@@ -14,7 +14,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-core-common": "12.16.18",
-    "basic-ftp": "^5.0.5",
+    "basic-ftp": "^5.1.0",
     "ssh2-sftp-client": "^12.0.1"
   },
   "devDependencies": {

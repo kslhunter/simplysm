@@ -2,10 +2,10 @@ import * as path from "path";
 import { pipeline } from "stream/promises"; // Node.js 내장 파이프라인
 import { Uuid } from "@simplysm/sd-core-common";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceServer } from "../../SdServiceServer";
-import { FastifyReply, FastifyRequest } from "fastify";
-import { ISdServiceUploadResult } from "@simplysm/sd-service-common";
-import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
+import type { SdServiceServer } from "../../SdServiceServer";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { ISdServiceUploadResult } from "@simplysm/sd-service-common";
+import type { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
 
 export class SdUploadHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdUploadHandler"]);
@@ -32,7 +32,7 @@ export class SdUploadHandler {
       const token = authHeader.split(" ")[1];
       await this._jwt.verifyAsync(token);
     } catch (err) {
-      reply.status(401).send({ error: "Unauthorized", message: err.message });
+      reply.status(401).send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
       return;
     }
 

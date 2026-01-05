@@ -7,6 +7,9 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/sd-orm-common/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/sd-core-node/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/sd-excel/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/orm-common/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/orm-node/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/core-common/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
@@ -15,6 +18,13 @@
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.back/251126/.docs" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.back" />
+      <excludeFolder url="file://$MODULE_DIR$/.serena" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.claude" />
+      <excludeFolder url="file://$MODULE_DIR$/.back/260105/orm-common-completed-tasks" />
+      <excludeFolder url="file://$MODULE_DIR$/.coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/.legacy-packages" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,4 +1,4 @@
-import { WritableSignal } from "@angular/core";
+import type { WritableSignal } from "@angular/core";
 import {
   producerIncrementEpoch,
   producerNotifyConsumers,

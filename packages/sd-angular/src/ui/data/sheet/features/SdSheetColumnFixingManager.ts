@@ -1,4 +1,4 @@
-import { Signal } from "@angular/core";
+import type { Signal } from "@angular/core";
 import { $computed } from "../../../../core/utils/bindings/$computed";
 import { $signal } from "../../../../core/utils/bindings/$signal";
 

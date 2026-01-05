@@ -1,11 +1,11 @@
-import {
+import type {
   ISdServiceErrorMessage,
   ISdServiceResponseMessage,
   TSdServiceClientMessage,
 } from "@simplysm/sd-service-common";
-import { ISdServiceProgress } from "../types/progress.types";
+import type { ISdServiceProgress } from "../types/progress.types";
 
-import { SdSocketProvider } from "./SdSocketProvider";
+import type { SdSocketProvider } from "./SdSocketProvider";
 import { EventEmitter } from "events";
 import { SdServiceClientProtocolWrapper } from "../protocol/SdServiceClientProtocolWrapper";
 import { Uuid } from "@simplysm/sd-core-common";
@@ -103,6 +103,9 @@ export class SdServiceTransport extends EventEmitter {
 
           listenerInfo?.resolve(decoded.message.body);
         } else if (decoded.message.name === "error") {
+          // 에러를 받았으므로 Map에서 제거
+          this._listenerMap.delete(decoded.uuid);
+
           listenerInfo?.reject(this._toError(decoded.message.body));
         } else if (decoded.message.name === "reload") {
           if (this._socket.clientName === decoded.message.body.clientName) {
@@ -115,7 +118,7 @@ export class SdServiceTransport extends EventEmitter {
         }
       }
     } catch (err) {
-      listenerInfo?.reject(err);
+      listenerInfo?.reject(err instanceof Error ? err : new Error(String(err)));
     }
   }
 

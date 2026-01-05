@@ -1,9 +1,10 @@
-import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils } from "@simplysm/sd-core-node";
 import { ComponentStylesheetBundler } from "@angular/build/src/tools/esbuild/angular/component-stylesheets";
 import { transformSupportedBrowsersToTargets } from "@angular/build/src/tools/esbuild/utils";
 import browserslist from "browserslist";
-import { TStylesheetBundlingResult } from "../types/build/TStylesheetBundlingResult";
-import { ScopePathSet } from "./ScopePathSet";
+import type { TStylesheetBundlingResult } from "../types/build/TStylesheetBundlingResult";
+import type { ScopePathSet } from "./ScopePathSet";
 import path from "path";
 
 export class SdStyleBundler {
@@ -95,7 +96,7 @@ export class SdStyleBundler {
       const result = {
         errors: [
           {
-            text: `스타일 번들링 실패: ${err.message ?? "알 수 없는 오류"}`,
+            text: `스타일 번들링 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`,
             location: { file: containingFile },
           },
         ],

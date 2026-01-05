@@ -1,4 +1,4 @@
-import { Signal, WritableSignal } from "@angular/core";
+import type { Signal, WritableSignal } from "@angular/core";
 
 export function setupModelHook<T, S extends WritableSignal<T>>(
   model: S,

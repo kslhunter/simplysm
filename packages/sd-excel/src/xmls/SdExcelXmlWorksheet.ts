@@ -1,4 +1,4 @@
-import {
+import type {
   ISdExcelAddressRangePoint,
   ISdExcelCellData,
   ISdExcelRowData,
@@ -402,7 +402,9 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
           result.mergeCells = this.data.worksheet.mergeCells;
         }
       } else {
-        result[key] = this.data.worksheet[key];
+        const worksheetRec = this.data.worksheet as Record<string, any>;
+        const resultRec = result as Record<string, any>;
+        resultRec[key] = worksheetRec[key];
       }
     }
 

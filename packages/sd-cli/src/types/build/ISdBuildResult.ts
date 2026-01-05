@@ -1,5 +1,5 @@
-import { TNormPath } from "@simplysm/sd-core-node";
-import { ISdBuildMessage } from "./ISdBuildMessage";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import type { ISdBuildMessage } from "./ISdBuildMessage";
 
 export interface ISdBuildResult {
   buildMessages: ISdBuildMessage[];

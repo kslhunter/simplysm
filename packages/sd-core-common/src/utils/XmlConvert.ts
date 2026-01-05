@@ -1,4 +1,5 @@
-import { XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser";
+import type { XmlBuilderOptions} from "fast-xml-parser";
+import { XMLBuilder, XMLParser } from "fast-xml-parser";
 
 export class XmlConvert {
   static parse(str: string, options?: { stripTagPrefix?: boolean }) {

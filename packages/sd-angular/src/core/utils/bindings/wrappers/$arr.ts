@@ -1,32 +1,40 @@
-import { Signal, WritableSignal } from "@angular/core";
-import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import type { Signal, WritableSignal } from "@angular/core";
+import type { TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 const ORIGIN_SNAPSHOT = Symbol();
 
 export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
+  const mySig = sig as (Signal<T[]> | WritableSignal<T[]>) & {
+    [ORIGIN_SNAPSHOT]?: {
+      keyPropNameOrFn: keyof T | ((item: T) => any);
+      snapshot: Map<any, T>;
+    };
+  };
+
   return {
     insert(i: number, item: T) {
-      if (!("update" in sig)) throw new Error("Readonly signal does not support insert.");
+      if (!("update" in mySig)) throw new Error("Readonly signal does not support insert.");
 
-      sig.update((v) => {
+      mySig.update((v) => {
         const r = [...v];
         r.insert(i, item);
         return r;
       });
     },
     remove(itemOrFn: T | ((item: T, i: number) => boolean)) {
-      if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");
+      if (!("update" in mySig)) throw new Error("Readonly signal does not support remove.");
 
-      sig.update((v) => {
+      mySig.update((v) => {
         const r = [...v];
         r.remove(itemOrFn as any);
         return r;
       });
     },
     toggle(value: T) {
-      if (!("update" in sig)) throw new Error("Readonly signal does not support toggle.");
+      if (!("update" in mySig)) throw new Error("Readonly signal does not support toggle.");
 
-      sig.update((v) => {
+      mySig.update((v) => {
         if (v.includes(value)) {
           return v.filter((item) => item !== value);
         } else {
@@ -35,17 +43,19 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
       });
     },
     snapshot(keyPropNameOrFn: keyof T | ((item: T) => any)) {
-      sig[ORIGIN_SNAPSHOT] = {
+      mySig[ORIGIN_SNAPSHOT] = {
         keyPropNameOrFn,
-        snapshot: ObjectUtils.clone(sig()).toMap((item) =>
+        snapshot: ObjectUtils.clone(mySig()).toMap((item) =>
           typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn],
         ),
       };
     },
     changed(item: T) {
-      if (sig[ORIGIN_SNAPSHOT] == null) return false;
-      const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
+      if (mySig[ORIGIN_SNAPSHOT] == null) return false;
+      const orgItemMap = mySig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
+      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as
+        | keyof T
+        | ((item: T) => any);
 
       const keyValue =
         typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
@@ -59,14 +69,16 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
       excludes?: string[];
       includes?: string[];
     }): TArrayDiffs2Result<T>[] {
-      if (sig[ORIGIN_SNAPSHOT] == null) return [];
-      const orgItemMap = sig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropNameOrFn = sig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
+      if (mySig[ORIGIN_SNAPSHOT] == null) return [];
+      const orgItemMap = mySig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
+      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as
+        | keyof T
+        | ((item: T) => any);
 
-      return sig().oneWayDiffs(orgItemMap, keyPropNameOrFn, options);
+      return mySig().oneWayDiffs(orgItemMap, keyPropNameOrFn, options);
     },
     get origin(): Map<any, T> {
-      return sig[ORIGIN_SNAPSHOT]?.snapshot ?? new Map<any, T>();
+      return mySig[ORIGIN_SNAPSHOT]?.snapshot ?? new Map<any, T>();
     },
   };
 }

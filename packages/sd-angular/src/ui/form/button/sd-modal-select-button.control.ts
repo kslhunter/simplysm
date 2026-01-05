@@ -7,14 +7,14 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { SdAdditionalButtonControl } from "./sd-additional-button.control";
-import { TSelectModeValue } from "../select/sd-select.control";
+import type { TSelectModeValue } from "../select/sd-select.control";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdButtonControl } from "./sd-button.control";
-import {
+import type {
   ISdSelectModal,
   TSdSelectModalInfo,
 } from "../../../features/data-view/sd-data-select-button.control";

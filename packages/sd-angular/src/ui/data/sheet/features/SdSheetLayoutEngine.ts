@@ -1,9 +1,9 @@
-import { ResourceRef, Signal } from "@angular/core";
+import type { ResourceRef, Signal } from "@angular/core";
 import { $computed } from "../../../../core/utils/bindings/$computed";
-import { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
-import { ISdSheetConfig } from "../types/ISdSheetConfig";
-import { ISdSheetColumnDef } from "../types/ISdSheetColumnDef";
-import { ISdSheetHeaderDef } from "../types/ISdSheetHeaderDef";
+import type { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
+import type { ISdSheetConfig } from "../types/ISdSheetConfig";
+import type { ISdSheetColumnDef } from "../types/ISdSheetColumnDef";
+import type { ISdSheetHeaderDef } from "../types/ISdSheetHeaderDef";
 
 export class SdSheetLayoutEngine<T> {
   constructor(

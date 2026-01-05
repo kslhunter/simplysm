@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import { IBroadcastPlugin, IBroadcastResult } from "./IBroadcastPlugin";
+import type { IBroadcastPlugin, IBroadcastResult } from "./IBroadcastPlugin";
 
 const BroadcastPlugin = registerPlugin<IBroadcastPlugin>("Broadcast", {
   web: async () => {

@@ -1,4 +1,5 @@
-import { DateOnly, DateTime, NumberUtils, ObjectUtils, Type } from "@simplysm/sd-core-common";
+import type { Type } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 import { SdExcelWorkbook } from "../SdExcelWorkbook";
 
 type TValidFieldSpec<T extends Type<any>> = {

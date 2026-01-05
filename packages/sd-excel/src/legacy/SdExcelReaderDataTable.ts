@@ -1,5 +1,5 @@
-import { SdExcelReaderWorksheet } from "./SdExcelReaderWorksheet";
-import * as XLSX from "xlsx";
+import type { SdExcelReaderWorksheet } from "./SdExcelReaderWorksheet";
+import type * as XLSX from "xlsx";
 
 export class SdExcelReaderDataTable {
   private readonly _headerColMap = new Map<string, number>();

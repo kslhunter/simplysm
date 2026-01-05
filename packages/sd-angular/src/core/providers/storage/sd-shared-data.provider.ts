@@ -1,4 +1,4 @@
-import { inject, Injectable, Signal, WritableSignal } from "@angular/core";
+import { inject, Injectable, type Signal, type WritableSignal } from "@angular/core";
 import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdServiceClientFactoryProvider } from "../integration/sd-service-client-factory.provider";
 import { DateOnly, DateTime, ObjectUtils, Time, Wait } from "@simplysm/sd-core-common";
@@ -30,8 +30,7 @@ export abstract class SdSharedDataProvider<
       existing.getter = getter;
       existing.listenerKey = undefined;
       void this._loadDataAsync(name);
-    }
-    else{
+    } else {
       this._infoMap.set(name, { getter });
     }
   }
@@ -148,7 +147,7 @@ export interface ISharedDataInfo<T extends ISharedDataBase<string | number>> {
 interface ISharedDataInnerInfo<T extends ISharedDataBase<string | number>> {
   getter: ISharedDataInfo<T>;
   listenerKey?: string;
-  signal?: WritableSignal<T[]>;
+  signal?: WritableSignal<T[]> & { $get?(key: T["__valueKey"] | undefined): T | undefined };
 }
 
 export interface ISharedDataBase<VK extends string | number> {

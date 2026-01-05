@@ -1,6 +1,7 @@
+import type {
+  FileEntry} from "@zip.js/zip.js";
 import {
   BlobReader,
-  FileEntry,
   Uint8ArrayReader,
   Uint8ArrayWriter,
   ZipReader,

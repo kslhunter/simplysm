@@ -1,8 +1,8 @@
 import { JsonConvert } from "@simplysm/sd-core-common";
-import { SdServiceServer } from "../../SdServiceServer";
-import { SdServiceExecutor } from "../../core/SdServiceExecutor";
-import { FastifyReply, FastifyRequest } from "fastify";
-import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
+import type { SdServiceServer } from "../../SdServiceServer";
+import type { SdServiceExecutor } from "../../core/SdServiceExecutor";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
 
 export class SdHttpRequestHandler {
   constructor(
@@ -30,7 +30,7 @@ export class SdHttpRequestHandler {
       }
     } catch (err) {
       // 토큰이 있는데 유효하지 않으면 401
-      reply.status(401).send({ error: "Unauthorized", message: err.message });
+      reply.status(401).send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
       return;
     }
 

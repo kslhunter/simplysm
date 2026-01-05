@@ -1,29 +1,30 @@
 import path from "path";
-import esbuild, { Metafile } from "esbuild";
-import { FsUtils, HashUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type esbuild from "esbuild";
+import type { Metafile } from "esbuild";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdLogger } from "@simplysm/sd-core-node";
 import { fileURLToPath } from "url";
-import nodeStdLibBrowser from "node-stdlib-browser";
-import nodeStdLibBrowserPlugin from "node-stdlib-browser/helpers/esbuild/plugin";
 import browserslist from "browserslist";
 import { SdNgBundlerContext } from "./SdNgBundlerContext";
 import { MemoryLoadResultCache } from "@angular/build/src/tools/esbuild/load-result-cache";
+import { nodeModulesPolyfillPlugin } from "esbuild-plugins-node-modules-polyfill";
 import {
   convertOutputFile,
   createOutputFile,
   transformSupportedBrowsersToTargets,
 } from "@angular/build/src/tools/esbuild/utils";
-import {
+import type {
   BuildOutputFile,
-  BuildOutputFileType,
   InitialFileRecord,
 } from "@angular/build/src/tools/esbuild/bundler-context";
+import { BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
 import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
-import {
+import type {
   HintMode,
-  IndexHtmlGenerator,
   IndexHtmlProcessResult,
 } from "@angular/build/src/utils/index-file/index-html-generator";
-import { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
+import { IndexHtmlGenerator } from "@angular/build/src/utils/index-file/index-html-generator";
+import type { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
 import { augmentAppWithServiceWorkerEsbuild } from "@angular/build/src/utils/service-worker";
 import { createSourcemapIgnorelistPlugin } from "@angular/build/src/tools/esbuild/sourcemap-ignorelist-plugin";
@@ -34,12 +35,12 @@ import { createCssResourcePlugin } from "@angular/build/src/tools/esbuild/styles
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
 import { createSdNgPlugin } from "./createSdNgPlugin";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTimer";
-import { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
+import type { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
 import nodeModule from "module";
-import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
-import { INpmConfig } from "../../types/common-config/INpmConfig";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import type { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
+import type { INpmConfig } from "../../types/common-config/INpmConfig";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 
 export class SdNgBundler {
@@ -229,7 +230,7 @@ export class SdNgBundler {
               char: undefined,
               code: undefined,
               severity: "error",
-              message: `${err.toString()}`,
+              message: err instanceof Error ? err.message : String(err),
               type: "gen-sw",
             });
           }
@@ -472,9 +473,6 @@ export class SdNgBundler {
       define: {
         ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "ngJitMode": "false",
-        "global": "global",
-        "process": "process",
-        "Buffer": "Buffer",
         "process.env.SD_VERSION": JSON.stringify(this._pkgNpmConf.version),
         "process.env.NODE_ENV": JSON.stringify(this._opt.watch?.dev ? "development" : "production"),
         ...(this._conf.env
@@ -548,18 +546,21 @@ export class SdNgBundler {
             target: this._browserTarget,
             format: "esm",
             splitting: true,
-            inject: [
-              PathUtils.posix(
-                fileURLToPath(import.meta.resolve("node-stdlib-browser/helpers/esbuild/shim")),
-              ),
-            ],
           }),
       plugins: [
         createSourcemapIgnorelistPlugin(),
         createSdNgPlugin(this._opt, this._modifiedFileSet, this._ngResultCache),
         ...(this._conf.builderType === "electron"
           ? []
-          : [nodeStdLibBrowserPlugin(nodeStdLibBrowser)]),
+          : [
+              nodeModulesPolyfillPlugin({
+                modules: ["path", "buffer", "crypto", "events", "util", "stream", "assert"],
+                globals: {
+                  process: true,
+                  Buffer: true,
+                },
+              }),
+            ]),
         SdWorkerPathPlugin(this._outputPath),
         // {
         //   name: "log-circular",

@@ -1,6 +1,7 @@
 import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
-import { ObjectUtils, TValidateDef } from "../utils/ObjectUtils";
-import { TPropertyDecoratorReturn } from "./TPropertyDecoratorReturn";
+import type { TValidateDef } from "../utils/ObjectUtils";
+import { ObjectUtils } from "../utils/ObjectUtils";
+import type { TPropertyDecoratorReturn } from "./TPropertyDecoratorReturn";
 
 /**
  * 속성값이 설정될 때, 기대되는 값인지 확인 하는 Decorator

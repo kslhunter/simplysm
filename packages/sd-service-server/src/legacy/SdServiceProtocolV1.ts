@@ -1,5 +1,5 @@
 import { JsonConvert } from "@simplysm/sd-core-common";
-import {
+import type {
   ISdServiceSplitRequest,
   ISdServiceSplitResponse,
   TSdServiceMessage,

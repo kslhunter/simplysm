@@ -16,7 +16,7 @@ import { SdActivatedModalProvider } from "../../ui/overlay/modal/sd-modal.provid
 import { $computed } from "../../core/utils/bindings/$computed";
 import { useCurrentPageCodeSignal } from "../../core/utils/signals/useCurrentPageCodeSignal";
 import { useFullPageCodeSignal } from "../../core/utils/signals/useFullPageCodeSignal";
-import { TSdViewType, useViewTypeSignal } from "../../core/utils/signals/useViewTypeSignal";
+import { type TSdViewType, useViewTypeSignal } from "../../core/utils/signals/useViewTypeSignal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { injectParent } from "../../core/utils/injections/injectParent";
 import { NgIcon } from "@ng-icons/core";

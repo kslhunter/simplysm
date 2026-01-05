@@ -1,4 +1,4 @@
-import { inject, Injectable, Signal } from "@angular/core";
+import { inject, Injectable, type Signal } from "@angular/core";
 import { $computed } from "../../utils/bindings/$computed";
 
 export function usePermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {

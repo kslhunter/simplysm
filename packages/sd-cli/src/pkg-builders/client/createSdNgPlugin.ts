@@ -1,14 +1,15 @@
-import esbuild from "esbuild";
+import type esbuild from "esbuild";
 import path from "path";
 import os from "os";
 import { JavaScriptTransformer } from "@angular/build/src/tools/esbuild/javascript-transformer";
-import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger } from "@simplysm/sd-core-node";
 import { SdCliPerformanceTimer } from "../../utils/SdCliPerformanceTimer";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
-import { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
-import { ISdTsCompilerResult } from "../../types/build/ISdTsCompilerResult";
-import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import type { ISdCliNgPluginResultCache } from "../../types/plugin/ISdCliNgPluginResultCache";
+import type { ISdTsCompilerResult } from "../../types/build/ISdTsCompilerResult";
+import type { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export function createSdNgPlugin(
   opt: ISdTsCompilerOptions,
@@ -138,7 +139,7 @@ export function createSdNgPlugin(
             loader: "js",
           };
         } catch (err) {
-          return { errors: [{ text: err?.message ?? String(err) }] };
+          return { errors: [{ text: err instanceof Error ? err.message : String(err) }] };
         }
       });
 

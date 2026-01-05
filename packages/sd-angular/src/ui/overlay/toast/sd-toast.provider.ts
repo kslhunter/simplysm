@@ -13,7 +13,7 @@ import { SdToastContainerControl } from "./sd-toast-container.control";
 import { SdSystemLogProvider } from "../../../core/providers/app/sd-system-log.provider";
 import { SdToastControl } from "./sd-toast.control";
 import { $signal } from "../../../core/utils/bindings/$signal";
-import { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
+import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
 import { $effect } from "../../../core/utils/bindings/$effect";
 
 @Injectable({ providedIn: "root" })
@@ -73,11 +73,12 @@ export class SdToastProvider {
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
     // component
+    const inputs = toast.inputs as Record<string, any>;
     const compRef = createComponent(toast.type, {
       environmentInjector: this._appRef.injector,
       bindings: [
-        ...Object.keys(toast.inputs).map((inputKey) =>
-          inputBinding(inputKey, () => toast.inputs[inputKey]),
+        ...Object.keys(inputs).map((inputKey) =>
+          inputBinding(inputKey, () => inputs[inputKey]),
         ),
         outputBinding("close", () => closeFn()),
       ],

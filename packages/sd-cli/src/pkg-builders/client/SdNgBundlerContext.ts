@@ -37,8 +37,8 @@ export class SdNgBundlerContext {
       try {
         esbuildResult = await this._context.rebuild();
       } catch (err) {
-        if ("warnings" in err || "errors" in err) {
-          esbuildResult = err;
+        if (err != null && typeof err === "object" && ("warnings" in err || "errors" in err)) {
+          esbuildResult = err as esbuild.BuildResult;
         } else {
           throw err;
         }
@@ -47,8 +47,8 @@ export class SdNgBundlerContext {
       try {
         esbuildResult = await esbuild.build(this._esbuildOptions);
       } catch (err) {
-        if ("warnings" in err || "errors" in err) {
-          esbuildResult = err;
+        if (err != null && typeof err === "object" && ("warnings" in err || "errors" in err)) {
+          esbuildResult = err as esbuild.BuildResult;
         } else {
           throw err;
         }
@@ -76,7 +76,8 @@ export class SdNgBundlerContext {
         const name = path.basename(relativeFilePath).split(".", 1)[0];
         const type = path.extname(relativeFilePath) === ".css" ? "style" : "script";
 
-        if (this._esbuildOptions.entryPoints?.[name] != null) {
+        const entryPointsRec = this._esbuildOptions.entryPoints as Record<string, string> | undefined;
+        if (entryPointsRec?.[name] != null) {
           initialFiles.set(relativeFilePath, {
             name,
             type,

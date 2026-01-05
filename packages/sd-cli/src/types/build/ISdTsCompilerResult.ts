@@ -1,6 +1,6 @@
-import { ISdBuildMessage } from "./ISdBuildMessage";
-import { TNormPath } from "@simplysm/sd-core-node";
-import { TStylesheetBundlingResult } from "./TStylesheetBundlingResult";
+import type { ISdBuildMessage } from "./ISdBuildMessage";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import type { TStylesheetBundlingResult } from "./TStylesheetBundlingResult";
 
 export interface ISdTsCompilerResult {
   messages: ISdBuildMessage[];

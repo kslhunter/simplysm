@@ -1,4 +1,4 @@
-import { ISdExcelXml, ISdExcelXmlContentTypeData } from "../types";
+import type { ISdExcelXml, ISdExcelXmlContentTypeData } from "../types";
 
 export class SdExcelXmlContentType implements ISdExcelXml {
   data: ISdExcelXmlContentTypeData;

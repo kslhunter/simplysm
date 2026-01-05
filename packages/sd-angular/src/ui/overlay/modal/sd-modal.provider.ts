@@ -9,13 +9,13 @@ import {
   inputBinding,
   outputBinding,
   OutputEmitterRef,
-  Signal,
+  type Signal,
   TemplateRef,
   Type,
 } from "@angular/core";
 import { SdModalControl } from "./sd-modal.control";
 import { $signal } from "../../../core/utils/bindings/$signal";
-import { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
+import type { TDirectiveInputSignals } from "../../../core/utils/TDirectiveInputSignals";
 import { Wait } from "@simplysm/sd-core-common";
 import { SdBusyProvider } from "../busy/sd-busy.provider";
 
@@ -57,6 +57,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
     this._activatedModalProvider = new SdActivatedModalProvider<T>();
 
     //-- Content component
+    const inputs = modal.inputs as Record<string, any>;
     this._compRef = createComponent(modal.type, {
       environmentInjector: appRef.injector,
       elementInjector: Injector.create({
@@ -64,8 +65,8 @@ export class SdModalInstance<T extends ISdModal<any>> {
         providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
       }),
       bindings: [
-        ...Object.keys(modal.inputs).map((inputKey) =>
-          inputBinding(inputKey, () => modal.inputs[inputKey]),
+        ...Object.keys(inputs).map((inputKey) =>
+          inputBinding(inputKey, () => inputs[inputKey]),
         ),
         outputBinding("close", (val) => this._onComponentClose(val)),
       ],

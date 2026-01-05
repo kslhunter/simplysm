@@ -1,5 +1,6 @@
 
-import { afterRenderEffect, signal, Signal } from "@angular/core";
+import type { Signal } from "@angular/core";
+import { afterRenderEffect, signal } from "@angular/core";
 
 export function $afterRenderComputed<R>(fn: () => R, opt: { initialValue: R }): Signal<R>;
 export function $afterRenderComputed<R>(

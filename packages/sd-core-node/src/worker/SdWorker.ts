@@ -2,9 +2,10 @@ import { TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 import { EventEmitter } from "events";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Worker, WorkerOptions } from "worker_threads";
+import type { WorkerOptions } from "worker_threads";
+import { Worker } from "worker_threads";
 import { SdLogger } from "../utils/SdLogger";
-import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
+import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
 
 export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
   private readonly _worker: Worker;

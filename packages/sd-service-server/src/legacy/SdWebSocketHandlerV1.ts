@@ -1,12 +1,12 @@
-import { WebSocket } from "ws";
-import { Type } from "@simplysm/sd-core-common";
+import type { WebSocket } from "ws";
+import type { Type } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceSocketV1 } from "./SdServiceSocketV1";
-import { SdServiceExecutor } from "../core/SdServiceExecutor";
-import { ISdServiceRequest, TSdServiceResponse } from "./protocol-v1.types";
+import type { SdServiceExecutor } from "../core/SdServiceExecutor";
+import type { ISdServiceRequest, TSdServiceResponse } from "./protocol-v1.types";
 import { SdServiceCommandHelperV1 } from "./SdServiceCommandHelperV1";
 import { SD_SERVICE_SPECIAL_COMMANDS } from "./command-v1.types";
-import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
+import type { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 
 /** @deprecated */
 export class SdWebSocketHandlerV1 {

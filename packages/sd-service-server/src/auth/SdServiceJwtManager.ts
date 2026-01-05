@@ -1,6 +1,6 @@
-import { SdServiceServer } from "../SdServiceServer";
+import type { SdServiceServer } from "../SdServiceServer";
 import * as jose from "jose";
-import { IAuthTokenPayload } from "./IAuthTokenPayload";
+import type { IAuthTokenPayload } from "./IAuthTokenPayload";
 
 export class SdServiceJwtManager<TAuthInfo = any> {
   constructor(private readonly _server: SdServiceServer<TAuthInfo>) {}
@@ -29,7 +29,7 @@ export class SdServiceJwtManager<TAuthInfo = any> {
       return payload as any;
     } catch (err) {
       // jose 에러 처리
-      if (err.code === "ERR_JWT_EXPIRED") {
+      if (err != null && typeof err === "object" && "code" in err && err.code === "ERR_JWT_EXPIRED") {
         throw new Error("토큰이 만료되었습니다.");
       }
       throw new Error("유효하지 않은 토큰입니다.");

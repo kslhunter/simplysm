@@ -9,7 +9,7 @@ import {
 import { DateOnly } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
 import { NgTemplateOutlet } from "@angular/common";
@@ -79,7 +79,7 @@ import { $computed } from "../../core/utils/bindings/$computed";
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/mixins";
-      
+
       sd-calendar {
         > table {
           border-collapse: collapse;

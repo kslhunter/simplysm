@@ -1,4 +1,4 @@
-import { IFileInfo } from "../IFileSystemPlugin";
+import type { IFileInfo } from "../IFileSystemPlugin";
 
 interface FsEntry {
   path: string;

@@ -1,8 +1,9 @@
-import {
-  afterRenderEffect,
+import type {
   EffectCleanupRegisterFn,
   EffectRef,
-  Signal,
+  Signal} from "@angular/core";
+import {
+  afterRenderEffect,
   untracked,
 } from "@angular/core";
 

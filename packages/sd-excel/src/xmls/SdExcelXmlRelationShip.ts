@@ -1,5 +1,5 @@
 import { NumberUtils } from "@simplysm/sd-core-common";
-import { ISdExcelRelationshipData, ISdExcelXml, ISdExcelXmlRelationshipData } from "../types";
+import type { ISdExcelRelationshipData, ISdExcelXml, ISdExcelXmlRelationshipData } from "../types";
 
 export class SdExcelXmlRelationShip implements ISdExcelXml {
   data: ISdExcelXmlRelationshipData;

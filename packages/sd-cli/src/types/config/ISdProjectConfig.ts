@@ -1,4 +1,4 @@
-import electronBuilder from "electron-builder";
+import type electronBuilder from "electron-builder";
 
 export interface ISdProjectConfig {
   packages: Record<string, TSdPackageConfig | undefined>;
@@ -7,7 +7,7 @@ export interface ISdProjectConfig {
   postPublish?: TSdPostPublishConfig[];
 }
 
-// export type TSdProjectConfigFn = (isDev: boolean, opts?: string[]) => ISdProjectConfig;
+export type TSdProjectConfigFn = (dev: boolean, opts?: string[]) => ISdProjectConfig;
 
 export type TSdPackageConfig<T extends "server" | "library" | "client" | unknown = unknown> =
   T extends "library"

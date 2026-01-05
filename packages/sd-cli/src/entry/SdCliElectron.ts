@@ -2,10 +2,10 @@ import { FsUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { ISdClientBuilderElectronConfig } from "../types/config/ISdProjectConfig";
+import type { ISdClientBuilderElectronConfig } from "../types/config/ISdProjectConfig";
 import { loadProjConfAsync } from "../utils/loadProjConfAsync";
-import electronBuilder from "electron-builder";
-import { INpmConfig } from "../types/common-config/INpmConfig";
+import type electronBuilder from "electron-builder";
+import type { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdCliElectron {
   private static readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdCliElectron"]);

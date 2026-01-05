@@ -1,6 +1,7 @@
 import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 
+// @deprecate use AI
 export class SdCliIndexFileGenerator {
   cachedHash?: string;
 

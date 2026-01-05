@@ -6,7 +6,7 @@ import {
   Directive,
   inject,
   output,
-  Signal,
+  type Signal,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
@@ -24,7 +24,7 @@ import { FormatPipe } from "../../core/pipes/format.pipe";
 import { SdSharedDataProvider } from "../../core/providers/storage/sd-shared-data.provider";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { injectParent } from "../../core/utils/injections/injectParent";
-import { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
+import type { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";

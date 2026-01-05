@@ -1,10 +1,11 @@
-import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import path from "path";
 import { javascript, StringUtils } from "@simplysm/sd-core-common";
 import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { SdServerBundler } from "./SdServerBundler";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { INpmConfig } from "../../types/common-config/INpmConfig";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { INpmConfig } from "../../types/common-config/INpmConfig";
 
 export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
   protected override _logger = SdLogger.get(["simplysm", "sd-cli", "SdServerBuildRunner"]);

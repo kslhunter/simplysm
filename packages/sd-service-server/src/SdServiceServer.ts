@@ -1,12 +1,14 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
+import type { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import { SdWebSocketHandlerV1 } from "./legacy/SdWebSocketHandlerV1";
 import { SdStaticFileHandler } from "./transport/http/SdStaticFileHandler";
 import { SdHttpRequestHandler } from "./transport/http/SdHttpRequestHandler";
 import { SdServiceExecutor } from "./core/SdServiceExecutor";
-import { JsonConvert, Type } from "@simplysm/sd-core-common";
-import fastify, { FastifyInstance, FastifyRequest } from "fastify";
+import type { Type } from "@simplysm/sd-core-common";
+import { JsonConvert } from "@simplysm/sd-core-common";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import fastify from "fastify";
 import fastifyMiddie from "@fastify/middie";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
@@ -17,10 +19,10 @@ import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
 import { SdUploadHandler } from "./transport/http/SdUploadHandler";
 import { SdWebSocketHandler } from "./transport/socket/SdWebSocketHandler";
-import { WebSocket } from "ws";
+import type { WebSocket } from "ws";
 import { SdServiceJwtManager } from "./auth/SdServiceJwtManager";
-import { IAuthTokenPayload } from "./auth/IAuthTokenPayload";
-import { ISdServiceServerOptions } from "./types/ISdServiceServerOptions";
+import type { IAuthTokenPayload } from "./auth/IAuthTokenPayload";
+import type { ISdServiceServerOptions } from "./types/ISdServiceServerOptions";
 
 export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
   isOpen = false;

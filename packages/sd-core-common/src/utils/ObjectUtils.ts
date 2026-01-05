@@ -1,12 +1,12 @@
-import { Type } from "../types/type/Type";
+import type { Type } from "../types/type/Type";
 import { DateTime } from "../types/date-time/DateTime";
 import { DateOnly } from "../types/date-time/DateOnly";
 import { Time } from "../types/date-time/Time";
 import { Uuid } from "../types/Uuid";
 import { NeverEntryError } from "../errors/NeverEntryError";
-import { WrappedType } from "../types/wrap/WrappedType";
-import { TFlatType } from "../types/type/TFlatType";
-import { UnwrappedType } from "../types/wrap/UnwrappedType";
+import type { WrappedType } from "../types/wrap/WrappedType";
+import type { TFlatType } from "../types/type/TFlatType";
+import type { UnwrappedType } from "../types/wrap/UnwrappedType";
 
 export class ObjectUtils {
   static clone<T>(
@@ -183,15 +183,17 @@ export class ObjectUtils {
       return result as any;
     }
 
-    const result = this.clone(source);
+    const sourceRec = source as Record<string, any>;
+    const targetRec = target as Record<string, any>;
+    const resultRec = this.clone(sourceRec);
     for (const key of Object.keys(target)) {
-      result[key] = this.merge(source[key], target[key], opt);
-      if (result[key] === undefined) {
-        delete result[key];
+      resultRec[key] = this.merge(sourceRec[key], targetRec[key], opt);
+      if (resultRec[key] === undefined) {
+        delete resultRec[key];
       }
     }
 
-    return result as any;
+    return resultRec as any;
   }
 
   static merge3<
@@ -361,13 +363,13 @@ export class ObjectUtils {
         (key) =>
           (options?.includes === undefined || options.includes.includes(key)) &&
           !options?.excludes?.includes(key) &&
-          source[key] !== undefined,
+          source.get(key) != null,
       );
       const targetKeys = Array.from(target.keys()).filter(
         (key) =>
           (options?.includes === undefined || options.includes.includes(key)) &&
           !options?.excludes?.includes(key) &&
-          target[key] !== undefined,
+          target.get(key) != null,
       );
 
       if (sourceKeys.length !== targetKeys.length) {
@@ -505,10 +507,10 @@ export class ObjectUtils {
     return undefined;
   }
 
-  static validateObject<T>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
-    const result: TValidateObjectResult<T> = {};
+  static validateObject<T extends Record<string, any>>(obj: T, def: TValidateObjectDef<T>): TValidateObjectResult<T> {
+    const result: TValidateObjectResult<any> = {};
     for (const defKey of Object.keys(def)) {
-      const validateResult = this.validate(this.getChainValue(obj, defKey), def[defKey]);
+      const validateResult = this.validate(this.getChainValue(obj, defKey), def[defKey]!);
       if (validateResult !== undefined) {
         result[defKey] = validateResult;
       }
@@ -517,7 +519,7 @@ export class ObjectUtils {
     return result;
   }
 
-  static validateObjectWithThrow<T>(
+  static validateObjectWithThrow<T extends Record<string, any>>(
     displayName: string,
     obj: T,
     def: TValidateObjectDefWithName<T>,
@@ -527,11 +529,11 @@ export class ObjectUtils {
       const errMessages: string[] = [];
       const invalidateKeys = Object.keys(validateResult);
       for (const invalidateKey of invalidateKeys) {
-        const itemDisplayName: string = def[invalidateKey].displayName;
+        const itemDisplayName: string = def[invalidateKey]!.displayName;
         let errMessage = `- '${itemDisplayName}'`;
 
         if ((def[invalidateKey] as IValidateDefWithName<any>).displayValue) {
-          const itemValue = validateResult[invalidateKey].value;
+          const itemValue: any = validateResult[invalidateKey]!.value;
           if (
             typeof itemValue === "string" ||
             typeof itemValue === "number" ||
@@ -550,7 +552,7 @@ export class ObjectUtils {
     }
   }
 
-  static validateArray<T>(
+  static validateArray<T extends Record<string, any>>(
     arr: T[],
     def: ((item: T) => TValidateObjectDef<T>) | TValidateObjectDef<T>,
   ): IValidateArrayResult<T>[] {
@@ -573,7 +575,7 @@ export class ObjectUtils {
     return result;
   }
 
-  static validateArrayWithThrow<T>(
+  static validateArrayWithThrow<T extends Record<string, any>>(
     displayName: string,
     arr: T[],
     def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>,
@@ -586,11 +588,11 @@ export class ObjectUtils {
 
         const invalidateKeys = Object.keys(validateResult.result);
         for (const invalidateKey of invalidateKeys) {
-          const itemDisplayName: string = realDef[invalidateKey].displayName;
+          const itemDisplayName: string = realDef[invalidateKey]!.displayName;
           let errMessage = `- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`;
 
           if ((realDef[invalidateKey] as IValidateDefWithName<any>).displayValue) {
-            const itemValue = validateResult.result[invalidateKey].value;
+            const itemValue: any = validateResult.result[invalidateKey]!.value;
             if (
               typeof itemValue === "string" ||
               typeof itemValue === "number" ||
@@ -697,11 +699,7 @@ export class ObjectUtils {
     delete curr[last];
   }
 
-  static clearUndefined<T>(obj: T): T {
-    if (obj == null) {
-      return obj;
-    }
-
+  static clearUndefined<T extends Record<string, any>>(obj: T): T {
     for (const key of Object.keys(obj)) {
       if (obj[key] === undefined) {
         delete obj[key];
@@ -711,7 +709,7 @@ export class ObjectUtils {
     return obj;
   }
 
-  static clear<T extends {}>(obj: T): {} {
+  static clear<T extends Record<string, any>>(obj: T): {} {
     for (const key of Object.keys(obj)) {
       delete obj[key];
     }
@@ -740,8 +738,9 @@ export class ObjectUtils {
     }
 
     if (typeof obj === "object") {
+      const objRec = obj as Record<string, any>;
       for (const key of Object.keys(obj)) {
-        obj[key] = this.nullToUndefined(obj[key]);
+        objRec[key] = this.nullToUndefined(objRec[key]);
       }
 
       return obj;

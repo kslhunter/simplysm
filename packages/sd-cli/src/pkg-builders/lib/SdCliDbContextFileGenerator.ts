@@ -1,7 +1,7 @@
 import { FsUtils, HashUtils, PathUtils, SdFsWatcher } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtils } from "@simplysm/sd-core-common";
-import { INpmConfig } from "../../types/common-config/INpmConfig";
+import type { INpmConfig } from "../../types/common-config/INpmConfig";
 
 export class SdCliDbContextFileGenerator {
   cachedHash?: string;
@@ -90,9 +90,9 @@ export class SdCliDbContextFileGenerator {
             "userPermission",
           ].includes(varName)
         ) {
-          modelTexts.push(`override ${varName} = new Queryable(this, ${className})`);
+          modelTexts.push(`override ${varName} = queryable(this, ${className})`);
         } else {
-          modelTexts.push(`${varName} = new Queryable(this, ${className})`);
+          modelTexts.push(`${varName} = queryable(this, ${className})`);
         }
       }
     }
@@ -114,7 +114,7 @@ export class SdCliDbContextFileGenerator {
         const className = fileName.includes("_") ? fileName : StringUtils.toPascalCase(fileName);
 
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
-        viewTexts.push(`${varName} = new Queryable(this, ${className})`);
+        viewTexts.push(`${varName} = queryable(this, ${className})`);
       }
     }
 
@@ -144,10 +144,10 @@ export class SdCliDbContextFileGenerator {
 
     importTexts.push(
       ...[
-        `import { IDbMigration${
-          modelTexts.length > 0 || viewTexts.length > 0 ? ", Queryable" : ""
+        `import { type IDbMigration${
+          modelTexts.length > 0 || viewTexts.length > 0 ? ", queryable" : ""
         }${spTexts.length > 0 ? ", StoredProcedure" : ""} } from "@simplysm/sd-orm-common";`,
-        'import { Type } from "@simplysm/sd-core-common";',
+        'import type { Type } from "@simplysm/sd-core-common";',
       ],
     );
 

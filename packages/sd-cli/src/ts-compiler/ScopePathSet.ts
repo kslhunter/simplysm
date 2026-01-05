@@ -1,4 +1,5 @@
-import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils } from "@simplysm/sd-core-node";
 
 export class ScopePathSet {
   private readonly _data: Set<TNormPath>;

@@ -1,36 +1,41 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "downlevelIteration": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "module": "ESNext",
+    // 출력
     "target": "ES2022",
-    "lib": ["ES2021"],
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
+
+    // Strict
     "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "noImplicitReturns": true,
-    "noImplicitAny": false,
     "noImplicitOverride": true,
-    "useUnknownInCatchVariables": false,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "sourceMap": true,
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "noEmitOnError": false,
-    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": true,
     "noPropertyAccessFromIndexSignature": true,
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
+
+    // 모듈
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+
+    // Angular 데코레이터
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+
+    // 빌드
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
     "importHelpers": true,
-    "useDefineForClassFields": false,
-    "noUnusedLocals": false,
+
+    // 경로
     "baseUrl": ".",
     "paths": {
-      "@simplysm/*": ["./packages/*/src/index.ts"],
-      "@simplysm/ts-transformer-keys/transformer": [
-        "./packages/ts-transformer-keys/src/transformer.ts"
-      ]
+      "@simplysm/*": ["packages/*/src/index.ts"]
     }
-  }
+  },
+  "include": ["packages/*/src/**/*.ts", "packages/*/tests/**/*.ts"]
 }

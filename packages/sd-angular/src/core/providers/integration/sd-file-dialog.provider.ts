@@ -4,9 +4,9 @@ import { Injectable } from "@angular/core";
 @Injectable({ providedIn: "root" })
 export class SdFileDialogProvider {
   async showAsync(multiple?: false, accept?: string): Promise<File | undefined>;
-  async showAsync(multiple: true, accept?: string): Promise<File[] | undefined>;
-  async showAsync(multiple?: boolean, accept?: string): Promise<File[] | File | undefined> {
-    return await new Promise<File[] | File | undefined>((resolve) => {
+  async showAsync(multiple: true, accept?: string): Promise<FileList | undefined>;
+  async showAsync(multiple?: boolean, accept?: string): Promise<FileList | File | undefined> {
+    return await new Promise<FileList | File | undefined>((resolve) => {
       let inputEl: HTMLInputElement | undefined = document.createElement("input");
 
       inputEl.type = "file";
@@ -14,14 +14,14 @@ export class SdFileDialogProvider {
       if (accept !== undefined) {
         inputEl.accept = accept;
       }
-      inputEl.onchange = (event: Event): void => {
+      inputEl.onchange = (): void => {
         if (inputEl) {
           document.body.removeChild(inputEl);
           inputEl = undefined;
         }
 
-        const files = event.target!["files"];
-        resolve(multiple ? files : files[0]);
+        const files = inputEl!.files ?? undefined;
+        resolve(multiple ? files : files?.[0]);
       };
       inputEl.style.opacity = "0";
       inputEl.style.position = "fixed";

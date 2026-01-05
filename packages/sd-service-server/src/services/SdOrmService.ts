@@ -1,18 +1,18 @@
 import { DbConnFactory } from "@simplysm/sd-orm-node";
 import {
-  IDbConn,
-  IQueryColumnDef,
-  IQueryResultParseOption,
-  ISOLATION_LEVEL,
+  type IDbConn,
+  type IQueryColumnDef,
+  type IQueryResultParseOption,
+  type ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtils,
-  TDbConnConf,
-  TDbContextOption,
-  TQueryDef,
+  type TDbConnConf,
+  type TDbContextOption,
+  type TQueryDef,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import { SdServiceBase } from "../core/SdServiceBase";
-import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
+import type { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
 import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
 import { Authorize } from "../auth/auth.decorators";
@@ -172,9 +172,15 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
         return Array.isArray(query) ? query : [query];
       });
       const result = await conn.executeAsync(queries);
-      return result.map((item, i) =>
-        SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined),
-      );
+
+      // parseQueryResultAsync를 사용하여 주기적으로 이벤트 루프에 양보
+      const parsed: any[][] = [];
+      for (let i = 0; i < result.length; i++) {
+        parsed.push(
+          await SdOrmUtils.parseQueryResultAsync(result[i], options ? options[i] : undefined),
+        );
+      }
+      return parsed;
     }
   }
 

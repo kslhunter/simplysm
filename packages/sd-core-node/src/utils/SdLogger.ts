@@ -1,58 +1,47 @@
 import path from "path";
 import { FsUtils } from "./FsUtils";
 import os from "os";
-import { DateTime, DeepPartial, MathUtils, ObjectUtils } from "@simplysm/sd-core-common";
+import type { DeepPartial } from "@simplysm/sd-core-common";
+import { DateTime, MathUtils, ObjectUtils } from "@simplysm/sd-core-common";
 
-export enum SdLoggerStyle {
-  clear = "\x1b[0m",
+export const SdLoggerStyle = {
+  clear: "\x1b[0m",
 
-  fgGray = "\x1b[90m",
-  fgBlack = "\x1b[30m",
-  fgWhite = "\x1b[37m",
+  fgGray: "\x1b[90m",
+  fgBlack: "\x1b[30m",
+  fgWhite: "\x1b[37m",
 
-  fgRed = "\x1b[31m",
-  fgGreen = "\x1b[32m",
-  fgYellow = "\x1b[33m",
-  fgBlue = "\x1b[34m",
-  fgMagenta = "\x1b[35m",
-  fgCyan = "\x1b[36m",
+  fgRed: "\x1b[31m",
+  fgGreen: "\x1b[32m",
+  fgYellow: "\x1b[33m",
+  fgBlue: "\x1b[34m",
+  fgMagenta: "\x1b[35m",
+  fgCyan: "\x1b[36m",
 
-  bgBlack = "\x1b[40m\x1b[97m",
-  bgRed = "\x1b[41m\x1b[97m",
-  bgGreen = "\x1b[42m\x1b[97m",
-  bgYellow = "\x1b[43m\x1b[97m",
-  bgBlue = "\x1b[44m\x1b[97m",
-  bgMagenta = "\x1b[45m\x1b[97m",
-  bgWhite = "\x1b[46m\x1b[97m",
-}
+  bgBlack: "\x1b[40m\x1b[97m",
+  bgRed: "\x1b[41m\x1b[97m",
+  bgGreen: "\x1b[42m\x1b[97m",
+  bgYellow: "\x1b[43m\x1b[97m",
+  bgBlue: "\x1b[44m\x1b[97m",
+  bgMagenta: "\x1b[45m\x1b[97m",
+  bgWhite: "\x1b[46m\x1b[97m",
+} as const;
+export type SdLoggerStyle = (typeof SdLoggerStyle)[keyof typeof SdLoggerStyle];
 
-export enum SdLoggerSeverity {
-  debug = "debug",
-  log = "log",
-  info = "info",
-  warn = "warn",
-  error = "error",
-  none = "",
-}
-export type TSdLoggerSeverity = Exclude<keyof typeof SdLoggerSeverity, "none">;
+export type SdLoggerSeverity = "debug" | "log" | "info" | "warn" | "error";
+const severities: SdLoggerSeverity[] = ["debug", "log", "info", "warn", "error"];
 
 export interface ISdLoggerConfig {
   dot: boolean;
 
   console: {
     style: SdLoggerStyle;
-    level: SdLoggerSeverity;
-    styles: {
-      debug: SdLoggerStyle;
-      log: SdLoggerStyle;
-      info: SdLoggerStyle;
-      warn: SdLoggerStyle;
-      error: SdLoggerStyle;
-    };
+    level: SdLoggerSeverity | undefined;
+    styles: Record<SdLoggerSeverity, SdLoggerStyle>;
   };
 
   file: {
-    level: SdLoggerSeverity;
+    level: SdLoggerSeverity | undefined;
     outDir: string;
     maxBytes?: number;
   };
@@ -102,32 +91,34 @@ export class SdLogger {
   private constructor(private readonly _group: string[]) {}
 
   debug(...args: any[]): void {
-    this._write(SdLoggerSeverity.debug, args);
+    this._write("debug", args);
   }
 
   log(...args: any[]): void {
-    this._write(SdLoggerSeverity.log, args);
+    this._write("log", args);
   }
 
   info(...args: any[]): void {
-    this._write(SdLoggerSeverity.info, args);
+    this._write("info", args);
   }
 
   warn(...args: any[]): void {
-    this._write(SdLoggerSeverity.warn, args);
+    this._write("warn", args);
   }
 
   error(...args: any[]): void {
-    this._write(SdLoggerSeverity.error, args);
+    this._write("error", args);
   }
 
   private _write(severity: SdLoggerSeverity, logs: any[]): void {
     const config = this._getConfig();
     const now = new DateTime();
 
-    const severityIndex = Object.values(SdLoggerSeverity).indexOf(severity);
-    const consoleLevelIndex = Object.values(SdLoggerSeverity).indexOf(config.console.level);
-    const fileLevelIndex = Object.values(SdLoggerSeverity).indexOf(config.file.level);
+    const severityIndex = severities.indexOf(severity);
+    const consoleLevelIndex = config.console.level
+      ? severities.indexOf(config.console.level)
+      : 9999;
+    const fileLevelIndex = config.file.level ? severities.indexOf(config.file.level) : 9999;
 
     if (severityIndex >= consoleLevelIndex) {
       if (typeof process.stdout.clearLine === "function") {
@@ -208,7 +199,7 @@ export class SdLogger {
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error("파일쓰기실패", err.message);
+        console.error("파일쓰기실패", err instanceof Error ? err.message : String(err));
       }
     }
 
@@ -240,12 +231,13 @@ export class SdLogger {
   }
 
   private _getConfig(): ISdLoggerConfig {
+    const styleKeys = Object.keys(SdLoggerStyle) as (keyof typeof SdLoggerStyle)[];
     let config: ISdLoggerConfig = {
       dot: false,
 
       console: {
-        style: SdLoggerStyle[Object.keys(SdLoggerStyle)[this._randomForStyle]],
-        level: SdLoggerSeverity.log,
+        style: SdLoggerStyle[styleKeys[this._randomForStyle]],
+        level: "log",
         styles: {
           debug: SdLoggerStyle.fgGray,
           log: SdLoggerStyle.clear,
@@ -256,7 +248,7 @@ export class SdLogger {
       },
 
       file: {
-        level: SdLoggerSeverity.none,
+        level: undefined,
         outDir: path.resolve(process.cwd(), "_logs"),
         maxBytes: 300 * 1000,
       },

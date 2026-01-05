@@ -1,7 +1,7 @@
-import { ISdBuildResult } from "../build/ISdBuildResult";
-import { ISdWorkerType, TNormPath } from "@simplysm/sd-core-node";
-import { TSdPackageConfig } from "../config/ISdProjectConfig";
-import { ISdTsCompilerOptions } from "../build/ISdTsCompilerOptions";
+import type { ISdBuildResult } from "../build/ISdBuildResult";
+import type { ISdWorkerType, TNormPath } from "@simplysm/sd-core-node";
+import type { TSdPackageConfig } from "../config/ISdProjectConfig";
+import type { ISdTsCompilerOptions } from "../build/ISdTsCompilerOptions";
 
 export interface ISdBuildRunnerWorkerType extends ISdWorkerType {
   methods: {

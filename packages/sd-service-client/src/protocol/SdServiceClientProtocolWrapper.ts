@@ -1,7 +1,8 @@
-import {
+import type {
   ISdServiceMessageDecodeResult,
-  SdServiceProtocol,
-  TSdServiceMessage,
+  TSdServiceMessage} from "@simplysm/sd-service-common";
+import {
+  SdServiceProtocol
 } from "@simplysm/sd-service-common";
 import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 

@@ -14,16 +14,23 @@ import { SdSelectButtonControl } from "../../ui/form/select/sd-select-button.con
 import { SdSelectItemControl } from "../../ui/form/select/sd-select-item.control";
 import { SdTextfieldControl } from "../../ui/form/input/sd-textfield.control";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
-import { ISdModal, ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
+import {
+  type ISdModal,
+  type ISdModalInfo,
+  SdModalProvider,
+} from "../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
-import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
-import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
-import { SdSelectControl, TSelectModeValue } from "../../ui/form/select/sd-select.control";
+import type { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
+import type {
+  ISdSelectModal,
+  TSdSelectModalInfo,
+} from "../data-view/sd-data-select-button.control";
+import { SdSelectControl, type TSelectModeValue } from "../../ui/form/select/sd-select.control";
 import { NgIcon } from "@ng-icons/core";
 import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
 
@@ -175,7 +182,7 @@ export class SdSharedDataSelectControl<
   itemByParentKeyMap = $computed(() => {
     if (this.parentKeyProp() !== undefined) {
       return this.items()
-        .groupBy((item) => item[this.parentKeyProp()!])
+        .groupBy((item: Record<string, any>) => item[this.parentKeyProp()!])
         .toMap(
           (item) => item.key,
           (item1) => item1.values,
@@ -189,11 +196,11 @@ export class SdSharedDataSelectControl<
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
-        (this.parentKeyProp() === undefined || item[this.parentKeyProp()!] === undefined),
+        (this.parentKeyProp() === undefined || (item as Record<string, any>)[this.parentKeyProp()!] === undefined),
     );
 
     if (this.displayOrderKeyProp() !== undefined) {
-      result = result.orderBy((item) => item[this.displayOrderKeyProp()!]);
+      result = result.orderBy((item: Record<string, any>) => item[this.displayOrderKeyProp()!]);
     }
 
     return result;
@@ -247,10 +254,11 @@ export class SdSharedDataSelectControl<
   }
 
   getChildren = (item: ISharedDataBase<string | number>): any[] => {
-    let result = this.itemByParentKeyMap()?.get(item.__valueKey) ?? [];
+    let result = this.itemByParentKeyMap()?.get(item.__valueKey);
+    if (result == null) return [];
 
     if (this.displayOrderKeyProp() !== undefined) {
-      result = result.orderBy((item1) => item1[this.displayOrderKeyProp()!]);
+      result = result.orderBy((item1: Record<string, any>) => item1[this.displayOrderKeyProp()!]);
     }
 
     return result;

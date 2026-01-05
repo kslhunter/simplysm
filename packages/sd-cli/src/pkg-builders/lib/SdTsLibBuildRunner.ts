@@ -1,8 +1,8 @@
-import { SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { SdLogger } from "@simplysm/sd-core-node";
 import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { SdTsLibBuilder } from "./SdTsLibBuilder";
-import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { SdCliDbContextFileGenerator } from "./SdCliDbContextFileGenerator";
 
 export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
@@ -15,14 +15,14 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
     if (!modifiedFileSet) {
       if (!this._opt.watch?.noEmit) {
         // index
-        if (this._pkgConf.index !== false) {
+        /*if (this._pkgConf.index !== false) {
           this._debug("GEN index.ts...");
           await new SdCliIndexFileGenerator().watchAsync(
             this._opt.pkgPath,
             this._pkgConf.polyfills,
             this._pkgConf.index?.excludes,
           );
-        }
+        }*/
 
         // db-context
         if (this._pkgConf.dbContext != null) {

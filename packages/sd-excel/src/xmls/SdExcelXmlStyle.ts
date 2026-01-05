@@ -1,4 +1,4 @@
-import {
+import type {
   ISdExcelXml,
   ISdExcelXmlStyleData,
   ISdExcelXmlStyleDataBorder,
@@ -441,10 +441,12 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       result.numFmts = this.data.styleSheet.numFmts;
     }
 
-    for (const key of Object.keys(this.data.styleSheet)) {
+    const styleSheetRec = this.data.styleSheet as Record<string, any>;
+    const resultRec = result as Record<string, any>;
+    for (const key of Object.keys(styleSheetRec)) {
       if (key === "numFmts") continue;
 
-      result[key] = this.data.styleSheet[key];
+      resultRec[key] = styleSheetRec[key];
     }
 
     this.data.styleSheet = result;

@@ -5,8 +5,18 @@
 - Angular 20.x
 - Typescript 5.8.x
 - Node 20.x
+  MySQL: 8.0.14+ (LATERAL)
+  MSSQL: 2012+ (OFFSET...FETCH)
+  PostgreSQL: 9.0+ (LATERAL)
 
 ## 주요 업데이트
+
+
+### 12.16.x > 13.0.x
+
+- ORM이 대격변 되어 새로운 사용법으로 사용해야함.
+  - ORM이 더이상 sqlite를 지원하지 않음
+  - ORM이 이제 postgresql을 지원할 것임(BETA)
 
 ### 12.15.x > 12.16.x
 

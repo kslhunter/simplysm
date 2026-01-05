@@ -1,6 +1,6 @@
 import { DateTime } from "@simplysm/sd-core-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import {
+import type {
   TSdServiceClientMessage,
   TSdServiceServerMessage,
   TSdServiceServerRawMessage,
@@ -9,8 +9,8 @@ import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
 import { SdServiceProtocolWrapper } from "../../protocol/SdServiceProtocolWrapper";
-import { IAuthTokenPayload } from "../../auth/IAuthTokenPayload";
-import { FastifyRequest } from "fastify";
+import type { IAuthTokenPayload } from "../../auth/IAuthTokenPayload";
+import type { FastifyRequest } from "fastify";
 
 export class SdServiceSocket extends EventEmitter {
   private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송

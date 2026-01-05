@@ -1,6 +1,6 @@
-import { Type } from "@simplysm/sd-core-common";
-import { SdServiceBase } from "../core/SdServiceBase";
-import http from "http";
+import type { Type } from "@simplysm/sd-core-common";
+import type { SdServiceBase } from "../core/SdServiceBase";
+import type http from "http";
 
 export interface ISdServiceServerOptions {
   rootPath: string;

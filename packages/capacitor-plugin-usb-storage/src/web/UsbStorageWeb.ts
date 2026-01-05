@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import { IUsbDeviceFilter, IUsbDeviceInfo, IUsbStoragePlugin } from "../IUsbStoragePlugin";
+import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbStoragePlugin } from "../IUsbStoragePlugin";
 
 export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   async getDevices(): Promise<{ devices: IUsbDeviceInfo[] }> {

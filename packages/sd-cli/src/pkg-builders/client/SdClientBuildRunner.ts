@@ -1,13 +1,14 @@
-import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
 import path from "path";
 import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
 import { SdNgBundler } from "./SdNgBundler";
 import { SdCliCordova } from "../../entry/SdCliCordova";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { INpmConfig } from "../../types/common-config/INpmConfig";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { INpmConfig } from "../../types/common-config/INpmConfig";
 import { SdCliNgRoutesFileGenerator } from "./SdCliNgRoutesFileGenerator";
 import { SdCliElectron } from "../../entry/SdCliElectron";
-import { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
+import type { ISdClientPackageConfig } from "../../types/config/ISdProjectConfig";
 import { SdCliCapacitor } from "../../entry/SdCliCapacitor";
 
 export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {

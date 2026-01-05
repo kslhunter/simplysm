@@ -1,0 +1,209 @@
+import { describe, it, expect, vi } from "vitest";
+import { SdAsyncFnDebounceQueue, Wait, SdError } from "@simplysm/core-common";
+
+describe("SdAsyncFnDebounceQueue", () => {
+  //#region 디바운스 동작
+
+  describe("디바운스 동작", () => {
+    it("마지막 요청만 실행한다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(50);
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+      queue.run(async () => {
+        calls.push(2);
+      });
+      queue.run(async () => {
+        calls.push(3);
+      });
+
+      // 디바운스 대기
+      await Wait.time(100);
+
+      // 마지막 요청만 실행됨
+      expect(calls).toEqual([3]);
+    });
+
+    it("delay 이후에 실행한다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(100);
+      const calls: number[] = [];
+
+      const start = Date.now();
+      queue.run(async () => {
+        calls.push(1);
+      });
+
+      // 50ms 후에는 아직 실행 안 됨
+      await Wait.time(50);
+      expect(calls).toEqual([]);
+
+      // 100ms 후에는 실행됨
+      await Wait.time(100);
+      expect(calls).toEqual([1]);
+
+      const elapsed = Date.now() - start;
+      expect(elapsed).toBeGreaterThanOrEqual(100);
+    });
+
+    it("delay가 없으면 즉시 실행한다", async () => {
+      const queue = new SdAsyncFnDebounceQueue();
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+
+      // 약간의 대기 (이벤트 루프)
+      await Wait.time(10);
+
+      expect(calls).toEqual([1]);
+    });
+
+    it("실행 중에 새 요청이 들어오면 완료 후 실행한다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+        await Wait.time(50); // 실행 중 대기
+      });
+
+      // 첫 실행 시작 대기
+      await Wait.time(20);
+
+      // 실행 중에 새 요청 추가
+      queue.run(async () => {
+        calls.push(2);
+      });
+
+      // 모든 작업 완료 대기
+      await Wait.time(100);
+
+      expect(calls).toEqual([1, 2]);
+    });
+  });
+
+  //#endregion
+
+  //#region 에러 처리
+
+  describe("에러 처리", () => {
+    it("에러 발생 시 error 이벤트를 발생시킨다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const errors: SdError[] = [];
+
+      queue.on("error", (err) => {
+        errors.push(err);
+      });
+
+      queue.run(async () => {
+        throw new Error("test error");
+      });
+
+      await Wait.time(50);
+
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toBeInstanceOf(SdError);
+      expect(errors[0].message).toContain("작업 실행 중 오류 발생");
+      expect(errors[0].message).toContain("test error");
+    });
+
+    it("에러가 발생해도 다음 요청은 정상 실행된다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const calls: number[] = [];
+      const errors: SdError[] = [];
+
+      // 에러 리스너 추가하여 unhandled rejection 방지
+      queue.on("error", (err) => {
+        errors.push(err);
+      });
+
+      queue.run(async () => {
+        throw new Error("error");
+      });
+
+      await Wait.time(50);
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+
+      await Wait.time(50);
+
+      expect(calls).toEqual([1]);
+      expect(errors).toHaveLength(1);
+    });
+
+    it("실행 중 에러가 발생해도 pendingFn은 실행된다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const calls: number[] = [];
+      const errors: SdError[] = [];
+
+      queue.on("error", (err) => {
+        errors.push(err);
+      });
+
+      // 첫 요청: 에러 발생
+      queue.run(async () => {
+        calls.push(1);
+        throw new Error("error 1");
+      });
+
+      await Wait.time(20);
+
+      // 실행 중 새 요청 추가
+      queue.run(async () => {
+        calls.push(2);
+      });
+
+      await Wait.time(100);
+
+      expect(calls).toEqual([1, 2]);
+      expect(errors).toHaveLength(1);
+    });
+  });
+
+  //#endregion
+
+  //#region 동기 함수 지원
+
+  describe("동기 함수 지원", () => {
+    it("동기 함수도 실행할 수 있다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const calls: number[] = [];
+
+      queue.run(() => {
+        calls.push(1);
+      });
+
+      await Wait.time(50);
+
+      expect(calls).toEqual([1]);
+    });
+
+    it("동기/비동기 함수를 혼합해서 사용할 수 있다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(10);
+      const calls: number[] = [];
+
+      queue.run(() => {
+        calls.push(1);
+      });
+      queue.run(async () => {
+        await Wait.time(10);
+        calls.push(2);
+      });
+      queue.run(() => {
+        calls.push(3);
+      });
+
+      await Wait.time(100);
+
+      // 마지막 요청만 실행
+      expect(calls).toEqual([3]);
+    });
+  });
+
+  //#endregion
+});

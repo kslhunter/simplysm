@@ -1,4 +1,4 @@
-import { ISdServiceMethodCommandInfo, TSdServiceMethodCommand } from "./command-v1.types";
+import type { ISdServiceMethodCommandInfo, TSdServiceMethodCommand } from "./command-v1.types";
 
 /** @deprecated */
 export abstract class SdServiceCommandHelperV1 {

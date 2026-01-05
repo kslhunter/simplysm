@@ -2,13 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  OnInit,
+  type OnInit,
   output,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdBusyContainerControl } from "../../ui/overlay/busy/sd-busy-container.control";
-import { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
+import type { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
 import { $signal } from "../../core/utils/bindings/$signal";
 
 @Component({

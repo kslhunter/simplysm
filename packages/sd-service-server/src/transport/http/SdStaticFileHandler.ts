@@ -1,7 +1,7 @@
 import * as path from "path";
 import { FsUtils, SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceServer } from "../../SdServiceServer";
-import { FastifyReply, FastifyRequest } from "fastify";
+import type { SdServiceServer } from "../../SdServiceServer";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 export class SdStaticFileHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdStaticFileHandler"]);

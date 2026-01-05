@@ -1,7 +1,8 @@
 import { SdAsyncFnDebounceQueue } from "@simplysm/sd-core-common";
 import * as chokidar from "chokidar";
-import { PathUtils, TNormPath } from "./PathUtils";
-import { EventName } from "chokidar/handler";
+import type { TNormPath } from "./PathUtils";
+import { PathUtils } from "./PathUtils";
+import type { EventName } from "chokidar/handler.js";
 
 export class SdFsWatcher {
   static async watchAsync(

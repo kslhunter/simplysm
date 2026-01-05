@@ -1,4 +1,4 @@
-import { ISdStorageConnConf } from "./ISdStorageConnConf";
+import type { ISdStorageConnConf } from "./ISdStorageConnConf";
 import { SdSftpStorage } from "./storages/SdSftpStorage";
 import { SdFtpStorage } from "./storages/SdFtpStorage";
 import { Wait } from "@simplysm/sd-core-common";

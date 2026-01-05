@@ -288,15 +288,12 @@ export class DateOnly {
    * @param month 월
    */
   setMonth(month: number): DateOnly {
-    const date = new Date(this.tick);
-    date.setDate(1);
-    date.setMonth(month - 1);
-    date.setDate(0);
+    // 대상 월의 마지막 날 구하기
+    const lastDay = new Date(this.year, month, 0).getDate();
 
-    const lastDay = date.getDate();
-    const currentDay = lastDay < this.day ? lastDay : this.day;
-    date.setDate(currentDay);
+    const currentDay = Math.min(this.day, lastDay);
 
+    const date = new Date(this.year, month - 1, currentDay);
     return new DateOnly(date);
   }
 

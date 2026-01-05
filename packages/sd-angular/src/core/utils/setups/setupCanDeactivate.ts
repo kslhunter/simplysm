@@ -1,5 +1,6 @@
 import { inject, reflectComponentType } from "@angular/core";
-import { ActivatedRoute, CanDeactivateFn } from "@angular/router";
+import type { CanDeactivateFn } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { SdActivatedModalProvider } from "../../../ui/overlay/modal/sd-modal.provider";
 import { injectElementRef } from "../injections/injectElementRef";
 

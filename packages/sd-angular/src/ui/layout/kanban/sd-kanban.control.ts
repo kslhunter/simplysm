@@ -10,7 +10,7 @@ import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
 import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
-import { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
+import type { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
 import { NumberUtils } from "@simplysm/sd-core-common";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../../core/utils/bindings/$computed";

@@ -1,7 +1,7 @@
-import { DateOnly } from "../date-time/DateOnly";
-import { DateTime } from "../date-time/DateTime";
-import { Time } from "../date-time/Time";
-import { Uuid } from "../Uuid";
+import type { DateOnly } from "../date-time/DateOnly";
+import type { DateTime } from "../date-time/DateTime";
+import type { Time } from "../date-time/Time";
+import type { Uuid } from "../Uuid";
 
 export type TFlatType =
   | undefined

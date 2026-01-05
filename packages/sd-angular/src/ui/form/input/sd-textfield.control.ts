@@ -440,7 +440,10 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
               errorMessages.push(`입력 값이 형식에 맞지 않습니다.`);
             }
           } catch (err) {
-            throw new SdError(`잘못된 pattern: ${pattern}`, err);
+            throw new SdError(
+              err instanceof Error ? err : String(err),
+              `잘못된 pattern: ${pattern}`,
+            );
           }
         }
       }

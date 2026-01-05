@@ -1,9 +1,9 @@
-import { SdServiceServer } from "../SdServiceServer";
-import { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
-import { SdServiceSocket } from "../transport/socket/SdServiceSocket";
-import { ISdServiceRequest } from "../legacy/protocol-v1.types";
+import type { SdServiceServer } from "../SdServiceServer";
+import type { SdServiceSocketV1 } from "../legacy/SdServiceSocketV1";
+import type { SdServiceSocket } from "../transport/socket/SdServiceSocket";
+import type { ISdServiceRequest } from "../legacy/protocol-v1.types";
 import { SD_SERVICE_AUTH_META } from "../auth/auth.decorators";
-import { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
+import type { IAuthTokenPayload } from "../auth/IAuthTokenPayload";
 
 export class SdServiceExecutor {
   constructor(private readonly _server: SdServiceServer) {}
@@ -81,7 +81,7 @@ export class SdServiceExecutor {
     service.http = def.http;
 
     // 메소드 찾기
-    const method = service[def.methodName];
+    const method = (service as Record<string, any>)[def.methodName];
     if (typeof method !== "function") {
       throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
     }

@@ -1,9 +1,9 @@
 import path from "path";
 import { pathToFileURL } from "url";
 import type { SdServiceServer } from "@simplysm/sd-service-server";
-import { createSdWorker, SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
+import { createSdWorker, SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { IServerWorkerType } from "../types/worker/IServerWorkerType";
+import type { IServerWorkerType } from "../types/worker/IServerWorkerType";
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -11,7 +11,7 @@ EventEmitter.defaultMaxListeners = 0;
 if (process.env["SD_DEBUG"] != null) {
   SdLogger.setConfig({
     console: {
-      level: SdLoggerSeverity.debug,
+      level: "debug",
     },
   });
 } else {

@@ -1,8 +1,9 @@
-import { FsUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils } from "@simplysm/sd-core-node";
 import path from "path";
-import { TSdPackageConfig } from "../types/config/ISdProjectConfig";
-import { ISdBuildResult } from "../types/build/ISdBuildResult";
-import { ISdTsCompilerOptions } from "../types/build/ISdTsCompilerOptions";
+import type { TSdPackageConfig } from "../types/config/ISdProjectConfig";
+import type { ISdBuildResult } from "../types/build/ISdBuildResult";
+import type { ISdTsCompilerOptions } from "../types/build/ISdTsCompilerOptions";
 
 export abstract class SdBuildRunnerBase<T extends "server" | "library" | "client"> {
   protected abstract _logger: SdLogger;

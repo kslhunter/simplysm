@@ -1,7 +1,7 @@
 import path from "path";
 import semver from "semver";
 import { FsUtils } from "@simplysm/sd-core-node";
-import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
+import type { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 import { SdServiceBase } from "../core/SdServiceBase";
 
 export class SdAutoUpdateService extends SdServiceBase implements ISdAutoUpdateService {

@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-import { Type, Uuid } from "@simplysm/sd-core-common";
-import { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
-import { SdServiceTransport } from "../../transport/SdServiceTransport";
+import type { Type} from "@simplysm/sd-core-common";
+import { Uuid } from "@simplysm/sd-core-common";
+import type { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
+import type { SdServiceTransport } from "../../transport/SdServiceTransport";
 
 export class SdServiceEventClient {
   private readonly _listenerMap = new Map<

@@ -1,8 +1,9 @@
 import { SdAngularConfigProvider } from "./providers/app/sd-angular-config.provider";
+import type {
+  EnvironmentProviders} from "@angular/core";
 import {
   DestroyRef,
   EnvironmentInjector,
-  EnvironmentProviders,
   ErrorHandler,
   inject,
   makeEnvironmentProviders,
@@ -17,7 +18,8 @@ import { SdInsertCommandEventPlugin } from "./plugins/commands/sd-insert-command
 import { SdResizeEventPlugin } from "./plugins/events/sd-resize-event.plugin";
 import { SdOptionEventPlugin } from "./plugins/events/sd-option-event.plugin";
 import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton-event.plugin";
-import { SdThemeProvider, TSdTheme } from "./providers/sd-theme-provider";
+import type { TSdTheme } from "./providers/sd-theme-provider";
+import { SdThemeProvider } from "./providers/sd-theme-provider";
 import { SdLocalStorageProvider } from "./providers/storage/sd-local-storage.provider";
 import {
   NavigationCancel,

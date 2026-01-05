@@ -2,7 +2,7 @@
 
 /* eslint-disable no-console */
 
-import { SdLogger, SdLoggerSeverity } from "@simplysm/sd-core-node";
+import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -31,7 +31,7 @@ await yargs(hideBin(process.argv))
     if (argv.debug) {
       process.env["SD_DEBUG"] = "true";
       SdLogger.setConfig({
-        console: { level: SdLoggerSeverity.debug },
+        console: { level: "debug" },
       });
     } else {
       SdLogger.setConfig({ dot: true });
@@ -49,7 +49,7 @@ await yargs(hideBin(process.argv))
           config: {
             string: true,
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             string: true,
@@ -71,7 +71,7 @@ await yargs(hideBin(process.argv))
           config: {
             string: true,
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             string: true,
@@ -108,7 +108,7 @@ await yargs(hideBin(process.argv))
           config: {
             string: true,
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             string: true,
@@ -142,7 +142,7 @@ await yargs(hideBin(process.argv))
           config: {
             type: "string",
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             type: "string",
@@ -177,7 +177,7 @@ await yargs(hideBin(process.argv))
           config: {
             type: "string",
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             type: "string",
@@ -204,7 +204,7 @@ await yargs(hideBin(process.argv))
           config: {
             type: "string",
             describe: "설정 파일 경로",
-            default: "simplysm.js",
+            default: "simplysm.ts",
           },
           options: {
             type: "string",

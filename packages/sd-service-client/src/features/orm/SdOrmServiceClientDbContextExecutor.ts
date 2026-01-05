@@ -1,4 +1,4 @@
-import {
+import type {
   IDbContextExecutor,
   IQueryColumnDef,
   IQueryResultParseOption,
@@ -6,8 +6,8 @@ import {
   TDbConnConf,
   TQueryDef,
 } from "@simplysm/sd-orm-common";
-import { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
-import { SdServiceClient } from "../../SdServiceClient";
+import type { ISdOrmService, TDbConnOptions } from "@simplysm/sd-service-common";
+import type { SdServiceClient } from "../../SdServiceClient";
 
 export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;

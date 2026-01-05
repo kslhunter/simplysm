@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { SdServiceBase } from "../core/SdServiceBase";
-import { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
+import type { ICryptoConfig, ISdCryptoService } from "@simplysm/sd-service-common";
 
 export class SdCryptoService extends SdServiceBase implements ISdCryptoService {
   async encrypt(data: string | Buffer): Promise<string> {

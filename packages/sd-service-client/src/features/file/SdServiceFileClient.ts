@@ -1,4 +1,4 @@
-import { ISdServiceUploadResult } from "@simplysm/sd-service-common";
+import type { ISdServiceUploadResult } from "@simplysm/sd-service-common";
 
 export class SdServiceFileClient {
   constructor(

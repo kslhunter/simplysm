@@ -1,6 +1,6 @@
-import { pathToFileURL } from "url";
 import path from "path";
-import { ISdProjectConfig } from "../types/config/ISdProjectConfig";
+import { createJiti } from "jiti";
+import type { TSdProjectConfigFn } from "../types/config/ISdProjectConfig";
 
 export async function loadProjConfAsync(
   rootPath: string,
@@ -11,6 +11,9 @@ export async function loadProjConfAsync(
   },
 ) {
   const filePath = path.resolve(rootPath, opt.config);
-  const imported = await import(pathToFileURL(filePath).href);
-  return imported.default(dev, opt.options ?? []) as ISdProjectConfig;
+  const jiti = createJiti(rootPath, {
+    interopDefault: true,
+  });
+  const imported = await jiti.import(filePath);
+  return (imported as { default: TSdProjectConfigFn }).default(dev, opt.options ?? []);
 }

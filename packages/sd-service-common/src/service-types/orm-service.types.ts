@@ -1,4 +1,4 @@
-import {
+import type {
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,

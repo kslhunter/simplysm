@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { TSdTheme } from "../sd-theme-provider";
+import type { TSdTheme } from "../sd-theme-provider";
 
 @Injectable({ providedIn: "root" })
 export class SdAngularConfigProvider {

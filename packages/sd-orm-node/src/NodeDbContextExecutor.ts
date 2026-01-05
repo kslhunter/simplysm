@@ -1,14 +1,15 @@
-import {
+import type {
   IDbConn,
   IDbContextExecutor,
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
-  QueryBuilder,
-  SdOrmUtils,
   TDbConnConf,
   TDbContextOption,
-  TQueryDef,
+  TQueryDef} from "@simplysm/sd-orm-common";
+import {
+  QueryBuilder,
+  SdOrmUtils
 } from "@simplysm/sd-orm-common";
 import { DbConnFactory } from "./DbConnFactory";
 
@@ -129,8 +130,8 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
         return Array.isArray(query) ? query : [query];
       });
       const result = await this._conn.executeAsync(queries);
-      return result.map((item, i) =>
-        SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined),
+      return await result.mapAsync(async (item, i) =>
+        await SdOrmUtils.parseQueryResultAsync(item, options ? options[i] : undefined),
       );
     }
   }

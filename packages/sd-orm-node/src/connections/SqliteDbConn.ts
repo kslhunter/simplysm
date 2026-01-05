@@ -1,10 +1,11 @@
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
-import {
+import type {
   IDbConn,
   IQueryColumnDef,
   ISOLATION_LEVEL,
-  ISqliteDbConnConf,
+  ISqliteDbConnConf} from "@simplysm/sd-orm-common";
+import {
   QueryHelper,
 } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";

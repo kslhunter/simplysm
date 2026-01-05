@@ -1,4 +1,4 @@
-import { ISdServiceMessageDecodeResult, TSdServiceMessage } from "@simplysm/sd-service-common";
+import type { ISdServiceMessageDecodeResult, TSdServiceMessage } from "@simplysm/sd-service-common";
 
 export interface ISdServiceProtocolWorker {
   methods: {

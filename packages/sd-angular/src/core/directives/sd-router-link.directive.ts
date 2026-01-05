@@ -2,7 +2,7 @@ import { Directive, inject, input } from "@angular/core";
 import { Router } from "@angular/router";
 import { SdNavigateWindowProvider } from "../providers/integration/sd-navigate-window.provider";
 import * as querystring from "querystring";
-import { ParsedUrlQuery } from "querystring";
+import type { ParsedUrlQuery } from "querystring";
 
 @Directive({
   selector: "[sd-router-link]",

@@ -1,4 +1,4 @@
-import { TPropertyDecoratorReturn } from "./TPropertyDecoratorReturn";
+import type { TPropertyDecoratorReturn } from "./TPropertyDecoratorReturn";
 
 const symbol = "sd-type-validate";
 

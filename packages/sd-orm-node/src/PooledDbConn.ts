@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
-import { Pool } from "generic-pool";
-import { IDbConn, IQueryColumnDef, ISOLATION_LEVEL, TDbConnConf } from "@simplysm/sd-orm-common";
+import type { Pool } from "generic-pool";
+import type { IDbConn, IQueryColumnDef, ISOLATION_LEVEL, TDbConnConf } from "@simplysm/sd-orm-common";
 
 export class PooledDbConn extends EventEmitter implements IDbConn {
   // 풀에서 빌려온 실제 물리 커넥션

@@ -1,6 +1,6 @@
 import "./Map.ext";
-import { Type } from "../types/type/Type";
-import { WrappedType } from "../types/wrap/WrappedType";
+import type { Type } from "../types/type/Type";
+import type { WrappedType } from "../types/wrap/WrappedType";
 import { NeverEntryError } from "../errors/NeverEntryError";
 import { ObjectUtils } from "../utils/ObjectUtils";
 import { DateOnly } from "../types/date-time/DateOnly";
@@ -160,8 +160,8 @@ function compareForOrder(pp: unknown, pn: unknown, desc: boolean): number {
   const cpn = toComparable(pn);
 
   if (cpn === cpp) return 0;
-  if (typeof cpp === "undefined") return desc ? 1 : -1;
-  if (typeof cpn === "undefined") return desc ? -1 : 1;
+  if (cpp == null) return desc ? 1 : -1;
+  if (cpn == null) return desc ? -1 : 1;
 
   if (typeof cpn === "string" && typeof cpp === "string") {
     return desc ? cpn.localeCompare(cpp) : cpp.localeCompare(cpn);
@@ -454,8 +454,8 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.concat().sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector == null ? p : selector(p);
+      const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, false);
     });
   },
@@ -464,8 +464,8 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.concat().sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector == null ? p : selector(p);
+      const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, true);
     });
   },

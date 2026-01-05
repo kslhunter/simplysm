@@ -5,11 +5,11 @@ import { NeverEntryError, StringUtils, Wait } from "@simplysm/sd-core-common";
 import { SdStorage } from "@simplysm/sd-storage";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { SdCliConvertMessageUtils } from "../utils/SdCliConvertMessageUtils";
-import { TSdPackageConfig } from "../types/config/ISdProjectConfig";
-import { ISdBuildMessage } from "../types/build/ISdBuildMessage";
+import type { TSdPackageConfig } from "../types/config/ISdProjectConfig";
+import type { ISdBuildMessage } from "../types/build/ISdBuildMessage";
 import { loadProjConfAsync } from "../utils/loadProjConfAsync";
 import { SdProjectBuildRunner } from "../pkg-builders/SdProjectBuildRunner";
-import { INpmConfig } from "../types/common-config/INpmConfig";
+import type { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdCliProject {
   static async watchAsync(opt: {
@@ -289,9 +289,15 @@ export class SdCliProject {
     pkgPubConf: TSdPackageConfig["publish"],
   ): Promise<void> {
     if (pkgPubConf === "npm") {
-      await SdProcess.spawnAsync("yarn", ["npm", "publish", "--access", "public"], {
-        cwd: pkgPath,
-      });
+      const pkgNpmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
+      const prereleaseInfo = semver.prerelease(pkgNpmConf.version);
+
+      const args = ["npm", "publish", "--access", "public"];
+      if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
+        args.push("--tag", prereleaseInfo[0]);
+      }
+
+      await SdProcess.spawnAsync("yarn", args, { cwd: pkgPath });
     } else if (pkgPubConf?.type === "local-directory") {
       const pkgNpmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
 
@@ -353,7 +359,15 @@ export class SdCliProject {
 
   private static _upgradeVersion(projNpmConf: INpmConfig, allPkgPaths: string[]) {
     // 작업공간 package.json 버전 설정
-    const newVersion = semver.inc(projNpmConf.version, "patch")!;
+    const currentVersion = projNpmConf.version;
+    const prereleaseInfo = semver.prerelease(currentVersion);
+
+    // prerelease 여부에 따라 증가 방식 결정
+    const newVersion =
+      prereleaseInfo !== null
+        ? semver.inc(currentVersion, "prerelease")!
+        : semver.inc(currentVersion, "patch")!;
+
     projNpmConf.version = newVersion;
 
     const pkgNames = allPkgPaths.map((pkgPath) => {

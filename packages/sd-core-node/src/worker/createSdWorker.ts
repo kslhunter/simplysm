@@ -1,5 +1,5 @@
 import { parentPort } from "worker_threads";
-import { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
+import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
 import { TransferableConvert } from "@simplysm/sd-core-common";
 
 export function createSdWorker<T extends ISdWorkerType>(methods: {
@@ -34,7 +34,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
           const response: TSdWorkerResponse<T, any> = {
             request,
             type: "error",
-            body: err,
+            body: err instanceof Error ? err : new Error(String(err)),
           };
 
           const serialized = TransferableConvert.encode(response);

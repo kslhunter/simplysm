@@ -1,6 +1,6 @@
 import { NumberUtils, ObjectUtils } from "@simplysm/sd-core-common";
 import { $signal } from "../../../../core/utils/bindings/$signal";
-import { SdSheetDomAccessor } from "./SdSheetDomAccessor";
+import type { SdSheetDomAccessor } from "./SdSheetDomAccessor";
 
 export class SdSheetCellAgent {
   constructor(private readonly _options: { domAccessor: SdSheetDomAccessor }) {}

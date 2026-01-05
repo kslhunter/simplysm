@@ -12,7 +12,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../../core/directives/sd-item-of-template.directive";
 import { SdRippleDirective } from "../../../core/directives/sd-ripple.directive";

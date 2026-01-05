@@ -8,17 +8,17 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
-import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
+import type { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
 import {
   AbsSdDataSelectButton,
-  ISdSelectModal,
+  type ISdSelectModal,
   SdDataSelectButtonControl,
-  TSdSelectModalInfo,
+  type TSdSelectModalInfo,
 } from "../data-view/sd-data-select-button.control";
-import { TSelectModeValue } from "../../ui/form/select/sd-select.control";
+import type { TSelectModeValue } from "../../ui/form/select/sd-select.control";
 
 @Component({
   selector: "sd-shared-data-select-button",

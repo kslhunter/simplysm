@@ -1,7 +1,7 @@
 import * as path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import { ISdClientBuilderCapacitorConfig } from "../types/config/ISdProjectConfig";
-import { INpmConfig } from "../types/common-config/INpmConfig";
+import type { ISdClientBuilderCapacitorConfig } from "../types/config/ISdProjectConfig";
+import type { INpmConfig } from "../types/common-config/INpmConfig";
 import { NotImplementError, ObjectUtils, StringUtils, typescript } from "@simplysm/sd-core-common";
 import sharp from "sharp";
 

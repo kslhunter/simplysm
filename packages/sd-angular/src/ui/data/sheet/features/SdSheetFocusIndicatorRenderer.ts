@@ -1,4 +1,4 @@
-import { SdSheetDomAccessor } from "./SdSheetDomAccessor";
+import type { SdSheetDomAccessor } from "./SdSheetDomAccessor";
 
 export class SdSheetFocusIndicatorRenderer {
   constructor(

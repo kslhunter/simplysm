@@ -1,4 +1,4 @@
-import { TSdServiceCommand } from "./command-v1.types";
+import type { TSdServiceCommand } from "./command-v1.types";
 
 /** @deprecated */
 export type TSdServiceMessage = TSdServiceS2CMessage | TSdServiceC2SMessage;

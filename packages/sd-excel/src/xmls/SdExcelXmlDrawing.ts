@@ -1,5 +1,5 @@
 // packages/sd-excel/src/xmls/SdExcelXmlDrawing.ts
-import { ISdExcelXml, ISdExcelXmlDrawingData } from "../types";
+import type { ISdExcelXml, ISdExcelXmlDrawingData } from "../types";
 
 /**
  * xl/drawings/drawingN.xml 을 객체로 표현하는 클래스

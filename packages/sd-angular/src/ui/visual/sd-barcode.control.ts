@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from "@angular/core";
-import bwipjs from "bwip-js";
+import bwipjs from "bwip-js/browser";
 import { injectElementRef } from "../../core/utils/injections/injectElementRef";
 import { $effect } from "../../core/utils/bindings/$effect";
 

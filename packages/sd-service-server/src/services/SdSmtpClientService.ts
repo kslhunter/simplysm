@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import {
+import type {
   ISdSmtpClientService,
   ISmtpClientDefaultConfig,
   ISmtpClientSendByDefaultOption,

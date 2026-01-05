@@ -1,5 +1,7 @@
 import { SdLogger } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
+import type {
+  Type} from "@simplysm/sd-core-common";
 import {
   DateOnly,
   DateTime,
@@ -7,11 +9,10 @@ import {
   NeverEntryError,
   StringUtils,
   Time,
-  Type,
   Uuid,
   Wait,
 } from "@simplysm/sd-core-common";
-import {
+import type {
   IDbConn,
   IDefaultDbConnConf,
   IQueryColumnDef,
@@ -222,20 +223,21 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           rejected = true;
           this._requests.remove(queryRequest);
 
-          if (err["code"] === "ECANCEL") {
+          const errRec = err as Record<string, any>;
+          if (errRec["code"] === "ECANCEL") {
             reject(new Error("쿼리가 취소되었습니다."));
           } else {
-            if (err["lineNumber"] > 0) {
+            if (errRec["lineNumber"] > 0) {
               const splitQuery = query.split("\n");
-              splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
+              splitQuery[errRec["lineNumber"] - 1] = "==> " + splitQuery[errRec["lineNumber"] - 1];
               reject(
                 new Error(
-                  `[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
+                  `[${errRec["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
                 ),
               );
             } else {
               reject(
-                new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${query}\n--`),
+                new Error(`[${errRec["code"] as string}] ${err.message}\n-- query\n${query}\n--`),
               );
             }
           }
@@ -251,7 +253,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           }
 
           const doneResult = (rst ?? []).map((item) => {
-            const resultItem = {};
+            const resultItem: Record<string, any> = {};
             for (const col of item) {
               resultItem[col.metadata.colName] = col.value;
             }
@@ -268,7 +270,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           }
 
           const doneResult = (rst ?? []).map((item) => {
-            const resultItem = {};
+            const resultItem: Record<string, any> = {};
             for (const col of item) {
               resultItem[col.metadata.colName] = col.value;
             }
@@ -338,9 +340,10 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     await new Promise<void>((resolve, reject) => {
       const bulkLoad = this._conn?.newBulkLoad(tableName, (err) => {
         if (err != null) {
+          const errRec = err as Record<string, any>;
           reject(
             new Error(
-              `[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`,
+              `[${errRec["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`,
             ),
           );
           return;
@@ -407,7 +410,8 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     precision?: number;
     scale?: number;
   } {
-    if (type["type"] !== undefined) {
+    const typeRec = type as Record<string, any>;
+    if (typeRec["type"] !== undefined) {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
         case "TEXT":
@@ -450,7 +454,7 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       if (typeKey === undefined) {
         throw new NeverEntryError();
       }
-      const dataType = this._tedious.TYPES[typeKey];
+      const dataType = (this._tedious.TYPES as Record<string, DataType>)[typeKey];
 
       if (dataType === this._tedious.TYPES.Decimal) {
         return { type: dataType, precision: length, scale: digits };

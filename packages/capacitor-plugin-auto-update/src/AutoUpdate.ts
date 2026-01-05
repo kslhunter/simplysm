@@ -1,7 +1,7 @@
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 import { html, NetUtils, Wait } from "@simplysm/sd-core-common";
-import { SdServiceClient } from "@simplysm/sd-service-client";
-import { ISdAutoUpdateService } from "@simplysm/sd-service-common";
+import type { SdServiceClient } from "@simplysm/sd-service-client";
+import type { ISdAutoUpdateService } from "@simplysm/sd-service-common";
 import semver from "semver";
 import { ApkInstaller } from "./ApkInstaller";
 import path from "path";

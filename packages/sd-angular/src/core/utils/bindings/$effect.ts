@@ -1,8 +1,9 @@
-import {
+import type {
   CreateEffectOptions,
-  effect,
   EffectCleanupRegisterFn,
-  EffectRef,
+  EffectRef} from "@angular/core";
+import {
+  effect,
   untracked,
 } from "@angular/core";
 

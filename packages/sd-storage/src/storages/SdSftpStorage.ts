@@ -1,6 +1,6 @@
-import { ISdStorageConnConf } from "../ISdStorageConnConf";
+import type { ISdStorageConnConf } from "../ISdStorageConnConf";
 import SFtpClient from "ssh2-sftp-client";
-import { ISdStorage } from "../ISdStorage";
+import type { ISdStorage } from "../ISdStorage";
 
 export class SdSftpStorage implements ISdStorage {
   private _sftp?: SFtpClient;

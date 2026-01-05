@@ -1,4 +1,4 @@
-import { ISdExcelXml } from "../types";
+import type { ISdExcelXml } from "../types";
 import { SdExcelXmlRelationShip } from "../xmls/SdExcelXmlRelationShip";
 import { SdExcelXmlContentType } from "../xmls/SdExcelXmlContentType";
 import { SdExcelXmlWorkbook } from "../xmls/SdExcelXmlWorkbook";

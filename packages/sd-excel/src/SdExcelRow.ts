@@ -1,6 +1,6 @@
 import { SdExcelCell } from "./SdExcelCell";
-import { SdExcelXmlWorksheet } from "./xmls/SdExcelXmlWorksheet";
-import { ZipCache } from "./utils/ZipCache";
+import type { SdExcelXmlWorksheet } from "./xmls/SdExcelXmlWorksheet";
+import type { ZipCache } from "./utils/ZipCache";
 
 export class SdExcelRow {
   private readonly _cellMap = new Map<number, SdExcelCell>();

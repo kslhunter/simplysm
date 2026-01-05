@@ -1,10 +1,11 @@
 import { SdWorker } from "@simplysm/sd-core-node";
-import {
+import type {
   ISdServiceMessageDecodeResult,
-  SdServiceProtocol,
-  TSdServiceMessage,
+  TSdServiceMessage} from "@simplysm/sd-service-common";
+import {
+  SdServiceProtocol
 } from "@simplysm/sd-service-common";
-import { ISdServiceProtocolWorker } from "./protocol.worker-types";
+import type { ISdServiceProtocolWorker } from "./protocol.worker-types";
 
 export class SdServiceProtocolWrapper {
   // 워커 스레드 (무거운 작업용, Static Lazy Singleton)

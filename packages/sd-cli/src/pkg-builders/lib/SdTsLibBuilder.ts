@@ -1,9 +1,10 @@
 import path from "path";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
-import { FsUtils, HashUtils, PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils } from "@simplysm/sd-core-node";
 import { SdTsCompiler } from "../../ts-compiler/SdTsCompiler";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 
 export class SdTsLibBuilder {
   private readonly _tsCompiler: SdTsCompiler;

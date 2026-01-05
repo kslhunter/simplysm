@@ -2,13 +2,13 @@ import { SdLogger } from "@simplysm/sd-core-node";
 import type { Connection } from "mysql2/promise";
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
-import {
+import type {
   IDbConn,
   IDefaultDbConnConf,
   IQueryColumnDef,
   ISOLATION_LEVEL,
-  QueryHelper,
 } from "@simplysm/sd-orm-common";
+import { QueryHelper } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConn extends EventEmitter implements IDbConn {
   private static readonly ERR_NOT_CONNECTED = "'Connection'이 연결되어있지 않습니다.";

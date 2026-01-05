@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import { IFileInfo, IFileSystemPlugin, TStorage } from "./IFileSystemPlugin";
+import type { IFileInfo, IFileSystemPlugin, TStorage } from "./IFileSystemPlugin";
 
 const FileSystemPlugin = registerPlugin<IFileSystemPlugin>("FileSystem", {
   web: async () => {

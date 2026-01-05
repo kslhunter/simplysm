@@ -1,5 +1,5 @@
 import { JsonConvert, LazyGcMap, Uuid } from "@simplysm/sd-core-common";
-import { TSdServiceMessage } from "./protocol.types";
+import type { TSdServiceMessage } from "./protocol.types";
 
 export class SdServiceProtocol {
   private readonly _MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB

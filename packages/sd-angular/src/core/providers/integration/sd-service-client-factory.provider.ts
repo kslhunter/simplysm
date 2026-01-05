@@ -1,6 +1,6 @@
-import { inject, Injectable, WritableSignal } from "@angular/core";
+import { inject, Injectable, type WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
-import { ISdServiceConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
+import { type ISdServiceConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 import { SdToastProvider } from "../../../ui/overlay/toast/sd-toast.provider";
 import { $effect } from "../../utils/bindings/$effect";
 import { SdAngularConfigProvider } from "../app/sd-angular-config.provider";
@@ -71,8 +71,8 @@ export class SdServiceClientFactoryProvider {
         }
       } else {
         // HMR refresh
-        if (window["__sd_hmr_destroy"] != null) {
-          window["__sd_hmr_destroy"]();
+        if ("__sd_hmr_destroy" in window && typeof window.__sd_hmr_destroy === "function") {
+          window.__sd_hmr_destroy();
 
           const old = document.querySelector("app-root");
           if (old) old.remove();

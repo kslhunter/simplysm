@@ -4,12 +4,12 @@ import {
   inject,
   Injectable,
   inputBinding,
-  Signal,
+  type Signal,
   Type,
 } from "@angular/core";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
-import { TDirectiveInputSignals } from "../../utils/TDirectiveInputSignals";
+import type { TDirectiveInputSignals } from "../../utils/TDirectiveInputSignals";
 import { Wait } from "@simplysm/sd-core-common";
 import { SdBusyProvider } from "../../../ui/overlay/busy/sd-busy.provider";
 
@@ -31,11 +31,12 @@ export class SdPrintProvider {
         this._sdBusy.globalBusyCount.update((v) => v + 1);
 
         //-- comp
+        const inputs = template.inputs as Record<string, any>;
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
           bindings: [
-            ...Object.keys(template.inputs).map((inputKey) =>
-              inputBinding(inputKey, () => template.inputs[inputKey]),
+            ...Object.keys(inputs).map((inputKey) =>
+              inputBinding(inputKey, () => inputs[inputKey]),
             ),
           ],
         });
@@ -99,11 +100,12 @@ export class SdPrintProvider {
         this._sdBusy.globalBusyCount.update((v) => v + 1);
 
         //-- comp
+        const inputs = template.inputs as Record<string, any>;
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
           bindings: [
-            ...Object.keys(template.inputs).map((inputKey) =>
-              inputBinding(inputKey, () => template.inputs[inputKey]),
+            ...Object.keys(inputs).map((inputKey) =>
+              inputBinding(inputKey, () => inputs[inputKey]),
             ),
           ],
         });

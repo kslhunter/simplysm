@@ -1,6 +1,7 @@
-import { afterEveryRender, Signal } from "@angular/core";
+import type { Signal } from "@angular/core";
+import { afterEveryRender } from "@angular/core";
 import { html, NumberUtils } from "@simplysm/sd-core-common";
-import { SdSheetDomAccessor } from "./SdSheetDomAccessor";
+import type { SdSheetDomAccessor } from "./SdSheetDomAccessor";
 
 export class SdSheetSelectRowIndicatorRenderer<T> {
   constructor(

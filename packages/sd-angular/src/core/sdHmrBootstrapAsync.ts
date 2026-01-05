@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
-import {
+import type {
   ApplicationConfig,
   ApplicationRef,
+  Type} from "@angular/core";
+import {
   destroyPlatform,
-  Type,
   ɵresetCompiledComponents,
 } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";

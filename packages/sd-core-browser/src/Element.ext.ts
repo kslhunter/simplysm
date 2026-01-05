@@ -34,8 +34,8 @@ declare interface Element {
   pasteAsync(): Promise<void>;
 }
 
-if (typeof Element.prototype.matches === "undefined") {
-  Element.prototype.matches = Element.prototype["msMatchesSelector"];
+if (typeof Element.prototype.matches === "undefined" && "msMatchesSelector" in Element.prototype) {
+  Element.prototype.matches = Element.prototype["msMatchesSelector"] as any;
 }
 
 Element.prototype.findParent = function (arg: string | Element): HTMLElement | undefined {
@@ -43,8 +43,7 @@ Element.prototype.findParent = function (arg: string | Element): HTMLElement | u
   while (cursor) {
     if (typeof arg === "string" && cursor.matches(arg)) {
       break;
-    }
-    else if (arg instanceof Element && arg === cursor) {
+    } else if (arg instanceof Element && arg === cursor) {
       break;
     }
 
@@ -72,13 +71,24 @@ Element.prototype.prependChild = function <T extends Element>(newChild: T): T {
 
 Element.prototype.findAll = function (selector: string): Element[] {
   return Array.from(
-    this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(",")),
+    this.querySelectorAll(
+      selector
+        .split(",")
+        .map((item) => `:scope ${item}`)
+        .join(","),
+    ),
   ).ofType(Element);
 };
 
 Element.prototype.findFirst = function (selector: string): Element | undefined {
-  return this.querySelector(selector.split(",").map((item) => `:scope ${item}`).join(","))
-    ?? undefined;
+  return (
+    this.querySelector(
+      selector
+        .split(",")
+        .map((item) => `:scope ${item}`)
+        .join(","),
+    ) ?? undefined
+  );
 };
 
 const focusableSelectorList = [
@@ -106,9 +116,8 @@ Element.prototype.findFocusableAll = function (): TFocusableElement[] {
 };
 
 Element.prototype.findFocusableFirst = function (): TFocusableElement | undefined {
-  return (
-    this.querySelector(focusableSelectorList.map((item) => `:scope ${item}`).join(",")) ?? undefined
-  ) as TFocusableElement | undefined;
+  return (this.querySelector(focusableSelectorList.map((item) => `:scope ${item}`).join(",")) ??
+    undefined) as TFocusableElement | undefined;
 };
 
 Element.prototype.findFocusableParent = function (): TFocusableElement | undefined {
@@ -124,18 +133,12 @@ Element.prototype.findFocusableParent = function (): TFocusableElement | undefin
 };
 
 Element.prototype.isOffsetElement = function (): boolean {
-  return [
-    "relative", "absolute", "fixed", "sticky",
-  ].includes(getComputedStyle(this).position);
+  return ["relative", "absolute", "fixed", "sticky"].includes(getComputedStyle(this).position);
 };
 
 Element.prototype.isVisible = function (): boolean {
   const style = getComputedStyle(this);
-  return (
-    this.getClientRects().length > 0 &&
-    style.visibility !== "hidden" &&
-    style.opacity !== "0"
-  );
+  return this.getClientRects().length > 0 && style.visibility !== "hidden" && style.opacity !== "0";
 };
 
 Element.prototype.copyAsync = async function () {
@@ -144,8 +147,7 @@ Element.prototype.copyAsync = async function () {
   const firstInputEl = this.findFirst<HTMLInputElement>("input:not(.sd-invalid-input)");
   if (firstInputEl) {
     await navigator.clipboard.writeText(firstInputEl.value);
-  }
-  else {
+  } else {
     await navigator.clipboard.writeText(this.innerHTML);
   }
 };

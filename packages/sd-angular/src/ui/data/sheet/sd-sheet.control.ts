@@ -11,12 +11,15 @@ import {
 } from "@angular/core";
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
-import { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
+import type { ISdResizeEvent } from "../../../core/plugins/events/sd-resize-event.plugin";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { SdExpandingManager } from "../../../core/utils/managers/SdExpandingManager";
 import { SdSelectionManager } from "../../../core/utils/managers/SdSelectionManager";
-import { ISdSortingDef, SdSortingManager } from "../../../core/utils/managers/SdSortingManager";
+import {
+  type ISdSortingDef,
+  SdSortingManager,
+} from "../../../core/utils/managers/SdSortingManager";
 import { useSdSystemConfigResource } from "../../../core/utils/signals/useSdSystemConfigResource";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { SdCheckboxControl } from "../../form/choice/sd-checkbox.control";
@@ -28,12 +31,12 @@ import { SdSheetDomAccessor } from "./features/SdSheetDomAccessor";
 import { SdSheetFocusIndicatorRenderer } from "./features/SdSheetFocusIndicatorRenderer";
 import { SdSheetLayoutEngine } from "./features/SdSheetLayoutEngine";
 import { SdSheetSelectRowIndicatorRenderer } from "./features/SdSheetSelectRowIndicatorRenderer";
-import { ISdSheetConfig, ISdSheetConfigColumn } from "./types/ISdSheetConfig";
+import type { ISdSheetConfig, ISdSheetConfigColumn } from "./types/ISdSheetConfig";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import { SdAnchorControl } from "../../form/button/sd-anchor.control";
 import { NumberUtils } from "@simplysm/sd-core-common";
-import { ISdSheetHeaderDef } from "./types/ISdSheetHeaderDef";
-import { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventParam";
+import type { ISdSheetHeaderDef } from "./types/ISdSheetHeaderDef";
+import type { ISdSheetItemKeydownEventParam } from "./types/ISdSheetItemKeydownEventParam";
 import { NgIcon } from "@ng-icons/core";
 import {
   tablerArrowRight,

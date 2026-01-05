@@ -1,4 +1,4 @@
-import { Type } from "../types/type/Type";
+import type { Type } from "../types/type/Type";
 
 /**
  * 클래스용 Decorator 함수의 Return 타입

@@ -7,16 +7,16 @@ import {
   Directive,
   inject,
   input,
-  InputSignal,
+  type InputSignal,
   model,
   output,
   reflectComponentType,
-  Signal,
+  type Signal,
   TemplateRef,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { ObjectUtils, TArrayDiffs2Result } from "@simplysm/sd-core-common";
+import { ObjectUtils, type TArrayDiffs2Result } from "@simplysm/sd-core-common";
 import { SdButtonControl } from "../../ui/form/button/sd-button.control";
 import { SdFormControl } from "../../ui/form/sd-form.control";
 import { SdSheetColumnCellTemplateDirective } from "../../ui/data/sheet/directives/sd-sheet-column-cell-template.directive";
@@ -26,14 +26,14 @@ import { SdFileDialogProvider } from "../../core/providers/integration/sd-file-d
 import { SdToastProvider } from "../../ui/overlay/toast/sd-toast.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
-import { ISdSortingDef } from "../../core/utils/managers/SdSortingManager";
+import type { ISdSortingDef } from "../../core/utils/managers/SdSortingManager";
 import { setupCumulateSelectedKeys } from "../../core/utils/setups/setupCumulateSelectedKeys";
 import { useViewTypeSignal } from "../../core/utils/signals/useViewTypeSignal";
 import { SdBaseContainerControl } from "../base/sd-base-container.control";
 import { SdSharedDataProvider } from "../../core/providers/storage/sd-shared-data.provider";
 import { SdDataSheetColumnDirective } from "./sd-data-sheet-column.directive";
 import { setupCloserWhenSingleSelectionChange } from "../../core/utils/setups/setupCloserWhenSingleSelectionChange";
-import { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
+import type { ISdSelectModal, ISelectModalOutputResult } from "./sd-data-select-button.control";
 import { injectParent } from "../../core/utils/injections/injectParent";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import { setupCanDeactivate } from "../../core/utils/setups/setupCanDeactivate";

@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import { IApkInstallerPlugin, IVersionInfo } from "./IApkInstallerPlugin";
+import type { IApkInstallerPlugin, IVersionInfo } from "./IApkInstallerPlugin";
 
 const ApkInstallerPlugin = registerPlugin<IApkInstallerPlugin>("ApkInstaller", {
   web: async () => {

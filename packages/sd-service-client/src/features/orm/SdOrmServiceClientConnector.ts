@@ -1,7 +1,7 @@
 import { SdOrmServiceClientDbContextExecutor } from "./SdOrmServiceClientDbContextExecutor";
-import { ISdOrmServiceConnectConfig } from "./ISdOrmServiceConnectConfig";
-import { DbContext } from "@simplysm/sd-orm-common";
-import { SdServiceClient } from "../../SdServiceClient";
+import type { ISdOrmServiceConnectConfig } from "./ISdOrmServiceConnectConfig";
+import type { DbContext } from "@simplysm/sd-orm-common";
+import type { SdServiceClient } from "../../SdServiceClient";
 
 export class SdOrmServiceClientConnector {
   constructor(private readonly _serviceClient: SdServiceClient) {}

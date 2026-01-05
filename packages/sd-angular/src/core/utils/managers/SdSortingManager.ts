@@ -1,4 +1,4 @@
-import { WritableSignal } from "@angular/core";
+import type { WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { $computed } from "../bindings/$computed";
 

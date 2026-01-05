@@ -1,17 +1,19 @@
 import esbuild from "esbuild";
 import path from "path";
-import { FsUtils, HashUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, HashUtils, PathUtils, SdLogger } from "@simplysm/sd-core-node";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 import { createSdServerPlugin } from "./createSdServerPlugin";
+import type {
+  BuildOutputFile} from "@angular/build/src/tools/esbuild/bundler-context";
 import {
-  BuildOutputFile,
   BuildOutputFileType,
 } from "@angular/build/src/tools/esbuild/bundler-context";
 import { convertOutputFile } from "@angular/build/src/tools/esbuild/utils";
 import { resolveAssets } from "@angular/build/src/utils/resolve-assets";
-import { ISdCliServerPluginResultCache } from "../../types/plugin/ISdCliServerPluginResultCache";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
-import { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
+import type { ISdCliServerPluginResultCache } from "../../types/plugin/ISdCliServerPluginResultCache";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { ISdTsCompilerOptions } from "../../types/build/ISdTsCompilerOptions";
 import { SdWorkerPathPlugin } from "../commons/SdWorkerPathPlugin";
 
 export class SdServerBundler {
@@ -114,8 +116,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       try {
         esbuildResult = await this._context.rebuild();
       } catch (err) {
-        if ("warnings" in err || "errors" in err) {
-          esbuildResult = err;
+        if (err != null && typeof err === "object" && ("warnings" in err || "errors" in err)) {
+          esbuildResult = err as esbuild.BuildResult;
         } else {
           throw err;
         }
@@ -124,8 +126,8 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       try {
         esbuildResult = await esbuild.build(this._esbuildOptions);
       } catch (err) {
-        if ("warnings" in err || "errors" in err) {
-          esbuildResult = err;
+        if (err != null && typeof err === "object" && ("warnings" in err || "errors" in err)) {
+          esbuildResult = err as esbuild.BuildResult;
         } else {
           throw err;
         }
@@ -185,11 +187,15 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           }
         }
       } catch (err) {
-        esbuildResult = err;
-        for (const e of err.errors) {
-          if (e.detail != null) {
-            this._logger.error(e.detail);
+        if (err != null && typeof err === "object" && "errors" in err) {
+          esbuildResult = err as esbuild.BuildResult;
+          for (const e of (err as esbuild.BuildFailure).errors) {
+            if (e.detail != null) {
+              this._logger.error(e.detail);
+            }
           }
+        } else {
+          throw err;
         }
       }
 

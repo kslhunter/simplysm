@@ -1,0 +1,397 @@
+import { describe, it, expect } from "vitest";
+import {
+  TransferableConvert,
+  DateTime,
+  DateOnly,
+  Time,
+  Uuid,
+} from "@simplysm/core-common";
+
+describe("TransferableConvert", () => {
+  //#region encode - 특수 타입
+
+  describe("encode() - 특수 타입", () => {
+    it("DateTime을 인코딩한다", () => {
+      const dt = new DateTime(2025, 1, 6, 15, 30, 45, 123);
+      const { result } = TransferableConvert.encode(dt);
+
+      expect(result).toEqual({
+        __type__: "DateTime",
+        data: dt.tick,
+      });
+    });
+
+    it("DateOnly를 인코딩한다", () => {
+      const d = new DateOnly(2025, 1, 6);
+      const { result } = TransferableConvert.encode(d);
+
+      expect(result).toEqual({
+        __type__: "DateOnly",
+        data: d.tick,
+      });
+    });
+
+    it("Time을 인코딩한다", () => {
+      const t = new Time(15, 30, 45, 123);
+      const { result } = TransferableConvert.encode(t);
+
+      expect(result).toEqual({
+        __type__: "Time",
+        data: t.tick,
+      });
+    });
+
+    it("Uuid를 인코딩한다", () => {
+      const uuid = Uuid.new();
+      const { result } = TransferableConvert.encode(uuid);
+
+      expect(result).toEqual({
+        __type__: "Uuid",
+        data: uuid.toString(),
+      });
+    });
+
+    it("Error를 인코딩한다", () => {
+      const err = new Error("test error");
+      err.stack = "test stack";
+      const { result } = TransferableConvert.encode(err);
+
+      expect(result).toEqual({
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "test error",
+          stack: "test stack",
+        },
+      });
+    });
+
+    it("Error의 cause를 재귀적으로 인코딩한다", () => {
+      const cause = new Error("cause error");
+      const err = new Error("main error", { cause });
+      const { result } = TransferableConvert.encode(err);
+
+      const typedResult = result as {
+        __type__: string;
+        data: {
+          name: string;
+          message: string;
+          cause?: {
+            __type__: string;
+            data: {
+              name: string;
+              message: string;
+            };
+          };
+        };
+      };
+
+      expect(typedResult.data.cause).toEqual({
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "cause error",
+          stack: cause.stack,
+        },
+      });
+    });
+
+    it("Buffer를 인코딩하고 transferList에 추가한다", () => {
+      const buffer = Buffer.from("hello");
+      const { result, transferList } = TransferableConvert.encode(buffer);
+
+      expect(result).toBe(buffer);
+      expect(transferList).toContain(buffer.buffer);
+    });
+  });
+
+  //#endregion
+
+  //#region encode - 컬렉션
+
+  describe("encode() - 컬렉션", () => {
+    it("배열을 재귀적으로 인코딩한다", () => {
+      const arr = [
+        new DateTime(2025, 1, 6),
+        Uuid.new(),
+        "string",
+        123,
+      ] as const;
+      const { result } = TransferableConvert.encode(arr);
+
+      expect(Array.isArray(result)).toBe(true);
+      const resultArr = result as unknown[];
+      expect(resultArr).toHaveLength(4);
+      expect(resultArr[0]).toMatchObject({ __type__: "DateTime" });
+      expect(resultArr[1]).toMatchObject({ __type__: "Uuid" });
+      expect(resultArr[2]).toBe("string");
+      expect(resultArr[3]).toBe(123);
+    });
+
+    it("Map을 재귀적으로 인코딩한다", () => {
+      const map = new Map<string, DateTime | Uuid>([
+        ["key1", new DateTime(2025, 1, 6)],
+        ["key2", Uuid.new()],
+      ]);
+      const { result } = TransferableConvert.encode(map);
+
+      expect(result instanceof Map).toBe(true);
+      const resultMap = result as Map<string, unknown>;
+      expect(resultMap.size).toBe(2);
+      expect(resultMap.get("key1")).toMatchObject({ __type__: "DateTime" });
+      expect(resultMap.get("key2")).toMatchObject({ __type__: "Uuid" });
+    });
+
+    it("Set을 재귀적으로 인코딩한다", () => {
+      const set = new Set([new DateTime(2025, 1, 6), Uuid.new()]);
+      const { result } = TransferableConvert.encode(set);
+
+      expect(result instanceof Set).toBe(true);
+      const resultSet = result as Set<unknown>;
+      expect(resultSet.size).toBe(2);
+      const arr = Array.from(resultSet);
+      expect(arr[0]).toMatchObject({ __type__: "DateTime" });
+      expect(arr[1]).toMatchObject({ __type__: "Uuid" });
+    });
+
+    it("중첩된 객체를 재귀적으로 인코딩한다", () => {
+      const obj = {
+        dt: new DateTime(2025, 1, 6),
+        nested: {
+          uuid: Uuid.new(),
+          arr: [new DateOnly(2025, 1, 6)],
+        },
+      };
+      const { result } = TransferableConvert.encode(obj);
+
+      const typedResult = result as {
+        dt: { __type__: string };
+        nested: {
+          uuid: { __type__: string };
+          arr: { __type__: string }[];
+        };
+      };
+
+      expect(typedResult.dt).toMatchObject({ __type__: "DateTime" });
+      expect(typedResult.nested.uuid).toMatchObject({ __type__: "Uuid" });
+      expect(typedResult.nested.arr[0]).toMatchObject({ __type__: "DateOnly" });
+    });
+  });
+
+  //#endregion
+
+  //#region decode - 특수 타입
+
+  describe("decode() - 특수 타입", () => {
+    it("DateTime을 디코딩한다", () => {
+      const tick = new DateTime(2025, 1, 6, 15, 30, 45, 123).tick;
+      const encoded = { __type__: "DateTime", data: tick };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof DateTime).toBe(true);
+      const dt = decoded as DateTime;
+      expect(dt.year).toBe(2025);
+      expect(dt.month).toBe(1);
+      expect(dt.day).toBe(6);
+      expect(dt.hour).toBe(15);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+      expect(dt.millisecond).toBe(123);
+    });
+
+    it("DateOnly를 디코딩한다", () => {
+      const tick = new DateOnly(2025, 1, 6).tick;
+      const encoded = { __type__: "DateOnly", data: tick };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof DateOnly).toBe(true);
+      const d = decoded as DateOnly;
+      expect(d.year).toBe(2025);
+      expect(d.month).toBe(1);
+      expect(d.day).toBe(6);
+    });
+
+    it("Time을 디코딩한다", () => {
+      const tick = new Time(15, 30, 45, 123).tick;
+      const encoded = { __type__: "Time", data: tick };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Time).toBe(true);
+      const t = decoded as Time;
+      expect(t.hour).toBe(15);
+      expect(t.minute).toBe(30);
+      expect(t.second).toBe(45);
+      expect(t.millisecond).toBe(123);
+    });
+
+    it("Uuid를 디코딩한다", () => {
+      const uuid = Uuid.new();
+      const encoded = { __type__: "Uuid", data: uuid.toString() };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Uuid).toBe(true);
+      expect((decoded as Uuid).toString()).toBe(uuid.toString());
+    });
+
+    it("Error를 디코딩한다", () => {
+      const encoded = {
+        __type__: "Error",
+        data: {
+          name: "CustomError",
+          message: "test error",
+          stack: "test stack",
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Error).toBe(true);
+      const err = decoded as Error;
+      expect(err.name).toBe("CustomError");
+      expect(err.message).toBe("test error");
+      expect(err.stack).toBe("test stack");
+    });
+
+    it("Error의 cause를 재귀적으로 디코딩한다", () => {
+      const encoded = {
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "main error",
+          cause: {
+            __type__: "Error",
+            data: {
+              name: "Error",
+              message: "cause error",
+            },
+          },
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Error).toBe(true);
+      const err = decoded as Error;
+      expect(err.message).toBe("main error");
+      expect(err.cause instanceof Error).toBe(true);
+      expect((err.cause as Error).message).toBe("cause error");
+    });
+  });
+
+  //#endregion
+
+  //#region decode - 컬렉션
+
+  describe("decode() - 컬렉션", () => {
+    it("배열을 재귀적으로 디코딩한다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const uuidStr = Uuid.new().toString();
+      const encoded = [
+        { __type__: "DateTime", data: tick },
+        { __type__: "Uuid", data: uuidStr },
+        "string",
+        123,
+      ];
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(Array.isArray(decoded)).toBe(true);
+      const arr = decoded as unknown[];
+      expect(arr[0] instanceof DateTime).toBe(true);
+      expect(arr[1] instanceof Uuid).toBe(true);
+      expect(arr[2]).toBe("string");
+      expect(arr[3]).toBe(123);
+    });
+
+    it("Map을 재귀적으로 디코딩한다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const encoded = new Map<string, unknown>([
+        ["key1", { __type__: "DateTime", data: tick }],
+        ["key2", "value"],
+      ]);
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Map).toBe(true);
+      const map = decoded as Map<string, unknown>;
+      expect(map.get("key1") instanceof DateTime).toBe(true);
+      expect(map.get("key2")).toBe("value");
+    });
+
+    it("Set을 재귀적으로 디코딩한다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const encoded = new Set([
+        { __type__: "DateTime", data: tick },
+        "string",
+      ]);
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Set).toBe(true);
+      const set = decoded as Set<unknown>;
+      const arr = Array.from(set);
+      expect(arr[0] instanceof DateTime).toBe(true);
+      expect(arr[1]).toBe("string");
+    });
+
+    it("중첩된 객체를 재귀적으로 디코딩한다", () => {
+      const dtTick = new DateTime(2025, 1, 6).tick;
+      const uuidStr = Uuid.new().toString();
+      const dTick = new DateOnly(2025, 1, 6).tick;
+      const encoded = {
+        dt: { __type__: "DateTime", data: dtTick },
+        nested: {
+          uuid: { __type__: "Uuid", data: uuidStr },
+          arr: [{ __type__: "DateOnly", data: dTick }],
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      const obj = decoded as {
+        dt: DateTime;
+        nested: {
+          uuid: Uuid;
+          arr: DateOnly[];
+        };
+      };
+
+      expect(obj.dt instanceof DateTime).toBe(true);
+      expect(obj.nested.uuid instanceof Uuid).toBe(true);
+      expect(obj.nested.arr[0] instanceof DateOnly).toBe(true);
+    });
+  });
+
+  //#endregion
+
+  //#region 왕복 변환 (round-trip)
+
+  describe("왕복 변환 (encode → decode)", () => {
+    it("DateTime을 왕복 변환한다", () => {
+      const original = new DateTime(2025, 1, 6, 15, 30, 45, 123);
+      const { result } = TransferableConvert.encode(original);
+      const decoded = TransferableConvert.decode(result) as DateTime;
+
+      expect(decoded.tick).toBe(original.tick);
+    });
+
+    it("복잡한 객체를 왕복 변환한다", () => {
+      const original = {
+        dt: new DateTime(2025, 1, 6),
+        d: new DateOnly(2025, 1, 6),
+        t: new Time(15, 30, 45),
+        uuid: Uuid.new(),
+        arr: [new DateTime(2024, 12, 31)],
+        map: new Map([["key", new DateOnly(2025, 1, 1)]]),
+        set: new Set([new Time(12, 0, 0)]),
+      };
+
+      const { result } = TransferableConvert.encode(original);
+      const decoded = TransferableConvert.decode(result) as typeof original;
+
+      expect(decoded.dt instanceof DateTime).toBe(true);
+      expect(decoded.d instanceof DateOnly).toBe(true);
+      expect(decoded.t instanceof Time).toBe(true);
+      expect(decoded.uuid instanceof Uuid).toBe(true);
+      expect(decoded.arr[0] instanceof DateTime).toBe(true);
+      expect(decoded.map.get("key") instanceof DateOnly).toBe(true);
+      expect(Array.from(decoded.set)[0] instanceof Time).toBe(true);
+    });
+  });
+
+  //#endregion
+});

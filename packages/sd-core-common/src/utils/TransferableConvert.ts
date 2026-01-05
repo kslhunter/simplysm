@@ -1,4 +1,4 @@
-import { Transferable } from "worker_threads";
+import type { Transferable } from "worker_threads";
 import { DateTime } from "../types/date-time/DateTime";
 import { DateOnly } from "../types/date-time/DateOnly";
 import { Time } from "../types/date-time/Time";

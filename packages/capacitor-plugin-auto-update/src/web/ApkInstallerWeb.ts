@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import { IApkInstallerPlugin, IVersionInfo } from "../IApkInstallerPlugin";
+import type { IApkInstallerPlugin, IVersionInfo } from "../IApkInstallerPlugin";
 
 export class ApkInstallerWeb extends WebPlugin implements IApkInstallerPlugin {
   async install(_options: { uri: string }): Promise<void> {

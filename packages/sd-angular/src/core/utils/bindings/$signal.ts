@@ -1,4 +1,5 @@
-import { signal, WritableSignal } from "@angular/core";
+import type { WritableSignal } from "@angular/core";
+import { signal } from "@angular/core";
 import { $mark } from "./utils/$mark";
 
 export interface SdWritableSignal<T> extends WritableSignal<T> {

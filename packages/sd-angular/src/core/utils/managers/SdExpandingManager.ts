@@ -1,4 +1,4 @@
-import { Signal, WritableSignal } from "@angular/core";
+import type { Signal, WritableSignal } from "@angular/core";
 import { $computed } from "../bindings/$computed";
 
 export class SdExpandingManager<T> {

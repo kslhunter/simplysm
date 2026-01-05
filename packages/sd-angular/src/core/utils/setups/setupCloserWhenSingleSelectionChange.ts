@@ -1,7 +1,7 @@
 import { $effect } from "../bindings/$effect";
 import { $signal } from "../bindings/$signal";
-import { OutputEmitterRef, Signal } from "@angular/core";
-import { ISelectModalOutputResult } from "../../../features/data-view/sd-data-select-button.control";
+import type { OutputEmitterRef, Signal } from "@angular/core";
+import type { ISelectModalOutputResult } from "../../../features/data-view/sd-data-select-button.control";
 
 export function setupCloserWhenSingleSelectionChange<TKey, TItem>(bindings: {
   selectedItemKeys: Signal<TKey[]>;

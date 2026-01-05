@@ -1,9 +1,10 @@
 import ts from "typescript";
-import { SdDepCache } from "./SdDepCache";
-import { PathUtils, TNormPath } from "@simplysm/sd-core-node";
+import type { SdDepCache } from "./SdDepCache";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { PathUtils } from "@simplysm/sd-core-node";
 import path from "path";
-import { NgtscProgram } from "@angular/compiler-cli";
-import { ScopePathSet } from "./ScopePathSet";
+import type { NgtscProgram } from "@angular/compiler-cli";
+import type { ScopePathSet } from "./ScopePathSet";
 
 export class SdDepAnalyzer {
   static analyze(

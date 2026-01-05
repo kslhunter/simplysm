@@ -4,14 +4,14 @@ import {
   SdFsWatcher,
   SdLogger,
   SdWorker,
-  TNormPath,
+  type TNormPath,
 } from "@simplysm/sd-core-node";
-import { ISdProjectConfig, ISdServerPackageConfig } from "../types/config/ISdProjectConfig";
+import type { ISdProjectConfig, ISdServerPackageConfig } from "../types/config/ISdProjectConfig";
 import path from "path";
-import { ISdBuildMessage } from "../types/build/ISdBuildMessage";
-import { ISdBuildRunnerWorkerType } from "../types/worker/ISdBuildRunnerWorkerType";
-import { IServerWorkerType } from "../types/worker/IServerWorkerType";
-import { INpmConfig } from "../types/common-config/INpmConfig";
+import type { ISdBuildMessage } from "../types/build/ISdBuildMessage";
+import type { ISdBuildRunnerWorkerType } from "../types/worker/ISdBuildRunnerWorkerType";
+import type { IServerWorkerType } from "../types/worker/IServerWorkerType";
+import type { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdProjectBuildRunner {
   private static readonly _logger = SdLogger.get(["simplysm", "sd-cli", "SdProjectBuildRunner"]);

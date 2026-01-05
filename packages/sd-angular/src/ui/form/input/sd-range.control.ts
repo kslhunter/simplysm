@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
-import { SdTextfieldControl, TSdTextfieldTypes } from "./sd-textfield.control";
+import { SdTextfieldControl, type TSdTextfieldTypes } from "./sd-textfield.control";
 
 @Component({
   selector: "sd-range",

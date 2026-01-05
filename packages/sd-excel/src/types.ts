@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import type { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 
 export interface ISdExcelXmlContentTypeData {
   Types: {

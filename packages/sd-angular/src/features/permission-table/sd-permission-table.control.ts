@@ -7,7 +7,7 @@ import { SdTypedTemplateDirective } from "../../core/directives/sd-typed-templat
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
-import { ISdPermission } from "../../core/providers/app/sd-app-structure.provider";
+import type { ISdPermission } from "../../core/providers/app/sd-app-structure.provider";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { tablerChevronRight } from "@ng-icons/tabler-icons";
 

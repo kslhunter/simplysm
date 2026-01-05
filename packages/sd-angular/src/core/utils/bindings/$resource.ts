@@ -1,4 +1,5 @@
-import { resource, ResourceOptions, ResourceRef } from "@angular/core";
+import type { ResourceOptions, ResourceRef } from "@angular/core";
+import { resource } from "@angular/core";
 import { $effect } from "./$effect";
 
 export function $resource<T, R>(

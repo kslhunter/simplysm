@@ -13,7 +13,7 @@ import { StringUtils } from "@simplysm/sd-core-common";
 import { SdPaginationControl } from "../../ui/navigation/sd-pagination.control";
 import { SdTextfieldControl } from "../../ui/form/input/sd-textfield.control";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
 import { SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
@@ -21,9 +21,12 @@ import { $computed } from "../../core/utils/bindings/$computed";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
-import { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
+import type { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
 import { setupModelHook } from "../../core/utils/setups/setupModelHook";
-import { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
+import type {
+  ISdSelectModal,
+  TSdSelectModalInfo,
+} from "../data-view/sd-data-select-button.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";

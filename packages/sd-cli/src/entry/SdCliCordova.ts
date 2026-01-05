@@ -1,8 +1,8 @@
 import * as path from "path";
 import { FsUtils, PathUtils, SdLogger, SdProcess } from "@simplysm/sd-core-node";
-import { ISdClientBuilderCordovaConfig } from "../types/config/ISdProjectConfig";
+import type { ISdClientBuilderCordovaConfig } from "../types/config/ISdProjectConfig";
 import { SdZip, XmlConvert } from "@simplysm/sd-core-common";
-import { INpmConfig } from "../types/common-config/INpmConfig";
+import type { INpmConfig } from "../types/common-config/INpmConfig";
 
 export class SdCliCordova {
   // 상수 정의
@@ -304,7 +304,7 @@ export class SdCliCordova {
 
     configXml.widget.platform = configXml.widget.platform ?? [];
 
-    const androidPlatform = {
+    const androidPlatform: Record<string, any> = {
       "$": {
         name: "android",
       },
@@ -356,7 +356,7 @@ export class SdCliCordova {
 
     // SDK 버전 설정
     if (this._opt.config.platform!.android!.sdkVersion != null) {
-      androidPlatform.preference.push(
+      androidPlatform["preference"].push(
         ...[
           {
             $: {

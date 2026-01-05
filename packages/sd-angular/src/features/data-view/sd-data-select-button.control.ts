@@ -5,21 +5,25 @@ import {
   Directive,
   inject,
   input,
-  InputSignal,
+  type InputSignal,
   model,
-  Signal,
+  type Signal,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdAdditionalButtonControl } from "../../ui/form/button/sd-additional-button.control";
-import { TSelectModeValue } from "../../ui/form/select/sd-select.control";
-import { ISdModal, ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
+import type { TSelectModeValue } from "../../ui/form/select/sd-select.control";
+import {
+  type ISdModal,
+  type ISdModalInfo,
+  SdModalProvider,
+} from "../../ui/overlay/modal/sd-modal.provider";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { setupInvalid } from "../../core/utils/setups/setupInvalid";
 import { $effect } from "../../core/utils/bindings/$effect";
 import {
-  SdItemOfTemplateContext,
+  type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
 import { NgTemplateOutlet } from "@angular/common";

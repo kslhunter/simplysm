@@ -1,5 +1,5 @@
 import { NumberUtils } from "@simplysm/sd-core-common";
-import { ISdExcelXml, ISdExcelXmlWorkbookData } from "../types";
+import type { ISdExcelXml, ISdExcelXmlWorkbookData } from "../types";
 
 export class SdExcelXmlWorkbook implements ISdExcelXml {
   data: ISdExcelXmlWorkbookData;
@@ -54,16 +54,18 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
     for (const key of Object.keys(this.data.workbook)) {
       if (key === "bookViews") continue;
 
+      const workbookRec = this.data.workbook as Record<string, any>;
+      const resultRec = result as Record<string, any>;
       if (key === "sheets") {
         if (this.data.workbook.bookViews) {
           result.bookViews = this.data.workbook.bookViews;
         }
         result.sheets = this.data.workbook.sheets;
       } else {
-        result[key] = this.data.workbook[key];
+        resultRec[key] = workbookRec[key];
       }
 
-      result[key] = this.data.workbook[key];
+      resultRec[key] = workbookRec[key];
     }
 
     this.data.workbook = result;

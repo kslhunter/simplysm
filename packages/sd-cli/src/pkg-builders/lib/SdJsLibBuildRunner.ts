@@ -1,8 +1,9 @@
-import { FsUtils, PathUtils, SdLogger, TNormPath } from "@simplysm/sd-core-node";
+import type { TNormPath } from "@simplysm/sd-core-node";
+import { FsUtils, PathUtils, SdLogger } from "@simplysm/sd-core-node";
 import path from "path";
 import { ESLint } from "eslint";
 import { SdBuildRunnerBase } from "../SdBuildRunnerBase";
-import { ISdBuildResult } from "../../types/build/ISdBuildResult";
+import type { ISdBuildResult } from "../../types/build/ISdBuildResult";
 import { SdCliConvertMessageUtils } from "../../utils/SdCliConvertMessageUtils";
 
 export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {

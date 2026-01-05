@@ -1,19 +1,23 @@
-import { Signal, WritableSignal } from "@angular/core";
+import type { Signal, WritableSignal } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 
 const ORIGIN_SNAPSHOT = Symbol();
 
 export function $obj<T extends object | undefined>(sig: Signal<T> | WritableSignal<T>) {
+  const mySig = sig as (Signal<T> | WritableSignal<T>) & {
+    [ORIGIN_SNAPSHOT]?: T;
+  };
+
   return {
     snapshot() {
-      sig[ORIGIN_SNAPSHOT] = ObjectUtils.clone(sig());
+      mySig[ORIGIN_SNAPSHOT] = ObjectUtils.clone(mySig());
     },
     changed() {
-      const orgData = sig[ORIGIN_SNAPSHOT];
-      return orgData != null && !ObjectUtils.equal(orgData, sig());
+      const orgData = mySig[ORIGIN_SNAPSHOT];
+      return orgData != null && !ObjectUtils.equal(orgData, mySig());
     },
     get origin(): T | undefined {
-      return sig[ORIGIN_SNAPSHOT];
+      return mySig[ORIGIN_SNAPSHOT];
     },
     updateField<K extends keyof T>(key: K, val: T[K]) {
       if (!("update" in sig)) throw new Error("Readonly signal does not support remove.");

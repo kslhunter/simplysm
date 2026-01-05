@@ -1,8 +1,9 @@
-import { IDbConn, TDbConnConf } from "@simplysm/sd-orm-common";
+import type { IDbConn, TDbConnConf } from "@simplysm/sd-orm-common";
 import { SqliteDbConn } from "./connections/SqliteDbConn";
 import { MysqlDbConn } from "./connections/MysqlDbConn";
 import { MssqlDbConn } from "./connections/MssqlDbConn";
-import { createPool, Pool } from "generic-pool";
+import type { Pool } from "generic-pool";
+import { createPool } from "generic-pool";
 import { PooledDbConn } from "./PooledDbConn";
 
 export class DbConnFactory {

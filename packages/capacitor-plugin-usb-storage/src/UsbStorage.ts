@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import { IUsbDeviceInfo, IUsbStoragePlugin } from "./IUsbStoragePlugin";
+import type { IUsbDeviceInfo, IUsbStoragePlugin } from "./IUsbStoragePlugin";
 
 const UsbStoragePlugin = registerPlugin<IUsbStoragePlugin>("UsbStorage", {
   web: async () => {

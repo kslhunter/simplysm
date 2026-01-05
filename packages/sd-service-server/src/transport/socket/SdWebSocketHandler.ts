@@ -1,11 +1,12 @@
-import { WebSocket } from "ws";
-import { Type, Uuid } from "@simplysm/sd-core-common";
-import { SdServiceEventListenerBase, TSdServiceClientMessage } from "@simplysm/sd-service-common";
+import type { WebSocket } from "ws";
+import type { Type} from "@simplysm/sd-core-common";
+import { Uuid } from "@simplysm/sd-core-common";
+import type { SdServiceEventListenerBase, TSdServiceClientMessage } from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
-import { SdServiceExecutor } from "../../core/SdServiceExecutor";
+import type { SdServiceExecutor } from "../../core/SdServiceExecutor";
 import { SdServiceSocket } from "./SdServiceSocket";
-import { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
-import { FastifyRequest } from "fastify";
+import type { SdServiceJwtManager } from "../../auth/SdServiceJwtManager";
+import type { FastifyRequest } from "fastify";
 
 export class SdWebSocketHandler {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdWebsocketHandler"]);
@@ -193,13 +194,13 @@ export class SdWebSocketHandler {
       return await serviceSocket.sendAsync(uuid, {
         name: "error",
         body: {
-          name: err.name,
+          name: error.name,
           message: error.message,
           code: "INTERNAL_ERROR",
           stack: error.stack,
 
-          ...("detail" in err ? { detail: err.detail } : {}),
-          ...("cause" in err ? { cause: err.cause } : {}),
+          ...("detail" in error ? { detail: error.detail } : {}),
+          ...("cause" in error ? { cause: error.cause } : {}),
         },
       });
     }

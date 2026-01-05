@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import { IBroadcastPlugin, IBroadcastResult } from "../IBroadcastPlugin";
+import type { IBroadcastPlugin, IBroadcastResult } from "../IBroadcastPlugin";
 
 export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
   async subscribe(

@@ -5,7 +5,7 @@ import fs from "fs";
 import crypto from "crypto";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
 import { HashUtils } from "./HashUtils";
-import { TNormPath } from "./PathUtils";
+import type { TNormPath } from "./PathUtils";
 
 export class FsUtils {
   static getParentPaths(currentPath: string): string[] {
@@ -35,14 +35,14 @@ export class FsUtils {
 
   static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
     return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
-      path.resolve(item),
+      path.resolve(item.toString()),
     );
   }
 
   static glob(pattern: string, options?: glob.GlobOptions): string[] {
     return glob
       .globSync(pattern.replace(/\\/g, "/"), options ?? {})
-      .map((item) => path.resolve(item));
+      .map((item) => path.resolve(item.toString()));
   }
 
   static async readdirAsync(targetPath: string): Promise<string[]> {

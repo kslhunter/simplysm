@@ -1,10 +1,6 @@
-.idea/dictionaries
-.idea/workspace.xml
-.idea/queries
-.idea/data_source_mapping.xml
-
 .yarn
 .tmp
+.coverage
 
 _logs
 node_modules
