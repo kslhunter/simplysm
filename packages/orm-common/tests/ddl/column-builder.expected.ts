@@ -1,4 +1,4 @@
-import { mysql, pgsql, tsql } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
 //#region ========== 데이터 타입 기본 테스트 ==========

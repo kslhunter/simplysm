@@ -9,5 +9,6 @@ export class NotImplementError extends SdError {
    */
   constructor(message?: string) {
     super("구현되어있지 않습니다" + (message != null ? ": " + message : ""));
+    this.name = "NotImplementError";
   }
 }

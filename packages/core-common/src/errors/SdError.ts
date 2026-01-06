@@ -28,7 +28,7 @@ export class SdError extends Error {
     super(fullMessage, { cause });
 
     Object.setPrototypeOf(this, new.target.prototype);
-    this.name = new.target.name;
+    this.name = "SdError";
 
     if (typeof Error.captureStackTrace !== "undefined") {
       Error.captureStackTrace(this, new.target);

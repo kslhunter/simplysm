@@ -5,7 +5,7 @@ import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./date.expected";
-import { DateTime } from "@simplysm/sd-core-common";
+import { DateTime } from "@simplysm/core-common";
 
 describe("Expr - 날짜/시간 함수", () => {
   describe("year - 연도 추출", () => {

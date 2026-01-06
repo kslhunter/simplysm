@@ -1,7 +1,7 @@
 /**
  * SELECT - 서브쿼리/WRAP/UNION 테스트 Expected SQL
  */
-import { mysql, pgsql, tsql } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
 //#region ========== WRAP (서브쿼리) ==========

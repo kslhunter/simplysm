@@ -14,5 +14,6 @@ export class TimeoutError extends SdError {
         (millisecond != null ? `(${millisecond}ms)` : "") +
         (message != null ? `: ${message}` : ""),
     );
+    this.name = "TimeoutError";
   }
 }

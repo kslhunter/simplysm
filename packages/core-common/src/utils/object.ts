@@ -576,7 +576,7 @@ export class ObjectUtils {
   /**
    * 객체에서 undefined 값을 가진 키 삭제
    */
-  static clearUndefined<T extends Record<string, unknown>>(obj: T): T {
+  static clearUndefined<T extends Record<string, any>>(obj: T): T {
     for (const key of Object.keys(obj)) {
       if (obj[key] === undefined) {
         delete obj[key];

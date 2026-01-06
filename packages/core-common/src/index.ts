@@ -29,6 +29,7 @@ export * from "./utils/wait.js";
 export * from "./utils/debounce-queue.js";
 export * from "./utils/serial-queue.js";
 export * from "./utils/transferable.js";
+export * from "./utils/template-strings.js";
 //#endregion
 
 //#region extensions

@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,
@@ -107,7 +107,9 @@ export class MysqlExprRenderer extends ExprRendererBase {
       return `'${value.toFormatString("HH:mm:ss")}'`;
     }
     if (value instanceof Uuid) {
-      return `0x${value.toBuffer().toString("hex")}`;
+      const bytes = value.toBytes();
+      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+      return `0x${hex}`;
     }
     if (Buffer.isBuffer(value)) {
       return `0x${value.toString("hex")}`;

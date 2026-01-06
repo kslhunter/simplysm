@@ -17,5 +17,6 @@ export class ArgumentError extends SdError {
     } else {
       super(message ?? "인수가 잘못되었습니다.");
     }
+    this.name = "ArgumentError";
   }
 }

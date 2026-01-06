@@ -1,4 +1,4 @@
-import { mysql, pgsql, tsql, DateTime, DateOnly, Time, Uuid } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
 // DateTime 값 테스트용

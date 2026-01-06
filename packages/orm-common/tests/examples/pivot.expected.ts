@@ -1,4 +1,4 @@
-import { mysql, pgsql, tsql } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
 //#region ========== PIVOT - 기본 집계 함수 ==========

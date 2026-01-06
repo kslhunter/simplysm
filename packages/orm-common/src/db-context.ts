@@ -37,7 +37,7 @@ import {
   RelationKeyBuilder,
   RelationKeyTargetBuilder,
 } from "./schema/factory/relation-builder";
-import { ObjectUtils } from "@simplysm/sd-core-common";
+import { ObjectUtils } from "@simplysm/core-common";
 import type { IndexBuilder } from "./schema/factory/index-builder";
 import { SystemMigration } from "./models/SystemMigration";
 
@@ -753,9 +753,7 @@ export abstract class DbContext {
       return this.getCreateProcQueryDef(builder);
     }
 
-    throw new Error(
-      `알 수 없는 빌더 타입: ${(builder as any)?.constructor?.name ?? typeof builder}`,
-    );
+    throw new Error(`알 수 없는 빌더 타입: ${typeof builder}`);
   }
 
   /**

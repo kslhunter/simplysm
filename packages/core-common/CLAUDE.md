@@ -12,11 +12,13 @@
 ```
 Application
     ↓
-sd-angular, sd-cli, etc.
+angular, cli, etc.        (마이그레이션 예정)
     ↓
-sd-core-browser / sd-core-node
+core-browser / core-node  (core-browser 완료, core-node 예정)
     ↓
-core-common  ← 최하위 레이어 (의존성 없음)
+orm-common                (완료)
+    ↓
+core-common               ← 최하위 레이어 (의존성 없음)
 ```
 
 **핵심**: 모든 SimplySM 패키지의 공통 기반. 브라우저/Node 양쪽에서 사용 가능.

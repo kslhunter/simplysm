@@ -1,4 +1,4 @@
-import "@simplysm/sd-core-common";
+import "@simplysm/core-common";
 import { DbContext } from "../../src/db-context";
 import { Post } from "./models/Post";
 import { Company } from "./models/Company";

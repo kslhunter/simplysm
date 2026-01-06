@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,

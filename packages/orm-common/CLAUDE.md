@@ -2,23 +2,6 @@
 
 > **주의:** `sd-orm-common`(구버전)은 참고 금지.
 
-## TODO: sd-core-common → core-common 마이그레이션
-
-의존성을 `@simplysm/sd-core-common`에서 `@simplysm/core-common`으로 변경 시 검토 필요:
-
-| 기존 (sd-core-common) | 변경 (core-common) |
-|----------------------|-------------------|
-| `DateTime` | `Temporal.PlainDateTime` |
-| `DateOnly` | `Temporal.PlainDate` |
-| `Time` | `Temporal.PlainTime` |
-| `ColumnPrimitive` | `PrimitiveType` |
-| `ColumnPrimitiveStr` | `PrimitiveTypeStr` |
-| `ColumnPrimitiveMap` | `PrimitiveTypeMap` |
-| `inferColumnPrimitiveStr()` | `getPrimitiveTypeStr()` |
-
-- `types/column.ts`의 Primitive 관련 타입을 core-common에서 import로 변경
-- dataTypeStrToColumnPrimitiveStr 매핑 키 변경: `datetime` → `PlainDateTime`, `date` → `PlainDate`, `time` → `PlainTime`
-
 ## 아키텍처
 
 ```
@@ -288,7 +271,7 @@ describe("테스트명", () => {
 
 ```typescript
 // expected 파일
-import { mysql, pgsql, tsql } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql } from "@simplysm/core-common";
 
 export const xxx = {
   mysql: mysql`SELECT ... FROM \`TestDb\`.\`Employee\``,

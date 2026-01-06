@@ -1,4 +1,4 @@
-import { Uuid } from "@simplysm/sd-core-common";
+import { Uuid } from "@simplysm/core-common";
 import type {
   AddColumnQueryDef,
   AddFkQueryDef,

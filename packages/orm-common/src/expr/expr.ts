@@ -1,4 +1,4 @@
-import type { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import type { DateOnly, DateTime, Time } from "@simplysm/core-common";
 import {
   type ColumnPrimitive,
   type ColumnPrimitiveMap,

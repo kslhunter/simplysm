@@ -1,4 +1,4 @@
-import type { DateOnly, DateTime, Time, Uuid } from "@simplysm/sd-core-common";
+import type { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, ColumnPrimitive } from "../../types/column";
 import type { ExprInput } from "../../expr/expr-unit";
 import type { DataRecord } from "../../types/db";

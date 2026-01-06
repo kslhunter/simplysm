@@ -1,7 +1,7 @@
 /**
  * SELECT - WHERE 테스트 Expected SQL
  */
-import { mysql, pgsql, tsql } from "@simplysm/sd-core-common";
+import { mysql, pgsql, tsql } from "@simplysm/core-common";
 import type { ExpectedSql } from "../setup/test-utils";
 
 //#region ========== 비교 연산 ==========

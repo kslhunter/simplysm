@@ -22,7 +22,7 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
-import { ObjectUtils } from "@simplysm/sd-core-common";
+import { ObjectUtils } from "@simplysm/core-common";
 import {
   ForeignKeyBuilder,
   ForeignKeyTargetBuilder,

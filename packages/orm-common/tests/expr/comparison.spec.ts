@@ -5,7 +5,7 @@ import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./comparison.expected";
-import { DateTime, DateOnly, Time, Uuid } from "@simplysm/sd-core-common";
+import { DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 
 describe("Expr - 비교 연산자 (null-safe)", () => {
   describe("eq - 동등 비교 (null == null → true)", () => {
