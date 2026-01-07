@@ -8,6 +8,17 @@ import { PercentPipe } from "@angular/common";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [PercentPipe],
+  host: {
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-size]": "size()",
+    "[attr.data-sd-theme]": "theme()",
+  },
+  template: `
+    <div class="_content tx-right">
+      {{ value() | percent: "1.0-2" }}
+    </div>
+    <div class="_progress" [style.width]="value() * 100 + '%'"></div>
+  `,
   styles: [
     /* language=SCSS */ `
       @use "sass:map";
@@ -40,21 +51,21 @@ import { PercentPipe } from "@angular/common";
         }
 
         @each $key, $val in map.get(variables.$vars, theme) {
-          &[theme="#{$key}"] > ._progress {
+          &[data-sd-theme="#{$key}"] > ._progress {
             background: var(--theme-#{$key}-default);
           }
         }
 
-        &[size="sm"] > ._content {
+        &[data-sd-size="sm"] > ._content {
           padding: var(--gap-xs) var(--gap-default);
         }
 
-        &[size="lg"] > ._content {
+        &[data-sd-size="lg"] > ._content {
           padding: var(--gap-default) var(--gap-xl);
         }
 
-        &[inset=""],
-        &[inset="true"] {
+        &[data-sd-inset=""],
+        &[data-sd-inset="true"] {
           border-radius: 0;
           border: none;
           background: var(--control-color);
@@ -62,12 +73,6 @@ import { PercentPipe } from "@angular/common";
       }
     `,
   ],
-  template: `
-    <div class="_content tx-right">
-      {{ value() | percent: "1.0-2" }}
-    </div>
-    <div class="_progress" [style.width]="value() * 100 + '%'"></div>
-  `,
 })
 export class SdProgressControl {
   inset = input(false, { transform: transformBoolean });
