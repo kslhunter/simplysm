@@ -172,8 +172,9 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
         return Array.isArray(query) ? query : [query];
       });
       const result = await conn.executeAsync(queries);
-      return result.map((item, i) =>
-        SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined),
+      return await result.mapAsync(
+        async (item, i) =>
+          await SdOrmUtils.parseQueryResultAsync(item, options ? options[i] : undefined),
       );
     }
   }

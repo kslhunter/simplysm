@@ -81,7 +81,19 @@ export class SdOrmUtils {
             ▼
      최종 객체 트리 배열 반환 (T[])
    */
-  static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
+  static async parseQueryResultAsync<T>(
+    orgResults: any[],
+    option?: IQueryResultParseOption,
+    yieldInterval = 50,
+  ): Promise<T[]> {
+    let processedCount = 0;
+    const maybeYield = async () => {
+      processedCount++;
+      if (processedCount % yieldInterval === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    };
+
     // 타입 파싱
     const parseValue = (value: any, type?: string) => {
       if (value == null) return undefined;
@@ -104,23 +116,22 @@ export class SdOrmUtils {
     };
 
     // DATA 추출 타입 변환
-    const data: Record<string, any>[] = orgResults
-      .flat()
-      .map((item) => {
-        const obj: Record<string, any> = {};
-        for (const key of Object.keys(item)) {
-          if (item[key] == null) {
-            obj[key] = undefined;
-            continue;
-          }
-
-          obj[key] = parseValue(item[key], option?.columns?.[key]?.dataType);
+    const flatData = orgResults.flat();
+    const data: Record<string, any>[] = [];
+    for (const item of flatData) {
+      const obj: Record<string, any> = {};
+      for (const key of Object.keys(item)) {
+        if (item[key] == null) {
+          obj[key] = undefined;
+          continue;
         }
-        if (Object.values(obj).every((item1) => item1 == null)) return undefined;
-
-        return obj;
-      })
-      .filterExists();
+        obj[key] = parseValue(item[key], option?.columns?.[key]?.dataType);
+      }
+      if (!Object.values(obj).every((item1) => item1 == null)) {
+        data.push(obj);
+      }
+      await maybeYield();
+    }
 
     // 조인 구조 해석
     const allJoinInfos = option?.joins
@@ -200,56 +211,72 @@ export class SdOrmUtils {
       return result;
     };
 
-    const grouping = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
-      const result = new Map<string, Record<string, any>>();
+    const grouping = async (
+      source: Record<string, any>[],
+      joinKeys: string[],
+    ): Promise<Record<string, any>[]> => {
+      const result = new Map<
+        string,
+        { keyObj: Record<string, any>; joinMaps: Map<string, Map<string, Record<string, any>>> }
+      >();
+
       for (const sourceItem of source) {
         const groupedKeyObj = getKeyObj(sourceItem, joinKeys);
         const groupedKey = getObjKeyString(groupedKeyObj);
-        if (result.has(groupedKey)) {
-          const groupedItem = result.get(groupedKey)!;
-          for (const joinKey of joinKeys) {
-            const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
-            if (sourceItemValue) {
-              groupedItem[joinKey].push(sourceItemValue);
+
+        let groupedData = result.get(groupedKey);
+        if (!groupedData) {
+          groupedData = {
+            keyObj: groupedKeyObj,
+            joinMaps: new Map(joinKeys.map((jk) => [jk, new Map()])),
+          };
+          result.set(groupedKey, groupedData);
+        }
+
+        for (const joinKey of joinKeys) {
+          const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
+          if (sourceItemValue) {
+            const itemKey = getObjKeyString(sourceItemValue);
+            const joinMap = groupedData.joinMaps.get(joinKey)!;
+            if (!joinMap.has(itemKey)) {
+              joinMap.set(itemKey, sourceItemValue);
             }
           }
-        } else {
-          const newGroupedItem: Record<string, any> = { ...groupedKeyObj };
-          for (const joinKey of joinKeys) {
-            const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
-            newGroupedItem[joinKey] = sourceItemValue ? [sourceItemValue] : [];
-          }
-          result.set(groupedKey, newGroupedItem);
         }
+
+        await maybeYield();
       }
 
-      for (const resultItem of result.values()) {
+      const resultArr: Record<string, any>[] = [];
+      for (const groupedData of result.values()) {
+        const item: Record<string, any> = { ...groupedData.keyObj };
         for (const joinKey of joinKeys) {
-          resultItem[joinKey].distinctThis();
+          item[joinKey] = Array.from(groupedData.joinMaps.get(joinKey)!.values());
         }
+        resultArr.push(item);
       }
 
-      return Array.from(result.values());
+      return resultArr;
     };
 
-    const doing = (
+    const doing = async (
       source: Record<string, any>[],
       joinInfos: { key: string; isSingle: boolean }[],
       parentKey?: string,
-    ): Record<string, any>[] => {
+    ): Promise<Record<string, any>[]> => {
       if (source.length === 0) return [];
 
       const joinKeys = joinInfos.map((info) => info.key);
-      const grouped = grouping(joinToObj(source, joinKeys), joinKeys);
+      const grouped = await grouping(joinToObj(source, joinKeys), joinKeys);
 
       const results: Record<string, any>[] = [];
 
       for (const groupedItem of grouped) {
-        let workingSet: Record<string, any>[] = [{ ...groupedItem }]; // baseItems
+        let workingSet: Record<string, any>[] = [{ ...groupedItem }];
 
         for (const joinInfo of joinInfos) {
           const fullJoinKey = parentKey != null ? `${parentKey}.${joinInfo.key}` : joinInfo.key;
-          const rawJoinItems = groupedItem[joinInfo.key]; // always array from grouping()
+          const rawJoinItems = groupedItem[joinInfo.key];
 
           const childJoinInfos = allJoinInfos
             .filter(
@@ -265,15 +292,13 @@ export class SdOrmUtils {
           let parsedJoinValues: any[];
 
           if (childJoinInfos.length > 0) {
-            parsedJoinValues = doing(rawJoinItems, childJoinInfos, fullJoinKey);
+            parsedJoinValues = await doing(rawJoinItems, childJoinInfos, fullJoinKey);
           } else {
             parsedJoinValues = rawJoinItems;
           }
 
-          // isSingle 분기
           if (joinInfo.isSingle) {
             if (parsedJoinValues.length === 0) {
-              // 없으면 제거
               workingSet = workingSet.map((item) => {
                 const rest: Record<string, any> = {};
                 for (const key of Object.keys(item)) {
@@ -284,13 +309,11 @@ export class SdOrmUtils {
                 return rest;
               });
             } else if (parsedJoinValues.length === 1) {
-              // 한 개면 그대로 붙이기
               workingSet = workingSet.map((item) => ({
                 ...item,
                 [joinInfo.key]: parsedJoinValues[0],
               }));
             } else {
-              // 여러 개면 분할
               const newSet: Record<string, any>[] = [];
               for (const item of workingSet) {
                 for (const val of parsedJoinValues) {
@@ -303,7 +326,6 @@ export class SdOrmUtils {
               workingSet = newSet;
             }
           } else {
-            // 배열 유지
             workingSet = workingSet.map((item) => ({
               ...item,
               [joinInfo.key]: parsedJoinValues,
@@ -311,14 +333,15 @@ export class SdOrmUtils {
           }
         }
 
-        results.push(...workingSet); // 🟢 이 부분이 핵심! 여러 개 push
+        results.push(...workingSet);
+        await maybeYield();
       }
 
       return results;
     };
 
     if (rootJoinInfos.length > 0) {
-      return doing(data, rootJoinInfos) as any[];
+      return (await doing(data, rootJoinInfos)) as any[];
     }
 
     return data as any[];
