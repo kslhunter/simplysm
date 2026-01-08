@@ -11,7 +11,8 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "tests/*"
   ],
   "volta": {
     "node": "20.19.6",
@@ -29,13 +30,18 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.27",
+    "@vitest/browser": "^4.0.16",
+    "@vitest/browser-playwright": "^4.0.16",
     "@vitest/coverage-v8": "^4.0.16",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "jiti": "^2.6.1",
+    "playwright": "^1.57.0",
     "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
+    "vite": "^7.3.1",
+    "vite-plugin-node-polyfills": "^0.24.0",
     "vite-tsconfig-paths": "^6.0.3",
     "vitest": "^4.0.16"
   }

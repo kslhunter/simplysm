@@ -46,7 +46,7 @@ allowed-tools: Bash(git:*)
 ## 실행 절차
 
 ### 1. 변경사항 스테이징
-먼저 `git status`로 현재 상태를 확인합니다. unstaged 변경사항이 있다면 `git add`로 스테이징합니다.
+먼저 `git status`로 현재 상태를 확인합니다. unstaged 변경사항이 있다면 항상 `git add .`로 스테이징합니다.
 
 ### 2. 컨텍스트 수집
 다음 정보를 수집하여 커밋 메시지 작성에 활용합니다:

@@ -91,8 +91,8 @@ const id = Uuid.new();  // 새 UUID 생성
 const fromString = new Uuid("550e8400-e29b-41d4-a716-446655440000");
 
 // Buffer 변환
-const bytes = id.toBytes();
-const fromBytes = Uuid.fromBytes(bytes);
+const buffer = id.toBuffer();
+const fromBuffer = Uuid.fromBuffer(buffer);
 ```
 
 #### DateTime, DateOnly, Time

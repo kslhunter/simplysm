@@ -37,5 +37,5 @@
       "@simplysm/*": ["packages/*/src/index.ts"]
     }
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/tests/**/*.ts"]
+  "include": ["./packages/*/src/**/*.ts", "./packages/*/tests/**/*.ts", "./tests/**/*.ts"]
 }

@@ -1,4 +1,4 @@
-import { SdError } from "./SdError.js";
+import { SdError } from "./SdError";
 
 /**
  * 미구현 오류

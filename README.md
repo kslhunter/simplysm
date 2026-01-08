@@ -14,9 +14,18 @@
 
 ### 12.16.x > 13.0.x
 
-- ORM이 대격변 되어 새로운 사용법으로 사용해야함.
-  - ORM이 더이상 sqlite를 지원하지 않음
-  - ORM이 이제 postgresql을 지원할 것임(BETA)
+**대규모 마이그레이션 진행 중** (`.legacy-packages` → `packages`)
+
+- 패키지명에서 `sd-` 접두사 제거 (`sd-core-common` → `core-common`)
+- Import 경로 변경: `@simplysm/sd-*` → `@simplysm/*`
+- ORM 대격변:
+  - SQLite 지원 제거
+  - PostgreSQL 지원 추가 (BETA)
+  - 새로운 QueryBuilder API
+- 완료된 패키지: `core-common`, `core-browser`, `core-node`, `orm-common`, `orm-node`, `service-common`, `eslint-plugin`
+- 진행 예정: `service-client`, `service-server`, `angular`, `cli`
+
+상세: [MIGRATION_PLAN.md](MIGRATION_PLAN.md)
 
 ### 12.15.x > 12.16.x
 

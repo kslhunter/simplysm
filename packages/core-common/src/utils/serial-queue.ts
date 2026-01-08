@@ -2,8 +2,8 @@
  * 비동기 함수 직렬 큐
  * 큐에 추가된 함수들을 순서대로 실행
  */
-import { SdError } from "../errors/SdError.js";
-import { Wait } from "./wait.js";
+import { SdError } from "../errors/SdError";
+import { Wait } from "./wait";
 import EventEmitter from "events";
 
 export interface ISdAsyncFnSerialQueueEvents {

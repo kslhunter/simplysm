@@ -1,4 +1,4 @@
-import { SdError } from "./SdError.js";
+import { SdError } from "./SdError";
 
 /**
  * 타임아웃 오류

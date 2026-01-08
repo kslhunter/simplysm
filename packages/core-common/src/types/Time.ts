@@ -1,6 +1,6 @@
-import { ArgumentError } from "../errors/ArgumentError.js";
-import { DateTimeFormatUtils } from "../utils/date-format.js";
-import { DateTime } from "./DateTime.js";
+import { ArgumentError } from "../errors/ArgumentError";
+import { DateTimeFormatUtils } from "../utils/date-format";
+import { DateTime } from "./DateTime";
 
 /**
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)

@@ -13,9 +13,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0"
+    "@simplysm/core-common": "13.0.0-beta.0",
+    "tabbable": "^6.4.0"
   },
   "devDependencies": {
-    "happy-dom": "^20.0.11"
+    "happy-dom": "^20.1.0"
   }
 }

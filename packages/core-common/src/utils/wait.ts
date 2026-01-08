@@ -1,7 +1,7 @@
 /**
  * 대기 유틸리티
  */
-import { TimeoutError } from "../errors/TimeoutError.js";
+import { TimeoutError } from "../errors/TimeoutError";
 
 export class Wait {
   /**

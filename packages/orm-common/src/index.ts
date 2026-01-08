@@ -92,6 +92,9 @@ export type {
 } from "./types/db";
 export { dialects } from "./types/db";
 
+// Result parsing
+export { parseQueryResultAsync } from "./utils/result-parser";
+
 // Column types
 export type {
   DataType,

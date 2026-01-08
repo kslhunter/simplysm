@@ -1,5 +1,5 @@
-import { ArgumentError } from "../errors/ArgumentError.js";
-import { DateTimeFormatUtils } from "../utils/date-format.js";
+import { ArgumentError } from "../errors/ArgumentError";
+import { DateTimeFormatUtils } from "../utils/date-format";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)

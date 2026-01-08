@@ -54,33 +54,33 @@ export class Uuid {
     );
   }
 
-  static fromBytes(bytes: Uint8Array): Uuid {
-    if (bytes.length !== 16) {
-      throw new Error(`UUID 바이트 크기는 16이어야 합니다. (현재: ${bytes.length})`);
+  static fromBuffer(buffer: Buffer): Uuid {
+    if (buffer.length !== 16) {
+      throw new Error(`UUID 바이트 크기는 16이어야 합니다. (현재: ${buffer.length})`);
     }
 
     const h = Uuid._hexTable;
     const uuidStr =
-      h[bytes[0]] +
-      h[bytes[1]] +
-      h[bytes[2]] +
-      h[bytes[3]] +
+      h[buffer[0]] +
+      h[buffer[1]] +
+      h[buffer[2]] +
+      h[buffer[3]] +
       "-" +
-      h[bytes[4]] +
-      h[bytes[5]] +
+      h[buffer[4]] +
+      h[buffer[5]] +
       "-" +
-      h[bytes[6]] +
-      h[bytes[7]] +
+      h[buffer[6]] +
+      h[buffer[7]] +
       "-" +
-      h[bytes[8]] +
-      h[bytes[9]] +
+      h[buffer[8]] +
+      h[buffer[9]] +
       "-" +
-      h[bytes[10]] +
-      h[bytes[11]] +
-      h[bytes[12]] +
-      h[bytes[13]] +
-      h[bytes[14]] +
-      h[bytes[15]];
+      h[buffer[10]] +
+      h[buffer[11]] +
+      h[buffer[12]] +
+      h[buffer[13]] +
+      h[buffer[14]] +
+      h[buffer[15]];
 
     return new Uuid(uuidStr);
   }
@@ -95,12 +95,12 @@ export class Uuid {
     return this._uuid;
   }
 
-  toBytes(): Uint8Array {
+  toBuffer(): Buffer {
     const hex = this._uuid.replace(/-/g, "");
-    const bytes = new Uint8Array(16);
+    const buffer = Buffer.alloc(16);
     for (let i = 0; i < 16; i++) {
-      bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+      buffer[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
     }
-    return bytes;
+    return buffer;
   }
 }

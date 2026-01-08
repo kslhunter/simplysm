@@ -11,6 +11,8 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/orm-node/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/core-common/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/core-browser/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/core-node/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />

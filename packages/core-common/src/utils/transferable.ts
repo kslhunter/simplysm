@@ -3,10 +3,10 @@
  * Worker 간 데이터 전송을 위한 직렬화/역직렬화
  */
 import type { Transferable } from "worker_threads";
-import { DateTime } from "../types/DateTime.js";
-import { DateOnly } from "../types/DateOnly.js";
-import { Time } from "../types/Time.js";
-import { Uuid } from "../types/Uuid.js";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/uuid";
 
 export abstract class TransferableConvert {
   //#region encode

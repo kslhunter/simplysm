@@ -1,7 +1,7 @@
-import { DateTime } from "./types/DateTime.js";
-import { DateOnly } from "./types/DateOnly.js";
-import { Time } from "./types/Time.js";
-import { Uuid } from "./types/Uuid.js";
+import { DateTime } from "./types/DateTime";
+import { DateOnly } from "./types/DateOnly";
+import { Time } from "./types/Time";
+import { Uuid } from "./types/uuid";
 
 //#region Primitive 타입
 

@@ -1,7 +1,7 @@
 /**
  * CSV 변환 유틸리티
  */
-import { StringUtils } from "./string.js";
+import { StringUtils } from "./string";
 
 export class CsvConvert {
   /**

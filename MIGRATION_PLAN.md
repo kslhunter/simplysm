@@ -25,20 +25,20 @@
 
 ## 현재 상태
 
-### 완료된 패키지
+### 완료된 패키지 (7개)
 | 신규 패키지 | 레거시 | 상태 |
 |------------|--------|------|
 | `core-common` | `sd-core-common` | ✅ 완료 |
 | `core-browser` | `sd-core-browser` | ✅ 완료 |
+| `core-node` | `sd-core-node` | ✅ 완료 |
 | `orm-common` | `sd-orm-common` | ✅ 완료 |
+| `orm-node` | `sd-orm-node` | ✅ 완료 |
+| `service-common` | `sd-service-common` | ✅ 완료 |
 | `eslint-plugin` | - | ✅ 신규 |
 
-### 마이그레이션 대상 (15개)
+### 마이그레이션 대상 (12개)
 | 레거시 패키지 | 목표 | 우선순위 |
 |--------------|------|----------|
-| `sd-core-node` | `core-node` | P1 |
-| `sd-orm-node` | `orm-node` | P2 |
-| `sd-service-common` | `service-common` | P2 |
 | `sd-service-client` | `service-client` | P2 |
 | `sd-service-server` | `service-server` | P2 |
 | `sd-angular` | `angular` | P3 |
@@ -54,7 +54,8 @@
 
 ### 1. 표준 기술 우선
 - 브라우저: 표준 Web API 사용 (polyfill 최소화)
-- Node.js: 내장 모듈 우선 (`fs/promises`, `node:path` 등)
+- Node.js: 내장 모듈 사용 (`fs/promises`, `node:path` 등)
+- 널리 사용되는 안정적 외부 패키지 사용
 - 불필요한 추상화 제거
 
 ### 2. 구조 개선
@@ -66,6 +67,7 @@
 - TypeScript strict 모드 완전 적용
 - ESLint 규칙 준수 (eslint-plugin)
 - 테스트 커버리지 확보
+- 각 패키지 `CLAUDE.md`, `README.md` 포함
 
 ### 4. CLAUDE.md 규칙 준수
 - **레이어 의존성**: 단방향 의존, 건너뛰기 금지, 순환 참조 금지
@@ -73,40 +75,47 @@
 - **Import**: 패키지 간 `@simplysm/*` 별칭 사용
 - **코딩 스타일**: `private` 키워드, `null` 대신 `undefined`, `===` 사용 등
 
+### 5. 권장사항
+- 클래스/함수/변수등의 명칭은 적절한 명칭으로 변경 권장
+
 ---
 
 ## Phase 1: Core 레이어 (Foundation)
 
-### 1.1 `core-browser` (신규 생성)
+### 1.1 `core-browser` ✅ 완료
 **소스**: `.legacy-packages/sd-core-browser`
 
-| 레거시 파일 | 마이그레이션 방향 |
+| 레거시 파일 | 마이그레이션 결과 |
 |------------|------------------|
-| `Blob.ext.ts` | 표준 Blob API로 대체, 필요시 유틸 함수로 |
-| `Element.ext.ts` | DOM 유틸리티 함수로 변환 |
-| `HtmlElement.ext.ts` | DOM 유틸리티 함수로 변환 |
-| `HtmlElementUtils.ts` | 정리 후 유지 |
+| `Blob.ext.ts` | `BlobUtils.download()` |
+| `Element.ext.ts` | `ElementUtils` 네임스페이스 |
+| `HtmlElement.ext.ts` | `HtmlElementUtils` 네임스페이스 |
+| `HtmlElementUtils.ts` | `HtmlElementUtils` 네임스페이스에 통합 |
 
 **주요 변경**:
-- 프로토타입 확장 → 순수 함수 유틸리티 패턴으로 전환
-- 불필요한 polyfill 제거
+- 프로토타입 확장 → 네임스페이스 패턴으로 전환 (`BlobUtils`, `ElementUtils`, `HtmlElementUtils`)
+- 불필요한 polyfill 제거 (IE11 등)
+- `tabbable` 패키지 도입 (포커스 가능 요소 탐지)
+- 포커스 관련 함수는 사용자가 `tabbable` 직접 사용 (`ElementUtils.findFocusableParent`만 제공)
 
-### 1.2 `core-node` (신규 생성)
+### 1.2 `core-node` ✅ 완료
 **소스**: `.legacy-packages/sd-core-node`
 
 | 레거시 파일 | 마이그레이션 방향 |
 |------------|------------------|
 | `FsUtils.ts` | `node:fs/promises` 기반으로 재작성 |
 | `PathUtils.ts` | `node:path` 직접 사용, 필요시 유틸만 |
-| `HashUtils.ts` | `node:crypto` 기반으로 단순화 |
+| `HashUtils.ts` | ❌ 제거 (7줄 래퍼, 직접 crypto 사용) |
 | `SdFsWatcher.ts` | `chokidar` 래퍼 개선 |
-| `SdLogger.ts` | 단순화 또는 외부 라이브러리 검토 |
-| `SdProcess.ts` | `node:child_process` 기반 정리 |
+| `SdLogger.ts` | ❌ 제거 → `pino` + `ora` 사용 (브라우저/Node 통합 지원) |
+| `SdProcess.ts` | ❌ 제거 → `execa` 패키지로 대체 |
 | `worker/` | Worker 유틸리티 개선 |
 
 **주요 변경**:
-- glob → `node:fs` + `node:path` 조합으로 대체 검토
-- 불필요한 의존성 제거
+- `execa` 패키지 도입 (SdProcess 대체)
+- `HashUtils` 제거 (직접 crypto 사용)
+- `SdLogger` 제거 → `pino` + `ora` 사용 (콘솔 스피너 + 파일 로깅)
+- `glob` 유지 (패턴 파싱 복잡, 안정적 라이브러리)
 
 ---
 
@@ -116,34 +125,41 @@
 >
 > 이 순서대로 진행해야 함 (CLAUDE.md 레이어 규칙 준수)
 
-### 2.1 `orm-node` (신규 생성)
+### 2.1 `orm-node` ✅ 완료
 **소스**: `.legacy-packages/sd-orm-node`
 
-| 구성요소 | 마이그레이션 방향 |
-|---------|------------------|
-| `MssqlDbConn` | tedious 기반 유지, 최신화 |
-| `MysqlDbConn` | mysql2 기반 유지 |
-| `PostgresDbConn` | pg 기반 신규 또는 개선 |
-| `PooledDbConn` | generic-pool 유지 또는 자체 구현 검토 |
-| `DbConnFactory` | 팩토리 패턴 개선 |
+| 레거시 파일 | 마이그레이션 결과 |
+|------------|------------------|
+| `MssqlDbConn` | `connections/mssql-db-conn.ts` |
+| `MysqlDbConn` | `connections/mysql-db-conn.ts` |
+| `PostgresDbConn` | `connections/postgresql-db-conn.ts` |
+| `PooledDbConn` | `pooled-db-conn.ts` |
+| `DbConnectionFactory` | `db-conn-factory.ts` |
+| `SdOrmDbContext*` | `node-db-context-executor.ts` |
+| - | `sd-orm.ts` (최상위 진입점) |
 
 **주요 변경**:
-- 연결 풀 관리 로직 개선
-- 에러 핸들링 표준화
-- PostgreSQL 9.0+ 지원 확인
+- generic-pool 기반 커넥션 풀링 유지
+- pino 로깅 도입 (SdLogger 대체)
+- PostgreSQL 네이티브 Bulk Insert (pg-copy-streams)
+- SQLite 지원 제거 (orm-common에 QueryBuilder 없음)
+- 타입: `any` → `unknown` 또는 구체적 타입
 
-### 2.2 `service-common` (신규 생성)
+### 2.2 `service-common` ✅ 완료
 **소스**: `.legacy-packages/sd-service-common`
 
-| 구성요소 | 마이그레이션 방향 |
-|---------|------------------|
-| `SdServiceProtocol` | 프로토콜 정의 정리 |
-| `protocol.types` | 타입 정의 표준화 |
-| `*-service.types` | 서비스 타입 정의 유지 |
+| 레거시 파일 | 마이그레이션 결과 |
+|------------|------------------|
+| `SdServiceProtocol.ts` | `protocol/service-protocol.ts` |
+| `protocol.types.ts` | `protocol/protocol.types.ts` |
+| `*-service.types.ts` | `service-types/*.types.ts` |
+| `SdServiceEventListenerBase` | `types.ts` (ServiceEventListener) |
 
 **주요 변경**:
-- V1 레거시 프로토콜 제거
-- 타입 정의 명확화
+- `Sd` 접두사 제거
+- `SdServiceEventListenerBase` → `abstract class ServiceEventListener`
+- `eventName`을 abstract로 변경 (mangle-safe, 상속 시 필수 구현)
+- `$info`, `$data` declare 프로퍼티로 타입 추출
 
 ### 2.3 `service-client` (신규 생성)
 **소스**: `.legacy-packages/sd-service-client`
@@ -310,3 +326,8 @@ cli/
 | 2026-01-06 | 초안 작성 |
 | 2026-01-06 | `core-browser` 마이그레이션 완료 |
 | 2026-01-06 | `orm-common` sd-core-common → core-common 의존성 마이그레이션 완료 (1,108개 테스트 통과) |
+| 2026-01-07 | `core-browser` 개선: 네임스페이스 구조 적용, `tabbable` 패키지 도입 |
+| 2026-01-07 | `core-node` 마이그레이션 완료 |
+| 2026-01-07 | `orm-node` 마이그레이션 완료: generic-pool 커넥션 풀링, pino 로깅, PostgreSQL 지원 |
+| 2026-01-07 | `service-common` 마이그레이션 완료: 프로토콜 정의, ServiceEventListener 추상 클래스 |
+| 2026-01-07 | 마이그레이션 계획 업데이트: 완료 패키지 7개, 남은 패키지 12개 |

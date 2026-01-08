@@ -2,12 +2,12 @@
  * Array 확장 메서드
  */
 
-import "./map.ext.js";
-import { ObjectUtils } from "../utils/object.js";
-import type { Type } from "../types.js";
-import { DateTime } from "../types/DateTime.js";
-import { DateOnly } from "../types/DateOnly.js";
-import { Time } from "../types/Time.js";
+import "./map.ext";
+import { ObjectUtils } from "../utils/object";
+import type { Type } from "../types";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
 
 //#region 인터페이스
 

@@ -2,12 +2,12 @@
  * JSON 변환 유틸리티
  * 커스텀 타입(DateTime, DateOnly, Time, Uuid 등)을 지원하는 JSON 직렬화/역직렬화
  */
-import { DateTime } from "../types/DateTime.js";
-import { DateOnly } from "../types/DateOnly.js";
-import { Time } from "../types/Time.js";
-import { Uuid } from "../types/Uuid.js";
-import { ObjectUtils } from "./object.js";
-import { SdError } from "../errors/SdError.js";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/uuid";
+import { ObjectUtils } from "./object";
+import { SdError } from "../errors/SdError";
 
 interface ITypedObject {
   __type__: string;

@@ -1,13 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  repaint,
-  getRelativeOffset,
-  scrollIntoViewIfNeeded,
-  getBoundsAsync,
-} from "../../src/utils/html-element";
+import { HtmlElementUtils } from "../../src/utils/html-element";
 
-describe("html-element", () => {
+describe("HtmlElementUtils", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
@@ -24,7 +19,7 @@ describe("html-element", () => {
       const el = document.createElement("div");
       const offsetHeightSpy = vi.spyOn(el, "offsetHeight", "get").mockReturnValue(100);
 
-      repaint(el);
+      HtmlElementUtils.repaint(el);
 
       expect(offsetHeightSpy).toHaveBeenCalled();
     });
@@ -37,9 +32,7 @@ describe("html-element", () => {
 
       const child = container.querySelector("#child") as HTMLElement;
 
-      // happy-dom에서 getBoundingClientRect는 제한적이므로
-      // 기본적인 호출 테스트만 수행
-      expect(() => getRelativeOffset(child, container)).not.toThrow();
+      expect(() => HtmlElementUtils.getRelativeOffset(child, container)).not.toThrow();
     });
 
     it("셀렉터로 부모 찾기", () => {
@@ -48,14 +41,14 @@ describe("html-element", () => {
 
       const deepChild = container.querySelector("#deep-child") as HTMLElement;
 
-      expect(() => getRelativeOffset(deepChild, "#parent")).not.toThrow();
+      expect(() => HtmlElementUtils.getRelativeOffset(deepChild, "#parent")).not.toThrow();
     });
 
     it("부모를 찾지 못하면 에러", () => {
       const child = document.createElement("div");
       container.appendChild(child);
 
-      expect(() => getRelativeOffset(child, ".not-exist")).toThrow("Parent element not found");
+      expect(() => HtmlElementUtils.getRelativeOffset(child, ".not-exist")).toThrow("Parent element not found");
     });
   });
 
@@ -65,16 +58,16 @@ describe("html-element", () => {
       container.style.height = "100px";
       container.scrollTop = 100;
 
-      scrollIntoViewIfNeeded(container, { top: 50, left: 0 }, { top: 10, left: 0 });
+      HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 50, left: 0 }, { top: 10, left: 0 });
 
-      expect(container.scrollTop).toBe(40); // 50 - 10
+      expect(container.scrollTop).toBe(40);
     });
 
     it("대상이 충분히 보이면 스크롤 안함", () => {
       container.style.overflow = "auto";
       container.scrollTop = 0;
 
-      scrollIntoViewIfNeeded(container, { top: 50, left: 0 }, { top: 10, left: 0 });
+      HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 50, left: 0 }, { top: 10, left: 0 });
 
       expect(container.scrollTop).toBe(0);
     });
@@ -82,7 +75,7 @@ describe("html-element", () => {
     it("기본 offset은 0", () => {
       container.scrollTop = 100;
 
-      scrollIntoViewIfNeeded(container, { top: 50, left: 0 });
+      HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 50, left: 0 });
 
       expect(container.scrollTop).toBe(50);
     });
@@ -120,7 +113,7 @@ describe("html-element", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      const result = await getBoundsAsync([container]);
+      const result = await HtmlElementUtils.getBoundsAsync([container]);
 
       expect(result.length).toBe(1);
       expect(result[0].target).toBe(container);
@@ -168,7 +161,7 @@ describe("html-element", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      const result = await getBoundsAsync([el1, el2]);
+      const result = await HtmlElementUtils.getBoundsAsync([el1, el2]);
 
       expect(result.length).toBe(2);
       expect(mockObserver.observe).toHaveBeenCalledTimes(2);

@@ -1,21 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  prependChild,
-  findAll,
-  findFirst,
-  getParents,
-  isFocusable,
-  findFocusableAll,
-  findFocusableFirst,
-  findFocusableParent,
-  isOffsetElement,
-  isVisible,
-  copyElement,
-  pasteToElement,
-} from "../../src/utils/element";
+import { ElementUtils } from "../../src/utils/element";
 
-describe("element", () => {
+describe("ElementUtils", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
@@ -36,7 +23,7 @@ describe("element", () => {
       const newChild = document.createElement("div");
       newChild.textContent = "new";
 
-      const result = prependChild(container, newChild);
+      const result = ElementUtils.prependChild(container, newChild);
 
       expect(result).toBe(newChild);
       expect(container.children[0]).toBe(newChild);
@@ -45,7 +32,7 @@ describe("element", () => {
 
     it("빈 컨테이너에 삽입", () => {
       const newChild = document.createElement("div");
-      prependChild(container, newChild);
+      ElementUtils.prependChild(container, newChild);
 
       expect(container.children[0]).toBe(newChild);
       expect(container.children.length).toBe(1);
@@ -60,7 +47,7 @@ describe("element", () => {
         <span class="item">3</span>
       `;
 
-      const result = findAll(container, ".item");
+      const result = ElementUtils.findAll(container, ".item");
 
       expect(result.length).toBe(3);
     });
@@ -72,13 +59,13 @@ describe("element", () => {
         <p class="c">c</p>
       `;
 
-      const result = findAll(container, ".a, .b");
+      const result = ElementUtils.findAll(container, ".a, .b");
 
       expect(result.length).toBe(2);
     });
 
     it("매칭 요소 없으면 빈 배열 반환", () => {
-      const result = findAll(container, ".not-exist");
+      const result = ElementUtils.findAll(container, ".not-exist");
       expect(result).toEqual([]);
     });
   });
@@ -90,13 +77,13 @@ describe("element", () => {
         <div class="item" id="second">2</div>
       `;
 
-      const result = findFirst(container, ".item");
+      const result = ElementUtils.findFirst(container, ".item");
 
       expect(result?.id).toBe("first");
     });
 
     it("매칭 요소 없으면 undefined 반환", () => {
-      const result = findFirst(container, ".not-exist");
+      const result = ElementUtils.findFirst(container, ".not-exist");
       expect(result).toBeUndefined();
     });
   });
@@ -106,7 +93,7 @@ describe("element", () => {
       container.innerHTML = `<div id="level1"><div id="level2"><span id="target"></span></div></div>`;
       const target = container.querySelector("#target")!;
 
-      const parents = getParents(target);
+      const parents = ElementUtils.getParents(target);
 
       expect(parents.length).toBeGreaterThanOrEqual(3);
       expect(parents[0].id).toBe("level2");
@@ -114,80 +101,8 @@ describe("element", () => {
     });
 
     it("body까지 포함", () => {
-      const parents = getParents(container);
+      const parents = ElementUtils.getParents(container);
       expect(parents).toContain(document.body);
-    });
-  });
-
-  describe("isFocusable", () => {
-    it("button은 포커스 가능", () => {
-      const btn = document.createElement("button");
-      expect(isFocusable(btn)).toBe(true);
-    });
-
-    it("disabled button은 포커스 불가", () => {
-      const btn = document.createElement("button");
-      btn.disabled = true;
-      expect(isFocusable(btn)).toBe(false);
-    });
-
-    it("일반 div는 포커스 불가", () => {
-      const div = document.createElement("div");
-      expect(isFocusable(div)).toBe(false);
-    });
-
-    it("tabindex가 있는 div는 포커스 가능", () => {
-      const div = document.createElement("div");
-      div.tabIndex = 0;
-      expect(isFocusable(div)).toBe(true);
-    });
-
-    it("input은 포커스 가능", () => {
-      const input = document.createElement("input");
-      expect(isFocusable(input)).toBe(true);
-    });
-
-    it("href가 있는 a 태그는 포커스 가능", () => {
-      const a = document.createElement("a");
-      a.href = "https://example.com";
-      expect(isFocusable(a)).toBe(true);
-    });
-  });
-
-  describe("findFocusableAll", () => {
-    it("모든 포커스 가능 요소 반환", () => {
-      container.innerHTML = `
-        <button>btn1</button>
-        <input type="text" />
-        <div>not focusable</div>
-        <a href="#">link</a>
-      `;
-
-      const result = findFocusableAll(container);
-
-      expect(result.length).toBe(3);
-    });
-  });
-
-  describe("findFocusableFirst", () => {
-    it("첫 번째 포커스 가능 요소 반환", () => {
-      container.innerHTML = `
-        <div>not focusable</div>
-        <button id="first-btn">btn</button>
-        <input type="text" />
-      `;
-
-      const result = findFocusableFirst(container);
-
-      expect(result?.id).toBe("first-btn");
-    });
-
-    it("포커스 가능 요소 없으면 undefined", () => {
-      container.innerHTML = `<div>not focusable</div>`;
-
-      const result = findFocusableFirst(container);
-
-      expect(result).toBeUndefined();
     });
   });
 
@@ -196,7 +111,7 @@ describe("element", () => {
       container.innerHTML = `<button id="parent-btn"><span id="child">text</span></button>`;
       const child = container.querySelector("#child")!;
 
-      const result = findFocusableParent(child);
+      const result = ElementUtils.findFocusableParent(child);
 
       expect(result?.id).toBe("parent-btn");
     });
@@ -205,7 +120,7 @@ describe("element", () => {
       container.innerHTML = `<div><span id="child">text</span></div>`;
       const child = container.querySelector("#child")!;
 
-      const result = findFocusableParent(child);
+      const result = ElementUtils.findFocusableParent(child);
 
       expect(result).toBeUndefined();
     });
@@ -214,27 +129,27 @@ describe("element", () => {
   describe("isOffsetElement", () => {
     it("position: relative는 offset 요소", () => {
       container.style.position = "relative";
-      expect(isOffsetElement(container)).toBe(true);
+      expect(ElementUtils.isOffsetElement(container)).toBe(true);
     });
 
     it("position: absolute는 offset 요소", () => {
       container.style.position = "absolute";
-      expect(isOffsetElement(container)).toBe(true);
+      expect(ElementUtils.isOffsetElement(container)).toBe(true);
     });
 
     it("position: fixed는 offset 요소", () => {
       container.style.position = "fixed";
-      expect(isOffsetElement(container)).toBe(true);
+      expect(ElementUtils.isOffsetElement(container)).toBe(true);
     });
 
     it("position: sticky는 offset 요소", () => {
       container.style.position = "sticky";
-      expect(isOffsetElement(container)).toBe(true);
+      expect(ElementUtils.isOffsetElement(container)).toBe(true);
     });
 
     it("position: static은 offset 요소 아님", () => {
       container.style.position = "static";
-      expect(isOffsetElement(container)).toBe(false);
+      expect(ElementUtils.isOffsetElement(container)).toBe(false);
     });
   });
 
@@ -242,17 +157,16 @@ describe("element", () => {
     it("기본 요소는 visible", () => {
       container.style.width = "100px";
       container.style.height = "100px";
-      // happy-dom에서는 getClientRects가 제한적이므로 스킵 가능
     });
 
     it("visibility: hidden은 not visible", () => {
       container.style.visibility = "hidden";
-      expect(isVisible(container)).toBe(false);
+      expect(ElementUtils.isVisible(container)).toBe(false);
     });
 
     it("opacity: 0은 not visible", () => {
       container.style.opacity = "0";
-      expect(isVisible(container)).toBe(false);
+      expect(ElementUtils.isVisible(container)).toBe(false);
     });
   });
 
@@ -276,7 +190,7 @@ describe("element", () => {
       container.innerHTML = `<input type="text" value="test value" />`;
       const event = createMockClipboardEvent(container);
 
-      copyElement(event);
+      ElementUtils.copyElement(event);
 
       expect(event.clipboardData?.setData).toHaveBeenCalledWith("text/plain", "test value");
       expect(event.preventDefault).toHaveBeenCalled();
@@ -286,7 +200,7 @@ describe("element", () => {
       container.innerHTML = `<textarea>textarea content</textarea>`;
       const event = createMockClipboardEvent(container);
 
-      copyElement(event);
+      ElementUtils.copyElement(event);
 
       expect(event.clipboardData?.setData).toHaveBeenCalledWith("text/plain", "textarea content");
       expect(event.preventDefault).toHaveBeenCalled();
@@ -296,7 +210,7 @@ describe("element", () => {
       container.innerHTML = `<span>content</span>`;
       const event = createMockClipboardEvent(container);
 
-      copyElement(event);
+      ElementUtils.copyElement(event);
 
       expect(event.clipboardData?.setData).not.toHaveBeenCalled();
       expect(event.preventDefault).not.toHaveBeenCalled();
@@ -305,7 +219,7 @@ describe("element", () => {
     it("clipboardData가 null이면 아무것도 안함", () => {
       const event = { target: container, clipboardData: null, preventDefault: vi.fn() } as unknown as ClipboardEvent;
 
-      copyElement(event);
+      ElementUtils.copyElement(event);
 
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
@@ -332,7 +246,7 @@ describe("element", () => {
       const input = container.querySelector("input")!;
       const event = createMockClipboardEvent(container, "pasted text");
 
-      pasteToElement(event);
+      ElementUtils.pasteToElement(event);
 
       expect(input.value).toBe("pasted text");
       expect(event.preventDefault).toHaveBeenCalled();
@@ -343,7 +257,7 @@ describe("element", () => {
       const textarea = container.querySelector("textarea")!;
       const event = createMockClipboardEvent(container, "pasted text");
 
-      pasteToElement(event);
+      ElementUtils.pasteToElement(event);
 
       expect(textarea.value).toBe("pasted text");
       expect(event.preventDefault).toHaveBeenCalled();
@@ -353,7 +267,7 @@ describe("element", () => {
       container.innerHTML = `<div>no input</div>`;
       const event = createMockClipboardEvent(container, "pasted text");
 
-      pasteToElement(event);
+      ElementUtils.pasteToElement(event);
 
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
@@ -362,7 +276,7 @@ describe("element", () => {
       container.innerHTML = `<input type="text" />`;
       const event = { target: container, clipboardData: null, preventDefault: vi.fn() } as unknown as ClipboardEvent;
 
-      pasteToElement(event);
+      ElementUtils.pasteToElement(event);
 
       expect(event.preventDefault).not.toHaveBeenCalled();
     });

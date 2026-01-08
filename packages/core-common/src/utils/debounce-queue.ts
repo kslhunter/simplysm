@@ -2,7 +2,7 @@
  * 비동기 함수 디바운스 큐
  * 마지막 요청만 실행하고 이전 요청은 무시
  */
-import { SdError } from "../errors/SdError.js";
+import { SdError } from "../errors/SdError";
 import EventEmitter from "events";
 
 export interface ISdAsyncFnDebounceQueueEvents {

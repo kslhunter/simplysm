@@ -1,5 +1,5 @@
 import YAML from "yaml";
-import { SdError } from "./SdError.js";
+import { SdError } from "./SdError";
 
 /**
  * 인수 오류

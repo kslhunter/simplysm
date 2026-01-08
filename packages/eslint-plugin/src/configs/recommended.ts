@@ -71,9 +71,9 @@ export default [
           devDependencies: [
             "**/*.spec.js",
             "**/lib/**",
-            "**/eslint.config.ts",
+            "**/eslint.config.js",
             "**/simplysm.js",
-            "**/vitest.config.ts",
+            "**/vitest.config.js",
           ],
         },
       ],
@@ -256,7 +256,9 @@ export default [
         {
           devDependencies: [
             "**/*.spec.ts",
+            "**/lib/**",
             "**/eslint.config.ts",
+            "**/simplysm.ts",
             "**/vitest.config.ts",
           ],
         },
