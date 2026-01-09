@@ -172,7 +172,7 @@ function compareForOrder(pp: unknown, pn: unknown, desc: boolean): number {
   if (typeof cpn === "boolean" && typeof cpp === "boolean") {
     return cpn === cpp ? 0 : cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
   }
-
+  
   throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
 }
 
@@ -454,8 +454,8 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.concat().sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector ? selector(p) : p;
+      const pn = selector ? selector(n) : n;
       return compareForOrder(pp, pn, false);
     });
   },
@@ -464,8 +464,8 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.concat().sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector ? selector(p) : p;
+      const pn = selector ? selector(n) : n;
       return compareForOrder(pp, pn, true);
     });
   },
@@ -679,8 +679,8 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector ? selector(p) : p;
+      const pn = selector ? selector(n) : n;
       return compareForOrder(pp, pn, false);
     });
   },
@@ -689,8 +689,8 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
     return this.sort((p, n) => {
-      const pp = selector?.(p) ?? p;
-      const pn = selector?.(n) ?? n;
+      const pp = selector ? selector(p) : p;
+      const pn = selector ? selector(n) : n;
       return compareForOrder(pp, pn, true);
     });
   },
