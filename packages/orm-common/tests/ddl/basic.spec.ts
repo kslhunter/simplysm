@@ -330,6 +330,31 @@ describe("DDL - Column", () => {
     });
   });
 
+  describe("getModifyColumnQueryDef - TYPE + DEFAULT 동시 변경", () => {
+    const db = new TestDbContext();
+    const column = Column.int().default(100);
+    const def = db.getModifyColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "modifyColumn",
+        table: { database: "TestDb", schema: "TestSchema", name: "User" },
+        column: {
+          name: "score",
+          dataType: { type: "int" },
+          autoIncrement: undefined,
+          nullable: undefined,
+          default: 100,
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.modifyColumnTypeAndDefault[dialect]);
+    });
+  });
+
   describe("getRenameColumnQueryDef", () => {
     const db = new TestDbContext();
     const def = db.getRenameColumnQueryDef(

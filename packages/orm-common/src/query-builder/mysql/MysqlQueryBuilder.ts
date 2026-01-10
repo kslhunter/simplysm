@@ -86,8 +86,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     }
 
     // 일반 JOIN
-    const joinType = join.isSingle ? "LEFT OUTER" : "LEFT OUTER";
-    return ` ${joinType} JOIN ${from} AS ${alias}${where}`;
+    return ` LEFT OUTER JOIN ${from} AS ${alias}${where}`;
   }
 
   //#endregion
@@ -181,7 +180,8 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // OUTPUT 필요: multi-statement로 INSERT + SELECT 실행
     // 결과셋: [INSERT결과, SELECT결과, INSERT결과, SELECT결과, ...]
     // → resultSetIndex=1, resultSetStride=2 로 SELECT 결과만 추출
-    const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
+    const output = def.output;
+    const outputCols = output.columns.map((c) => this.expr.wrap(c)).join(", ");
     const statements: string[] = [];
 
     for (const record of def.records) {
@@ -189,9 +189,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       statements.push(`INSERT INTO ${table} (${colList}) VALUES (${values})`);
 
       // PK로 SELECT (aiColName이면 LAST_INSERT_ID() 사용)
-      const whereForSelect = def.output.pkColNames.map((pk) => {
+      const whereForSelect = output.pkColNames.map((pk) => {
         const wrappedPk = this.expr.wrap(pk);
-        if (pk === def.output!.aiColName) {
+        if (pk === output.aiColName) {
           return `${wrappedPk} = LAST_INSERT_ID()`;
         }
         return `${wrappedPk} = ${this.expr.escapeValue(record[pk])}`;
@@ -226,12 +226,13 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     }
 
     // OUTPUT 필요: multi-statement (INSERT + SET @affected + SELECT)
-    const outputCols = def.output.columns.map((c) => this.expr.wrap(c)).join(", ");
+    const output = def.output;
+    const outputCols = output.columns.map((c) => this.expr.wrap(c)).join(", ");
 
     // OUTPUT을 위한 SELECT WHERE 조건
-    const whereForSelect = def.output.pkColNames.map((pk) => {
+    const whereForSelect = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
-      if (pk === def.output!.aiColName) {
+      if (pk === output.aiColName) {
         return `${wrappedPk} = LAST_INSERT_ID()`;
       }
       return `${wrappedPk} = ${this.expr.escapeValue(def.record[pk])}`;
@@ -461,16 +462,17 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // SELECT: UPDATE 결과 또는 INSERT 결과 조회 (UNION ALL로 합침)
     // UPDATE 케이스: temp 테이블의 PK로 조회
-    const updatePkConditions = def.output.pkColNames.map((pk) => {
+    const output = def.output;
+    const updatePkConditions = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
       return `${table}.${wrappedPk} IN (SELECT ${wrappedPk} FROM ${tempTableName})`;
     });
     const selectUpdateSql = `SELECT ${outputCols} FROM ${table} WHERE ${updatePkConditions.join(" AND ")}`;
 
     // INSERT 케이스: insertRecord의 PK로 조회 (AI면 LAST_INSERT_ID(), 임시 테이블이 비어있을 때만)
-    const insertPkConditions = def.output.pkColNames.map((pk) => {
+    const insertPkConditions = output.pkColNames.map((pk) => {
       const wrappedPk = this.expr.wrap(pk);
-      if (pk === def.output!.aiColName) {
+      if (pk === output.aiColName) {
         return `${wrappedPk} = LAST_INSERT_ID()`;
       }
       const pkExpr = def.insertRecord[pk];

@@ -6,6 +6,26 @@ declare global {
   interface Map<K, V> {
     /**
      * 키에 해당하는 값이 없으면 새 값을 설정하고 반환
+     *
+     * @remarks
+     * **주의**: V 타입이 함수인 경우(예: `Map<string, () => void>`),
+     * 두 번째 인자로 함수를 직접 전달하면 팩토리로 인식되어 호출됩니다.
+     * 함수 자체를 값으로 저장하려면 팩토리로 감싸세요.
+     *
+     * @example
+     * ```typescript
+     * // 일반 값
+     * map.getOrCreate("key", 0);
+     * map.getOrCreate("key", []);
+     *
+     * // 팩토리 함수 (계산 비용이 큰 경우)
+     * map.getOrCreate("key", () => expensiveComputation());
+     *
+     * // 함수를 값으로 저장하는 경우
+     * const fnMap = new Map<string, () => void>();
+     * const myFn = () => console.log("hello");
+     * fnMap.getOrCreate("key", () => myFn);  // 팩토리로 감싸기
+     * ```
      */
     getOrCreate(key: K, newValue: V): V;
     getOrCreate(key: K, newValueFn: () => V): V;
@@ -23,8 +43,8 @@ Map.prototype.getOrCreate = function <K, V>(
   newValue: V | (() => V),
 ): V {
   if (!this.has(key)) {
-    if (newValue instanceof Function) {
-      this.set(key, newValue());
+    if (typeof newValue === "function") {
+      this.set(key, (newValue as () => V)());
     } else {
       this.set(key, newValue);
     }

@@ -1,5 +1,5 @@
-import { JsonConvert, LazyGcMap, Uuid } from "@simplysm/core-common";
-import type { TServiceMessage } from "./protocol.types";
+import { ArgumentError, JsonConvert, LazyGcMap, Uuid } from "@simplysm/core-common";
+import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
 
 /**
  * 서비스 프로토콜 인코더/디코더
@@ -11,9 +11,9 @@ import type { TServiceMessage } from "./protocol.types";
  * - 최대 메시지: 100MB
  */
 export class ServiceProtocol {
-  private readonly _MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
-  private readonly _SPLIT_MESSAGE_SIZE = 3 * 1024 * 1024; // 3MB
-  private readonly _CHUNK_SIZE = 300 * 1024; // 300KB
+  private readonly _MAX_TOTAL_SIZE = PROTOCOL_CONFIG.MAX_TOTAL_SIZE;
+  private readonly _SPLIT_MESSAGE_SIZE = PROTOCOL_CONFIG.SPLIT_MESSAGE_SIZE;
+  private readonly _CHUNK_SIZE = PROTOCOL_CONFIG.CHUNK_SIZE;
 
   // -------------------------------------------------------------------
   // Encoding
@@ -22,7 +22,7 @@ export class ServiceProtocol {
   /**
    * 메시지 인코딩 (필요 시 자동 분할)
    */
-  encode(uuid: string, message: TServiceMessage): { chunks: Buffer[]; totalSize: number } {
+  encode(uuid: string, message: ServiceMessage): { chunks: Buffer[]; totalSize: number } {
     const msgJson = JsonConvert.stringify([
       message.name,
       ...("body" in message ? [message.body] : []),
@@ -33,7 +33,10 @@ export class ServiceProtocol {
 
     // 전체 사이즈 제한 체크 (가장 먼저 수행)
     if (totalSize > this._MAX_TOTAL_SIZE) {
-      throw new Error(`Message size exceeded limit: ${totalSize}`);
+      throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
+        totalSize,
+        maxSize: this._MAX_TOTAL_SIZE,
+      });
     }
 
     // 사이즈가 작으면 그대로 반환
@@ -97,20 +100,23 @@ export class ServiceProtocol {
       buffers: (Buffer | undefined)[];
     }
   >({
-    gcInterval: 10 * 1000, // 10초마다
-    expireTime: 60 * 1000, // 60초 지난 것 삭제
+    gcInterval: PROTOCOL_CONFIG.GC_INTERVAL,
+    expireTime: PROTOCOL_CONFIG.EXPIRE_TIME,
   });
 
   dispose(): void {
-    this._accumulator.clear();
+    this._accumulator.destroy();
   }
 
   /**
    * 메시지 디코딩 (분할 패킷 자동 조립)
    */
-  decode<T extends TServiceMessage>(buffer: Buffer): IServiceMessageDecodeResult<T> {
+  decode<T extends ServiceMessage>(buffer: Buffer): ServiceMessageDecodeResult<T> {
     if (buffer.length < 28) {
-      throw new Error(`Invalid Buffer: Size(${buffer.length}) is smaller than header size(28).`);
+      throw new ArgumentError("버퍼 크기가 헤더 크기보다 작습니다.", {
+        bufferSize: buffer.length,
+        minimumSize: 28,
+      });
     }
 
     // 1. 헤더 읽기
@@ -126,7 +132,10 @@ export class ServiceProtocol {
 
     // 전체 사이즈 제한 체크 (가장 먼저 수행)
     if (totalSize > this._MAX_TOTAL_SIZE) {
-      throw new Error(`Message size exceeded limit: ${totalSize}`);
+      throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
+        totalSize,
+        maxSize: this._MAX_TOTAL_SIZE,
+      });
     }
 
     const bodyBuffer = buffer.subarray(28);
@@ -167,6 +176,6 @@ export class ServiceProtocol {
 }
 
 /** 메시지 디코딩 결과 타입 */
-export type IServiceMessageDecodeResult<T extends TServiceMessage> =
+export type ServiceMessageDecodeResult<T extends ServiceMessage> =
   | { type: "complete"; uuid: string; message: T }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };

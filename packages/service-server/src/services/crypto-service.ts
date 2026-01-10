@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import { ServiceBase } from "../core/service-base";
-import type { ICryptoConfig, ICryptoService } from "@simplysm/service-common";
+import type { CryptoConfig, CryptoService as CryptoServiceType } from "@simplysm/service-common";
 
-export class CryptoService extends ServiceBase implements ICryptoService {
+export class CryptoService extends ServiceBase implements CryptoServiceType {
   async encrypt(data: string | Buffer): Promise<string> {
     const config = await this._getConf();
     return crypto.createHmac("sha256", config.key).update(data).digest("hex");
@@ -31,6 +31,6 @@ export class CryptoService extends ServiceBase implements ICryptoService {
   }
 
   private async _getConf() {
-    return await this.getConfigAsync<ICryptoConfig>("crypto");
+    return await this.getConfigAsync<CryptoConfig>("crypto");
   }
 }

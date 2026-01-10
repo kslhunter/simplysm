@@ -30,7 +30,7 @@ export abstract class ServiceEventListener<TInfo, TData> {
 }
 
 /** 파일 업로드 결과 */
-export interface IServiceUploadResult {
+export interface ServiceUploadResult {
   path: string;
   filename: string;
   size: number;

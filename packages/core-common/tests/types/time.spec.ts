@@ -111,6 +111,38 @@ describe("Time", () => {
     it("잘못된 형식이면 에러를 던진다", () => {
       expect(() => Time.parse("invalid-time")).toThrow("시간 형식을 파싱할 수 없습니다");
     });
+
+    it("오후 12:00:00은 정오(12시)", () => {
+      const time = Time.parse("오후 12:00:00");
+
+      expect(time.hour).toBe(12);
+      expect(time.minute).toBe(0);
+      expect(time.second).toBe(0);
+    });
+
+    it("오전 12:00:00은 자정(0시)", () => {
+      const time = Time.parse("오전 12:00:00");
+
+      expect(time.hour).toBe(0);
+      expect(time.minute).toBe(0);
+      expect(time.second).toBe(0);
+    });
+
+    it("오후 12:30:45는 정오 이후(12시 30분 45초)", () => {
+      const time = Time.parse("오후 12:30:45");
+
+      expect(time.hour).toBe(12);
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(45);
+    });
+
+    it("오전 12:30:45는 자정 이후(0시 30분 45초)", () => {
+      const time = Time.parse("오전 12:30:45");
+
+      expect(time.hour).toBe(0);
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(45);
+    });
   });
 
   //#endregion
@@ -302,6 +334,91 @@ describe("Time", () => {
 
       expect(newTime.second).toBe(46);
       expect(newTime.millisecond).toBe(100);
+    });
+  });
+
+  //#endregion
+
+  //#region 음수 연산 (24시간 경계 처리)
+
+  describe("음수 연산 (24시간 경계)", () => {
+    it("addHours(-25)는 전날 같은 시간 (23시간 전)", () => {
+      // 10시에서 25시간을 빼면 전날 9시 = 24 - 25 + 10 = 9시
+      const time = new Time(10, 0, 0);
+      const newTime = time.addHours(-25);
+
+      expect(newTime.hour).toBe(9);
+      expect(newTime.minute).toBe(0);
+      expect(newTime.second).toBe(0);
+    });
+
+    it("addHours(-10)에서 자정을 넘으면 전날 시간", () => {
+      // 5시에서 10시간을 빼면 19시
+      const time = new Time(5, 0, 0);
+      const newTime = time.addHours(-10);
+
+      expect(newTime.hour).toBe(19);
+    });
+
+    it("addMinutes(-90)는 1시간 30분 전", () => {
+      // 1시 30분에서 90분을 빼면 0시 0분
+      const time = new Time(1, 30, 0);
+      const newTime = time.addMinutes(-90);
+
+      expect(newTime.hour).toBe(0);
+      expect(newTime.minute).toBe(0);
+    });
+
+    it("addMinutes(-90)에서 자정을 넘으면 전날 시간", () => {
+      // 0시 30분에서 90분을 빼면 전날 23시 0분
+      const time = new Time(0, 30, 0);
+      const newTime = time.addMinutes(-90);
+
+      expect(newTime.hour).toBe(23);
+      expect(newTime.minute).toBe(0);
+    });
+
+    it("addSeconds(-3700)는 약 1시간 전", () => {
+      // 1시 0분 0초에서 3700초(1시간 1분 40초)를 빼면 23시 58분 20초
+      const time = new Time(1, 0, 0);
+      const newTime = time.addSeconds(-3700);
+
+      expect(newTime.hour).toBe(23);
+      expect(newTime.minute).toBe(58);
+      expect(newTime.second).toBe(20);
+    });
+
+    it("addMilliseconds(-1000)에서 자정을 넘으면 전날 시간", () => {
+      // 0시 0분 0초 500ms에서 1000ms를 빼면 23시 59분 59초 500ms
+      const time = new Time(0, 0, 0, 500);
+      const newTime = time.addMilliseconds(-1000);
+
+      expect(newTime.hour).toBe(23);
+      expect(newTime.minute).toBe(59);
+      expect(newTime.second).toBe(59);
+      expect(newTime.millisecond).toBe(500);
+    });
+  });
+
+  //#endregion
+
+  //#region isValid
+
+  describe("isValid", () => {
+    it("유효한 시간은 true를 반환한다", () => {
+      const time = new Time(15, 30, 45);
+      expect(time.isValid).toBe(true);
+    });
+
+    it("기본 생성자는 유효한 시간이다", () => {
+      const time = new Time();
+      expect(time.isValid).toBe(true);
+    });
+
+    it("tick으로 생성한 시간은 유효하다", () => {
+      const tick = (15 * 60 * 60 + 30 * 60 + 45) * 1000;
+      const time = new Time(tick);
+      expect(time.isValid).toBe(true);
     });
   });
 

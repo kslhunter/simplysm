@@ -6,7 +6,7 @@ import type { Transferable } from "worker_threads";
 import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
-import { Uuid } from "../types/uuid";
+import { Uuid } from "../types/Uuid";
 
 export abstract class TransferableConvert {
   //#region encode
@@ -147,12 +147,9 @@ export abstract class TransferableConvert {
       }
     }
 
-    // 2. 배열 재귀
+    // 2. 배열 재귀 (새 배열 생성)
     if (Array.isArray(obj)) {
-      for (let i = 0; i < obj.length; i++) {
-        obj[i] = this.decode(obj[i]);
-      }
-      return obj;
+      return obj.map((item) => this.decode(item));
     }
 
     // 3. Map 재귀
@@ -173,12 +170,14 @@ export abstract class TransferableConvert {
       return newSet;
     }
 
-    // 5. 객체 재귀
+    // 5. 객체 재귀 (새 객체 생성)
     if (typeof obj === "object") {
       const record = obj as Record<string, unknown>;
+      const result: Record<string, unknown> = {};
       for (const key of Object.keys(record)) {
-        record[key] = this.decode(record[key]);
+        result[key] = this.decode(record[key]);
       }
+      return result;
     }
 
     return obj;

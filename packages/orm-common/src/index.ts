@@ -4,7 +4,7 @@
 
 //#region ========== Core ==========
 
-export { DbContext, type TDbContextStatus } from "./db-context";
+export { DbContext, type DbContextStatus } from "./db-context";
 export { DbTransactionError, DbErrorCode } from "./errors/DbTransactionError";
 
 //#endregion
@@ -85,7 +85,7 @@ export type {
   Dialect,
   IsolationLevel,
   DataRecord,
-  IDbContextExecutor,
+  DbContextExecutor,
   ResultMeta,
   Migration,
   QueryBuildResult,
@@ -110,7 +110,7 @@ export { dataTypeStrToColumnPrimitiveStr, inferColumnPrimitiveStr } from "./type
 export type {
   Expr,
   WhereExpr,
-  TDateSeparator,
+  DateSeparator,
   WinSpec,
   // Value expressions
   ExprColumn,
@@ -227,6 +227,9 @@ export type {
   // DDL - Schema
   ClearSchemaQueryDef,
   SchemaExistsQueryDef,
+  // DDL 타입 상수
+  DDL_TYPES,
+  DdlType,
 } from "./types/query-def";
 
 //#endregion

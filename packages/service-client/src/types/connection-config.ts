@@ -1,4 +1,4 @@
-export interface IServiceConnectionConfig {
+export interface ServiceConnectionConfig {
   port: number;
   host: string;
   ssl?: boolean;

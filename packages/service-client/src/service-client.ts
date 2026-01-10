@@ -3,8 +3,8 @@ import type { Type } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
 import { EventEmitter } from "events";
 
-import type { IServiceConnectionConfig } from "./types/connection-config";
-import type { IServiceProgress, IServiceProgressState } from "./types/progress.types";
+import type { ServiceConnectionConfig } from "./types/connection-config";
+import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
 import { ServiceTransport } from "./transport/service-transport";
 import { SocketProvider } from "./transport/socket-provider";
 import { EventClient } from "./features/event-client";
@@ -21,14 +21,14 @@ export class ServiceClient extends EventEmitter {
 
   private _authToken?: string;
 
-  override on(event: "request-progress", listener: (state: IServiceProgressState) => void): this;
-  override on(event: "response-progress", listener: (state: IServiceProgressState) => void): this;
+  override on(event: "request-progress", listener: (state: ServiceProgressState) => void): this;
+  override on(event: "response-progress", listener: (state: ServiceProgressState) => void): this;
   override on(
     event: "state",
     listener: (state: "connected" | "closed" | "reconnecting") => void,
   ): this;
   override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this;
-  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
 
@@ -43,7 +43,7 @@ export class ServiceClient extends EventEmitter {
 
   constructor(
     public readonly name: string,
-    public readonly options: IServiceConnectionConfig,
+    public readonly options: ServiceConnectionConfig,
   ) {
     super();
 
@@ -79,8 +79,8 @@ export class ServiceClient extends EventEmitter {
   }
 
   // 타입 안전성을 위한 Proxy 생성 메소드
-  getService<T>(serviceName: string): TRemoteService<T> {
-    return new Proxy({} as TRemoteService<T>, {
+  getService<T>(serviceName: string): RemoteService<T> {
+    return new Proxy({} as RemoteService<T>, {
       get: (_target, prop) => {
         const methodName = String(prop);
         return async (...params: unknown[]) => {
@@ -102,7 +102,7 @@ export class ServiceClient extends EventEmitter {
     serviceName: string,
     methodName: string,
     params: unknown[],
-    progress?: IServiceProgress,
+    progress?: ServiceProgress,
   ): Promise<unknown> {
     return await this._transport.sendAsync(
       {
@@ -163,7 +163,7 @@ export class ServiceClient extends EventEmitter {
 }
 
 // T의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
-export type TRemoteService<T> = {
+export type RemoteService<T> = {
   [K in keyof T]: T[K] extends (...args: infer P) => infer R
     ? (...args: P) => Promise<Awaited<R>>
     : never; // 함수가 아닌 프로퍼티는 안씀

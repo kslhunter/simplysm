@@ -1,14 +1,14 @@
 import nodemailer from "nodemailer";
 import type {
-  ISmtpService,
-  ISmtpConfig,
-  ISmtpSendByConfigOption,
-  ISmtpSendOption,
+  SmtpService as SmtpServiceType,
+  SmtpConfig,
+  SmtpSendByConfigOption,
+  SmtpSendOption,
 } from "@simplysm/service-common";
 import { ServiceBase } from "../core/service-base";
 
-export class SmtpService extends ServiceBase implements ISmtpService {
-  async send(options: ISmtpSendOption): Promise<string> {
+export class SmtpService extends ServiceBase implements SmtpServiceType {
+  async send(options: SmtpSendOption): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const transport = nodemailer.createTransport({
         host: options.host,
@@ -37,8 +37,8 @@ export class SmtpService extends ServiceBase implements ISmtpService {
     });
   }
 
-  async sendByConfig(configName: string, options: ISmtpSendByConfigOption): Promise<string> {
-    const config = (await this.getConfigAsync<Record<string, ISmtpConfig | undefined>>("smtp"))[
+  async sendByConfig(configName: string, options: SmtpSendByConfigOption): Promise<string> {
+    const config = (await this.getConfigAsync<Record<string, SmtpConfig | undefined>>("smtp"))[
       configName
     ];
     if (config == null) {

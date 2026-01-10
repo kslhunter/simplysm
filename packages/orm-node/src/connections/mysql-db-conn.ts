@@ -6,7 +6,12 @@ import type { Connection } from "mysql2/promise";
 import pino from "pino";
 import { DateOnly, DateTime, SdError, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
-import type { IDbConn, MysqlDbConnConfig } from "../types/db-conn";
+import {
+  DB_CONN_DEFAULT_TIMEOUT,
+  DB_CONN_ERRORS,
+  type DbConn,
+  type MysqlDbConnConfig,
+} from "../types/db-conn";
 
 const logger = pino({ name: "mysql-db-conn" });
 
@@ -15,11 +20,9 @@ const logger = pino({ name: "mysql-db-conn" });
  *
  * mysql2/promise 라이브러리를 사용하여 MySQL 연결을 관리합니다.
  */
-export class MysqlDbConn extends EventEmitter implements IDbConn {
-  private static readonly ERR_NOT_CONNECTED = "'Connection'이 연결되어있지 않습니다.";
-  private static readonly ERR_ALREADY_CONNECTED = "이미 'Connection'이 연결되어있습니다.";
-
-  private readonly _timeout = 10 * 60 * 1000;
+export class MysqlDbConn extends EventEmitter implements DbConn {
+  private static readonly _ROOT_USER = "root";
+  private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _conn?: Connection;
   private _connTimeout?: ReturnType<typeof setTimeout>;
@@ -36,7 +39,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
   async connectAsync(): Promise<void> {
     if (this.isConnected) {
-      throw new Error(MysqlDbConn.ERR_ALREADY_CONNECTED);
+      throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
 
     const conn = await this._mysql2.createConnection({
@@ -44,7 +47,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
-      database: this.config.username === "root" ? undefined : this.config.database,
+      database: this.config.username === MysqlDbConn._ROOT_USER ? undefined : this.config.database,
       multipleStatements: true,
       charset: "utf8mb4",
       infileStreamFactory: (filePath: string) => fs.createReadStream(filePath), // LOAD DATA LOCAL INFILE 지원
@@ -253,7 +256,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
   private _assertConnected(): Connection {
     if (this._conn == null || !this.isConnected) {
-      throw new Error(MysqlDbConn.ERR_NOT_CONNECTED);
+      throw new Error(DB_CONN_ERRORS.NOT_CONNECTED);
     }
     this._startTimeout();
     return this._conn;

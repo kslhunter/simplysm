@@ -1,10 +1,11 @@
 # core-common 개발 가이드
 
-> SimplySM 프레임워크의 공통 유틸리티 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 공통 유틸리티 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-core-common`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 core-common 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 **사용자 문서는 [README.md](README.md)를 참고하세요.**
 
 ## 아키텍처
@@ -21,7 +22,19 @@ orm-common                (완료)
 core-common               ← 최하위 레이어 (의존성 없음)
 ```
 
-**핵심**: 모든 SimplySM 패키지의 공통 기반. 브라우저/Node 양쪽에서 사용 가능.
+**핵심**: 모든 SIMPLYSM 패키지의 공통 기반. 브라우저/Node 양쪽에서 사용 가능.
+
+## 브라우저 호환성 제약 (Chrome 79+)
+
+프로젝트 타겟이 Chrome 79+이므로 다음 API들은 **사용 불가**:
+
+| API | 최소 버전 | 대체 구현 |
+|-----|----------|----------|
+| `crypto.randomUUID()` | Chrome 92 | `Uuid` 클래스 (getRandomValues 기반) |
+| `structuredClone()` | Chrome 98 | `ObjectUtils.clone()` |
+| Temporal API | 미정 (Stage 3) | `DateTime`, `DateOnly`, `Time` 클래스 |
+
+**참고**: 향후 타겟 버전 상향 시 표준 API 전환 검토
 
 ## 모듈 구조
 
@@ -31,6 +44,8 @@ src/
 ├── types/           # 커스텀 타입 클래스 (Uuid, DateTime, DateOnly, Time, LazyGcMap)
 ├── extensions/      # Array, Map, Set 프로토타입 확장
 ├── utils/           # 유틸리티 함수들
+│   ├── template-strings.ts  # 태그 템플릿 유틸리티 (dedent, stripIndent)
+│   └── ...
 ├── zip/             # ZIP 파일 처리
 ├── types.ts         # 타입 유틸리티 (PrimitiveType 등)
 └── index.ts         # 진입점
@@ -94,8 +109,10 @@ dt.year = 2025;  // 불가
 
 | 메서드 | 설명 |
 |--------|------|
-| `getOrCreate(key, factory)` | 없으면 생성 후 반환 |
+| `getOrCreate(key, valueOrFactory)` | 없으면 생성 후 반환 |
 | `update(key, updater)` | 값 업데이트 |
+
+**주의**: `getOrCreate`에서 V 타입이 함수인 경우, 함수를 직접 전달하면 팩토리로 호출됨. 함수 값 저장 시 팩토리로 감싸기: `map.getOrCreate("key", () => myFn)`
 
 #### Set.ext.ts
 
@@ -111,9 +128,7 @@ dt.year = 2025;  // 불가
 | `object.ts` | `ObjectUtils.clone`, `equal`, `merge`, `omit`, `pick`, `getChainValue` 등 |
 | `string.ts` | `StringUtils.getSuffix`, `toPascalCase` 등 |
 | `number.ts` | `NumberUtils.parseInt`, `parseFloat`, `format` |
-| `math.ts` | `MathUtils.*` |
 | `json.ts` | `JsonConvert.stringify/parse` (커스텀 타입 지원) |
-| `csv.ts` | `CsvConvert.stringify/parse` |
 | `xml.ts` | `XmlConvert.stringify/parse` |
 | `wait.ts` | `wait(ms)`, `waitUntil(fn)` |
 | `debounce-queue.ts` | `SdAsyncFnDebounceQueue` |
@@ -212,8 +227,8 @@ npx vitest run packages/core-common -t "clone"
 
 ### 테스트 현황 (2026-01-06 기준)
 
-**커버리지**: 86.82% (Lines), 89.43% (Functions)
-**테스트**: 438개 (20개 파일), 통과율 100%
+**커버리지**: 86%+ (Lines)
+**테스트**: 475개, 통과율 100%
 
 <details>
 <summary>주요 테스트 파일</summary>
@@ -231,7 +246,6 @@ npx vitest run packages/core-common -t "clone"
 | | string.spec.ts | 43 |
 | | number.spec.ts | 35 |
 | | xml.spec.ts | 14 |
-| | csv.spec.ts | 11 |
 | | wait.spec.ts | 8 |
 | | debounce-queue.spec.ts | 9 |
 | | serial-queue.spec.ts | 12 |
@@ -250,7 +264,7 @@ npx vitest run packages/core-common -t "clone"
 npx tsc --noEmit -p packages/core-common/tsconfig.json 2>&1 | grep "^packages/core-common/"
 
 # ESLint
-npx eslint "packages/core-common/**/*.ts"
+yarn run _sd-cli_ lint "packages/core-common/**/*.ts"
 
 # 테스트
 npx vitest run packages/core-common

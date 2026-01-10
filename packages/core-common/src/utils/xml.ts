@@ -62,15 +62,16 @@ export class XmlConvert {
       const newObj: Record<string, unknown> = {};
       const record = obj as Record<string, unknown>;
 
-      for (const key in record) {
+      for (const key of Object.keys(record)) {
         const value = record[key];
 
         // Attribute는 prefix를 제거하면 안 된다.
         if (key === "$") {
           newObj[key] = value;
         } else {
-          // 태그 이름에서만 ":"을 기준으로 prefix 제거
-          const cleanKey = key.includes(":") ? key.split(":")[1] : key;
+          // 태그 이름에서만 첫 번째 ":"을 기준으로 prefix 제거
+          const colonIndex = key.indexOf(":");
+          const cleanKey = colonIndex !== -1 ? key.slice(colonIndex + 1) : key;
           newObj[cleanKey] = this._stripTagPrefix(value);
         }
       }

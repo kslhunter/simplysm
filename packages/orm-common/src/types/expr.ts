@@ -6,7 +6,7 @@ import type { SelectQueryDef } from "./query-def";
  *
  * dateDiff, dateAdd 등 날짜 함수에서 사용
  */
-export type TDateSeparator = "year" | "month" | "day" | "hour" | "minute" | "second";
+export type DateSeparator = "year" | "month" | "day" | "hour" | "minute" | "second";
 
 //#region ========== 값 표현식 ==========
 
@@ -326,7 +326,7 @@ export interface ExprIsoYearMonth {
 /** 날짜 차이 (DATEDIFF) */
 export interface ExprDateDiff {
   type: "dateDiff";
-  separator: TDateSeparator;
+  separator: DateSeparator;
   from: Expr;
   to: Expr;
 }
@@ -334,7 +334,7 @@ export interface ExprDateDiff {
 /** 날짜 연산 (DATEADD) */
 export interface ExprDateAdd {
   type: "dateAdd";
-  separator: TDateSeparator;
+  separator: DateSeparator;
   source: Expr;
   value: Expr;
 }

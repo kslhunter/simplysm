@@ -1,9 +1,9 @@
-export interface IServiceProgress {
-  request?: (s: IServiceProgressState) => void;
-  response?: (s: IServiceProgressState) => void;
+export interface ServiceProgress {
+  request?: (s: ServiceProgressState) => void;
+  response?: (s: ServiceProgressState) => void;
 }
 
-export interface IServiceProgressState {
+export interface ServiceProgressState {
   uuid: string;
   totalSize: number;
   completedSize: number;

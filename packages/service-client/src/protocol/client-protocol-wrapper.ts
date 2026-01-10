@@ -1,4 +1,4 @@
-import type { IServiceMessageDecodeResult, TServiceMessage } from "@simplysm/service-common";
+import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
 import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/core-common";
 
@@ -93,7 +93,7 @@ export class ClientProtocolWrapper {
 
   async encodeAsync(
     uuid: string,
-    message: TServiceMessage,
+    message: ServiceMessage,
   ): Promise<{ chunks: Buffer[]; totalSize: number }> {
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!ClientProtocolWrapper.workerAvailable || !this._shouldUseWorkerForEncode(message)) {
@@ -109,7 +109,7 @@ export class ClientProtocolWrapper {
     };
   }
 
-  async decodeAsync(buffer: Buffer): Promise<IServiceMessageDecodeResult<TServiceMessage>> {
+  async decodeAsync(buffer: Buffer): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = buffer.length;
 
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
@@ -122,10 +122,10 @@ export class ClientProtocolWrapper {
     const rawResult = await this._runWorkerAsync("decode", buffer, [buffer.buffer]);
 
     // Worker에서 온 결과(Plain Object)를 클래스 인스턴스(DateTime 등)로 복원
-    return TransferableConvert.decode(rawResult) as IServiceMessageDecodeResult<TServiceMessage>;
+    return TransferableConvert.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
   }
 
-  private _shouldUseWorkerForEncode(msg: TServiceMessage): boolean {
+  private _shouldUseWorkerForEncode(msg: ServiceMessage): boolean {
     if (!("body" in msg)) return false;
     const body = msg.body;
 

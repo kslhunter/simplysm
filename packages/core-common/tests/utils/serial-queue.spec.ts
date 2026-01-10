@@ -232,6 +232,69 @@ describe("SdAsyncFnSerialQueue", () => {
 
   //#endregion
 
+  //#region dispose
+
+  describe("dispose()", () => {
+    it("대기 중인 큐를 비운다", async () => {
+      const queue = new SdAsyncFnSerialQueue();
+      const calls: number[] = [];
+
+      // 첫 작업 실행 중
+      queue.run(async () => {
+        calls.push(1);
+        await Wait.time(100);
+      });
+
+      // 대기 중인 작업들 추가
+      queue.run(async () => {
+        calls.push(2);
+      });
+      queue.run(async () => {
+        calls.push(3);
+      });
+
+      // 첫 작업 시작 후 dispose
+      await Wait.time(20);
+      queue.dispose();
+
+      // 모든 작업 완료 대기
+      await Wait.time(150);
+
+      // 첫 작업만 실행됨 (실행 중인 작업은 완료됨)
+      expect(calls).toEqual([1]);
+    });
+
+    it("dispose 후 새 작업은 정상 실행된다", async () => {
+      const queue = new SdAsyncFnSerialQueue();
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+      queue.dispose();
+
+      // dispose 후 새 작업 추가
+      queue.run(async () => {
+        calls.push(2);
+      });
+
+      await Wait.time(50);
+
+      expect(calls).toContain(2);
+    });
+
+    it("여러 번 호출해도 안전하다", () => {
+      const queue = new SdAsyncFnSerialQueue();
+
+      // 여러 번 호출해도 에러 없음
+      queue.dispose();
+      queue.dispose();
+      queue.dispose();
+    });
+  });
+
+  //#endregion
+
   //#region 동기 함수 지원
 
   describe("동기 함수 지원", () => {

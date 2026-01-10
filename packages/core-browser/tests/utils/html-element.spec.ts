@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { TimeoutError } from "@simplysm/core-common";
 import { HtmlElementUtils } from "../../src/utils/html-element";
 
 describe("HtmlElementUtils", () => {
@@ -50,6 +51,21 @@ describe("HtmlElementUtils", () => {
 
       expect(() => HtmlElementUtils.getRelativeOffset(child, ".not-exist")).toThrow("Parent element not found");
     });
+
+    it("transform이 적용된 요소도 처리", () => {
+      container.style.position = "relative";
+      container.style.transform = "scale(2)";
+      container.innerHTML = `<div id="child" style="transform: rotate(45deg);"></div>`;
+
+      const child = container.querySelector("#child") as HTMLElement;
+
+      // transform이 있어도 에러 없이 결과 반환해야 함
+      const result = HtmlElementUtils.getRelativeOffset(child, container);
+      expect(result).toHaveProperty("top");
+      expect(result).toHaveProperty("left");
+      expect(typeof result.top).toBe("number");
+      expect(typeof result.left).toBe("number");
+    });
   });
 
   describe("scrollIntoViewIfNeeded", () => {
@@ -82,6 +98,11 @@ describe("HtmlElementUtils", () => {
   });
 
   describe("getBoundsAsync", () => {
+    it("빈 배열 전달 시 즉시 빈 배열 반환", async () => {
+      const result = await HtmlElementUtils.getBoundsAsync([]);
+      expect(result).toEqual([]);
+    });
+
     it("IntersectionObserver로 bounds 조회", async () => {
       const mockObserver = {
         observe: vi.fn(),
@@ -165,6 +186,59 @@ describe("HtmlElementUtils", () => {
 
       expect(result.length).toBe(2);
       expect(mockObserver.observe).toHaveBeenCalledTimes(2);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("타임아웃 시 TimeoutError 발생", async () => {
+      const mockObserver = {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      // 콜백을 호출하지 않는 Mock (타임아웃 유도)
+      const MockIntersectionObserver = vi.fn(function () {
+        return mockObserver;
+      });
+
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+      // 50ms 타임아웃으로 테스트
+      await expect(HtmlElementUtils.getBoundsAsync([container], 50)).rejects.toThrow(TimeoutError);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("커스텀 타임아웃 설정", async () => {
+      const mockObserver = {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const MockIntersectionObserver = vi.fn(function (
+        this: IntersectionObserver,
+        callback: IntersectionObserverCallback,
+      ) {
+        // 100ms 후에 응답
+        setTimeout(() => {
+          callback(
+            [
+              {
+                target: container,
+                boundingClientRect: { top: 0, left: 0, width: 10, height: 10 },
+              },
+            ] as unknown as IntersectionObserverEntry[],
+            this,
+          );
+        }, 100);
+        return mockObserver;
+      });
+
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+      // 200ms 타임아웃이면 성공해야 함
+      const result = await HtmlElementUtils.getBoundsAsync([container], 200);
+      expect(result.length).toBe(1);
 
       vi.unstubAllGlobals();
     });

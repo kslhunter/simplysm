@@ -1,10 +1,10 @@
 import { DateTime } from "@simplysm/core-common";
-import type { TServiceClientMessage, TServiceServerMessage, TServiceServerRawMessage } from "@simplysm/service-common";
+import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
 import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
-import type { IAuthTokenPayload } from "../../auth/auth-token-payload";
+import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import type { FastifyRequest } from "fastify";
 import pino from "pino";
 
@@ -22,7 +22,7 @@ export class ServiceSocket extends EventEmitter {
 
   readonly connectedAtDateTime = new DateTime();
 
-  authTokenPayload?: IAuthTokenPayload;
+  authTokenPayload?: AuthTokenPayload;
 
   constructor(
     private readonly _socket: WebSocket,
@@ -55,11 +55,11 @@ export class ServiceSocket extends EventEmitter {
     this._socket.terminate();
   }
 
-  async sendAsync(uuid: string, msg: TServiceServerMessage) {
+  async sendAsync(uuid: string, msg: ServiceServerMessage) {
     return await this._sendAsync(uuid, msg);
   }
 
-  private async _sendAsync(uuid: string, msg: TServiceServerRawMessage) {
+  private async _sendAsync(uuid: string, msg: ServiceServerRawMessage) {
     if (this._socket.readyState !== WebSocket.OPEN) return 0;
 
     const { chunks } = await this._protocol.encodeAsync(uuid, msg);
@@ -124,7 +124,7 @@ export class ServiceSocket extends EventEmitter {
           },
         });
       } else {
-        const msg = decodeResult.message as TServiceClientMessage;
+        const msg = decodeResult.message as ServiceClientMessage;
         this.emit("message", decodeResult.uuid, msg);
       }
     } catch (err) {

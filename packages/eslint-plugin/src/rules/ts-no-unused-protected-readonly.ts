@@ -1,5 +1,8 @@
-import { TSESTree } from "@typescript-eslint/utils";
-import { createRule, traverseNode, escapeRegExp } from "../utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { createRule } from "../utils/createRule";
+import { traverseNode } from "../utils/traverse";
+import { escapeRegExp } from "../utils/escapeRegExp";
+import { extractComponentTemplate, findComponentDecorator } from "../utils/angular-template";
 
 export default createRule({
   name: "ts-no-unused-protected-readonly",
@@ -22,51 +25,22 @@ export default createRule({
       "ClassDeclaration, ClassExpression"(
         classNode: TSESTree.ClassDeclaration | TSESTree.ClassExpression
       ) {
-        // @Component 데코레이터 찾기
-        const componentDecorator = classNode.decorators.find((d) => {
-          if (d.expression.type === "CallExpression") {
-            const callee = d.expression.callee;
-            return callee.type === "Identifier" && callee.name === "Component";
-          }
-          return false;
-        });
-
+        // @Component 데코레이터가 있는지 확인
+        const componentDecorator = findComponentDecorator(classNode);
         if (componentDecorator === undefined) return;
 
         // template 문자열 추출
-        const decoratorExpr = componentDecorator.expression as TSESTree.CallExpression;
-        const args = decoratorExpr.arguments;
-        const firstArg = args[0] as TSESTree.Node | undefined;
-        if (firstArg === undefined || firstArg.type !== "ObjectExpression") return;
-
-        const templateProp = firstArg.properties.find(
-          (p): p is TSESTree.Property =>
-            p.type === "Property" &&
-            p.key.type === "Identifier" &&
-            p.key.name === "template"
-        );
-
-        if (!templateProp) return;
-
-        let templateText = "";
-        const templateValue = templateProp.value;
-
-        if (templateValue.type === "TemplateLiteral") {
-          templateText = templateValue.quasis.map((q) => q.value.raw).join("");
-        } else if (templateValue.type === "Literal" && typeof templateValue.value === "string") {
-          templateText = templateValue.value;
-        }
-
+        const templateText = extractComponentTemplate(classNode);
         if (!templateText) return;
 
         // protected readonly 필드 수집
         const protectedReadonlyFields = classNode.body.body.filter(
           (node): node is TSESTree.PropertyDefinition =>
-            node.type === "PropertyDefinition" &&
+            node.type === AST_NODE_TYPES.PropertyDefinition &&
             node.accessibility === "protected" &&
             node.readonly === true &&
             !node.static &&
-            node.key.type === "Identifier"
+            node.key.type === AST_NODE_TYPES.Identifier
         );
 
         for (const field of protectedReadonlyFields) {
@@ -84,13 +58,13 @@ export default createRule({
           const usedInClass = classNode.body.body.some((member) => {
             if (member === field) return false;
 
-            let found = false;
-            traverseNode(member, (node) => {
-              if (node.type === "Identifier" && node.name === fieldName) {
-                found = true;
+            // traverseNode가 false를 반환하면 조기 종료된 것 = 참조 발견됨
+            return !traverseNode(member, (node) => {
+              if (node.type === AST_NODE_TYPES.Identifier && node.name === fieldName) {
+                return false; // 조기 종료
               }
+              return true;
             });
-            return found;
           });
 
           if (!usedInTemplate && !usedInClass) {
@@ -102,14 +76,15 @@ export default createRule({
                 let start = field.range[0];
                 let end = field.range[1];
 
-                // 앞쪽 공백/줄바꿈 포함
+                // 앞쪽 줄바꿈과 들여쓰기 공백 포함 (Windows \r\n 및 Unix \n 모두 지원)
                 const textBefore = sourceCode.text.slice(0, start);
-                const leadingMatch = textBefore.match(/\n[ \t]*$/);
+                const leadingMatch = textBefore.match(/(\r?\n)([ \t]*)$/);
                 if (leadingMatch) {
-                  start -= leadingMatch[0].length - 1;
+                  // 줄바꿈 이후의 들여쓰기 공백만 제거 (줄바꿈 자체는 유지)
+                  start -= leadingMatch[2].length;
                 }
 
-                // 뒤쪽 세미콜론과 줄바꿈까지 포함
+                // 뒤쪽 세미콜론과 줄바꿈까지 포함 (Windows \r\n 및 Unix \n 모두 지원)
                 const afterText = sourceCode.text.slice(end);
                 const trailingMatch = afterText.match(/^;?[ \t]*\r?\n/);
                 if (trailingMatch) {

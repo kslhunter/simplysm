@@ -16,7 +16,7 @@
     "@simplysm/core-common": "13.0.0-beta.0",
     "@simplysm/orm-common": "13.0.0-beta.0",
     "generic-pool": "^3.9.0",
-    "pino": "^10.1.0"
+    "pino": "^10.1.1"
   },
   "devDependencies": {
     "@types/generic-pool": "^3.8.3",
@@ -25,7 +25,7 @@
     "mysql2": "^3.16.0",
     "pg": "^8.16.3",
     "pg-copy-streams": "^7.0.0",
-    "pino": "^10.1.0",
+    "pino": "^10.1.1",
     "tedious": "^19.2.0"
   },
   "peerDependencies": {

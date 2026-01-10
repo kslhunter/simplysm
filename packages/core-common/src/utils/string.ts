@@ -22,8 +22,20 @@ export class StringUtils {
       라: { t: "이라", f: "라" },
     };
 
+    // 빈 문자열 또는 마지막 글자가 한글이 아닌 경우 받침 없음으로 처리
+    if (text.length === 0) {
+      return table[type].f;
+    }
+
+    const lastCharCode = text.charCodeAt(text.length - 1);
+
+    // 한글 범위 체크 (0xAC00 ~ 0xD7A3)
+    if (lastCharCode < 0xac00 || lastCharCode > 0xd7a3) {
+      return table[type].f;
+    }
+
     // 받침존재여부
-    const hasLast = (text.slice(-1).charCodeAt(0) - 0xac00) % 28 !== 0;
+    const hasLast = (lastCharCode - 0xac00) % 28 !== 0;
     return hasLast ? table[type].t : table[type].f;
   }
   //#endregion

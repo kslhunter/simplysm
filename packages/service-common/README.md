@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-> SimplySM 프레임워크의 서비스 프로토콜 및 공통 타입 패키지
+> SIMPLYSM 프레임워크의 서비스 프로토콜 및 공통 타입 패키지
 
 [![npm version](https://img.shields.io/npm/v/@simplysm/service-common.svg)](https://www.npmjs.com/package/@simplysm/service-common)
 [![license](https://img.shields.io/npm/l/@simplysm/service-common.svg)](https://github.com/kslhunter/simplysm/blob/master/LICENSE)
@@ -137,14 +137,15 @@ import type {
 
 ```typescript
 interface IOrmService {
-  connectAsync(dbConnOptions: TDbConnOptions, config?: unknown): Promise<number>;
-  closeAsync(connId: number): Promise<void>;
-  beginTransactionAsync(connId: number): Promise<void>;
-  commitTransactionAsync(connId: number): Promise<void>;
-  rollbackTransactionAsync(connId: number): Promise<void>;
-  executeAsync(connId: number, queries: TQueryDef[]): Promise<unknown[][]>;
-  executeBulkAsync(connId: number, query: TQueryDef): Promise<void>;
-  executeDefsAsync(connId: number, defs: TQueryDef[], options?: { ...}): Promise<unknown[][]>;
+  getInfo(opt: TDbConnOptions & { configName: string }): Promise<{ dialect: Dialect; database?: string; schema?: string }>;
+  connect(opt: Record<string, unknown>): Promise<number>;
+  close(connId: number): Promise<void>;
+  beginTransaction(connId: number, isolationLevel?: IsolationLevel): Promise<void>;
+  commitTransaction(connId: number): Promise<void>;
+  rollbackTransaction(connId: number): Promise<void>;
+  executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]>;
+  executeDefs(connId: number, defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<unknown[][]>;
+  bulkInsert(connId: number, tableName: string, columnDefs: ColumnMeta[], records: Record<string, unknown>[]): Promise<void>;
 }
 ```
 

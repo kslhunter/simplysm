@@ -1,4 +1,4 @@
-import { DbConnFactory, type DbConnConfig, type IDbConn } from "@simplysm/orm-node";
+import { DbConnFactory, type DbConnConfig, type DbConn } from "@simplysm/orm-node";
 import {
   type ColumnMeta,
   createQueryBuilder,
@@ -9,7 +9,7 @@ import {
   type ResultMeta,
 } from "@simplysm/orm-common";
 import { ServiceBase } from "../core/service-base";
-import type { IOrmService, TDbConnOptions } from "@simplysm/service-common";
+import type { OrmService as OrmServiceType, DbConnOptions } from "@simplysm/service-common";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import { Authorize } from "../auth/auth.decorators";
 import pino from "pino";
@@ -17,10 +17,10 @@ import pino from "pino";
 const logger = pino({ name: "service-server:OrmService" });
 
 @Authorize()
-export class OrmService extends ServiceBase implements IOrmService {
-  private static readonly _socketConns = new WeakMap<ServiceSocket, Map<number, IDbConn>>();
+export class OrmService extends ServiceBase implements OrmServiceType {
+  private static readonly _socketConns = new WeakMap<ServiceSocket, Map<number, DbConn>>();
 
-  private async _getConf(opt: TDbConnOptions & { configName: string }): Promise<DbConnConfig> {
+  private async _getConf(opt: DbConnOptions & { configName: string }): Promise<DbConnConfig> {
     const config = (await this.getConfigAsync<Record<string, DbConnConfig | undefined>>("orm"))[
       opt.configName
     ];
@@ -38,7 +38,7 @@ export class OrmService extends ServiceBase implements IOrmService {
     return socket;
   }
 
-  private _getConn(connId: number): IDbConn {
+  private _getConn(connId: number): DbConn {
     const myConns = OrmService._socketConns.get(this.sock);
     const conn = myConns?.get(connId);
     if (conn == null) {
@@ -47,7 +47,7 @@ export class OrmService extends ServiceBase implements IOrmService {
     return conn;
   }
 
-  async getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
+  async getInfo(opt: DbConnOptions & { configName: string }): Promise<{
     dialect: Dialect;
     database?: string;
     schema?: string;
@@ -60,10 +60,10 @@ export class OrmService extends ServiceBase implements IOrmService {
     };
   }
 
-  async connect(opt: TDbConnOptions & { configName: string }): Promise<number> {
+  async connect(opt: DbConnOptions & { configName: string }): Promise<number> {
     let myConns = OrmService._socketConns.get(this.sock);
     if (myConns == null) {
-      myConns = new Map<number, IDbConn>();
+      myConns = new Map<number, DbConn>();
       OrmService._socketConns.set(this.sock, myConns);
 
       this.sock.on("close", async () => {

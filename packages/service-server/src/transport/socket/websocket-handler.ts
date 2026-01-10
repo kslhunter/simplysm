@@ -1,7 +1,7 @@
 import type { WebSocket } from "ws";
 import type { Type } from "@simplysm/core-common";
 import { Uuid } from "@simplysm/core-common";
-import type { ServiceEventListener, TServiceClientMessage } from "@simplysm/service-common";
+import type { ServiceEventListener, ServiceClientMessage } from "@simplysm/service-common";
 import type { ServiceExecutor } from "../../core/service-executor";
 import { ServiceSocket } from "./service-socket";
 import type { JwtManager } from "../../auth/jwt-manager";
@@ -108,7 +108,7 @@ export class WebSocketHandler {
   private async _processRequestAsync(
     serviceSocket: ServiceSocket,
     uuid: string,
-    message: TServiceClientMessage,
+    message: ServiceClientMessage,
   ): Promise<number> {
     try {
       if (message.name.includes(".") && Array.isArray(message.body)) {

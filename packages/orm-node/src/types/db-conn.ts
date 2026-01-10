@@ -2,6 +2,23 @@ import type { EventEmitter } from "events";
 import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
 
 // ============================================
+// 공통 상수
+// ============================================
+
+/**
+ * DB 연결 기본 타임아웃 (10분)
+ */
+export const DB_CONN_DEFAULT_TIMEOUT = 10 * 60 * 1000;
+
+/**
+ * DB 연결 에러 메시지
+ */
+export const DB_CONN_ERRORS = {
+  NOT_CONNECTED: "'Connection'이 연결되어있지 않습니다.",
+  ALREADY_CONNECTED: "이미 'Connection'이 연결되어있습니다.",
+} as const;
+
+// ============================================
 // IDbConn Interface
 // ============================================
 
@@ -16,7 +33,7 @@ import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
  * @remarks
  * EventEmitter를 상속하여 'close' 이벤트를 발생시킵니다.
  */
-export interface IDbConn extends EventEmitter {
+export interface DbConn extends EventEmitter {
   /**
    * 연결 설정
    */
@@ -104,6 +121,27 @@ export interface IDbConn extends EventEmitter {
 // ============================================
 
 /**
+ * 커넥션 풀 설정
+ *
+ * @remarks
+ * 각 값의 기본값:
+ * - min: 1 (최소 연결 수)
+ * - max: 10 (최대 연결 수)
+ * - acquireTimeoutMillis: 30000 (연결 획득 타임아웃)
+ * - idleTimeoutMillis: 30000 (유휴 연결 타임아웃)
+ */
+export interface DbPoolConfig {
+  /** 최소 연결 수 (기본: 1) */
+  min?: number;
+  /** 최대 연결 수 (기본: 10) */
+  max?: number;
+  /** 연결 획득 타임아웃 (밀리초, 기본: 30000) */
+  acquireTimeoutMillis?: number;
+  /** 유휴 연결 타임아웃 (밀리초, 기본: 30000) */
+  idleTimeoutMillis?: number;
+}
+
+/**
  * DB 연결 설정 타입 (dialect별 분기)
  */
 export type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConfig;
@@ -119,6 +157,7 @@ export interface MysqlDbConnConfig {
   password: string;
   database?: string;
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 
 /**
@@ -133,6 +172,7 @@ export interface MssqlDbConnConfig {
   database?: string;
   schema?: string;
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 
 /**
@@ -147,6 +187,7 @@ export interface PostgresqlDbConnConfig {
   database?: string;
   schema?: string;
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 
 /**

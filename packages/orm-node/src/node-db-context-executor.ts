@@ -1,5 +1,5 @@
 import type {
-  IDbContextExecutor,
+  DbContextExecutor,
   IsolationLevel,
   QueryDef,
   ResultMeta,
@@ -8,7 +8,7 @@ import type {
   DataRecord,
 } from "@simplysm/orm-common";
 import { createQueryBuilder, parseQueryResultAsync } from "@simplysm/orm-common";
-import type { DbConnConfig, IDbConn } from "./types/db-conn";
+import type { DbConn, DbConnConfig } from "./types/db-conn";
 import { getDialectFromConfig } from "./types/db-conn";
 import { DbConnFactory } from "./db-conn-factory";
 
@@ -17,8 +17,8 @@ import { DbConnFactory } from "./db-conn-factory";
  *
  * DbContext에서 사용하는 실행기로, 실제 DB 연결을 담당합니다.
  */
-export class NodeDbContextExecutor implements IDbContextExecutor {
-  private _conn?: IDbConn;
+export class NodeDbContextExecutor implements DbContextExecutor {
+  private _conn?: DbConn;
   private readonly _dialect: Dialect;
 
   constructor(private readonly _config: DbConnConfig) {
@@ -37,8 +37,8 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
    * DB 연결 종료
    */
   async closeAsync(): Promise<void> {
-    this._assertConnected();
-    await this._conn!.closeAsync();
+    const conn = this._requireConn();
+    await conn.closeAsync();
     this._conn = undefined;
   }
 
@@ -46,32 +46,32 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
    * 트랜잭션 시작
    */
   async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
-    this._assertConnected();
-    await this._conn!.beginTransactionAsync(isolationLevel);
+    const conn = this._requireConn();
+    await conn.beginTransactionAsync(isolationLevel);
   }
 
   /**
    * 트랜잭션 커밋
    */
   async commitTransactionAsync(): Promise<void> {
-    this._assertConnected();
-    await this._conn!.commitTransactionAsync();
+    const conn = this._requireConn();
+    await conn.commitTransactionAsync();
   }
 
   /**
    * 트랜잭션 롤백
    */
   async rollbackTransactionAsync(): Promise<void> {
-    this._assertConnected();
-    await this._conn!.rollbackTransactionAsync();
+    const conn = this._requireConn();
+    await conn.rollbackTransactionAsync();
   }
 
   /**
    * 파라미터화된 쿼리 실행
    */
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
-    this._assertConnected();
-    return await this._conn!.executeParametrizedAsync(query, params);
+    const conn = this._requireConn();
+    return await conn.executeParametrizedAsync(query, params);
   }
 
   /**
@@ -82,8 +82,8 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     columnMetas: Record<string, ColumnMeta>,
     records: DataRecord[],
   ): Promise<void> {
-    this._assertConnected();
-    await this._conn!.bulkInsertAsync(tableName, columnMetas, records);
+    const conn = this._requireConn();
+    await conn.bulkInsertAsync(tableName, columnMetas, records);
   }
 
   /**
@@ -95,14 +95,14 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     defs: QueryDef[],
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
-    this._assertConnected();
+    const conn = this._requireConn();
 
     const builder = createQueryBuilder(this._dialect);
 
     // 가져올 데이터가 없는 것으로 옵션 설정을 했을 때, 하나의 쿼리로 한번의 요청 보냄
     if (resultMetas != null && resultMetas.every((item) => item == null)) {
       const combinedSql = defs.map((def) => builder.build(def).sql).join("\n");
-      const results = await this._conn!.executeAsync([combinedSql]);
+      const results = await conn.executeAsync([combinedSql]);
       return results as T[][];
     }
 
@@ -113,7 +113,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
       const meta = resultMetas?.[i];
       const buildResult = builder.build(def);
 
-      const rawResults = await this._conn!.executeAsync([buildResult.sql]);
+      const rawResults = await conn.executeAsync([buildResult.sql]);
 
       // resultSetIndex가 지정된 경우 해당 인덱스의 결과셋 사용
       const targetResultSet =
@@ -133,9 +133,10 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     return results;
   }
 
-  private _assertConnected(): void {
+  private _requireConn(): DbConn {
     if (this._conn == null) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
+    return this._conn;
   }
 }

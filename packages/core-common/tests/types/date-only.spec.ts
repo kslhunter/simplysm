@@ -157,6 +157,33 @@ describe("DateOnly", () => {
       expect(newDateOnly.month).toBe(2);
       expect(newDateOnly.day).toBe(28); // 2월 마지막 날
     });
+
+    it("setMonth(13)은 다음 해 1월을 반환한다", () => {
+      const dateOnly = new DateOnly(2025, 6, 15);
+      const result = dateOnly.setMonth(13);
+
+      expect(result.year).toBe(2026);
+      expect(result.month).toBe(1);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(0)은 이전 해 12월을 반환한다", () => {
+      const dateOnly = new DateOnly(2025, 6, 15);
+      const result = dateOnly.setMonth(0);
+
+      expect(result.year).toBe(2024);
+      expect(result.month).toBe(12);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(-1)은 이전 해 11월을 반환한다", () => {
+      const dateOnly = new DateOnly(2025, 6, 15);
+      const result = dateOnly.setMonth(-1);
+
+      expect(result.year).toBe(2024);
+      expect(result.month).toBe(11);
+      expect(result.day).toBe(15);
+    });
   });
 
   describe("setDay()", () => {

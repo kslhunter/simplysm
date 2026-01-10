@@ -1,24 +1,24 @@
 import type {
-  IDbContextExecutor,
+  DbContextExecutor,
   ColumnMeta,
   ResultMeta,
   IsolationLevel,
   Dialect,
   QueryDef,
 } from "@simplysm/orm-common";
-import type { IOrmService, TDbConnOptions } from "@simplysm/service-common";
+import type { OrmService, DbConnOptions } from "@simplysm/service-common";
 import type { ServiceClient } from "../../service-client";
 
-export class OrmClientDbContextExecutor implements IDbContextExecutor {
+export class OrmClientDbContextExecutor implements DbContextExecutor {
   private _connId?: number;
-  private readonly _ormService: IOrmService;
+  private readonly _ormService: OrmService;
 
   constructor(
     private readonly _client: ServiceClient,
-    private readonly _opt: TDbConnOptions & { configName: string },
+    private readonly _opt: DbConnOptions & { configName: string },
   ) {
     // "SdOrmService" → "OrmService" 변경
-    this._ormService = _client.getService<IOrmService>("OrmService");
+    this._ormService = _client.getService<OrmService>("OrmService");
   }
 
   async getInfoAsync(): Promise<{

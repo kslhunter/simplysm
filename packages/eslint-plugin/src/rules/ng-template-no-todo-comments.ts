@@ -1,4 +1,4 @@
-import { createRule } from "../utils";
+import { createRule } from "../utils/createRule";
 
 export default createRule({
   name: "ng-template-no-todo-comments",

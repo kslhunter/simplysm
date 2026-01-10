@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import path from "path";
-import { PathUtils, type TNormPath } from "../../src/utils/path";
+import { PathUtils, type NormPath } from "../../src/utils/path";
 
 describe("PathUtils", () => {
   //#region posix
@@ -32,8 +32,8 @@ describe("PathUtils", () => {
   //#region norm
 
   describe("norm", () => {
-    it("경로를 정규화하고 TNormPath 타입으로 반환", () => {
-      const result: TNormPath = PathUtils.norm("./test/../file.txt");
+    it("경로를 정규화하고 NormPath 타입으로 반환", () => {
+      const result: NormPath = PathUtils.norm("./test/../file.txt");
       expect(result).toBe(path.resolve("./test/../file.txt"));
     });
 
@@ -100,6 +100,14 @@ describe("PathUtils", () => {
 
       const result = PathUtils.changeFileDirectory(file, from, to);
       expect(result).toBe(PathUtils.norm("/x/y/c/d/file.txt"));
+    });
+
+    it("파일이 fromDirectory 안에 없으면 에러 발생", () => {
+      const file = PathUtils.norm("/other/path/file.txt");
+      const from = PathUtils.norm("/source");
+      const to = PathUtils.norm("/target");
+
+      expect(() => PathUtils.changeFileDirectory(file, from, to)).toThrow();
     });
   });
 

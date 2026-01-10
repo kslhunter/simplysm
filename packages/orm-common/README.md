@@ -33,7 +33,7 @@ TypeScript 기반의 타입 안전한 ORM 라이브러리입니다. 데이터베
 
 DBMS별로 네임스페이스 구조가 다르므로 주의가 필요합니다:
 
-| DBMS | Connection | 테이블 참조 | SimplySM 파라미터 |
+| DBMS | Connection | 테이블 참조 | SIMPLYSM 파라미터 |
 |------|-----------|-----------|------------------|
 | **MySQL** | database 연결 | `database.table` | `database` (schema 무시) |
 | **MSSQL** | database 연결 | `database.schema.table` | `database` + `schema` (기본: dbo) |

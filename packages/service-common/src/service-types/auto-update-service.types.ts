@@ -1,4 +1,4 @@
-export interface IAutoUpdateService {
+export interface AutoUpdateService {
   getLastVersion(platform: string):
     | {
         version: string;

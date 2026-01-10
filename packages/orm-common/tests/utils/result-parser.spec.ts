@@ -250,10 +250,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      // Uuid는 현재 검증 없이 생성되므로, 별도 검증 로직이 없으면 통과할 수 있음
-      // 실제 검증이 필요하다면 Uuid 클래스에 검증 로직 추가 필요
-      const result = await parseQueryResultAsync<{ id: Uuid }>(raw, meta);
-      expect(result).toBeDefined();
+      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
     });
 
     it("Buffer 파싱 실패 시 throw", async () => {

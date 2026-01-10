@@ -3,7 +3,12 @@ import { Readable } from "stream";
 import pino from "pino";
 import { DateOnly, DateTime, SdError, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
-import type { IDbConn, PostgresqlDbConnConfig } from "../types/db-conn";
+import {
+  DB_CONN_DEFAULT_TIMEOUT,
+  DB_CONN_ERRORS,
+  type DbConn,
+  type PostgresqlDbConnConfig,
+} from "../types/db-conn";
 import type { Client } from "pg";
 import type { CopyStreamQuery } from "pg-copy-streams";
 
@@ -14,11 +19,8 @@ const logger = pino({ name: "postgresql-db-conn" });
  *
  * pg 라이브러리를 사용하여 PostgreSQL 연결을 관리합니다.
  */
-export class PostgresqlDbConn extends EventEmitter implements IDbConn {
-  private static readonly ERR_NOT_CONNECTED = "'Connection'이 연결되어있지 않습니다.";
-  private static readonly ERR_ALREADY_CONNECTED = "이미 'Connection'이 연결되어있습니다.";
-
-  private readonly _timeout = 10 * 60 * 1000;
+export class PostgresqlDbConn extends EventEmitter implements DbConn {
+  private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _client?: Client;
   private _connTimeout?: ReturnType<typeof setTimeout>;
@@ -36,7 +38,7 @@ export class PostgresqlDbConn extends EventEmitter implements IDbConn {
 
   async connectAsync(): Promise<void> {
     if (this.isConnected) {
-      throw new Error(PostgresqlDbConn.ERR_ALREADY_CONNECTED);
+      throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
 
     const client = new this._pg.Client({
@@ -226,7 +228,7 @@ export class PostgresqlDbConn extends EventEmitter implements IDbConn {
 
   private _assertConnected(): void {
     if (this._client == null || !this.isConnected) {
-      throw new Error(PostgresqlDbConn.ERR_NOT_CONNECTED);
+      throw new Error(DB_CONN_ERRORS.NOT_CONNECTED);
     }
     this._startTimeout();
   }
@@ -245,8 +247,10 @@ export class PostgresqlDbConn extends EventEmitter implements IDbConn {
 
   private _startTimeout(): void {
     this._stopTimeout();
-    this._connTimeout = setTimeout(async () => {
-      await this.closeAsync();
+    this._connTimeout = setTimeout(() => {
+      this.closeAsync().catch((err) => {
+        logger.error({ err: err instanceof Error ? err.message : String(err) }, "closeAsync error");
+      });
     }, this._timeout * 2);
   }
 }

@@ -2,6 +2,8 @@
 
 > **주의:** `sd-orm-common`(구버전)은 참고 금지.
 
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
+
 ## 아키텍처
 
 ```
@@ -16,7 +18,7 @@ Queryable → QueryDef → QueryBuilder → SQL
 
 ### DBMS별 네임스페이스
 
-| DBMS           | 테이블 참조             | SimplySM 파라미터                              |
+| DBMS           | 테이블 참조             | SIMPLYSM 파라미터                              |
 | -------------- | ----------------------- | ---------------------------------------------- |
 | **MySQL**      | `database.table`        | `database` (schema 무시)                       |
 | **MSSQL**      | `database.schema.table` | `database` + `schema` (기본: dbo)              |
@@ -273,6 +275,7 @@ describe("테스트명", () => {
 // expected 파일
 import { mysql, pgsql, tsql } from "@simplysm/core-common";
 
+// 무조건 각 db dialect에서 정상 동작하는 쿼리여야함.  
 export const xxx = {
   mysql: mysql`SELECT ... FROM \`TestDb\`.\`Employee\``,
   mssql: tsql`SELECT ... FROM [TestDb].[dbo].[Employee]`,
@@ -290,7 +293,7 @@ export const xxx = {
 
 ### 테스트 실패 시 수정 절차
 
-**중요**: actual을 expected에 적용할지 로직 수정할지 먼저 사용자에게 확인.
+**중요**: expected가 해당 DB dialect에서 정상동작하는 쿼리일 경우 actual 수정, expected가 잘못된 경우 expected 수정
 
 테스트 코드를 actual과 맞추기로 결정한 경우:
 

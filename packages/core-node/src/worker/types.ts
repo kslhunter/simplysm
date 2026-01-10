@@ -5,7 +5,7 @@
  * 메서드와 이벤트의 타입을 정의.
  *
  * @example
- * interface IMyWorkerType extends ISdWorkerType {
+ * interface MyWorkerType extends SdWorkerType {
  *   methods: {
  *     calculate: { params: [number, number]; returnType: number };
  *   };
@@ -14,7 +14,7 @@
  *   };
  * }
  */
-export interface ISdWorkerType {
+export interface SdWorkerType {
   methods: Record<
     string,
     {
@@ -28,7 +28,7 @@ export interface ISdWorkerType {
 /**
  * 워커 요청 메시지.
  */
-export interface ISdWorkerRequest<T extends ISdWorkerType, K extends keyof T["methods"]> {
+export interface SdWorkerRequest<T extends SdWorkerType, K extends keyof T["methods"]> {
   id: string;
   method: K;
   params: T["methods"][K]["params"];
@@ -37,14 +37,14 @@ export interface ISdWorkerRequest<T extends ISdWorkerType, K extends keyof T["me
 /**
  * 워커 응답 메시지.
  */
-export type TSdWorkerResponse<T extends ISdWorkerType, K extends keyof T["methods"]> =
+export type SdWorkerResponse<T extends SdWorkerType, K extends keyof T["methods"]> =
   | {
-      request: ISdWorkerRequest<T, K>;
+      request: SdWorkerRequest<T, K>;
       type: "return";
       body?: T["methods"][K]["returnType"];
     }
   | {
-      request: ISdWorkerRequest<T, K>;
+      request: SdWorkerRequest<T, K>;
       type: "error";
       body: Error;
     }

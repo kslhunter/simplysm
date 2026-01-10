@@ -1,4 +1,4 @@
-import type { IServiceUploadResult } from "@simplysm/service-common";
+import type { ServiceUploadResult } from "@simplysm/service-common";
 
 export class FileClient {
   constructor(
@@ -22,7 +22,7 @@ export class FileClient {
   async uploadAsync(
     files: File[] | FileList | { name: string; data: BlobPart }[],
     authToken: string,
-  ): Promise<IServiceUploadResult[]> {
+  ): Promise<ServiceUploadResult[]> {
     const formData = new FormData();
     const fileList = files instanceof FileList ? Array.from(files) : files;
 

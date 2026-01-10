@@ -1,3 +1,5 @@
+import { ArgumentError } from "../errors/ArgumentError";
+
 /**
  * UUID v4 클래스
  * crypto.getRandomValues 기반 (Chrome 79+ 지원)
@@ -8,6 +10,9 @@ export class Uuid {
     { length: 256 },
     (_, i) => i.toString(16).padStart(2, "0"),
   );
+
+  private static readonly _uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   static new(): Uuid {
     if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
@@ -56,7 +61,7 @@ export class Uuid {
 
   static fromBuffer(buffer: Buffer): Uuid {
     if (buffer.length !== 16) {
-      throw new Error(`UUID 바이트 크기는 16이어야 합니다. (현재: ${buffer.length})`);
+      throw new ArgumentError("UUID 바이트 크기는 16이어야 합니다.", { length: buffer.length });
     }
 
     const h = Uuid._hexTable;
@@ -88,6 +93,9 @@ export class Uuid {
   private readonly _uuid: string;
 
   constructor(uuid: string) {
+    if (!Uuid._uuidRegex.test(uuid)) {
+      throw new ArgumentError("UUID 형식이 올바르지 않습니다.", { uuid });
+    }
     this._uuid = uuid;
   }
 

@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     tsconfigPaths({
       root: __dirname,
-      projects: ["./tsconfig.base.json"],
+      projects: ["./tsconfig.json"],
     }),
   ],
   test: {
@@ -23,12 +23,46 @@ export default defineConfig({
     },
     // 여기에 projects 배열로 정의
     projects: [
-      // 패키지 단위 테스트
+      // 패키지 단위 테스트 (Node 환경)
       {
         extends: true,
         test: {
           name: "packages",
           include: ["packages/*/tests/**/*.spec.ts"],
+          exclude: ["packages/excel/tests/**/*.spec.ts"],
+          testTimeout: 30000,
+        },
+      },
+      // Excel 패키지 테스트 (브라우저 환경)
+      {
+        extends: true,
+        plugins: [
+          nodePolyfills({
+            include: ["path", "buffer", "crypto", "events", "util", "stream", "assert"],
+            globals: {
+              Buffer: true,
+              process: true,
+            },
+          }),
+        ],
+        optimizeDeps: {
+          include: [
+            "vite-plugin-node-polyfills/shims/buffer",
+            "vite-plugin-node-polyfills/shims/global",
+            "vite-plugin-node-polyfills/shims/process",
+            "events",
+          ],
+        },
+        test: {
+          name: "excel",
+          include: ["packages/excel/tests/**/*.spec.ts"],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: "chromium" }],
+            screenshotFailures: false,
+          },
         },
       },
       // 통합 테스트 - ORM (Docker DB 필요)

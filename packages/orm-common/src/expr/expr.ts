@@ -10,7 +10,7 @@ import {
 } from "../types/column";
 import type { ExprInput } from "./expr-unit";
 import { ExprUnit, WhereExprUnit } from "./expr-unit";
-import type { Expr, TDateSeparator, WhereExpr, WinSpec } from "../types/expr";
+import type { Expr, DateSeparator, WhereExpr, WinSpec } from "../types/expr";
 import type { SelectQueryDef } from "../types/query-def";
 import type { Queryable } from "../exec/queryable";
 
@@ -146,7 +146,7 @@ export const expr = {
     return (strings, ...values) => {
       const sql = strings.reduce((acc, str, i) => {
         if (i < values.length) {
-          return acc + str + `$${i + 1}`; // 또는 ?, :p0 등 DB에 맞게
+          return acc + str + `$${i + 1}`; // 플레이스홀더 (ExprRenderer에서 변환)
         }
         return acc + str;
       }, "");
@@ -1172,7 +1172,7 @@ export const expr = {
    * ```
    */
   dateDiff<T extends DateTime | DateOnly | Time | undefined>(
-    separator: TDateSeparator,
+    separator: DateSeparator,
     from: ExprInput<T>,
     to: ExprInput<T>,
   ): ExprUnit<T extends undefined ? undefined : number> {
@@ -1201,7 +1201,7 @@ export const expr = {
    * ```
    */
   dateAdd<T extends DateTime | DateOnly | Time | undefined>(
-    separator: TDateSeparator,
+    separator: DateSeparator,
     source: ExprUnit<T>,
     value: ExprInput<number>,
   ): ExprUnit<T> {

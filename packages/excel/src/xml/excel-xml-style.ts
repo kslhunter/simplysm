@@ -1,0 +1,382 @@
+import type {
+  ExcelBorderPosition,
+  ExcelHorizontalAlign,
+  ExcelVerticalAlign,
+  ExcelXml,
+  ExcelXmlStyleData,
+  ExcelXmlStyleDataBorder,
+  ExcelXmlStyleDataFill,
+  ExcelXmlStyleDataXf,
+} from "../types";
+import { NumberUtils, ObjectUtils } from "@simplysm/core-common";
+
+export interface ExcelStyle {
+  numFmtId?: string;
+  numFmtCode?: string;
+  border?: ExcelBorderPosition[];
+  background?: string;
+  verticalAlign?: ExcelVerticalAlign;
+  horizontalAlign?: ExcelHorizontalAlign;
+}
+
+export class ExcelXmlStyle implements ExcelXml {
+  data: ExcelXmlStyleData;
+
+  constructor(data?: ExcelXmlStyleData) {
+    if (data === undefined) {
+      this.data = {
+        styleSheet: {
+          $: {
+            xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+          },
+          fonts: [
+            {
+              $: { count: "1" },
+              font: [{}],
+            },
+          ],
+          fills: [
+            {
+              $: { count: "2" },
+              fill: [
+                { patternFill: [{ $: { patternType: "none" } }] },
+                { patternFill: [{ $: { patternType: "gray125" } }] },
+              ],
+            },
+          ],
+          borders: [
+            {
+              $: { count: "1" },
+              border: [{}],
+            },
+          ],
+          cellXfs: [
+            {
+              $: { count: "1" },
+              xf: [{ $: { numFmtId: "0" } }],
+            },
+          ],
+        },
+      };
+    } else {
+      this.data = data;
+    }
+  }
+
+  add(style: ExcelStyle): string {
+    const newXf: ExcelXmlStyleDataXf = { $: {} };
+
+    if (style.numFmtId !== undefined) {
+      newXf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.numFmtCode !== undefined) {
+      newXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
+      newXf.$.applyNumberFormat = "1";
+    }
+
+    if (style.background !== undefined) {
+      const newFill: ExcelXmlStyleDataFill = {
+        patternFill: [
+          {
+            $: { patternType: "solid" },
+            fgColor: [{ $: { rgb: style.background.toUpperCase() } }],
+          },
+        ],
+      };
+
+      newXf.$.applyFill = "1";
+      newXf.$.fillId = this._getSameOrCreateFill(newFill);
+    }
+
+    if (style.border !== undefined) {
+      const newBorder = this._createBorderFromPositions(style.border);
+      newXf.$.applyBorder = "1";
+      newXf.$.borderId = this._getSameOrCreateBorder(newBorder);
+    }
+
+    this._applyAlignment(newXf, style);
+
+    return this._getSameOrCreateXf(newXf);
+  }
+
+  addWithClone(id: string, style: ExcelStyle): string {
+    const prevXf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!];
+    const cloneXf = ObjectUtils.clone(prevXf);
+
+    if (style.numFmtId !== undefined) {
+      cloneXf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.numFmtCode !== undefined) {
+      cloneXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
+      cloneXf.$.applyNumberFormat = "1";
+    }
+
+    if (style.background !== undefined) {
+      const prevFill =
+        cloneXf.$.fillId !== undefined
+          ? this.data.styleSheet.fills[0].fill[NumberUtils.parseInt(cloneXf.$.fillId)!]
+          : undefined;
+
+      if (prevFill != null) {
+        const cloneFill = ObjectUtils.clone(prevFill);
+        cloneFill.patternFill[0].$.patternType = "solid";
+
+        if (cloneFill.patternFill[0].fgColor == null) {
+          cloneFill.patternFill[0].fgColor = [{ $: { rgb: style.background } }];
+        } else {
+          cloneFill.patternFill[0].fgColor[0].$.rgb = style.background;
+        }
+
+        cloneXf.$.applyFill = "1";
+        cloneXf.$.fillId = this._getSameOrCreateFill(cloneFill);
+      } else {
+        const newFill: ExcelXmlStyleDataFill = {
+          patternFill: [
+            {
+              $: { patternType: "solid" },
+              fgColor: [{ $: { rgb: style.background.toUpperCase() } }],
+            },
+          ],
+        };
+        cloneXf.$.applyFill = "1";
+        cloneXf.$.fillId = this._getSameOrCreateFill(newFill);
+      }
+    }
+
+    if (style.border !== undefined) {
+      const prevBorder =
+        cloneXf.$.borderId !== undefined
+          ? this.data.styleSheet.borders[0].border[NumberUtils.parseInt(cloneXf.$.borderId)!]
+          : undefined;
+
+      if (prevBorder != null) {
+        const cloneBorder = ObjectUtils.clone(prevBorder);
+        this._applyBorderPosition(cloneBorder, "left", style.border.includes("left"));
+        this._applyBorderPosition(cloneBorder, "right", style.border.includes("right"));
+        this._applyBorderPosition(cloneBorder, "top", style.border.includes("top"));
+        this._applyBorderPosition(cloneBorder, "bottom", style.border.includes("bottom"));
+
+        cloneXf.$.applyBorder = "1";
+        cloneXf.$.borderId = this._getSameOrCreateBorder(cloneBorder);
+      } else {
+        const newBorder = this._createBorderFromPositions(style.border);
+        cloneXf.$.applyBorder = "1";
+        cloneXf.$.borderId = this._getSameOrCreateBorder(newBorder);
+      }
+    }
+
+    this._applyAlignment(cloneXf, style);
+
+    return this._getSameOrCreateXf(cloneXf);
+  }
+
+  get(id: string): ExcelStyle {
+    const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!] as
+      | ExcelXmlStyleDataXf
+      | undefined;
+
+    const result: ExcelStyle = {};
+
+    if (xf !== undefined) {
+      result.numFmtId = xf.$.numFmtId;
+
+      if (xf.$.fillId !== undefined) {
+        result.background =
+          this.data.styleSheet.fills[0].fill[
+            NumberUtils.parseInt(xf.$.fillId)!
+          ].patternFill[0].fgColor?.[0].$.rgb;
+      }
+
+      if (xf.$.borderId !== undefined) {
+        const border = this.data.styleSheet.borders[0].border[NumberUtils.parseInt(xf.$.borderId)!];
+        if (border.top != null || border.left != null || border.right != null || border.bottom != null) {
+          result.border = [];
+          if (border.left != null) {
+            result.border.push("left");
+          }
+          if (border.right != null) {
+            result.border.push("right");
+          }
+          if (border.top != null) {
+            result.border.push("top");
+          }
+          if (border.bottom != null) {
+            result.border.push("bottom");
+          }
+        }
+      }
+
+      result.verticalAlign = xf.alignment?.[0].$.vertical;
+      result.horizontalAlign = xf.alignment?.[0].$.horizontal;
+    }
+
+    return result;
+  }
+
+  getNumFmtCode(numFmtId: string): string | undefined {
+    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId === numFmtId)
+      ?.$.formatCode;
+  }
+
+  cleanup(): void {
+    const result = {} as ExcelXmlStyleData["styleSheet"];
+
+    // 순서 정렬 (numFmts 맨위로)
+
+    if (this.data.styleSheet.numFmts != null) {
+      result.numFmts = this.data.styleSheet.numFmts;
+    }
+
+    const styleSheetRec = this.data.styleSheet as Record<string, unknown>;
+    const resultRec = result as Record<string, unknown>;
+    for (const key of Object.keys(styleSheetRec)) {
+      if (key === "numFmts") continue;
+
+      resultRec[key] = styleSheetRec[key];
+    }
+
+    this.data.styleSheet = result;
+  }
+
+  //#region Private Methods
+
+  private _setNumFmtCode(numFmtCode: string): string {
+    // 이미 해당 code가 있으면 넘기기
+    const existsNumFmtId = this.data.styleSheet.numFmts?.[0].numFmt?.single(
+      (item) => item.$.formatCode === numFmtCode,
+    )?.$.numFmtId;
+    if (existsNumFmtId != null) {
+      return existsNumFmtId;
+    }
+
+    this.data.styleSheet.numFmts = this.data.styleSheet.numFmts ?? [
+      {
+        $: { count: "0" },
+        numFmt: [],
+      },
+    ];
+
+    this.data.styleSheet.numFmts[0].numFmt = this.data.styleSheet.numFmts[0].numFmt ?? [];
+
+    const maxId =
+      this.data.styleSheet.numFmts[0].numFmt.max(
+        (item) => NumberUtils.parseInt(item.$.numFmtId) ?? 180,
+      ) ?? 180;
+    const nextNumFmtId = (maxId + 1).toString();
+    this.data.styleSheet.numFmts[0].numFmt.push({
+      $: {
+        numFmtId: nextNumFmtId.toString(),
+        formatCode: numFmtCode,
+      },
+    });
+    this.data.styleSheet.numFmts[0].$.count = (
+      NumberUtils.parseInt(this.data.styleSheet.numFmts[0].$.count)! + 1
+    ).toString();
+
+    return nextNumFmtId.toString();
+  }
+
+  private _applyAlignment(xf: ExcelXmlStyleDataXf, style: ExcelStyle): void {
+    if (style.verticalAlign !== undefined) {
+      xf.$.applyAlignment = "1";
+      if (xf.alignment == null) {
+        xf.alignment = [{ $: { vertical: style.verticalAlign } }];
+      } else {
+        xf.alignment[0].$.vertical = style.verticalAlign;
+      }
+    }
+
+    if (style.horizontalAlign !== undefined) {
+      xf.$.applyAlignment = "1";
+      if (xf.alignment == null) {
+        xf.alignment = [{ $: { horizontal: style.horizontalAlign } }];
+      } else {
+        xf.alignment[0].$.horizontal = style.horizontalAlign;
+      }
+    }
+  }
+
+  private _createBorderFromPositions(positions: ExcelBorderPosition[]): ExcelXmlStyleDataBorder {
+    return {
+      ...(positions.includes("left")
+        ? { left: [{ $: { style: "thin" }, color: [{ $: { rgb: "00000000" } }] }] }
+        : {}),
+      ...(positions.includes("right")
+        ? { right: [{ $: { style: "thin" }, color: [{ $: { rgb: "00000000" } }] }] }
+        : {}),
+      ...(positions.includes("top")
+        ? { top: [{ $: { style: "thin" }, color: [{ $: { rgb: "00000000" } }] }] }
+        : {}),
+      ...(positions.includes("bottom")
+        ? { bottom: [{ $: { style: "thin" }, color: [{ $: { rgb: "00000000" } }] }] }
+        : {}),
+    };
+  }
+
+  private _applyBorderPosition(
+    border: ExcelXmlStyleDataBorder,
+    position: ExcelBorderPosition,
+    enabled: boolean,
+  ): void {
+    if (enabled) {
+      const existing = border[position];
+      if (existing == null) {
+        border[position] = [{ $: { style: "thin" }, color: [{ $: { rgb: "00000000" } }] }];
+      } else if (existing[0].color == null) {
+        existing[0].color = [{ $: { rgb: "00000000" } }];
+      } else {
+        existing[0].color[0].$.rgb = "00000000";
+      }
+    } else {
+      delete border[position];
+    }
+  }
+
+  private _getSameOrCreateXf(xfItem: ExcelXmlStyleDataXf): string {
+    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) =>
+      ObjectUtils.equal(item, xfItem),
+    );
+
+    if (prevSameXf != null) {
+      return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
+    } else {
+      this.data.styleSheet.cellXfs[0].xf.push(xfItem);
+      this.data.styleSheet.cellXfs[0].$.count =
+        this.data.styleSheet.cellXfs[0].xf.length.toString();
+      return (this.data.styleSheet.cellXfs[0].xf.length - 1).toString();
+    }
+  }
+
+  private _getSameOrCreateFill(fillItem: ExcelXmlStyleDataFill): string {
+    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) =>
+      ObjectUtils.equal(item, fillItem),
+    );
+
+    if (prevSameFill != null) {
+      return this.data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
+    } else {
+      this.data.styleSheet.fills[0].fill.push(fillItem);
+      this.data.styleSheet.fills[0].$.count = this.data.styleSheet.fills[0].fill.length.toString();
+      return (this.data.styleSheet.fills[0].fill.length - 1).toString();
+    }
+  }
+
+  private _getSameOrCreateBorder(borderItem: ExcelXmlStyleDataBorder): string {
+    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) =>
+      ObjectUtils.equal(item, borderItem),
+    );
+
+    if (prevSameBorder != null) {
+      return this.data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();
+    } else {
+      this.data.styleSheet.borders[0].border.push(borderItem);
+      this.data.styleSheet.borders[0].$.count =
+        this.data.styleSheet.borders[0].border.length.toString();
+      return (this.data.styleSheet.borders[0].border.length - 1).toString();
+    }
+  }
+
+  //#endregion
+}

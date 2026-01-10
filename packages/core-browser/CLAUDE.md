@@ -1,10 +1,11 @@
 # core-browser 개발 가이드
 
-> SimplySM 프레임워크의 브라우저 전용 DOM 유틸리티 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 브라우저 전용 DOM 유틸리티 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-core-browser`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 core-browser 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 
 ## 아키텍처
 
@@ -172,7 +173,7 @@ npx vitest run packages/core-browser/tests/utils/element.spec.ts
 npx tsc --noEmit -p packages/core-browser/tsconfig.json 2>&1 | grep "^packages/core-browser/"
 
 # ESLint
-npx eslint "packages/core-browser/**/*.ts"
+yarn run _sd-cli_ lint "packages/core-browser/**/*.ts"
 
 # 테스트
 npx vitest run packages/core-browser

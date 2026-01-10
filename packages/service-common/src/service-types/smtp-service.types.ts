@@ -1,25 +1,25 @@
-export interface ISmtpService {
-  send(options: ISmtpSendOption): Promise<string>;
-  sendByConfig(configName: string, options: ISmtpSendByConfigOption): Promise<string>;
+export interface SmtpService {
+  send(options: SmtpSendOption): Promise<string>;
+  sendByConfig(configName: string, options: SmtpSendByConfigOption): Promise<string>;
 }
 
-export interface ISmtpSendAttachment {
+export interface SmtpSendAttachment {
   filename: string;
   content?: Buffer;
   path?: string;
   contentType?: string;
 }
 
-export interface ISmtpSendByConfigOption {
+export interface SmtpSendByConfigOption {
   to: string;
   cc?: string;
   bcc?: string;
   subject: string;
   html: string;
-  attachments?: ISmtpSendAttachment[];
+  attachments?: SmtpSendAttachment[];
 }
 
-export interface ISmtpSendOption {
+export interface SmtpSendOption {
   host: string;
   port?: number;
   secure?: boolean;
@@ -32,10 +32,10 @@ export interface ISmtpSendOption {
   bcc?: string;
   subject: string;
   html: string;
-  attachments?: ISmtpSendAttachment[];
+  attachments?: SmtpSendAttachment[];
 }
 
-export interface ISmtpConfig {
+export interface SmtpConfig {
   senderName: string;
   senderEmail?: string;
   user?: string;

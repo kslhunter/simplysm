@@ -7,6 +7,14 @@
 export class DateTimeFormatUtils {
   //#region 정규식 캐싱 (클래스 로드 시 1회만 생성)
 
+  /**
+   * 포맷 패턴 정규식
+   *
+   * ⚠️ 순서 중요:
+   * format() 메서드에서 긴 패턴(yyyy, MM, dd 등)을 먼저 처리해야
+   * 짧은 패턴(y, M, d 등)이 부분 매칭되는 것을 방지합니다.
+   * 예: "yyyy"를 먼저 처리하지 않으면 "yy"가 두 번 매칭될 수 있음
+   */
   private static readonly _patterns = {
     yyyy: /yyyy/g,
     yy: /yy/g,

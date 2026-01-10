@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/cli",
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - CLI 도구",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/cli"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "sd-cli": "./dist/sd-cli.js"
+  },
+  "dependencies": {
+    "@simplysm/eslint-plugin": "13.0.0-beta.0",
+    "eslint": "^9.39.2",
+    "glob": "^13.0.0",
+    "jiti": "^2.6.1",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.35"
+  }
+}

@@ -44,10 +44,6 @@ describe("types.ts", () => {
       expect(getPrimitiveTypeStr(buffer)).toBe("Buffer");
     });
 
-    it("undefined 타입이면 에러를 던진다", () => {
-      expect(() => getPrimitiveTypeStr(undefined)).toThrow("알 수 없는 값 타입");
-    });
-
     it("지원하지 않는 타입이면 에러를 던진다", () => {
       expect(() => getPrimitiveTypeStr({} as never)).toThrow("알 수 없는 값 타입");
       expect(() => getPrimitiveTypeStr([] as never)).toThrow("알 수 없는 값 타입");

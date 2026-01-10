@@ -1,5 +1,20 @@
 import { isFocusable } from "tabbable";
 
+/**
+ * 셀렉터를 :scope 접두사가 붙은 형태로 정규화
+ *
+ * 콤마로 구분된 복수 셀렉터를 지원하며, 각 셀렉터에 :scope를 추가합니다.
+ *
+ * @example
+ * normalizeScopedSelector(".item, .card") // ":scope .item,:scope .card"
+ */
+function normalizeScopedSelector(selector: string): string {
+  return selector
+    .split(",")
+    .map((item) => `:scope ${item.trim()}`)
+    .join(",");
+}
+
 export namespace ElementUtils {
   /**
    * 요소를 첫 번째 자식으로 삽입
@@ -12,11 +27,7 @@ export namespace ElementUtils {
    * 셀렉터로 하위 요소 전체 검색 (:scope 자동 적용)
    */
   export function findAll<T extends Element = Element>(el: Element, selector: string): T[] {
-    const scopedSelector = selector
-      .split(",")
-      .map((item) => `:scope ${item.trim()}`)
-      .join(",");
-    return Array.from(el.querySelectorAll<T>(scopedSelector));
+    return Array.from(el.querySelectorAll<T>(normalizeScopedSelector(selector)));
   }
 
   /**
@@ -26,11 +37,7 @@ export namespace ElementUtils {
     el: Element,
     selector: string,
   ): T | undefined {
-    const scopedSelector = selector
-      .split(",")
-      .map((item) => `:scope ${item.trim()}`)
-      .join(",");
-    return el.querySelector<T>(scopedSelector) ?? undefined;
+    return el.querySelector<T>(normalizeScopedSelector(selector)) ?? undefined;
   }
 
   /**

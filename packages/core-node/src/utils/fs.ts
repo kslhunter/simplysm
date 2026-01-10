@@ -97,7 +97,7 @@ export class FsUtils {
     try {
       stat = fs.lstatSync(sourcePath);
     } catch (err) {
-      throw new SdError(err, targetPath);
+      throw new SdError(err, sourcePath);
     }
 
     if (stat.isDirectory()) {
@@ -141,7 +141,7 @@ export class FsUtils {
     try {
       stat = await fs.promises.lstat(sourcePath);
     } catch (err) {
-      throw new SdError(err, targetPath);
+      throw new SdError(err, sourcePath);
     }
 
     if (stat.isDirectory()) {
@@ -188,10 +188,6 @@ export class FsUtils {
    * 파일 읽기 (UTF-8 문자열, 비동기).
    */
   static async readAsync(targetPath: string): Promise<string> {
-    if (!FsUtils.exists(targetPath)) {
-      throw new SdError(`${targetPath} 파일을 찾을 수 없습니다.`);
-    }
-
     try {
       return await fs.promises.readFile(targetPath, "utf-8");
     } catch (err) {
@@ -226,7 +222,11 @@ export class FsUtils {
    */
   static readJson<T = unknown>(targetPath: string): T {
     const contents = FsUtils.read(targetPath);
-    return JsonConvert.parse(contents);
+    try {
+      return JsonConvert.parse(contents);
+    } catch (err) {
+      throw new SdError(err, targetPath + os.EOL + contents);
+    }
   }
 
   /**
@@ -266,7 +266,7 @@ export class FsUtils {
     await FsUtils.mkdirAsync(path.dirname(targetPath));
 
     try {
-      await fs.promises.writeFile(targetPath, data);
+      await fs.promises.writeFile(targetPath, data, { flush: true });
     } catch (err) {
       throw new SdError(err, targetPath);
     }

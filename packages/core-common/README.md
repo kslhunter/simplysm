@@ -1,6 +1,6 @@
 # @simplysm/core-common
 
-> SimplySM 프레임워크의 공통 유틸리티 패키지
+> SIMPLYSM 프레임워크의 공통 유틸리티 패키지
 
 [![npm version](https://img.shields.io/npm/v/@simplysm/core-common.svg)](https://www.npmjs.com/package/@simplysm/core-common)
 [![license](https://img.shields.io/npm/l/@simplysm/core-common.svg)](https://github.com/kslhunter/simplysm/blob/master/LICENSE)
@@ -54,8 +54,8 @@ StringUtils.toCamelCase("HelloWorld");    // "helloWorld"
 StringUtils.toKebabCase("HelloWorld");    // "hello-world"
 
 // 한국어 조사 처리
-StringUtils.getSuffix("사과", "을/를");  // "를"
-StringUtils.getSuffix("책", "을/를");    // "을"
+StringUtils.getSuffix("사과", "을");  // "를"
+StringUtils.getSuffix("책", "을");    // "을"
 
 // 전각→반각 변환
 StringUtils.replaceSpecialDefaultChar("ＡＢＣ１２３");  // "ABC123"
@@ -102,16 +102,16 @@ const fromBuffer = Uuid.fromBuffer(buffer);
 import { DateTime, DateOnly, Time } from "@simplysm/core-common";
 
 // DateTime
-const now = DateTime.now();
+const now = new DateTime();
 const tomorrow = now.addDays(1);  // 새 인스턴스 반환
 const nextYear = now.setYear(2026);  // 새 인스턴스 반환
 
 // DateOnly
-const today = DateOnly.today();
+const today = new DateOnly();
 const nextMonth = today.addMonths(1);
 
 // Time
-const currentTime = Time.now();
+const currentTime = new Time();
 const later = currentTime.addHours(2);
 ```
 
@@ -121,15 +121,16 @@ const later = currentTime.addHours(2);
 ```typescript
 import { LazyGcMap } from "@simplysm/core-common";
 
-const cache = new LazyGcMap<string, Data>(60000); // 60초 만료
+const cache = new LazyGcMap<string, Data>({
+  gcInterval: 10000,  // 10초마다 GC
+  expireTime: 60000,  // 60초 미접근 시 만료
+  onExpire: (key, value) => {
+    console.log(`${key} expired`);
+  }
+});
 
 cache.set("key", data);
 const value = cache.get("key");  // 접근 시 만료 시간 갱신
-
-// 만료 콜백
-cache.onExpire = (key, value) => {
-  console.log(`${key} expired`);
-};
 ```
 
 ### 🎨 프로토타입 확장
@@ -158,7 +159,7 @@ users.toMap(u => u.id, u => u.name);
 
 // 비동기 처리
 await items.mapAsync(async item => await process(item));
-await items.parallelAsync(async item => await process(item), 5); // 병렬 5개
+await items.parallelAsync(async item => await process(item)); // 전체 병렬 처리
 ```
 
 #### Map 확장
@@ -170,9 +171,15 @@ const map = new Map<string, number>();
 map.getOrCreate("key", 0);
 map.getOrCreate("key", () => computeValue());
 
+// 함수를 값으로 저장하는 경우
+const fnMap = new Map<string, () => void>();
+fnMap.getOrCreate("key", () => myFn);  // 팩토리로 감싸기
+
 // 업데이트
 map.update("key", (prev) => (prev ?? 0) + 1);
 ```
+
+> **주의**: `getOrCreate`에서 두 번째 인자가 함수면 팩토리로 호출됩니다. 함수 자체를 값으로 저장하려면 팩토리로 감싸세요.
 
 #### Set 확장
 
@@ -198,7 +205,7 @@ import { JsonConvert } from "@simplysm/core-common";
 
 const obj = {
   id: new Uuid("..."),
-  createdAt: DateTime.now(),
+  createdAt: new DateTime(),
   tags: new Set(["a", "b"]),
   metadata: new Map([["key", "value"]])
 };
@@ -208,19 +215,6 @@ const restored = JsonConvert.parse(json);  // 원본 타입 복원
 ```
 
 지원 타입: `Uuid`, `DateTime`, `DateOnly`, `Time`, `Buffer`, `Date`, `Set`, `Map`, `Error`
-
-#### CsvConvert
-CSV 파싱 및 생성
-
-```typescript
-import { CsvConvert } from "@simplysm/core-common";
-
-// 파싱
-const rows = CsvConvert.parse(csvString);  // string[][]
-
-// 생성
-const csv = CsvConvert.stringify(rows);
-```
 
 #### XmlConvert
 XML 파싱 및 생성
@@ -234,6 +228,30 @@ const obj = XmlConvert.parse(xmlString);
 // 생성
 const xml = XmlConvert.stringify(obj);
 ```
+
+### 🔁 Worker 데이터 전송
+
+#### TransferableConvert
+Worker 간 데이터 전송을 위한 직렬화/역직렬화
+
+```typescript
+import { TransferableConvert } from "@simplysm/core-common";
+
+// Worker에 전송할 데이터 준비
+const data = {
+  id: new Uuid("550e8400-e29b-41d4-a716-446655440000"),
+  createdAt: new DateTime(),
+  buffer: Buffer.from("hello"),
+};
+
+const { result, transferList } = TransferableConvert.encode(data);
+worker.postMessage(result, transferList);
+
+// Worker에서 데이터 복원
+const decoded = TransferableConvert.decode(event.data);
+```
+
+지원 타입: `Uuid`, `DateTime`, `DateOnly`, `Time`, `Buffer`, `Map`, `Set`, `Error` (+ cause, detail)
 
 ### 🗜️ ZIP 파일 처리
 
@@ -387,7 +405,7 @@ packages/core-common/
 │   ├── zip/             # ZIP 처리
 │   ├── types.ts         # 타입 유틸리티
 │   └── index.ts         # 진입점
-└── tests/               # 테스트 (438개, 커버리지 86%+)
+└── tests/               # 테스트 (475개, 커버리지 86%+)
 ```
 
 ### 테스트
@@ -424,7 +442,6 @@ MIT © 김석래
 
 ## 관련 패키지
 
-- `@simplysm/sd-core-browser` - 브라우저 전용 유틸리티
-- `@simplysm/sd-core-node` - Node.js 전용 유틸리티
+- `@simplysm/core-browser` - 브라우저 전용 유틸리티
+- `@simplysm/core-node` - Node.js 전용 유틸리티
 - `@simplysm/orm-common` - ORM 쿼리 빌더
-- `@simplysm/sd-angular` - Angular 컴포넌트 라이브러리

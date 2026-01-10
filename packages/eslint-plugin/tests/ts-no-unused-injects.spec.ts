@@ -99,6 +99,63 @@ describe("ts-no-unused-injects 규칙", () => {
         invalid: [],
       });
     });
+
+    describe("inject() 필드가 템플릿에서 사용됨", () => {
+      ruleTester.run("ts-no-unused-injects", rule, {
+        valid: [
+          {
+            code: `
+              @Component({
+                template: '<div>{{ userService.currentUser() }}</div>'
+              })
+              class MyComponent {
+                userService = inject(UserService);
+              }
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("inject() 필드가 템플릿에서만 사용됨 (클래스 내 미사용)", () => {
+      ruleTester.run("ts-no-unused-injects", rule, {
+        valid: [
+          {
+            code: `
+              @Component({
+                template: \`
+                  <div>{{ authService.isLoggedIn() }}</div>
+                  <button (click)="authService.logout()">Logout</button>
+                \`
+              })
+              class MyComponent {
+                authService = inject(AuthService);
+              }
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("$ 접두사 inject() 필드가 템플릿에서 사용됨", () => {
+      ruleTester.run("ts-no-unused-injects", rule, {
+        valid: [
+          {
+            code: `
+              @Component({
+                template: '<div>{{ $router.url }}</div>'
+              })
+              class MyComponent {
+                $router = inject(Router);
+              }
+            `,
+          },
+        ],
+        invalid: [],
+      });
+    });
   });
 
   describe("오류가 발생해야 하는 코드들 (invalid)", () => {

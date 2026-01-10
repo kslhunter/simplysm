@@ -328,6 +328,36 @@ describe("ObjectUtils", () => {
 
       expect(obj.a.b).toEqual({ d: 2 });
     });
+
+    it("존재하지 않는 경로는 에러 없이 무시한다", () => {
+      const obj = { a: 1 };
+
+      // 중간 경로가 없어도 에러 없음
+      expect(() => ObjectUtils.deleteChainValue(obj, "b.c.d")).not.toThrow();
+      expect(obj).toEqual({ a: 1 });
+    });
+
+    it("중간 경로가 undefined여도 에러 없이 무시한다", () => {
+      const obj: Record<string, unknown> = { a: undefined };
+
+      expect(() => ObjectUtils.deleteChainValue(obj, "a.b.c")).not.toThrow();
+      expect(obj).toEqual({ a: undefined });
+    });
+
+    it("중간 경로가 null이어도 에러 없이 무시한다", () => {
+      const obj: Record<string, unknown> = { a: null };
+
+      expect(() => ObjectUtils.deleteChainValue(obj, "a.b.c")).not.toThrow();
+      expect(obj).toEqual({ a: null });
+    });
+
+    it("배열 인덱스 경로도 삭제한다", () => {
+      const obj = { arr: [{ name: "first" }, { name: "second" }] };
+      ObjectUtils.deleteChainValue(obj, "arr[0].name");
+
+      expect(obj.arr[0]).toEqual({});
+      expect(obj.arr[1]).toEqual({ name: "second" });
+    });
   });
 
   //#endregion

@@ -8,7 +8,7 @@ const NORM = Symbol("NormPath");
  * 정규화된 경로를 나타내는 브랜드 타입.
  * PathUtils.norm()을 통해서만 생성 가능.
  */
-export type TNormPath = string & {
+export type NormPath = string & {
   [NORM]: never;
 };
 
@@ -92,15 +92,15 @@ export class PathUtils {
   }
 
   /**
-   * 경로를 정규화하여 TNormPath로 반환.
+   * 경로를 정규화하여 NormPath로 반환.
    * 절대 경로로 변환되며, 플랫폼별 구분자로 정규화됨.
    *
    * @example
-   * PathUtils.norm("/some/path"); // TNormPath
-   * PathUtils.norm("relative", "path"); // TNormPath (절대 경로로 변환)
+   * PathUtils.norm("/some/path"); // NormPath
+   * PathUtils.norm("relative", "path"); // NormPath (절대 경로로 변환)
    */
-  static norm(...paths: string[]): TNormPath {
-    return path.resolve(...paths) as TNormPath;
+  static norm(...paths: string[]): NormPath {
+    return path.resolve(...paths) as NormPath;
   }
 }
 

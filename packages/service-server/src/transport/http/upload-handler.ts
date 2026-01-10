@@ -5,7 +5,7 @@ import { Uuid } from "@simplysm/core-common";
 import { FsUtils } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { IServiceUploadResult } from "@simplysm/service-common";
+import type { ServiceUploadResult } from "@simplysm/service-common";
 import type { JwtManager } from "../../auth/jwt-manager";
 import pino from "pino";
 
@@ -39,7 +39,7 @@ export class UploadHandler {
       return;
     }
 
-    const result: IServiceUploadResult[] = [];
+    const result: ServiceUploadResult[] = [];
     const uploadDir = path.resolve(this._server.options.rootPath, "www", "uploads");
 
     await FsUtils.mkdirAsync(uploadDir);

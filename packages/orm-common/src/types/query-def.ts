@@ -349,7 +349,7 @@ export interface CreateProcQueryDef {
     name: string;
     dataType: DataType;
     nullable?: boolean;
-    default?: any;
+    default?: unknown;
   }>;
   returns?: Array<{
     name: string;
@@ -382,6 +382,44 @@ export interface SchemaExistsQueryDef {
   database: string;
   schema?: string;
 }
+
+//#endregion
+
+//#region ========== DDL 타입 상수 ==========
+
+/**
+ * DDL (Data Definition Language) 타입 상수
+ *
+ * 트랜잭션 내 DDL 차단 및 DDL 타입 검증에 사용
+ * 새 DDL QueryDef 추가 시 이 배열도 함께 업데이트 필요
+ *
+ * @remarks
+ * switchFk는 DDL이 아니므로 제외 (트랜잭션 내 사용 가능)
+ */
+export const DDL_TYPES = [
+  "clearSchema",
+  "createTable",
+  "dropTable",
+  "renameTable",
+  "truncate",
+  "addColumn",
+  "dropColumn",
+  "modifyColumn",
+  "renameColumn",
+  "dropPk",
+  "addPk",
+  "addFk",
+  "dropFk",
+  "addIdx",
+  "dropIdx",
+  "createView",
+  "dropView",
+  "createProc",
+  "dropProc",
+] as const;
+
+/** DDL 타입 유니언 */
+export type DdlType = (typeof DDL_TYPES)[number];
 
 //#endregion
 

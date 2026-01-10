@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ISdWorkerType, ISdWorkerRequest, TSdWorkerResponse } from "../../src/worker/types";
+import type { SdWorkerType, SdWorkerRequest, SdWorkerResponse } from "../../src/worker/types";
 
 // 타입 정의 테스트용 인터페이스
-interface ITestWorkerType extends ISdWorkerType {
+interface TestWorkerType extends SdWorkerType {
   methods: {
     add: { params: [number, number]; returnType: number };
     greet: { params: [string]; returnType: string };
@@ -15,12 +15,12 @@ interface ITestWorkerType extends ISdWorkerType {
 }
 
 describe("Worker Types", () => {
-  //#region ISdWorkerType
+  //#region SdWorkerType
 
-  describe("ISdWorkerType", () => {
+  describe("SdWorkerType", () => {
     it("메서드와 이벤트 타입 정의", () => {
       // 타입 검증 - 컴파일 타임에 체크됨
-      const _workerType: ITestWorkerType = {
+      const _workerType: TestWorkerType = {
         methods: {
           add: { params: [1, 2], returnType: 3 },
           greet: { params: ["hello"], returnType: "greeting" },
@@ -39,11 +39,11 @@ describe("Worker Types", () => {
 
   //#endregion
 
-  //#region ISdWorkerRequest
+  //#region SdWorkerRequest
 
-  describe("ISdWorkerRequest", () => {
+  describe("SdWorkerRequest", () => {
     it("요청 메시지 구조 검증", () => {
-      const request: ISdWorkerRequest<ITestWorkerType, "add"> = {
+      const request: SdWorkerRequest<TestWorkerType, "add"> = {
         id: "test-uuid-123",
         method: "add",
         params: [10, 20],
@@ -55,7 +55,7 @@ describe("Worker Types", () => {
     });
 
     it("다른 메서드의 요청", () => {
-      const request: ISdWorkerRequest<ITestWorkerType, "greet"> = {
+      const request: SdWorkerRequest<TestWorkerType, "greet"> = {
         id: "test-uuid-456",
         method: "greet",
         params: ["World"],
@@ -68,11 +68,11 @@ describe("Worker Types", () => {
 
   //#endregion
 
-  //#region TSdWorkerResponse
+  //#region SdWorkerResponse
 
-  describe("TSdWorkerResponse", () => {
+  describe("SdWorkerResponse", () => {
     it("return 타입 응답", () => {
-      const response: TSdWorkerResponse<ITestWorkerType, "add"> = {
+      const response: SdWorkerResponse<TestWorkerType, "add"> = {
         request: { id: "1", method: "add", params: [1, 2] },
         type: "return",
         body: 3,
@@ -87,7 +87,7 @@ describe("Worker Types", () => {
 
     it("error 타입 응답", () => {
       const error = new Error("Test error");
-      const response: TSdWorkerResponse<ITestWorkerType, "add"> = {
+      const response: SdWorkerResponse<TestWorkerType, "add"> = {
         request: { id: "1", method: "add", params: [1, 2] },
         type: "error",
         body: error,
@@ -101,7 +101,7 @@ describe("Worker Types", () => {
     });
 
     it("event 타입 응답", () => {
-      const response: TSdWorkerResponse<ITestWorkerType, "add"> = {
+      const response: SdWorkerResponse<TestWorkerType, "add"> = {
         type: "event",
         event: "progress",
         body: 75,
@@ -115,7 +115,7 @@ describe("Worker Types", () => {
     });
 
     it("log 타입 응답", () => {
-      const response: TSdWorkerResponse<ITestWorkerType, "add"> = {
+      const response: SdWorkerResponse<TestWorkerType, "add"> = {
         type: "log",
         body: "Log message from worker",
       };
@@ -137,14 +137,14 @@ describe("Worker Types", () => {
       // 잘못된 타입은 컴파일 에러 발생
 
       // 올바른 타입
-      const _validRequest: ISdWorkerRequest<ITestWorkerType, "add"> = {
+      const _validRequest: SdWorkerRequest<TestWorkerType, "add"> = {
         id: "1",
         method: "add",
         params: [1, 2],
       };
 
       // 아래 코드는 컴파일 에러가 발생해야 함 (테스트에서는 주석 처리)
-      // const invalidRequest: ISdWorkerRequest<ITestWorkerType, "add"> = {
+      // const invalidRequest: SdWorkerRequest<TestWorkerType, "add"> = {
       //   id: "1",
       //   method: "add",
       //   params: ["string", "invalid"], // Error: string is not number

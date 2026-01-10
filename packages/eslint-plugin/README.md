@@ -168,15 +168,29 @@ throw new NotImplementError("이 기능은 아직 구현되지 않았습니다")
 ### ts-no-unused-injects
 
 Angular의 `inject()` 함수로 주입받았지만 사용하지 않는 필드를 감지합니다.
+클래스 내 참조뿐만 아니라 `@Component`의 inline `template`에서의 참조도 검사합니다.
 
 #### 위반 예시
 
 ```typescript
-@Component({ /* ... */ })
+@Component({ template: '<div></div>' })
 class MyComponent {
-  private service = inject(MyService);  // Error: 사용되지 않음
+  private service = inject(MyService);  // Error: 클래스/템플릿 어디에서도 사용되지 않음
 }
 ```
+
+#### 올바른 예시
+
+```typescript
+@Component({ template: '<div>{{ userService.name }}</div>' })
+class MyComponent {
+  userService = inject(UserService);  // OK: 템플릿에서 사용됨
+}
+```
+
+#### 제한사항
+
+- `templateUrl`로 참조된 외부 템플릿 파일은 검사하지 않습니다.
 
 ---
 
@@ -211,6 +225,10 @@ class MyComponent {
   }
 }
 ```
+
+#### 제한사항
+
+- `templateUrl`로 참조된 외부 템플릿 파일은 검사하지 않습니다.
 
 ---
 

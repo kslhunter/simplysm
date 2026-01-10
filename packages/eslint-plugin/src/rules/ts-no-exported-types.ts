@@ -1,6 +1,7 @@
 import ts from "typescript";
-import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
-import { createRule, createTypeCacheHelper } from "../utils";
+import { AST_NODE_TYPES, ESLintUtils, type TSESTree } from "@typescript-eslint/utils";
+import { createRule } from "../utils/createRule";
+import { createTypeCacheHelper } from "../utils/typeChecker";
 
 export interface TypeConfig {
   ban: string;
@@ -195,7 +196,7 @@ export default createRule<Options, MessageIds>({
         if (!isExported) return;
 
         let type: ts.Type | undefined;
-        if (node.id.type === "Identifier" && node.id.typeAnnotation) {
+        if (node.id.type === AST_NODE_TYPES.Identifier && node.id.typeAnnotation) {
           const tsType = parserServices.esTreeNodeToTSNodeMap.get(
             node.id.typeAnnotation.typeAnnotation
           );

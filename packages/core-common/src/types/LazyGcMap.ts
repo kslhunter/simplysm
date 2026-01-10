@@ -49,6 +49,14 @@ export class LazyGcMap<K, V> {
     return result;
   }
 
+  destroy(): void {
+    this._map.clear();
+    this._stopGc();
+  }
+
+  /**
+   * 모든 항목 삭제 (인스턴스는 계속 사용 가능)
+   */
   clear(): void {
     this._map.clear();
     this._stopGc();
@@ -99,19 +107,35 @@ export class LazyGcMap<K, V> {
   private async _runGc(): Promise<void> {
     const now = Date.now();
 
+    // 1. 만료된 항목 수집 (삭제 전)
+    const expiredEntries: { key: K; item: { value: V; lastAccess: number } }[] = [];
     for (const [key, item] of this._map) {
       if (now - item.lastAccess > this._options.expireTime) {
-        // 1. 맵에서 제거
-        this._map.delete(key);
+        expiredEntries.push({ key, item });
+      }
+    }
 
-        // 2. 만료 콜백 실행
-        if (this._options.onExpire != null) {
-          try {
-            await this._options.onExpire(key, item.value);
-          } catch {
-            // 만료 콜백 에러 무시
-          }
+    // 2. 각 항목에 대해 콜백 실행 후 삭제
+    for (const { key, item } of expiredEntries) {
+      // 콜백 실행 전 현재 상태 확인 (이미 다른 값으로 교체되었거나 삭제되었으면 스킵)
+      const currentItem = this._map.get(key);
+      if (currentItem !== item) {
+        continue;
+      }
+
+      // 만료 콜백 실행
+      if (this._options.onExpire != null) {
+        try {
+          await this._options.onExpire(key, item.value);
+        } catch {
+          // 만료 콜백 에러 무시
         }
+      }
+
+      // 콜백 후 재등록 여부 확인 (같은 item 참조면 삭제, 다른 값이면 콜백 중 재등록됨)
+      const afterItem = this._map.get(key);
+      if (afterItem === item) {
+        this._map.delete(key);
       }
     }
 

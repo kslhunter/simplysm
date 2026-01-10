@@ -6,6 +6,8 @@ import { DateTime } from "./DateTime";
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)
  */
 export class Time {
+  private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+
   private readonly _tick: number;
 
   constructor();
@@ -20,31 +22,42 @@ export class Time {
           now.getSeconds() * 1000 +
           now.getMinutes() * 60 * 1000 +
           now.getHours() * 60 * 60 * 1000) %
-        (24 * 60 * 60 * 1000);
+        Time.MS_PER_DAY;
     } else if (arg2 !== undefined) {
       this._tick =
         ((arg4 ?? 0) +
           (arg3 ?? 0) * 1000 +
           arg2 * 60 * 1000 +
           (arg1 as number) * 60 * 60 * 1000) %
-        (24 * 60 * 60 * 1000);
+        Time.MS_PER_DAY;
     } else if (arg1 instanceof Date) {
       this._tick =
         (arg1.getMilliseconds() +
           arg1.getSeconds() * 1000 +
           arg1.getMinutes() * 60 * 1000 +
           arg1.getHours() * 60 * 60 * 1000) %
-        (24 * 60 * 60 * 1000);
+        Time.MS_PER_DAY;
     } else {
-      this._tick = arg1 % (24 * 60 * 60 * 1000);
+      this._tick = arg1 % Time.MS_PER_DAY;
     }
   }
 
   static parse(str: string): Time {
     const match1 = /(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
     if (match1 != null) {
+      const rawHour = Number(match1[2]);
+      const isPM = match1[1] === "오후";
+      // 12시간제 → 24시간제 변환
+      // 오전 12시 = 0시, 오후 12시 = 12시
+      // 오전 1-11시 = 1-11시, 오후 1-11시 = 13-23시
+      let hour: number;
+      if (rawHour === 12) {
+        hour = isPM ? 12 : 0;
+      } else {
+        hour = isPM ? rawHour + 12 : rawHour;
+      }
       return new Time(
-        Number(match1[2]) + (match1[1] === "오후" ? 12 : 0),
+        hour,
         Number(match1[3]),
         Number(match1[4]),
         Number(match1[6] ? match1[6].padEnd(3, "0") : "0"),
@@ -94,6 +107,11 @@ export class Time {
     return this._tick;
   }
 
+  /** 시간 세팅이 제대로 되었는지 여부 */
+  get isValid(): boolean {
+    return !Number.isNaN(this._tick);
+  }
+
   //#endregion
 
   //#region 불변 변환 메서드 (새 인스턴스 반환)
@@ -119,19 +137,27 @@ export class Time {
   //#region 산술 메서드 (새 인스턴스 반환)
 
   addHours(hours: number): Time {
-    return new Time((this._tick + hours * 60 * 60 * 1000) % (24 * 60 * 60 * 1000));
+    let newTick = (this._tick + hours * 60 * 60 * 1000) % Time.MS_PER_DAY;
+    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    return new Time(newTick);
   }
 
   addMinutes(minutes: number): Time {
-    return new Time((this._tick + minutes * 60 * 1000) % (24 * 60 * 60 * 1000));
+    let newTick = (this._tick + minutes * 60 * 1000) % Time.MS_PER_DAY;
+    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    return new Time(newTick);
   }
 
   addSeconds(seconds: number): Time {
-    return new Time((this._tick + seconds * 1000) % (24 * 60 * 60 * 1000));
+    let newTick = (this._tick + seconds * 1000) % Time.MS_PER_DAY;
+    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    return new Time(newTick);
   }
 
   addMilliseconds(milliseconds: number): Time {
-    return new Time((this._tick + milliseconds) % (24 * 60 * 60 * 1000));
+    let newTick = (this._tick + milliseconds) % Time.MS_PER_DAY;
+    if (newTick < 0) newTick += Time.MS_PER_DAY;
+    return new Time(newTick);
   }
 
   //#endregion

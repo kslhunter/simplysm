@@ -157,6 +157,7 @@ describe("ElementUtils", () => {
     it("기본 요소는 visible", () => {
       container.style.width = "100px";
       container.style.height = "100px";
+      expect(ElementUtils.isVisible(container)).toBe(true);
     });
 
     it("visibility: hidden은 not visible", () => {

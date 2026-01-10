@@ -1,9 +1,9 @@
-export interface ICryptoService {
+export interface CryptoService {
   encrypt(data: string | Buffer): Promise<string>;
   encryptAes(data: Buffer): Promise<string>;
   decryptAes(encText: string): Promise<Buffer>;
 }
 
-export interface ICryptoConfig {
+export interface CryptoConfig {
   key: string;
 }

@@ -1,48 +1,170 @@
 # SIMPLYSM
 
-## 의존성
+[![license](https://img.shields.io/github/license/kslhunter/simplysm)](https://github.com/kslhunter/simplysm/blob/master/LICENSE)
 
-- Angular 20.x
-- Typescript 5.8.x
-- Node 20.x
-  MySQL: 8.0.14+ (LATERAL)
-  MSSQL: 2012+ (OFFSET...FETCH)
-  PostgreSQL: 9.0+ (LATERAL)
+Angular 기반 풀스택 TypeScript 애플리케이션을 위한 모노레포 프레임워크입니다.
 
-## 주요 업데이트
+## 요구사항
 
+| 항목 | 버전 |
+|------|------|
+| Node.js | 20.x (LTS) |
+| Yarn | 4.x (Berry) |
+| TypeScript | 5.8.x |
+| Angular | 20.x |
 
-### 12.16.x > 13.0.x
+### 데이터베이스 지원
 
-**대규모 마이그레이션 진행 중** (`.legacy-packages` → `packages`)
+| DBMS | 최소 버전 | 비고 |
+|------|----------|------|
+| MySQL | 8.0.14+ | LATERAL 지원 필요 |
+| MSSQL | 2012+ | OFFSET...FETCH 지원 필요 |
+| PostgreSQL | 9.0+ | LATERAL 지원 필요 |
 
-- 패키지명에서 `sd-` 접두사 제거 (`sd-core-common` → `core-common`)
-- Import 경로 변경: `@simplysm/sd-*` → `@simplysm/*`
-- ORM 대격변:
-  - SQLite 지원 제거
-  - PostgreSQL 지원 추가 (BETA)
-  - 새로운 QueryBuilder API
-- 완료된 패키지: `core-common`, `core-browser`, `core-node`, `orm-common`, `orm-node`, `service-common`, `eslint-plugin`
-- 진행 예정: `service-client`, `service-server`, `angular`, `cli`
+## 설치
 
-상세: [MIGRATION_PLAN.md](MIGRATION_PLAN.md)
+```bash
+# npm
+npm install @simplysm/core-common
 
-### 12.15.x > 12.16.x
+# yarn
+yarn add @simplysm/core-common
+```
 
-- 앤간한 오류는 eslint일것임. `eslint --fix "**/+(*.ts|*.js|*.html)"`로 대부분 고쳐짐
-- 그외, FontAwesome을 안쓰는것으로 업데이트됨
-  - ng-icons를 사용할 것이며, sd-angular는 "@ng-icons/tabler-icons"를
-    사용함 ([링크](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=tablerTools))
-  - ng-icons중 tabler아닌 다른 아이콘도 사용가능.
-  - 물론 이미 쓰고있는 FontAwesome계속 써도됨.
-    - sd-angular의 컨트롤의 \[icon\] attrigute에 넣던 것만 수정하면됨.
+## 패키지 구조
 
-### 12.14.x > 12.15.x
+```
+@simplysm/angular          (마이그레이션 예정)
+        ↓
+@simplysm/service-server ←→ @simplysm/service-client
+        ↓                           ↓
+          @simplysm/service-common
+        ↓
+@simplysm/orm-node       @simplysm/storage
+        ↓                       ↓
+@simplysm/orm-common            ↓
+        ↓                       ↓
+@simplysm/core-browser   @simplysm/core-node   @simplysm/excel
+        ↓                       ↓                    ↓
+                  @simplysm/core-common
+```
 
-- sd-dock-container, sd-dock 컨트롤 되 살림
-- sd-flex, sd-form-\*, sd-grid, sd-card, sd-pane, sd-table등 layout관련 컨트롤(디렉티브) 변화
-  - 왠간하면 태그/속성/클래스 방식으로 사용가능
-  - Control이던게 Directive로 변경된 것들이 있음 (사용법은 같으나 import가 달라짐)
-- ESLINT에 sd-컨트롤 attribute관련 규칙추가
-  - FIX가 존재하므로, Webstorm에서 ALT+Enter로 fix current file하시는걸 추천함
-  - `eslint --fix "**/+(*.ts|*.js|*.html)"` 이런식으로 fix 가능
+## 패키지 목록
+
+### Core 패키지
+
+| 패키지 | 설명 | 문서 |
+|--------|------|------|
+| [`@simplysm/core-common`](https://www.npmjs.com/package/@simplysm/core-common) | 브라우저/Node.js 공통 유틸리티 | [README](packages/core-common/README.md) |
+| [`@simplysm/core-browser`](https://www.npmjs.com/package/@simplysm/core-browser) | 브라우저 전용 DOM 유틸리티 | [README](packages/core-browser/README.md) |
+| [`@simplysm/core-node`](https://www.npmjs.com/package/@simplysm/core-node) | Node.js 전용 파일시스템/Worker 유틸리티 | [README](packages/core-node/README.md) |
+
+### ORM 패키지
+
+| 패키지 | 설명 | 문서 |
+|--------|------|------|
+| [`@simplysm/orm-common`](https://www.npmjs.com/package/@simplysm/orm-common) | 타입 안전한 ORM 쿼리 빌더 | [README](packages/orm-common/README.md) |
+| [`@simplysm/orm-node`](https://www.npmjs.com/package/@simplysm/orm-node) | Node.js DB 연결 (MySQL/MSSQL/PostgreSQL) | [README](packages/orm-node/README.md) |
+
+### Service 패키지
+
+| 패키지 | 설명 | 문서 |
+|--------|------|------|
+| [`@simplysm/service-common`](https://www.npmjs.com/package/@simplysm/service-common) | 클라이언트-서버 프로토콜 및 타입 | [README](packages/service-common/README.md) |
+| [`@simplysm/service-client`](https://www.npmjs.com/package/@simplysm/service-client) | WebSocket 기반 서비스 클라이언트 | [README](packages/service-client/README.md) |
+| [`@simplysm/service-server`](https://www.npmjs.com/package/@simplysm/service-server) | WebSocket 기반 서비스 서버 | [README](packages/service-server/README.md) |
+
+### 유틸리티 패키지
+
+| 패키지 | 설명 | 문서 |
+|--------|------|------|
+| [`@simplysm/excel`](https://www.npmjs.com/package/@simplysm/excel) | Excel 파일 처리 (OOXML) | [README](packages/excel/README.md) |
+| [`@simplysm/storage`](https://www.npmjs.com/package/@simplysm/storage) | FTP/SFTP 스토리지 클라이언트 | [README](packages/storage/README.md) |
+
+### 개발 도구
+
+| 패키지 | 설명 | 문서 |
+|--------|------|------|
+| [`@simplysm/eslint-plugin`](https://www.npmjs.com/package/@simplysm/eslint-plugin) | SIMPLYSM 프로젝트용 ESLint 규칙 | [README](packages/eslint-plugin/README.md) |
+| [`@simplysm/cli`](https://www.npmjs.com/package/@simplysm/cli) | CLI 도구 (ESLint 래퍼) | [README](packages/cli/README.md) |
+| [`@simplysm/claude`](https://www.npmjs.com/package/@simplysm/claude) | Claude Code 확장 배포 | [README](packages/claude/README.md) |
+
+## 주요 기능 요약
+
+### core-common
+
+- **유틸리티**: `ObjectUtils`, `StringUtils`, `NumberUtils` (깊은 복사, 케이스 변환, 포맷팅)
+- **커스텀 타입**: `Uuid`, `DateTime`, `DateOnly`, `Time` (불변 날짜/시간)
+- **확장 메서드**: Array (`orderBy`, `groupBy`, `sum`), Map (`getOrCreate`), Set (`toggle`)
+- **데이터 변환**: `JsonConvert` (커스텀 타입 지원), `CsvConvert`, `XmlConvert`
+- **비동기 제어**: `Wait`, `SdAsyncFnDebounceQueue`, `SdAsyncFnSerialQueue`
+
+### core-browser
+
+- **DOM 유틸리티**: `findAll`, `findFirst`, `getParents`, `isFocusable`
+- **HTML 유틸리티**: `repaint`, `getRelativeOffset`, `scrollIntoViewIfNeeded`
+- **Blob 처리**: `downloadBlob`
+
+### core-node
+
+- **경로 유틸리티**: `PathUtils.posix`, `PathUtils.norm`, `PathUtils.isChildPath`
+- **파일시스템**: `FsUtils.glob`, `FsUtils.readJson`, `FsUtils.writeAsync`
+- **파일 감시**: `SdFsWatcher` (chokidar 기반)
+- **타입 안전 Worker**: `SdWorker`, `createSdWorker`
+
+### orm-common
+
+- **타입 안전 쿼리**: LINQ-like Fluent API
+- **Multi-Dialect**: MySQL, MSSQL, PostgreSQL 지원
+- **Code First**: 코드 기반 스키마 정의 및 마이그레이션
+- **SQL Injection 방지**: 자동 파라미터화
+
+### orm-node
+
+- **커넥션 풀링**: generic-pool 기반 자동 관리
+- **네이티브 Bulk Insert**: MSSQL BulkLoad, MySQL LOAD DATA, PostgreSQL COPY
+- **트랜잭션 지원**: 자동 롤백
+
+### service-common
+
+- **Binary Protocol**: 대용량 메시지 청킹 (최대 100MB)
+- **타입 안전 이벤트**: `ServiceEventListener`
+- **빌트인 서비스**: `IOrmService`, `ICryptoService`, `ISmtpService`
+
+### excel
+
+- **워크북/워크시트**: 생성, 읽기, 저장 (OOXML 포맷)
+- **셀 조작**: 값, 스타일, 수식, 병합
+- **이미지 삽입**: PNG, JPEG 등 지원
+- **타입 안전 래퍼**: Zod 스키마 기반 `ExcelWrapper`
+
+### storage
+
+- **FTP/FTPS**: `FtpStorageClient` (basic-ftp 기반)
+- **SFTP**: `SftpStorageClient` (ssh2-sftp-client 기반)
+- **연결 관리**: `StorageFactory` (busyCount 동기화)
+
+### eslint-plugin
+
+- **TypeScript 규칙**: `no-hard-private`, `ts-no-unused-injects`
+- **Angular 템플릿 규칙**: `ng-template-sd-require-binding-attrs`
+- **권장 설정**: `sdPlugin.configs.root`
+
+## 브라우저 지원
+
+- **타겟**: Chrome 79+
+- **빌드**: TypeScript ES2022 → esbuild (browserslist)
+- **폴리필**: Node.js 내장 모듈 사용 가능 (`esbuild-plugins-node-modules-polyfill`)
+
+```typescript
+import path from "path";  // 브라우저에서도 사용 가능
+Buffer.from("hello");     // 브라우저에서도 사용 가능
+```
+
+## 개발 가이드
+
+개발 관련 상세 가이드는 [CLAUDE.md](CLAUDE.md)를 참고하세요.
+
+## 라이선스
+
+MIT

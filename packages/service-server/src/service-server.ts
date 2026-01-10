@@ -19,8 +19,8 @@ import { UploadHandler } from "./transport/http/upload-handler";
 import { WebSocketHandler } from "./transport/socket/websocket-handler";
 import type { WebSocket } from "ws";
 import { JwtManager } from "./auth/jwt-manager";
-import type { IAuthTokenPayload } from "./auth/auth-token-payload";
-import type { IServiceServerOptions } from "./types/server-options";
+import type { AuthTokenPayload } from "./auth/auth-token-payload";
+import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection } from "./legacy/v1-auto-update-handler";
 import { AutoUpdateService } from "./services/auto-update-service";
 import pino from "pino";
@@ -45,7 +45,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter {
 
   private _fastify?: FastifyInstance;
 
-  constructor(readonly options: IServiceServerOptions) {
+  constructor(readonly options: ServiceServerOptions) {
     super();
   }
 
@@ -231,11 +231,11 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter {
     await this._wsHandler.emitAsync(eventType, infoSelector, data);
   }
 
-  async generateAuthTokenAsync(payload: IAuthTokenPayload<TAuthInfo>) {
+  async generateAuthTokenAsync(payload: AuthTokenPayload<TAuthInfo>) {
     return await this._jwt.signAsync(payload);
   }
 
-  async verifyAuthTokenAsync(token: string): Promise<IAuthTokenPayload<TAuthInfo>> {
+  async verifyAuthTokenAsync(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
     return await this._jwt.verifyAsync(token);
   }
 

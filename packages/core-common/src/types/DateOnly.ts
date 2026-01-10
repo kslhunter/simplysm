@@ -5,6 +5,8 @@ import { DateTimeFormatUtils } from "../utils/date-format";
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
  */
 export class DateOnly {
+  private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+
   readonly date: Date;
 
   /** 현재시간 */
@@ -66,7 +68,7 @@ export class DateOnly {
       return { year: this.addDays(-7).year, monthSeq: this.addDays(-7).month };
     } else {
       const nextMonthDate = this.addMonths(1).setDay(1);
-      const remainedDays = (nextMonthDate.tick - this.tick) / (24 * 60 * 60 * 1000);
+      const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly.MS_PER_DAY;
 
       const realDaysInWeek = Math.min(daysInWeek, remainedDays);
       if (realDaysInWeek < minDaysInFirstWeek) {
@@ -105,7 +107,7 @@ export class DateOnly {
       minDaysInFirstWeek,
     );
 
-    const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
+    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly.MS_PER_DAY;
     return {
       year: base.year,
       weekSeq: Math.floor(diffDays / 7) + 1,
@@ -126,7 +128,7 @@ export class DateOnly {
       minDaysInFirstWeek,
     );
 
-    const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
+    const diffDays = (this.tick - firstWeekStart.tick) / DateOnly.MS_PER_DAY;
     return {
       year: base.year,
       monthSeq: base.monthSeq,
@@ -154,7 +156,7 @@ export class DateOnly {
 
   /** 날짜 세팅이 제대로 되었는지 여부 */
   get isValidDate(): boolean {
-    return this.date instanceof Date && !isNaN(this.date as unknown as number);
+    return this.date instanceof Date && !Number.isNaN(this.date.getTime());
   }
 
   get year(): number {
@@ -187,10 +189,15 @@ export class DateOnly {
   }
 
   setMonth(month: number): DateOnly {
+    // 월 오버플로우/언더플로우 정규화
+    // month가 1-12 범위를 벗어나면 연도를 조정
+    const normalizedYear = this.year + Math.floor((month - 1) / 12);
+    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
+
     // 대상 월의 마지막 날 구하기
-    const lastDay = new Date(this.year, month, 0).getDate();
+    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
     const currentDay = Math.min(this.day, lastDay);
-    return new DateOnly(this.year, month, currentDay);
+    return new DateOnly(normalizedYear, normalizedMonth, currentDay);
   }
 
   setDay(day: number): DateOnly {
@@ -210,7 +217,7 @@ export class DateOnly {
   }
 
   addDays(days: number): DateOnly {
-    return new DateOnly(this.tick + days * 24 * 60 * 60 * 1000);
+    return new DateOnly(this.tick + days * DateOnly.MS_PER_DAY);
   }
 
   //#endregion

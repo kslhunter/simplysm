@@ -2,7 +2,7 @@ import type { Type } from "@simplysm/core-common";
 import type { ServiceBase } from "../core/service-base";
 import type http from "http";
 
-export interface IServiceServerOptions {
+export interface ServiceServerOptions {
   rootPath: string;
   port: number;
   ssl?: {

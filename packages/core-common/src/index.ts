@@ -9,7 +9,7 @@ export * from "./errors/TimeoutError";
 //#endregion
 
 //#region types
-export * from "./types/uuid";
+export * from "./types/Uuid";
 export * from "./types/LazyGcMap";
 export * from "./types/DateTime";
 export * from "./types/DateOnly";
@@ -21,9 +21,7 @@ export * from "./utils/date-format";
 export * from "./utils/object";
 export * from "./utils/string";
 export * from "./utils/number";
-export * from "./utils/math";
 export * from "./utils/json";
-export * from "./utils/csv";
 export * from "./utils/xml";
 export * from "./utils/wait";
 export * from "./utils/debounce-queue";

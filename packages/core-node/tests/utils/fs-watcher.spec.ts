@@ -83,7 +83,7 @@ describe("SdFsWatcher", () => {
   //#region Types
 
   describe("Types", () => {
-    it("TSdFsWatcherEvent 타입 정의 확인", () => {
+    it("SdFsWatcherEvent 타입 정의 확인", () => {
       // 이벤트 타입이 올바르게 정의되어 있는지 확인
       const validEvents = ["add", "addDir", "change", "unlink", "unlinkDir"];
       expect(validEvents).toContain("add");
@@ -93,7 +93,7 @@ describe("SdFsWatcher", () => {
       expect(validEvents).toContain("unlinkDir");
     });
 
-    it("ISdFsWatcherChangeInfo 구조 확인", () => {
+    it("SdFsWatcherChangeInfo 구조 확인", () => {
       // 인터페이스 구조 확인용 타입 체크
       const mockChangeInfo = {
         event: "add" as const,

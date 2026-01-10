@@ -6,8 +6,8 @@ import type {
   ResultMeta,
 } from "@simplysm/orm-common";
 
-export interface IOrmService {
-  getInfo(opt: TDbConnOptions & { configName: string }): Promise<{
+export interface OrmService {
+  getInfo(opt: DbConnOptions & { configName: string }): Promise<{
     dialect: Dialect;
     database?: string;
     schema?: string;
@@ -39,7 +39,7 @@ export interface IOrmService {
   ): Promise<void>;
 }
 
-export type TDbConnOptions = { configName?: string; config?: Record<string, unknown> } & Record<
+export type DbConnOptions = { configName?: string; config?: Record<string, unknown> } & Record<
   string,
   unknown
 >;

@@ -1,14 +1,14 @@
 import { SdWorker } from "@simplysm/core-node";
-import type { IServiceMessageDecodeResult, TServiceMessage } from "@simplysm/service-common";
+import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
-import type { IServiceProtocolWorker } from "./protocol.worker-types";
+import type { ServiceProtocolWorker } from "./protocol.worker-types";
 
 export class ProtocolWrapper {
   // 워커 스레드 (무거운 작업용, Static Lazy Singleton)
-  private static _worker?: SdWorker<IServiceProtocolWorker>;
+  private static _worker?: SdWorker<ServiceProtocolWorker>;
   private static get worker() {
     if (this._worker == null) {
-      this._worker = new SdWorker<IServiceProtocolWorker>(
+      this._worker = new SdWorker<ServiceProtocolWorker>(
         import.meta.resolve("../workers/service-protocol.worker"),
         {
           resourceLimits: { maxOldGenerationSizeMb: 4096 },
@@ -29,7 +29,7 @@ export class ProtocolWrapper {
    */
   async encodeAsync(
     uuid: string,
-    message: TServiceMessage,
+    message: ServiceMessage,
   ): Promise<{ chunks: Buffer[]; totalSize: number }> {
     if (this._shouldUseWorkerForEncode(message)) {
       return await ProtocolWrapper.worker.run("encode", [uuid, message]);
@@ -41,7 +41,7 @@ export class ProtocolWrapper {
   /**
    * 메시지 디코딩 (자동 분기 처리)
    */
-  async decodeAsync(buffer: Buffer): Promise<IServiceMessageDecodeResult<TServiceMessage>> {
+  async decodeAsync(buffer: Buffer): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = buffer.length;
     if (totalSize > this._SIZE_THRESHOLD) {
       return await ProtocolWrapper.worker.run("decode", [buffer]);
@@ -53,7 +53,7 @@ export class ProtocolWrapper {
   /**
    * 워커 사용 여부 판단 로직 (Encode)
    */
-  private _shouldUseWorkerForEncode(msg: TServiceMessage): boolean {
+  private _shouldUseWorkerForEncode(msg: ServiceMessage): boolean {
     if (!("body" in msg)) return false;
 
     const body = msg.body;

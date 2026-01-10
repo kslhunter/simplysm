@@ -358,6 +358,75 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
+  //#region decode 원본 보존
+
+  describe("decode() - 원본 보존", () => {
+    it("원본 배열이 변경되지 않는다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const original = [
+        { __type__: "DateTime", data: tick },
+        "string",
+        123,
+      ];
+      const originalCopy = JSON.stringify(original);
+
+      TransferableConvert.decode(original);
+
+      // 원본이 변경되지 않았는지 확인
+      expect(JSON.stringify(original)).toBe(originalCopy);
+      expect(original[0]).toEqual({ __type__: "DateTime", data: tick });
+      expect(original[1]).toBe("string");
+      expect(original[2]).toBe(123);
+    });
+
+    it("원본 객체가 변경되지 않는다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const original = {
+        dt: { __type__: "DateTime", data: tick },
+        value: 123,
+      };
+      const originalCopy = JSON.stringify(original);
+
+      TransferableConvert.decode(original);
+
+      // 원본이 변경되지 않았는지 확인
+      expect(JSON.stringify(original)).toBe(originalCopy);
+      expect(original.dt).toEqual({ __type__: "DateTime", data: tick });
+      expect(original.value).toBe(123);
+    });
+
+    it("중첩 배열/객체도 원본이 보존된다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const original = {
+        nested: {
+          arr: [{ __type__: "DateTime", data: tick }],
+        },
+      };
+      const originalCopy = JSON.stringify(original);
+
+      TransferableConvert.decode(original);
+
+      expect(JSON.stringify(original)).toBe(originalCopy);
+    });
+
+    it("decode 결과는 새 인스턴스다 (원본과 다름)", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const original = [
+        { __type__: "DateTime", data: tick },
+      ];
+
+      const decoded = TransferableConvert.decode(original);
+
+      // 결과는 새 배열
+      expect(decoded).not.toBe(original);
+      // 배열 내용은 변환됨
+      expect(Array.isArray(decoded)).toBe(true);
+      expect((decoded as unknown[])[0] instanceof DateTime).toBe(true);
+    });
+  });
+
+  //#endregion
+
   //#region 왕복 변환 (round-trip)
 
   describe("왕복 변환 (encode → decode)", () => {

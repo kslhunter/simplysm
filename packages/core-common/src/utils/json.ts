@@ -5,11 +5,11 @@
 import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
-import { Uuid } from "../types/uuid";
+import { Uuid } from "../types/Uuid";
 import { ObjectUtils } from "./object";
 import { SdError } from "../errors/SdError";
 
-interface ITypedObject {
+interface TypedObject {
   __type__: string;
   data: unknown;
 }
@@ -78,17 +78,21 @@ export class JsonConvert {
       return currValue;
     };
 
+    // Date.prototype.toJSON 임시 제거
+    // 이유: JSON.stringify의 replacer에서 value를 받을 때 toJSON이 먼저 호출되어
+    //       Date가 string으로 변환됨. 이를 방지하여 Date 객체를 그대로 받기 위함.
     const prevDateToJson = Date.prototype.toJSON;
     delete (Date.prototype as { toJSON?: typeof Date.prototype.toJSON }).toJSON;
 
-    const result = JSON.stringify(
-      replacer(undefined, obj),
-      replacer as (key: string, value: unknown) => unknown,
-      options?.space,
-    );
-    Date.prototype.toJSON = prevDateToJson;
-
-    return result;
+    try {
+      return JSON.stringify(
+        replacer(undefined, obj),
+        replacer as (key: string, value: unknown) => unknown,
+        options?.space,
+      );
+    } finally {
+      Date.prototype.toJSON = prevDateToJson;
+    }
   }
   //#endregion
 
@@ -104,7 +108,7 @@ export class JsonConvert {
           if (value != null && typeof value === "object") {
             // __type__ 기반 타입 복원
             if ("__type__" in value && "data" in value) {
-              const typed = value as ITypedObject;
+              const typed = value as TypedObject;
               if (typed.__type__ === "Date" && typeof typed.data === "string") {
                 return new Date(Date.parse(typed.data));
               }

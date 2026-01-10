@@ -1,10 +1,13 @@
 import { TransferableConvert, Uuid } from "@simplysm/core-common";
 import { EventEmitter } from "events";
 import path from "path";
+import pino from "pino";
 import { fileURLToPath } from "url";
 import type { WorkerOptions } from "worker_threads";
 import { Worker } from "worker_threads";
-import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
+import type { SdWorkerRequest, SdWorkerType, SdWorkerResponse } from "./types";
+
+const logger = pino({ name: "sd-worker" });
 
 //#region SdWorker
 
@@ -13,7 +16,7 @@ import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types
  * 메인 스레드에서 사용.
  *
  * @example
- * const worker = new SdWorker<IMyWorkerType>("./my-worker.ts");
+ * const worker = new SdWorker<MyWorkerType>("./my-worker.ts");
  *
  * worker.on("progress", (percent) => {
  *   console.log(`Progress: ${percent}%`);
@@ -22,7 +25,7 @@ import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types
  * const result = await worker.run("calculate", [10, 20]);
  * await worker.killAsync();
  */
-export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
+export class SdWorker<T extends SdWorkerType> extends EventEmitter {
   private readonly _worker: Worker;
   private _isTerminated = false;
 
@@ -71,20 +74,18 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
 
     this._worker.on("exit", (code) => {
       if (!this._isTerminated && code !== 0) {
-        // eslint-disable-next-line no-console
-        console.error(`[SdWorker] 오류와 함께 닫힘 (CODE: ${code})`);
+        logger.error({ code }, "워커가 오류와 함께 닫힘");
       }
     });
 
     this._worker.on("error", (err) => {
-      // eslint-disable-next-line no-console
-      console.error("[SdWorker] 에러:", err);
+      logger.error({ err }, "워커 에러 발생");
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
-      const response: TSdWorkerResponse<T, string> = TransferableConvert.decode(
+      const response: SdWorkerResponse<T, string> = TransferableConvert.decode(
         serializedResponse,
-      ) as TSdWorkerResponse<T, string>;
+      ) as SdWorkerResponse<T, string>;
 
       if (response.type === "event") {
         this.emit(response.event, response.body);
@@ -117,21 +118,23 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     params: T["methods"][K]["params"],
   ): Promise<T["methods"][K]["returnType"]> {
     return await new Promise<T["methods"][K]["returnType"]>((resolve, reject) => {
-      const request: ISdWorkerRequest<T, K> = {
+      const request: SdWorkerRequest<T, K> = {
         id: Uuid.new().toString(),
         method,
         params,
       };
 
       const callback = (serializedResponse: unknown) => {
-        const response: TSdWorkerResponse<T, K> = TransferableConvert.decode(
+        const response: SdWorkerResponse<T, K> = TransferableConvert.decode(
           serializedResponse,
-        ) as TSdWorkerResponse<T, K>;
+        ) as SdWorkerResponse<T, K>;
 
         if (response.type === "return") {
           if (response.request.id === request.id) {
             this._worker.off("message", callback);
-            resolve(response.body!);
+            // void 반환 타입에서 body가 undefined일 수 있으므로 as 사용
+            // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+            resolve(response.body as T["methods"][K]["returnType"]);
           }
         } else if (response.type === "error") {
           if (response.request.id === request.id) {

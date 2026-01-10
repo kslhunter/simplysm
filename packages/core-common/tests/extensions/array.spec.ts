@@ -56,6 +56,28 @@ describe("Array.ext", () => {
 
       expect(result).toEqual(["a", "b", "c"]);
     });
+
+    it("keyFn으로 커스텀 키 기반 중복 제거", () => {
+      const arr = [
+        { id: 1, name: "a" },
+        { id: 2, name: "b" },
+        { id: 1, name: "c" },
+      ];
+      const result = arr.distinct({ keyFn: (item) => item.id });
+
+      expect(result).toHaveLength(2);
+      expect(result[0].name).toBe("a"); // 첫 번째 id:1 유지
+      expect(result[1].name).toBe("b");
+    });
+
+    it("options 객체로 matchAddress 전달", () => {
+      const obj1 = { id: 1 };
+      const obj2 = { id: 2 };
+      const arr = [obj1, obj2, obj1];
+      const result = arr.distinct({ matchAddress: true });
+
+      expect(result).toHaveLength(2);
+    });
   });
 
   //#endregion

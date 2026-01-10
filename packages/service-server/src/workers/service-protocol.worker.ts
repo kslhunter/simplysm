@@ -1,10 +1,10 @@
 import { createSdWorker } from "@simplysm/core-node";
 import { ServiceProtocol } from "@simplysm/service-common";
-import type { IServiceProtocolWorker } from "../protocol/protocol.worker-types";
+import type { ServiceProtocolWorker } from "../protocol/protocol.worker-types";
 
 const protocol = new ServiceProtocol();
 
-createSdWorker<IServiceProtocolWorker>({
+createSdWorker<ServiceProtocolWorker>({
   encode: (uuid, message) => {
     return protocol.encode(uuid, message);
   },

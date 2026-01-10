@@ -26,7 +26,7 @@ export class SocketProvider extends EventEmitter {
     event: "state",
     listener: (state: "connected" | "closed" | "reconnecting") => void,
   ): this;
-  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
 
@@ -60,10 +60,11 @@ export class SocketProvider extends EventEmitter {
   async closeAsync(): Promise<void> {
     this._isManualClose = true;
     this._stopHeartbeat();
-    if (this._ws != null) {
-      this._ws.close();
+    const ws = this._ws;
+    if (ws != null) {
+      ws.close();
       // 완전히 닫힐 때까지 대기 (Graceful Shutdown)
-      await Wait.until(() => this._ws!.readyState === WebSocket.CLOSED, 100, 3000).catch(() => {});
+      await Wait.until(() => ws.readyState === WebSocket.CLOSED, 100, 3000).catch(() => {});
     }
     this.emit("state", "closed");
   }
@@ -74,7 +75,11 @@ export class SocketProvider extends EventEmitter {
     } catch {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
-    this._ws!.send(data);
+    const ws = this._ws;
+    if (ws == null) {
+      throw new Error("WebSocket이 연결되어있지 않습니다.");
+    }
+    ws.send(data);
   }
 
   private async _createSocketAsync(): Promise<void> {
@@ -104,7 +109,13 @@ export class SocketProvider extends EventEmitter {
       };
     });
 
-    this._ws!.onmessage = (event) => {
+    // 이 시점에서 this._ws는 항상 할당되어 있음 (ws.onopen에서 할당)
+    const currentWs = this._ws;
+    if (currentWs == null) {
+      throw new Error("WebSocket 초기화 실패");
+    }
+
+    currentWs.onmessage = (event) => {
       this._lastHeartbeatTime = Date.now(); // 하트비트 갱신
 
       const data = event.data as ArrayBuffer | Buffer;
@@ -135,7 +146,7 @@ export class SocketProvider extends EventEmitter {
       this.emit("message", buffer);
     };
 
-    this._ws!.onclose = async () => {
+    currentWs.onclose = async () => {
       this._stopHeartbeat();
       if (!this._isManualClose) {
         await this._tryReconnectAsync();
@@ -144,30 +155,32 @@ export class SocketProvider extends EventEmitter {
   }
 
   private async _tryReconnectAsync(): Promise<void> {
-    if (this._reconnectCount >= this._maxReconnectCount) {
-      logger.error("재연결 시도 횟수 초과. 연결을 포기합니다.");
-      this.emit("state", "closed");
-      return;
+    // 루프 기반 재연결 (재귀 대신 사용하여 스택 안전성 확보)
+    while (this._reconnectCount < this._maxReconnectCount) {
+      this._reconnectCount++;
+      this.emit("state", "reconnecting");
+      logger.warn(
+        { reconnectCount: this._reconnectCount, maxReconnectCount: this._maxReconnectCount },
+        "WebSocket 연결 끊김. 재연결 시도...",
+      );
+
+      await Wait.time(this._RECONNECT_DELAY);
+
+      try {
+        await this._createSocketAsync();
+        this._startHeartbeat();
+        this._reconnectCount = 0;
+        this.emit("state", "connected"); // 재연결 성공 알림
+        logger.info("WebSocket 재연결 성공");
+        return; // 재연결 성공 시 종료
+      } catch {
+        // 실패 시 루프 계속
+      }
     }
 
-    this._reconnectCount++;
-    this.emit("state", "reconnecting");
-    logger.warn(
-      { reconnectCount: this._reconnectCount, maxReconnectCount: this._maxReconnectCount },
-      "WebSocket 연결 끊김. 재연결 시도...",
-    );
-
-    await Wait.time(this._RECONNECT_DELAY);
-
-    try {
-      await this._createSocketAsync();
-      this._startHeartbeat();
-      this._reconnectCount = 0;
-      this.emit("state", "connected"); // 재연결 성공 알림
-      logger.info("WebSocket 재연결 성공");
-    } catch {
-      await this._tryReconnectAsync(); // 실패 시 재귀 호출
-    }
+    // 최대 재시도 횟수 초과
+    logger.error("재연결 시도 횟수 초과. 연결을 포기합니다.");
+    this.emit("state", "closed");
   }
 
   private _startHeartbeat(): void {
@@ -209,9 +222,10 @@ export class SocketProvider extends EventEmitter {
       }
 
       // ping 전송
-      if (this.connected) {
+      const ws = this._ws;
+      if (this.connected && ws != null) {
         try {
-          this._ws!.send(this._PING_PACKET);
+          ws.send(this._PING_PACKET);
         } catch (err) {
           logger.warn({ err }, "Ping send failed");
         }

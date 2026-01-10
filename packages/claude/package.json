@@ -1,0 +1,20 @@
+{
+  "name": "@simplysm/claude",
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - claude code 확장",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/claude"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "tsc && node dist/prepack.js",
+    "postinstall": "node dist/postinstall.js"
+  }
+}

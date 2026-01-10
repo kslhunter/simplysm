@@ -77,7 +77,15 @@ END $$
 
 export const schemaExists: ExpectedSql = {
   mysql: mysql`SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'TestDb'`,
-  mssql: tsql`SELECT name FROM sys.databases WHERE name = 'TestDb' AND EXISTS (SELECT 1 FROM [TestDb].sys.schemas WHERE name = 'TestSchema')`,
+  mssql: tsql`
+DECLARE @result NVARCHAR(MAX) = NULL;
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'TestDb')
+BEGIN
+  DECLARE @sql NVARCHAR(MAX) = N'SELECT @result = name FROM ' + QUOTENAME('TestDb') + N'.sys.schemas WHERE name = ''TestSchema''';
+  EXEC sp_executesql @sql, N'@result NVARCHAR(MAX) OUTPUT', @result OUTPUT;
+END
+SELECT @result AS name WHERE @result IS NOT NULL
+  `,
   postgresql: pgsql`SELECT nspname FROM pg_namespace WHERE nspname = 'TestSchema'`,
 };
 
@@ -186,6 +194,12 @@ export const modifyColumn: ExpectedSql = {
   mysql: mysql`ALTER TABLE \`TestDb\`.\`User\` MODIFY COLUMN \`name\` VARCHAR(200) NULL`,
   mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[User] ALTER COLUMN [name] NVARCHAR(200) NULL`,
   postgresql: pgsql`ALTER TABLE "TestSchema"."User" ALTER COLUMN "name" TYPE VARCHAR(200), ALTER COLUMN "name" DROP NOT NULL`,
+};
+
+export const modifyColumnTypeAndDefault: ExpectedSql = {
+  mysql: mysql`ALTER TABLE \`TestDb\`.\`User\` MODIFY COLUMN \`score\` INT NOT NULL DEFAULT 100`,
+  mssql: tsql`ALTER TABLE [TestDb].[TestSchema].[User] ALTER COLUMN [score] INT NOT NULL`,
+  postgresql: pgsql`ALTER TABLE "TestSchema"."User" ALTER COLUMN "score" TYPE INTEGER, ALTER COLUMN "score" DROP NOT NULL, ALTER COLUMN "score" SET DEFAULT 100`,
 };
 
 export const renameColumn: ExpectedSql = {

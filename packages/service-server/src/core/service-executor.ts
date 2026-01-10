@@ -1,6 +1,6 @@
 import type { ServiceServer } from "../service-server";
 import type { ServiceSocket } from "../transport/socket/service-socket";
-import type { IAuthTokenPayload } from "../auth/auth-token-payload";
+import type { AuthTokenPayload } from "../auth/auth-token-payload";
 import { getAuthPermissions } from "../auth/auth.decorators";
 
 export class ServiceExecutor {
@@ -11,7 +11,7 @@ export class ServiceExecutor {
     methodName: string;
     params: unknown[];
     socket?: ServiceSocket;
-    http?: { clientName: string; authTokenPayload?: IAuthTokenPayload };
+    http?: { clientName: string; authTokenPayload?: AuthTokenPayload };
   }): Promise<unknown> {
     // 서비스 클래스 찾기
     const ServiceClass = this._server.options.services.find(

@@ -38,7 +38,7 @@ describe("LazyGcMap", () => {
       expect(map.delete("key1")).toBe(false); // 이미 삭제됨
     });
 
-    it("clear로 모든 값을 삭제한다", () => {
+    it("destroy로 모든 값을 삭제한다", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 1000,
         expireTime: 5000,
@@ -48,7 +48,7 @@ describe("LazyGcMap", () => {
       map.set("key2", 200);
       expect(map.size).toBe(2);
 
-      map.clear();
+      map.destroy();
       expect(map.size).toBe(0);
       expect(map.has("key1")).toBe(false);
       expect(map.has("key2")).toBe(false);
@@ -293,6 +293,188 @@ describe("LazyGcMap", () => {
       // 에러가 발생해도 만료는 정상 처리됨
       expect(expired).toEqual([["key1", 100]]);
       expect(map.has("key1")).toBe(false);
+    });
+
+    it("onExpire 중 같은 키로 set() 호출 시 새 값이 유지된다", async () => {
+      let map: LazyGcMap<string, number>;
+      const expired: Array<[string, number]> = [];
+
+      map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+        onExpire: async (key, value) => {
+          expired.push([key, value]);
+          // onExpire 콜백 중에 같은 키로 새 값 등록
+          map.set(key, value + 1000);
+        },
+      });
+
+      map.set("key1", 100);
+      await Wait.time(350);
+
+      // onExpire는 호출되었지만, 새로 등록된 값은 삭제되지 않음
+      expect(expired).toEqual([["key1", 100]]);
+      expect(map.has("key1")).toBe(true);
+      expect(map.get("key1")).toBe(1100);
+    });
+
+    it("onExpire 중 다른 키로 set() 호출은 영향 없다", async () => {
+      let map: LazyGcMap<string, number>;
+      const expired: Array<[string, number]> = [];
+
+      map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+        onExpire: async (key, value) => {
+          expired.push([key, value]);
+          // onExpire 콜백 중에 다른 키로 새 값 등록
+          map.set("key2", 200);
+        },
+      });
+
+      map.set("key1", 100);
+      await Wait.time(350);
+
+      // key1은 만료 삭제됨
+      expect(expired).toEqual([["key1", 100]]);
+      expect(map.has("key1")).toBe(false);
+      // key2는 새로 등록됨
+      expect(map.has("key2")).toBe(true);
+      expect(map.get("key2")).toBe(200);
+    });
+  });
+
+  //#endregion
+
+  //#region destroy (타이머 및 리소스 정리)
+
+  describe("destroy() - 타이머 정리", () => {
+    it("destroy 후 타이머가 정리되어 GC 콜백이 호출되지 않는다", async () => {
+      const expired: Array<[string, number]> = [];
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+        onExpire: (key, value) => {
+          expired.push([key, value]);
+        },
+      });
+
+      map.set("key1", 100);
+      expect(map.has("key1")).toBe(true);
+
+      // destroy 호출로 타이머 정리
+      map.destroy();
+      expect(map.size).toBe(0);
+
+      // expireTime + gcInterval 이상 대기
+      await Wait.time(400);
+
+      // GC 콜백이 호출되지 않아야 함 (destroy로 이미 정리됨)
+      expect(expired).toHaveLength(0);
+    });
+
+    it("destroy 후 새 항목 추가가 정상 작동한다", async () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+      });
+
+      map.set("key1", 100);
+      map.destroy();
+
+      // destroy 후 새 항목 추가
+      map.set("key2", 200);
+      expect(map.has("key2")).toBe(true);
+      expect(map.get("key2")).toBe(200);
+
+      // GC가 정상 작동하는지 확인
+      await Wait.time(350);
+      expect(map.has("key2")).toBe(false);
+    });
+
+    it("destroy는 여러 번 호출해도 안전하다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 1000,
+        expireTime: 5000,
+      });
+
+      map.set("key1", 100);
+
+      // 여러 번 호출해도 에러 없음
+      map.destroy();
+      map.destroy();
+      map.destroy();
+
+      expect(map.size).toBe(0);
+    });
+  });
+
+  //#endregion
+
+  //#region clear
+
+  describe("clear()", () => {
+    it("모든 항목을 삭제한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 1000,
+        expireTime: 5000,
+      });
+
+      map.set("key1", 100);
+      map.set("key2", 200);
+      expect(map.size).toBe(2);
+
+      map.clear();
+      expect(map.size).toBe(0);
+      expect(map.has("key1")).toBe(false);
+      expect(map.has("key2")).toBe(false);
+    });
+
+    it("clear 후 새 항목을 추가할 수 있다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 1000,
+        expireTime: 5000,
+      });
+
+      map.set("key1", 100);
+      map.clear();
+
+      map.set("key2", 200);
+      expect(map.has("key2")).toBe(true);
+      expect(map.get("key2")).toBe(200);
+    });
+
+    it("clear는 여러 번 호출해도 안전하다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 1000,
+        expireTime: 5000,
+      });
+
+      map.set("key1", 100);
+
+      // 여러 번 호출해도 에러 없음
+      map.clear();
+      map.clear();
+      map.clear();
+
+      expect(map.size).toBe(0);
+    });
+
+    it("clear 후 GC가 정상 작동한다", async () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+      });
+
+      map.set("key1", 100);
+      map.clear();
+
+      // clear 후 새 항목 추가
+      map.set("key2", 200);
+
+      // GC가 정상 작동하는지 확인
+      await Wait.time(350);
+      expect(map.has("key2")).toBe(false);
     });
   });
 

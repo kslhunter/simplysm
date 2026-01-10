@@ -1,38 +1,60 @@
-export type TServiceMessage =
-  | IServiceReloadMessage
-  | IServiceRequestMessage
-  | IServiceAuthMessage
-  | IServiceProgressMessage
-  | IServiceResponseMessage
-  | IServiceErrorMessage
-  | IServiceAddEventListenerMessage
-  | IServiceRemoveEventListenerMessage
-  | IServiceGetEventListenerInfosMessage
-  | IServiceEmitEventMessage
-  | IServiceEventMessage;
+// ----------------------------------------------------------------------
+// Protocol Constants
+// ----------------------------------------------------------------------
 
-export type TServiceServerMessage =
-  | IServiceReloadMessage // 알림
-  | IServiceResponseMessage
-  | IServiceErrorMessage
-  | IServiceEventMessage; // 알림
+/** 서비스 프로토콜 설정 */
+export const PROTOCOL_CONFIG = {
+  /** 최대 메시지 크기 (100MB) */
+  MAX_TOTAL_SIZE: 100 * 1024 * 1024,
+  /** 청킹 임계값 (3MB) */
+  SPLIT_MESSAGE_SIZE: 3 * 1024 * 1024,
+  /** 청크 크기 (300KB) */
+  CHUNK_SIZE: 300 * 1024,
+  /** GC 주기 (10초) */
+  GC_INTERVAL: 10 * 1000,
+  /** 미완성 메시지 만료 시간 (60초) */
+  EXPIRE_TIME: 60 * 1000,
+} as const;
 
-export type TServiceServerRawMessage = IServiceProgressMessage | TServiceServerMessage;
+// ----------------------------------------------------------------------
+// Message Types
+// ----------------------------------------------------------------------
 
-export type TServiceClientMessage =
-  | IServiceRequestMessage
-  | IServiceAuthMessage
-  | IServiceAddEventListenerMessage
-  | IServiceRemoveEventListenerMessage
-  | IServiceGetEventListenerInfosMessage
-  | IServiceEmitEventMessage;
+export type ServiceMessage =
+  | ServiceReloadMessage
+  | ServiceRequestMessage
+  | ServiceAuthMessage
+  | ServiceProgressMessage
+  | ServiceResponseMessage
+  | ServiceErrorMessage
+  | ServiceAddEventListenerMessage
+  | ServiceRemoveEventListenerMessage
+  | ServiceGetEventListenerInfosMessage
+  | ServiceEmitEventMessage
+  | ServiceEventMessage;
+
+export type ServiceServerMessage =
+  | ServiceReloadMessage // 알림
+  | ServiceResponseMessage
+  | ServiceErrorMessage
+  | ServiceEventMessage; // 알림
+
+export type ServiceServerRawMessage = ServiceProgressMessage | ServiceServerMessage;
+
+export type ServiceClientMessage =
+  | ServiceRequestMessage
+  | ServiceAuthMessage
+  | ServiceAddEventListenerMessage
+  | ServiceRemoveEventListenerMessage
+  | ServiceGetEventListenerInfosMessage
+  | ServiceEmitEventMessage;
 
 // ----------------------------------------------------------------------
 // System 공통
 // ----------------------------------------------------------------------
 
 /** 서버: 클라이언트에게 reload 명령 */
-export interface IServiceReloadMessage {
+export interface ServiceReloadMessage {
   name: "reload";
   body: {
     clientName: string | undefined; // 클라이언트명
@@ -41,7 +63,7 @@ export interface IServiceReloadMessage {
 }
 
 /** 서버: 받은 분할메시지에 대한 progress 알림 */
-export interface IServiceProgressMessage {
+export interface ServiceProgressMessage {
   name: "progress";
   body: {
     totalSize: number; // 총 크기 (Bytes)
@@ -50,7 +72,7 @@ export interface IServiceProgressMessage {
 }
 
 /** 서버: 에러 발생 알림 */
-export interface IServiceErrorMessage {
+export interface ServiceErrorMessage {
   name: "error";
   body: {
     name: string;
@@ -63,7 +85,7 @@ export interface IServiceErrorMessage {
 }
 
 /** 클라: 인증 메시지 */
-export interface IServiceAuthMessage {
+export interface ServiceAuthMessage {
   name: "auth";
   body: string; // 토큰
 }
@@ -73,13 +95,13 @@ export interface IServiceAuthMessage {
 // ----------------------------------------------------------------------
 
 /** 클라: ServiceMethod 요청 */
-export interface IServiceRequestMessage {
+export interface ServiceRequestMessage {
   name: `${string}.${string}`; // ${service}.${method}
   body: unknown[]; // params
 }
 
 /** 서버: ServiceMethod 응답 */
-export interface IServiceResponseMessage {
+export interface ServiceResponseMessage {
   name: "response";
   body?: unknown; // result
 }
@@ -89,7 +111,7 @@ export interface IServiceResponseMessage {
 // ----------------------------------------------------------------------
 
 /** 클라: 이벤트 리스너 등록 */
-export interface IServiceAddEventListenerMessage {
+export interface ServiceAddEventListenerMessage {
   name: "evt:add";
   body: {
     key: string; // 리스너키 (uuid) - 차후 removeEventListener를 위해서라도 필요함
@@ -99,7 +121,7 @@ export interface IServiceAddEventListenerMessage {
 }
 
 /** 클라: 이벤트 리스너 제거 */
-export interface IServiceRemoveEventListenerMessage {
+export interface ServiceRemoveEventListenerMessage {
   name: "evt:remove";
   body: {
     key: string; // 리스너키 (uuid)
@@ -107,7 +129,7 @@ export interface IServiceRemoveEventListenerMessage {
 }
 
 /** 클라: 이벤트 리스너 정보 목록 요청 */
-export interface IServiceGetEventListenerInfosMessage {
+export interface ServiceGetEventListenerInfosMessage {
   name: "evt:gets";
   body: {
     name: string; // 이벤트명
@@ -115,7 +137,7 @@ export interface IServiceGetEventListenerInfosMessage {
 }
 
 /** 클라: 이벤트 발생 */
-export interface IServiceEmitEventMessage {
+export interface ServiceEmitEventMessage {
   name: "evt:emit";
   body: {
     keys: string[]; // 리스너키 목록
@@ -124,7 +146,7 @@ export interface IServiceEmitEventMessage {
 }
 
 /** 서버: 이벤트 발생 알림 */
-export interface IServiceEventMessage {
+export interface ServiceEventMessage {
   name: "evt:on";
   body: {
     keys: string[]; // 리스너키 목록

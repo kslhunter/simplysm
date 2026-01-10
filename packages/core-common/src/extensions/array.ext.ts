@@ -8,184 +8,24 @@ import type { Type } from "../types";
 import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
-
-//#region 인터페이스
-
-interface IReadonlyArrayExt<T> {
-  single(predicate?: (item: T, index: number) => boolean): T | undefined;
-
-  first(predicate?: (item: T, index: number) => boolean): T | undefined;
-
-  filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
-
-  last(predicate?: (item: T, index: number) => boolean): T | undefined;
-
-  filterExists(): NonNullable<T>[];
-
-  ofType<N extends T>(type: Type<N>): N[];
-
-  mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
-
-  mapMany(): T;
-
-  mapMany<R>(selector: (item: T, index: number) => R[]): R[];
-
-  mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
-
-  parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
-
-  groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
-
-  groupBy<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (item: T, index: number) => V,
-  ): {
-    key: K;
-    values: V[];
-  }[];
-
-  toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
-
-  toMap<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (item: T, index: number) => V,
-  ): Map<K, V>;
-
-  toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
-
-  toMapAsync<K, V>(
-    keySelector: (item: T, index: number) => Promise<K> | K,
-    valueSelector: (item: T, index: number) => Promise<V> | V,
-  ): Promise<Map<K, V>>;
-
-  toArrayMap<K>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
-
-  toArrayMap<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (item: T, index: number) => V,
-  ): Map<K, V[]>;
-
-  toSetMap<K>(keySelector: (item: T, index: number) => K): Map<K, Set<T>>;
-  toSetMap<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (item: T, index: number) => V,
-  ): Map<K, Set<V>>;
-
-  toMapValues<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (items: T[]) => V,
-  ): Map<K, V>;
-
-  toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
-
-  toObject<V>(
-    keySelector: (item: T, index: number) => string,
-    valueSelector: (item: T, index: number) => V,
-  ): Record<string, V>;
-
-  toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
-
-  distinct(matchAddress?: boolean): T[];
-
-  orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
-
-  orderByDesc(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
-
-  diffs<P>(
-    target: P[],
-    options?: { keys?: string[]; excludes?: string[] },
-  ): TArrayDiffsResult<T, P>[];
-
-  oneWayDiffs<K extends keyof T>(
-    orgItems: T[] | Map<T[K], T>,
-    keyPropNameOrFn: K | ((item: T) => K),
-    options?: {
-      includeSame?: boolean;
-      excludes?: string[];
-      includes?: string[];
-    },
-  ): TArrayDiffs2Result<T>[];
-
-  merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
-
-  sum(selector?: (item: T, index: number) => number): number;
-
-  min(): T extends number | string ? T | undefined : never;
-
-  min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
-
-  max(): T extends number | string ? T | undefined : never;
-
-  max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
-
-  shuffle(): T[];
-}
-
-interface IMutableArrayExt<T> {
-  distinctThis(matchAddress?: boolean): T[];
-
-  orderByThis(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
-
-  orderByDescThis(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
-
-  insert(index: number, ...items: T[]): this;
-
-  remove(item: T): this;
-
-  remove(selector: (item: T, index: number) => boolean): this;
-
-  toggle(item: T): this;
-
-  clear(): this;
-}
-
-//#endregion
-
-//#region 헬퍼 함수
-
-function toComparable(value: unknown): string | number | boolean | undefined {
-  if (value instanceof DateOnly || value instanceof DateTime || value instanceof Time) {
-    return value.tick;
-  }
-  return value as string | number | boolean | undefined;
-}
-
-function compareForOrder(pp: unknown, pn: unknown, desc: boolean): number {
-  const cpp = toComparable(pp);
-  const cpn = toComparable(pn);
-
-  if (cpn === cpp) return 0;
-  if (cpp == null) return desc ? 1 : -1;
-  if (cpn == null) return desc ? -1 : 1;
-
-  if (typeof cpn === "string" && typeof cpp === "string") {
-    return desc ? cpn.localeCompare(cpp) : cpp.localeCompare(cpn);
-  }
-  if (typeof cpn === "number" && typeof cpp === "number") {
-    return desc ? (cpn < cpp ? -1 : cpn > cpp ? 1 : 0) : cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
-  }
-  if (typeof cpn === "boolean" && typeof cpp === "boolean") {
-    return cpn === cpp ? 0 : cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
-  }
-
-  throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
-}
-
-//#endregion
+import { ArgumentError } from "../errors/ArgumentError";
+import { SdError } from "../errors/SdError";
+import { compareForOrder } from "./array-ext.helpers";
+import type {
+  ReadonlyArrayExt,
+  MutableArrayExt,
+  ArrayDiffsResult,
+  ArrayDiffs2Result,
+  TreeArray,
+} from "./array-ext.types";
 
 //#region 구현
 
-const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
+const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   single<T>(predicate?: (item: T, index: number) => boolean): T | undefined {
     const arr = predicate !== undefined ? this.filter(predicate) : this;
     if (arr.length > 1) {
-      throw new Error(`복수의 결과물이 있습니다. (${arr.length}개)`);
+      throw new ArgumentError("복수의 결과물이 있습니다.", { count: arr.length });
     }
     return arr[0];
   },
@@ -248,6 +88,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     return await Promise.all(this.map(async (item, index) => await fn(item, index)));
   },
 
+  // K도 Object일 수 있음
   groupBy<T, K, V>(
     keySelector: (item: T, index: number) => K,
     valueSelector?: (item: T, index: number) => V,
@@ -285,7 +126,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
-        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
+        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: keyObj });
       }
       result.set(keyObj, valueObj);
     }
@@ -306,7 +147,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
-        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
+        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: keyObj });
       }
       result.set(keyObj, valueObj);
     }
@@ -389,7 +230,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
       if (result[key] !== undefined) {
-        throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
+        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: key });
       }
       result[key] = valueObj;
     }
@@ -397,11 +238,14 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  toTree<T, K extends keyof T, P extends keyof T>(key: K, parentKey: P): ITreeArray<T>[] {
-    const fn = (items: T[]): ITreeArray<T>[] => {
+  toTree<T, K extends keyof T, P extends keyof T>(key: K, parentKey: P): TreeArray<T>[] {
+    // O(n) 최적화: 맵 기반 인덱싱
+    const childrenMap = this.toArrayMap((item) => item[parentKey]);
+
+    const fn = (items: T[]): TreeArray<T>[] => {
       return items.map((item) => ({
         ...ObjectUtils.clone(item),
-        children: fn(this.filter((item1) => item1[parentKey] === item[key])),
+        children: fn(childrenMap.get(item[key]) ?? []),
       }));
     };
 
@@ -409,10 +253,33 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     return fn(rootItems);
   },
 
-  distinct<T>(matchAddress?: boolean): T[] {
-    if (matchAddress === true) return [...new Set(this)];
+  distinct<T>(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
+  ): T[] {
+    // 옵션 정규화
+    const opts =
+      typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
+    // matchAddress: Set 기반 O(n)
+    if (opts.matchAddress === true) return [...new Set(this)];
+
+    // keyFn 제공 시: 커스텀 키 기반 O(n)
+    if (opts.keyFn) {
+      const seen = new Set<string | number>();
+      const result: T[] = [];
+      for (const item of this) {
+        const key = opts.keyFn(item);
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(item);
+        }
+      }
+      return result;
+    }
+
+    // 기본: 타입별 처리
     const seen = new Map<string, T>();
+    const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>(); // symbol/function용 O(n) 처리
     const result: T[] = [];
 
     for (const item of this) {
@@ -420,9 +287,10 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       if (item === null || typeof item !== "object") {
         const type = typeof item;
 
-        // symbol, function은 Map key로 직접 사용 (identity 비교)
+        // symbol, function은 Set으로 identity 비교 (O(n))
         if (type === "symbol" || type === "function") {
-          if (!result.includes(item)) {
+          if (!seenRefs.has(item)) {
+            seenRefs.add(item);
             result.push(item);
           }
           continue;
@@ -454,7 +322,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
   orderBy<T>(
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.concat().sort((p, n) => {
+    return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, false);
@@ -464,7 +332,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
   orderByDesc<T>(
     selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
   ): T[] {
-    return this.concat().sort((p, n) => {
+    return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
       return compareForOrder(pp, pn, true);
@@ -477,10 +345,10 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       keys?: string[];
       excludes?: string[];
     },
-  ): TArrayDiffsResult<T, P>[] {
-    const result: TArrayDiffsResult<T, P>[] = [];
+  ): ArrayDiffsResult<T, P>[] {
+    const result: ArrayDiffsResult<T, P>[] = [];
 
-    const uncheckedTarget = ([] as P[]).concat(target);
+    const uncheckedTarget = [...target];
 
     for (const sourceItem of this) {
       const sameTarget = uncheckedTarget.single((targetItem) =>
@@ -524,7 +392,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       excludes?: string[];
       includes?: string[];
     },
-  ): TArrayDiffs2Result<T>[] {
+  ): ArrayDiffs2Result<T>[] {
     const orgItemMap =
       orgItems instanceof Map
         ? orgItems
@@ -535,7 +403,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
           );
     const includeSame = options?.includeSame ?? false;
 
-    const diffs: TArrayDiffs2Result<T>[] = [];
+    const diffs: ArrayDiffs2Result<T>[] = [];
     for (const item of this) {
       const keyValue =
         typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
@@ -582,7 +450,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       if (diff.source !== undefined && diff.target !== undefined) {
         const resultSourceItem = result.single((item) => ObjectUtils.equal(item, diff.source));
         if (resultSourceItem === undefined) {
-          throw new Error("예상치 못한 오류: merge에서 source 항목을 찾을 수 없습니다.");
+          throw new SdError("예상치 못한 오류: merge에서 source 항목을 찾을 수 없습니다.");
         }
         result[result.indexOf(resultSourceItem)] = ObjectUtils.merge(diff.source, diff.target);
       }
@@ -600,7 +468,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number") {
-        throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
+        throw new ArgumentError("sum 은 number 에 대해서만 사용할 수 있습니다.", { type: typeof item });
       }
       result += item;
     }
@@ -613,7 +481,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new Error("min 은 number/string 에 대해서만 사용할 수 있습니다.");
+        throw new ArgumentError("min 은 number/string 에 대해서만 사용할 수 있습니다.", { type: typeof item });
       }
       if (result === undefined || result > item) {
         result = item;
@@ -628,7 +496,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new Error("max 은 number/string 에 대해서만 사용할 수 있습니다.");
+        throw new ArgumentError("max 은 number/string 에 대해서만 사용할 수 있습니다.", { type: typeof item });
       }
       if (result === undefined || result < item) {
         result = item;
@@ -652,7 +520,7 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 };
 
-const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
+const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
   distinctThis<T>(matchAddress?: boolean): T[] {
     // 뒤에서부터 순회, 앞에 같은 요소가 있으면 제거
     for (let i = this.length - 1; i >= 0; i--) {
@@ -697,14 +565,15 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
   },
 
   remove<T>(itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
-    const removeItems =
+    const shouldRemove =
       typeof itemOrSelector === "function"
-        ? this.filter((itemOrSelector as (item: T, index: number) => boolean).bind(this))
-        : [itemOrSelector];
+        ? (itemOrSelector as (item: T, index: number) => boolean)
+        : (item: T) => item === itemOrSelector;
 
-    for (const removeItem of removeItems) {
-      while (this.includes(removeItem)) {
-        this.splice(this.indexOf(removeItem), 1);
+    // 역방향 순회로 인덱스 변경 문제 방지 (O(n) 성능)
+    for (let i = this.length - 1; i >= 0; i--) {
+      if (shouldRemove(this[i], i)) {
+        this.splice(i, 1);
       }
     }
 
@@ -742,24 +611,10 @@ for (const [name, fn] of Object.entries({
 //#region 타입 선언
 
 declare global {
-  interface ReadonlyArray<T> extends IReadonlyArrayExt<T> {}
-  interface Array<T> extends IReadonlyArrayExt<T>, IMutableArrayExt<T> {}
+  interface ReadonlyArray<T> extends ReadonlyArrayExt<T> {}
+  interface Array<T> extends ReadonlyArrayExt<T>, MutableArrayExt<T> {}
 }
 
 //#endregion
 
-//#region 내보내기 타입
-
-export type TArrayDiffsResult<T, P> =
-  | { source: undefined; target: P } // INSERT
-  | { source: T; target: undefined } // DELETE
-  | { source: T; target: P }; // UPDATE
-
-export type TArrayDiffs2Result<T> =
-  | { type: "create"; item: T; orgItem: undefined }
-  | { type: "update"; item: T; orgItem: T }
-  | { type: "same"; item: T; orgItem: T };
-
-export type ITreeArray<T> = T & { children: ITreeArray<T>[] };
-
-//#endregion
+export type { ArrayDiffsResult, ArrayDiffs2Result, TreeArray } from "./array-ext.types";

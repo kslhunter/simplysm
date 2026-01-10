@@ -594,8 +594,16 @@ EXEC sp_executesql @sql;` };
     const dbName = this.expr.escapeString(def.database);
     const schemaName = def.schema ?? "dbo";
     const schema = this.expr.escapeString(schemaName);
-    // MSSQL: database.schema 존재 확인
-    return { sql: `SELECT name FROM sys.databases WHERE name = '${dbName}' AND EXISTS (SELECT 1 FROM ${this.expr.wrap(def.database)}.sys.schemas WHERE name = '${schema}')` };
+    // MSSQL: database 존재 확인 후 schema 확인 (동적 SQL 사용)
+    return {
+      sql: `DECLARE @result NVARCHAR(MAX) = NULL;
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = '${dbName}')
+BEGIN
+  DECLARE @sql NVARCHAR(MAX) = N'SELECT @result = name FROM ' + QUOTENAME('${dbName}') + N'.sys.schemas WHERE name = ''${schema}''';
+  EXEC sp_executesql @sql, N'@result NVARCHAR(MAX) OUTPUT', @result OUTPUT;
+END
+SELECT @result AS name WHERE @result IS NOT NULL`,
+    };
   }
 
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {

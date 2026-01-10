@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import type { Pool } from "generic-pool";
 import type { ColumnMeta, IsolationLevel } from "@simplysm/orm-common";
-import type { DbConnConfig, IDbConn } from "./types/db-conn";
+import type { DbConn, DbConnConfig } from "./types/db-conn";
 
 /**
  * 커넥션 풀에서 관리되는 DB 연결 래퍼
@@ -9,12 +9,12 @@ import type { DbConnConfig, IDbConn } from "./types/db-conn";
  * generic-pool 라이브러리를 사용하여 커넥션 풀링을 지원합니다.
  * 실제 물리 연결은 풀에서 획득하고 반환합니다.
  */
-export class PooledDbConn extends EventEmitter implements IDbConn {
+export class PooledDbConn extends EventEmitter implements DbConn {
   // 풀에서 빌려온 실제 물리 커넥션
-  private _rawConn?: IDbConn;
+  private _rawConn?: DbConn;
 
   constructor(
-    private readonly _pool: Pool<IDbConn>,
+    private readonly _pool: Pool<DbConn>,
     private readonly _initialConfig: DbConnConfig,
   ) {
     super();
@@ -75,28 +75,28 @@ export class PooledDbConn extends EventEmitter implements IDbConn {
   // --- 아래는 위임(Delegation) 메소드 ---
 
   async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
-    this._checkConnected();
-    await this._rawConn!.beginTransactionAsync(isolationLevel);
+    const conn = this._requireRawConn();
+    await conn.beginTransactionAsync(isolationLevel);
   }
 
   async commitTransactionAsync(): Promise<void> {
-    this._checkConnected();
-    await this._rawConn!.commitTransactionAsync();
+    const conn = this._requireRawConn();
+    await conn.commitTransactionAsync();
   }
 
   async rollbackTransactionAsync(): Promise<void> {
-    this._checkConnected();
-    await this._rawConn!.rollbackTransactionAsync();
+    const conn = this._requireRawConn();
+    await conn.rollbackTransactionAsync();
   }
 
   async executeAsync(queries: string[]): Promise<unknown[][]> {
-    this._checkConnected();
-    return await this._rawConn!.executeAsync(queries);
+    const conn = this._requireRawConn();
+    return await conn.executeAsync(queries);
   }
 
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
-    this._checkConnected();
-    return await this._rawConn!.executeParametrizedAsync(query, params);
+    const conn = this._requireRawConn();
+    return await conn.executeParametrizedAsync(query, params);
   }
 
   async bulkInsertAsync(
@@ -104,13 +104,14 @@ export class PooledDbConn extends EventEmitter implements IDbConn {
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
   ): Promise<void> {
-    this._checkConnected();
-    await this._rawConn!.bulkInsertAsync(tableName, columnMetas, records);
+    const conn = this._requireRawConn();
+    await conn.bulkInsertAsync(tableName, columnMetas, records);
   }
 
-  private _checkConnected() {
+  private _requireRawConn(): DbConn {
     if (this._rawConn == null) {
       throw new Error("'Connection'이 연결되어있지 않습니다. (Pool Connection is not acquired)");
     }
+    return this._rawConn;
   }
 }

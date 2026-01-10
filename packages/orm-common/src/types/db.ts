@@ -112,7 +112,7 @@ export type DataRecord = {
  *
  * @see {@link DbContext} DbContext에서 사용
  */
-export interface IDbContextExecutor {
+export interface DbContextExecutor {
   /**
    * DB 연결 수립
    */

@@ -1,6 +1,6 @@
 # @simplysm/core-browser
 
-> SimplySM 프레임워크의 브라우저 전용 DOM 유틸리티 패키지
+> SIMPLYSM 프레임워크의 브라우저 전용 DOM 유틸리티 패키지
 
 ## 설치
 
@@ -11,227 +11,220 @@ yarn add @simplysm/core-browser
 ## 요구사항
 
 - **브라우저**: Chrome 79+
-- **의존성**: `@simplysm/core-common`
+- **의존성**: `@simplysm/core-common`, `tabbable`
 
 > **주의**: 이 패키지는 브라우저 환경에서만 동작합니다. Node.js 환경에서는 사용할 수 없습니다.
 
 ## API
 
-### Blob 유틸리티
+### BlobUtils
 
-#### `downloadBlob(blob, fileName)`
+Blob 관련 유틸리티.
+
+#### `BlobUtils.download(blob, fileName)`
 
 Blob을 파일로 다운로드합니다.
 
 ```typescript
-import { downloadBlob } from "@simplysm/core-browser";
+import { BlobUtils } from "@simplysm/core-browser";
 
 const blob = new Blob(["Hello, World!"], { type: "text/plain" });
-downloadBlob(blob, "hello.txt");
+BlobUtils.download(blob, "hello.txt");
 ```
 
 ---
 
-### Element 유틸리티
+### ElementUtils
 
-#### `prependChild(parent, child)`
+Element 관련 유틸리티.
+
+#### `ElementUtils.prependChild(parent, child)`
 
 요소를 첫 번째 자식으로 삽입합니다.
 
 ```typescript
-import { prependChild } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
 const newItem = document.createElement("div");
-prependChild(container, newItem);
+ElementUtils.prependChild(container, newItem);
 ```
 
-#### `findAll(el, selector)`
+#### `ElementUtils.findAll(el, selector)`
 
 셀렉터로 하위 요소 전체를 검색합니다. `:scope`가 자동 적용됩니다.
 
 ```typescript
-import { findAll } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-const items = findAll(container, ".item");
-const buttons = findAll<HTMLButtonElement>(container, "button");
+const items = ElementUtils.findAll(container, ".item");
+const buttons = ElementUtils.findAll<HTMLButtonElement>(container, "button");
 ```
 
-#### `findFirst(el, selector)`
+#### `ElementUtils.findFirst(el, selector)`
 
 셀렉터로 첫 번째 하위 요소를 검색합니다.
 
 ```typescript
-import { findFirst } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-const firstItem = findFirst(container, ".item");
+const firstItem = ElementUtils.findFirst(container, ".item");
 if (firstItem !== undefined) {
   // ...
 }
 ```
 
-#### `getParents(el)`
+#### `ElementUtils.getParents(el)`
 
 모든 부모 요소 목록을 반환합니다 (가까운 순서).
 
 ```typescript
-import { getParents } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-const parents = getParents(element);
+const parents = ElementUtils.getParents(element);
 ```
 
-#### `isFocusable(el)`
-
-요소가 포커스 가능한지 확인합니다.
-
-```typescript
-import { isFocusable } from "@simplysm/core-browser";
-
-if (isFocusable(element)) {
-  element.focus();
-}
-```
-
-#### `findFocusableAll(el)`
-
-하위의 모든 포커스 가능 요소를 검색합니다.
-
-```typescript
-import { findFocusableAll } from "@simplysm/core-browser";
-
-const focusables = findFocusableAll(container);
-```
-
-#### `findFocusableFirst(el)`
-
-첫 번째 포커스 가능 하위 요소를 검색합니다.
-
-```typescript
-import { findFocusableFirst } from "@simplysm/core-browser";
-
-const firstFocusable = findFocusableFirst(container);
-firstFocusable?.focus();
-```
-
-#### `findFocusableParent(el)`
+#### `ElementUtils.findFocusableParent(el)`
 
 부모 중 첫 번째 포커스 가능 요소를 검색합니다.
 
 ```typescript
-import { findFocusableParent } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-const focusableParent = findFocusableParent(element);
+const focusableParent = ElementUtils.findFocusableParent(element);
 ```
 
-#### `isOffsetElement(el)`
+> **참고**: 포커스 가능 여부 확인(`isFocusable`), 포커스 가능 요소 목록 조회(`focusable`, `tabbable`) 등은 `tabbable` 패키지를 직접 사용하세요.
+>
+> ```typescript
+> import { isFocusable, focusable } from "tabbable";
+>
+> if (isFocusable(element)) {
+>   element.focus();
+> }
+> const focusableElements = focusable(container);
+> ```
+
+#### `ElementUtils.isOffsetElement(el)`
 
 요소가 offset 기준 요소인지 확인합니다 (position: relative/absolute/fixed/sticky).
 
 ```typescript
-import { isOffsetElement } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-if (isOffsetElement(element)) {
+if (ElementUtils.isOffsetElement(element)) {
   // offset 계산의 기준이 되는 요소
 }
 ```
 
-#### `isVisible(el)`
+#### `ElementUtils.isVisible(el)`
 
 요소가 화면에 보이는지 확인합니다.
 
 ```typescript
-import { isVisible } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-if (isVisible(element)) {
+if (ElementUtils.isVisible(element)) {
   // 요소가 보이는 상태
 }
 ```
 
-#### `copyElement(event)`
+#### `ElementUtils.copyElement(event)`
 
 요소 내용을 클립보드에 복사합니다 (copy 이벤트 핸들러에서 사용).
 input/textarea가 있으면 value를 복사, 없으면 기본 동작을 유지합니다.
 
 ```typescript
-import { copyElement } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-element.addEventListener("copy", copyElement);
+element.addEventListener("copy", ElementUtils.copyElement);
 ```
 
-#### `pasteToElement(event)`
+#### `ElementUtils.pasteToElement(event)`
 
 클립보드 내용을 요소에 붙여넣습니다 (paste 이벤트 핸들러에서 사용).
 
 ```typescript
-import { pasteToElement } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-element.addEventListener("paste", pasteToElement);
+element.addEventListener("paste", ElementUtils.pasteToElement);
 ```
 
 ---
 
-### HTMLElement 유틸리티
+### HtmlElementUtils
 
-#### `repaint(el)`
+HTMLElement 전용 유틸리티.
+
+#### `HtmlElementUtils.repaint(el)`
 
 강제 리페인트를 트리거합니다 (reflow).
 
 ```typescript
-import { repaint } from "@simplysm/core-browser";
+import { HtmlElementUtils } from "@simplysm/core-browser";
 
 element.style.height = "100px";
-repaint(element); // 변경사항 즉시 반영
+HtmlElementUtils.repaint(element); // 변경사항 즉시 반영
 ```
 
-#### `getRelativeOffset(el, parent)`
+#### `HtmlElementUtils.getRelativeOffset(el, parent)`
 
 부모 요소 기준 상대 위치를 계산합니다.
 
 ```typescript
-import { getRelativeOffset } from "@simplysm/core-browser";
+import { HtmlElementUtils } from "@simplysm/core-browser";
 
 // HTMLElement로 지정
-const offset = getRelativeOffset(child, parentElement);
+const offset = HtmlElementUtils.getRelativeOffset(child, parentElement);
 
 // 셀렉터로 지정
-const offset2 = getRelativeOffset(child, ".container");
+const offset2 = HtmlElementUtils.getRelativeOffset(child, ".container");
 
 console.log(offset.top, offset.left);
 ```
 
-#### `scrollIntoViewIfNeeded(container, target, offset?)`
+#### `HtmlElementUtils.scrollIntoViewIfNeeded(container, target, offset?)`
 
 필요시 스크롤하여 대상 위치를 보이게 합니다.
 
 ```typescript
-import { scrollIntoViewIfNeeded, getRelativeOffset } from "@simplysm/core-browser";
+import { HtmlElementUtils } from "@simplysm/core-browser";
 
-const targetOffset = getRelativeOffset(targetElement, container);
-scrollIntoViewIfNeeded(container, targetOffset, { top: 10, left: 10 });
+const targetOffset = HtmlElementUtils.getRelativeOffset(targetElement, container);
+HtmlElementUtils.scrollIntoViewIfNeeded(container, targetOffset, { top: 10, left: 10 });
 ```
 
-#### `getBoundsAsync(els)`
+#### `HtmlElementUtils.getBoundsAsync(els, timeout?)`
 
 IntersectionObserver를 사용하여 요소들의 bounds 정보를 비동기로 조회합니다.
 
 ```typescript
-import { getBoundsAsync } from "@simplysm/core-browser";
+import { HtmlElementUtils } from "@simplysm/core-browser";
 
-const bounds = await getBoundsAsync([element1, element2]);
+const bounds = await HtmlElementUtils.getBoundsAsync([element1, element2]);
 bounds.forEach((b) => {
   console.log(b.target, b.top, b.left, b.width, b.height);
 });
+
+// 커스텀 타임아웃 (기본: 5000ms)
+const bounds2 = await HtmlElementUtils.getBoundsAsync([element], 10000);
 ```
 
 ---
 
 ## 타입
 
-### `FocusableElement`
+### `HtmlElementUtils.ElementBounds`
 
-포커스 가능한 요소 타입입니다.
+요소의 bounds 정보 타입입니다.
 
 ```typescript
-type FocusableElement = Element & HTMLOrSVGElement;
+interface ElementBounds {
+  target: HTMLElement;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
 ```
 
 ---

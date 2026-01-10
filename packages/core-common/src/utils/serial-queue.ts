@@ -5,12 +5,15 @@
 import { SdError } from "../errors/SdError";
 import { Wait } from "./wait";
 import EventEmitter from "events";
+import pino from "pino";
 
-export interface ISdAsyncFnSerialQueueEvents {
+export interface SdAsyncFnSerialQueueEvents {
   error: [err: SdError];
 }
 
-export class SdAsyncFnSerialQueue extends EventEmitter<ISdAsyncFnSerialQueueEvents> {
+export class SdAsyncFnSerialQueue extends EventEmitter<SdAsyncFnSerialQueueEvents> {
+  private static readonly _logger = pino({ name: "SdAsyncFnSerialQueue" });
+
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;
 
@@ -19,6 +22,13 @@ export class SdAsyncFnSerialQueue extends EventEmitter<ISdAsyncFnSerialQueueEven
    */
   constructor(private readonly _gap: number = 0) {
     super();
+  }
+
+  /**
+   * 대기 중인 큐 비우기 (현재 실행 중인 작업은 완료됨)
+   */
+  dispose(): void {
+    this._queue.length = 0;
   }
 
   /**
@@ -42,7 +52,14 @@ export class SdAsyncFnSerialQueue extends EventEmitter<ISdAsyncFnSerialQueueEven
           await fn();
         } catch (err) {
           const error = err instanceof Error ? err : new Error(String(err));
-          this.emit("error", new SdError(error, "큐 작업 실행 중 오류 발생"));
+          const sdError = new SdError(error, "큐 작업 실행 중 오류 발생");
+
+          // 리스너가 있으면 이벤트로 전달, 없으면 로깅
+          if (this.listenerCount("error") > 0) {
+            this.emit("error", sdError);
+          } else {
+            SdAsyncFnSerialQueue._logger.error(sdError);
+          }
         }
 
         if (this._gap > 0 && this._queue.length > 0) {

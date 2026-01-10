@@ -22,7 +22,7 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
-import { ObjectUtils } from "@simplysm/core-common";
+import { ArgumentError, ObjectUtils } from "@simplysm/core-common";
 import {
   ForeignKeyBuilder,
   ForeignKeyTargetBuilder,
@@ -77,7 +77,10 @@ class JoinQueryable {
    */
   union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData, never> {
     if (queries.length < 2) {
-      throw new Error("union은 최소 2개의 queryable이 필요합니다.");
+      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+        provided: queries.length,
+        minimum: 2,
+      });
     }
 
     const first = queries[0];

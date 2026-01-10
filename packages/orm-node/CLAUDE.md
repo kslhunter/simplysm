@@ -1,10 +1,11 @@
 # orm-node 개발 가이드
 
-> SimplySM 프레임워크의 Node.js ORM 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 Node.js ORM 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-orm-node`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 orm-node 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 
 ## 아키텍처
 
@@ -86,6 +87,13 @@ dialect별로 분기되는 연결 설정.
 ```typescript
 type DbConnConfig = MysqlDbConnConfig | MssqlDbConnConfig | PostgresqlDbConnConfig;
 
+interface DbPoolConfig {
+  min?: number;                  // default: 1
+  max?: number;                  // default: 10
+  acquireTimeoutMillis?: number; // default: 30000
+  idleTimeoutMillis?: number;    // default: 30000
+}
+
 interface MysqlDbConnConfig {
   dialect: "mysql";
   host: string;
@@ -94,6 +102,7 @@ interface MysqlDbConnConfig {
   password: string;
   database: string;
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 
 interface MssqlDbConnConfig {
@@ -105,6 +114,7 @@ interface MssqlDbConnConfig {
   database: string;
   schema?: string;    // default: dbo
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 
 interface PostgresqlDbConnConfig {
@@ -116,6 +126,7 @@ interface PostgresqlDbConnConfig {
   database: string;
   schema?: string;    // default: public
   defaultIsolationLevel?: IsolationLevel;
+  pool?: DbPoolConfig;
 }
 ```
 
@@ -149,9 +160,25 @@ await orm.connectWithoutTransactionAsync(async (db) => {
 ### 커넥션 풀링
 
 DbConnFactory가 generic-pool을 사용하여 커넥션 풀 관리.
+`DbPoolConfig`로 풀 설정을 외부에서 제어할 수 있습니다.
 
 ```typescript
-// 내부 동작
+// 사용자 설정
+const orm = new SdOrm(MyDb, {
+  dialect: "mysql",
+  host: "localhost",
+  username: "root",
+  password: "password",
+  database: "mydb",
+  pool: {
+    min: 2,
+    max: 20,
+    acquireTimeoutMillis: 60000,
+    idleTimeoutMillis: 60000,
+  },
+});
+
+// 내부 동작 (DbConnFactory)
 const pool = createPool<IDbConn>({
   create: async () => {
     const conn = await createRawConnection(config);
@@ -163,10 +190,10 @@ const pool = createPool<IDbConn>({
   },
   validate: (conn) => Promise.resolve(conn.isConnected),
 }, {
-  min: 1,
-  max: 10,
-  acquireTimeoutMillis: 30000,
-  idleTimeoutMillis: 30000,
+  min: config.pool?.min ?? 1,
+  max: config.pool?.max ?? 10,
+  acquireTimeoutMillis: config.pool?.acquireTimeoutMillis ?? 30000,
+  idleTimeoutMillis: config.pool?.idleTimeoutMillis ?? 30000,
   testOnBorrow: true,
 });
 ```
@@ -256,7 +283,7 @@ private _convertDataTypeToTediousBulkColumnType(dataType: DataType): {
 npx tsc --noEmit -p packages/orm-node/tsconfig.json 2>&1 | grep "^packages/orm-node/"
 
 # ESLint
-npx eslint "packages/orm-node/**/*.ts"
+yarn run _sd-cli_ lint "packages/orm-node/**/*.ts"
 
 # 테스트 (Docker 필요)
 npx vitest run packages/orm-node

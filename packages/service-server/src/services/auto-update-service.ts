@@ -1,10 +1,10 @@
 import path from "path";
 import semver from "semver";
 import { FsUtils } from "@simplysm/core-node";
-import type { IAutoUpdateService } from "@simplysm/service-common";
+import type { AutoUpdateService as AutoUpdateServiceType } from "@simplysm/service-common";
 import { ServiceBase } from "../core/service-base";
 
-export class AutoUpdateService extends ServiceBase implements IAutoUpdateService {
+export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceType {
   getLastVersion(platform: string):
     | {
         version: string;

@@ -1,10 +1,11 @@
 # service-common 개발 가이드
 
-> SimplySM 프레임워크의 서비스 프로토콜 및 공통 타입 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 서비스 프로토콜 및 공통 타입 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-service-common`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 service-common 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 **사용자 문서는 [README.md](README.md)를 참고하세요.**
 
 ## 아키텍처
@@ -47,14 +48,14 @@ src/
 
 Binary Protocol V2 인코더/디코더.
 
-**상수 (하드코딩)**:
+**상수** (`PROTOCOL_CONFIG` 객체):
 | 상수 | 값 | 설명 |
 |------|-----|------|
-| `_MAX_TOTAL_SIZE` | 100MB | 메시지 최대 크기 |
-| `_SPLIT_MESSAGE_SIZE` | 3MB | 청킹 임계값 |
-| `_CHUNK_SIZE` | 300KB | 청크 크기 |
-| GC Interval | 10초 | LazyGcMap 정리 주기 |
-| Expire Time | 60초 | 미완성 메시지 만료 |
+| `MAX_TOTAL_SIZE` | 100MB | 메시지 최대 크기 |
+| `SPLIT_MESSAGE_SIZE` | 3MB | 청킹 임계값 |
+| `CHUNK_SIZE` | 300KB | 청크 크기 |
+| `GC_INTERVAL` | 10초 | LazyGcMap 정리 주기 |
+| `EXPIRE_TIME` | 60초 | 미완성 메시지 만료 |
 
 ### ServiceEventListener (types.ts)
 
@@ -102,5 +103,5 @@ Binary Protocol V2 인코더/디코더.
 npx tsc --noEmit -p packages/service-common/tsconfig.json 2>&1 | grep "^packages/service-common/"
 
 # ESLint
-npx eslint "packages/service-common/**/*.ts"
+yarn run _sd-cli_ lint "packages/service-common/**/*.ts"
 ```

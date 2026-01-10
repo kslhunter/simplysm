@@ -1,10 +1,11 @@
 # core-node 개발 가이드
 
-> SimplySM 프레임워크의 Node.js 전용 유틸리티 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 Node.js 전용 유틸리티 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-core-node`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 core-node 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 **사용자 문서는 [README.md](README.md)를 참고하세요.**
 
 ## 아키텍처
@@ -30,7 +31,7 @@ core-common             ← 공통 유틸리티
 ```
 src/
 ├── utils/
-│   ├── path.ts         # 경로 유틸리티 (TNormPath 브랜드 타입)
+│   ├── path.ts         # 경로 유틸리티 (NormPath 브랜드 타입)
 │   ├── fs.ts           # 파일 시스템 유틸리티 (node:fs/promises 기반)
 │   └── fs-watcher.ts   # 파일 감시 (chokidar 래퍼)
 ├── worker/
@@ -49,15 +50,15 @@ lib/
 | 함수 | 설명 |
 |------|------|
 | `posix(...args)` | POSIX 스타일 경로 (백슬래시 → 슬래시) |
-| `norm(...paths)` | 정규화된 경로 (`TNormPath` 반환) |
+| `norm(...paths)` | 정규화된 경로 (`NormPath` 반환) |
 | `isChildPath(child, parent)` | 자식 경로 여부 확인 |
 | `changeFileDirectory(file, from, to)` | 디렉토리 변경 |
 | `removeExt(filePath)` | 확장자 제거 |
 
-**TNormPath**: 브랜드 타입으로 경로 정규화 보장
+**NormPath**: 브랜드 타입으로 경로 정규화 보장
 
 ```typescript
-const normalized: TNormPath = PathUtils.norm("/some/path");
+const normalized: NormPath = PathUtils.norm("/some/path");
 ```
 
 ### FsUtils (utils/fs.ts)
@@ -121,6 +122,7 @@ sender.send("eventName", data);
 |--------|------|
 | `chokidar@5` | 파일 감시 |
 | `glob@13` | 파일 글로빙 |
+| `pino@10` | 로깅 |
 | `tsx@4` | 개발 환경 TS 워커 실행 |
 
 ## core-common 의존성
@@ -170,7 +172,7 @@ npx vitest run packages/core-node/tests/utils/fs.spec.ts
 npx tsc --noEmit -p packages/core-node/tsconfig.json 2>&1 | grep "^packages/core-node/"
 
 # ESLint
-npx eslint "packages/core-node/**/*.ts"
+yarn run _sd-cli_ lint "packages/core-node/**/*.ts"
 
 # 테스트
 npx vitest run packages/core-node

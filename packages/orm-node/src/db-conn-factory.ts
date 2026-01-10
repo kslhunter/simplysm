@@ -1,6 +1,6 @@
 import type { Pool } from "generic-pool";
 import { createPool } from "generic-pool";
-import type { DbConnConfig, IDbConn } from "./types/db-conn";
+import type { DbConn, DbConnConfig } from "./types/db-conn";
 import { PooledDbConn } from "./pooled-db-conn";
 import { MysqlDbConn } from "./connections/mysql-db-conn";
 import { MssqlDbConn } from "./connections/mssql-db-conn";
@@ -14,7 +14,7 @@ import { PostgresqlDbConn } from "./connections/postgresql-db-conn";
  */
 export class DbConnFactory {
   // 설정별 커넥션 풀 캐싱
-  private static readonly _poolMap = new Map<string, Pool<IDbConn>>();
+  private static readonly _poolMap = new Map<string, Pool<DbConn>>();
 
   /**
    * DB 연결 생성
@@ -22,7 +22,7 @@ export class DbConnFactory {
    * 커넥션 풀에서 연결을 획득하여 반환합니다.
    * 풀이 없는 경우 새로 생성합니다.
    */
-  static createAsync(config: DbConnConfig): Promise<IDbConn> {
+  static createAsync(config: DbConnConfig): Promise<DbConn> {
     // 1. 풀 가져오기 (없으면 생성)
     const pool = this._getOrCreatePool(config);
 
@@ -30,12 +30,12 @@ export class DbConnFactory {
     return Promise.resolve(new PooledDbConn(pool, config));
   }
 
-  private static _getOrCreatePool(config: DbConnConfig): Pool<IDbConn> {
+  private static _getOrCreatePool(config: DbConnConfig): Pool<DbConn> {
     // 객체를 키로 쓰기 위해 문자열 변환
     const configKey = JSON.stringify(config);
 
     if (!this._poolMap.has(configKey)) {
-      const pool = createPool<IDbConn>(
+      const pool = createPool<DbConn>(
         {
           create: async () => {
             const conn = await this._createRawConnectionAsync(config);
@@ -51,10 +51,10 @@ export class DbConnFactory {
           },
         },
         {
-          min: 1,
-          max: 10,
-          acquireTimeoutMillis: 30000,
-          idleTimeoutMillis: 30000,
+          min: config.pool?.min ?? 1,
+          max: config.pool?.max ?? 10,
+          acquireTimeoutMillis: config.pool?.acquireTimeoutMillis ?? 30000,
+          idleTimeoutMillis: config.pool?.idleTimeoutMillis ?? 30000,
           testOnBorrow: true, // [중요] 빌려줄 때 validate 실행 여부
         },
       );
@@ -65,7 +65,7 @@ export class DbConnFactory {
     return this._poolMap.get(configKey)!;
   }
 
-  private static async _createRawConnectionAsync(config: DbConnConfig): Promise<IDbConn> {
+  private static async _createRawConnectionAsync(config: DbConnConfig): Promise<DbConn> {
     if (config.dialect === "mysql") {
       const mysql = await this._ensureModuleAsync("mysql");
       return new MysqlDbConn(mysql, config);

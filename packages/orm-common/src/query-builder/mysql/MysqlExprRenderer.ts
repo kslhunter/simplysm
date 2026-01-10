@@ -62,7 +62,7 @@ import type {
   ExprCast,
   ExprWindow,
   ExprSubquery,
-  TDateSeparator,
+  DateSeparator,
 } from "../../types/expr";
 import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/ExprRendererBase";
@@ -414,7 +414,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
     return `DATE_FORMAT(${this.render(expr.source)}, '${mysqlFormat}')`;
   }
 
-  private dateSeparatorToUnit(sep: TDateSeparator): string {
+  private dateSeparatorToUnit(sep: DateSeparator): string {
     switch (sep) {
       case "year":
         return "YEAR";

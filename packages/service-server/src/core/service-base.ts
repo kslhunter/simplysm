@@ -1,6 +1,6 @@
 import type { ServiceServer } from "../service-server";
 import type { ServiceSocket } from "../transport/socket/service-socket";
-import type { IAuthTokenPayload } from "../auth/auth-token-payload";
+import type { AuthTokenPayload } from "../auth/auth-token-payload";
 import { ObjectUtils } from "@simplysm/core-common";
 import { ConfigManager } from "../utils/config-manager";
 import path from "path";
@@ -11,7 +11,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
 
   http?: {
     clientName: string;
-    authTokenPayload?: IAuthTokenPayload<TAuthInfo>;
+    authTokenPayload?: AuthTokenPayload<TAuthInfo>;
   };
 
   // V1 legacy 컨텍스트 (auto-update용)

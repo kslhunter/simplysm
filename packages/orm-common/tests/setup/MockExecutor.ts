@@ -1,7 +1,7 @@
-import type { IDbContextExecutor, ResultMeta } from "../../src/types/db";
+import type { DbContextExecutor, ResultMeta } from "../../src/types/db";
 import type { QueryDef } from "../../src/types/query-def";
 
-export class MockExecutor implements IDbContextExecutor {
+export class MockExecutor implements DbContextExecutor {
   // 연결 관리 (Mock - 아무것도 안 함)
   async connectAsync(): Promise<void> {}
   async closeAsync(): Promise<void> {}

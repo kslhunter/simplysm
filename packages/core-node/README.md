@@ -1,6 +1,6 @@
 # @simplysm/core-node
 
-SimplySM 프레임워크의 Node.js 전용 유틸리티 패키지입니다.
+SIMPLYSM 프레임워크의 Node.js 전용 유틸리티 패키지입니다.
 
 ## 설치
 
@@ -13,13 +13,13 @@ yarn add @simplysm/core-node
 ### 경로 유틸리티 (PathUtils)
 
 ```typescript
-import { PathUtils, TNormPath } from "@simplysm/core-node";
+import { PathUtils, NormPath } from "@simplysm/core-node";
 
 // POSIX 스타일 경로
 PathUtils.posix("C:\\Users\\test"); // "C:/Users/test"
 
 // 정규화된 경로
-const normalized: TNormPath = PathUtils.norm("/some/path");
+const normalized: NormPath = PathUtils.norm("/some/path");
 
 // 자식 경로 확인
 PathUtils.isChildPath("/a/b/c", "/a/b"); // true
@@ -73,7 +73,7 @@ await watcher.close();
 
 ```typescript
 // worker-types.ts
-export interface IMyWorkerType {
+export interface MyWorkerType {
   methods: {
     calculate: { params: [number, number]; returnType: number };
   };
@@ -84,9 +84,9 @@ export interface IMyWorkerType {
 
 // main.ts
 import { SdWorker } from "@simplysm/core-node";
-import type { IMyWorkerType } from "./worker-types";
+import type { MyWorkerType } from "./worker-types";
 
-const worker = new SdWorker<IMyWorkerType>("./my-worker.ts");
+const worker = new SdWorker<MyWorkerType>("./my-worker.ts");
 
 worker.on("progress", (percent) => {
   console.log(`Progress: ${percent}%`);
@@ -97,9 +97,9 @@ await worker.killAsync();
 
 // my-worker.ts
 import { createSdWorker } from "@simplysm/core-node";
-import type { IMyWorkerType } from "./worker-types";
+import type { MyWorkerType } from "./worker-types";
 
-const sender = createSdWorker<IMyWorkerType>({
+const sender = createSdWorker<MyWorkerType>({
   calculate: async (a, b) => {
     sender.send("progress", 50);
     return a + b;
@@ -135,9 +135,11 @@ spinner.succeed("Build complete");
 
 ```typescript
 import { execa } from "execa";
+import pino from "pino";
 
+const logger = pino({ name: "my-app" });
 const { stdout } = await execa("npm", ["install"]);
-console.log(stdout);
+logger.info(stdout);
 ```
 
 ## API 참조

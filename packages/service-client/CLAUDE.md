@@ -1,10 +1,11 @@
 # service-client 개발 가이드
 
-> SimplySM 프레임워크의 서비스 클라이언트 패키지 - Claude Code 참고 문서
+> SIMPLYSM 프레임워크의 서비스 클라이언트 패키지 - Claude Code 참고 문서
 >
 > **주의:** `sd-service-client`(구버전)은 참고 금지.
 
 **이 문서는 Claude Code가 service-client 패키지를 개발/수정할 때 참고하는 가이드입니다.**
+**프로젝트 루트의 [CLAUDE.md](../../CLAUDE.md) 함께 확인하세요.**
 
 ## 아키텍처
 
@@ -202,7 +203,7 @@ const result = await svc.getData(); // 타입 추론됨
 npx tsc --noEmit -p packages/service-client/tsconfig.json 2>&1 | grep "^packages/service-client/"
 
 # ESLint
-npx eslint "packages/service-client/**/*.ts"
+yarn run _sd-cli_ lint "packages/service-client/**/*.ts"
 
 # 테스트
 npx vitest run packages/service-client

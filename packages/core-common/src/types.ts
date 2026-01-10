@@ -1,7 +1,8 @@
 import { DateTime } from "./types/DateTime";
 import { DateOnly } from "./types/DateOnly";
 import { Time } from "./types/Time";
-import { Uuid } from "./types/uuid";
+import { Uuid } from "./types/Uuid";
+import { ArgumentError } from "./errors/ArgumentError";
 
 //#region Primitive 타입
 
@@ -33,7 +34,7 @@ export type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
 /**
  * 값에서 PrimitiveTypeStr 추론
  */
-export function getPrimitiveTypeStr(value: PrimitiveType): PrimitiveTypeStr {
+export function getPrimitiveTypeStr(value: PrimitiveTypeMap[PrimitiveTypeStr]): PrimitiveTypeStr {
   if (typeof value === "string") return "string";
   if (typeof value === "number") return "number";
   if (typeof value === "boolean") return "boolean";
@@ -42,7 +43,7 @@ export function getPrimitiveTypeStr(value: PrimitiveType): PrimitiveTypeStr {
   if (value instanceof Time) return "Time";
   if (value instanceof Uuid) return "Uuid";
   if (Buffer.isBuffer(value)) return "Buffer";
-  throw new Error(`알 수 없는 값 타입: ${typeof value}`);
+  throw new ArgumentError("알 수 없는 값 타입입니다.", { type: typeof value });
 }
 
 //#endregion

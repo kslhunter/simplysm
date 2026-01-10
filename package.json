@@ -23,13 +23,13 @@
     "build": "yarn run _sd-cli_ build",
     "publish": "yarn run _sd-cli_ publish",
     "----": "",
-    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/sd-cli/tsconfig.json packages/sd-cli/src/sd-cli.ts",
-    "eslint:timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.html)\"",
-    "eslint:fix": "eslint --fix \"**/+(*.ts|*.js|*.html)\"",
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/cli/tsconfig.build.json packages/cli/src/sd-cli.ts",
+    "eslint:timing": "yarn run _sd-cli_ lint --timing \"**/*.{ts,js,html}\"",
+    "eslint:fix": "yarn run _sd-cli_ lint --fix \"**/*.{ts,js,html}\"",
     "reinstall": "yarn install --refresh-lockfile"
   },
   "devDependencies": {
-    "@types/node": "^20.19.27",
+    "@types/node": "^20.19.28",
     "@vitest/browser": "^4.0.16",
     "@vitest/browser-playwright": "^4.0.16",
     "@vitest/coverage-v8": "^4.0.16",
@@ -40,9 +40,9 @@
     "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
-    "vite": "^7.3.1",
+    "vite": "~7.2.7",
     "vite-plugin-node-polyfills": "^0.24.0",
-    "vite-tsconfig-paths": "^6.0.3",
+    "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^4.0.16"
   }
 }

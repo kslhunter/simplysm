@@ -1,6 +1,6 @@
 import { getTemplateParserServices } from "@angular-eslint/utils";
 import type { TmplAstElement, TmplAstTextAttribute } from "@angular/compiler";
-import { createRule } from "../utils";
+import { createRule } from "../utils/createRule";
 
 export const RULE_NAME = "ng-template-sd-require-binding-attrs";
 

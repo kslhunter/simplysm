@@ -62,7 +62,7 @@ import type {
   ExprCast,
   ExprWindow,
   ExprSubquery,
-  TDateSeparator,
+  DateSeparator,
 } from "../../types/expr";
 import type { DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/ExprRendererBase";
@@ -416,7 +416,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
     return `FORMAT(${this.render(expr.source)}, '${mssqlFormat}')`;
   }
 
-  private dateSeparatorToUnit(sep: TDateSeparator): string {
+  private dateSeparatorToUnit(sep: DateSeparator): string {
     switch (sep) {
       case "year":
         return "YEAR";

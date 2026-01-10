@@ -1,5 +1,5 @@
 import { OrmClientDbContextExecutor } from "./orm-client-db-context-executor";
-import type { IOrmConnectConfig } from "./orm-connect-config";
+import type { OrmConnectConfig } from "./orm-connect-config";
 import type { DbContext } from "@simplysm/orm-common";
 import type { ServiceClient } from "../../service-client";
 
@@ -7,7 +7,7 @@ export class OrmClientConnector {
   constructor(private readonly _serviceClient: ServiceClient) {}
 
   async connectAsync<T extends DbContext, R>(
-    config: IOrmConnectConfig<T>,
+    config: OrmConnectConfig<T>,
     callback: (conn: T) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
@@ -35,7 +35,7 @@ export class OrmClientConnector {
   }
 
   async connectWithoutTransactionAsync<T extends DbContext, R>(
-    config: IOrmConnectConfig<T>,
+    config: OrmConnectConfig<T>,
     callback: (conn: T) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);

@@ -12,7 +12,10 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/core-common/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/core-browser/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/core-node/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/excel/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/storage/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/service-common/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
@@ -28,6 +31,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.back/260105/orm-common-completed-tasks" />
       <excludeFolder url="file://$MODULE_DIR$/.coverage" />
       <excludeFolder url="file://$MODULE_DIR$/.legacy-packages" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/claude/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/eslint-plugin/docs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

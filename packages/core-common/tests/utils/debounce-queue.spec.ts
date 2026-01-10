@@ -167,6 +167,58 @@ describe("SdAsyncFnDebounceQueue", () => {
 
   //#endregion
 
+  //#region dispose
+
+  describe("dispose()", () => {
+    it("대기 중인 작업과 타이머를 정리한다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(100);
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+
+      // 디바운스 대기 중 dispose
+      await Wait.time(50);
+      queue.dispose();
+
+      // 디바운스 시간 경과 후에도 실행 안 됨
+      await Wait.time(100);
+
+      expect(calls).toEqual([]);
+    });
+
+    it("dispose 후 새 작업은 정상 실행된다", async () => {
+      const queue = new SdAsyncFnDebounceQueue(50);
+      const calls: number[] = [];
+
+      queue.run(async () => {
+        calls.push(1);
+      });
+      queue.dispose();
+
+      // dispose 후 새 작업 추가
+      queue.run(async () => {
+        calls.push(2);
+      });
+
+      await Wait.time(100);
+
+      expect(calls).toEqual([2]);
+    });
+
+    it("여러 번 호출해도 안전하다", () => {
+      const queue = new SdAsyncFnDebounceQueue(50);
+
+      // 여러 번 호출해도 에러 없음
+      queue.dispose();
+      queue.dispose();
+      queue.dispose();
+    });
+  });
+
+  //#endregion
+
   //#region 동기 함수 지원
 
   describe("동기 함수 지원", () => {

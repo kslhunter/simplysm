@@ -16,14 +16,14 @@ export class Wait {
     milliseconds?: number,
     timeout?: number,
   ): Promise<void> {
-    let currMs = 0;
+    const startTime = Date.now();
     while (!(await forwarder())) {
       await Wait.time(milliseconds ?? 100);
 
       if (timeout !== undefined) {
-        currMs += milliseconds ?? 100;
-        if (currMs >= timeout) {
-          throw new TimeoutError();
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= timeout) {
+          throw new TimeoutError(timeout);
         }
       }
     }

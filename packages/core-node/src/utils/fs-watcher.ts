@@ -1,7 +1,7 @@
 import { SdAsyncFnDebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
 import type { EventName } from "chokidar/handler.js";
-import type { TNormPath } from "./path";
+import type { NormPath } from "./path";
 import { PathUtils } from "./path";
 
 //#region Types
@@ -14,16 +14,16 @@ const SD_FS_WATCHER_EVENTS = ["add", "addDir", "change", "unlink", "unlinkDir"] 
 /**
  * 파일 변경 이벤트 타입.
  */
-export type TSdFsWatcherEvent = (typeof SD_FS_WATCHER_EVENTS)[number];
+export type SdFsWatcherEvent = (typeof SD_FS_WATCHER_EVENTS)[number];
 
 /**
  * 파일 변경 정보.
  */
-export interface ISdFsWatcherChangeInfo {
+export interface SdFsWatcherChangeInfo {
   /** 변경 이벤트 타입 */
-  event: TSdFsWatcherEvent;
+  event: SdFsWatcherEvent;
   /** 변경된 파일/디렉토리 경로 (정규화됨) */
-  path: TNormPath;
+  path: NormPath;
 }
 
 //#endregion
@@ -83,7 +83,7 @@ export class SdFsWatcher {
    */
   onChange(
     opt: { delay?: number },
-    cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
+    cb: (changeInfos: SdFsWatcherChangeInfo[]) => void | Promise<void>,
   ): this {
     const fnQ = new SdAsyncFnDebounceQueue(opt.delay);
 
@@ -98,7 +98,7 @@ export class SdFsWatcher {
 
     this._watcher.on("all", (event, filePath) => {
       // 지원하는 이벤트만 처리
-      if (!SD_FS_WATCHER_EVENTS.includes(event as TSdFsWatcherEvent)) return;
+      if (!SD_FS_WATCHER_EVENTS.includes(event as SdFsWatcherEvent)) return;
 
       // 이벤트 병합 로직
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
@@ -123,9 +123,9 @@ export class SdFsWatcher {
         changeInfoMap = new Map<string, EventName>();
 
         const changeInfos = Array.from(currChangeInfoMap.entries()).map(
-          ([path, evt]): ISdFsWatcherChangeInfo => ({
+          ([path, evt]): SdFsWatcherChangeInfo => ({
             path: PathUtils.norm(path),
-            event: evt as TSdFsWatcherEvent,
+            event: evt as SdFsWatcherEvent,
           }),
         );
 

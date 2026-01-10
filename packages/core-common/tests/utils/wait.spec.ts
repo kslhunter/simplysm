@@ -98,6 +98,51 @@ describe("Wait", () => {
       expect(elapsed).toBeGreaterThanOrEqual(200);
       expect(elapsed).toBeLessThan(350);
     });
+
+    it("비동기 조건 함수 시간이 타임아웃에 포함된다", async () => {
+      // 조건 함수가 50ms 걸리고, 체크 간격 10ms, 타임아웃 100ms면
+      // 실제 경과 시간은 50ms(조건) + 10ms(wait) + 50ms(조건) = 110ms로 타임아웃
+      const start = Date.now();
+
+      await expect(async () => {
+        await Wait.until(
+          async () => {
+            await Wait.time(50); // 조건 함수가 50ms 걸림
+            return false;
+          },
+          10,
+          100,
+        );
+      }).rejects.toThrow(TimeoutError);
+
+      const elapsed = Date.now() - start;
+      // 실제 경과 시간 기준으로 타임아웃이 발생해야 함
+      expect(elapsed).toBeGreaterThanOrEqual(100);
+      expect(elapsed).toBeLessThan(200);
+    });
+
+    it("Date.now() 기반 실제 경과 시간 측정 확인", async () => {
+      // 조건 함수가 오래 걸려도 실제 경과 시간 기준으로 타임아웃
+      let callCount = 0;
+      const start = Date.now();
+
+      await expect(async () => {
+        await Wait.until(
+          async () => {
+            callCount++;
+            await Wait.time(30); // 매 호출마다 30ms
+            return false;
+          },
+          10,
+          80, // 80ms 타임아웃
+        );
+      }).rejects.toThrow(TimeoutError);
+
+      const elapsed = Date.now() - start;
+      // 첫 번째: 30ms + 10ms = 40ms, 두 번째: 30ms + 10ms = 40ms (총 80ms)
+      expect(elapsed).toBeGreaterThanOrEqual(80);
+      expect(elapsed).toBeLessThan(150);
+    });
   });
 
   //#endregion

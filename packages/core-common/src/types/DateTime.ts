@@ -56,11 +56,22 @@ export class DateTime {
     const match1 =
       /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/.exec(str);
     if (match1 != null) {
+      const rawHour = Number(match1[5]);
+      const isPM = match1[4] === "오후";
+      // 12시간제 → 24시간제 변환
+      // 오전 12시 = 0시, 오후 12시 = 12시
+      // 오전 1-11시 = 1-11시, 오후 1-11시 = 13-23시
+      let hour: number;
+      if (rawHour === 12) {
+        hour = isPM ? 12 : 0;
+      } else {
+        hour = isPM ? rawHour + 12 : rawHour;
+      }
       return new DateTime(
         Number(match1[1]),
         Number(match1[2]),
         Number(match1[3]),
-        Number(match1[5]) + (match1[4] === "오후" ? 12 : 0),
+        hour,
         Number(match1[6]),
         Number(match1[7]),
       );
@@ -79,7 +90,7 @@ export class DateTime {
     }
 
     const match3 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/.exec(
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(
         str,
       );
     if (match3 != null) {
@@ -90,7 +101,7 @@ export class DateTime {
         Number(match3[4]),
         Number(match3[5]),
         Number(match3[6]),
-        match3[8] ? Number(match3[8]) : undefined,
+        match3[8] ? Number(match3[8].padEnd(3, "0")) : undefined,
       );
     }
 
@@ -142,6 +153,11 @@ export class DateTime {
     return -this.date.getTimezoneOffset();
   }
 
+  /** 날짜시간 세팅이 제대로 되었는지 여부 */
+  get isValidDate(): boolean {
+    return this.date instanceof Date && !Number.isNaN(this.date.getTime());
+  }
+
   //#endregion
 
   //#region 불변 변환 메서드 (새 인스턴스 반환)
@@ -159,13 +175,18 @@ export class DateTime {
   }
 
   setMonth(month: number): DateTime {
+    // 월 오버플로우/언더플로우 정규화
+    // month가 1-12 범위를 벗어나면 연도를 조정
+    const normalizedYear = this.year + Math.floor((month - 1) / 12);
+    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
+
     // 대상 월의 마지막 날 구하기
-    const lastDay = new Date(this.year, month, 0).getDate();
+    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
     const currentDay = Math.min(this.day, lastDay);
 
     return new DateTime(
-      this.year,
-      month,
+      normalizedYear,
+      normalizedMonth,
       currentDay,
       this.hour,
       this.minute,

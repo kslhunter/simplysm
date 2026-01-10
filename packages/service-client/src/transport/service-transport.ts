@@ -1,9 +1,9 @@
 import type {
-  IServiceErrorMessage,
-  IServiceResponseMessage,
-  TServiceClientMessage,
+  ServiceErrorMessage,
+  ServiceResponseMessage,
+  ServiceClientMessage,
 } from "@simplysm/service-common";
-import type { IServiceProgress } from "../types/progress.types";
+import type { ServiceProgress } from "../types/progress.types";
 
 import type { SocketProvider } from "./socket-provider";
 import { EventEmitter } from "events";
@@ -16,16 +16,16 @@ export class ServiceTransport extends EventEmitter {
   private readonly _listenerMap = new Map<
     string,
     {
-      resolve: (msg: IServiceResponseMessage) => void;
+      resolve: (msg: ServiceResponseMessage) => void;
       reject: (err: Error) => void;
-      progress?: IServiceProgress;
+      progress?: ServiceProgress;
     }
   >();
 
   // 이벤트
   override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this;
   override on(event: "event", listener: (keys: string[], data: unknown) => void): this;
-  override on(event: string | symbol, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
 
@@ -42,7 +42,7 @@ export class ServiceTransport extends EventEmitter {
     });
   }
 
-  async sendAsync(message: TServiceClientMessage, progress?: IServiceProgress): Promise<unknown> {
+  async sendAsync(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown> {
     const uuid = Uuid.new().toString();
 
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
@@ -102,7 +102,7 @@ export class ServiceTransport extends EventEmitter {
           // 응답을 받았으므로 Map에서 제거
           this._listenerMap.delete(decoded.uuid);
 
-          listenerInfo?.resolve(decoded.message.body as IServiceResponseMessage);
+          listenerInfo?.resolve(decoded.message.body as ServiceResponseMessage);
         } else if (decoded.message.name === "error") {
           // 에러를 받았으므로 Map에서 제거
           this._listenerMap.delete(decoded.uuid);
@@ -133,7 +133,7 @@ export class ServiceTransport extends EventEmitter {
     this._listenerMap.clear();
   }
 
-  private _toError(body: IServiceErrorMessage["body"]): Error {
+  private _toError(body: ServiceErrorMessage["body"]): Error {
     let err = new Error(body.message);
     err = Object.assign(err, body);
     return err;

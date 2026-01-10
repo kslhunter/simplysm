@@ -1,30 +1,31 @@
 import type {
   DataRecord,
-  IDbContextExecutor,
+  DbContextExecutor,
   IsolationLevel,
   Migration,
   ResultMeta,
 } from "./types/db";
 import { DbErrorCode, DbTransactionError } from "./errors/DbTransactionError";
-import type {
-  AddColumnQueryDef,
-  AddPkQueryDef,
-  ClearSchemaQueryDef,
-  DropColumnQueryDef,
-  DropFkQueryDef,
-  DropIdxQueryDef,
-  DropPkQueryDef,
-  DropProcQueryDef,
-  DropTableQueryDef,
-  DropViewQueryDef,
-  ModifyColumnQueryDef,
-  QueryDef,
-  QueryDefObjectName,
-  RenameColumnQueryDef,
-  RenameTableQueryDef,
-  SchemaExistsQueryDef,
-  SwitchFkQueryDef,
-  TruncateQueryDef,
+import {
+  DDL_TYPES,
+  type AddColumnQueryDef,
+  type AddPkQueryDef,
+  type ClearSchemaQueryDef,
+  type DropColumnQueryDef,
+  type DropFkQueryDef,
+  type DropIdxQueryDef,
+  type DropPkQueryDef,
+  type DropProcQueryDef,
+  type DropTableQueryDef,
+  type DropViewQueryDef,
+  type ModifyColumnQueryDef,
+  type QueryDef,
+  type QueryDefObjectName,
+  type RenameColumnQueryDef,
+  type RenameTableQueryDef,
+  type SchemaExistsQueryDef,
+  type SwitchFkQueryDef,
+  type TruncateQueryDef,
 } from "./types/query-def";
 import { TableBuilder } from "./schema/table-builder";
 import { ViewBuilder } from "./schema/view-builder";
@@ -48,7 +49,7 @@ import { SystemMigration } from "./models/SystemMigration";
  * @property connect - 연결됨 (트랜잭션 없음)
  * @property transact - 트랜잭션 진행 중
  */
-export type TDbContextStatus = "ready" | "connect" | "transact";
+export type DbContextStatus = "ready" | "connect" | "transact";
 
 /**
  * 데이터베이스 컨텍스트 추상 클래스
@@ -75,7 +76,7 @@ export type TDbContextStatus = "ready" | "connect" | "transact";
  * ```
  *
  * @see {@link queryable} 테이블 Queryable 생성
- * @see {@link IDbContextExecutor} 쿼리 실행기 인터페이스
+ * @see {@link DbContextExecutor} 쿼리 실행기 인터페이스
  */
 export abstract class DbContext {
   //#region ========== 기본 ==========
@@ -87,7 +88,7 @@ export abstract class DbContext {
    * - `connect`: DB 연결됨 (트랜잭션 없음)
    * - `transact`: 트랜잭션 진행 중
    */
-  status: TDbContextStatus = "ready";
+  status: DbContextStatus = "ready";
 
   /**
    * 마이그레이션 목록
@@ -126,7 +127,7 @@ export abstract class DbContext {
    * @param _opt.schema - 스키마 이름 (MSSQL: dbo, PostgreSQL: public)
    */
   constructor(
-    private readonly _executor: IDbContextExecutor,
+    private readonly _executor: DbContextExecutor,
     private readonly _opt: {
       database: string;
       schema?: string;
@@ -396,29 +397,10 @@ export abstract class DbContext {
     defs: QueryDef[],
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
-    const ddlTypes = [
-      "clearSchema",
-      "createTable",
-      "dropTable",
-      "renameTable",
-      "truncate",
-      "addColumn",
-      "dropColumn",
-      "modifyColumn",
-      "renameColumn",
-      "dropPk",
-      "addPk",
-      "addFk",
-      "dropFk",
-      "addIdx",
-      "dropIdx",
-      "createView",
-      "dropView",
-      "createProc",
-      "dropProc",
-      // switchFk는 DDL이 아님 (트랜잭션 내 사용 가능)
-    ];
-    if (this.status === "transact" && defs.some((d) => ddlTypes.includes(d.type))) {
+    if (
+      this.status === "transact" &&
+      defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))
+    ) {
       throw new Error("TRANSACTION 상태에서는 DDL을 실행할 수 없습니다.");
     }
 

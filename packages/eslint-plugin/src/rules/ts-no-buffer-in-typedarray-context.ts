@@ -1,6 +1,7 @@
 import ts from "typescript";
-import { ESLintUtils, TSESTree } from "@typescript-eslint/utils";
-import { createRule, createTypeCacheHelper } from "../utils";
+import { AST_NODE_TYPES, ESLintUtils, type TSESTree } from "@typescript-eslint/utils";
+import { createRule } from "../utils/createRule";
+import { createTypeCacheHelper } from "../utils/typeChecker";
 
 const TYPED_ARRAY_NAMES = new Set([
   "Uint8Array",
@@ -12,6 +13,8 @@ const TYPED_ARRAY_NAMES = new Set([
   "Int32Array",
   "Float32Array",
   "Float64Array",
+  "BigInt64Array",
+  "BigUint64Array",
 ]);
 
 export default createRule({
@@ -88,7 +91,7 @@ export default createRule({
     }
 
     function checkTypedAssignment(lhsNode: TSESTree.Node, rhsNode: TSESTree.Node): void {
-      if (lhsNode.type !== "Identifier") return;
+      if (lhsNode.type !== AST_NODE_TYPES.Identifier) return;
 
       const lhsTsNode = parserServices.esTreeNodeToTSNodeMap.get(lhsNode);
       const expectedType = getCachedType(lhsTsNode);
@@ -141,7 +144,7 @@ export default createRule({
 
       ArrayExpression(node: TSESTree.ArrayExpression) {
         node.elements.forEach((el) => {
-          if (el && el.type !== "SpreadElement") {
+          if (el && el.type !== AST_NODE_TYPES.SpreadElement) {
             const tsNode = parserServices.esTreeNodeToTSNodeMap.get(el);
             const contextualType = checker.getContextualType(tsNode as ts.Expression);
             if (contextualType) {

@@ -377,4 +377,26 @@ describe("FsUtils", () => {
   });
 
   //#endregion
+
+  //#region 에러 케이스
+
+  describe("에러 케이스", () => {
+    it("존재하지 않는 파일 읽기 시 에러 발생", () => {
+      expect(() => FsUtils.read(path.join(testDir, "nonexistent.txt"))).toThrow();
+    });
+
+    it("존재하지 않는 파일 비동기 읽기 시 에러 발생", async () => {
+      await expect(FsUtils.readAsync(path.join(testDir, "nonexistent.txt"))).rejects.toThrow();
+    });
+
+    it("존재하지 않는 디렉토리 내용 읽기 시 에러 발생", () => {
+      expect(() => FsUtils.readdir(path.join(testDir, "nonexistent"))).toThrow();
+    });
+
+    it("존재하지 않는 파일 stat 시 에러 발생", () => {
+      expect(() => FsUtils.stat(path.join(testDir, "nonexistent.txt"))).toThrow();
+    });
+  });
+
+  //#endregion
 });

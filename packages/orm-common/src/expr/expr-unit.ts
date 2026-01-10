@@ -9,7 +9,7 @@ export class ExprUnit<T extends ColumnPrimitive> {
   readonly $infer!: T;
 
   get n(): ExprUnit<NonNullable<T>> {
-    return this as any;
+    return this as unknown as ExprUnit<NonNullable<T>>;
   }
 
   constructor(

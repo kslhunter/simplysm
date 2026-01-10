@@ -1,6 +1,6 @@
-import { AST_NODE_TYPES, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
-import type * as ts from "typescript";
-import { createRule } from "../utils";
+import { AST_NODE_TYPES, ESLintUtils, type TSESTree } from "@typescript-eslint/utils";
+import type ts from "typescript";
+import { createRule } from "../utils/createRule";
 
 export default createRule({
   name: "ts-no-throw-not-implement-error",

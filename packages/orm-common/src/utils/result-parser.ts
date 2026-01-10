@@ -145,7 +145,7 @@ function deepClone<T>(obj: T): T {
 // ============================================
 
 /** yield 간격: N개 처리마다 이벤트 루프 양보 */
-const YIELD_INTERVAL = 50;
+const YIELD_INTERVAL = 100;
 
 /**
  * DB 쿼리 결과를 ResultMeta를 통해 TypeScript 객체로 변환
@@ -270,7 +270,19 @@ async function parseJoinedRecords<T>(
 }
 
 /**
+ * 그룹 키를 문자열로 직렬화 (Map 키로 사용)
+ *
+ * JSON.stringify보다 빠른 커스텀 직렬화
+ */
+function serializeGroupKey(groupKey: Record<string, unknown>): string {
+  const entries = Object.entries(groupKey).sort(([a], [b]) => a.localeCompare(b));
+  return entries.map(([k, v]) => `${k}:${v === null ? "null" : String(v)}`).join("|");
+}
+
+/**
  * 현재 경로에 해당하는 레코드들을 재귀적으로 그룹핑
+ *
+ * Map 기반 그룹핑으로 O(n) 복잡도 달성
  *
  * @param records - 그룹핑할 레코드 배열
  * @param allJoinKeys - 모든 JOIN 키 (깊이 순 정렬됨)
@@ -301,18 +313,15 @@ function groupRecordsRecursively(
     return records;
   }
 
-  // 현재 레벨의 모든 JOIN 키를 제외한 키들로 그룹핑
-  const grouped: Record<string, unknown>[] = [];
+  // Map 기반 그룹핑 (O(n) 복잡도)
+  const groupMap = new Map<string, Record<string, unknown>>();
 
   for (const record of records) {
-    // 그룹 키 추출 (JOIN 키 제외)
+    // 그룹 키 추출 및 직렬화 (JOIN 키 제외)
     const groupKey = extractGroupKey(record, childJoinKeys);
+    const keyStr = serializeGroupKey(groupKey);
 
-    // 동일한 그룹 키를 가진 기존 그룹 찾기
-    const existingGroup = grouped.find((g) => {
-      const gKey = extractGroupKey(g, childJoinKeys);
-      return ObjectUtils.equal(gKey, groupKey);
-    });
+    const existingGroup = groupMap.get(keyStr);
 
     if (existingGroup != null) {
       // 기존 그룹에 JOIN 데이터 병합
@@ -340,9 +349,12 @@ function groupRecordsRecursively(
         }
       }
 
-      grouped.push(newGroup);
+      groupMap.set(keyStr, newGroup);
     }
   }
+
+  // Map에서 배열로 변환
+  const grouped = Array.from(groupMap.values());
 
   // 각 JOIN의 하위 레벨도 재귀적으로 처리
   for (const group of grouped) {

@@ -1,5 +1,5 @@
-import { TSESTree } from "@typescript-eslint/utils";
-import { createRule } from "../utils";
+import type { TSESTree } from "@typescript-eslint/utils";
+import { createRule } from "../utils/createRule";
 
 export default createRule({
   name: "no-hard-private",

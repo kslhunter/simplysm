@@ -1,6 +1,6 @@
 import { parentPort } from "worker_threads";
 import { TransferableConvert } from "@simplysm/core-common";
-import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types";
+import type { SdWorkerRequest, SdWorkerType, SdWorkerResponse } from "./types";
 
 //#region createSdWorker
 
@@ -10,7 +10,7 @@ import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types
  *
  * @example
  * // my-worker.ts
- * const sender = createSdWorker<IMyWorkerType>({
+ * const sender = createSdWorker<MyWorkerType>({
  *   calculate: async (a, b) => {
  *     sender.send("progress", 50);
  *     return a + b;
@@ -20,7 +20,7 @@ import type { ISdWorkerRequest, ISdWorkerType, TSdWorkerResponse } from "./types
  * @param methods - 메서드 핸들러 맵
  * @returns 이벤트 발행 함수를 포함한 객체
  */
-export function createSdWorker<T extends ISdWorkerType>(methods: {
+export function createSdWorker<T extends SdWorkerType>(methods: {
   [P in keyof T["methods"]]: (
     ...args: T["methods"][P]["params"]
   ) => T["methods"][P]["returnType"] | Promise<T["methods"][P]["returnType"]>;
@@ -44,16 +44,16 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
   };
 
   port.on("message", async (serializedRequest: unknown) => {
-    const request: ISdWorkerRequest<T, keyof T["methods"]> = TransferableConvert.decode(
+    const request: SdWorkerRequest<T, keyof T["methods"]> = TransferableConvert.decode(
       serializedRequest,
-    ) as ISdWorkerRequest<T, keyof T["methods"]>;
+    ) as SdWorkerRequest<T, keyof T["methods"]>;
 
     const methodFn = methods[request.method];
 
     try {
       const result = await methodFn(...(request.params as Parameters<typeof methodFn>));
 
-      const response: TSdWorkerResponse<T, keyof T["methods"]> = {
+      const response: SdWorkerResponse<T, keyof T["methods"]> = {
         request,
         type: "return",
         body: result,
@@ -62,7 +62,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
       const serialized = TransferableConvert.encode(response);
       port.postMessage(serialized.result, serialized.transferList);
     } catch (err) {
-      const response: TSdWorkerResponse<T, keyof T["methods"]> = {
+      const response: SdWorkerResponse<T, keyof T["methods"]> = {
         request,
         type: "error",
         body: err instanceof Error ? err : new Error(String(err)),
@@ -75,7 +75,7 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
 
   return {
     send<K extends keyof T["events"] & string>(event: K, body?: T["events"][K]) {
-      const response: TSdWorkerResponse<T, keyof T["methods"]> = {
+      const response: SdWorkerResponse<T, keyof T["methods"]> = {
         type: "event",
         event,
         body,

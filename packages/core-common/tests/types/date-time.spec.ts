@@ -67,6 +67,24 @@ describe("DateTime", () => {
       expect(dt.millisecond).toBe(123);
     });
 
+    it("밀리초 1자리는 100ms 단위로 패딩한다 (ISO 8601)", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.1");
+
+      expect(dt.millisecond).toBe(100);
+    });
+
+    it("밀리초 2자리는 10ms 단위로 패딩한다 (ISO 8601)", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.01");
+
+      expect(dt.millisecond).toBe(10);
+    });
+
+    it("밀리초 3자리는 그대로 파싱한다", () => {
+      const dt = DateTime.parse("2024-03-15 10:30:45.001");
+
+      expect(dt.millisecond).toBe(1);
+    });
+
     it("yyyyMMddHHmmss 형식을 파싱한다", () => {
       const dt = DateTime.parse("20240315103045");
 
@@ -84,6 +102,38 @@ describe("DateTime", () => {
 
       const dtPm = DateTime.parse("2024-03-15 오후 02:30:45");
       expect(dtPm.hour).toBe(14);
+    });
+
+    it("오후 12:00:00은 정오(12시)", () => {
+      const dt = DateTime.parse("2024-03-15 오후 12:00:00");
+
+      expect(dt.hour).toBe(12);
+      expect(dt.minute).toBe(0);
+      expect(dt.second).toBe(0);
+    });
+
+    it("오전 12:00:00은 자정(0시)", () => {
+      const dt = DateTime.parse("2024-03-15 오전 12:00:00");
+
+      expect(dt.hour).toBe(0);
+      expect(dt.minute).toBe(0);
+      expect(dt.second).toBe(0);
+    });
+
+    it("오후 12:30:45는 정오 이후(12시 30분 45초)", () => {
+      const dt = DateTime.parse("2024-03-15 오후 12:30:45");
+
+      expect(dt.hour).toBe(12);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
+    });
+
+    it("오전 12:30:45는 자정 이후(0시 30분 45초)", () => {
+      const dt = DateTime.parse("2024-03-15 오전 12:30:45");
+
+      expect(dt.hour).toBe(0);
+      expect(dt.minute).toBe(30);
+      expect(dt.second).toBe(45);
     });
 
     it("잘못된 형식은 에러를 던진다", () => {
@@ -116,6 +166,51 @@ describe("DateTime", () => {
 
       expect(dt2.month).toBe(2);
       expect(dt2.day).toBe(29); // 2024는 윤년
+    });
+
+    it("setMonth(13)은 다음 해 1월을 반환한다", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(13);
+
+      expect(result.year).toBe(2025);
+      expect(result.month).toBe(1);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(0)은 이전 해 12월을 반환한다", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(0);
+
+      expect(result.year).toBe(2023);
+      expect(result.month).toBe(12);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(-1)은 이전 해 11월을 반환한다", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(-1);
+
+      expect(result.year).toBe(2023);
+      expect(result.month).toBe(11);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(25)는 2년 후 1월을 반환한다", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(25);
+
+      expect(result.year).toBe(2026);
+      expect(result.month).toBe(1);
+      expect(result.day).toBe(15);
+    });
+
+    it("setMonth(-13)은 2년 전 11월을 반환한다", () => {
+      const dt = new DateTime(2024, 6, 15);
+      const result = dt.setMonth(-13);
+
+      expect(result.year).toBe(2022);
+      expect(result.month).toBe(11);
+      expect(result.day).toBe(15);
     });
   });
 
@@ -164,6 +259,23 @@ describe("DateTime", () => {
 
       expect(dt2.minute).toBe(31);
       expect(dt2.second).toBe(15);
+    });
+  });
+
+  describe("isValidDate", () => {
+    it("유효한 날짜시간은 true를 반환한다", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45);
+      expect(dt.isValidDate).toBe(true);
+    });
+
+    it("유효하지 않은 날짜시간은 false를 반환한다", () => {
+      const dt = new DateTime(NaN);
+      expect(dt.isValidDate).toBe(false);
+    });
+
+    it("기본 생성자는 유효한 날짜시간이다", () => {
+      const dt = new DateTime();
+      expect(dt.isValidDate).toBe(true);
     });
   });
 

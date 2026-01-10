@@ -11,7 +11,7 @@ import {
 } from "@zip.js/zip.js";
 import "../extensions/array.ext.js";
 
-export interface ISdZipProgress {
+export interface SdZipProgress {
   fileName: string;
   totalSize: number;
   extractedSize: number;
@@ -20,6 +20,7 @@ export interface ISdZipProgress {
 export class SdZip {
   private readonly _reader?: ZipReader<Blob | Buffer>;
   private readonly _cache = new Map<string, Buffer | undefined>();
+  private _entries?: Awaited<ReturnType<ZipReader<Blob | Buffer>["getEntries"]>>;
 
   constructor(data?: Blob | Buffer) {
     if (!data) return;
@@ -32,17 +33,23 @@ export class SdZip {
     }
   }
 
+  private async _getEntries() {
+    if (this._entries == null && this._reader != null) {
+      this._entries = await this._reader.getEntries();
+    }
+    return this._entries;
+  }
+
   //#region extractAllAsync
   /**
    * 모든 파일을 압축 해제
    * @param progressCallback 진행률 콜백
    */
   async extractAllAsync(
-    progressCallback?: (progress: ISdZipProgress) => void,
+    progressCallback?: (progress: SdZipProgress) => void,
   ): Promise<Map<string, Buffer | undefined>> {
-    if (!this._reader) return this._cache;
-
-    const entries = await this._reader.getEntries();
+    const entries = await this._getEntries();
+    if (entries == null) return this._cache;
 
     // 압축 해제 대상 크기 총합 계산
     const totalSize = entries.filter((e) => !e.directory).sum((e) => e.uncompressedSize);
@@ -101,12 +108,11 @@ export class SdZip {
       return this._cache.get(fileName);
     }
 
-    if (!this._reader) {
+    const entries = await this._getEntries();
+    if (entries == null) {
       this._cache.set(fileName, undefined);
       return undefined;
     }
-
-    const entries = await this._reader.getEntries();
 
     const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
     if (!entry) {
@@ -131,11 +137,11 @@ export class SdZip {
       return true;
     }
 
-    if (!this._reader) {
+    const entries = await this._getEntries();
+    if (entries == null) {
       return false;
     }
 
-    const entries = await this._reader.getEntries();
     const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
     return entry !== undefined;
   }

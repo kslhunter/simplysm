@@ -1,7 +1,8 @@
 import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
-import { Uuid } from "../types/uuid";
+import { Uuid } from "../types/Uuid";
+import { ArgumentError } from "../errors/ArgumentError";
 
 /**
  * 객체 유틸리티 클래스
@@ -91,7 +92,7 @@ export class ObjectUtils {
 
     for (const key of Object.keys(source)) {
       const value = (source as Record<string, unknown>)[key];
-      result[key] = value == null ? undefined : this._clone(value, currPrevClones);
+      result[key] = this._clone(value, currPrevClones);
     }
 
     return result;
@@ -332,7 +333,7 @@ export class ObjectUtils {
     }
 
     if (typeof source !== typeof target) {
-      throw new Error("병합하려고 하는 두 객체의 타입이 서로 다릅니다.");
+      throw new ArgumentError("병합하려고 하는 두 객체의 타입이 서로 다릅니다.", { sourceType: typeof source, targetType: typeof target });
     }
 
     if (source instanceof Map && target instanceof Map) {
@@ -537,7 +538,7 @@ export class ObjectUtils {
   static setChainValue(obj: unknown, chain: string, value: unknown): void {
     const splits = this._getChainSplits(chain);
     if (splits.length === 0) {
-      throw new Error("체인이 비어있습니다.");
+      throw new ArgumentError("체인이 비어있습니다.", { chain });
     }
 
     let curr: Record<string | number, unknown> = obj as Record<string | number, unknown>;
@@ -557,12 +558,17 @@ export class ObjectUtils {
   static deleteChainValue(obj: unknown, chain: string): void {
     const splits = this._getChainSplits(chain);
     if (splits.length === 0) {
-      throw new Error("체인이 비어있습니다.");
+      throw new ArgumentError("체인이 비어있습니다.", { chain });
     }
 
     let curr: Record<string | number, unknown> = obj as Record<string | number, unknown>;
     for (const splitItem of splits.slice(0, -1)) {
-      curr = curr[splitItem] as Record<string | number, unknown>;
+      const next = curr[splitItem];
+      // 중간 경로가 없으면 조용히 리턴 (삭제할 것이 없음)
+      if (next == null || typeof next !== "object") {
+        return;
+      }
+      curr = next as Record<string | number, unknown>;
     }
 
     const last = splits[splits.length - 1];
@@ -576,10 +582,11 @@ export class ObjectUtils {
   /**
    * 객체에서 undefined 값을 가진 키 삭제
    */
-  static clearUndefined<T extends Record<string, any>>(obj: T): T {
-    for (const key of Object.keys(obj)) {
-      if (obj[key] === undefined) {
-        delete obj[key];
+  static clearUndefined<T extends object>(obj: T): T {
+    const record = obj as Record<string, unknown>;
+    for (const key of Object.keys(record)) {
+      if (record[key] === undefined) {
+        delete record[key];
       }
     }
 
@@ -669,7 +676,7 @@ export class ObjectUtils {
  * undefined를 가진 프로퍼티를 optional로 변환
  * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
-export type TUndefToOptional<T> = {
+export type UndefToOptional<T> = {
   [K in keyof T as undefined extends T[K] ? K : never]?: T[K];
 } & { [K in keyof T as undefined extends T[K] ? never : K]: T[K] };
 
@@ -677,7 +684,7 @@ export type TUndefToOptional<T> = {
  * optional 프로퍼티를 required + undefined 유니온으로 변환
  * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
-export type TOptionalToUndef<T> = {
+export type OptionalToUndef<T> = {
   [K in keyof T]-?: {} extends Pick<T, K> ? T[K] | undefined : T[K];
 };
 
