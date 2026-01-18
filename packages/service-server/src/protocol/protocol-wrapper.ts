@@ -30,9 +30,9 @@ export class ProtocolWrapper {
   async encodeAsync(
     uuid: string,
     message: ServiceMessage,
-  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
+  ): Promise<{ chunks: Uint8Array[]; totalSize: number }> {
     if (this._shouldUseWorkerForEncode(message)) {
-      return await ProtocolWrapper.worker.run("encode", [uuid, message]);
+      return ProtocolWrapper.worker.run("encode", [uuid, message]);
     } else {
       return this._protocol.encode(uuid, message);
     }
@@ -41,12 +41,12 @@ export class ProtocolWrapper {
   /**
    * 메시지 디코딩 (자동 분기 처리)
    */
-  async decodeAsync(buffer: Buffer): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
-    const totalSize = buffer.length;
+  async decodeAsync(bytes: Uint8Array): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+    const totalSize = bytes.length;
     if (totalSize > this._SIZE_THRESHOLD) {
-      return await ProtocolWrapper.worker.run("decode", [buffer]);
+      return ProtocolWrapper.worker.run("decode", [bytes]);
     } else {
-      return this._protocol.decode(buffer);
+      return this._protocol.decode(bytes);
     }
   }
 
@@ -58,14 +58,14 @@ export class ProtocolWrapper {
 
     const body = msg.body;
 
-    // Buffer: 크기 확인
-    if (Buffer.isBuffer(body)) {
+    // Uint8Array: 크기 확인
+    if (body instanceof Uint8Array) {
       return true;
     }
 
     // Array: 길이 확인 (ORM 결과 등)
     if (Array.isArray(body)) {
-      return body.length > 0 && body.some((item) => Buffer.isBuffer(item));
+      return body.length > 0 && body.some((item) => item instanceof Uint8Array);
     }
 
     return false;

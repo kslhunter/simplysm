@@ -17,14 +17,12 @@
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/service-common/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
-      <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
       <excludeFolder url="file://$MODULE_DIR$/_logs" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.back/251126/.docs" />
-      <excludeFolder url="file://$MODULE_DIR$/.claude" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.serena" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.claude" />
@@ -34,6 +32,23 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/cli/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/claude/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/eslint-plugin/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/.back/260111/.back" />
+      <excludeFolder url="file://$MODULE_DIR$/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/claude/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core-browser/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core-common/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core-node/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/eslint-plugin/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/excel/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-node/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-client/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-common/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-server/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/storage/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/service/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

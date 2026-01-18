@@ -1,19 +1,31 @@
 {
   "permissions": {
     "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(yarn typecheck:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn vitest run:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(npm view:*)",
       "Read",
       "Glob",
       "Grep",
+      "LS",
       "WebFetch",
       "WebSearch",
-      "mcp__sequential-thinking__sequentialthinking",
-      "Bash(yarn run _sd-cli_ lint:*)",
-      "Bash(npx vitest run:*)",
-      "Bash(tsc --noEmit:*)"
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "node .claude/scripts/statusline.js"
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
+    ],
+    "deny": [
+      "Read(.back/**)",
+      "Bash(.back/**)",
+      "Bash(git checkout:*)"
+    ],
+    "respectGitignore": true
   }
 }

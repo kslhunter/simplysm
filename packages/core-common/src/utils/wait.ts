@@ -1,7 +1,7 @@
 /**
  * 대기 유틸리티
  */
-import { TimeoutError } from "../errors/TimeoutError";
+import { TimeoutError } from "../errors/timeout-error";
 
 export class Wait {
   /**
@@ -18,14 +18,15 @@ export class Wait {
   ): Promise<void> {
     const startTime = Date.now();
     while (!(await forwarder())) {
-      await Wait.time(milliseconds ?? 100);
-
+      // 타임아웃 먼저 체크 (timeout=0 케이스 포함)
       if (timeout !== undefined) {
         const elapsed = Date.now() - startTime;
         if (elapsed >= timeout) {
           throw new TimeoutError(timeout);
         }
       }
+
+      await Wait.time(milliseconds ?? 100);
     }
   }
 
@@ -34,7 +35,7 @@ export class Wait {
    * @param millisecond 대기 시간 (ms)
    */
   static async time(millisecond: number): Promise<void> {
-    await new Promise<void>((resolve) => {
+    return new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, millisecond);

@@ -8,13 +8,17 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/claude"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "files": [
+    "scripts",
     "dist"
   ],
   "scripts": {
-    "prepack": "tsc && node dist/prepack.js",
-    "postinstall": "node dist/postinstall.js"
+    "prepack": "node scripts/prepack.js",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "dependencies": {
+    "pino": "^10.2.0"
   }
 }

@@ -2,17 +2,17 @@
  * 비동기 함수 직렬 큐
  * 큐에 추가된 함수들을 순서대로 실행
  */
-import { SdError } from "../errors/SdError";
+import { SdError } from "../errors/sd-error";
 import { Wait } from "./wait";
-import EventEmitter from "events";
+import { SdEventEmitter } from "./sd-event-emitter";
 import pino from "pino";
 
-export interface SdAsyncFnSerialQueueEvents {
-  error: [err: SdError];
+interface SerialQueueEvents {
+  error: SdError;
 }
 
-export class SdAsyncFnSerialQueue extends EventEmitter<SdAsyncFnSerialQueueEvents> {
-  private static readonly _logger = pino({ name: "SdAsyncFnSerialQueue" });
+export class SerialQueue extends SdEventEmitter<SerialQueueEvents> {
+  private static readonly _logger = pino({ name: "SerialQueue" });
 
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;
@@ -29,6 +29,13 @@ export class SdAsyncFnSerialQueue extends EventEmitter<SdAsyncFnSerialQueueEvent
    */
   dispose(): void {
     this._queue.length = 0;
+  }
+
+  /**
+   * using 문 지원
+   */
+  [Symbol.dispose](): void {
+    this.dispose();
   }
 
   /**
@@ -58,7 +65,7 @@ export class SdAsyncFnSerialQueue extends EventEmitter<SdAsyncFnSerialQueueEvent
           if (this.listenerCount("error") > 0) {
             this.emit("error", sdError);
           } else {
-            SdAsyncFnSerialQueue._logger.error(sdError);
+            SerialQueue._logger.error(sdError);
           }
         }
 

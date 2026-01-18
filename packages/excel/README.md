@@ -1,195 +1,87 @@
 # @simplysm/excel
 
-**이 문서는 패키지 사용자를 위한 가이드입니다.**
-**개발자용 가이드는 [CLAUDE.md](./CLAUDE.md)를 참고하세요.**
-
----
-
-브라우저/Node.js 환경에서 사용 가능한 Excel 파일(OOXML) 처리 라이브러리입니다.
+Excel 파일(.xlsx) 처리 라이브러리입니다. Node.js와 브라우저 환경 모두에서 사용할 수 있습니다.
 
 ## 설치
 
 ```bash
+npm install @simplysm/excel
+# or
 yarn add @simplysm/excel
 ```
 
-## 요구사항
+## 주요 기능
 
-- Node.js 20.x (LTS) 또는 Chrome 79+
-- TypeScript 5.8.x
+### ExcelWorkbook
 
-## 사용법
-
-### 워크북 생성
+Excel 워크북을 생성하고 관리합니다.
 
 ```typescript
 import { ExcelWorkbook } from "@simplysm/excel";
 
 // 새 워크북 생성
-const wb = new ExcelWorkbook();
+const workbook = ExcelWorkbook.create();
+const sheet = workbook.createWorksheet("Sheet1");
 
-// 기존 파일 열기
-const wb = new ExcelWorkbook(buffer);
-const wb = new ExcelWorkbook(blob);
+// 셀 값 설정
+sheet.cell(0, 0).value = "Hello";
+sheet.cell(0, 1).value = "World";
+
+// 파일로 저장 (ArrayBuffer 반환)
+const buffer = await workbook.getBufferAsync();
 ```
 
-### 워크시트 조작
+### 파일 읽기
 
 ```typescript
-// 워크시트 생성
-const ws = await wb.createWorksheet("Sheet1");
+import { ExcelWorkbook } from "@simplysm/excel";
 
-// 워크시트 가져오기 (이름 또는 인덱스)
-const ws = await wb.getWorksheet("Sheet1");
-const ws = await wb.getWorksheet(0);
+// ArrayBuffer로부터 읽기
+const workbook = await ExcelWorkbook.loadAsync(arrayBuffer);
 
-// 워크시트 이름 목록
-const names = await wb.getWorksheetNames();
+// 워크시트 접근
+const sheet = workbook.worksheets[0];
+const value = sheet.cell(0, 0).value;
 ```
-
-### 셀 조작
-
-```typescript
-// 값 설정/가져오기
-await ws.cell(0, 0).setVal("Hello");
-const val = await ws.cell(0, 0).getVal();
-
-// 수식
-await ws.cell(0, 2).setFormula("A1+B1");
-
-// 병합 (현재 셀에서 상대 위치로)
-await ws.cell(0, 0).merge(1, 1);  // (0,0)부터 (1,1)까지 병합
-```
-
-### 스타일 설정
-
-```typescript
-await ws.cell(0, 0).setStyle({
-  background: "00FF0000",  // ARGB 형식 (alpha + RGB)
-  horizontalAlign: "center",  // "center" | "left" | "right"
-  verticalAlign: "center",    // "center" | "top" | "bottom"
-  border: ["left", "right", "top", "bottom"],
-  numberFormat: "number",     // "number" | "string" | "DateOnly" | "DateTime" | "Time"
-});
-```
-
-### 이미지 삽입
-
-```typescript
-await ws.addImage({
-  buffer: imageBuffer,
-  ext: "png",
-  from: { r: 0, c: 0 },
-  to: { r: 4, c: 4 },
-});
-```
-
-### 뷰 설정
-
-```typescript
-// 줌 배율
-await ws.setZoom(85);
-
-// 틀 고정 (1행 고정)
-await ws.setFix({ r: 0 });
-```
-
-### 저장
-
-```typescript
-// Buffer로 저장
-const buffer = await wb.getBuffer();
-
-// Blob으로 저장 (브라우저)
-const blob = await wb.getBlob();
-
-// 리소스 해제
-await wb.close();
-```
-
-### ExcelWrapper (Zod 스키마 기반)
-
-타입 안전한 Excel 읽기/쓰기를 위한 래퍼 클래스입니다.
-
-```typescript
-import { z } from "zod";
-import { ExcelWrapper } from "@simplysm/excel";
-import { DateOnly } from "@simplysm/core-common";
-
-// 스키마 정의
-const schema = z.object({
-  name: z.string(),
-  age: z.number(),
-  birthDate: z.instanceof(DateOnly).optional(),
-});
-
-// 래퍼 생성 (필드별 헤더명 매핑)
-const wrapper = new ExcelWrapper(schema, {
-  name: "이름",
-  age: "나이",
-  birthDate: "생년월일",
-});
-
-// Excel 읽기 → 레코드 배열
-const records = await wrapper.read(file);
-// records: { name: string; age: number; birthDate?: DateOnly }[]
-
-// 레코드 배열 → Excel 워크북
-const wb = await wrapper.write("직원목록", records);
-const buffer = await wb.getBuffer();
-```
-
-## API
-
-### ExcelWorkbook
-
-| 메서드 | 설명 |
-|--------|------|
-| `constructor(arg?)` | 새 워크북 생성 또는 기존 파일 열기 (Buffer/Blob) |
-| `createWorksheet(name)` | 새 워크시트 생성 |
-| `getWorksheet(nameOrIndex)` | 워크시트 가져오기 |
-| `getWorksheetNames()` | 워크시트 이름 목록 |
-| `addMedia(buffer, ext)` | 미디어 파일 추가 |
-| `getBuffer()` | Buffer로 저장 |
-| `getBlob()` | Blob으로 저장 |
-| `close()` | 리소스 해제 |
-
-### ExcelWorksheet
-
-| 메서드 | 설명 |
-|--------|------|
-| `cell(r, c)` | 셀 접근 |
-| `row(r)` | 행 접근 |
-| `col(c)` | 열 접근 |
-| `cell(r,c).merge(r,c)` | 셀 병합 |
-| `addImage(options)` | 이미지 삽입 |
-| `setZoom(scale)` | 줌 배율 설정 |
-| `setFix(pos)` | 틀 고정 |
-| `getDataTable(options?)` | 데이터 테이블로 읽기 |
-
-### ExcelCell
-
-| 메서드 | 설명 |
-|--------|------|
-| `getVal()` | 값 가져오기 |
-| `setVal(value)` | 값 설정 |
-| `setFormula(formula)` | 수식 설정 |
-| `setStyle(options)` | 스타일 설정 |
 
 ### ExcelWrapper
 
-| 메서드 | 설명 |
-|--------|------|
-| `constructor(schema, displayNameMap)` | 래퍼 생성 |
-| `read(file, wsNameOrIndex?)` | Excel → 레코드 배열 |
-| `write(wsName, records)` | 레코드 배열 → 워크북 |
+간편한 데이터 변환을 위한 래퍼 클래스입니다.
 
-## 관련 패키지
+```typescript
+import { ExcelWrapper, parseExcelWrapper } from "@simplysm/excel";
 
-| 패키지 | 관계 |
-|--------|------|
-| `@simplysm/core-common` | SdZip, XmlConvert, 타입들 |
+// Excel 데이터 읽기 - Zod 스키마 지원
+const data = await parseExcelWrapper(buffer, sheetName, schema);
+
+// 데이터를 Excel로 변환
+const wrapper = new ExcelWrapper([
+  { name: "John", age: 30 },
+  { name: "Jane", age: 25 },
+]);
+const buffer = await wrapper.toBufferAsync();
+```
+
+## 클래스 구조
+
+| 클래스 | 설명 |
+|-------|------|
+| `ExcelWorkbook` | 워크북 관리 |
+| `ExcelWorksheet` | 워크시트 관리 |
+| `ExcelRow` | 행 관리 |
+| `ExcelCol` | 열 관리 |
+| `ExcelCell` | 셀 관리 (값, 스타일, 수식 등) |
+| `ExcelWrapper` | 데이터 변환 래퍼 |
+
+## 지원 기능
+
+- 셀 값 읽기/쓰기
+- 셀 스타일 (폰트, 배경색, 테두리 등)
+- 셀 병합
+- 수식
+- 이미지 삽입
+- 여러 워크시트 관리
 
 ## 라이선스
 
-MIT
+Apache-2.0

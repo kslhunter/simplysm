@@ -2,7 +2,7 @@
 .tmp
 .coverage
 
-_logs
+.cache
 node_modules
 packages/*/.*
 packages/*/dist

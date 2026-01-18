@@ -210,7 +210,7 @@ export class ExcelWorksheet {
   //#region Image Methods
 
   async addImage(opts: {
-    buffer: Buffer;
+    bytes: Uint8Array;
     ext: string;
     from: { r: number; c: number; rOff?: number | string; cOff?: number | string };
     to?: { r: number; c: number; rOff?: number | string; cOff?: number | string };
@@ -222,11 +222,11 @@ export class ExcelWorksheet {
 
     // 1. media 파일명 결정 및 저장
     let mediaIndex = 1;
-    while (await this._zipCache.exists(`xl/media/image${mediaIndex}.${opts.ext}`)) {
+    while ((await this._zipCache.get(`xl/media/image${mediaIndex}.${opts.ext}`)) !== undefined) {
       mediaIndex++;
     }
     const mediaPath = `xl/media/image${mediaIndex}.${opts.ext}`;
-    this._zipCache.set(mediaPath, opts.buffer);
+    this._zipCache.set(mediaPath, opts.bytes);
 
     // 2. [Content_Types].xml 갱신
     const typeXml = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
@@ -234,7 +234,7 @@ export class ExcelWorksheet {
 
     // 3. drawing index 결정
     let drawingIndex = 1;
-    while (await this._zipCache.exists(`xl/drawings/drawing${drawingIndex}.xml`)) {
+    while ((await this._zipCache.get(`xl/drawings/drawing${drawingIndex}.xml`)) !== undefined) {
       drawingIndex++;
     }
     const drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;

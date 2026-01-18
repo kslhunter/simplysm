@@ -39,9 +39,9 @@ describe("types.ts", () => {
       expect(getPrimitiveTypeStr(uuid)).toBe("Uuid");
     });
 
-    it("Buffer 타입을 반환한다", () => {
-      const buffer = Buffer.from("hello");
-      expect(getPrimitiveTypeStr(buffer)).toBe("Buffer");
+    it("Bytes 타입을 반환한다", () => {
+      const bytes = new Uint8Array([1, 2, 3]);
+      expect(getPrimitiveTypeStr(bytes)).toBe("Bytes");
     });
 
     it("지원하지 않는 타입이면 에러를 던진다", () => {

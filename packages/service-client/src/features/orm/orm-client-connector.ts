@@ -17,7 +17,7 @@ export class OrmClientConnector {
       database: config.dbContextOpt?.database ?? info.database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
-    return await db.connectAsync(async () => {
+    return db.connectAsync(async () => {
       try {
         return await callback(db);
       } catch (err) {
@@ -45,6 +45,6 @@ export class OrmClientConnector {
       database: config.dbContextOpt?.database ?? info.database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
-    return await db.connectWithoutTransactionAsync(async () => await callback(db));
+    return db.connectWithoutTransactionAsync(async () => callback(db));
   }
 }

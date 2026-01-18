@@ -1,12 +1,7 @@
-import { afterAll, describe, it } from "vitest";
+import "./vitest.setup";
+import { describe } from "vitest";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import rule from "../src/rules/no-subpath-imports-from-simplysm";
-
-// vitest 훅 바인딩
-RuleTester.afterAll = afterAll;
-RuleTester.describe = describe;
-RuleTester.it = it;
-RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
 
@@ -50,6 +45,34 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
         invalid: [],
       });
     });
+
+    describe("동적 import - src가 아닌 경로는 허용", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [
+          {
+            code: `const mod = await import("@simplysm/sd-core-common");`,
+          },
+          {
+            code: `const mod = await import("@simplysm/sd-core-common/utils");`,
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("re-export - src가 아닌 경로는 허용", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [
+          {
+            code: `export { Something } from "@simplysm/sd-core-common";`,
+          },
+          {
+            code: `export * from "@simplysm/sd-core-common/utils";`,
+          },
+        ],
+        invalid: [],
+      });
+    });
   });
 
   describe("오류가 발생해야 하는 코드들 (invalid)", () => {
@@ -59,6 +82,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
         invalid: [
           {
             code: `import { Something } from "@simplysm/sd-core-common/src";`,
+            output: `import { Something } from "@simplysm/sd-core-common";`,
             errors: [
               {
                 messageId: "noSubpathImport",
@@ -79,6 +103,7 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
         invalid: [
           {
             code: `import { DateOnly } from "@simplysm/sd-core-common/src/types/DateOnly";`,
+            output: `import { DateOnly } from "@simplysm/sd-core-common";`,
             errors: [
               {
                 messageId: "noSubpathImport",
@@ -99,12 +124,76 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
         invalid: [
           {
             code: `import { SdServiceClient } from "@simplysm/sd-service-client/src/SdServiceClient";`,
+            output: `import { SdServiceClient } from "@simplysm/sd-service-client";`,
             errors: [
               {
                 messageId: "noSubpathImport",
                 data: {
                   pkg: "sd-service-client",
                   importPath: "@simplysm/sd-service-client/src/SdServiceClient",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("동적 import에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `const mod = await import("@simplysm/sd-core-common/src/utils");`,
+            output: `const mod = await import("@simplysm/sd-core-common");`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/utils",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("re-export에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `export { Something } from "@simplysm/sd-core-common/src/types";`,
+            output: `export { Something } from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/types",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("export * from에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `export * from "@simplysm/sd-core-common/src/types";`,
+            output: `export * from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/types",
                 },
               },
             ],

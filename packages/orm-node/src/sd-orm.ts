@@ -73,7 +73,7 @@ export class SdOrm<T extends DbContext> {
     isolationLevel?: IsolationLevel,
   ): Promise<R> {
     const db = this._createDbContext();
-    return await db.connectAsync(async () => await callback(db), isolationLevel);
+    return db.connectAsync(async () => callback(db), isolationLevel);
   }
 
   /**
@@ -84,7 +84,7 @@ export class SdOrm<T extends DbContext> {
    */
   async connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R> {
     const db = this._createDbContext();
-    return await db.connectWithoutTransactionAsync(async () => await callback(db));
+    return db.connectWithoutTransactionAsync(async () => callback(db));
   }
 
   /**

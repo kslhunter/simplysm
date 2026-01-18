@@ -89,9 +89,9 @@ describe("JsonConvert", () => {
       expect(parsed.data.name).toBe("Error");
     });
 
-    it("hideBuffer 옵션으로 Buffer를 숨긴다", () => {
-      const obj = { data: Buffer.from("hello") };
-      const json = JsonConvert.stringify(obj, { hideBuffer: true });
+    it("hideBytes 옵션으로 Uint8Array를 숨긴다", () => {
+      const obj = { data: new TextEncoder().encode("hello") };
+      const json = JsonConvert.stringify(obj, { hideBytes: true });
       const parsed = JSON.parse(json);
 
       expect(parsed.data.data).toBe("__hidden__");
@@ -181,12 +181,12 @@ describe("JsonConvert", () => {
       expect((result as Map<string, number>).get("a")).toBe(1);
     });
 
-    it("Buffer를 복원한다", () => {
-      const json = '{"type":"Buffer","data":[104,101,108,108,111]}';
+    it("Uint8Array를 복원한다", () => {
+      const json = '{"__type__":"Uint8Array","data":"68656c6c6f"}';
       const result = JsonConvert.parse(json);
 
-      expect(Buffer.isBuffer(result)).toBe(true);
-      expect((result as Buffer).toString()).toBe("hello");
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result as Uint8Array)).toBe("hello");
     });
 
     it("stringify/parse 라운드트립", () => {
@@ -198,7 +198,7 @@ describe("JsonConvert", () => {
         uuid: new Uuid("12345678-9abc-def0-1234-56789abcdef0"),
         set: new Set([1, 2, 3]),
         map: new Map([["a", 1]]),
-        buffer: Buffer.from("hello"),
+        bytes: new TextEncoder().encode("hello"),
       };
 
       const json = JsonConvert.stringify(original);
@@ -211,11 +211,39 @@ describe("JsonConvert", () => {
       expect(result.uuid).toBeInstanceOf(Uuid);
       expect(result.set).toBeInstanceOf(Set);
       expect(result.map).toBeInstanceOf(Map);
-      expect(Buffer.isBuffer(result.buffer)).toBe(true);
+      expect(result.bytes).toBeInstanceOf(Uint8Array);
     });
 
     it("잘못된 JSON은 에러를 던진다", () => {
       expect(() => JsonConvert.parse("invalid json")).toThrow("JSON 파싱 에러");
+    });
+
+    it("긴 JSON 에러 메시지를 truncate한다", () => {
+      const longJson = "x".repeat(2000);
+
+      try {
+        JsonConvert.parse(longJson);
+        expect.fail("에러가 발생해야 합니다");
+      } catch (err) {
+        const message = (err as Error).message;
+        expect(message).toContain("truncated");
+        expect(message).toContain("original length: 2000");
+        // 메시지 길이가 원본보다 훨씬 짧아야 함
+        expect(message.length).toBeLessThan(1500);
+      }
+    });
+
+    it("짧은 JSON은 truncate하지 않는다", () => {
+      const shortJson = "invalid";
+
+      try {
+        JsonConvert.parse(shortJson);
+        expect.fail("에러가 발생해야 합니다");
+      } catch (err) {
+        const message = (err as Error).message;
+        expect(message).not.toContain("truncated");
+        expect(message).toContain("invalid");
+      }
     });
   });
 

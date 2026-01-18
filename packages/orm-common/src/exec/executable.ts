@@ -44,7 +44,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
    * 프로시저 실행
    */
   async executeAsync(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]> {
-    return await this._db.executeDefsAsync<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
+    return this._db.executeDefsAsync<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
   }
 }
 

@@ -11,7 +11,7 @@ export class JwtManager<TAuthInfo = unknown> {
 
     const secret = new TextEncoder().encode(jwtSecret);
 
-    return await new jose.SignJWT(payload)
+    return new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("12h")

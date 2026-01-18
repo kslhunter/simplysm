@@ -4,10 +4,10 @@ export interface ServiceProtocolWorker {
   methods: {
     encode: {
       params: [string, ServiceMessage];
-      returnType: { chunks: Buffer[]; totalSize: number };
+      returnType: { chunks: Uint8Array[]; totalSize: number };
     };
     decode: {
-      params: [Buffer];
+      params: [Uint8Array];
       returnType: ServiceMessageDecodeResult<ServiceMessage>;
     };
   };

@@ -35,16 +35,16 @@ export class WebSocketHandler {
 
       this._socketMap.set(clientId, serviceSocket);
 
-      serviceSocket.on("close", (code: number) => {
+      serviceSocket.on("close", (code) => {
         logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
 
         if (this._socketMap.get(clientId) !== serviceSocket) return;
         this._socketMap.delete(clientId);
       });
 
-      serviceSocket.on("message", async (uuid, message) => {
-        logger.debug({ message }, "요청 수신");
-        const sentSize = await this._processRequestAsync(serviceSocket, uuid, message);
+      serviceSocket.on("message", async ({ uuid, msg }) => {
+        logger.debug({ message: msg }, "요청 수신");
+        const sentSize = await this._processRequestAsync(serviceSocket, uuid, msg);
         logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
@@ -176,7 +176,7 @@ export class WebSocketHandler {
           ? err
           : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
-      return await serviceSocket.sendAsync(uuid, {
+      return serviceSocket.sendAsync(uuid, {
         name: "error",
         body: {
           name: error.name,

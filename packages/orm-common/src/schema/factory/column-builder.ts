@@ -1,4 +1,4 @@
-import type { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
+import type { Bytes, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, ColumnPrimitive } from "../../types/column";
 import type { ExprInput } from "../../expr/expr-unit";
 import type { DataRecord } from "../../types/db";
@@ -255,8 +255,8 @@ export function createColumnFactory() {
      *
      * @returns ColumnBuilder 인스턴스
      */
-    binary(): ColumnBuilder<Buffer, { type: "Buffer"; dataType: { type: "binary" } }> {
-      return new ColumnBuilder({ type: "Buffer", dataType: { type: "binary" } });
+    binary(): ColumnBuilder<Bytes, { type: "Bytes"; dataType: { type: "binary" } }> {
+      return new ColumnBuilder({ type: "Bytes", dataType: { type: "binary" } });
     },
 
     /**

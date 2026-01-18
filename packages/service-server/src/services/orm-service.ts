@@ -133,7 +133,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     params?: unknown[],
   ): Promise<unknown[][]> {
     const conn = this._getConn(connId);
-    return await conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrizedAsync(query, params);
   }
 
   async executeDefs(
@@ -146,7 +146,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     const queryBuilder = createQueryBuilder(dialect);
 
     if (options == null || options.every((item) => item == null)) {
-      return await conn.executeAsync([defs.map((def) => queryBuilder.build(def)).join("\n")]);
+      return conn.executeAsync([defs.map((def) => queryBuilder.build(def)).join("\n")]);
     } else {
       const queries = defs.flatMap((def) => {
         const query = queryBuilder.build(def);

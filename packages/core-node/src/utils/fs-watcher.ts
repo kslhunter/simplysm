@@ -1,4 +1,4 @@
-import { SdAsyncFnDebounceQueue } from "@simplysm/core-common";
+import { DebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
 import type { EventName } from "chokidar/handler.js";
 import type { NormPath } from "./path";
@@ -54,7 +54,7 @@ export class SdFsWatcher {
     paths: string[],
     options?: chokidar.ChokidarOptions,
   ): Promise<SdFsWatcher> {
-    return await new Promise<SdFsWatcher>((resolve) => {
+    return new Promise<SdFsWatcher>((resolve) => {
       const watcher = new SdFsWatcher(paths, options);
       watcher._watcher.on("ready", () => {
         resolve(watcher);
@@ -85,7 +85,7 @@ export class SdFsWatcher {
     opt: { delay?: number },
     cb: (changeInfos: SdFsWatcherChangeInfo[]) => void | Promise<void>,
   ): this {
-    const fnQ = new SdAsyncFnDebounceQueue(opt.delay);
+    const fnQ = new DebounceQueue(opt.delay);
 
     let changeInfoMap = new Map<string, EventName>();
 

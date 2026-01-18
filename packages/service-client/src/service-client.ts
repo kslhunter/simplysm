@@ -1,7 +1,7 @@
 import pino from "pino";
 import type { Type } from "@simplysm/core-common";
+import { SdEventEmitter } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
-import { EventEmitter } from "events";
 
 import type { ServiceConnectionConfig } from "./types/connection-config";
 import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
@@ -12,7 +12,14 @@ import { FileClient } from "./features/file-client";
 
 const logger = pino({ name: "service-client:ServiceClient" });
 
-export class ServiceClient extends EventEmitter {
+interface ServiceClientEvents {
+  "request-progress": ServiceProgressState;
+  "response-progress": ServiceProgressState;
+  state: "connected" | "closed" | "reconnecting";
+  reload: Set<string>;
+}
+
+export class ServiceClient extends SdEventEmitter<ServiceClientEvents> {
   // 모듈들
   private readonly _socket: SocketProvider;
   private readonly _transport: ServiceTransport;
@@ -20,17 +27,6 @@ export class ServiceClient extends EventEmitter {
   private readonly _fileClient: FileClient;
 
   private _authToken?: string;
-
-  override on(event: "request-progress", listener: (state: ServiceProgressState) => void): this;
-  override on(event: "response-progress", listener: (state: ServiceProgressState) => void): this;
-  override on(
-    event: "state",
-    listener: (state: "connected" | "closed" | "reconnecting") => void,
-  ): this;
-  override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this;
-  override on(event: string, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
-  }
 
   // 상태 접근자
   get connected() {
@@ -45,7 +41,7 @@ export class ServiceClient extends EventEmitter {
     public readonly name: string,
     public readonly options: ServiceConnectionConfig,
   ) {
-    super();
+    super({});
 
     const wsProtocol = options.ssl ? "wss" : "ws";
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;
@@ -84,7 +80,7 @@ export class ServiceClient extends EventEmitter {
       get: (_target, prop) => {
         const methodName = String(prop);
         return async (...params: unknown[]) => {
-          return await this.sendAsync(serviceName, methodName, params);
+          return this.sendAsync(serviceName, methodName, params);
         };
       },
     });
@@ -104,7 +100,7 @@ export class ServiceClient extends EventEmitter {
     params: unknown[],
     progress?: ServiceProgress,
   ): Promise<unknown> {
-    return await this._transport.sendAsync(
+    return this._transport.sendAsync(
       {
         name: `${serviceName}.${methodName}`,
         body: params,
@@ -133,7 +129,7 @@ export class ServiceClient extends EventEmitter {
     cb: (data: T["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     if (!this.connected) throw new Error("서버와 연결되어있지 않습니다.");
-    return await this._eventClient.addListenerAsync(eventType, info, cb);
+    return this._eventClient.addListenerAsync(eventType, info, cb);
   }
 
   async removeEventListenerAsync(key: string): Promise<void> {
@@ -154,11 +150,11 @@ export class ServiceClient extends EventEmitter {
         "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.",
       );
     }
-    return await this._fileClient.uploadAsync(files, this._authToken);
+    return this._fileClient.uploadAsync(files, this._authToken);
   }
 
   async downloadFileBufferAsync(relPath: string) {
-    return await this._fileClient.downloadAsync(relPath);
+    return this._fileClient.downloadAsync(relPath);
   }
 }
 

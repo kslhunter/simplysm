@@ -1,7 +1,6 @@
-import { DateTime } from "@simplysm/core-common";
+import { DateTime, SdEventEmitter } from "@simplysm/core-common";
 import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 import { WebSocket } from "ws";
-import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
 import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
@@ -10,9 +9,13 @@ import pino from "pino";
 
 const logger = pino({ name: "service-server:ServiceSocket" });
 
-export class ServiceSocket extends EventEmitter {
+export class ServiceSocket extends SdEventEmitter<{
+  error: Error;
+  close: number;
+  message: { uuid: string; msg: ServiceClientMessage };
+}> {
   private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송
-  private readonly _PONG_PACKET = Buffer.from([0x02]);
+  private readonly _PONG_PACKET = new Uint8Array([0x02]);
 
   private readonly _protocol = new ProtocolWrapper();
   private readonly _listenerInfos: { eventName: string; key: string; info: unknown }[] = [];
@@ -56,7 +59,7 @@ export class ServiceSocket extends EventEmitter {
   }
 
   async sendAsync(uuid: string, msg: ServiceServerMessage) {
-    return await this._sendAsync(uuid, msg);
+    return this._sendAsync(uuid, msg);
   }
 
   private async _sendAsync(uuid: string, msg: ServiceServerRawMessage) {
@@ -104,7 +107,7 @@ export class ServiceSocket extends EventEmitter {
     this.emit("close", code);
   }
 
-  private async _onMessage(msgBuffer: Buffer) {
+  private async _onMessage(msgBuffer: Uint8Array) {
     try {
       // ping에 대한 pong처리
       if (msgBuffer.length === 1 && msgBuffer[0] === 0x01) {
@@ -125,7 +128,7 @@ export class ServiceSocket extends EventEmitter {
         });
       } else {
         const msg = decodeResult.message as ServiceClientMessage;
-        this.emit("message", decodeResult.uuid, msg);
+        this.emit("message", { uuid: decodeResult.uuid, msg });
       }
     } catch (err) {
       logger.error({ err }, "WebSocket 메시지 처리 중 오류 발생");

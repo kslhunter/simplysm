@@ -71,7 +71,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    */
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._requireConn();
-    return await conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrizedAsync(query, params);
   }
 
   /**

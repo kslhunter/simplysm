@@ -1,44 +1,77 @@
 # @simplysm/cli
 
-**이 문서는 패키지 사용자를 위한 가이드입니다.**
-**개발자용 가이드는 [CLAUDE.md](./CLAUDE.md)를 참고하세요.**
-
----
-
-SIMPLYSM 프로젝트를 위한 CLI 도구입니다.
+심플리즘 프레임워크의 CLI 도구입니다.
 
 ## 설치
 
 ```bash
-yarn add -D @simplysm/cli
-```
-
-## 사용법
-
-### lint
-
-ESLint를 실행합니다. 기본 ESLint CLI보다 빠르게 동작합니다.
-
-```bash
-# 기본 사용
-sd-cli lint "**/*.{ts,js,html}"
-
-# 자동 수정
-sd-cli lint "**/*.{ts,js,html}" --fix
-
-# 규칙별 실행 시간 출력
-sd-cli lint "**/*.ts" --timing
-
-# 특정 경로만
-sd-cli lint "src/**/*.ts"
+npm install -g @simplysm/cli
+# or
+yarn global add @simplysm/cli
 ```
 
 ## 명령어
 
-| 명령어 | 설명 |
-|--------|------|
-| `lint [patterns..] [--fix] [--timing]` | ESLint 실행 |
+### lint
+
+ESLint를 실행합니다.
+
+```bash
+# 전체 린트
+sd-cli lint
+
+# 특정 경로만 린트
+sd-cli lint packages/core-common
+
+# 자동 수정
+sd-cli lint --fix
+
+# 규칙별 실행 시간 출력
+sd-cli lint --timing
+```
+
+**옵션:**
+
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--fix` | 자동 수정 | `false` |
+| `--timing` | 규칙별 실행 시간 출력 | `false` |
+| `--debug` | debug 로그 출력 | `false` |
+
+### typecheck
+
+TypeScript 타입체크를 실행합니다.
+
+```bash
+# 전체 타입체크
+sd-cli typecheck
+
+# 특정 경로만 타입체크
+sd-cli typecheck packages/core-common
+
+# 여러 경로 타입체크
+sd-cli typecheck packages/core-common tests/orm
+```
+
+**옵션:**
+
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--debug` | debug 로그 출력 | `false` |
+
+## 사용 예시
+
+```bash
+# 전체 린트
+sd-cli lint
+
+# 특정 패키지만 린트
+sd-cli lint packages/core-common
+
+# 특정 패키지 타입체크
+sd-cli typecheck packages/core-common
+```
 
 ## 라이선스
 
-MIT
+Apache-2.0

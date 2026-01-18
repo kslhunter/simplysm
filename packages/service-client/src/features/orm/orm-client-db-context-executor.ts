@@ -26,7 +26,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     database?: string;
     schema?: string;
   }> {
-    return await this._ormService.getInfo(this._opt);
+    return this._ormService.getInfo(this._opt);
   }
 
   async connectAsync(): Promise<void> {
@@ -81,7 +81,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._ormService.executeParametrized(this._connId, query, params);
+    return this._ormService.executeParametrized(this._connId, query, params);
   }
 
   async bulkInsertAsync(
@@ -93,6 +93,6 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await this._ormService.bulkInsert(this._connId, tableName, columnDefs, records);
+    return this._ormService.bulkInsert(this._connId, tableName, columnDefs, records);
   }
 }

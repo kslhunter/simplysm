@@ -2,16 +2,16 @@
  * 비동기 함수 디바운스 큐
  * 마지막 요청만 실행하고 이전 요청은 무시
  */
-import { SdError } from "../errors/SdError";
-import EventEmitter from "events";
+import { SdError } from "../errors/sd-error";
+import { SdEventEmitter } from "./sd-event-emitter";
 import pino from "pino";
 
-export interface SdAsyncFnDebounceQueueEvents {
-  error: [err: SdError];
+interface DebounceQueueEvents {
+  error: SdError;
 }
 
-export class SdAsyncFnDebounceQueue extends EventEmitter<SdAsyncFnDebounceQueueEvents> {
-  private static readonly _logger = pino({ name: "SdAsyncFnDebounceQueue" });
+export class DebounceQueue extends SdEventEmitter<DebounceQueueEvents> {
+  private static readonly _logger = pino({ name: "DebounceQueue" });
 
   private _pendingFn: (() => void | Promise<void>) | undefined;
   private _isRunning = false;
@@ -30,6 +30,13 @@ export class SdAsyncFnDebounceQueue extends EventEmitter<SdAsyncFnDebounceQueueE
       this._timer = undefined;
     }
     this._pendingFn = undefined;
+  }
+
+  /**
+   * using 문 지원
+   */
+  [Symbol.dispose](): void {
+    this.dispose();
   }
 
   /**
@@ -72,7 +79,7 @@ export class SdAsyncFnDebounceQueue extends EventEmitter<SdAsyncFnDebounceQueueE
           if (this.listenerCount("error") > 0) {
             this.emit("error", sdError);
           } else {
-            SdAsyncFnDebounceQueue._logger.error(sdError);
+            DebounceQueue._logger.error(sdError);
           }
         }
       }

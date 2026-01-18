@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, ObjectUtils, Time, Uuid } from "@simplysm/core-common";
+import { DateOnly, DateTime, ObjectUtils, Time, Uuid, BytesUtils } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -48,14 +48,13 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
       return Time.parse(value as string);
 
     case "Uuid":
-      if (Buffer.isBuffer(value)) return Uuid.fromBuffer(value);
+      if (value instanceof Uint8Array) return Uuid.fromBytes(value);
       return new Uuid(value as string);
 
-    case "Buffer":
-      if (Buffer.isBuffer(value)) return value;
-      if (typeof value === "string") return Buffer.from(value, "base64");
-      if (value instanceof Uint8Array) return Buffer.from(value);
-      throw new Error(`Buffer 파싱 실패: ${typeof value}`);
+    case "Bytes":
+      if (value instanceof Uint8Array) return value;
+      if (typeof value === "string") return BytesUtils.fromHex(value);
+      throw new Error(`Bytes 파싱 실패: ${typeof value}`);
   }
 }
 
@@ -122,13 +121,13 @@ function deepClone<T>(obj: T): T {
     return obj.map((item) => deepClone(item)) as T;
   }
 
-  // DateTime, DateOnly, Time, Uuid, Buffer 등 특수 객체는 그대로 반환
+  // DateTime, DateOnly, Time, Uuid, Uint8Array 등 특수 객체는 그대로 반환
   if (
     obj instanceof DateTime ||
     obj instanceof DateOnly ||
     obj instanceof Time ||
     obj instanceof Uuid ||
-    Buffer.isBuffer(obj)
+    obj instanceof Uint8Array
   ) {
     return obj;
   }
@@ -195,11 +194,11 @@ export async function parseQueryResultAsync<T>(
 
   // JOIN이 없는 경우: 단순 타입 파싱만
   if (joinKeys.length === 0) {
-    return await parseSimpleRecords<T>(rawResults, meta.columns);
+    return parseSimpleRecords<T>(rawResults, meta.columns);
   }
 
   // JOIN이 있는 경우: 그룹핑 + 중첩화
-  return await parseJoinedRecords<T>(rawResults, meta);
+  return parseJoinedRecords<T>(rawResults, meta);
 }
 
 /**

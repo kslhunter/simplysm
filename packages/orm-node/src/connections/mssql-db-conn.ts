@@ -1,6 +1,5 @@
-import { EventEmitter } from "events";
 import pino from "pino";
-import { DateOnly, DateTime, JsonConvert, SdError, StringUtils, Time, Uuid, Wait } from "@simplysm/core-common";
+import { DateOnly, DateTime, JsonConvert, SdError, SdEventEmitter, StringUtils, Time, Uuid, Wait } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -18,7 +17,7 @@ const logger = pino({ name: "mssql-db-conn" });
  *
  * tedious 라이브러리를 사용하여 MSSQL/Azure SQL 연결을 관리합니다.
  */
-export class MssqlDbConn extends EventEmitter implements DbConn {
+export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _conn?: tediousType.Connection;
@@ -446,7 +445,7 @@ export class MssqlDbConn extends EventEmitter implements DbConn {
     if (value instanceof DateOnly) return this._tedious.TYPES.Date;
     if (value instanceof Time) return this._tedious.TYPES.Time;
     if (value instanceof Uuid) return this._tedious.TYPES.UniqueIdentifier;
-    if (Buffer.isBuffer(value)) return this._tedious.TYPES.VarBinary;
+    if (value instanceof Uint8Array) return this._tedious.TYPES.VarBinary;
 
     throw new Error(`알 수 없는 값 타입: ${typeof value}`);
   }

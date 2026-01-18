@@ -8,11 +8,12 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/storage"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@simplysm/core-common": "workspace:*",
     "basic-ftp": "^5.1.0",
     "ssh2-sftp-client": "^12.0.1"
   },

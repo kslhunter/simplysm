@@ -13,7 +13,7 @@ export class EventClient {
   >();
 
   constructor(private readonly _transport: ServiceTransport) {
-    this._transport.on("event", async (keys: string[], data: unknown) => {
+    this._transport.on("event", async ({ keys, data }) => {
       await this._executeByKeyAsync(keys, data);
     });
   }

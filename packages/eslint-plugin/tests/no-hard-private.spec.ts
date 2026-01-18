@@ -1,12 +1,7 @@
-import { afterAll, describe, it } from "vitest";
+import "./vitest.setup";
+import { describe } from "vitest";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import rule from "../src/rules/no-hard-private";
-
-// vitest 훅 바인딩
-RuleTester.afterAll = afterAll;
-RuleTester.describe = describe;
-RuleTester.it = it;
-RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester();
 
@@ -229,6 +224,286 @@ class MyClass {
             output: `
 class MyClass {
   private static _staticField = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("readonly # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  readonly #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private readonly _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("static readonly # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  static readonly #staticReadonlyField = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private static readonly _staticReadonlyField = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("# private getter를 private _ 스타일로 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  get #value() {
+    return 1;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private get _value() {
+    return 1;
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("# private setter를 private _ 스타일로 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  set #value(v) {
+    this._internal = v;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private set _value(v) {
+    this._internal = v;
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("# private getter/setter 쌍 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  get #prop() {
+    return this._internal;
+  }
+  set #prop(v) {
+    this._internal = v;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private get _prop() {
+    return this._internal;
+  }
+  private set _prop(v) {
+    this._internal = v;
+  }
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("여러 인접한 # private 필드/메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  #a;
+  #b;
+  #method1() {}
+  #method2() {}
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _a;
+  private _b;
+  private _method1() {}
+  private _method2() {}
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("데코레이터가 있는 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  @Decorator
+  #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  @Decorator
+  private _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("데코레이터가 있는 # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  @MethodDecorator
+  #method() {
+    return 1;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  @MethodDecorator
+  private _method() {
+    return 1;
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("# private accessor 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  accessor #value = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private accessor _value = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("# private accessor 필드 사용 (this.#value)", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  accessor #value = 1;
+  method() {
+    return this.#value;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private accessor _value = 1;
+  method() {
+    return this._value;
+  }
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("static # private accessor 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  static accessor #staticValue = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private static accessor _staticValue = 1;
 }
             `.trim(),
             errors: [{ messageId: "preferSoftPrivate" }],

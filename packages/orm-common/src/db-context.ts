@@ -5,7 +5,7 @@ import type {
   Migration,
   ResultMeta,
 } from "./types/db";
-import { DbErrorCode, DbTransactionError } from "./errors/DbTransactionError";
+import { DbErrorCode, DbTransactionError } from "./errors/db-transaction-error";
 import {
   DDL_TYPES,
   type AddColumnQueryDef,
@@ -40,7 +40,7 @@ import {
 } from "./schema/factory/relation-builder";
 import { ObjectUtils } from "@simplysm/core-common";
 import type { IndexBuilder } from "./schema/factory/index-builder";
-import { SystemMigration } from "./models/SystemMigration";
+import { SystemMigration } from "./models/system-migration";
 
 /**
  * DbContext 연결 상태

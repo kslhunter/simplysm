@@ -2,9 +2,20 @@ import SftpClient from "ssh2-sftp-client";
 import type { Storage, FileInfo } from "../types/storage";
 import type { StorageConnConfig } from "../types/storage-conn-config";
 
+// ssh2-sftp-client 라이브러리 타입 정의에서 Buffer 사용
+type SftpGetResult = string | NodeJS.WritableStream | Uint8Array;
+
 export class SftpStorageClient implements Storage {
   private _client: SftpClient | undefined;
 
+  /**
+   * SFTP 서버에 연결합니다.
+   *
+   * @remarks
+   * - 연결 후 반드시 {@link close}로 연결을 종료해야 합니다.
+   * - 동일 인스턴스에서 여러 번 호출하지 마세요. (연결 누수 발생)
+   * - 자동 연결/종료 관리가 필요하면 {@link StorageFactory.connect}를 사용하세요. (권장)
+   */
   async connect(config: StorageConnConfig): Promise<void> {
     this._client = new SftpClient();
     await this._client.connect({
@@ -43,12 +54,12 @@ export class SftpStorageClient implements Storage {
     }));
   }
 
-  async readFile(filePath: string): Promise<Buffer> {
-    const result = await this._requireClient().get(filePath);
+  async readFile(filePath: string): Promise<Uint8Array> {
+    const result = (await this._requireClient().get(filePath)) as SftpGetResult;
     if (typeof result === "string") {
-      return Buffer.from(result);
+      return new TextEncoder().encode(result);
     }
-    if (Buffer.isBuffer(result)) {
+    if (result instanceof Uint8Array) {
       return result;
     }
     throw new Error("예상치 못한 응답 타입입니다.");
@@ -58,11 +69,12 @@ export class SftpStorageClient implements Storage {
     await this._requireClient().delete(filePath);
   }
 
-  async put(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
+  async put(localPathOrBuffer: string | Uint8Array, storageFilePath: string): Promise<void> {
     if (typeof localPathOrBuffer === "string") {
       await this._requireClient().fastPut(localPathOrBuffer, storageFilePath);
     } else {
-      await this._requireClient().put(localPathOrBuffer, storageFilePath);
+      // eslint-disable-next-line no-restricted-globals -- ssh2-sftp-client 라이브러리 요구사항
+      await this._requireClient().put(Buffer.from(localPathOrBuffer), storageFilePath);
     }
   }
 
@@ -72,5 +84,6 @@ export class SftpStorageClient implements Storage {
 
   async close(): Promise<void> {
     await this._requireClient().end();
+    this._client = undefined;
   }
 }

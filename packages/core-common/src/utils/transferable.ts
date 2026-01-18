@@ -1,34 +1,49 @@
+import type { Transferable } from "worker_threads";
+import { DateTime } from "../types/date-time";
+import { DateOnly } from "../types/date-only";
+import { Time } from "../types/time";
+import { Uuid } from "../types/uuid";
+
 /**
  * Transferable 변환 유틸리티
  * Worker 간 데이터 전송을 위한 직렬화/역직렬화
  */
-import type { Transferable } from "worker_threads";
-import { DateTime } from "../types/DateTime";
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
-import { Uuid } from "../types/Uuid";
-
 export abstract class TransferableConvert {
   //#region encode
   /**
    * 심플리즘 타입을 사용한 객체를 일반 객체로 변환
    * Worker에 전송할 수 있는 형태로 직렬화
+   *
+   * @throws 순환 참조 감지 시 TypeError
    */
   static encode(obj: unknown): {
     result: unknown;
     transferList: Transferable[];
   } {
     const transferList: Transferable[] = [];
-    const result = this._encode(obj, transferList);
+    const seen = new WeakSet<object>();
+    const result = this._encode(obj, transferList, seen);
     return { result, transferList };
   }
 
-  private static _encode(obj: unknown, transferList: Transferable[]): unknown {
+  private static _encode(
+    obj: unknown,
+    transferList: Transferable[],
+    seen: WeakSet<object>,
+  ): unknown {
     if (obj == null) return obj;
 
-    // 1. Buffer / Uint8Array
-    if (obj instanceof Uint8Array || Buffer.isBuffer(obj)) {
-      // buffer.buffer (ArrayBuffer)가 이미 리스트에 없으면 추가
+    // 순환 참조 감지 (객체 타입만)
+    if (typeof obj === "object") {
+      if (seen.has(obj)) {
+        throw new TypeError("순환 참조가 감지되었습니다");
+      }
+      seen.add(obj);
+    }
+
+    // 1. Uint8Array
+    if (obj instanceof Uint8Array) {
+      // buffer (ArrayBuffer)가 이미 리스트에 없으면 추가
       if (!transferList.includes(obj.buffer as ArrayBuffer)) {
         transferList.push(obj.buffer as ArrayBuffer);
       }
@@ -36,6 +51,7 @@ export abstract class TransferableConvert {
     }
 
     // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
+    if (obj instanceof Date) return { __type__: "Date", data: obj.getTime() };
     if (obj instanceof DateTime)
       return { __type__: "DateTime", data: obj.tick };
     if (obj instanceof DateOnly)
@@ -55,10 +71,10 @@ export abstract class TransferableConvert {
           stack: errObj.stack,
           ...(errObj.code !== undefined ? { code: errObj.code } : {}),
           ...(errObj.detail !== undefined
-            ? { detail: this._encode(errObj.detail, transferList) }
+            ? { detail: this._encode(errObj.detail, transferList, seen) }
             : {}),
           ...(errObj.cause !== undefined
-            ? { cause: this._encode(errObj.cause, transferList) }
+            ? { cause: this._encode(errObj.cause, transferList, seen) }
             : {}),
         },
       };
@@ -66,15 +82,15 @@ export abstract class TransferableConvert {
 
     // 3. 배열 재귀 순회
     if (Array.isArray(obj)) {
-      return obj.map((item) => this._encode(item, transferList));
+      return obj.map((item) => this._encode(item, transferList, seen));
     }
 
     // 4. Map 재귀 순회
     if (obj instanceof Map) {
       return new Map(
         Array.from(obj.entries()).map(([k, v]) => [
-          this._encode(k, transferList),
-          this._encode(v, transferList),
+          this._encode(k, transferList, seen),
+          this._encode(v, transferList, seen),
         ]),
       );
     }
@@ -82,7 +98,7 @@ export abstract class TransferableConvert {
     // 5. Set 재귀 순회
     if (obj instanceof Set) {
       return new Set(
-        Array.from(obj).map((v) => this._encode(v, transferList)),
+        Array.from(obj).map((v) => this._encode(v, transferList, seen)),
       );
     }
 
@@ -91,7 +107,7 @@ export abstract class TransferableConvert {
       const result: Record<string, unknown> = {};
       const record = obj as Record<string, unknown>;
       for (const key of Object.keys(record)) {
-        result[key] = this._encode(record[key], transferList);
+        result[key] = this._encode(record[key], transferList, seen);
       }
       return result;
     }
@@ -113,6 +129,8 @@ export abstract class TransferableConvert {
       const typed = obj as { __type__: string; data: unknown };
       const data = typed.data;
 
+      if (typed.__type__ === "Date" && typeof data === "number")
+        return new Date(data);
       if (typed.__type__ === "DateTime" && typeof data === "number")
         return new DateTime(data);
       if (typed.__type__ === "DateOnly" && typeof data === "number")

@@ -1,11 +1,17 @@
 import type { StorageConnConfig } from "./types/storage-conn-config";
 import type { Storage } from "./types/storage";
+import type { StorageType } from "./types/storage-type";
 import { FtpStorageClient } from "./clients/ftp-storage-client";
 import { SftpStorageClient } from "./clients/sftp-storage-client";
 
-export type StorageType = "ftp" | "ftps" | "sftp";
-
 export class StorageFactory {
+  /**
+   * 스토리지에 연결하고 콜백을 실행한 후 자동으로 연결을 종료합니다.
+   *
+   * @remarks
+   * 콜백 패턴으로 연결/종료가 자동 관리되므로, 직접 클라이언트를 사용하는 것보다 권장됩니다.
+   * 콜백에서 예외가 발생해도 연결은 자동으로 종료됩니다.
+   */
   static async connect<R>(
     type: StorageType,
     config: StorageConnConfig,

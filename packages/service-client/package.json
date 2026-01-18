@@ -8,15 +8,15 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/service-client"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0",
-    "@simplysm/orm-common": "13.0.0-beta.0",
-    "@simplysm/service-common": "13.0.0-beta.0",
-    "pino": "^10.1.1"
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/orm-common": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "pino": "^10.2.0"
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",

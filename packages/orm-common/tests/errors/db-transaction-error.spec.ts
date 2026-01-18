@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DbErrorCode, DbTransactionError } from "../../src/errors/DbTransactionError";
+import { DbErrorCode, DbTransactionError } from "../../src/errors/db-transaction-error";
 
 describe("DbTransactionError", () => {
   describe("에러 생성", () => {

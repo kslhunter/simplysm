@@ -2,25 +2,26 @@
  * Array 확장 헬퍼 함수
  */
 
-import { DateTime } from "../types/DateTime";
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
-import { ArgumentError } from "../errors/ArgumentError";
+import { DateTime } from "../types/date-time";
+import { DateOnly } from "../types/date-only";
+import { Time } from "../types/time";
+import { ArgumentError } from "../errors/argument-error";
+import type { ComparableType } from "./array-ext.types";
 
 /**
- * DateTime, DateOnly, Time을 비교 가능한 값으로 변환
+ * DateTime, DateOnly, Time을 비교 가능한 primitive 값으로 변환
  */
-export function toComparable(value: unknown): string | number | boolean | undefined {
+export function toComparable(value: ComparableType): string | number | boolean | undefined {
   if (value instanceof DateOnly || value instanceof DateTime || value instanceof Time) {
     return value.tick;
   }
-  return value as string | number | boolean | undefined;
+  return value;
 }
 
 /**
  * 정렬을 위한 비교 함수
  */
-export function compareForOrder(pp: unknown, pn: unknown, desc: boolean): number {
+export function compareForOrder(pp: ComparableType, pn: ComparableType, desc: boolean): number {
   const cpp = toComparable(pp);
   const cpn = toComparable(pn);
 

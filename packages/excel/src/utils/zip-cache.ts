@@ -8,7 +8,7 @@ import type {
   ExcelXmlWorkbookData,
   ExcelXmlWorksheetData,
 } from "../types";
-import { SdZip, XmlConvert } from "@simplysm/core-common";
+import { ZipArchive, XmlConvert } from "@simplysm/core-common";
 import { ExcelXmlRelationship } from "../xml/excel-xml-relationship";
 import { ExcelXmlContentType } from "../xml/excel-xml-content-type";
 import { ExcelXmlWorkbook } from "../xml/excel-xml-workbook";
@@ -19,14 +19,14 @@ import { ExcelXmlStyle } from "../xml/excel-xml-style";
 import { ExcelXmlDrawing } from "../xml/excel-xml-drawing";
 
 export class ZipCache {
-  private readonly _cache = new Map<string, ExcelXml | Buffer | undefined>();
-  private readonly _zip: SdZip;
+  private readonly _cache = new Map<string, ExcelXml | Uint8Array | undefined>();
+  private readonly _zip: ZipArchive;
 
-  constructor(arg?: Blob | Buffer) {
-    this._zip = new SdZip(arg);
+  constructor(arg?: Blob | Uint8Array) {
+    this._zip = new ZipArchive(arg);
   }
 
-  async get(filePath: string): Promise<ExcelXml | Buffer | undefined> {
+  async get(filePath: string): Promise<ExcelXml | Uint8Array | undefined> {
     if (this._cache.has(filePath)) {
       return this._cache.get(filePath);
     }
@@ -64,35 +64,24 @@ export class ZipCache {
     return this._cache.get(filePath);
   }
 
-  async exists(filePath: string): Promise<boolean> {
-    if (this._cache.has(filePath)) {
-      return true;
-    }
-
-    return await this._zip.existsAsync(filePath);
-  }
-
-  set(filePath: string, content: ExcelXml | Buffer): void {
+  set(filePath: string, content: ExcelXml | Uint8Array): void {
     this._cache.set(filePath, content);
   }
 
-  async toBuffer(): Promise<Buffer> {
+  async toBytes(): Promise<Uint8Array> {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath);
       if (content == null) continue;
 
       if ("cleanup" in content) {
         content.cleanup();
-        this._zip.write(
-          filePath,
-          Buffer.from(new TextEncoder().encode(XmlConvert.stringify(content.data))),
-        );
+        this._zip.write(filePath, new TextEncoder().encode(XmlConvert.stringify(content.data)));
       } else {
         this._zip.write(filePath, content);
       }
     }
 
-    return await this._zip.compressAsync();
+    return this._zip.compressAsync();
   }
 
   async close(): Promise<void> {

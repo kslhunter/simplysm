@@ -16,8 +16,8 @@ const PROGRESS_BAR_UNIT = 100 / PROGRESS_BAR_SIZE; // 20
 //#region Stdin
 
 /** @returns {Promise<string>} */
-async function readStdin() {
-  return await new Promise((resolve) => {
+function readStdin() {
+  return new Promise((resolve) => {
     let data = "";
     const timeout = setTimeout(() => resolve(""), STDIN_TIMEOUT_MS);
     stdin.setEncoding("utf8");

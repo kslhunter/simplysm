@@ -30,10 +30,10 @@ self.onmessage = (event: MessageEvent) => {
       // 결과물 청크들의 내부 ArrayBuffer를 소유권 이전 목록에 추가
       transferList = chunks.map((chunk) => chunk.buffer as ArrayBuffer);
     } else {
-      // [Main -> Worker] 디코딩 요청 (data: Buffer)
-      // data는 Uint8Array(Buffer)로 넘어옴
-      const buffer = Buffer.from(data as ArrayBuffer);
-      const decodeResult = protocol.decode(buffer);
+      // [Main -> Worker] 디코딩 요청 (data: Uint8Array)
+      // data는 Uint8Array로 넘어옴
+      const bytes = new Uint8Array(data as ArrayBuffer);
+      const decodeResult = protocol.decode(bytes);
 
       // 결과물(객체)을 전송 가능한 형태로 변환 (Zero-Copy 준비)
       const encoded = TransferableConvert.encode(decodeResult);

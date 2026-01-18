@@ -6,14 +6,18 @@ import type {
 import type { ServiceProgress } from "../types/progress.types";
 
 import type { SocketProvider } from "./socket-provider";
-import { EventEmitter } from "events";
+import { SdEventEmitter, Uuid } from "@simplysm/core-common";
 import { ClientProtocolWrapper } from "../protocol/client-protocol-wrapper";
-import { Uuid } from "@simplysm/core-common";
 
-export class ServiceTransport extends EventEmitter {
+interface ServiceTransportEvents {
+  reload: Set<string>;
+  event: { keys: string[]; data: unknown };
+}
+
+export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
   private readonly _protocol = new ClientProtocolWrapper();
 
-  private readonly _listenerMap = new Map<
+  private readonly _pendingRequests = new Map<
     string,
     {
       resolve: (msg: ServiceResponseMessage) => void;
@@ -22,15 +26,8 @@ export class ServiceTransport extends EventEmitter {
     }
   >();
 
-  // 이벤트
-  override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this;
-  override on(event: "event", listener: (keys: string[], data: unknown) => void): this;
-  override on(event: string, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
-  }
-
   constructor(private readonly _socket: SocketProvider) {
-    super();
+    super({});
 
     this._socket.on("message", this._onMessage.bind(this));
 
@@ -47,7 +44,7 @@ export class ServiceTransport extends EventEmitter {
 
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
     const responsePromise = new Promise((resolve, reject) => {
-      this._listenerMap.set(uuid, { resolve, reject, progress });
+      this._pendingRequests.set(uuid, { resolve, reject, progress });
     });
 
     // 요청 전송
@@ -69,19 +66,19 @@ export class ServiceTransport extends EventEmitter {
       }
     } catch (err) {
       // 전송 실패 시 즉시 정리
-      this._listenerMap.get(uuid)?.reject(err as Error);
-      this._listenerMap.delete(uuid);
+      this._pendingRequests.get(uuid)?.reject(err as Error);
+      this._pendingRequests.delete(uuid);
       throw err;
     }
 
     // 응답 결과 반환
-    return await responsePromise;
+    return responsePromise;
   }
 
-  private async _onMessage(buf: Buffer): Promise<void> {
+  private async _onMessage(buf: Uint8Array): Promise<void> {
     const decoded = await this._protocol.decodeAsync(buf);
 
-    const listenerInfo = this._listenerMap.get(decoded.uuid);
+    const listenerInfo = this._pendingRequests.get(decoded.uuid);
 
     try {
       if (decoded.type === "progress") {
@@ -100,12 +97,12 @@ export class ServiceTransport extends EventEmitter {
           });
         } else if (decoded.message.name === "response") {
           // 응답을 받았으므로 Map에서 제거
-          this._listenerMap.delete(decoded.uuid);
+          this._pendingRequests.delete(decoded.uuid);
 
           listenerInfo?.resolve(decoded.message.body as ServiceResponseMessage);
         } else if (decoded.message.name === "error") {
           // 에러를 받았으므로 Map에서 제거
-          this._listenerMap.delete(decoded.uuid);
+          this._pendingRequests.delete(decoded.uuid);
 
           listenerInfo?.reject(this._toError(decoded.message.body));
         } else if (decoded.message.name === "reload") {
@@ -115,7 +112,7 @@ export class ServiceTransport extends EventEmitter {
           }
         } else if (decoded.message.name === "evt:on") {
           const body = decoded.message.body as { keys: string[]; data: unknown };
-          this.emit("event", body.keys, body.data);
+          this.emit("event", { keys: body.keys, data: body.data });
         } else {
           throw new Error("요청이 잘 못 되었습니다.");
         }
@@ -127,10 +124,10 @@ export class ServiceTransport extends EventEmitter {
 
   // 모든 대기 요청 취소 처리
   private _cancelAllRequests(reason: string): void {
-    for (const listenerInfo of this._listenerMap.values()) {
+    for (const listenerInfo of this._pendingRequests.values()) {
       listenerInfo.reject(new Error(`Request canceled: ${reason}`));
     }
-    this._listenerMap.clear();
+    this._pendingRequests.clear();
   }
 
   private _toError(body: ServiceErrorMessage["body"]): Error {

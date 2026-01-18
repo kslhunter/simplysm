@@ -5,7 +5,7 @@
 //#region ========== Core ==========
 
 export { DbContext, type DbContextStatus } from "./db-context";
-export { DbTransactionError, DbErrorCode } from "./errors/DbTransactionError";
+export { DbTransactionError, DbErrorCode } from "./errors/db-transaction-error";
 
 //#endregion
 
@@ -60,21 +60,21 @@ export {
 
 //#region ========== Models ==========
 
-export { SystemMigration } from "./models/SystemMigration";
+export { SystemMigration } from "./models/system-migration";
 
 //#endregion
 
 //#region ========== Query Builder ==========
 
 export { createQueryBuilder } from "./query-builder/query-builder";
-export { QueryBuilderBase } from "./query-builder/base/QueryBuilderBase";
-export { ExprRendererBase } from "./query-builder/base/ExprRendererBase";
-export { MysqlQueryBuilder } from "./query-builder/mysql/MysqlQueryBuilder";
-export { MysqlExprRenderer } from "./query-builder/mysql/MysqlExprRenderer";
-export { MssqlQueryBuilder } from "./query-builder/mssql/MssqlQueryBuilder";
-export { MssqlExprRenderer } from "./query-builder/mssql/MssqlExprRenderer";
-export { PostgresqlQueryBuilder } from "./query-builder/postgresql/PostgresqlQueryBuilder";
-export { PostgresqlExprRenderer } from "./query-builder/postgresql/PostgresqlExprRenderer";
+export { QueryBuilderBase } from "./query-builder/base/query-builder-base";
+export { ExprRendererBase } from "./query-builder/base/expr-renderer-base";
+export { MysqlQueryBuilder } from "./query-builder/mysql/mysql-query-builder";
+export { MysqlExprRenderer } from "./query-builder/mysql/mysql-expr-renderer";
+export { MssqlQueryBuilder } from "./query-builder/mssql/mssql-query-builder";
+export { MssqlExprRenderer } from "./query-builder/mssql/mssql-expr-renderer";
+export { PostgresqlQueryBuilder } from "./query-builder/postgresql/postgresql-query-builder";
+export { PostgresqlExprRenderer } from "./query-builder/postgresql/postgresql-expr-renderer";
 
 //#endregion
 

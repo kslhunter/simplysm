@@ -6,7 +6,7 @@ export class FileClient {
     private readonly _clientName: string,
   ) {}
 
-  async downloadAsync(relPath: string): Promise<Buffer> {
+  async downloadAsync(relPath: string): Promise<Uint8Array> {
     // URL 구성
     const url = `${this._hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
@@ -15,8 +15,8 @@ export class FileClient {
       throw new Error(`Download failed: ${res.status} ${res.statusText}`);
     }
 
-    // ArrayBuffer -> Buffer
-    return Buffer.from(await res.arrayBuffer());
+    // ArrayBuffer -> Uint8Array
+    return new Uint8Array(await res.arrayBuffer());
   }
 
   async uploadAsync(
@@ -50,6 +50,6 @@ export class FileClient {
       throw new Error(`Upload failed: ${res.statusText}`);
     }
 
-    return await res.json();
+    return res.json();
   }
 }

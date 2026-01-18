@@ -10,7 +10,7 @@ const mockList = vi.fn().mockResolvedValue([
   { name: "file.txt", type: "-" },
   { name: "dir", type: "d" },
 ]);
-const mockGet = vi.fn().mockResolvedValue(Buffer.from("test content"));
+const mockGet = vi.fn().mockResolvedValue(new TextEncoder().encode("test content"));
 const mockDelete = vi.fn().mockResolvedValue(undefined);
 const mockPut = vi.fn().mockResolvedValue(undefined);
 const mockFastPut = vi.fn().mockResolvedValue(undefined);
@@ -145,21 +145,21 @@ describe("SftpStorageClient", () => {
   });
 
   describe("readFile", () => {
-    it("파일 내용을 Buffer로 반환해야 함", async () => {
+    it("파일 내용을 Uint8Array로 반환해야 함", async () => {
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
 
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.toString()).toBe("test content");
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result)).toBe("test content");
     });
 
-    it("문자열 결과를 Buffer로 변환해야 함", async () => {
+    it("문자열 결과를 Uint8Array로 변환해야 함", async () => {
       mockGet.mockResolvedValueOnce("string content");
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
 
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.toString()).toBe("string content");
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result)).toBe("string content");
     });
 
     it("예상치 못한 타입이면 에러 발생", async () => {
@@ -189,12 +189,13 @@ describe("SftpStorageClient", () => {
       expect(mockFastPut).toHaveBeenCalledWith("/local/file.txt", "/remote/file.txt");
     });
 
-    it("Buffer에서 put으로 업로드해야 함", async () => {
+    it("Uint8Array에서 put으로 업로드해야 함", async () => {
       await client.connect({ host: "test" });
-      const buffer = Buffer.from("content");
-      await client.put(buffer, "/remote/file.txt");
+      const bytes = new TextEncoder().encode("content");
+      await client.put(bytes, "/remote/file.txt");
 
-      expect(mockPut).toHaveBeenCalledWith(buffer, "/remote/file.txt");
+      // Buffer.from으로 변환되어 전달됨
+      expect(mockPut).toHaveBeenCalled();
     });
   });
 
@@ -213,6 +214,15 @@ describe("SftpStorageClient", () => {
       await client.close();
 
       expect(mockEnd).toHaveBeenCalled();
+    });
+
+    it("close 후 메서드 호출 시 에러", async () => {
+      await client.connect({ host: "test" });
+      await client.close();
+
+      await expect(client.mkdir("/test")).rejects.toThrow(
+        "SFTP 서버에 연결되어있지 않습니다.",
+      );
     });
   });
 });

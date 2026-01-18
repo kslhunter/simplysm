@@ -8,12 +8,12 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/service-common"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0",
-    "@simplysm/orm-common": "13.0.0-beta.0"
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/orm-common": "workspace:*"
   }
 }

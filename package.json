@@ -8,7 +8,7 @@
     "url": "https://github.com/kslhunter/simplysm.git"
   },
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -19,30 +19,28 @@
     "yarn": "4.12.0"
   },
   "scripts": {
-    "watch": "yarn run _sd-cli_ --debug watch",
-    "build": "yarn run _sd-cli_ build",
-    "publish": "yarn run _sd-cli_ publish",
+    "---": "",
+    "typecheck": "yarn run _sd-cli_ typecheck",
+    "lint": "yarn run _sd-cli_ lint",
     "----": "",
-    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx --tsconfig packages/cli/tsconfig.build.json packages/cli/src/sd-cli.ts",
-    "eslint:timing": "yarn run _sd-cli_ lint --timing \"**/*.{ts,js,html}\"",
-    "eslint:fix": "yarn run _sd-cli_ lint --fix \"**/*.{ts,js,html}\"",
-    "reinstall": "yarn install --refresh-lockfile"
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/cli/src/sd-cli.ts",
+    "reinstall": "yarn install --refresh-lockfile",
+    "postinstall": "playwright install"
   },
   "devDependencies": {
-    "@types/node": "^20.19.28",
-    "@vitest/browser": "^4.0.16",
-    "@vitest/browser-playwright": "^4.0.16",
-    "@vitest/coverage-v8": "^4.0.16",
+    "@simplysm/cli": "workspace:*",
+    "@types/node": "^20.19.30",
+    "@vitest/browser": "^4.0.17",
+    "@vitest/browser-playwright": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.17",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "jiti": "^2.6.1",
     "playwright": "^1.57.0",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
-    "vite": "~7.2.7",
-    "vite-plugin-node-polyfills": "^0.24.0",
     "vite-tsconfig-paths": "^6.0.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   }
 }

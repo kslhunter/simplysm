@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SdError, ArgumentError, NotImplementError, TimeoutError } from "@simplysm/core-common";
+import { SdError, ArgumentError, NotImplementedError, TimeoutError } from "@simplysm/core-common";
 
 describe("Errors", () => {
   //#region SdError
@@ -61,18 +61,18 @@ describe("Errors", () => {
 
   //#endregion
 
-  //#region NotImplementError
+  //#region NotImplementedError
 
-  describe("NotImplementError", () => {
+  describe("NotImplementedError", () => {
     it("기본 메시지로 생성한다", () => {
-      const error = new NotImplementError();
+      const error = new NotImplementedError();
 
-      expect(error.name).toBe("NotImplementError");
+      expect(error.name).toBe("NotImplementedError");
       expect(error.message).toBe("구현되어있지 않습니다");
     });
 
     it("커스텀 메시지로 생성한다", () => {
-      const error = new NotImplementError("custom message");
+      const error = new NotImplementedError("custom message");
 
       // "구현되어있지 않습니다: custom message" 형식
       expect(error.message).toContain("구현되어있지 않습니다");
@@ -126,12 +126,12 @@ describe("Errors", () => {
       expect(error).toBeInstanceOf(ArgumentError);
     });
 
-    it("NotImplementError는 SdError를 상속한다", () => {
-      const error = new NotImplementError();
+    it("NotImplementedError는 SdError를 상속한다", () => {
+      const error = new NotImplementedError();
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(SdError);
-      expect(error).toBeInstanceOf(NotImplementError);
+      expect(error).toBeInstanceOf(NotImplementedError);
     });
 
     it("TimeoutError는 SdError를 상속한다", () => {
@@ -151,7 +151,7 @@ describe("Errors", () => {
     it("모든 에러가 스택 트레이스를 가진다", () => {
       const sdError = new SdError("test");
       const argError = new ArgumentError("test");
-      const notImplError = new NotImplementError();
+      const notImplError = new NotImplementedError();
       const timeoutError = new TimeoutError();
 
       expect(sdError.stack).toBeDefined();

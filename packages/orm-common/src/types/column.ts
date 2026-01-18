@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
+import { DateOnly, DateTime, Time, Uuid, type Bytes } from "@simplysm/core-common";
 
 // ============================================
 // DataType (SQL 타입 정의)
@@ -69,7 +69,7 @@ export type ColumnPrimitiveMap = {
   DateOnly: DateOnly;
   Time: Time;
   Uuid: Uuid;
-  Buffer: Buffer;
+  Bytes: Bytes;
 };
 
 /**
@@ -112,7 +112,7 @@ export const dataTypeStrToColumnPrimitiveStr = {
   varchar: "string" as const,
   char: "string" as const,
   text: "string" as const,
-  binary: "Buffer" as const,
+  binary: "Bytes" as const,
   boolean: "boolean" as const,
   datetime: "DateTime" as const,
   date: "DateOnly" as const,
@@ -156,7 +156,7 @@ export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitive
   if (value instanceof DateOnly) return "DateOnly";
   if (value instanceof Time) return "Time";
   if (value instanceof Uuid) return "Uuid";
-  if (Buffer.isBuffer(value)) return "Buffer";
+  if (value instanceof Uint8Array) return "Bytes";
   throw new Error(`알 수 없는 값 타입: ${typeof value}`);
 }
 

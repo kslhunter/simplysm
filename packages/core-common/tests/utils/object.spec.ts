@@ -243,6 +243,61 @@ describe("ObjectUtils", () => {
     });
   });
 
+  describe("merge3()", () => {
+    it("source만 변경된 경우 source 값을 사용한다", () => {
+      const origin = { a: 1, b: 2 };
+      const source = { a: 1, b: 3 };
+      const target = { a: 1, b: 2 };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(false);
+      expect(result).toEqual({ a: 1, b: 3 });
+    });
+
+    it("target만 변경된 경우 target 값을 사용한다", () => {
+      const origin = { a: 1, b: 2 };
+      const source = { a: 1, b: 2 };
+      const target = { a: 1, b: 4 };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(false);
+      expect(result).toEqual({ a: 1, b: 4 });
+    });
+
+    it("source와 target이 같은 값으로 변경된 경우 충돌 없이 해당 값을 사용한다", () => {
+      const origin = { a: 1, b: 2 };
+      const source = { a: 1, b: 5 };
+      const target = { a: 1, b: 5 };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(false);
+      expect(result).toEqual({ a: 1, b: 5 });
+    });
+
+    it("source와 target이 다른 값으로 변경된 경우 충돌을 반환한다", () => {
+      const origin = { a: 1, b: 2 };
+      const source = { a: 1, b: 3 };
+      const target = { a: 1, b: 4 };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(true);
+      // origin 값 유지
+      expect(result.b).toBe(2);
+    });
+
+    it("여러 키에서 일부만 충돌하면 충돌을 반환한다", () => {
+      const origin = { a: 1, b: 2, c: 3 };
+      const source = { a: 10, b: 20, c: 3 };
+      const target = { a: 1, b: 30, c: 4 };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(true);
+      expect(result.a).toBe(10); // source만 변경
+      expect(result.b).toBe(2); // 둘 다 다르게 변경 → 충돌 → origin 유지
+      expect(result.c).toBe(4); // target만 변경
+    });
+  });
+
   //#endregion
 
   //#region omit / pick
@@ -302,6 +357,57 @@ describe("ObjectUtils", () => {
       const obj = { a: 1 };
 
       expect(ObjectUtils.getChainValue(obj, "b.c.d", true)).toBe(undefined);
+    });
+  });
+
+  describe("getChainValueByDepth()", () => {
+    it("depth만큼 같은 키로 내려간다", () => {
+      const obj = {
+        parent: {
+          parent: {
+            parent: {
+              name: "leaf",
+            },
+          },
+        },
+      };
+
+      const result = ObjectUtils.getChainValueByDepth(obj, "parent", 2);
+
+      expect(result).toEqual({ parent: { name: "leaf" } });
+    });
+
+    it("depth가 0이면 원본을 반환한다", () => {
+      const obj = { parent: { name: "child" } };
+
+      const result = ObjectUtils.getChainValueByDepth(obj, "parent", 0);
+
+      expect(result).toBe(obj);
+    });
+
+    it("depth가 1이면 한 단계만 내려간다", () => {
+      const obj = { parent: { name: "child" } };
+
+      const result = ObjectUtils.getChainValueByDepth(obj, "parent", 1);
+
+      expect(result).toEqual({ name: "child" });
+    });
+
+    it("optional: true로 중간 경로가 없으면 undefined를 반환한다", () => {
+      const obj = { parent: { name: "child" } };
+
+      const result = ObjectUtils.getChainValueByDepth(obj, "parent", 5, true);
+
+      expect(result).toBe(undefined);
+    });
+
+    it("optional 없이 중간 경로가 없으면 에러 발생 가능", () => {
+      const obj = { parent: undefined as unknown };
+
+      // optional이 없으면 undefined에서 키를 접근하려 해서 에러 발생 가능
+      // 하지만 현재 구현에서는 result == null 체크가 optional 조건 내에서만 동작
+      // 따라서 optional 없이 사용 시 주의 필요
+      expect(() => ObjectUtils.getChainValueByDepth(obj as any, "parent", 2)).toThrow();
     });
   });
 

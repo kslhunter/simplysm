@@ -13,11 +13,11 @@ describe("ExcelWorksheet.addImage integration", () => {
     // 브라우저 환경: fetch로 PNG 파일 로드
     const response = await fetch(new URL("./fixtures/logo.png", import.meta.url));
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const bytes = new Uint8Array(arrayBuffer);
 
     // call addImage (the single entry API)
     await ws.addImage({
-      buffer,
+      bytes,
       ext: "png",
       from: { r: 0, c: 0 },
       to: { r: 2, c: 2 },
@@ -27,8 +27,8 @@ describe("ExcelWorksheet.addImage integration", () => {
     const mediaPath = `xl/media/image1.png`;
     const mediaObj = await (ws as any)._zipCache.get(mediaPath);
     expect(mediaObj).toBeDefined();
-    expect(Buffer.isBuffer(mediaObj)).toBe(true);
-    expect((mediaObj as Buffer).equals(buffer)).toBe(true);
+    expect(mediaObj instanceof Uint8Array).toBe(true);
+    expect(mediaObj).toEqual(bytes);
 
     // --- 2) Content Types 에 media / drawing override 존재
     const types = await (ws as any)._zipCache.get("[Content_Types].xml");
@@ -78,7 +78,7 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(drawingElems.some((d: any) => d.$ && d.$["r:id"])).toBeTruthy();
 
     // Buffer 생성 검증
-    const resultBuffer = await wb.getBuffer();
+    const resultBuffer = await wb.getBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });

@@ -12,10 +12,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0",
-    "@simplysm/service-client": "13.0.0-beta.0",
-    "@simplysm/service-common": "13.0.0-beta.0",
-    "@simplysm/service-server": "13.0.0-beta.0",
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "@simplysm/service-server": "workspace:*",
     "ws": "^8.19.0"
   },
   "devDependencies": {

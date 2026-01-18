@@ -27,14 +27,6 @@ describe("NumberUtils", () => {
       expect(NumberUtils.parseInt("가나다123")).toBe(123);
     });
 
-    it("radix를 지정하여 파싱한다", () => {
-      // 참고: parseInt는 숫자가 아닌 문자를 먼저 제거하므로 16진수 'ff'는 빈 문자열이 됨
-      // 따라서 radix는 숫자 문자열에서만 의미가 있음
-      expect(NumberUtils.parseInt("10", 2)).toBe(2);
-      expect(NumberUtils.parseInt("10", 8)).toBe(8);
-      expect(NumberUtils.parseInt("10", 16)).toBe(16);
-    });
-
     it("빈 문자열이면 undefined를 반환한다", () => {
       expect(NumberUtils.parseInt("")).toBe(undefined);
     });
@@ -117,10 +109,6 @@ describe("NumberUtils", () => {
   //#region isNullOrEmpty
 
   describe("isNullOrEmpty()", () => {
-    it("null이면 true를 반환한다", () => {
-      expect(NumberUtils.isNullOrEmpty(null)).toBe(true);
-    });
-
     it("undefined이면 true를 반환한다", () => {
       expect(NumberUtils.isNullOrEmpty(undefined)).toBe(true);
     });

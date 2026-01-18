@@ -1,5 +1,4 @@
-import { TransferableConvert, Uuid } from "@simplysm/core-common";
-import { EventEmitter } from "events";
+import { SdEventEmitter, TransferableConvert, Uuid } from "@simplysm/core-common";
 import path from "path";
 import pino from "pino";
 import { fileURLToPath } from "url";
@@ -25,7 +24,9 @@ const logger = pino({ name: "sd-worker" });
  * const result = await worker.run("calculate", [10, 20]);
  * await worker.killAsync();
  */
-export class SdWorker<T extends SdWorkerType> extends EventEmitter {
+export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
+  [K in keyof T["events"]]: T["events"][K];
+}> {
   private readonly _worker: Worker;
   private _isTerminated = false;
 
@@ -88,7 +89,8 @@ export class SdWorker<T extends SdWorkerType> extends EventEmitter {
       ) as SdWorkerResponse<T, string>;
 
       if (response.type === "event") {
-        this.emit(response.event, response.body);
+        // 동적으로 이벤트를 emit하므로 타입 캐스팅 필요
+        (this.emit as (type: string, data: unknown) => void)(response.event, response.body);
       } else if (response.type === "log") {
         process.stdout.write(response.body);
       }
@@ -101,9 +103,8 @@ export class SdWorker<T extends SdWorkerType> extends EventEmitter {
   override on<K extends keyof T["events"] & string>(
     event: K,
     listener: (args: T["events"][K]) => void,
-  ): this {
-    super.on(event, listener as (arg: unknown) => void);
-    return this;
+  ): void {
+    super.on(event, listener);
   }
 
   /**
@@ -117,7 +118,7 @@ export class SdWorker<T extends SdWorkerType> extends EventEmitter {
     method: K,
     params: T["methods"][K]["params"],
   ): Promise<T["methods"][K]["returnType"]> {
-    return await new Promise<T["methods"][K]["returnType"]>((resolve, reject) => {
+    return new Promise<T["methods"][K]["returnType"]>((resolve, reject) => {
       const request: SdWorkerRequest<T, K> = {
         id: Uuid.new().toString(),
         method,

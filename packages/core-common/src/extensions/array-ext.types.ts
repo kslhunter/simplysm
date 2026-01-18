@@ -2,10 +2,10 @@
  * Array 확장 타입 정의
  */
 
-import type { Type } from "../types";
-import type { DateTime } from "../types/DateTime";
-import type { DateOnly } from "../types/DateOnly";
-import type { Time } from "../types/Time";
+import type { Type } from "../common.types";
+import type { DateTime } from "../types/date-time";
+import type { DateOnly } from "../types/date-only";
+import type { Time } from "../types/time";
 
 //#region 인터페이스
 
@@ -32,8 +32,19 @@ export interface ReadonlyArrayExt<T> {
 
   parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
+  /**
+   * 키 기준 그룹화
+   * @param keySelector 그룹 키 선택 함수
+   * @note O(n²) 복잡도 (객체 키 지원을 위해 깊은 비교 사용). primitive 키만 필요하면 toArrayMap()이 O(n)으로 더 효율적
+   */
   groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
+  /**
+   * 키 기준 그룹화 (값 변환 포함)
+   * @param keySelector 그룹 키 선택 함수
+   * @param valueSelector 값 변환 함수
+   * @note O(n²) 복잡도 (객체 키 지원을 위해 깊은 비교 사용). primitive 키만 필요하면 toArrayMap()이 O(n)으로 더 효율적
+   */
   groupBy<K, V>(
     keySelector: (item: T, index: number) => K,
     valueSelector: (item: T, index: number) => V,
@@ -86,6 +97,7 @@ export interface ReadonlyArrayExt<T> {
   /**
    * 중복 제거
    * @param options matchAddress: 주소 비교 (true면 Set 사용), keyFn: 커스텀 키 함수 (O(n) 성능)
+   * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
    */
   distinct(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[];
 
@@ -95,6 +107,12 @@ export interface ReadonlyArrayExt<T> {
     selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
   ): T[];
 
+  /**
+   * 두 배열 비교 (INSERT/DELETE/UPDATE)
+   * @param target 비교 대상 배열
+   * @param options keys: 키 비교용, excludes: 비교 제외 속성
+   * @note target 배열에 중복 요소가 있으면 ArgumentError 발생
+   */
   diffs<P>(
     target: P[],
     options?: { keys?: string[]; excludes?: string[] },
@@ -130,8 +148,15 @@ export interface ReadonlyArrayExt<T> {
  * @mutates 모든 메서드가 원본 배열을 직접 변경합니다
  */
 export interface MutableArrayExt<T> {
-  /** 원본 배열에서 중복 제거 @mutates */
-  distinctThis(matchAddress?: boolean): T[];
+  /**
+   * 원본 배열에서 중복 제거
+   * @param options matchAddress: 주소 비교 (true면 Set 사용), keyFn: 커스텀 키 함수 (O(n) 성능)
+   * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
+   * @mutates
+   */
+  distinctThis(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
+  ): T[];
 
   /** 원본 배열 오름차순 정렬 @mutates */
   orderByThis(
@@ -174,5 +199,8 @@ export type ArrayDiffs2Result<T> =
   | { type: "same"; item: T; orgItem: T };
 
 export type TreeArray<T> = T & { children: TreeArray<T>[] };
+
+/** 정렬/비교 가능한 타입 */
+export type ComparableType = string | number | boolean | DateTime | DateOnly | Time | undefined;
 
 //#endregion

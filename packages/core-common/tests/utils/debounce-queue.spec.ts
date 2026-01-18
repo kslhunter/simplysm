@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { SdAsyncFnDebounceQueue, Wait, SdError } from "@simplysm/core-common";
+import { DebounceQueue, Wait, SdError } from "@simplysm/core-common";
 
-describe("SdAsyncFnDebounceQueue", () => {
+describe("DebounceQueue", () => {
   //#region 디바운스 동작
 
   describe("디바운스 동작", () => {
     it("마지막 요청만 실행한다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(50);
+      const queue = new DebounceQueue(50);
       const calls: number[] = [];
 
       queue.run(async () => {
@@ -27,7 +27,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("delay 이후에 실행한다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(100);
+      const queue = new DebounceQueue(100);
       const calls: number[] = [];
 
       const start = Date.now();
@@ -48,7 +48,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("delay가 없으면 즉시 실행한다", async () => {
-      const queue = new SdAsyncFnDebounceQueue();
+      const queue = new DebounceQueue();
       const calls: number[] = [];
 
       queue.run(async () => {
@@ -62,7 +62,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("실행 중에 새 요청이 들어오면 완료 후 실행한다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const calls: number[] = [];
 
       queue.run(async () => {
@@ -91,7 +91,7 @@ describe("SdAsyncFnDebounceQueue", () => {
 
   describe("에러 처리", () => {
     it("에러 발생 시 error 이벤트를 발생시킨다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const errors: SdError[] = [];
 
       queue.on("error", (err) => {
@@ -111,7 +111,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("에러가 발생해도 다음 요청은 정상 실행된다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const calls: number[] = [];
       const errors: SdError[] = [];
 
@@ -137,7 +137,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("실행 중 에러가 발생해도 pendingFn은 실행된다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const calls: number[] = [];
       const errors: SdError[] = [];
 
@@ -171,7 +171,7 @@ describe("SdAsyncFnDebounceQueue", () => {
 
   describe("dispose()", () => {
     it("대기 중인 작업과 타이머를 정리한다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(100);
+      const queue = new DebounceQueue(100);
       const calls: number[] = [];
 
       queue.run(async () => {
@@ -189,7 +189,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("dispose 후 새 작업은 정상 실행된다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(50);
+      const queue = new DebounceQueue(50);
       const calls: number[] = [];
 
       queue.run(async () => {
@@ -208,7 +208,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("여러 번 호출해도 안전하다", () => {
-      const queue = new SdAsyncFnDebounceQueue(50);
+      const queue = new DebounceQueue(50);
 
       // 여러 번 호출해도 에러 없음
       queue.dispose();
@@ -223,7 +223,7 @@ describe("SdAsyncFnDebounceQueue", () => {
 
   describe("동기 함수 지원", () => {
     it("동기 함수도 실행할 수 있다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const calls: number[] = [];
 
       queue.run(() => {
@@ -236,7 +236,7 @@ describe("SdAsyncFnDebounceQueue", () => {
     });
 
     it("동기/비동기 함수를 혼합해서 사용할 수 있다", async () => {
-      const queue = new SdAsyncFnDebounceQueue(10);
+      const queue = new DebounceQueue(10);
       const calls: number[] = [];
 
       queue.run(() => {

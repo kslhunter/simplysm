@@ -262,20 +262,20 @@ describe("DateTime", () => {
     });
   });
 
-  describe("isValidDate", () => {
+  describe("isValid", () => {
     it("유효한 날짜시간은 true를 반환한다", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30, 45);
-      expect(dt.isValidDate).toBe(true);
+      expect(dt.isValid).toBe(true);
     });
 
     it("유효하지 않은 날짜시간은 false를 반환한다", () => {
       const dt = new DateTime(NaN);
-      expect(dt.isValidDate).toBe(false);
+      expect(dt.isValid).toBe(false);
     });
 
     it("기본 생성자는 유효한 날짜시간이다", () => {
       const dt = new DateTime();
-      expect(dt.isValidDate).toBe(true);
+      expect(dt.isValid).toBe(true);
     });
   });
 

@@ -8,13 +8,13 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/excel"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0",
+    "@simplysm/core-common": "workspace:*",
     "mime": "^4.1.0",
-    "zod": "^3.25.76"
+    "zod": "^4.3.5"
   }
 }

@@ -1,38 +1,41 @@
 import { describe, it, expect } from "vitest";
-import { SdZip } from "@simplysm/core-common";
+import { ZipArchive } from "@simplysm/core-common";
 
-describe("SdZip", () => {
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+describe("ZipArchive", () => {
   //#region write + compress
 
   describe("write + compress", () => {
     it("write로 파일을 추가하고 compress로 ZIP을 생성한다", async () => {
-      const zip = new SdZip();
-      zip.write("file1.txt", Buffer.from("content 1"));
-      zip.write("file2.txt", Buffer.from("content 2"));
+      const zip = new ZipArchive();
+      zip.write("file1.txt", encoder.encode("content 1"));
+      zip.write("file2.txt", encoder.encode("content 2"));
 
       const zipBuffer = await zip.compressAsync();
 
-      expect(Buffer.isBuffer(zipBuffer)).toBe(true);
+      expect(zipBuffer instanceof Uint8Array).toBe(true);
       expect(zipBuffer.length).toBeGreaterThan(0);
     });
 
     it("빈 ZIP도 압축할 수 있다", async () => {
-      const zip = new SdZip();
+      const zip = new ZipArchive();
       const zipBuffer = await zip.compressAsync();
 
-      expect(Buffer.isBuffer(zipBuffer)).toBe(true);
+      expect(zipBuffer instanceof Uint8Array).toBe(true);
     });
 
     it("같은 파일명으로 여러 번 write하면 덮어쓴다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("first"));
-      zip.write("file.txt", Buffer.from("second"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("first"));
+      zip.write("file.txt", encoder.encode("second"));
 
       const zipBuffer = await zip.compressAsync();
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const content = await result.getAsync("file.txt");
 
-      expect(content?.toString()).toBe("second");
+      expect(content != null ? decoder.decode(content) : undefined).toBe("second");
     });
   });
 
@@ -42,26 +45,26 @@ describe("SdZip", () => {
 
   describe("extractAllAsync", () => {
     it("압축된 모든 파일을 추출한다", async () => {
-      const zip = new SdZip();
-      zip.write("file1.txt", Buffer.from("content 1"));
-      zip.write("file2.txt", Buffer.from("content 2"));
+      const zip = new ZipArchive();
+      zip.write("file1.txt", encoder.encode("content 1"));
+      zip.write("file2.txt", encoder.encode("content 2"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const files = await result.extractAllAsync();
 
       expect(files.size).toBe(2);
-      expect(files.get("file1.txt")?.toString()).toBe("content 1");
-      expect(files.get("file2.txt")?.toString()).toBe("content 2");
+      expect(files.get("file1.txt") != null ? decoder.decode(files.get("file1.txt")!) : undefined).toBe("content 1");
+      expect(files.get("file2.txt") != null ? decoder.decode(files.get("file2.txt")!) : undefined).toBe("content 2");
     });
 
     it("진행률 콜백을 호출한다", async () => {
-      const zip = new SdZip();
-      zip.write("file1.txt", Buffer.from("a".repeat(1000)));
-      zip.write("file2.txt", Buffer.from("b".repeat(1000)));
+      const zip = new ZipArchive();
+      zip.write("file1.txt", encoder.encode("a".repeat(1000)));
+      zip.write("file2.txt", encoder.encode("b".repeat(1000)));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const progressCalls: Array<{ fileName: string; extractedSize: number }> = [];
 
       await result.extractAllAsync((progress) => {
@@ -77,7 +80,7 @@ describe("SdZip", () => {
     });
 
     it("reader가 없으면 빈 캐시를 반환한다", async () => {
-      const zip = new SdZip();
+      const zip = new ZipArchive();
       const files = await zip.extractAllAsync();
 
       expect(files.size).toBe(0);
@@ -90,34 +93,34 @@ describe("SdZip", () => {
 
   describe("getAsync", () => {
     it("특정 파일만 추출한다", async () => {
-      const zip = new SdZip();
-      zip.write("file1.txt", Buffer.from("content 1"));
-      zip.write("file2.txt", Buffer.from("content 2"));
+      const zip = new ZipArchive();
+      zip.write("file1.txt", encoder.encode("content 1"));
+      zip.write("file2.txt", encoder.encode("content 2"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const content = await result.getAsync("file1.txt");
 
-      expect(content?.toString()).toBe("content 1");
+      expect(content != null ? decoder.decode(content) : undefined).toBe("content 1");
     });
 
     it("없는 파일은 undefined를 반환한다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("content"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const content = await result.getAsync("nonexistent.txt");
 
       expect(content).toBe(undefined);
     });
 
     it("캐시된 파일은 재추출하지 않는다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("content"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const content1 = await result.getAsync("file.txt");
       const content2 = await result.getAsync("file.txt");
 
@@ -125,7 +128,7 @@ describe("SdZip", () => {
     });
 
     it("reader가 없으면 undefined를 반환한다", async () => {
-      const zip = new SdZip();
+      const zip = new ZipArchive();
       const content = await zip.getAsync("file.txt");
 
       expect(content).toBe(undefined);
@@ -138,11 +141,11 @@ describe("SdZip", () => {
 
   describe("existsAsync", () => {
     it("파일 존재 여부를 확인한다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("content"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       const exists = await result.existsAsync("file.txt");
       const notExists = await result.existsAsync("nonexistent.txt");
 
@@ -151,11 +154,11 @@ describe("SdZip", () => {
     });
 
     it("캐시된 파일은 true를 반환한다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("content"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       await result.getAsync("file.txt"); // 캐시에 로드
       const exists = await result.existsAsync("file.txt");
 
@@ -163,7 +166,7 @@ describe("SdZip", () => {
     });
 
     it("reader가 없으면 false를 반환한다", async () => {
-      const zip = new SdZip();
+      const zip = new ZipArchive();
       const exists = await zip.existsAsync("file.txt");
 
       expect(exists).toBe(false);
@@ -176,22 +179,22 @@ describe("SdZip", () => {
 
   describe("closeAsync", () => {
     it("reader를 닫는다", async () => {
-      const zip = new SdZip();
-      zip.write("file.txt", Buffer.from("content"));
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
       const zipBuffer = await zip.compressAsync();
 
-      const result = new SdZip(zipBuffer);
+      const result = new ZipArchive(zipBuffer);
       // extractAllAsync 호출하여 캐시에 로드
       await result.extractAllAsync();
       await result.closeAsync();
 
       // close 이후에도 캐시된 데이터는 사용 가능
       const content = await result.getAsync("file.txt");
-      expect(content?.toString()).toBe("content");
+      expect(content != null ? decoder.decode(content) : undefined).toBe("content");
     });
 
     it("reader가 없어도 에러 없이 동작한다", async () => {
-      const zip = new SdZip();
+      const zip = new ZipArchive();
       await expect(zip.closeAsync()).resolves.not.toThrow();
     });
   });

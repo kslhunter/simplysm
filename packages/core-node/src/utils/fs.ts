@@ -87,8 +87,13 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 복사.
+   * @param sourcePath 복사할 원본 경로
+   * @param targetPath 복사 대상 경로
+   * @param filter 복사 여부를 결정하는 필터 함수.
+   *               각 파일/디렉토리의 **절대 경로**가 전달되며,
+   *               true를 반환하면 복사, false면 제외.
    */
-  static copy(sourcePath: string, targetPath: string, filter?: (subPath: string) => boolean): void {
+  static copy(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): void {
     if (!FsUtils.exists(sourcePath)) {
       return;
     }
@@ -127,11 +132,16 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 복사 (비동기).
+   * @param sourcePath 복사할 원본 경로
+   * @param targetPath 복사 대상 경로
+   * @param filter 복사 여부를 결정하는 필터 함수.
+   *               각 파일/디렉토리의 **절대 경로**가 전달되며,
+   *               true를 반환하면 복사, false면 제외.
    */
   static async copyAsync(
     sourcePath: string,
     targetPath: string,
-    filter?: (subPath: string) => boolean,
+    filter?: (absolutePath: string) => boolean,
   ): Promise<void> {
     if (!FsUtils.exists(sourcePath)) {
       return;

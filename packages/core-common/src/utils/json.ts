@@ -2,12 +2,13 @@
  * JSON 변환 유틸리티
  * 커스텀 타입(DateTime, DateOnly, Time, Uuid 등)을 지원하는 JSON 직렬화/역직렬화
  */
-import { DateTime } from "../types/DateTime";
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
-import { Uuid } from "../types/Uuid";
+import { DateTime } from "../types/date-time";
+import { DateOnly } from "../types/date-only";
+import { Time } from "../types/time";
+import { Uuid } from "../types/uuid";
 import { ObjectUtils } from "./object";
-import { SdError } from "../errors/SdError";
+import { SdError } from "../errors/sd-error";
+import { BytesUtils } from "./bytes-utils";
 
 interface TypedObject {
   __type__: string;
@@ -18,16 +19,34 @@ export class JsonConvert {
   //#region stringify
   /**
    * 객체를 JSON 문자열로 직렬화
-   * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Buffer 등 커스텀 타입 지원
+   * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Uint8Array 등 커스텀 타입 지원
+   *
+   * @warning **Worker 환경 사용 금지**
+   * 내부적으로 `Date.prototype.toJSON`을 임시 제거합니다.
+   * Worker 또는 멀티스레드 환경에서 동시 호출 시 경쟁 조건이 발생하여
+   * Date 직렬화가 올바르게 동작하지 않을 수 있습니다.
+   * 반드시 단일 스레드(메인 스레드) 환경에서만 사용하세요.
    */
   static stringify(
     obj: unknown,
     options?: {
       space?: string | number;
       replacer?: (key: string | undefined, value: unknown) => unknown;
-      hideBuffer?: boolean;
+      hideBytes?: boolean;
     },
   ): string {
+    // Worker 환경 감지 - 프로토타입 수정으로 인한 경쟁 조건 방지
+    // 브라우저 Web Worker 감지
+    const globalScope = globalThis as { WorkerGlobalScope?: unknown; window?: unknown };
+    if (globalScope.WorkerGlobalScope !== undefined && globalScope.window === undefined) {
+      throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");
+    }
+    // Node.js worker_threads 감지
+    const processObj = globalThis as { process?: { threadId?: number } };
+    if (processObj.process?.threadId !== undefined && processObj.process.threadId !== 0) {
+      throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");
+    }
+
     const replacer = (key: string | undefined, value: unknown): unknown => {
       const currValue =
         options?.replacer !== undefined ? options.replacer(key, value) : value;
@@ -66,14 +85,11 @@ export class JsonConvert {
           },
         };
       }
-      if (
-        typeof currValue === "object" &&
-        currValue !== null &&
-        "type" in currValue &&
-        (currValue as { type: unknown }).type === "Buffer" &&
-        options?.hideBuffer === true
-      ) {
-        return { type: "Buffer", data: "__hidden__" };
+      if (currValue instanceof Uint8Array) {
+        if (options?.hideBytes === true) {
+          return { __type__: "Uint8Array", data: "__hidden__" };
+        }
+        return { __type__: "Uint8Array", data: BytesUtils.toHex(currValue) };
       }
       return currValue;
     };
@@ -81,6 +97,8 @@ export class JsonConvert {
     // Date.prototype.toJSON 임시 제거
     // 이유: JSON.stringify의 replacer에서 value를 받을 때 toJSON이 먼저 호출되어
     //       Date가 string으로 변환됨. 이를 방지하여 Date 객체를 그대로 받기 위함.
+    // ⚠️ 주의: 전역 프로토타입을 임시 수정하므로, 동시성 환경(Worker 등)에서
+    //          동시에 호출되면 경쟁 조건이 발생할 수 있음. 단일 스레드 환경에서만 안전.
     const prevDateToJson = Date.prototype.toJSON;
     delete (Date.prototype as { toJSON?: typeof Date.prototype.toJSON }).toJSON;
 
@@ -99,7 +117,12 @@ export class JsonConvert {
   //#region parse
   /**
    * JSON 문자열을 객체로 역직렬화
-   * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Buffer 등 커스텀 타입 복원
+   * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Uint8Array 등 커스텀 타입 복원
+   *
+   * @remarks
+   * `__type__`과 `data` 키를 가진 객체는 타입 복원에 사용됩니다.
+   * 사용자 데이터에 `{ __type__: "Date" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Set" | "Map" | "Error" | "Uint8Array", data: ... }`
+   * 형태가 있으면 의도치 않게 타입 변환될 수 있으니 주의하세요.
    */
   static parse<T = unknown>(json: string): T {
     try {
@@ -145,13 +168,11 @@ export class JsonConvert {
                 Object.assign(error, errorData);
                 return error;
               }
-            }
-
-            // Buffer 복원
-            if ("type" in value && "data" in value) {
-              const buf = value as { type: string; data: unknown };
-              if (buf.type === "Buffer" && Array.isArray(buf.data)) {
-                return Buffer.from(buf.data as number[]);
+              if (
+                typed.__type__ === "Uint8Array" &&
+                typeof typed.data === "string"
+              ) {
+                return BytesUtils.fromHex(typed.data);
               }
             }
           }
@@ -160,7 +181,12 @@ export class JsonConvert {
         }),
       ) as T;
     } catch (err) {
-      throw new SdError(err, "JSON 파싱 에러: \n" + json);
+      const maxLen = 1000;
+      const truncatedJson =
+        json.length > maxLen
+          ? json.slice(0, maxLen) + `... (truncated, original length: ${json.length})`
+          : json;
+      throw new SdError(err, "JSON 파싱 에러: \n" + truncatedJson);
     }
   }
   //#endregion

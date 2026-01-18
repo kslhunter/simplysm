@@ -18,7 +18,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
    * Excel 파일 읽기 → 레코드 배열
    */
   async read(
-    file: Buffer | Blob,
+    file: Uint8Array | Blob,
     wsNameOrIndex: string | number = 0,
   ): Promise<z.infer<T>[]> {
     const wb = new ExcelWorkbook(file);
@@ -45,7 +45,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
 
         for (const [displayName, fieldKey] of reverseMap) {
           const rawValue = row[displayName];
-          const fieldSchema = shape[fieldKey];
+          const fieldSchema = shape[fieldKey] as z.ZodType;
 
           if (rawValue != null && rawValue !== "") {
             hasNonNullValue = true;
@@ -61,8 +61,8 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
         // Zod 스키마로 검증
         const parseResult = this._schema.safeParse(record);
         if (!parseResult.success) {
-          const errors = parseResult.error.errors
-            .map((e) => `${e.path.join(".")}: ${e.message}`)
+          const errors = parseResult.error.issues
+            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
             .join(", ");
           throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
         }
@@ -113,7 +113,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     const shape = this._schema.shape;
     for (let c = 0; c < keys.length; c++) {
       const fieldKey = keys[c] as string;
-      const fieldSchema = shape[fieldKey];
+      const fieldSchema = shape[fieldKey] as z.ZodType;
 
       if (this._isRequired(fieldSchema) && !this._isBoolean(fieldSchema)) {
         await ws.cell(0, c).setStyle({
@@ -141,7 +141,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
 
   private _convertValue(
     rawValue: ExcelValueType,
-    fieldSchema: z.ZodTypeAny,
+    fieldSchema: z.ZodType,
   ): unknown {
     if (rawValue == null || rawValue === "") {
       return this._getDefaultForSchema(fieldSchema);
@@ -182,25 +182,25 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     return rawValue;
   }
 
-  private _unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
+  private _unwrapSchema(schema: z.ZodType): z.ZodType {
     const typeName = this._getTypeName(schema);
 
     if (typeName === "ZodOptional" || typeName === "ZodNullable") {
-      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodTypeAny);
+      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodType);
     }
 
     if (typeName === "ZodDefault") {
-      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodTypeAny);
+      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodType);
     }
 
     return schema;
   }
 
-  private _getTypeName(schema: z.ZodTypeAny): string {
+  private _getTypeName(schema: z.ZodType): string {
     return (schema as Record<string, any>)["_def"].typeName as string;
   }
 
-  private _getDefaultForSchema(schema: z.ZodTypeAny): unknown {
+  private _getDefaultForSchema(schema: z.ZodType): unknown {
     const typeName = this._getTypeName(schema);
 
     if (typeName === "ZodDefault") {
@@ -220,12 +220,12 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     return undefined;
   }
 
-  private _isRequired(schema: z.ZodTypeAny): boolean {
+  private _isRequired(schema: z.ZodType): boolean {
     const typeName = this._getTypeName(schema);
     return typeName !== "ZodOptional" && typeName !== "ZodNullable";
   }
 
-  private _isBoolean(schema: z.ZodTypeAny): boolean {
+  private _isBoolean(schema: z.ZodType): boolean {
     const innerSchema = this._unwrapSchema(schema);
     return this._getTypeName(innerSchema) === "ZodBoolean";
   }

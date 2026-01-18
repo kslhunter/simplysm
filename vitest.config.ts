@@ -1,10 +1,8 @@
-// vitest.config.ts
 import path from "path";
 import { fileURLToPath } from "url";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { playwright } from "@vitest/browser-playwright";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,23 +34,6 @@ export default defineConfig({
       // Excel 패키지 테스트 (브라우저 환경)
       {
         extends: true,
-        plugins: [
-          nodePolyfills({
-            include: ["path", "buffer", "crypto", "events", "util", "stream", "assert"],
-            globals: {
-              Buffer: true,
-              process: true,
-            },
-          }),
-        ],
-        optimizeDeps: {
-          include: [
-            "vite-plugin-node-polyfills/shims/buffer",
-            "vite-plugin-node-polyfills/shims/global",
-            "vite-plugin-node-polyfills/shims/process",
-            "events",
-          ],
-        },
         test: {
           name: "excel",
           include: ["packages/excel/tests/**/*.spec.ts"],
@@ -78,25 +59,6 @@ export default defineConfig({
       // 통합 테스트 - Service (서버 필요 + 브라우저 테스트)
       {
         extends: true,
-        plugins:[
-          // 브라우저 테스트용 Node.js 폴리필 (Buffer, events 등)
-          nodePolyfills({
-            include: ["path", "buffer", "crypto", "events", "util", "stream", "assert"],
-            globals: {
-              Buffer: true,
-              process: true,
-            },
-          }),
-        ],
-        // 브라우저 테스트 안정성을 위한 사전 최적화
-        optimizeDeps: {
-          include: [
-            "vite-plugin-node-polyfills/shims/buffer",
-            "vite-plugin-node-polyfills/shims/global",
-            "vite-plugin-node-polyfills/shims/process",
-            "events",
-          ],
-        },
         test: {
           name: "service",
           include: ["tests/service/**/*.spec.ts"],

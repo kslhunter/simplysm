@@ -106,4 +106,155 @@ describe("SdFsWatcher", () => {
   });
 
   //#endregion
+
+  //#region 이벤트 병합 (Event Merging)
+
+  describe("이벤트 병합", () => {
+    const DELAY = 300;
+
+    /**
+     * 지정 시간 대기 헬퍼 함수.
+     */
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    /**
+     * 이벤트 콜백이 호출될 때까지 대기하는 헬퍼 함수.
+     */
+    const waitForChanges = (
+      watcherInstance: SdFsWatcher,
+      delay: number,
+    ): Promise<Array<{ event: string; path: string }>> => {
+      return new Promise((resolve) => {
+        watcherInstance.onChange({ delay }, (changeInfos) => {
+          resolve(changeInfos.map((c) => ({ event: c.event, path: c.path })));
+        });
+      });
+    };
+
+    it("파일 추가 후 변경 시 add 이벤트만 반환", async () => {
+      const testFile = path.join(testDir, "test-add-change.txt");
+
+      watcher = await SdFsWatcher.watchAsync([testDir]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      // 파일 추가
+      fs.writeFileSync(testFile, "initial");
+
+      // 짧은 간격으로 파일 변경 (delay 내에서 일어나야 함)
+      await wait(50);
+      fs.writeFileSync(testFile, "modified");
+
+      // 이벤트 콜백 호출 대기
+      const changes = await changesPromise;
+
+      // add → change 가 add로 병합되어야 함
+      expect(changes.length).toBe(1);
+      expect(changes[0].event).toBe("add");
+    });
+
+    it("파일 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
+      const testFile = path.join(testDir, "test-add-unlink.txt");
+
+      watcher = await SdFsWatcher.watchAsync([testDir]);
+
+      const changes: Array<{ event: string; path: string }> = [];
+      let resolved = false;
+
+      const changesPromise = new Promise<void>((resolve) => {
+        watcher!.onChange({ delay: DELAY }, (changeInfos) => {
+          changes.push(...changeInfos.map((c) => ({ event: c.event, path: c.path })));
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+      });
+
+      // 파일 추가
+      fs.writeFileSync(testFile, "content");
+
+      // 짧은 간격으로 파일 삭제
+      await wait(50);
+      fs.unlinkSync(testFile);
+
+      // 타임아웃과 함께 대기 (이벤트가 발생하지 않을 수 있음)
+      await Promise.race([changesPromise, wait(DELAY + 200)]);
+
+      // add → unlink 가 병합되어 이벤트 없음
+      expect(changes.length).toBe(0);
+    });
+
+    it("디렉토리 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
+      const testSubDir = path.join(testDir, "test-addDir-unlinkDir");
+
+      watcher = await SdFsWatcher.watchAsync([testDir]);
+
+      const changes: Array<{ event: string; path: string }> = [];
+      let resolved = false;
+
+      const changesPromise = new Promise<void>((resolve) => {
+        watcher!.onChange({ delay: DELAY }, (changeInfos) => {
+          changes.push(...changeInfos.map((c) => ({ event: c.event, path: c.path })));
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+      });
+
+      // 디렉토리 추가
+      fs.mkdirSync(testSubDir);
+
+      // 짧은 간격으로 디렉토리 삭제
+      await wait(50);
+      fs.rmdirSync(testSubDir);
+
+      // 타임아웃과 함께 대기 (이벤트가 발생하지 않을 수 있음)
+      await Promise.race([changesPromise, wait(DELAY + 200)]);
+
+      // addDir → unlinkDir 가 병합되어 이벤트 없음
+      expect(changes.length).toBe(0);
+    });
+
+    it("여러 파일 변경 시 올바른 이벤트 병합", async () => {
+      const file1 = path.join(testDir, "file1.txt");
+      const file2 = path.join(testDir, "file2.txt");
+      const file3 = path.join(testDir, "file3.txt");
+
+      // file3은 미리 생성 (change 이벤트 발생용)
+      fs.writeFileSync(file3, "existing");
+
+      watcher = await SdFsWatcher.watchAsync([testDir]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      // file1: 추가만
+      fs.writeFileSync(file1, "content1");
+
+      // file2: 추가 후 삭제 (병합되어 사라짐)
+      await wait(50);
+      fs.writeFileSync(file2, "content2");
+      await wait(50);
+      fs.unlinkSync(file2);
+
+      // file3: 변경
+      await wait(50);
+      fs.writeFileSync(file3, "modified");
+
+      // 이벤트 콜백 호출 대기
+      const changes = await changesPromise;
+
+      // file1: add, file2: 병합으로 삭제됨, file3: change
+      expect(changes.length).toBe(2);
+
+      const file1Change = changes.find((c) => c.path.endsWith("file1.txt"));
+      const file3Change = changes.find((c) => c.path.endsWith("file3.txt"));
+
+      expect(file1Change?.event).toBe("add");
+      expect(file3Change?.event).toBe("change");
+    });
+  });
+
+  //#endregion
 });

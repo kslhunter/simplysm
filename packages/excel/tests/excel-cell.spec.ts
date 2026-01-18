@@ -110,7 +110,7 @@ describe("ExcelCell", () => {
 
       // 수식 셀의 값은 Excel에서 계산되므로 여기서는 undefined
       // 수식이 제대로 저장되었는지는 라운드트립으로 확인
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
 
       const wb2 = new ExcelWorkbook(buffer);
       const ws2 = await wb2.getWorksheet(0);
@@ -138,7 +138,7 @@ describe("ExcelCell", () => {
       await ws.cell(0, 0).merge(2, 3); // 2행 x 3열 병합
 
       // 라운드트립으로 병합 확인
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       const wb2 = new ExcelWorkbook(buffer);
       const ws2 = await wb2.getWorksheet(0);
 

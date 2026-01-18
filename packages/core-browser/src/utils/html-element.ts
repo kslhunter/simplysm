@@ -10,7 +10,26 @@ export namespace HtmlElementUtils {
   }
 
   /**
-   * 부모 요소 기준 상대 위치 계산
+   * 부모 요소 기준 상대 위치 계산 (CSS 포지셔닝용)
+   *
+   * @remarks
+   * 이 함수는 요소의 위치를 부모 요소 기준으로 계산하되, `window.scrollX/Y`를 포함하여
+   * CSS `top`/`left` 속성에 직접 사용할 수 있는 문서 기준 좌표를 반환합니다.
+   *
+   * 주요 사용 사례:
+   * - 드롭다운, 팝업 등을 `document.body`에 append 후 위치 지정
+   * - 스크롤된 페이지에서도 올바르게 동작
+   *
+   * 계산에 포함되는 요소:
+   * - 뷰포트 기준 위치 (getBoundingClientRect)
+   * - 문서 스크롤 위치 (window.scrollX/Y)
+   * - 부모 요소 내부 스크롤 (parentEl.scrollTop/Left)
+   * - 중간 요소들의 border 두께
+   * - CSS transform 변환
+   *
+   * @param parent - 기준이 될 부모 요소 또는 셀렉터 (예: document.body, ".container")
+   * @returns CSS top/left 속성에 사용할 수 있는 좌표
+   * @throws {Error} 부모 요소를 찾을 수 없는 경우
    */
   export function getRelativeOffset(
     el: HTMLElement,
@@ -63,7 +82,16 @@ export namespace HtmlElementUtils {
   }
 
   /**
-   * 필요시 스크롤하여 대상 위치를 보이게 함
+   * 대상이 offset 영역(고정 헤더/고정 열 등)에 가려진 경우, 보이도록 스크롤
+   *
+   * @remarks
+   * 이 함수는 대상이 스크롤 영역의 위쪽/왼쪽 경계를 벗어난 경우만 처리합니다.
+   * 아래쪽/오른쪽으로 스크롤이 필요한 경우는 브라우저의 기본 포커스 스크롤 동작에 의존합니다.
+   * 주로 고정 헤더나 고정 열이 있는 테이블에서 포커스 이벤트와 함께 사용됩니다.
+   *
+   * @param container - 스크롤 컨테이너 요소
+   * @param target - 대상의 컨테이너 내 위치 (offsetTop, offsetLeft)
+   * @param offset - 가려지면 안 되는 영역 크기 (예: 고정 헤더 높이, 고정 열 너비)
    */
   export function scrollIntoViewIfNeeded(
     container: HTMLElement,
@@ -109,29 +137,35 @@ export namespace HtmlElementUtils {
       return [];
     }
 
-    return await Promise.race([
-      new Promise<ElementBounds[]>((resolve) => {
-        const observer = new IntersectionObserver((entries) => {
-          observer.disconnect();
+    let observer: IntersectionObserver | undefined;
 
-          resolve(
-            entries.map((entry) => ({
-              target: entry.target as HTMLElement,
-              top: entry.boundingClientRect.top,
-              left: entry.boundingClientRect.left,
-              width: entry.boundingClientRect.width,
-              height: entry.boundingClientRect.height,
-            })),
-          );
-        });
+    try {
+      return await Promise.race([
+        new Promise<ElementBounds[]>((resolve) => {
+          observer = new IntersectionObserver((entries) => {
+            observer?.disconnect();
 
-        for (const el of els) {
-          observer.observe(el);
-        }
-      }),
-      new Promise<ElementBounds[]>((_, reject) =>
-        setTimeout(() => reject(new TimeoutError(timeout)), timeout),
-      ),
-    ]);
+            resolve(
+              entries.map((entry) => ({
+                target: entry.target as HTMLElement,
+                top: entry.boundingClientRect.top,
+                left: entry.boundingClientRect.left,
+                width: entry.boundingClientRect.width,
+                height: entry.boundingClientRect.height,
+              })),
+            );
+          });
+
+          for (const el of els) {
+            observer.observe(el);
+          }
+        }),
+        new Promise<ElementBounds[]>((_, reject) =>
+          setTimeout(() => reject(new TimeoutError(timeout)), timeout),
+        ),
+      ]);
+    } finally {
+      observer?.disconnect();
+    }
   }
 }

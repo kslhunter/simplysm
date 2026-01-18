@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
+import type { Bytes } from "@simplysm/core-common";
 
 describe("ExcelWorkbook", () => {
   describe("빈 워크북 생성", () => {
@@ -58,15 +59,15 @@ describe("ExcelWorkbook", () => {
     });
   });
 
-  describe("Buffer/Blob 출력", () => {
-    it("Buffer로 출력할 수 있다", async () => {
+  describe("Bytes/Blob 출력", () => {
+    it("Bytes로 출력할 수 있다", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
       await ws.cell(0, 0).setVal("Hello");
 
-      const buffer = await wb.getBuffer();
-      expect(buffer).toBeInstanceOf(Buffer);
-      expect(buffer.length).toBeGreaterThan(0);
+      const bytes: Bytes = await wb.getBytes();
+      expect(bytes).toBeInstanceOf(Uint8Array);
+      expect(bytes.length).toBeGreaterThan(0);
     });
 
     it("Blob으로 출력할 수 있다", async () => {
@@ -82,7 +83,7 @@ describe("ExcelWorkbook", () => {
   });
 
   describe("워크북 읽기/쓰기 라운드트립", () => {
-    it("생성한 워크북을 Buffer로 저장 후 다시 읽을 수 있다", async () => {
+    it("생성한 워크북을 Bytes로 저장 후 다시 읽을 수 있다", async () => {
       // 생성
       const wb1 = new ExcelWorkbook();
       const ws1 = await wb1.createWorksheet("RoundTrip");
@@ -90,11 +91,11 @@ describe("ExcelWorkbook", () => {
       await ws1.cell(0, 1).setVal(12345);
 
       // 저장
-      const buffer = await wb1.getBuffer();
+      const bytes = await wb1.getBytes();
       await wb1.close();
 
       // 다시 읽기
-      const wb2 = new ExcelWorkbook(buffer);
+      const wb2 = new ExcelWorkbook(bytes);
       const names = await wb2.getWorksheetNames();
       expect(names).toContain("RoundTrip");
 

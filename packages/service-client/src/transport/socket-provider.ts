@@ -1,10 +1,14 @@
 import pino from "pino";
-import { Uuid, Wait } from "@simplysm/core-common";
-import { EventEmitter } from "events";
+import { SdEventEmitter, Uuid, Wait } from "@simplysm/core-common";
 
 const logger = pino({ name: "service-client:SocketProvider" });
 
-export class SocketProvider extends EventEmitter {
+interface SocketProviderEvents {
+  message: Uint8Array;
+  state: "connected" | "closed" | "reconnecting";
+}
+
+export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
   // 설정상수
   private readonly _HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
   private readonly _HEARTBEAT_INTERVAL = 5000; // 5초마다 핑 전송
@@ -20,16 +24,6 @@ export class SocketProvider extends EventEmitter {
   private _heartbeatTimer?: ReturnType<typeof setInterval>;
   private _lastHeartbeatTime = Date.now();
 
-  // 이벤트
-  override on(event: "message", listener: (data: Buffer) => void): this;
-  override on(
-    event: "state",
-    listener: (state: "connected" | "closed" | "reconnecting") => void,
-  ): this;
-  override on(event: string, listener: (...args: any[]) => void): this {
-    return super.on(event, listener);
-  }
-
   get connected(): boolean {
     return this._ws?.readyState === WebSocket.OPEN;
   }
@@ -39,7 +33,7 @@ export class SocketProvider extends EventEmitter {
     public readonly clientName: string,
     private readonly _maxReconnectCount: number,
   ) {
-    super();
+    super({});
   }
 
   async connectAsync(): Promise<void> {
@@ -69,7 +63,7 @@ export class SocketProvider extends EventEmitter {
     this.emit("state", "closed");
   }
 
-  async sendAsync(data: Buffer | Uint8Array): Promise<void> {
+  async sendAsync(data: Uint8Array): Promise<void> {
     try {
       await Wait.until(() => this.connected, undefined, 5000);
     } catch {
@@ -118,32 +112,15 @@ export class SocketProvider extends EventEmitter {
     currentWs.onmessage = (event) => {
       this._lastHeartbeatTime = Date.now(); // 하트비트 갱신
 
-      const data = event.data as ArrayBuffer | Buffer;
+      const data = event.data as ArrayBuffer;
+      const bytes = new Uint8Array(data);
+
       // Raw Ping/Pong 처리 (가장 먼저 체크)
-      // ArrayBuffer나 Buffer의 길이가 1이고, 첫 바이트가 0x02(Pong)이면 무시
+      // 1바이트이고 첫 바이트가 0x02(Pong)이면 무시
       // (하트비트 타임스탬프만 갱신하고 끝냄)
-      let byteLength = 0;
-      let firstByte = 0;
+      if (bytes.length === 1 && bytes[0] === 0x02) return;
 
-      if (data instanceof ArrayBuffer) {
-        byteLength = data.byteLength;
-        if (byteLength === 1) firstByte = new Uint8Array(data)[0];
-      } else if (Buffer.isBuffer(data)) {
-        byteLength = data.length;
-        if (byteLength === 1) firstByte = data[0];
-      }
-
-      // 1바이트 Pong 패킷이면 여기서 종료 (Event Emit 안 함)
-      if (byteLength === 1 && firstByte === 0x02) return;
-
-      // Buffer 포맷 통일 (Browser/Node 호환)
-      let buffer: Buffer;
-      if (Buffer.isBuffer(data)) buffer = data;
-      else if (data instanceof ArrayBuffer) buffer = Buffer.from(data);
-      else if (Array.isArray(data)) buffer = Buffer.concat(data);
-      else buffer = Buffer.from(data as Uint8Array);
-
-      this.emit("message", buffer);
+      this.emit("message", bytes);
     };
 
     currentWs.onclose = async () => {

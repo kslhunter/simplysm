@@ -1,10 +1,9 @@
-import { EventEmitter } from "events";
 import type { ServiceEventListener } from "@simplysm/service-common";
 import { StaticFileHandler } from "./transport/http/static-file-handler";
 import { HttpRequestHandler } from "./transport/http/http-request-handler";
 import { ServiceExecutor } from "./core/service-executor";
 import type { Type } from "@simplysm/core-common";
-import { JsonConvert } from "@simplysm/core-common";
+import { JsonConvert, SdEventEmitter } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
 import fastifyMiddie from "@fastify/middie";
@@ -27,7 +26,10 @@ import pino from "pino";
 
 const logger = pino({ name: "service-server:ServiceServer" });
 
-export class ServiceServer<TAuthInfo = unknown> extends EventEmitter {
+export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
+  ready: void;
+  close: void;
+}> {
   isOpen = false;
 
   private readonly _serviceExecutor = new ServiceExecutor(this);
@@ -185,7 +187,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter {
           if (proxyKey != null) {
             const targetPort = this.options.portProxy[proxyKey];
             const target = `http://127.0.0.1:${targetPort}${req.raw.url}`;
-            return await reply.from(target);
+            return reply.from(target);
           }
         }
 
@@ -232,11 +234,11 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter {
   }
 
   async generateAuthTokenAsync(payload: AuthTokenPayload<TAuthInfo>) {
-    return await this._jwt.signAsync(payload);
+    return this._jwt.signAsync(payload);
   }
 
   async verifyAuthTokenAsync(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
-    return await this._jwt.verifyAsync(token);
+    return this._jwt.verifyAsync(token);
   }
 
   private _registerGracefulShutdown() {

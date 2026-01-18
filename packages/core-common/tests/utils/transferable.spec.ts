@@ -180,6 +180,49 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
+  //#region encode - 순환 참조 감지
+
+  describe("encode() - 순환 참조 감지", () => {
+    it("자기 참조 객체를 인코딩하면 TypeError를 던진다", () => {
+      const obj: Record<string, unknown> = { a: 1 };
+      obj["self"] = obj;
+
+      expect(() => TransferableConvert.encode(obj)).toThrow(TypeError);
+      expect(() => TransferableConvert.encode(obj)).toThrow("순환 참조가 감지되었습니다");
+    });
+
+    it("중첩된 순환 참조를 감지한다", () => {
+      const a: Record<string, unknown> = { name: "a" };
+      const b: Record<string, unknown> = { name: "b", ref: a };
+      a["ref"] = b;
+
+      expect(() => TransferableConvert.encode(a)).toThrow("순환 참조가 감지되었습니다");
+    });
+
+    it("배열 내 순환 참조를 감지한다", () => {
+      const arr: unknown[] = [1, 2, 3];
+      arr.push(arr);
+
+      expect(() => TransferableConvert.encode(arr)).toThrow("순환 참조가 감지되었습니다");
+    });
+
+    it("Map 내 순환 참조를 감지한다", () => {
+      const map = new Map<string, unknown>();
+      map.set("self", map);
+
+      expect(() => TransferableConvert.encode(map)).toThrow("순환 참조가 감지되었습니다");
+    });
+
+    it("Set 내 순환 참조를 감지한다", () => {
+      const set = new Set<unknown>();
+      set.add(set);
+
+      expect(() => TransferableConvert.encode(set)).toThrow("순환 참조가 감지되었습니다");
+    });
+  });
+
+  //#endregion
+
   //#region decode - 특수 타입
 
   describe("decode() - 특수 타입", () => {

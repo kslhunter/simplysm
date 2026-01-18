@@ -1,8 +1,8 @@
-import { DateTime } from "../types/DateTime";
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
-import { Uuid } from "../types/Uuid";
-import { ArgumentError } from "../errors/ArgumentError";
+import { DateTime } from "../types/date-time";
+import { DateOnly } from "../types/date-only";
+import { Time } from "../types/time";
+import { Uuid } from "../types/uuid";
+import { ArgumentError } from "../errors/argument-error";
 
 /**
  * 객체 유틸리티 클래스
@@ -13,7 +13,10 @@ export class ObjectUtils {
   /**
    * 깊은 복사
    * - 순환 참조 지원
-   * - 커스텀 타입(DateTime, DateOnly, Time, Uuid, Buffer) 복사 지원
+   * - 커스텀 타입(DateTime, DateOnly, Time, Uuid, Uint8Array) 복사 지원
+   *
+   * @note 함수, Symbol은 복사되지 않고 참조가 유지됨
+   * @note WeakMap, WeakSet은 지원되지 않음 (일반 객체로 복사되어 빈 객체가 됨)
    */
   static clone<T>(source: T): T {
     return this._clone(source) as T;
@@ -46,14 +49,42 @@ export class ObjectUtils {
       return new Uuid(source.toString());
     }
 
-    // 순환 참조 체크
+    // RegExp
+    if (source instanceof RegExp) {
+      return new RegExp(source.source, source.flags);
+    }
+
+    // 순환 참조 체크 (Error 포함 모든 object 타입에 적용)
     const currPrevClones = prevClones ?? new WeakMap<object, unknown>();
     if (currPrevClones.has(source)) {
       return currPrevClones.get(source);
     }
 
-    if (Buffer.isBuffer(source)) {
-      const result = Buffer.from(source);
+    // Error (cause 포함)
+    // 생성자 호출 대신 프로토타입 기반 복사 - 커스텀 Error 클래스 호환성 보장
+    if (source instanceof Error) {
+      const cloned = Object.create(Object.getPrototypeOf(source)) as Error;
+      currPrevClones.set(source, cloned);
+      cloned.message = source.message;
+      cloned.name = source.name;
+      cloned.stack = source.stack;
+      if (source.cause !== undefined) {
+        cloned.cause = this._clone(source.cause, currPrevClones);
+      }
+      // 커스텀 Error 속성 복사
+      for (const key of Object.keys(source)) {
+        if (!["message", "name", "stack", "cause"].includes(key)) {
+          (cloned as unknown as Record<string, unknown>)[key] = this._clone(
+            (source as unknown as Record<string, unknown>)[key],
+            currPrevClones,
+          );
+        }
+      }
+      return cloned;
+    }
+
+    if (source instanceof Uint8Array) {
+      const result = source.slice();
       currPrevClones.set(source, result);
       return result;
     }
@@ -104,6 +135,19 @@ export class ObjectUtils {
 
   /**
    * 깊은 비교
+   *
+   * @param source 비교 대상 1
+   * @param target 비교 대상 2
+   * @param options 비교 옵션
+   * @param options.includes 비교할 키 목록. 지정 시 해당 키만 비교
+   * @param options.excludes 비교에서 제외할 키 목록
+   * @param options.ignoreArrayIndex 배열 순서 무시 여부. true 시 O(n²) 복잡도
+   * @param options.onlyOneDepth 얕은 비교 여부. true 시 1단계만 비교 (참조 비교)
+   *
+   * @note 성능 고려사항:
+   * - 기본 배열 비교: O(n) 시간 복잡도
+   * - `ignoreArrayIndex: true` 사용 시: O(n²) 시간 복잡도
+   *   (대용량 배열에서 성능 저하 가능)
    */
   static equal(
     source: unknown,
@@ -141,6 +185,10 @@ export class ObjectUtils {
 
     if (source instanceof Map && target instanceof Map) {
       return this._equalMap(source, target, options);
+    }
+
+    if (source instanceof Set && target instanceof Set) {
+      return this._equalSet(source, target, options);
     }
 
     if (typeof source === "object" && typeof target === "object") {
@@ -257,13 +305,13 @@ export class ObjectUtils {
       (key) =>
         (options?.includes === undefined || options.includes.includes(key)) &&
         !options?.excludes?.includes(key) &&
-        source[key] !== undefined,
+        source[key] != null,
     );
     const targetKeys = Object.keys(target).filter(
       (key) =>
         (options?.includes === undefined || options.includes.includes(key)) &&
         !options?.excludes?.includes(key) &&
-        target[key] !== undefined,
+        target[key] != null,
     );
 
     if (sourceKeys.length !== targetKeys.length) {
@@ -289,12 +337,50 @@ export class ObjectUtils {
     return true;
   }
 
+  private static _equalSet(
+    source: Set<unknown>,
+    target: Set<unknown>,
+    options?: {
+      includes?: string[];
+      excludes?: string[];
+      ignoreArrayIndex?: boolean;
+      onlyOneDepth?: boolean;
+    },
+  ): boolean {
+    if (source.size !== target.size) {
+      return false;
+    }
+
+    for (const sourceItem of source) {
+      if (options?.onlyOneDepth) {
+        if (!target.has(sourceItem)) {
+          return false;
+        }
+      } else {
+        // deep equal: target에서 같은 항목 찾기
+        const hasMatch = [...target].some((targetItem) =>
+          this.equal(sourceItem, targetItem, options),
+        );
+        if (!hasMatch) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   //#endregion
 
   //#region merge
 
   /**
    * 깊은 병합 (source를 base로 target을 병합)
+   *
+   * @note 원본 객체를 수정하지 않고 새 객체를 반환함 (불변성 보장)
+   * @note arrayProcess="concat" 사용 시 Set을 통해 중복을 제거하며,
+   *       객체 배열의 경우 참조(주소) 비교로 중복을 판단함
+   * @throws {ArgumentError} 동일 키에 서로 다른 타입이 있으면 발생
    */
   static merge<T, P>(
     source: T,
@@ -326,7 +412,7 @@ export class ObjectUtils {
       target instanceof DateOnly ||
       target instanceof Time ||
       target instanceof Uuid ||
-      Buffer.isBuffer(target) ||
+      target instanceof Uint8Array ||
       (opt?.arrayProcess === "replace" && target instanceof Array)
     ) {
       return this.clone(target) as T & P;
@@ -395,7 +481,8 @@ export class ObjectUtils {
   } {
     let conflict = false;
     const result = this.clone(origin) as Record<string, unknown>;
-    for (const key of Object.keys(source).concat(Object.keys(target)).concat(Object.keys(origin))) {
+    const allKeys = new Set([...Object.keys(source), ...Object.keys(target), ...Object.keys(origin)]);
+    for (const key of allKeys) {
       if (this.equal(source[key], result[key], optionsObj?.[key])) {
         result[key] = this.clone(target[key]);
       } else if (this.equal(target[key], result[key], optionsObj?.[key])) {

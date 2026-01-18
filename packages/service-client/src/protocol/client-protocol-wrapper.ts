@@ -82,7 +82,7 @@ export class ClientProtocolWrapper {
     data: unknown,
     transfer: Transferable[] = [],
   ): Promise<unknown> {
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const id = Uuid.new().toString();
 
       ClientProtocolWrapper._workerResolvers.set(id, { resolve, reject });
@@ -94,7 +94,7 @@ export class ClientProtocolWrapper {
   async encodeAsync(
     uuid: string,
     message: ServiceMessage,
-  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
+  ): Promise<{ chunks: Uint8Array[]; totalSize: number }> {
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!ClientProtocolWrapper.workerAvailable || !this._shouldUseWorkerForEncode(message)) {
       return this._protocol.encode(uuid, message);
@@ -104,22 +104,22 @@ export class ClientProtocolWrapper {
     // Encode는 객체를 보내야 하므로 Structured Clone이 발생함.
     // 하지만 JSON.stringify 비용을 메인 스레드에서 제거하는 이득이 더 큼.
     return (await this._runWorkerAsync("encode", { uuid, message })) as {
-      chunks: Buffer[];
+      chunks: Uint8Array[];
       totalSize: number;
     };
   }
 
-  async decodeAsync(buffer: Buffer): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
-    const totalSize = buffer.length;
+  async decodeAsync(bytes: Uint8Array): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+    const totalSize = bytes.length;
 
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!ClientProtocolWrapper.workerAvailable || totalSize <= this._SIZE_THRESHOLD) {
-      return this._protocol.decode(buffer);
+      return this._protocol.decode(bytes);
     }
 
     // [Worker]
     // Zero-Copy 전송 (buffer의 소유권이 Worker로 넘어감)
-    const rawResult = await this._runWorkerAsync("decode", buffer, [buffer.buffer]);
+    const rawResult = await this._runWorkerAsync("decode", bytes, [bytes.buffer]);
 
     // Worker에서 온 결과(Plain Object)를 클래스 인스턴스(DateTime 등)로 복원
     return TransferableConvert.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
@@ -129,11 +129,11 @@ export class ClientProtocolWrapper {
     if (!("body" in msg)) return false;
     const body = msg.body;
 
-    // Buffer가 있거나, 배열 길이가 길면 워커 사용
-    if (Buffer.isBuffer(body)) return true;
+    // Uint8Array가 있거나, 배열 길이가 길면 워커 사용
+    if (body instanceof Uint8Array) return true;
     if (typeof body === "string" && body.length > this._SIZE_THRESHOLD) return true;
     if (Array.isArray(body)) {
-      return body.length > 100 || (body.length > 0 && Buffer.isBuffer(body[0]));
+      return body.length > 100 || (body.length > 0 && body[0] instanceof Uint8Array);
     }
 
     return false;

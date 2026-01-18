@@ -1,6 +1,7 @@
 //#region Types
 export * from "./types/storage-conn-config";
 export * from "./types/storage";
+export * from "./types/storage-type";
 //#endregion
 
 //#region Clients

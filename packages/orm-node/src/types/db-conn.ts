@@ -1,4 +1,4 @@
-import type { EventEmitter } from "events";
+import type { SdEventEmitter } from "@simplysm/core-common";
 import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
 
 // ============================================
@@ -31,9 +31,9 @@ export const DB_CONN_ERRORS = {
  * - {@link PostgresqlDbConn} - PostgreSQL 연결
  *
  * @remarks
- * EventEmitter를 상속하여 'close' 이벤트를 발생시킵니다.
+ * SdEventEmitter를 상속하여 'close' 이벤트를 발생시킵니다.
  */
-export interface DbConn extends EventEmitter {
+export interface DbConn extends SdEventEmitter<{ close: void }> {
   /**
    * 연결 설정
    */
@@ -48,11 +48,6 @@ export interface DbConn extends EventEmitter {
    * 트랜잭션 진행 여부
    */
   isOnTransaction: boolean;
-
-  /**
-   * 'close' 이벤트 리스너 등록
-   */
-  on(event: "close", listener: () => void): this;
 
   /**
    * DB 연결 수립

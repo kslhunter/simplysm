@@ -21,12 +21,9 @@
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
 
-    // Angular 데코레이터
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": false,
-
     // 빌드
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
     "importHelpers": true,
@@ -37,5 +34,5 @@
       "@simplysm/*": ["packages/*/src/index.ts"]
     }
   },
-  "include": ["./*.ts","./packages/*/src/**/*.ts", "./packages/*/tests/**/*.ts", "./tests/**/*.ts"]
+  "include": ["*.ts","packages/*/src/**/*.ts", "packages/*/tests/**/*.ts", "tests/**/*.ts"]
 }

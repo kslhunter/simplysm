@@ -7,6 +7,17 @@ export class StringUtils {
    * 한글 조사를 받침에 따라 적절히 반환
    * @param text 텍스트
    * @param type 조사 타입
+   *   - `"을"`: 을/를
+   *   - `"은"`: 은/는
+   *   - `"이"`: 이/가
+   *   - `"와"`: 과/와
+   *   - `"랑"`: 이랑/랑
+   *   - `"로"`: 으로/로
+   *   - `"라"`: 이라/라
+   *
+   * @example
+   * getSuffix("사과", "을") // "를"
+   * getSuffix("책", "이") // "이"
    */
   static getSuffix(
     text: string,
@@ -104,39 +115,60 @@ export class StringUtils {
   //#region 케이스 변환
   /**
    * PascalCase로 변환
+   * @example "hello-world" → "HelloWorld"
+   * @example "hello_world" → "HelloWorld"
+   * @example "hello.world" → "HelloWorld"
    */
   static toPascalCase(str: string): string {
     return str
-      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[a-z]/, (m) => m.toUpperCase());
   }
 
   /**
    * camelCase로 변환
+   * @example "hello-world" → "helloWorld"
+   * @example "hello_world" → "helloWorld"
+   * @example "HelloWorld" → "helloWorld"
    */
   static toCamelCase(str: string): string {
     return str
-      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
       .replace(/^[A-Z]/, (m) => m.toLowerCase());
   }
 
   /**
    * kebab-case로 변환
+   * @example "HelloWorld" → "hello-world"
+   * @example "helloWorld" → "hello-world"
+   * @example "XMLParser" → "x-m-l-parser" (연속된 대문자는 각각 분리됨)
    */
   static toKebabCase(str: string): string {
+    return this._toCaseWithSeparator(str, "-");
+  }
+
+  /**
+   * snake_case로 변환
+   * @example "HelloWorld" → "hello_world"
+   * @example "helloWorld" → "hello_world"
+   * @example "XMLParser" → "x_m_l_parser" (연속된 대문자는 각각 분리됨)
+   */
+  static toSnakeCase(str: string): string {
+    return this._toCaseWithSeparator(str, "_");
+  }
+
+  private static _toCaseWithSeparator(str: string, separator: string): string {
     return str
       .replace(/^[A-Z]/, (m) => m.toLowerCase())
-      .replace(/[-_]?[A-Z]/g, (m) => "-" + m.toLowerCase());
+      .replace(/[-_]?[A-Z]/g, (m) => separator + m.toLowerCase());
   }
   //#endregion
 
   //#region 기타
   /**
-   * null, undefined, 빈 문자열 체크
+   * undefined, 빈 문자열 체크
    */
-  static isNullOrEmpty(
-    str: string | null | undefined,
-  ): str is "" | undefined | null {
+  static isNullOrEmpty(str: string | undefined): str is "" | undefined {
     return str == null || str === "";
   }
 

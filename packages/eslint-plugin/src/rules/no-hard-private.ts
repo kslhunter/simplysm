@@ -1,5 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/utils";
-import { createRule } from "../utils/createRule";
+import type { RuleFix } from "@typescript-eslint/utils/ts-eslint";
+import { createRule } from "../utils/create-rule";
 
 export default createRule({
   name: "no-hard-private",
@@ -19,18 +20,18 @@ export default createRule({
     const sourceCode = context.sourceCode;
 
     return {
-      // 1. 선언부 감지
-      "PropertyDefinition > PrivateIdentifier, MethodDefinition > PrivateIdentifier"(
+      // 1. 선언부 감지 (PropertyDefinition, MethodDefinition, AccessorProperty)
+      "PropertyDefinition > PrivateIdentifier, MethodDefinition > PrivateIdentifier, AccessorProperty > PrivateIdentifier"(
         node: TSESTree.PrivateIdentifier
       ) {
-        const parent = node.parent as TSESTree.PropertyDefinition | TSESTree.MethodDefinition;
+        const parent = node.parent as TSESTree.PropertyDefinition | TSESTree.MethodDefinition | TSESTree.AccessorProperty;
         const identifierName = node.name; // '#'을 제외한 이름
 
         context.report({
-          node: node,
+          node,
           messageId: "preferSoftPrivate",
           fix(fixer) {
-            const fixes = [];
+            const fixes: RuleFix[] = [];
 
             // 1-1. 이름 변경 (#a -> _a)
             fixes.push(fixer.replaceText(node, `_${identifierName}`));
@@ -63,7 +64,7 @@ export default createRule({
       "MemberExpression > PrivateIdentifier"(node: TSESTree.PrivateIdentifier) {
         const identifierName = node.name;
         context.report({
-          node: node,
+          node,
           messageId: "preferSoftPrivate",
           fix(fixer) {
             return fixer.replaceText(node, `_${identifierName}`);

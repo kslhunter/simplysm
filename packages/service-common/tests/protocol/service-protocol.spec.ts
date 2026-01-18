@@ -60,26 +60,26 @@ describe("ServiceProtocol", () => {
     });
 
     it("헤더 크기 미달 시 에러", () => {
-      const smallBuffer = Buffer.alloc(20);
+      const smallBytes = new Uint8Array(20);
 
-      expect(() => protocol.decode(smallBuffer)).toThrow("버퍼 크기가 헤더 크기보다 작습니다.");
+      expect(() => protocol.decode(smallBytes)).toThrow("버퍼 크기가 헤더 크기보다 작습니다.");
     });
 
     it("100MB 초과 메시지 디코딩 시 에러", () => {
       // 헤더를 수동 생성하여 totalSize가 100MB 초과로 설정
-      const headerBuffer = Buffer.alloc(28);
-      const uuidBuffer = new Uuid(Uuid.new().toString()).toBuffer();
-      headerBuffer.set(uuidBuffer, 0);
+      const headerBytes = new Uint8Array(28);
+      const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
+      headerBytes.set(uuidBytes, 0);
 
       const headerView = new DataView(
-        headerBuffer.buffer,
-        headerBuffer.byteOffset,
-        headerBuffer.byteLength,
+        headerBytes.buffer,
+        headerBytes.byteOffset,
+        headerBytes.byteLength,
       );
       headerView.setBigUint64(16, BigInt(101 * 1024 * 1024), false); // 101MB
       headerView.setUint32(24, 0, false);
 
-      expect(() => protocol.decode(headerBuffer)).toThrow("메시지 크기가 제한을 초과했습니다.");
+      expect(() => protocol.decode(headerBytes)).toThrow("메시지 크기가 제한을 초과했습니다.");
     });
   });
 

@@ -1,7 +1,6 @@
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import plugin from "../plugin";
-import ngeslint from "angular-eslint";
 import importPlugin from "eslint-plugin-import";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import { globalIgnores } from "eslint/config";
@@ -9,22 +8,45 @@ import { globalIgnores } from "eslint/config";
 //#region 공통 규칙 설정
 
 const commonRules = {
-  "no-console": ["warn"],
+  "no-console": ["error"],
   "no-warning-comments": ["warn"],
   "eqeqeq": ["error", "always", { null: "ignore" }],
 };
 
-const simplysm = {
-  // JS/TS 공통
-  noSubpathImports: ["error"] as const,
-  noHardPrivate: ["error"] as const,
-  // TS 전용
-  tsNoThrowNotImplementError: ["warn"] as const,
-  tsNoUnusedInjects: ["error"] as const,
-  tsNoUnusedProtectedReadonly: ["error"] as const,
-  // Angular 템플릿
-  ngTemplateNoTodoComments: ["warn"] as const,
-  ngTemplateSdRequireBindingAttrs: ["error"] as const,
+/**
+ * browser/neutral 패키지에서 Node.js 전용 API 사용 금지
+ * - Buffer → Uint8Array, BytesUtils 사용
+ * - EventEmitter → SdEventEmitter 사용
+ */
+const noNodeBuiltinsRules = {
+  "no-restricted-globals": [
+    "error",
+    {
+      name: "Buffer",
+      message:
+        "Use Uint8Array instead. For complex operations, use BytesUtils from @simplysm/core-common.",
+    },
+  ],
+  "no-restricted-imports": [
+    "error",
+    {
+      paths: [
+        {
+          name: "buffer",
+          message:
+            "Use Uint8Array instead. For complex operations, use BytesUtils from @simplysm/core-common.",
+        },
+        {
+          name: "events",
+          message: "Use SdEventEmitter from @simplysm/core-common instead.",
+        },
+        {
+          name: "eventemitter3",
+          message: "Use SdEventEmitter from @simplysm/core-common instead.",
+        },
+      ],
+    },
+  ],
 };
 
 const unusedImportsRules = {
@@ -47,7 +69,6 @@ export default [
     // directory/** 형태로 순회 자체를 건너뜀
     "**/node_modules/**",
     "**/dist/**",
-    "**/tests/**",
     "**/.legacy-packages/**",
     "**/.*/**",
     "**/_*/**",
@@ -87,6 +108,7 @@ export default [
           devDependencies: [
             "**/*.spec.js",
             "**/lib/**",
+            "**/tests/**",
             "**/eslint.config.js",
             "**/simplysm.js",
             "**/vitest.config.js",
@@ -94,8 +116,11 @@ export default [
         },
       ],
 
-      "@simplysm/no-subpath-imports-from-simplysm": simplysm.noSubpathImports,
-      "@simplysm/no-hard-private": simplysm.noHardPrivate,
+      // JS/TS 공통
+      "@simplysm/no-subpath-imports-from-simplysm": ["error"],
+      "@simplysm/no-hard-private": ["error"],
+
+      ...noNodeBuiltinsRules,
     },
   },
   {
@@ -103,11 +128,9 @@ export default [
     plugins: {
       "@typescript-eslint": tseslint.plugin,
       "@simplysm": plugin,
-      "@angular-eslint": ngeslint.tsPlugin,
       "import": importPlugin,
       "unused-imports": unusedImportsPlugin,
     },
-    processor: ngeslint.processInlineTemplates,
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -119,7 +142,7 @@ export default [
 
       "@typescript-eslint/require-await": ["error"],
       "@typescript-eslint/await-thenable": ["error"],
-      "@typescript-eslint/return-await": ["error", "always"],
+      "@typescript-eslint/return-await": ["error", "in-try-catch"],
       "@typescript-eslint/no-floating-promises": ["error"],
       "@typescript-eslint/no-shadow": ["error"],
       "@typescript-eslint/no-unnecessary-condition": [
@@ -139,16 +162,21 @@ export default [
           allowNullableObject: true,
         },
       ],
-      "@typescript-eslint/prefer-ts-expect-error": ["error"],
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        {
+          "ts-expect-error": "allow-with-description",
+          minimumDescriptionLength: 3,
+        },
+      ],
       "@typescript-eslint/prefer-readonly": ["error"],
 
-      "@simplysm/no-subpath-imports-from-simplysm": simplysm.noSubpathImports,
-      "@simplysm/no-hard-private": simplysm.noHardPrivate,
-      "@simplysm/ts-no-throw-not-implement-error": simplysm.tsNoThrowNotImplementError,
-      "@simplysm/ts-no-unused-injects": simplysm.tsNoUnusedInjects,
-      "@simplysm/ts-no-unused-protected-readonly": simplysm.tsNoUnusedProtectedReadonly,
+      "@simplysm/no-hard-private": ["error"],
+      "@simplysm/no-subpath-imports-from-simplysm": ["error"],
+      "@simplysm/ts-no-throw-not-implemented-error": ["warn"],
 
       ...unusedImportsRules,
+      ...noNodeBuiltinsRules,
 
       "import/no-extraneous-dependencies": [
         "error",
@@ -156,25 +184,21 @@ export default [
           devDependencies: [
             "**/*.spec.ts",
             "**/lib/**",
+            "**/tests/**",
             "**/eslint.config.ts",
             "**/simplysm.ts",
             "**/vitest.config.ts",
+            "**/vitest.setup.ts",
           ],
         },
       ],
     },
   },
+  // 테스트 파일: 루트 devDependencies(vitest 등) 사용 허용
   {
-    files: ["**/*.html"],
-    languageOptions: {
-      parser: ngeslint.templateParser,
-    },
-    plugins: {
-      "@simplysm": plugin,
-    },
+    files: ["**/*.spec.ts", "**/*.spec.js"],
     rules: {
-      "@simplysm/ng-template-no-todo-comments": simplysm.ngTemplateNoTodoComments,
-      "@simplysm/ng-template-sd-require-binding-attrs": simplysm.ngTemplateSdRequireBindingAttrs,
+      "import/no-extraneous-dependencies": "off",
     },
   },
 ];

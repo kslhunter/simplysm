@@ -99,6 +99,10 @@ export namespace ElementUtils {
 
   /**
    * 클립보드 내용을 요소에 붙여넣기 (paste 이벤트 핸들러에서 사용)
+   *
+   * @remarks
+   * 대상 요소 내의 첫 번째 input/textarea를 찾아 전체 값을 클립보드 내용으로 교체합니다.
+   * 커서 위치나 선택 영역을 고려하지 않습니다.
    */
   export function pasteToElement(event: ClipboardEvent): void {
     const clipboardData = event.clipboardData;

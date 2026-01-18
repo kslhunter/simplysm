@@ -1,7 +1,6 @@
-import { EventEmitter } from "events";
 import { Readable } from "stream";
 import pino from "pino";
-import { DateOnly, DateTime, SdError, StringUtils, Time, Uuid } from "@simplysm/core-common";
+import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -19,7 +18,7 @@ const logger = pino({ name: "postgresql-db-conn" });
  *
  * pg 라이브러리를 사용하여 PostgreSQL 연결을 관리합니다.
  */
-export class PostgresqlDbConn extends EventEmitter implements DbConn {
+export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _client?: Client;
@@ -219,7 +218,7 @@ export class PostgresqlDbConn extends EventEmitter implements DbConn {
         return (value as Uuid).toString();
 
       case "binary":
-        return "\\\\x" + (value as Buffer).toString("hex"); // PostgreSQL bytea hex 형식
+        return "\\\\x" + BytesUtils.toHex(value as Uint8Array); // PostgreSQL bytea hex 형식
 
       default:
         throw new Error(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);

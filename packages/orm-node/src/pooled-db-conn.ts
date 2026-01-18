@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { SdEventEmitter } from "@simplysm/core-common";
 import type { Pool } from "generic-pool";
 import type { ColumnMeta, IsolationLevel } from "@simplysm/orm-common";
 import type { DbConn, DbConnConfig } from "./types/db-conn";
@@ -9,7 +9,7 @@ import type { DbConn, DbConnConfig } from "./types/db-conn";
  * generic-pool 라이브러리를 사용하여 커넥션 풀링을 지원합니다.
  * 실제 물리 연결은 풀에서 획득하고 반환합니다.
  */
-export class PooledDbConn extends EventEmitter implements DbConn {
+export class PooledDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
   // 풀에서 빌려온 실제 물리 커넥션
   private _rawConn?: DbConn;
 
@@ -91,12 +91,12 @@ export class PooledDbConn extends EventEmitter implements DbConn {
 
   async executeAsync(queries: string[]): Promise<unknown[][]> {
     const conn = this._requireRawConn();
-    return await conn.executeAsync(queries);
+    return conn.executeAsync(queries);
   }
 
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._requireRawConn();
-    return await conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrizedAsync(query, params);
   }
 
   async bulkInsertAsync(

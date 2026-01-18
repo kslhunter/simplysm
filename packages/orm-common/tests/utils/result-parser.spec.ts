@@ -110,10 +110,10 @@ describe("result-parser", () => {
       expect(result![0].id.toString()).toBe(uuidStr);
     });
 
-    it("Uuid 변환 - Buffer", async () => {
+    it("Uuid 변환 - Uint8Array", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
-      const uuidBuffer = Buffer.from(uuidStr.replace(/-/g, ""), "hex");
-      const raw = [{ id: uuidBuffer }];
+      const uuidBytes = Buffer.from(uuidStr.replace(/-/g, ""), "hex");
+      const raw = [{ id: uuidBytes }];
       const meta: ResultMeta = {
         columns: { id: "Uuid" },
         joins: {},
@@ -125,32 +125,33 @@ describe("result-parser", () => {
       expect(result![0].id.toString()).toBe(uuidStr);
     });
 
-    it("Buffer 변환 - Buffer 그대로", async () => {
-      const buffer = Buffer.from([0x01, 0x02, 0x03]);
-      const raw = [{ data: buffer }];
+    it("Bytes 변환 - Uint8Array 그대로", async () => {
+      const bytes = new Uint8Array([0x01, 0x02, 0x03]);
+      const raw = [{ data: bytes }];
       const meta: ResultMeta = {
-        columns: { data: "Buffer" },
+        columns: { data: "Bytes" },
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ data: Buffer }>(raw, meta);
+      const result = await parseQueryResultAsync<{ data: Uint8Array }>(raw, meta);
       expect(result).toBeDefined();
-      expect(Buffer.isBuffer(result![0].data)).toBe(true);
-      expect(result![0].data).toEqual(buffer);
+      expect(result![0].data).toBeInstanceOf(Uint8Array);
+      expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
     });
 
-    it("Buffer 변환 - base64 문자열", async () => {
-      const buffer = Buffer.from([0x01, 0x02, 0x03]);
-      const raw = [{ data: buffer.toString("base64") }];
+    it("Bytes 변환 - hex 문자열", async () => {
+      // [0x01, 0x02, 0x03]의 hex 표현
+      const hexStr = "010203";
+      const raw = [{ data: hexStr }];
       const meta: ResultMeta = {
-        columns: { data: "Buffer" },
+        columns: { data: "Bytes" },
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ data: Buffer }>(raw, meta);
+      const result = await parseQueryResultAsync<{ data: Uint8Array }>(raw, meta);
       expect(result).toBeDefined();
-      expect(Buffer.isBuffer(result![0].data)).toBe(true);
-      expect(result![0].data).toEqual(buffer);
+      expect(result![0].data).toBeInstanceOf(Uint8Array);
+      expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
     });
   });
 
@@ -253,14 +254,14 @@ describe("result-parser", () => {
       await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
     });
 
-    it("Buffer 파싱 실패 시 throw", async () => {
-      const raw = [{ data: 12345 }]; // 숫자는 Buffer로 변환 불가
+    it("Bytes 파싱 실패 시 throw", async () => {
+      const raw = [{ data: 12345 }]; // 숫자는 Bytes로 변환 불가
       const meta: ResultMeta = {
-        columns: { data: "Buffer" },
+        columns: { data: "Bytes" },
         joins: {},
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("Buffer 파싱 실패");
+      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("Bytes 파싱 실패");
     });
   });
 

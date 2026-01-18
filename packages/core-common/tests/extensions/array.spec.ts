@@ -80,6 +80,80 @@ describe("Array.ext", () => {
     });
   });
 
+  describe("filterExists()", () => {
+    it("null과 undefined를 제외한 요소만 반환한다", () => {
+      const arr = [1, null, 2, undefined, 3];
+      const result = arr.filterExists();
+
+      expect(result).toEqual([1, 2, 3]);
+    });
+
+    it("모든 요소가 존재하면 그대로 반환한다", () => {
+      const arr = [1, 2, 3];
+      const result = arr.filterExists();
+
+      expect(result).toEqual([1, 2, 3]);
+    });
+
+    it("빈 배열은 빈 배열을 반환한다", () => {
+      const arr: (number | null)[] = [];
+      const result = arr.filterExists();
+
+      expect(result).toEqual([]);
+    });
+
+    it("0과 빈 문자열은 유지한다", () => {
+      const arr = [0, "", null, undefined, false];
+      const result = arr.filterExists();
+
+      expect(result).toEqual([0, "", false]);
+    });
+  });
+
+  describe("ofType()", () => {
+    it("지정한 클래스의 인스턴스만 필터링한다", () => {
+      class Dog {
+        name = "dog";
+      }
+      class Cat {
+        name = "cat";
+      }
+
+      const dog1 = new Dog();
+      const dog2 = new Dog();
+      const cat1 = new Cat();
+
+      const arr = [dog1, cat1, dog2];
+      const result = arr.ofType(Dog);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContain(dog1);
+      expect(result).toContain(dog2);
+    });
+
+    it("일치하는 타입이 없으면 빈 배열을 반환한다", () => {
+      class Dog {
+        name = "dog";
+      }
+      class Cat {
+        name = "cat";
+      }
+
+      const dog = new Dog();
+      const arr = [dog];
+      const result = arr.ofType(Cat);
+
+      expect(result).toEqual([]);
+    });
+
+    it("내장 타입도 필터링한다", () => {
+      const arr = [1, "a", 2, "b", 3];
+      const result = arr.ofType(String);
+
+      expect(result).toEqual(["a", "b"]);
+    });
+  });
+
   //#endregion
 
   //#region 검색
@@ -106,6 +180,36 @@ describe("Array.ext", () => {
       const arr = [{ id: 1 }, { id: 1 }];
 
       expect(() => arr.single((item) => item.id === 1)).toThrow();
+    });
+  });
+
+  describe("first()", () => {
+    it("조건 없이 첫 번째 요소를 반환한다", () => {
+      const arr = [1, 2, 3];
+      const result = arr.first();
+
+      expect(result).toBe(1);
+    });
+
+    it("조건에 맞는 첫 번째 요소를 반환한다", () => {
+      const arr = [1, 2, 3, 4, 5];
+      const result = arr.first((item) => item > 2);
+
+      expect(result).toBe(3);
+    });
+
+    it("조건에 맞는 요소가 없으면 undefined를 반환한다", () => {
+      const arr = [1, 2, 3];
+      const result = arr.first((item) => item > 10);
+
+      expect(result).toBe(undefined);
+    });
+
+    it("빈 배열에서 undefined를 반환한다", () => {
+      const arr: number[] = [];
+      const result = arr.first();
+
+      expect(result).toBe(undefined);
     });
   });
 
@@ -530,6 +634,200 @@ describe("Array.ext", () => {
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe("same");
     });
+
+    it("Map 파라미터를 사용할 수 있다", () => {
+      interface Item {
+        id: number;
+        value: string;
+      }
+
+      const orgMap = new Map<number, Item>([
+        [1, { id: 1, value: "a" }],
+        [2, { id: 2, value: "b" }],
+      ]);
+
+      const items: Item[] = [
+        { id: 2, value: "changed" },
+        { id: 3, value: "c" },
+      ];
+
+      const result = items.oneWayDiffs(orgMap, "id");
+
+      const updated = result.find((d) => d.item.id === 2);
+      expect(updated?.type).toBe("update");
+
+      const created = result.find((d) => d.item.id === 3);
+      expect(created?.type).toBe("create");
+    });
+
+    it("keyValue가 null인 경우 create로 처리한다", () => {
+      interface Item {
+        id: number | undefined;
+        value: string;
+      }
+
+      const orgItems: Item[] = [
+        { id: 1, value: "a" },
+        { id: 2, value: "b" },
+      ];
+
+      const items: Item[] = [
+        { id: undefined, value: "new" },
+        { id: 2, value: "changed" },
+      ];
+
+      const result = items.oneWayDiffs(orgItems, "id");
+
+      const created = result.find((d) => d.item.id === undefined);
+      expect(created?.type).toBe("create");
+
+      const updated = result.find((d) => d.item.id === 2);
+      expect(updated?.type).toBe("update");
+    });
+
+    it("excludes 옵션으로 비교 시 특정 키를 제외한다", () => {
+      interface Item {
+        id: number;
+        value: string;
+        timestamp: number;
+      }
+
+      const orgItems: Item[] = [{ id: 1, value: "a", timestamp: 100 }];
+
+      const items: Item[] = [{ id: 1, value: "a", timestamp: 200 }];
+
+      // timestamp를 제외하면 같은 항목으로 취급
+      const result = items.oneWayDiffs(orgItems, "id", {
+        excludes: ["timestamp"],
+        includeSame: true,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe("same");
+    });
+
+    it("includes 옵션으로 특정 키만 비교한다", () => {
+      interface Item {
+        id: number;
+        value: string;
+        other: string;
+      }
+
+      const orgItems: Item[] = [{ id: 1, value: "a", other: "x" }];
+
+      const items: Item[] = [{ id: 1, value: "a", other: "changed" }];
+
+      // value만 비교하면 같은 항목으로 취급
+      const result = items.oneWayDiffs(orgItems, "id", {
+        includes: ["id", "value"],
+        includeSame: true,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe("same");
+    });
+  });
+
+  //#endregion
+
+  //#region 병합
+
+  describe("merge()", () => {
+    it("변경된 항목을 병합한다", () => {
+      interface Item {
+        id: number;
+        value: string;
+      }
+
+      const source: Item[] = [
+        { id: 1, value: "a" },
+        { id: 2, value: "b" },
+      ];
+      const target: Item[] = [
+        { id: 1, value: "a" },
+        { id: 2, value: "changed" },
+      ];
+
+      const result = source.merge(target, { keys: ["id"] });
+
+      expect(result).toHaveLength(2);
+      expect(result.find((r) => r.id === 2)?.value).toBe("changed");
+    });
+
+    it("새 항목을 추가한다", () => {
+      interface Item {
+        id: number;
+        value: string;
+      }
+
+      const source: Item[] = [{ id: 1, value: "a" }];
+      const target: Item[] = [
+        { id: 1, value: "a" },
+        { id: 2, value: "b" },
+      ];
+
+      const result = source.merge(target, { keys: ["id"] });
+
+      expect(result).toHaveLength(2);
+      expect(result.find((r) => r.id === 2)?.value).toBe("b");
+    });
+
+    it("keys 옵션으로 변경 여부를 판단한다", () => {
+      interface Item {
+        id: number;
+        name: string;
+        count: number;
+      }
+
+      const source: Item[] = [{ id: 1, name: "item1", count: 10 }];
+      const target: Item[] = [{ id: 1, name: "item1", count: 20 }];
+
+      const result = source.merge(target, { keys: ["id"] });
+
+      // id가 같으므로 target 값으로 병합됨
+      expect(result[0].count).toBe(20);
+    });
+
+    it("excludes 옵션으로 비교 시 특정 키를 제외한다", () => {
+      interface Item {
+        id: number;
+        value: string;
+        timestamp: number;
+      }
+
+      const source: Item[] = [{ id: 1, value: "a", timestamp: 100 }];
+      const target: Item[] = [{ id: 1, value: "a", timestamp: 200 }];
+
+      // timestamp를 제외하면 같은 항목으로 취급
+      const result = source.merge(target, { excludes: ["timestamp"] });
+
+      expect(result).toHaveLength(1);
+      // 같은 항목이므로 source 값 유지
+      expect(result[0].timestamp).toBe(100);
+    });
+
+    it("원본 배열을 변경하지 않는다", () => {
+      const source = [{ id: 1, value: "a" }];
+      const target = [{ id: 2, value: "b" }];
+
+      source.merge(target, { keys: ["id"] });
+
+      expect(source).toHaveLength(1);
+      expect(source[0].value).toBe("a");
+    });
+
+    it("primitive 배열도 병합한다", () => {
+      const source = [1, 2, 3];
+      const target = [3, 4, 5];
+
+      const result = source.merge(target);
+
+      expect(result).toContain(1);
+      expect(result).toContain(2);
+      expect(result).toContain(3);
+      expect(result).toContain(4);
+      expect(result).toContain(5);
+    });
   });
 
   //#endregion
@@ -587,6 +885,30 @@ describe("Array.ext", () => {
 
       expect(result).toBe(arr); // 원본 반환
       expect(arr.map((item) => item.a)).toEqual([1, 2, 3]);
+    });
+  });
+
+  describe("orderByDescThis()", () => {
+    it("원본 배열을 내림차순 정렬한다", () => {
+      const arr = [{ a: 1 }, { a: 3 }, { a: 2 }];
+      const result = arr.orderByDescThis((item) => item.a);
+
+      expect(result).toBe(arr); // 원본 반환
+      expect(arr.map((item) => item.a)).toEqual([3, 2, 1]);
+    });
+
+    it("selector 없이 primitive 배열을 내림차순 정렬한다", () => {
+      const arr = [1, 3, 2, 5, 4];
+      arr.orderByDescThis();
+
+      expect(arr).toEqual([5, 4, 3, 2, 1]);
+    });
+
+    it("문자열 배열을 내림차순 정렬한다", () => {
+      const arr = ["a", "c", "b"];
+      arr.orderByDescThis();
+
+      expect(arr).toEqual(["c", "b", "a"]);
     });
   });
 

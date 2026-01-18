@@ -8,15 +8,15 @@
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/core-node"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/core-common": "13.0.0-beta.0",
+    "@simplysm/core-common": "workspace:*",
     "chokidar": "^5.0.0",
     "glob": "^13.0.0",
-    "pino": "^10.1.1",
+    "pino": "^10.2.0",
     "tsx": "^4.21.0"
   }
 }

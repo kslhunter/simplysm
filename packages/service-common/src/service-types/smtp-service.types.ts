@@ -5,28 +5,22 @@ export interface SmtpService {
 
 export interface SmtpSendAttachment {
   filename: string;
-  content?: Buffer;
+  content?: Uint8Array;
   path?: string;
   contentType?: string;
 }
 
-export interface SmtpSendByConfigOption {
-  to: string;
-  cc?: string;
-  bcc?: string;
-  subject: string;
-  html: string;
-  attachments?: SmtpSendAttachment[];
-}
-
-export interface SmtpSendOption {
+/** SMTP 연결 옵션 (공통) */
+export interface SmtpConnectionOptions {
   host: string;
   port?: number;
   secure?: boolean;
   user?: string;
   pass?: string;
+}
 
-  from: string;
+/** 이메일 내용 옵션 (공통) */
+export interface SmtpEmailContentOptions {
   to: string;
   cc?: string;
   bcc?: string;
@@ -35,12 +29,13 @@ export interface SmtpSendOption {
   attachments?: SmtpSendAttachment[];
 }
 
-export interface SmtpConfig {
+export interface SmtpSendByConfigOption extends SmtpEmailContentOptions {}
+
+export interface SmtpSendOption extends SmtpConnectionOptions, SmtpEmailContentOptions {
+  from: string;
+}
+
+export interface SmtpConfig extends SmtpConnectionOptions {
   senderName: string;
   senderEmail?: string;
-  user?: string;
-  pass?: string;
-  host: string;
-  port?: number;
-  secure?: boolean;
 }

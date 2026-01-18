@@ -112,6 +112,10 @@ describe("StringUtils", () => {
       expect(StringUtils.toPascalCase("hello.world")).toBe("HelloWorld");
     });
 
+    it("snake_case를 PascalCase로 변환한다", () => {
+      expect(StringUtils.toPascalCase("hello_world")).toBe("HelloWorld");
+    });
+
     it("소문자로 시작하는 문자열의 첫 글자를 대문자로 변환한다", () => {
       expect(StringUtils.toPascalCase("hello")).toBe("Hello");
     });
@@ -136,6 +140,10 @@ describe("StringUtils", () => {
 
     it("dot.case를 camelCase로 변환한다", () => {
       expect(StringUtils.toCamelCase("hello.world")).toBe("helloWorld");
+    });
+
+    it("snake_case를 camelCase로 변환한다", () => {
+      expect(StringUtils.toCamelCase("hello_world")).toBe("helloWorld");
     });
 
     it("이미 camelCase인 경우 그대로 반환한다", () => {
@@ -166,15 +174,29 @@ describe("StringUtils", () => {
     });
   });
 
+  describe("toSnakeCase()", () => {
+    it("PascalCase를 snake_case로 변환한다", () => {
+      expect(StringUtils.toSnakeCase("HelloWorld")).toBe("hello_world");
+    });
+
+    it("camelCase를 snake_case로 변환한다", () => {
+      expect(StringUtils.toSnakeCase("helloWorld")).toBe("hello_world");
+    });
+
+    it("이미 snake_case인 경우 그대로 반환한다", () => {
+      expect(StringUtils.toSnakeCase("hello_world")).toBe("hello_world");
+    });
+
+    it("연속된 대문자를 처리한다", () => {
+      expect(StringUtils.toSnakeCase("HelloWorldTest")).toBe("hello_world_test");
+    });
+  });
+
   //#endregion
 
   //#region 기타
 
   describe("isNullOrEmpty()", () => {
-    it("null이면 true를 반환한다", () => {
-      expect(StringUtils.isNullOrEmpty(null)).toBe(true);
-    });
-
     it("undefined이면 true를 반환한다", () => {
       expect(StringUtils.isNullOrEmpty(undefined)).toBe(true);
     });

@@ -1,10 +1,9 @@
-import { EventEmitter } from "events";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
 import pino from "pino";
-import { DateOnly, DateTime, SdError, StringUtils, Time, Uuid } from "@simplysm/core-common";
+import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -20,7 +19,7 @@ const logger = pino({ name: "mysql-db-conn" });
  *
  * mysql2/promise 라이브러리를 사용하여 MySQL 연결을 관리합니다.
  */
-export class MysqlDbConn extends EventEmitter implements DbConn {
+export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
   private static readonly _ROOT_USER = "root";
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
@@ -247,7 +246,7 @@ export class MysqlDbConn extends EventEmitter implements DbConn {
         return (value as Uuid).toString().replace(/-/g, ""); // BINARY(16) 저장용 hex
 
       case "binary":
-        return (value as Buffer).toString("hex");
+        return BytesUtils.toHex(value as Uint8Array);
 
       default:
         throw new Error(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);

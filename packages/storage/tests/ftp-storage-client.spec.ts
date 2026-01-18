@@ -10,7 +10,7 @@ const mockList = vi.fn().mockResolvedValue([
   { name: "dir", isFile: false },
 ]);
 const mockDownloadTo = vi.fn().mockImplementation((writable) => {
-  writable.emit("data", Buffer.from("test content"));
+  writable.emit("data", new TextEncoder().encode("test content"));
   return Promise.resolve();
 });
 const mockRemove = vi.fn().mockResolvedValue(undefined);
@@ -123,12 +123,12 @@ describe("FtpStorageClient", () => {
   });
 
   describe("readFile", () => {
-    it("파일 내용을 Buffer로 반환해야 함", async () => {
+    it("파일 내용을 Uint8Array로 반환해야 함", async () => {
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
 
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.toString()).toBe("test content");
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result)).toBe("test content");
     });
   });
 
@@ -185,10 +185,10 @@ describe("FtpStorageClient", () => {
       );
     });
 
-    it("Buffer에서 업로드해야 함", async () => {
+    it("Uint8Array에서 업로드해야 함", async () => {
       await client.connect({ host: "test" });
-      const buffer = Buffer.from("content");
-      await client.put(buffer, "/remote/file.txt");
+      const bytes = new TextEncoder().encode("content");
+      await client.put(bytes, "/remote/file.txt");
 
       expect(mockUploadFrom).toHaveBeenCalled();
     });
@@ -209,6 +209,15 @@ describe("FtpStorageClient", () => {
       await client.close();
 
       expect(mockClose).toHaveBeenCalled();
+    });
+
+    it("close 후 메서드 호출 시 에러", async () => {
+      await client.connect({ host: "test" });
+      await client.close();
+
+      await expect(client.mkdir("/test")).rejects.toThrow(
+        "FTP 서버에 연결되어있지 않습니다.",
+      );
     });
   });
 });

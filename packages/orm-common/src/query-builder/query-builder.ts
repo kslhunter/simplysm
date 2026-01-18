@@ -1,8 +1,8 @@
 import type { Dialect } from "../types/db";
-import type { QueryBuilderBase } from "./base/QueryBuilderBase";
-import { MssqlQueryBuilder } from "./mssql/MssqlQueryBuilder";
-import { MysqlQueryBuilder } from "./mysql/MysqlQueryBuilder";
-import { PostgresqlQueryBuilder } from "./postgresql/PostgresqlQueryBuilder";
+import type { QueryBuilderBase } from "./base/query-builder-base";
+import { MssqlQueryBuilder } from "./mssql/mssql-query-builder";
+import { MysqlQueryBuilder } from "./mysql/mysql-query-builder";
+import { PostgresqlQueryBuilder } from "./postgresql/postgresql-query-builder";
 
 /**
  * Dialect에 맞는 QueryBuilder 인스턴스 생성

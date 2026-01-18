@@ -72,7 +72,7 @@ describe("ExcelWrapper", () => {
       ];
 
       const wb = await wrapper.write("Users", records);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       // Excel에서 읽기
@@ -92,7 +92,7 @@ describe("ExcelWrapper", () => {
 
       const records = [{ name: "Test", age: 20 }];
       const wb = await wrapper.write("Sheet1", records);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, 0);
@@ -107,7 +107,7 @@ describe("ExcelWrapper", () => {
 
       // 수동으로 문자열로 저장된 Excel 시뮬레이션
       const wb = await wrapper.write("Test", [{ name: "Test", age: 25 }]);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       const records = await wrapper.read(buffer);
@@ -120,7 +120,7 @@ describe("ExcelWrapper", () => {
 
       // active 필드 없이 저장
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       const records = await wrapper.read(buffer);
@@ -148,7 +148,7 @@ describe("ExcelWrapper", () => {
       ];
 
       const wb = await wrapper.write("Events", records);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       const readRecords = await wrapper.read(buffer, "Events");
@@ -168,7 +168,7 @@ describe("ExcelWrapper", () => {
 
       // 헤더만 있는 빈 Excel 생성
       const wb = await wrapper.write("Empty", []);
-      const buffer = await wb.getBuffer();
+      const buffer = await wb.getBytes();
       await wb.close();
 
       await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(

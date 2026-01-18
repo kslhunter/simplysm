@@ -8,7 +8,7 @@ createSdWorker<ServiceProtocolWorker>({
   encode: (uuid, message) => {
     return protocol.encode(uuid, message);
   },
-  decode: (bufferData) => {
-    return protocol.decode(Buffer.from(bufferData));
+  decode: (bytes) => {
+    return protocol.decode(bytes);
   },
 });

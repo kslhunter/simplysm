@@ -5,13 +5,31 @@ import { ExcelXmlContentType } from "./xml/excel-xml-content-type";
 import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-worksheet";
 import { ZipCache } from "./utils/zip-cache";
 import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
-import mime from "mime";
 
+/**
+ * Excel 워크북 처리 클래스
+ *
+ * @remarks
+ * 이 클래스는 내부적으로 ZIP 리소스를 관리합니다.
+ * 사용 완료 후 반드시 {@link close} 메서드를 호출하여 리소스를 해제해야 합니다.
+ *
+ * @example
+ * ```typescript
+ * const wb = new ExcelWorkbook(bytes);
+ * try {
+ *   const ws = await wb.getWorksheet(0);
+ *   // ... 작업 수행
+ * } finally {
+ *   await wb.close();
+ * }
+ * ```
+ */
 export class ExcelWorkbook {
   zipCache: ZipCache;
   private readonly _wsMap = new Map<number, ExcelWorksheet>();
+  private _isClosed = false;
 
-  constructor(arg?: Blob | Buffer) {
+  constructor(arg?: Blob | Uint8Array) {
     if (arg != null) {
       this.zipCache = new ZipCache(arg);
     } else {
@@ -42,12 +60,20 @@ export class ExcelWorkbook {
 
   //#region Worksheet Methods
 
+  private _ensureNotClosed(): void {
+    if (this._isClosed) {
+      throw new Error("ExcelWorkbook이 이미 닫혔습니다. close() 호출 후에는 사용할 수 없습니다.");
+    }
+  }
+
   async getWorksheetNames(): Promise<string[]> {
+    this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     return wbData.sheetNames;
   }
 
   async createWorksheet(name: string): Promise<ExcelWorksheet> {
+    this._ensureNotClosed();
     // Workbook
     const wbXml = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     const newWsRelId = wbXml.addWorksheet(name).lastWsRelId!;
@@ -79,6 +105,7 @@ export class ExcelWorkbook {
   }
 
   async getWorksheet(nameOrIndex: string | number): Promise<ExcelWorksheet> {
+    this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     const wsId =
       typeof nameOrIndex === "string"
@@ -112,42 +139,17 @@ export class ExcelWorkbook {
 
   //#endregion
 
-  //#region Media Methods
-
-  async addMedia(buffer: Buffer, ext: string): Promise<string> {
-    const mimeType = mime.getType(ext);
-    if (mimeType == null) {
-      throw new Error(`지원되지 않는 이미지 확장자입니다: ${ext}`);
-    }
-
-    // 다음 Media Index 찾기
-    let mediaIndex = 1;
-    while ((await this.zipCache.get(`xl/media/image${mediaIndex}.${ext}`)) !== undefined) {
-      mediaIndex++;
-    }
-    const mediaPath = `xl/media/image${mediaIndex}.${ext}`;
-
-    // Media 저장
-    this.zipCache.set(mediaPath, buffer);
-
-    // [Content_Types].xml 설정
-    const typeXml = (await this.zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
-    typeXml.add(mediaPath, mimeType);
-
-    return mediaPath;
-  }
-
-  //#endregion
-
   //#region Export Methods
 
-  async getBuffer(): Promise<Buffer> {
-    return await this.zipCache.toBuffer();
+  async getBytes(): Promise<Uint8Array> {
+    this._ensureNotClosed();
+    return this.zipCache.toBytes();
   }
 
   async getBlob(): Promise<Blob> {
-    const buffer = await this.zipCache.toBuffer();
-    return new Blob([buffer], {
+    this._ensureNotClosed();
+    const bytes = await this.zipCache.toBytes();
+    return new Blob([bytes], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
   }
@@ -156,7 +158,19 @@ export class ExcelWorkbook {
 
   //#region Lifecycle Methods
 
+  /**
+   * 워크북 리소스 해제
+   *
+   * @remarks
+   * ZIP 리더와 내부 캐시를 정리합니다.
+   * 호출 후에는 이 워크북 인스턴스를 사용할 수 없습니다.
+   * 이미 닫힌 워크북에 대해 호출해도 안전합니다 (no-op).
+   */
   async close(): Promise<void> {
+    if (this._isClosed) {
+      return; // 이미 닫힌 경우 무시
+    }
+    this._isClosed = true;
     await this.zipCache.close();
   }
 

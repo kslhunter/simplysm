@@ -2,19 +2,42 @@ import { glob } from "glob";
 import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
-import fs from "fs";
+import { FsUtils, PathUtils } from "@simplysm/core-node";
+import pino from "pino";
+import ora, { type Ora } from "ora";
 
+/**
+ * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드
+ */
+function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
+  if (item == null || typeof item !== "object") return false;
+  if (!("ignores" in item)) return false;
+  if ("files" in item) return false; // files가 있으면 globalIgnores가 아님
+  const ignores = (item as { ignores: unknown }).ignores;
+  if (!Array.isArray(ignores)) return false;
+  return ignores.every((i) => typeof i === "string");
+}
+
+/**
+ * ESLint 실행 옵션
+ */
 export interface LintOptions {
-  patterns: string[];
+  /** 린트할 경로 필터 (예: `packages/core-common`). 빈 배열이면 전체 대상 */
+  targets: string[];
+  /** 자동 수정 활성화 */
   fix: boolean;
+  /** 규칙별 실행 시간 출력 (TIMING 환경변수 설정) */
   timing: boolean;
+  /** debug 로그 출력 */
+  debug: boolean;
 }
 
 /**
  * eslint.config.ts/js에서 globalIgnores 패턴을 추출합니다.
  * files 속성 없이 ignores만 있는 설정 객체가 globalIgnores입니다.
+ * @internal 테스트용으로 export
  */
-async function loadIgnorePatterns(cwd: string): Promise<string[]> {
+export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   const configFiles = [
     "eslint.config.ts",
     "eslint.config.mts",
@@ -25,25 +48,33 @@ async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   let configPath: string | undefined;
   for (const file of configFiles) {
     const fullPath = path.join(cwd, file);
-    if (fs.existsSync(fullPath)) {
+    if (FsUtils.exists(fullPath)) {
       configPath = fullPath;
       break;
     }
   }
 
-  if (configPath === undefined) {
+  if (configPath == null) {
     throw new Error(
       `ESLint 설정 파일을 찾을 수 없습니다: ${configFiles.join(", ")}`
     );
   }
 
   const jiti = createJiti(import.meta.url);
-  const configModule = (await jiti.import(configPath)) as
-    | { default?: unknown[] }
-    | unknown[];
-  const configs = Array.isArray(configModule)
-    ? configModule
-    : (configModule as { default: unknown[] }).default;
+  const configModule = await jiti.import(configPath);
+
+  let configs: unknown;
+  if (Array.isArray(configModule)) {
+    configs = configModule;
+  } else if (
+    configModule != null &&
+    typeof configModule === "object" &&
+    "default" in configModule
+  ) {
+    configs = configModule.default;
+  } else {
+    throw new Error(`ESLint 설정 파일이 올바른 형식이 아닙니다: ${configPath}`);
+  }
 
   if (!Array.isArray(configs)) {
     throw new Error(`ESLint 설정이 배열이 아닙니다: ${configPath}`);
@@ -51,51 +82,112 @@ async function loadIgnorePatterns(cwd: string): Promise<string[]> {
 
   const ignores: string[] = [];
   for (const item of configs) {
-    if (
-      item !== null &&
-      typeof item === "object" &&
-      "ignores" in item &&
-      Array.isArray((item as { ignores: unknown }).ignores)
-    ) {
-      // files가 없고 ignores만 있는 경우 = globalIgnores
-      if (!("files" in item)) {
-        ignores.push(...((item as { ignores: string[] }).ignores));
-      }
+    if (isGlobalIgnoresConfig(item)) {
+      ignores.push(...item.ignores);
     }
   }
 
   return ignores;
 }
 
+/**
+ * ESLint를 실행합니다.
+ *
+ * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
+ * - 에러 발생 시 `process.exitCode = 1` 설정
+ */
 export async function runLint(options: LintOptions): Promise<void> {
-  const { patterns, fix, timing } = options;
+  const { targets, fix, timing, debug } = options;
   const cwd = process.cwd();
+
+  // 로거 설정
+  const logger = pino({
+    name: "sd-cli:lint",
+    level: debug ? "debug" : "silent",
+    transport: debug ? { target: "pino-pretty" } : undefined,
+  });
+
+  // spinner (debug 모드가 아닐 때만)
+  let spinner: Ora | undefined;
+  if (!debug) {
+    spinner = ora("린트 준비 중...").start();
+  }
+
+  logger.debug({ targets, fix, timing }, "린트 시작");
 
   if (timing) {
     process.env["TIMING"] = "1";
   }
 
   // eslint.config.ts/js에서 ignore 패턴 로드
-  const ignorePatterns = await loadIgnorePatterns(cwd);
+  if (spinner) spinner.text = "ESLint 설정 로드 중...";
+  let ignorePatterns: string[];
+  try {
+    ignorePatterns = await loadIgnorePatterns(cwd);
+  } catch (err) {
+    spinner?.fail("ESLint 설정 로드 실패");
+    logger.error({ err }, "ESLint 설정 로드 실패");
+    if (err instanceof Error) {
+      process.stderr.write(err.message + "\n");
+    }
+    process.exitCode = 1;
+    return;
+  }
+  logger.debug({ ignorePatternCount: ignorePatterns.length }, "ignore 패턴 로드 완료");
 
   // glob으로 파일 목록 생성 (ignore 적용)
-  const files = await glob(patterns, {
+  if (spinner) spinner.text = "린트 대상 파일 수집 중...";
+  let files = await glob("**/*.{ts,js,html}", {
     cwd,
     ignore: ignorePatterns,
     nodir: true,
     absolute: true,
   });
 
+  // targets가 주어지면 해당 경로로 시작하는 파일만 필터링
+  if (targets.length > 0) {
+    files = files.filter((file) => {
+      const relativePath = PathUtils.posix(path.relative(cwd, file));
+      return targets.some((target) => relativePath.startsWith(target));
+    });
+  }
+  logger.debug({ fileCount: files.length }, "파일 수집 완료");
+
   if (files.length === 0) {
+    spinner?.succeed("린트할 파일이 없습니다.");
+    logger.info("린트할 파일 없음");
     return;
   }
 
-  // ESLint 실행
-  const eslint = new ESLint({ cwd, fix });
+  // ESLint 실행 (캐시 활성화)
+  if (spinner) spinner.text = `린트 실행 중... (${files.length}개 파일)`;
+  const eslint = new ESLint({
+    cwd,
+    fix,
+    cache: true,
+    cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
+  });
   const results = await eslint.lintFiles(files);
 
   if (fix) {
+    if (spinner) spinner.text = "자동 수정 적용 중...";
     await ESLint.outputFixes(results);
+    logger.debug("자동 수정 적용 완료");
+  }
+
+  // 결과 집계
+  const errorCount = results.reduce((sum, r) => sum + r.errorCount, 0);
+  const warningCount = results.reduce((sum, r) => sum + r.warningCount, 0);
+
+  if (errorCount > 0) {
+    spinner?.fail(`린트 에러 발견 (${errorCount}개 에러, ${warningCount}개 경고)`);
+    logger.error({ errorCount, warningCount }, "린트 에러 발생");
+  } else if (warningCount > 0) {
+    spinner?.warn(`린트 완료 (${warningCount}개 경고)`);
+    logger.info({ errorCount, warningCount }, "린트 완료 (경고 있음)");
+  } else {
+    spinner?.succeed("린트 완료");
+    logger.info({ errorCount, warningCount }, "린트 완료");
   }
 
   // 포맷터 출력
@@ -104,7 +196,6 @@ export async function runLint(options: LintOptions): Promise<void> {
   process.stdout.write(resultText);
 
   // 에러 있으면 exit code 1
-  const errorCount = results.reduce((sum, r) => sum + r.errorCount, 0);
   if (errorCount > 0) {
     process.exitCode = 1;
   }
