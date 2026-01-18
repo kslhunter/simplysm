@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cordova-plugin-auto-update",
-  "version": "12.16.19",
+  "version": "12.16.20",
   "deprecated": "이 패키지는 더 이상 유지보수되지 않습니다. (Capacitor로 전환)",
   "description": "심플리즘 패키지 - Cordova Plugin Auto Update",
   "author": "김석래",
@@ -20,10 +20,10 @@
     ]
   },
   "dependencies": {
-    "@simplysm/cordova-plugin-file-system": "12.16.19",
-    "@simplysm/sd-core-common": "12.16.19",
-    "@simplysm/sd-service-client": "12.16.19",
-    "@simplysm/sd-service-common": "12.16.19",
+    "@simplysm/cordova-plugin-file-system": "12.16.20",
+    "@simplysm/sd-core-common": "12.16.20",
+    "@simplysm/sd-service-client": "12.16.20",
+    "@simplysm/sd-service-common": "12.16.20",
     "semver": "^7.7.3"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin id="@simplysm/cordova-plugin-usb-storage"
-        version="12.16.19"
+        version="12.16.20"
         xmlns="http://apache.org/cordova/ns/plugins/1.0">
   <name>USB Storage</name>
   <description>Cordova USB Storage Plugin</description>
