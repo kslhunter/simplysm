@@ -284,20 +284,21 @@ export class DateOnly {
   }
 
   /**
-   * 월 설정
-   * @param month 월
+   * 지정된 월로 새 DateOnly 인스턴스를 반환
+   * @param month 설정할 월 (1-12, 범위 외 값은 연도 조정)
+   * @note 대상 월의 일수보다 현재 일자가 크면 해당 월의 마지막 날로 조정됨
+   *       (예: 1월 31일에서 setMonth(2) → 2월 28일 또는 29일)
    */
   setMonth(month: number): DateOnly {
-    const date = new Date(this.tick);
-    date.setDate(1);
-    date.setMonth(month - 1);
-    date.setDate(0);
+    // 월 오버플로우/언더플로우 정규화
+    // month가 1-12 범위를 벗어나면 연도를 조정
+    const normalizedYear = this.year + Math.floor((month - 1) / 12);
+    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
 
-    const lastDay = date.getDate();
-    const currentDay = lastDay < this.day ? lastDay : this.day;
-    date.setDate(currentDay);
-
-    return new DateOnly(date);
+    // 대상 월의 마지막 날 구하기
+    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
+    const currentDay = Math.min(this.day, lastDay);
+    return new DateOnly(normalizedYear, normalizedMonth, currentDay);
   }
 
   /**

@@ -174,16 +174,24 @@ export class DateTime {
   }
 
   setMonth(month: number): DateTime {
-    const date = new Date(this.tick);
-    date.setDate(1);
-    date.setMonth(month);
-    date.setDate(0);
+    // 월 오버플로우/언더플로우 정규화
+    // month가 1-12 범위를 벗어나면 연도를 조정
+    const normalizedYear = this.year + Math.floor((month - 1) / 12);
+    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
 
-    const lastDay = date.getDate();
-    const currentDay = lastDay < this.day ? lastDay : this.day;
-    date.setDate(currentDay);
+    // 대상 월의 마지막 날 구하기
+    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
+    const currentDay = Math.min(this.day, lastDay);
 
-    return new DateTime(date);
+    return new DateTime(
+      normalizedYear,
+      normalizedMonth,
+      currentDay,
+      this.hour,
+      this.minute,
+      this.second,
+      this.millisecond,
+    );
   }
 
   setDay(day: number): DateTime {
