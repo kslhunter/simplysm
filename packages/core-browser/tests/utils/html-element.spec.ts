@@ -31,18 +31,26 @@ describe("HtmlElementUtils", () => {
       container.style.position = "relative";
       container.innerHTML = `<div id="child" style="position: absolute; top: 50px; left: 30px;"></div>`;
 
-      const child = container.querySelector("#child") as HTMLElement;
+      const child = container.querySelector("#child")!;
 
-      expect(() => HtmlElementUtils.getRelativeOffset(child, container)).not.toThrow();
+      const result = HtmlElementUtils.getRelativeOffset(child, container);
+      expect(result).toHaveProperty("top");
+      expect(result).toHaveProperty("left");
+      expect(typeof result.top).toBe("number");
+      expect(typeof result.left).toBe("number");
     });
 
     it("셀렉터로 부모 찾기", () => {
       container.id = "parent";
       container.innerHTML = `<div><span id="deep-child"></span></div>`;
 
-      const deepChild = container.querySelector("#deep-child") as HTMLElement;
+      const deepChild = container.querySelector("#deep-child")!;
 
-      expect(() => HtmlElementUtils.getRelativeOffset(deepChild, "#parent")).not.toThrow();
+      const result = HtmlElementUtils.getRelativeOffset(deepChild, "#parent");
+      expect(result).toHaveProperty("top");
+      expect(result).toHaveProperty("left");
+      expect(typeof result.top).toBe("number");
+      expect(typeof result.left).toBe("number");
     });
 
     it("부모를 찾지 못하면 에러", () => {
@@ -57,7 +65,7 @@ describe("HtmlElementUtils", () => {
       container.style.transform = "scale(2)";
       container.innerHTML = `<div id="child" style="transform: rotate(45deg);"></div>`;
 
-      const child = container.querySelector("#child") as HTMLElement;
+      const child = container.querySelector("#child")!;
 
       // transform이 있어도 에러 없이 결과 반환해야 함
       const result = HtmlElementUtils.getRelativeOffset(child, container);
@@ -94,6 +102,25 @@ describe("HtmlElementUtils", () => {
       HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 50, left: 0 });
 
       expect(container.scrollTop).toBe(50);
+    });
+
+    it("대상이 offset보다 왼쪽에 있으면 가로 스크롤", () => {
+      container.style.overflow = "auto";
+      container.style.width = "100px";
+      container.scrollLeft = 100;
+
+      HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 0, left: 50 }, { top: 0, left: 10 });
+
+      expect(container.scrollLeft).toBe(40);
+    });
+
+    it("대상이 충분히 보이면 가로 스크롤 안함", () => {
+      container.style.overflow = "auto";
+      container.scrollLeft = 0;
+
+      HtmlElementUtils.scrollIntoViewIfNeeded(container, { top: 0, left: 50 }, { top: 0, left: 10 });
+
+      expect(container.scrollLeft).toBe(0);
     });
   });
 

@@ -224,7 +224,7 @@ describe("getResultMeta", () => {
 
   it("다단계 include", () => {
     const db = new TestDbContext();
-    const meta = db.post().include((item) => item.user!.company).getResultMeta();
+    const meta = db.post().include((item) => item.user.company).getResultMeta();
 
     expect(meta).toEqual({
       columns: {

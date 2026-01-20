@@ -65,7 +65,7 @@ ZIP 파일 압축/해제 유틸리티입니다.
 | `XmlConvert` | XML 파싱/변환 |
 | `TransferableConvert` | Worker 데이터 변환 |
 | `StringUtils` | 한글 조사 처리, 케이스 변환 (camelCase, kebab-case 등) |
-| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C# 호환 포맷 문자열) |
+| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C# 호환 커스텀 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
 | `NumberUtils` | 숫자 파싱/포맷팅 |
 | `BytesUtils` | Uint8Array 연결, hex 변환 |
 | `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 타임아웃) |

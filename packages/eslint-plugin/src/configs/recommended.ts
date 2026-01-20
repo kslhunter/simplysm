@@ -117,9 +117,7 @@ export default [
         "error",
         {
           devDependencies: [
-            "**/*.spec.js",
             "**/lib/**",
-            "**/tests/**",
             "**/eslint.config.js",
             "**/simplysm.js",
             "**/vitest.config.js",
@@ -193,9 +191,7 @@ export default [
         "error",
         {
           devDependencies: [
-            "**/*.spec.ts",
             "**/lib/**",
-            "**/tests/**",
             "**/eslint.config.ts",
             "**/simplysm.ts",
             "**/vitest.config.ts",
@@ -205,9 +201,9 @@ export default [
       ],
     },
   },
-  // 테스트 파일: 루트 devDependencies(vitest 등) 사용 허용
+  // 테스트 폴더: 루트 devDependencies(vitest 등) 사용 허용
   {
-    files: ["**/*.spec.ts", "**/*.spec.js"],
+    files: ["**/tests/**/*.ts", "**/tests/**/*.js"],
     rules: {
       "import/no-extraneous-dependencies": "off",
     },

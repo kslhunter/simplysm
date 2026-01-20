@@ -128,6 +128,15 @@ describe("ObjectUtils", () => {
       expect(cloned.cause).toBeInstanceOf(Error);
       expect((cloned.cause as Error).message).toBe("cause error");
     });
+
+    it("Uint8Array를 복사한다", () => {
+      const arr = new Uint8Array([1, 2, 3, 4, 5]);
+      const cloned = ObjectUtils.clone(arr);
+
+      expect(cloned).toEqual(arr);
+      expect(cloned).not.toBe(arr);
+      expect(cloned.buffer).not.toBe(arr.buffer);
+    });
   });
 
   //#endregion
@@ -308,11 +317,40 @@ describe("ObjectUtils", () => {
       expect(result).toEqual({ a: 1 });
     });
 
-    it("서로 다른 타입을 병합하면 에러를 던진다", () => {
+    it("source가 object이고 target이 primitive면 target을 반환한다", () => {
+      const source = { a: 1 };
+      const target = "string";
+
+      const result = ObjectUtils.merge(source, target as any);
+
+      expect(result).toBe("string");
+    });
+
+    it("source가 primitive이고 target이 object면 target을 반환한다", () => {
+      const source = "string";
+      const target = { a: 1 };
+
+      const result = ObjectUtils.merge(source as any, target);
+
+      expect(result).toEqual({ a: 1 });
+    });
+
+    it("source가 배열이고 target이 일반 객체면 target을 반환한다", () => {
+      const source = [1, 2, 3];
+      const target = { a: 1 };
+
+      const result = ObjectUtils.merge(source as any, target);
+
+      expect(result).toEqual({ a: 1 });
+    });
+
+    it("source가 일반 객체이고 target이 배열이면 target을 반환한다", () => {
       const source = { a: 1 };
       const target = [1, 2, 3];
 
-      expect(() => ObjectUtils.merge(source, target as any)).toThrow();
+      const result = ObjectUtils.merge(source as any, target);
+
+      expect(result).toEqual([1, 2, 3]);
     });
   });
 

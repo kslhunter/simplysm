@@ -11,8 +11,13 @@ import type { ExcelXmlContentType } from "./xml/excel-xml-content-type";
 import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
 import { ExcelXmlDrawing } from "./xml/excel-xml-drawing";
 
+/**
+ * Excel 워크시트를 나타내는 클래스.
+ * 셀 접근, 행/열 복사, 데이터 테이블 처리, 이미지 삽입 등의 기능을 제공한다.
+ */
 export class ExcelWorksheet {
   private readonly _rowMap = new Map<number, ExcelRow>();
+  private readonly _colMap = new Map<number, ExcelCol>();
 
   constructor(
     private readonly _zipCache: ZipCache,
@@ -45,7 +50,7 @@ export class ExcelWorksheet {
   }
 
   col(c: number): ExcelCol {
-    return new ExcelCol(this._zipCache, this._targetFileName, c);
+    return this._colMap.getOrCreate(c, new ExcelCol(this._zipCache, this._targetFileName, c));
   }
 
   //#endregion
@@ -79,6 +84,12 @@ export class ExcelWorksheet {
     wsData.copyCell(srcAddr, targetAddr);
   }
 
+  /**
+   * 소스 행을 타겟 위치에 삽입 복사.
+   * 타겟 위치 이하의 기존 행들은 한 칸씩 아래로 밀린다.
+   * @param srcR 복사할 소스 행 인덱스 (0-based)
+   * @param targetR 삽입할 타겟 행 인덱스 (0-based)
+   */
   async insertCopyRow(srcR: number, targetR: number): Promise<void> {
     const range = await this.getRange();
 
@@ -118,6 +129,12 @@ export class ExcelWorksheet {
 
   //#region Data Methods
 
+  /**
+   * 워크시트 데이터를 테이블(레코드 배열) 형식으로 반환.
+   * @param opt.headerRowIndex 헤더 행 인덱스 (기본값: 첫 번째 행)
+   * @param opt.checkEndColIndex 데이터 종료를 판단할 열 인덱스. 해당 열이 비어있으면 데이터 끝으로 간주
+   * @param opt.usableHeaderNameFn 사용할 헤더를 필터링하는 함수
+   */
   async getDataTable(opt?: {
     headerRowIndex?: number;
     checkEndColIndex?: number;
@@ -209,6 +226,13 @@ export class ExcelWorksheet {
 
   //#region Image Methods
 
+  /**
+   * 워크시트에 이미지를 삽입.
+   * @param opts.bytes 이미지 바이너리 데이터
+   * @param opts.ext 이미지 확장자 (png, jpg 등)
+   * @param opts.from 이미지 시작 위치 (0-based 행/열 인덱스, rOff/cOff는 EMU 단위 오프셋)
+   * @param opts.to 이미지 끝 위치 (생략 시 from 위치에 원본 크기로 삽입)
+   */
   async addImage(opts: {
     bytes: Uint8Array;
     ext: string;

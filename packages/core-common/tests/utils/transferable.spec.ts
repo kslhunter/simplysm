@@ -103,6 +103,16 @@ describe("TransferableConvert", () => {
       expect(result).toBe(buffer);
       expect(transferList).toContain(buffer.buffer);
     });
+
+    it("Date를 인코딩한다", () => {
+      const date = new Date(2025, 0, 6, 15, 30, 45, 123);
+      const { result } = TransferableConvert.encode(date);
+
+      expect(result).toEqual({
+        __type__: "Date",
+        data: date.getTime(),
+      });
+    });
   });
 
   //#endregion
@@ -317,6 +327,22 @@ describe("TransferableConvert", () => {
       expect(err.cause instanceof Error).toBe(true);
       expect((err.cause as Error).message).toBe("cause error");
     });
+
+    it("Date를 디코딩한다", () => {
+      const tick = new Date(2025, 0, 6, 15, 30, 45, 123).getTime();
+      const encoded = { __type__: "Date", data: tick };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Date).toBe(true);
+      const date = decoded as Date;
+      expect(date.getFullYear()).toBe(2025);
+      expect(date.getMonth()).toBe(0);
+      expect(date.getDate()).toBe(6);
+      expect(date.getHours()).toBe(15);
+      expect(date.getMinutes()).toBe(30);
+      expect(date.getSeconds()).toBe(45);
+      expect(date.getMilliseconds()).toBe(123);
+    });
   });
 
   //#endregion
@@ -473,6 +499,14 @@ describe("TransferableConvert", () => {
   //#region 왕복 변환 (round-trip)
 
   describe("왕복 변환 (encode → decode)", () => {
+    it("Date를 왕복 변환한다", () => {
+      const original = new Date(2025, 0, 6, 15, 30, 45, 123);
+      const { result } = TransferableConvert.encode(original);
+      const decoded = TransferableConvert.decode(result) as Date;
+
+      expect(decoded.getTime()).toBe(original.getTime());
+    });
+
     it("DateTime을 왕복 변환한다", () => {
       const original = new DateTime(2025, 1, 6, 15, 30, 45, 123);
       const { result } = TransferableConvert.encode(original);

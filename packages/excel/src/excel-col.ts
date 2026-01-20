@@ -2,6 +2,7 @@ import { ExcelCell } from "./excel-cell";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 import type { ZipCache } from "./utils/zip-cache";
 
+/** Excel 워크시트의 열을 나타내는 클래스. 셀 접근 및 열 너비 설정 기능을 제공한다. */
 export class ExcelCol {
   private readonly _cellMap = new Map<number, ExcelCell>();
 

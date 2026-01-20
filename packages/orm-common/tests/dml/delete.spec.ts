@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TestDbContext } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
-import { Employee } from "../setup/models/Employee";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";

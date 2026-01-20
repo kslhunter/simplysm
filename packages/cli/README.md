@@ -1,6 +1,6 @@
 # @simplysm/cli
 
-심플리즘 프레임워크의 CLI 도구입니다.
+심플리즘 프레임워크의 CLI 도구이다.
 
 ## 설치
 
@@ -68,7 +68,7 @@ sd-cli typecheck packages/core-common tests/orm
 
 ### 설정 (sd.config.ts)
 
-타입체크 시 패키지별 빌드 타겟을 설정합니다. 파일이 없으면 모든 패키지가 `neutral` 타겟으로 처리됩니다.
+타입체크 시 패키지별 빌드 타겟을 설정한다. 파일이 없으면 모든 패키지가 `neutral` 타겟으로 처리된다.
 
 ```typescript
 import type { SdConfigFn } from "@simplysm/cli";
@@ -91,7 +91,7 @@ export default config;
 
 ## 프로그래매틱 사용
 
-CLI가 아닌 코드에서 직접 호출할 수 있다:
+코드에서 직접 함수를 호출할 수 있다:
 
 ```typescript
 import { runLint, runTypecheck } from "@simplysm/cli";

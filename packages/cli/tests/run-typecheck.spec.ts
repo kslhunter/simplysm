@@ -24,20 +24,33 @@ vi.mock("typescript", () => {
   };
 });
 
-vi.mock("@simplysm/core-node", () => ({
-  FsUtils: {
-    exists: vi.fn(),
-    readJsonAsync: vi.fn(),
-  },
-  PathUtils: {
-    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
-    isChildPath: vi.fn((child: string, parent: string) => {
-      if (child === parent) return false;
-      const parentWithSlash = parent.endsWith("/") ? parent : parent + "/";
-      return child.startsWith(parentWithSlash);
-    }),
-  },
-}));
+vi.mock("@simplysm/core-node", () => {
+  const posix = (p: string) => p.replace(/\\/g, "/");
+  const isChildPath = (child: string, parent: string) => {
+    if (child === parent) return false;
+    const parentWithSlash = parent.endsWith("/") ? parent : parent + "/";
+    return child.startsWith(parentWithSlash);
+  };
+  return {
+    FsUtils: {
+      exists: vi.fn(),
+      readJsonAsync: vi.fn(),
+    },
+    PathUtils: {
+      posix: vi.fn(posix),
+      isChildPath: vi.fn(isChildPath),
+      filterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
+        if (targets.length === 0) return files;
+        return files.filter((file) => {
+          const relativePath = posix(file.replace(cwd + "/", ""));
+          return targets.some(
+            (target) => relativePath === target || isChildPath(relativePath, target),
+          );
+        });
+      }),
+    },
+  };
+});
 
 vi.mock("pino", () => ({
   default: vi.fn(() => ({
@@ -53,6 +66,7 @@ vi.mock("ora", () => ({
     succeed: vi.fn().mockReturnThis(),
     fail: vi.fn().mockReturnThis(),
     warn: vi.fn().mockReturnThis(),
+    stop: vi.fn().mockReturnThis(),
     text: "",
   })),
 }));

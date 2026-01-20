@@ -50,6 +50,30 @@ describe("ExcelCell", () => {
       await ws.cell(0, 0).setVal(undefined);
       expect(await ws.cell(0, 0).getVal()).toBeUndefined();
     });
+
+    it("매우 큰 숫자를 처리할 수 있다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      // MAX_SAFE_INTEGER 이하의 큰 숫자
+      const bigNumber = Number.MAX_SAFE_INTEGER;
+      await ws.cell(0, 0).setVal(bigNumber);
+
+      const val = await ws.cell(0, 0).getVal();
+      expect(val).toBe(bigNumber);
+    });
+
+    it("매우 작은 소수를 처리할 수 있다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      // Excel이 처리 가능한 정밀도 범위 내의 작은 소수
+      const smallDecimal = 0.0001;
+      await ws.cell(0, 0).setVal(smallDecimal);
+
+      const val = await ws.cell(0, 0).getVal();
+      expect(val).toBeCloseTo(smallDecimal, 6);
+    });
   });
 
   describe("셀 값 읽기/쓰기 - 날짜/시간 타입", () => {
@@ -116,6 +140,26 @@ describe("ExcelCell", () => {
       const ws2 = await wb2.getWorksheet(0);
       // 수식은 있지만 값은 Excel에서 계산해야 함
       expect(ws2).toBeDefined();
+    });
+
+    it("수식이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      await ws.cell(0, 0).setVal(10);
+      await ws.cell(0, 1).setVal(20);
+      await ws.cell(0, 2).setFormula("SUM(A1:B1)");
+
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      const wb2 = new ExcelWorkbook(buffer);
+      const ws2 = await wb2.getWorksheet(0);
+
+      // 수식 문자열이 저장되었는지 직접 검증
+      const formula = await ws2.cell(0, 2).getFormula();
+      expect(formula).toBe("SUM(A1:B1)");
+      await wb2.close();
     });
 
     it("수식을 undefined로 설정하면 삭제된다", async () => {

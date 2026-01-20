@@ -136,6 +136,23 @@ describe("prepack 스크립트", () => {
 
       expect(() => copyClaudeToDist(srcDir, destDir)).toThrow();
     });
+
+    it("settings.json이 없는 경우에도 정상 동작한다", () => {
+      const srcDir = path.join(tempDir, ".claude");
+      const destDir = path.join(tempDir, "dist");
+
+      // settings.json 없이 디렉토리만 생성
+      fs.mkdirSync(path.join(srcDir, "rules"), { recursive: true });
+      fs.writeFileSync(path.join(srcDir, "rules", "rule1.md"), "rule content");
+
+      // 에러 없이 동작해야 함
+      expect(() => copyClaudeToDist(srcDir, destDir)).not.toThrow();
+
+      // 디렉토리는 복사됨
+      expect(fs.existsSync(path.join(destDir, "rules", "rule1.md"))).toBe(true);
+      // settings.json은 복사되지 않음 (존재하지 않았으므로)
+      expect(fs.existsSync(path.join(destDir, "settings.json"))).toBe(false);
+    });
   });
 
   //#endregion

@@ -169,6 +169,8 @@ export class ViewBuilder<
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TData & string>>) => T,
   ): ViewBuilder<TDbContext, TData & InferDeepRelations<T>, TRelations> {
+    // TypeScript의 제네릭 타입 추론 한계로 인해 캐스팅 불가피
+    // TRelations 타입 파라미터와 새로 생성되는 관계 타입 T 간의 타입 불일치 해결
     return new ViewBuilder({
       ...this.meta,
       relations: fn(createRelationFactory<this, keyof TData & string>(() => this)),

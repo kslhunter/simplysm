@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { ExcelWrapper } from "../src/excel-wrapper";
-import { DateOnly } from "@simplysm/core-common";
+import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
 describe("ExcelWrapper", () => {
   const testSchema = z.object({
@@ -155,10 +155,65 @@ describe("ExcelWrapper", () => {
 
       expect(readRecords[0].title).toBe("Event 1");
       expect(readRecords[0].date).toBeInstanceOf(DateOnly);
-      expect((readRecords[0].date as DateOnly).year).toBe(2024);
-      expect((readRecords[0].date as DateOnly).month).toBe(6);
-      expect((readRecords[0].date as DateOnly).day).toBe(15);
+      expect((readRecords[0].date!).year).toBe(2024);
+      expect((readRecords[0].date!).month).toBe(6);
+      expect((readRecords[0].date!).day).toBe(15);
       expect(readRecords[1].date).toBeUndefined();
+    });
+
+    it("DateTime 타입을 읽고 쓸 수 있다", async () => {
+      const dateTimeSchema = z.object({
+        title: z.string(),
+        datetime: z.instanceof(DateTime).optional(),
+      });
+
+      const dateTimeDisplayMap = {
+        title: "제목",
+        datetime: "일시",
+      };
+
+      const wrapper = new ExcelWrapper(dateTimeSchema, dateTimeDisplayMap);
+
+      const records = [{ title: "Meeting", datetime: new DateTime(2024, 6, 15, 14, 30, 0) }];
+
+      const wb = await wrapper.write("Events", records);
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      const readRecords = await wrapper.read(buffer, "Events");
+
+      expect(readRecords[0].datetime).toBeInstanceOf(DateTime);
+      expect((readRecords[0].datetime!).year).toBe(2024);
+      expect((readRecords[0].datetime!).month).toBe(6);
+      expect((readRecords[0].datetime!).day).toBe(15);
+      expect((readRecords[0].datetime!).hour).toBe(14);
+      expect((readRecords[0].datetime!).minute).toBe(30);
+    });
+
+    it("Time 타입을 읽고 쓸 수 있다", async () => {
+      const timeSchema = z.object({
+        title: z.string(),
+        time: z.instanceof(Time).optional(),
+      });
+
+      const timeDisplayMap = {
+        title: "제목",
+        time: "시간",
+      };
+
+      const wrapper = new ExcelWrapper(timeSchema, timeDisplayMap);
+
+      const records = [{ title: "Alarm", time: new Time(9, 30, 0) }];
+
+      const wb = await wrapper.write("Events", records);
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      const readRecords = await wrapper.read(buffer, "Events");
+
+      expect(readRecords[0].time).toBeInstanceOf(Time);
+      expect((readRecords[0].time!).hour).toBe(9);
+      expect((readRecords[0].time!).minute).toBe(30);
     });
   });
 
@@ -174,6 +229,52 @@ describe("ExcelWrapper", () => {
       await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(
         "엑셀파일에서 데이터를 찾을 수 없습니다",
       );
+    });
+
+    it("존재하지 않는 워크시트 이름으로 읽으면 에러 발생", async () => {
+      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+
+      const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      await expect(wrapper.read(buffer, "NotExist")).rejects.toThrow();
+    });
+
+    it("존재하지 않는 워크시트 인덱스로 읽으면 에러 발생", async () => {
+      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+
+      const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      await expect(wrapper.read(buffer, 99)).rejects.toThrow();
+    });
+
+    it("스키마 검증 실패 시 워크시트 이름과 상세 오류가 포함된 에러 발생", async () => {
+      const strictSchema = z.object({
+        name: z.string().min(5), // 최소 5자 이상
+        age: z.number().min(0).max(150), // 0~150 사이
+      });
+
+      const strictDisplayMap = {
+        name: "이름",
+        age: "나이",
+      };
+
+      // 유효한 데이터로 Excel 생성
+      const wrapper = new ExcelWrapper(strictSchema, strictDisplayMap);
+      const wb = await wrapper.write("Validation", [{ name: "홍길동홍길동", age: 30 }]);
+
+      // 데이터를 직접 수정하여 검증 실패 유도
+      const ws = await wb.getWorksheet("Validation");
+      await ws.cell(1, 0).setVal("AB"); // 최소 5자 미만으로 변경
+
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      // 검증 실패 에러가 발생해야 함
+      await expect(wrapper.read(buffer, "Validation")).rejects.toThrow();
     });
   });
 });

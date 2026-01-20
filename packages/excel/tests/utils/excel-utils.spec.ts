@@ -21,6 +21,12 @@ describe("ExcelUtils", () => {
       expect(ExcelUtils.stringifyColAddr(702)).toBe("AAA");
     });
 
+    it("Excel 최대 열 인덱스(XFD, 16383)를 처리한다", () => {
+      // Excel 최대 열은 XFD (16383번 인덱스, 0-based)
+      expect(ExcelUtils.stringifyColAddr(16383)).toBe("XFD");
+      expect(ExcelUtils.parseColAddrCode("XFD")).toBe(16383);
+    });
+
     it("A-Z를 0-25로 파싱한다", () => {
       expect(ExcelUtils.parseColAddrCode("A")).toBe(0);
       expect(ExcelUtils.parseColAddrCode("B")).toBe(1);
@@ -46,6 +52,11 @@ describe("ExcelUtils", () => {
         const parsed = ExcelUtils.parseColAddrCode(stringified);
         expect(parsed).toBe(i);
       }
+    });
+
+    it("음수 열 인덱스 입력 시 에러", () => {
+      expect(() => ExcelUtils.stringifyColAddr(-1)).toThrow();
+      expect(() => ExcelUtils.stringifyColAddr(-100)).toThrow();
     });
   });
 
@@ -188,6 +199,10 @@ describe("ExcelUtils", () => {
       expect(ExcelUtils.convertNumFmtCodeToName("0.00")).toBe("number");
       expect(ExcelUtils.convertNumFmtCodeToName("#,0")).toBe("number");
     });
+
+    it("알 수 없는 포맷 코드 입력 시 에러", () => {
+      expect(() => ExcelUtils.convertNumFmtCodeToName("unknown-format-xyz")).toThrow();
+    });
   });
 
   describe("convertNumFmtIdToName", () => {
@@ -213,6 +228,11 @@ describe("ExcelUtils", () => {
 
     it("텍스트 포맷을 인식한다", () => {
       expect(ExcelUtils.convertNumFmtIdToName(49)).toBe("string");
+    });
+
+    it("알 수 없는 numFmtId 입력 시 에러", () => {
+      expect(() => ExcelUtils.convertNumFmtIdToName(23)).toThrow();
+      expect(() => ExcelUtils.convertNumFmtIdToName(100)).toThrow();
     });
   });
 

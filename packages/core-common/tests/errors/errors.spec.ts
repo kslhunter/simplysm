@@ -38,6 +38,14 @@ describe("Errors", () => {
       expect(top.message).toContain("root error");
     });
 
+    it("cause의 스택을 현재 스택에 통합한다", () => {
+      const cause = new Error("cause error");
+      const error = new SdError(cause, "main error");
+
+      expect(error.stack).toContain("---- cause stack ----");
+      expect(error.stack).toContain(cause.stack);
+    });
+
   });
 
   //#endregion
@@ -102,16 +110,16 @@ describe("Errors", () => {
       expect(error.message).toContain("대기시간이 초과되었습니다");
     });
 
-    it("millisecond와 함께 생성한다", () => {
-      const error = new TimeoutError(5000);
+    it("시도 횟수와 함께 생성한다", () => {
+      const error = new TimeoutError(5);
 
-      expect(error.message).toContain("5000ms");
+      expect(error.message).toContain("5회");
     });
 
-    it("millisecond와 커스텀 메시지로 생성한다", () => {
-      const error = new TimeoutError(3000, "custom timeout");
+    it("시도 횟수와 커스텀 메시지로 생성한다", () => {
+      const error = new TimeoutError(3, "custom timeout");
 
-      expect(error.message).toContain("3000ms");
+      expect(error.message).toContain("3회");
       expect(error.message).toContain("custom timeout");
     });
   });

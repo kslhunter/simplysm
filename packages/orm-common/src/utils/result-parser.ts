@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, ObjectUtils, Time, Uuid, BytesUtils } from "@simplysm/core-common";
+import { BytesUtils, DateOnly, DateTime, ObjectUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -109,35 +109,6 @@ function isEmptyObject(obj: Record<string, unknown>): boolean {
   return Object.keys(obj).length === 0;
 }
 
-/**
- * 객체를 깊은 복사
- */
-function deepClone<T>(obj: T): T {
-  if (obj == null || typeof obj !== "object") {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => deepClone(item)) as T;
-  }
-
-  // DateTime, DateOnly, Time, Uuid, Uint8Array 등 특수 객체는 그대로 반환
-  if (
-    obj instanceof DateTime ||
-    obj instanceof DateOnly ||
-    obj instanceof Time ||
-    obj instanceof Uuid ||
-    obj instanceof Uint8Array
-  ) {
-    return obj;
-  }
-
-  const result: Record<string, unknown> = {};
-  for (const key of Object.keys(obj)) {
-    result[key] = deepClone((obj as Record<string, unknown>)[key]);
-  }
-  return result as T;
-}
 
 // ============================================
 // Main Function
@@ -330,7 +301,7 @@ function groupRecordsRecursively(
       }
     } else {
       // 새 그룹 생성
-      const newGroup = deepClone(record);
+      const newGroup = ObjectUtils.clone(record);
 
       // 각 JOIN 키를 배열 또는 단일 객체로 초기화
       for (const joinKey of childJoinKeys) {
@@ -431,19 +402,19 @@ function mergeJoinData(
         throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
       }
     } else {
-      existingGroup[localKey] = deepClone(newJoinData);
+      existingGroup[localKey] = ObjectUtils.clone(newJoinData);
     }
   } else {
     // isSingle: false → 배열에 추가
     if (!Array.isArray(existingJoinData)) {
-      existingGroup[localKey] = [deepClone(newJoinData)];
+      existingGroup[localKey] = [ObjectUtils.clone(newJoinData)];
     } else {
       // 중복 체크 후 추가
       const isDuplicate = existingJoinData.some(
         (item) => ObjectUtils.equal(item, newJoinData),
       );
       if (!isDuplicate) {
-        existingJoinData.push(deepClone(newJoinData));
+        existingJoinData.push(ObjectUtils.clone(newJoinData));
       }
     }
   }

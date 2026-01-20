@@ -83,6 +83,28 @@ describe("ExcelWorkbook", () => {
   });
 
   describe("워크북 읽기/쓰기 라운드트립", () => {
+    it("Blob으로 워크북을 생성할 수 있다", async () => {
+      // 먼저 Bytes로 워크북 생성
+      const wb1 = new ExcelWorkbook();
+      const ws1 = await wb1.createWorksheet("Test");
+      await ws1.cell(0, 0).setVal("BlobTest");
+      const bytes = await wb1.getBytes();
+      await wb1.close();
+
+      // Blob으로 변환
+      const blob = new Blob([bytes], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      // Blob으로 워크북 읽기
+      const wb2 = new ExcelWorkbook(blob);
+      const ws2 = await wb2.getWorksheet(0);
+      const val = await ws2.cell(0, 0).getVal();
+
+      expect(val).toBe("BlobTest");
+      await wb2.close();
+    });
+
     it("생성한 워크북을 Bytes로 저장 후 다시 읽을 수 있다", async () => {
       // 생성
       const wb1 = new ExcelWorkbook();
@@ -107,6 +129,38 @@ describe("ExcelWorkbook", () => {
       expect(val2).toBe(12345);
 
       await wb2.close();
+    });
+  });
+
+  describe("리소스 해제 후 에러", () => {
+    it("close() 후 getWorksheetNames() 호출 시 에러", async () => {
+      const wb = new ExcelWorkbook();
+      await wb.createWorksheet("Test");
+      await wb.close();
+
+      await expect(wb.getWorksheetNames()).rejects.toThrow();
+    });
+
+    it("close() 후 createWorksheet() 호출 시 에러", async () => {
+      const wb = new ExcelWorkbook();
+      await wb.close();
+
+      await expect(wb.createWorksheet("New")).rejects.toThrow();
+    });
+
+    it("close() 후 getWorksheet() 호출 시 에러", async () => {
+      const wb = new ExcelWorkbook();
+      await wb.createWorksheet("Test");
+      await wb.close();
+
+      await expect(wb.getWorksheet(0)).rejects.toThrow();
+    });
+
+    it("close() 후 getBytes() 호출 시 에러", async () => {
+      const wb = new ExcelWorkbook();
+      await wb.close();
+
+      await expect(wb.getBytes()).rejects.toThrow();
     });
   });
 });

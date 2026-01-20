@@ -34,7 +34,7 @@ describe("ExcelWorksheet.addImage integration", () => {
     const types = await (ws as any)._zipCache.get("[Content_Types].xml");
     expect(types).toBeDefined();
     // types는 ExcelXmlContentType 인스턴스일 가능성이 높음
-    const overrides = (types as any).data?.Types?.Override ?? [];
+    const overrides = (types).data?.Types?.Override ?? [];
     expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image1.png")).toBeTruthy();
     expect(overrides.some((o: any) => o.$.PartName === "/xl/drawings/drawing1.xml")).toBeTruthy();
 
@@ -68,18 +68,19 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(sheetRels).toBeDefined();
     const sheetRelsArr = sheetRels?.data?.Relationships?.Relationship ?? [];
     expect(
-      sheetRelsArr.some((r: any) => r.$.Target && r.$.Target.indexOf("/drawings/drawing") !== -1),
+      sheetRelsArr.some((r: any) => r.$.Target != null && r.$.Target.indexOf("/drawings/drawing") !== -1),
     ).toBeTruthy();
 
     const wsXml = await (ws as any)._zipCache.get(`xl/worksheets/${sheetFileName}`);
     expect(wsXml).toBeDefined();
     expect(Array.isArray(wsXml.data?.worksheet?.drawing)).toBeTruthy();
     const drawingElems = wsXml.data.worksheet.drawing;
-    expect(drawingElems.some((d: any) => d.$ && d.$["r:id"])).toBeTruthy();
+    expect(drawingElems.some((d: any) => d.$ != null && d.$["r:id"] != null)).toBeTruthy();
 
     // Buffer 생성 검증
     const resultBuffer = await wb.getBytes();
     expect(resultBuffer).toBeDefined();
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
+
 });

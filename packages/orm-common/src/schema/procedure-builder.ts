@@ -45,9 +45,9 @@ export class ProcedureBuilder<
   TReturns extends ColumnBuilderRecord,
 > {
   /** 파라미터 정의 (타입 추론용) */
-  $params!: TParams;
+  readonly $params!: TParams;
   /** 반환 타입 정의 (타입 추론용) */
-  $returns!: TReturns;
+  readonly $returns!: TReturns;
 
   /**
    * @param meta - 프로시저 메타데이터

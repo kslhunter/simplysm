@@ -19,10 +19,7 @@ export class StringUtils {
    * getSuffix("사과", "을") // "를"
    * getSuffix("책", "이") // "이"
    */
-  static getSuffix(
-    text: string,
-    type: "을" | "은" | "이" | "와" | "랑" | "로" | "라",
-  ): string {
+  static getSuffix(text: string, type: "을" | "은" | "이" | "와" | "랑" | "로" | "라"): string {
     const table = {
       을: { t: "을", f: "를" },
       은: { t: "은", f: "는" },
@@ -54,32 +51,58 @@ export class StringUtils {
   //#region 전각→반각 변환
   // 전각 → 반각 매핑 테이블 (클래스 로드 시 1회만 생성)
   private static readonly _specialCharMap: Record<string, string> = {
-    Ａ: "A",
-    Ｂ: "B",
-    Ｃ: "C",
-    Ｄ: "D",
-    Ｅ: "E",
-    Ｆ: "F",
-    Ｇ: "G",
-    Ｈ: "H",
-    Ｉ: "I",
-    Ｊ: "J",
-    Ｋ: "K",
-    Ｌ: "L",
-    Ｍ: "M",
-    Ｎ: "N",
-    Ｏ: "O",
-    Ｐ: "P",
-    Ｑ: "Q",
-    Ｒ: "R",
-    Ｓ: "S",
-    Ｔ: "T",
-    Ｕ: "U",
-    Ｖ: "V",
-    Ｗ: "W",
-    Ｘ: "X",
-    Ｙ: "Y",
-    Ｚ: "Z",
+    "Ａ": "A",
+    "Ｂ": "B",
+    "Ｃ": "C",
+    "Ｄ": "D",
+    "Ｅ": "E",
+    "Ｆ": "F",
+    "Ｇ": "G",
+    "Ｈ": "H",
+    "Ｉ": "I",
+    "Ｊ": "J",
+    "Ｋ": "K",
+    "Ｌ": "L",
+    "Ｍ": "M",
+    "Ｎ": "N",
+    "Ｏ": "O",
+    "Ｐ": "P",
+    "Ｑ": "Q",
+    "Ｒ": "R",
+    "Ｓ": "S",
+    "Ｔ": "T",
+    "Ｕ": "U",
+    "Ｖ": "V",
+    "Ｗ": "W",
+    "Ｘ": "X",
+    "Ｙ": "Y",
+    "Ｚ": "Z",
+    "ａ": "a",
+    "ｂ": "b",
+    "ｃ": "c",
+    "ｄ": "d",
+    "ｅ": "e",
+    "ｆ": "f",
+    "ｇ": "g",
+    "ｈ": "h",
+    "ｉ": "i",
+    "ｊ": "j",
+    "ｋ": "k",
+    "ｌ": "l",
+    "ｍ": "m",
+    "ｎ": "n",
+    "ｏ": "o",
+    "ｐ": "p",
+    "ｑ": "q",
+    "ｒ": "r",
+    "ｓ": "s",
+    "ｔ": "t",
+    "ｕ": "u",
+    "ｖ": "v",
+    "ｗ": "w",
+    "ｘ": "x",
+    "ｙ": "y",
+    "ｚ": "z",
     "０": "0",
     "１": "1",
     "２": "2",
@@ -106,6 +129,7 @@ export class StringUtils {
    *
    * 변환 대상:
    * - 전각 영문 대문자 (Ａ-Ｚ → A-Z)
+   * - 전각 영문 소문자 (ａ-ｚ → a-z)
    * - 전각 숫자 (０-９ → 0-9)
    * - 전각 공백 (　 → 일반 공백)
    * - 전각 괄호 (（） → ())
@@ -149,8 +173,15 @@ export class StringUtils {
 
   /**
    * kebab-case로 변환
+   *
+   * @note 기존 구분자(-, _)도 변환됨: `hello_world` → `hello-world`
+   * @note 혼합 케이스(`Hello_World`)는 지원하지 않음
+   *
    * @example "HelloWorld" → "hello-world"
    * @example "helloWorld" → "hello-world"
+   * @example "hello_world" → "hello-world"
+   * @example "Hello_World" → "hello_-world"
+   * @example "Hello-World" → "hello--world"
    * @example "XMLParser" → "x-m-l-parser" (연속된 대문자는 각각 분리됨)
    */
   static toKebabCase(str: string): string {
@@ -159,8 +190,14 @@ export class StringUtils {
 
   /**
    * snake_case로 변환
+   *
+   * @note 기존 구분자(-, _)도 변환됨: `hello-world` → `hello_world`
+   *
    * @example "HelloWorld" → "hello_world"
    * @example "helloWorld" → "hello_world"
+   * @example "hello-world" → "hello_world"
+   * @example "Hello-World" → "hello-_world"
+   * @example "Hello_World" → "hello__world"
    * @example "XMLParser" → "x_m_l_parser" (연속된 대문자는 각각 분리됨)
    */
   static toSnakeCase(str: string): string {
@@ -176,7 +213,20 @@ export class StringUtils {
 
   //#region 기타
   /**
-   * undefined, 빈 문자열 체크
+   * undefined 또는 빈 문자열 여부 체크 (타입 가드)
+   *
+   * @param str 체크할 문자열
+   * @returns undefined, null, 빈 문자열이면 true
+   *
+   * @example
+   * const name: string | undefined = getValue();
+   * if (StringUtils.isNullOrEmpty(name)) {
+   *   // name: "" | undefined
+   *   console.log("이름이 비어있습니다");
+   * } else {
+   *   // name: string (비어있지 않은 문자열)
+   *   console.log(`이름: ${name}`);
+   * }
    */
   static isNullOrEmpty(str: string | undefined): str is "" | undefined {
     return str == null || str === "";

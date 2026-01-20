@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import path from "path";
 import type { SdWorkerType, SdWorkerRequest, SdWorkerResponse } from "../../src/worker/types";
+import { SdWorker } from "../../src/worker/sd-worker";
+import type { TestWorkerType } from "./fixtures/test-worker";
 
-// 타입 정의 테스트용 인터페이스
-interface TestWorkerType extends SdWorkerType {
+// 타입 정의 테스트용 인터페이스 (실제 워커 타입과 별도)
+interface TypeTestWorkerType extends SdWorkerType {
   methods: {
     add: { params: [number, number]; returnType: number };
     greet: { params: [string]; returnType: string };
@@ -20,7 +23,7 @@ describe("Worker Types", () => {
   describe("SdWorkerType", () => {
     it("메서드와 이벤트 타입 정의", () => {
       // 타입 검증 - 컴파일 타임에 체크됨
-      const _workerType: TestWorkerType = {
+      const _workerType: TypeTestWorkerType = {
         methods: {
           add: { params: [1, 2], returnType: 3 },
           greet: { params: ["hello"], returnType: "greeting" },
@@ -43,7 +46,7 @@ describe("Worker Types", () => {
 
   describe("SdWorkerRequest", () => {
     it("요청 메시지 구조 검증", () => {
-      const request: SdWorkerRequest<TestWorkerType, "add"> = {
+      const request: SdWorkerRequest<TypeTestWorkerType, "add"> = {
         id: "test-uuid-123",
         method: "add",
         params: [10, 20],
@@ -55,7 +58,7 @@ describe("Worker Types", () => {
     });
 
     it("다른 메서드의 요청", () => {
-      const request: SdWorkerRequest<TestWorkerType, "greet"> = {
+      const request: SdWorkerRequest<TypeTestWorkerType, "greet"> = {
         id: "test-uuid-456",
         method: "greet",
         params: ["World"],
@@ -72,58 +75,50 @@ describe("Worker Types", () => {
 
   describe("SdWorkerResponse", () => {
     it("return 타입 응답", () => {
-      const response: SdWorkerResponse<TestWorkerType, "add"> = {
+      const response = {
         request: { id: "1", method: "add", params: [1, 2] },
         type: "return",
         body: 3,
-      };
+      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
 
       expect(response.type).toBe("return");
-      if (response.type === "return") {
-        expect(response.body).toBe(3);
-        expect(response.request.method).toBe("add");
-      }
+      expect(response.body).toBe(3);
+      expect(response.request.method).toBe("add");
     });
 
     it("error 타입 응답", () => {
       const error = new Error("Test error");
-      const response: SdWorkerResponse<TestWorkerType, "add"> = {
+      const response = {
         request: { id: "1", method: "add", params: [1, 2] },
         type: "error",
         body: error,
-      };
+      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
 
       expect(response.type).toBe("error");
-      if (response.type === "error") {
-        expect(response.body).toBeInstanceOf(Error);
-        expect(response.body.message).toBe("Test error");
-      }
+      expect(response.body).toBeInstanceOf(Error);
+      expect(response.body.message).toBe("Test error");
     });
 
     it("event 타입 응답", () => {
-      const response: SdWorkerResponse<TestWorkerType, "add"> = {
+      const response = {
         type: "event",
         event: "progress",
         body: 75,
-      };
+      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
 
       expect(response.type).toBe("event");
-      if (response.type === "event") {
-        expect(response.event).toBe("progress");
-        expect(response.body).toBe(75);
-      }
+      expect(response.event).toBe("progress");
+      expect(response.body).toBe(75);
     });
 
     it("log 타입 응답", () => {
-      const response: SdWorkerResponse<TestWorkerType, "add"> = {
+      const response = {
         type: "log",
         body: "Log message from worker",
-      };
+      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
 
       expect(response.type).toBe("log");
-      if (response.type === "log") {
-        expect(response.body).toBe("Log message from worker");
-      }
+      expect(response.body).toBe("Log message from worker");
     });
   });
 
@@ -137,20 +132,79 @@ describe("Worker Types", () => {
       // 잘못된 타입은 컴파일 에러 발생
 
       // 올바른 타입
-      const _validRequest: SdWorkerRequest<TestWorkerType, "add"> = {
+      const _validRequest: SdWorkerRequest<TypeTestWorkerType, "add"> = {
         id: "1",
         method: "add",
         params: [1, 2],
       };
 
       // 아래 코드는 컴파일 에러가 발생해야 함 (테스트에서는 주석 처리)
-      // const invalidRequest: SdWorkerRequest<TestWorkerType, "add"> = {
+      // const invalidRequest: SdWorkerRequest<TypeTestWorkerType, "add"> = {
       //   id: "1",
       //   method: "add",
       //   params: ["string", "invalid"], // Error: string is not number
       // };
 
       expect(_validRequest.params).toEqual([1, 2]);
+    });
+  });
+
+  //#endregion
+});
+
+describe("SdWorker", () => {
+  const workerPath = path.resolve(import.meta.dirname, "fixtures/test-worker.ts");
+  let worker: SdWorker<TestWorkerType> | undefined;
+
+  afterEach(async () => {
+    if (worker) {
+      await worker.killAsync();
+      worker = undefined;
+    }
+  });
+
+  //#region run
+
+  describe("run", () => {
+    it("워커 메서드 호출 및 결과 반환", async () => {
+      worker = new SdWorker<TestWorkerType>(workerPath);
+
+      const result = await worker.run("add", [10, 20]);
+
+      expect(result).toBe(30);
+    });
+
+    it("문자열 반환 메서드 호출", async () => {
+      worker = new SdWorker<TestWorkerType>(workerPath);
+
+      const result = await worker.run("echo", ["Hello"]);
+
+      expect(result).toBe("Echo: Hello");
+    });
+
+    it("워커에서 에러 발생 시 reject", async () => {
+      worker = new SdWorker<TestWorkerType>(workerPath);
+
+      await expect(worker.run("throwError", [])).rejects.toThrow();
+    });
+  });
+
+  //#endregion
+
+  //#region events
+
+  describe("events", () => {
+    it("워커에서 이벤트 수신", async () => {
+      worker = new SdWorker<TestWorkerType>(workerPath);
+
+      const events: number[] = [];
+      worker.on("progress", (value) => {
+        events.push(value);
+      });
+
+      await worker.run("add", [1, 2]);
+
+      expect(events).toContain(50);
     });
   });
 

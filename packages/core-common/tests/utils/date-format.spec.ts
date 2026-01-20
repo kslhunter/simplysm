@@ -206,6 +206,10 @@ describe("DateTimeFormatUtils", () => {
         expect(DateTimeFormatUtils.format("zzz", { timezoneOffsetMinutes: -300 })).toBe("-05:00");
         // UTC-8 (-480분) - 정수 시간대
         expect(DateTimeFormatUtils.format("zzz", { timezoneOffsetMinutes: -480 })).toBe("-08:00");
+        // UTC-3:30 (-210분) - Newfoundland Standard Time
+        expect(DateTimeFormatUtils.format("zzz", { timezoneOffsetMinutes: -210 })).toBe("-03:30");
+        // UTC-9:30 (-570분) - Marquesas Islands
+        expect(DateTimeFormatUtils.format("zzz", { timezoneOffsetMinutes: -570 })).toBe("-09:30");
       });
 
       it("zz - -HH 형식으로 출력한다", () => {

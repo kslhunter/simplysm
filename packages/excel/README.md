@@ -1,6 +1,6 @@
 # @simplysm/excel
 
-Excel 파일(.xlsx) 처리 라이브러리입니다. Node.js와 브라우저 환경 모두에서 사용할 수 있습니다.
+Excel 파일(.xlsx) 처리 라이브러리이다. Node.js와 브라우저 환경 모두에서 사용할 수 있다.
 
 ## 설치
 
@@ -14,21 +14,27 @@ yarn add @simplysm/excel
 
 ### ExcelWorkbook
 
-Excel 워크북을 생성하고 관리합니다.
+Excel 워크북을 생성하고 관리한다.
 
 ```typescript
 import { ExcelWorkbook } from "@simplysm/excel";
 
 // 새 워크북 생성
-const workbook = ExcelWorkbook.create();
-const sheet = workbook.createWorksheet("Sheet1");
+const workbook = new ExcelWorkbook();
+const sheet = await workbook.createWorksheet("Sheet1");
 
 // 셀 값 설정
-sheet.cell(0, 0).value = "Hello";
-sheet.cell(0, 1).value = "World";
+await sheet.cell(0, 0).setVal("Hello");
+await sheet.cell(0, 1).setVal("World");
 
-// 파일로 저장 (ArrayBuffer 반환)
-const buffer = await workbook.getBufferAsync();
+// Bytes로 출력 (Uint8Array)
+const bytes = await workbook.getBytes();
+
+// Blob으로 출력
+const blob = await workbook.getBlob();
+
+// 리소스 해제
+await workbook.close();
 ```
 
 ### 파일 읽기
@@ -36,30 +42,103 @@ const buffer = await workbook.getBufferAsync();
 ```typescript
 import { ExcelWorkbook } from "@simplysm/excel";
 
-// ArrayBuffer로부터 읽기
-const workbook = await ExcelWorkbook.loadAsync(arrayBuffer);
+// Uint8Array 또는 Blob으로부터 읽기
+const workbook = new ExcelWorkbook(bytes);
 
-// 워크시트 접근
-const sheet = workbook.worksheets[0];
-const value = sheet.cell(0, 0).value;
+// 워크시트 접근 (인덱스 또는 이름)
+const sheet = await workbook.getWorksheet(0);
+// 또는
+const sheet = await workbook.getWorksheet("Sheet1");
+
+// 셀 값 읽기
+const value = await sheet.cell(0, 0).getVal();
+
+// await using 문법 지원 (자동 리소스 해제)
+await using wb = new ExcelWorkbook(bytes);
+const ws = await wb.getWorksheet(0);
 ```
 
 ### ExcelWrapper
 
-간편한 데이터 변환을 위한 래퍼 클래스입니다.
+Zod 스키마 기반의 타입 안전한 Excel 데이터 변환 래퍼이다.
 
 ```typescript
-import { ExcelWrapper, parseExcelWrapper } from "@simplysm/excel";
+import { z } from "zod";
+import { ExcelWrapper } from "@simplysm/excel";
 
-// Excel 데이터 읽기 - Zod 스키마 지원
-const data = await parseExcelWrapper(buffer, sheetName, schema);
+// 스키마 정의
+const schema = z.object({
+  name: z.string(),
+  age: z.number(),
+  email: z.string().optional(),
+});
 
-// 데이터를 Excel로 변환
-const wrapper = new ExcelWrapper([
-  { name: "John", age: 30 },
-  { name: "Jane", age: 25 },
-]);
-const buffer = await wrapper.toBufferAsync();
+// 표시 이름 매핑
+const displayNameMap = {
+  name: "이름",
+  age: "나이",
+  email: "이메일",
+};
+
+const wrapper = new ExcelWrapper(schema, displayNameMap);
+
+// 레코드를 Excel로 변환
+const records = [
+  { name: "홍길동", age: 30, email: "hong@test.com" },
+  { name: "김철수", age: 25 },
+];
+const workbook = await wrapper.write("Users", records);
+const bytes = await workbook.getBytes();
+await workbook.close();
+
+// Excel에서 레코드 읽기
+const readRecords = await wrapper.read(bytes, "Users");
+// readRecords: { name: string; age: number; email?: string }[]
+```
+
+### 셀 스타일
+
+```typescript
+// 배경색 설정 (ARGB 형식)
+await cell.setStyle({ background: "00FF0000" }); // 빨간색
+
+// 테두리 설정
+await cell.setStyle({ border: ["left", "right", "top", "bottom"] });
+
+// 정렬 설정
+await cell.setStyle({
+  horizontalAlign: "center",
+  verticalAlign: "center",
+});
+
+// 숫자 형식 설정
+await cell.setStyle({ numberFormat: "number" }); // number, DateOnly, DateTime, Time, string
+```
+
+### 이미지 삽입
+
+```typescript
+await sheet.addImage({
+  bytes: imageBytes,
+  ext: "png",
+  from: { r: 0, c: 0 },
+  to: { r: 5, c: 3 },
+});
+```
+
+### 셀 병합
+
+```typescript
+await sheet.cell(0, 0).setVal("Merged Cell");
+await sheet.cell(0, 0).merge(2, 3); // 2행 x 3열 병합
+```
+
+### 수식
+
+```typescript
+await sheet.cell(0, 0).setVal(10);
+await sheet.cell(0, 1).setVal(20);
+await sheet.cell(0, 2).setFormula("A1+B1");
 ```
 
 ## 클래스 구조
@@ -71,16 +150,18 @@ const buffer = await wrapper.toBufferAsync();
 | `ExcelRow` | 행 관리 |
 | `ExcelCol` | 열 관리 |
 | `ExcelCell` | 셀 관리 (값, 스타일, 수식 등) |
-| `ExcelWrapper` | 데이터 변환 래퍼 |
+| `ExcelWrapper` | Zod 스키마 기반 데이터 변환 래퍼 |
+| `ExcelUtils` | 셀 주소 변환 등 유틸리티 |
 
 ## 지원 기능
 
-- 셀 값 읽기/쓰기
-- 셀 스타일 (폰트, 배경색, 테두리 등)
+- 셀 값 읽기/쓰기 (string, number, boolean, DateOnly, DateTime, Time)
+- 셀 스타일 (배경색, 테두리, 정렬, 숫자 형식)
 - 셀 병합
 - 수식
 - 이미지 삽입
 - 여러 워크시트 관리
+- `await using` 문법 지원 (자동 리소스 해제)
 
 ## 라이선스
 

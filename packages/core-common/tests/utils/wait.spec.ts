@@ -60,28 +60,29 @@ describe("Wait", () => {
       expect(elapsed).toBeLessThan(50);
     });
 
-    it("타임아웃이 발생하면 TimeoutError를 던진다", async () => {
-      const start = Date.now();
+    it("최대 시도 횟수 초과 시 TimeoutError를 던진다", async () => {
+      let count = 0;
 
       await expect(async () => {
-        await Wait.until(() => false, 10, 50);
+        await Wait.until(() => {
+          count++;
+          return false;
+        }, 10, 5);
       }).rejects.toThrow(TimeoutError);
 
-      const elapsed = Date.now() - start;
-      expect(elapsed).toBeGreaterThanOrEqual(50);
-      expect(elapsed).toBeLessThan(100);
+      expect(count).toBe(5);
     });
 
-    it("타임아웃이 undefined면 무제한 대기한다", async () => {
+    it("maxCount가 undefined면 무제한 대기한다", async () => {
       let count = 0;
 
       // 무제한 대기지만 조건이 참이 되면 반환
       await Wait.until(() => {
         count++;
-        return count >= 5;
+        return count >= 10;
       }, 10, undefined);
 
-      expect(count).toBe(5);
+      expect(count).toBe(10);
     });
 
     it("milliseconds 기본값은 100ms다", async () => {
@@ -94,54 +95,33 @@ describe("Wait", () => {
       });
 
       const elapsed = Date.now() - start;
-      // 100ms * 2회 체크 = 200ms (첫 체크는 즉시)
+      // 100ms * 2회 대기 = 200ms (첫 체크는 즉시)
       expect(elapsed).toBeGreaterThanOrEqual(200);
       expect(elapsed).toBeLessThan(350);
     });
 
-    it("비동기 조건 함수 시간이 타임아웃에 포함된다", async () => {
-      // 조건 함수가 50ms 걸리고, 체크 간격 10ms, 타임아웃 100ms면
-      // 실제 경과 시간은 50ms(조건) + 10ms(wait) + 50ms(조건) = 110ms로 타임아웃
-      const start = Date.now();
+    it("maxCount=1이면 한 번만 시도 후 에러", async () => {
+      let count = 0;
 
       await expect(async () => {
-        await Wait.until(
-          async () => {
-            await Wait.time(50); // 조건 함수가 50ms 걸림
-            return false;
-          },
-          10,
-          100,
-        );
+        await Wait.until(() => {
+          count++;
+          return false;
+        }, 10, 1);
       }).rejects.toThrow(TimeoutError);
 
-      const elapsed = Date.now() - start;
-      // 실제 경과 시간 기준으로 타임아웃이 발생해야 함
-      expect(elapsed).toBeGreaterThanOrEqual(100);
-      expect(elapsed).toBeLessThan(200);
+      expect(count).toBe(1);
     });
 
-    it("Date.now() 기반 실제 경과 시간 측정 확인", async () => {
-      // 조건 함수가 오래 걸려도 실제 경과 시간 기준으로 타임아웃
-      let callCount = 0;
-      const start = Date.now();
+    it("조건이 maxCount 내에 참이 되면 성공", async () => {
+      let count = 0;
 
-      await expect(async () => {
-        await Wait.until(
-          async () => {
-            callCount++;
-            await Wait.time(30); // 매 호출마다 30ms
-            return false;
-          },
-          10,
-          80, // 80ms 타임아웃
-        );
-      }).rejects.toThrow(TimeoutError);
+      await Wait.until(() => {
+        count++;
+        return count >= 3;
+      }, 10, 5);
 
-      const elapsed = Date.now() - start;
-      // 첫 번째: 30ms + 10ms = 40ms, 두 번째: 30ms + 10ms = 40ms (총 80ms)
-      expect(elapsed).toBeGreaterThanOrEqual(80);
-      expect(elapsed).toBeLessThan(150);
+      expect(count).toBe(3);
     });
   });
 

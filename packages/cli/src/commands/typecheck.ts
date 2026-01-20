@@ -251,15 +251,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
 
     // targets가 지정되면 fileNames 필터링
     if (spinner) spinner.text = "파일 목록 수집 중...";
-    let fileNames = parsedConfig.fileNames;
-    if (targets.length > 0) {
-      fileNames = fileNames.filter((fileName) => {
-        const relativePath = PathUtils.posix(path.relative(cwd, fileName));
-        return targets.some(
-          (target) => relativePath === target || PathUtils.isChildPath(relativePath, target),
-        );
-      });
-    }
+    const fileNames = PathUtils.filterByTargets(parsedConfig.fileNames, targets, cwd);
 
     if (fileNames.length === 0) {
       spinner?.succeed("타입체크할 파일이 없습니다.");

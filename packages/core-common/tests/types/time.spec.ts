@@ -438,6 +438,11 @@ describe("Time", () => {
       const time = new Time(tick);
       expect(time.isValid).toBe(true);
     });
+
+    it("NaN tick으로 생성한 시간은 isValid가 false다", () => {
+      const time = new Time(NaN);
+      expect(time.isValid).toBe(false);
+    });
   });
 
   //#endregion

@@ -15,20 +15,21 @@ paths:
 - 비교는 `===`를 사용한다. 단, `null`/`undefined` 체크는 `=== null/undefined`대신 `== null`, `!= null`을 사용한다.
 - 불필요한 async/await는 피한다. (`return await x` → `return x`)
 - `console` 대신 `pino`를 적극 활용한다. (`ora` indicator도 활용한다)
-  - `pino`는 browser, node 환경 모두 지원한다.
+    - `pino`는 browser, node 환경 모두 지원한다.
 - `using` 문을 적극 활용한다.
+- 예측에서 벗어난 사용에 대해서는 기본값 보다는 오류 발생를 선호한다. (예: 엑셀 셀 포맷을 통해 타입을 찾을때, 각각 포맷에 맞는 타입반환 + 그외는 기본값이 아닌 오류 발생)
 
 ## 네이밍
 
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| 파일 | `kebab-case` | `date-only.ts` |
-| 클래스 | `PascalCase` | `DateOnly` |
-| 함수/변수 | `camelCase` | `formatDate` |
-| interface/type | 접두사 없음 | `User` (~~`IUser`~~) |
-| Sd 접두사 | 필요한 곳에서만 사용 | `ServiceServer` (~~`SdServiceServer`~~) |
-| 미사용 변수 | `_` 접두사 | `_unused` |
-| async 함수 | `Async` 접미사 생략 | `readFile()` (동기는 `readFileSync()`) |
+| 대상             | 규칙             | 예시                                      |
+|----------------|----------------|-----------------------------------------|
+| 파일             | `kebab-case`   | `date-only.ts`                          |
+| 클래스            | `PascalCase`   | `DateOnly`                              |
+| 함수/변수          | `camelCase`    | `formatDate`                            |
+| interface/type | 접두사 없음         | `User` (~~`IUser`~~)                    |
+| Sd 접두사         | 필요한 곳에서만 사용    | `ServiceServer` (~~`SdServiceServer`~~) |
+| 미사용 변수         | `_` 접두사        | `_unused`                               |
+| async 함수       | `Async` 접미사 생략 | `readFile()` (동기는 `readFileSync()`)     |
 
 ## 코드 구조
 
@@ -37,12 +38,12 @@ paths:
 
 ## 호환성
 
-| 기술 | 버전 |
-|------|------|
-| 모듈 시스템 | ESM |
-| Node.js | 20.x |
-| TypeScript | 5.8.x |
-| Vitest | 4.x |
-| ESLint | 9.x |
-| SolidJS | 1.x |
-| 브라우저 | Chrome 79+ (ES2022) |
+| 기술         | 버전                  |
+|------------|---------------------|
+| 모듈 시스템     | ESM                 |
+| Node.js    | 20.x                |
+| TypeScript | 5.8.x               |
+| Vitest     | 4.x                 |
+| ESLint     | 9.x                 |
+| SolidJS    | 1.x                 |
+| 브라우저       | Chrome 79+ (ES2022) |

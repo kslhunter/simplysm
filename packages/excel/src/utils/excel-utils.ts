@@ -1,7 +1,12 @@
 import { NumberUtils } from "@simplysm/core-common";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelNumberFormat } from "../types";
 
+/**
+ * Excel 관련 유틸리티 함수 모음.
+ * 셀 주소 변환, 날짜/숫자 변환, 숫자 형식 처리 등의 기능을 제공한다.
+ */
 export class ExcelUtils {
+  /** 셀 좌표를 "A1" 형식 문자열로 변환 */
   static stringifyAddr(point: ExcelAddressPoint): string {
     const rowStr = this.stringifyRowAddr(point.r);
     const colStr = this.stringifyColAddr(point.c);
@@ -13,6 +18,10 @@ export class ExcelUtils {
   }
 
   static stringifyColAddr(c: number): string {
+    if (c < 0) {
+      throw new Error(`열 인덱스는 0 이상이어야 합니다: ${c}`);
+    }
+
     let remained = c;
     let result = String.fromCharCode((remained % 26) + 65);
     remained = Math.floor(remained / 26);
@@ -71,6 +80,10 @@ export class ExcelUtils {
     }
   }
 
+  /**
+   * JavaScript 타임스탬프(ms)를 Excel 날짜 숫자로 변환.
+   * Excel은 1899-12-31을 기준(0)으로 일수를 계산한다.
+   */
   static convertTimeTickToNumber(tick: number): number {
     const currDate = new Date(tick);
     currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset());
@@ -79,6 +92,10 @@ export class ExcelUtils {
     return inputExcelDateNumberUtc / (24 * 60 * 60 * 1000) + 1;
   }
 
+  /**
+   * Excel 날짜 숫자를 JavaScript 타임스탬프(ms)로 변환.
+   * Excel은 1899-12-31을 기준(0)으로 일수를 계산한다.
+   */
   static convertNumberToTimeTick(num: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
     const excelDateNumberUtc = (num - 1) * 24 * 60 * 60 * 1000;
@@ -102,7 +119,7 @@ export class ExcelUtils {
       return "DateOnly"; // 날짜만 = DateOnly
     } else if (hasTime) {
       return "Time"; // 시간만 = Time
-    } else if (/^[0.#,_;()\-\\$ @*?"]*$/.test(numFmtCode.split("]").at(-1) ?? "")) {
+    } else if (/^[0.#,_;()\-\\$ @*?"E%+]*$/.test(numFmtCode.split("]").at(-1) ?? "")) {
       return "number";
     } else if ((numFmtCode.split("]").at(-1) ?? "").includes("#,0")) {
       return "number";
@@ -136,7 +153,7 @@ export class ExcelUtils {
     }
   }
 
-  static convertNumFmtNameToId(numFmtName: ExcelNumberFormat | undefined): number {
+  static convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number {
     if (numFmtName === "number") {
       return 0;
     } else if (numFmtName === "DateOnly") {
@@ -145,6 +162,7 @@ export class ExcelUtils {
       return 22;
     } else if (numFmtName === "Time") {
       return 18;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     } else if (numFmtName === "string") {
       return 49;
     } else {

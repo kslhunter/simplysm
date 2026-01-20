@@ -391,7 +391,7 @@ export class ObjectUtils {
    * @note 원본 객체를 수정하지 않고 새 객체를 반환함 (불변성 보장)
    * @note arrayProcess="concat" 사용 시 Set을 통해 중복을 제거하며,
    *       객체 배열의 경우 참조(주소) 비교로 중복을 판단함
-   * @throws {ArgumentError} 동일 키에 서로 다른 타입이 있으면 발생
+   * @note 타입이 다른 경우 target 값으로 덮어씀
    */
   static merge<T, P>(
     source: T,
@@ -429,8 +429,9 @@ export class ObjectUtils {
       return this.clone(target) as T & P;
     }
 
-    if (typeof source !== typeof target) {
-      throw new ArgumentError("병합하려고 하는 두 객체의 타입이 서로 다릅니다.", { sourceType: typeof source, targetType: typeof target });
+    // source가 object가 아니거나, source와 target이 다른 종류의 object면 target으로 덮어씀
+    if (typeof source !== "object" || source.constructor !== target.constructor) {
+      return this.clone(target) as T & P;
     }
 
     if (source instanceof Map && target instanceof Map) {
@@ -719,6 +720,8 @@ export class ObjectUtils {
 
   /**
    * 객체에서 undefined 값을 가진 키 삭제
+   *
+   * @mutates 원본 객체를 직접 수정함
    */
   static clearUndefined<T extends object>(obj: T): T {
     const record = obj as Record<string, unknown>;
@@ -733,6 +736,8 @@ export class ObjectUtils {
 
   /**
    * 객체의 모든 키 삭제
+   *
+   * @mutates 원본 객체를 직접 수정함
    */
   static clear<T extends Record<string, unknown>>(obj: T): Record<string, never> {
     for (const key of Object.keys(obj)) {
@@ -743,6 +748,8 @@ export class ObjectUtils {
 
   /**
    * null을 undefined로 변환 (재귀적)
+   *
+   * @mutates 원본 배열/객체를 직접 수정함
    */
   static nullToUndefined<T>(obj: T): T | undefined {
     if (obj == null) {

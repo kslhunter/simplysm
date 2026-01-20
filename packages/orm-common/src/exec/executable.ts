@@ -4,6 +4,24 @@ import type { DbContext } from "../db-context";
 import { ExprUnit } from "../expr/expr-unit";
 import { expr } from "../expr/expr";
 
+/**
+ * 저장 프로시저 실행 래퍼 클래스
+ *
+ * ProcedureBuilder로 정의된 프로시저를 실행하기 위한 클래스.
+ * DbContext에서 executable() 팩토리 함수를 통해 생성하여 사용한다.
+ *
+ * @template TParams - 프로시저 파라미터 타입
+ * @template TReturns - 프로시저 반환 타입
+ *
+ * @example
+ * ```typescript
+ * // 프로시저 실행
+ * const result = await db.getUserById().executeAsync({ userId: 1n });
+ * ```
+ *
+ * @see {@link executable} 팩토리 함수
+ * @see {@link ProcedureBuilder} 프로시저 정의
+ */
 export class Executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord> {
   constructor(
     private readonly _db: DbContext,
@@ -49,9 +67,42 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
 }
 
 // ============================================
-// procedure 함수
+// executable 함수
 // ============================================
 
+/**
+ * Executable 생성 팩토리 함수
+ *
+ * DbContext에서 프로시저를 등록할 때 사용한다.
+ * ProcedureBuilder로 정의된 프로시저를 Executable로 래핑하여 반환한다.
+ *
+ * @template TParams - 프로시저 파라미터 타입
+ * @template TReturns - 프로시저 반환 타입
+ * @param db - DbContext 인스턴스
+ * @param builder - ProcedureBuilder 인스턴스
+ * @returns Executable 생성 함수
+ *
+ * @example
+ * ```typescript
+ * // 프로시저 정의
+ * const GetUserById = Procedure("GetUserById")
+ *   .database("mydb")
+ *   .params((c) => ({ userId: c.bigint() }))
+ *   .returns((c) => ({ id: c.bigint(), name: c.varchar(100) }))
+ *   .body("SELECT id, name FROM User WHERE id = userId");
+ *
+ * // DbContext에서 등록
+ * class MyDb extends DbContext {
+ *   getUserById = executable(this, GetUserById);
+ * }
+ *
+ * // 사용
+ * const result = await db.getUserById().executeAsync({ userId: 1n });
+ * ```
+ *
+ * @see {@link Executable} 실행 클래스
+ * @see {@link ProcedureBuilder} 프로시저 정의
+ */
 export function executable<
   TParams extends ColumnBuilderRecord,
   TReturns extends ColumnBuilderRecord,

@@ -266,4 +266,61 @@ describe("ExcelWorksheet", () => {
       // 에러 없이 설정되면 성공
     });
   });
+
+  describe("열 접근", () => {
+    it("열의 모든 셀을 가져올 수 있다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      await ws.cell(0, 0).setVal("A1");
+      await ws.cell(1, 0).setVal("A2");
+      await ws.cell(2, 0).setVal("A3");
+
+      const cells = await ws.col(0).getCells();
+      expect(cells.length).toBe(3);
+      expect(await cells[0].getVal()).toBe("A1");
+      expect(await cells[1].getVal()).toBe("A2");
+      expect(await cells[2].getVal()).toBe("A3");
+    });
+  });
+
+  describe("데이터 테이블 옵션", () => {
+    it("headerRowIndex로 헤더 행을 지정할 수 있다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      // 0행은 제목
+      await ws.cell(0, 0).setVal("Title");
+      // 1행이 헤더
+      await ws.cell(1, 0).setVal("Name");
+      await ws.cell(1, 1).setVal("Age");
+      // 2행부터 데이터
+      await ws.cell(2, 0).setVal("Alice");
+      await ws.cell(2, 1).setVal(30);
+
+      const data = await ws.getDataTable({ headerRowIndex: 1 });
+      expect(data.length).toBe(1);
+      expect(data[0]["Name"]).toBe("Alice");
+      expect(data[0]["Age"]).toBe(30);
+    });
+
+    it("checkEndColIndex로 데이터 끝을 감지할 수 있다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      await ws.cell(0, 0).setVal("Name");
+      await ws.cell(0, 1).setVal("Age");
+      await ws.cell(1, 0).setVal("Alice");
+      await ws.cell(1, 1).setVal(30);
+      await ws.cell(2, 0).setVal("Bob");
+      await ws.cell(2, 1).setVal(25);
+      // 3행은 Name 열이 비어있음 → 데이터 끝
+      await ws.cell(3, 1).setVal(999);
+
+      const data = await ws.getDataTable({ checkEndColIndex: 0 });
+      expect(data.length).toBe(2);
+      expect(data[0]["Name"]).toBe("Alice");
+      expect(data[1]["Name"]).toBe("Bob");
+    });
+  });
 });

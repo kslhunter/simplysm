@@ -8,22 +8,19 @@ export class Wait {
    * 조건이 참이 될 때까지 대기
    * @param forwarder 조건 함수
    * @param milliseconds 체크 간격 (기본: 100ms)
-   * @param timeout 타임아웃 (undefined면 무제한)
-   * @throws TimeoutError 타임아웃 발생 시
+   * @param maxCount 최대 시도 횟수 (undefined면 무제한)
+   * @throws TimeoutError 최대 시도 횟수 초과 시
    */
   static async until(
     forwarder: () => boolean | Promise<boolean>,
     milliseconds?: number,
-    timeout?: number,
+    maxCount?: number,
   ): Promise<void> {
-    const startTime = Date.now();
+    let count = 0;
     while (!(await forwarder())) {
-      // 타임아웃 먼저 체크 (timeout=0 케이스 포함)
-      if (timeout !== undefined) {
-        const elapsed = Date.now() - startTime;
-        if (elapsed >= timeout) {
-          throw new TimeoutError(timeout);
-        }
+      count++;
+      if (maxCount !== undefined && count >= maxCount) {
+        throw new TimeoutError(count);
       }
 
       await Wait.time(milliseconds ?? 100);
@@ -35,10 +32,6 @@ export class Wait {
    * @param millisecond 대기 시간 (ms)
    */
   static async time(millisecond: number): Promise<void> {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, millisecond);
-    });
+    return new Promise<void>((resolve) => setTimeout(resolve, millisecond));
   }
 }

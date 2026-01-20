@@ -151,8 +151,20 @@ describe("FsUtils", () => {
 
       const buffer = FsUtils.readBuffer(filePath);
 
-      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(buffer instanceof Uint8Array).toBe(true);
       expect(buffer.toString()).toBe("buffer content");
+    });
+  });
+
+  describe("readBufferAsync", () => {
+    it("비동기로 파일을 Buffer로 읽기", async () => {
+      const filePath = path.join(testDir, "asyncbuffer.txt");
+      fs.writeFileSync(filePath, "async buffer content");
+
+      const buffer = await FsUtils.readBufferAsync(filePath);
+
+      expect(buffer instanceof Uint8Array).toBe(true);
+      expect(buffer.toString()).toBe("async buffer content");
     });
   });
 
@@ -163,6 +175,15 @@ describe("FsUtils", () => {
       FsUtils.write(filePath, "written content");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("written content");
+    });
+
+    it("Buffer를 파일로 쓰기", () => {
+      const filePath = path.join(testDir, "buffer-write.bin");
+      const buffer = Buffer.from([0x00, 0x01, 0x02, 0xff]);
+
+      FsUtils.write(filePath, buffer);
+
+      expect(fs.readFileSync(filePath)).toEqual(buffer);
     });
 
     it("부모 디렉토리가 없으면 자동 생성", () => {
@@ -221,6 +242,29 @@ describe("FsUtils", () => {
     });
   });
 
+  describe("readJsonAsync", () => {
+    it("비동기로 JSON 파일 읽기", async () => {
+      const filePath = path.join(testDir, "asyncdata.json");
+      fs.writeFileSync(filePath, '{"name": "async", "value": 100}');
+
+      const data = await FsUtils.readJsonAsync<{ name: string; value: number }>(filePath);
+
+      expect(data).toEqual({ name: "async", value: 100 });
+    });
+  });
+
+  describe("writeJsonAsync", () => {
+    it("비동기로 JSON 파일 쓰기", async () => {
+      const filePath = path.join(testDir, "asyncoutput.json");
+      const data = { name: "async", value: 100 };
+
+      await FsUtils.writeJsonAsync(filePath, data);
+
+      const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
+      expect(content).toEqual(data);
+    });
+  });
+
   //#endregion
 
   //#region copy
@@ -256,6 +300,58 @@ describe("FsUtils", () => {
 
       expect(() => FsUtils.copy(source, target)).not.toThrow();
     });
+
+    it("filter 옵션으로 선택적 복사", () => {
+      const sourceDir = path.join(testDir, "filterSource");
+      const targetDir = path.join(testDir, "filterTarget");
+      fs.mkdirSync(sourceDir);
+      fs.writeFileSync(path.join(sourceDir, "include.txt"), "include");
+      fs.writeFileSync(path.join(sourceDir, "exclude.log"), "exclude");
+
+      FsUtils.copy(sourceDir, targetDir, (p) => !p.endsWith(".log"));
+
+      expect(fs.existsSync(path.join(targetDir, "include.txt"))).toBe(true);
+      expect(fs.existsSync(path.join(targetDir, "exclude.log"))).toBe(false);
+    });
+  });
+
+  describe("copyAsync", () => {
+    it("비동기로 파일 복사", async () => {
+      const source = path.join(testDir, "asyncSource.txt");
+      const target = path.join(testDir, "asyncTarget.txt");
+      fs.writeFileSync(source, "async source content");
+
+      await FsUtils.copyAsync(source, target);
+
+      expect(fs.readFileSync(target, "utf-8")).toBe("async source content");
+    });
+
+    it("비동기로 디렉토리 복사 (recursive)", async () => {
+      const sourceDir = path.join(testDir, "asyncSourceDir");
+      const targetDir = path.join(testDir, "asyncTargetDir");
+      fs.mkdirSync(sourceDir);
+      fs.writeFileSync(path.join(sourceDir, "file.txt"), "content");
+      fs.mkdirSync(path.join(sourceDir, "sub"));
+      fs.writeFileSync(path.join(sourceDir, "sub/nested.txt"), "nested");
+
+      await FsUtils.copyAsync(sourceDir, targetDir);
+
+      expect(fs.existsSync(path.join(targetDir, "file.txt"))).toBe(true);
+      expect(fs.existsSync(path.join(targetDir, "sub/nested.txt"))).toBe(true);
+    });
+
+    it("비동기로 filter 옵션으로 선택적 복사", async () => {
+      const sourceDir = path.join(testDir, "asyncFilterSource");
+      const targetDir = path.join(testDir, "asyncFilterTarget");
+      fs.mkdirSync(sourceDir);
+      fs.writeFileSync(path.join(sourceDir, "keep.ts"), "keep");
+      fs.writeFileSync(path.join(sourceDir, "skip.js"), "skip");
+
+      await FsUtils.copyAsync(sourceDir, targetDir, (p) => p.endsWith(".ts"));
+
+      expect(fs.existsSync(path.join(targetDir, "keep.ts"))).toBe(true);
+      expect(fs.existsSync(path.join(targetDir, "skip.js"))).toBe(false);
+    });
   });
 
   //#endregion
@@ -273,6 +369,18 @@ describe("FsUtils", () => {
       expect(entries).toContain("file1.txt");
       expect(entries).toContain("file2.txt");
       expect(entries).toContain("subdir");
+    });
+  });
+
+  describe("readdirAsync", () => {
+    it("비동기로 디렉토리 내용 읽기", async () => {
+      fs.writeFileSync(path.join(testDir, "async1.txt"), "");
+      fs.writeFileSync(path.join(testDir, "async2.txt"), "");
+
+      const entries = await FsUtils.readdirAsync(testDir);
+
+      expect(entries).toContain("async1.txt");
+      expect(entries).toContain("async2.txt");
     });
   });
 
@@ -294,6 +402,40 @@ describe("FsUtils", () => {
     it("디렉토리 정보 가져오기", () => {
       const stat = FsUtils.stat(testDir);
       expect(stat.isDirectory()).toBe(true);
+    });
+  });
+
+  describe("statAsync", () => {
+    it("비동기로 파일 정보 가져오기", async () => {
+      const filePath = path.join(testDir, "asyncstatfile.txt");
+      fs.writeFileSync(filePath, "async content");
+
+      const stat = await FsUtils.statAsync(filePath);
+
+      expect(stat.isFile()).toBe(true);
+      expect(stat.size).toBeGreaterThan(0);
+    });
+  });
+
+  describe("lstat", () => {
+    it("심볼릭 링크 정보 가져오기 (링크 자체)", () => {
+      const filePath = path.join(testDir, "lstatfile.txt");
+      fs.writeFileSync(filePath, "content");
+
+      const stat = FsUtils.lstat(filePath);
+
+      expect(stat.isFile()).toBe(true);
+    });
+  });
+
+  describe("lstatAsync", () => {
+    it("비동기로 파일 정보 가져오기", async () => {
+      const filePath = path.join(testDir, "asynclstatfile.txt");
+      fs.writeFileSync(filePath, "async content");
+
+      const stat = await FsUtils.lstatAsync(filePath);
+
+      expect(stat.isFile()).toBe(true);
     });
   });
 
@@ -371,6 +513,19 @@ describe("FsUtils", () => {
       fs.writeFileSync(path.join(testDir, "a/marker.txt"), "");
 
       const results = FsUtils.findAllParentChildPaths("marker.txt", deepDir, testDir);
+
+      expect(results.length).toBe(2);
+    });
+  });
+
+  describe("findAllParentChildPathsAsync", () => {
+    it("비동기로 부모 디렉토리들에서 특정 파일 찾기", async () => {
+      const deepDir = path.join(testDir, "x/y/z");
+      fs.mkdirSync(deepDir, { recursive: true });
+      fs.writeFileSync(path.join(testDir, "config.json"), "");
+      fs.writeFileSync(path.join(testDir, "x/config.json"), "");
+
+      const results = await FsUtils.findAllParentChildPathsAsync("config.json", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });

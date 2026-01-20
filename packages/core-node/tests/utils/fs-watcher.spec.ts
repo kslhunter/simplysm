@@ -43,13 +43,12 @@ describe("SdFsWatcher", () => {
   describe("close", () => {
     it("감시 종료", async () => {
       watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")]);
-      await watcher.close();
+
+      // close()가 에러 없이 완료되면 테스트 통과
+      await expect(watcher.close()).resolves.toBeUndefined();
 
       // 종료 후 watcher 참조 해제
       watcher = undefined;
-
-      // 에러 없이 완료되면 성공
-      expect(true).toBe(true);
     });
   });
 

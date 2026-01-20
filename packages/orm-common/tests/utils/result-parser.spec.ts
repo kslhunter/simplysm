@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
+import { BytesUtils, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import { parseQueryResultAsync } from "../../src/utils/result-parser";
 import type { ResultMeta } from "../../src/types/db";
 
@@ -112,7 +112,7 @@ describe("result-parser", () => {
 
     it("Uuid 변환 - Uint8Array", async () => {
       const uuidStr = "550e8400-e29b-41d4-a716-446655440000";
-      const uuidBytes = Buffer.from(uuidStr.replace(/-/g, ""), "hex");
+      const uuidBytes = BytesUtils.fromHex(uuidStr.replace(/-/g, ""));
       const raw = [{ id: uuidBytes }];
       const meta: ResultMeta = {
         columns: { id: "Uuid" },

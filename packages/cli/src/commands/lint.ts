@@ -154,14 +154,7 @@ export async function runLint(options: LintOptions): Promise<void> {
     });
 
     // targets가 주어지면 해당 경로의 하위 파일만 필터링
-    if (targets.length > 0) {
-      files = files.filter((file) => {
-        const relativePath = PathUtils.posix(path.relative(cwd, file));
-        return targets.some(
-          (target) => relativePath === target || PathUtils.isChildPath(relativePath, target),
-        );
-      });
-    }
+    files = PathUtils.filterByTargets(files, targets, cwd);
     logger.debug({ fileCount: files.length }, "파일 수집 완료");
 
     if (files.length === 0) {

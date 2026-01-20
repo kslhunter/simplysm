@@ -5,7 +5,6 @@ import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./view-builder.expected";
-import { createRelationFactory } from "../../src/schema/factory/relation-builder";
 
 describe("DDL - View Builder", () => {
   describe("기본 뷰 (이름만)", () => {

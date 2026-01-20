@@ -1,6 +1,6 @@
 # @simplysm/eslint-plugin
 
-심플리즘 프레임워크의 ESLint 플러그인입니다. 프로젝트 컨벤션을 강제하기 위한 커스텀 규칙들을 제공합니다.
+심플리즘 프레임워크의 ESLint 플러그인이다. 프로젝트 컨벤션을 강제하기 위한 커스텀 규칙들을 제공한다.
 
 ## 설치
 
@@ -39,9 +39,9 @@ export default [
 
 ### no-hard-private
 
-ECMAScript private 필드(`#field`) 사용을 제한합니다. TypeScript의 `private` 키워드 사용을 권장합니다.
+ECMAScript private 필드(`#field`) 사용을 제한한다. TypeScript의 `private` 키워드 사용을 권장한다.
 
-**자동 수정 가능**: `--fix` 옵션으로 자동 변환됩니다.
+`--fix` 옵션으로 자동 변환된다.
 
 ```typescript
 // Bad
@@ -57,9 +57,9 @@ class Foo {
 
 ### no-subpath-imports-from-simplysm
 
-`@simplysm/*` 패키지의 `/src/` 경로 임포트를 금지합니다.
+`@simplysm/*` 패키지의 `/src/` 경로 import를 금지한다.
 
-**자동 수정 가능**: `--fix` 옵션으로 패키지 루트 경로로 자동 변환됩니다.
+`--fix` 옵션으로 패키지 루트 경로로 자동 변환된다.
 
 ```typescript
 // Bad
@@ -71,20 +71,21 @@ import { Foo } from "@simplysm/core-common";
 
 ### ts-no-throw-not-implemented-error
 
-`@simplysm/core-common`의 `NotImplementedError`를 사용하는 코드에 대해 경고합니다. 미구현 코드가 프로덕션에 포함되는 것을 방지합니다.
+`@simplysm/core-common`의 `NotImplementedError`를 사용하는 코드에 대해 경고한다. 미구현 코드가 프로덕션에 포함되는 것을 방지한다.
+
+`new` 키워드로 생성하는 모든 경우에 경고가 발생한다. (`throw` 여부와 관계없음)
 
 ```typescript
 import { NotImplementedError } from "@simplysm/core-common";
 
-// Warning - new 사용 시 경고 (throw 여부와 관계없이)
-new NotImplementedError();
-throw new NotImplementedError();
-const err = new NotImplementedError();
+new NotImplementedError();           // 경고
+throw new NotImplementedError();     // 경고
+const err = new NotImplementedError(); // 경고
 ```
 
 ## recommended 설정
 
-recommended 설정에는 다음이 포함됩니다:
+recommended 설정에는 다음이 포함된다:
 
 ### 심플리즘 커스텀 규칙
 
@@ -103,11 +104,11 @@ recommended 설정에는 다음이 포함됩니다:
 ### Node.js 내장 모듈 사용 금지 (neutral/browser 타겟)
 
 - `Buffer`, `EventEmitter` 등 Node.js 내장 모듈 사용 금지
-- `.ts`, `.tsx`, `.mts` 파일에 적용 (`.cts` 제외)
+- `.ts`, `.tsx` 파일에 적용
 
 ### TypeScript 규칙
 
-`@typescript-eslint` 규칙 기반으로 다음 규칙들이 적용됩니다:
+`@typescript-eslint` 규칙 기반으로 다음 규칙들이 적용된다:
 
 | 규칙 | 설명 |
 |------|------|
@@ -138,7 +139,7 @@ recommended 설정에는 다음이 포함됩니다:
 
 ### JS 파일 전용 규칙
 
-JS 파일에만 적용되는 규칙입니다. TS 파일에서는 TypeScript 컴파일러 또는 `@typescript-eslint` 규칙이 대체합니다.
+JS 파일에만 적용되는 규칙이다. TS 파일에서는 TypeScript 컴파일러 또는 `@typescript-eslint` 규칙이 대체한다.
 
 | 규칙 | 설명 |
 |------|------|

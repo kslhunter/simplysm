@@ -11,10 +11,17 @@ import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
  *
  * @remarks
  * 이 클래스는 내부적으로 ZIP 리소스를 관리합니다.
- * 사용 완료 후 반드시 {@link close} 메서드를 호출하여 리소스를 해제해야 합니다.
+ * 사용 완료 후 반드시 리소스를 해제해야 합니다.
  *
  * @example
  * ```typescript
+ * // await using 사용 (권장)
+ * await using wb = new ExcelWorkbook(bytes);
+ * const ws = await wb.getWorksheet(0);
+ * // ... 작업 수행
+ * // 스코프 종료 시 자동으로 리소스 해제
+ *
+ * // 또는 try-finally 사용
  * const wb = new ExcelWorkbook(bytes);
  * try {
  *   const ws = await wb.getWorksheet(0);
@@ -25,7 +32,7 @@ import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
  * ```
  */
 export class ExcelWorkbook {
-  zipCache: ZipCache;
+  readonly zipCache: ZipCache;
   private readonly _wsMap = new Map<number, ExcelWorksheet>();
   private _isClosed = false;
 
@@ -127,10 +134,16 @@ export class ExcelWorkbook {
     const relData = (await this.zipCache.get(
       "xl/_rels/workbook.xml.rels",
     )) as ExcelXmlRelationship;
-    const targetFilePath = relData.getTargetByRelId(wsId)!;
+    const targetFilePath = relData.getTargetByRelId(wsId);
+    if (targetFilePath == null) {
+      throw new Error(`시트 관계 정보를 찾을 수 없습니다: rId${wsId}`);
+    }
 
     // path.basename 대신 직접 파일명 추출 (브라우저 호환성)
-    const fileName = targetFilePath.split("/").pop()!;
+    const fileName = targetFilePath.split("/").pop();
+    if (fileName == null) {
+      throw new Error(`시트 파일명을 추출할 수 없습니다: ${targetFilePath}`);
+    }
 
     const ws = new ExcelWorksheet(this.zipCache, wsId, fileName);
     this._wsMap.set(wsId, ws);
@@ -172,6 +185,10 @@ export class ExcelWorkbook {
     }
     this._isClosed = true;
     await this.zipCache.close();
+  }
+
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
   }
 
   //#endregion

@@ -329,7 +329,7 @@ export type ExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | 
  * Excel 셀 타입
  * - s: 공유 문자열 (SharedString)
  * - b: 불리언
- * - str: 인라인 문자열/수식 결과
+ * - str: 수식 결과 문자열
  * - n: 숫자
  * - inlineStr: 인라인 문자열 (리치 텍스트)
  * - e: 에러

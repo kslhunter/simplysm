@@ -9,6 +9,8 @@ describe("BlobUtils", () => {
   let clickSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
+
     originalCreateObjectURL = URL.createObjectURL;
     originalRevokeObjectURL = URL.revokeObjectURL;
     URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
@@ -25,6 +27,7 @@ describe("BlobUtils", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     URL.createObjectURL = originalCreateObjectURL;
     URL.revokeObjectURL = originalRevokeObjectURL;
     vi.restoreAllMocks();
@@ -47,6 +50,7 @@ describe("BlobUtils", () => {
       const blob = new Blob(["test"], { type: "text/plain" });
 
       BlobUtils.download(blob, "test.txt");
+      vi.runAllTimers();
 
       expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
     });
@@ -58,6 +62,7 @@ describe("BlobUtils", () => {
       });
 
       expect(() => BlobUtils.download(blob, "test.txt")).toThrow("Click failed");
+      vi.runAllTimers();
       expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
     });
   });

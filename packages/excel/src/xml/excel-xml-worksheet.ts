@@ -17,7 +17,7 @@ interface RowInfo {
 export class ExcelXmlWorksheet implements ExcelXml {
   data: ExcelXmlWorksheetData;
 
-  private readonly _dataMap = new Map<number, RowInfo>();
+  private readonly _dataMap: Map<number, RowInfo>;
 
   constructor(data?: ExcelXmlWorksheetData) {
     if (data === undefined) {
@@ -129,7 +129,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const rowInfo = this._dataMap.get(addr.r);
     if (rowInfo == null) return;
 
-    // CELL 업으면 무효
+    // CELL 없으면 무효
     const cellData = rowInfo.cellMap.get(addr.c);
     if (cellData == null) return;
 
@@ -214,6 +214,12 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
   }
 
+  /**
+   * 특정 열의 너비를 설정한다.
+   *
+   * @param colIndex 열 인덱스 (1-based, 문자열)
+   * @param width 설정할 너비
+   */
   setColWidth(colIndex: string, width: string): void {
     const colIndexNumber = NumberUtils.parseInt(colIndex);
     if (colIndexNumber == null) {
@@ -221,6 +227,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
 
     const cols = this.data.worksheet.cols?.[0];
+
+    // 대상 열을 포함하는 기존 범위 찾기
     const col = cols?.col.single(
       (item) =>
         (NumberUtils.parseInt(item.$.min) ?? 0) <= colIndexNumber &&
@@ -229,28 +237,32 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     if (col != null && cols != null) {
       if (col.$.min === col.$.max) {
+        // 기존 범위가 단일 열인 경우: 해당 열의 속성만 변경
         col.$.bestFit = "1";
         col.$.customWidth = "1";
         col.$.width = width;
       } else {
+        // 기존 범위가 여러 열인 경우: 범위를 분할하여 대상 열만 새 width 적용
+        // 예: 기존 [1~5, width=10], 대상=3, 새 width=20
+        //     → [1~2, width=10], [3, width=20], [4~5, width=10]
         const minNumber = NumberUtils.parseInt(col.$.min) ?? 0;
         const maxNumber = NumberUtils.parseInt(col.$.max) ?? 0;
 
         let insertIndex = cols.col.indexOf(col);
 
+        // 앞쪽 범위 생성 (min ~ colIndex-1): 원본 속성 유지
         if (minNumber < colIndexNumber) {
           cols.col.insert(insertIndex, {
             $: {
+              ...col.$,
               min: col.$.min,
               max: (colIndexNumber - 1).toString(),
-              bestFit: "1",
-              customWidth: "1",
-              width: width,
             },
           });
           insertIndex++;
         }
 
+        // 대상 열 생성 (colIndex): 새 width 적용
         cols.col.insert(insertIndex, {
           $: {
             min: colIndex,
@@ -262,21 +274,22 @@ export class ExcelXmlWorksheet implements ExcelXml {
         });
         insertIndex++;
 
+        // 뒤쪽 범위 생성 (colIndex+1 ~ max): 원본 속성 유지
         if (maxNumber > colIndexNumber) {
           cols.col.insert(insertIndex, {
             $: {
+              ...col.$,
               min: (colIndexNumber + 1).toString(),
               max: col.$.max,
-              bestFit: "1",
-              customWidth: "1",
-              width: width,
             },
           });
         }
 
+        // 원본 범위 삭제
         cols.col.remove(col);
       }
     } else {
+      // 기존 범위 없음: 새 범위 생성
       this.data.worksheet.cols = this.data.worksheet.cols ?? [{ col: [] }];
       this.data.worksheet.cols[0].col.push({
         $: {

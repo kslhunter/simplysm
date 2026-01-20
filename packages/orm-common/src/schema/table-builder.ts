@@ -244,7 +244,7 @@ export class TableBuilder<
    *   .primaryKey("id")
    *   .relations((r) => ({
    *     // FK 관계 (N:1)
-   *     author: r.foreignKey(User, ["authorId"]),
+   *     author: r.foreignKey(["authorId"], () => User),
    *   }));
    *
    * const User = Table("User")
@@ -255,7 +255,7 @@ export class TableBuilder<
    *   .primaryKey("id")
    *   .relations((r) => ({
    *     // 역참조 (1:N)
-   *     posts: r.foreignKeyTarget(Post, "author"),
+   *     posts: r.foreignKeyTarget(() => Post, "author"),
    *   }));
    * ```
    *
@@ -308,7 +308,7 @@ export class TableBuilder<
  *   }))
  *   .primaryKey("id")
  *   .relations((r) => ({
- *     author: r.foreignKey(User, ["authorId"]),
+ *     author: r.foreignKey(["authorId"], () => User),
  *   }));
  * ```
  *

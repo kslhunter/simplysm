@@ -10,7 +10,7 @@ export namespace BlobUtils {
       link.download = fileName;
       link.click();
     } finally {
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     }
   }
 }

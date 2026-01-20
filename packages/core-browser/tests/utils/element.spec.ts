@@ -224,6 +224,18 @@ describe("ElementUtils", () => {
 
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
+
+    it("target이 Element가 아니면 아무것도 안함", () => {
+      const event = {
+        target: document,
+        clipboardData: { setData: vi.fn(), getData: vi.fn() },
+        preventDefault: vi.fn(),
+      } as unknown as ClipboardEvent;
+
+      ElementUtils.copyElement(event);
+
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    });
   });
 
   describe("pasteToElement", () => {
@@ -276,6 +288,18 @@ describe("ElementUtils", () => {
     it("clipboardData가 null이면 아무것도 안함", () => {
       container.innerHTML = `<input type="text" />`;
       const event = { target: container, clipboardData: null, preventDefault: vi.fn() } as unknown as ClipboardEvent;
+
+      ElementUtils.pasteToElement(event);
+
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("target이 Element가 아니면 아무것도 안함", () => {
+      const event = {
+        target: document,
+        clipboardData: { setData: vi.fn(), getData: vi.fn().mockReturnValue("text") },
+        preventDefault: vi.fn(),
+      } as unknown as ClipboardEvent;
 
       ElementUtils.pasteToElement(event);
 

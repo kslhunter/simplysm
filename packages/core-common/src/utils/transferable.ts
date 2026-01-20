@@ -24,7 +24,7 @@ type Transferable = ArrayBuffer;
  * - Array, Map, Set, 일반 객체
  *
  * @note 순환 참조가 있으면 encode 시 TypeError 발생
- * @note 동일 객체가 여러 곳에서 참조되는 DAG 구조도 순환 참조로 감지됨
+ * @note 동일 객체가 여러 곳에서 참조되는 DAG 구조에서는 각 참조마다 별도로 변환되어 데이터가 중복됨
  *
  * @example
  * // Worker로 데이터 전송
@@ -69,8 +69,12 @@ export abstract class TransferableConvert {
 
     // 1. Uint8Array
     if (obj instanceof Uint8Array) {
-      // buffer (ArrayBuffer)가 이미 리스트에 없으면 추가
-      if (!transferList.includes(obj.buffer as ArrayBuffer)) {
+      // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
+      // ArrayBuffer만 transferList에 추가
+      if (
+        !(obj.buffer instanceof SharedArrayBuffer) &&
+        !transferList.includes(obj.buffer as ArrayBuffer)
+      ) {
         transferList.push(obj.buffer as ArrayBuffer);
       }
       return obj;

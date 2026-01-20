@@ -12,10 +12,10 @@ export class MockExecutor implements DbContextExecutor {
   async rollbackTransactionAsync(): Promise<void> {}
 
   // 쿼리 실행
-  async executeDefsAsync(
+  executeDefsAsync(
     _defs: QueryDef[],
     _resultMetas?: (ResultMeta | undefined)[],
   ): Promise<any[][]> {
-    return [[]];
+    return Promise.resolve([[]]);
   }
 }

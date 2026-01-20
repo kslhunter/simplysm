@@ -1,6 +1,6 @@
 # @simplysm/orm-common
 
-심플리즘 ORM의 공통 모듈입니다. 쿼리 빌더, 스키마 정의, 표현식 등 ORM의 핵심 기능을 제공합니다.
+@simplysm ORM의 공통 모듈이다. 쿼리 빌더, 스키마 정의, 표현식 등 ORM의 핵심 기능을 제공한다.
 
 ## 설치
 
@@ -15,30 +15,62 @@ yarn add @simplysm/orm-common
 ### 테이블 정의
 
 ```typescript
-import { Table, TableBuilder, createColumnFactory, createIndexFactory } from "@simplysm/orm-common";
+import { Table, queryable, DbContext } from "@simplysm/orm-common";
 
-const col = createColumnFactory();
-const idx = createIndexFactory();
+// 테이블 정의
+const User = Table("User")
+  .database("mydb")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    name: c.varchar(100),
+    email: c.varchar(200).nullable(),
+    isActive: c.boolean().default(true),
+    createdAt: c.datetime(),
+  }))
+  .primaryKey("id")
+  .indexes((i) => [
+    i.columns("email").unique(),
+  ]);
 
-@Table({ schema: "dbo", description: "사용자 테이블" })
-class User extends TableBuilder({
-  id: col.int().autoIncrement().primary(),
-  name: col.string(100).notNull(),
-  email: col.string(255).notNull(),
-  createdAt: col.datetime().notNull().default("GETDATE()"),
-}, {
-  idx_email: idx.columns("email").unique(),
-}) {}
+// DbContext에서 사용
+class MyDb extends DbContext {
+  user = queryable(this, User);
+}
+```
+
+### 관계 정의
+
+```typescript
+const Post = Table("Post")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    userId: c.bigint(),
+    title: c.varchar(200),
+  }))
+  .primaryKey("id")
+  .relations((r) => ({
+    user: r.foreignKey(["userId"], () => User),
+  }));
+
+const User = Table("User")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    name: c.varchar(100),
+  }))
+  .primaryKey("id")
+  .relations((r) => ({
+    posts: r.foreignKeyTarget(() => Post, "user"),
+  }));
 ```
 
 ### 쿼리 작성
 
 ```typescript
-import { DbContext, Queryable, expr } from "@simplysm/orm-common";
+import { expr } from "@simplysm/orm-common";
 
 // SELECT 쿼리
-const users = await db.from(User)
-  .where((u) => expr.eq(u.name, "John"))
+const users = await db.user()
+  .where((u) => [expr.eq(u.name, "John")])
   .select((u) => ({
     id: u.id,
     name: u.name,
@@ -46,18 +78,23 @@ const users = await db.from(User)
   .resultAsync();
 
 // JOIN 쿼리
-const result = await db.from(User)
-  .join(Order, (u, o) => expr.eq(u.id, o.userId))
-  .select((u, o) => ({
+const result = await db.user()
+  .join("post", (q, u) => q.from(Post).where((p) => [expr.eq(p.userId, u.id)]))
+  .select((u) => ({
     userName: u.name,
-    orderDate: o.createdAt,
+    postTitle: u.post.title,
   }))
   .resultAsync();
+
+// include (관계 정의 기반)
+const userWithPosts = await db.user()
+  .include("posts")
+  .singleAsync();
 ```
 
 ### 표현식 (expr)
 
-타입 안전한 SQL 표현식을 제공합니다.
+타입 안전한 SQL 표현식을 제공한다.
 
 ```typescript
 import { expr } from "@simplysm/orm-common";
@@ -94,7 +131,7 @@ expr.day(date)
 
 ### 쿼리 빌더
 
-각 데이터베이스에 맞는 SQL을 생성합니다.
+각 데이터베이스에 맞는 SQL을 생성한다.
 
 ```typescript
 import { createQueryBuilder } from "@simplysm/orm-common";

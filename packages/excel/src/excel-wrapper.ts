@@ -21,63 +21,70 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     file: Uint8Array | Blob,
     wsNameOrIndex: string | number = 0,
   ): Promise<z.infer<T>[]> {
-    const wb = new ExcelWorkbook(file);
-    try {
-      const ws = await wb.getWorksheet(wsNameOrIndex);
-      const wsName = await ws.getName();
+    await using wb = new ExcelWorkbook(file);
 
-      const displayNames = Object.values(this._displayNameMap);
-      const rawData = await ws.getDataTable({
-        usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
-      });
+    const ws = await wb.getWorksheet(wsNameOrIndex);
+    const wsName = await ws.getName();
 
-      if (rawData.length === 0) {
-        throw new Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
-      }
+    const displayNames = Object.values(this._displayNameMap);
+    const rawData = await ws.getDataTable({
+      usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
+    });
 
-      const reverseMap = this._getReverseDisplayNameMap();
-      const shape = this._schema.shape;
-      const result: z.infer<T>[] = [];
-
-      for (const row of rawData) {
-        const record: Record<string, unknown> = {};
-        let hasNonNullValue = false;
-
-        for (const [displayName, fieldKey] of reverseMap) {
-          const rawValue = row[displayName];
-          const fieldSchema = shape[fieldKey] as z.ZodType;
-
-          if (rawValue != null && rawValue !== "") {
-            hasNonNullValue = true;
-          }
-
-          record[fieldKey] = this._convertValue(rawValue, fieldSchema);
-        }
-
-        if (!hasNonNullValue) {
-          continue;
-        }
-
-        // Zod 스키마로 검증
-        const parseResult = this._schema.safeParse(record);
-        if (!parseResult.success) {
-          const errors = parseResult.error.issues
-            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-            .join(", ");
-          throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
-        }
-
-        result.push(parseResult.data);
-      }
-
-      return result;
-    } finally {
-      await wb.close();
+    if (rawData.length === 0) {
+      throw new Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
     }
+
+    const reverseMap = this._getReverseDisplayNameMap();
+    const shape = this._schema.shape;
+    const result: z.infer<T>[] = [];
+
+    for (const row of rawData) {
+      const record: Record<string, unknown> = {};
+      let hasNonNullValue = false;
+
+      for (const [displayName, fieldKey] of reverseMap) {
+        const rawValue = row[displayName];
+        const fieldSchema = shape[fieldKey] as z.ZodType;
+
+        if (rawValue != null && rawValue !== "") {
+          hasNonNullValue = true;
+        }
+
+        record[fieldKey] = this._convertValue(rawValue, fieldSchema);
+      }
+
+      if (!hasNonNullValue) {
+        continue;
+      }
+
+      // Zod 스키마로 검증
+      const parseResult = this._schema.safeParse(record);
+      if (!parseResult.success) {
+        const errors = parseResult.error.issues
+          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+          .join(", ");
+        throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
+      }
+
+      result.push(parseResult.data);
+    }
+
+    return result;
   }
 
   /**
    * 레코드 배열 → Excel 워크북
+   *
+   * @remarks
+   * 반환된 워크북은 호출자가 리소스를 관리해야 합니다.
+   * `await using`을 사용하거나 작업 완료 후 `close()`를 호출하세요.
+   *
+   * @example
+   * ```typescript
+   * await using wb = await wrapper.write("Sheet1", records);
+   * const bytes = await wb.getBytes();
+   * ```
    */
   async write(wsName: string, records: Partial<z.infer<T>>[]): Promise<ExcelWorkbook> {
     const wb = new ExcelWorkbook();
@@ -185,26 +192,25 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
   private _unwrapSchema(schema: z.ZodType): z.ZodType {
     const typeName = this._getTypeName(schema);
 
-    if (typeName === "ZodOptional" || typeName === "ZodNullable") {
-      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodType);
-    }
-
-    if (typeName === "ZodDefault") {
-      return this._unwrapSchema((schema as Record<string, any>)["_def"].innerType as z.ZodType);
+    if (typeName === "ZodOptional" || typeName === "ZodNullable" || typeName === "ZodDefault") {
+      const def = schema._def as unknown as { innerType: z.ZodType };
+      return this._unwrapSchema(def.innerType);
     }
 
     return schema;
   }
 
   private _getTypeName(schema: z.ZodType): string {
-    return (schema as Record<string, any>)["_def"].typeName as string;
+    const def = schema._def as unknown as { typeName: string };
+    return def.typeName;
   }
 
   private _getDefaultForSchema(schema: z.ZodType): unknown {
     const typeName = this._getTypeName(schema);
 
     if (typeName === "ZodDefault") {
-      return ((schema as Record<string, any>)["_def"].defaultValue as () => unknown)();
+      const def = schema._def as unknown as { defaultValue: () => unknown };
+      return def.defaultValue();
     }
 
     if (typeName === "ZodOptional" || typeName === "ZodNullable") {

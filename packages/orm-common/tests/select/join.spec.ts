@@ -426,7 +426,7 @@ describe("SELECT - INCLUDE", () => {
 
   it("다단계 include (FK -> FK)", () => {
     const db = new TestDbContext();
-    const def = db.post().include((item) => item.user!.company).getSelectQueryDef();
+    const def = db.post().include((item) => item.user.company).getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -485,7 +485,7 @@ describe("SELECT - INCLUDE", () => {
     const db = new TestDbContext();
     const def = db.post()
       .include((item) => item.user)
-      .include((item) => item.user!.company)
+      .include((item) => item.user.company)
       .getSelectQueryDef();
 
     // 중복 include는 자동으로 제거됨 (user 1번, company 1번)

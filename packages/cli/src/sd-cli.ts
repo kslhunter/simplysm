@@ -46,12 +46,12 @@ export function createCliParser(argv: string[]): Argv {
               default: false,
             },
           }),
-      async (argv) => {
+      async (args) => {
         await runLint({
-          targets: argv.targets ?? [],
-          fix: argv.fix,
-          timing: argv.timing,
-          debug: argv.debug,
+          targets: args.targets ?? [],
+          fix: args.fix,
+          timing: args.timing,
+          debug: args.debug,
         });
       },
     )
@@ -74,10 +74,10 @@ export function createCliParser(argv: string[]): Argv {
               default: false,
             },
           }),
-      async (argv) => {
+      async (args) => {
         await runTypecheck({
-          targets: argv.targets ?? [],
-          debug: argv.debug,
+          targets: args.targets ?? [],
+          debug: args.debug,
         });
       },
     )
@@ -86,8 +86,9 @@ export function createCliParser(argv: string[]): Argv {
 }
 
 // CLI로 직접 실행될 때만 파싱 수행
-const isMainModule =
-  process.argv[1] != null && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"));
-if (isMainModule) {
+// ESM에서 메인 모듈 판별: import.meta.url과 process.argv[1]을 비교
+// Windows 경로(\)를 POSIX 스타일(/)로 변환하여 비교
+const cliEntryPath = process.argv.at(1);
+if (cliEntryPath != null && import.meta.url.endsWith(cliEntryPath.replace(/\\/g, "/"))) {
   await createCliParser(hideBin(process.argv)).parse();
 }

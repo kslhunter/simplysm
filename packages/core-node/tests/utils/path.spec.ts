@@ -109,6 +109,15 @@ describe("PathUtils", () => {
 
       expect(() => PathUtils.changeFileDirectory(file, from, to)).toThrow();
     });
+
+    it("filePath와 fromDirectory가 동일한 경우 toDirectory 반환", () => {
+      const file = PathUtils.norm("/source");
+      const from = PathUtils.norm("/source");
+      const to = PathUtils.norm("/target");
+
+      const result = PathUtils.changeFileDirectory(file, from, to);
+      expect(result).toBe(to);
+    });
   });
 
   //#endregion
@@ -134,6 +143,40 @@ describe("PathUtils", () => {
     it("숨김 파일(점으로 시작)은 그대로 반환", () => {
       const result = PathUtils.removeExt("/path/to/.gitignore");
       expect(result).toBe(".gitignore");
+    });
+  });
+
+  //#endregion
+
+  //#region filterByTargets
+
+  describe("filterByTargets", () => {
+    const cwd = "/proj";
+    const files = ["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts", "/proj/lib/d.ts"];
+
+    it("빈 타겟 배열이면 모든 파일 반환", () => {
+      const result = PathUtils.filterByTargets(files, [], cwd);
+      expect(result).toEqual(files);
+    });
+
+    it("단일 타겟으로 필터링", () => {
+      const result = PathUtils.filterByTargets(files, ["src"], cwd);
+      expect(result).toEqual(["/proj/src/a.ts", "/proj/src/b.ts"]);
+    });
+
+    it("다중 타겟으로 필터링", () => {
+      const result = PathUtils.filterByTargets(files, ["src", "tests"], cwd);
+      expect(result).toEqual(["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts"]);
+    });
+
+    it("매칭되는 파일이 없으면 빈 배열 반환", () => {
+      const result = PathUtils.filterByTargets(files, ["nonexistent"], cwd);
+      expect(result).toEqual([]);
+    });
+
+    it("정확한 파일 경로로 필터링", () => {
+      const result = PathUtils.filterByTargets(files, ["src/a.ts"], cwd);
+      expect(result).toEqual(["/proj/src/a.ts"]);
     });
   });
 

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { TestDbContext } from "../setup/TestDbContext";
-import { GetUserById } from "../setup/procedure/GetUserById";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";

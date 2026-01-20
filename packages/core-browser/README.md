@@ -1,6 +1,6 @@
 # @simplysm/core-browser
 
-심플리즘 프레임워크의 브라우저 전용 유틸리티 패키지입니다.
+심플리즘 프레임워크의 브라우저 전용 유틸리티 패키지이다.
 
 ## 설치
 
@@ -12,64 +12,65 @@ yarn add @simplysm/core-browser
 
 ## 주요 기능
 
-### Blob Utils
+### BlobUtils
 
-Blob 처리 유틸리티를 제공합니다.
+Blob 파일 다운로드 유틸리티를 제공한다.
 
 ```typescript
-import { blobToDataUrl, blobToText, blobToArrayBuffer } from "@simplysm/core-browser";
+import { BlobUtils } from "@simplysm/core-browser";
 
-// Blob을 Data URL로 변환
-const dataUrl = await blobToDataUrl(blob);
-
-// Blob을 텍스트로 변환
-const text = await blobToText(blob);
-
-// Blob을 ArrayBuffer로 변환
-const buffer = await blobToArrayBuffer(blob);
+// Blob을 파일로 다운로드
+BlobUtils.download(blob, "report.xlsx");
 ```
 
-### Element Utils
+### ElementUtils
 
-DOM 엘리먼트 조작 유틸리티를 제공합니다.
+DOM 요소 탐색 및 클립보드 처리 유틸리티를 제공한다.
 
 ```typescript
-import { getSiblings, getNextSiblings, getAncestors, getOffset } from "@simplysm/core-browser";
+import { ElementUtils } from "@simplysm/core-browser";
 
-// 형제 요소 가져오기
-const siblings = getSiblings(element);
+// 하위 요소 검색 (:scope 자동 적용)
+const buttons = ElementUtils.findAll(container, "button");
+const firstInput = ElementUtils.findFirst(container, "input");
 
-// 다음 형제 요소들 가져오기
-const nextSiblings = getNextSiblings(element);
+// 모든 부모 요소 조회
+const parents = ElementUtils.getParents(element);
 
-// 조상 요소들 가져오기
-const ancestors = getAncestors(element);
+// 요소 가시성 확인
+if (ElementUtils.isVisible(element)) {
+  // ...
+}
 
-// 요소의 offset 정보 가져오기
-const offset = getOffset(element);
+// 클립보드 복사/붙여넣기 (이벤트 핸들러에서 사용)
+element.addEventListener("copy", (e) => ElementUtils.copyElement(e));
+element.addEventListener("paste", (e) => ElementUtils.pasteToElement(e));
 ```
 
-### HTML Element Utils
+### HtmlElementUtils
 
-HTML 엘리먼트 관련 유틸리티를 제공합니다.
+HTMLElement 전용 유틸리티를 제공한다.
 
 ```typescript
-import {
-  focusableSelector,
-  findFocusableAll,
-  findFocusableFirst,
-  findFocusableLast,
-  hasContentSelector
-} from "@simplysm/core-browser";
+import { HtmlElementUtils } from "@simplysm/core-browser";
 
-// 포커스 가능한 모든 요소 찾기
-const focusables = findFocusableAll(container);
+// 강제 리페인트 (CSS 애니메이션 재시작 등에 유용)
+HtmlElementUtils.repaint(element);
 
-// 첫 번째 포커스 가능한 요소 찾기
-const first = findFocusableFirst(container);
+// 부모 요소 기준 상대 위치 계산
+const offset = HtmlElementUtils.getRelativeOffset(element, document.body);
+// 또는 셀렉터 사용
+const offset2 = HtmlElementUtils.getRelativeOffset(element, ".container");
 
-// 마지막 포커스 가능한 요소 찾기
-const last = findFocusableLast(container);
+// 고정 헤더가 있는 경우 스크롤 위치 조정
+HtmlElementUtils.scrollIntoViewIfNeeded(
+  scrollContainer,
+  { top: target.offsetTop, left: target.offsetLeft },
+  { top: 50, left: 0 }, // 고정 헤더 높이
+);
+
+// 요소들의 bounds 정보 비동기 조회
+const bounds = await HtmlElementUtils.getBoundsAsync([el1, el2]);
 ```
 
 ## 라이선스

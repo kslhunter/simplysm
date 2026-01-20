@@ -101,7 +101,11 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   addWithClone(id: string, style: ExcelStyle): string {
-    const prevXf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!];
+    const idNum = NumberUtils.parseInt(id);
+    if (idNum == null) {
+      throw new Error(`잘못된 스타일 ID: ${id}`);
+    }
+    const prevXf = this.data.styleSheet.cellXfs[0].xf[idNum];
     const cloneXf = ObjectUtils.clone(prevXf);
 
     if (style.numFmtId !== undefined) {
@@ -114,10 +118,8 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.background !== undefined) {
-      const prevFill =
-        cloneXf.$.fillId !== undefined
-          ? this.data.styleSheet.fills[0].fill[NumberUtils.parseInt(cloneXf.$.fillId)!]
-          : undefined;
+      const fillIdNum = cloneXf.$.fillId !== undefined ? NumberUtils.parseInt(cloneXf.$.fillId) : undefined;
+      const prevFill = fillIdNum !== undefined ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
 
       if (prevFill != null) {
         const cloneFill = ObjectUtils.clone(prevFill);
@@ -146,10 +148,8 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.border !== undefined) {
-      const prevBorder =
-        cloneXf.$.borderId !== undefined
-          ? this.data.styleSheet.borders[0].border[NumberUtils.parseInt(cloneXf.$.borderId)!]
-          : undefined;
+      const borderIdNum = cloneXf.$.borderId !== undefined ? NumberUtils.parseInt(cloneXf.$.borderId) : undefined;
+      const prevBorder = borderIdNum !== undefined ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
 
       if (prevBorder != null) {
         const cloneBorder = ObjectUtils.clone(prevBorder);
@@ -173,9 +173,11 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   get(id: string): ExcelStyle {
-    const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!] as
-      | ExcelXmlStyleDataXf
-      | undefined;
+    const idNum = NumberUtils.parseInt(id);
+    if (idNum == null) {
+      throw new Error(`잘못된 스타일 ID: ${id}`);
+    }
+    const xf = this.data.styleSheet.cellXfs[0].xf[idNum] as ExcelXmlStyleDataXf | undefined;
 
     const result: ExcelStyle = {};
 
@@ -183,14 +185,18 @@ export class ExcelXmlStyle implements ExcelXml {
       result.numFmtId = xf.$.numFmtId;
 
       if (xf.$.fillId !== undefined) {
-        result.background =
-          this.data.styleSheet.fills[0].fill[
-            NumberUtils.parseInt(xf.$.fillId)!
-          ].patternFill[0].fgColor?.[0].$.rgb;
+        const fillIdNum = NumberUtils.parseInt(xf.$.fillId);
+        if (fillIdNum != null) {
+          result.background = this.data.styleSheet.fills[0].fill[fillIdNum].patternFill[0].fgColor?.[0].$.rgb;
+        }
       }
 
       if (xf.$.borderId !== undefined) {
-        const border = this.data.styleSheet.borders[0].border[NumberUtils.parseInt(xf.$.borderId)!];
+        const borderIdNum = NumberUtils.parseInt(xf.$.borderId);
+        if (borderIdNum == null) {
+          throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
+        }
+        const border = this.data.styleSheet.borders[0].border[borderIdNum];
         if (border.top != null || border.left != null || border.right != null || border.bottom != null) {
           result.border = [];
           if (border.left != null) {
@@ -267,7 +273,7 @@ export class ExcelXmlStyle implements ExcelXml {
     const nextNumFmtId = (maxId + 1).toString();
     this.data.styleSheet.numFmts[0].numFmt.push({
       $: {
-        numFmtId: nextNumFmtId.toString(),
+        numFmtId: nextNumFmtId,
         formatCode: numFmtCode,
       },
     });
@@ -275,7 +281,7 @@ export class ExcelXmlStyle implements ExcelXml {
       NumberUtils.parseInt(this.data.styleSheet.numFmts[0].$.count)! + 1
     ).toString();
 
-    return nextNumFmtId.toString();
+    return nextNumFmtId;
   }
 
   private _applyAlignment(xf: ExcelXmlStyleDataXf, style: ExcelStyle): void {

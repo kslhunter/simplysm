@@ -10,7 +10,12 @@ import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-x
 import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
 
+/**
+ * Excel 셀을 나타내는 클래스.
+ * 값 읽기/쓰기, 수식 설정, 스타일 설정, 셀 병합 등의 기능을 제공한다.
+ */
 export class ExcelCell {
+  /** 셀 주소 (0-based 행/열 인덱스) */
   readonly addr: ExcelAddressPoint;
 
   constructor(
@@ -33,6 +38,11 @@ export class ExcelCell {
       wsData.setCellVal(this.addr, undefined);
       wsData.setCellFormula(this.addr, val);
     }
+  }
+
+  async getFormula(): Promise<string | undefined> {
+    const wsData = await this._getWsData();
+    return wsData.getCellFormula(this.addr);
   }
 
   async setVal(val: ExcelValueType): Promise<void> {
@@ -80,7 +90,11 @@ export class ExcelCell {
     const cellType = wsData.getCellType(this.addr);
     if (cellType === "s") {
       const ssData = await this._getOrCreateSsData();
-      return ssData.getStringById(NumberUtils.parseInt(cellVal)!);
+      const ssId = NumberUtils.parseInt(cellVal);
+      if (ssId == null) {
+        throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] SharedString ID 파싱 실패: ${cellVal}`);
+      }
+      return ssData.getStringById(ssId);
     } else if (cellType === "str") {
       return cellVal;
     } else if (cellType === "inlineStr") {
@@ -111,10 +125,16 @@ export class ExcelCell {
       }
 
       const numFmtCode = styleData.getNumFmtCode(numFmtId);
-      const numFmt =
-        numFmtCode !== undefined
-          ? ExcelUtils.convertNumFmtCodeToName(numFmtCode)
-          : ExcelUtils.convertNumFmtIdToName(NumberUtils.parseInt(numFmtId)!);
+      let numFmt;
+      if (numFmtCode !== undefined) {
+        numFmt = ExcelUtils.convertNumFmtCodeToName(numFmtCode);
+      } else {
+        const numFmtIdNum = NumberUtils.parseInt(numFmtId);
+        if (numFmtIdNum == null) {
+          throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] numFmtId 파싱 실패: ${numFmtId}`);
+        }
+        numFmt = ExcelUtils.convertNumFmtIdToName(numFmtIdNum);
+      }
 
       if (numFmt === "number") {
         return NumberUtils.parseFloat(cellVal);
@@ -122,7 +142,10 @@ export class ExcelCell {
         return cellVal;
       } else {
         // DateOnly, DateTime, Time
-        const dateNum = NumberUtils.parseFloat(cellVal)!;
+        const dateNum = NumberUtils.parseFloat(cellVal);
+        if (dateNum == null) {
+          throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 날짜 숫자 파싱 실패: ${cellVal}`);
+        }
         const tick = ExcelUtils.convertNumberToTimeTick(dateNum);
         if (numFmt === "DateOnly") {
           return new DateOnly(tick);

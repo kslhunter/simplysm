@@ -9,7 +9,20 @@ paths:
 
 ## core-common
 
+```ts
+import { ObjectUtils, StringUtils, ... } from "@simplysm/core-common";
+```
+
 ### 객체 처리 (ObjectUtils)
+
+객체 깊은 복사/비교/병합 유틸리티.
+
+```ts
+const copied = ObjectUtils.clone(obj);
+if (ObjectUtils.equal(a, b)) { ... }
+const val = ObjectUtils.getChainValue(obj, "a.b[0].c");
+```
+
 | 함수 | 용도 |
 |------|------|
 | `clone(obj)` | 깊은 복사 (순환 참조 지원) |
@@ -23,6 +36,14 @@ paths:
 | `setChainValue(obj, "a.b[0].c", v)` | 경로 기반 값 설정 |
 
 ### 문자열 처리 (StringUtils)
+
+문자열 변환 및 한글 조사 처리.
+
+```ts
+const name = StringUtils.toCamelCase("my-var"); // "myVar"
+const msg = `${name}${StringUtils.getSuffix(name, "을")} 선택하세요`; // "myVar를 선택하세요"
+```
+
 | 함수 | 용도 |
 |------|------|
 | `isNullOrEmpty(str)` | 빈 문자열 체크 |
@@ -32,6 +53,14 @@ paths:
 | `getSuffix("책", "을")` | 한글 조사 자동 처리 |
 
 ### 숫자 처리 (NumberUtils)
+
+숫자 파싱 및 포맷팅.
+
+```ts
+const num = NumberUtils.parseInt("1,234원"); // 1234
+const str = NumberUtils.format(1234.5, { digits: 1 }); // "1,234.5"
+```
+
 | 함수 | 용도 |
 |------|------|
 | `parseInt(str)` | 파싱 (비숫자 자동 제거) |
@@ -39,6 +68,17 @@ paths:
 | `format(num, opts)` | 천단위 포맷팅 |
 
 ### 배열 확장 (Array.prototype)
+
+side-effect import로 Array에 메서드 추가.
+
+```ts
+import "@simplysm/core-common";
+
+const groups = items.groupBy((item) => item.category);
+const sorted = items.orderBy((item) => item.name);
+const unique = items.distinct();
+```
+
 | 메서드 | 용도 |
 |--------|------|
 | `groupBy(fn)` | 그룹핑 |
@@ -52,12 +92,30 @@ paths:
 | `single()` / `first()` / `last()` | 단일 요소 조회 |
 
 ### Map/Set 확장
+
+side-effect import로 Map/Set에 메서드 추가.
+
+```ts
+const map = new Map<string, number[]>();
+const arr = map.getOrCreate("key", () => []);
+arr.push(1);
+```
+
 | 메서드 | 용도 |
 |--------|------|
 | `map.getOrCreate(key, default)` | 없으면 생성 |
 | `set.toggle(item)` | 추가/제거 토글 |
 
 ### 타입
+
+불변 날짜/시간 타입 및 UUID.
+
+```ts
+const now = DateTime.now();
+const date = DateOnly.parse("2024-01-15");
+const id = Uuid.new();
+```
+
 | 타입 | 용도 |
 |------|------|
 | `DateTime` | 날짜+시간 (불변) |
@@ -66,24 +124,56 @@ paths:
 | `Uuid` | UUID v4 |
 
 ### JSON 변환 (JsonConvert)
+
+DateTime, Uuid 등 커스텀 타입을 지원하는 JSON 직렬화.
+
+```ts
+const json = JsonConvert.stringify({ date: DateTime.now() });
+const obj = JsonConvert.parse(json); // date가 DateTime으로 복원됨
+```
+
 | 함수 | 용도 |
 |------|------|
 | `stringify(obj)` | DateTime/Uuid 등 커스텀 타입 지원 |
 | `parse(str)` | DateTime/Uuid 등 커스텀 타입 지원 |
 
 ### 비동기 (Wait)
+
+조건 대기 및 딜레이.
+
+```ts
+await Wait.until(() => isReady, 100, 5000); // 100ms 간격, 5초 타임아웃
+await Wait.time(1000); // 1초 대기
+```
+
 | 함수 | 용도 |
 |------|------|
 | `until(fn, interval, timeout)` | 조건 대기 |
 | `time(ms)` | 고정 대기 |
 
 ### 큐
+
+비동기 작업 제어.
+
+```ts
+const queue = new DebounceQueue();
+queue.run("key", async () => { ... }); // 같은 key로 호출 시 마지막 것만 실행
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `DebounceQueue` | 디바운스 (마지막 요청만 실행) |
 | `SerialQueue` | 순차 실행 |
 
 ### 에러
+
+에러 타입.
+
+```ts
+throw new SdError("메시지", { cause: originalError });
+throw new ArgumentError({ param: value }); // YAML 형식으로 출력
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `SdError` | cause 체인 지원 |
@@ -92,7 +182,19 @@ paths:
 
 ## core-node
 
+```ts
+import { PathUtils, FsUtils, SdFsWatcher, SdWorker } from "@simplysm/core-node";
+```
+
 ### 경로 처리 (PathUtils)
+
+크로스 플랫폼 경로 처리.
+
+```ts
+const p = PathUtils.posix("C:\\Users\\foo"); // "C:/Users/foo"
+const norm = PathUtils.norm("a", "b", "c.ts"); // "a/b/c.ts"
+```
+
 | 함수 | 용도 |
 |------|------|
 | `posix(...args)` | POSIX 스타일 경로 변환 |
@@ -101,6 +203,15 @@ paths:
 | `isChildPath(child, parent)` | 자식 경로 여부 |
 
 ### 파일 시스템 (FsUtils)
+
+파일/디렉토리 조작. 부모 디렉토리 자동 생성.
+
+```ts
+const content = FsUtils.read("config.json");
+FsUtils.write("out/result.txt", data); // out/ 자동 생성
+const files = FsUtils.glob("src/**/*.ts");
+```
+
 | 함수 | 용도 |
 |------|------|
 | `exists(path)` | 존재 확인 |
@@ -114,12 +225,34 @@ paths:
 | `glob(pattern)` / `globAsync(pattern)` | 글로브 패턴 검색 |
 
 ### 파일 감시 (SdFsWatcher)
+
+파일 변경 감시. 이벤트 자동 병합.
+
+```ts
+const watcher = await SdFsWatcher.watchAsync(["src/**/*.ts"]);
+watcher.onChange({ delay: 300 }, (changes) => {
+  console.log(changes); // [{ path, type: "add" | "change" | "unlink" }]
+});
+```
+
 | 메서드 | 용도 |
 |--------|------|
 | `watchAsync(paths)` | 파일 감시 시작 |
 | `onChange(opt, cb)` | 변경 이벤트 핸들러 (이벤트 병합) |
 
 ### Worker (SdWorker)
+
+타입 안전한 Worker 래퍼.
+
+```ts
+// worker.ts
+export default createSdWorker({ calc: (a: number) => a * 2 });
+
+// main.ts
+const worker = new SdWorker<typeof import("./worker")>("./worker.js");
+const result = await worker.call("calc", 5); // 10
+```
+
 | 함수/클래스 | 용도 |
 |-------------|------|
 | `SdWorker<T>` | 타입 안전한 Worker 래퍼 |
@@ -127,7 +260,19 @@ paths:
 
 ## core-browser
 
+```ts
+import { ElementUtils, HtmlElementUtils, BlobUtils } from "@simplysm/core-browser";
+```
+
 ### DOM 처리 (ElementUtils)
+
+DOM 요소 탐색 및 클립보드 처리.
+
+```ts
+const buttons = ElementUtils.findAll(container, "button");
+const parents = ElementUtils.getParents(el);
+```
+
 | 함수 | 용도 |
 |------|------|
 | `findAll(el, selector)` | 하위 요소 검색 |
@@ -138,6 +283,14 @@ paths:
 | `pasteToElement(event)` | 클립보드 붙여넣기 |
 
 ### HTML 요소 (HtmlElementUtils)
+
+HTMLElement 전용 유틸리티.
+
+```ts
+HtmlElementUtils.repaint(el); // CSS 애니메이션 재시작 시 유용
+HtmlElementUtils.scrollIntoViewIfNeeded(scrollContainer, targetEl);
+```
+
 | 함수 | 용도 |
 |------|------|
 | `repaint(el)` | 강제 리페인트 |
@@ -145,13 +298,34 @@ paths:
 | `scrollIntoViewIfNeeded(container, target)` | 스크롤 위치 조정 |
 
 ### Blob (BlobUtils)
+
+Blob 파일 다운로드.
+
+```ts
+BlobUtils.download(blob, "report.xlsx");
+```
+
 | 함수 | 용도 |
 |------|------|
 | `download(blob, fileName)` | 파일 다운로드 |
 
 ## excel
 
+```ts
+import { ExcelWorkbook, ExcelWrapper, ExcelUtils } from "@simplysm/excel";
+```
+
 ### 워크북 (ExcelWorkbook)
+
+Excel 파일 생성/읽기.
+
+```ts
+const wb = new ExcelWorkbook();
+const ws = wb.createWorksheet("Sheet1");
+ws.cell(0, 0).value = "Hello";
+const bytes = await wb.getBytes();
+```
+
 | 메서드 | 용도 |
 |--------|------|
 | `new ExcelWorkbook(bytes?)` | 워크북 생성/읽기 |
@@ -160,6 +334,18 @@ paths:
 | `getBytes()` | 바이너리 출력 |
 
 ### 워크시트/셀
+
+셀 단위 접근 및 Zod 스키마 기반 타입 안전 처리.
+
+```ts
+ws.cell(0, 0).value = "이름";
+ws.cell(0, 0).style.bold = true;
+
+// Zod 스키마 기반 읽기/쓰기
+const wrapper = new ExcelWrapper(ws, schema);
+const rows = wrapper.read();
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `ExcelWorksheet` | 워크시트 (셀/행/열 접근) |
@@ -167,6 +353,14 @@ paths:
 | `ExcelWrapper<T>` | Zod 스키마 기반 타입 안전 읽기/쓰기 |
 
 ### 유틸 (ExcelUtils)
+
+셀 주소 변환.
+
+```ts
+ExcelUtils.stringifyAddr({ r: 0, c: 0 }); // "A1"
+ExcelUtils.parseCellAddrCode("B3"); // { r: 2, c: 1 }
+```
+
 | 함수 | 용도 |
 |------|------|
 | `stringifyAddr(point)` | 좌표 → "A1" 변환 |
@@ -174,7 +368,26 @@ paths:
 
 ## orm-common
 
+```ts
+import { DbContext, Table, View, queryable, expr, parseSearchQuery } from "@simplysm/orm-common";
+```
+
 ### 쿼리 빌더
+
+타입 안전한 쿼리 빌더.
+
+```ts
+class MyDb extends DbContext {
+  users = Table<IUser>("users");
+}
+
+const db = new MyDb(conn);
+const users = await db.users
+  .where((t) => expr.eq(t.status, "active"))
+  .orderBy((t) => t.name)
+  .resultAsync();
+```
+
 | 함수/클래스 | 용도 |
 |-------------|------|
 | `DbContext` | DB 연결/트랜잭션 관리 기본 클래스 |
@@ -183,6 +396,7 @@ paths:
 | `queryable(table)` | 쿼리 빌더 생성 |
 
 ### Queryable 주요 메서드
+
 | 메서드 | 용도 |
 |--------|------|
 | `select()` / `distinct()` | SELECT |
@@ -194,6 +408,16 @@ paths:
 | `insertAsync()` / `updateAsync()` / `deleteAsync()` | CUD |
 
 ### 표현식 (expr)
+
+SQL 표현식 생성.
+
+```ts
+.where((t) => expr.and(
+  expr.eq(t.status, "active"),
+  expr.gt(t.age, 18)
+))
+```
+
 | 함수 | 용도 |
 |------|------|
 | `expr.val(v)` | 값 표현식 |
@@ -203,19 +427,50 @@ paths:
 | `expr.and()` / `expr.or()` | 논리 연산 |
 
 ### 검색 (parseSearchQuery)
+
+검색어를 SQL LIKE 패턴으로 변환.
+
+```ts
+const patterns = parseSearchQuery("apple -banana"); // OR/AND/NOT/와일드카드 지원
+db.users.search((t) => [t.name, t.email], patterns);
+```
+
 | 함수 | 용도 |
 |------|------|
 | `parseSearchQuery(query)` | 검색어 → SQL LIKE 패턴 (OR/AND/NOT/와일드카드) |
 
 ## orm-node
 
+```ts
+import { SdOrm, DbConnFactory, MysqlDbConn } from "@simplysm/orm-node";
+```
+
 ### ORM 클래스
+
+Node.js 환경 ORM.
+
+```ts
+const orm = new SdOrm(MyDb, connFactory);
+await orm.transactionAsync(async (db) => {
+  await db.users.insertAsync({ name: "홍길동" });
+});
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `SdOrm<T>` | Node.js ORM 메인 클래스 |
 | `DbConnFactory` | DB 연결 팩토리 (커넥션 풀) |
 
 ### DB 연결
+
+DB별 연결 클래스.
+
+```ts
+const factory = new DbConnFactory(() => new MysqlDbConn({
+  host: "localhost", user: "root", password: "xxx", database: "mydb"
+}));
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `MysqlDbConn` | MySQL 연결 |
@@ -224,13 +479,28 @@ paths:
 
 ## service-common
 
+```ts
+import { ServiceProtocol, ServiceEventListener } from "@simplysm/service-common";
+```
+
 ### 프로토콜
+
+서버-클라이언트 통신 프로토콜.
+
+```ts
+// 이벤트 리스너 정의
+interface INotifyEvent extends ServiceEventListener<{ userId: string }, { message: string }> {}
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `ServiceProtocol` | 메시지 인코더/디코더 (자동 청킹) |
 | `ServiceEventListener<TInfo, TData>` | 이벤트 리스너 정의 |
 
 ### 서비스 인터페이스
+
+서버에서 구현할 서비스 인터페이스.
+
 | 서비스 | 용도 |
 |--------|------|
 | `OrmService` | DB 연결/쿼리 |
@@ -239,7 +509,25 @@ paths:
 
 ## service-client
 
+```ts
+import { ServiceClient, OrmClientConnector, EventClient, FileClient } from "@simplysm/service-client";
+```
+
 ### 클라이언트
+
+서버 통신 클라이언트.
+
+```ts
+const client = new ServiceClient("wss://api.example.com");
+await client.connectAsync();
+
+// ORM 연결
+const orm = new OrmClientConnector(client, MyDb);
+await orm.transactionAsync(async (db) => {
+  return await db.users.resultAsync();
+});
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `ServiceClient` | 서버 통신 메인 클라이언트 |
@@ -249,26 +537,74 @@ paths:
 
 ## service-server
 
+```ts
+import { ServiceServer, ServiceBase, JwtManager, Authorize, ConfigManager } from "@simplysm/service-server";
+```
+
 ### 서버
+
+Fastify 기반 마이크로서비스 서버.
+
+```ts
+const server = new ServiceServer<IAuthInfo>({ port: 3000 });
+server.addService(MyService);
+await server.startAsync();
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `ServiceServer<TAuthInfo>` | 마이크로서비스 서버 (Fastify) |
 | `ServiceBase<TAuthInfo>` | 서비스 기본 클래스 |
 
 ### 인증
+
+JWT 기반 인증.
+
+```ts
+class MyService extends ServiceBase<IAuthInfo> {
+  @Authorize(["admin"])
+  async deleteUser(id: string) { ... }
+}
+```
+
 | 클래스/데코레이터 | 용도 |
 |-------------------|------|
 | `JwtManager<TAuthInfo>` | JWT 토큰 관리 |
 | `@Authorize(perms?)` | 권한 설정 데코레이터 |
 
 ### 설정
+
+JSON 설정 로드 (파일 변경 시 자동 갱신).
+
+```ts
+const config = ConfigManager.get<IConfig>("config.json");
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `ConfigManager` | JSON 설정 로드/캐싱 (파일 감시) |
 
 ## storage
 
+```ts
+import { StorageFactory, FtpStorageClient, SftpStorageClient } from "@simplysm/storage";
+```
+
 ### 스토리지
+
+FTP/SFTP 파일 전송.
+
+```ts
+const client = await StorageFactory.connect({
+  type: "sftp",
+  host: "ftp.example.com",
+  user: "user",
+  password: "xxx"
+});
+await client.put("local.txt", "/remote/path/file.txt");
+await client.close();
+```
+
 | 클래스 | 용도 |
 |--------|------|
 | `StorageFactory` | FTP/FTPS/SFTP 연결 팩토리 |
@@ -276,6 +612,7 @@ paths:
 | `SftpStorageClient` | SFTP 클라이언트 |
 
 ### Storage 주요 메서드
+
 | 메서드 | 용도 |
 |--------|------|
 | `connect(config)` | 연결 |

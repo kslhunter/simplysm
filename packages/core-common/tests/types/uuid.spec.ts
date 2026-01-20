@@ -80,5 +80,17 @@ describe("Uuid", () => {
     it("길이가 맞지 않는 UUID는 에러를 던진다", () => {
       expect(() => new Uuid("12345678-9abc")).toThrow();
     });
+
+    it("대문자 UUID를 정상적으로 파싱한다", () => {
+      const uuid = new Uuid("12345678-9ABC-DEF0-1234-56789ABCDEF0");
+
+      expect(uuid.toString()).toBe("12345678-9ABC-DEF0-1234-56789ABCDEF0");
+    });
+
+    it("대소문자 혼합 UUID를 정상적으로 파싱한다", () => {
+      const uuid = new Uuid("12345678-9AbC-DeF0-1234-56789AbCdEf0");
+
+      expect(uuid.toString()).toBe("12345678-9AbC-DeF0-1234-56789AbCdEf0");
+    });
   });
 });
