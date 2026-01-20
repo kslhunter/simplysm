@@ -16,6 +16,8 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/storage/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/service-common/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/claude/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/cli/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />

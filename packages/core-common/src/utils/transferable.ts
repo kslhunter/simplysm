@@ -1,12 +1,38 @@
-import type { Transferable } from "worker_threads";
 import { DateTime } from "../types/date-time";
 import { DateOnly } from "../types/date-only";
 import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
 
 /**
+ * Worker 간 전송 가능한 객체 타입
+ *
+ * 이 코드에서는 ArrayBuffer만 사용됩니다.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
+ */
+type Transferable = ArrayBuffer;
+
+/**
  * Transferable 변환 유틸리티
- * Worker 간 데이터 전송을 위한 직렬화/역직렬화
+ *
+ * Worker 간 데이터 전송을 위한 직렬화/역직렬화를 수행합니다.
+ * structuredClone이 지원하지 않는 커스텀 타입들을 처리합니다.
+ *
+ * 지원 타입:
+ * - Date, DateTime, DateOnly, Time, Uuid
+ * - Error (cause, code, detail 포함)
+ * - Uint8Array (다른 TypedArray는 미지원, 일반 객체로 처리됨)
+ * - Array, Map, Set, 일반 객체
+ *
+ * @note 순환 참조가 있으면 encode 시 TypeError 발생
+ * @note 동일 객체가 여러 곳에서 참조되는 DAG 구조도 순환 참조로 감지됨
+ *
+ * @example
+ * // Worker로 데이터 전송
+ * const { result, transferList } = TransferableConvert.encode(data);
+ * worker.postMessage(result, transferList);
+ *
+ * // Worker에서 데이터 수신
+ * const decoded = TransferableConvert.decode(event.data);
  */
 export abstract class TransferableConvert {
   //#region encode

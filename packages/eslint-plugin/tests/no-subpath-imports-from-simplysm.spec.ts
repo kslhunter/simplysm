@@ -201,5 +201,152 @@ describe("no-subpath-imports-from-simplysm 규칙", () => {
         ],
       });
     });
+
+    describe("작은따옴표 사용 시 따옴표 스타일 보존", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import { Something } from '@simplysm/sd-core-common/src';`,
+            output: `import { Something } from '@simplysm/sd-core-common';`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("type-only import에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import type { DateOnly } from "@simplysm/sd-core-common/src/types";`,
+            output: `import type { DateOnly } from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/types",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("export type에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `export type { DateOnly } from "@simplysm/sd-core-common/src/types";`,
+            output: `export type { DateOnly } from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/types",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("namespace import에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import * as CoreCommon from "@simplysm/sd-core-common/src";`,
+            output: `import * as CoreCommon from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("side-effect import에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import "@simplysm/sd-core-common/src/polyfills";`,
+            output: `import "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/polyfills",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("default import에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import SomeDefault from "@simplysm/sd-core-common/src/default";`,
+            output: `import SomeDefault from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src/default",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("mixed import (default + named)에서 src 경로 금지", () => {
+      ruleTester.run("no-subpath-imports-from-simplysm", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `import SomeDefault, { Something } from "@simplysm/sd-core-common/src";`,
+            output: `import SomeDefault, { Something } from "@simplysm/sd-core-common";`,
+            errors: [
+              {
+                messageId: "noSubpathImport",
+                data: {
+                  pkg: "sd-core-common",
+                  importPath: "@simplysm/sd-core-common/src",
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
   });
 });

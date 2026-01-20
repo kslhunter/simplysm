@@ -28,6 +28,16 @@ describe("Errors", () => {
       expect(error.message).toContain("main message");
     });
 
+    it("다단계 cause 체인을 처리한다", () => {
+      const root = new Error("root error");
+      const middle = new SdError(root, "middle error");
+      const top = new SdError(middle, "top error");
+
+      expect(top.message).toContain("top error");
+      expect(top.message).toContain("middle error");
+      expect(top.message).toContain("root error");
+    });
+
   });
 
   //#endregion

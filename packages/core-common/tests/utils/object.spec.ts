@@ -100,6 +100,34 @@ describe("ObjectUtils", () => {
       expect(cloned["self"]).toBe(cloned);
       expect(cloned).not.toBe(obj);
     });
+
+    it("RegExp를 복사한다", () => {
+      const regex = /test/gi;
+      const cloned = ObjectUtils.clone(regex);
+
+      expect(cloned).toEqual(regex);
+      expect(cloned).not.toBe(regex);
+      expect(cloned.source).toBe("test");
+      expect(cloned.flags).toBe("gi");
+    });
+
+    it("Error를 복사한다", () => {
+      const error = new Error("test error");
+      const cloned = ObjectUtils.clone(error);
+
+      expect(cloned.message).toBe("test error");
+      expect(cloned).not.toBe(error);
+    });
+
+    it("Error의 cause를 복사한다", () => {
+      const cause = new Error("cause error");
+      const error = new Error("test error", { cause });
+      const cloned = ObjectUtils.clone(error);
+
+      expect(cloned.message).toBe("test error");
+      expect(cloned.cause).toBeInstanceOf(Error);
+      expect((cloned.cause as Error).message).toBe("cause error");
+    });
   });
 
   //#endregion
@@ -149,6 +177,44 @@ describe("ObjectUtils", () => {
 
       expect(ObjectUtils.equal(uuid1, uuid2)).toBe(true);
       expect(ObjectUtils.equal(uuid1, uuid3)).toBe(false);
+    });
+
+    it("RegExp를 비교한다", () => {
+      const regex1 = /test/gi;
+      const regex2 = /test/gi;
+      const regex3 = /test/g;
+      const regex4 = /other/gi;
+
+      expect(ObjectUtils.equal(regex1, regex2)).toBe(true);
+      expect(ObjectUtils.equal(regex1, regex3)).toBe(false); // flags 다름
+      expect(ObjectUtils.equal(regex1, regex4)).toBe(false); // source 다름
+    });
+
+    it("Map을 비교한다", () => {
+      const map1 = new Map([
+        ["a", 1],
+        ["b", 2],
+      ]);
+      const map2 = new Map([
+        ["a", 1],
+        ["b", 2],
+      ]);
+      const map3 = new Map([
+        ["a", 1],
+        ["b", 3],
+      ]);
+
+      expect(ObjectUtils.equal(map1, map2)).toBe(true);
+      expect(ObjectUtils.equal(map1, map3)).toBe(false);
+    });
+
+    it("Set을 비교한다", () => {
+      const set1 = new Set([1, 2, 3]);
+      const set2 = new Set([1, 2, 3]);
+      const set3 = new Set([1, 2, 4]);
+
+      expect(ObjectUtils.equal(set1, set2)).toBe(true);
+      expect(ObjectUtils.equal(set1, set3)).toBe(false);
     });
 
     it("includes 옵션으로 특정 키만 비교한다", () => {
@@ -241,6 +307,13 @@ describe("ObjectUtils", () => {
 
       expect(result).toEqual({ a: 1 });
     });
+
+    it("서로 다른 타입을 병합하면 에러를 던진다", () => {
+      const source = { a: 1 };
+      const target = [1, 2, 3];
+
+      expect(() => ObjectUtils.merge(source, target as any)).toThrow();
+    });
   });
 
   describe("merge3()", () => {
@@ -295,6 +368,30 @@ describe("ObjectUtils", () => {
       expect(result.a).toBe(10); // source만 변경
       expect(result.b).toBe(2); // 둘 다 다르게 변경 → 충돌 → origin 유지
       expect(result.c).toBe(4); // target만 변경
+    });
+
+    it("중첩된 객체에서 충돌을 감지한다", () => {
+      const origin = { a: { b: 1, c: 2 } };
+      const source = { a: { b: 10, c: 2 } };
+      const target = { a: { b: 20, c: 2 } };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(true);
+      expect(result.a.b).toBe(1); // 둘 다 다르게 변경 → 충돌 → origin 유지
+      expect(result.a.c).toBe(2);
+    });
+
+    it("중첩된 객체에서 각각 다른 내부 키가 변경되어도 객체 단위로 비교하므로 충돌로 감지된다", () => {
+      // merge3는 키 단위로 비교하므로, { a: {...} } 전체를 비교함
+      // source.a와 origin.a가 다르고, target.a와 origin.a도 다르면 충돌
+      const origin = { a: { b: 1, c: 2 } };
+      const source = { a: { b: 10, c: 2 } };
+      const target = { a: { b: 1, c: 20 } };
+      const { conflict, result } = ObjectUtils.merge3(source, origin, target);
+
+      expect(conflict).toBe(true);
+      expect(result.a.b).toBe(1); // 충돌 시 origin 유지
+      expect(result.a.c).toBe(2);
     });
   });
 
@@ -425,6 +522,12 @@ describe("ObjectUtils", () => {
 
       expect(obj.a.b.c).toBe(2);
     });
+
+    it("빈 체인은 에러를 던진다", () => {
+      const obj: Record<string, unknown> = {};
+
+      expect(() => ObjectUtils.setChainValue(obj, "", 1)).toThrow();
+    });
   });
 
   describe("deleteChainValue()", () => {
@@ -463,6 +566,12 @@ describe("ObjectUtils", () => {
 
       expect(obj.arr[0]).toEqual({});
       expect(obj.arr[1]).toEqual({ name: "second" });
+    });
+
+    it("빈 체인은 에러를 던진다", () => {
+      const obj = { a: 1 };
+
+      expect(() => ObjectUtils.deleteChainValue(obj, "")).toThrow();
     });
   });
 

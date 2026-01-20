@@ -36,6 +36,17 @@ export class XmlConvert {
   //#region stringify
   /**
    * 객체를 XML 문자열로 직렬화
+   * @param obj 직렬화할 객체
+   * @param options fast-xml-parser XmlBuilderOptions (선택)
+   * @returns XML 문자열
+   * @example
+   * XmlConvert.stringify({
+   *   root: {
+   *     $: { id: "1" },
+   *     item: [{ _: "hello" }, { _: "world" }],
+   *   },
+   * });
+   * // '<root id="1"><item>hello</item><item>world</item></root>'
    */
   static stringify(obj: unknown, options?: XmlBuilderOptions): string {
     return new XMLBuilder({

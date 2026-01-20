@@ -56,11 +56,16 @@ yarn vitest run packages/core-common/tests/types/date-only.spec.ts
 
 ## 코드 컨벤션
 
+### 스크립트 (`packages/*/scripts/`)
+
+- 독립적으로 실행되는 진입점으로, 각 스크립트는 자체 완결성을 갖는다.
+- 스크립트 간 코드 중복이 있더라도 공통 모듈로 분리하지 않는다.
+
 ### ESLint 커스텀 규칙
 
 - `no-hard-private`: 하드 private(`#field`) 사용 제한
 - `no-subpath-imports-from-simplysm`: 서브패스 임포트 금지
-- `ts-no-throw-not-implement-error`: NotImplementedError throw 경고
+- `ts-no-throw-not-implemented-error`: NotImplementedError 사용 경고
 
 ## ORM DB 호환성
 

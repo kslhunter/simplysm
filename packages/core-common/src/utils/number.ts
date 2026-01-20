@@ -42,7 +42,22 @@ export class NumberUtils {
 
   //#region 체크
   /**
-   * undefined, 0 체크
+   * undefined, null, 0 체크 (타입 가드)
+   *
+   * 타입 가드로 동작하여, true 반환 시 `val`이 `0 | undefined`임을 보장합니다.
+   * false 반환 시 `val`이 0이 아닌 유효한 숫자임이 보장됩니다.
+   *
+   * @param val 체크할 값
+   * @returns undefined, null, 0이면 true
+   * @example
+   * const count: number | undefined = getValue();
+   * if (NumberUtils.isNullOrEmpty(count)) {
+   *   // count: 0 | undefined
+   *   console.log("비어있음");
+   * } else {
+   *   // count: number (0이 아닌 값)
+   *   console.log(`개수: ${count}`);
+   * }
    */
   static isNullOrEmpty(val: number | undefined): val is 0 | undefined {
     return val == null || val === 0;
@@ -52,6 +67,13 @@ export class NumberUtils {
   //#region 포맷팅
   /**
    * 숫자를 천단위 구분자가 포함된 문자열로 포맷팅
+   * @param val 포맷팅할 숫자
+   * @param digit 소수점 자릿수 옵션
+   * @param digit.max 최대 소수점 자릿수
+   * @param digit.min 최소 소수점 자릿수 (부족하면 0으로 채움)
+   * @example
+   * NumberUtils.format(1234.567, { max: 2 }) // "1,234.57"
+   * NumberUtils.format(1234, { min: 2 }) // "1,234.00"
    */
   static format(
     val: number,

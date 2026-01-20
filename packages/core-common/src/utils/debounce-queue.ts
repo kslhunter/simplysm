@@ -1,6 +1,18 @@
 /**
  * 비동기 함수 디바운스 큐
- * 마지막 요청만 실행하고 이전 요청은 무시
+ *
+ * 짧은 시간 내에 여러 번 호출되면 마지막 요청만 실행하고 이전 요청은 무시합니다.
+ * 입력 필드 자동완성, 연속적인 상태 변경 배치 처리 등에 유용합니다.
+ *
+ * @example
+ * const queue = new DebounceQueue(300); // 300ms 딜레이
+ * queue.run(() => console.log("1")); // 무시됨
+ * queue.run(() => console.log("2")); // 무시됨
+ * queue.run(() => console.log("3")); // 300ms 후 실행됨
+ *
+ * @example
+ * // 에러 처리
+ * queue.on("error", (err) => console.error(err));
  */
 import { SdError } from "../errors/sd-error";
 import { SdEventEmitter } from "./sd-event-emitter";
@@ -17,6 +29,9 @@ export class DebounceQueue extends SdEventEmitter<DebounceQueueEvents> {
   private _isRunning = false;
   private _timer: ReturnType<typeof setTimeout> | undefined;
 
+  /**
+   * @param _delay 디바운스 지연 시간 (밀리초). 생략 시 즉시 실행 (다음 이벤트 루프)
+   */
   constructor(private readonly _delay?: number) {
     super();
   }

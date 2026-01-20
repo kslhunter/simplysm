@@ -7,6 +7,12 @@ import { globalIgnores } from "eslint/config";
 
 //#region 공통 규칙 설정
 
+/**
+ * JS/TS 공통 규칙
+ * - no-console: 프로덕션 코드에서 console 사용 금지
+ * - no-warning-comments: TODO/FIXME 주석 경고
+ * - eqeqeq: `===` 사용 강제 (null 체크는 `== null` 허용)
+ */
 const commonRules = {
   "no-console": ["error"],
   "no-warning-comments": ["warn"],
@@ -14,7 +20,7 @@ const commonRules = {
 };
 
 /**
- * browser/neutral 패키지에서 Node.js 전용 API 사용 금지
+ * 모든 패키지에서 Node.js 전용 API 사용 금지 (코드 통일)
  * - Buffer → Uint8Array, BytesUtils 사용
  * - EventEmitter → SdEventEmitter 사용
  */
@@ -49,6 +55,11 @@ const noNodeBuiltinsRules = {
   ],
 };
 
+/**
+ * 미사용 import 처리 규칙
+ * - 미사용 import 자동 제거
+ * - `_` 접두사 변수/인자는 미사용 허용 (예: `_unused`)
+ */
 const unusedImportsRules = {
   "unused-imports/no-unused-imports": ["error"],
   "unused-imports/no-unused-vars": [

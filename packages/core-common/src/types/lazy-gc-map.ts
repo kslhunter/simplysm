@@ -27,11 +27,17 @@ export class LazyGcMap<K, V> {
   // GC 타이머
   private _gcTimer?: ReturnType<typeof setInterval>;
 
+  /**
+   * @param _options 설정 옵션
+   * @param _options.gcInterval GC 주기 (밀리초). 예: 10000 (10초)
+   * @param _options.expireTime 만료 시간 (밀리초). 마지막 접근 후 이 시간이 지나면 삭제됨. 예: 60000 (60초)
+   * @param _options.onExpire 만료 시 호출되는 콜백. 비동기 함수도 가능하며, 에러 발생 시 로깅 후 계속 진행됨
+   */
   constructor(
     private readonly _options: {
-      gcInterval: number; // GC 주기 (예: 10초)
-      expireTime: number; // 만료 시간 (예: 60초)
-      onExpire?: (key: K, value: V) => void | Promise<void>; // 만료 시 콜백
+      gcInterval: number;
+      expireTime: number;
+      onExpire?: (key: K, value: V) => void | Promise<void>;
     },
   ) {}
 
@@ -87,7 +93,12 @@ export class LazyGcMap<K, V> {
     this._stopGc();
   }
 
-  // 없으면 생성 후 반환
+  /**
+   * 키에 해당하는 값을 반환하고, 없으면 factory로 생성 후 저장하여 반환
+   * @param key 조회할 키
+   * @param factory 키가 없을 때 값을 생성하는 함수
+   * @returns 기존 값 또는 새로 생성된 값
+   */
   getOrCreate(key: K, factory: () => V): V {
     const item = this._map.get(key);
     if (item == null) {
@@ -100,19 +111,19 @@ export class LazyGcMap<K, V> {
     return item.value;
   }
 
-  // 값들만 순회 (Iterator)
+  /** 값들만 순회 (Iterator) */
   *values(): IterableIterator<V> {
     for (const item of this._map.values()) {
       yield item.value;
     }
   }
 
-  // 키들만 순회 (Iterator)
+  /** 키들만 순회 (Iterator) */
   *keys(): IterableIterator<K> {
     yield* this._map.keys();
   }
 
-  // 엔트리 순회 (Iterator)
+  /** 엔트리 순회 (Iterator) */
   *entries(): IterableIterator<[K, V]> {
     for (const [key, item] of this._map.entries()) {
       yield [key, item.value];

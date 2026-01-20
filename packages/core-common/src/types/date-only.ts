@@ -3,6 +3,11 @@ import { DateTimeFormatUtils } from "../utils/date-format";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
+ *
+ * @example
+ * const today = new DateOnly();
+ * const specific = new DateOnly(2025, 1, 15);
+ * const parsed = DateOnly.parse("2025-01-15");
  */
 export class DateOnly {
   private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -63,6 +68,8 @@ export class DateOnly {
     }
 
     // ISO 8601 등 기타 형식 (Date.parse 사용, 타임존 변환 적용)
+    // Date.parse()는 'Z' 접미사가 있는 ISO 8601을 UTC tick으로 반환
+    // 로컬 날짜를 얻기 위해 타임존 오프셋을 보정 (getTimezoneOffset: UTC-로컬 분 단위, KST=-540)
     const offsetMinutes = new Date().getTimezoneOffset();
     const parsedTick = Date.parse(str) - offsetMinutes * 60 * 1000;
     if (!Number.isNaN(parsedTick)) {

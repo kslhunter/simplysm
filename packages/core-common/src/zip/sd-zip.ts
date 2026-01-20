@@ -9,7 +9,6 @@ import {
   ZipReader,
   ZipWriter,
 } from "@zip.js/zip.js";
-import "../extensions/array-ext";
 
 export interface ZipArchiveProgress {
   fileName: string;
@@ -17,11 +16,40 @@ export interface ZipArchiveProgress {
   extractedSize: number;
 }
 
+/**
+ * ZIP 아카이브 처리 클래스
+ *
+ * ZIP 파일의 읽기, 쓰기, 압축/해제를 처리합니다.
+ * 내부 캐시를 사용하여 동일 파일의 중복 압축 해제를 방지합니다.
+ *
+ * @example
+ * // ZIP 파일 읽기
+ * await using archive = new ZipArchive(zipBytes);
+ * const content = await archive.getAsync("file.txt");
+ *
+ * @example
+ * // ZIP 파일 생성
+ * await using archive = new ZipArchive();
+ * archive.write("file.txt", textBytes);
+ * archive.write("data.json", jsonBytes);
+ * const zipBytes = await archive.compressAsync();
+ *
+ * @example
+ * // 전체 압축 해제 (진행률 표시)
+ * await using archive = new ZipArchive(zipBytes);
+ * const files = await archive.extractAllAsync((progress) => {
+ *   console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
+ * });
+ */
 export class ZipArchive {
   private readonly _reader?: ZipReader<Blob | Uint8Array>;
   private readonly _cache = new Map<string, Uint8Array | undefined>();
   private _entries?: Awaited<ReturnType<ZipReader<Blob | Uint8Array>["getEntries"]>>;
 
+  /**
+   * ZipArchive 생성
+   * @param data ZIP 데이터 (생략 시 새 아카이브 생성)
+   */
   constructor(data?: Blob | Uint8Array) {
     if (!data) return;
 
@@ -51,7 +79,9 @@ export class ZipArchive {
     if (entries == null) return this._cache;
 
     // 압축 해제 대상 크기 총합 계산
-    const totalSize = entries.filter((e) => !e.directory).sum((e) => e.uncompressedSize);
+    const totalSize = entries
+      .filter((e) => !e.directory)
+      .reduce((acc, e) => acc + e.uncompressedSize, 0);
 
     let totalExtracted = 0;
     for (const entry of entries) {
@@ -111,7 +141,7 @@ export class ZipArchive {
       return undefined;
     }
 
-    const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
+    const entry = entries.find((item) => item.filename === fileName) as FileEntry | undefined;
     if (!entry) {
       this._cache.set(fileName, undefined);
       return undefined;
@@ -138,7 +168,7 @@ export class ZipArchive {
       return false;
     }
 
-    const entry = entries.single((item) => item.filename === fileName) as FileEntry | undefined;
+    const entry = entries.find((item) => item.filename === fileName) as FileEntry | undefined;
     return entry !== undefined;
   }
   //#endregion

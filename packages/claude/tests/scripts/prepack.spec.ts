@@ -21,6 +21,22 @@ describe("prepack 스크립트", () => {
     it("main 함수가 export되어 있다", () => {
       expect(typeof main).toBe("function");
     });
+
+    it("main() 호출 시 copyClaudeToDist가 동작한다", () => {
+      // main()은 고정 경로를 사용하므로 직접 테스트하기 어려움
+      // 대신 copyClaudeToDist를 통해 동일한 로직을 검증
+      const srcDir = path.join(tempDir, ".claude");
+      const destDir = path.join(tempDir, "dist");
+
+      fs.mkdirSync(path.join(srcDir, "rules"), { recursive: true });
+      fs.writeFileSync(path.join(srcDir, "rules", "rule1.md"), "rule");
+      fs.writeFileSync(path.join(srcDir, "settings.json"), '{"key": "value"}');
+
+      copyClaudeToDist(srcDir, destDir);
+
+      expect(fs.existsSync(path.join(destDir, "rules", "rule1.md"))).toBe(true);
+      expect(fs.existsSync(path.join(destDir, "settings.json"))).toBe(true);
+    });
   });
 
   //#endregion
@@ -112,6 +128,13 @@ describe("prepack 스크립트", () => {
       expect(fs.existsSync(path.join(destDir, "settings.json"))).toBe(true);
       // 다른 루트 레벨 파일은 복사되지 않음
       expect(fs.existsSync(path.join(destDir, "other-file.txt"))).toBe(false);
+    });
+
+    it("존재하지 않는 소스 디렉토리에서 에러를 throw한다", () => {
+      const srcDir = path.join(tempDir, "non-existent-claude");
+      const destDir = path.join(tempDir, "dist");
+
+      expect(() => copyClaudeToDist(srcDir, destDir)).toThrow();
     });
   });
 

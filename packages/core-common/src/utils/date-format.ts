@@ -44,6 +44,52 @@ export class DateTimeFormatUtils {
 
   //#endregion
 
+  /**
+   * 포맷 문자열에 따라 날짜/시간을 문자열로 변환한다
+   *
+   * @param format 포맷 문자열
+   * @param args 날짜/시간 구성 요소
+   *
+   * @remarks
+   * C#과 동일한 포맷 문자열을 지원한다:
+   *
+   * | 포맷 | 설명 | 예시 |
+   * |------|------|------|
+   * | yyyy | 4자리 연도 | 2024 |
+   * | yy | 2자리 연도 | 24 |
+   * | MM | 0으로 패딩된 월 | 01~12 |
+   * | M | 월 | 1~12 |
+   * | ddd | 요일 (한글) | 일, 월, 화, 수, 목, 금, 토 |
+   * | dd | 0으로 패딩된 일 | 01~31 |
+   * | d | 일 | 1~31 |
+   * | tt | 오전/오후 | 오전, 오후 |
+   * | hh | 0으로 패딩된 12시간 | 01~12 |
+   * | h | 12시간 | 1~12 |
+   * | HH | 0으로 패딩된 24시간 | 00~23 |
+   * | H | 24시간 | 0~23 |
+   * | mm | 0으로 패딩된 분 | 00~59 |
+   * | m | 분 | 0~59 |
+   * | ss | 0으로 패딩된 초 | 00~59 |
+   * | s | 초 | 0~59 |
+   * | fff | 밀리초 (3자리) | 000~999 |
+   * | ff | 밀리초 (2자리) | 00~99 |
+   * | f | 밀리초 (1자리) | 0~9 |
+   * | zzz | 타임존 오프셋 (±HH:mm) | +09:00 |
+   * | zz | 타임존 오프셋 (±HH) | +09 |
+   * | z | 타임존 오프셋 (±H) | +9 |
+   *
+   * @example
+   * ```typescript
+   * DateTimeFormatUtils.format("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
+   * // "2024-03-15"
+   *
+   * DateTimeFormatUtils.format("yyyy년 M월 d일 (ddd)", { year: 2024, month: 3, day: 15 });
+   * // "2024년 3월 15일 (금)"
+   *
+   * DateTimeFormatUtils.format("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
+   * // "오후 2:30:45"
+   * ```
+   */
   static format(
     format: string,
     args: {

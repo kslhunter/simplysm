@@ -1,5 +1,7 @@
 /**
  * Array 확장 메서드
+ *
+ * @remarks 각 메서드의 TSDoc은 타입 정의 파일(array-ext.types.ts) 참조
  */
 
 import "./map-ext";
@@ -88,13 +90,10 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return Promise.all(this.map(fn));
   },
 
-  /**
-   * 배열을 키별로 그룹화
-   *
-   * @note 성능 고려사항:
-   * - primitive 키 (string, number 등): O(n) - Map 기반
-   * - 객체 키: O(n²) - ObjectUtils.equal 비교로 인해 대용량 배열에서 성능 저하 가능
-   */
+  // 배열을 키별로 그룹화
+  // 성능 고려사항:
+  // - primitive 키 (string, number 등): O(n) - Map 기반
+  // - 객체 키: O(n²) - ObjectUtils.equal 비교
   groupBy<T, K, V>(
     keySelector: (item: T, index: number) => K,
     valueSelector?: (item: T, index: number) => V,
@@ -252,6 +251,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const key = keySelector(item, i);
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
+      // undefined 값은 "없음"으로 취급하여 덮어쓰기 허용
       if (result[key] !== undefined) {
         throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: key });
       }

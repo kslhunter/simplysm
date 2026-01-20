@@ -65,9 +65,10 @@ ZIP 파일 압축/해제 유틸리티입니다.
 | `XmlConvert` | XML 파싱/변환 |
 | `TransferableConvert` | Worker 데이터 변환 |
 | `StringUtils` | 한글 조사 처리, 케이스 변환 (camelCase, kebab-case 등) |
+| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C# 호환 포맷 문자열) |
 | `NumberUtils` | 숫자 파싱/포맷팅 |
 | `BytesUtils` | Uint8Array 연결, hex 변환 |
-| `Wait` | 비동기 대기 유틸리티 |
+| `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 타임아웃) |
 | `DebounceQueue` | 비동기 디바운스 큐 (마지막 요청만 실행) |
 | `SerialQueue` | 비동기 직렬 큐 (순차 실행) |
 | `SdEventEmitter` | EventTarget 래퍼 (type-safe 이벤트) |
@@ -78,13 +79,21 @@ ZIP 파일 압축/해제 유틸리티입니다.
 Array, Map, Set 프로토타입 확장입니다.
 
 **Array 확장 메서드**:
-- 검색: `single()`, `first()`, `last()`, `ofType()`
-- 비동기: `filterAsync()`, `mapAsync()`, `parallelAsync()`
-- 변환: `mapMany()`, `groupBy()`, `toMap()`, `toArrayMap()`, `toTree()`
+- 검색: `single()`, `first()`, `last()`, `ofType()`, `filterExists()`
+- 비동기: `filterAsync()`, `mapAsync()`, `mapManyAsync()`, `parallelAsync()`
+- 변환: `mapMany()`, `groupBy()`, `toMap()`, `toArrayMap()`, `toSetMap()`, `toMapValues()`, `toObject()`, `toTree()`
 - 정렬: `orderBy()`, `orderByDesc()`
-- 비교: `distinct()`, `diffs()`, `oneWayDiffs()`
-- 통계: `sum()`, `min()`, `max()`
-- 변경: `distinctThis()`, `insert()`, `remove()`, `toggle()`, `clear()`
+- 비교: `distinct()`, `diffs()`, `oneWayDiffs()`, `merge()`
+- 통계: `sum()`, `min()`, `max()`, `shuffle()`
+- 변경: `distinctThis()`, `orderByThis()`, `orderByDescThis()`, `insert()`, `remove()`, `toggle()`, `clear()`
+
+**Map 확장 메서드**:
+- `getOrCreate()`: 키에 해당하는 값이 없으면 새 값 설정 후 반환
+- `update()`: 키에 해당하는 값을 함수로 업데이트
+
+**Set 확장 메서드**:
+- `adds()`: 여러 값을 한 번에 추가
+- `toggle()`: 값 토글 (있으면 제거, 없으면 추가)
 
 ## 주의사항
 
@@ -102,10 +111,11 @@ Array, Map, Set 프로토타입 확장입니다.
 
 ```typescript
 // using 문 사용 (권장)
-using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 });
+// gcInterval: GC 실행 간격 (ms), expireTime: 항목 만료 시간 (ms)
+using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
 
 // 또는 명시적 destroy() 호출
-const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 });
+const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
 try {
   // ... 사용
 } finally {

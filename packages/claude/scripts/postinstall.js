@@ -2,15 +2,33 @@ import fs from "fs";
 import path from "path";
 import pino from "pino";
 import { fileURLToPath } from "url";
-import { copyDir } from "./utils/copy-dir.js";
 
 const logger = pino({ name: "@simplysm/claude" });
+
+/**
+ * 디렉토리를 재귀적으로 복사한다.
+ * @param {string} src - 소스 디렉토리 경로
+ * @param {string} dest - 대상 디렉토리 경로
+ * @throws {Error} 복사 실패 시
+ */
+function copyDir(src, dest) {
+  try {
+    fs.cpSync(src, dest, { recursive: true });
+  } catch (err) {
+    logger.error({ err, src, dest }, "copyDir 실패");
+    throw err;
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgDir = path.resolve(__dirname, "..");
 const distDir = path.join(pkgDir, "dist");
 
-/** @returns {string | undefined} */
+/**
+ * @simplysm/claude가 devDependencies에 포함된 프로젝트 루트를 찾음
+ * 현재 작업 디렉토리부터 상위 디렉토리로 탐색
+ * @returns {string | undefined} 프로젝트 루트 경로 또는 찾지 못한 경우 undefined
+ */
 function findProjectRoot() {
   let currentDir = process.cwd();
 
@@ -38,18 +56,19 @@ function findProjectRoot() {
 
 /**
  * dist 디렉토리 내용을 대상 디렉토리로 복사
+ * - 하위 디렉토리는 재귀적으로 복사
+ * - 루트 레벨 파일 중 settings.json만 복사 (다른 파일 무시)
  * @param {string} srcDir - 소스 디렉토리 (dist)
  * @param {string} destDir - 대상 디렉토리 (.claude)
  */
 function copyDistToTarget(srcDir, destDir) {
-  for (const item of fs.readdirSync(srcDir)) {
-    const srcPath = path.join(srcDir, item);
-    const destPath = path.join(destDir, item);
-    const stat = fs.statSync(srcPath);
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
 
-    if (stat.isDirectory()) {
+    if (entry.isDirectory()) {
       copyDir(srcPath, destPath);
-    } else if (item === "settings.json") {
+    } else if (entry.name === "settings.json") {
       // settings.json 파일도 복사
       fs.mkdirSync(destDir, { recursive: true });
       fs.copyFileSync(srcPath, destPath);
@@ -84,4 +103,4 @@ if (isDirectRun) {
 }
 
 // 테스트용 내보내기
-export { main, findProjectRoot, copyDistToTarget };
+export { main, findProjectRoot, copyDistToTarget, copyDir };

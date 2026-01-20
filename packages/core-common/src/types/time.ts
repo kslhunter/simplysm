@@ -4,15 +4,27 @@ import { DateTime } from "./date-time";
 
 /**
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)
+ *
+ * 날짜 정보 없이 시간만 저장하는 불변 클래스입니다.
+ * 24시간을 초과하거나 음수인 경우 자동으로 정규화됩니다.
+ *
+ * @example
+ * const now = new Time();
+ * const specific = new Time(10, 30, 0);
+ * const parsed = Time.parse("10:30:00");
  */
 export class Time {
   private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   private readonly _tick: number;
 
+  /** 현재 시간으로 생성 */
   constructor();
+  /** 시분초밀리초로 생성 */
   constructor(hour: number, minute: number, second?: number, millisecond?: number);
+  /** tick (밀리초)으로 생성 */
   constructor(tick: number);
+  /** Date 객체에서 시간 부분만 추출하여 생성 */
   constructor(date: Date);
   constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
     if (arg1 === undefined) {
@@ -38,10 +50,25 @@ export class Time {
           arg1.getHours() * 60 * 60 * 1000) %
         Time.MS_PER_DAY;
     } else {
-      this._tick = arg1 % Time.MS_PER_DAY;
+      let tick = arg1 % Time.MS_PER_DAY;
+      if (tick < 0) tick += Time.MS_PER_DAY;
+      this._tick = tick;
     }
   }
 
+  /**
+   * 문자열을 파싱하여 Time 인스턴스를 생성
+   *
+   * @param str 시간 문자열
+   * @returns 파싱된 Time 인스턴스
+   * @throws ArgumentError 지원하지 않는 형식인 경우
+   *
+   * @example
+   * Time.parse("10:30:00")           // HH:mm:ss
+   * Time.parse("10:30:00.123")       // HH:mm:ss.fff
+   * Time.parse("오전 10:30:00")       // 오전/오후 HH:mm:ss
+   * Time.parse("2025-01-15T10:30:00") // ISO 8601 (시간 부분만 추출)
+   */
   static parse(str: string): Time {
     const match1 = /(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
     if (match1 != null) {

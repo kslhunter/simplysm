@@ -10,26 +10,50 @@ import type { Time } from "../types/time";
 //#region 인터페이스
 
 export interface ReadonlyArrayExt<T> {
+  /**
+   * 조건에 맞는 단일 요소 반환
+   * @param predicate 필터 조건 (생략 시 배열 전체 대상)
+   * @returns 요소가 없으면 undefined
+   * @throws ArgumentError 조건에 맞는 요소가 2개 이상이면 발생
+   */
   single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+  /**
+   * 첫 번째 요소 반환
+   * @param predicate 필터 조건 (생략 시 첫 번째 요소 반환)
+   * @returns 요소가 없으면 undefined
+   */
   first(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+  /** 비동기 필터 (순차 실행) */
   filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
 
+  /**
+   * 마지막 요소 반환
+   * @param predicate 필터 조건 (생략 시 마지막 요소 반환)
+   * @returns 요소가 없으면 undefined
+   */
   last(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+  /** null/undefined 제거 */
   filterExists(): NonNullable<T>[];
 
+  /** 특정 타입의 요소만 필터링 */
   ofType<N extends T>(type: Type<N>): N[];
 
+  /** 비동기 매핑 (순차 실행) */
   mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
+  /** 중첩 배열 평탄화 */
   mapMany(): T;
 
+  /** 매핑 후 평탄화 */
   mapMany<R>(selector: (item: T, index: number) => R[]): R[];
 
+  /** 비동기 매핑 후 평탄화 (순차 실행) */
   mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
 
+  /** 비동기 병렬 처리 (Promise.all 사용) */
   parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
   /**
@@ -92,6 +116,42 @@ export interface ReadonlyArrayExt<T> {
     valueSelector: (item: T, index: number) => V,
   ): Record<string, V>;
 
+  /**
+   * 평탄한 배열을 트리 구조로 변환한다
+   *
+   * @param keyProp 각 항목의 고유 키 속성명
+   * @param parentKey 부모 항목의 키를 참조하는 속성명
+   * @returns 루트 항목들의 배열 (각 항목에 children 속성 추가)
+   *
+   * @remarks
+   * - parentKey 값이 null/undefined인 항목이 루트가 된다
+   * - 내부적으로 toArrayMap을 사용하여 O(n) 복잡도로 처리한다
+   * - 원본 항목은 복사되어 children 속성이 추가된다
+   *
+   * @example
+   * ```typescript
+   * interface Item {
+   *   id: number;
+   *   parentId?: number;
+   *   name: string;
+   * }
+   *
+   * const items: Item[] = [
+   *   { id: 1, name: "root" },
+   *   { id: 2, parentId: 1, name: "child1" },
+   *   { id: 3, parentId: 1, name: "child2" },
+   *   { id: 4, parentId: 2, name: "grandchild" },
+   * ];
+   *
+   * const tree = items.toTree("id", "parentId");
+   * // [{ id: 1, name: "root", children: [
+   * //   { id: 2, name: "child1", children: [
+   * //     { id: 4, name: "grandchild", children: [] }
+   * //   ]},
+   * //   { id: 3, name: "child2", children: [] }
+   * // ]}]
+   * ```
+   */
   toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): TreeArray<T>[];
 
   /**

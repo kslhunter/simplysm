@@ -89,6 +89,24 @@ describe("JsonConvert", () => {
       expect(parsed.data.name).toBe("Error");
     });
 
+    it("Error의 확장 속성(code, detail, cause)을 직렬화한다", () => {
+      const cause = new Error("원인 에러");
+      const error = new Error("test error") as Error & { code: string; detail: object };
+      error.code = "ERR_CODE";
+      error.detail = { key: "value" };
+      (error as Error & { cause: Error }).cause = cause;
+
+      const json = JsonConvert.stringify(error);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.__type__).toBe("Error");
+      expect(parsed.data.message).toBe("test error");
+      expect(parsed.data.code).toBe("ERR_CODE");
+      expect(parsed.data.detail).toEqual({ key: "value" });
+      expect(parsed.data.cause.__type__).toBe("Error");
+      expect(parsed.data.cause.data.message).toBe("원인 에러");
+    });
+
     it("hideBytes 옵션으로 Uint8Array를 숨긴다", () => {
       const obj = { data: new TextEncoder().encode("hello") };
       const json = JsonConvert.stringify(obj, { hideBytes: true });
@@ -102,6 +120,21 @@ describe("JsonConvert", () => {
       const json = JsonConvert.stringify(obj, { space: 2 });
 
       expect(json).toBe('{\n  "a": 1\n}');
+    });
+
+    it("replacer 옵션으로 값을 변환한다", () => {
+      const obj = { a: 1, b: 2, c: 3 };
+      const json = JsonConvert.stringify(obj, {
+        replacer: (key, value) => {
+          if (key === "b") return undefined;
+          return value;
+        },
+      });
+      const parsed = JSON.parse(json);
+
+      expect(parsed.a).toBe(1);
+      expect(parsed.b).toBeUndefined();
+      expect(parsed.c).toBe(3);
     });
   });
 
@@ -181,6 +214,24 @@ describe("JsonConvert", () => {
       expect((result as Map<string, number>).get("a")).toBe(1);
     });
 
+    it("Error를 복원한다 (확장 속성 포함)", () => {
+      const cause = new Error("원인 에러");
+      const error = new Error("test error") as Error & { code: string; detail: object; cause: Error };
+      error.code = "ERR_CODE";
+      error.detail = { key: "value" };
+      error.cause = cause;
+
+      const json = JsonConvert.stringify(error);
+      const result = JsonConvert.parse<typeof error>(json);
+
+      expect(result).toBeInstanceOf(Error);
+      expect(result.message).toBe("test error");
+      expect(result.code).toBe("ERR_CODE");
+      expect(result.detail).toEqual({ key: "value" });
+      expect(result.cause).toBeInstanceOf(Error);
+      expect(result.cause.message).toBe("원인 에러");
+    });
+
     it("Uint8Array를 복원한다", () => {
       const json = '{"__type__":"Uint8Array","data":"68656c6c6f"}';
       const result = JsonConvert.parse(json);
@@ -212,6 +263,14 @@ describe("JsonConvert", () => {
       expect(result.set).toBeInstanceOf(Set);
       expect(result.map).toBeInstanceOf(Map);
       expect(result.bytes).toBeInstanceOf(Uint8Array);
+    });
+
+    it("hideBytes로 직렬화된 데이터는 parse 시 에러가 발생한다", () => {
+      const obj = { data: new TextEncoder().encode("hello") };
+      const json = JsonConvert.stringify(obj, { hideBytes: true });
+
+      // "__hidden__"은 유효하지 않은 hex이므로 parse 시 에러 발생
+      expect(() => JsonConvert.parse<typeof obj>(json)).toThrow("유효하지 않은 hex 문자가 포함되어 있습니다");
     });
 
     it("잘못된 JSON은 에러를 던진다", () => {

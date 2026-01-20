@@ -17,6 +17,8 @@ export class ObjectUtils {
    *
    * @note 함수, Symbol은 복사되지 않고 참조가 유지됨
    * @note WeakMap, WeakSet은 지원되지 않음 (일반 객체로 복사되어 빈 객체가 됨)
+   * @note 프로토타입 체인은 유지됨 (Object.setPrototypeOf 사용)
+   * @note getter/setter는 현재 값으로 평가되어 복사됨 (접근자 속성 자체는 복사되지 않음)
    */
   static clone<T>(source: T): T {
     return this._clone(source) as T;
@@ -139,8 +141,8 @@ export class ObjectUtils {
    * @param source 비교 대상 1
    * @param target 비교 대상 2
    * @param options 비교 옵션
-   * @param options.includes 비교할 키 목록. 지정 시 해당 키만 비교
-   * @param options.excludes 비교에서 제외할 키 목록
+   * @param options.includes 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용)
+   * @param options.excludes 비교에서 제외할 키 목록 (최상위 레벨에만 적용)
    * @param options.ignoreArrayIndex 배열 순서 무시 여부. true 시 O(n²) 복잡도
    * @param options.onlyOneDepth 얕은 비교 여부. true 시 1단계만 비교 (참조 비교)
    *
@@ -177,6 +179,10 @@ export class ObjectUtils {
 
     if (source instanceof Uuid && target instanceof Uuid) {
       return source.toString() === target.toString();
+    }
+
+    if (source instanceof RegExp && target instanceof RegExp) {
+      return source.source === target.source && source.flags === target.flags;
     }
 
     if (source instanceof Array && target instanceof Array) {
@@ -337,6 +343,11 @@ export class ObjectUtils {
     return true;
   }
 
+  /**
+   * Set 깊은 비교
+   * @note deep equal 비교(`onlyOneDepth: false`)는 O(n²) 시간 복잡도를 가짐.
+   *   primitive Set이나 성능이 중요한 경우 `onlyOneDepth: true` 사용 권장
+   */
   private static _equalSet(
     source: Set<unknown>,
     target: Set<unknown>,
@@ -456,8 +467,27 @@ export class ObjectUtils {
   }
 
   /**
-   * 3-way 병합 (source, origin, target)
-   * 충돌 여부와 결과를 반환
+   * 3-way 병합
+   *
+   * source, origin, target 세 객체를 비교하여 병합합니다.
+   * - source와 origin이 같고 target이 다르면 → target 값 사용
+   * - target과 origin이 같고 source가 다르면 → source 값 사용
+   * - source와 target이 같으면 → 해당 값 사용
+   * - 세 값이 모두 다르면 → 충돌 발생 (origin 값 유지)
+   *
+   * @param source 변경된 버전 1
+   * @param origin 기준 버전 (공통 조상)
+   * @param target 변경된 버전 2
+   * @param optionsObj 키별 비교 옵션
+   * @returns conflict: 충돌 발생 여부, result: 병합 결과
+   *
+   * @example
+   * const { conflict, result } = ObjectUtils.merge3(
+   *   { a: 1, b: 2 },  // source
+   *   { a: 1, b: 1 },  // origin
+   *   { a: 2, b: 1 },  // target
+   * );
+   * // conflict: false, result: { a: 2, b: 2 }
    */
   static merge3<
     S extends Record<string, unknown>,
@@ -506,6 +536,13 @@ export class ObjectUtils {
 
   /**
    * 객체에서 특정 키들을 제외
+   * @param item 원본 객체
+   * @param omitKeys 제외할 키 배열
+   * @returns 지정된 키가 제외된 새 객체
+   * @example
+   * const user = { name: "Alice", age: 30, email: "alice@example.com" };
+   * ObjectUtils.omit(user, ["email"]);
+   * // { name: "Alice", age: 30 }
    */
   static omit<T extends Record<string, unknown>, K extends keyof T>(
     item: T,
@@ -522,6 +559,13 @@ export class ObjectUtils {
 
   /**
    * 조건에 맞는 키들을 제외
+   * @param item 원본 객체
+   * @param omitKeyFn 키를 받아 제외 여부를 반환하는 함수 (true면 제외)
+   * @returns 조건에 맞는 키가 제외된 새 객체
+   * @example
+   * const data = { name: "Alice", _internal: "secret", age: 30 };
+   * ObjectUtils.omitByFilter(data, (key) => key.startsWith("_"));
+   * // { name: "Alice", age: 30 }
    */
   static omitByFilter<T extends Record<string, unknown>>(
     item: T,
@@ -538,6 +582,13 @@ export class ObjectUtils {
 
   /**
    * 객체에서 특정 키들만 선택
+   * @param item 원본 객체
+   * @param keys 선택할 키 배열
+   * @returns 지정된 키만 포함된 새 객체
+   * @example
+   * const user = { name: "Alice", age: 30, email: "alice@example.com" };
+   * ObjectUtils.pick(user, ["name", "age"]);
+   * // { name: "Alice", age: 30 }
    */
   static pick<T extends Record<string, unknown>, K extends keyof T>(
     item: T,

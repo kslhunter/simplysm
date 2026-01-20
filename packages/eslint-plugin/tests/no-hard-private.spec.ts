@@ -511,5 +511,256 @@ class MyClass {
         ],
       });
     });
+
+    describe("async # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  async #asyncMethod() {
+    return await fetch("/api");
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private async _asyncMethod() {
+    return await fetch("/api");
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("static async # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  static async #staticAsyncMethod() {
+    return await fetch("/api");
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private static async _staticAsyncMethod() {
+    return await fetch("/api");
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("generator # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  *#generatorMethod() {
+    yield 1;
+    yield 2;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private *_generatorMethod() {
+    yield 1;
+    yield 2;
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("복수 데코레이터가 있는 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  @Decorator1
+  @Decorator2
+  #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  @Decorator1
+  @Decorator2
+  private _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("클래스 표현식에서 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+const MyClass = class {
+  #field = 1;
+};
+            `.trim(),
+            output: `
+const MyClass = class {
+  private _field = 1;
+};
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("중첩 클래스에서 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class Outer {
+  Inner = class {
+    #innerField = 1;
+  };
+}
+            `.trim(),
+            output: `
+class Outer {
+  Inner = class {
+    private _innerField = 1;
+  };
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("타입 어노테이션이 있는 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  #count: number = 0;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _count: number = 0;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("optional 타입의 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  #name?: string;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _name?: string;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("다른 인스턴스의 # private 필드 접근 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  #value = 1;
+  compare(other: MyClass) {
+    return other.#value;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _value = 1;
+  compare(other: MyClass) {
+    return other._value;
+  }
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("같은 클래스 인스턴스 간 # private 필드 비교 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  #id = 1;
+  equals(other: MyClass) {
+    return this.#id === other.#id;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _id = 1;
+  equals(other: MyClass) {
+    return this._id === other._id;
+  }
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
   });
 });

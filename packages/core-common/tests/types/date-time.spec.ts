@@ -39,6 +39,31 @@ describe("DateTime", () => {
       expect(dt.month).toBe(3);
       expect(dt.day).toBe(15);
     });
+
+    it("윤년 2월 29일을 생성한다", () => {
+      const dt = new DateTime(2024, 2, 29);
+
+      expect(dt.year).toBe(2024);
+      expect(dt.month).toBe(2);
+      expect(dt.day).toBe(29);
+      expect(dt.isValid).toBe(true);
+    });
+
+    it("평년 2월 29일은 3월 1일로 자동 조정된다 (JS Date 동작)", () => {
+      const dt = new DateTime(2023, 2, 29);
+
+      expect(dt.year).toBe(2023);
+      expect(dt.month).toBe(3);
+      expect(dt.day).toBe(1);
+    });
+
+    it("유효하지 않은 월(13월)은 다음 해 1월로 자동 조정된다 (JS Date 동작)", () => {
+      const dt = new DateTime(2024, 13, 1);
+
+      expect(dt.year).toBe(2025);
+      expect(dt.month).toBe(1);
+      expect(dt.day).toBe(1);
+    });
   });
 
   describe("parse()", () => {
@@ -259,6 +284,32 @@ describe("DateTime", () => {
 
       expect(dt2.minute).toBe(31);
       expect(dt2.second).toBe(15);
+    });
+
+    it("addMilliseconds", () => {
+      const dt1 = new DateTime(2024, 3, 15, 10, 30, 45, 500);
+      const dt2 = dt1.addMilliseconds(600);
+
+      expect(dt2.second).toBe(46);
+      expect(dt2.millisecond).toBe(100);
+    });
+  });
+
+  describe("timezoneOffsetMinutes", () => {
+    it("현재 타임존 오프셋을 반환한다", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45);
+      const expected = new Date().getTimezoneOffset() * -1;
+
+      expect(dt.timezoneOffsetMinutes).toBe(expected);
+    });
+  });
+
+  describe("dayOfWeek", () => {
+    it("요일을 반환한다 (일~토: 0~6)", () => {
+      // 2024-03-15는 금요일 (5)
+      const dt = new DateTime(2024, 3, 15);
+
+      expect(dt.dayOfWeek).toBe(5);
     });
   });
 

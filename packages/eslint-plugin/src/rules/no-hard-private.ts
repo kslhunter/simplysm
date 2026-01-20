@@ -2,6 +2,16 @@ import type { TSESTree } from "@typescript-eslint/utils";
 import type { RuleFix } from "@typescript-eslint/utils/ts-eslint";
 import { createRule } from "../utils/create-rule";
 
+/**
+ * ECMAScript private 필드(`#field`) 사용을 제한하고 TypeScript `private` 키워드 사용을 강제하는 ESLint 규칙
+ *
+ * @remarks
+ * 이 규칙은 다음을 검사합니다:
+ * - 클래스 필드 선언: `#field`
+ * - 클래스 메서드 선언: `#method()`
+ * - 클래스 접근자 선언: `accessor #field`
+ * - 멤버 접근 표현식: `this.#field`
+ */
 export default createRule({
   name: "no-hard-private",
   meta: {
@@ -44,12 +54,13 @@ export default createRule({
               // 데코레이터가 있다면, 마지막 데코레이터 '다음' 토큰 앞에 삽입
               // (@Deco private static _foo)
               if (parent.decorators.length > 0) {
-                const lastDecorator = parent.decorators[parent.decorators.length - 1];
+                const lastDecorator = parent.decorators.at(-1)!;
                 tokenToInsertBefore = sourceCode.getTokenAfter(lastDecorator);
               }
 
               // tokenToInsertBefore는 이제 'static', 'async', 'readonly' 또는 변수명('_foo')입니다.
               // 이 앞에 'private '를 붙이면 자연스럽게 'private static ...' 순서가 됩니다.
+              // tokenToInsertBefore가 null인 경우는 AST 파싱 오류 등 예외 상황이므로 fix를 생략한다.
               if (tokenToInsertBefore) {
                 fixes.push(fixer.insertTextBefore(tokenToInsertBefore, "private "));
               }

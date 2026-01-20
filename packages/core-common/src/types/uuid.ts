@@ -2,7 +2,12 @@ import { ArgumentError } from "../errors/argument-error";
 
 /**
  * UUID v4 클래스
- * crypto.getRandomValues 기반 (Chrome 79+ 지원)
+ *
+ * crypto.getRandomValues 기반으로 암호학적으로 안전한 UUID를 생성한다. (Chrome 79+, Node.js 공용)
+ *
+ * @example
+ * const id = Uuid.new();
+ * const fromStr = new Uuid("550e8400-e29b-41d4-a716-446655440000");
  */
 export class Uuid {
   // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)

@@ -61,6 +61,24 @@ describe("Time", () => {
 
       expect(time.hour).toBe(1);
     });
+
+    it("음수 tick으로 생성하면 24시간 내로 정규화된다", () => {
+      // -1시간 = -3600000ms → 23시간
+      const time = new Time(-3600000);
+
+      expect(time.hour).toBe(23);
+      expect(time.minute).toBe(0);
+      expect(time.second).toBe(0);
+    });
+
+    it("음수 tick(-1ms)은 23:59:59.999로 정규화된다", () => {
+      const time = new Time(-1);
+
+      expect(time.hour).toBe(23);
+      expect(time.minute).toBe(59);
+      expect(time.second).toBe(59);
+      expect(time.millisecond).toBe(999);
+    });
   });
 
   //#endregion

@@ -2,9 +2,23 @@ import fs from "fs";
 import path from "path";
 import pino from "pino";
 import { fileURLToPath } from "url";
-import { copyDir } from "./utils/copy-dir.js";
 
 const logger = pino({ name: "@simplysm/claude" });
+
+/**
+ * 디렉토리를 재귀적으로 복사한다.
+ * @param {string} src - 소스 디렉토리 경로
+ * @param {string} dest - 대상 디렉토리 경로
+ * @throws {Error} 복사 실패 시
+ */
+function copyDir(src, dest) {
+  try {
+    fs.cpSync(src, dest, { recursive: true });
+  } catch (err) {
+    logger.error({ err, src, dest }, "copyDir 실패");
+    throw err;
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgDir = path.resolve(__dirname, "..");
@@ -13,8 +27,12 @@ const distDir = path.join(pkgDir, "dist");
 
 /**
  * .claude 디렉토리 내용을 dist로 복사
+ * - 기존 dist 폴더 삭제 후 새로 생성
+ * - 하위 디렉토리만 복사 (루트 레벨 파일 중 settings.json만 복사)
+ * - settings.local.json은 복사하지 않음
  * @param {string} srcDir - 소스 디렉토리 (.claude)
  * @param {string} destDir - 대상 디렉토리 (dist)
+ * @throws {Error} 소스 디렉토리가 존재하지 않을 경우
  */
 function copyClaudeToDist(srcDir, destDir) {
   // dist 폴더 초기화
@@ -51,4 +69,4 @@ if (isDirectRun) {
 }
 
 // 테스트용 내보내기
-export { main, copyDir, copyClaudeToDist };
+export { main, copyClaudeToDist };

@@ -18,6 +18,13 @@ describe("Array.ext", () => {
 
       expect(arr.map((item) => item.a)).toEqual([3, 1, 2]);
     });
+
+    it("undefined 값은 오름차순 시 앞으로 정렬된다", () => {
+      const arr = [{ a: 2 }, { a: undefined }, { a: 1 }];
+      const result = arr.orderBy((item) => item.a);
+
+      expect(result.map((item) => item.a)).toEqual([undefined, 1, 2]);
+    });
   });
 
   describe("orderByDesc()", () => {
@@ -26,6 +33,13 @@ describe("Array.ext", () => {
       const result = arr.orderByDesc((item) => item.a);
 
       expect(result.map((item) => item.a)).toEqual([3, 2, 1]);
+    });
+
+    it("undefined 값은 내림차순 시 뒤로 정렬된다", () => {
+      const arr = [{ a: 2 }, { a: undefined }, { a: 1 }];
+      const result = arr.orderByDesc((item) => item.a);
+
+      expect(result.map((item) => item.a)).toEqual([2, 1, undefined]);
     });
   });
 
@@ -77,6 +91,37 @@ describe("Array.ext", () => {
       const result = arr.distinct({ matchAddress: true });
 
       expect(result).toHaveLength(2);
+    });
+
+    it("NaN을 포함한 배열에서 matchAddress: true로 중복을 제거한다", () => {
+      const arr = [NaN, 1, NaN, 2];
+      // Set은 SameValueZero 알고리즘을 사용하므로 NaN을 같은 값으로 취급
+      const result = arr.distinct(true);
+
+      expect(result.filter((v) => Number.isNaN(v))).toHaveLength(1);
+      expect(result).toContain(1);
+      expect(result).toContain(2);
+    });
+
+    it("-0과 0을 matchAddress: true로 동일하게 취급한다", () => {
+      const arr = [0, -0, 1];
+      // Set은 SameValueZero 알고리즘을 사용하므로 0과 -0을 같은 값으로 취급
+      const result = arr.distinct(true);
+
+      expect(result).toHaveLength(2);
+      expect(result).toContain(0);
+      expect(result).toContain(1);
+    });
+
+    it("Symbol을 포함한 배열에서 matchAddress: true로 중복을 제거한다", () => {
+      const sym = Symbol("test");
+      const arr = [sym, 1, sym, 2];
+      const result = arr.distinct(true);
+
+      expect(result).toHaveLength(3);
+      expect(result).toContain(sym);
+      expect(result).toContain(1);
+      expect(result).toContain(2);
     });
   });
 
@@ -181,6 +226,13 @@ describe("Array.ext", () => {
 
       expect(() => arr.single((item) => item.id === 1)).toThrow();
     });
+
+    it("빈 배열은 undefined를 반환한다", () => {
+      const arr: { id: number }[] = [];
+      const result = arr.single((item) => item.id === 1);
+
+      expect(result).toBe(undefined);
+    });
   });
 
   describe("first()", () => {
@@ -247,6 +299,19 @@ describe("Array.ext", () => {
 
       expect(result).toBe(60);
     });
+
+    it("빈 배열은 0을 반환한다", () => {
+      const arr: number[] = [];
+      const result = arr.sum();
+
+      expect(result).toBe(0);
+    });
+
+    it("숫자가 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
+      const arr = ["a", "b", "c"];
+
+      expect(() => (arr as any).sum()).toThrow();
+    });
   });
 
   describe("min()", () => {
@@ -262,6 +327,19 @@ describe("Array.ext", () => {
       const result = arr.min((item) => item.value);
 
       expect(result).toBe(10);
+    });
+
+    it("빈 배열은 undefined를 반환한다", () => {
+      const arr: number[] = [];
+      const result = arr.min();
+
+      expect(result).toBe(undefined);
+    });
+
+    it("숫자/문자열이 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
+      const arr = [{ a: 1 }, { a: 2 }];
+
+      expect(() => (arr as any).min()).toThrow();
     });
   });
 
@@ -279,8 +357,20 @@ describe("Array.ext", () => {
 
       expect(result).toBe(30);
     });
-  });
 
+    it("빈 배열은 undefined를 반환한다", () => {
+      const arr: number[] = [];
+      const result = arr.max();
+
+      expect(result).toBe(undefined);
+    });
+
+    it("숫자/문자열이 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
+      const arr = [{ a: 1 }, { a: 2 }];
+
+      expect(() => (arr as any).max()).toThrow();
+    });
+  });
 
   //#endregion
 
@@ -325,6 +415,15 @@ describe("Array.ext", () => {
 
       expect(result.get(1)).toBe("a");
       expect(result.get(2)).toBe("b");
+    });
+
+    it("키가 중복되면 에러를 던진다", () => {
+      const arr = [
+        { id: 1, name: "a" },
+        { id: 1, name: "b" },
+      ];
+
+      expect(() => arr.toMap((item) => item.id)).toThrow("키가 중복되었습니다");
     });
   });
 

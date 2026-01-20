@@ -13,7 +13,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@eslint/compat": "^2.0.1",
     "@typescript-eslint/utils": "^8.53.0",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",

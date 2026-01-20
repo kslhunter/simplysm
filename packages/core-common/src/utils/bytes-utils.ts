@@ -4,7 +4,16 @@ import { ArgumentError } from "../errors/argument-error";
  * Uint8Array 유틸리티 (복잡한 연산만)
  */
 export const BytesUtils = {
-  /** 여러 Uint8Array 연결 */
+  /**
+   * 여러 Uint8Array 연결
+   * @param arrays 연결할 Uint8Array 배열
+   * @returns 연결된 새 Uint8Array
+   * @example
+   * const a = new Uint8Array([1, 2]);
+   * const b = new Uint8Array([3, 4]);
+   * BytesUtils.concat([a, b]);
+   * // Uint8Array([1, 2, 3, 4])
+   */
   concat(arrays: Uint8Array[]): Uint8Array {
     const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
     const result = new Uint8Array(total);
@@ -16,7 +25,14 @@ export const BytesUtils = {
     return result;
   },
 
-  /** hex 문자열로 변환 */
+  /**
+   * hex 문자열로 변환
+   * @param bytes 변환할 Uint8Array
+   * @returns 소문자 hex 문자열
+   * @example
+   * BytesUtils.toHex(new Uint8Array([255, 0, 127]));
+   * // "ff007f"
+   */
   toHex(bytes: Uint8Array): string {
     return Array.from(bytes)
       .map((b) => b.toString(16).padStart(2, "0"))

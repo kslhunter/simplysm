@@ -35,6 +35,23 @@ describe("StringUtils", () => {
       });
     });
 
+    describe("비한글 문자의 경우", () => {
+      it("영문자로 끝나면 받침 없음으로 처리한다", () => {
+        expect(StringUtils.getSuffix("ABC", "을")).toBe("를");
+        expect(StringUtils.getSuffix("test", "은")).toBe("는");
+      });
+
+      it("숫자로 끝나면 받침 없음으로 처리한다", () => {
+        expect(StringUtils.getSuffix("123", "을")).toBe("를");
+        expect(StringUtils.getSuffix("456", "은")).toBe("는");
+      });
+
+      it("빈 문자열은 받침 없음으로 처리한다", () => {
+        expect(StringUtils.getSuffix("", "을")).toBe("를");
+        expect(StringUtils.getSuffix("", "은")).toBe("는");
+      });
+    });
+
     describe("받침이 없는 경우", () => {
       it("'을' 타입은 '를'을 반환한다", () => {
         expect(StringUtils.getSuffix("나무", "을")).toBe("를");

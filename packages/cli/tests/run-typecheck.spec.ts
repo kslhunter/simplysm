@@ -31,6 +31,11 @@ vi.mock("@simplysm/core-node", () => ({
   },
   PathUtils: {
     posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    isChildPath: vi.fn((child: string, parent: string) => {
+      if (child === parent) return false;
+      const parentWithSlash = parent.endsWith("/") ? parent : parent + "/";
+      return child.startsWith(parentWithSlash);
+    }),
   },
 }));
 
@@ -49,6 +54,13 @@ vi.mock("ora", () => ({
     fail: vi.fn().mockReturnThis(),
     warn: vi.fn().mockReturnThis(),
     text: "",
+  })),
+}));
+
+const mockJitiImport = vi.fn();
+vi.mock("jiti", () => ({
+  createJiti: vi.fn(() => ({
+    import: mockJitiImport,
   })),
 }));
 
@@ -253,5 +265,109 @@ describe("runTypecheck", () => {
     await runTypecheck({ targets: [], debug: false });
 
     expect(process.exitCode).toBeUndefined();
+  });
+
+  it("경고만 있는 경우 exitCode 설정하지 않음", async () => {
+    vi.mocked(ts.readConfigFile).mockReturnValue({
+      config: {},
+    });
+
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      options: { lib: ["ES2022"], types: [] },
+      fileNames: ["/project/packages/core-common/src/index.ts"],
+      errors: [],
+    } as unknown as ts.ParsedCommandLine);
+
+    vi.mocked(FsUtils.exists).mockReturnValue(false);
+    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+
+    const mockProgram = {
+      getProgram: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
+    };
+    vi.mocked(ts.createIncrementalProgram).mockReturnValue(mockProgram as unknown as ts.BuilderProgram);
+
+    vi.mocked(ts.getPreEmitDiagnostics).mockReturnValue([
+      { category: ts.DiagnosticCategory.Warning, messageText: "Warning" },
+    ] as unknown as readonly ts.Diagnostic[]);
+
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([
+      { category: ts.DiagnosticCategory.Warning, messageText: "Warning" },
+    ] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
+
+    await runTypecheck({ targets: [], debug: false });
+
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("sd.config.ts의 default export가 함수가 아닌 경우 기본값 사용", async () => {
+    vi.mocked(ts.readConfigFile).mockReturnValue({
+      config: {},
+    });
+
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      options: { lib: ["ES2022"], types: [] },
+      fileNames: ["/project/packages/core-common/src/index.ts"],
+      errors: [],
+    } as unknown as ts.ParsedCommandLine);
+
+    vi.mocked(FsUtils.exists).mockReturnValue(false);
+    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+
+    // sd.config.ts의 default export가 함수가 아닌 객체인 경우
+    mockJitiImport.mockResolvedValue({
+      default: { packages: {} }, // 함수가 아닌 객체
+    });
+
+    const mockProgram = {
+      getProgram: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
+    };
+    vi.mocked(ts.createIncrementalProgram).mockReturnValue(mockProgram as unknown as ts.BuilderProgram);
+
+    vi.mocked(ts.getPreEmitDiagnostics).mockReturnValue([]);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+
+    // 에러 없이 기본값으로 진행되어야 함
+    await runTypecheck({ targets: [], debug: false });
+
+    expect(process.exitCode).toBeUndefined();
+    expect(ts.createIncrementalProgram).toHaveBeenCalled();
+  });
+
+  it("sd.config.ts에 default export가 없는 경우 기본값 사용", async () => {
+    vi.mocked(ts.readConfigFile).mockReturnValue({
+      config: {},
+    });
+
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      options: { lib: ["ES2022"], types: [] },
+      fileNames: ["/project/packages/core-common/src/index.ts"],
+      errors: [],
+    } as unknown as ts.ParsedCommandLine);
+
+    vi.mocked(FsUtils.exists).mockReturnValue(false);
+    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+
+    // sd.config.ts에 default export가 없는 경우
+    mockJitiImport.mockResolvedValue({
+      someOtherExport: () => ({}),
+    });
+
+    const mockProgram = {
+      getProgram: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
+    };
+    vi.mocked(ts.createIncrementalProgram).mockReturnValue(mockProgram as unknown as ts.BuilderProgram);
+
+    vi.mocked(ts.getPreEmitDiagnostics).mockReturnValue([]);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+
+    // 에러 없이 기본값으로 진행되어야 함
+    await runTypecheck({ targets: [], debug: false });
+
+    expect(process.exitCode).toBeUndefined();
+    expect(ts.createIncrementalProgram).toHaveBeenCalled();
   });
 });

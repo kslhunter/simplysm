@@ -1,7 +1,20 @@
-import { AST_NODE_TYPES, ESLintUtils, type TSESTree } from "@typescript-eslint/utils";
-import type ts from "typescript";
+import { AST_NODE_TYPES, ASTUtils, type TSESTree } from "@typescript-eslint/utils";
 import { createRule } from "../utils/create-rule";
 
+/**
+ * `@simplysm/core-common`의 `NotImplementedError` 사용을 감지하여 경고하는 ESLint 규칙
+ *
+ * @remarks
+ * 이 규칙은 `@simplysm/core-common`에서 import된 `NotImplementedError`를 `new`로 생성하는 코드를 감지합니다.
+ * 미구현 코드가 프로덕션에 포함되는 것을 방지합니다.
+ *
+ * 지원하는 import 형태:
+ * - named import: `import { NotImplementedError } from "@simplysm/core-common"`
+ * - aliased import: `import { NotImplementedError as NIE } from "@simplysm/core-common"`
+ * - namespace import: `import * as CC from "@simplysm/core-common"` → `new CC.NotImplementedError()`
+ *
+ * 동적 import(`await import(...)`)는 감지하지 않습니다.
+ */
 export default createRule({
   name: "ts-no-throw-not-implemented-error",
   meta: {
@@ -16,60 +29,64 @@ export default createRule({
   },
   defaultOptions: [],
   create(context) {
-    const parserServices = ESLintUtils.getParserServices(context);
-    const checker = parserServices.program.getTypeChecker();
-
-    const tryGetThrowArgumentType = (node: TSESTree.Node): ts.Type | undefined => {
-      switch (node.type) {
-        case AST_NODE_TYPES.Identifier:
-        case AST_NODE_TYPES.CallExpression:
-        case AST_NODE_TYPES.NewExpression:
-        case AST_NODE_TYPES.MemberExpression:
-          return checker.getTypeAtLocation(parserServices.esTreeNodeToTSNodeMap.get(node));
-
-        case AST_NODE_TYPES.AssignmentExpression:
-          return tryGetThrowArgumentType(node.right);
-
-        case AST_NODE_TYPES.SequenceExpression:
-          return tryGetThrowArgumentType(node.expressions[node.expressions.length - 1]);
-
-        case AST_NODE_TYPES.LogicalExpression: {
-          const left = tryGetThrowArgumentType(node.left);
-          return left === undefined ? tryGetThrowArgumentType(node.right) : left;
-        }
-
-        case AST_NODE_TYPES.ConditionalExpression: {
-          const consequent = tryGetThrowArgumentType(node.consequent);
-          return consequent === undefined ? tryGetThrowArgumentType(node.alternate) : consequent;
-        }
-
-        default:
-          return undefined;
-      }
-    };
-
     /**
-     * throw 문의 인자가 NotImplementedError인지 검사하고 경고를 보고합니다.
-     * @remarks await/yield 표현식은 런타임에 결과가 결정되므로 정적 분석에서 제외됩니다.
+     * identifier가 @simplysm/core-common에서 import된 것인지 확인
+     * @param identifier - 확인할 identifier
+     * @param expectedImportedName - named import인 경우 확인할 원본 이름 (namespace import는 undefined)
      */
-    const checkThrowArgument = (node: TSESTree.Node | null): void => {
-      if (!node) return;
+    function isImportedFromSimplysm(
+      identifier: TSESTree.Identifier,
+      expectedImportedName: string | undefined,
+    ): boolean {
+      const scope = context.sourceCode.getScope(identifier);
+      const variable = ASTUtils.findVariable(scope, identifier.name);
+      if (!variable) return false;
 
-      if (
-        node.type === AST_NODE_TYPES.AwaitExpression ||
-        node.type === AST_NODE_TYPES.YieldExpression
-      ) {
-        return;
+      for (const def of variable.defs) {
+        if (def.type !== "ImportBinding") continue;
+        if (def.parent.type !== AST_NODE_TYPES.ImportDeclaration) continue;
+        if (def.parent.source.value !== "@simplysm/core-common") continue;
+
+        // named/aliased import: import { NotImplementedError } 또는 import { NotImplementedError as NIE }
+        if (def.node.type === AST_NODE_TYPES.ImportSpecifier && expectedImportedName != null) {
+          const imported = def.node.imported;
+          if (imported.type === AST_NODE_TYPES.Identifier && imported.name === expectedImportedName) {
+            return true;
+          }
+        }
+
+        // namespace import: import * as CC
+        if (def.node.type === AST_NODE_TYPES.ImportNamespaceSpecifier && expectedImportedName == null) {
+          return true;
+        }
       }
 
-      const type = tryGetThrowArgumentType(node);
-      if (type?.getSymbol()?.getName() === "NotImplementedError") {
-        let msg: string | undefined;
+      return false;
+    }
 
+    return {
+      NewExpression(node: TSESTree.NewExpression) {
+        let shouldReport = false;
+
+        // Case 1: new NotImplementedError() 또는 new NIE() (named/aliased import)
+        if (node.callee.type === AST_NODE_TYPES.Identifier) {
+          shouldReport = isImportedFromSimplysm(node.callee, "NotImplementedError");
+        }
+
+        // Case 2: new CC.NotImplementedError() (namespace import)
         if (
-          node.type === AST_NODE_TYPES.NewExpression &&
-          node.arguments[0]?.type === AST_NODE_TYPES.Literal
+          node.callee.type === AST_NODE_TYPES.MemberExpression &&
+          node.callee.property.type === AST_NODE_TYPES.Identifier &&
+          node.callee.property.name === "NotImplementedError" &&
+          node.callee.object.type === AST_NODE_TYPES.Identifier
         ) {
+          shouldReport = isImportedFromSimplysm(node.callee.object, undefined);
+        }
+
+        if (!shouldReport) return;
+
+        let msg: string | undefined;
+        if (node.arguments[0]?.type === AST_NODE_TYPES.Literal) {
           msg = String(node.arguments[0].value ?? "");
         }
 
@@ -78,12 +95,6 @@ export default createRule({
           messageId: "noThrowNotImplementedError",
           data: { text: msg ?? "구현되어있지 않습니다" },
         });
-      }
-    };
-
-    return {
-      ThrowStatement(node: TSESTree.ThrowStatement) {
-        checkThrowArgument(node.argument);
       },
     };
   },

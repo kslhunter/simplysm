@@ -3,32 +3,99 @@
  * IDE 코드 하이라이팅 지원용 (실제 동작은 문자열 조합 + 들여쓰기 정리)
  */
 
-/** JavaScript 코드 하이라이팅 */
+/**
+ * JavaScript 코드 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const code = js`
+ *   function hello() {
+ *     return "world";
+ *   }
+ * `;
+ */
 export function js(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }
 
-/** TypeScript 코드 하이라이팅 */
+/**
+ * TypeScript 코드 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const code = ts`
+ *   interface User {
+ *     name: string;
+ *     age: number;
+ *   }
+ * `;
+ */
 export function ts(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }
 
-/** HTML 마크업 하이라이팅 */
+/**
+ * HTML 마크업 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const markup = html`
+ *   <div class="container">
+ *     <span>${name}</span>
+ *   </div>
+ * `;
+ */
 export function html(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }
 
-/** MSSQL T-SQL 하이라이팅 */
+/**
+ * MSSQL T-SQL 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const query = tsql`
+ *   SELECT TOP 10 *
+ *   FROM Users
+ *   WHERE Name LIKE '%${keyword}%'
+ * `;
+ */
 export function tsql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }
 
-/** MySQL SQL 하이라이팅 */
+/**
+ * MySQL SQL 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const query = mysql`
+ *   SELECT *
+ *   FROM users
+ *   LIMIT 10
+ * `;
+ */
 export function mysql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }
 
-/** PostgreSQL SQL 하이라이팅 */
+/**
+ * PostgreSQL SQL 하이라이팅용 템플릿 태그
+ * @param strings 템플릿 문자열 배열
+ * @param values 보간된 값들
+ * @returns 들여쓰기가 정리된 문자열
+ * @example
+ * const query = pgsql`
+ *   SELECT *
+ *   FROM users
+ *   OFFSET 0 LIMIT 10
+ * `;
+ */
 export function pgsql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
 }

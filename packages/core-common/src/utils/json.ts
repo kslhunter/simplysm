@@ -21,6 +21,12 @@ export class JsonConvert {
    * 객체를 JSON 문자열로 직렬화
    * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Uint8Array 등 커스텀 타입 지원
    *
+   * @param obj 직렬화할 객체
+   * @param options 직렬화 옵션
+   * @param options.space JSON 들여쓰기 (숫자: 공백 수, 문자열: 들여쓰기 문자열)
+   * @param options.replacer 커스텀 replacer 함수. 기본 타입 변환 전에 호출됨
+   * @param options.hideBytes true 시 Uint8Array 내용을 "__hidden__"으로 대체 (로깅용). 이 옵션으로 직렬화한 결과는 parse()로 원본 Uint8Array를 복원할 수 없음
+   *
    * @warning **Worker 환경 사용 금지**
    * 내부적으로 `Date.prototype.toJSON`을 임시 제거합니다.
    * Worker 또는 멀티스레드 환경에서 동시 호출 시 경쟁 조건이 발생하여
@@ -41,7 +47,7 @@ export class JsonConvert {
     if (globalScope.WorkerGlobalScope !== undefined && globalScope.window === undefined) {
       throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");
     }
-    // Node.js worker_threads 감지
+    // Node.js worker_threads 감지 (worker_threads 모듈이 로드된 경우에만 threadId 존재)
     const processObj = globalThis as { process?: { threadId?: number } };
     if (processObj.process?.threadId !== undefined && processObj.process.threadId !== 0) {
       throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");

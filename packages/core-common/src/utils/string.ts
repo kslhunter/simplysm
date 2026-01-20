@@ -102,7 +102,17 @@ export class StringUtils {
   );
 
   /**
-   * 전각 문자를 반각으로 변환
+   * 전각(Full-width) 문자를 반각(Half-width) 문자로 변환
+   *
+   * 변환 대상:
+   * - 전각 영문 대문자 (Ａ-Ｚ → A-Z)
+   * - 전각 숫자 (０-９ → 0-9)
+   * - 전각 공백 (　 → 일반 공백)
+   * - 전각 괄호 (（） → ())
+   *
+   * @example
+   * replaceSpecialDefaultChar("Ａ１２３") // "A123"
+   * replaceSpecialDefaultChar("（株）") // "(株)"
    */
   static replaceSpecialDefaultChar(str: string): string {
     return str.replace(

@@ -71,4 +71,14 @@ describe("Uuid", () => {
       expect(uuid.toString()).toBe("12345678-9abc-def0-1234-56789abcdef0");
     });
   });
+
+  describe("constructor", () => {
+    it("유효하지 않은 UUID 형식은 에러를 던진다", () => {
+      expect(() => new Uuid("invalid-uuid")).toThrow();
+    });
+
+    it("길이가 맞지 않는 UUID는 에러를 던진다", () => {
+      expect(() => new Uuid("12345678-9abc")).toThrow();
+    });
+  });
 });

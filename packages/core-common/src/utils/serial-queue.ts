@@ -1,6 +1,19 @@
 /**
  * 비동기 함수 직렬 큐
- * 큐에 추가된 함수들을 순서대로 실행
+ *
+ * 큐에 추가된 함수들을 순서대로 실행합니다.
+ * 한 작업이 완료되어야 다음 작업이 시작됩니다.
+ * 에러가 발생해도 후속 작업은 계속 실행됩니다.
+ *
+ * @example
+ * const queue = new SerialQueue();
+ * queue.run(async () => { await fetch("/api/1"); });
+ * queue.run(async () => { await fetch("/api/2"); }); // 1번 완료 후 실행
+ * queue.run(async () => { await fetch("/api/3"); }); // 2번 완료 후 실행
+ *
+ * @example
+ * // 에러 처리
+ * queue.on("error", (err) => console.error(err));
  */
 import { SdError } from "../errors/sd-error";
 import { Wait } from "./wait";

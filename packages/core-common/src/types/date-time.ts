@@ -3,11 +3,21 @@ import { DateTimeFormatUtils } from "../utils/date-format";
 
 /**
  * 날짜시간 클래스 (불변)
+ *
+ * JavaScript Date 객체를 래핑하여 불변성과 편리한 API를 제공합니다.
+ * 밀리초 단위까지 지원하며, 로컬 타임존을 기준으로 동작합니다.
+ *
+ * @example
+ * const now = new DateTime();
+ * const specific = new DateTime(2025, 1, 15, 10, 30, 0);
+ * const parsed = DateTime.parse("2025-01-15 10:30:00");
  */
 export class DateTime {
   readonly date: Date;
 
+  /** 현재 시간으로 생성 */
   constructor();
+  /** 연월일시분초밀리초로 생성 */
   constructor(
     year: number,
     month: number,
@@ -17,7 +27,9 @@ export class DateTime {
     second?: number,
     millisecond?: number,
   );
+  /** tick (밀리초)으로 생성 */
   constructor(tick: number);
+  /** Date 객체로 생성 */
   constructor(date: Date);
   constructor(
     arg1?: number | Date,
@@ -47,6 +59,20 @@ export class DateTime {
     }
   }
 
+  /**
+   * 문자열을 파싱하여 DateTime 인스턴스를 생성
+   *
+   * @param str 날짜시간 문자열
+   * @returns 파싱된 DateTime 인스턴스
+   * @throws ArgumentError 지원하지 않는 형식인 경우
+   *
+   * @example
+   * DateTime.parse("2025-01-15 10:30:00")     // yyyy-MM-dd HH:mm:ss
+   * DateTime.parse("2025-01-15 10:30:00.123") // yyyy-MM-dd HH:mm:ss.fff
+   * DateTime.parse("20250115103000")          // yyyyMMddHHmmss
+   * DateTime.parse("2025-01-15 오전 10:30:00") // yyyy-MM-dd 오전/오후 HH:mm:ss
+   * DateTime.parse("2025-01-15T10:30:00Z")    // ISO 8601
+   */
   static parse(str: string): DateTime {
     const parsedTick = Date.parse(str);
     if (!Number.isNaN(parsedTick)) {
@@ -304,6 +330,11 @@ export class DateTime {
 
   //#region 포맷팅
 
+  /**
+   * 지정된 포맷으로 문자열 변환
+   * @param format 포맷 문자열
+   * @see DateTimeFormatUtils.format 지원 포맷 문자열 참조
+   */
   toFormatString(format: string): string {
     return DateTimeFormatUtils.format(format, {
       year: this.year,

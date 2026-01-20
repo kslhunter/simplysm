@@ -148,4 +148,55 @@ describe("loadIgnorePatterns", () => {
       "ESLint 설정 파일이 올바른 형식이 아닙니다",
     );
   });
+
+  it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {
+    const cwd = "/project";
+    const mockExists = vi.mocked(FsUtils.exists);
+
+    mockExists.mockImplementation((filePath: string) => {
+      // eslint.config.ts는 없고 eslint.config.mts만 존재
+      return filePath === path.join(cwd, "eslint.config.mts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["mts-ignore/**"] }],
+    });
+
+    const patterns = await loadIgnorePatterns(cwd);
+
+    expect(patterns).toEqual(["mts-ignore/**"]);
+    expect(mockJitiImportFn).toHaveBeenCalledWith(
+      expect.stringContaining("eslint.config.mts"),
+    );
+  });
+
+  it("빈 배열 export 시 빈 패턴 배열 반환", async () => {
+    const cwd = "/project";
+    const mockExists = vi.mocked(FsUtils.exists);
+
+    mockExists.mockImplementation((filePath: string) => {
+      return filePath === path.join(cwd, "eslint.config.ts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [],
+    });
+
+    const patterns = await loadIgnorePatterns(cwd);
+
+    expect(patterns).toEqual([]);
+  });
+
+  it("jiti import 에러 발생 시 에러 전파", async () => {
+    const cwd = "/project";
+    const mockExists = vi.mocked(FsUtils.exists);
+
+    mockExists.mockImplementation((filePath: string) => {
+      return filePath === path.join(cwd, "eslint.config.ts");
+    });
+
+    mockJitiImportFn.mockRejectedValue(new Error("Syntax error in config file"));
+
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("Syntax error in config file");
+  });
 });

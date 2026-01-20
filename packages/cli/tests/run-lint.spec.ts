@@ -1,31 +1,23 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
 
-// 모킹 데이터 저장용 전역 객체
-const mockState = {
-  lintResults: [] as Array<{ errorCount: number; warningCount: number }>,
-  lintedFiles: [] as string[],
-  outputFixesCalled: false,
-};
-
-const mockJitiImportFn = vi.fn();
-
-// 외부 의존성 모킹
-vi.mock("glob", () => ({
-  glob: vi.fn(),
+// vi.hoisted로 호이스팅된 상태 관리
+const { mockState, mockJitiImportFn } = vi.hoisted(() => ({
+  mockState: {
+    lintResults: [] as Array<{ errorCount: number; warningCount: number }>,
+    lintedFiles: [] as string[],
+    outputFixesCalled: false,
+  },
+  mockJitiImportFn: vi.fn(),
 }));
 
-vi.mock("eslint", () => {
-  // 호이스팅된 환경에서 mockState를 참조하기 위해 함수 형태로 접근
-  const getMockState = () => (globalThis as { __mockState?: typeof mockState }).__mockState;
+// 외부 의존성 모킹
 
+vi.mock("eslint", () => {
   class MockESLint {
     lintFiles(files: string[]) {
-      const state = getMockState();
-      if (state) {
-        state.lintedFiles = files;
-      }
-      return Promise.resolve(state?.lintResults ?? []);
+      mockState.lintedFiles = files;
+      return Promise.resolve(mockState.lintResults);
     }
     loadFormatter() {
       return Promise.resolve({
@@ -33,10 +25,7 @@ vi.mock("eslint", () => {
       });
     }
     static outputFixes(_results: unknown) {
-      const state = getMockState();
-      if (state) {
-        state.outputFixesCalled = true;
-      }
+      mockState.outputFixesCalled = true;
     }
   }
 
@@ -46,18 +35,21 @@ vi.mock("eslint", () => {
 vi.mock("@simplysm/core-node", () => ({
   FsUtils: {
     exists: vi.fn(),
+    globAsync: vi.fn(),
   },
   PathUtils: {
     posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
+    isChildPath: vi.fn((child: string, parent: string) => {
+      if (child === parent) return false;
+      const parentWithSlash = parent.endsWith("/") ? parent : parent + "/";
+      return child.startsWith(parentWithSlash);
+    }),
   },
 }));
 
 vi.mock("jiti", () => ({
   createJiti: vi.fn(() => ({
-    import: (configPath: string) => {
-      const getMockJiti = () => (globalThis as { __mockJitiImportFn?: typeof mockJitiImportFn }).__mockJitiImportFn;
-      return getMockJiti()?.(configPath);
-    },
+    import: (configPath: string) => mockJitiImportFn(configPath),
   })),
 }));
 
@@ -79,7 +71,6 @@ vi.mock("ora", () => ({
   })),
 }));
 
-import { glob } from "glob";
 import { FsUtils } from "@simplysm/core-node";
 import { runLint } from "../src/commands/lint";
 
@@ -93,22 +84,16 @@ describe("runLint", () => {
     originalCwd = process.cwd;
     process.cwd = vi.fn().mockReturnValue("/project");
 
-    // 전역 상태 초기화
+    // 상태 초기화
     mockState.lintResults = [];
     mockState.lintedFiles = [];
     mockState.outputFixesCalled = false;
-
-    // globalThis에 상태 노출 (호이스팅된 모킹에서 접근 가능하도록)
-    (globalThis as { __mockState?: typeof mockState }).__mockState = mockState;
-    (globalThis as { __mockJitiImportFn?: typeof mockJitiImportFn }).__mockJitiImportFn = mockJitiImportFn;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     process.exitCode = originalExitCode;
     process.cwd = originalCwd;
-    delete (globalThis as { __mockState?: typeof mockState }).__mockState;
-    delete (globalThis as { __mockJitiImportFn?: typeof mockJitiImportFn }).__mockJitiImportFn;
   });
 
   it("린트 에러 발생 시 exitCode를 1로 설정", async () => {
@@ -121,7 +106,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 2, warningCount: 0 }];
 
@@ -140,7 +125,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -159,7 +144,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue([
+    vi.mocked(FsUtils.globAsync).mockResolvedValue([
       "/project/packages/core-common/src/index.ts",
       "/project/packages/core-node/src/index.ts",
       "/project/packages/cli/src/index.ts",
@@ -178,6 +163,39 @@ describe("runLint", () => {
     expect(mockState.lintedFiles[0]).toContain("core-common");
   });
 
+  it("여러 targets 지정 시 모든 경로의 파일 필터링", async () => {
+    const cwd = "/project";
+    vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
+      return filePath === path.join(cwd, "eslint.config.ts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["node_modules/**"] }],
+    });
+
+    vi.mocked(FsUtils.globAsync).mockResolvedValue([
+      "/project/packages/core-common/src/index.ts",
+      "/project/packages/core-node/src/index.ts",
+      "/project/packages/cli/src/index.ts",
+      "/project/tests/orm/src/test.spec.ts",
+    ]);
+
+    mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
+
+    await runLint({
+      targets: ["packages/core-common", "packages/cli"],
+      fix: false,
+      timing: false,
+      debug: false,
+    });
+
+    expect(mockState.lintedFiles).toHaveLength(2);
+    expect(mockState.lintedFiles.some((f) => f.includes("core-common"))).toBe(true);
+    expect(mockState.lintedFiles.some((f) => f.includes("cli"))).toBe(true);
+    expect(mockState.lintedFiles.some((f) => f.includes("core-node"))).toBe(false);
+    expect(mockState.lintedFiles.some((f) => f.includes("tests/orm"))).toBe(false);
+  });
+
   it("fix 옵션 활성화 시 ESLint.outputFixes 호출", async () => {
     const cwd = "/project";
     vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
@@ -188,7 +206,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
@@ -207,7 +225,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue([]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue([]);
 
     await runLint({ targets: [], fix: false, timing: false, debug: false });
 
@@ -237,7 +255,7 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 3 }];
 
@@ -246,7 +264,7 @@ describe("runLint", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("timing 옵션 활성화 시 TIMING 환경변수 설정", async () => {
+  it("timing 옵션 활성화 시 TIMING 환경변수 설정 및 복원", async () => {
     const cwd = "/project";
     vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -256,21 +274,92 @@ describe("runLint", () => {
       default: [{ ignores: ["node_modules/**"] }],
     });
 
-    vi.mocked(glob).mockResolvedValue(["/project/src/index.ts"]);
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
     const originalTiming = process.env["TIMING"];
+    delete process.env["TIMING"];
 
     await runLint({ targets: [], fix: false, timing: true, debug: false });
 
-    expect(process.env["TIMING"]).toBe("1");
+    // 실행 후 TIMING 환경변수가 복원되었는지 확인
+    expect(process.env["TIMING"]).toBeUndefined();
 
     // cleanup
-    if (originalTiming === undefined) {
-      delete process.env["TIMING"];
-    } else {
+    if (originalTiming !== undefined) {
       process.env["TIMING"] = originalTiming;
     }
+  });
+
+  it("TIMING 환경변수가 이미 설정된 경우 원래 값으로 복원", async () => {
+    const cwd = "/project";
+    vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
+      return filePath === path.join(cwd, "eslint.config.ts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["node_modules/**"] }],
+    });
+
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
+
+    mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
+
+    const originalTiming = process.env["TIMING"];
+    process.env["TIMING"] = "existing_value";
+
+    await runLint({ targets: [], fix: false, timing: true, debug: false });
+
+    // 실행 후 TIMING 환경변수가 원래 값으로 복원되었는지 확인
+    expect(process.env["TIMING"]).toBe("existing_value");
+
+    // cleanup
+    if (originalTiming !== undefined) {
+      process.env["TIMING"] = originalTiming;
+    } else {
+      delete process.env["TIMING"];
+    }
+  });
+
+  it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {
+    const cwd = "/project";
+    vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
+      // eslint.config.ts는 없고 eslint.config.mts만 존재
+      return filePath === path.join(cwd, "eslint.config.mts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["dist/**"] }],
+    });
+
+    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
+
+    mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
+
+    await runLint({ targets: [], fix: false, timing: false, debug: false });
+
+    // mts 파일이 로드되었는지 확인
+    expect(mockJitiImportFn).toHaveBeenCalledWith(
+      expect.stringContaining("eslint.config.mts"),
+    );
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("glob 에러 발생 시 에러 전파", async () => {
+    const cwd = "/project";
+    vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
+      return filePath === path.join(cwd, "eslint.config.ts");
+    });
+
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["node_modules/**"] }],
+    });
+
+    vi.mocked(FsUtils.globAsync).mockRejectedValue(new Error("Glob error"));
+
+    await expect(
+      runLint({ targets: [], fix: false, timing: false, debug: false }),
+    ).rejects.toThrow("Glob error");
   });
 });

@@ -49,6 +49,31 @@ describe("DateOnly", () => {
 
       expect(dateOnly1.tick).toBe(dateOnly2.tick);
     });
+
+    it("윤년 2월 29일을 생성한다", () => {
+      const dateOnly = new DateOnly(2024, 2, 29);
+
+      expect(dateOnly.year).toBe(2024);
+      expect(dateOnly.month).toBe(2);
+      expect(dateOnly.day).toBe(29);
+      expect(dateOnly.isValid).toBe(true);
+    });
+
+    it("평년 2월 29일은 3월 1일로 자동 조정된다 (JS Date 동작)", () => {
+      const dateOnly = new DateOnly(2023, 2, 29);
+
+      expect(dateOnly.year).toBe(2023);
+      expect(dateOnly.month).toBe(3);
+      expect(dateOnly.day).toBe(1);
+    });
+
+    it("유효하지 않은 월(13월)은 다음 해 1월로 자동 조정된다 (JS Date 동작)", () => {
+      const dateOnly = new DateOnly(2024, 13, 1);
+
+      expect(dateOnly.year).toBe(2025);
+      expect(dateOnly.month).toBe(1);
+      expect(dateOnly.day).toBe(1);
+    });
   });
 
   //#endregion
@@ -119,6 +144,11 @@ describe("DateOnly", () => {
     it("isValid를 반환한다", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.isValid).toBe(true);
+    });
+
+    it("유효하지 않은 날짜는 isValid가 false를 반환한다", () => {
+      const dateOnly = new DateOnly(NaN);
+      expect(dateOnly.isValid).toBe(false);
     });
   });
 
