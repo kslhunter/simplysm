@@ -2357,6 +2357,7 @@ __metadata:
     "@solidjs/testing-library": "npm:^0.8.10"
     solid-js: "npm:^1.9.10"
     tailwind-variants: "npm:^3.2.2"
+    tailwindcss: "npm:^4.1.18"
   peerDependencies:
     solid-js: ^1.9.0
   languageName: unknown
@@ -8114,6 +8115,13 @@ __metadata:
     tailwind-merge:
       optional: true
   checksum: 10c0/715a35b66c374f3bb234cd1e6737588cb7c0213c80a69bd62239d752d20c44377bec1d028c3ea7c28882d81384507fbae407813d348c142cb991c5a0ad063d48
+  languageName: node
+  linkType: hard
+
+"tailwindcss@npm:^4.1.18":
+  version: 4.1.18
+  resolution: "tailwindcss@npm:4.1.18"
+  checksum: 10c0/c79263cea0b2c577859b02f28284caa4eb3844e4d0f563686726ca97817c045c5c395a55bc776daaa351ba9e4aefa9a75bfbb43c22d86f3c573eecc2b87d6bf1
   languageName: node
   linkType: hard
 
