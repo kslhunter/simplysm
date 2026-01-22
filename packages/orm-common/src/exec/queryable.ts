@@ -171,7 +171,10 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
     ...queries: Queryable<TData, any>[]
   ): Queryable<TData & { self?: TBaseData[] }, never> {
     if (queries.length < 2) {
-      throw new Error("union은 최소 2개의 queryable이 필요합니다.");
+      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+        provided: queries.length,
+        minimum: 2,
+      });
     }
 
     const first = queries[0];
@@ -1734,7 +1737,12 @@ export class Queryable<
 //#region ========== Helper Functions ==========
 
 /**
- * FK 대상 테이블의 PK를 가져오고 FK/PK 컬럼 수 검증
+ * FK 컬럼 배열과 대상 테이블의 PK를 매칭하여 PK 컬럼명 배열을 반환
+ *
+ * @param fkCols - FK 컬럼명 배열
+ * @param targetTable - 참조 대상 테이블 빌더
+ * @returns 매칭된 PK 컬럼명 배열
+ * @throws FK/PK 컬럼 수 불일치 시
  */
 export function getMatchedPrimaryKeys(
   fkCols: string[],
@@ -1749,8 +1757,17 @@ export function getMatchedPrimaryKeys(
 
 /**
  * 중첩 columns 구조를 새 alias로 변환하는 공용 헬퍼
- * ExprUnit의 path를 새 alias와 평면화된 키로 변환
- * e.g., posts[0].userId: ["T1.posts", "userId"] → ["newAlias", "posts.userId"]
+ *
+ * 서브쿼리/JOIN 시 기존 alias를 새 alias로 변환하면서,
+ * 중첩 키(posts.userId)는 평면화된 키로 유지한다.
+ *
+ * 예: posts[0].userId 컬럼의 경로가 ["T1.posts", "userId"]인 경우,
+ *     새 alias "T2"로 변환하면 ["T2", "posts.userId"]가 된다.
+ *
+ * @param columns - 변환할 컬럼 레코드
+ * @param alias - 새 테이블 alias (예: "T2")
+ * @param keyPrefix - 현재 중첩 경로 (재귀 호출용, 기본값 "")
+ * @returns 변환된 컬럼 레코드
  */
 function transformColumnsAlias<T extends DataRecord>(
   columns: QueryableRecord<T>,

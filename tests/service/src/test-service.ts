@@ -16,34 +16,34 @@ export class TestService extends ServiceBase<TestAuthInfo> {
   /**
    * 간단한 에코 메소드 (인증 불필요)
    */
-  async echo(message: string): Promise<string> {
-    return `Echo: ${message}`;
+  echo(message: string): Promise<string> {
+    return Promise.resolve(`Echo: ${message}`);
   }
 
   /**
    * 복잡한 객체 반환 (직렬화 테스트)
    */
-  async getComplexData(): Promise<{
+  getComplexData(): Promise<{
     number: number;
     string: string;
     array: number[];
     nested: { a: string; b: number };
     date: Date;
   }> {
-    return {
+    return Promise.resolve({
       number: 42,
       string: "hello",
       array: [1, 2, 3],
       nested: { a: "nested", b: 99 },
       date: new Date("2026-01-08T12:00:00Z"),
-    };
+    });
   }
 
   /**
    * 에러 발생 테스트
    */
-  async throwError(message: string): Promise<void> {
-    throw new Error(message);
+  throwError(message: string): Promise<void> {
+    return Promise.reject(new Error(message));
   }
 
   /**
@@ -58,30 +58,30 @@ export class TestService extends ServiceBase<TestAuthInfo> {
    * 인증 필요한 메소드
    */
   @Authorize()
-  async getAuthInfo(): Promise<TestAuthInfo | undefined> {
-    return this.authInfo;
+  getAuthInfo(): Promise<TestAuthInfo | undefined> {
+    return Promise.resolve(this.authInfo);
   }
 
   /**
    * 관리자 권한 필요 메소드
    */
   @Authorize(["admin"])
-  async adminOnly(): Promise<string> {
-    return "Admin access granted";
+  adminOnly(): Promise<string> {
+    return Promise.resolve("Admin access granted");
   }
 
   /**
    * 클라이언트 이름 반환
    */
-  async getClientName(): Promise<string | undefined> {
-    return this.clientName;
+  getClientName(): Promise<string | undefined> {
+    return Promise.resolve(this.clientName);
   }
 
   /**
    * 대용량 데이터 반환 (청킹 테스트)
    */
-  async getLargeData(sizeKb: number): Promise<string> {
+  getLargeData(sizeKb: number): Promise<string> {
     // sizeKb KB 크기의 문자열 생성 (repeat 사용으로 성능 최적화)
-    return "A".repeat(sizeKb * 1024);
+    return Promise.resolve("A".repeat(sizeKb * 1024));
   }
 }

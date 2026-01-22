@@ -21,7 +21,6 @@ export * from "./transport/http/static-file-handler";
 
 // Protocol
 export * from "./protocol/protocol-wrapper";
-export * from "./protocol/protocol.worker-types";
 
 // Services
 export * from "./services/orm-service";

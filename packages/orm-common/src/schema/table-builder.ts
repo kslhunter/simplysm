@@ -37,7 +37,7 @@ import {
  *     status: c.varchar(20).default("active"),
  *   }))
  *   .primaryKey("id")
- *   .indexes((i) => [i.columns("email").unique()]);
+ *   .indexes((i) => [i.index("email").unique()]);
  *
  * // DbContext에서 사용
  * class MyDb extends DbContext {
@@ -208,8 +208,8 @@ export class TableBuilder<
    *     name: c.varchar(100),
    *   }))
    *   .indexes((i) => [
-   *     i.columns("email").unique(),
-   *     i.columns("name").orderBy("ASC"),
+   *     i.index("email").unique(),
+   *     i.index("name").orderBy("ASC"),
    *   ]);
    * ```
    */
@@ -295,7 +295,7 @@ export class TableBuilder<
  *     email: c.varchar(200).nullable(),
  *   }))
  *   .primaryKey("id")
- *   .indexes((i) => [i.columns("email").unique()]);
+ *   .indexes((i) => [i.index("email").unique()]);
  *
  * // 관계 포함
  * const Post = Table("Post")

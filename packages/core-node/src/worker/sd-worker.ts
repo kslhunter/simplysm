@@ -4,36 +4,24 @@ import pino from "pino";
 import { fileURLToPath } from "url";
 import type { WorkerOptions } from "worker_threads";
 import { Worker } from "worker_threads";
-import type { SdWorkerRequest, SdWorkerType, SdWorkerResponse } from "./types";
+import type { SdWorkerModule, SdWorkerProxy, SdWorkerRequest, SdWorkerResponse } from "./types";
 
 const logger = pino({ name: "sd-worker" });
 
-//#region SdWorker
+//#region SdWorkerInternal
 
 /**
- * 타입 안전한 Worker 래퍼 클래스.
- * 메인 스레드에서 사용.
- *
- * @example
- * const worker = new SdWorker<MyWorkerType>("./my-worker.ts");
- *
- * worker.on("progress", (percent) => {
- *   console.log(`Progress: ${percent}%`);
- * });
- *
- * const result = await worker.run("calculate", [10, 20]);
- * await worker.killAsync();
+ * Worker 내부 구현 클래스.
+ * Proxy를 통해 외부에 노출됨.
  */
-export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
-  [K in keyof T["events"]]: T["events"][K];
-}> {
+class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
   private readonly _worker: Worker;
   private _isTerminated = false;
+  private readonly _pendingRequests = new Map<
+    string,
+    { reject: (err: Error) => void; callback: (msg: unknown) => void }
+  >();
 
-  /**
-   * @param filePath - 워커 파일 경로 (file:// URL 또는 절대 경로)
-   * @param opt - Worker 옵션
-   */
   constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
     super();
 
@@ -69,7 +57,7 @@ export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
       });
     }
 
-    // 워커의 stdout/stderr을 메인에 출력
+    // 워커의 stdout/stderr를 메인에 출력
     this._worker.stdout.pipe(process.stdout);
     this._worker.stderr.pipe(process.stderr);
 
@@ -84,13 +72,12 @@ export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
-      const response: SdWorkerResponse<T, string> = TransferableConvert.decode(
+      const response: SdWorkerResponse = TransferableConvert.decode(
         serializedResponse,
-      ) as SdWorkerResponse<T, string>;
+      ) as SdWorkerResponse;
 
       if (response.type === "event") {
-        // 동적으로 이벤트를 emit하므로 타입 캐스팅 필요
-        (this.emit as (type: string, data: unknown) => void)(response.event, response.body);
+        this.emit(response.event, response.body);
       } else if (response.type === "log") {
         process.stdout.write(response.body);
       }
@@ -98,53 +85,37 @@ export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
   }
 
   /**
-   * 이벤트 리스너 등록.
+   * 워커 메서드 호출.
    */
-  override on<K extends keyof T["events"] & string>(
-    event: K,
-    listener: (args: T["events"][K]) => void,
-  ): void {
-    super.on(event, listener);
-  }
-
-  /**
-   * 워커 메서드 실행.
-   *
-   * @param method - 실행할 메서드 이름
-   * @param params - 메서드 파라미터
-   * @returns 메서드 실행 결과
-   */
-  async run<K extends keyof T["methods"]>(
-    method: K,
-    params: T["methods"][K]["params"],
-  ): Promise<T["methods"][K]["returnType"]> {
-    return new Promise<T["methods"][K]["returnType"]>((resolve, reject) => {
-      const request: SdWorkerRequest<T, K> = {
+  call(method: string, params: unknown[]): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const request: SdWorkerRequest = {
         id: Uuid.new().toString(),
         method,
         params,
       };
 
       const callback = (serializedResponse: unknown) => {
-        const response: SdWorkerResponse<T, K> = TransferableConvert.decode(
+        const response: SdWorkerResponse = TransferableConvert.decode(
           serializedResponse,
-        ) as SdWorkerResponse<T, K>;
+        ) as SdWorkerResponse;
 
         if (response.type === "return") {
           if (response.request.id === request.id) {
             this._worker.off("message", callback);
-            // void 반환 타입에서 body가 undefined일 수 있으므로 as 사용
-            // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-            resolve(response.body as T["methods"][K]["returnType"]);
+            this._pendingRequests.delete(request.id);
+            resolve(response.body);
           }
         } else if (response.type === "error") {
           if (response.request.id === request.id) {
             this._worker.off("message", callback);
+            this._pendingRequests.delete(request.id);
             reject(response.body);
           }
         }
       };
 
+      this._pendingRequests.set(request.id, { reject, callback });
       this._worker.on("message", callback);
 
       const serialized = TransferableConvert.encode(request);
@@ -155,10 +126,69 @@ export class SdWorker<T extends SdWorkerType> extends SdEventEmitter<{
   /**
    * 워커 종료.
    */
-  async killAsync(): Promise<void> {
+  async terminate(): Promise<void> {
     this._isTerminated = true;
+
+    // 대기 중인 모든 요청 정리
+    for (const [_id, { reject, callback }] of this._pendingRequests) {
+      this._worker.off("message", callback);
+      reject(new Error("Worker terminated"));
+    }
+    this._pendingRequests.clear();
+
     await this._worker.terminate();
   }
 }
+
+//#endregion
+
+//#region SdWorker
+
+/**
+ * 타입 안전한 Worker 래퍼.
+ *
+ * @example
+ * // worker.ts
+ * export default createSdWorker({
+ *   add: (a: number, b: number) => a + b,
+ * });
+ *
+ * // main.ts
+ * const worker = SdWorker.create<typeof import("./worker")>("./worker.ts");
+ * const result = await worker.add(10, 20);  // 30
+ * await worker.terminate();
+ */
+export const SdWorker = {
+  /**
+   * 타입 안전한 Worker Proxy 생성.
+   *
+   * @param filePath - 워커 파일 경로 (file:// URL 또는 절대 경로)
+   * @param opt - Worker 옵션
+   * @returns Proxy 객체 (메서드 직접 호출, on(), terminate() 지원)
+   */
+  create<TModule extends SdWorkerModule>(
+    filePath: string,
+    opt?: Omit<WorkerOptions, "stdout" | "stderr">,
+  ): SdWorkerProxy<TModule> {
+    const internal = new SdWorkerInternal(filePath, opt);
+
+    return new Proxy({} as SdWorkerProxy<TModule>, {
+      get(_target, prop: string) {
+        // 예약된 메서드: on, terminate
+        if (prop === "on") {
+          return (event: string, listener: (data: unknown) => void) => {
+            internal.on(event, listener);
+          };
+        }
+        if (prop === "terminate") {
+          return () => internal.terminate();
+        }
+
+        // 그 외는 워커 메서드로 처리
+        return (...args: unknown[]) => internal.call(prop, args);
+      },
+    });
+  },
+};
 
 //#endregion

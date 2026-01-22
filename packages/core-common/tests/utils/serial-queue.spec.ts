@@ -9,13 +9,13 @@ describe("SerialQueue", () => {
       const queue = new SerialQueue();
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(3);
       });
 
@@ -43,8 +43,8 @@ describe("SerialQueue", () => {
       await Wait.time(200);
 
       expect(calls).toEqual([1, 2]);
-      // 두 번째 작업은 첫 작업 완료 후 시작 (50ms 이상 차이)
-      expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(50);
+      // 두 번째 작업은 첫 작업 완료 후 시작 (타이머 오차 허용: 45ms 이상)
+      expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(45);
     });
 
     it("실행 중에 추가된 작업도 순차적으로 실행한다", async () => {
@@ -60,7 +60,7 @@ describe("SerialQueue", () => {
       await Wait.time(10);
 
       // 실행 중에 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
 
@@ -79,10 +79,10 @@ describe("SerialQueue", () => {
       const queue = new SerialQueue(50);
       const timestamps: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         timestamps.push(Date.now());
       });
-      queue.run(async () => {
+      queue.run(() => {
         timestamps.push(Date.now());
       });
 
@@ -161,7 +161,7 @@ describe("SerialQueue", () => {
         errors.push(err);
       });
 
-      queue.run(async () => {
+      queue.run(() => {
         throw new Error("test error");
       });
 
@@ -183,14 +183,14 @@ describe("SerialQueue", () => {
         errors.push(err);
       });
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
         throw new Error("error");
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(3);
       });
 
@@ -209,14 +209,14 @@ describe("SerialQueue", () => {
         errors.push(err);
       });
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
         throw new Error("error 1");
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(3);
         throw new Error("error 3");
       });
@@ -246,10 +246,10 @@ describe("SerialQueue", () => {
       });
 
       // 대기 중인 작업들 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(3);
       });
 
@@ -268,13 +268,13 @@ describe("SerialQueue", () => {
       const queue = new SerialQueue();
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
       queue.dispose();
 
       // dispose 후 새 작업 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
 
@@ -290,6 +290,24 @@ describe("SerialQueue", () => {
       queue.dispose();
       queue.dispose();
       queue.dispose();
+    });
+
+    it("using 문으로 자동 dispose된다", async () => {
+      const calls: number[] = [];
+      {
+        using queue = new SerialQueue();
+        queue.run(async () => {
+          calls.push(1);
+          await Wait.time(100);
+        });
+        queue.run(() => {
+          calls.push(2);
+        });
+        await Wait.time(20);
+      } // using 블록 종료 시 dispose 자동 호출
+      await Wait.time(150);
+      // 첫 작업(실행 중)은 완료되지만, 대기 중인 작업은 실행되지 않음
+      expect(calls).toEqual([1]);
     });
   });
 

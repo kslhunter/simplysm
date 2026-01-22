@@ -1,3 +1,4 @@
+import type { Bytes } from "../common.types";
 import { ArgumentError } from "../errors/argument-error";
 
 /**
@@ -59,7 +60,7 @@ export class Uuid {
    * @param bytes 16바이트 배열
    * @throws {ArgumentError} 바이트 크기가 16이 아닌 경우
    */
-  static fromBytes(bytes: Uint8Array): Uuid {
+  static fromBytes(bytes: Bytes): Uuid {
     if (bytes.length !== 16) {
       throw new ArgumentError("UUID 바이트 크기는 16이어야 합니다.", { length: bytes.length });
     }
@@ -109,7 +110,7 @@ export class Uuid {
   }
 
   /** UUID를 16바이트 Uint8Array로 변환 */
-  toBytes(): Uint8Array {
+  toBytes(): Bytes {
     const hex = this._uuid.replace(/-/g, "");
     const bytes = new Uint8Array(16);
     for (let i = 0; i < 16; i++) {

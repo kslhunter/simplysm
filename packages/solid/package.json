@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/solid",
+  "version": "13.0.0-beta.0",
+  "description": "SolidJS UI 컴포넌트",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/solid"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "tailwind-variants": "^3.2.2"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "@solidjs/testing-library": "^0.8.10",
+    "solid-js": "^1.9.10"
+  }
+}

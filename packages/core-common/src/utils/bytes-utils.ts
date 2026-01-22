@@ -1,9 +1,10 @@
+import type { Bytes } from "../common.types";
 import { ArgumentError } from "../errors/argument-error";
 
 /**
  * Uint8Array 유틸리티 (복잡한 연산만)
  */
-export const BytesUtils = {
+export class BytesUtils {
   /**
    * 여러 Uint8Array 연결
    * @param arrays 연결할 Uint8Array 배열
@@ -14,7 +15,7 @@ export const BytesUtils = {
    * BytesUtils.concat([a, b]);
    * // Uint8Array([1, 2, 3, 4])
    */
-  concat(arrays: Uint8Array[]): Uint8Array {
+  static concat(arrays: Bytes[]): Bytes {
     const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
     const result = new Uint8Array(total);
     let offset = 0;
@@ -23,7 +24,7 @@ export const BytesUtils = {
       offset += arr.length;
     }
     return result;
-  },
+  }
 
   /**
    * hex 문자열로 변환
@@ -33,17 +34,22 @@ export const BytesUtils = {
    * BytesUtils.toHex(new Uint8Array([255, 0, 127]));
    * // "ff007f"
    */
-  toHex(bytes: Uint8Array): string {
+  static toHex(bytes: Bytes): string {
     return Array.from(bytes)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-  },
+  }
 
   /**
-   * hex 문자열에서 변환
+   * hex 문자열에서 Uint8Array로 변환
+   * @param hex 변환할 hex 문자열 (소문자/대문자 모두 허용)
+   * @returns 변환된 Uint8Array
    * @throws {ArgumentError} 홀수 길이 또는 유효하지 않은 hex 문자가 포함된 경우
+   * @example
+   * BytesUtils.fromHex("ff007f");
+   * // Uint8Array([255, 0, 127])
    */
-  fromHex(hex: string): Uint8Array {
+  static fromHex(hex: string): Bytes {
     if (hex.length % 2 !== 0) {
       throw new ArgumentError("hex 문자열은 짝수 길이여야 합니다", { hex });
     }
@@ -55,5 +61,5 @@ export const BytesUtils = {
       bytes[i] = Number.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
     }
     return bytes;
-  },
-};
+  }
+}

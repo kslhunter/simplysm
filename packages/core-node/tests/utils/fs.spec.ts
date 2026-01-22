@@ -35,6 +35,24 @@ describe("FsUtils", () => {
     });
   });
 
+  describe("existsAsync", () => {
+    it("존재하는 파일에 대해 true 반환", async () => {
+      const filePath = path.join(testDir, "test.txt");
+      fs.writeFileSync(filePath, "test");
+
+      expect(await FsUtils.existsAsync(filePath)).toBe(true);
+    });
+
+    it("존재하지 않는 파일에 대해 false 반환", async () => {
+      const filePath = path.join(testDir, "nonexistent.txt");
+      expect(await FsUtils.existsAsync(filePath)).toBe(false);
+    });
+
+    it("존재하는 디렉토리에 대해 true 반환", async () => {
+      expect(await FsUtils.existsAsync(testDir)).toBe(true);
+    });
+  });
+
   //#endregion
 
   //#region mkdir
@@ -179,11 +197,11 @@ describe("FsUtils", () => {
 
     it("Buffer를 파일로 쓰기", () => {
       const filePath = path.join(testDir, "buffer-write.bin");
-      const buffer = Buffer.from([0x00, 0x01, 0x02, 0xff]);
+      const buffer = new Uint8Array([0x00, 0x01, 0x02, 0xff]);
 
       FsUtils.write(filePath, buffer);
 
-      expect(fs.readFileSync(filePath)).toEqual(buffer);
+      expect(new Uint8Array(fs.readFileSync(filePath))).toEqual(buffer);
     });
 
     it("부모 디렉토리가 없으면 자동 생성", () => {
@@ -239,6 +257,19 @@ describe("FsUtils", () => {
 
       const content = fs.readFileSync(filePath, "utf-8");
       expect(content).toContain("\n");
+    });
+
+    it("JSON 파일 쓰기 (replacer 옵션)", () => {
+      const filePath = path.join(testDir, "replaced.json");
+      const data = { name: "test", secret: "hidden" };
+
+      FsUtils.writeJson(filePath, data, {
+        replacer: (_key, value) => (typeof value === "string" && value === "hidden" ? undefined : value),
+      });
+
+      const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
+      expect(content).toEqual({ name: "test" });
+      expect(content["secret"]).toBeUndefined();
     });
   });
 
@@ -418,13 +449,31 @@ describe("FsUtils", () => {
   });
 
   describe("lstat", () => {
-    it("심볼릭 링크 정보 가져오기 (링크 자체)", () => {
+    it("일반 파일 정보 가져오기", () => {
       const filePath = path.join(testDir, "lstatfile.txt");
       fs.writeFileSync(filePath, "content");
 
       const stat = FsUtils.lstat(filePath);
 
       expect(stat.isFile()).toBe(true);
+    });
+
+    it("심볼릭 링크는 링크 자체의 정보 반환", () => {
+      const targetPath = path.join(testDir, "target.txt");
+      const linkPath = path.join(testDir, "link.txt");
+      fs.writeFileSync(targetPath, "target content");
+      fs.symlinkSync(targetPath, linkPath);
+
+      const lstatResult = FsUtils.lstat(linkPath);
+      const statResult = FsUtils.stat(linkPath);
+
+      // lstat은 심볼릭 링크 자체의 정보를 반환
+      expect(lstatResult.isSymbolicLink()).toBe(true);
+      expect(lstatResult.isFile()).toBe(false);
+
+      // stat은 링크 대상의 정보를 반환
+      expect(statResult.isSymbolicLink()).toBe(false);
+      expect(statResult.isFile()).toBe(true);
     });
   });
 
@@ -436,6 +485,24 @@ describe("FsUtils", () => {
       const stat = await FsUtils.lstatAsync(filePath);
 
       expect(stat.isFile()).toBe(true);
+    });
+
+    it("비동기로 심볼릭 링크는 링크 자체의 정보 반환", async () => {
+      const targetPath = path.join(testDir, "async-target.txt");
+      const linkPath = path.join(testDir, "async-link.txt");
+      fs.writeFileSync(targetPath, "target content");
+      fs.symlinkSync(targetPath, linkPath);
+
+      const lstatResult = await FsUtils.lstatAsync(linkPath);
+      const statResult = await FsUtils.statAsync(linkPath);
+
+      // lstat은 심볼릭 링크 자체의 정보를 반환
+      expect(lstatResult.isSymbolicLink()).toBe(true);
+      expect(lstatResult.isFile()).toBe(false);
+
+      // stat은 링크 대상의 정보를 반환
+      expect(statResult.isSymbolicLink()).toBe(false);
+      expect(statResult.isFile()).toBe(true);
     });
   });
 
@@ -550,6 +617,18 @@ describe("FsUtils", () => {
 
     it("존재하지 않는 파일 stat 시 에러 발생", () => {
       expect(() => FsUtils.stat(path.join(testDir, "nonexistent.txt"))).toThrow();
+    });
+
+    it("잘못된 JSON 형식 파일 읽기 시 에러 발생", () => {
+      const filePath = path.join(testDir, "invalid.json");
+      fs.writeFileSync(filePath, "{ invalid json }");
+      expect(() => FsUtils.readJson(filePath)).toThrow();
+    });
+
+    it("잘못된 JSON 형식 파일 비동기 읽기 시 에러 발생", async () => {
+      const filePath = path.join(testDir, "invalid-async.json");
+      fs.writeFileSync(filePath, "{ invalid json }");
+      await expect(FsUtils.readJsonAsync(filePath)).rejects.toThrow();
     });
   });
 

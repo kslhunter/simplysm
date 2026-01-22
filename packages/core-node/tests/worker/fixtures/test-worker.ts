@@ -1,25 +1,25 @@
-import { createSdWorker, type SdWorkerType } from "../../../src";
+import { createSdWorker } from "../../../src";
 
-export interface TestWorkerType extends SdWorkerType {
-  methods: {
-    add: { params: [number, number]; returnType: number };
-    echo: { params: [string]; returnType: string };
-    throwError: { params: []; returnType: void };
-  };
-  events: {
-    progress: number;
-  };
+interface TestWorkerEvents {
+  progress: number;
 }
 
-const sender = createSdWorker<TestWorkerType>({
-  add: (a, b) => {
+const methods = {
+  add: (a: number, b: number) => {
     sender.send("progress", 50);
     return a + b;
   },
-  echo: (message) => {
-    return `Echo: ${message}`;
-  },
+  echo: (message: string) => `Echo: ${message}`,
   throwError: () => {
     throw new Error("Intentional error");
   },
-});
+  delay: async (ms: number) => {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    return ms;
+  },
+  noReturn: () => {},
+};
+
+const sender = createSdWorker<typeof methods, TestWorkerEvents>(methods);
+
+export default sender;

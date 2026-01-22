@@ -1,15 +1,16 @@
-import crypto from "crypto";
+import type { Bytes } from "@simplysm/core-common";
 import { BytesUtils } from "@simplysm/core-common";
-import { ServiceBase } from "../core/service-base";
 import type { CryptoConfig, CryptoService as CryptoServiceType } from "@simplysm/service-common";
+import crypto from "crypto";
+import { ServiceBase } from "../core/service-base";
 
 export class CryptoService extends ServiceBase implements CryptoServiceType {
-  async encrypt(data: string | Uint8Array): Promise<string> {
+  async encrypt(data: string | Bytes): Promise<string> {
     const config = await this._getConf();
     return crypto.createHmac("sha256", config.key).update(data).digest("hex");
   }
 
-  async encryptAes(data: Uint8Array): Promise<string> {
+  async encryptAes(data: Bytes): Promise<string> {
     const config = await this._getConf();
 
     const iv = crypto.randomBytes(16);
@@ -19,7 +20,7 @@ export class CryptoService extends ServiceBase implements CryptoServiceType {
     return BytesUtils.toHex(iv) + ":" + BytesUtils.toHex(BytesUtils.concat([encrypted, cipher.final()]));
   }
 
-  async decryptAes(encText: string): Promise<Uint8Array> {
+  async decryptAes(encText: string): Promise<Bytes> {
     const config = await this._getConf();
 
     const textParts = encText.split(":");

@@ -19,6 +19,23 @@ describe("ExcelWorksheet", () => {
       const name = await ws.getName();
       expect(name).toBe("NewName");
     });
+
+    it("변경한 시트 이름이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("OldName");
+      await ws.setName("NewName");
+
+      const bytes = await wb.getBytes();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      const names = await wb2.getWorksheetNames();
+      expect(names).toContain("NewName");
+      expect(names).not.toContain("OldName");
+
+      const ws2 = await wb2.getWorksheet("NewName");
+      const name = await ws2.getName();
+      expect(name).toBe("NewName");
+    });
   });
 
   describe("행/열 복사", () => {
@@ -265,6 +282,34 @@ describe("ExcelWorksheet", () => {
       await ws.col(0).setWidth(20);
       // 에러 없이 설정되면 성공
     });
+
+    it("설정한 열 너비가 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      await ws.cell(0, 0).setVal("A1");
+      await ws.col(0).setWidth(25);
+      await ws.col(2).setWidth(30);
+
+      const bytes = await wb.getBytes();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      await wb2.getWorksheet("Test");
+
+      // XML 구조에서 cols 데이터 확인
+      const wsData = (await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml"));
+      const cols = wsData.data.worksheet.cols?.[0]?.col ?? [];
+
+      // 열 A (인덱스 0, 1-based=1)의 너비 확인
+      const colA = cols.find((c: any) => c.$.min === "1" && c.$.max === "1");
+      expect(colA).toBeDefined();
+      expect(colA.$.width).toBe("25");
+
+      // 열 C (인덱스 2, 1-based=3)의 너비 확인
+      const colC = cols.find((c: any) => c.$.min === "3" && c.$.max === "3");
+      expect(colC).toBeDefined();
+      expect(colC.$.width).toBe("30");
+    });
   });
 
   describe("열 접근", () => {
@@ -281,6 +326,24 @@ describe("ExcelWorksheet", () => {
       expect(await cells[0].getVal()).toBe("A1");
       expect(await cells[1].getVal()).toBe("A2");
       expect(await cells[2].getVal()).toBe("A3");
+    });
+  });
+
+  describe("데이터 테이블 엣지 케이스", () => {
+    it("빈 시트에서 getDataTable 호출 시 빈 배열 반환", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Empty");
+      const data = await ws.getDataTable();
+      expect(data).toEqual([]);
+    });
+
+    it("헤더만 있고 데이터가 없는 경우 빈 배열 반환", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+      await ws.cell(0, 0).setVal("Header1");
+      await ws.cell(0, 1).setVal("Header2");
+      const data = await ws.getDataTable();
+      expect(data).toEqual([]);
     });
   });
 

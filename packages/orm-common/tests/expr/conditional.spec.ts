@@ -216,4 +216,61 @@ describe("Expr - 조건 함수", () => {
       expect(builder.build(def)).toMatchSql(expected.least[dialect]);
     });
   });
+
+  describe("switch - 모든 case/default가 undefined인 경우", () => {
+    it("에러를 발생시킨다", () => {
+      const db = new TestDbContext();
+      expect(() => {
+        db.user()
+          .select((item) => ({
+            result: expr
+              .switch<string | undefined>()
+              .case(expr.gt(item.age, 20), undefined)
+              .default(undefined),
+          }))
+          .getSelectQueryDef();
+      }).toThrow("switch의 case/default 중 적어도 하나는 non-null이어야 합니다.");
+    });
+  });
+
+  describe("if - then과 else가 모두 undefined인 경우", () => {
+    it("에러를 발생시킨다", () => {
+      const db = new TestDbContext();
+      expect(() => {
+        db.user()
+          .select((item) => ({
+            result: expr.if<string | undefined>(expr.gt(item.age, 20), undefined, undefined),
+          }))
+          .getSelectQueryDef();
+      }).toThrow("if의 then/else 중 적어도 하나는 non-null이어야 합니다.");
+    });
+  });
+
+  describe("ifNull - 3개 이상 인자로 COALESCE 생성", () => {
+    const db = new TestDbContext();
+    const def = db
+      .user()
+      .select((item) => ({
+        firstValid: expr.ifNull(item.email, item.name, "익명"),
+      }))
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def.select).toMatchObject({
+        firstValid: {
+          type: "ifNull",
+          args: [
+            { type: "column", path: ["T1", "email"] },
+            { type: "column", path: ["T1", "name"] },
+            { type: "value", value: "익명" },
+          ],
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.ifNullMultiple[dialect]);
+    });
+  });
 });

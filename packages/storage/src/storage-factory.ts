@@ -15,7 +15,7 @@ export class StorageFactory {
   static async connect<R>(
     type: StorageType,
     config: StorageConnConfig,
-    fn: (storage: Storage) => Promise<R>,
+    fn: (storage: Storage) => R | Promise<R>,
   ): Promise<R> {
     const client = StorageFactory._createClient(type);
 

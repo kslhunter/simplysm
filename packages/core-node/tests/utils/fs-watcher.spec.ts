@@ -216,6 +216,32 @@ describe("SdFsWatcher", () => {
       expect(changes.length).toBe(0);
     });
 
+    it("파일 삭제 후 재생성 시 add 이벤트로 병합", async () => {
+      const testFile = path.join(testDir, "test-unlink-add.txt");
+
+      // 파일 미리 생성
+      fs.writeFileSync(testFile, "initial");
+
+      watcher = await SdFsWatcher.watchAsync([testDir]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      // 파일 삭제
+      fs.unlinkSync(testFile);
+
+      // 짧은 간격으로 파일 재생성 (delay 내에서 일어나야 함)
+      await wait(50);
+      fs.writeFileSync(testFile, "recreated");
+
+      // 이벤트 콜백 호출 대기
+      const changes = await changesPromise;
+
+      // unlink → add/change 가 add로 병합되어야 함 (나중 이벤트로 덮어씀)
+      // 환경에 따라 chokidar가 unlink 없이 change만 발생시킬 수 있음 (WSL2 등)
+      expect(changes.length).toBe(1);
+      expect(["add", "change"]).toContain(changes[0].event);
+    });
+
     it("여러 파일 변경 시 올바른 이벤트 병합", async () => {
       const file1 = path.join(testDir, "file1.txt");
       const file2 = path.join(testDir, "file2.txt");

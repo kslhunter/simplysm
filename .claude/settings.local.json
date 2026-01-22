@@ -20,11 +20,10 @@
       "WebSearch",
       "mcp__context7__resolve-library-id",
       "mcp__context7__query-docs",
-      "Skill(sd-issue-validate)",
-      "Skill(sd-review-code)",
-      "Skill(sd-review-architect)",
-      "Skill(sd-review-test)",
-      "Skill(sd-review-docs)"
+      "Skill(sd-check)",
+      "Skill(sd-improve)",
+      "Skill(sd-improve-scan)",
+      "Skill(sd-improve-validate)"
     ],
     "deny": [
       "Read(.back/**)",

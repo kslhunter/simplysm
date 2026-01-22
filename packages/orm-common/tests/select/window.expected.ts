@@ -139,6 +139,48 @@ export const lead: ExpectedSql = {
   `,
 };
 
+export const lagWithDefault: ExpectedSql = {
+  mysql: mysql`
+    SELECT
+      \`T1\`.\`id\` AS \`id\`,
+      LAG(\`T1\`.\`id\`, 1, 0) OVER (ORDER BY \`T1\`.\`id\` ASC) AS \`prevId\`
+    FROM \`TestDb\`.\`Employee\` AS \`T1\`
+  `,
+  mssql: tsql`
+    SELECT
+      [T1].[id] AS [id],
+      LAG([T1].[id], 1, 0) OVER (ORDER BY [T1].[id] ASC) AS [prevId]
+    FROM [TestDb].[TestSchema].[Employee] AS [T1]
+  `,
+  postgresql: pgsql`
+    SELECT
+      "T1"."id" AS "id",
+      LAG("T1"."id", 1, 0) OVER (ORDER BY "T1"."id" ASC) AS "prevId"
+    FROM "TestSchema"."Employee" AS "T1"
+  `,
+};
+
+export const leadWithDefault: ExpectedSql = {
+  mysql: mysql`
+    SELECT
+      \`T1\`.\`id\` AS \`id\`,
+      LEAD(\`T1\`.\`id\`, 1, -1) OVER (ORDER BY \`T1\`.\`id\` ASC) AS \`nextId\`
+    FROM \`TestDb\`.\`Employee\` AS \`T1\`
+  `,
+  mssql: tsql`
+    SELECT
+      [T1].[id] AS [id],
+      LEAD([T1].[id], 1, -1) OVER (ORDER BY [T1].[id] ASC) AS [nextId]
+    FROM [TestDb].[TestSchema].[Employee] AS [T1]
+  `,
+  postgresql: pgsql`
+    SELECT
+      "T1"."id" AS "id",
+      LEAD("T1"."id", 1, -1) OVER (ORDER BY "T1"."id" ASC) AS "nextId"
+    FROM "TestSchema"."Employee" AS "T1"
+  `,
+};
+
 export const sumOver: ExpectedSql = {
   mysql: mysql`
     SELECT

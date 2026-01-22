@@ -69,7 +69,7 @@ function copyDistToTarget(srcDir, destDir) {
     if (entry.isDirectory()) {
       copyDir(srcPath, destPath);
     } else if (entry.name === "settings.json") {
-      // settings.json 파일도 복사
+      // settings.json 파일 복사
       fs.mkdirSync(destDir, { recursive: true });
       fs.copyFileSync(srcPath, destPath);
     }

@@ -59,6 +59,13 @@ describe("SftpStorageClient", () => {
         password: "pass",
       });
     });
+
+    it("이미 연결된 상태에서 connect 호출 시 에러", async () => {
+      await client.connect({ host: "test" });
+      await expect(client.connect({ host: "test" })).rejects.toThrow(
+        "이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
+      );
+    });
   });
 
   describe("연결 전 메서드 호출", () => {
@@ -223,6 +230,14 @@ describe("SftpStorageClient", () => {
       await expect(client.mkdir("/test")).rejects.toThrow(
         "SFTP 서버에 연결되어있지 않습니다.",
       );
+    });
+
+    it("close 후 재연결이 가능해야 함", async () => {
+      await client.connect({ host: "test" });
+      await client.close();
+      await client.connect({ host: "test" });
+
+      expect(mockConnect).toHaveBeenCalledTimes(2);
     });
   });
 });

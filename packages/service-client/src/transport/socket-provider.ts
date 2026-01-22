@@ -1,10 +1,11 @@
-import pino from "pino";
+import type { Bytes } from "@simplysm/core-common";
 import { SdEventEmitter, Uuid, Wait } from "@simplysm/core-common";
+import pino from "pino";
 
 const logger = pino({ name: "service-client:SocketProvider" });
 
 interface SocketProviderEvents {
-  message: Uint8Array;
+  message: Bytes;
   state: "connected" | "closed" | "reconnecting";
 }
 
@@ -33,7 +34,7 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
     public readonly clientName: string,
     private readonly _maxReconnectCount: number,
   ) {
-    super({});
+    super();
   }
 
   async connectAsync(): Promise<void> {
@@ -63,7 +64,7 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
     this.emit("state", "closed");
   }
 
-  async sendAsync(data: Uint8Array): Promise<void> {
+  async sendAsync(data: Bytes): Promise<void> {
     try {
       await Wait.until(() => this.connected, undefined, 5000);
     } catch {

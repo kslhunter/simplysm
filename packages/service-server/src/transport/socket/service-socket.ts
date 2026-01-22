@@ -1,11 +1,12 @@
+import type { Bytes } from "@simplysm/core-common";
 import { DateTime, SdEventEmitter } from "@simplysm/core-common";
-import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
-import { WebSocket } from "ws";
-import { clearInterval } from "node:timers";
-import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
-import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import type { FastifyRequest } from "fastify";
+import { clearInterval } from "node:timers";
 import pino from "pino";
+import { WebSocket } from "ws";
+import type { AuthTokenPayload } from "../../auth/auth-token-payload";
+import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
+import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 
 const logger = pino({ name: "service-server:ServiceSocket" });
 
@@ -107,7 +108,7 @@ export class ServiceSocket extends SdEventEmitter<{
     this.emit("close", code);
   }
 
-  private async _onMessage(msgBuffer: Uint8Array) {
+  private async _onMessage(msgBuffer: Bytes) {
     try {
       // ping에 대한 pong처리
       if (msgBuffer.length === 1 && msgBuffer[0] === 0x01) {

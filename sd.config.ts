@@ -14,6 +14,7 @@ const config: SdConfigFn = () => ({
     "service-client": { target: "neutral" },
     "service-common": { target: "neutral" },
     "service-server": { target: "node" },
+    "solid": { target: "browser" },
     "storage": { target: "node" },
   },
 });

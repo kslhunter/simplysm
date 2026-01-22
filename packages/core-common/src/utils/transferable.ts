@@ -71,11 +71,11 @@ export abstract class TransferableConvert {
     if (obj instanceof Uint8Array) {
       // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
       // ArrayBuffer만 transferList에 추가
-      if (
-        !(obj.buffer instanceof SharedArrayBuffer) &&
-        !transferList.includes(obj.buffer as ArrayBuffer)
-      ) {
-        transferList.push(obj.buffer as ArrayBuffer);
+      const isSharedArrayBuffer =
+        typeof SharedArrayBuffer !== "undefined" &&
+        obj.buffer instanceof SharedArrayBuffer;
+      if (!isSharedArrayBuffer && !transferList.includes(obj.buffer)) {
+        transferList.push(obj.buffer);
       }
       return obj;
     }

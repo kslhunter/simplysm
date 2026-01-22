@@ -3,7 +3,7 @@ import { isFocusable } from "tabbable";
 /**
  * 셀렉터를 :scope 접두사가 붙은 형태로 정규화
  *
- * 콤마로 구분된 복수 셀렉터를 지원하며, 각 셀렉터에 :scope를 추가합니다.
+ * 콤마로 구분된 복수 셀렉터를 지원하며, 각 셀렉터에 :scope를 추가한다.
  *
  * @example
  * normalizeScopedSelector(".item, .card") // ":scope .item,:scope .card"
@@ -84,6 +84,8 @@ export namespace ElementUtils {
 
   /**
    * 요소 내용을 클립보드에 복사 (copy 이벤트 핸들러에서 사용)
+   *
+   * @param event - copy 이벤트 객체
    */
   export function copyElement(event: ClipboardEvent): void {
     const clipboardData = event.clipboardData;
@@ -101,8 +103,10 @@ export namespace ElementUtils {
    * 클립보드 내용을 요소에 붙여넣기 (paste 이벤트 핸들러에서 사용)
    *
    * @remarks
-   * 대상 요소 내의 첫 번째 input/textarea를 찾아 전체 값을 클립보드 내용으로 교체합니다.
-   * 커서 위치나 선택 영역을 고려하지 않습니다.
+   * 대상 요소 내의 첫 번째 input/textarea를 찾아 전체 값을 클립보드 내용으로 교체한다.
+   * 커서 위치나 선택 영역을 고려하지 않는다.
+   *
+   * @param event - paste 이벤트 객체
    */
   export function pasteToElement(event: ClipboardEvent): void {
     const clipboardData = event.clipboardData;
@@ -114,6 +118,7 @@ export namespace ElementUtils {
     const firstInputEl = findFirst<HTMLInputElement | HTMLTextAreaElement>(target, "input, textarea");
     if (firstInputEl !== undefined) {
       firstInputEl.value = contentText;
+      firstInputEl.dispatchEvent(new Event("input", { bubbles: true }));
       event.preventDefault();
     }
   }

@@ -306,6 +306,11 @@ export class DateOnly {
 
   //#region 포맷팅
 
+  /**
+   * 지정된 포맷으로 문자열 변환
+   * @param format 포맷 문자열
+   * @see DateTimeFormatUtils.format 지원 포맷 문자열 참조
+   */
   toFormatString(format: string): string {
     return DateTimeFormatUtils.format(format, {
       year: this.year,

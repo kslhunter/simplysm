@@ -166,6 +166,15 @@ describe("DateOnly", () => {
       expect(newDateOnly.day).toBe(6);
       expect(dateOnly.year).toBe(2025); // 원본 불변
     });
+
+    it("윤년 2월 29일에서 평년으로 setYear하면 3월 1일로 조정된다", () => {
+      const dateOnly = new DateOnly(2024, 2, 29); // 2024년은 윤년
+      const newDateOnly = dateOnly.setYear(2023); // 2023년은 평년
+
+      expect(newDateOnly.year).toBe(2023);
+      expect(newDateOnly.month).toBe(3);
+      expect(newDateOnly.day).toBe(1); // 2월 29일 → 3월 1일로 조정
+    });
   });
 
   describe("setMonth()", () => {

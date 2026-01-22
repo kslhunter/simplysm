@@ -367,11 +367,29 @@ export type ExcelBorderPosition = "left" | "right" | "top" | "bottom";
 export type ExcelHorizontalAlign = "center" | "left" | "right";
 export type ExcelVerticalAlign = "center" | "top" | "bottom";
 
+/**
+ * 셀 스타일 옵션
+ * @example
+ * ```typescript
+ * await cell.setStyle({
+ *   background: "00FF0000",  // 빨간색
+ *   border: ["left", "right", "top", "bottom"],
+ *   horizontalAlign: "center",
+ *   verticalAlign: "center",
+ *   numberFormat: "number",
+ * });
+ * ```
+ */
 export interface ExcelStyleOptions {
+  /** 배경색 (ARGB 형식, 예: "00FF0000") */
   background?: string;
+  /** 테두리 위치 */
   border?: ExcelBorderPosition[];
+  /** 가로 정렬 */
   horizontalAlign?: ExcelHorizontalAlign;
+  /** 세로 정렬 */
   verticalAlign?: ExcelVerticalAlign;
+  /** 숫자 형식 */
   numberFormat?: ExcelNumberFormat;
 }
 

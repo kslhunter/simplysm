@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { DebounceQueue, Wait, SdError } from "@simplysm/core-common";
 
 describe("DebounceQueue", () => {
@@ -9,13 +9,13 @@ describe("DebounceQueue", () => {
       const queue = new DebounceQueue(50);
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(3);
       });
 
@@ -31,7 +31,7 @@ describe("DebounceQueue", () => {
       const calls: number[] = [];
 
       const start = Date.now();
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
 
@@ -51,7 +51,7 @@ describe("DebounceQueue", () => {
       const queue = new DebounceQueue();
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
 
@@ -74,7 +74,7 @@ describe("DebounceQueue", () => {
       await Wait.time(20);
 
       // 실행 중에 새 요청 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
 
@@ -98,7 +98,7 @@ describe("DebounceQueue", () => {
         errors.push(err);
       });
 
-      queue.run(async () => {
+      queue.run(() => {
         throw new Error("test error");
       });
 
@@ -120,13 +120,13 @@ describe("DebounceQueue", () => {
         errors.push(err);
       });
 
-      queue.run(async () => {
+      queue.run(() => {
         throw new Error("error");
       });
 
       await Wait.time(50);
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
 
@@ -146,7 +146,7 @@ describe("DebounceQueue", () => {
       });
 
       // 첫 요청: 에러 발생
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
         throw new Error("error 1");
       });
@@ -154,7 +154,7 @@ describe("DebounceQueue", () => {
       await Wait.time(20);
 
       // 실행 중 새 요청 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
 
@@ -174,7 +174,7 @@ describe("DebounceQueue", () => {
       const queue = new DebounceQueue(100);
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
 
@@ -192,13 +192,13 @@ describe("DebounceQueue", () => {
       const queue = new DebounceQueue(50);
       const calls: number[] = [];
 
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(1);
       });
       queue.dispose();
 
       // dispose 후 새 작업 추가
-      queue.run(async () => {
+      queue.run(() => {
         calls.push(2);
       });
 
@@ -214,6 +214,20 @@ describe("DebounceQueue", () => {
       queue.dispose();
       queue.dispose();
       queue.dispose();
+    });
+
+    it("using 문으로 자동 dispose된다", async () => {
+      const calls: number[] = [];
+      {
+        using queue = new DebounceQueue(100);
+        queue.run(() => {
+          calls.push(1);
+        });
+        await Wait.time(50);
+      } // using 블록 종료 시 dispose 자동 호출
+      await Wait.time(100);
+      // 디바운스 대기 중 dispose되어 실행 안 됨
+      expect(calls).toEqual([]);
     });
   });
 

@@ -1,3 +1,5 @@
+import type { Bytes } from "@simplysm/core-common";
+
 export interface SmtpService {
   send(options: SmtpSendOption): Promise<string>;
   sendByConfig(configName: string, options: SmtpSendByConfigOption): Promise<string>;
@@ -5,7 +7,7 @@ export interface SmtpService {
 
 export interface SmtpSendAttachment {
   filename: string;
-  content?: Uint8Array;
+  content?: Bytes;
   path?: string;
   contentType?: string;
 }

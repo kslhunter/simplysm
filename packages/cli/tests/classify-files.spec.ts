@@ -88,7 +88,34 @@ describe("classifyFiles", () => {
     const result = classifyFiles([], cwd, config);
 
     expect(result.byPackage.size).toBe(0);
+    expect(result.byPackageTests.size).toBe(0);
     expect(result.byTests.size).toBe(0);
     expect(result.root).toHaveLength(0);
+  });
+
+  it("packages/*/tests 디렉토리 파일을 byPackageTests로 분류", () => {
+    const fileNames = [
+      "/project/packages/core-common/tests/utils.spec.ts",
+      "/project/packages/core-node/tests/fs.spec.ts",
+    ];
+
+    const result = classifyFiles(fileNames, cwd, config);
+
+    expect(result.byPackage.size).toBe(0);
+    expect(result.byPackageTests.size).toBe(2);
+    expect(result.byPackageTests.get("core-common")?.info.target).toBe("neutral");
+    expect(result.byPackageTests.get("core-node")?.info.target).toBe("node");
+  });
+
+  it("packages의 src와 tests를 분리 분류", () => {
+    const fileNames = [
+      "/project/packages/core-common/src/index.ts",
+      "/project/packages/core-common/tests/utils.spec.ts",
+    ];
+
+    const result = classifyFiles(fileNames, cwd, config);
+
+    expect(result.byPackage.size).toBe(1);
+    expect(result.byPackageTests.size).toBe(1);
   });
 });

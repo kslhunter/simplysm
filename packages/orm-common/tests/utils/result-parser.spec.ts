@@ -51,6 +51,17 @@ describe("result-parser", () => {
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
+    it('boolean 변환 - "0"/"1" 문자열', async () => {
+      const raw = [{ active: "1", deleted: "0" }];
+      const meta: ResultMeta = {
+        columns: { active: "boolean", deleted: "boolean" },
+        joins: {},
+      };
+
+      const result = await parseQueryResultAsync(raw, meta);
+      expect(result).toEqual([{ active: true, deleted: false }]);
+    });
+
     it("DateTime 변환", async () => {
       const raw = [{ createdAt: "2026-01-07T10:30:00.000" }];
       const meta: ResultMeta = {
@@ -563,6 +574,43 @@ describe("result-parser", () => {
         },
       ]);
     });
+
+    it("여러 JOIN 중 일부만 NULL - company는 있고 posts는 없음", async () => {
+      const raw = [
+        {
+          id: 1,
+          name: "User1",
+          "company.id": 100,
+          "company.name": "Corp",
+          "posts.id": null,
+          "posts.title": null,
+        },
+      ];
+      const meta: ResultMeta = {
+        columns: {
+          id: "number",
+          name: "string",
+          "company.id": "number",
+          "company.name": "string",
+          "posts.id": "number",
+          "posts.title": "string",
+        },
+        joins: {
+          company: { isSingle: true },
+          posts: { isSingle: false },
+        },
+      };
+
+      const result = await parseQueryResultAsync(raw, meta);
+      expect(result).toEqual([
+        {
+          id: 1,
+          name: "User1",
+          company: { id: 100, name: "Corp" },
+        },
+      ]);
+      expect(result![0]).not.toHaveProperty("posts");
+    });
   });
 
   //#endregion
@@ -632,8 +680,8 @@ describe("result-parser", () => {
     });
 
     it("대용량 데이터 yield 처리", async () => {
-      // 100개 레코드 생성
-      const raw = Array.from({ length: 100 }, (_, i) => ({
+      // 250개 레코드 생성 (yield가 2회 발생: i=100, i=200)
+      const raw = Array.from({ length: 250 }, (_, i) => ({
         id: String(i + 1),
         name: `User${i + 1}`,
       }));
@@ -643,9 +691,9 @@ describe("result-parser", () => {
       };
 
       const result = await parseQueryResultAsync(raw, meta);
-      expect(result).toHaveLength(100);
+      expect(result).toHaveLength(250);
       expect(result![0]).toEqual({ id: 1, name: "User1" });
-      expect(result![99]).toEqual({ id: 100, name: "User100" });
+      expect(result![249]).toEqual({ id: 250, name: "User250" });
     });
   });
 

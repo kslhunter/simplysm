@@ -12,6 +12,7 @@ export class ExcelCol {
     private readonly _c: number,
   ) {}
 
+  /** 행 인덱스에 해당하는 셀 반환 (0-based) */
   cell(r: number): ExcelCell {
     return this._cellMap.getOrCreate(
       r,
@@ -19,6 +20,7 @@ export class ExcelCol {
     );
   }
 
+  /** 열의 모든 셀 반환 */
   async getCells(): Promise<ExcelCell[]> {
     const result: ExcelCell[] = [];
     const wsData = await this._getWsData();
@@ -31,6 +33,7 @@ export class ExcelCol {
     return result;
   }
 
+  /** 열 너비 설정 */
   async setWidth(size: number): Promise<void> {
     const wsData = await this._getWsData();
     wsData.setColWidth((this._c + 1).toString(), size.toString());

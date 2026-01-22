@@ -20,6 +20,18 @@ export class FsUtils {
     return fs.existsSync(targetPath);
   }
 
+  /**
+   * 파일 또는 디렉토리 존재 확인 (비동기).
+   */
+  static async existsAsync(targetPath: string): Promise<boolean> {
+    try {
+      await fs.promises.access(targetPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   //#endregion
 
   //#region 디렉토리 생성
@@ -28,8 +40,6 @@ export class FsUtils {
    * 디렉토리 생성 (recursive).
    */
   static mkdir(targetPath: string): void {
-    if (FsUtils.exists(targetPath)) return;
-
     try {
       fs.mkdirSync(targetPath, { recursive: true });
     } catch (err) {
@@ -41,8 +51,6 @@ export class FsUtils {
    * 디렉토리 생성 (recursive, 비동기).
    */
   static async mkdirAsync(targetPath: string): Promise<void> {
-    if (FsUtils.exists(targetPath)) return;
-
     try {
       await fs.promises.mkdir(targetPath, { recursive: true });
     } catch (err) {
@@ -92,6 +100,8 @@ export class FsUtils {
    * @param filter 복사 여부를 결정하는 필터 함수.
    *               각 파일/디렉토리의 **절대 경로**가 전달되며,
    *               true를 반환하면 복사, false면 제외.
+   *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
+   *               자식 항목들에만 filter 함수가 적용된다.
    */
   static copy(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): void {
     if (!FsUtils.exists(sourcePath)) {
@@ -108,7 +118,7 @@ export class FsUtils {
     if (stat.isDirectory()) {
       FsUtils.mkdir(targetPath);
 
-      const children = FsUtils.glob(path.resolve(sourcePath, "*"));
+      const children = FsUtils.glob(path.resolve(sourcePath, "*"), { dot: true });
 
       for (const childPath of children) {
         if (filter !== undefined && !filter(childPath)) {
@@ -137,13 +147,15 @@ export class FsUtils {
    * @param filter 복사 여부를 결정하는 필터 함수.
    *               각 파일/디렉토리의 **절대 경로**가 전달되며,
    *               true를 반환하면 복사, false면 제외.
+   *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
+   *               자식 항목들에만 filter 함수가 적용된다.
    */
   static async copyAsync(
     sourcePath: string,
     targetPath: string,
     filter?: (absolutePath: string) => boolean,
   ): Promise<void> {
-    if (!FsUtils.exists(sourcePath)) {
+    if (!(await FsUtils.existsAsync(sourcePath))) {
       return;
     }
 
@@ -157,7 +169,7 @@ export class FsUtils {
     if (stat.isDirectory()) {
       await FsUtils.mkdirAsync(targetPath);
 
-      const children = await FsUtils.globAsync(path.resolve(sourcePath, "*"));
+      const children = await FsUtils.globAsync(path.resolve(sourcePath, "*"), { dot: true });
 
       await children.parallelAsync(async (childPath) => {
         if (filter !== undefined && !filter(childPath)) {
@@ -244,12 +256,7 @@ export class FsUtils {
    */
   static async readJsonAsync<T = unknown>(targetPath: string): Promise<T> {
     const contents = await FsUtils.readAsync(targetPath);
-    try {
-      const result: T = JsonConvert.parse(contents);
-      return result;
-    } catch (err) {
-      throw new SdError(err, targetPath + os.EOL + contents);
-    }
+    return JsonConvert.parse(contents);
   }
 
   //#endregion
@@ -259,7 +266,7 @@ export class FsUtils {
   /**
    * 파일 쓰기 (부모 디렉토리 자동 생성).
    */
-  static write(targetPath: string, data: string | Buffer): void {
+  static write(targetPath: string, data: string | Uint8Array): void {
     FsUtils.mkdir(path.dirname(targetPath));
 
     try {
@@ -272,7 +279,7 @@ export class FsUtils {
   /**
    * 파일 쓰기 (부모 디렉토리 자동 생성, 비동기).
    */
-  static async writeAsync(targetPath: string, data: string | Buffer): Promise<void> {
+  static async writeAsync(targetPath: string, data: string | Uint8Array): Promise<void> {
     await FsUtils.mkdirAsync(path.dirname(targetPath));
 
     try {
@@ -413,10 +420,11 @@ export class FsUtils {
   //#region 유틸리티
 
   /**
-   * 빈 디렉토리 재귀적으로 삭제.
+   * 지정 디렉토리 하위의 빈 디렉토리를 재귀적으로 탐색하여 삭제.
+   * 하위 디렉토리가 모두 삭제되어 빈 디렉토리가 된 경우, 해당 디렉토리도 삭제 대상이 됨.
    */
   static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
-    if (!FsUtils.exists(dirPath)) return;
+    if (!(await FsUtils.existsAsync(dirPath))) return;
 
     const childNames = await FsUtils.readdirAsync(dirPath);
     for (const childName of childNames) {
@@ -432,7 +440,11 @@ export class FsUtils {
   }
 
   /**
-   * 부모 디렉토리들에서 특정 패턴의 파일 찾기.
+   * 시작 경로부터 루트 방향으로 상위 디렉토리를 순회하며 glob 패턴 검색.
+   * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집.
+   * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
+   * @param fromPath - 검색 시작 경로
+   * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지)
    */
   static findAllParentChildPaths(childGlob: string, fromPath: string, rootPath?: string): string[] {
     const resultPaths: string[] = [];

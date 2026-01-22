@@ -99,3 +99,49 @@ export const castToVarchar: ExpectedSql = {
 };
 
 //#endregion
+
+//#region ========== RAW ==========
+
+export const rawBasic: ExpectedSql = {
+  mysql: mysql`
+    SELECT
+      \`T1\`.\`id\` AS \`id\`,
+      NOW() AS \`serverTime\`
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+  `,
+  mssql: tsql`
+    SELECT
+      [T1].[id] AS [id],
+      NOW() AS [serverTime]
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+  `,
+  postgresql: pgsql`
+    SELECT
+      "T1"."id" AS "id",
+      NOW() AS "serverTime"
+    FROM "TestSchema"."User" AS "T1"
+  `,
+};
+
+export const rawWithParam: ExpectedSql = {
+  mysql: mysql`
+    SELECT
+      \`T1\`.\`id\` AS \`id\`,
+      CONCAT(\`T1\`.\`name\`, ' - ', \`T1\`.\`email\`) AS \`combined\`
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+  `,
+  mssql: tsql`
+    SELECT
+      [T1].[id] AS [id],
+      CONCAT([T1].[name], ' - ', [T1].[email]) AS [combined]
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+  `,
+  postgresql: pgsql`
+    SELECT
+      "T1"."id" AS "id",
+      CONCAT("T1"."name", ' - ', "T1"."email") AS "combined"
+    FROM "TestSchema"."User" AS "T1"
+  `,
+};
+
+//#endregion

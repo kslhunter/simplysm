@@ -74,6 +74,16 @@ describe("ExcelCell", () => {
       const val = await ws.cell(0, 0).getVal();
       expect(val).toBeCloseTo(smallDecimal, 6);
     });
+
+    it("지원되지 않는 타입을 설정하면 에러 발생", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+       
+      await expect(ws.cell(0, 0).setVal({} as any)).rejects.toThrow("지원되지 않는 타입");
+       
+      await expect(ws.cell(0, 1).setVal([] as any)).rejects.toThrow("지원되지 않는 타입");
+    });
   });
 
   describe("셀 값 읽기/쓰기 - 날짜/시간 타입", () => {
@@ -132,8 +142,11 @@ describe("ExcelCell", () => {
       await ws.cell(0, 1).setVal(20);
       await ws.cell(0, 2).setFormula("A1+B1");
 
-      // 수식 셀의 값은 Excel에서 계산되므로 여기서는 undefined
-      // 수식이 제대로 저장되었는지는 라운드트립으로 확인
+      // 수식 직접 검증
+      const formula = await ws.cell(0, 2).getFormula();
+      expect(formula).toBe("A1+B1");
+
+      // 라운드트립으로도 검증
       const buffer = await wb.getBytes();
 
       const wb2 = new ExcelWorkbook(buffer);
@@ -188,6 +201,16 @@ describe("ExcelCell", () => {
 
       const val = await ws2.cell(0, 0).getVal();
       expect(val).toBe("Merged");
+    });
+
+    it("겹치는 범위로 병합 시도 시 에러 발생", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      await ws.cell(0, 0).merge(2, 2); // A1:B2 병합
+
+      // 겹치는 범위(B2:C3)로 병합 시도
+      await expect(ws.cell(1, 1).merge(2, 2)).rejects.toThrow("병합 셀이 기존 병합 범위");
     });
   });
 
@@ -263,6 +286,59 @@ describe("ExcelCell", () => {
       await expect(
         ws.cell(0, 0).setStyle({ background: "invalid" }),
       ).rejects.toThrow();
+    });
+
+    it("설정한 스타일이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      // 다양한 스타일 설정
+      await ws.cell(0, 0).setVal("Styled");
+      await ws.cell(0, 0).setStyle({
+        background: "00FF0000", // 빨간색
+        border: ["left", "right", "top", "bottom"],
+        horizontalAlign: "center",
+        verticalAlign: "top",
+      });
+
+      const bytes = await wb.getBytes();
+
+      // 라운드트립 후 스타일 확인
+      const wb2 = new ExcelWorkbook(bytes);
+      const ws2 = await wb2.getWorksheet("Test");
+
+      // 값 확인
+      const val = await ws2.cell(0, 0).getVal();
+      expect(val).toBe("Styled");
+
+      // 스타일 ID가 존재하는지 확인
+      const styleId = await ws2.cell(0, 0).getStyleId();
+      expect(styleId).toBeDefined();
+
+      // XML 레벨에서 스타일 데이터 확인
+      const styleData = (await (wb2 as any).zipCache.get("xl/styles.xml"));
+      const styleIdNum = parseInt(styleId!, 10);
+      const xf = styleData.data.styleSheet.cellXfs[0].xf[styleIdNum];
+
+      // 배경색 확인
+      expect(xf.$.fillId).toBeDefined();
+      const fillId = parseInt(xf.$.fillId, 10);
+      const fill = styleData.data.styleSheet.fills[0].fill[fillId];
+      expect(fill.patternFill[0].fgColor[0].$.rgb).toBe("00FF0000");
+
+      // 테두리 확인
+      expect(xf.$.borderId).toBeDefined();
+      const borderId = parseInt(xf.$.borderId, 10);
+      const border = styleData.data.styleSheet.borders[0].border[borderId];
+      expect(border.left).toBeDefined();
+      expect(border.right).toBeDefined();
+      expect(border.top).toBeDefined();
+      expect(border.bottom).toBeDefined();
+
+      // 정렬 확인
+      expect(xf.alignment).toBeDefined();
+      expect(xf.alignment[0].$.horizontal).toBe("center");
+      expect(xf.alignment[0].$.vertical).toBe("top");
     });
   });
 });

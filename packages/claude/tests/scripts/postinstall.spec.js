@@ -18,7 +18,7 @@ vi.mock("pino", () => ({
 const { findProjectRoot, main, copyDistToTarget, copyDir } = await import("../../scripts/postinstall.js");
 
 describe("postinstall 스크립트", () => {
-  let tempDir: string;
+  let tempDir;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "claude-test-"));

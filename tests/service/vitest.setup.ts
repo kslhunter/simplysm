@@ -15,7 +15,7 @@ const rootDir = __dirname;
 export const TEST_PORT = 23100;
 
 // 서버 인스턴스
-let testServer: ServiceServer<TestAuthInfo>;
+let testServer: ServiceServer<TestAuthInfo> | undefined;
 
 export async function setup() {
   console.log("[service] Setting up test environment...");

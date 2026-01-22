@@ -15,7 +15,7 @@
   "dependencies": {
     "@zip.js/zip.js": "^2.8.15",
     "fast-xml-parser": "^5.3.3",
-    "pino": "^10.2.0",
+    "pino": "^10.2.1",
     "yaml": "^2.8.2"
   }
 }

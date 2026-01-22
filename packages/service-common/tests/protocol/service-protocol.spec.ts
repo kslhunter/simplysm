@@ -105,7 +105,7 @@ describe("ServiceProtocol", () => {
       expect(encoded.chunks.length).toBeGreaterThan(1);
 
       // 청크 순서대로 디코딩
-      let result;
+      let result!: ReturnType<typeof protocol.decode>;
       for (let i = 0; i < encoded.chunks.length; i++) {
         result = protocol.decode(encoded.chunks[i]);
         if (i < encoded.chunks.length - 1) {
@@ -113,9 +113,9 @@ describe("ServiceProtocol", () => {
         }
       }
 
-      expect(result!.type).toBe("complete");
-      if (result!.type === "complete") {
-        expect(result!.message.body).toEqual([largeData]);
+      expect(result.type).toBe("complete");
+      if (result.type === "complete") {
+        expect(result.message.body).toEqual([largeData]);
       }
     });
 
@@ -129,15 +129,15 @@ describe("ServiceProtocol", () => {
       const reversedChunks = [...encoded.chunks].reverse();
 
       // 역순으로 디코딩
-      let result;
+      let result!: ReturnType<typeof protocol.decode>;
       for (let i = 0; i < reversedChunks.length; i++) {
         result = protocol.decode(reversedChunks[i]);
       }
 
       // 마지막에 완료되어야 함
-      expect(result!.type).toBe("complete");
-      if (result!.type === "complete") {
-        expect(result!.message.body).toEqual([largeData]);
+      expect(result.type).toBe("complete");
+      if (result.type === "complete") {
+        expect(result.message.body).toEqual([largeData]);
       }
     });
 
@@ -157,14 +157,14 @@ describe("ServiceProtocol", () => {
       expect(result1.type).toBe("progress");
 
       // 나머지 청크 전송
-      let result;
+      let result!: ReturnType<typeof protocol.decode>;
       for (let i = 1; i < encoded.chunks.length; i++) {
         result = protocol.decode(encoded.chunks[i]);
       }
 
-      expect(result!.type).toBe("complete");
-      if (result!.type === "complete") {
-        expect(result!.message.body).toEqual([largeData]);
+      expect(result.type).toBe("complete");
+      if (result.type === "complete") {
+        expect(result.message.body).toEqual([largeData]);
       }
     });
   });

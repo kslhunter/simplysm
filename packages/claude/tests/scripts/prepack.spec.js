@@ -5,7 +5,7 @@ import os from "os";
 import { main, copyClaudeToDist } from "../../scripts/prepack.js";
 
 describe("prepack 스크립트", () => {
-  let tempDir: string;
+  let tempDir;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "claude-prepack-test-"));

@@ -13,15 +13,15 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@typescript-eslint/utils": "^8.53.0",
+    "@typescript-eslint/utils": "^8.53.1",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^17.0.0",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.53.0"
+    "typescript-eslint": "^8.53.1"
   },
   "devDependencies": {
-    "@typescript-eslint/rule-tester": "^8.53.0"
+    "@typescript-eslint/rule-tester": "^8.53.1"
   }
 }

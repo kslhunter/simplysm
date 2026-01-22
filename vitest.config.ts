@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { playwright } from "@vitest/browser-playwright";
+import solidPlugin from "vite-plugin-solid";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,6 +13,7 @@ export default defineConfig({
       root: __dirname,
       projects: ["./tsconfig.json"],
     }),
+    solidPlugin(),
   ],
   test: {
     globals: true,
@@ -21,22 +23,37 @@ export default defineConfig({
     },
     // 여기에 projects 배열로 정의
     projects: [
-      // 패키지 단위 테스트 (Node 환경)
+      // Node 환경 테스트 (node + common 패키지)
       {
         extends: true,
         test: {
-          name: "packages",
-          include: ["packages/*/tests/**/*.spec.ts"],
-          exclude: ["packages/excel/tests/**/*.spec.ts"],
+          name: "node",
+          include: ["packages/*/tests/**/*.spec.{ts,tsx,js}"],
+          exclude: [
+            // browser 전용 패키지 제외
+            "packages/core-browser/tests/**/*.spec.{ts,tsx,js}",
+            // solid 패키지는 browser에서 테스트
+            "packages/solid/tests/**/*.spec.{ts,tsx,js}",
+          ],
           testTimeout: 30000,
         },
       },
-      // Excel 패키지 테스트 (브라우저 환경)
+      // Playwright 환경 테스트 (browser + common 패키지)
       {
         extends: true,
         test: {
-          name: "excel",
-          include: ["packages/excel/tests/**/*.spec.ts"],
+          name: "browser",
+          include: ["packages/*/tests/**/*.spec.{ts,tsx,js}"],
+          exclude: [
+            // node 전용 패키지 제외
+            "packages/cli/tests/**/*.spec.{ts,tsx,js}",
+            "packages/claude/tests/**/*.spec.{ts,tsx,js}",
+            "packages/core-node/tests/**/*.spec.{ts,tsx,js}",
+            "packages/eslint-plugin/tests/**/*.spec.{ts,tsx,js}",
+            "packages/orm-node/tests/**/*.spec.{ts,tsx,js}",
+            "packages/service-server/tests/**/*.spec.{ts,tsx,js}",
+            "packages/storage/tests/**/*.spec.{ts,tsx,js}",
+          ],
           browser: {
             enabled: true,
             provider: playwright(),

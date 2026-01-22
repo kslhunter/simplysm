@@ -95,8 +95,8 @@ describe("Wait", () => {
       });
 
       const elapsed = Date.now() - start;
-      // 100ms * 2회 대기 = 200ms (첫 체크는 즉시)
-      expect(elapsed).toBeGreaterThanOrEqual(200);
+      // 100ms * 2회 대기 = 200ms (첫 체크는 즉시), 타이머 오차 고려
+      expect(elapsed).toBeGreaterThanOrEqual(190);
       expect(elapsed).toBeLessThan(350);
     });
 

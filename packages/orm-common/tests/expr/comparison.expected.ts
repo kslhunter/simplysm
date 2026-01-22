@@ -187,6 +187,24 @@ export const betweenNone: ExpectedSql = {
   `,
 };
 
+export const betweenColumns: ExpectedSql = {
+  mysql: mysql`
+    SELECT *
+    FROM \`TestDb\`.\`MonthlySales\` AS \`T1\`
+    WHERE \`T1\`.\`feb\` BETWEEN \`T1\`.\`jan\` AND \`T1\`.\`mar\`
+  `,
+  mssql: tsql`
+    SELECT *
+    FROM [TestDb].[TestSchema].[MonthlySales] AS [T1]
+    WHERE [T1].[feb] BETWEEN [T1].[jan] AND [T1].[mar]
+  `,
+  postgresql: pgsql`
+    SELECT *
+    FROM "TestSchema"."MonthlySales" AS "T1"
+    WHERE "T1"."feb" BETWEEN "T1"."jan" AND "T1"."mar"
+  `,
+};
+
 export const regexpMysqlPostgresql: ExpectedSql = {
   mysql: mysql`
     SELECT *
@@ -236,6 +254,28 @@ export const eqDateTime: ExpectedSql = {
     SELECT *
     FROM "TestSchema"."User" AS "T1"
     WHERE (("T1"."createdAt" IS NULL AND '2024-01-15 10:30:00'::timestamp IS NULL) OR "T1"."createdAt" = '2024-01-15 10:30:00'::timestamp)
+  `,
+};
+
+//#endregion
+
+//#region ========== inQuery 테스트 ==========
+
+export const inQuery: ExpectedSql = {
+  mysql: mysql`
+    SELECT *
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+    WHERE \`T1\`.\`id\` IN (SELECT \`T2\`.\`userId\` AS \`userId\` FROM \`TestDb\`.\`Post\` AS \`T2\`)
+  `,
+  mssql: tsql`
+    SELECT *
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+    WHERE [T1].[id] IN (SELECT [T2].[userId] AS [userId] FROM [TestDb].[TestSchema].[Post] AS [T2])
+  `,
+  postgresql: pgsql`
+    SELECT *
+    FROM "TestSchema"."User" AS "T1"
+    WHERE "T1"."id" IN (SELECT "T2"."userId" AS "userId" FROM "TestSchema"."Post" AS "T2")
   `,
 };
 

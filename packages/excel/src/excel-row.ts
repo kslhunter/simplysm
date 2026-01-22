@@ -12,6 +12,7 @@ export class ExcelRow {
     private readonly _r: number,
   ) {}
 
+  /** 열 인덱스에 해당하는 셀 반환 (0-based) */
   cell(c: number): ExcelCell {
     return this._cellMap.getOrCreate(
       c,
@@ -19,6 +20,7 @@ export class ExcelRow {
     );
   }
 
+  /** 행의 모든 셀 반환 */
   async getCells(): Promise<ExcelCell[]> {
     const result: ExcelCell[] = [];
     const wsData = await this._getWsData();

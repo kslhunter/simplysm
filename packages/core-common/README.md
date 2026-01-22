@@ -29,7 +29,7 @@ import "@simplysm/core-common";
 
 | 클래스 | 설명 |
 |--------|------|
-| `SdError` | 기본 에러 클래스 (ES2022 cause 속성 지원) |
+| `SdError` | 기본 에러 클래스 (cause 체인으로 오류 추적, 중첩된 스택 자동 통합) |
 | `ArgumentError` | 인자 검증 에러 (YAML 포맷팅) |
 | `NotImplementedError` | 미구현 기능 표시 |
 | `TimeoutError` | 타임아웃 에러 |
@@ -45,6 +45,7 @@ import "@simplysm/core-common";
 | `Time` | 시간만 (날짜 제외) |
 | `Uuid` | UUID v4 |
 | `LazyGcMap` | 자동 만료 기능이 있는 Map (LRU) |
+| `PrimitiveTypeStr` | 원시 타입 문자열 (`"string"`, `"number"` 등) |
 
 ### Zip
 
@@ -60,7 +61,7 @@ ZIP 파일 압축/해제 유틸리티입니다.
 
 | 클래스/함수 | 설명 |
 |--------|------|
-| `ObjectUtils` | 깊은 복사/비교/병합 |
+| `ObjectUtils` | 깊은 복사/비교/병합/3-way 병합 (충돌 감지) |
 | `JsonConvert` | 커스텀 타입 지원 JSON 직렬화 |
 | `XmlConvert` | XML 파싱/변환 |
 | `TransferableConvert` | Worker 데이터 변환 |
@@ -68,7 +69,7 @@ ZIP 파일 압축/해제 유틸리티입니다.
 | `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C# 호환 커스텀 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
 | `NumberUtils` | 숫자 파싱/포맷팅 |
 | `BytesUtils` | Uint8Array 연결, hex 변환 |
-| `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 타임아웃) |
+| `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 최대 시도 횟수 제한) |
 | `DebounceQueue` | 비동기 디바운스 큐 (마지막 요청만 실행) |
 | `SerialQueue` | 비동기 직렬 큐 (순차 실행) |
 | `SdEventEmitter` | EventTarget 래퍼 (type-safe 이벤트) |
@@ -103,7 +104,7 @@ Array, Map, Set 프로토타입 확장입니다.
 - `yyyy-MM-dd`, `yyyyMMdd` 형식: 문자열에서 직접 파싱 (타임존 영향 없음)
 - ISO 8601 형식 (`2024-01-15T00:00:00Z`): UTC로 해석 후 로컬 변환
 
-서버와 클라이언트 타임존이 다른 경우 `yyyy-MM-dd` 형식 사용을 권장합니다.
+서버와 클라이언트 타임존이 다른 경우 `yyyy-MM-dd` 형식을 적극 활용한다.
 
 ### 메모리 관리 (LazyGcMap)
 
@@ -126,7 +127,7 @@ try {
 ### 멀티스레드 환경 (JsonConvert)
 
 `JsonConvert.stringify()`는 내부적으로 `Date.prototype.toJSON`을 임시 수정합니다.
-Worker 환경에서 동시 호출 시 경쟁 조건이 발생할 수 있으므로 단일 스레드에서만 사용하세요.
+Worker 환경에서 동시 호출 시 경쟁 조건이 발생할 수 있으므로 단일 스레드에서만 사용해야 한다.
 
 ## 라이선스
 

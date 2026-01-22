@@ -191,9 +191,9 @@ describe("Array.ext", () => {
       expect(result).toEqual([]);
     });
 
-    it("내장 타입도 필터링한다", () => {
+    it("PrimitiveTypeStr로 필터링한다", () => {
       const arr = [1, "a", 2, "b", 3];
-      const result = arr.ofType(String);
+      const result = arr.ofType("string");
 
       expect(result).toEqual(["a", "b"]);
     });
@@ -491,7 +491,7 @@ describe("Array.ext", () => {
   describe("filterAsync()", () => {
     it("비동기 필터링을 수행한다", async () => {
       const arr = [1, 2, 3, 4, 5];
-      const result = await arr.filterAsync(async (item) => item > 2);
+      const result = await arr.filterAsync(async (item) => Promise.resolve(item > 2));
 
       expect(result).toEqual([3, 4, 5]);
     });
@@ -500,7 +500,7 @@ describe("Array.ext", () => {
   describe("mapAsync()", () => {
     it("비동기 매핑을 수행한다", async () => {
       const arr = [1, 2, 3];
-      const result = await arr.mapAsync(async (item) => item * 2);
+      const result = await arr.mapAsync(async (item) => Promise.resolve(item * 2));
 
       expect(result).toEqual([2, 4, 6]);
     });
@@ -509,7 +509,7 @@ describe("Array.ext", () => {
   describe("parallelAsync()", () => {
     it("병렬 비동기 실행을 수행한다", async () => {
       const arr = [1, 2, 3];
-      const result = await arr.parallelAsync(async (item) => item * 2);
+      const result = await arr.parallelAsync(async (item) => Promise.resolve(item * 2));
 
       expect(result).toEqual([2, 4, 6]);
     });
@@ -521,7 +521,7 @@ describe("Array.ext", () => {
         { items: [1, 2] },
         { items: [3, 4] },
       ];
-      const result = await arr.mapManyAsync(async (item) => item.items);
+      const result = await arr.mapManyAsync(async (item) => Promise.resolve(item.items));
 
       expect(result).toEqual([1, 2, 3, 4]);
     });
@@ -642,7 +642,7 @@ describe("Array.ext", () => {
         { id: 1, name: "a" },
         { id: 2, name: "b" },
       ];
-      const result = await arr.toMapAsync(async (item) => item.id);
+      const result = await arr.toMapAsync(async (item) => Promise.resolve(item.id));
 
       expect(result.get(1)).toEqual({ id: 1, name: "a" });
     });
@@ -653,8 +653,8 @@ describe("Array.ext", () => {
         { id: 2, name: "b" },
       ];
       const result = await arr.toMapAsync(
-        async (item) => item.id,
-        async (item) => item.name.toUpperCase(),
+        async (item) => Promise.resolve(item.id),
+        async (item) => Promise.resolve(item.name.toUpperCase()),
       );
 
       expect(result.get(1)).toBe("A");

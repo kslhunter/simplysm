@@ -2,7 +2,7 @@
  * Array 확장 타입 정의
  */
 
-import type { Type } from "../common.types";
+import type { PrimitiveTypeMap, PrimitiveTypeStr, Type } from "../common.types";
 import type { DateTime } from "../types/date-time";
 import type { DateOnly } from "../types/date-only";
 import type { Time } from "../types/time";
@@ -38,7 +38,8 @@ export interface ReadonlyArrayExt<T> {
   /** null/undefined 제거 */
   filterExists(): NonNullable<T>[];
 
-  /** 특정 타입의 요소만 필터링 */
+  /** 특정 타입의 요소만 필터링 (PrimitiveTypeStr 또는 생성자 타입) */
+  ofType<K extends PrimitiveTypeStr>(type: K): Extract<T, PrimitiveTypeMap[K]>[];
   ofType<N extends T>(type: Type<N>): N[];
 
   /** 비동기 매핑 (순차 실행) */
@@ -190,6 +191,11 @@ export interface ReadonlyArrayExt<T> {
 
   merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[];
 
+  /**
+   * 요소의 합계 반환
+   * @param selector 값 선택 함수 (생략 시 요소 자체를 number로 사용)
+   * @returns 빈 배열인 경우 0 반환
+   */
   sum(selector?: (item: T, index: number) => number): number;
 
   min(): T extends number | string ? T | undefined : never;

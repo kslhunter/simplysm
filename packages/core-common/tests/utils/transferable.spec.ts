@@ -96,12 +96,67 @@ describe("TransferableConvert", () => {
       });
     });
 
-    it("Buffer를 인코딩하고 transferList에 추가한다", () => {
-      const buffer = Buffer.from("hello");
-      const { result, transferList } = TransferableConvert.encode(buffer);
+    it("Error의 code 속성을 인코딩한다", () => {
+      const err = new Error("test error") as Error & { code: string };
+      err.code = "ERR_CUSTOM";
+      const { result } = TransferableConvert.encode(err);
 
-      expect(result).toBe(buffer);
-      expect(transferList).toContain(buffer.buffer);
+      const typedResult = result as {
+        __type__: string;
+        data: {
+          name: string;
+          message: string;
+          code?: string;
+        };
+      };
+
+      expect(typedResult.data.code).toBe("ERR_CUSTOM");
+    });
+
+    it("Error의 detail 속성을 인코딩한다", () => {
+      const err = new Error("test error") as Error & { detail: unknown };
+      err.detail = { userId: 123, action: "delete" };
+      const { result } = TransferableConvert.encode(err);
+
+      const typedResult = result as {
+        __type__: string;
+        data: {
+          name: string;
+          message: string;
+          detail?: unknown;
+        };
+      };
+
+      expect(typedResult.data.detail).toEqual({ userId: 123, action: "delete" });
+    });
+
+    it("Error의 detail에 포함된 특수 타입도 인코딩한다", () => {
+      const err = new Error("test error") as Error & { detail: unknown };
+      const dt = new DateTime(2025, 1, 6);
+      err.detail = { timestamp: dt };
+      const { result } = TransferableConvert.encode(err);
+
+      const typedResult = result as {
+        __type__: string;
+        data: {
+          name: string;
+          message: string;
+          detail?: { timestamp: { __type__: string; data: number } };
+        };
+      };
+
+      expect(typedResult.data.detail?.timestamp).toEqual({
+        __type__: "DateTime",
+        data: dt.tick,
+      });
+    });
+
+    it("Uint8Array를 인코딩하고 transferList에 추가한다", () => {
+      const bytes = new TextEncoder().encode("hello");
+      const { result, transferList } = TransferableConvert.encode(bytes);
+
+      expect(result).toBe(bytes);
+      expect(transferList).toContain(bytes.buffer);
     });
 
     it("Date를 인코딩한다", () => {
@@ -326,6 +381,56 @@ describe("TransferableConvert", () => {
       expect(err.message).toBe("main error");
       expect(err.cause instanceof Error).toBe(true);
       expect((err.cause as Error).message).toBe("cause error");
+    });
+
+    it("Error의 code 속성을 디코딩한다", () => {
+      const encoded = {
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "test error",
+          code: "ERR_CUSTOM",
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Error).toBe(true);
+      const err = decoded as Error & { code?: string };
+      expect(err.code).toBe("ERR_CUSTOM");
+    });
+
+    it("Error의 detail 속성을 디코딩한다", () => {
+      const encoded = {
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "test error",
+          detail: { userId: 123, action: "delete" },
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Error).toBe(true);
+      const err = decoded as Error & { detail?: unknown };
+      expect(err.detail).toEqual({ userId: 123, action: "delete" });
+    });
+
+    it("Error의 detail에 포함된 특수 타입도 디코딩한다", () => {
+      const tick = new DateTime(2025, 1, 6).tick;
+      const encoded = {
+        __type__: "Error",
+        data: {
+          name: "Error",
+          message: "test error",
+          detail: { timestamp: { __type__: "DateTime", data: tick } },
+        },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof Error).toBe(true);
+      const err = decoded as Error & { detail?: { timestamp: DateTime } };
+      expect(err.detail?.timestamp instanceof DateTime).toBe(true);
+      expect(err.detail?.timestamp.tick).toBe(tick);
     });
 
     it("Date를 디코딩한다", () => {

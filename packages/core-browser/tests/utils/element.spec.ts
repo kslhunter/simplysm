@@ -1,4 +1,3 @@
-// @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ElementUtils } from "../../src/utils/element";
 
@@ -169,6 +168,11 @@ describe("ElementUtils", () => {
       container.style.opacity = "0";
       expect(ElementUtils.isVisible(container)).toBe(false);
     });
+
+    it("display: none은 not visible", () => {
+      container.style.display = "none";
+      expect(ElementUtils.isVisible(container)).toBe(false);
+    });
   });
 
   describe("copyElement", () => {
@@ -263,6 +267,18 @@ describe("ElementUtils", () => {
 
       expect(input.value).toBe("pasted text");
       expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it("붙여넣기 시 input 이벤트 발생", () => {
+      container.innerHTML = `<input type="text" />`;
+      const input = container.querySelector("input")!;
+      const inputEventSpy = vi.fn();
+      input.addEventListener("input", inputEventSpy);
+
+      const event = createMockClipboardEvent(container, "pasted text");
+      ElementUtils.pasteToElement(event);
+
+      expect(inputEventSpy).toHaveBeenCalledTimes(1);
     });
 
     it("클립보드 내용을 textarea에 붙여넣기", () => {

@@ -41,7 +41,7 @@ export class ServiceClient extends SdEventEmitter<ServiceClientEvents> {
     public readonly name: string,
     public readonly options: ServiceConnectionConfig,
   ) {
-    super({});
+    super();
 
     const wsProtocol = options.ssl ? "wss" : "ws";
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;

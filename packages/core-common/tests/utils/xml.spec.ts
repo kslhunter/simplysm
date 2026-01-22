@@ -21,8 +21,8 @@ describe("XmlConvert", () => {
         };
       };
 
-      expect(result.root.$?.id).toBe("1");
-      expect(result.root.child[0].$?.name).toBe("test");
+      expect(result.root.$.id).toBe("1");
+      expect(result.root.child[0].$.name).toBe("test");
     });
 
     it("중첩된 XML을 파싱한다", () => {

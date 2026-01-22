@@ -54,8 +54,8 @@ describe("ZipArchive", () => {
       const files = await result.extractAllAsync();
 
       expect(files.size).toBe(2);
-      expect(files.get("file1.txt") != null ? decoder.decode(files.get("file1.txt")!) : undefined).toBe("content 1");
-      expect(files.get("file2.txt") != null ? decoder.decode(files.get("file2.txt")!) : undefined).toBe("content 2");
+      expect(files.get("file1.txt") != null ? decoder.decode(files.get("file1.txt")) : undefined).toBe("content 1");
+      expect(files.get("file2.txt") != null ? decoder.decode(files.get("file2.txt")) : undefined).toBe("content 2");
     });
 
     it("진행률 콜백을 호출한다", async () => {
@@ -196,6 +196,19 @@ describe("ZipArchive", () => {
     it("reader가 없어도 에러 없이 동작한다", async () => {
       const zip = new ZipArchive();
       await expect(zip.closeAsync()).resolves.not.toThrow();
+    });
+
+    it("await using으로 자동 close된다", async () => {
+      const zip = new ZipArchive();
+      zip.write("file.txt", encoder.encode("content"));
+      const zipBuffer = await zip.compressAsync();
+
+      {
+        await using result = new ZipArchive(zipBuffer);
+        await result.extractAllAsync();
+        const content = await result.getAsync("file.txt");
+        expect(decoder.decode(content!)).toBe("content");
+      } // await using 블록 종료 시 closeAsync 자동 호출
     });
   });
 

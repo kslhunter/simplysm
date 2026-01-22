@@ -6,7 +6,6 @@ describe("Time", () => {
 
   describe("constructor", () => {
     it("인수 없이 생성하면 현재 시간을 반환한다", () => {
-      const now = new Date();
       const time = new Time();
 
       // 시간은 실시간으로 변하므로 범위 테스트
@@ -160,6 +159,23 @@ describe("Time", () => {
       expect(time.hour).toBe(0);
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
+    });
+
+    it("ISO 8601 형식에서 시간 부분을 파싱한다", () => {
+      const time = Time.parse("2025-01-15T10:30:45Z");
+
+      expect(time.hour).toBe(10);
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(45);
+    });
+
+    it("ISO 8601 형식에서 밀리초도 파싱한다", () => {
+      const time = Time.parse("2025-01-15T10:30:45.123Z");
+
+      expect(time.hour).toBe(10);
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(45);
+      expect(time.millisecond).toBe(123);
     });
   });
 

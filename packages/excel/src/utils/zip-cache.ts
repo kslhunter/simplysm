@@ -1,3 +1,5 @@
+import type { Bytes } from "@simplysm/core-common";
+import { ZipArchive, XmlConvert } from "@simplysm/core-common";
 import type {
   ExcelXml,
   ExcelXmlContentTypeData,
@@ -8,25 +10,24 @@ import type {
   ExcelXmlWorkbookData,
   ExcelXmlWorksheetData,
 } from "../types";
-import { ZipArchive, XmlConvert } from "@simplysm/core-common";
-import { ExcelXmlRelationship } from "../xml/excel-xml-relationship";
 import { ExcelXmlContentType } from "../xml/excel-xml-content-type";
+import { ExcelXmlDrawing } from "../xml/excel-xml-drawing";
+import { ExcelXmlRelationship } from "../xml/excel-xml-relationship";
+import { ExcelXmlSharedString } from "../xml/excel-xml-shared-string";
+import { ExcelXmlStyle } from "../xml/excel-xml-style";
+import { ExcelXmlUnknown } from "../xml/excel-xml-unknown";
 import { ExcelXmlWorkbook } from "../xml/excel-xml-workbook";
 import { ExcelXmlWorksheet } from "../xml/excel-xml-worksheet";
-import { ExcelXmlSharedString } from "../xml/excel-xml-shared-string";
-import { ExcelXmlUnknown } from "../xml/excel-xml-unknown";
-import { ExcelXmlStyle } from "../xml/excel-xml-style";
-import { ExcelXmlDrawing } from "../xml/excel-xml-drawing";
 
 export class ZipCache {
-  private readonly _cache = new Map<string, ExcelXml | Uint8Array | undefined>();
+  private readonly _cache = new Map<string, ExcelXml | Bytes | undefined>();
   private readonly _zip: ZipArchive;
 
-  constructor(arg?: Blob | Uint8Array) {
+  constructor(arg?: Blob | Bytes) {
     this._zip = new ZipArchive(arg);
   }
 
-  async get(filePath: string): Promise<ExcelXml | Uint8Array | undefined> {
+  async get(filePath: string): Promise<ExcelXml | Bytes | undefined> {
     if (this._cache.has(filePath)) {
       return this._cache.get(filePath);
     }
@@ -64,11 +65,11 @@ export class ZipCache {
     return this._cache.get(filePath);
   }
 
-  set(filePath: string, content: ExcelXml | Uint8Array): void {
+  set(filePath: string, content: ExcelXml | Bytes): void {
     this._cache.set(filePath, content);
   }
 
-  async toBytes(): Promise<Uint8Array> {
+  async toBytes(): Promise<Bytes> {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath);
       if (content == null) continue;

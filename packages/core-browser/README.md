@@ -66,7 +66,7 @@ const offset2 = HtmlElementUtils.getRelativeOffset(element, ".container");
 HtmlElementUtils.scrollIntoViewIfNeeded(
   scrollContainer,
   { top: target.offsetTop, left: target.offsetLeft },
-  { top: 50, left: 0 }, // 고정 헤더 높이
+  { top: 50, left: 0 }, // 고정 헤더 높이, 고정 열 너비
 );
 
 // 요소들의 bounds 정보 비동기 조회

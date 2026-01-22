@@ -27,13 +27,14 @@ yarn add -D @simplysm/claude
 ```
 dist/
 ├── rules/        # 규칙 설정
+├── scripts/      # 스크립트
 ├── settings.json # 설정 파일
 └── skills/       # 스킬 정의
 ```
 
 ## 주의사항
 
-- 설치 시 프로젝트 루트의 `.claude` 폴더 내용이 덮어쓰기된다.
+- dist에 포함된 파일과 동일한 경로의 파일은 덮어쓰기된다. dist에 없는 기존 커스텀 파일은 유지된다.
 - 기존 `.claude` 커스텀 설정이 있는 경우 백업을 권장한다.
 - 이 패키지는 외부 프로젝트에서 사용하기 위한 패키지다. monorepo 내부에서는 postinstall이 동작하지 않는다.
 

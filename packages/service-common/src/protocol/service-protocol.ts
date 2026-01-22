@@ -1,3 +1,4 @@
+import type { Bytes } from "@simplysm/core-common";
 import { ArgumentError, JsonConvert, LazyGcMap, Uuid, BytesUtils } from "@simplysm/core-common";
 import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
 
@@ -19,7 +20,7 @@ export class ServiceProtocol {
   /**
    * 메시지 인코딩 (필요 시 자동 분할)
    */
-  encode(uuid: string, message: ServiceMessage): { chunks: Uint8Array[]; totalSize: number } {
+  encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number } {
     const msgJson = JsonConvert.stringify([
       message.name,
       ...("body" in message ? [message.body] : []),
@@ -42,7 +43,7 @@ export class ServiceProtocol {
     }
 
     // 분할 처리
-    const chunks: Uint8Array[] = [];
+    const chunks: Bytes[] = [];
     let offset = 0;
     let index = 0;
 
@@ -65,8 +66,8 @@ export class ServiceProtocol {
       totalSize: number;
       index: number;
     },
-    bodyBytes?: Uint8Array,
-  ): Uint8Array {
+    bodyBytes?: Bytes,
+  ): Bytes {
     const headerBytes = new Uint8Array(28);
 
     // UUID
@@ -90,7 +91,7 @@ export class ServiceProtocol {
     {
       totalSize: number;
       completedSize: number;
-      chunks: (Uint8Array | undefined)[];
+      chunks: (Bytes | undefined)[];
     }
   >({
     gcInterval: PROTOCOL_CONFIG.GC_INTERVAL,
@@ -104,7 +105,7 @@ export class ServiceProtocol {
   /**
    * 메시지 디코딩 (분할 패킷 자동 조립)
    */
-  decode<T extends ServiceMessage>(bytes: Uint8Array): ServiceMessageDecodeResult<T> {
+  decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T> {
     if (bytes.length < 28) {
       throw new ArgumentError("버퍼 크기가 헤더 크기보다 작습니다.", {
         bufferSize: bytes.length,

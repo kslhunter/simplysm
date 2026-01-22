@@ -105,7 +105,11 @@ export class ExcelXmlStyle implements ExcelXml {
     if (idNum == null) {
       throw new Error(`잘못된 스타일 ID: ${id}`);
     }
-    const prevXf = this.data.styleSheet.cellXfs[0].xf[idNum];
+    const xfArray = this.data.styleSheet.cellXfs[0].xf;
+    if (idNum < 0 || idNum >= xfArray.length) {
+      throw new Error(`존재하지 않는 스타일 ID: ${id} (범위: 0-${xfArray.length - 1})`);
+    }
+    const prevXf = xfArray[idNum];
     const cloneXf = ObjectUtils.clone(prevXf);
 
     if (style.numFmtId !== undefined) {
@@ -187,7 +191,11 @@ export class ExcelXmlStyle implements ExcelXml {
       if (xf.$.fillId !== undefined) {
         const fillIdNum = NumberUtils.parseInt(xf.$.fillId);
         if (fillIdNum != null) {
-          result.background = this.data.styleSheet.fills[0].fill[fillIdNum].patternFill[0].fgColor?.[0].$.rgb;
+          const fill = this.data.styleSheet.fills[0].fill[fillIdNum] as ExcelXmlStyleDataFill | undefined;
+          if (fill == null) {
+            throw new Error(`존재하지 않는 fill ID: ${xf.$.fillId} (범위: 0-${this.data.styleSheet.fills[0].fill.length - 1})`);
+          }
+          result.background = fill.patternFill[0].fgColor?.[0].$.rgb;
         }
       }
 
@@ -196,7 +204,10 @@ export class ExcelXmlStyle implements ExcelXml {
         if (borderIdNum == null) {
           throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
         }
-        const border = this.data.styleSheet.borders[0].border[borderIdNum];
+        const border = this.data.styleSheet.borders[0].border[borderIdNum] as ExcelXmlStyleDataBorder | undefined;
+        if (border == null) {
+          throw new Error(`존재하지 않는 border ID: ${xf.$.borderId} (범위: 0-${this.data.styleSheet.borders[0].border.length - 1})`);
+        }
         if (border.top != null || border.left != null || border.right != null || border.bottom != null) {
           result.border = [];
           if (border.left != null) {

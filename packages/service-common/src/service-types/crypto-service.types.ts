@@ -1,7 +1,9 @@
+import type { Bytes } from "@simplysm/core-common";
+
 export interface CryptoService {
-  encrypt(data: string | Uint8Array): Promise<string>;
-  encryptAes(data: Uint8Array): Promise<string>;
-  decryptAes(encText: string): Promise<Uint8Array>;
+  encrypt(data: string | Bytes): Promise<string>;
+  encryptAes(data: Bytes): Promise<string>;
+  decryptAes(encText: string): Promise<Bytes>;
 }
 
 export interface CryptoConfig {

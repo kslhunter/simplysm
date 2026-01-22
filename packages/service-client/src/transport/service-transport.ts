@@ -1,13 +1,13 @@
+import type { Bytes } from "@simplysm/core-common";
+import { SdEventEmitter, Uuid } from "@simplysm/core-common";
 import type {
   ServiceErrorMessage,
   ServiceResponseMessage,
   ServiceClientMessage,
 } from "@simplysm/service-common";
-import type { ServiceProgress } from "../types/progress.types";
-
-import type { SocketProvider } from "./socket-provider";
-import { SdEventEmitter, Uuid } from "@simplysm/core-common";
 import { ClientProtocolWrapper } from "../protocol/client-protocol-wrapper";
+import type { ServiceProgress } from "../types/progress.types";
+import type { SocketProvider } from "./socket-provider";
 
 interface ServiceTransportEvents {
   reload: Set<string>;
@@ -27,7 +27,7 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
   >();
 
   constructor(private readonly _socket: SocketProvider) {
-    super({});
+    super();
 
     this._socket.on("message", this._onMessage.bind(this));
 
@@ -75,7 +75,7 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
     return responsePromise;
   }
 
-  private async _onMessage(buf: Uint8Array): Promise<void> {
+  private async _onMessage(buf: Bytes): Promise<void> {
     const decoded = await this._protocol.decodeAsync(buf);
 
     const listenerInfo = this._pendingRequests.get(decoded.uuid);

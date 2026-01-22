@@ -91,7 +91,7 @@ const workbook = await wrapper.write("Users", records);
 const bytes = await workbook.getBytes();
 await workbook.close();
 
-// Excel에서 레코드 읽기
+// Excel에서 레코드 읽기 (데이터가 없으면 에러 발생)
 const readRecords = await wrapper.read(bytes, "Users");
 // readRecords: { name: string; age: number; email?: string }[]
 ```
@@ -130,7 +130,8 @@ await sheet.addImage({
 
 ```typescript
 await sheet.cell(0, 0).setVal("Merged Cell");
-await sheet.cell(0, 0).merge(2, 3); // 2행 x 3열 병합
+// A1 셀부터 D3 셀까지 병합 (3행 x 4열)
+await sheet.cell(0, 0).merge(2, 3);
 ```
 
 ### 수식

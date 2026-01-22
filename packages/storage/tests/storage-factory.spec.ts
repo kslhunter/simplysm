@@ -40,7 +40,7 @@ describe("StorageFactory", () => {
       const result = await StorageFactory.connect(
         "ftp",
         { host: "ftp.example.com" },
-        async () => "result",
+        () => "result",
       );
 
       expect(result).toBe("result");
@@ -56,7 +56,7 @@ describe("StorageFactory", () => {
       const result = await StorageFactory.connect(
         "ftps",
         { host: "ftps.example.com" },
-        async () => "result",
+        () => "result",
       );
 
       expect(result).toBe("result");
@@ -72,7 +72,7 @@ describe("StorageFactory", () => {
       const result = await StorageFactory.connect(
         "sftp",
         { host: "sftp.example.com" },
-        async () => "result",
+        () => "result",
       );
 
       expect(result).toBe("result");
@@ -87,7 +87,7 @@ describe("StorageFactory", () => {
       const result = await StorageFactory.connect(
         "ftp",
         { host: "test" },
-        async (storage) => {
+        (storage) => {
           expect(storage).toBeDefined();
           return { data: "test" };
         },
@@ -100,7 +100,7 @@ describe("StorageFactory", () => {
       const error = new Error("Test error");
 
       await expect(
-        StorageFactory.connect("ftp", { host: "test" }, async () => {
+        StorageFactory.connect("ftp", { host: "test" }, () => {
           throw error;
         }),
       ).rejects.toThrow("Test error");
@@ -109,11 +109,31 @@ describe("StorageFactory", () => {
     });
 
     it("작업 완료 후 연결을 닫아야 함", async () => {
-      await StorageFactory.connect("ftp", { host: "test" }, async () => {
+      await StorageFactory.connect("ftp", { host: "test" }, () => {
         return "done";
       });
 
       expect(mockFtpClose).toHaveBeenCalled();
+    });
+
+    it("SFTP 에러 발생 시 연결을 닫고 에러를 전파해야 함", async () => {
+      const error = new Error("Test error");
+
+      await expect(
+        StorageFactory.connect("sftp", { host: "test" }, () => {
+          throw error;
+        }),
+      ).rejects.toThrow("Test error");
+
+      expect(mockSftpEnd).toHaveBeenCalled();
+    });
+
+    it("SFTP 작업 완료 후 연결을 닫아야 함", async () => {
+      await StorageFactory.connect("sftp", { host: "test" }, () => {
+        return "done";
+      });
+
+      expect(mockSftpEnd).toHaveBeenCalled();
     });
 
     it("동시 연결 시 각 연결이 독립적으로 동작해야 함", async () => {
@@ -141,13 +161,15 @@ describe("StorageFactory", () => {
       expect(executionOrder).toContain("task2-start");
       expect(executionOrder).toContain("task1-end");
       expect(executionOrder).toContain("task2-end");
+      expect(mockFtpAccess).toHaveBeenCalledTimes(2);
+      expect(mockFtpClose).toHaveBeenCalledTimes(2);
     });
 
     it("연결 실패 시 에러를 전파해야 함", async () => {
       mockFtpAccess.mockRejectedValueOnce(new Error("Connection failed"));
 
       await expect(
-        StorageFactory.connect("ftp", { host: "test" }, async () => "result"),
+        StorageFactory.connect("ftp", { host: "test" }, () => "result"),
       ).rejects.toThrow("Connection failed");
     });
   });

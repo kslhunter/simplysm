@@ -67,7 +67,7 @@ export default createRule({
         if (node.source.type !== AST_NODE_TYPES.Literal) return;
         const importPath = node.source.value;
         if (typeof importPath !== "string") return;
-        checkAndReport(node.source as TSESTree.StringLiteral, importPath);
+        checkAndReport(node.source, importPath);
       },
 
       // re-export: export { x } from '...'

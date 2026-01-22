@@ -227,6 +227,82 @@ describe("SELECT - Window Functions", () => {
     });
   });
 
+  describe("LAG with default: 이전 행이 없을 때 기본값", () => {
+    const db = new TestDbContext();
+    const def = db.employee()
+      .select((e) => ({
+        id: e.id,
+        prevId: expr.lag(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1, default: 0 }),
+      }))
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "select",
+        as: "T1",
+        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        select: {
+          id: { type: "column", path: ["T1", "id"] },
+          prevId: {
+            type: "window",
+            fn: {
+              type: "lag",
+              column: { type: "column", path: ["T1", "id"] },
+              offset: 1,
+              default: { type: "value", value: 0 },
+            },
+            spec: {
+              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
+            },
+          },
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.lagWithDefault[dialect]);
+    });
+  });
+
+  describe("LEAD with default: 다음 행이 없을 때 기본값", () => {
+    const db = new TestDbContext();
+    const def = db.employee()
+      .select((e) => ({
+        id: e.id,
+        nextId: expr.lead(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1, default: -1 }),
+      }))
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "select",
+        as: "T1",
+        from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        select: {
+          id: { type: "column", path: ["T1", "id"] },
+          nextId: {
+            type: "window",
+            fn: {
+              type: "lead",
+              column: { type: "column", path: ["T1", "id"] },
+              offset: 1,
+              default: { type: "value", value: -1 },
+            },
+            spec: {
+              orderBy: [[{ type: "column", path: ["T1", "id"] }, "ASC"]],
+            },
+          },
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.leadWithDefault[dialect]);
+    });
+  });
+
   describe("SUM OVER: 누적 합계", () => {
     const db = new TestDbContext();
     const def = db.employee()

@@ -6,11 +6,15 @@ import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
+import path from "path";
+import { fileURLToPath } from "url";
+import { EventEmitter } from "node:events";
 
 Error.stackTraceLimit = Infinity;
+EventEmitter.defaultMaxListeners = 0;
 
 /**
- * CLI 파서를 생성합니다.
+ * CLI 파서를 생성한다.
  * @internal 테스트용으로 export
  */
 export function createCliParser(argv: string[]): Argv {
@@ -19,7 +23,7 @@ export function createCliParser(argv: string[]): Argv {
     .alias("help", "h")
     .command(
       "lint [targets..]",
-      "ESLint를 실행합니다.",
+      "ESLint를 실행한다.",
       (cmd) =>
         cmd
           .version(false)
@@ -57,7 +61,7 @@ export function createCliParser(argv: string[]): Argv {
     )
     .command(
       "typecheck [targets..]",
-      "TypeScript 타입체크를 실행합니다.",
+      "TypeScript 타입체크를 실행한다.",
       (cmd) =>
         cmd
           .version(false)
@@ -86,9 +90,8 @@ export function createCliParser(argv: string[]): Argv {
 }
 
 // CLI로 직접 실행될 때만 파싱 수행
-// ESM에서 메인 모듈 판별: import.meta.url과 process.argv[1]을 비교
-// Windows 경로(\)를 POSIX 스타일(/)로 변환하여 비교
+// ESM에서 메인 모듈 판별: import.meta.url과 process.argv[1]을 정규화하여 비교
 const cliEntryPath = process.argv.at(1);
-if (cliEntryPath != null && import.meta.url.endsWith(cliEntryPath.replace(/\\/g, "/"))) {
+if (cliEntryPath != null && fileURLToPath(import.meta.url) === path.resolve(cliEntryPath)) {
   await createCliParser(hideBin(process.argv)).parse();
 }

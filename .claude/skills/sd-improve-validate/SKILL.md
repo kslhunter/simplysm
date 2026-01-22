@@ -1,7 +1,8 @@
 ---
-name: sd-issue-validate
+name: sd-improve-validate
 description: "이 스킬은 지적의 유효성을 검증한다."
-context: "fork""
+context: "fork"
+user-invocable: false
 ---
 
 # 지적 검증

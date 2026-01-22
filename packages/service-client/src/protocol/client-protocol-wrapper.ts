@@ -1,6 +1,7 @@
+import type { Bytes } from "@simplysm/core-common";
+import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/core-common";
 import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
-import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/core-common";
 
 export class ClientProtocolWrapper {
   // 기준값: 30KB
@@ -94,7 +95,7 @@ export class ClientProtocolWrapper {
   async encodeAsync(
     uuid: string,
     message: ServiceMessage,
-  ): Promise<{ chunks: Uint8Array[]; totalSize: number }> {
+  ): Promise<{ chunks: Bytes[]; totalSize: number }> {
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!ClientProtocolWrapper.workerAvailable || !this._shouldUseWorkerForEncode(message)) {
       return this._protocol.encode(uuid, message);
@@ -104,12 +105,12 @@ export class ClientProtocolWrapper {
     // Encode는 객체를 보내야 하므로 Structured Clone이 발생함.
     // 하지만 JSON.stringify 비용을 메인 스레드에서 제거하는 이득이 더 큼.
     return (await this._runWorkerAsync("encode", { uuid, message })) as {
-      chunks: Uint8Array[];
+      chunks: Bytes[];
       totalSize: number;
     };
   }
 
-  async decodeAsync(bytes: Uint8Array): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+  async decodeAsync(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = bytes.length;
 
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리

@@ -6,10 +6,11 @@
 
 import "./map-ext";
 import { ObjectUtils } from "../utils/object";
-import type { Type } from "../common.types";
+import type { PrimitiveTypeStr, Type } from "../common.types";
 import { DateTime } from "../types/date-time";
 import { DateOnly } from "../types/date-only";
 import { Time } from "../types/time";
+import { Uuid } from "../types/uuid";
 import { ArgumentError } from "../errors/argument-error";
 import { SdError } from "../errors/sd-error";
 import { compareForOrder } from "./array-ext.helpers";
@@ -64,7 +65,32 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return this.filter((item) => item != null);
   },
 
-  ofType<T, N extends T>(type: Type<N>): N[] {
+  ofType<T, N extends T>(type: PrimitiveTypeStr | Type<N>): N[] {
+    // PrimitiveTypeStr인 경우
+    if (typeof type === "string") {
+      return this.filter((item) => {
+        switch (type) {
+          case "string":
+            return typeof item === "string";
+          case "number":
+            return typeof item === "number";
+          case "boolean":
+            return typeof item === "boolean";
+          case "DateTime":
+            return item instanceof DateTime;
+          case "DateOnly":
+            return item instanceof DateOnly;
+          case "Time":
+            return item instanceof Time;
+          case "Uuid":
+            return item instanceof Uuid;
+          case "Bytes":
+            return item instanceof Uint8Array;
+        }
+      }) as N[];
+    }
+
+    // Type<N> (생성자)인 경우
     return this.filter((item) => item instanceof type || item?.constructor === type) as N[];
   },
 

@@ -1,14 +1,15 @@
 import { createSdWorker } from "@simplysm/core-node";
+import type { Bytes } from "@simplysm/core-common";
+import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
-import type { ServiceProtocolWorker } from "../protocol/protocol.worker-types";
 
 const protocol = new ServiceProtocol();
 
-createSdWorker<ServiceProtocolWorker>({
-  encode: (uuid, message) => {
+export default createSdWorker({
+  encode: (uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number } => {
     return protocol.encode(uuid, message);
   },
-  decode: (bytes) => {
+  decode: (bytes: Bytes): ServiceMessageDecodeResult<ServiceMessage> => {
     return protocol.decode(bytes);
   },
 });

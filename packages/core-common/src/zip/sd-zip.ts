@@ -9,6 +9,7 @@ import {
   ZipReader,
   ZipWriter,
 } from "@zip.js/zip.js";
+import type { Bytes } from "../common.types";
 
 export interface ZipArchiveProgress {
   fileName: string;
@@ -42,15 +43,15 @@ export interface ZipArchiveProgress {
  * });
  */
 export class ZipArchive {
-  private readonly _reader?: ZipReader<Blob | Uint8Array>;
-  private readonly _cache = new Map<string, Uint8Array | undefined>();
-  private _entries?: Awaited<ReturnType<ZipReader<Blob | Uint8Array>["getEntries"]>>;
+  private readonly _reader?: ZipReader<Blob | Bytes>;
+  private readonly _cache = new Map<string, Bytes | undefined>();
+  private _entries?: Awaited<ReturnType<ZipReader<Blob | Bytes>["getEntries"]>>;
 
   /**
    * ZipArchive 생성
    * @param data ZIP 데이터 (생략 시 새 아카이브 생성)
    */
-  constructor(data?: Blob | Uint8Array) {
+  constructor(data?: Blob | Bytes) {
     if (!data) return;
 
     if (data instanceof Uint8Array) {
@@ -74,7 +75,7 @@ export class ZipArchive {
    */
   async extractAllAsync(
     progressCallback?: (progress: ZipArchiveProgress) => void,
-  ): Promise<Map<string, Uint8Array | undefined>> {
+  ): Promise<Map<string, Bytes | undefined>> {
     const entries = await this._getEntries();
     if (entries == null) return this._cache;
 
@@ -130,7 +131,7 @@ export class ZipArchive {
    * 특정 파일 압축 해제
    * @param fileName 파일 이름
    */
-  async getAsync(fileName: string): Promise<Uint8Array | undefined> {
+  async getAsync(fileName: string): Promise<Bytes | undefined> {
     if (this._cache.has(fileName)) {
       return this._cache.get(fileName);
     }
@@ -179,7 +180,7 @@ export class ZipArchive {
    * @param fileName 파일 이름
    * @param bytes 파일 내용
    */
-  write(fileName: string, bytes: Uint8Array): void {
+  write(fileName: string, bytes: Bytes): void {
     this._cache.set(fileName, bytes);
   }
   //#endregion
@@ -187,8 +188,12 @@ export class ZipArchive {
   //#region compressAsync
   /**
    * 캐시된 파일들을 ZIP으로 압축
+   *
+   * @remarks
+   * 내부적으로 `extractAllAsync()`를 호출하여 모든 파일을 메모리에 로드한 후 압축합니다.
+   * 대용량 ZIP 파일의 경우 메모리 사용량에 주의가 필요합니다.
    */
-  async compressAsync(): Promise<Uint8Array> {
+  async compressAsync(): Promise<Bytes> {
     const fileMap = await this.extractAllAsync();
 
     const writer = new ZipWriter(new Uint8ArrayWriter());

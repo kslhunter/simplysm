@@ -129,6 +129,10 @@ export class JsonConvert {
    * `__type__`과 `data` 키를 가진 객체는 타입 복원에 사용됩니다.
    * 사용자 데이터에 `{ __type__: "Date" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Set" | "Map" | "Error" | "Uint8Array", data: ... }`
    * 형태가 있으면 의도치 않게 타입 변환될 수 있으니 주의하세요.
+   *
+   * @security 파싱 실패 시 에러 메시지에 JSON 문자열의 일부(최대 1000자)가 포함됩니다.
+   * 토큰, 비밀번호 등 민감한 데이터가 포함된 JSON을 파싱할 경우,
+   * 에러 로그를 통해 해당 데이터가 노출될 수 있으니 주의하세요.
    */
   static parse<T = unknown>(json: string): T {
     try {

@@ -1,14 +1,15 @@
-import { SdWorker } from "@simplysm/core-node";
+import type { Bytes } from "@simplysm/core-common";
+import { SdWorker, type SdWorkerProxy } from "@simplysm/core-node";
 import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
-import type { ServiceProtocolWorker } from "./protocol.worker-types";
+import type * as ServiceProtocolWorkerModule from "../workers/service-protocol.worker";
 
 export class ProtocolWrapper {
   // 워커 스레드 (무거운 작업용, Static Lazy Singleton)
-  private static _worker?: SdWorker<ServiceProtocolWorker>;
+  private static _worker?: SdWorkerProxy<typeof ServiceProtocolWorkerModule>;
   private static get worker() {
     if (this._worker == null) {
-      this._worker = new SdWorker<ServiceProtocolWorker>(
+      this._worker = SdWorker.create<typeof ServiceProtocolWorkerModule>(
         import.meta.resolve("../workers/service-protocol.worker"),
         {
           resourceLimits: { maxOldGenerationSizeMb: 4096 },
@@ -30,9 +31,9 @@ export class ProtocolWrapper {
   async encodeAsync(
     uuid: string,
     message: ServiceMessage,
-  ): Promise<{ chunks: Uint8Array[]; totalSize: number }> {
+  ): Promise<{ chunks: Bytes[]; totalSize: number }> {
     if (this._shouldUseWorkerForEncode(message)) {
-      return ProtocolWrapper.worker.run("encode", [uuid, message]);
+      return ProtocolWrapper.worker.encode(uuid, message);
     } else {
       return this._protocol.encode(uuid, message);
     }
@@ -41,10 +42,10 @@ export class ProtocolWrapper {
   /**
    * 메시지 디코딩 (자동 분기 처리)
    */
-  async decodeAsync(bytes: Uint8Array): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+  async decodeAsync(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = bytes.length;
     if (totalSize > this._SIZE_THRESHOLD) {
-      return ProtocolWrapper.worker.run("decode", [bytes]);
+      return ProtocolWrapper.worker.decode(bytes);
     } else {
       return this._protocol.decode(bytes);
     }

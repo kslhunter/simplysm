@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { LazyGcMap, Wait } from "@simplysm/core-common";
 
 describe("LazyGcMap", () => {
@@ -302,7 +302,7 @@ describe("LazyGcMap", () => {
       map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
-        onExpire: async (key, value) => {
+        onExpire: (key, value) => {
           expired.push([key, value]);
           // onExpire 콜백 중에 같은 키로 새 값 등록
           map.set(key, value + 1000);
@@ -325,7 +325,7 @@ describe("LazyGcMap", () => {
       map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
-        onExpire: async (key, value) => {
+        onExpire: (key, value) => {
           expired.push([key, value]);
           // onExpire 콜백 중에 다른 키로 새 값 등록
           map.set("key2", 200);
@@ -333,7 +333,8 @@ describe("LazyGcMap", () => {
       });
 
       map.set("key1", 100);
-      await Wait.time(350);
+      // expireTime(200) + gcInterval(100) + 여유 = 최소 400ms 필요
+      await Wait.time(400);
 
       // key1은 만료 삭제됨
       expect(expired).toEqual([["key1", 100]]);
@@ -406,6 +407,24 @@ describe("LazyGcMap", () => {
       map.destroy();
 
       expect(map.size).toBe(0);
+    });
+
+    it("using 문으로 자동 destroy된다", async () => {
+      const expired: Array<[string, number]> = [];
+      {
+        using map = new LazyGcMap<string, number>({
+          gcInterval: 100,
+          expireTime: 200,
+          onExpire: (key, value) => {
+            expired.push([key, value]);
+          },
+        });
+        map.set("key1", 100);
+        expect(map.has("key1")).toBe(true);
+      } // using 블록 종료 시 destroy 자동 호출
+      await Wait.time(350);
+      // destroy로 정리됨 (onExpire 미호출)
+      expect(expired).toHaveLength(0);
     });
   });
 

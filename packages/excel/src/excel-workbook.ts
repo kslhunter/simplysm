@@ -1,10 +1,11 @@
+import type { Bytes } from "@simplysm/core-common";
 import { ExcelWorksheet } from "./excel-worksheet";
-import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
-import { ExcelXmlWorkbook as ExcelXmlWorkbookClass } from "./xml/excel-xml-workbook";
-import { ExcelXmlContentType } from "./xml/excel-xml-content-type";
-import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-worksheet";
 import { ZipCache } from "./utils/zip-cache";
+import { ExcelXmlContentType } from "./xml/excel-xml-content-type";
+import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
 import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
+import { ExcelXmlWorkbook as ExcelXmlWorkbookClass } from "./xml/excel-xml-workbook";
+import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-worksheet";
 
 /**
  * Excel 워크북 처리 클래스
@@ -36,7 +37,7 @@ export class ExcelWorkbook {
   private readonly _wsMap = new Map<number, ExcelWorksheet>();
   private _isClosed = false;
 
-  constructor(arg?: Blob | Uint8Array) {
+  constructor(arg?: Blob | Bytes) {
     if (arg != null) {
       this.zipCache = new ZipCache(arg);
     } else {
@@ -73,12 +74,14 @@ export class ExcelWorkbook {
     }
   }
 
+  /** 워크북의 모든 워크시트 이름을 반환 */
   async getWorksheetNames(): Promise<string[]> {
     this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     return wbData.sheetNames;
   }
 
+  /** 새 워크시트를 생성하고 반환 */
   async createWorksheet(name: string): Promise<ExcelWorksheet> {
     this._ensureNotClosed();
     // Workbook
@@ -111,6 +114,7 @@ export class ExcelWorkbook {
     return ws;
   }
 
+  /** 이름 또는 인덱스(0-based)로 워크시트를 조회 */
   async getWorksheet(nameOrIndex: string | number): Promise<ExcelWorksheet> {
     this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
@@ -154,11 +158,13 @@ export class ExcelWorkbook {
 
   //#region Export Methods
 
-  async getBytes(): Promise<Uint8Array> {
+  /** 워크북을 바이트 배열로 출력 */
+  async getBytes(): Promise<Bytes> {
     this._ensureNotClosed();
     return this.zipCache.toBytes();
   }
 
+  /** 워크북을 Blob으로 출력 */
   async getBlob(): Promise<Blob> {
     this._ensureNotClosed();
     const bytes = await this.zipCache.toBytes();

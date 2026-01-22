@@ -1,4 +1,4 @@
-import type { DateOnly, DateTime, Time } from "@simplysm/core-common";
+import { ArgumentError, type DateOnly, type DateTime, type Time } from "@simplysm/core-common";
 import {
   type ColumnPrimitive,
   type ColumnPrimitiveMap,
@@ -469,11 +469,10 @@ export const expr = {
    * ```
    */
   exists(query: Queryable<any, any>): WhereExprUnit {
-    const queryDef = query.getSelectQueryDef();
-    delete queryDef.select; // EXISTS는 SELECT 절 불필요, 패킷 절약
+    const { select: _, ...queryDefWithoutSelect } = query.getSelectQueryDef(); // EXISTS는 SELECT 절 불필요, 패킷 절약
     return new WhereExprUnit({
       type: "exists",
-      query: queryDef,
+      query: queryDefWithoutSelect,
     });
   },
 
@@ -520,6 +519,9 @@ export const expr = {
    * ```
    */
   and(conditions: WhereExprUnit[]): WhereExprUnit {
+    if (conditions.length === 0) {
+      throw new ArgumentError({ conditions: "빈 배열은 허용되지 않습니다" });
+    }
     return new WhereExprUnit({
       type: "and",
       conditions: conditions.map((c) => c.expr),
@@ -544,6 +546,9 @@ export const expr = {
    * ```
    */
   or(conditions: WhereExprUnit[]): WhereExprUnit {
+    if (conditions.length === 0) {
+      throw new ArgumentError({ conditions: "빈 배열은 허용되지 않습니다" });
+    }
     return new WhereExprUnit({
       type: "or",
       conditions: conditions.map((c) => c.expr),
@@ -1360,7 +1365,25 @@ export const expr = {
     then: ExprInput<T>,
     else_: ExprInput<T>,
   ): ExprUnit<T> {
-    return new ExprUnit("boolean", {
+    const allValues = [then, else_];
+    // 1. ExprUnit에서 dataType 찾기
+    const exprUnit = allValues.find((v): v is ExprUnit<T> => v instanceof ExprUnit);
+    if (exprUnit) {
+      return new ExprUnit(exprUnit.dataType, {
+        type: "if",
+        condition: condition.expr,
+        then: toExpr(then),
+        else: toExpr(else_),
+      });
+    }
+
+    // 2. non-null 리터럴에서 추론
+    const nonNullLiteral = allValues.find((v) => v != null) as ColumnPrimitive;
+    if (nonNullLiteral == null) {
+      throw new Error("if의 then/else 중 적어도 하나는 non-null이어야 합니다.");
+    }
+
+    return new ExprUnit(inferColumnPrimitiveStr(nonNullLiteral), {
       type: "if",
       condition: condition.expr,
       then: toExpr(then),

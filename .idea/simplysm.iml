@@ -51,6 +51,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/storage/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/service/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/solid/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

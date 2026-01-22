@@ -118,4 +118,65 @@ describe("Expr - 유틸리티 함수", () => {
   });
 
   //#endregion
+
+  //#region ========== RAW ==========
+
+  describe("raw - 기본 raw SQL", () => {
+    const db = new TestDbContext();
+    const def = db
+      .user()
+      .select((item) => ({
+        id: item.id,
+        serverTime: expr.raw("DateTime")`NOW()`,
+      }))
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def.select).toMatchObject({
+        id: { type: "column", path: ["T1", "id"] },
+        serverTime: {
+          type: "raw",
+          sql: "NOW()",
+          params: [],
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.rawBasic[dialect]);
+    });
+  });
+
+  describe("raw - 파라미터가 있는 raw SQL", () => {
+    const db = new TestDbContext();
+    const def = db
+      .user()
+      .select((item) => ({
+        id: item.id,
+        combined: expr.raw("string")`CONCAT(${item.name}, ' - ', ${item.email})`,
+      }))
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def.select).toMatchObject({
+        id: { type: "column", path: ["T1", "id"] },
+        combined: {
+          type: "raw",
+          sql: "CONCAT($1, ' - ', $2)",
+          params: [
+            { type: "column", path: ["T1", "name"] },
+            { type: "column", path: ["T1", "email"] },
+          ],
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.rawWithParam[dialect]);
+    });
+  });
+
+  //#endregion
 });

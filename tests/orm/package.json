@@ -15,7 +15,7 @@
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",
     "mysql2": "^3.16.1",
-    "pg": "^8.17.1",
+    "pg": "^8.17.2",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.0"
   }

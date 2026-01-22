@@ -142,13 +142,13 @@ const obj = JsonConvert.parse(json); // date가 DateTime으로 복원됨
 조건 대기 및 딜레이.
 
 ```ts
-await Wait.until(() => isReady, 100, 5000); // 100ms 간격, 5초 타임아웃
+await Wait.until(() => isReady, 100, 50); // 100ms 간격, 최대 50회 시도 (약 5초)
 await Wait.time(1000); // 1초 대기
 ```
 
 | 함수 | 용도 |
 |------|------|
-| `until(fn, interval, timeout)` | 조건 대기 |
+| `until(fn, interval, maxCount)` | 조건 대기 |
 | `time(ms)` | 고정 대기 |
 
 ### 큐

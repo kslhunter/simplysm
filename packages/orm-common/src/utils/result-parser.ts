@@ -122,14 +122,14 @@ const YIELD_INTERVAL = 100;
  *
  * @param rawResults - DB에서 받은 raw 결과 배열
  * @param meta - 타입 변환 및 JOIN 구조 정보 (필수)
- * @returns 타입 변환 및 중첩화된 결과 배열, 빈 결과 시 undefined
+ * @returns 타입 변환 및 중첩화된 결과 배열. 입력이 비거나 유효한 결과가 없으면 undefined
  * @throws 타입 파싱 실패 시 Error
  *
  * @remarks
  * - meta 필수: meta가 없으면 이 함수를 호출할 필요 없음 (입력 = 출력)
  * - async only: 대용량 처리 시 외부 인터럽트를 위해 동기 버전 미제공
  * - browser/node 모두 지원: setTimeout(resolve, 0)으로 yield
- * - 빈 결과 처리: null/undefined 값은 키 제거, 빈 배열은 undefined 반환
+ * - 빈 결과 처리: 입력 배열이 비거나, 파싱 후 모든 레코드가 빈 객체인 경우 undefined 반환
  *
  * @example
  * ```typescript

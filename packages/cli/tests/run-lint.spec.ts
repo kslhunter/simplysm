@@ -74,15 +74,36 @@ vi.mock("pino", () => ({
   })),
 }));
 
-vi.mock("ora", () => ({
-  default: vi.fn(() => ({
-    start: vi.fn().mockReturnThis(),
-    succeed: vi.fn().mockReturnThis(),
-    fail: vi.fn().mockReturnThis(),
-    warn: vi.fn().mockReturnThis(),
-    stop: vi.fn().mockReturnThis(),
-    text: "",
-  })),
+// listr2 모킹 - 순차적으로 모든 task를 실행하고 context 반환
+vi.mock("listr2", () => ({
+  Listr: class MockListr {
+    private tasks: Array<{
+      title: string;
+      task: (ctx: Record<string, unknown>, task: { title: string; skip: (msg: string) => void }) => Promise<void>;
+      enabled?: (ctx: Record<string, unknown>) => boolean;
+      skip?: (ctx: Record<string, unknown>) => boolean;
+    }>;
+    constructor(
+      tasks: Array<{
+        title: string;
+        task: (ctx: Record<string, unknown>, task: { title: string; skip: (msg: string) => void }) => Promise<void>;
+        enabled?: (ctx: Record<string, unknown>) => boolean;
+        skip?: (ctx: Record<string, unknown>) => boolean;
+      }>,
+    ) {
+      this.tasks = tasks;
+    }
+    async run() {
+      const ctx: Record<string, unknown> = { files: [], results: [], ignorePatterns: [] };
+      for (const t of this.tasks) {
+        if (t.enabled && !t.enabled(ctx)) continue;
+        if (t.skip && t.skip(ctx)) continue;
+        const mockTask = { title: t.title, skip: () => {} };
+        await t.task(ctx, mockTask);
+      }
+      return ctx;
+    }
+  },
 }));
 
 import { FsUtils } from "@simplysm/core-node";
@@ -252,7 +273,9 @@ describe("runLint", () => {
     // 모든 설정 파일이 없는 경우
     vi.mocked(FsUtils.exists).mockReturnValue(false);
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await expect(
+      runLint({ targets: [], fix: false, timing: false, debug: false }),
+    ).rejects.toThrow("ESLint 설정 파일을 찾을 수 없습니다");
 
     expect(process.exitCode).toBe(1);
     // ESLint가 호출되지 않음
@@ -278,7 +301,7 @@ describe("runLint", () => {
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("timing 옵션 활성화 시 TIMING 환경변수 설정 및 복원", async () => {
+  it("timing 옵션 활성화 시 TIMING 환경변수 설정", async () => {
     const cwd = "/project";
     vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -297,36 +320,8 @@ describe("runLint", () => {
 
     await runLint({ targets: [], fix: false, timing: true, debug: false });
 
-    // 실행 후 TIMING 환경변수가 복원되었는지 확인
-    expect(process.env["TIMING"]).toBeUndefined();
-
-    // cleanup
-    if (originalTiming !== undefined) {
-      process.env["TIMING"] = originalTiming;
-    }
-  });
-
-  it("TIMING 환경변수가 이미 설정된 경우 원래 값으로 복원", async () => {
-    const cwd = "/project";
-    vi.mocked(FsUtils.exists).mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
-    });
-
-    mockJitiImportFn.mockResolvedValue({
-      default: [{ ignores: ["node_modules/**"] }],
-    });
-
-    vi.mocked(FsUtils.globAsync).mockResolvedValue(["/project/src/index.ts"]);
-
-    mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
-
-    const originalTiming = process.env["TIMING"];
-    process.env["TIMING"] = "existing_value";
-
-    await runLint({ targets: [], fix: false, timing: true, debug: false });
-
-    // 실행 후 TIMING 환경변수가 원래 값으로 복원되었는지 확인
-    expect(process.env["TIMING"]).toBe("existing_value");
+    // TIMING이 설정되었는지 확인 (함수 내에서 설정됨)
+    expect(process.env["TIMING"]).toBe("1");
 
     // cleanup
     if (originalTiming !== undefined) {

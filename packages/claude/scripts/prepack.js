@@ -32,7 +32,7 @@ const distDir = path.join(pkgDir, "dist");
  * - settings.local.json은 복사하지 않음
  * @param {string} srcDir - 소스 디렉토리 (.claude)
  * @param {string} destDir - 대상 디렉토리 (dist)
- * @throws {Error} 소스 디렉토리가 존재하지 않을 경우
+ * @throws {Error} 복사 실패 시
  */
 function copyClaudeToDist(srcDir, destDir) {
   // dist 폴더 초기화
@@ -42,10 +42,9 @@ function copyClaudeToDist(srcDir, destDir) {
   fs.mkdirSync(destDir, { recursive: true });
 
   // .claude 하위 디렉토리 복사
-  for (const item of fs.readdirSync(srcDir)) {
-    const srcPath = path.join(srcDir, item);
-    if (fs.statSync(srcPath).isDirectory()) {
-      copyDir(srcPath, path.join(destDir, item));
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      copyDir(path.join(srcDir, entry.name), path.join(destDir, entry.name));
     }
   }
 

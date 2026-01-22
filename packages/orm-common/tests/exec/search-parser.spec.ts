@@ -63,6 +63,25 @@ describe("parseSearchQuery", () => {
         not: [],
       });
     });
+
+    it("접두사만 있는 경우 무시", () => {
+      expect(parseSearchQuery("+ - ")).toEqual({ or: [], must: [], not: [] });
+      expect(parseSearchQuery("+ 사과")).toEqual({ or: ["%사과%"], must: [], not: [] });
+    });
+
+    it("연속된 접두사", () => {
+      // 첫 번째 접두사가 처리되고, 나머지는 리터럴로 포함됨
+      expect(parseSearchQuery("++term")).toEqual({
+        or: [],
+        must: ["%+term%"], // + 접두사 처리 후 "+term"이 남아 리터럴 + 포함
+        not: [],
+      });
+      expect(parseSearchQuery("--word")).toEqual({
+        or: [],
+        must: [],
+        not: ["%-word%"], // - 접두사 처리 후 "-word"이 남아 리터럴 - 포함
+      });
+    });
   });
 
   //#endregion

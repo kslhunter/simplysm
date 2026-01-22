@@ -1,7 +1,8 @@
-import type { z } from "zod";
+import type { Bytes } from "@simplysm/core-common";
+import { DateOnly, DateTime, NumberUtils, Time } from "@simplysm/core-common";
+import { type z, ZodBoolean, ZodDefault, ZodNullable, ZodNumber, ZodOptional, ZodString } from "zod";
 import { ExcelWorkbook } from "./excel-workbook";
 import type { ExcelValueType } from "./types";
-import { DateOnly, DateTime, NumberUtils, Time } from "@simplysm/core-common";
 
 /**
  * Zod 스키마 기반 Excel 래퍼
@@ -9,6 +10,10 @@ import { DateOnly, DateTime, NumberUtils, Time } from "@simplysm/core-common";
  * 스키마에서 타입 정보를 추론하여 타입 안전한 읽기/쓰기 제공
  */
 export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
+  /**
+   * @param _schema Zod 스키마 (레코드 구조 정의)
+   * @param _displayNameMap 필드명-표시명 매핑 (Excel 헤더로 사용)
+   */
   constructor(
     private readonly _schema: T,
     private readonly _displayNameMap: Record<keyof z.infer<T>, string>,
@@ -18,7 +23,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
    * Excel 파일 읽기 → 레코드 배열
    */
   async read(
-    file: Uint8Array | Blob,
+    file: Bytes | Blob,
     wsNameOrIndex: string | number = 0,
   ): Promise<z.infer<T>[]> {
     await using wb = new ExcelWorkbook(file);
@@ -32,7 +37,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     });
 
     if (rawData.length === 0) {
-      throw new Error("엑셀파일에서 데이터를 찾을 수 없습니다.");
+      throw new Error(`[${wsName}] 엑셀파일에서 데이터를 찾을 수 없습니다. (기대 헤더: ${displayNames.join(", ")})`);
     }
 
     const reverseMap = this._getReverseDisplayNameMap();
@@ -155,19 +160,17 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     }
 
     const innerSchema = this._unwrapSchema(fieldSchema);
-    const typeName = this._getTypeName(innerSchema);
 
-    if (typeName === "ZodString") {
+    if (innerSchema instanceof ZodString) {
       return typeof rawValue === "string" ? rawValue : String(rawValue);
     }
 
-    if (typeName === "ZodNumber") {
+    if (innerSchema instanceof ZodNumber) {
       if (typeof rawValue === "number") return rawValue;
-      const parsed = NumberUtils.parseFloat(String(rawValue));
-      return parsed;
+      return NumberUtils.parseFloat(String(rawValue));
     }
 
-    if (typeName === "ZodBoolean") {
+    if (innerSchema instanceof ZodBoolean) {
       if (typeof rawValue === "boolean") return rawValue;
       if (rawValue === "1" || rawValue === "true") return true;
       if (rawValue === "0" || rawValue === "false") return false;
@@ -179,47 +182,32 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
       return rawValue;
     }
 
-    // 문자열에서 날짜 파싱 시도
-    if (typeof rawValue === "string") {
-      if (typeName === "ZodDate") {
-        return DateTime.parse(rawValue);
-      }
-    }
-
     return rawValue;
   }
 
   private _unwrapSchema(schema: z.ZodType): z.ZodType {
-    const typeName = this._getTypeName(schema);
-
-    if (typeName === "ZodOptional" || typeName === "ZodNullable" || typeName === "ZodDefault") {
-      const def = schema._def as unknown as { innerType: z.ZodType };
-      return this._unwrapSchema(def.innerType);
+    if (schema instanceof ZodOptional || schema instanceof ZodNullable) {
+      return this._unwrapSchema(schema.unwrap() as z.ZodType);
     }
-
+    if (schema instanceof ZodDefault) {
+      return this._unwrapSchema(schema.removeDefault() as z.ZodType);
+    }
     return schema;
   }
 
-  private _getTypeName(schema: z.ZodType): string {
-    const def = schema._def as unknown as { typeName: string };
-    return def.typeName;
-  }
-
   private _getDefaultForSchema(schema: z.ZodType): unknown {
-    const typeName = this._getTypeName(schema);
-
-    if (typeName === "ZodDefault") {
-      const def = schema._def as unknown as { defaultValue: () => unknown };
-      return def.defaultValue();
+    if (schema instanceof ZodDefault) {
+      // ZodDefault.parse(undefined)는 기본값을 반환함
+      return schema.parse(undefined);
     }
 
-    if (typeName === "ZodOptional" || typeName === "ZodNullable") {
+    if (schema instanceof ZodOptional || schema instanceof ZodNullable) {
       return undefined;
     }
 
     // Boolean 필수 필드의 기본값은 false
     const innerSchema = this._unwrapSchema(schema);
-    if (this._getTypeName(innerSchema) === "ZodBoolean") {
+    if (innerSchema instanceof ZodBoolean) {
       return false;
     }
 
@@ -227,13 +215,12 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
   }
 
   private _isRequired(schema: z.ZodType): boolean {
-    const typeName = this._getTypeName(schema);
-    return typeName !== "ZodOptional" && typeName !== "ZodNullable";
+    return !(schema instanceof ZodOptional) && !(schema instanceof ZodNullable);
   }
 
   private _isBoolean(schema: z.ZodType): boolean {
     const innerSchema = this._unwrapSchema(schema);
-    return this._getTypeName(innerSchema) === "ZodBoolean";
+    return innerSchema instanceof ZodBoolean;
   }
 
   //#endregion

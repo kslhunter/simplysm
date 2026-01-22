@@ -29,6 +29,7 @@ export class ExcelCell {
 
   //#region Value Methods
 
+  /** 셀에 수식 설정 (undefined: 수식 삭제) */
   async setFormula(val: string | undefined): Promise<void> {
     if (val === undefined) {
       await this._deleteCell(this.addr);
@@ -40,11 +41,13 @@ export class ExcelCell {
     }
   }
 
+  /** 셀의 수식 반환 */
   async getFormula(): Promise<string | undefined> {
     const wsData = await this._getWsData();
     return wsData.getCellFormula(this.addr);
   }
 
+  /** 셀 값 설정 (undefined: 셀 삭제) */
   async setVal(val: ExcelValueType): Promise<void> {
     if (val === undefined) {
       await this._deleteCell(this.addr);
@@ -76,10 +79,11 @@ export class ExcelCell {
       const numFmtName = val instanceof DateOnly ? "DateOnly" : val instanceof DateTime ? "DateTime" : "Time";
       await this._setStyleInternal({ numFmtId: ExcelUtils.convertNumFmtNameToId(numFmtName).toString() });
     } else {
-      throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${String(val)}`);
+      throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${typeof val}`);
     }
   }
 
+  /** 셀 값 반환 */
   async getVal(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
@@ -105,7 +109,7 @@ export class ExcelCell {
       return NumberUtils.parseFloat(cellVal);
     } else if (cellType === "e") {
       throw new Error(
-        `[${ExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`,
+        `[${ExcelUtils.stringifyAddr(this.addr)}] 셀 타입 분석 실패: 셀에 에러 값이 포함되어 있습니다 (${cellVal})`,
       );
     } else {
       // cellType === undefined: 숫자 또는 날짜/시간 타입
@@ -162,6 +166,14 @@ export class ExcelCell {
 
   //#region Merge Methods
 
+  /**
+   * 현재 셀부터 지정된 끝 좌표까지 셀 병합
+   * @param r 병합 끝 행 인덱스 (0-based)
+   * @param c 병합 끝 열 인덱스 (0-based)
+   * @example
+   * // A1 셀에서 호출하면 A1:C3 범위 (3행 x 3열)를 병합
+   * await ws.cell(0, 0).merge(2, 2);
+   */
   async merge(r: number, c: number): Promise<void> {
     const wsData = await this._getWsData();
     wsData.setMergeCells(this.addr, { r, c });
@@ -171,11 +183,13 @@ export class ExcelCell {
 
   //#region Style Methods
 
+  /** 셀의 스타일 ID 반환 */
   async getStyleId(): Promise<string | undefined> {
     const wsData = await this._getWsData();
     return wsData.getCellStyleId(this.addr);
   }
 
+  /** 셀의 스타일 ID 설정 */
   async setStyleId(styleId: string | undefined): Promise<void> {
     const wsData = await this._getWsData();
     wsData.setCellStyleId(this.addr, styleId);

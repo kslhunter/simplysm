@@ -274,6 +274,33 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
     });
   });
 
+  describe("between - 컬럼 참조를 from/to로 사용", () => {
+    const db = new TestDbContext();
+    const def = db
+      .monthlySales()
+      .where((item) => [expr.between(item.feb, item.jan, item.mar)])
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def).toMatchObject({
+        type: "select",
+        where: [
+          {
+            type: "between",
+            source: { type: "column", path: ["T1", "feb"] },
+            from: { type: "column", path: ["T1", "jan"] },
+            to: { type: "column", path: ["T1", "mar"] },
+          },
+        ],
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.betweenColumns[dialect]);
+    });
+  });
+
   describe("regexp - 정규식 비교 (MySQL/PostgreSQL)", () => {
     const db = new TestDbContext();
     const def = db
@@ -326,6 +353,41 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
     it.each(dialects)("[%s] SQL 검증", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.eqDateTime[dialect]);
+    });
+  });
+
+  //#endregion
+
+  //#region ========== inQuery 테스트 ==========
+
+  describe("inQuery - 서브쿼리 IN 조건", () => {
+    const db = new TestDbContext();
+    const def = db
+      .user()
+      .where((u) => [expr.inQuery(u.id, db.post().select((p) => ({ userId: p.userId })))])
+      .getSelectQueryDef();
+
+    it("QueryDef 검증", () => {
+      expect(def).toMatchObject({
+        type: "select",
+        where: [
+          {
+            type: "inQuery",
+            source: { type: "column", path: ["T1", "id"] },
+            query: {
+              type: "select",
+              select: {
+                userId: { type: "column", path: ["T2", "userId"] },
+              },
+            },
+          },
+        ],
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.inQuery[dialect]);
     });
   });
 

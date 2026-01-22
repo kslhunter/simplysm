@@ -1,3 +1,4 @@
+import type { Bytes } from "@simplysm/core-common";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 
 export class FileClient {
@@ -6,7 +7,7 @@ export class FileClient {
     private readonly _clientName: string,
   ) {}
 
-  async downloadAsync(relPath: string): Promise<Uint8Array> {
+  async downloadAsync(relPath: string): Promise<Bytes> {
     // URL 구성
     const url = `${this._hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 

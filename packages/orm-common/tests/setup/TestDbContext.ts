@@ -11,6 +11,7 @@ import { MockExecutor } from "./MockExecutor";
 import { User } from "./models/User";
 import { executable } from "../../src/exec/executable";
 import { GetUserById } from "./procedure/GetUserById";
+import { GetAllUsers } from "./procedure/GetAllUsers";
 import { queryable } from "../../src/exec/queryable";
 
 export class TestDbContext extends DbContext {
@@ -32,4 +33,5 @@ export class TestDbContext extends DbContext {
 
   // Procedures
   getUserById = executable(this, GetUserById);
+  getAllUsers = executable(this, GetAllUsers);
 }

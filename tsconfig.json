@@ -6,6 +6,10 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "moduleResolution": "bundler",
 
+    // JSX (SolidJS)
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+
     // Strict
     "strict": true,
     "noImplicitOverride": true,
@@ -34,5 +38,5 @@
       "@simplysm/*": ["packages/*/src/index.ts"]
     }
   },
-  "include": ["*.ts","packages/*/src/**/*.ts", "packages/*/tests/**/*.ts", "tests/**/*.ts"]
+  "include": ["*.ts","packages/*/src/**/*.ts", "packages/*/src/**/*.tsx", "packages/*/tests/**/*.ts", "packages/*/tests/**/*.tsx", "tests/**/*.ts"]
 }

@@ -1,210 +1,107 @@
 import { afterEach, describe, expect, it } from "vitest";
 import path from "path";
-import type { SdWorkerType, SdWorkerRequest, SdWorkerResponse } from "../../src/worker/types";
+import type { SdWorkerProxy } from "../../src/worker/types";
 import { SdWorker } from "../../src/worker/sd-worker";
-import type { TestWorkerType } from "./fixtures/test-worker";
-
-// 타입 정의 테스트용 인터페이스 (실제 워커 타입과 별도)
-interface TypeTestWorkerType extends SdWorkerType {
-  methods: {
-    add: { params: [number, number]; returnType: number };
-    greet: { params: [string]; returnType: string };
-    noReturn: { params: []; returnType: void };
-  };
-  events: {
-    progress: number;
-    status: string;
-  };
-}
-
-describe("Worker Types", () => {
-  //#region SdWorkerType
-
-  describe("SdWorkerType", () => {
-    it("메서드와 이벤트 타입 정의", () => {
-      // 타입 검증 - 컴파일 타임에 체크됨
-      const _workerType: TypeTestWorkerType = {
-        methods: {
-          add: { params: [1, 2], returnType: 3 },
-          greet: { params: ["hello"], returnType: "greeting" },
-          noReturn: { params: [], returnType: undefined },
-        },
-        events: {
-          progress: 50,
-          status: "running",
-        },
-      };
-
-      expect(_workerType.methods.add.params).toEqual([1, 2]);
-      expect(_workerType.events.progress).toBe(50);
-    });
-  });
-
-  //#endregion
-
-  //#region SdWorkerRequest
-
-  describe("SdWorkerRequest", () => {
-    it("요청 메시지 구조 검증", () => {
-      const request: SdWorkerRequest<TypeTestWorkerType, "add"> = {
-        id: "test-uuid-123",
-        method: "add",
-        params: [10, 20],
-      };
-
-      expect(request.id).toBe("test-uuid-123");
-      expect(request.method).toBe("add");
-      expect(request.params).toEqual([10, 20]);
-    });
-
-    it("다른 메서드의 요청", () => {
-      const request: SdWorkerRequest<TypeTestWorkerType, "greet"> = {
-        id: "test-uuid-456",
-        method: "greet",
-        params: ["World"],
-      };
-
-      expect(request.method).toBe("greet");
-      expect(request.params).toEqual(["World"]);
-    });
-  });
-
-  //#endregion
-
-  //#region SdWorkerResponse
-
-  describe("SdWorkerResponse", () => {
-    it("return 타입 응답", () => {
-      const response = {
-        request: { id: "1", method: "add", params: [1, 2] },
-        type: "return",
-        body: 3,
-      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
-
-      expect(response.type).toBe("return");
-      expect(response.body).toBe(3);
-      expect(response.request.method).toBe("add");
-    });
-
-    it("error 타입 응답", () => {
-      const error = new Error("Test error");
-      const response = {
-        request: { id: "1", method: "add", params: [1, 2] },
-        type: "error",
-        body: error,
-      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
-
-      expect(response.type).toBe("error");
-      expect(response.body).toBeInstanceOf(Error);
-      expect(response.body.message).toBe("Test error");
-    });
-
-    it("event 타입 응답", () => {
-      const response = {
-        type: "event",
-        event: "progress",
-        body: 75,
-      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
-
-      expect(response.type).toBe("event");
-      expect(response.event).toBe("progress");
-      expect(response.body).toBe(75);
-    });
-
-    it("log 타입 응답", () => {
-      const response = {
-        type: "log",
-        body: "Log message from worker",
-      } satisfies SdWorkerResponse<TypeTestWorkerType, "add">;
-
-      expect(response.type).toBe("log");
-      expect(response.body).toBe("Log message from worker");
-    });
-  });
-
-  //#endregion
-
-  //#region Type Safety
-
-  describe("Type Safety", () => {
-    it("제네릭 타입 파라미터로 타입 안전성 보장", () => {
-      // 이 테스트는 컴파일 타임에 타입 체크됨
-      // 잘못된 타입은 컴파일 에러 발생
-
-      // 올바른 타입
-      const _validRequest: SdWorkerRequest<TypeTestWorkerType, "add"> = {
-        id: "1",
-        method: "add",
-        params: [1, 2],
-      };
-
-      // 아래 코드는 컴파일 에러가 발생해야 함 (테스트에서는 주석 처리)
-      // const invalidRequest: SdWorkerRequest<TypeTestWorkerType, "add"> = {
-      //   id: "1",
-      //   method: "add",
-      //   params: ["string", "invalid"], // Error: string is not number
-      // };
-
-      expect(_validRequest.params).toEqual([1, 2]);
-    });
-  });
-
-  //#endregion
-});
+import type * as TestWorkerModule from "./fixtures/test-worker";
 
 describe("SdWorker", () => {
   const workerPath = path.resolve(import.meta.dirname, "fixtures/test-worker.ts");
-  let worker: SdWorker<TestWorkerType> | undefined;
+  let worker: SdWorkerProxy<typeof TestWorkerModule> | undefined;
 
   afterEach(async () => {
     if (worker) {
-      await worker.killAsync();
+      await worker.terminate();
       worker = undefined;
     }
   });
 
-  //#region run
+  //#region 메서드 호출
 
-  describe("run", () => {
+  describe("메서드 호출", () => {
     it("워커 메서드 호출 및 결과 반환", async () => {
-      worker = new SdWorker<TestWorkerType>(workerPath);
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
 
-      const result = await worker.run("add", [10, 20]);
+      const result = await worker.add(10, 20);
 
       expect(result).toBe(30);
     });
 
     it("문자열 반환 메서드 호출", async () => {
-      worker = new SdWorker<TestWorkerType>(workerPath);
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
 
-      const result = await worker.run("echo", ["Hello"]);
+      const result = await worker.echo("Hello");
 
       expect(result).toBe("Echo: Hello");
     });
 
     it("워커에서 에러 발생 시 reject", async () => {
-      worker = new SdWorker<TestWorkerType>(workerPath);
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
 
-      await expect(worker.run("throwError", [])).rejects.toThrow();
+      await expect(worker.throwError()).rejects.toThrow();
+    });
+
+    it("다중 요청 동시 처리", async () => {
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
+
+      const [result1, result2, result3] = await Promise.all([
+        worker.add(1, 2),
+        worker.add(3, 4),
+        worker.add(5, 6),
+      ]);
+
+      expect(result1).toBe(3);
+      expect(result2).toBe(7);
+      expect(result3).toBe(11);
+    });
+
+    it("void 반환 메서드 호출", async () => {
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
+
+      const result = await worker.noReturn();
+
+      expect(result).toBeUndefined();
     });
   });
 
   //#endregion
 
-  //#region events
+  //#region 이벤트
 
-  describe("events", () => {
+  describe("이벤트", () => {
     it("워커에서 이벤트 수신", async () => {
-      worker = new SdWorker<TestWorkerType>(workerPath);
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
 
       const events: number[] = [];
       worker.on("progress", (value) => {
         events.push(value);
       });
 
-      await worker.run("add", [1, 2]);
+      await worker.add(1, 2);
 
       expect(events).toContain(50);
+    });
+  });
+
+  //#endregion
+
+  //#region terminate
+
+  describe("terminate", () => {
+    it("대기 중인 요청이 Worker terminated 에러와 함께 reject", async () => {
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
+
+      const runPromise = worker.delay(5000);
+
+      // 워커 종료 전에 미리 에러를 캐치할 준비를 한다
+      const errorPromise = runPromise.catch((err: unknown) => err);
+
+      // 워커 종료
+      await worker.terminate();
+      worker = undefined;
+
+      const error = await errorPromise;
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe("Worker terminated");
     });
   });
 

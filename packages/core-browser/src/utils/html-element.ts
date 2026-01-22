@@ -1,10 +1,12 @@
-import { TimeoutError } from "@simplysm/core-common";
+import { ArgumentError, TimeoutError } from "@simplysm/core-common";
 
 export namespace HtmlElementUtils {
   /**
    * 강제 리페인트 (reflow 트리거)
    */
   export function repaint(el: HTMLElement): void {
+    // offsetHeight 접근 시 브라우저는 동기적 레이아웃 계산(forced synchronous layout)을 수행하며,
+    // 이로 인해 현재 배치된 스타일 변경사항이 즉시 적용되어 리페인트가 트리거된다.
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     el.offsetHeight;
   }
@@ -14,7 +16,7 @@ export namespace HtmlElementUtils {
    *
    * @remarks
    * 이 함수는 요소의 위치를 부모 요소 기준으로 계산하되, `window.scrollX/Y`를 포함하여
-   * CSS `top`/`left` 속성에 직접 사용할 수 있는 문서 기준 좌표를 반환합니다.
+   * CSS `top`/`left` 속성에 직접 사용할 수 있는 문서 기준 좌표를 반환한다.
    *
    * 주요 사용 사례:
    * - 드롭다운, 팝업 등을 `document.body`에 append 후 위치 지정
@@ -29,7 +31,7 @@ export namespace HtmlElementUtils {
    *
    * @param parent - 기준이 될 부모 요소 또는 셀렉터 (예: document.body, ".container")
    * @returns CSS top/left 속성에 사용할 수 있는 좌표
-   * @throws {Error} 부모 요소를 찾을 수 없는 경우
+   * @throws {ArgumentError} 부모 요소를 찾을 수 없는 경우
    */
   export function getRelativeOffset(
     el: HTMLElement,
@@ -38,7 +40,7 @@ export namespace HtmlElementUtils {
     const parentEl = typeof parent === "string" ? el.closest(parent) : parent;
 
     if (!(parentEl instanceof HTMLElement)) {
-      throw new Error("Parent element not found");
+      throw new ArgumentError({ parent });
     }
 
     const elementRect = el.getBoundingClientRect();
@@ -85,9 +87,9 @@ export namespace HtmlElementUtils {
    * 대상이 offset 영역(고정 헤더/고정 열 등)에 가려진 경우, 보이도록 스크롤
    *
    * @remarks
-   * 이 함수는 대상이 스크롤 영역의 위쪽/왼쪽 경계를 벗어난 경우만 처리합니다.
-   * 아래쪽/오른쪽으로 스크롤이 필요한 경우는 브라우저의 기본 포커스 스크롤 동작에 의존합니다.
-   * 주로 고정 헤더나 고정 열이 있는 테이블에서 포커스 이벤트와 함께 사용됩니다.
+   * 이 함수는 대상이 스크롤 영역의 위쪽/왼쪽 경계를 벗어난 경우만 처리한다.
+   * 아래쪽/오른쪽으로 스크롤이 필요한 경우는 브라우저의 기본 포커스 스크롤 동작에 의존한다.
+   * 주로 고정 헤더나 고정 열이 있는 테이블에서 포커스 이벤트와 함께 사용된다.
    *
    * @param container - 스크롤 컨테이너 요소
    * @param target - 대상의 컨테이너 내 위치 (offsetTop, offsetLeft)

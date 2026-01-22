@@ -78,7 +78,7 @@ const watcher = await SdFsWatcher.watchAsync(["src/**/*.ts"]);
 // 변경 이벤트 핸들러 등록 (이벤트 병합 지원)
 watcher.onChange({ delay: 300 }, (changes) => {
   for (const { path, event } of changes) {
-    console.log(`${event}: ${path}`); // event: "add" | "change" | "unlink" | ...
+    console.log(`${event}: ${path}`); // event: "add" | "addDir" | "change" | "unlink" | "unlinkDir"
   }
 });
 
@@ -103,12 +103,13 @@ interface MyWorkerType extends SdWorkerType {
   };
 }
 
-export default createSdWorker<MyWorkerType>({
+const sender = createSdWorker<MyWorkerType>({
   calculate: async (a, b) => {
     sender.send("progress", 50);
     return a + b;
   },
 });
+export default sender;
 
 // main.ts
 import { SdWorker } from "@simplysm/core-node";

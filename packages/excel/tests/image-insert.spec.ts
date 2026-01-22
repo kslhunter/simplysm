@@ -2,6 +2,26 @@ import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 
 /**
+ * PNG 파일 로드 (Node/브라우저 환경 분기)
+ */
+async function loadPngFile(): Promise<Uint8Array> {
+  const url = new URL("./fixtures/logo.png", import.meta.url);
+
+  // Node 환경: fs 사용
+  if (typeof window === "undefined") {
+    const fs = await import("fs");
+    const { fileURLToPath } = await import("url");
+    const filePath = fileURLToPath(url);
+    return new Uint8Array(fs.readFileSync(filePath));
+  }
+
+  // 브라우저 환경: fetch 사용
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  return new Uint8Array(arrayBuffer);
+}
+
+/**
  * 통합 테스트: ExcelWorksheet.addImage 동작 검증
  */
 
@@ -10,10 +30,7 @@ describe("ExcelWorksheet.addImage integration", () => {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet("Sheet1");
 
-    // 브라우저 환경: fetch로 PNG 파일 로드
-    const response = await fetch(new URL("./fixtures/logo.png", import.meta.url));
-    const arrayBuffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
+    const bytes = await loadPngFile();
 
     // call addImage (the single entry API)
     await ws.addImage({
@@ -83,4 +100,84 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(resultBuffer.length).toBeGreaterThan(0);
   });
 
+  it("같은 워크시트에 여러 이미지를 삽입할 수 있다", async () => {
+    const wb = new ExcelWorkbook();
+    const ws = await wb.createWorksheet("Sheet1");
+
+    const bytes = await loadPngFile();
+
+    // 첫 번째 이미지 삽입
+    await ws.addImage({
+      bytes,
+      ext: "png",
+      from: { r: 0, c: 0 },
+      to: { r: 2, c: 2 },
+    });
+
+    // 두 번째 이미지 삽입 (다른 위치)
+    await ws.addImage({
+      bytes,
+      ext: "png",
+      from: { r: 3, c: 0 },
+      to: { r: 5, c: 2 },
+    });
+
+    // --- 1) 두 개의 media 파일이 각각 생성되었는지 확인
+    const media1 = await (ws as any)._zipCache.get("xl/media/image1.png");
+    const media2 = await (ws as any)._zipCache.get("xl/media/image2.png");
+    expect(media1).toBeDefined();
+    expect(media2).toBeDefined();
+    expect(media1 instanceof Uint8Array).toBe(true);
+    expect(media2 instanceof Uint8Array).toBe(true);
+
+    // --- 2) Content Types에 두 이미지가 모두 등록되었는지 확인
+    const types = await (ws as any)._zipCache.get("[Content_Types].xml");
+    const overrides = types.data?.Types?.Override ?? [];
+    expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image1.png")).toBeTruthy();
+    expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image2.png")).toBeTruthy();
+
+    // --- 3) drawing xml에 두 개의 anchor가 있는지 확인
+    const drawingObj = await (ws as any)._zipCache.get("xl/drawings/drawing1.xml");
+    const anchors = drawingObj?.data?.wsDr?.twoCellAnchor ?? [];
+    expect(anchors.length).toBe(2);
+
+    // 첫 번째 이미지 anchor
+    const pic1 = anchors[0].pic?.[0];
+    expect(pic1).toBeDefined();
+    const embed1 = pic1?.blipFill?.[0]?.["a:blip"]?.[0]?.$?.["r:embed"];
+    expect(embed1).toBeDefined();
+
+    // 두 번째 이미지 anchor
+    const pic2 = anchors[1].pic?.[0];
+    expect(pic2).toBeDefined();
+    const embed2 = pic2?.blipFill?.[0]?.["a:blip"]?.[0]?.$?.["r:embed"];
+    expect(embed2).toBeDefined();
+
+    // 서로 다른 rId인지 확인
+    expect(embed1).not.toBe(embed2);
+
+    // --- 4) drawing rels에 두 이미지에 대한 관계가 있는지 확인
+    const drawingRels = await (ws as any)._zipCache.get("xl/drawings/_rels/drawing1.xml.rels");
+    const relsArr = drawingRels?.data?.Relationships?.Relationship ?? [];
+    expect(relsArr.some((r: any) => r.$.Target === "../media/image1.png")).toBeTruthy();
+    expect(relsArr.some((r: any) => r.$.Target === "../media/image2.png")).toBeTruthy();
+
+    // Buffer 생성 검증
+    const resultBuffer = await wb.getBytes();
+    expect(resultBuffer).toBeDefined();
+    expect(resultBuffer.length).toBeGreaterThan(0);
+  });
+
+  it("지원되지 않는 확장자는 에러 발생", async () => {
+    const wb = new ExcelWorkbook();
+    const ws = await wb.createWorksheet("Sheet1");
+
+    await expect(
+      ws.addImage({
+        bytes: new Uint8Array([0, 1, 2, 3]),
+        ext: "xyz123",
+        from: { r: 0, c: 0 },
+      }),
+    ).rejects.toThrow("MIME 타입을 확인할 수 없습니다");
+  });
 });
