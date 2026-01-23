@@ -1,3 +1,4 @@
+// side-effect: core-common의 프로토타입 확장 활성화 (Map, Set, Array 등)
 import "@simplysm/core-common";
 
 // Utils

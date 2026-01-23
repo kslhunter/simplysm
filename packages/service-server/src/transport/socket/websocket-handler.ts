@@ -6,9 +6,9 @@ import type { ServiceExecutor } from "../../core/service-executor";
 import { ServiceSocket } from "./service-socket";
 import type { JwtManager } from "../../auth/jwt-manager";
 import type { FastifyRequest } from "fastify";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:WebSocketHandler" });
+const logger = createConsola().withTag("service-server:WebSocketHandler");
 
 export class WebSocketHandler {
   private readonly _socketMap = new Map<string, ServiceSocket>();
@@ -43,21 +43,18 @@ export class WebSocketHandler {
       });
 
       serviceSocket.on("message", async ({ uuid, msg }) => {
-        logger.debug({ message: msg }, "요청 수신");
+        logger.debug("요청 수신", msg);
         const sentSize = await this._processRequestAsync(serviceSocket, uuid, msg);
         logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
-      logger.debug(
-        {
-          clientId,
-          remoteAddress: connReq.socket.remoteAddress,
-          socketSize: this._socketMap.size,
-        },
-        "클라이언트 연결됨",
-      );
+      logger.debug("클라이언트 연결됨", {
+        clientId,
+        remoteAddress: connReq.socket.remoteAddress,
+        socketSize: this._socketMap.size,
+      });
     } catch (err) {
-      logger.error({ err }, "연결 처리 중 오류 발생");
+      logger.error("연결 처리 중 오류 발생", err);
       socket.terminate();
     }
   }

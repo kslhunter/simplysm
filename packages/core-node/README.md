@@ -92,36 +92,34 @@ await watcher.close();
 
 ```typescript
 // worker.ts
-import { createSdWorker, SdWorkerType } from "@simplysm/core-node";
+import { createSdWorker } from "@simplysm/core-node";
 
-interface MyWorkerType extends SdWorkerType {
-  methods: {
-    calculate: { params: [number, number]; returnType: number };
-  };
-  events: {
-    progress: number;
-  };
+interface MyEvents {
+  progress: number;
 }
 
-const sender = createSdWorker<MyWorkerType>({
-  calculate: async (a, b) => {
+const methods = {
+  calculate: (a: number, b: number) => {
     sender.send("progress", 50);
     return a + b;
   },
-});
+};
+
+const sender = createSdWorker<typeof methods, MyEvents>(methods);
 export default sender;
 
 // main.ts
 import { SdWorker } from "@simplysm/core-node";
+import type * as MyWorker from "./worker";
 
-const worker = new SdWorker<MyWorkerType>("./worker.ts");
+const worker = SdWorker.create<typeof MyWorker>("./worker.ts");
 
 worker.on("progress", (percent) => {
   console.log(`Progress: ${percent}%`);
 });
 
-const result = await worker.run("calculate", [10, 20]); // 30
-await worker.killAsync();
+const result = await worker.calculate(10, 20); // 30
+await worker.terminate();
 ```
 
 ## 라이선스

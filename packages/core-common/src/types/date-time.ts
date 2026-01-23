@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { DateTimeFormatUtils } from "../utils/date-format";
+import { DateTimeFormatUtils, normalizeMonth } from "../utils/date-format";
 
 /**
  * 날짜시간 클래스 (불변)
@@ -189,6 +189,7 @@ export class DateTime {
 
   //#region 불변 변환 메서드 (새 인스턴스 반환)
 
+  /** 지정된 연도로 새 인스턴스 반환 */
   setYear(year: number): DateTime {
     return new DateTime(
       year,
@@ -208,19 +209,11 @@ export class DateTime {
    *       (예: 1월 31일에서 setMonth(2) → 2월 28일 또는 29일)
    */
   setMonth(month: number): DateTime {
-    // 월 오버플로우/언더플로우 정규화
-    // month가 1-12 범위를 벗어나면 연도를 조정
-    const normalizedYear = this.year + Math.floor((month - 1) / 12);
-    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
-
-    // 대상 월의 마지막 날 구하기
-    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
-    const currentDay = Math.min(this.day, lastDay);
-
+    const normalized = normalizeMonth(this.year, month, this.day);
     return new DateTime(
-      normalizedYear,
-      normalizedMonth,
-      currentDay,
+      normalized.year,
+      normalized.month,
+      normalized.day,
       this.hour,
       this.minute,
       this.second,
@@ -246,6 +239,7 @@ export class DateTime {
     );
   }
 
+  /** 지정된 시로 새 인스턴스 반환 */
   setHour(hour: number): DateTime {
     return new DateTime(
       this.year,
@@ -258,6 +252,7 @@ export class DateTime {
     );
   }
 
+  /** 지정된 분으로 새 인스턴스 반환 */
   setMinute(minute: number): DateTime {
     return new DateTime(
       this.year,
@@ -270,6 +265,7 @@ export class DateTime {
     );
   }
 
+  /** 지정된 초로 새 인스턴스 반환 */
   setSecond(second: number): DateTime {
     return new DateTime(
       this.year,
@@ -282,6 +278,7 @@ export class DateTime {
     );
   }
 
+  /** 지정된 밀리초로 새 인스턴스 반환 */
   setMillisecond(millisecond: number): DateTime {
     return new DateTime(
       this.year,
@@ -298,30 +295,37 @@ export class DateTime {
 
   //#region 산술 메서드 (새 인스턴스 반환)
 
+  /** 지정된 연수를 더한 새 인스턴스 반환 */
   addYears(years: number): DateTime {
     return this.setYear(this.year + years);
   }
 
+  /** 지정된 월수를 더한 새 인스턴스 반환 */
   addMonths(months: number): DateTime {
     return this.setMonth(this.month + months);
   }
 
+  /** 지정된 일수를 더한 새 인스턴스 반환 */
   addDays(days: number): DateTime {
     return new DateTime(this.tick + days * 24 * 60 * 60 * 1000);
   }
 
+  /** 지정된 시간을 더한 새 인스턴스 반환 */
   addHours(hours: number): DateTime {
     return new DateTime(this.tick + hours * 60 * 60 * 1000);
   }
 
+  /** 지정된 분을 더한 새 인스턴스 반환 */
   addMinutes(minutes: number): DateTime {
     return new DateTime(this.tick + minutes * 60 * 1000);
   }
 
+  /** 지정된 초를 더한 새 인스턴스 반환 */
   addSeconds(seconds: number): DateTime {
     return new DateTime(this.tick + seconds * 1000);
   }
 
+  /** 지정된 밀리초를 더한 새 인스턴스 반환 */
   addMilliseconds(milliseconds: number): DateTime {
     return new DateTime(this.tick + milliseconds);
   }

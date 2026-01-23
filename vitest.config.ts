@@ -3,7 +3,6 @@ import { fileURLToPath } from "url";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { playwright } from "@vitest/browser-playwright";
-import solidPlugin from "vite-plugin-solid";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -13,8 +12,10 @@ export default defineConfig({
       root: __dirname,
       projects: ["./tsconfig.json"],
     }),
-    solidPlugin(),
   ],
+  define: {
+    __DEV__: true,
+  },
   test: {
     globals: true,
     environment: "node",
@@ -32,7 +33,7 @@ export default defineConfig({
           exclude: [
             // browser 전용 패키지 제외
             "packages/core-browser/tests/**/*.spec.{ts,tsx,js}",
-            // solid 패키지는 browser에서 테스트
+            // solid 패키지는 별도 프로젝트에서 테스트
             "packages/solid/tests/**/*.spec.{ts,tsx,js}",
           ],
           testTimeout: 30000,
@@ -53,7 +54,26 @@ export default defineConfig({
             "packages/orm-node/tests/**/*.spec.{ts,tsx,js}",
             "packages/service-server/tests/**/*.spec.{ts,tsx,js}",
             "packages/storage/tests/**/*.spec.{ts,tsx,js}",
+            // solid 패키지는 별도 프로젝트에서 테스트
+            "packages/solid/tests/**/*.spec.{ts,tsx,js}",
           ],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: "chromium" }],
+            screenshotFailures: false,
+          },
+        },
+      },
+      // SolidJS 테스트 (solid 패키지 전용, vite-plugin-solid 필요)
+      {
+        extends: true,
+         
+        plugins: [(await import("vite-plugin-solid")).default() as never],
+        test: {
+          name: "solid",
+          include: ["packages/solid/tests/**/*.spec.{ts,tsx,js}"],
           browser: {
             enabled: true,
             provider: playwright(),

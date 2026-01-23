@@ -295,6 +295,42 @@ describe("DateTime", () => {
     });
   });
 
+  //#region tick 비교
+
+  describe("tick 비교", () => {
+    it("같은 날짜시간은 같은 tick을 가진다", () => {
+      const dt1 = new DateTime(2025, 3, 15, 10, 30, 45, 123);
+      const dt2 = new DateTime(2025, 3, 15, 10, 30, 45, 123);
+
+      expect(dt1.tick).toBe(dt2.tick);
+    });
+
+    it("다른 날짜시간은 다른 tick을 가진다", () => {
+      const dt1 = new DateTime(2025, 3, 15, 10, 30, 45, 123);
+      const dt2 = new DateTime(2025, 3, 15, 10, 30, 45, 124);
+
+      expect(dt1.tick).not.toBe(dt2.tick);
+    });
+
+    it("tick으로 날짜시간 순서를 비교할 수 있다", () => {
+      const dt1 = new DateTime(2025, 1, 1, 0, 0, 0);
+      const dt2 = new DateTime(2025, 6, 15, 12, 30, 0);
+      const dt3 = new DateTime(2025, 12, 31, 23, 59, 59);
+
+      expect(dt1.tick).toBeLessThan(dt2.tick);
+      expect(dt2.tick).toBeLessThan(dt3.tick);
+    });
+
+    it("밀리초 단위 비교가 가능하다", () => {
+      const dt1 = new DateTime(2025, 3, 15, 10, 30, 45, 0);
+      const dt2 = new DateTime(2025, 3, 15, 10, 30, 45, 1);
+
+      expect(dt2.tick - dt1.tick).toBe(1);
+    });
+  });
+
+  //#endregion
+
   describe("timezoneOffsetMinutes", () => {
     it("현재 타임존 오프셋을 반환한다", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30, 45);
@@ -341,6 +377,15 @@ describe("DateTime", () => {
       const dt = new DateTime(2024, 3, 5, 9, 5, 3);
 
       expect(dt.toFormatString("HH:mm:ss")).toBe("09:05:03");
+    });
+  });
+
+  describe("toString()", () => {
+    it("ISO 8601 형식으로 반환한다", () => {
+      const dt = new DateTime(2024, 3, 15, 10, 30, 45, 123);
+      const str = dt.toString();
+
+      expect(str).toMatch(/^2024-03-15T10:30:45\.123[+-]\d{2}:\d{2}$/);
     });
   });
 });

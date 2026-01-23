@@ -2,9 +2,9 @@ import type { Type } from "@simplysm/core-common";
 import { Uuid } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
 import type { ServiceTransport } from "../transport/service-transport";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-client:EventClient" });
+const logger = createConsola().withTag("service-client:EventClient");
 
 export class EventClient {
   private readonly _listenerMap = new Map<
@@ -83,7 +83,7 @@ export class EventClient {
           body: { key, name: value.eventName, info: value.info },
         });
       } catch (err) {
-        logger.error({ err, eventName: value.eventName }, "이벤트 리스너 복구 실패");
+        logger.error("이벤트 리스너 복구 실패", { err, eventName: value.eventName });
       }
     }
   }
@@ -96,7 +96,7 @@ export class EventClient {
         try {
           await entry.cb(data);
         } catch (err) {
-          logger.error({ err, eventName: entry.eventName }, "이벤트 핸들러 오류");
+          logger.error("이벤트 핸들러 오류", { err, eventName: entry.eventName });
         }
       }
     }

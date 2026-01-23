@@ -39,14 +39,30 @@ describe("SdButton", () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it("theme prop 적용", () => {
+  it("theme prop 적용 - filled 테마", () => {
     const { getByRole } = render(() => <SdButton theme="primary">Primary</SdButton>);
     const button = getByRole("button");
 
-    expect(button.className).toContain("bg-blue-500");
+    expect(button.className).toContain("bg-primary");
   });
 
-  it("size prop 적용", () => {
+  it("theme prop 적용 - link 테마", () => {
+    const { getByRole } = render(() => <SdButton theme="link-primary">Link</SdButton>);
+    const button = getByRole("button");
+
+    expect(button.className).toContain("bg-transparent");
+    expect(button.className).toContain("text-primary");
+  });
+
+  it("size prop 미지정 시 기본값 적용", () => {
+    const { getByRole } = render(() => <SdButton>Default Size</SdButton>);
+    const button = getByRole("button");
+
+    expect(button.className).toContain("px-3");
+    expect(button.className).toContain("py-1.5");
+  });
+
+  it("size prop 적용 - sm", () => {
     const { getByRole } = render(() => <SdButton size="sm">Small</SdButton>);
     const button = getByRole("button");
 
@@ -54,11 +70,12 @@ describe("SdButton", () => {
     expect(button.className).toContain("text-xs");
   });
 
-  it("fullWidth={false} 적용", () => {
-    const { getByRole } = render(() => <SdButton fullWidth={false}>Inline</SdButton>);
+  it("size prop 적용 - lg", () => {
+    const { getByRole } = render(() => <SdButton size="lg">Large</SdButton>);
     const button = getByRole("button");
 
-    expect(button.className).not.toContain("w-full");
+    expect(button.className).toContain("px-4");
+    expect(button.className).toContain("text-base");
   });
 
   it("커스텀 class 병합", () => {
@@ -80,5 +97,39 @@ describe("SdButton", () => {
     const button = getByRole("button");
 
     expect(button.className).toContain("border-none");
+    expect(button.className).toContain("rounded-none");
+  });
+
+  it("inset + theme 미지정 시 link-primary 테마 자동 적용", () => {
+    const { getByRole } = render(() => <SdButton inset>Inset Default</SdButton>);
+    const button = getByRole("button");
+
+    expect(button.className).toContain("bg-transparent");
+    expect(button.className).toContain("text-primary");
+  });
+
+  it("inset + theme 명시 시 명시된 테마 유지 (primary)", () => {
+    const { getByRole } = render(() => (
+      <SdButton inset theme="primary">
+        Inset Primary
+      </SdButton>
+    ));
+    const button = getByRole("button");
+
+    expect(button.className).toContain("bg-primary");
+    expect(button.className).not.toContain("bg-transparent");
+  });
+
+  it("inset + theme='default' 명시 시에도 link-primary로 변환", () => {
+    const { getByRole } = render(() => (
+      <SdButton inset theme="default">
+        Inset Default Explicit
+      </SdButton>
+    ));
+    const button = getByRole("button");
+
+    // theme="default"를 명시해도 inset일 경우 link-primary로 변환됨
+    expect(button.className).toContain("bg-transparent");
+    expect(button.className).toContain("text-primary");
   });
 });

@@ -18,14 +18,14 @@
 import { SdError } from "../errors/sd-error";
 import { Wait } from "./wait";
 import { SdEventEmitter } from "./sd-event-emitter";
-import pino from "pino";
+import { createConsola } from "consola";
 
 interface SerialQueueEvents {
   error: SdError;
 }
 
 export class SerialQueue extends SdEventEmitter<SerialQueueEvents> {
-  private static readonly _logger = pino({ name: "SerialQueue" });
+  private static readonly _logger = createConsola().withTag("SerialQueue");
 
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;

@@ -1,6 +1,6 @@
 import { createSdWorker } from "../../../src";
 
-interface TestWorkerEvents {
+interface TestWorkerEvents extends Record<string, unknown> {
   progress: number;
 }
 

@@ -22,9 +22,11 @@ describe("classifyFiles", () => {
     const result = classifyFiles(fileNames, cwd, config);
 
     expect(result.byPackage.size).toBe(2);
-    expect(result.byPackage.get("core-common")?.info.target).toBe("neutral");
+    // neutral은 node/browser 둘 다
+    expect(result.byPackage.get("core-common")?.info.envs).toEqual(["node", "browser"]);
     expect(result.byPackage.get("core-common")?.files).toHaveLength(2);
-    expect(result.byPackage.get("core-node")?.info.target).toBe("node");
+    // node는 node만
+    expect(result.byPackage.get("core-node")?.info.envs).toEqual(["node"]);
     expect(result.byPackage.get("core-node")?.files).toHaveLength(1);
     expect(result.byTests.size).toBe(0);
     expect(result.root).toHaveLength(0);
@@ -74,14 +76,14 @@ describe("classifyFiles", () => {
     expect(result.root).toHaveLength(1);
   });
 
-  it("설정에 없는 패키지는 neutral 타겟으로 분류", () => {
+  it("설정에 없는 패키지는 node/browser 둘 다로 분류", () => {
     const fileNames = [
       "/project/packages/unknown-package/src/index.ts",
     ];
 
     const result = classifyFiles(fileNames, cwd, config);
 
-    expect(result.byPackage.get("unknown-package")?.info.target).toBe("neutral");
+    expect(result.byPackage.get("unknown-package")?.info.envs).toEqual(["node", "browser"]);
   });
 
   it("빈 파일 목록 처리", () => {
@@ -103,8 +105,8 @@ describe("classifyFiles", () => {
 
     expect(result.byPackage.size).toBe(0);
     expect(result.byPackageTests.size).toBe(2);
-    expect(result.byPackageTests.get("core-common")?.info.target).toBe("neutral");
-    expect(result.byPackageTests.get("core-node")?.info.target).toBe("node");
+    expect(result.byPackageTests.get("core-common")?.info.envs).toEqual(["node", "browser"]);
+    expect(result.byPackageTests.get("core-node")?.info.envs).toEqual(["node"]);
   });
 
   it("packages의 src와 tests를 분리 분류", () => {
@@ -117,5 +119,41 @@ describe("classifyFiles", () => {
 
     expect(result.byPackage.size).toBe(1);
     expect(result.byPackageTests.size).toBe(1);
+  });
+
+  it("scripts 타겟 패키지는 분류에서 제외", () => {
+    const configWithScripts: SdConfig = {
+      packages: {
+        "some-scripts": { target: "scripts" },
+        "core-common": { target: "neutral" },
+      },
+    };
+    const fileNames = [
+      "/project/packages/some-scripts/src/run.ts",
+      "/project/packages/some-scripts/tests/run.spec.ts",
+      "/project/packages/core-common/src/index.ts",
+    ];
+
+    const result = classifyFiles(fileNames, cwd, configWithScripts);
+
+    expect(result.byPackage.size).toBe(1);
+    expect(result.byPackage.has("some-scripts")).toBe(false);
+    expect(result.byPackage.has("core-common")).toBe(true);
+    expect(result.byPackageTests.size).toBe(0);
+  });
+
+  it("client 타겟 패키지는 browser 환경으로 분류", () => {
+    const configWithClient: SdConfig = {
+      packages: {
+        "solid-demo": { target: "client", server: 3000 },
+      },
+    };
+    const fileNames = [
+      "/project/packages/solid-demo/src/main.tsx",
+    ];
+
+    const result = classifyFiles(fileNames, cwd, configWithClient);
+
+    expect(result.byPackage.get("solid-demo")?.info.envs).toEqual(["browser"]);
   });
 });

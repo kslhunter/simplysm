@@ -13,7 +13,7 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 import { FsUtils } from "@simplysm/core-node";
-import { getTypesFromPackageJson } from "../src/commands/typecheck";
+import { getTypesFromPackageJson } from "../src/utils/tsconfig";
 
 describe("getTypesFromPackageJson", () => {
   beforeEach(() => {

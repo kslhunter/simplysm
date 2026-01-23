@@ -1,25 +1,28 @@
 import { SdEventEmitter, TransferableConvert, Uuid } from "@simplysm/core-common";
+import { createConsola } from "consola";
 import path from "path";
-import pino from "pino";
 import { fileURLToPath } from "url";
 import type { WorkerOptions } from "worker_threads";
 import { Worker } from "worker_threads";
 import type { SdWorkerModule, SdWorkerProxy, SdWorkerRequest, SdWorkerResponse } from "./types";
 
-const logger = pino({ name: "sd-worker" });
+const logger = createConsola().withTag("sd-worker");
 
 //#region SdWorkerInternal
 
 /**
  * Worker 내부 구현 클래스.
  * Proxy를 통해 외부에 노출됨.
+ *
+ * 개발 환경(.ts)에서는 tsx를 통해 TypeScript 워커 파일을 실행하고,
+ * 프로덕션 환경(.js)에서는 직접 Worker를 생성한다.
  */
 class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
   private readonly _worker: Worker;
   private _isTerminated = false;
   private readonly _pendingRequests = new Map<
     string,
-    { reject: (err: Error) => void; callback: (msg: unknown) => void }
+    { method: string; resolve: (value: unknown) => void; reject: (err: Error) => void }
   >();
 
   constructor(filePath: string, opt?: Omit<WorkerOptions, "stdout" | "stderr">) {
@@ -28,6 +31,7 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
     const ext = path.extname(import.meta.filename);
 
     // 개발 환경 (.ts 파일)인 경우 tsx를 통해 실행
+    // worker-dev-proxy.js: tsx로 TypeScript 워커 파일을 동적으로 로드하는 프록시
     if (ext === ".ts") {
       this._worker = new Worker(
         path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
@@ -63,23 +67,41 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
 
     this._worker.on("exit", (code) => {
       if (!this._isTerminated && code !== 0) {
-        logger.error({ code }, "워커가 오류와 함께 닫힘");
+        logger.error(`워커가 오류와 함께 닫힘 (code: ${code})`);
       }
     });
 
     this._worker.on("error", (err) => {
-      logger.error({ err }, "워커 에러 발생");
+      logger.error("워커 에러 발생:", err);
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
-      const response: SdWorkerResponse = TransferableConvert.decode(
-        serializedResponse,
-      ) as SdWorkerResponse;
+      const decoded = TransferableConvert.decode(serializedResponse);
+
+      // 응답 구조 검증
+      if (decoded == null || typeof decoded !== "object" || !("type" in decoded)) {
+        logger.warn("잘못된 형식의 워커 응답 수신:", decoded);
+        return;
+      }
+      const response = decoded as SdWorkerResponse;
 
       if (response.type === "event") {
         this.emit(response.event, response.body);
       } else if (response.type === "log") {
         process.stdout.write(response.body);
+      } else if (response.type === "return") {
+        const pending = this._pendingRequests.get(response.request.id);
+        if (pending) {
+          this._pendingRequests.delete(response.request.id);
+          pending.resolve(response.body);
+        }
+      } else {
+        // response.type === "error"
+        const pending = this._pendingRequests.get(response.request.id);
+        if (pending) {
+          this._pendingRequests.delete(response.request.id);
+          pending.reject(response.body);
+        }
       }
     });
   }
@@ -95,28 +117,7 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
         params,
       };
 
-      const callback = (serializedResponse: unknown) => {
-        const response: SdWorkerResponse = TransferableConvert.decode(
-          serializedResponse,
-        ) as SdWorkerResponse;
-
-        if (response.type === "return") {
-          if (response.request.id === request.id) {
-            this._worker.off("message", callback);
-            this._pendingRequests.delete(request.id);
-            resolve(response.body);
-          }
-        } else if (response.type === "error") {
-          if (response.request.id === request.id) {
-            this._worker.off("message", callback);
-            this._pendingRequests.delete(request.id);
-            reject(response.body);
-          }
-        }
-      };
-
-      this._pendingRequests.set(request.id, { reject, callback });
-      this._worker.on("message", callback);
+      this._pendingRequests.set(request.id, { method, resolve, reject });
 
       const serialized = TransferableConvert.encode(request);
       this._worker.postMessage(serialized.result, serialized.transferList);
@@ -130,9 +131,8 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
     this._isTerminated = true;
 
     // 대기 중인 모든 요청 정리
-    for (const [_id, { reject, callback }] of this._pendingRequests) {
-      this._worker.off("message", callback);
-      reject(new Error("Worker terminated"));
+    for (const [_id, { method, reject }] of this._pendingRequests) {
+      reject(new Error(`워커가 종료됨 (method: ${method})`));
     }
     this._pendingRequests.clear();
 
@@ -174,10 +174,15 @@ export const SdWorker = {
 
     return new Proxy({} as SdWorkerProxy<TModule>, {
       get(_target, prop: string) {
-        // 예약된 메서드: on, terminate
+        // 예약된 메서드: on, off, terminate
         if (prop === "on") {
           return (event: string, listener: (data: unknown) => void) => {
             internal.on(event, listener);
+          };
+        }
+        if (prop === "off") {
+          return (event: string, listener: (data: unknown) => void) => {
+            internal.off(event, listener);
           };
         }
         if (prop === "terminate") {

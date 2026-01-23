@@ -2,7 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
-import pino from "pino";
+import { createConsola } from "consola";
 import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
@@ -12,7 +12,7 @@ import {
   type MysqlDbConnConfig,
 } from "../types/db-conn";
 
-const logger = pino({ name: "mysql-db-conn" });
+const logger = createConsola().withTag("mysql-db-conn");
 
 /**
  * MySQL 데이터베이스 연결 클래스
@@ -58,7 +58,7 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     });
 
     conn.on("error", (error) => {
-      logger.error({ err: error.message }, "DB 연결 오류");
+      logger.error("DB 연결 오류", error.message);
     });
 
     this._conn = conn;
@@ -120,7 +120,7 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._assertConnected();
 
-    logger.debug({ queryLength: query.length, params }, "쿼리 실행");
+    logger.debug("쿼리 실행", { queryLength: query.length, params });
 
     try {
       const [queryResults] = await conn.query({

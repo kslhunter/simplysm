@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     // 출력
-    "target": "ES2022",
+    "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
     "moduleResolution": "bundler",
 
     // JSX (SolidJS)
@@ -38,5 +38,5 @@
       "@simplysm/*": ["packages/*/src/index.ts"]
     }
   },
-  "include": ["*.ts","packages/*/src/**/*.ts", "packages/*/src/**/*.tsx", "packages/*/tests/**/*.ts", "packages/*/tests/**/*.tsx", "tests/**/*.ts"]
+  "include": ["*.ts", "packages/*/src/**/*.ts", "packages/*/src/**/*.tsx", "packages/*/tests/**/*.ts", "packages/*/tests/**/*.tsx", "tests/**/*.ts"]
 }

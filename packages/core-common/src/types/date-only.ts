@@ -1,8 +1,11 @@
 import { ArgumentError } from "../errors/argument-error";
-import { DateTimeFormatUtils } from "../utils/date-format";
+import { DateTimeFormatUtils, normalizeMonth } from "../utils/date-format";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
+ *
+ * 시간 정보 없이 날짜만 저장하는 불변 클래스입니다.
+ * 로컬 타임존을 기준으로 동작합니다.
  *
  * @example
  * const today = new DateOnly();
@@ -49,6 +52,7 @@ export class DateOnly {
    * - ISO 8601 (예: '2024-01-15T00:00:00Z') - UTC로 해석 후 로컬 타임존 변환
    *
    * @note 서버/클라이언트 타임존이 다른 경우 `yyyy-MM-dd` 형식 사용 권장
+   * @note DST(일광절약시간) 지역에서 ISO 8601 형식 파싱 시, 파싱 대상 날짜의 오프셋을 사용합니다.
    */
   static parse(str: string): DateOnly {
     // yyyy-MM-dd 형식 (타임존 영향 없음)
@@ -69,11 +73,15 @@ export class DateOnly {
 
     // ISO 8601 등 기타 형식 (Date.parse 사용, 타임존 변환 적용)
     // Date.parse()는 'Z' 접미사가 있는 ISO 8601을 UTC tick으로 반환
-    // 로컬 날짜를 얻기 위해 타임존 오프셋을 보정 (getTimezoneOffset: UTC-로컬 분 단위, KST=-540)
-    const offsetMinutes = new Date().getTimezoneOffset();
-    const parsedTick = Date.parse(str) - offsetMinutes * 60 * 1000;
-    if (!Number.isNaN(parsedTick)) {
-      return new DateOnly(parsedTick);
+    // getTimezoneOffset()은 "로컬에서 UTC로 변환할 때 더할 분"을 반환 (KST는 -540분 = UTC+9)
+    // 여기서는 "UTC → 로컬" 변환이므로 부호를 반대로 적용 (뺄셈)
+    // 파싱 대상 날짜의 오프셋을 사용하여 DST 지역에서도 정확한 변환
+    const utcTick = Date.parse(str);
+    if (!Number.isNaN(utcTick)) {
+      const tempDate = new Date(utcTick);
+      const offsetMinutes = tempDate.getTimezoneOffset();
+      const localTick = utcTick - offsetMinutes * 60 * 1000;
+      return new DateOnly(localTick);
     }
 
     throw new ArgumentError(
@@ -101,14 +109,16 @@ export class DateOnly {
     const daysInWeek = 7 - dayOfWeek;
 
     if (daysInWeek < minDaysInFirstWeek) {
-      return { year: this.addDays(-7).year, monthSeq: this.addDays(-7).month };
+      const prevWeek = this.addDays(-7);
+      return { year: prevWeek.year, monthSeq: prevWeek.month };
     } else {
       const nextMonthDate = this.addMonths(1).setDay(1);
       const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly.MS_PER_DAY;
 
       const realDaysInWeek = Math.min(daysInWeek, remainedDays);
       if (realDaysInWeek < minDaysInFirstWeek) {
-        return { year: this.addDays(7).year, monthSeq: this.addDays(7).month };
+        const nextWeek = this.addDays(7);
+        return { year: nextWeek.year, monthSeq: nextWeek.month };
       } else {
         return { year: this.year, monthSeq: this.month };
       }
@@ -254,6 +264,7 @@ export class DateOnly {
 
   //#region 불변 변환 메서드 (새 인스턴스 반환)
 
+  /** 지정된 연도로 새 인스턴스 반환 */
   setYear(year: number): DateOnly {
     return new DateOnly(year, this.month, this.day);
   }
@@ -265,15 +276,8 @@ export class DateOnly {
    *       (예: 1월 31일에서 setMonth(2) → 2월 28일 또는 29일)
    */
   setMonth(month: number): DateOnly {
-    // 월 오버플로우/언더플로우 정규화
-    // month가 1-12 범위를 벗어나면 연도를 조정
-    const normalizedYear = this.year + Math.floor((month - 1) / 12);
-    const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
-
-    // 대상 월의 마지막 날 구하기
-    const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
-    const currentDay = Math.min(this.day, lastDay);
-    return new DateOnly(normalizedYear, normalizedMonth, currentDay);
+    const normalized = normalizeMonth(this.year, month, this.day);
+    return new DateOnly(normalized.year, normalized.month, normalized.day);
   }
 
   /**
@@ -290,14 +294,17 @@ export class DateOnly {
 
   //#region 산술 메서드 (새 인스턴스 반환)
 
+  /** 지정된 연수를 더한 새 인스턴스 반환 */
   addYears(years: number): DateOnly {
     return this.setYear(this.year + years);
   }
 
+  /** 지정된 월수를 더한 새 인스턴스 반환 */
   addMonths(months: number): DateOnly {
     return this.setMonth(this.month + months);
   }
 
+  /** 지정된 일수를 더한 새 인스턴스 반환 */
   addDays(days: number): DateOnly {
     return new DateOnly(this.tick + days * DateOnly.MS_PER_DAY);
   }

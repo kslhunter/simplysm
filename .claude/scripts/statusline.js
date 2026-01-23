@@ -64,7 +64,7 @@ function getOAuthToken() {
 
 /**
  * @param {string} token
- * @returns {Promise<{seven_day?: {utilization?: number, resets_at?: string}, five_hour?: {utilization?: number, resets_at?: string}} | undefined>}
+ * @returns {Promise<{seven_day?: {utilization?: number, resets_at?: string}, daily?: {utilization?: number, resets_at?: string}, five_hour?: {utilization?: number, resets_at?: string}} | undefined>}
  */
 async function fetchUsage(token) {
   try {
@@ -119,14 +119,19 @@ function formatTimeRemaining(isoDate) {
 
     if (diffMs <= 0) return "";
 
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
     const days = Math.floor(diffHours / 24);
     const hours = diffHours % 24;
+    const minutes = diffMinutes % 60;
 
     if (days > 0) {
       return `${days}d${hours}h`;
     }
-    return `${hours}h`;
+    if (hours > 0) {
+      return `${hours}h${minutes}m`;
+    }
+    return `${minutes}m`;
   } catch {
     return "";
   }
@@ -151,10 +156,12 @@ async function main() {
   const inputStr = await readStdin();
   let input = {};
 
-  try {
-    input = JSON.parse(inputStr);
-  } catch {
-    // 파싱 실패 시 빈 객체 사용
+  if (inputStr !== "") {
+    try {
+      input = JSON.parse(inputStr);
+    } catch {
+      // JSON 파싱 실패 시 빈 객체 사용
+    }
   }
 
   // 기본 정보
@@ -170,12 +177,18 @@ async function main() {
 
   // OAuth 토큰으로 사용량 조회 시도
   const token = getOAuthToken();
+  let dailyPercent = "?";
+  let dailyResetTime = "";
   let weekPercent = "?";
   let weekResetDay = "";
 
   if (token != null) {
     const usageResponse = await fetchUsage(token);
     if (usageResponse != null) {
+      // daily 또는 five_hour 사용
+      const dailyData = usageResponse.daily ?? usageResponse.five_hour;
+      dailyPercent = formatPercent(dailyData?.utilization);
+      dailyResetTime = formatTimeRemaining(dailyData?.resets_at);
       weekPercent = formatPercent(usageResponse.seven_day?.utilization);
       weekResetDay = formatTimeRemaining(usageResponse.seven_day?.resets_at);
     }
@@ -192,9 +205,9 @@ async function main() {
 
   // 출력
   const ctxBar = formatProgressBar(contextPercent);
+  const dailyBar = dailyPercent !== "?" ? formatProgressBar(Number(dailyPercent)) : "□□□□□";
   const weekBar = weekPercent !== "?" ? formatProgressBar(Number(weekPercent)) : "□□□□□";
-  const weekLabel = weekResetDay !== "" ? `주간(${weekResetDay})` : "주간";
-  console.log(`${modelName} ${ctxBar} ${contextPercent}% ─ ${weekLabel} ${weekBar} ${weekPercent}%`);
+  console.log(`${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%`);
 }
 
 void main();

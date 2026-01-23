@@ -2,13 +2,13 @@ import type { Bytes } from "@simplysm/core-common";
 import { DateTime, SdEventEmitter } from "@simplysm/core-common";
 import type { FastifyRequest } from "fastify";
 import { clearInterval } from "node:timers";
-import pino from "pino";
+import { createConsola } from "consola";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
 import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 
-const logger = pino({ name: "service-server:ServiceSocket" });
+const logger = createConsola().withTag("service-server:ServiceSocket");
 
 export class ServiceSocket extends SdEventEmitter<{
   error: Error;
@@ -98,7 +98,7 @@ export class ServiceSocket extends SdEventEmitter<{
   }
 
   private _onError(err: Error) {
-    logger.error({ err }, "WebSocket 클라이언트 오류 발생");
+    logger.error("WebSocket 클라이언트 오류 발생", err);
     this.emit("error", err);
   }
 
@@ -132,7 +132,7 @@ export class ServiceSocket extends SdEventEmitter<{
         this.emit("message", { uuid: decodeResult.uuid, msg });
       }
     } catch (err) {
-      logger.error({ err }, "WebSocket 메시지 처리 중 오류 발생");
+      logger.error("WebSocket 메시지 처리 중 오류 발생", err);
     }
   }
 }

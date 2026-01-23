@@ -1,8 +1,8 @@
 import type { WebSocket } from "ws";
 import type { AutoUpdateService } from "../services/auto-update-service";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:V1AutoUpdateHandler" });
+const logger = createConsola().withTag("service-server:V1AutoUpdateHandler");
 
 interface IV1Request {
   uuid: string;
@@ -58,7 +58,7 @@ export function handleV1Connection(socket: WebSocket, autoUpdateService: AutoUpd
         socket.send(JSON.stringify(response));
       }
     } catch (err) {
-      logger.warn({ err }, "V1 메시지 처리 오류");
+      logger.warn("V1 메시지 처리 오류", err);
     }
   });
 }

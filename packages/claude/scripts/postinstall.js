@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import pino from "pino";
+import { createConsola } from "consola";
 import { fileURLToPath } from "url";
 
-const logger = pino({ name: "@simplysm/claude" });
+const logger = createConsola().withTag("@simplysm/claude");
 
 /**
  * 디렉토리를 재귀적으로 복사한다.
@@ -15,7 +15,7 @@ function copyDir(src, dest) {
   try {
     fs.cpSync(src, dest, { recursive: true });
   } catch (err) {
-    logger.error({ err, src, dest }, "copyDir 실패");
+    logger.error("copyDir 실패", { err, src, dest });
     throw err;
   }
 }
@@ -43,8 +43,8 @@ function findProjectRoot() {
         if ("@simplysm/claude" in devDeps) {
           return currentDir;
         }
-      } catch {
-        // 파싱 실패 시 해당 디렉토리 건너뜀
+      } catch (err) {
+        logger.debug("package.json 파싱 실패, 해당 디렉토리 건너뜀", { path: packageJsonPath, err });
       }
     }
 
@@ -60,8 +60,11 @@ function findProjectRoot() {
  * - 루트 레벨 파일 중 settings.json만 복사 (다른 파일 무시)
  * @param {string} srcDir - 소스 디렉토리 (dist)
  * @param {string} destDir - 대상 디렉토리 (.claude)
+ * @throws {Error} 디렉토리 복사 실패 시
  */
 function copyDistToTarget(srcDir, destDir) {
+  fs.mkdirSync(destDir, { recursive: true });
+
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
     const srcPath = path.join(srcDir, entry.name);
     const destPath = path.join(destDir, entry.name);
@@ -69,14 +72,16 @@ function copyDistToTarget(srcDir, destDir) {
     if (entry.isDirectory()) {
       copyDir(srcPath, destPath);
     } else if (entry.name === "settings.json") {
-      // settings.json 파일 복사
-      fs.mkdirSync(destDir, { recursive: true });
       fs.copyFileSync(srcPath, destPath);
     }
   }
 }
 
-/** 메인 실행 */
+/**
+ * postinstall 메인 실행
+ * - devDependencies에 @simplysm/claude가 있는 프로젝트 루트를 찾는다
+ * - dist 폴더 내용을 프로젝트 루트의 .claude 폴더로 복사한다
+ */
 function main() {
   const projectRoot = findProjectRoot();
 
@@ -99,7 +104,12 @@ function main() {
 // 직접 실행 시에만 main 호출
 const isDirectRun = path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    logger.error("postinstall 실패", { err });
+    process.exit(1);
+  }
 }
 
 // 테스트용 내보내기

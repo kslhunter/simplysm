@@ -207,7 +207,7 @@ describe("ZipArchive", () => {
         await using result = new ZipArchive(zipBuffer);
         await result.extractAllAsync();
         const content = await result.getAsync("file.txt");
-        expect(decoder.decode(content!)).toBe("content");
+        expect(decoder.decode(content)).toBe("content");
       } // await using 블록 종료 시 closeAsync 자동 호출
     });
   });

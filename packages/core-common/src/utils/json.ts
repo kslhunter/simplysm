@@ -47,7 +47,9 @@ export class JsonConvert {
     if (globalScope.WorkerGlobalScope !== undefined && globalScope.window === undefined) {
       throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");
     }
-    // Node.js worker_threads 감지 (worker_threads 모듈이 로드된 경우에만 threadId 존재)
+    // Node.js worker_threads 감지
+    // isMainThread 대신 threadId 기반으로 감지 (동적 import 회피)
+    // threadId: 0 = main thread, 1+ = worker thread
     const processObj = globalThis as { process?: { threadId?: number } };
     if (processObj.process?.threadId !== undefined && processObj.process.threadId !== 0) {
       throw new SdError("JsonConvert.stringify는 Worker 환경에서 사용할 수 없습니다.");
@@ -130,9 +132,8 @@ export class JsonConvert {
    * 사용자 데이터에 `{ __type__: "Date" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Set" | "Map" | "Error" | "Uint8Array", data: ... }`
    * 형태가 있으면 의도치 않게 타입 변환될 수 있으니 주의하세요.
    *
-   * @security 파싱 실패 시 에러 메시지에 JSON 문자열의 일부(최대 1000자)가 포함됩니다.
-   * 토큰, 비밀번호 등 민감한 데이터가 포함된 JSON을 파싱할 경우,
-   * 에러 로그를 통해 해당 데이터가 노출될 수 있으니 주의하세요.
+   * @security 개발 모드(`__DEV__`)에서만 에러 메시지에 JSON 문자열 전체가 포함됩니다.
+   * 프로덕션 모드에서는 JSON 길이만 포함됩니다.
    */
   static parse<T = unknown>(json: string): T {
     try {
@@ -182,6 +183,11 @@ export class JsonConvert {
                 typed.__type__ === "Uint8Array" &&
                 typeof typed.data === "string"
               ) {
+                if (typed.data === "__hidden__") {
+                  throw new SdError(
+                    "hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
+                  );
+                }
                 return BytesUtils.fromHex(typed.data);
               }
             }
@@ -191,12 +197,10 @@ export class JsonConvert {
         }),
       ) as T;
     } catch (err) {
-      const maxLen = 1000;
-      const truncatedJson =
-        json.length > maxLen
-          ? json.slice(0, maxLen) + `... (truncated, original length: ${json.length})`
-          : json;
-      throw new SdError(err, "JSON 파싱 에러: \n" + truncatedJson);
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        throw new SdError(err, "JSON 파싱 에러: \n" + json);
+      }
+      throw new SdError(err, `JSON 파싱 에러 (length: ${json.length})`);
     }
   }
   //#endregion

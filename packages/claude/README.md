@@ -14,7 +14,7 @@ yarn add -D @simplysm/claude
 
 ### postinstall
 
-패키지 설치 시 자동으로 `dist` 폴더의 하위 디렉토리와 `settings.json` 파일을 프로젝트 루트의 `.claude` 폴더로 복사한다.
+패키지 설치 시 자동으로 `dist` 폴더의 하위 디렉토리와 `settings.json` 파일을 프로젝트 루트의 `.claude` 폴더로 복사한다. 이때 프로젝트 루트는 현재 작업 디렉토리에서 상위로 탐색하여 처음 발견되는, `@simplysm/claude`가 `devDependencies`에 포함된 디렉토리를 의미한다.
 
 패키지가 `devDependencies`에 직접 설치된 경우에만 동작한다. (다른 패키지의 의존성으로 간접 설치된 경우 동작하지 않음)
 
@@ -27,14 +27,14 @@ yarn add -D @simplysm/claude
 ```
 dist/
 ├── rules/        # 규칙 설정
-├── scripts/      # 스크립트
+├── scripts/      # 스크립트 파일
 ├── settings.json # 설정 파일
 └── skills/       # 스킬 정의
 ```
 
 ## 주의사항
 
-- dist에 포함된 파일과 동일한 경로의 파일은 덮어쓰기된다. dist에 없는 기존 커스텀 파일은 유지된다.
+- dist에 포함된 파일/디렉토리와 동일한 이름의 기존 파일은 덮어쓴다. dist에 없는 기존 커스텀 파일은 유지된다.
 - 기존 `.claude` 커스텀 설정이 있는 경우 백업을 권장한다.
 - 이 패키지는 외부 프로젝트에서 사용하기 위한 패키지다. monorepo 내부에서는 postinstall이 동작하지 않는다.
 

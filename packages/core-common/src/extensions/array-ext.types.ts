@@ -46,7 +46,7 @@ export interface ReadonlyArrayExt<T> {
   mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
   /** 중첩 배열 평탄화 */
-  mapMany(): T;
+  mapMany(): T extends readonly (infer U)[] ? U[] : T;
 
   /** 매핑 후 평탄화 */
   mapMany<R>(selector: (item: T, index: number) => R[]): R[];
@@ -54,7 +54,10 @@ export interface ReadonlyArrayExt<T> {
   /** 비동기 매핑 후 평탄화 (순차 실행) */
   mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
 
-  /** 비동기 병렬 처리 (Promise.all 사용) */
+  /**
+   * 비동기 병렬 처리 (Promise.all 사용)
+   * @note 하나라도 reject되면 전체가 fail-fast로 reject됨 (Promise.all 동작)
+   */
   parallelAsync<R>(fn: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
   /**
@@ -172,7 +175,7 @@ export interface ReadonlyArrayExt<T> {
    * 두 배열 비교 (INSERT/DELETE/UPDATE)
    * @param target 비교 대상 배열
    * @param options keys: 키 비교용, excludes: 비교 제외 속성
-   * @note target 배열에 중복 요소가 있으면 ArgumentError 발생
+   * @note target에 중복 키가 있으면 첫 번째 매칭만 사용됨
    */
   diffs<P>(
     target: P[],

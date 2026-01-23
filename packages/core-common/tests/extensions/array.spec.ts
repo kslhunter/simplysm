@@ -103,6 +103,18 @@ describe("Array.ext", () => {
       expect(result).toContain(2);
     });
 
+    it("NaN을 포함한 배열에서 기본값(matchAddress: false)으로 중복을 제거한다", () => {
+      const arr = [NaN, 1, NaN, 2];
+      // matchAddress: false는 JSON.stringify 기반 비교를 사용
+      // JSON.stringify(NaN)은 "null"을 반환하므로 모든 NaN이 같은 것으로 취급됨
+      const result = arr.distinct();
+
+      // NaN은 JSON.stringify로 null이 되어 중복 제거됨
+      expect(result.filter((v) => Number.isNaN(v))).toHaveLength(1);
+      expect(result).toContain(1);
+      expect(result).toContain(2);
+    });
+
     it("-0과 0을 matchAddress: true로 동일하게 취급한다", () => {
       const arr = [0, -0, 1];
       // Set은 SameValueZero 알고리즘을 사용하므로 0과 -0을 같은 값으로 취급

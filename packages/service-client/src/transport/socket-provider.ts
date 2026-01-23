@@ -1,8 +1,8 @@
 import type { Bytes } from "@simplysm/core-common";
 import { SdEventEmitter, Uuid, Wait } from "@simplysm/core-common";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-client:SocketProvider" });
+const logger = createConsola().withTag("service-client:SocketProvider");
 
 interface SocketProviderEvents {
   message: Bytes;
@@ -59,14 +59,14 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
     if (ws != null) {
       ws.close();
       // 완전히 닫힐 때까지 대기 (Graceful Shutdown)
-      await Wait.until(() => ws.readyState === WebSocket.CLOSED, 100, 3000).catch(() => {});
+      await Wait.until(() => ws.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
     }
     this.emit("state", "closed");
   }
 
   async sendAsync(data: Bytes): Promise<void> {
     try {
-      await Wait.until(() => this.connected, undefined, 5000);
+      await Wait.until(() => this.connected, undefined, 50);
     } catch {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
@@ -137,10 +137,10 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
     while (this._reconnectCount < this._maxReconnectCount) {
       this._reconnectCount++;
       this.emit("state", "reconnecting");
-      logger.warn(
-        { reconnectCount: this._reconnectCount, maxReconnectCount: this._maxReconnectCount },
-        "WebSocket 연결 끊김. 재연결 시도...",
-      );
+      logger.warn("WebSocket 연결 끊김. 재연결 시도...", {
+        reconnectCount: this._reconnectCount,
+        maxReconnectCount: this._maxReconnectCount,
+      });
 
       await Wait.time(this._RECONNECT_DELAY);
 
@@ -205,7 +205,7 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
         try {
           ws.send(this._PING_PACKET);
         } catch (err) {
-          logger.warn({ err }, "Ping send failed");
+          logger.warn("Ping send failed", err);
         }
       }
     }, this._HEARTBEAT_INTERVAL);

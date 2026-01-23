@@ -1,5 +1,6 @@
 import { DebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
+import { createConsola } from "consola";
 import type { EventName } from "chokidar/handler.js";
 import type { NormPath } from "./path";
 import { PathUtils } from "./path";
@@ -59,16 +60,19 @@ export class SdFsWatcher {
     paths: string[],
     options?: chokidar.ChokidarOptions,
   ): Promise<SdFsWatcher> {
-    return new Promise<SdFsWatcher>((resolve) => {
+    return new Promise<SdFsWatcher>((resolve, reject) => {
       const watcher = new SdFsWatcher(paths, options);
       watcher._watcher.on("ready", () => {
         resolve(watcher);
       });
+      watcher._watcher.on("error", reject);
     });
   }
 
   private readonly _watcher: chokidar.FSWatcher;
   private readonly _ignoreInitial: boolean = true;
+
+  private readonly _logger = createConsola().withTag("sd-fs-watcher");
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
     this._watcher = chokidar.watch(paths, {
@@ -77,6 +81,11 @@ export class SdFsWatcher {
       ignoreInitial: true,
     });
     this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
+
+    // 감시 중 발생하는 에러 로깅
+    this._watcher.on("error", (err) => {
+      this._logger.error("SdFsWatcher error:", err);
+    });
   }
 
   /**

@@ -14,8 +14,8 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@zip.js/zip.js": "^2.8.15",
+    "consola": "^3.4.2",
     "fast-xml-parser": "^5.3.3",
-    "pino": "^10.2.1",
     "yaml": "^2.8.2"
   }
 }

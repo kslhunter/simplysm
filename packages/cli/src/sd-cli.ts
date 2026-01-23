@@ -6,12 +6,14 @@ import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
+import { runWatch } from "./commands/watch";
 import path from "path";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
+import { consola, LogLevels } from "consola";
 
 Error.stackTraceLimit = Infinity;
-EventEmitter.defaultMaxListeners = 0;
+EventEmitter.defaultMaxListeners = 100;
 
 /**
  * CLI 파서를 생성한다.
@@ -21,6 +23,15 @@ export function createCliParser(argv: string[]): Argv {
   return yargs(argv)
     .help("help", "도움말")
     .alias("help", "h")
+    .option("debug", {
+      type: "boolean",
+      describe: "debug 로그 출력",
+      default: false,
+      global: true,
+    })
+    .middleware((args) => {
+      if (args.debug) consola.level = LogLevels.debug;
+    })
     .command(
       "lint [targets..]",
       "ESLint를 실행한다.",
@@ -32,6 +43,7 @@ export function createCliParser(argv: string[]): Argv {
             type: "string",
             array: true,
             describe: "린트할 경로 (예: packages/core-common, tests/orm)",
+            default: [],
           })
           .options({
             fix: {
@@ -44,18 +56,12 @@ export function createCliParser(argv: string[]): Argv {
               describe: "규칙별 실행 시간 출력",
               default: false,
             },
-            debug: {
-              type: "boolean",
-              describe: "debug 로그 출력",
-              default: false,
-            },
           }),
       async (args) => {
         await runLint({
-          targets: args.targets ?? [],
+          targets: args.targets,
           fix: args.fix,
           timing: args.timing,
-          debug: args.debug,
         });
       },
     )
@@ -70,18 +76,50 @@ export function createCliParser(argv: string[]): Argv {
             type: "string",
             array: true,
             describe: "타입체크할 경로 (예: packages/core-common, tests/orm)",
+            default: [],
           })
           .options({
-            debug: {
-              type: "boolean",
-              describe: "debug 로그 출력",
-              default: false,
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "옵션",
+              default: [] as string[],
             },
           }),
       async (args) => {
         await runTypecheck({
-          targets: args.targets ?? [],
-          debug: args.debug,
+          targets: args.targets,
+          options: args.options,
+        });
+      },
+    )
+    .command(
+      "watch [targets..]",
+      "패키지를 watch 모드로 빌드한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .positional("targets", {
+            type: "string",
+            array: true,
+            describe: "watch할 패키지 (예: solid, solid-demo)",
+            default: [],
+          })
+          .options({
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "옵션",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        await runWatch({
+          targets: args.targets,
+          options: args.options,
         });
       },
     )

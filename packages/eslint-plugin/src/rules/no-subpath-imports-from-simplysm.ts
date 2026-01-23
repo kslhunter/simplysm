@@ -5,7 +5,7 @@ import { createRule } from "../utils/create-rule";
  * `@simplysm/*` 패키지에서 'src' 서브경로 import를 금지하는 ESLint 규칙
  *
  * @remarks
- * 이 규칙은 다음을 검사합니다:
+ * 이 규칙은 다음을 검사한다:
  * - 정적 import 문: `import ... from '...'`
  * - 동적 import: `import('...')`
  * - re-export 문: `export { ... } from '...'`, `export * from '...'`
@@ -16,13 +16,13 @@ export default createRule({
     type: "problem",
     docs: {
       description:
-        "@simplysm 패키지에서 'src' 서브경로 import를 금지합니다. (ex: @simplysm/pkg/src/x → 금지)",
+        "@simplysm 패키지에서 'src' 서브경로 import를 금지한다. (ex: @simplysm/pkg/src/x → 금지)",
     },
     fixable: "code",
     schema: [],
     messages: {
       noSubpathImport:
-        "'@simplysm/{{pkg}}' 패키지는 'src' 서브경로를 import할 수 없습니다. import '{{importPath}}'는 허용되지 않습니다.",
+        "'@simplysm/{{pkg}}' 패키지는 'src' 서브경로를 import할 수 없습니다: '{{importPath}}'",
     },
   },
   defaultOptions: [],
@@ -57,9 +57,7 @@ export default createRule({
     return {
       // 정적 import: import { x } from '...'
       ImportDeclaration(node) {
-        const importPath = node.source.value;
-        if (typeof importPath !== "string") return;
-        checkAndReport(node.source, importPath);
+        checkAndReport(node.source, node.source.value);
       },
 
       // 동적 import: import('...')
@@ -73,16 +71,12 @@ export default createRule({
       // re-export: export { x } from '...'
       ExportNamedDeclaration(node) {
         if (!node.source) return;
-        const importPath = node.source.value;
-        if (typeof importPath !== "string") return;
-        checkAndReport(node.source, importPath);
+        checkAndReport(node.source, node.source.value);
       },
 
       // re-export all: export * from '...'
       ExportAllDeclaration(node) {
-        const importPath = node.source.value;
-        if (typeof importPath !== "string") return;
-        checkAndReport(node.source, importPath);
+        checkAndReport(node.source, node.source.value);
       },
     };
   },

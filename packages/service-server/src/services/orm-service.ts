@@ -12,9 +12,9 @@ import { ServiceBase } from "../core/service-base";
 import type { OrmService as OrmServiceType, DbConnOptions } from "@simplysm/service-common";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import { Authorize } from "../auth/auth.decorators";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:OrmService" });
+const logger = createConsola().withTag("service-server:OrmService");
 
 @Authorize()
 export class OrmService extends ServiceBase implements OrmServiceType {
@@ -79,7 +79,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
                 await conn.closeAsync();
               }
             } catch (err) {
-              logger.warn({ err }, "DB 연결 강제 종료 중 오류 무시됨");
+              logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
             }
           }),
         );
@@ -108,7 +108,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
       const conn = this._getConn(connId);
       await conn.closeAsync();
     } catch (err) {
-      logger.warn({ err }, "DB 연결 종료 중 오류 무시됨");
+      logger.warn("DB 연결 종료 중 오류 무시됨", err);
     }
   }
 

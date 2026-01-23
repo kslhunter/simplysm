@@ -1,4 +1,5 @@
 import path from "path";
+import { ArgumentError } from "@simplysm/core-common";
 
 //#region Types
 
@@ -48,7 +49,7 @@ export class PathUtils {
     }
 
     if (!PathUtils.isChildPath(filePath, fromDirectory)) {
-      throw new Error(`'${filePath}'가 ${fromDirectory} 안에 없습니다.`);
+      throw new ArgumentError(`'${filePath}'가 ${fromDirectory} 안에 없습니다.`, { filePath, fromDirectory });
     }
 
     return path.resolve(toDirectory, path.relative(fromDirectory, filePath));
@@ -68,6 +69,9 @@ export class PathUtils {
   /**
    * childPath가 parentPath의 자식 경로인지 확인.
    * 같은 경로는 false 반환.
+   *
+   * 경로는 내부적으로 `norm()`으로 정규화된 후 비교되며,
+   * 플랫폼별 경로 구분자(Windows: `\`, Unix: `/`)를 사용한다.
    *
    * @example
    * PathUtils.isChildPath("/a/b/c", "/a/b"); // true
@@ -107,9 +111,11 @@ export class PathUtils {
    * 타겟 경로 목록을 기준으로 파일을 필터링.
    * 파일이 타겟 경로와 같거나 타겟의 자식 경로일 때 포함.
    *
-   * @param files - 필터링할 파일 경로 목록 (절대 경로)
-   * @param targets - 타겟 경로 목록 (상대 경로)
-   * @param cwd - 현재 작업 디렉토리
+   * @param files - 필터링할 파일 경로 목록.
+   *                **주의**: cwd 하위의 절대 경로여야 함.
+   *                cwd 외부 경로는 결과에 포함되지 않음.
+   * @param targets - 타겟 경로 목록 (cwd 기준 상대 경로, POSIX 스타일 권장)
+   * @param cwd - 현재 작업 디렉토리 (절대 경로)
    * @returns targets가 빈 배열이면 files 그대로, 아니면 타겟 경로 하위 파일만
    *
    * @example

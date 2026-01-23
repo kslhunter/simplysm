@@ -108,6 +108,38 @@ describe("DateOnly", () => {
     it("잘못된 형식이면 에러를 던진다", () => {
       expect(() => DateOnly.parse("invalid-date")).toThrow("날짜 형식을 파싱할 수 없습니다");
     });
+
+    it("연말 경계(12월 31일)를 파싱한다", () => {
+      const dateOnly = DateOnly.parse("2024-12-31");
+
+      expect(dateOnly.year).toBe(2024);
+      expect(dateOnly.month).toBe(12);
+      expect(dateOnly.day).toBe(31);
+    });
+
+    it("연초 경계(1월 1일)를 파싱한다", () => {
+      const dateOnly = DateOnly.parse("2025-01-01");
+
+      expect(dateOnly.year).toBe(2025);
+      expect(dateOnly.month).toBe(1);
+      expect(dateOnly.day).toBe(1);
+    });
+
+    it("윤년 2월 29일을 파싱한다", () => {
+      const dateOnly = DateOnly.parse("2024-02-29");
+
+      expect(dateOnly.year).toBe(2024);
+      expect(dateOnly.month).toBe(2);
+      expect(dateOnly.day).toBe(29);
+    });
+
+    it("윤년 2월 28일을 파싱한다", () => {
+      const dateOnly = DateOnly.parse("2024-02-28");
+
+      expect(dateOnly.year).toBe(2024);
+      expect(dateOnly.month).toBe(2);
+      expect(dateOnly.day).toBe(28);
+    });
   });
 
   //#endregion
@@ -342,6 +374,42 @@ describe("DateOnly", () => {
     it("기본 형식 yyyy-MM-dd로 반환한다", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
       expect(dateOnly.toString()).toBe("2025-01-06");
+    });
+  });
+
+  //#endregion
+
+  //#region tick 비교
+
+  describe("tick 비교", () => {
+    it("같은 날짜는 같은 tick을 가진다", () => {
+      const d1 = new DateOnly(2025, 3, 15);
+      const d2 = new DateOnly(2025, 3, 15);
+
+      expect(d1.tick).toBe(d2.tick);
+    });
+
+    it("다른 날짜는 다른 tick을 가진다", () => {
+      const d1 = new DateOnly(2025, 3, 15);
+      const d2 = new DateOnly(2025, 3, 16);
+
+      expect(d1.tick).not.toBe(d2.tick);
+    });
+
+    it("tick으로 날짜 순서를 비교할 수 있다", () => {
+      const d1 = new DateOnly(2025, 1, 1);
+      const d2 = new DateOnly(2025, 6, 15);
+      const d3 = new DateOnly(2025, 12, 31);
+
+      expect(d1.tick).toBeLessThan(d2.tick);
+      expect(d2.tick).toBeLessThan(d3.tick);
+    });
+
+    it("연도가 다른 날짜도 tick으로 비교할 수 있다", () => {
+      const d2024 = new DateOnly(2024, 12, 31);
+      const d2025 = new DateOnly(2025, 1, 1);
+
+      expect(d2024.tick).toBeLessThan(d2025.tick);
     });
   });
 

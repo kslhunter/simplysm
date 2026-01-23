@@ -3,8 +3,18 @@ import { ArgumentError } from "../errors/argument-error";
 
 /**
  * Uint8Array 유틸리티 (복잡한 연산만)
+ *
+ * 기능:
+ * - concat: 여러 Uint8Array 연결
+ * - toHex: Uint8Array를 hex 문자열로 변환
+ * - fromHex: hex 문자열을 Uint8Array로 변환
  */
 export class BytesUtils {
+  /** hex 변환용 룩업 테이블 (성능 최적화) */
+  private static readonly _hexTable: string[] = Array.from(
+    { length: 256 },
+    (_, i) => i.toString(16).padStart(2, "0"),
+  );
   /**
    * 여러 Uint8Array 연결
    * @param arrays 연결할 Uint8Array 배열
@@ -35,9 +45,12 @@ export class BytesUtils {
    * // "ff007f"
    */
   static toHex(bytes: Bytes): string {
-    return Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const h = BytesUtils._hexTable;
+    let result = "";
+    for (let i = 0; i < bytes.length; i++) {
+      result += h[bytes[i]];
+    }
+    return result;
   }
 
   /**

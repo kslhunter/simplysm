@@ -1,10 +1,49 @@
 import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
-import pino from "pino";
 import { Listr } from "listr2";
 import { FsUtils, PathUtils } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
+import { consola } from "consola";
+
+//#region Types
+
+/**
+ * ESLint 실행 옵션
+ */
+export interface LintOptions {
+  /** 린트할 경로 필터 (예: `packages/core-common`). 빈 배열이면 전체 대상 */
+  targets: string[];
+  /** 자동 수정 활성화 */
+  fix: boolean;
+  /** ESLint 규칙별 실행 시간 측정 활성화 (TIMING 환경변수 설정) */
+  timing: boolean;
+}
+
+/**
+ * Listr2 컨텍스트 타입
+ */
+interface LintContext {
+  ignorePatterns: string[];
+  /** 파일 수집 태스크 완료 후 초기화됨 */
+  files?: string[];
+  /** 린트 대상 파일이 있을 때만 초기화됨 */
+  eslint?: ESLint;
+  /** 린트 대상 파일이 있을 때만 초기화됨 */
+  results?: ESLint.LintResult[];
+}
+
+//#endregion
+
+//#region Utilities
+
+/** ESLint 설정 파일 탐색 순서 */
+const ESLINT_CONFIG_FILES = [
+  "eslint.config.ts",
+  "eslint.config.mts",
+  "eslint.config.js",
+  "eslint.config.mjs",
+] as const;
 
 /**
  * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드
@@ -17,28 +56,6 @@ function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
   if (!Array.isArray(ignores)) return false;
   return ignores.every((i) => typeof i === "string");
 }
-
-/**
- * ESLint 실행 옵션
- */
-export interface LintOptions {
-  /** 린트할 경로 필터 (예: `packages/core-common`). 빈 배열이면 전체 대상 */
-  targets: string[];
-  /** 자동 수정 활성화 */
-  fix: boolean;
-  /** ESLint 규칙별 실행 시간 측정 활성화 (TIMING 환경변수 설정) */
-  timing: boolean;
-  /** debug 로그 출력 */
-  debug: boolean;
-}
-
-/** ESLint 설정 파일 탐색 순서 */
-const ESLINT_CONFIG_FILES = [
-  "eslint.config.ts",
-  "eslint.config.mts",
-  "eslint.config.js",
-  "eslint.config.mjs",
-] as const;
 
 /**
  * eslint.config.ts/js에서 globalIgnores 패턴을 추출한다.
@@ -76,27 +93,15 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
     throw new SdError(`ESLint 설정이 배열이 아닙니다: ${configPath}`);
   }
 
-  const ignores: string[] = [];
-  for (const item of configs) {
-    if (isGlobalIgnoresConfig(item)) {
-      ignores.push(...item.ignores);
-    }
-  }
-
-  return ignores;
+  return configs.filter(isGlobalIgnoresConfig).flatMap((item) => item.ignores);
 }
 
-/**
- * Listr2 컨텍스트 타입
- */
-interface LintContext {
-  ignorePatterns: string[];
-  files: string[];
-  results: ESLint.LintResult[];
-}
+//#endregion
+
+//#region Main
 
 /**
- * ESLint를 실행합니다.
+ * ESLint를 실행한다.
  *
  * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
  * - listr2를 사용하여 진행 상황 표시
@@ -107,17 +112,11 @@ interface LintContext {
  * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
  */
 export async function runLint(options: LintOptions): Promise<void> {
-  const { targets, fix, timing, debug } = options;
+  const { targets, fix, timing } = options;
   const cwd = process.cwd();
+  const logger = consola.withTag("sd:cli:lint");
 
-  // pino 로거 (debug 모드에서만 활성화)
-  const logger = pino({
-    name: "sd-cli:lint",
-    level: debug ? "debug" : "silent",
-    transport: debug ? { target: "pino-pretty" } : undefined,
-  });
-
-  logger.debug({ targets, fix, timing }, "린트 시작");
+  logger.debug("린트 시작", { targets, fix, timing });
 
   // TIMING 환경변수 설정
   if (timing) {
@@ -129,18 +128,9 @@ export async function runLint(options: LintOptions): Promise<void> {
       {
         title: "ESLint 설정 로드",
         task: async (ctx, task) => {
-          try {
-            ctx.ignorePatterns = await loadIgnorePatterns(cwd);
-            logger.debug({ ignorePatternCount: ctx.ignorePatterns.length }, "ignore 패턴 로드 완료");
-            task.title = `ESLint 설정 로드 (${ctx.ignorePatterns.length}개 ignore 패턴)`;
-          } catch (err) {
-            logger.error({ err }, "ESLint 설정 로드 실패");
-            if (err instanceof Error) {
-              process.stderr.write(err.message + "\n");
-            }
-            process.exitCode = 1;
-            throw err;
-          }
+          ctx.ignorePatterns = await loadIgnorePatterns(cwd);
+          logger.debug("ignore 패턴 로드 완료", { ignorePatternCount: ctx.ignorePatterns.length });
+          task.title = `ESLint 설정 로드 (${ctx.ignorePatterns.length}개 ignore 패턴)`;
         },
       },
       {
@@ -156,7 +146,7 @@ export async function runLint(options: LintOptions): Promise<void> {
           // targets가 주어지면 해당 경로의 하위 파일만 필터링
           files = PathUtils.filterByTargets(files, targets, cwd);
           ctx.files = files;
-          logger.debug({ fileCount: files.length }, "파일 수집 완료");
+          logger.debug("파일 수집 완료", { fileCount: files.length });
           task.title = `린트 대상 파일 수집 (${files.length}개)`;
 
           if (files.length === 0) {
@@ -168,54 +158,55 @@ export async function runLint(options: LintOptions): Promise<void> {
         title: "린트 실행",
         enabled: (ctx) => (ctx.files?.length ?? 0) > 0,
         task: async (ctx, task) => {
-          task.title = `린트 실행 중... (${ctx.files.length}개 파일)`;
-          const eslint = new ESLint({
+          const files = ctx.files!;
+          task.title = `린트 실행 중... (${files.length}개 파일)`;
+          ctx.eslint = new ESLint({
             cwd,
             fix,
             cache: true,
             cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
           });
-          ctx.results = await eslint.lintFiles(ctx.files);
+          ctx.results = await ctx.eslint.lintFiles(files);
         },
       },
       {
         title: "자동 수정 적용",
         enabled: () => fix,
-        skip: (ctx) => (ctx.files?.length ?? 0) === 0,
+        skip: (ctx) => (ctx.files?.length ?? 0) === 0 || ctx.results == null,
         task: async (ctx) => {
+          if (ctx.results == null) return;
           await ESLint.outputFixes(ctx.results);
           logger.debug("자동 수정 적용 완료");
         },
       },
     ],
     {
-      renderer: (debug ? "verbose" : "default") as "default" | "verbose",
+      renderer: process.env["CONSOLA_LEVEL"] === "debug" ? "verbose" : "default",
     },
   );
 
   const ctx = await listr.run();
 
-  // 파일이 없으면 조기 종료
-  if (ctx.files.length === 0) {
+  // 파일이 없거나 린트가 실행되지 않았으면 조기 종료
+  if ((ctx.files?.length ?? 0) === 0 || ctx.results == null || ctx.eslint == null) {
     logger.info("린트할 파일 없음");
     return;
   }
 
   // 결과 집계
-  const errorCount = ctx.results.reduce((sum, r) => sum + r.errorCount, 0);
-  const warningCount = ctx.results.reduce((sum, r) => sum + r.warningCount, 0);
+  const errorCount = ctx.results.sum((r) => r.errorCount);
+  const warningCount = ctx.results.sum((r) => r.warningCount);
 
   if (errorCount > 0) {
-    logger.error({ errorCount, warningCount }, "린트 에러 발생");
+    logger.error("린트 에러 발생", { errorCount, warningCount });
   } else if (warningCount > 0) {
-    logger.info({ errorCount, warningCount }, "린트 완료 (경고 있음)");
+    logger.info("린트 완료 (경고 있음)", { errorCount, warningCount });
   } else {
-    logger.info({ errorCount, warningCount }, "린트 완료");
+    logger.info("린트 완료", { errorCount, warningCount });
   }
 
   // 포맷터 출력
-  const eslint = new ESLint({ cwd });
-  const formatter = await eslint.loadFormatter("stylish");
+  const formatter = await ctx.eslint.loadFormatter("stylish");
   const resultText = await formatter.format(ctx.results);
   if (resultText) {
     process.stdout.write(resultText);
@@ -226,3 +217,5 @@ export async function runLint(options: LintOptions): Promise<void> {
     process.exitCode = 1;
   }
 }
+
+//#endregion

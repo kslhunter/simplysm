@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { FsUtils } from "../../src/utils/fs";
+import { SdError } from "@simplysm/core-common";
 
 describe("FsUtils", () => {
   const testDir = path.join(os.tmpdir(), "fs-utils-test-" + Date.now());
@@ -236,6 +237,19 @@ describe("FsUtils", () => {
 
       expect(data).toEqual({ name: "test", value: 42 });
     });
+
+    it("500자 이상의 잘못된 JSON 파일 읽기 시 truncate된 내용 포함", () => {
+      const filePath = path.join(testDir, "long-invalid.json");
+      const longContent = "{ invalid " + "x".repeat(600) + " }";
+      fs.writeFileSync(filePath, longContent);
+
+      try {
+        FsUtils.readJson(filePath);
+        expect.fail("에러가 발생해야 함");
+      } catch (err) {
+        expect((err as Error).message).toContain("...(truncated)");
+      }
+    });
   });
 
   describe("writeJson", () => {
@@ -343,6 +357,23 @@ describe("FsUtils", () => {
 
       expect(fs.existsSync(path.join(targetDir, "include.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "exclude.log"))).toBe(false);
+    });
+
+    it("filter가 디렉토리를 제외하면 하위 항목도 건너뛰기", () => {
+      const sourceDir = path.join(testDir, "filterDirSource");
+      const targetDir = path.join(testDir, "filterDirTarget");
+      fs.mkdirSync(sourceDir);
+      fs.mkdirSync(path.join(sourceDir, "excluded"));
+      fs.mkdirSync(path.join(sourceDir, "included"));
+      fs.writeFileSync(path.join(sourceDir, "excluded", "nested.txt"), "nested");
+      fs.writeFileSync(path.join(sourceDir, "included", "nested.txt"), "nested");
+
+      FsUtils.copy(sourceDir, targetDir, (p) => !p.includes("excluded"));
+
+      expect(fs.existsSync(path.join(targetDir, "excluded"))).toBe(false);
+      expect(fs.existsSync(path.join(targetDir, "excluded", "nested.txt"))).toBe(false);
+      expect(fs.existsSync(path.join(targetDir, "included"))).toBe(true);
+      expect(fs.existsSync(path.join(targetDir, "included", "nested.txt"))).toBe(true);
     });
   });
 
@@ -531,6 +562,17 @@ describe("FsUtils", () => {
 
       expect(files.some((f) => f.endsWith("deep.txt"))).toBe(true);
     });
+
+    it("dot: true 옵션으로 숨김 파일 포함", () => {
+      fs.writeFileSync(path.join(testDir, ".hidden"), "");
+      fs.writeFileSync(path.join(testDir, "visible"), "");
+
+      const withoutDot = FsUtils.glob(path.join(testDir, "*"));
+      const withDot = FsUtils.glob(path.join(testDir, "*"), { dot: true });
+
+      expect(withoutDot.some((f) => f.endsWith(".hidden"))).toBe(false);
+      expect(withDot.some((f) => f.endsWith(".hidden"))).toBe(true);
+    });
   });
 
   describe("globAsync", () => {
@@ -583,6 +625,15 @@ describe("FsUtils", () => {
 
       expect(results.length).toBe(2);
     });
+
+    it("매칭되는 파일이 없으면 빈 배열 반환", () => {
+      const deepDir = path.join(testDir, "a/b/c");
+      fs.mkdirSync(deepDir, { recursive: true });
+
+      const results = FsUtils.findAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
+
+      expect(results).toEqual([]);
+    });
   });
 
   describe("findAllParentChildPathsAsync", () => {
@@ -596,6 +647,15 @@ describe("FsUtils", () => {
 
       expect(results.length).toBe(2);
     });
+
+    it("비동기로 매칭되는 파일이 없으면 빈 배열 반환", async () => {
+      const deepDir = path.join(testDir, "x/y/z");
+      fs.mkdirSync(deepDir, { recursive: true });
+
+      const results = await FsUtils.findAllParentChildPathsAsync("nonexistent-file.txt", deepDir, testDir);
+
+      expect(results).toEqual([]);
+    });
   });
 
   //#endregion
@@ -603,12 +663,24 @@ describe("FsUtils", () => {
   //#region 에러 케이스
 
   describe("에러 케이스", () => {
-    it("존재하지 않는 파일 읽기 시 에러 발생", () => {
-      expect(() => FsUtils.read(path.join(testDir, "nonexistent.txt"))).toThrow();
+    it("존재하지 않는 파일 읽기 시 SdError에 경로 정보 포함", () => {
+      const filePath = path.join(testDir, "nonexistent.txt");
+      expect(() => FsUtils.read(filePath)).toThrow(SdError);
+      try {
+        FsUtils.read(filePath);
+      } catch (err) {
+        expect((err as Error).message).toContain(filePath);
+      }
     });
 
-    it("존재하지 않는 파일 비동기 읽기 시 에러 발생", async () => {
-      await expect(FsUtils.readAsync(path.join(testDir, "nonexistent.txt"))).rejects.toThrow();
+    it("존재하지 않는 파일 비동기 읽기 시 SdError에 경로 정보 포함", async () => {
+      const filePath = path.join(testDir, "nonexistent.txt");
+      await expect(FsUtils.readAsync(filePath)).rejects.toThrow(SdError);
+      try {
+        await FsUtils.readAsync(filePath);
+      } catch (err) {
+        expect((err as Error).message).toContain(filePath);
+      }
     });
 
     it("존재하지 않는 디렉토리 내용 읽기 시 에러 발생", () => {
@@ -619,16 +691,32 @@ describe("FsUtils", () => {
       expect(() => FsUtils.stat(path.join(testDir, "nonexistent.txt"))).toThrow();
     });
 
-    it("잘못된 JSON 형식 파일 읽기 시 에러 발생", () => {
+    it("잘못된 JSON 형식 파일 읽기 시 SdError에 경로와 내용 정보 포함", () => {
       const filePath = path.join(testDir, "invalid.json");
-      fs.writeFileSync(filePath, "{ invalid json }");
-      expect(() => FsUtils.readJson(filePath)).toThrow();
+      const content = "{ invalid json }";
+      fs.writeFileSync(filePath, content);
+
+      expect(() => FsUtils.readJson(filePath)).toThrow(SdError);
+      try {
+        FsUtils.readJson(filePath);
+      } catch (err) {
+        expect((err as Error).message).toContain(filePath);
+        expect((err as Error).message).toContain(content);
+      }
     });
 
-    it("잘못된 JSON 형식 파일 비동기 읽기 시 에러 발생", async () => {
+    it("잘못된 JSON 형식 파일 비동기 읽기 시 SdError에 경로와 내용 정보 포함", async () => {
       const filePath = path.join(testDir, "invalid-async.json");
-      fs.writeFileSync(filePath, "{ invalid json }");
-      await expect(FsUtils.readJsonAsync(filePath)).rejects.toThrow();
+      const content = "{ invalid json }";
+      fs.writeFileSync(filePath, content);
+
+      await expect(FsUtils.readJsonAsync(filePath)).rejects.toThrow(SdError);
+      try {
+        await FsUtils.readJsonAsync(filePath);
+      } catch (err) {
+        expect((err as Error).message).toContain(filePath);
+        expect((err as Error).message).toContain(content);
+      }
     });
   });
 

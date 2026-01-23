@@ -269,15 +269,17 @@ describe("JsonConvert", () => {
       const obj = { data: new TextEncoder().encode("hello") };
       const json = JsonConvert.stringify(obj, { hideBytes: true });
 
-      // "__hidden__"은 유효하지 않은 hex이므로 parse 시 에러 발생
-      expect(() => JsonConvert.parse<typeof obj>(json)).toThrow("유효하지 않은 hex 문자가 포함되어 있습니다");
+      // "__hidden__"은 hideBytes 옵션으로 직렬화된 데이터이므로 parse 시 에러 발생
+      expect(() => JsonConvert.parse<typeof obj>(json)).toThrow(
+        "hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
+      );
     });
 
     it("잘못된 JSON은 에러를 던진다", () => {
       expect(() => JsonConvert.parse("invalid json")).toThrow("JSON 파싱 에러");
     });
 
-    it("긴 JSON 에러 메시지를 truncate한다", () => {
+    it("DEV 모드에서는 전체 JSON이 에러 메시지에 포함된다", () => {
       const longJson = "x".repeat(2000);
 
       try {
@@ -285,14 +287,12 @@ describe("JsonConvert", () => {
         expect.fail("에러가 발생해야 합니다");
       } catch (err) {
         const message = (err as Error).message;
-        expect(message).toContain("truncated");
-        expect(message).toContain("original length: 2000");
-        // 메시지 길이가 원본보다 훨씬 짧아야 함
-        expect(message.length).toBeLessThan(1500);
+        // DEV 모드에서는 전체 JSON이 포함됨
+        expect(message).toContain(longJson);
       }
     });
 
-    it("짧은 JSON은 truncate하지 않는다", () => {
+    it("에러 메시지에 JSON 내용이 포함된다", () => {
       const shortJson = "invalid";
 
       try {
@@ -300,7 +300,6 @@ describe("JsonConvert", () => {
         expect.fail("에러가 발생해야 합니다");
       } catch (err) {
         const message = (err as Error).message;
-        expect(message).not.toContain("truncated");
         expect(message).toContain("invalid");
       }
     });

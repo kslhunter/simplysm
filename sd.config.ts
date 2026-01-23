@@ -2,7 +2,7 @@ import type { SdConfigFn } from "@simplysm/cli";
 
 const config: SdConfigFn = () => ({
   packages: {
-    "claude": { target: "node" },
+    "claude": { target: "scripts" },
     "cli": { target: "node" },
     "core-browser": { target: "browser" },
     "core-common": { target: "neutral" },
@@ -15,6 +15,7 @@ const config: SdConfigFn = () => ({
     "service-common": { target: "neutral" },
     "service-server": { target: "node" },
     "solid": { target: "browser" },
+    "solid-demo": { target: "client", server: 40080 },
     "storage": { target: "node" },
   },
 });

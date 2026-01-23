@@ -30,7 +30,7 @@ const noNodeBuiltinsRules = {
     {
       name: "Buffer",
       message:
-        "Use Uint8Array instead. For complex operations, use BytesUtils from @simplysm/core-common.",
+        "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
     },
   ],
   "no-restricted-imports": [
@@ -40,15 +40,15 @@ const noNodeBuiltinsRules = {
         {
           name: "buffer",
           message:
-            "Use Uint8Array instead. For complex operations, use BytesUtils from @simplysm/core-common.",
+            "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
         },
         {
           name: "events",
-          message: "Use SdEventEmitter from @simplysm/core-common instead.",
+          message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
         },
         {
           name: "eventemitter3",
-          message: "Use SdEventEmitter from @simplysm/core-common instead.",
+          message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
         },
       ],
     },
@@ -88,10 +88,10 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.es2022,
+        ...globals.es2024,
         ...globals.browser,
       },
-      ecmaVersion: 2022,
+      ecmaVersion: 2024,
       sourceType: "module",
     },
   },
@@ -162,7 +162,6 @@ export default [
       "@typescript-eslint/non-nullable-type-assertion-style": ["error"],
       "@typescript-eslint/prefer-reduce-type-parameter": ["error"],
       "@typescript-eslint/prefer-return-this-type": ["error"],
-      "@typescript-eslint/typedef": ["error"],
       "@typescript-eslint/no-unused-expressions": ["error"],
       "@typescript-eslint/strict-boolean-expressions": [
         "error",
@@ -175,7 +174,7 @@ export default [
         "error",
         {
           "ts-expect-error": "allow-with-description",
-          minimumDescriptionLength: 3,
+          "minimumDescriptionLength": 3,
         },
       ],
       "@typescript-eslint/prefer-readonly": ["error"],
@@ -203,7 +202,7 @@ export default [
   },
   // 테스트 폴더: 루트 devDependencies(vitest 등) 사용 허용
   {
-    files: ["**/tests/**/*.ts", "**/tests/**/*.js"],
+    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx", "**/tests/**/*.js"],
     rules: {
       "import/no-extraneous-dependencies": "off",
     },

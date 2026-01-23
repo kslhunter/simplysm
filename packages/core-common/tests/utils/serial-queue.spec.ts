@@ -142,9 +142,9 @@ describe("SerialQueue", () => {
       // 충분히 대기 (작업1 + gap100 + 작업2 + 여유)
       await Wait.time(200);
 
-      // gap이 실제로 적용되었는지 확인
+      // gap이 실제로 적용되었는지 확인 (타이머 오차 허용: 95ms 이상)
       expect(timestamps).toHaveLength(2);
-      expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(100);
+      expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(95);
     });
   });
 

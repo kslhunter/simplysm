@@ -6,9 +6,14 @@ export class NumberUtils {
   /**
    * 문자열을 정수로 파싱
    * 숫자가 아닌 문자(0-9, -, . 제외)는 제거 후 파싱
+   *
+   * @note 소수점이 포함된 문자열은 정수 부분만 반환됩니다 (예: '12.34' → 12).
+   *       반올림이 필요하면 {@link parseRoundedInt}를 사용하세요.
+   * @note 문자열 중간의 `-`도 유지되므로 의도치 않은 음수가 될 수 있습니다.
+   *       예: `"가-123나"` → `-123`
    */
   static parseInt(text: unknown): number | undefined {
-    if (typeof text === "number") return Math.round(text);
+    if (typeof text === "number") return Math.trunc(text);
     if (typeof text !== "string") return undefined;
     const txt = text.replace(/[^0-9.\-]/g, "").trim();
     if (txt === "") return undefined;

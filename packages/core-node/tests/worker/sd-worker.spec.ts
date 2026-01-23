@@ -40,6 +40,15 @@ describe("SdWorker", () => {
       await expect(worker.throwError()).rejects.toThrow();
     });
 
+    it("존재하지 않는 메서드 호출 시 에러", async () => {
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
+
+      // 타입 시스템을 우회하여 존재하지 않는 메서드 호출
+      const unknownWorker = worker as unknown as { unknownMethod: () => Promise<void> };
+
+      await expect(unknownWorker.unknownMethod()).rejects.toThrow("알 수 없는 메서드: unknownMethod");
+    });
+
     it("다중 요청 동시 처리", async () => {
       worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
 
@@ -80,6 +89,26 @@ describe("SdWorker", () => {
 
       expect(events).toContain(50);
     });
+
+    it("off()로 이벤트 리스너 제거", async () => {
+      worker = SdWorker.create<typeof TestWorkerModule>(workerPath);
+
+      const events: number[] = [];
+      const listener = (value: number) => {
+        events.push(value);
+      };
+
+      worker.on("progress", listener);
+      await worker.add(1, 2);
+
+      // 리스너 제거
+      worker.off("progress", listener);
+      await worker.add(3, 4);
+
+      // 첫 번째 호출의 이벤트만 수신되어야 함
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBe(50);
+    });
   });
 
   //#endregion
@@ -101,7 +130,7 @@ describe("SdWorker", () => {
 
       const error = await errorPromise;
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe("Worker terminated");
+      expect((error as Error).message).toBe("워커가 종료됨 (method: delay)");
     });
   });
 

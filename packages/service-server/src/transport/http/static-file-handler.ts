@@ -2,9 +2,9 @@ import path from "path";
 import { FsUtils } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:StaticFileHandler" });
+const logger = createConsola().withTag("service-server:StaticFileHandler");
 
 export class StaticFileHandler {
   constructor(private readonly _server: ServiceServer) {}
@@ -61,7 +61,7 @@ export class StaticFileHandler {
       } else {
         const errorMessage = "파일 전송 중 오류가 발생했습니다.";
         this._responseErrorHtml(reply, 500, errorMessage);
-        logger.error({ err }, `[500] ${errorMessage}`);
+        logger.error(`[500] ${errorMessage}`, err);
       }
     }
   }

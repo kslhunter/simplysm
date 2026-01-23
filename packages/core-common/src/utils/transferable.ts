@@ -18,12 +18,12 @@ type Transferable = ArrayBuffer;
  * structuredClone이 지원하지 않는 커스텀 타입들을 처리합니다.
  *
  * 지원 타입:
- * - Date, DateTime, DateOnly, Time, Uuid
+ * - Date, DateTime, DateOnly, Time, Uuid, RegExp
  * - Error (cause, code, detail 포함)
  * - Uint8Array (다른 TypedArray는 미지원, 일반 객체로 처리됨)
  * - Array, Map, Set, 일반 객체
  *
- * @note 순환 참조가 있으면 encode 시 TypeError 발생
+ * @note 순환 참조가 있으면 encode 시 TypeError 발생 (경로 정보 포함)
  * @note 동일 객체가 여러 곳에서 참조되는 DAG 구조에서는 각 참조마다 별도로 변환되어 데이터가 중복됨
  *
  * @example
@@ -47,24 +47,27 @@ export abstract class TransferableConvert {
     transferList: Transferable[];
   } {
     const transferList: Transferable[] = [];
-    const seen = new WeakSet<object>();
-    const result = this._encode(obj, transferList, seen);
+    const seen = new Map<object, string>();
+    const result = this._encode(obj, transferList, [], seen);
     return { result, transferList };
   }
 
   private static _encode(
     obj: unknown,
     transferList: Transferable[],
-    seen: WeakSet<object>,
+    path: (string | number)[],
+    seen: Map<object, string>,
   ): unknown {
     if (obj == null) return obj;
 
     // 순환 참조 감지 (객체 타입만)
     if (typeof obj === "object") {
-      if (seen.has(obj)) {
-        throw new TypeError("순환 참조가 감지되었습니다");
+      const currentPath = path.length > 0 ? path.join(".") : "root";
+      const existingPath = seen.get(obj);
+      if (existingPath !== undefined) {
+        throw new TypeError(`순환 참조가 감지되었습니다: ${currentPath} → ${existingPath}`);
       }
-      seen.add(obj);
+      seen.set(obj, currentPath);
     }
 
     // 1. Uint8Array
@@ -74,8 +77,9 @@ export abstract class TransferableConvert {
       const isSharedArrayBuffer =
         typeof SharedArrayBuffer !== "undefined" &&
         obj.buffer instanceof SharedArrayBuffer;
-      if (!isSharedArrayBuffer && !transferList.includes(obj.buffer)) {
-        transferList.push(obj.buffer);
+      const buffer = obj.buffer as ArrayBuffer;
+      if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
+        transferList.push(buffer);
       }
       return obj;
     }
@@ -88,6 +92,7 @@ export abstract class TransferableConvert {
       return { __type__: "DateOnly", data: obj.tick };
     if (obj instanceof Time) return { __type__: "Time", data: obj.tick };
     if (obj instanceof Uuid) return { __type__: "Uuid", data: obj.toString() };
+    if (obj instanceof RegExp) return { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
     if (obj instanceof Error) {
       const errObj = obj as Error & {
         code?: unknown;
@@ -101,10 +106,10 @@ export abstract class TransferableConvert {
           stack: errObj.stack,
           ...(errObj.code !== undefined ? { code: errObj.code } : {}),
           ...(errObj.detail !== undefined
-            ? { detail: this._encode(errObj.detail, transferList, seen) }
+            ? { detail: this._encode(errObj.detail, transferList, [...path, "detail"], seen) }
             : {}),
           ...(errObj.cause !== undefined
-            ? { cause: this._encode(errObj.cause, transferList, seen) }
+            ? { cause: this._encode(errObj.cause, transferList, [...path, "cause"], seen) }
             : {}),
         },
       };
@@ -112,23 +117,30 @@ export abstract class TransferableConvert {
 
     // 3. 배열 재귀 순회
     if (Array.isArray(obj)) {
-      return obj.map((item) => this._encode(item, transferList, seen));
+      return obj.map((item, idx) => this._encode(item, transferList, [...path, idx], seen));
     }
 
     // 4. Map 재귀 순회
     if (obj instanceof Map) {
+      let idx = 0;
       return new Map(
-        Array.from(obj.entries()).map(([k, v]) => [
-          this._encode(k, transferList, seen),
-          this._encode(v, transferList, seen),
-        ]),
+        Array.from(obj.entries()).map(([k, v]) => {
+          const keyPath = [...path, `Map[${idx}].key`];
+          const valuePath = [...path, `Map[${idx}].value`];
+          idx++;
+          return [
+            this._encode(k, transferList, keyPath, seen),
+            this._encode(v, transferList, valuePath, seen),
+          ];
+        }),
       );
     }
 
     // 5. Set 재귀 순회
     if (obj instanceof Set) {
+      let idx = 0;
       return new Set(
-        Array.from(obj).map((v) => this._encode(v, transferList, seen)),
+        Array.from(obj).map((v) => this._encode(v, transferList, [...path, `Set[${idx++}]`], seen)),
       );
     }
 
@@ -137,7 +149,7 @@ export abstract class TransferableConvert {
       const result: Record<string, unknown> = {};
       const record = obj as Record<string, unknown>;
       for (const key of Object.keys(record)) {
-        result[key] = this._encode(record[key], transferList, seen);
+        result[key] = this._encode(record[key], transferList, [...path, key], seen);
       }
       return result;
     }
@@ -169,6 +181,10 @@ export abstract class TransferableConvert {
         return new Time(data);
       if (typed.__type__ === "Uuid" && typeof data === "string")
         return new Uuid(data);
+      if (typed.__type__ === "RegExp" && typeof data === "object" && data !== null) {
+        const regexData = data as { source: string; flags: string };
+        return new RegExp(regexData.source, regexData.flags);
+      }
       if (typed.__type__ === "Error" && typeof data === "object" && data !== null) {
         const errorData = data as {
           name: string;

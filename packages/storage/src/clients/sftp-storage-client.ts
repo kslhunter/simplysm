@@ -28,6 +28,7 @@ export class SftpStorageClient implements Storage {
     if (this._client !== undefined) {
       throw new SdError("이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.");
     }
+
     const client = new SftpClient();
     try {
       await client.connect({

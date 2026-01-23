@@ -18,6 +18,7 @@
       <sourceFolder url="file://$MODULE_DIR$/packages/service-common/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/claude/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/packages/cli/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/solid/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
@@ -52,6 +53,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/service/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

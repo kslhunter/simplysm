@@ -174,14 +174,11 @@ export class StringUtils {
   /**
    * kebab-case로 변환
    *
-   * @note 기존 구분자(-, _)도 변환됨: `hello_world` → `hello-world`
-   * @note 혼합 케이스(`Hello_World`)는 지원하지 않음
-   *
    * @example "HelloWorld" → "hello-world"
    * @example "helloWorld" → "hello-world"
-   * @example "hello_world" → "hello-world"
-   * @example "Hello_World" → "hello_-world"
-   * @example "Hello-World" → "hello--world"
+   * @example "hello_world" → "hello_world" (소문자만 있으면 변환 안됨)
+   * @example "Hello_World" → "hello-_world" (기존 분리자는 유지됨)
+   * @example "Hello-World" → "hello--world" (기존 분리자는 유지됨)
    * @example "XMLParser" → "x-m-l-parser" (연속된 대문자는 각각 분리됨)
    */
   static toKebabCase(str: string): string {
@@ -191,13 +188,11 @@ export class StringUtils {
   /**
    * snake_case로 변환
    *
-   * @note 기존 구분자(-, _)도 변환됨: `hello-world` → `hello_world`
-   *
    * @example "HelloWorld" → "hello_world"
    * @example "helloWorld" → "hello_world"
-   * @example "hello-world" → "hello_world"
-   * @example "Hello-World" → "hello-_world"
-   * @example "Hello_World" → "hello__world"
+   * @example "hello-world" → "hello-world" (소문자만 있으면 변환 안됨)
+   * @example "Hello-World" → "hello_-world" (기존 분리자는 유지됨)
+   * @example "Hello_World" → "hello__world" (기존 분리자는 유지됨)
    * @example "XMLParser" → "x_m_l_parser" (연속된 대문자는 각각 분리됨)
    */
   static toSnakeCase(str: string): string {
@@ -234,6 +229,16 @@ export class StringUtils {
 
   /**
    * 문자열 특정 위치에 삽입
+   *
+   * @param str 원본 문자열
+   * @param index 삽입할 위치 (0부터 시작)
+   * @param insertString 삽입할 문자열
+   * @returns 삽입된 새 문자열
+   *
+   * @example
+   * StringUtils.insert("Hello World", 5, ","); // "Hello, World"
+   * StringUtils.insert("abc", 0, "X"); // "Xabc"
+   * StringUtils.insert("abc", 3, "X"); // "abcX"
    */
   static insert(str: string, index: number, insertString: string): string {
     return str.substring(0, index) + insertString + str.substring(index);

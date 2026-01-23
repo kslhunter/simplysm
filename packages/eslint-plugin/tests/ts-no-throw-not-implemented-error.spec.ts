@@ -162,6 +162,25 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
       });
     });
 
+    describe("여러 번 사용 시 각각 에러 발생", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              new NotImplementedError("첫 번째");
+              new NotImplementedError("두 번째");
+            `,
+            errors: [
+              { messageId: "noThrowNotImplementedError", data: { text: "첫 번째" } },
+              { messageId: "noThrowNotImplementedError", data: { text: "두 번째" } },
+            ],
+          },
+        ],
+      });
+    });
+
     describe("namespace import로 사용", () => {
       ruleTester.run("ts-no-throw-not-implemented-error", rule, {
         valid: [],
@@ -196,6 +215,127 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
         ],
       });
     });
+
+    describe("템플릿 리터럴 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(\`동적 메시지\`);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("변수 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              const msg = "동적 메시지";
+              throw new NotImplementedError(msg);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("숫자 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(123);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("빈 문자열 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError("");
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("null 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(null);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("undefined 인자는 기본 메시지로 폴백", () => {
+      ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              import { NotImplementedError } from "@simplysm/core-common";
+              throw new NotImplementedError(undefined);
+            `,
+            errors: [
+              {
+                messageId: "noThrowNotImplementedError",
+                data: { text: "미구현" },
+              },
+            ],
+          },
+        ],
+      });
+    });
   });
 
   describe("namespace import는 다른 패키지면 허용", () => {
@@ -205,6 +345,38 @@ describe("ts-no-throw-not-implemented-error 규칙", () => {
           code: `
             import * as OtherPkg from "other-package";
             new OtherPkg.NotImplementedError();
+          `,
+        },
+      ],
+      invalid: [],
+    });
+  });
+
+  describe("제한사항: re-export된 NotImplementedError는 감지하지 않음", () => {
+    ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+      valid: [
+        {
+          // 다른 모듈에서 re-export된 경우는 감지하지 않음
+          code: `
+            import { NotImplementedError } from "./my-errors";
+            throw new NotImplementedError();
+          `,
+        },
+      ],
+      invalid: [],
+    });
+  });
+
+  describe("제한사항: 동적 import는 감지하지 않음", () => {
+    ruleTester.run("ts-no-throw-not-implemented-error", rule, {
+      valid: [
+        {
+          // 동적 import 후 사용하는 경우는 감지하지 않음
+          code: `
+            async function test() {
+              const { NotImplementedError } = await import("@simplysm/core-common");
+              throw new NotImplementedError();
+            }
           `,
         },
       ],

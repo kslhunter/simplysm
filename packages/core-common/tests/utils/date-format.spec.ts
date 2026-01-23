@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DateTimeFormatUtils } from "@simplysm/core-common";
+import { normalizeMonth } from "../../src/utils/date-format";
 
 describe("DateTimeFormatUtils", () => {
   //#region 연도 패턴
@@ -280,6 +281,90 @@ describe("DateTimeFormatUtils", () => {
         timezoneOffsetMinutes: 540,
       });
       expect(result).toBe("2025-01-18T14:30:00+09:00");
+    });
+  });
+
+  //#endregion
+});
+
+describe("normalizeMonth", () => {
+  //#region 정상 범위
+
+  describe("정상 범위 (1-12)", () => {
+    it("월이 1-12 범위 내면 그대로 반환한다", () => {
+      expect(normalizeMonth(2025, 1, 15)).toEqual({ year: 2025, month: 1, day: 15 });
+      expect(normalizeMonth(2025, 6, 15)).toEqual({ year: 2025, month: 6, day: 15 });
+      expect(normalizeMonth(2025, 12, 15)).toEqual({ year: 2025, month: 12, day: 15 });
+    });
+  });
+
+  //#endregion
+
+  //#region 월 오버플로우
+
+  describe("월 오버플로우 (13 이상)", () => {
+    it("13월은 다음 해 1월이 된다", () => {
+      expect(normalizeMonth(2025, 13, 15)).toEqual({ year: 2026, month: 1, day: 15 });
+    });
+
+    it("14월은 다음 해 2월이 된다", () => {
+      expect(normalizeMonth(2025, 14, 15)).toEqual({ year: 2026, month: 2, day: 15 });
+    });
+
+    it("25월은 2년 후 1월이 된다", () => {
+      expect(normalizeMonth(2025, 25, 15)).toEqual({ year: 2027, month: 1, day: 15 });
+    });
+
+    it("24월은 다음 해 12월이 된다", () => {
+      expect(normalizeMonth(2025, 24, 15)).toEqual({ year: 2026, month: 12, day: 15 });
+    });
+  });
+
+  //#endregion
+
+  //#region 월 언더플로우
+
+  describe("월 언더플로우 (0 이하)", () => {
+    it("0월은 이전 해 12월이 된다", () => {
+      expect(normalizeMonth(2025, 0, 15)).toEqual({ year: 2024, month: 12, day: 15 });
+    });
+
+    it("-1월은 이전 해 11월이 된다", () => {
+      expect(normalizeMonth(2025, -1, 15)).toEqual({ year: 2024, month: 11, day: 15 });
+    });
+
+    it("-11월은 이전 해 1월이 된다", () => {
+      expect(normalizeMonth(2025, -11, 15)).toEqual({ year: 2024, month: 1, day: 15 });
+    });
+
+    it("-12월은 2년 전 12월이 된다", () => {
+      expect(normalizeMonth(2025, -12, 15)).toEqual({ year: 2023, month: 12, day: 15 });
+    });
+
+    it("-13월은 2년 전 11월이 된다", () => {
+      expect(normalizeMonth(2025, -13, 15)).toEqual({ year: 2023, month: 11, day: 15 });
+    });
+  });
+
+  //#endregion
+
+  //#region 일 조정
+
+  describe("일 조정 (대상 월의 마지막 날)", () => {
+    it("31일에서 2월로 변경하면 28일로 조정된다 (평년)", () => {
+      expect(normalizeMonth(2025, 2, 31)).toEqual({ year: 2025, month: 2, day: 28 });
+    });
+
+    it("31일에서 2월로 변경하면 29일로 조정된다 (윤년)", () => {
+      expect(normalizeMonth(2024, 2, 31)).toEqual({ year: 2024, month: 2, day: 29 });
+    });
+
+    it("31일에서 4월로 변경하면 30일로 조정된다", () => {
+      expect(normalizeMonth(2025, 4, 31)).toEqual({ year: 2025, month: 4, day: 30 });
+    });
+
+    it("대상 월의 일수보다 작으면 그대로 유지된다", () => {
+      expect(normalizeMonth(2025, 3, 15)).toEqual({ year: 2025, month: 3, day: 15 });
     });
   });
 

@@ -1,1 +1,143 @@
 @import "tailwindcss";
+
+@source "./src/**/*.{ts,tsx}";
+
+@theme inline {
+  /* primary (blue) */
+  --color-primary-lightest: var(--color-blue-100);
+  --color-primary-lighter: var(--color-blue-200);
+  --color-primary-light: var(--color-blue-300);
+  --color-primary: var(--color-blue-500);
+  --color-primary-dark: var(--color-blue-600);
+  --color-primary-darker: var(--color-blue-700);
+  --color-primary-darkest: var(--color-blue-800);
+
+  /* secondary (indigo) */
+  --color-secondary-lightest: var(--color-indigo-100);
+  --color-secondary-lighter: var(--color-indigo-200);
+  --color-secondary-light: var(--color-indigo-300);
+  --color-secondary: var(--color-indigo-500);
+  --color-secondary-dark: var(--color-indigo-600);
+  --color-secondary-darker: var(--color-indigo-700);
+  --color-secondary-darkest: var(--color-indigo-800);
+
+  /* info (cyan) */
+  --color-info-lightest: var(--color-cyan-100);
+  --color-info-lighter: var(--color-cyan-200);
+  --color-info-light: var(--color-cyan-300);
+  --color-info: var(--color-cyan-500);
+  --color-info-dark: var(--color-cyan-600);
+  --color-info-darker: var(--color-cyan-700);
+  --color-info-darkest: var(--color-cyan-800);
+
+  /* success (lime) */
+  --color-success-lightest: var(--color-lime-100);
+  --color-success-lighter: var(--color-lime-200);
+  --color-success-light: var(--color-lime-300);
+  --color-success: var(--color-lime-500);
+  --color-success-dark: var(--color-lime-600);
+  --color-success-darker: var(--color-lime-700);
+  --color-success-darkest: var(--color-lime-800);
+
+  /* warning (orange) */
+  --color-warning-lightest: var(--color-orange-100);
+  --color-warning-lighter: var(--color-orange-200);
+  --color-warning-light: var(--color-orange-300);
+  --color-warning: var(--color-orange-500);
+  --color-warning-dark: var(--color-orange-600);
+  --color-warning-darker: var(--color-orange-700);
+  --color-warning-darkest: var(--color-orange-800);
+
+  /* danger (red) */
+  --color-danger-lightest: var(--color-red-100);
+  --color-danger-lighter: var(--color-red-200);
+  --color-danger-light: var(--color-red-300);
+  --color-danger: var(--color-red-500);
+  --color-danger-dark: var(--color-red-600);
+  --color-danger-darker: var(--color-red-700);
+  --color-danger-darkest: var(--color-red-800);
+
+  /* gray (gray) */
+  --color-gray-lightest: var(--color-gray-100);
+  --color-gray-lighter: var(--color-gray-200);
+  --color-gray-light: var(--color-gray-300);
+  --color-gray: var(--color-gray-500);
+  --color-gray-dark: var(--color-gray-600);
+  --color-gray-darker: var(--color-gray-700);
+  --color-gray-darkest: var(--color-gray-800);
+
+  /* blue-gray (slate) */
+  --color-blue-gray-lightest: var(--color-slate-100);
+  --color-blue-gray-lighter: var(--color-slate-200);
+  --color-blue-gray-light: var(--color-slate-300);
+  --color-blue-gray: var(--color-slate-500);
+  --color-blue-gray-dark: var(--color-slate-600);
+  --color-blue-gray-darker: var(--color-slate-700);
+  --color-blue-gray-darkest: var(--color-slate-800);
+
+}
+
+/* semantic colors - CSS 변수로 유지되어야 다크 모드에서 오버라이드 가능 */
+@theme {
+  --color-bg-base: var(--color-bg-base);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-hover: var(--color-bg-hover);
+  --color-text-base: var(--color-text-base);
+  --color-text-muted: var(--color-text-muted);
+  --color-border-base: var(--color-border-base);
+  --color-disabled-bg: var(--color-disabled-bg);
+  --color-disabled-text: var(--color-disabled-text);
+  --color-disabled-border: var(--color-disabled-border);
+  --color-primary-text-hover: var(--color-primary-text-hover);
+  --color-secondary-text-hover: var(--color-secondary-text-hover);
+  --color-info-text-hover: var(--color-info-text-hover);
+  --color-success-text-hover: var(--color-success-text-hover);
+  --color-warning-text-hover: var(--color-warning-text-hover);
+  --color-danger-text-hover: var(--color-danger-text-hover);
+  --color-gray-text-hover: var(--color-gray-text-hover);
+  --color-blue-gray-text-hover: var(--color-blue-gray-text-hover);
+  --color-ripple: var(--color-ripple);
+}
+
+:root {
+  --color-bg-base: white;
+  --color-bg-elevated: var(--color-gray-50);
+  --color-bg-hover: var(--color-gray-100);
+  --color-text-base: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-500);
+  --color-border-base: var(--color-gray-300);
+  --color-disabled-bg: var(--color-gray-200);
+  --color-disabled-text: var(--color-gray-400);
+  --color-disabled-border: var(--color-gray-200);
+  --color-primary-text-hover: var(--color-primary-dark);
+  --color-secondary-text-hover: var(--color-secondary-dark);
+  --color-info-text-hover: var(--color-info-dark);
+  --color-success-text-hover: var(--color-success-dark);
+  --color-warning-text-hover: var(--color-warning-dark);
+  --color-danger-text-hover: var(--color-danger-dark);
+  --color-gray-text-hover: var(--color-gray-dark);
+  --color-blue-gray-text-hover: var(--color-blue-gray-dark);
+  --color-ripple: rgba(0, 0, 0, 0.15);
+}
+
+/* dark mode overrides */
+:root.dark {
+  --color-bg-base: var(--color-gray-900);
+  --color-bg-elevated: var(--color-gray-800);
+  --color-bg-hover: var(--color-gray-700);
+  --color-text-base: var(--color-gray-100);
+  --color-text-muted: var(--color-gray-400);
+  --color-border-base: var(--color-gray-600);
+  --color-disabled-bg: var(--color-gray-700);
+  --color-disabled-text: var(--color-gray-500);
+  --color-disabled-border: var(--color-gray-700);
+  --color-primary-text-hover: var(--color-primary-light);
+  --color-secondary-text-hover: var(--color-secondary-light);
+  --color-info-text-hover: var(--color-info-light);
+  --color-success-text-hover: var(--color-success-light);
+  --color-warning-text-hover: var(--color-warning-light);
+  --color-danger-text-hover: var(--color-danger-light);
+  --color-gray-text-hover: var(--color-gray-light);
+  --color-blue-gray-text-hover: var(--color-blue-gray-light);
+  --color-ripple: rgba(255, 255, 255, 0.2);
+}

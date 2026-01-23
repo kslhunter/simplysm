@@ -13,7 +13,7 @@ vi.mock("@simplysm/core-node", () => ({
 }));
 
 import { FsUtils } from "@simplysm/core-node";
-import { getCompilerOptionsForPackage } from "../src/commands/typecheck";
+import { getCompilerOptionsForPackage } from "../src/utils/tsconfig";
 
 describe("getCompilerOptionsForPackage", () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe("getCompilerOptionsForPackage", () => {
   });
 
   const baseOptions: ts.CompilerOptions = {
-    lib: ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    lib: ["ES2024", "DOM", "DOM.Iterable", "WebWorker"],
     types: [],
     strict: true,
   };
@@ -41,10 +41,8 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 
-    // noEmit이 true로 설정됨
-    expect(result.noEmit).toBe(true);
     // DOM, WebWorker lib 제거됨
-    expect(result.lib).toEqual(["ES2022"]);
+    expect(result.lib).toEqual(["ES2024"]);
     // types에 node와 express 포함
     expect(result.types).toContain("node");
     expect(result.types).toContain("express");
@@ -62,35 +60,13 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "browser", packageDir);
 
-    // noEmit이 true로 설정됨
-    expect(result.noEmit).toBe(true);
     // lib는 그대로 유지
-    expect(result.lib).toEqual(["ES2022", "DOM", "DOM.Iterable", "WebWorker"]);
+    expect(result.lib).toEqual(["ES2024", "DOM", "DOM.Iterable", "WebWorker"]);
     // types에서 node 제거, react만 포함
     expect(result.types).not.toContain("node");
     expect(result.types).toContain("react");
   });
 
-  it("neutral 타겟: DOM lib 제거, types에서 node 제거", async () => {
-    const packageDir = "/project/packages/core-common";
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({
-      devDependencies: {
-        "@types/node": "^20.0.0",
-        "@types/lodash": "^4.14.0",
-      },
-    });
-
-    const result = await getCompilerOptionsForPackage(baseOptions, "neutral", packageDir);
-
-    // noEmit이 true로 설정됨
-    expect(result.noEmit).toBe(true);
-    // DOM, WebWorker lib 제거됨
-    expect(result.lib).toEqual(["ES2022"]);
-    // types에서 node 제거, lodash만 포함
-    expect(result.types).not.toContain("node");
-    expect(result.types).toContain("lodash");
-  });
 
   it("node 타겟: 중복된 node 타입 제거", async () => {
     const packageDir = "/project/packages/core-node";
@@ -133,7 +109,7 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("원본 baseOptions가 변경되지 않음 (immutability)", async () => {
     const originalOptions: ts.CompilerOptions = {
-      lib: ["ES2022", "DOM"],
+      lib: ["ES2024", "DOM"],
       types: ["original"],
       strict: true,
     };
@@ -143,7 +119,7 @@ describe("getCompilerOptionsForPackage", () => {
     await getCompilerOptionsForPackage(originalOptions, "node", packageDir);
 
     // 원본 옵션이 변경되지 않음
-    expect(originalOptions.lib).toEqual(["ES2022", "DOM"]);
+    expect(originalOptions.lib).toEqual(["ES2024", "DOM"]);
     expect(originalOptions.types).toEqual(["original"]);
     expect(originalOptions.noEmit).toBeUndefined();
   });

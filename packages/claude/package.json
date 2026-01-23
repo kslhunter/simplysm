@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/claude",
   "version": "13.0.0-beta.0",
-  "description": "심플리즘 패키지 - claude code 확장",
+  "description": "심플리즘 패키지 - Claude Code 확장",
   "author": "김석래",
   "repository": {
     "type": "git",
@@ -19,6 +19,6 @@
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
-    "pino": "^10.2.1"
+    "consola": "^3.4.2"
   }
 }

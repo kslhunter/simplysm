@@ -1,6 +1,6 @@
 /**
  * 오류의 Tree 구조 구성이 가능한 오류 클래스
- * ES2022 cause 속성 활용
+ * ES2024 cause 속성 활용
  *
  * @example
  * // 원인 에러를 감싸서 생성
@@ -46,8 +46,12 @@ export class SdError extends Error {
     Object.setPrototypeOf(this, new.target.prototype);
     this.name = "SdError";
 
-    if (typeof Error.captureStackTrace !== "undefined") {
-      Error.captureStackTrace(this, new.target);
+    // V8 엔진(Node.js, Chrome)에서만 사용 가능한 captureStackTrace
+    if ("captureStackTrace" in Error) {
+      (Error.captureStackTrace as (targetObject: object, constructorOpt?: Function) => void)(
+        this,
+        new.target,
+      );
     }
 
     // cause 체인의 stack을 현재 stack에 추가

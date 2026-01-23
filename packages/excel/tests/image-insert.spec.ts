@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ExcelWorkbook } from "../src/excel-workbook";
 
+// globalThis.window가 없으면 Node.js 환경
+declare const window: unknown;
+// Node.js 전용 타입 (browser 환경에서도 타입체크가 통과되도록)
+declare const require: (id: string) => unknown;
+
 /**
  * PNG 파일 로드 (Node/브라우저 환경 분기)
  */
@@ -9,8 +14,8 @@ async function loadPngFile(): Promise<Uint8Array> {
 
   // Node 환경: fs 사용
   if (typeof window === "undefined") {
-    const fs = await import("fs");
-    const { fileURLToPath } = await import("url");
+    const fs = require("fs") as { readFileSync: (path: string) => Uint8Array };
+    const { fileURLToPath } = require("url") as { fileURLToPath: (url: URL) => string };
     const filePath = fileURLToPath(url);
     return new Uint8Array(fs.readFileSync(filePath));
   }

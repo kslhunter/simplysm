@@ -1,6 +1,6 @@
 # @simplysm/cli
 
-심플리즘 프레임워크의 CLI 도구이다.
+심플리즘 프레임워크의 CLI 도구이다. ESLint 린트, TypeScript 타입체크, 패키지 빌드 watch 기능을 제공한다.
 
 ## 설치
 
@@ -10,7 +10,7 @@ npm install -g @simplysm/cli
 yarn global add @simplysm/cli
 ```
 
-또는 npx로 설치 없이 직접 실행한다:
+또는 npx로 설치 없이 실행할 수 있다:
 
 ```bash
 npx @simplysm/cli lint
@@ -66,9 +66,30 @@ sd-cli typecheck packages/core-common tests/orm
 |------|------|--------|
 | `--debug` | debug 로그 출력 | `false` |
 
-### 설정 (sd.config.ts)
+### watch
 
-타입체크 시 패키지별 빌드 타겟을 설정한다. 파일이 없으면 모든 패키지가 `neutral` 타겟으로 처리된다.
+패키지를 watch 모드로 빌드한다. 파일 변경 시 자동으로 리빌드되며, `node`/`browser`/`neutral` 타겟의 경우 `.d.ts` 타입 정의 파일도 자동 생성된다. `client` 타겟의 경우 Vite dev server가 시작된다.
+
+```bash
+# 모든 패키지 watch
+sd-cli watch
+
+# 특정 패키지만 watch
+sd-cli watch solid
+
+# 여러 패키지 watch
+sd-cli watch solid solid-demo
+```
+
+**옵션:**
+
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--debug` | debug 로그 출력 | `false` |
+
+## 설정 (sd.config.ts)
+
+타입체크와 watch 시 패키지별 빌드 타겟을 설정한다. 타입체크 시 파일이 없으면 모든 패키지가 `neutral` 타겟으로 처리된다. watch는 이 파일이 필수이다.
 
 ```typescript
 import type { SdConfigFn } from "@simplysm/cli";
@@ -78,6 +99,7 @@ const config: SdConfigFn = () => ({
     "core-common": { target: "neutral" },
     "core-node": { target: "node" },
     "core-browser": { target: "browser" },
+    "solid-demo": { target: "client", server: 3000 },
   },
 });
 
@@ -87,34 +109,66 @@ export default config;
 **타겟별 동작:**
 - `node`: DOM 관련 lib 제거, `@types/node` 자동 포함
 - `browser`: DOM lib 유지, `@types/node` 제외
-- `neutral`: DOM 관련 lib 제거, `@types/node` 제외
+- `neutral`: DOM lib 유지, `@types/node` 자동 포함 (Node/브라우저 공용)
+- `client`: Vite dev server를 통한 개발 모드. `server` 옵션으로 포트 지정
+- `scripts`: typecheck/watch 대상에서 제외. 각 스크립트가 자체 완결적으로 실행되는 패키지용
 
-## 프로그래매틱 사용
+## API로 직접 호출
 
 코드에서 직접 함수를 호출할 수 있다:
 
 ```typescript
-import { runLint, runTypecheck } from "@simplysm/cli";
+import { runLint, runTypecheck, runWatch } from "@simplysm/cli";
 
 // 린트 실행
 await runLint({
   targets: ["packages/core-common"],
   fix: false,
   timing: false,
-  debug: false,
 });
 
 // 타입체크 실행
 await runTypecheck({
   targets: ["packages/core-common"],
-  debug: false,
+});
+
+// watch 실행
+await runWatch({
+  targets: ["solid"],
 });
 ```
+
+### 옵션 타입
+
+#### LintOptions
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `targets` | `string[]` | 린트할 경로 목록. 빈 배열이면 전체 |
+| `fix` | `boolean` | 자동 수정 여부 |
+| `timing` | `boolean` | 규칙별 실행 시간 출력 |
+
+#### TypecheckOptions
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `targets` | `string[]` | 타입체크할 경로 목록. 빈 배열이면 전체 |
+
+#### WatchOptions
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `targets` | `string[]` | watch할 패키지 목록. 빈 배열이면 전체 |
+
+**API 동작:**
+- `runLint`, `runTypecheck`: `Promise<void>` 반환. 에러 발견 시 `process.exitCode = 1`을 설정하고 resolve (throw하지 않음)
+- `runWatch`: `Promise<void>` 반환. SIGINT/SIGTERM 시그널 수신 시 resolve
 
 ## 캐시
 
 - **lint**: `.cache/eslint.cache`에 캐시 저장
-- **typecheck**: 각 패키지/테스트 디렉토리의 `.cache/typecheck.tsbuildinfo`에 incremental 빌드 정보 저장
+- **typecheck**: 각 패키지/테스트 디렉토리의 `.cache/typecheck-{env}.tsbuildinfo`에 incremental 빌드 정보 저장 (`{env}`는 `node` 또는 `browser`)
+- **watch (dts)**: 각 패키지의 `.cache/dts.tsbuildinfo`에 incremental 빌드 정보 저장
 
 캐시를 초기화하려면 `.cache` 디렉토리를 삭제한다.
 

@@ -1,4 +1,4 @@
-import pino from "pino";
+import { createConsola } from "consola";
 import { DateOnly, DateTime, JsonConvert, SdError, SdEventEmitter, StringUtils, Time, Uuid, Wait } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
@@ -10,7 +10,7 @@ import {
 import type tediousType from "tedious";
 import type { DataType as TediousDataType } from "tedious/lib/data-type";
 
-const logger = pino({ name: "mssql-db-conn" });
+const logger = createConsola().withTag("mssql-db-conn");
 
 /**
  * MSSQL 데이터베이스 연결 클래스
@@ -61,15 +61,15 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     });
 
     conn.on("infoMessage", (info) => {
-      logger.debug({ message: info.message }, "info");
+      logger.debug("info", info.message);
     });
 
     conn.on("errorMessage", (error) => {
-      logger.error({ message: error.message }, "errorMessage");
+      logger.error("errorMessage", error.message);
     });
 
     conn.on("error", (error) => {
-      logger.error({ err: error.message }, "error");
+      logger.error("error", error.message);
     });
 
     conn.on("end", () => {
@@ -105,12 +105,12 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
     // 진행 중인 요청 취소
     conn.cancel();
-    await Wait.until(() => this._requests.length < 1, undefined, 10000);
+    await Wait.until(() => this._requests.length < 1, undefined, 100);
 
     // 연결 종료 대기
     await new Promise<void>((resolve) => {
       conn.on("end", () => {
-        Wait.until(() => this._conn == null, undefined, 10000)
+        Wait.until(() => this._conn == null, undefined, 100)
           .then(() => resolve())
           .catch(() => resolve());
       });
@@ -199,7 +199,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
     const results: unknown[][] = [];
 
-    logger.debug({ queryLength: query.length, params }, "쿼리 실행");
+    logger.debug("쿼리 실행", { queryLength: query.length, params });
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
       const queryRequest = new this._tedious.Request(query, (err) => {
@@ -363,7 +363,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     this._stopTimeout();
     this._connTimeout = setTimeout(() => {
       this.closeAsync().catch((err) => {
-        logger.error({ err: err instanceof Error ? err.message : String(err) }, "closeAsync error");
+        logger.error("closeAsync error", err instanceof Error ? err.message : String(err));
       });
     }, this._timeout * 2);
   }

@@ -86,6 +86,11 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
             return item instanceof Uuid;
           case "Bytes":
             return item instanceof Uint8Array;
+          default: {
+            // exhaustive check: PrimitiveTypeStr에 새 타입 추가 시 컴파일 에러 발생
+            const _exhaustive: never = type;
+            throw new ArgumentError(`지원하지 않는 타입: ${_exhaustive}`);
+          }
         }
       }) as N[];
     }
@@ -268,8 +273,8 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   toObject<T, V>(
     keySelector: (item: T, index: number) => string,
     valueSelector?: (item: T, index: number) => V,
-  ): Record<string, V | T | undefined> {
-    const result: Record<string, V | T | undefined> = {};
+  ): Record<string, V | T> {
+    const result: Record<string, V | T> = {};
 
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
@@ -400,29 +405,33 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     const uncheckedTarget = [...target];
 
     for (const sourceItem of this) {
-      const sameTarget = uncheckedTarget.single((targetItem) =>
-        ObjectUtils.equal(
-          targetItem,
-          sourceItem,
-          options?.excludes !== undefined ? { excludes: options.excludes } : undefined,
-        ),
-      );
+      // 전체 일치(sameTarget) 우선, 없으면 키 일치(sameKeyTarget) 검색
+      let sameTarget: P | undefined;
+      let sameKeyTarget: P | undefined;
+      const excludeOpts = { excludes: options?.excludes };
+      const hasKeys = options?.keys !== undefined;
 
-      if (sameTarget === undefined) {
-        if (options?.keys !== undefined) {
-          const sameKeyTargetItem = uncheckedTarget.single((targetItem) =>
-            ObjectUtils.equal(targetItem, sourceItem, { includes: options.keys }),
-          );
-          if (sameKeyTargetItem !== undefined) {
-            result.push({ source: sourceItem, target: sameKeyTargetItem });
-            uncheckedTarget.remove(sameKeyTargetItem);
-            continue;
-          }
+      for (const targetItem of uncheckedTarget) {
+        if (sameTarget === undefined && ObjectUtils.equal(targetItem, sourceItem, excludeOpts)) {
+          sameTarget = targetItem;
+          break; // 전체 일치를 찾으면 키 비교는 불필요
         }
+        if (
+          sameKeyTarget === undefined &&
+          hasKeys &&
+          ObjectUtils.equal(targetItem, sourceItem, { includes: options.keys })
+        ) {
+          sameKeyTarget = targetItem;
+        }
+      }
 
-        result.push({ source: sourceItem, target: undefined });
-      } else {
+      if (sameTarget !== undefined) {
         uncheckedTarget.remove(sameTarget);
+      } else if (sameKeyTarget !== undefined) {
+        result.push({ source: sourceItem, target: sameKeyTarget });
+        uncheckedTarget.remove(sameKeyTarget);
+      } else {
+        result.push({ source: sourceItem, target: undefined });
       }
     }
 
@@ -494,14 +503,21 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     const diffs = this.diffs(target, options);
 
     const result: (T | P | (T & P))[] = ObjectUtils.clone(this);
+
+    // source 항목의 원본 인덱스를 미리 계산하여 O(n) 검색을 O(1)로 개선
+    const sourceIndexMap = new Map<T, number>();
+    for (let i = 0; i < this.length; i++) {
+      sourceIndexMap.set(this[i], i);
+    }
+
     for (const diff of diffs) {
       // 변경시
       if (diff.source !== undefined && diff.target !== undefined) {
-        const resultSourceItem = result.single((item) => ObjectUtils.equal(item, diff.source));
-        if (resultSourceItem === undefined) {
+        const sourceIndex = sourceIndexMap.get(diff.source);
+        if (sourceIndex === undefined) {
           throw new SdError("예상치 못한 오류: merge에서 source 항목을 찾을 수 없습니다.");
         }
-        result[result.indexOf(resultSourceItem)] = ObjectUtils.merge(diff.source, diff.target);
+        result[sourceIndex] = ObjectUtils.merge(diff.source, diff.target);
       }
       // 추가시
       else if (diff.target !== undefined) {
@@ -578,14 +594,20 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
       typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
     // matchAddress: Set 기반 O(n)
+    // 첫 번째 등장한 요소를 유지하기 위해 정방향 순회 후 제거할 인덱스 수집
     if (opts.matchAddress === true) {
       const seen = new Set<T>();
-      for (let i = this.length - 1; i >= 0; i--) {
+      const toRemove: number[] = [];
+      for (let i = 0; i < this.length; i++) {
         if (seen.has(this[i])) {
-          this.splice(i, 1);
+          toRemove.push(i);
         } else {
           seen.add(this[i]);
         }
+      }
+      // 역순으로 제거 (인덱스 변화 방지)
+      for (let i = toRemove.length - 1; i >= 0; i--) {
+        this.splice(toRemove[i], 1);
       }
       return this;
     }

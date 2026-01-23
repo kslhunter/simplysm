@@ -129,6 +129,17 @@ describe("ObjectUtils", () => {
       expect((cloned.cause as Error).message).toBe("cause error");
     });
 
+    it("Error의 커스텀 속성을 복사한다", () => {
+      const error = new Error("test") as Error & { code: string; detail: object };
+      error.code = "ERR_CODE";
+      error.detail = { key: "value" };
+      const cloned = ObjectUtils.clone(error);
+
+      expect((cloned).code).toBe("ERR_CODE");
+      expect((cloned).detail).toEqual({ key: "value" });
+      expect((cloned).detail).not.toBe(error.detail);
+    });
+
     it("Uint8Array를 복사한다", () => {
       const arr = new Uint8Array([1, 2, 3, 4, 5]);
       const cloned = ObjectUtils.clone(arr);
@@ -136,6 +147,16 @@ describe("ObjectUtils", () => {
       expect(cloned).toEqual(arr);
       expect(cloned).not.toBe(arr);
       expect(cloned.buffer).not.toBe(arr.buffer);
+    });
+
+    it("Symbol 키는 복사되지 않는다", () => {
+      // Object.keys()는 Symbol 키를 열거하지 않으므로 복사되지 않음
+      const sym = Symbol("test");
+      const obj = { a: 1, [sym]: "symbol value" };
+      const cloned = ObjectUtils.clone(obj);
+
+      expect(cloned.a).toBe(1);
+      expect(cloned[sym]).toBeUndefined();
     });
   });
 
@@ -352,6 +373,86 @@ describe("ObjectUtils", () => {
 
       expect(result).toEqual([1, 2, 3]);
     });
+
+    it("3단계 이상 중첩된 객체를 병합한다", () => {
+      const source = {
+        level1: {
+          level2: {
+            level3: {
+              a: 1,
+              b: 2,
+            },
+            x: 10,
+          },
+          y: 20,
+        },
+        z: 30,
+      };
+      const target = {
+        level1: {
+          level2: {
+            level3: {
+              b: 3,
+              c: 4,
+            },
+          },
+        },
+      };
+
+      const result = ObjectUtils.merge(source, target);
+
+      expect(result).toEqual({
+        level1: {
+          level2: {
+            level3: {
+              a: 1,
+              b: 3,
+              c: 4,
+            },
+            x: 10,
+          },
+          y: 20,
+        },
+        z: 30,
+      });
+    });
+
+    it("4단계 중첩에서 깊은 값만 변경한다", () => {
+      const source = {
+        a: {
+          b: {
+            c: {
+              d: { value: 1 },
+            },
+          },
+        },
+      };
+      const target = {
+        a: {
+          b: {
+            c: {
+              d: { value: 2 },
+            },
+          },
+        },
+      };
+
+      const result = ObjectUtils.merge(source, target);
+
+      expect(result.a.b.c.d.value).toBe(2);
+    });
+
+    it("Map 병합 시 target의 새 키-값이 clone된다", () => {
+      const sourceMap = new Map<string, { value: number }>([["key1", { value: 1 }]]);
+      const targetObj = { value: 2 };
+      const targetMap = new Map<string, { value: number }>([["key2", targetObj]]);
+
+      const result = ObjectUtils.merge(sourceMap, targetMap);
+
+      // key2의 값이 clone되어 원본과 다른 참조여야 함
+      expect(result.get("key2")).toEqual({ value: 2 });
+      expect(result.get("key2")).not.toBe(targetObj);
+    });
   });
 
   describe("merge3()", () => {
@@ -512,12 +613,12 @@ describe("ObjectUtils", () => {
       expect(result).toEqual({ parent: { name: "leaf" } });
     });
 
-    it("depth가 0이면 원본을 반환한다", () => {
+    it("depth가 0이면 에러를 던진다", () => {
       const obj = { parent: { name: "child" } };
 
-      const result = ObjectUtils.getChainValueByDepth(obj, "parent", 0);
-
-      expect(result).toBe(obj);
+      expect(() => ObjectUtils.getChainValueByDepth(obj, "parent", 0)).toThrow(
+        "depth는 1 이상이어야 합니다.",
+      );
     });
 
     it("depth가 1이면 한 단계만 내려간다", () => {

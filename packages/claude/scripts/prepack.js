@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import pino from "pino";
+import { createConsola } from "consola";
 import { fileURLToPath } from "url";
 
-const logger = pino({ name: "@simplysm/claude" });
+const logger = createConsola().withTag("@simplysm/claude");
 
 /**
  * 디렉토리를 재귀적으로 복사한다.
@@ -15,7 +15,7 @@ function copyDir(src, dest) {
   try {
     fs.cpSync(src, dest, { recursive: true });
   } catch (err) {
-    logger.error({ err, src, dest }, "copyDir 실패");
+    logger.error("copyDir 실패", { err, src, dest });
     throw err;
   }
 }
@@ -28,8 +28,8 @@ const distDir = path.join(pkgDir, "dist");
 /**
  * .claude 디렉토리 내용을 dist로 복사
  * - 기존 dist 폴더 삭제 후 새로 생성
- * - 하위 디렉토리만 복사 (루트 레벨 파일 중 settings.json만 복사)
- * - settings.local.json은 복사하지 않음
+ * - 하위 디렉토리는 재귀적으로 복사
+ * - 루트 레벨 파일 중 settings.json만 복사 (다른 파일 무시)
  * @param {string} srcDir - 소스 디렉토리 (.claude)
  * @param {string} destDir - 대상 디렉토리 (dist)
  * @throws {Error} 복사 실패 시
@@ -55,7 +55,11 @@ function copyClaudeToDist(srcDir, destDir) {
   }
 }
 
-/** 메인 실행 */
+/**
+ * prepack 메인 실행
+ * - 프로젝트 루트의 .claude 디렉토리 내용을 dist 폴더로 복사한다
+ * @throws {Error} .claude 디렉토리 복사 실패 시
+ */
 function main() {
   copyClaudeToDist(sourceDir, distDir);
   logger.info("prepack: .claude -> dist 복사 완료");
@@ -68,4 +72,4 @@ if (isDirectRun) {
 }
 
 // 테스트용 내보내기
-export { main, copyClaudeToDist };
+export { main, copyClaudeToDist, copyDir };

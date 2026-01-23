@@ -1,4 +1,4 @@
-import pino from "pino";
+import { createConsola } from "consola";
 import type { Type } from "@simplysm/core-common";
 import { SdEventEmitter } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
@@ -10,7 +10,7 @@ import { SocketProvider } from "./transport/socket-provider";
 import { EventClient } from "./features/event-client";
 import { FileClient } from "./features/file-client";
 
-const logger = pino({ name: "service-client:ServiceClient" });
+const logger = createConsola().withTag("service-client:ServiceClient");
 
 interface ServiceClientEvents {
   "request-progress": ServiceProgressState;
@@ -64,7 +64,7 @@ export class ServiceClient extends SdEventEmitter<ServiceClientEvents> {
           }
           await this._eventClient.reRegisterAllAsync();
         } catch (err) {
-          logger.error({ err }, "이벤트 리스너 복구 실패");
+          logger.error("이벤트 리스너 복구 실패", err);
         }
       }
     });

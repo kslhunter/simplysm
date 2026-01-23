@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import pino from "pino";
+import { createConsola } from "consola";
 import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
@@ -11,7 +11,7 @@ import {
 import type { Client } from "pg";
 import type { CopyStreamQuery } from "pg-copy-streams";
 
-const logger = pino({ name: "postgresql-db-conn" });
+const logger = createConsola().withTag("postgresql-db-conn");
 
 /**
  * PostgreSQL 데이터베이스 연결 클래스
@@ -56,7 +56,7 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
     });
 
     client.on("error", (error) => {
-      logger.error({ err: error.message }, "DB 연결 오류");
+      logger.error("DB 연결 오류", error.message);
     });
 
     await client.connect();
@@ -117,7 +117,7 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
   async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
     this._assertConnected();
 
-    logger.debug({ queryLength: query.length, params }, "쿼리 실행");
+    logger.debug("쿼리 실행", { queryLength: query.length, params });
 
     try {
       const result = await this._client!.query(query, params);
@@ -248,7 +248,7 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
     this._stopTimeout();
     this._connTimeout = setTimeout(() => {
       this.closeAsync().catch((err) => {
-        logger.error({ err: err instanceof Error ? err.message : String(err) }, "closeAsync error");
+        logger.error("closeAsync error", err instanceof Error ? err.message : String(err));
       });
     }, this._timeout * 2);
   }

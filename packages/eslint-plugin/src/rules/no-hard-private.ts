@@ -6,7 +6,7 @@ import { createRule } from "../utils/create-rule";
  * ECMAScript private 필드(`#field`) 사용을 제한하고 TypeScript `private` 키워드 사용을 강제하는 ESLint 규칙
  *
  * @remarks
- * 이 규칙은 다음을 검사합니다:
+ * 이 규칙은 다음을 검사한다:
  * - 클래스 필드 선언: `#field`
  * - 클래스 메서드 선언: `#method()`
  * - 클래스 접근자 선언: `accessor #field`
@@ -17,10 +17,10 @@ export default createRule({
   meta: {
     type: "problem",
     docs: {
-      description: 'Enforce TypeScript "private _" style over ECMAScript "#" private fields.',
+      description: '하드 프라이빗 필드(#) 대신 TypeScript "private _" 스타일을 강제한다.',
     },
     messages: {
-      preferSoftPrivate: 'Hard private fields (#) are not allowed. Use "private _" instead.',
+      preferSoftPrivate: '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
     },
     fixable: "code",
     schema: [],
@@ -47,7 +47,7 @@ export default createRule({
             fixes.push(fixer.replaceText(node, `_${identifierName}`));
 
             // 1-2. 'private' 접근 제어자 추가 위치 계산
-            if (!parent.accessibility) {
+            if (parent.accessibility == null) {
               // 기본 삽입 위치: 부모 노드의 시작 지점 (static, async 등 포함)
               let tokenToInsertBefore = sourceCode.getFirstToken(parent);
 
@@ -60,10 +60,12 @@ export default createRule({
 
               // tokenToInsertBefore는 이제 'static', 'async', 'readonly' 또는 변수명('_foo')입니다.
               // 이 앞에 'private '를 붙이면 자연스럽게 'private static ...' 순서가 됩니다.
-              // tokenToInsertBefore가 null인 경우는 AST 파싱 오류 등 예외 상황이므로 fix를 생략한다.
-              if (tokenToInsertBefore) {
-                fixes.push(fixer.insertTextBefore(tokenToInsertBefore, "private "));
+              // tokenToInsertBefore가 null인 경우는 AST 파싱 오류 등 예외 상황이므로,
+              // 이름만 변경되는 불완전한 fix를 방지하기 위해 전체 fix를 생략한다.
+              if (tokenToInsertBefore == null) {
+                return [];
               }
+              fixes.push(fixer.insertTextBefore(tokenToInsertBefore, "private "));
             }
 
             return fixes;

@@ -168,6 +168,27 @@ describe("LazyGcMap", () => {
       expect(map.has("key1")).toBe(true);
     });
 
+    it("has()는 접근 시간을 갱신하지 않는다", async () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 100,
+        expireTime: 200,
+      });
+
+      map.set("key1", 100);
+
+      // 150ms마다 has()만 호출 (get()이 아님)
+      await Wait.time(150);
+      map.has("key1"); // has()는 접근 시간을 갱신하지 않음
+
+      await Wait.time(150);
+      map.has("key1"); // has()는 접근 시간을 갱신하지 않음
+
+      await Wait.time(100);
+
+      // has()는 접근 시간을 갱신하지 않으므로 만료됨
+      expect(map.has("key1")).toBe(false);
+    });
+
     it("getOrCreate도 접근 시간을 갱신한다", async () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
@@ -252,7 +273,8 @@ describe("LazyGcMap", () => {
       });
 
       map.set("key1", 100);
-      await Wait.time(350);
+      // expireTime(200) + gcInterval(100) + callback(10) + 안전마진(240) = 550ms
+      await Wait.time(550);
 
       expect(expired).toEqual([["key1", 100]]);
     });

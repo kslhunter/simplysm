@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { consola, LogLevels } from "consola";
 
-// runLint와 runTypecheck를 모킹
+// runLint, runTypecheck, runWatch를 모킹
 vi.mock("../src/commands/lint", () => ({
   runLint: vi.fn(),
 }));
@@ -9,19 +10,29 @@ vi.mock("../src/commands/typecheck", () => ({
   runTypecheck: vi.fn(),
 }));
 
+vi.mock("../src/commands/watch", () => ({
+  runWatch: vi.fn(),
+}));
+
 import { createCliParser } from "../src/sd-cli";
 import { runLint } from "../src/commands/lint";
 import { runTypecheck } from "../src/commands/typecheck";
+import { runWatch } from "../src/commands/watch";
 
 describe("sd-cli", () => {
+  let originalConsolaLevel: number;
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(runLint).mockResolvedValue(undefined);
     vi.mocked(runTypecheck).mockResolvedValue(undefined);
+    vi.mocked(runWatch).mockResolvedValue(undefined);
+    originalConsolaLevel = consola.level;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    consola.level = originalConsolaLevel;
   });
 
   describe("lint 명령어", () => {
@@ -32,7 +43,6 @@ describe("sd-cli", () => {
         targets: ["packages/core-common"],
         fix: true,
         timing: false,
-        debug: false,
       });
     });
 
@@ -43,7 +53,6 @@ describe("sd-cli", () => {
         targets: [],
         fix: false,
         timing: true,
-        debug: false,
       });
     });
 
@@ -54,29 +63,17 @@ describe("sd-cli", () => {
         targets: [],
         fix: false,
         timing: false,
-        debug: false,
-      });
-    });
-
-    it("lint 명령어의 --debug 옵션이 올바르게 전달됨", async () => {
-      await createCliParser(["lint", "--debug"]).parse();
-
-      expect(runLint).toHaveBeenCalledWith({
-        targets: [],
-        fix: false,
-        timing: false,
-        debug: true,
       });
     });
   });
 
   describe("typecheck 명령어", () => {
     it("typecheck 명령어가 올바른 옵션으로 runTypecheck를 호출", async () => {
-      await createCliParser(["typecheck", "packages/cli", "--debug"]).parse();
+      await createCliParser(["typecheck", "packages/cli"]).parse();
 
       expect(runTypecheck).toHaveBeenCalledWith({
         targets: ["packages/cli"],
-        debug: true,
+        options: [],
       });
     });
 
@@ -85,8 +82,52 @@ describe("sd-cli", () => {
 
       expect(runTypecheck).toHaveBeenCalledWith({
         targets: ["packages/core-common", "packages/core-node"],
-        debug: false,
+        options: [],
       });
+    });
+  });
+
+  describe("watch 명령어", () => {
+    it("watch 명령어가 올바른 옵션으로 runWatch를 호출", async () => {
+      await createCliParser(["watch", "solid"]).parse();
+
+      expect(runWatch).toHaveBeenCalledWith({
+        targets: ["solid"],
+        options: [],
+      });
+    });
+
+    it("watch 명령어에 여러 targets 전달 가능", async () => {
+      await createCliParser(["watch", "solid", "solid-demo"]).parse();
+
+      expect(runWatch).toHaveBeenCalledWith({
+        targets: ["solid", "solid-demo"],
+        options: [],
+      });
+    });
+
+    it("watch 명령어에 targets 없이 실행 가능", async () => {
+      await createCliParser(["watch"]).parse();
+
+      expect(runWatch).toHaveBeenCalledWith({
+        targets: [],
+        options: [],
+      });
+    });
+  });
+
+  describe("글로벌 --debug 옵션", () => {
+    it("--debug 옵션이 consola.level을 debug로 설정", async () => {
+      await createCliParser(["--debug", "lint"]).parse();
+
+      expect(consola.level).toBe(LogLevels.debug);
+    });
+
+    it("--debug 없이 실행 시 consola.level 변경 안함", async () => {
+      const levelBefore = consola.level;
+      await createCliParser(["lint"]).parse();
+
+      expect(consola.level).toBe(levelBefore);
     });
   });
 

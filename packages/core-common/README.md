@@ -66,7 +66,7 @@ ZIP 파일 압축/해제 유틸리티입니다.
 | `XmlConvert` | XML 파싱/변환 |
 | `TransferableConvert` | Worker 데이터 변환 |
 | `StringUtils` | 한글 조사 처리, 케이스 변환 (camelCase, kebab-case 등) |
-| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C# 호환 커스텀 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
+| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C#과 동일한 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
 | `NumberUtils` | 숫자 파싱/포맷팅 |
 | `BytesUtils` | Uint8Array 연결, hex 변환 |
 | `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 최대 시도 횟수 제한) |
@@ -98,6 +98,12 @@ Array, Map, Set 프로토타입 확장입니다.
 
 ## 주의사항
 
+### 프로토타입 확장 충돌
+
+이 패키지는 Array, Map, Set 프로토타입을 확장한다.
+동일한 메서드명을 확장하는 다른 라이브러리와 함께 사용 시 충돌이 발생할 수 있다.
+충돌 시 로드 순서에 따라 마지막에 정의된 구현이 적용된다.
+
 ### 타임존 처리
 
 `DateOnly.parse()`, `DateTime.parse()` 사용 시:
@@ -108,7 +114,7 @@ Array, Map, Set 프로토타입 확장입니다.
 
 ### 메모리 관리 (LazyGcMap)
 
-`LazyGcMap`은 내부 GC 타이머가 있으므로 반드시 정리가 필요합니다.
+`LazyGcMap`은 내부 GC 타이머가 있으므로 반드시 정리해야 한다.
 
 ```typescript
 // using 문 사용 (권장)

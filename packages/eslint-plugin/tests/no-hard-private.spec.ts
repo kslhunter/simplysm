@@ -132,6 +132,32 @@ describe("no-hard-private 규칙", () => {
         ],
       });
     });
+
+    describe("화살표 함수 필드 내 # private 필드 사용", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+              class MyClass {
+                #value = 1;
+                getValue = () => this.#value;
+              }
+            `,
+            output: `
+              class MyClass {
+                private _value = 1;
+                getValue = () => this._value;
+              }
+            `,
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
   });
 
   describe("autofix 테스트", () => {
@@ -224,6 +250,31 @@ class MyClass {
             output: `
 class MyClass {
   private static _staticField = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("static # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  static #staticMethod() {
+    return 1;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private static _staticMethod() {
+    return 1;
+  }
 }
             `.trim(),
             errors: [{ messageId: "preferSoftPrivate" }],
@@ -758,6 +809,133 @@ class MyClass {
               { messageId: "preferSoftPrivate" },
               { messageId: "preferSoftPrivate" },
             ],
+          },
+        ],
+      });
+    });
+
+    describe("이미 accessibility가 있는 # private 필드 변환 (private 중복 추가 안 함)", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  private #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+          {
+            code: `
+class MyClass {
+  public #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  public _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+          {
+            code: `
+class MyClass {
+  protected #field = 1;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  protected _field = 1;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("이미 accessibility가 있는 # private 메서드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  private #method() {
+    return 1;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private _method() {
+    return 1;
+  }
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
+          },
+        ],
+      });
+    });
+
+    describe("상속 클래스에서 # private 필드 변환", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class Parent {
+  #parentField = 1;
+}
+class Child extends Parent {
+  #childField = 2;
+}
+            `.trim(),
+            output: `
+class Parent {
+  private _parentField = 1;
+}
+class Child extends Parent {
+  private _childField = 2;
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
+          },
+        ],
+      });
+    });
+
+    describe("제한사항: 기존 _field가 있을 때 이름 충돌 발생", () => {
+      // 주의: #field를 _field로 변환할 때 기존 _field가 있으면 충돌이 발생한다.
+      // 사용자가 수동으로 이름을 조정해야 한다.
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  _field = 1;
+  #field = 2;
+}
+            `.trim(),
+            output: `
+class MyClass {
+  _field = 1;
+  private _field = 2;
+}
+            `.trim(),
+            errors: [{ messageId: "preferSoftPrivate" }],
           },
         ],
       });

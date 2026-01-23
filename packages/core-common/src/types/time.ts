@@ -1,6 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
 import { DateTimeFormatUtils } from "../utils/date-format";
-import { DateTime } from "./date-time";
 
 /**
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)
@@ -36,12 +35,14 @@ export class Time {
           now.getHours() * 60 * 60 * 1000) %
         Time.MS_PER_DAY;
     } else if (arg2 !== undefined) {
-      this._tick =
+      let tick =
         ((arg4 ?? 0) +
           (arg3 ?? 0) * 1000 +
           arg2 * 60 * 1000 +
           (arg1 as number) * 60 * 60 * 1000) %
         Time.MS_PER_DAY;
+      if (tick < 0) tick += Time.MS_PER_DAY;
+      this._tick = tick;
     } else if (arg1 instanceof Date) {
       this._tick =
         (arg1.getMilliseconds() +
@@ -101,15 +102,20 @@ export class Time {
       );
     }
 
-    try {
-      const dt = DateTime.parse(str);
-      return new Time(dt.hour, dt.minute, dt.second, dt.millisecond);
-    } catch {
-      throw new ArgumentError(
-        `시간 형식을 파싱할 수 없습니다. 지원 형식: 'HH:mm:ss', 'HH:mm:ss.fff', '오전/오후 HH:mm:ss'`,
-        { input: str },
-      );
+    // ISO 8601 형식 (예: 2025-01-15T10:30:00.123Z, 2025-01-15T10:30:00+09:00)
+    // Date 객체를 사용하여 타임존 변환 처리
+    const isoMatch = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.exec(str);
+    if (isoMatch != null) {
+      const date = new Date(str);
+      if (!Number.isNaN(date.getTime())) {
+        return new Time(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+      }
     }
+
+    throw new ArgumentError(
+      `시간 형식을 파싱할 수 없습니다. 지원 형식: 'HH:mm:ss', 'HH:mm:ss.fff', '오전/오후 HH:mm:ss', ISO 8601`,
+      { input: str },
+    );
   }
 
   //#region Getters (읽기 전용)
@@ -143,18 +149,22 @@ export class Time {
 
   //#region 불변 변환 메서드 (새 인스턴스 반환)
 
+  /** 지정된 시로 새 인스턴스 반환 */
   setHour(hour: number): Time {
     return new Time(hour, this.minute, this.second, this.millisecond);
   }
 
+  /** 지정된 분으로 새 인스턴스 반환 */
   setMinute(minute: number): Time {
     return new Time(this.hour, minute, this.second, this.millisecond);
   }
 
+  /** 지정된 초로 새 인스턴스 반환 */
   setSecond(second: number): Time {
     return new Time(this.hour, this.minute, second, this.millisecond);
   }
 
+  /** 지정된 밀리초로 새 인스턴스 반환 */
   setMillisecond(millisecond: number): Time {
     return new Time(this.hour, this.minute, this.second, millisecond);
   }
@@ -163,24 +173,28 @@ export class Time {
 
   //#region 산술 메서드 (새 인스턴스 반환)
 
+  /** 지정된 시간을 더한 새 인스턴스 반환 (24시간 순환) */
   addHours(hours: number): Time {
     let newTick = (this._tick + hours * 60 * 60 * 1000) % Time.MS_PER_DAY;
     if (newTick < 0) newTick += Time.MS_PER_DAY;
     return new Time(newTick);
   }
 
+  /** 지정된 분을 더한 새 인스턴스 반환 (24시간 순환) */
   addMinutes(minutes: number): Time {
     let newTick = (this._tick + minutes * 60 * 1000) % Time.MS_PER_DAY;
     if (newTick < 0) newTick += Time.MS_PER_DAY;
     return new Time(newTick);
   }
 
+  /** 지정된 초를 더한 새 인스턴스 반환 (24시간 순환) */
   addSeconds(seconds: number): Time {
     let newTick = (this._tick + seconds * 1000) % Time.MS_PER_DAY;
     if (newTick < 0) newTick += Time.MS_PER_DAY;
     return new Time(newTick);
   }
 
+  /** 지정된 밀리초를 더한 새 인스턴스 반환 (24시간 순환) */
   addMilliseconds(milliseconds: number): Time {
     let newTick = (this._tick + milliseconds) % Time.MS_PER_DAY;
     if (newTick < 0) newTick += Time.MS_PER_DAY;

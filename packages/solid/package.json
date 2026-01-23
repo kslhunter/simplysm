@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/solid",
   "version": "13.0.0-beta.0",
-  "description": "SolidJS UI 컴포넌트",
+  "description": "심플리즘 패키지 - SolidJS",
   "author": "김석래",
   "repository": {
     "type": "git",
@@ -12,16 +12,14 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": false,
   "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "solid-js": "^1.9.10",
+    "tailwind-merge": "^3.4.0",
     "tailwind-variants": "^3.2.2"
-  },
-  "peerDependencies": {
-    "solid-js": "^1.9.0"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
-    "solid-js": "^1.9.10",
     "tailwindcss": "^4.1.18"
   }
 }

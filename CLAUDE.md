@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## 주요 명령어
 
 ```bash
@@ -29,9 +27,9 @@ yarn vitest run packages/core-common/tests/types/date-only.spec.ts
 
 | 순서 | 패키지 | 내부 의존 |
 |:---:|--------|----------|
-| 1 | core-common, eslint-plugin, cli, claude | 없음 |
-| 2 | core-browser, core-node, excel, orm-common, storage | core-common |
-| 3 | orm-node, service-common | orm-common |
+| 1 | core-common, eslint-plugin, claude, solid | 없음 |
+| 2 | core-browser, core-node, excel, orm-common, storage, solid-demo | core-common, solid |
+| 3 | cli, orm-node, service-common | core-node, orm-common |
 | 4 | service-client | service-common |
 | 5 | service-server | core-node, orm-node, service-common |
 
@@ -39,9 +37,11 @@ yarn vitest run packages/core-common/tests/types/date-only.spec.ts
 
 | 타겟 | 패키지 | 설명 |
 |------|--------|------|
-| node | cli, claude, core-node, eslint-plugin, orm-node, service-server, storage | Node.js 전용 |
-| browser | core-browser | 브라우저 전용 |
+| scripts | claude | 스크립트 전용 |
+| node | cli, core-node, eslint-plugin, orm-node, service-server, storage | Node.js 전용 |
+| browser | core-browser, solid | 브라우저 전용 |
 | neutral | core-common, excel, orm-common, service-client, service-common | Node/브라우저 공용 |
+| client | solid-demo | 클라이언트 앱 |
 
 **주의**: `neutral`/`browser` 패키지는 Node.js 내장 모듈 사용 불가
 

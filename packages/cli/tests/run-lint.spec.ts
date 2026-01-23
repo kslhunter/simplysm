@@ -66,18 +66,24 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-vi.mock("pino", () => ({
-  default: vi.fn(() => ({
+vi.mock("consola", () => {
+  const mockLogger = {
     debug: vi.fn(),
     info: vi.fn(),
     error: vi.fn(),
-  })),
-}));
+    warn: vi.fn(),
+    withTag: vi.fn(() => mockLogger),
+  };
+  return {
+    consola: mockLogger,
+    createConsola: vi.fn(() => mockLogger),
+  };
+});
 
 // listr2 모킹 - 순차적으로 모든 task를 실행하고 context 반환
 vi.mock("listr2", () => ({
   Listr: class MockListr {
-    private tasks: Array<{
+    private readonly tasks: Array<{
       title: string;
       task: (ctx: Record<string, unknown>, task: { title: string; skip: (msg: string) => void }) => Promise<void>;
       enabled?: (ctx: Record<string, unknown>) => boolean;
@@ -145,7 +151,7 @@ describe("runLint", () => {
 
     mockState.lintResults = [{ errorCount: 2, warningCount: 0 }];
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await runLint({ targets: [], fix: false, timing: false });
 
     expect(process.exitCode).toBe(1);
   });
@@ -164,7 +170,7 @@ describe("runLint", () => {
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await runLint({ targets: [], fix: false, timing: false });
 
     expect(process.exitCode).toBeUndefined();
   });
@@ -191,7 +197,6 @@ describe("runLint", () => {
       targets: ["packages/core-common"],
       fix: false,
       timing: false,
-      debug: false,
     });
 
     expect(mockState.lintedFiles).toHaveLength(1);
@@ -221,7 +226,6 @@ describe("runLint", () => {
       targets: ["packages/core-common", "packages/cli"],
       fix: false,
       timing: false,
-      debug: false,
     });
 
     expect(mockState.lintedFiles).toHaveLength(2);
@@ -245,7 +249,7 @@ describe("runLint", () => {
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
-    await runLint({ targets: [], fix: true, timing: false, debug: false });
+    await runLint({ targets: [], fix: true, timing: false });
 
     expect(mockState.outputFixesCalled).toBe(true);
   });
@@ -262,22 +266,22 @@ describe("runLint", () => {
 
     vi.mocked(FsUtils.globAsync).mockResolvedValue([]);
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await runLint({ targets: [], fix: false, timing: false });
 
     // ESLint가 호출되지 않으므로 lintedFiles는 빈 배열 유지
     expect(mockState.lintedFiles).toHaveLength(0);
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("ESLint 설정 파일이 없으면 exitCode 1 설정", async () => {
+  it("ESLint 설정 파일이 없으면 에러를 throw한다", async () => {
     // 모든 설정 파일이 없는 경우
     vi.mocked(FsUtils.exists).mockReturnValue(false);
 
     await expect(
-      runLint({ targets: [], fix: false, timing: false, debug: false }),
+      runLint({ targets: [], fix: false, timing: false }),
     ).rejects.toThrow("ESLint 설정 파일을 찾을 수 없습니다");
 
-    expect(process.exitCode).toBe(1);
+    // 에러가 throw되므로 exitCode는 호출자가 설정해야 함 (runLint 내부에서 설정하지 않음)
     // ESLint가 호출되지 않음
     expect(mockState.lintedFiles).toHaveLength(0);
   });
@@ -296,7 +300,7 @@ describe("runLint", () => {
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 3 }];
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await runLint({ targets: [], fix: false, timing: false });
 
     expect(process.exitCode).toBeUndefined();
   });
@@ -318,7 +322,7 @@ describe("runLint", () => {
     const originalTiming = process.env["TIMING"];
     delete process.env["TIMING"];
 
-    await runLint({ targets: [], fix: false, timing: true, debug: false });
+    await runLint({ targets: [], fix: false, timing: true,  });
 
     // TIMING이 설정되었는지 확인 (함수 내에서 설정됨)
     expect(process.env["TIMING"]).toBe("1");
@@ -346,7 +350,7 @@ describe("runLint", () => {
 
     mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
 
-    await runLint({ targets: [], fix: false, timing: false, debug: false });
+    await runLint({ targets: [], fix: false, timing: false });
 
     // mts 파일이 로드되었는지 확인
     expect(mockJitiImportFn).toHaveBeenCalledWith(
@@ -368,7 +372,7 @@ describe("runLint", () => {
     vi.mocked(FsUtils.globAsync).mockRejectedValue(new Error("Glob error"));
 
     await expect(
-      runLint({ targets: [], fix: false, timing: false, debug: false }),
+      runLint({ targets: [], fix: false, timing: false }),
     ).rejects.toThrow("Glob error");
   });
 });

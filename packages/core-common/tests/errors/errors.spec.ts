@@ -46,6 +46,20 @@ describe("Errors", () => {
       expect(error.stack).toContain(cause.stack);
     });
 
+    it("non-Error 객체를 cause로 전달하면 String()으로 변환한다", () => {
+      // 숫자
+      const errorFromNumber = new SdError(42, "number cause");
+      expect(errorFromNumber.message).toContain("42");
+
+      // 객체
+      const errorFromObject = new SdError({ code: 500, reason: "server error" }, "object cause");
+      expect(errorFromObject.message).toContain("object cause");
+
+      // null/undefined
+      const errorFromNull = new SdError(null, "null cause");
+      expect(errorFromNull.message).toContain("null cause");
+    });
+
   });
 
   //#endregion

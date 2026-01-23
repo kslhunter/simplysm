@@ -22,6 +22,7 @@
     "---": "",
     "typecheck": "yarn run _sd-cli_ typecheck",
     "lint": "yarn run _sd-cli_ lint",
+    "watch": "yarn run _sd-cli_ watch",
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/cli/src/sd-cli.ts",
     "reinstall": "yarn install --refresh-lockfile",
@@ -38,8 +39,10 @@
     "jiti": "^2.6.1",
     "playwright": "^1.57.0",
     "prettier": "^3.8.1",
+    "solid-js": "^1.9.10",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
+    "vite": "^7.3.1",
     "vite-plugin-solid": "^2.11.10",
     "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^4.0.17"

@@ -3,15 +3,18 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-// pino 로거 mocking
+// consola 로거 mocking
 const { mockError } = vi.hoisted(() => ({
   mockError: vi.fn(),
 }));
 
-vi.mock("pino", () => ({
-  default: () => ({
-    error: mockError,
-    info: vi.fn(),
+vi.mock("consola", () => ({
+  createConsola: () => ({
+    withTag: () => ({
+      error: mockError,
+      info: vi.fn(),
+      debug: vi.fn(),
+    }),
   }),
 }));
 
@@ -169,6 +172,30 @@ describe("postinstall 스크립트", () => {
         process.chdir(originalCwd);
       }
     });
+
+    it("하위 디렉토리에서 시작하여 상위의 프로젝트 루트를 찾는다", () => {
+      // 프로젝트 루트 생성
+      const projectRoot = path.join(tempDir, "project");
+      fs.mkdirSync(projectRoot);
+      fs.writeFileSync(
+        path.join(projectRoot, "package.json"),
+        JSON.stringify({ devDependencies: { "@simplysm/claude": "workspace:*" } }),
+      );
+
+      // 하위 디렉토리 생성
+      const subDir = path.join(projectRoot, "packages", "sub", "deep");
+      fs.mkdirSync(subDir, { recursive: true });
+
+      const originalCwd = process.cwd();
+      process.chdir(subDir);
+
+      try {
+        const result = findProjectRoot();
+        expect(result).toBe(projectRoot);
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
   });
 
   //#endregion
@@ -260,6 +287,33 @@ describe("postinstall 스크립트", () => {
       expect(fs.readFileSync(path.join(destDir, "settings.json"), "utf-8")).toBe('{"new": true}');
     });
 
+    it("dist에 없는 기존 커스텀 파일은 유지된다", () => {
+      const srcDir = path.join(tempDir, "dist");
+      const destDir = path.join(tempDir, ".claude");
+
+      // 기존 대상 디렉토리에 커스텀 파일 생성
+      fs.mkdirSync(path.join(destDir, "rules"), { recursive: true });
+      fs.writeFileSync(path.join(destDir, "rules", "custom-rule.md"), "custom rule content");
+      fs.writeFileSync(path.join(destDir, "settings.local.json"), '{"local": true}');
+
+      // 소스 디렉토리 구조 생성 (커스텀 파일 없음)
+      fs.mkdirSync(path.join(srcDir, "rules"), { recursive: true });
+      fs.writeFileSync(path.join(srcDir, "rules", "rule1.md"), "rule content");
+      fs.writeFileSync(path.join(srcDir, "settings.json"), '{"setting": true}');
+
+      copyDistToTarget(srcDir, destDir);
+
+      // dist에서 복사된 파일 확인
+      expect(fs.existsSync(path.join(destDir, "rules", "rule1.md"))).toBe(true);
+      expect(fs.existsSync(path.join(destDir, "settings.json"))).toBe(true);
+
+      // 기존 커스텀 파일이 유지되는지 확인
+      expect(fs.existsSync(path.join(destDir, "rules", "custom-rule.md"))).toBe(true);
+      expect(fs.readFileSync(path.join(destDir, "rules", "custom-rule.md"), "utf-8")).toBe("custom rule content");
+      expect(fs.existsSync(path.join(destDir, "settings.local.json"))).toBe(true);
+      expect(fs.readFileSync(path.join(destDir, "settings.local.json"), "utf-8")).toBe('{"local": true}');
+    });
+
     it("디렉토리 복사 실패 시 logger.error()에 err 필드가 포함된다", () => {
       const srcDir = path.join(tempDir, "non-existent");
       const destDir = path.join(tempDir, "dest");
@@ -271,13 +325,23 @@ describe("postinstall 스크립트", () => {
       }
 
       expect(mockError).toHaveBeenCalledWith(
+        "copyDir 실패",
         expect.objectContaining({
           err: expect.any(Error),
           src: srcDir,
           dest: destDir,
         }),
-        "copyDir 실패",
       );
+    });
+
+    it("빈 소스 디렉토리에서도 정상 동작한다", () => {
+      const srcDir = path.join(tempDir, "dist");
+      const destDir = path.join(tempDir, ".claude");
+
+      fs.mkdirSync(srcDir);
+
+      expect(() => copyDistToTarget(srcDir, destDir)).not.toThrow();
+      expect(fs.existsSync(destDir)).toBe(true);
     });
 
     it("존재하지 않는 소스 디렉토리에서 에러를 throw한다", () => {

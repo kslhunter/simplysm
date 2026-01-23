@@ -161,7 +161,7 @@ export class ZipArchive {
    */
   async existsAsync(fileName: string): Promise<boolean> {
     if (this._cache.has(fileName)) {
-      return true;
+      return this._cache.get(fileName) != null;
     }
 
     const entries = await this._getEntries();

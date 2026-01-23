@@ -1,14 +1,31 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { main, copyClaudeToDist } from "../../scripts/prepack.js";
+
+// consola 로거 mocking
+const { mockError } = vi.hoisted(() => ({
+  mockError: vi.fn(),
+}));
+
+vi.mock("consola", () => ({
+  createConsola: () => ({
+    withTag: () => ({
+      error: mockError,
+      info: vi.fn(),
+      debug: vi.fn(),
+    }),
+  }),
+}));
+
+const { main, copyClaudeToDist, copyDir } = await import("../../scripts/prepack.js");
 
 describe("prepack 스크립트", () => {
   let tempDir;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "claude-prepack-test-"));
+    mockError.mockClear();
   });
 
   afterEach(() => {
@@ -152,6 +169,56 @@ describe("prepack 스크립트", () => {
       expect(fs.existsSync(path.join(destDir, "rules", "rule1.md"))).toBe(true);
       // settings.json은 복사되지 않음 (존재하지 않았으므로)
       expect(fs.existsSync(path.join(destDir, "settings.json"))).toBe(false);
+    });
+  });
+
+  //#endregion
+
+  //#region copyDir
+
+  describe("copyDir()", () => {
+    it("디렉토리를 재귀적으로 복사한다", () => {
+      const srcDir = path.join(tempDir, "src");
+      const destDir = path.join(tempDir, "dest");
+
+      // 소스 디렉토리 구조 생성
+      fs.mkdirSync(path.join(srcDir, "subdir"), { recursive: true });
+      fs.writeFileSync(path.join(srcDir, "file1.txt"), "content1");
+      fs.writeFileSync(path.join(srcDir, "subdir", "file2.txt"), "content2");
+
+      copyDir(srcDir, destDir);
+
+      expect(fs.existsSync(path.join(destDir, "file1.txt"))).toBe(true);
+      expect(fs.existsSync(path.join(destDir, "subdir", "file2.txt"))).toBe(true);
+      expect(fs.readFileSync(path.join(destDir, "file1.txt"), "utf-8")).toBe("content1");
+      expect(fs.readFileSync(path.join(destDir, "subdir", "file2.txt"), "utf-8")).toBe("content2");
+    });
+
+    it("디렉토리 복사 실패 시 logger.error()에 err 필드가 포함된다", () => {
+      const srcDir = path.join(tempDir, "non-existent");
+      const destDir = path.join(tempDir, "dest");
+
+      try {
+        copyDir(srcDir, destDir);
+      } catch {
+        // 에러 무시
+      }
+
+      expect(mockError).toHaveBeenCalledWith(
+        "copyDir 실패",
+        expect.objectContaining({
+          err: expect.any(Error),
+          src: srcDir,
+          dest: destDir,
+        }),
+      );
+    });
+
+    it("디렉토리 복사 실패 시 에러를 throw한다", () => {
+      const srcDir = path.join(tempDir, "non-existent");
+      const destDir = path.join(tempDir, "dest");
+
+      expect(() => copyDir(srcDir, destDir)).toThrow();
     });
   });
 

@@ -22,9 +22,9 @@ import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection } from "./legacy/v1-auto-update-handler";
 import { AutoUpdateService } from "./services/auto-update-service";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:ServiceServer" });
+const logger = createConsola().withTag("service-server:ServiceServer");
 
 export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
   ready: void;
@@ -197,7 +197,7 @@ export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
 
     // HTTP 서버 수준의 에러 핸들링
     this._fastify.server.on("error", (err) => {
-      logger.error({ err }, "HTTP 서버 오류 발생");
+      logger.error("HTTP 서버 오류 발생", err);
     });
 
     // 리슨
@@ -258,7 +258,7 @@ export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
         clearTimeout(forceExitTimer);
         process.exit(0);
       } catch (err) {
-        logger.error({ err }, "서버 종료 중 오류 발생");
+        logger.error("서버 종료 중 오류 발생", err);
         process.exit(1);
       }
     };

@@ -35,6 +35,14 @@ export type SdWorkerProxy<TModule extends SdWorkerModule> = PromisifyMethods<
   ): void;
 
   /**
+   * 워커 이벤트 리스너 제거.
+   */
+  off<K extends keyof TModule["default"]["__events"] & string>(
+    event: K,
+    listener: (data: TModule["default"]["__events"][K]) => void,
+  ): void;
+
+  /**
    * 워커 종료.
    */
   terminate(): Promise<void>;

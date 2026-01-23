@@ -1,4 +1,41 @@
 /**
+ * 월 설정 시 연도/월/일 정규화 결과
+ */
+export interface NormalizedMonth {
+  year: number;
+  month: number;
+  day: number;
+}
+
+/**
+ * 월 설정 시 연도/월/일을 정규화
+ * - 월이 1-12 범위를 벗어나면 연도를 조정
+ * - 대상 월의 일수보다 현재 일자가 크면 해당 월의 마지막 날로 조정
+ *
+ * @param year 기준 연도
+ * @param month 설정할 월 (1-12 범위 외의 값도 허용)
+ * @param day 기준 일자
+ * @returns 정규화된 연도, 월, 일
+ *
+ * @example
+ * normalizeMonth(2025, 13, 15) // { year: 2026, month: 1, day: 15 }
+ * normalizeMonth(2025, 2, 31)  // { year: 2025, month: 2, day: 28 }
+ */
+export function normalizeMonth(year: number, month: number, day: number): NormalizedMonth {
+  // 월 오버플로우/언더플로우 정규화
+  // month가 1-12 범위를 벗어나면 연도를 조정
+  const normalizedYear = year + Math.floor((month - 1) / 12);
+  // JavaScript % 연산자는 음수에서 음수를 반환하므로 (% 12 + 12) % 12 패턴으로 0-11 범위를 보장 후 1-12로 변환
+  const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
+
+  // 대상 월의 마지막 날 구하기
+  const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
+  const normalizedDay = Math.min(day, lastDay);
+
+  return { year: normalizedYear, month: normalizedMonth, day: normalizedDay };
+}
+
+/**
  * DateTime/DateOnly/Time 포맷 유틸리티
  *
  * C#과 동일한 포맷 문자열 지원:

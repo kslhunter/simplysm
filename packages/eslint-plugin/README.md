@@ -21,7 +21,7 @@ export default [
   // recommended 설정 사용
   simplysm.configs.recommended,
 
-  // 또는 개별 규칙 설정
+  // 개별 규칙만 사용하려면
   {
     plugins: {
       "@simplysm": simplysm,
@@ -55,6 +55,8 @@ class Foo {
 }
 ```
 
+**제한 사항**: 기존에 `_` 접두사가 붙은 동일 이름의 멤버가 있으면 이름 충돌이 발생할 수 있다. 이 경우 수동으로 이름을 조정해야 한다.
+
 ### no-subpath-imports-from-simplysm
 
 `@simplysm/*` 패키지의 `/src/` 경로 import를 금지한다.
@@ -73,7 +75,7 @@ import { Foo } from "@simplysm/core-common";
 
 `@simplysm/core-common`의 `NotImplementedError`를 사용하는 코드에 대해 경고한다. 미구현 코드가 프로덕션에 포함되는 것을 방지한다.
 
-`new` 키워드로 생성하는 모든 경우에 경고가 발생한다. (`throw` 여부와 관계없음)
+`new` 키워드로 생성하는 모든 경우에 경고가 발생한다. `throw` 없이 생성만 해도 경고 대상이다.
 
 ```typescript
 import { NotImplementedError } from "@simplysm/core-common";
@@ -82,6 +84,8 @@ new NotImplementedError();           // 경고
 throw new NotImplementedError();     // 경고
 const err = new NotImplementedError(); // 경고
 ```
+
+**제한 사항**: 동적 import(`await import(...)`)로 가져온 `NotImplementedError`는 감지하지 않는다.
 
 ## recommended 설정
 
@@ -98,13 +102,15 @@ recommended 설정에는 다음이 포함된다:
 ### 공통 규칙
 
 - `no-console`: 콘솔 사용 금지 (error)
-- `eqeqeq`: `===` 사용 강제 (null 체크 제외)
-- `no-warning-comments`: TODO/FIXME 주석 경고
+- `eqeqeq`: `===` 사용 강제, null 체크 제외 (error)
+- `no-warning-comments`: TODO/FIXME 주석 경고 (warn)
 
-### Node.js 내장 모듈 사용 금지 (neutral/browser 타겟)
+### Node.js 내장 모듈 사용 금지
 
-- `Buffer`, `EventEmitter` 등 Node.js 내장 모듈 사용 금지
-- `.ts`, `.tsx` 파일에 적용
+모든 패키지에서 코드 통일을 위해 Node.js 전용 API 사용을 금지한다.
+
+- `Buffer` → `Uint8Array`, `@simplysm/core-common`의 `BytesUtils` 사용
+- `EventEmitter` → `@simplysm/core-common`의 `SdEventEmitter` 사용
 
 ### TypeScript 규칙
 
@@ -122,7 +128,6 @@ recommended 설정에는 다음이 포함된다:
 | `non-nullable-type-assertion-style` | non-null 단언 스타일 강제 |
 | `prefer-reduce-type-parameter` | reduce 타입 파라미터 사용 권장 |
 | `prefer-return-this-type` | this 반환 타입 사용 권장 |
-| `typedef` | 타입 정의 필수 |
 | `no-unused-expressions` | 미사용 표현식 금지 |
 | `strict-boolean-expressions` | 엄격한 boolean 표현식 강제 |
 | `ban-ts-comment` | @ts-expect-error는 설명 필수 |
@@ -139,7 +144,7 @@ recommended 설정에는 다음이 포함된다:
 
 ### JS 파일 전용 규칙
 
-JS 파일에만 적용되는 규칙이다. TS 파일에서는 TypeScript 컴파일러 또는 `@typescript-eslint` 규칙이 대체한다.
+JS 파일에만 적용되는 규칙이다. TS 파일에서는 TypeScript 컴파일러가 동일한 검사를 수행한다.
 
 | 규칙 | 설명 |
 |------|------|

@@ -17,8 +17,8 @@ describe("NumberUtils", () => {
       expect(NumberUtils.parseInt("123.45")).toBe(123);
     });
 
-    it("숫자 타입이면 반올림하여 반환한다", () => {
-      expect(NumberUtils.parseInt(123.7)).toBe(124);
+    it("숫자 타입이면 소수점 이하를 버린다", () => {
+      expect(NumberUtils.parseInt(123.7)).toBe(123);
       expect(NumberUtils.parseInt(123.3)).toBe(123);
     });
 

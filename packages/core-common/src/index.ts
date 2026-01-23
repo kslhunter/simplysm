@@ -1,6 +1,8 @@
 // @simplysm/core-common
 // 공통 유틸리티 패키지
 
+import "./globals.d.ts";
+
 //#region errors
 export * from "./errors/sd-error";
 export * from "./errors/argument-error";

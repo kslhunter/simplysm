@@ -15,6 +15,7 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 존재 확인 (동기).
+   * @param targetPath - 확인할 경로
    */
   static exists(targetPath: string): boolean {
     return fs.existsSync(targetPath);
@@ -22,6 +23,7 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 존재 확인 (비동기).
+   * @param targetPath - 확인할 경로
    */
   static async existsAsync(targetPath: string): Promise<boolean> {
     try {
@@ -38,6 +40,7 @@ export class FsUtils {
 
   /**
    * 디렉토리 생성 (recursive).
+   * @param targetPath - 생성할 디렉토리 경로
    */
   static mkdir(targetPath: string): void {
     try {
@@ -49,6 +52,7 @@ export class FsUtils {
 
   /**
    * 디렉토리 생성 (recursive, 비동기).
+   * @param targetPath - 생성할 디렉토리 경로
    */
   static async mkdirAsync(targetPath: string): Promise<void> {
     try {
@@ -64,6 +68,7 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 삭제.
+   * @param targetPath - 삭제할 경로
    */
   static rm(targetPath: string): void {
     try {
@@ -75,6 +80,7 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 삭제 (비동기).
+   * @param targetPath - 삭제할 경로
    */
   static async rmAsync(targetPath: string): Promise<void> {
     try {
@@ -95,13 +101,17 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 복사.
+   *
+   * sourcePath가 존재하지 않으면 아무 작업도 수행하지 않고 반환한다.
+   *
    * @param sourcePath 복사할 원본 경로
    * @param targetPath 복사 대상 경로
    * @param filter 복사 여부를 결정하는 필터 함수.
    *               각 파일/디렉토리의 **절대 경로**가 전달되며,
    *               true를 반환하면 복사, false면 제외.
    *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
-   *               자식 항목들에만 filter 함수가 적용된다.
+   *               모든 하위 항목(자식, 손자 등)에 재귀적으로 filter 함수가 적용된다.
+   *               디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 항목이 건너뛰어짐.
    */
   static copy(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): void {
     if (!FsUtils.exists(sourcePath)) {
@@ -142,13 +152,17 @@ export class FsUtils {
 
   /**
    * 파일 또는 디렉토리 복사 (비동기).
+   *
+   * sourcePath가 존재하지 않으면 아무 작업도 수행하지 않고 반환한다.
+   *
    * @param sourcePath 복사할 원본 경로
    * @param targetPath 복사 대상 경로
    * @param filter 복사 여부를 결정하는 필터 함수.
    *               각 파일/디렉토리의 **절대 경로**가 전달되며,
    *               true를 반환하면 복사, false면 제외.
    *               **주의**: 최상위 sourcePath는 필터 대상이 아니며,
-   *               자식 항목들에만 filter 함수가 적용된다.
+   *               모든 하위 항목(자식, 손자 등)에 재귀적으로 filter 함수가 적용된다.
+   *               디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 항목이 건너뛰어짐.
    */
   static async copyAsync(
     sourcePath: string,
@@ -197,6 +211,7 @@ export class FsUtils {
 
   /**
    * 파일 읽기 (UTF-8 문자열).
+   * @param targetPath - 읽을 파일 경로
    */
   static read(targetPath: string): string {
     try {
@@ -208,6 +223,7 @@ export class FsUtils {
 
   /**
    * 파일 읽기 (UTF-8 문자열, 비동기).
+   * @param targetPath - 읽을 파일 경로
    */
   static async readAsync(targetPath: string): Promise<string> {
     try {
@@ -219,6 +235,7 @@ export class FsUtils {
 
   /**
    * 파일 읽기 (Buffer).
+   * @param targetPath - 읽을 파일 경로
    */
   static readBuffer(targetPath: string): Buffer {
     try {
@@ -230,6 +247,7 @@ export class FsUtils {
 
   /**
    * 파일 읽기 (Buffer, 비동기).
+   * @param targetPath - 읽을 파일 경로
    */
   static async readBufferAsync(targetPath: string): Promise<Buffer> {
     try {
@@ -247,7 +265,8 @@ export class FsUtils {
     try {
       return JsonConvert.parse(contents);
     } catch (err) {
-      throw new SdError(err, targetPath + os.EOL + contents);
+      const preview = contents.length > 500 ? contents.slice(0, 500) + "...(truncated)" : contents;
+      throw new SdError(err, targetPath + os.EOL + preview);
     }
   }
 
@@ -256,7 +275,13 @@ export class FsUtils {
    */
   static async readJsonAsync<T = unknown>(targetPath: string): Promise<T> {
     const contents = await FsUtils.readAsync(targetPath);
-    return JsonConvert.parse(contents);
+    try {
+      const result = JsonConvert.parse<T>(contents);
+      return result;
+    } catch (err) {
+      const preview = contents.length > 500 ? contents.slice(0, 500) + "...(truncated)" : contents;
+      throw new SdError(err, targetPath + os.EOL + preview);
+    }
   }
 
   //#endregion
@@ -265,6 +290,8 @@ export class FsUtils {
 
   /**
    * 파일 쓰기 (부모 디렉토리 자동 생성).
+   * @param targetPath - 쓸 파일 경로
+   * @param data - 쓸 데이터 (문자열 또는 바이너리)
    */
   static write(targetPath: string, data: string | Uint8Array): void {
     FsUtils.mkdir(path.dirname(targetPath));
@@ -278,6 +305,8 @@ export class FsUtils {
 
   /**
    * 파일 쓰기 (부모 디렉토리 자동 생성, 비동기).
+   * @param targetPath - 쓸 파일 경로
+   * @param data - 쓸 데이터 (문자열 또는 바이너리)
    */
   static async writeAsync(targetPath: string, data: string | Uint8Array): Promise<void> {
     await FsUtils.mkdirAsync(path.dirname(targetPath));
@@ -399,6 +428,9 @@ export class FsUtils {
 
   /**
    * 글로브 패턴으로 파일 검색.
+   * @param pattern - 글로브 패턴 (예: `**\/*.ts`)
+   * @param options - glob 옵션
+   * @returns 매칭된 파일들의 절대 경로 배열
    */
   static glob(pattern: string, options?: glob.GlobOptions): string[] {
     return glob
@@ -408,6 +440,9 @@ export class FsUtils {
 
   /**
    * 글로브 패턴으로 파일 검색 (비동기).
+   * @param pattern - 글로브 패턴 (예: `**\/*.ts`)
+   * @param options - glob 옵션
+   * @returns 매칭된 파일들의 절대 경로 배열
    */
   static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
     return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
@@ -444,7 +479,9 @@ export class FsUtils {
    * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집.
    * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
    * @param fromPath - 검색 시작 경로
-   * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지)
+   * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지).
+   *                   **주의**: fromPath가 rootPath의 자식 경로여야 함.
+   *                   그렇지 않으면 파일시스템 루트까지 검색함.
    */
   static findAllParentChildPaths(childGlob: string, fromPath: string, rootPath?: string): string[] {
     const resultPaths: string[] = [];
@@ -466,7 +503,13 @@ export class FsUtils {
   }
 
   /**
-   * 부모 디렉토리들에서 특정 패턴의 파일 찾기 (비동기).
+   * 시작 경로부터 루트 방향으로 상위 디렉토리를 순회하며 glob 패턴 검색 (비동기).
+   * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집.
+   * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
+   * @param fromPath - 검색 시작 경로
+   * @param rootPath - 검색 종료 경로 (미지정 시 파일시스템 루트까지).
+   *                   **주의**: fromPath가 rootPath의 자식 경로여야 함.
+   *                   그렇지 않으면 파일시스템 루트까지 검색함.
    */
   static async findAllParentChildPathsAsync(
     childGlob: string,

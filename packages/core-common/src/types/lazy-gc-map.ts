@@ -1,4 +1,4 @@
-import pino from "pino";
+import { createConsola } from "consola";
 
 /**
  * 자동 만료 기능이 있는 Map
@@ -20,12 +20,33 @@ import pino from "pino";
  * }
  */
 export class LazyGcMap<K, V> {
-  private static readonly _logger = pino({ name: "LazyGcMap" });
+  private static readonly _logger = createConsola().withTag("LazyGcMap");
+
+  /**
+   * destroy() 미호출 감지용 registry
+   * @note FinalizationRegistry는 Chrome 84+, Node 14.6+ 지원
+   *       미지원 환경에서는 경고 없이 동작하지만, destroy() 미호출 시 메모리 누수 가능
+   */
+  private static readonly _registry =
+    typeof FinalizationRegistry !== "undefined"
+      ? new FinalizationRegistry<string>((id) => {
+          LazyGcMap._logger.warn(
+            `LazyGcMap(${id})이 destroy() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`,
+          );
+        })
+      : undefined;
+
   // 실제 데이터와 마지막 접근 시간을 함께 저장
   private readonly _map = new Map<K, { value: V; lastAccess: number }>();
 
   // GC 타이머
   private _gcTimer?: ReturnType<typeof setInterval>;
+  // GC 실행 중 플래그 (중복 실행 방지)
+  private _isGcRunning = false;
+  // destroy 호출 여부
+  private _isDestroyed = false;
+  // 인스턴스 식별자 (경고 메시지용)
+  private readonly _instanceId = Math.random().toString(36).slice(2);
 
   /**
    * @param _options 설정 옵션
@@ -39,16 +60,21 @@ export class LazyGcMap<K, V> {
       expireTime: number;
       onExpire?: (key: K, value: V) => void | Promise<void>;
     },
-  ) {}
+  ) {
+    LazyGcMap._registry?.register(this, this._instanceId);
+  }
 
+  /** 저장된 항목 수 */
   get size(): number {
     return this._map.size;
   }
 
+  /** 키 존재 여부 확인 (접근 시간 갱신 안함) */
   has(key: K): boolean {
     return this._map.has(key);
   }
 
+  /** 값 조회 (접근 시간 갱신됨) */
   get(key: K): V | undefined {
     const item = this._map.get(key);
     if (item == null) return undefined;
@@ -58,12 +84,14 @@ export class LazyGcMap<K, V> {
     return item.value;
   }
 
+  /** 값 저장 (접근 시간 설정 및 GC 타이머 시작) */
   set(key: K, value: V): void {
     this._map.set(key, { value, lastAccess: Date.now() });
     // 데이터가 들어왔으므로 GC 타이머 가동
     this._startGc();
   }
 
+  /** 항목 삭제 (비었으면 GC 타이머 중지) */
   delete(key: K): boolean {
     const result = this._map.delete(key);
     // 비었으면 타이머 중지
@@ -73,14 +101,17 @@ export class LazyGcMap<K, V> {
     return result;
   }
 
+  /** 인스턴스 정리 (GC 타이머 중지 및 데이터 삭제) */
   destroy(): void {
+    if (this._isDestroyed) return;
+    this._isDestroyed = true;
+    LazyGcMap._registry?.unregister(this);
+
     this._map.clear();
     this._stopGc();
   }
 
-  /**
-   * using 문 지원
-   */
+  /** using 문 지원 */
   [Symbol.dispose](): void {
     this.destroy();
   }
@@ -141,43 +172,53 @@ export class LazyGcMap<K, V> {
   }
 
   private async _runGc(): Promise<void> {
-    const now = Date.now();
+    // 이미 실행 중이면 스킵 (onExpire 콜백이 오래 걸리는 경우 중복 실행 방지)
+    if (this._isGcRunning) return;
+    this._isGcRunning = true;
 
-    // 1. 만료된 항목 수집 (삭제 전)
-    const expiredEntries: { key: K; item: { value: V; lastAccess: number } }[] = [];
-    for (const [key, item] of this._map) {
-      if (now - item.lastAccess > this._options.expireTime) {
-        expiredEntries.push({ key, item });
-      }
-    }
+    try {
+      const now = Date.now();
 
-    // 2. 각 항목에 대해 콜백 실행 후 삭제
-    for (const { key, item } of expiredEntries) {
-      // 콜백 실행 전 현재 상태 확인 (이미 다른 값으로 교체되었거나 삭제되었으면 스킵)
-      const currentItem = this._map.get(key);
-      if (currentItem !== item) {
-        continue;
-      }
-
-      // 만료 콜백 실행
-      if (this._options.onExpire != null) {
-        try {
-          await this._options.onExpire(key, item.value);
-        } catch (err) {
-          LazyGcMap._logger.error(err, "onExpire 콜백 에러");
+      // 1. 만료된 항목 수집 (삭제 전)
+      const expiredEntries: { key: K; item: { value: V; lastAccess: number } }[] = [];
+      for (const [key, item] of this._map) {
+        if (now - item.lastAccess > this._options.expireTime) {
+          expiredEntries.push({ key, item });
         }
       }
 
-      // 콜백 후 재등록 여부 확인 (같은 item 참조면 삭제, 다른 값이면 콜백 중 재등록됨)
-      const afterItem = this._map.get(key);
-      if (afterItem === item) {
-        this._map.delete(key);
-      }
-    }
+      // 2. 각 항목에 대해 콜백 실행 후 삭제
+      for (const { key, item } of expiredEntries) {
+        // 콜백 실행 전 현재 상태 확인 (이미 다른 값으로 교체되었거나 삭제되었으면 스킵)
+        const currentItem = this._map.get(key);
+        if (currentItem !== item) {
+          continue;
+        }
 
-    // GC 후 비었으면 끄기
-    if (this._map.size === 0) {
-      this._stopGc();
+        // 만료 콜백 실행
+        if (this._options.onExpire != null) {
+          try {
+            await this._options.onExpire(key, item.value);
+          } catch (err) {
+            LazyGcMap._logger.error("onExpire 콜백 에러", err);
+          }
+        }
+
+        // 콜백 후 재등록 여부 확인
+        // 시나리오: onExpire 콜백에서 동일 키로 새 값을 set()한 경우,
+        // 새로 등록된 항목을 삭제하면 안 됨. item 참조가 같으면 재등록되지 않은 것이므로 삭제 진행.
+        const afterItem = this._map.get(key);
+        if (afterItem === item) {
+          this._map.delete(key);
+        }
+      }
+
+      // GC 후 비었으면 끄기
+      if (this._map.size === 0) {
+        this._stopGc();
+      }
+    } finally {
+      this._isGcRunning = false;
     }
   }
 

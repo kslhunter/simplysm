@@ -1,9 +1,9 @@
 import { LazyGcMap } from "@simplysm/core-common";
 import { FsUtils, SdFsWatcher } from "@simplysm/core-node";
 import path from "path";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:ConfigManager" });
+const logger = createConsola().withTag("service-server:ConfigManager");
 
 export class ConfigManager {
   // 값: Config 객체, 키: 파일 경로
@@ -49,11 +49,11 @@ export class ConfigManager {
             this._cache.set(filePath, newConfig);
             logger.debug(`설정 파일 실시간 갱신: ${path.basename(filePath)}`);
           } catch (err) {
-            logger.warn({ err }, `설정 파일 갱신 실패: ${filePath}`);
+            logger.warn(`설정 파일 갱신 실패: ${filePath}`, err);
           }
         });
       } catch (err) {
-        logger.error({ err }, `감시 실패: ${filePath}`);
+        logger.error(`감시 실패: ${filePath}`, err);
       }
     }
 

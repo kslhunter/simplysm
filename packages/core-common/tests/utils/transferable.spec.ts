@@ -168,6 +168,16 @@ describe("TransferableConvert", () => {
         data: date.getTime(),
       });
     });
+
+    it("RegExp를 인코딩한다", () => {
+      const regex = /test\d+/gi;
+      const { result } = TransferableConvert.encode(regex);
+
+      expect(result).toEqual({
+        __type__: "RegExp",
+        data: { source: "test\\d+", flags: "gi" },
+      });
+    });
   });
 
   //#endregion
@@ -448,6 +458,23 @@ describe("TransferableConvert", () => {
       expect(date.getSeconds()).toBe(45);
       expect(date.getMilliseconds()).toBe(123);
     });
+
+    it("RegExp를 디코딩한다", () => {
+      const encoded = {
+        __type__: "RegExp",
+        data: { source: "test\\d+", flags: "gi" },
+      };
+      const decoded = TransferableConvert.decode(encoded);
+
+      expect(decoded instanceof RegExp).toBe(true);
+      const regex = decoded as RegExp;
+      expect(regex.source).toBe("test\\d+");
+      expect(regex.flags).toBe("gi");
+      // g 플래그가 있는 정규식은 lastIndex가 stateful이므로 리셋 후 테스트
+      expect(regex.test("test123")).toBe(true);
+      regex.lastIndex = 0;
+      expect(regex.test("TEST456")).toBe(true);
+    });
   });
 
   //#endregion
@@ -641,6 +668,16 @@ describe("TransferableConvert", () => {
       expect(decoded.arr[0] instanceof DateTime).toBe(true);
       expect(decoded.map.get("key") instanceof DateOnly).toBe(true);
       expect(Array.from(decoded.set)[0] instanceof Time).toBe(true);
+    });
+
+    it("RegExp를 왕복 변환한다", () => {
+      const original = /test\d+/gi;
+      const { result } = TransferableConvert.encode(original);
+      const decoded = TransferableConvert.decode(result) as RegExp;
+
+      expect(decoded instanceof RegExp).toBe(true);
+      expect(decoded.source).toBe(original.source);
+      expect(decoded.flags).toBe(original.flags);
     });
   });
 

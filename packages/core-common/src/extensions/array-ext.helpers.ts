@@ -39,10 +39,14 @@ export function compareForOrder(pp: ComparableType, pn: ComparableType, desc: bo
     return desc ? cpn.localeCompare(cpp) : cpp.localeCompare(cpn);
   }
   if (typeof cpn === "number" && typeof cpp === "number") {
-    return desc ? (cpn < cpp ? -1 : cpn > cpp ? 1 : 0) : cpn > cpp ? -1 : cpn < cpp ? 1 : 0;
+    if (desc) {
+      return cpp > cpn ? -1 : cpp < cpn ? 1 : 0;
+    }
+    return cpp < cpn ? -1 : cpp > cpn ? 1 : 0;
   }
   if (typeof cpn === "boolean" && typeof cpp === "boolean") {
-    return cpn === cpp ? 0 : cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
+    // true > false: 오름차순 시 true가 뒤, 내림차순 시 true가 앞
+    return cpn ? (desc ? 1 : -1) : (desc ? -1 : 1);
   }
 
   throw new ArgumentError("orderBy를 사용할 수 없는 타입입니다.", { type1: typeof cpp, type2: typeof cpn });

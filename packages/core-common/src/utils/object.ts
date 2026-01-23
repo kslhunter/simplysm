@@ -146,10 +146,15 @@ export class ObjectUtils {
    * @param options.ignoreArrayIndex 배열 순서 무시 여부. true 시 O(n²) 복잡도
    * @param options.onlyOneDepth 얕은 비교 여부. true 시 1단계만 비교 (참조 비교)
    *
+   * @note includes/excludes 옵션은 object 속성 키에만 적용됩니다.
+   *       Map의 모든 키는 항상 비교에 포함됩니다.
    * @note 성능 고려사항:
    * - 기본 배열 비교: O(n) 시간 복잡도
    * - `ignoreArrayIndex: true` 사용 시: O(n²) 시간 복잡도
    *   (대용량 배열에서 성능 저하 가능)
+   * @note `ignoreArrayIndex: true` 동작 특성:
+   * - 배열 순서를 무시하고 동일한 요소들의 순열인지 비교
+   * - 예: `[1,2,3]`과 `[3,2,1]` → true, `[1,1,1]`과 `[1,2,3]` → false
    */
   static equal(
     source: unknown,
@@ -223,12 +228,30 @@ export class ObjectUtils {
     }
 
     if (options?.ignoreArrayIndex) {
+      const matchedIndices = new Set<number>();
+
       if (options.onlyOneDepth) {
-        return source.every((sourceItem) => target.some((targetItem) => targetItem === sourceItem));
+        return source.every((sourceItem) => {
+          const idx = target.findIndex((t, i) => !matchedIndices.has(i) && t === sourceItem);
+          if (idx !== -1) {
+            matchedIndices.add(idx);
+            return true;
+          }
+          return false;
+        });
       } else {
-        return source.every((sourceItem) =>
-          target.some((targetItem) => this.equal(targetItem, sourceItem, options)),
-        );
+        // 재귀 호출 시 includes/excludes 옵션은 최상위 레벨에만 적용되므로 제외
+        const recursiveOptions = { ignoreArrayIndex: options.ignoreArrayIndex, onlyOneDepth: options.onlyOneDepth };
+        return source.every((sourceItem) => {
+          const idx = target.findIndex(
+            (t, i) => !matchedIndices.has(i) && this.equal(t, sourceItem, recursiveOptions),
+          );
+          if (idx !== -1) {
+            matchedIndices.add(idx);
+            return true;
+          }
+          return false;
+        });
       }
     } else {
       if (options?.onlyOneDepth) {
@@ -259,38 +282,49 @@ export class ObjectUtils {
       onlyOneDepth?: boolean;
     },
   ): boolean {
-    const sourceKeys = Array.from(source.keys()).filter(
-      (key) =>
-        typeof key === "string" &&
-        (options?.includes === undefined || options.includes.includes(key)) &&
-        !options?.excludes?.includes(key) &&
-        source.get(key) != null,
-    );
-    const targetKeys = Array.from(target.keys()).filter(
-      (key) =>
-        typeof key === "string" &&
-        (options?.includes === undefined || options.includes.includes(key)) &&
-        !options?.excludes?.includes(key) &&
-        target.get(key) != null,
-    );
+    // Map 비교 시 includes/excludes 옵션은 무시됨 (object 속성 키에만 적용)
+    const sourceKeys = Array.from(source.keys()).filter((key) => source.get(key) != null);
+    const targetKeys = Array.from(target.keys()).filter((key) => target.get(key) != null);
 
     if (sourceKeys.length !== targetKeys.length) {
       return false;
     }
 
-    for (const key of sourceKeys) {
-      if (options?.onlyOneDepth) {
-        if (source.get(key) !== target.get(key)) {
-          return false;
+    const usedTargetKeys = new Set<number>();
+    for (const sourceKey of sourceKeys) {
+      // 문자열 키: 직접 비교
+      if (typeof sourceKey === "string") {
+        const sourceValue = source.get(sourceKey);
+        const targetValue = target.get(sourceKey);
+        if (options?.onlyOneDepth) {
+          if (sourceValue !== targetValue) return false;
+        } else {
+          if (!this.equal(sourceValue, targetValue, { ignoreArrayIndex: options?.ignoreArrayIndex, onlyOneDepth: options?.onlyOneDepth })) {
+            return false;
+          }
         }
       } else {
-        if (
-          !this.equal(source.get(key), target.get(key), {
-            ignoreArrayIndex: options?.ignoreArrayIndex,
-          })
-        ) {
-          return false;
+        // 비문자열 키: targetKeys에서 동등한 키 찾기
+        let found = false;
+        for (let i = 0; i < targetKeys.length; i++) {
+          const targetKey = targetKeys[i];
+          if (typeof targetKey === "string" || usedTargetKeys.has(i)) continue;
+          if (options?.onlyOneDepth ? sourceKey === targetKey : this.equal(sourceKey, targetKey)) {
+            usedTargetKeys.add(i);
+            const sourceValue = source.get(sourceKey);
+            const targetValue = target.get(targetKey);
+            if (options?.onlyOneDepth) {
+              if (sourceValue !== targetValue) return false;
+            } else {
+              if (!this.equal(sourceValue, targetValue, { ignoreArrayIndex: options?.ignoreArrayIndex, onlyOneDepth: options?.onlyOneDepth })) {
+                return false;
+              }
+            }
+            found = true;
+            break;
+          }
         }
+        if (!found) return false;
       }
     }
 
@@ -388,6 +422,16 @@ export class ObjectUtils {
   /**
    * 깊은 병합 (source를 base로 target을 병합)
    *
+   * @param source 기준 객체
+   * @param target 병합할 객체
+   * @param opt 병합 옵션
+   * @param opt.arrayProcess 배열 처리 방식
+   *   - `"replace"`: target 배열로 대체 (기본값)
+   *   - `"concat"`: source와 target 배열을 합침 (Set으로 중복 제거)
+   * @param opt.useDelTargetNull target 값이 null일 때 해당 키 삭제 여부
+   *   - `true`: target이 null이면 결과에서 해당 키 삭제
+   *   - `false` 또는 미지정: source 값 유지
+   *
    * @note 원본 객체를 수정하지 않고 새 객체를 반환함 (불변성 보장)
    * @note arrayProcess="concat" 사용 시 Set을 통해 중복을 제거하며,
    *       객체 배열의 경우 참조(주소) 비교로 중복을 판단함
@@ -440,7 +484,7 @@ export class ObjectUtils {
         if (result.has(key)) {
           result.set(key, this.merge(result.get(key), target.get(key), opt));
         } else {
-          result.set(key, target.get(key));
+          result.set(key, this.clone(target.get(key)));
         }
       }
       return result as T & P;
@@ -479,7 +523,10 @@ export class ObjectUtils {
    * @param source 변경된 버전 1
    * @param origin 기준 버전 (공통 조상)
    * @param target 변경된 버전 2
-   * @param optionsObj 키별 비교 옵션
+   * @param optionsObj 키별 비교 옵션. 각 키에 대해 equal() 비교 옵션을 개별 지정
+   *   - `keys`: 비교할 하위 키 목록 (equal의 includes와 동일)
+   *   - `excludes`: 비교에서 제외할 하위 키 목록
+   *   - `ignoreArrayIndex`: 배열 순서 무시 여부
    * @returns conflict: 충돌 발생 여부, result: 병합 결과
    *
    * @example
@@ -644,6 +691,11 @@ export class ObjectUtils {
 
   /**
    * depth만큼 같은 키로 내려가기
+   * @param obj 대상 객체
+   * @param key 내려갈 키
+   * @param depth 내려갈 깊이 (1 이상)
+   * @param optional true면 중간에 null/undefined가 있어도 에러 없이 undefined 반환
+   * @throws ArgumentError depth가 1 미만일 경우
    * @example getChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
    */
   static getChainValueByDepth<T, K extends keyof T>(
@@ -659,6 +711,9 @@ export class ObjectUtils {
     depth: number,
     optional?: true,
   ): T[K] | undefined {
+    if (depth < 1) {
+      throw new ArgumentError("depth는 1 이상이어야 합니다.", { depth });
+    }
     let result: unknown = obj;
     for (let i = 0; i < depth; i++) {
       if (optional && result == null) {
@@ -760,7 +815,8 @@ export class ObjectUtils {
       obj instanceof Date ||
       obj instanceof DateTime ||
       obj instanceof DateOnly ||
-      obj instanceof Time
+      obj instanceof Time ||
+      obj instanceof Uuid
     ) {
       return obj;
     }

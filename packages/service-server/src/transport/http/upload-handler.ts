@@ -7,9 +7,9 @@ import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 import type { JwtManager } from "../../auth/jwt-manager";
-import pino from "pino";
+import { createConsola } from "consola";
 
-const logger = pino({ name: "service-server:UploadHandler" });
+const logger = createConsola().withTag("service-server:UploadHandler");
 
 export class UploadHandler {
   constructor(
@@ -74,7 +74,7 @@ export class UploadHandler {
 
       reply.send(result);
     } catch (err) {
-      logger.error({ err }, "Upload Error");
+      logger.error("Upload Error", err);
 
       if (currentSavePath != null) {
         await FsUtils.rmAsync(currentSavePath).catch(() => {});

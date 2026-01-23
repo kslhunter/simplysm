@@ -16,7 +16,7 @@
     "@simplysm/core-common": "workspace:*",
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/service-common": "workspace:*",
-    "pino": "^10.2.1"
+    "consola": "^3.4.2"
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",

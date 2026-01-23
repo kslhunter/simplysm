@@ -1,7 +1,6 @@
 import ts from "typescript";
-import path from "path";
-import { createSdWorker, FsUtils } from "@simplysm/core-node";
-import type { Target } from "../sd-config.types";
+import { createSdWorker } from "@simplysm/core-node";
+import { getTypesFromPackageJson, getCompilerOptionsForPackage, type TypecheckEnv } from "../utils/tsconfig";
 
 //#region Types
 
@@ -9,11 +8,17 @@ import type { Target } from "../sd-config.types";
  * 타입체크 작업 정보
  */
 export interface TypecheckTaskInfo {
+  /** 작업 표시 이름 (예: "패키지: core-common [node]") */
   name: string;
+  /** 작업 카테고리 */
   category: "package" | "packageTest" | "test" | "root";
+  /** 타입체크할 파일 경로 목록 */
   files: string[];
-  target: Target;
+  /** 타입체크 환경 */
+  env: TypecheckEnv;
+  /** 패키지 디렉토리 경로 */
   packageDir: string;
+  /** incremental 빌드 정보 파일 경로 */
   buildInfoPath: string;
 }
 
@@ -24,6 +29,8 @@ export interface TypecheckResult {
   taskName: string;
   diagnostics: SerializedDiagnostic[];
   hasErrors: boolean;
+  errorCount: number;
+  warningCount: number;
 }
 
 /**
@@ -45,98 +52,12 @@ export interface SerializedDiagnostic {
 //#region Utilities
 
 /**
- * DOM 관련 lib 패턴 - 브라우저 API를 포함하는 lib들
- */
-const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
-
-/**
- * 패키지의 package.json에서 @types/* devDependencies를 읽어 types 목록을 반환합니다.
- */
-async function getTypesFromPackageJson(packageDir: string): Promise<string[]> {
-  const packageJsonPath = path.join(packageDir, "package.json");
-  if (!FsUtils.exists(packageJsonPath)) {
-    return [];
-  }
-
-  const packageJson = await FsUtils.readJsonAsync<{ devDependencies?: Record<string, string> }>(
-    packageJsonPath,
-  );
-  const devDeps = packageJson.devDependencies ?? {};
-
-  return Object.keys(devDeps)
-    .filter((dep) => dep.startsWith("@types/"))
-    .map((dep) => dep.replace("@types/", ""));
-}
-
-/**
- * 패키지용 컴파일러 옵션 생성
- */
-async function getCompilerOptionsForPackage(
-  baseOptions: ts.CompilerOptions,
-  target: "node" | "browser" | "neutral",
-  packageDir: string,
-): Promise<ts.CompilerOptions> {
-  const options = { ...baseOptions, noEmit: true };
-  const packageTypes = await getTypesFromPackageJson(packageDir);
-
-  switch (target) {
-    case "node":
-      options.lib = options.lib?.filter(
-        (lib) => !DOM_LIB_PATTERNS.some((pattern) => lib.toLowerCase().includes(pattern)),
-      );
-      options.types = [...new Set([...packageTypes, "node"])];
-      break;
-    case "browser":
-      options.types = packageTypes.filter((t) => t !== "node");
-      break;
-    case "neutral":
-      options.lib = options.lib?.filter(
-        (lib) => !DOM_LIB_PATTERNS.some((pattern) => lib.toLowerCase().includes(pattern)),
-      );
-      options.types = packageTypes.filter((t) => t !== "node");
-      break;
-  }
-
-  return options;
-}
-
-/**
- * 패키지 테스트용 컴파일러 옵션 생성
- */
-async function getCompilerOptionsForPackageTests(
-  baseOptions: ts.CompilerOptions,
-  target: "node" | "browser" | "neutral",
-  packageDir: string,
-): Promise<ts.CompilerOptions> {
-  const options = { ...baseOptions, noEmit: true };
-  const packageTypes = await getTypesFromPackageJson(packageDir);
-
-  switch (target) {
-    case "node":
-      options.lib = options.lib?.filter(
-        (lib) => !DOM_LIB_PATTERNS.some((pattern) => lib.toLowerCase().includes(pattern)),
-      );
-      options.types = [...new Set([...packageTypes, "node"])];
-      break;
-    case "browser":
-      options.types = packageTypes.filter((t) => t !== "node");
-      break;
-    case "neutral":
-      options.types = [...new Set([...packageTypes, "node"])];
-      break;
-  }
-
-  return options;
-}
-
-/**
  * Diagnostic을 직렬화 가능한 형태로 변환
+ * (Worker thread 간 structured clone 통신을 위해 순환 참조/함수 제거)
  */
 function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagnostic {
-  const messageText =
-    typeof diagnostic.messageText === "string"
-      ? diagnostic.messageText
-      : diagnostic.messageText.messageText;
+  // DiagnosticMessageChain인 경우 전체 체인을 평탄화하여 모든 컨텍스트 정보 보존
+  const messageText = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 
   return {
     category: diagnostic.category,
@@ -158,32 +79,32 @@ function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagnostic {
 
 /**
  * 타입체크 실행
+ *
+ * @param taskInfo 타입체크 작업 정보
+ * @param baseOptions 루트 tsconfig의 컴파일러 옵션 (SdWorker가 자동으로 직렬화하여 전달)
+ * @returns 타입체크 결과 (진단 메시지, 에러/경고 카운트 포함)
  */
 async function executeTypecheck(
   taskInfo: TypecheckTaskInfo,
-  baseOptions: Record<string, unknown>,
+  baseOptions: ts.CompilerOptions,
 ): Promise<TypecheckResult> {
-  // baseOptions를 ts.CompilerOptions로 변환
-  const parsedOptions = baseOptions as ts.CompilerOptions;
-
   // 카테고리별 옵션 생성
   let options: ts.CompilerOptions;
   switch (taskInfo.category) {
     case "package":
-      options = await getCompilerOptionsForPackage(parsedOptions, taskInfo.target, taskInfo.packageDir);
-      break;
     case "packageTest":
-      options = await getCompilerOptionsForPackageTests(parsedOptions, taskInfo.target, taskInfo.packageDir);
+      options = await getCompilerOptionsForPackage(baseOptions, taskInfo.env, taskInfo.packageDir);
       break;
     case "test": {
       const testTypes = await getTypesFromPackageJson(taskInfo.packageDir);
-      options = { ...parsedOptions, noEmit: true, types: [...new Set([...testTypes, "node"])] };
+      options = { ...baseOptions, types: [...new Set([...testTypes, "node"])] };
       break;
     }
     case "root":
-      options = { ...parsedOptions, noEmit: true };
+      options = { ...baseOptions };
       break;
   }
+  options.noEmit = true;
 
   // 타입체크 실행
   const program = ts.createIncrementalProgram({
@@ -194,12 +115,20 @@ async function executeTypecheck(
   const diagnostics = [...ts.getPreEmitDiagnostics(program.getProgram())];
   program.emit();
 
-  const hasErrors = diagnostics.some((d) => d.category === ts.DiagnosticCategory.Error);
+  // 에러/경고 카운트 집계
+  let errorCount = 0;
+  let warningCount = 0;
+  for (const d of diagnostics) {
+    if (d.category === ts.DiagnosticCategory.Error) errorCount++;
+    else if (d.category === ts.DiagnosticCategory.Warning) warningCount++;
+  }
 
   return {
     taskName: taskInfo.name,
     diagnostics: diagnostics.map(serializeDiagnostic),
-    hasErrors,
+    hasErrors: errorCount > 0,
+    errorCount,
+    warningCount,
   };
 }
 

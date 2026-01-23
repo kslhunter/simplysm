@@ -61,6 +61,14 @@ describe("Time", () => {
       expect(time.hour).toBe(1);
     });
 
+    it("음수 시분초로 생성하면 24시간 내로 정규화된다", () => {
+      // -1시간 30분 = 23시간 30분 (24 - 0.5 = 23.5)
+      const time = new Time(-1, 30, 0);
+
+      expect(time.hour).toBe(23);
+      expect(time.minute).toBe(30);
+    });
+
     it("음수 tick으로 생성하면 24시간 내로 정규화된다", () => {
       // -1시간 = -3600000ms → 23시간
       const time = new Time(-3600000);
@@ -161,18 +169,22 @@ describe("Time", () => {
       expect(time.second).toBe(45);
     });
 
-    it("ISO 8601 형식에서 시간 부분을 파싱한다", () => {
+    it("ISO 8601 형식에서 시간 부분을 파싱한다 (UTC -> 로컬 변환)", () => {
+      // UTC 시간은 로컬 시간으로 변환됨
       const time = Time.parse("2025-01-15T10:30:45Z");
+      const expected = new Date("2025-01-15T10:30:45Z");
 
-      expect(time.hour).toBe(10);
+      expect(time.hour).toBe(expected.getHours());
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
     });
 
-    it("ISO 8601 형식에서 밀리초도 파싱한다", () => {
+    it("ISO 8601 형식에서 밀리초도 파싱한다 (UTC -> 로컬 변환)", () => {
+      // UTC 시간은 로컬 시간으로 변환됨
       const time = Time.parse("2025-01-15T10:30:45.123Z");
+      const expected = new Date("2025-01-15T10:30:45.123Z");
 
-      expect(time.hour).toBe(10);
+      expect(time.hour).toBe(expected.getHours());
       expect(time.minute).toBe(30);
       expect(time.second).toBe(45);
       expect(time.millisecond).toBe(123);
@@ -208,6 +220,50 @@ describe("Time", () => {
       const time = new Time(15, 30, 45, 123);
       const expectedTick = (15 * 60 * 60 + 30 * 60 + 45) * 1000 + 123;
       expect(time.tick).toBe(expectedTick);
+    });
+  });
+
+  //#endregion
+
+  //#region tick 비교
+
+  describe("tick 비교", () => {
+    it("같은 시간은 같은 tick을 가진다", () => {
+      const t1 = new Time(10, 30, 45, 123);
+      const t2 = new Time(10, 30, 45, 123);
+
+      expect(t1.tick).toBe(t2.tick);
+    });
+
+    it("다른 시간은 다른 tick을 가진다", () => {
+      const t1 = new Time(10, 30, 45, 123);
+      const t2 = new Time(10, 30, 45, 124);
+
+      expect(t1.tick).not.toBe(t2.tick);
+    });
+
+    it("tick으로 시간 순서를 비교할 수 있다", () => {
+      const t1 = new Time(0, 0, 0);
+      const t2 = new Time(12, 30, 0);
+      const t3 = new Time(23, 59, 59);
+
+      expect(t1.tick).toBeLessThan(t2.tick);
+      expect(t2.tick).toBeLessThan(t3.tick);
+    });
+
+    it("밀리초 단위 비교가 가능하다", () => {
+      const t1 = new Time(10, 30, 45, 0);
+      const t2 = new Time(10, 30, 45, 1);
+
+      expect(t2.tick - t1.tick).toBe(1);
+    });
+
+    it("시간 차이를 tick으로 계산할 수 있다", () => {
+      const t1 = new Time(10, 0, 0);
+      const t2 = new Time(11, 0, 0);
+
+      // 1시간 = 3600000ms
+      expect(t2.tick - t1.tick).toBe(3600000);
     });
   });
 

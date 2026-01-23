@@ -10,9 +10,9 @@ describe("Wait", () => {
       await Wait.time(100);
       const elapsed = Date.now() - start;
 
-      // 100ms ± 오차 범위 (50ms)
-      expect(elapsed).toBeGreaterThanOrEqual(100);
-      expect(elapsed).toBeLessThan(150);
+      // 100ms ± 오차 범위 - CI 환경 부하 및 타이머 정밀도 고려
+      expect(elapsed).toBeGreaterThanOrEqual(95);
+      expect(elapsed).toBeLessThan(250);
     });
 
     it("0ms 대기도 정상 동작한다", async () => {

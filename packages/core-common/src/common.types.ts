@@ -80,6 +80,17 @@ export type DeepPartial<T> = Partial<{
 
 /**
  * 생성자 타입
+ *
+ * 클래스 생성자를 타입으로 표현할 때 사용합니다.
+ * 주로 의존성 주입, 팩토리 패턴, instanceof 체크 등에서 활용됩니다.
+ *
+ * @example
+ * function create<T>(ctor: Type<T>): T {
+ *   return new ctor();
+ * }
+ *
+ * class MyClass { name = "test"; }
+ * const instance = create(MyClass); // MyClass 인스턴스
  */
 export interface Type<T> extends Function {
   new (...args: unknown[]): T;

@@ -4,6 +4,10 @@
  * 짧은 시간 내에 여러 번 호출되면 마지막 요청만 실행하고 이전 요청은 무시합니다.
  * 입력 필드 자동완성, 연속적인 상태 변경 배치 처리 등에 유용합니다.
  *
+ * @remarks
+ * 실행 중에 추가된 요청은 디바운스 지연 없이 현재 실행이 완료된 직후 처리됩니다.
+ * 이는 실행 완료 전에 들어온 요청이 누락되지 않도록 하기 위한 의도적 설계입니다.
+ *
  * @example
  * const queue = new DebounceQueue(300); // 300ms 딜레이
  * queue.run(() => console.log("1")); // 무시됨
@@ -16,14 +20,14 @@
  */
 import { SdError } from "../errors/sd-error";
 import { SdEventEmitter } from "./sd-event-emitter";
-import pino from "pino";
+import { createConsola } from "consola";
 
 interface DebounceQueueEvents {
   error: SdError;
 }
 
 export class DebounceQueue extends SdEventEmitter<DebounceQueueEvents> {
-  private static readonly _logger = pino({ name: "DebounceQueue" });
+  private static readonly _logger = createConsola().withTag("DebounceQueue");
 
   private _pendingFn: (() => void | Promise<void>) | undefined;
   private _isRunning = false;
@@ -80,6 +84,8 @@ export class DebounceQueue extends SdEventEmitter<DebounceQueueEvents> {
     this._timer = undefined;
 
     try {
+      // 실행 중에 새 요청이 들어오면 디바운스 지연 없이 즉시 처리
+      // 이는 "실행 완료 전에 들어온 요청은 실행 직후 바로 처리"하는 의도적 설계
       while (this._pendingFn) {
         const currentFn = this._pendingFn;
         this._pendingFn = undefined;
