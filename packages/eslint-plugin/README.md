@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/eslint-plugin
 # or
-yarn add @simplysm/eslint-plugin
+pnpm add @simplysm/eslint-plugin
 ```
 
 ## 설정

@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/core-common
 # 또는
-yarn add @simplysm/core-common
+pnpm add @simplysm/core-common
 ```
 
 ## 초기화

@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/core-browser
 # or
-yarn add @simplysm/core-browser
+pnpm add @simplysm/core-browser
 ```
 
 ## 주요 기능

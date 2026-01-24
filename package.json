@@ -10,41 +10,33 @@
   "type": "module",
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "tests/*"
-  ],
-  "volta": {
-    "node": "20.19.6",
-    "yarn": "4.12.0"
-  },
   "scripts": {
     "---": "",
-    "typecheck": "yarn run _sd-cli_ typecheck",
-    "lint": "yarn run _sd-cli_ lint",
-    "watch": "yarn run _sd-cli_ watch",
+    "typecheck": "pnpm _sd-cli_ typecheck",
+    "lint": "pnpm _sd-cli_ lint",
+    "watch": "pnpm _sd-cli_ watch",
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/cli/src/sd-cli.ts",
-    "reinstall": "yarn install --refresh-lockfile",
+    "reinstall": "pnpm install --force",
     "postinstall": "playwright install"
   },
   "devDependencies": {
     "@simplysm/cli": "workspace:*",
     "@types/node": "^20.19.30",
-    "@vitest/browser": "^4.0.17",
-    "@vitest/browser-playwright": "^4.0.17",
-    "@vitest/coverage-v8": "^4.0.17",
+    "@vitest/browser": "^4.0.18",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "jiti": "^2.6.1",
-    "playwright": "^1.57.0",
+    "playwright": "^1.58.0",
     "prettier": "^3.8.1",
-    "solid-js": "^1.9.10",
+    "solid-js": "^1.9.11",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
     "vite": "^7.3.1",
     "vite-plugin-solid": "^2.11.10",
-    "vite-tsconfig-paths": "^6.0.4",
-    "vitest": "^4.0.17"
+    "vite-tsconfig-paths": "^6.0.5",
+    "vitest": "^4.0.18"
   }
 }

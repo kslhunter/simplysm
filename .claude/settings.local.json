@@ -2,9 +2,9 @@
   "permissions": {
     "allow": [
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(yarn typecheck:*)",
-      "Bash(yarn lint:*)",
-      "Bash(yarn vitest run:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm vitest run:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
       "Bash(cat:*)",

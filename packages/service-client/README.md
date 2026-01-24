@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/service-client
 # or
-yarn add @simplysm/service-client
+pnpm add @simplysm/service-client
 ```
 
 ## 주요 기능

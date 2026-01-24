@@ -68,11 +68,15 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
     this._worker.on("exit", (code) => {
       if (!this._isTerminated && code !== 0) {
         logger.error(`워커가 오류와 함께 닫힘 (code: ${code})`);
+        // 비정상 종료 시 대기 중인 모든 요청 reject
+        this._rejectAllPending(new Error(`워커가 비정상 종료됨 (code: ${code})`));
       }
     });
 
     this._worker.on("error", (err) => {
       logger.error("워커 에러 발생:", err);
+      // 워커 에러 시 대기 중인 모든 요청 reject
+      this._rejectAllPending(err);
     });
 
     this._worker.on("message", (serializedResponse: unknown) => {
@@ -104,6 +108,16 @@ class SdWorkerInternal extends SdEventEmitter<Record<string, unknown>> {
         }
       }
     });
+  }
+
+  /**
+   * 대기 중인 모든 요청을 reject합니다.
+   */
+  private _rejectAllPending(err: Error): void {
+    for (const [id, { method, reject }] of this._pendingRequests) {
+      reject(new Error(`${err.message} (method: ${method})`));
+      this._pendingRequests.delete(id);
+    }
   }
 
   /**

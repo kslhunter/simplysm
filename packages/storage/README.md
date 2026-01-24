@@ -7,7 +7,7 @@ FTP/SFTP 스토리지 클라이언트 패키지입니다.
 ```bash
 npm install @simplysm/storage
 # or
-yarn add @simplysm/storage
+pnpm add @simplysm/storage
 ```
 
 ## 주요 기능

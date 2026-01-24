@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/orm-common
 # or
-yarn add @simplysm/orm-common
+pnpm add @simplysm/orm-common
 ```
 
 ## 주요 기능

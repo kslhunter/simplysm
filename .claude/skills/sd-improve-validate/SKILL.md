@@ -1,6 +1,7 @@
 ---
 name: sd-improve-validate
 description: "이 스킬은 지적의 유효성을 검증한다. (내부용)"
+model: "opus"
 user-invocable: false
 ---
 

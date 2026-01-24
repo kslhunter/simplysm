@@ -1,6 +1,7 @@
 ---
 name: sd-check
 description: "이 스킬은 타입체크/린트/테스트를 통해 검증하고 수정할때 사용한다."
+model: "opus"
 disable-model-invocation: true
 ---
 

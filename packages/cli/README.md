@@ -5,16 +5,9 @@
 ## 설치
 
 ```bash
-npm install -g @simplysm/cli
+npm install --save-dev @simplysm/cli
 # or
-yarn global add @simplysm/cli
-```
-
-또는 npx로 설치 없이 실행할 수 있다:
-
-```bash
-npx @simplysm/cli lint
-npx @simplysm/cli typecheck
+pnpm add -D @simplysm/cli
 ```
 
 ## 명령어

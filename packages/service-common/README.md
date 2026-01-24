@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/service-common
 # or
-yarn add @simplysm/service-common
+pnpm add @simplysm/service-common
 ```
 
 ## 주요 기능

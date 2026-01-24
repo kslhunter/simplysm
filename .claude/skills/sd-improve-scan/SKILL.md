@@ -1,6 +1,7 @@
 ---
 name: sd-improve-scan
 description: "검토 실행기 (내부용)"
+model: "opus"
 user-invocable: false
 ---
 

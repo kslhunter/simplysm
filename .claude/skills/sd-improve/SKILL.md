@@ -2,6 +2,7 @@
 name: sd-improve
 description: "이 스킬은 프로젝트/패키지의 문제점/개선점을 종합 검토할 때 사용한다."
 argument-hint: "[패키지명]"
+model: "opus"
 disable-model-invocation: true
 ---
 

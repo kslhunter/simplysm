@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/core-node
 # or
-yarn add @simplysm/core-node
+pnpm add @simplysm/core-node
 ```
 
 ## 주요 기능

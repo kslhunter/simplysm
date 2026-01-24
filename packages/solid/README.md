@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/solid
 # 또는
-yarn add @simplysm/solid
+pnpm add @simplysm/solid
 ```
 
 ## 설정

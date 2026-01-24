@@ -7,7 +7,7 @@
 ```bash
 npm install @simplysm/orm-node
 # or
-yarn add @simplysm/orm-node
+pnpm add @simplysm/orm-node
 ```
 
 ### 데이터베이스별 드라이버 설치

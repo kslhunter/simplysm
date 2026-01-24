@@ -7,7 +7,7 @@
 ```bash
 npm install --save-dev @simplysm/claude
 # or
-yarn add -D @simplysm/claude
+pnpm add -D @simplysm/claude
 ```
 
 ## 기능

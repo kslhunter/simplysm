@@ -34,3 +34,5 @@
 ## 개발 환경
 
 - IDE: WebStorm 최신 배포버전
+- 개발 OS: Windows or Windows WSL2(Ubuntu)
+- 배포 OS: Windows Server or Ubuntu Linux or Rocky Linux

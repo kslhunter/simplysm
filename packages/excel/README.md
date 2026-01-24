@@ -7,7 +7,7 @@ Excel 파일(.xlsx) 처리 라이브러리이다. Node.js와 브라우저 환경
 ```bash
 npm install @simplysm/excel
 # or
-yarn add @simplysm/excel
+pnpm add @simplysm/excel
 ```
 
 ## 주요 기능

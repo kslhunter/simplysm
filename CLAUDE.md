@@ -4,21 +4,21 @@
 
 ```bash
 # 타입 체크 (파일별 체크는 불가함)
-yarn typecheck                         # 전체 타입체크 (기본)
-yarn typecheck packages/core-common    # 특정 패키지만
-yarn typecheck tests/orm               # 통합테스트만
+pnpm typecheck                         # 전체 타입체크 (기본)
+pnpm typecheck packages/core-common    # 특정 패키지만
+pnpm typecheck tests/orm               # 통합테스트만
 
 # 린트
-yarn lint                              # 전체 린트 (기본)
-yarn lint packages/core-common         # 특정 패키지만
-yarn lint --fix                        # 자동 수정
+pnpm lint                              # 전체 린트 (기본)
+pnpm lint packages/core-common         # 특정 패키지만
+pnpm lint --fix                        # 자동 수정
 
 # 테스트 (Vitest)
-yarn vitest run                              # 전체 테스트 (기본)
-yarn vitest run packages/core-common/tests   # 특정 패키지만
+pnpm vitest run                              # 전체 테스트 (기본)
+pnpm vitest run packages/core-common/tests   # 특정 패키지만
 
 # 단일 테스트 파일 실행
-yarn vitest run packages/core-common/tests/types/date-only.spec.ts
+pnpm vitest run packages/core-common/tests/types/date-only.spec.ts
 ```
 
 ## 아키텍처
