@@ -1,3 +1,4 @@
+import { mapGetOrCreate } from "@simplysm/core-common";
 import { ExcelCell } from "./excel-cell";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 import type { ZipCache } from "./utils/zip-cache";
@@ -14,7 +15,8 @@ export class ExcelRow {
 
   /** 열 인덱스에 해당하는 셀 반환 (0-based) */
   cell(c: number): ExcelCell {
-    return this._cellMap.getOrCreate(
+    return mapGetOrCreate(
+      this._cellMap,
       c,
       new ExcelCell(this._zipCache, this._targetFileName, this._r, c),
     );

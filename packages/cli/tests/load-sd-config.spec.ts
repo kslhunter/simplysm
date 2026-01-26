@@ -3,9 +3,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 const mockJitiImport = vi.fn();
 
 vi.mock("@simplysm/core-node", () => ({
-  FsUtils: {
-    exists: vi.fn(),
-  },
+  fsExists: vi.fn(),
 }));
 
 vi.mock("jiti", () => ({
@@ -14,7 +12,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists } from "@simplysm/core-node";
 import { loadSdConfig } from "../src/utils/sd-config";
 
 describe("loadSdConfig", () => {
@@ -27,7 +25,7 @@ describe("loadSdConfig", () => {
   });
 
   it("sd.config.ts 파일이 없으면 에러", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
+    vi.mocked(fsExists).mockReturnValue(false);
 
     await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
       "sd.config.ts 파일을 찾을 수 없습니다",
@@ -35,7 +33,7 @@ describe("loadSdConfig", () => {
   });
 
   it("default export가 없으면 에러", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       someOtherExport: () => ({}),
     });
@@ -46,7 +44,7 @@ describe("loadSdConfig", () => {
   });
 
   it("default export가 함수가 아니면 에러", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: { packages: {} }, // 함수가 아닌 객체
     });
@@ -57,7 +55,7 @@ describe("loadSdConfig", () => {
   });
 
   it("반환값이 올바른 형식이 아니면 에러 (packages 없음)", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: () => ({}), // packages 속성 없음
     });
@@ -68,7 +66,7 @@ describe("loadSdConfig", () => {
   });
 
   it("반환값이 올바른 형식이 아니면 에러 (packages가 배열)", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: () => ({ packages: [] }), // packages가 배열
     });
@@ -79,7 +77,7 @@ describe("loadSdConfig", () => {
   });
 
   it("반환값이 올바른 형식이 아니면 에러 (packages가 null)", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: () => ({ packages: null }),
     });
@@ -90,7 +88,7 @@ describe("loadSdConfig", () => {
   });
 
   it("올바른 설정 반환", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: () => ({
         packages: {
@@ -109,7 +107,7 @@ describe("loadSdConfig", () => {
   });
 
   it("빈 packages 객체도 유효", async () => {
-    vi.mocked(FsUtils.exists).mockReturnValue(true);
+    vi.mocked(fsExists).mockReturnValue(true);
     mockJitiImport.mockResolvedValue({
       default: () => ({ packages: {} }),
     });
@@ -117,5 +115,23 @@ describe("loadSdConfig", () => {
     const config = await loadSdConfig({ cwd: "/project", dev: false, opt: [] });
 
     expect(config.packages).toEqual({});
+  });
+
+  it("async 함수를 default export한 경우도 정상 처리", async () => {
+    vi.mocked(fsExists).mockReturnValue(true);
+    mockJitiImport.mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/require-await
+      default: async () => ({
+        packages: {
+          "core-common": { target: "neutral" },
+        },
+      }),
+    });
+
+    const config = await loadSdConfig({ cwd: "/project", dev: false, opt: [] });
+
+    expect(config.packages).toEqual({
+      "core-common": { target: "neutral" },
+    });
   });
 });

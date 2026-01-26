@@ -19,6 +19,24 @@ describe("ZipArchive", () => {
       expect(zipBuffer.length).toBeGreaterThan(0);
     });
 
+    it("특수 문자가 포함된 파일명을 처리한다", async () => {
+      const zip = new ZipArchive();
+      zip.write("파일 이름.txt", encoder.encode("한글 내용"));
+      zip.write("file (1).txt", encoder.encode("괄호 포함"));
+      zip.write("file@#$.txt", encoder.encode("특수문자"));
+
+      const zipBuffer = await zip.compressAsync();
+      const result = new ZipArchive(zipBuffer);
+
+      const content1 = await result.getAsync("파일 이름.txt");
+      const content2 = await result.getAsync("file (1).txt");
+      const content3 = await result.getAsync("file@#$.txt");
+
+      expect(content1 != null ? decoder.decode(content1) : undefined).toBe("한글 내용");
+      expect(content2 != null ? decoder.decode(content2) : undefined).toBe("괄호 포함");
+      expect(content3 != null ? decoder.decode(content3) : undefined).toBe("특수문자");
+    });
+
     it("빈 ZIP도 압축할 수 있다", async () => {
       const zip = new ZipArchive();
       const zipBuffer = await zip.compressAsync();

@@ -20,8 +20,8 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -44,8 +44,8 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  COUNT(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  COUNT(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  COUNT(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  COUNT(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -68,8 +68,8 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  AVG(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  AVG(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  AVG(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  AVG(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -92,8 +92,8 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  MAX(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  MAX(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  MAX(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  MAX(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -116,8 +116,8 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  MIN(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  MIN(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  MIN(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  MIN(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -148,10 +148,10 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2019 IS NULL) OR "T1"."year" = 2019) THEN "T1"."amount" ELSE NULL END) AS "y2019",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2022 IS NULL) OR "T1"."year" = 2022) THEN "T1"."amount" ELSE NULL END) AS "y2022"
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2019 THEN "T1"."amount" ELSE NULL END) AS "y2019",
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021",
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2022 THEN "T1"."amount" ELSE NULL END) AS "y2022"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."category"
   `,
@@ -174,8 +174,8 @@ GROUP BY [T1].[id], [T1].[year]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."year" AS "year",
-  SUM(CASE WHEN (("T1"."category" IS NULL AND '식품' IS NULL) OR "T1"."category" = '식품') THEN "T1"."amount" ELSE NULL END) AS "food",
-  SUM(CASE WHEN (("T1"."category" IS NULL AND '전자' IS NULL) OR "T1"."category" = '전자') THEN "T1"."amount" ELSE NULL END) AS "electronics"
+  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM '식품' THEN "T1"."amount" ELSE NULL END) AS "food",
+  SUM(CASE WHEN "T1"."category" IS NOT DISTINCT FROM '전자' THEN "T1"."amount" ELSE NULL END) AS "electronics"
 FROM "TestSchema"."Sales" AS "T1"
 GROUP BY "T1"."id", "T1"."year"
   `,
@@ -200,10 +200,10 @@ GROUP BY [T1].[id], [T1].[category]
   `,
   postgresql: pgsql`
 SELECT "T1"."id" AS "id", "T1"."category" AS "category",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2020 IS NULL) OR "T1"."year" = 2020) THEN "T1"."amount" ELSE NULL END) AS "y2020",
-  SUM(CASE WHEN (("T1"."year" IS NULL AND 2021 IS NULL) OR "T1"."year" = 2021) THEN "T1"."amount" ELSE NULL END) AS "y2021"
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2020 THEN "T1"."amount" ELSE NULL END) AS "y2020",
+  SUM(CASE WHEN "T1"."year" IS NOT DISTINCT FROM 2021 THEN "T1"."amount" ELSE NULL END) AS "y2021"
 FROM "TestSchema"."Sales" AS "T1"
-WHERE (("T1"."category" IS NULL AND '식품' IS NULL) OR "T1"."category" = '식품')
+WHERE "T1"."category" IS NOT DISTINCT FROM '식품'
 GROUP BY "T1"."id", "T1"."category"
   `,
 };

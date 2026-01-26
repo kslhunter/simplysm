@@ -58,9 +58,12 @@ function copyClaudeToDist(srcDir, destDir) {
 /**
  * prepack 메인 실행
  * - 프로젝트 루트의 .claude 디렉토리 내용을 dist 폴더로 복사한다
- * @throws {Error} .claude 디렉토리 복사 실패 시
+ * @throws {Error} .claude 디렉토리가 존재하지 않거나 복사 실패 시
  */
 function main() {
+  if (!fs.existsSync(sourceDir)) {
+    throw new Error(`.claude 디렉토리를 찾을 수 없습니다: ${sourceDir}`);
+  }
   copyClaudeToDist(sourceDir, distDir);
   logger.info("prepack: .claude -> dist 복사 완료");
 }
@@ -68,7 +71,12 @@ function main() {
 // 직접 실행 시에만 main 호출
 const isDirectRun = path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    logger.error("prepack 실패", { err });
+    process.exit(1);
+  }
 }
 
 // 테스트용 내보내기

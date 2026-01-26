@@ -34,7 +34,7 @@ export const deleteSimple: ExpectedSql = {
   `,
   postgresql: pgsql`
     DELETE FROM "TestSchema"."Employee" AS "T1"
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -51,7 +51,7 @@ export const deleteMultiCond: ExpectedSql = {
   `,
   postgresql: pgsql`
     DELETE FROM "TestSchema"."Employee" AS "T1"
-    WHERE (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+    WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1
       AND "T1"."managerId" IS NULL
   `,
 };
@@ -71,7 +71,7 @@ export const deleteWithOutput: ExpectedSql = {
   `,
   postgresql: pgsql`
     DELETE FROM "TestSchema"."Employee" AS "T1"
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
     RETURNING "id", "name"
   `,
 };
@@ -89,7 +89,7 @@ export const deleteWithTop: ExpectedSql = {
   `,
   postgresql: pgsql`
     DELETE FROM "TestSchema"."Employee" AS "T1"
-    WHERE (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+    WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1
   `,
 };
 

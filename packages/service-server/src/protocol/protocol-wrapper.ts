@@ -1,15 +1,15 @@
 import type { Bytes } from "@simplysm/core-common";
-import { SdWorker, type SdWorkerProxy } from "@simplysm/core-node";
+import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
 import type * as ServiceProtocolWorkerModule from "../workers/service-protocol.worker";
 
 export class ProtocolWrapper {
   // 워커 스레드 (무거운 작업용, Static Lazy Singleton)
-  private static _worker?: SdWorkerProxy<typeof ServiceProtocolWorkerModule>;
+  private static _worker?: WorkerProxy<typeof ServiceProtocolWorkerModule>;
   private static get worker() {
     if (this._worker == null) {
-      this._worker = SdWorker.create<typeof ServiceProtocolWorkerModule>(
+      this._worker = Worker.create<typeof ServiceProtocolWorkerModule>(
         import.meta.resolve("../workers/service-protocol.worker"),
         {
           resourceLimits: { maxOldGenerationSizeMb: 4096 },

@@ -58,24 +58,24 @@ describe("SdButton", () => {
     const { getByRole } = render(() => <SdButton>Default Size</SdButton>);
     const button = getByRole("button");
 
-    expect(button.className).toContain("px-3");
-    expect(button.className).toContain("py-1.5");
+    expect(button.className).toContain("px-ctrl");
+    expect(button.className).toContain("py-ctrl-sm");
   });
 
   it("size prop 적용 - sm", () => {
     const { getByRole } = render(() => <SdButton size="sm">Small</SdButton>);
     const button = getByRole("button");
 
-    expect(button.className).toContain("px-2");
-    expect(button.className).toContain("text-xs");
+    expect(button.className).toContain("px-ctrl-sm");
+    expect(button.className).toContain("py-ctrl-xs");
   });
 
   it("size prop 적용 - lg", () => {
     const { getByRole } = render(() => <SdButton size="lg">Large</SdButton>);
     const button = getByRole("button");
 
-    expect(button.className).toContain("px-4");
-    expect(button.className).toContain("text-base");
+    expect(button.className).toContain("px-ctrl-lg");
+    expect(button.className).toContain("py-ctrl");
   });
 
   it("커스텀 class 병합", () => {
@@ -131,5 +131,15 @@ describe("SdButton", () => {
     // theme="default"를 명시해도 inset일 경우 link-primary로 변환됨
     expect(button.className).toContain("bg-transparent");
     expect(button.className).toContain("text-primary");
+  });
+
+  it("disabled 상태에서 ripple 비활성화", () => {
+    const { getByRole } = render(() => <SdButton disabled>비활성</SdButton>);
+    const button = getByRole("button");
+
+    fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
+
+    const rippleEl = button.querySelector("span");
+    expect(rippleEl).toBeNull();
   });
 });

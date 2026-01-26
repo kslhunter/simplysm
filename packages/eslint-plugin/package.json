@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
@@ -15,9 +16,12 @@
   "dependencies": {
     "@typescript-eslint/utils": "^8.53.1",
     "eslint": "^9.39.2",
+    "eslint-plugin-better-tailwindcss": "^4.0.1",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-solid": "^0.14.5",
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^17.0.0",
+    "tailwindcss": "^4.1.18",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.53.1"
   },

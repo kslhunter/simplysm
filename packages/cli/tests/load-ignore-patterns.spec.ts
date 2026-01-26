@@ -2,14 +2,10 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { loadIgnorePatterns } from "../src/commands/lint";
 import path from "path";
 
-// FsUtils와 jiti를 모킹
+// core-node 함수와 jiti를 모킹
 vi.mock("@simplysm/core-node", () => ({
-  FsUtils: {
-    exists: vi.fn(),
-  },
-  PathUtils: {
-    posix: vi.fn(),
-  },
+  fsExists: vi.fn(),
+  pathPosix: vi.fn(),
 }));
 
 const mockJitiImportFn = vi.fn();
@@ -19,7 +15,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists } from "@simplysm/core-node";
 
 describe("loadIgnorePatterns", () => {
   beforeEach(() => {
@@ -32,7 +28,7 @@ describe("loadIgnorePatterns", () => {
 
   it("eslint.config.ts에서 globalIgnores 패턴을 추출", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -52,7 +48,7 @@ describe("loadIgnorePatterns", () => {
 
   it("files가 있는 설정은 globalIgnores로 추출하지 않음", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -73,7 +69,7 @@ describe("loadIgnorePatterns", () => {
 
   it("설정 파일이 없으면 에러 발생", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockReturnValue(false);
 
@@ -82,7 +78,7 @@ describe("loadIgnorePatterns", () => {
 
   it("설정이 배열이 아니면 에러 발생", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -97,7 +93,7 @@ describe("loadIgnorePatterns", () => {
 
   it("여러 globalIgnores 설정을 병합", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -117,7 +113,7 @@ describe("loadIgnorePatterns", () => {
 
   it("배열을 직접 export하는 설정도 처리", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.js");
@@ -134,7 +130,7 @@ describe("loadIgnorePatterns", () => {
 
   it("default도 없고 배열도 아닌 설정은 에러 발생", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -151,7 +147,7 @@ describe("loadIgnorePatterns", () => {
 
   it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       // eslint.config.ts는 없고 eslint.config.mts만 존재
@@ -172,7 +168,7 @@ describe("loadIgnorePatterns", () => {
 
   it("빈 배열 export 시 빈 패턴 배열 반환", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");
@@ -189,7 +185,7 @@ describe("loadIgnorePatterns", () => {
 
   it("jiti import 에러 발생 시 에러 전파", async () => {
     const cwd = "/project";
-    const mockExists = vi.mocked(FsUtils.exists);
+    const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
       return filePath === path.join(cwd, "eslint.config.ts");

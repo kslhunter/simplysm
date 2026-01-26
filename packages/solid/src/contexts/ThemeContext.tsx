@@ -7,6 +7,7 @@ import {
   type ParentProps,
   useContext,
 } from "solid-js";
+import { useLocalStorage } from "./SdContext";
 
 /** 테마 타입. "light" 또는 "dark" 값을 가진다. */
 export type Theme = "light" | "dark";
@@ -19,7 +20,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>();
 
-const STORAGE_KEY = "sd-theme";
+const STORAGE_KEY = "theme";
 
 /**
  * ThemeProvider의 props
@@ -41,15 +42,13 @@ export interface ThemeProviderProps extends ParentProps {
  * ```
  */
 export function ThemeProvider(props: ThemeProviderProps) {
+  const storage = useLocalStorage();
+
   const getInitialTheme = (): Theme => {
     if (typeof window === "undefined") return props.defaultTheme ?? "light";
 
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      if (stored === "light" || stored === "dark") return stored;
-    } catch {
-      // localStorage 접근 실패 시 무시
-    }
+    const stored = storage.getItem(STORAGE_KEY) as Theme | null;
+    if (stored === "light" || stored === "dark") return stored;
 
     if (props.defaultTheme) return props.defaultTheme;
 
@@ -60,11 +59,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeSignal(newTheme);
-    try {
-      localStorage.setItem(STORAGE_KEY, newTheme);
-    } catch {
-      // localStorage 저장 실패 시 무시
-    }
+    storage.setItem(STORAGE_KEY, newTheme);
   };
 
   const toggleTheme = () => {
@@ -77,11 +72,13 @@ export function ThemeProvider(props: ThemeProviderProps) {
     document.documentElement.classList.toggle("dark", currentTheme === "dark");
   });
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {props.children}
-    </ThemeContext.Provider>
-  );
+  const store: ThemeContextValue = {
+    theme,
+    setTheme,
+    toggleTheme,
+  };
+
+  return <ThemeContext.Provider value={store}>{props.children}</ThemeContext.Provider>;
 }
 
 /**

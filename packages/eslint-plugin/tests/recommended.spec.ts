@@ -43,8 +43,15 @@ describe("recommended 설정", () => {
     const ignoresConfig = recommended.find(hasIgnores);
     expect(ignoresConfig).toBeDefined();
     if (ignoresConfig == null) return;
-    expect(ignoresConfig.ignores).toContain("**/node_modules/**");
-    expect(ignoresConfig.ignores).toContain("**/dist/**");
+
+    const expectedPatterns = [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.legacy-packages/**",
+      "**/.*/**",
+      "**/_*/**",
+    ];
+    expect(ignoresConfig.ignores).toEqual(expect.arrayContaining(expectedPatterns));
   });
 
   it("JS 파일 설정이 포함되어야 함", () => {
@@ -83,16 +90,14 @@ describe("recommended 설정", () => {
     expect(tsConfig).toBeDefined();
     if (tsConfig == null) return;
     if (hasRules(tsConfig)) {
-      expect(tsConfig.rules).toHaveProperty("@simplysm/no-hard-private", [
-        "error",
-      ]);
+      expect(tsConfig.rules).toHaveProperty("@simplysm/no-hard-private", "error");
       expect(tsConfig.rules).toHaveProperty(
         "@simplysm/no-subpath-imports-from-simplysm",
-        ["error"],
+        "error",
       );
       expect(tsConfig.rules).toHaveProperty(
         "@simplysm/ts-no-throw-not-implemented-error",
-        ["warn"],
+        "warn",
       );
     }
   });
@@ -106,12 +111,10 @@ describe("recommended 설정", () => {
     expect(jsConfig).toBeDefined();
     if (jsConfig == null) return;
     if (hasRules(jsConfig)) {
-      expect(jsConfig.rules).toHaveProperty("@simplysm/no-hard-private", [
-        "error",
-      ]);
+      expect(jsConfig.rules).toHaveProperty("@simplysm/no-hard-private", "error");
       expect(jsConfig.rules).toHaveProperty(
         "@simplysm/no-subpath-imports-from-simplysm",
-        ["error"],
+        "error",
       );
     }
   });
@@ -163,5 +166,24 @@ describe("recommended 설정", () => {
     };
     expect(tsConfig).toBeDefined();
     expect(tsConfig.languageOptions?.parserOptions?.project).toBe(true);
+  });
+
+  it("TSX 파일에 solid 플러그인이 적용되어야 함", () => {
+    // TSX 전용 설정 (solid 플러그인이 있는 설정)
+    const tsxSolidConfig = recommended.find(
+      (config) =>
+        hasFiles(config) &&
+        flattenFiles(config.files).length === 1 &&
+        flattenFiles(config.files)[0] === "**/*.tsx",
+    );
+    expect(tsxSolidConfig).toBeDefined();
+    if (tsxSolidConfig == null) return;
+    if (hasPlugins(tsxSolidConfig)) {
+      expect(tsxSolidConfig.plugins).toHaveProperty("solid");
+    }
+    if (hasRules(tsxSolidConfig)) {
+      // eslint-plugin-solid의 flat/typescript 규칙이 적용되어야 함
+      expect(tsxSolidConfig.rules).toHaveProperty("solid/jsx-no-undef");
+    }
   });
 });

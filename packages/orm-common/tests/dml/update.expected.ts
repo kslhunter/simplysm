@@ -21,7 +21,7 @@ export const updateSimple: ExpectedSql = {
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
     SET "name" = '새이름'
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -40,7 +40,7 @@ export const updateMultiCol: ExpectedSql = {
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
     SET "name" = '새이름', "departmentId" = 2
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -59,7 +59,7 @@ export const updateWithRef: ExpectedSql = {
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
     SET "managerId" = "T1"."managerId" + 1
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -82,7 +82,7 @@ export const updateWithOutput: ExpectedSql = {
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
     SET "name" = '새이름'
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
     RETURNING "T1"."id", "T1"."name"
   `,
 };
@@ -103,7 +103,7 @@ export const updateWithTop: ExpectedSql = {
   postgresql: pgsql`
     UPDATE "TestSchema"."Employee" AS "T1"
     SET "name" = '새이름'
-    WHERE (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+    WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1
   `,
 };
 

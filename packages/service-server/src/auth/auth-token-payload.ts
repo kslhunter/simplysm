@@ -1,6 +1,6 @@
 import type { JWTPayload } from "jose";
 
 export interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
-  perms: string[];
+  roles: string[];
   data: TAuthInfo;
 }

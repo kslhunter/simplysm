@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import { ServiceProtocol } from "@simplysm/service-common";
-import { TransferableConvert } from "@simplysm/core-common";
+import { transferableEncode } from "@simplysm/core-common";
 
 const protocol = new ServiceProtocol();
 
@@ -36,7 +36,7 @@ self.onmessage = (event: MessageEvent) => {
       const decodeResult = protocol.decode(bytes);
 
       // 결과물(객체)을 전송 가능한 형태로 변환 (Zero-Copy 준비)
-      const encoded = TransferableConvert.encode(decodeResult);
+      const encoded = transferableEncode(decodeResult);
       result = encoded.result;
       transferList = encoded.transferList;
     }

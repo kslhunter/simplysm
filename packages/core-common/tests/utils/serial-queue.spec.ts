@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SerialQueue, Wait, SdError } from "@simplysm/core-common";
+import { SerialQueue, waitTime as time, SdError } from "@simplysm/core-common";
 
 describe("SerialQueue", () => {
   //#region 순차 실행
@@ -19,7 +19,7 @@ describe("SerialQueue", () => {
         calls.push(3);
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(calls).toEqual([1, 2, 3]);
     });
@@ -32,15 +32,15 @@ describe("SerialQueue", () => {
       queue.run(async () => {
         timestamps.push(Date.now());
         calls.push(1);
-        await Wait.time(50);
+        await time(50);
       });
       queue.run(async () => {
         timestamps.push(Date.now());
         calls.push(2);
-        await Wait.time(50);
+        await time(50);
       });
 
-      await Wait.time(200);
+      await time(200);
 
       expect(calls).toEqual([1, 2]);
       // 두 번째 작업은 첫 작업 완료 후 시작 (타이머 오차 허용: 45ms 이상)
@@ -53,18 +53,18 @@ describe("SerialQueue", () => {
 
       queue.run(async () => {
         calls.push(1);
-        await Wait.time(50);
+        await time(50);
       });
 
       // 첫 작업 시작 대기
-      await Wait.time(10);
+      await time(10);
 
       // 실행 중에 추가
       queue.run(() => {
         calls.push(2);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2]);
     });
@@ -86,7 +86,7 @@ describe("SerialQueue", () => {
         timestamps.push(Date.now());
       });
 
-      await Wait.time(150);
+      await time(150);
 
       expect(timestamps).toHaveLength(2);
       // 두 작업 사이에 최소 50ms 간격
@@ -104,7 +104,7 @@ describe("SerialQueue", () => {
         timestamps.push(Date.now());
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(timestamps).toHaveLength(2);
       // 간격이 매우 짧음 (10ms 미만)
@@ -122,7 +122,7 @@ describe("SerialQueue", () => {
         timestamps.push(Date.now());
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(timestamps).toHaveLength(2);
       expect(timestamps[1] - timestamps[0]).toBeLessThan(10);
@@ -140,7 +140,7 @@ describe("SerialQueue", () => {
       });
 
       // 충분히 대기 (작업1 + gap100 + 작업2 + 여유)
-      await Wait.time(200);
+      await time(200);
 
       // gap이 실제로 적용되었는지 확인 (타이머 오차 허용: 95ms 이상)
       expect(timestamps).toHaveLength(2);
@@ -165,7 +165,7 @@ describe("SerialQueue", () => {
         throw new Error("test error");
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(errors).toHaveLength(1);
       expect(errors[0]).toBeInstanceOf(SdError);
@@ -194,7 +194,7 @@ describe("SerialQueue", () => {
         calls.push(3);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2, 3]);
       expect(errors).toHaveLength(1);
@@ -221,7 +221,7 @@ describe("SerialQueue", () => {
         throw new Error("error 3");
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2, 3]);
       expect(errors).toHaveLength(2);
@@ -242,7 +242,7 @@ describe("SerialQueue", () => {
       // 첫 작업 실행 중
       queue.run(async () => {
         calls.push(1);
-        await Wait.time(100);
+        await time(100);
       });
 
       // 대기 중인 작업들 추가
@@ -254,11 +254,11 @@ describe("SerialQueue", () => {
       });
 
       // 첫 작업 시작 후 dispose
-      await Wait.time(20);
+      await time(20);
       queue.dispose();
 
       // 모든 작업 완료 대기
-      await Wait.time(150);
+      await time(150);
 
       // 첫 작업만 실행됨 (실행 중인 작업은 완료됨)
       expect(calls).toEqual([1]);
@@ -278,7 +278,7 @@ describe("SerialQueue", () => {
         calls.push(2);
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(calls).toContain(2);
     });
@@ -298,14 +298,14 @@ describe("SerialQueue", () => {
         using queue = new SerialQueue();
         queue.run(async () => {
           calls.push(1);
-          await Wait.time(100);
+          await time(100);
         });
         queue.run(() => {
           calls.push(2);
         });
-        await Wait.time(20);
+        await time(20);
       } // using 블록 종료 시 dispose 자동 호출
-      await Wait.time(150);
+      await time(150);
       // 첫 작업(실행 중)은 완료되지만, 대기 중인 작업은 실행되지 않음
       expect(calls).toEqual([1]);
     });
@@ -327,7 +327,7 @@ describe("SerialQueue", () => {
         calls.push(2);
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(calls).toEqual([1, 2]);
     });
@@ -340,14 +340,14 @@ describe("SerialQueue", () => {
         calls.push(1);
       });
       queue.run(async () => {
-        await Wait.time(10);
+        await time(10);
         calls.push(2);
       });
       queue.run(() => {
         calls.push(3);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2, 3]);
     });

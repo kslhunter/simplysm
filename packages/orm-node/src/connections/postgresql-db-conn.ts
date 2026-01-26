@@ -1,6 +1,6 @@
 import { Readable } from "stream";
 import { createConsola } from "consola";
-import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
+import { bytesToHex, DateOnly, DateTime, SdError, EventEmitter, strIsNullOrEmpty, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -18,7 +18,7 @@ const logger = createConsola().withTag("postgresql-db-conn");
  *
  * pg 라이브러리를 사용하여 PostgreSQL 연결을 관리합니다.
  */
-export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
+export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _client?: Client;
@@ -107,7 +107,7 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
 
   async executeAsync(queries: string[]): Promise<unknown[][]> {
     const results: unknown[][] = [];
-    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrizedAsync(query);
       results.push(...resultItems);
     }
@@ -128,7 +128,7 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
       return [result.rows];
     } catch (err) {
       this._startTimeout();
-      const error = err as Error;
+      const error = err instanceof Error ? err : new Error(String(err));
       throw new SdError(error, "쿼리 수행중 오류발생\n-- query\n" + query.trim() + "\n--");
     }
   }
@@ -218,16 +218,16 @@ export class PostgresqlDbConn extends SdEventEmitter<{ close: void }> implements
         return (value as Uuid).toString();
 
       case "binary":
-        return "\\\\x" + BytesUtils.toHex(value as Uint8Array); // PostgreSQL bytea hex 형식
+        return "\\\\x" + bytesToHex(value as Uint8Array); // PostgreSQL bytea hex 형식
 
       default:
-        throw new Error(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
     }
   }
 
   private _assertConnected(): void {
     if (this._client == null || !this.isConnected) {
-      throw new Error(DB_CONN_ERRORS.NOT_CONNECTED);
+      throw new SdError(DB_CONN_ERRORS.NOT_CONNECTED);
     }
     this._startTimeout();
   }

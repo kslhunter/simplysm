@@ -1,6 +1,6 @@
 import { createConsola } from "consola";
 import type { Type } from "@simplysm/core-common";
-import { SdEventEmitter } from "@simplysm/core-common";
+import { EventEmitter } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
 
 import type { ServiceConnectionConfig } from "./types/connection-config";
@@ -19,7 +19,7 @@ interface ServiceClientEvents {
   reload: Set<string>;
 }
 
-export class ServiceClient extends SdEventEmitter<ServiceClientEvents> {
+export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   // 모듈들
   private readonly _socket: SocketProvider;
   private readonly _transport: ServiceTransport;

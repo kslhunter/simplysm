@@ -21,7 +21,7 @@ export const eqNull: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."email" IS NULL AND NULL IS NULL) OR "T1"."email" = NULL)
+    WHERE "T1"."email" IS NOT DISTINCT FROM NULL
   `,
 };
 
@@ -39,7 +39,7 @@ export const eqValue: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -253,7 +253,7 @@ export const eqDateTime: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."createdAt" IS NULL AND '2024-01-15 10:30:00'::timestamp IS NULL) OR "T1"."createdAt" = '2024-01-15 10:30:00'::timestamp)
+    WHERE "T1"."createdAt" IS NOT DISTINCT FROM '2024-01-15 10:30:00'::timestamp
   `,
 };
 

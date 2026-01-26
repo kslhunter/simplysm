@@ -1,7 +1,8 @@
 // @simplysm/core-common
 // 공통 유틸리티 패키지
 
-import "./globals.d.ts";
+import "./globals";
+
 
 //#region errors
 export * from "./errors/sd-error";
@@ -18,30 +19,28 @@ export * from "./types/date-only";
 export * from "./types/time";
 //#endregion
 
-//#region utils
-export * from "./utils/date-format";
-export * from "./utils/object";
-export * from "./utils/string";
-export * from "./utils/number";
-export * from "./utils/json";
-export * from "./utils/xml";
-export * from "./utils/wait";
-export * from "./utils/debounce-queue";
-export * from "./utils/serial-queue";
-export * from "./utils/transferable";
-export * from "./utils/template-strings";
-export * from "./utils/bytes-utils";
-export * from "./utils/sd-event-emitter";
+//#region features
+export * from "./features/debounce-queue";
+export * from "./features/serial-queue";
+export * from "./features/event-emitter";
 //#endregion
 
-//#region extensions
-// side-effect: Map 프로토타입 확장 (export 없음)
-import "./extensions/map-ext";
-// side-effect: Set 프로토타입 확장 (export 없음)
-import "./extensions/set-ext";
-// side-effect: Array 프로토타입 확장 + 타입 export
-import "./extensions/array-ext";
-export * from "./extensions/array-ext";
+//#region utils
+export * from "./utils/date-format";
+export * from "./utils/arr";
+export * from "./utils/bytes";
+export * from "./utils/json";
+export * from "./utils/map";
+export * from "./utils/num";
+export * from "./utils/obj";
+export * from "./utils/pipe";
+export * from "./utils/primitive";
+export * from "./utils/set";
+export * from "./utils/str";
+export * from "./utils/template-strings";
+export * from "./utils/transferable";
+export * from "./utils/wait";
+export * from "./utils/xml";
 //#endregion
 
 //#region zip

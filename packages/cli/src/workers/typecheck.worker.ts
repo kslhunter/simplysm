@@ -1,6 +1,8 @@
 import ts from "typescript";
-import { createSdWorker } from "@simplysm/core-node";
+import path from "path";
+import { createWorker } from "@simplysm/core-node";
 import { getTypesFromPackageJson, getCompilerOptionsForPackage, type TypecheckEnv } from "../utils/tsconfig";
+import { serializeDiagnostic, type SerializedDiagnostic } from "../utils/typecheck-serialization";
 
 //#region Types
 
@@ -33,45 +35,8 @@ export interface TypecheckResult {
   warningCount: number;
 }
 
-/**
- * Worker로 전달 가능한 직렬화된 Diagnostic
- */
-export interface SerializedDiagnostic {
-  category: number;
-  code: number;
-  messageText: string;
-  file?: {
-    fileName: string;
-  };
-  start?: number;
-  length?: number;
-}
-
-//#endregion
-
-//#region Utilities
-
-/**
- * Diagnostic을 직렬화 가능한 형태로 변환
- * (Worker thread 간 structured clone 통신을 위해 순환 참조/함수 제거)
- */
-function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagnostic {
-  // DiagnosticMessageChain인 경우 전체 체인을 평탄화하여 모든 컨텍스트 정보 보존
-  const messageText = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-
-  return {
-    category: diagnostic.category,
-    code: diagnostic.code,
-    messageText,
-    file: diagnostic.file
-      ? {
-          fileName: diagnostic.file.fileName,
-        }
-      : undefined,
-    start: diagnostic.start,
-    length: diagnostic.length,
-  };
-}
+// SerializedDiagnostic은 typecheck-serialization.ts에서 re-export
+export type { SerializedDiagnostic };
 
 //#endregion
 
@@ -97,7 +62,14 @@ async function executeTypecheck(
       break;
     case "test": {
       const testTypes = await getTypesFromPackageJson(taskInfo.packageDir);
-      options = { ...baseOptions, types: [...new Set([...testTypes, "node"])] };
+      options = {
+        ...baseOptions,
+        typeRoots: [
+          path.join(taskInfo.packageDir, "node_modules", "@types"),
+          path.join(process.cwd(), "node_modules", "@types"),
+        ],
+        types: [...new Set([...testTypes, "node"])],
+      };
       break;
     }
     case "root":
@@ -132,7 +104,7 @@ async function executeTypecheck(
   };
 }
 
-export default createSdWorker({
+export default createWorker({
   typecheck: executeTypecheck,
 });
 

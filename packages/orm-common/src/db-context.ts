@@ -38,7 +38,7 @@ import {
   RelationKeyBuilder,
   RelationKeyTargetBuilder,
 } from "./schema/factory/relation-builder";
-import { ObjectUtils } from "@simplysm/core-common";
+import { objClearUndefined } from "@simplysm/core-common";
 import type { IndexBuilder } from "./schema/factory/index-builder";
 import { SystemMigration } from "./models/system-migration";
 
@@ -474,8 +474,11 @@ export abstract class DbContext {
       let appliedMigrations: { code: string }[] | undefined;
       try {
         appliedMigrations = await this.systemMigration().resultAsync();
-      } catch {
+      } catch (err) {
         // 테이블 없음 = 신규 환경
+        if (!this._isTableNotExistsError(err)) {
+          throw err;
+        }
       }
 
       if (appliedMigrations == null) {
@@ -1284,11 +1287,43 @@ export abstract class DbContext {
   getQueryDefObjectName(
     tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName {
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       database: tableOrView.meta.database ?? this.database,
       schema: tableOrView.meta.schema ?? this.schema,
       name: tableOrView.meta.name,
     });
+  }
+
+  /**
+   * 테이블 없음 에러인지 확인
+   *
+   * DBMS별 에러 메시지 패턴:
+   * - MySQL: "Table 'xxx' doesn't exist" (에러 코드 1146)
+   * - MSSQL: "Invalid object name 'xxx'" (에러 코드 208)
+   * - PostgreSQL: "relation \"xxx\" does not exist" (SQLSTATE 42P01)
+   */
+  private _isTableNotExistsError(err: unknown): boolean {
+    if (err == null) return false;
+
+    const message = err instanceof Error ? err.message : String(err);
+    const lowerMessage = message.toLowerCase();
+
+    // MySQL: Table 'xxx' doesn't exist
+    if (lowerMessage.includes("doesn't exist") && lowerMessage.includes("table")) {
+      return true;
+    }
+
+    // MSSQL: Invalid object name 'xxx'
+    if (lowerMessage.includes("invalid object name")) {
+      return true;
+    }
+
+    // PostgreSQL: relation "xxx" does not exist
+    if (lowerMessage.includes("does not exist") && lowerMessage.includes("relation")) {
+      return true;
+    }
+
+    return false;
   }
 
   //#endregion

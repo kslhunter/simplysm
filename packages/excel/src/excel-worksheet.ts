@@ -1,5 +1,6 @@
 import type { Bytes } from "@simplysm/core-common";
-import { StringUtils } from "@simplysm/core-common";
+import { strIsNullOrEmpty, mapGetOrCreate } from "@simplysm/core-common";
+import { flatMap, unique, filter } from "remeda";
 import mime from "mime";
 import type { ExcelCell } from "./excel-cell";
 import { ExcelCol } from "./excel-col";
@@ -31,7 +32,11 @@ export class ExcelWorksheet {
   /** 워크시트 이름 반환 */
   async getName(): Promise<string> {
     const wbXmlData = await this._getWbData();
-    return wbXmlData.getWorksheetNameById(this._relId)!;
+    const name = wbXmlData.getWorksheetNameById(this._relId);
+    if (name == null) {
+      throw new Error(`워크시트 ID ${this._relId}에 해당하는 이름을 찾을 수 없습니다`);
+    }
+    return name;
   }
 
   /** 워크시트 이름 변경 */
@@ -46,7 +51,7 @@ export class ExcelWorksheet {
 
   /** 행 객체 반환 (0-based) */
   row(r: number): ExcelRow {
-    return this._rowMap.getOrCreate(r, new ExcelRow(this._zipCache, this._targetFileName, r));
+    return mapGetOrCreate(this._rowMap, r, new ExcelRow(this._zipCache, this._targetFileName, r));
   }
 
   /** 셀 객체 반환 (0-based 행/열) */
@@ -56,7 +61,7 @@ export class ExcelWorksheet {
 
   /** 열 객체 반환 (0-based) */
   col(c: number): ExcelCol {
-    return this._colMap.getOrCreate(c, new ExcelCol(this._zipCache, this._targetFileName, c));
+    return mapGetOrCreate(this._colMap, c, new ExcelCol(this._zipCache, this._targetFileName, c));
   }
 
   //#endregion
@@ -101,7 +106,15 @@ export class ExcelWorksheet {
    * @param targetR 삽입할 타겟 행 인덱스 (0-based)
    */
   async insertCopyRow(srcR: number, targetR: number): Promise<void> {
-    const range = await this.getRange();
+    const wsData = await this._getWsData();
+    const range = wsData.range;
+
+    // targetR 이하 모든 병합 셀의 행 인덱스 +1
+    const mergeCells = wsData.getMergeCells();
+    for (const mc of mergeCells) {
+      if (mc.s.r >= targetR) mc.s.r++;
+      if (mc.e.r >= targetR) mc.e.r++;
+    }
 
     // srcR >= targetR인 경우, 밀림 후 srcR 위치가 변경되므로 보정
     const adjustedSrcR = srcR >= targetR ? srcR + 1 : srcR;
@@ -125,16 +138,15 @@ export class ExcelWorksheet {
 
   /** 워크시트의 모든 셀을 2차원 배열로 반환 */
   async getCells(): Promise<ExcelCell[][]> {
-    const result: ExcelCell[][] = [];
     const xml = await this._getWsData();
     const range = xml.range;
+    const promises: Promise<ExcelCell[]>[] = [];
 
     for (let r = range.s.r; r <= range.e.r; r++) {
-      const cells = await this.row(r).getCells();
-      result.push(cells);
+      promises.push(this.row(r).getCells());
     }
 
-    return result;
+    return Promise.all(promises);
   }
 
   //#endregion
@@ -188,22 +200,27 @@ export class ExcelWorksheet {
     return result;
   }
 
-  /** 2차원 배열 데이터를 워크시트에 기록 */
+  /**
+   * 2차원 배열 데이터를 워크시트에 기록
+   * @param matrix 2차원 배열 데이터 (행 우선, 0번 인덱스가 첫 번째 행)
+   */
   async setDataMatrix(matrix: ExcelValueType[][]): Promise<void> {
     for (let r = 0; r < matrix.length; r++) {
       for (let c = 0; c < matrix[r].length; c++) {
-        const val = matrix[r][c];
-        await this.cell(r, c).setVal(val);
+        await this.cell(r, c).setVal(matrix[r][c]);
       }
     }
   }
 
-  /** 레코드 배열을 워크시트에 기록 (첫 행: 헤더) */
+  /**
+   * 레코드 배열을 워크시트에 기록
+   * @param records 레코드 배열. 첫 행에 헤더가 자동 생성되고, 이후 행에 데이터가 기록된다.
+   */
   async setRecords(records: Record<string, ExcelValueType>[]): Promise<void> {
-    const headers = records
-      .mapMany((item) => Object.keys(item))
-      .distinct()
-      .filter((item) => !StringUtils.isNullOrEmpty(item));
+    const headers = filter(
+      unique(flatMap(records, (item) => Object.keys(item))),
+      (item) => !strIsNullOrEmpty(item),
+    );
 
     for (let c = 0; c < headers.length; c++) {
       await this.cell(0, c).setVal(headers[c]);

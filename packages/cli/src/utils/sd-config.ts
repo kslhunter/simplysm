@@ -1,7 +1,7 @@
 import path from "path";
 import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists } from "@simplysm/core-node";
 import type { SdConfig } from "../sd-config.types";
 
 /**
@@ -9,14 +9,14 @@ import type { SdConfig } from "../sd-config.types";
  * @returns SdConfig 객체
  * @throws sd.config.ts가 없거나 형식이 잘못된 경우
  */
-export async function loadSdConfig(opt: {
+export async function loadSdConfig(params: {
   cwd: string;
   dev: boolean;
   opt: string[];
 }): Promise<SdConfig> {
-  const sdConfigPath = path.resolve(opt.cwd, "sd.config.ts");
+  const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
 
-  if (!FsUtils.exists(sdConfigPath)) {
+  if (!fsExists(sdConfigPath)) {
     throw new SdError(`sd.config.ts 파일을 찾을 수 없습니다: ${sdConfigPath}`);
   }
 
@@ -32,7 +32,7 @@ export async function loadSdConfig(opt: {
     throw new SdError(`sd.config.ts는 함수를 default export해야 합니다: ${sdConfigPath}`);
   }
 
-  const config = await sdConfigModule.default(opt);
+  const config = await sdConfigModule.default(params);
 
   if (
     config == null ||

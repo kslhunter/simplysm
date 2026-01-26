@@ -1,6 +1,11 @@
-import { NumberUtils } from "@simplysm/core-common";
+import { numParseInt, arrSingle } from "@simplysm/core-common";
+import { firstBy } from "remeda";
 import type { ExcelRelationshipData, ExcelXml, ExcelXmlRelationshipData } from "../types";
 
+/**
+ * *.rels 파일을 관리하는 클래스.
+ * 파일 간의 참조 관계를 처리한다.
+ */
 export class ExcelXmlRelationship implements ExcelXml {
   data: ExcelXmlRelationshipData;
 
@@ -19,8 +24,8 @@ export class ExcelXmlRelationship implements ExcelXml {
   }
 
   getTargetByRelId(rId: number): string | undefined {
-    return this.data.Relationships.Relationship?.single((rel) => this._getRelId(rel) === rId)?.$
-      .Target;
+    return arrSingle(this.data.Relationships.Relationship ?? [], (rel) => this._getRelId(rel) === rId)
+      ?.$.Target;
   }
 
   add(target: string, type: string): this {
@@ -68,7 +73,10 @@ export class ExcelXmlRelationship implements ExcelXml {
   cleanup(): void {}
 
   private get _lastId(): number | undefined {
-    return this.data.Relationships.Relationship?.max((rel) => this._getRelId(rel));
+    const rels = this.data.Relationships.Relationship;
+    if (!rels || rels.length === 0) return undefined;
+    const maxRel = firstBy(rels, [(rel) => this._getRelId(rel), "desc"]);
+    return maxRel ? this._getRelId(maxRel) : undefined;
   }
 
   private _getRelId(rel: ExcelRelationshipData): number {
@@ -76,6 +84,6 @@ export class ExcelXmlRelationship implements ExcelXml {
     if (match == null) {
       throw new Error(`잘못된 관계 ID 형식입니다: ${rel.$.Id}`);
     }
-    return NumberUtils.parseInt(match[0])!;
+    return numParseInt(match[0])!;
   }
 }

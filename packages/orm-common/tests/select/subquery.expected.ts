@@ -81,7 +81,7 @@ export const whereThenWrapThenWhere: ExpectedSql = {
     SELECT *
     FROM (
       SELECT * FROM "TestSchema"."User" AS "T1"
-      WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE)
+      WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE
     ) AS "T2"
     WHERE "T2"."age" > 20
   `,
@@ -126,7 +126,7 @@ export const includeThenWrapThenSelect: ExpectedSql = {
              "T1.posts"."viewCount" AS "posts.viewCount", "T1.posts"."publishedAt" AS "posts.publishedAt"
       FROM "TestSchema"."User" AS "T1"
       LEFT OUTER JOIN "TestSchema"."Post" AS "T1.posts"
-        ON (("T1.posts"."userId" IS NULL AND "T1"."id" IS NULL) OR "T1.posts"."userId" = "T1"."id")
+        ON "T1.posts"."userId" IS NOT DISTINCT FROM "T1"."id"
     ) AS "T2"
   `,
 };
@@ -187,7 +187,7 @@ export const unionBasic: ExpectedSql = {
     SELECT *
     FROM (
       SELECT * FROM "TestSchema"."User" AS "T1"
-      WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE)
+      WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE
       UNION ALL
       SELECT * FROM "TestSchema"."User" AS "T2" WHERE "T2"."age" > 30
     ) AS "T3"
@@ -222,13 +222,13 @@ export const unionThree: ExpectedSql = {
     SELECT *
     FROM (
       SELECT * FROM "TestSchema"."User" AS "T1"
-      WHERE (("T1"."age" IS NULL AND 20 IS NULL) OR "T1"."age" = 20)
+      WHERE "T1"."age" IS NOT DISTINCT FROM 20
       UNION ALL
       SELECT * FROM "TestSchema"."User" AS "T2"
-      WHERE (("T2"."age" IS NULL AND 30 IS NULL) OR "T2"."age" = 30)
+      WHERE "T2"."age" IS NOT DISTINCT FROM 30
       UNION ALL
       SELECT * FROM "TestSchema"."User" AS "T3"
-      WHERE (("T3"."age" IS NULL AND 40 IS NULL) OR "T3"."age" = 40)
+      WHERE "T3"."age" IS NOT DISTINCT FROM 40
     ) AS "T4"
   `,
 };
@@ -256,10 +256,10 @@ export const unionThenWhere: ExpectedSql = {
     SELECT *
     FROM (
       SELECT * FROM "TestSchema"."User" AS "T1"
-      WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE)
+      WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE
       UNION ALL
       SELECT * FROM "TestSchema"."User" AS "T2"
-      WHERE (("T2"."isActive" IS NULL AND TRUE IS NULL) OR "T2"."isActive" = TRUE)
+      WHERE "T2"."isActive" IS NOT DISTINCT FROM TRUE
     ) AS "T3"
   `,
 };
@@ -298,7 +298,7 @@ export const unionThenWrapThenOrderByLimit: ExpectedSql = {
       SELECT *
       FROM (
         SELECT * FROM "TestSchema"."User" AS "T1"
-        WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE)
+        WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE
         UNION ALL
         SELECT * FROM "TestSchema"."User" AS "T2" WHERE "T2"."age" > 30
       ) AS "T3"
@@ -355,7 +355,7 @@ export const scalarSubquery: ExpectedSql = {
   postgresql: pgsql`
     SELECT
       "T1"."id" AS "id",
-      (SELECT COUNT(*) AS "cnt" FROM "TestSchema"."Post" AS "T2" WHERE (("T2"."userId" IS NULL AND "T1"."id" IS NULL) OR "T2"."userId" = "T1"."id")) AS "postCount"
+      (SELECT COUNT(*) AS "cnt" FROM "TestSchema"."Post" AS "T2" WHERE "T2"."userId" IS NOT DISTINCT FROM "T1"."id") AS "postCount"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/solid",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - SolidJS",
   "author": "김석래",
@@ -14,6 +15,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
+    "@tabler/icons-solidjs": "^3.30.0",
     "solid-js": "^1.9.10",
     "tailwind-merge": "^3.4.0",
     "tailwind-variants": "^3.2.2"

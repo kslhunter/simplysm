@@ -46,7 +46,7 @@ export class ServiceExecutor {
 
         // 권한 목록 체크 (빈 배열이면 로그인만 체크)
         if (requiredPerms.length > 0) {
-          const hasPerm = requiredPerms.some((perm) => authTokenPayload.perms.includes(perm));
+          const hasPerm = requiredPerms.some((perm) => authTokenPayload.roles.includes(perm));
           if (!hasPerm) {
             throw new Error("권한이 부족합니다.");
           }

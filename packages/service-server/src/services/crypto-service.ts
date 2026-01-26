@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { BytesUtils } from "@simplysm/core-common";
+import { bytesConcat, bytesToHex, bytesFromHex } from "@simplysm/core-common";
 import type { CryptoConfig, CryptoService as CryptoServiceType } from "@simplysm/service-common";
 import crypto from "crypto";
 import { ServiceBase } from "../core/service-base";
@@ -17,19 +17,19 @@ export class CryptoService extends ServiceBase implements CryptoServiceType {
     const cipher = crypto.createCipheriv("aes-256-cbc", config.key, iv);
     const encrypted = cipher.update(data);
 
-    return BytesUtils.toHex(iv) + ":" + BytesUtils.toHex(BytesUtils.concat([encrypted, cipher.final()]));
+    return bytesToHex(iv) + ":" + bytesToHex(bytesConcat([encrypted, cipher.final()]));
   }
 
   async decryptAes(encText: string): Promise<Bytes> {
     const config = await this._getConf();
 
     const textParts = encText.split(":");
-    const iv = BytesUtils.fromHex(textParts.shift()!);
-    const encryptedText = BytesUtils.fromHex(textParts.join(":"));
+    const iv = bytesFromHex(textParts.shift()!);
+    const encryptedText = bytesFromHex(textParts.join(":"));
     const decipher = crypto.createDecipheriv("aes-256-cbc", config.key, iv);
     const decrypted = decipher.update(encryptedText);
 
-    return BytesUtils.concat([decrypted, decipher.final()]);
+    return bytesConcat([decrypted, decipher.final()]);
   }
 
   private async _getConf() {

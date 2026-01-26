@@ -3,7 +3,7 @@ import { StaticFileHandler } from "./transport/http/static-file-handler";
 import { HttpRequestHandler } from "./transport/http/http-request-handler";
 import { ServiceExecutor } from "./core/service-executor";
 import type { Type } from "@simplysm/core-common";
-import { JsonConvert, SdEventEmitter } from "@simplysm/core-common";
+import { jsonStringify, jsonParse, EventEmitter } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
 import fastifyMiddie from "@fastify/middie";
@@ -26,7 +26,7 @@ import { createConsola } from "consola";
 
 const logger = createConsola().withTag("service-server:ServiceServer");
 
-export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
+export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   ready: void;
   close: void;
 }> {
@@ -124,7 +124,7 @@ export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
       { parseAs: "string" },
       (req, body, done) => {
         try {
-          const json = JsonConvert.parse(body as string);
+          const json = jsonParse(body as string);
           done(null, json);
         } catch (err: unknown) {
           const error = err as Error & { statusCode?: number };
@@ -135,7 +135,7 @@ export class ServiceServer<TAuthInfo = unknown> extends SdEventEmitter<{
     );
 
     // JSON 생성기
-    this._fastify.setSerializerCompiler(() => (data) => JsonConvert.stringify(data));
+    this._fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
 
     // API 라우트
     this._fastify.all("/api/:service/:method", async (req, reply) => {

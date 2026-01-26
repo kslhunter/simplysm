@@ -4,34 +4,34 @@ import { createConsola } from "consola";
  * 자동 만료 기능이 있는 Map
  * LRU 방식으로 접근 시간 갱신, 일정 시간 미접근 시 자동 삭제
  *
- * @note 인스턴스 사용 후 반드시 destroy()를 호출하거나 using 문을 사용해야 함.
+ * @note 인스턴스 사용 후 반드시 dispose()를 호출하거나 using 문을 사용해야 함.
  *       그렇지 않으면 GC 타이머가 계속 동작하여 메모리 누수 발생.
  *
  * @example
  * // using 문 사용 (권장)
  * using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 });
  *
- * // 또는 명시적 destroy() 호출
+ * // 또는 명시적 dispose() 호출
  * const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 });
  * try {
  *   // ... 사용
  * } finally {
- *   map.destroy();
+ *   map.dispose();
  * }
  */
 export class LazyGcMap<K, V> {
   private static readonly _logger = createConsola().withTag("LazyGcMap");
 
   /**
-   * destroy() 미호출 감지용 registry
+   * dispose() 미호출 감지용 registry
    * @note FinalizationRegistry는 Chrome 84+, Node 14.6+ 지원
-   *       미지원 환경에서는 경고 없이 동작하지만, destroy() 미호출 시 메모리 누수 가능
+   *       미지원 환경에서는 경고 없이 동작하지만, dispose() 미호출 시 메모리 누수 가능
    */
   private static readonly _registry =
     typeof FinalizationRegistry !== "undefined"
       ? new FinalizationRegistry<string>((id) => {
           LazyGcMap._logger.warn(
-            `LazyGcMap(${id})이 destroy() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`,
+            `LazyGcMap(${id})이 dispose() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`,
           );
         })
       : undefined;
@@ -102,7 +102,7 @@ export class LazyGcMap<K, V> {
   }
 
   /** 인스턴스 정리 (GC 타이머 중지 및 데이터 삭제) */
-  destroy(): void {
+  dispose(): void {
     if (this._isDestroyed) return;
     this._isDestroyed = true;
     LazyGcMap._registry?.unregister(this);
@@ -113,7 +113,7 @@ export class LazyGcMap<K, V> {
 
   /** using 문 지원 */
   [Symbol.dispose](): void {
-    this.destroy();
+    this.dispose();
   }
 
   /**

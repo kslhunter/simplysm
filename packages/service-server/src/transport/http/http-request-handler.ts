@@ -1,4 +1,4 @@
-import { JsonConvert } from "@simplysm/core-common";
+import { jsonParse } from "@simplysm/core-common";
 import type { ServiceServer } from "../../service-server";
 import type { ServiceExecutor } from "../../core/service-executor";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -41,7 +41,7 @@ export class HttpRequestHandler {
       if (typeof query.json !== "string") {
         throw new Error("JSON query parameter required");
       }
-      params = JsonConvert.parse(query.json);
+      params = jsonParse(query.json);
     } else if (req.method === "POST") {
       if (!Array.isArray(req.body)) {
         reply.status(400).send({

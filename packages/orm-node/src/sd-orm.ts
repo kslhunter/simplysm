@@ -6,7 +6,7 @@ import { NodeDbContextExecutor } from "./node-db-context-executor";
 /**
  * SdOrm 옵션
  *
- * DbConnConfig에서 상속받지 않는 DbContext 옵션
+ * DbConnConfig보다 우선 적용되는 DbContext 옵션
  */
 export interface SdOrmOptions {
   /**

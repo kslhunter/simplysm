@@ -14,6 +14,13 @@ import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-wor
  * 이 클래스는 내부적으로 ZIP 리소스를 관리합니다.
  * 사용 완료 후 반드시 리소스를 해제해야 합니다.
  *
+ * ## 비동기 설계
+ *
+ * 대용량 Excel 파일의 메모리 효율성을 위해 Lazy Loading 구조를 채택합니다:
+ * - ZIP 파일 내부의 XML은 접근 시점에만 읽고 파싱한다
+ * - SharedStrings, Styles 등 대용량 XML은 필요할 때만 로드한다
+ * - 극단적 케이스(예: SharedStrings가 1TB인 파일에서 숫자 셀 하나만 읽기)에서도 메모리 효율적이다
+ *
  * @example
  * ```typescript
  * // await using 사용 (권장)
@@ -37,6 +44,9 @@ export class ExcelWorkbook {
   private readonly _wsMap = new Map<number, ExcelWorksheet>();
   private _isClosed = false;
 
+  /**
+   * @param arg 기존 Excel 파일 데이터 (Blob 또는 Uint8Array). 생략 시 새 워크북을 생성한다.
+   */
   constructor(arg?: Blob | Bytes) {
     if (arg != null) {
       this.zipCache = new ZipCache(arg);

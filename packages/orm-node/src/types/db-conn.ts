@@ -1,4 +1,4 @@
-import type { SdEventEmitter } from "@simplysm/core-common";
+import type { EventEmitter } from "@simplysm/core-common";
 import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
 
 // ============================================
@@ -33,7 +33,7 @@ export const DB_CONN_ERRORS = {
  * @remarks
  * SdEventEmitter를 상속하여 'close' 이벤트를 발생시킵니다.
  */
-export interface DbConn extends SdEventEmitter<{ close: void }> {
+export interface DbConn extends EventEmitter<{ close: void }> {
   /**
    * 연결 설정
    */

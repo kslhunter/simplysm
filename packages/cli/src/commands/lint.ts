@@ -2,9 +2,10 @@ import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
 import { Listr } from "listr2";
-import { FsUtils, PathUtils } from "@simplysm/core-node";
+import { fsExists, fsGlobAsync, pathFilterByTargets } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 import { consola } from "consola";
+import { sumBy } from "remeda";
 
 //#region Types
 
@@ -65,7 +66,7 @@ function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
 export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   const configPath = ESLINT_CONFIG_FILES
     .map((f) => path.join(cwd, f))
-    .find((p) => FsUtils.exists(p));
+    .find((p) => fsExists(p));
 
   if (configPath == null) {
     throw new SdError(
@@ -136,7 +137,7 @@ export async function runLint(options: LintOptions): Promise<void> {
       {
         title: "린트 대상 파일 수집",
         task: async (ctx, task) => {
-          let files = await FsUtils.globAsync("**/*.{ts,js,html}", {
+          let files = await fsGlobAsync("**/*.{ts,tsx,js,jsx}", {
             cwd,
             ignore: ctx.ignorePatterns,
             nodir: true,
@@ -144,7 +145,7 @@ export async function runLint(options: LintOptions): Promise<void> {
           });
 
           // targets가 주어지면 해당 경로의 하위 파일만 필터링
-          files = PathUtils.filterByTargets(files, targets, cwd);
+          files = pathFilterByTargets(files, targets, cwd);
           ctx.files = files;
           logger.debug("파일 수집 완료", { fileCount: files.length });
           task.title = `린트 대상 파일 수집 (${files.length}개)`;
@@ -194,8 +195,8 @@ export async function runLint(options: LintOptions): Promise<void> {
   }
 
   // 결과 집계
-  const errorCount = ctx.results.sum((r) => r.errorCount);
-  const warningCount = ctx.results.sum((r) => r.warningCount);
+  const errorCount = sumBy(ctx.results, (r) => r.errorCount);
+  const warningCount = sumBy(ctx.results, (r) => r.warningCount);
 
   if (errorCount > 0) {
     logger.error("린트 에러 발생", { errorCount, warningCount });

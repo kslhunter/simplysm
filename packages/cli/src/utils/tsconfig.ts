@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 
 /**
@@ -14,11 +14,11 @@ const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
  */
 export async function getTypesFromPackageJson(packageDir: string): Promise<string[]> {
   const packageJsonPath = path.join(packageDir, "package.json");
-  if (!FsUtils.exists(packageJsonPath)) {
+  if (!fsExists(packageJsonPath)) {
     return [];
   }
 
-  const packageJson = await FsUtils.readJsonAsync<{ devDependencies?: Record<string, string> }>(
+  const packageJson = await fsReadJsonAsync<{ devDependencies?: Record<string, string> }>(
     packageJsonPath,
   );
   const devDeps = packageJson.devDependencies ?? {};
@@ -55,6 +55,12 @@ export async function getCompilerOptionsForPackage(
 ): Promise<ts.CompilerOptions> {
   const options = { ...baseOptions };
   const packageTypes = await getTypesFromPackageJson(packageDir);
+
+  // pnpm 환경: 패키지별 node_modules/@types와 루트 node_modules/@types 모두 검색
+  options.typeRoots = [
+    path.join(packageDir, "node_modules", "@types"),
+    path.join(process.cwd(), "node_modules", "@types"),
+  ];
 
   switch (env) {
     case "node":

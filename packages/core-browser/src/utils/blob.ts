@@ -1,6 +1,9 @@
 export namespace BlobUtils {
   /**
    * Blob을 파일로 다운로드
+   *
+   * @param blob - 다운로드할 Blob 객체
+   * @param fileName - 저장될 파일 이름
    */
   export function download(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob);
@@ -10,7 +13,7 @@ export namespace BlobUtils {
       link.download = fileName;
       link.click();
     } finally {
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
   }
 }

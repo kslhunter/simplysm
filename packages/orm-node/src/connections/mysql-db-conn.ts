@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
 import { createConsola } from "consola";
-import { BytesUtils, DateOnly, DateTime, SdError, SdEventEmitter, StringUtils, Time, Uuid } from "@simplysm/core-common";
+import { bytesToHex, DateOnly, DateTime, SdError, EventEmitter, strIsNullOrEmpty, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -19,7 +19,7 @@ const logger = createConsola().withTag("mysql-db-conn");
  *
  * mysql2/promise 라이브러리를 사용하여 MySQL 연결을 관리합니다.
  */
-export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
+export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private static readonly _ROOT_USER = "root";
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
@@ -82,16 +82,19 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
   async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._assertConnected();
 
-    await conn.beginTransaction();
-
     const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(
       /_/g,
       " ",
     );
+
+    // 격리 수준을 먼저 설정 (다음 트랜잭션에 적용됨)
     await conn.query({
       sql: `SET SESSION TRANSACTION ISOLATION LEVEL ${level}`,
       timeout: this._timeout,
     });
+
+    // 그 다음 트랜잭션 시작
+    await conn.beginTransaction();
 
     this.isOnTransaction = true;
   }
@@ -110,7 +113,7 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
   async executeAsync(queries: string[]): Promise<unknown[][]> {
     const results: unknown[][] = [];
-    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrizedAsync(query);
       results.push(...resultItems);
     }
@@ -131,6 +134,9 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
       this._startTimeout();
 
+      // MySQL은 INSERT/UPDATE/DELETE 문에 대해 ResultSetHeader를 반환함
+      // SELECT 결과만 추출하기 위해 ResultSetHeader 객체를 필터링함
+      // ResultSetHeader는 affectedRows, fieldCount 등의 필드를 가지고 있음
       const result: unknown[] = [];
       if (queryResults instanceof Array) {
         for (const queryResult of queryResults.filter(
@@ -246,16 +252,16 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
         return (value as Uuid).toString().replace(/-/g, ""); // BINARY(16) 저장용 hex
 
       case "binary":
-        return BytesUtils.toHex(value as Uint8Array);
+        return bytesToHex(value as Uint8Array);
 
       default:
-        throw new Error(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
     }
   }
 
   private _assertConnected(): Connection {
     if (this._conn == null || !this.isConnected) {
-      throw new Error(DB_CONN_ERRORS.NOT_CONNECTED);
+      throw new SdError(DB_CONN_ERRORS.NOT_CONNECTED);
     }
     this._startTimeout();
     return this._conn;
@@ -275,8 +281,10 @@ export class MysqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
   private _startTimeout(): void {
     this._stopTimeout();
-    this._connTimeout = setTimeout(async () => {
-      await this.closeAsync();
+    this._connTimeout = setTimeout(() => {
+      this.closeAsync().catch((err) => {
+        logger.error("closeAsync error", err instanceof Error ? err.message : String(err));
+      });
     }, this._timeout * 2);
   }
 }

@@ -66,6 +66,12 @@ describe("SftpStorageClient", () => {
         "이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
       );
     });
+
+    it("연결 실패 시 클라이언트를 정리해야 함", async () => {
+      mockConnect.mockRejectedValueOnce(new Error("Auth failed"));
+      await expect(client.connect({ host: "test" })).rejects.toThrow("Auth failed");
+      expect(mockEnd).toHaveBeenCalled();
+    });
   });
 
   describe("연결 전 메서드 호출", () => {
@@ -136,6 +142,14 @@ describe("SftpStorageClient", () => {
       const result = await client.exists("/symlink");
 
       expect(result).toBe(true);
+    });
+
+    it("에러 발생 시 false 반환", async () => {
+      mockExists.mockRejectedValueOnce(new Error("Network error"));
+      await client.connect({ host: "test" });
+      const result = await client.exists("/test.txt");
+
+      expect(result).toBe(false);
     });
   });
 
@@ -216,6 +230,10 @@ describe("SftpStorageClient", () => {
   });
 
   describe("close", () => {
+    it("연결 전 close 호출 시 에러 없이 종료", async () => {
+      await expect(client.close()).resolves.toBeUndefined();
+    });
+
     it("연결을 닫아야 함", async () => {
       await client.connect({ host: "test" });
       await client.close();

@@ -2,7 +2,7 @@ import path from "path";
 import { createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
 import { Uuid } from "@simplysm/core-common";
-import { FsUtils } from "@simplysm/core-node";
+import { fsMkdirAsync, fsStatAsync, fsRmAsync } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { ServiceUploadResult } from "@simplysm/service-common";
@@ -42,7 +42,7 @@ export class UploadHandler {
     const result: ServiceUploadResult[] = [];
     const uploadDir = path.resolve(this._server.options.rootPath, "www", "uploads");
 
-    await FsUtils.mkdirAsync(uploadDir);
+    await fsMkdirAsync(uploadDir);
 
     let currentSavePath: string | undefined;
 
@@ -60,7 +60,7 @@ export class UploadHandler {
             throw new Error(`File limit exceeded: ${originalFilename}`);
           }
 
-          const stats = await FsUtils.statAsync(currentSavePath);
+          const stats = await fsStatAsync(currentSavePath);
 
           result.push({
             path: `uploads/${saveName}`,
@@ -77,7 +77,7 @@ export class UploadHandler {
       logger.error("Upload Error", err);
 
       if (currentSavePath != null) {
-        await FsUtils.rmAsync(currentSavePath).catch(() => {});
+        await fsRmAsync(currentSavePath).catch(() => {});
         logger.warn(`Incomplete file deleted: ${currentSavePath}`);
       }
 

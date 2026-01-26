@@ -1,6 +1,21 @@
-import type { TSESTree } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
 import type { RuleFix } from "@typescript-eslint/utils/ts-eslint";
 import { createRule } from "../utils/create-rule";
+
+type ClassMemberWithAccessibility =
+  | TSESTree.PropertyDefinition
+  | TSESTree.MethodDefinition
+  | TSESTree.AccessorProperty;
+
+function isClassMemberWithAccessibility(
+  node: TSESTree.Node | undefined,
+): node is ClassMemberWithAccessibility {
+  return (
+    node?.type === AST_NODE_TYPES.PropertyDefinition ||
+    node?.type === AST_NODE_TYPES.MethodDefinition ||
+    node?.type === AST_NODE_TYPES.AccessorProperty
+  );
+}
 
 /**
  * ECMAScript private 필드(`#field`) 사용을 제한하고 TypeScript `private` 키워드 사용을 강제하는 ESLint 규칙
@@ -20,7 +35,10 @@ export default createRule({
       description: '하드 프라이빗 필드(#) 대신 TypeScript "private _" 스타일을 강제한다.',
     },
     messages: {
-      preferSoftPrivate: '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
+      preferSoftPrivate:
+        '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
+      nameConflict:
+        '하드 프라이빗 필드 "#{{name}}"을 "_{{name}}"으로 변환할 수 없습니다. 동일한 이름의 멤버가 이미 존재합니다.',
     },
     fixable: "code",
     schema: [],
@@ -28,14 +46,49 @@ export default createRule({
   defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
+    // 중첩 클래스 지원을 위한 스택 구조
+    const classStack: Set<string>[] = [];
 
     return {
+      // 0. 클래스 진입 시 멤버 이름 수집
+      ClassBody(node: TSESTree.ClassBody) {
+        const memberNames = new Set<string>();
+        for (const member of node.body) {
+          if (!("key" in member)) continue;
+          const key = member.key;
+          if (key.type === AST_NODE_TYPES.Identifier) {
+            memberNames.add(key.name);
+          }
+        }
+        classStack.push(memberNames);
+      },
+
+      "ClassBody:exit"() {
+        classStack.pop();
+      },
+
       // 1. 선언부 감지 (PropertyDefinition, MethodDefinition, AccessorProperty)
       "PropertyDefinition > PrivateIdentifier, MethodDefinition > PrivateIdentifier, AccessorProperty > PrivateIdentifier"(
-        node: TSESTree.PrivateIdentifier
+        node: TSESTree.PrivateIdentifier,
       ) {
-        const parent = node.parent as TSESTree.PropertyDefinition | TSESTree.MethodDefinition | TSESTree.AccessorProperty;
+        const parent = node.parent;
+        if (!isClassMemberWithAccessibility(parent)) {
+          return;
+        }
+
         const identifierName = node.name; // '#'을 제외한 이름
+        const targetName = `_${identifierName}`;
+        const currentClassMembers = classStack.at(-1);
+
+        // 이름 충돌 검사
+        if (currentClassMembers?.has(targetName)) {
+          context.report({
+            node,
+            messageId: "nameConflict",
+            data: { name: identifierName },
+          });
+          return;
+        }
 
         context.report({
           node,
@@ -44,7 +97,7 @@ export default createRule({
             const fixes: RuleFix[] = [];
 
             // 1-1. 이름 변경 (#a -> _a)
-            fixes.push(fixer.replaceText(node, `_${identifierName}`));
+            fixes.push(fixer.replaceText(node, targetName));
 
             // 1-2. 'private' 접근 제어자 추가 위치 계산
             if (parent.accessibility == null) {

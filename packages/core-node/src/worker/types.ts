@@ -1,9 +1,13 @@
 //#region Types
 
 /**
- * Worker 모듈 타입 (기본 구조).
+ * `createWorker()`가 반환하는 워커 모듈의 타입 구조.
+ * `Worker.create<typeof import("./worker")>()`에서 타입 추론에 사용된다.
+ *
+ * @see createWorker - 워커 모듈 생성
+ * @see Worker.create - 워커 프록시 생성
  */
-export interface SdWorkerModule {
+export interface WorkerModule {
   default: {
     __methods: Record<string, (...args: any[]) => unknown>;
     __events: Record<string, unknown>;
@@ -11,7 +15,9 @@ export interface SdWorkerModule {
 }
 
 /**
- * 메서드를 Promise 반환 타입으로 변환.
+ * 메서드 타입의 반환값을 Promise로 래핑하는 매핑 타입.
+ * 워커 메서드는 postMessage 기반으로 동작하여 항상 비동기이므로,
+ * 동기 메서드 타입도 `Promise<Awaited<R>>`로 변환한다.
  */
 export type PromisifyMethods<T> = {
   [K in keyof T]: T[K] extends (...args: infer P) => infer R
@@ -23,7 +29,7 @@ export type PromisifyMethods<T> = {
  * SdWorker.create()가 반환하는 Proxy 타입.
  * Promisified 메서드들 + on() + terminate() 제공.
  */
-export type SdWorkerProxy<TModule extends SdWorkerModule> = PromisifyMethods<
+export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
   TModule["default"]["__methods"]
 > & {
   /**
@@ -51,7 +57,7 @@ export type SdWorkerProxy<TModule extends SdWorkerModule> = PromisifyMethods<
 /**
  * Worker 내부 요청 메시지.
  */
-export interface SdWorkerRequest {
+export interface WorkerRequest {
   id: string;
   method: string;
   params: unknown[];
@@ -60,14 +66,14 @@ export interface SdWorkerRequest {
 /**
  * Worker 내부 응답 메시지.
  */
-export type SdWorkerResponse =
+export type WorkerResponse =
   | {
-      request: SdWorkerRequest;
+      request: WorkerRequest;
       type: "return";
       body?: unknown;
     }
   | {
-      request: SdWorkerRequest;
+      request: WorkerRequest;
       type: "error";
       body: Error;
     }

@@ -57,6 +57,7 @@ sd-cli typecheck packages/core-common tests/orm
 
 | 옵션 | 설명 | 기본값 |
 |------|------|--------|
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
 | `--debug` | debug 로그 출력 | `false` |
 
 ### watch
@@ -78,6 +79,7 @@ sd-cli watch solid solid-demo
 
 | 옵션 | 설명 | 기본값 |
 |------|------|--------|
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
 | `--debug` | debug 로그 출력 | `false` |
 
 ## 설정 (sd.config.ts)
@@ -146,12 +148,14 @@ await runWatch({
 | 속성 | 타입 | 설명 |
 |------|------|------|
 | `targets` | `string[]` | 타입체크할 경로 목록. 빈 배열이면 전체 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
 
 #### WatchOptions
 
 | 속성 | 타입 | 설명 |
 |------|------|------|
 | `targets` | `string[]` | watch할 패키지 목록. 빈 배열이면 전체 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
 
 **API 동작:**
 - `runLint`, `runTypecheck`: `Promise<void>` 반환. 에러 발견 시 `process.exitCode = 1`을 설정하고 resolve (throw하지 않음)

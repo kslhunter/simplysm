@@ -1,22 +1,23 @@
 import path from "path";
 import semver from "semver";
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists, fsReaddir } from "@simplysm/core-node";
 import type { AutoUpdateService as AutoUpdateServiceType } from "@simplysm/service-common";
 import { ServiceBase } from "../core/service-base";
 
 export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceType {
-  getLastVersion(platform: string):
+  getLastVersion(platform: string): Promise<
     | {
         version: string;
         downloadPath: string;
       }
-    | undefined {
+    | undefined
+  > {
     const clientPath = this.clientPath;
     if (clientPath == null) throw new Error("클라이언트 경로를 찾을 수 없습니다.");
 
-    if (!FsUtils.exists(path.resolve(clientPath, platform, "updates"))) return undefined;
+    if (!fsExists(path.resolve(clientPath, platform, "updates"))) return Promise.resolve(undefined);
 
-    const updates = FsUtils.readdir(path.resolve(clientPath, platform, "updates"));
+    const updates = fsReaddir(path.resolve(clientPath, platform, "updates"));
     const versions = updates
       .map((item) => ({
         fileName: item,
@@ -36,17 +37,17 @@ export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceT
       "*",
     );
 
-    if (version == null) return undefined;
+    if (version == null) return Promise.resolve(undefined);
 
     const versionItem = versions.find((item) => item.version === version);
-    if (versionItem == null) return undefined;
+    if (versionItem == null) return Promise.resolve(undefined);
 
     const downloadPath =
       "/" + path.join(this.clientName ?? "", platform, "updates", versionItem.fileName);
 
-    return {
+    return Promise.resolve({
       version,
       downloadPath,
-    };
+    });
   }
 }

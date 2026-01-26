@@ -100,14 +100,14 @@ describe("Errors", () => {
       const error = new NotImplementedError();
 
       expect(error.name).toBe("NotImplementedError");
-      expect(error.message).toBe("구현되어있지 않습니다");
+      expect(error.message).toBe("구현되어 있지 않습니다");
     });
 
     it("커스텀 메시지로 생성한다", () => {
       const error = new NotImplementedError("custom message");
 
-      // "구현되어있지 않습니다: custom message" 형식
-      expect(error.message).toContain("구현되어있지 않습니다");
+      // "구현되어 있지 않습니다: custom message" 형식
+      expect(error.message).toContain("구현되어 있지 않습니다");
       expect(error.message).toContain("custom message");
     });
   });
@@ -121,7 +121,7 @@ describe("Errors", () => {
       const error = new TimeoutError();
 
       expect(error.name).toBe("TimeoutError");
-      expect(error.message).toContain("대기시간이 초과되었습니다");
+      expect(error.message).toContain("대기 시간이 초과되었습니다");
     });
 
     it("시도 횟수와 함께 생성한다", () => {

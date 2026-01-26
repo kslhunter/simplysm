@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid, BytesUtils } from "@simplysm/core-common";
+import { DateOnly, DateTime, Time, Uuid, bytesToHex } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,
@@ -107,10 +107,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
       return `'${value.toFormatString("HH:mm:ss")}'`;
     }
     if (value instanceof Uuid) {
-      return `0x${BytesUtils.toHex(value.toBytes())}`;
+      return `0x${bytesToHex(value.toBytes())}`;
     }
     if (value instanceof Uint8Array) {
-      return `0x${BytesUtils.toHex(value)}`;
+      return `0x${bytesToHex(value)}`;
     }
     throw new Error(`알 수 없는 값 타입: ${typeof value}`);
   }
@@ -164,11 +164,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected raw(expr: ExprRaw): string {
-    let sql = expr.sql;
-    expr.params.forEach((param, i) => {
-      sql = sql.replace(`$${i + 1}`, this.render(param));
+    return expr.sql.replace(/\$(\d+)/g, (_, num) => {
+      const idx = parseInt(num) - 1;
+      return idx < expr.params.length ? this.render(expr.params[idx]) : `$${num}`;
     });
-    return sql;
   }
 
   //#endregion
@@ -504,10 +503,12 @@ export class MysqlExprRenderer extends ExprRendererBase {
   //#region ========== 기타 ==========
 
   protected greatest(expr: ExprGreatest): string {
+    if (expr.args.length === 0) throw new Error("greatest는 최소 하나의 인자가 필요합니다.");
     return `GREATEST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 
   protected least(expr: ExprLeast): string {
+    if (expr.args.length === 0) throw new Error("least는 최소 하나의 인자가 필요합니다.");
     return `LEAST(${expr.args.map((a) => this.render(a)).join(", ")})`;
   }
 

@@ -1,6 +1,11 @@
-import { NumberUtils } from "@simplysm/core-common";
+import { numParseInt, arrSingle } from "@simplysm/core-common";
+import { firstBy } from "remeda";
 import type { ExcelXml, ExcelXmlWorkbookData } from "../types";
 
+/**
+ * xl/workbook.xml 파일을 관리하는 클래스.
+ * 워크시트 목록과 관계 ID를 처리한다.
+ */
 export class ExcelXmlWorkbook implements ExcelXml {
   data: ExcelXmlWorkbookData;
 
@@ -20,9 +25,10 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   get lastWsRelId(): number | undefined {
-    return this.data.workbook.sheets?.[0].sheet.max(
-      (sheet) => NumberUtils.parseInt(sheet.$["r:id"])!,
-    );
+    const sheets = this.data.workbook.sheets?.[0].sheet;
+    if (!sheets || sheets.length === 0) return undefined;
+    const maxSheet = firstBy(sheets, [(sheet) => numParseInt(sheet.$["r:id"])!, "desc"]);
+    return maxSheet ? numParseInt(maxSheet.$["r:id"]) : undefined;
   }
 
   get sheetNames(): string[] {
@@ -75,13 +81,13 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   getWsRelIdByName(name: string): number | undefined {
-    return NumberUtils.parseInt(
-      this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name === name)?.$["r:id"],
+    return numParseInt(
+      arrSingle(this.data.workbook.sheets?.[0].sheet ?? [], (item) => item.$.name === name)?.$["r:id"],
     );
   }
 
   getWsRelIdByIndex(index: number): number | undefined {
-    return NumberUtils.parseInt(this.data.workbook.sheets?.[0].sheet[index]?.$["r:id"]);
+    return numParseInt(this.data.workbook.sheets?.[0].sheet[index]?.$["r:id"]);
   }
 
   getWorksheetNameById(id: number): string | undefined {
@@ -89,13 +95,18 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   setWorksheetNameById(id: number, newName: string): void {
+    const sheetData = this._getSheetDataById(id);
+    if (sheetData == null) {
+      throw new Error(`워크시트 ID ${id}를 찾을 수 없습니다`);
+    }
     const replacedName = this._getReplacedName(newName);
-    this._getSheetDataById(id)!.$.name = replacedName;
+    sheetData.$.name = replacedName;
   }
 
   private _getSheetDataById(id: number) {
-    return this.data.workbook.sheets?.[0].sheet.single(
-      (item) => NumberUtils.parseInt(item.$["r:id"]) === id,
+    return arrSingle(
+      this.data.workbook.sheets?.[0].sheet ?? [],
+      (item) => numParseInt(item.$["r:id"]) === id,
     );
   }
 

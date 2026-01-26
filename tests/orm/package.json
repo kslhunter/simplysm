@@ -1,5 +1,6 @@
 {
   "name": "@simplysm-test/orm",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - ORM 통합 테스트",
   "author": "김석래",
@@ -11,6 +12,10 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "devDependencies": {
+    "@types/pg": "^8.16.0",
+    "@types/pg-copy-streams": "^1.2.5"
+  },
   "dependencies": {
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",

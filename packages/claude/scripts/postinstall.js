@@ -60,7 +60,7 @@ function findProjectRoot() {
  * - 루트 레벨 파일 중 settings.json만 복사 (다른 파일 무시)
  * @param {string} srcDir - 소스 디렉토리 (dist)
  * @param {string} destDir - 대상 디렉토리 (.claude)
- * @throws {Error} 디렉토리 복사 실패 시
+ * @throws {Error} 파일 시스템 작업 실패 시
  */
 function copyDistToTarget(srcDir, destDir) {
   fs.mkdirSync(destDir, { recursive: true });

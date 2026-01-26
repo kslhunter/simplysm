@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { BytesUtils, SdError } from "@simplysm/core-common";
+import { bytesConcat, SdError } from "@simplysm/core-common";
 import ftp from "basic-ftp";
 import { PassThrough, Readable } from "stream";
 import type { Storage, FileInfo } from "../types/storage";
@@ -74,15 +74,15 @@ export class FtpStorageClient implements Storage {
       chunks.push(chunk);
     });
     await client.downloadTo(writable, filePath);
-    return BytesUtils.concat(chunks);
+    return bytesConcat(chunks);
   }
 
   /**
    * 파일 또는 디렉토리 존재 여부를 확인합니다.
    *
    * @remarks
-   * 내부적으로 상위 디렉토리의 전체 목록을 조회하므로,
-   * 항목이 많은 디렉토리에서는 성능이 저하될 수 있습니다.
+   * 파일 확인 시 size() 명령으로 O(1) 성능을 제공합니다.
+   * 디렉토리 확인 시 상위 디렉토리 목록을 조회하므로, 항목 수가 많으면 성능이 저하될 수 있습니다.
    *
    * 슬래시가 없는 경로(예: `file.txt`)는 루트 디렉토리(`/`)에서 검색합니다.
    *
@@ -91,13 +91,20 @@ export class FtpStorageClient implements Storage {
    */
   async exists(filePath: string): Promise<boolean> {
     try {
-      const lastSlash = filePath.lastIndexOf("/");
-      const dirPath = lastSlash > 0 ? filePath.substring(0, lastSlash) : "/";
-      const fileName = filePath.substring(lastSlash + 1);
-      const list = await this._requireClient().list(dirPath);
-      return list.some((item) => item.name === fileName);
+      // 파일인 경우 size()로 빠르게 확인 (O(1))
+      await this._requireClient().size(filePath);
+      return true;
     } catch {
-      return false;
+      // size() 실패 시 디렉토리일 수 있으므로 list()로 확인
+      try {
+        const lastSlash = filePath.lastIndexOf("/");
+        const dirPath = lastSlash > 0 ? filePath.substring(0, lastSlash) : "/";
+        const fileName = filePath.substring(lastSlash + 1);
+        const list = await this._requireClient().list(dirPath);
+        return list.some((item) => item.name === fileName);
+      } catch {
+        return false;
+      }
     }
   }
 
@@ -127,12 +134,13 @@ export class FtpStorageClient implements Storage {
    * 이미 종료된 상태에서 호출해도 에러가 발생하지 않습니다.
    * 종료 후에는 동일 인스턴스에서 {@link connect}를 다시 호출하여 재연결할 수 있습니다.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await -- basic-ftp close()는 동기 함수
-  async close(): Promise<void> {
+  close(): Promise<void> {
     if (this._client === undefined) {
-      return;
+      return Promise.resolve();
     }
+
     this._client.close();
     this._client = undefined;
+    return Promise.resolve();
   }
 }

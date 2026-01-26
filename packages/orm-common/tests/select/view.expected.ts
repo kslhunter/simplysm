@@ -121,7 +121,7 @@ export const createActiveUsersView: ExpectedSql = {
   postgresql: pgsql`
     CREATE OR REPLACE VIEW "TestSchema"."ActiveUsers" AS
     SELECT * FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE)
+    WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE
   `,
 };
 

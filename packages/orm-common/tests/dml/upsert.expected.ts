@@ -27,12 +27,12 @@ export const upsertSimple: ExpectedSql = {
   postgresql: pgsql`
     WITH matched AS (
       SELECT "T1".* FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
     ),
     updated AS (
       UPDATE "TestSchema"."Employee" AS "T1"
       SET "name" = '새이름'
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
       RETURNING *
     ),
     inserted AS (
@@ -66,12 +66,12 @@ export const upsertReuse: ExpectedSql = {
   postgresql: pgsql`
     WITH matched AS (
       SELECT "T1".* FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
     ),
     updated AS (
       UPDATE "TestSchema"."Employee" AS "T1"
       SET "name" = '홍길동', "departmentId" = 2
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
       RETURNING *
     ),
     inserted AS (
@@ -113,12 +113,12 @@ export const upsertWithOutput: ExpectedSql = {
   postgresql: pgsql`
     WITH matched AS (
       SELECT "T1".* FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
     ),
     updated AS (
       UPDATE "TestSchema"."Employee" AS "T1"
       SET "name" = '새이름'
-      WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
       RETURNING "id", "name"
     ),
     inserted AS (
@@ -153,14 +153,14 @@ export const upsertMultiWhere: ExpectedSql = {
   postgresql: pgsql`
     WITH matched AS (
       SELECT "T1".* FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."name" IS NULL AND '홍길동' IS NULL) OR "T1"."name" = '홍길동')
-        AND (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+      WHERE "T1"."name" IS NOT DISTINCT FROM '홍길동'
+        AND "T1"."departmentId" IS NOT DISTINCT FROM 1
     ),
     updated AS (
       UPDATE "TestSchema"."Employee" AS "T1"
       SET "managerId" = 10
-      WHERE (("T1"."name" IS NULL AND '홍길동' IS NULL) OR "T1"."name" = '홍길동')
-        AND (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+      WHERE "T1"."name" IS NOT DISTINCT FROM '홍길동'
+        AND "T1"."departmentId" IS NOT DISTINCT FROM 1
       RETURNING *
     ),
     inserted AS (

@@ -2,7 +2,13 @@
 
 @source "./src/**/*.{ts,tsx}";
 
+/* 클래스 기반 다크 모드 설정 (.dark 클래스 사용) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
+  /* 브라우저 기본 폰트 사용 (한국어 환경에서 굴림 폴백 방지) */
+  --font-sans: sans-serif;
+
   /* primary (blue) */
   --color-primary-lightest: var(--color-blue-100);
   --color-primary-lighter: var(--color-blue-200);
@@ -66,78 +72,119 @@
   --color-gray-darker: var(--color-gray-700);
   --color-gray-darkest: var(--color-gray-800);
 
-  /* blue-gray (slate) */
-  --color-blue-gray-lightest: var(--color-slate-100);
-  --color-blue-gray-lighter: var(--color-slate-200);
-  --color-blue-gray-light: var(--color-slate-300);
-  --color-blue-gray: var(--color-slate-500);
-  --color-blue-gray-dark: var(--color-slate-600);
-  --color-blue-gray-darker: var(--color-slate-700);
-  --color-blue-gray-darkest: var(--color-slate-800);
+  /* slate - Tailwind 기본 slate 팔레트를 시맨틱 변형으로 재정의 */
+  --color-slate-lightest: var(--color-slate-100);
+  --color-slate-lighter: var(--color-slate-200);
+  --color-slate-light: var(--color-slate-300);
+  --color-slate: var(--color-slate-500);
+  --color-slate-dark: var(--color-slate-600);
+  --color-slate-darker: var(--color-slate-700);
+  --color-slate-darkest: var(--color-slate-800);
 
+  /* control sizes - spacing (padding) - 기준: 1rem = 12px */
+  --spacing-ctrl-xxs: 0.167rem;   /* 2px */
+  --spacing-ctrl-xs: 0.25rem;     /* 3px */
+  --spacing-ctrl-sm: 0.333rem;    /* 4px */
+  --spacing-ctrl: 0.5rem;         /* 6px - default */
+  --spacing-ctrl-lg: 0.667rem;    /* 8px */
+  --spacing-ctrl-xl: 0.833rem;    /* 10px */
+  --spacing-ctrl-xxl: 1rem;       /* 12px */
+
+
+  /* sidebar */
+  --sidebar-width: 200px;
+
+  /* z-index */
+  --z-index-sidebar: 100;
 }
 
-/* semantic colors - CSS 변수로 유지되어야 다크 모드에서 오버라이드 가능 */
-@theme {
-  --color-bg-base: var(--color-bg-base);
-  --color-bg-elevated: var(--color-bg-elevated);
-  --color-bg-hover: var(--color-bg-hover);
-  --color-text-base: var(--color-text-base);
-  --color-text-muted: var(--color-text-muted);
-  --color-border-base: var(--color-border-base);
-  --color-disabled-bg: var(--color-disabled-bg);
-  --color-disabled-text: var(--color-disabled-text);
-  --color-disabled-border: var(--color-disabled-border);
-  --color-primary-text-hover: var(--color-primary-text-hover);
-  --color-secondary-text-hover: var(--color-secondary-text-hover);
-  --color-info-text-hover: var(--color-info-text-hover);
-  --color-success-text-hover: var(--color-success-text-hover);
-  --color-warning-text-hover: var(--color-warning-text-hover);
-  --color-danger-text-hover: var(--color-danger-text-hover);
-  --color-gray-text-hover: var(--color-gray-text-hover);
-  --color-blue-gray-text-hover: var(--color-blue-gray-text-hover);
-  --color-ripple: var(--color-ripple);
-}
-
+/* semantic colors - 동적 테마를 위해 별도 CSS 변수(--sd-*)를 정의하고 @theme에서 참조 */
 :root {
-  --color-bg-base: white;
-  --color-bg-elevated: var(--color-gray-50);
-  --color-bg-hover: var(--color-gray-100);
-  --color-text-base: var(--color-gray-900);
-  --color-text-muted: var(--color-gray-500);
-  --color-border-base: var(--color-gray-300);
-  --color-disabled-bg: var(--color-gray-200);
-  --color-disabled-text: var(--color-gray-400);
-  --color-disabled-border: var(--color-gray-200);
-  --color-primary-text-hover: var(--color-primary-dark);
-  --color-secondary-text-hover: var(--color-secondary-dark);
-  --color-info-text-hover: var(--color-info-dark);
-  --color-success-text-hover: var(--color-success-dark);
-  --color-warning-text-hover: var(--color-warning-dark);
-  --color-danger-text-hover: var(--color-danger-dark);
-  --color-gray-text-hover: var(--color-gray-dark);
-  --color-blue-gray-text-hover: var(--color-blue-gray-dark);
-  --color-ripple: rgba(0, 0, 0, 0.15);
+  --sd-bg-base: white;
+  --sd-bg-elevated: var(--color-gray-50);
+  --sd-bg-hover: var(--color-gray-100);
+  --sd-text-base: var(--color-gray-900);
+  --sd-text-muted: var(--color-gray-500);
+  --sd-border-base: var(--color-gray-300);
+  --sd-bg-disabled: var(--color-gray-200);
+  --sd-text-disabled: var(--color-gray-400);
+  --sd-border-disabled: var(--color-gray-200);
+  --sd-text-primary-hover: var(--color-primary-dark);
+  --sd-text-secondary-hover: var(--color-secondary-dark);
+  --sd-text-info-hover: var(--color-info-dark);
+  --sd-text-success-hover: var(--color-success-dark);
+  --sd-text-warning-hover: var(--color-warning-dark);
+  --sd-text-danger-hover: var(--color-danger-dark);
+  --sd-text-gray-hover: var(--color-gray-dark);
+  --sd-text-slate-hover: var(--color-slate-dark);
+  --sd-ripple: rgba(0, 0, 0, 0.15);
 }
 
 /* dark mode overrides */
 :root.dark {
-  --color-bg-base: var(--color-gray-900);
-  --color-bg-elevated: var(--color-gray-800);
-  --color-bg-hover: var(--color-gray-700);
-  --color-text-base: var(--color-gray-100);
-  --color-text-muted: var(--color-gray-400);
-  --color-border-base: var(--color-gray-600);
-  --color-disabled-bg: var(--color-gray-700);
-  --color-disabled-text: var(--color-gray-500);
-  --color-disabled-border: var(--color-gray-700);
-  --color-primary-text-hover: var(--color-primary-light);
-  --color-secondary-text-hover: var(--color-secondary-light);
-  --color-info-text-hover: var(--color-info-light);
-  --color-success-text-hover: var(--color-success-light);
-  --color-warning-text-hover: var(--color-warning-light);
-  --color-danger-text-hover: var(--color-danger-light);
-  --color-gray-text-hover: var(--color-gray-light);
-  --color-blue-gray-text-hover: var(--color-blue-gray-light);
-  --color-ripple: rgba(255, 255, 255, 0.2);
+  --sd-bg-base: var(--color-gray-900);
+  --sd-bg-elevated: var(--color-gray-800);
+  --sd-bg-hover: var(--color-gray-700);
+  --sd-text-base: var(--color-gray-100);
+  --sd-text-muted: var(--color-gray-400);
+  --sd-border-base: var(--color-gray-600);
+  --sd-bg-disabled: var(--color-gray-700);
+  --sd-text-disabled: var(--color-gray-500);
+  --sd-border-disabled: var(--color-gray-700);
+  --sd-text-hover-primary: var(--color-primary-light);
+  --sd-text-hover-secondary: var(--color-secondary-light);
+  --sd-text-info-hover: var(--color-info-light);
+  --sd-text-success-hover: var(--color-success-light);
+  --sd-text-warning-hover: var(--color-warning-light);
+  --sd-text-danger-hover: var(--color-danger-light);
+  --sd-text-gray-hover: var(--color-gray-light);
+  --sd-text-slate-hover: var(--color-slate-light);
+  --sd-ripple: rgba(255, 255, 255, 0.2);
+}
+
+/* Tailwind 테마 변수 - 동적 CSS 변수 참조 */
+@theme inline {
+  --color-bg-base: var(--sd-bg-base);
+  --color-bg-elevated: var(--sd-bg-elevated);
+  --color-bg-hover: var(--sd-bg-hover);
+  --color-text-base: var(--sd-text-base);
+  --color-text-muted: var(--sd-text-muted);
+  --color-border-base: var(--sd-border-base);
+  --color-bg-disabled: var(--sd-bg-disabled);
+  --color-text-disabled: var(--sd-text-disabled);
+  --color-border-disabled: var(--sd-border-disabled);
+  --color-text-primary-hover: var(--sd-text-primary-hover);
+  --color-text-secondary-hover: var(--sd-text-secondary-hover);
+  --color-text-info-hover: var(--sd-text-info-hover);
+  --color-text-success-hover: var(--sd-text-success-hover);
+  --color-text-warning-hover: var(--sd-text-warning-hover);
+  --color-text-danger-hover: var(--sd-text-danger-hover);
+  --color-text-gray-hover: var(--sd-text-gray-hover);
+  --color-text-slate-hover: var(--sd-text-slate-hover);
+  --color-ripple: var(--sd-ripple);
+}
+
+/* base layer: Preflight 위에 추가되는 기본 스타일 */
+@layer base {
+  html {
+    font-size: 12px; /* compact UI: sd-angular 스타일 */
+    height: 100%;
+  }
+
+  body {
+    height: 100%;
+    margin: 0;
+    color: var(--sd-text-base);
+    background-color: var(--sd-bg-base);
+  }
+
+  #app {
+    height: 100%;
+  }
+
+  /* Tabler Icons 기본 크기를 1lh로 설정 (size prop 전달 시 override 가능) */
+  svg.tabler-icon[width="24"] {
+    width: 1lh;
+    height: 1lh;
+  }
 }

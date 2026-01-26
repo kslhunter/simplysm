@@ -50,15 +50,16 @@ paths:
 
 ## 호환성
 
-| 기술 | 버전 |
-|-----|-----|
-| 모듈 시스템 | ESM |
-| Node.js | 20.x |
-| TypeScript | 5.8.x |
-| Vitest | 4.x |
-| ESLint | 9.x |
-| SolidJS | 1.x |
-| 브라우저 | Chrome 79+ (esbuild/vite 빌드) |
+| 기술         | 버전                           |
+|------------|------------------------------|
+| 모듈 시스템     | ESM                          |
+| Node.js    | 20.11+                       |
+| TypeScript | 5.8.x                        |
+| Vitest     | 4.x                          |
+| ESLint     | 9.x                          |
+| SolidJS    | 1.x                          |
+| Tailwind   | 4.x                          |
+| 브라우저       | Chrome 79+ (esbuild/vite 빌드) |
 
 ## ESLint 규칙
 

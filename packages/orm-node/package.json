@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/orm-node",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - ORM 모듈 (node)",
   "author": "김석래",
@@ -16,10 +17,10 @@
     "@simplysm/core-common": "workspace:*",
     "@simplysm/orm-common": "workspace:*",
     "consola": "^3.4.2",
-    "generic-pool": "^3.9.0"
+    "generic-pool": "^3.9.0",
+    "remeda": "^2.33.4"
   },
   "devDependencies": {
-    "@types/generic-pool": "^3.8.3",
     "@types/pg": "^8.16.0",
     "@types/pg-copy-streams": "^1.2.5",
     "mysql2": "^3.16.1",

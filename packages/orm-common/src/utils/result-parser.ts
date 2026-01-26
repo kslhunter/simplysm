@@ -1,4 +1,4 @@
-import { BytesUtils, DateOnly, DateTime, ObjectUtils, Time, Uuid } from "@simplysm/core-common";
+import { bytesFromHex, DateOnly, DateTime, objClone, objEqual, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -53,7 +53,7 @@ function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
 
     case "Bytes":
       if (value instanceof Uint8Array) return value;
-      if (typeof value === "string") return BytesUtils.fromHex(value);
+      if (typeof value === "string") return bytesFromHex(value);
       throw new Error(`Bytes 파싱 실패: ${typeof value}`);
   }
 }
@@ -301,7 +301,7 @@ function groupRecordsRecursively(
       }
     } else {
       // 새 그룹 생성
-      const newGroup = ObjectUtils.clone(record);
+      const newGroup = objClone(record);
 
       // 각 JOIN 키를 배열 또는 단일 객체로 초기화
       for (const joinKey of childJoinKeys) {
@@ -355,6 +355,15 @@ function groupRecordsRecursively(
     }
   }
 
+  // __hashSet__ 내부 속성 제거 (중복 체크용 임시 속성)
+  for (const group of grouped) {
+    for (const key of Object.keys(group)) {
+      if (key.startsWith("__hashSet__")) {
+        delete group[key];
+      }
+    }
+  }
+
   return grouped;
 }
 
@@ -398,23 +407,36 @@ function mergeJoinData(
   if (isSingle) {
     // isSingle: true인데 이미 데이터가 있고 다른 값이면 에러
     if (existingJoinData != null) {
-      if (!ObjectUtils.equal(existingJoinData, newJoinData)) {
+      if (!objEqual(existingJoinData as Record<string, unknown>, newJoinData)) {
         throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
       }
     } else {
-      existingGroup[localKey] = ObjectUtils.clone(newJoinData);
+      existingGroup[localKey] = objClone(newJoinData);
     }
   } else {
     // isSingle: false → 배열에 추가
+    const hashSetKey = `__hashSet__${localKey}`;
     if (!Array.isArray(existingJoinData)) {
-      existingGroup[localKey] = [ObjectUtils.clone(newJoinData)];
+      existingGroup[localKey] = [objClone(newJoinData)];
+      // Set 기반 해시 중복 체크를 위한 내부 속성 초기화
+      existingGroup[hashSetKey] = new Set([JSON.stringify(newJoinData)]);
     } else {
-      // 중복 체크 후 추가
-      const isDuplicate = existingJoinData.some(
-        (item) => ObjectUtils.equal(item, newJoinData),
-      );
-      if (!isDuplicate) {
-        existingJoinData.push(ObjectUtils.clone(newJoinData));
+      // Set 기반 중복 체크 (O(1))
+      const hashSet = existingGroup[hashSetKey] as Set<string> | undefined;
+      const newHash = JSON.stringify(newJoinData);
+      if (hashSet != null) {
+        if (!hashSet.has(newHash)) {
+          hashSet.add(newHash);
+          existingJoinData.push(objClone(newJoinData));
+        }
+      } else {
+        // hashSet이 없으면 폴백 (기존 방식)
+        const isDuplicate = existingJoinData.some(
+          (item) => objEqual(item as Record<string, unknown>, newJoinData),
+        );
+        if (!isDuplicate) {
+          existingJoinData.push(objClone(newJoinData));
+        }
       }
     }
   }

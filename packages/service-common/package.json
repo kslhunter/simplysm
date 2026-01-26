@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/service-common",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - 서비스 모듈 (common)",
   "author": "김석래",
@@ -14,6 +15,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
-    "@simplysm/orm-common": "workspace:*"
+    "@simplysm/orm-common": "workspace:*",
+    "remeda": "^2.33.4"
   }
 }

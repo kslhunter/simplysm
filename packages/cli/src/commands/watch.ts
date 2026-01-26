@@ -1,6 +1,6 @@
 import path from "path";
 import { Listr } from "listr2";
-import { SdWorker, type SdWorkerProxy } from "@simplysm/core-node";
+import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
@@ -25,7 +25,7 @@ export interface WatchOptions {
 interface EsbuildWorkerInfo {
   name: string;
   config: SdPackageConfig;
-  worker: SdWorkerProxy<typeof WatchWorkerModule>;
+  worker: WorkerProxy<typeof WatchWorkerModule>;
   isInitialBuild: boolean;
   buildResolver: (() => void) | undefined;
 }
@@ -37,7 +37,7 @@ interface DtsWorkerInfo {
   name: string;
   config: SdPackageConfig;
   env: TypecheckEnv;
-  worker: SdWorkerProxy<typeof DtsWorkerModule>;
+  worker: WorkerProxy<typeof DtsWorkerModule>;
   isInitialBuild: boolean;
   buildResolver: (() => void) | undefined;
 }
@@ -52,6 +52,103 @@ interface PackageResult {
   status: "success" | "error" | "server";
   message?: string;
   port?: number;
+}
+
+/** Worker 빌드 완료 이벤트 데이터 */
+interface BuildEventData {
+  success: boolean;
+  errors?: string[];
+}
+
+/** Worker 에러 이벤트 데이터 */
+interface ErrorEventData {
+  message: string;
+}
+
+/** Worker 서버 준비 이벤트 데이터 */
+interface ServerReadyEventData {
+  port: number;
+}
+
+//#endregion
+
+//#region RebuildListrManager
+
+/**
+ * 리빌드 시 Listr 실행을 관리하는 클래스
+ *
+ * 여러 Worker가 동시에 buildStart를 발생시킬 때, 한 번에 하나의 Listr만 실행되도록 보장합니다.
+ * 실행 중에 들어온 빌드 요청은 pending에 모아두었다가 현재 배치가 완료되면 다음 배치로 실행합니다.
+ */
+class RebuildListrManager {
+  private _isRunning = false;
+  private readonly _pendingBuilds = new Map<string, { title: string; promise: Promise<void>; resolver: () => void }>();
+
+  constructor(
+    private readonly _results: Map<string, PackageResult>,
+    private readonly _logger: ReturnType<typeof consola.withTag>,
+  ) {}
+
+  /**
+   * 빌드를 등록하고 resolver 함수를 반환합니다.
+   *
+   * @param key - 빌드를 식별하는 고유 키 (예: "core-common:build")
+   * @param title - Listr에 표시할 제목 (예: "core-common (node)")
+   * @returns 워커가 빌드 완료 시 호출할 resolver 함수
+   */
+  registerBuild(key: string, title: string): () => void {
+    let resolver!: () => void;
+    const promise = new Promise<void>((resolve) => {
+      resolver = resolve;
+    });
+
+    this._pendingBuilds.set(key, { title, promise, resolver });
+
+    // Listr가 실행 중이 아니면 다음 tick에 배치 실행
+    if (!this._isRunning) {
+      void Promise.resolve().then(() => void this._runBatch());
+    }
+
+    return resolver;
+  }
+
+  /**
+   * pending에 있는 빌드들을 모아서 하나의 Listr로 실행합니다.
+   * 실행 중에 들어온 새 빌드는 다음 배치로 넘어갑니다.
+   */
+  private async _runBatch(): Promise<void> {
+    if (this._isRunning || this._pendingBuilds.size === 0) {
+      return;
+    }
+
+    this._isRunning = true;
+
+    // 현재 pending을 스냅샷으로 가져옴
+    const batchBuilds = new Map(this._pendingBuilds);
+    this._pendingBuilds.clear();
+
+    // Listr 태스크 생성
+    const tasks = Array.from(batchBuilds.entries()).map(([, { title, promise }]) => ({
+      title,
+      task: () => promise,
+    }));
+
+    const listr = new Listr(tasks);
+
+    try {
+      await listr.run();
+      printErrorsAndServers(this._results);
+    } catch (err) {
+      this._logger.error("listr 실행 중 오류 발생", { error: String(err) });
+    }
+
+    this._isRunning = false;
+
+    // 실행 중 새로 들어온 pending이 있으면 다음 배치 실행
+    if (this._pendingBuilds.size > 0) {
+      void this._runBatch();
+    }
+  }
 }
 
 //#endregion
@@ -98,6 +195,7 @@ export function filterPackagesByTargets(
  * @param results 패키지별 빌드 결과 상태
  */
 function printErrorsAndServers(results: Map<string, PackageResult>): void {
+  // 에러 출력
   for (const result of results.values()) {
     if (result.status === "error") {
       const typeLabel = result.type === "dts" ? "dts" : result.target;
@@ -108,8 +206,19 @@ function printErrorsAndServers(results: Map<string, PackageResult>): void {
         }
       }
       consola.error(errorLines.join("\n"));
-    } else if (result.status === "server" && result.port != null) {
-      consola.info(`[server] http://localhost:${result.port}/${result.name}`);
+    }
+  }
+
+  // 서버 정보 수집
+  const servers = [...results.values()].filter(
+    (r) => r.status === "server" && r.port != null
+  );
+
+  // 서버 정보 출력 (있으면 앞에 빈 줄 추가)
+  if (servers.length > 0) {
+    process.stdout.write("\n");
+    for (const server of servers) {
+      consola.info(`[server] http://localhost:${server.port}/${server.name}/`);
     }
   }
 }
@@ -165,7 +274,7 @@ export async function runWatch(options: WatchOptions): Promise<void> {
   const esbuildWorkers: EsbuildWorkerInfo[] = Object.entries(packages).map(([name, config]) => ({
     name,
     config,
-    worker: SdWorker.create<typeof WatchWorkerModule>(esbuildWorkerPath),
+    worker: Worker.create<typeof WatchWorkerModule>(esbuildWorkerPath),
     isInitialBuild: true,
     buildResolver: undefined,
   }));
@@ -185,7 +294,7 @@ export async function runWatch(options: WatchOptions): Promise<void> {
         name,
         config,
         env,
-        worker: SdWorker.create<typeof DtsWorkerModule>(dtsWorkerPath),
+        worker: Worker.create<typeof DtsWorkerModule>(dtsWorkerPath),
         isInitialBuild: true,
         buildResolver: undefined,
       };
@@ -193,6 +302,9 @@ export async function runWatch(options: WatchOptions): Promise<void> {
 
   // 결과 상태 관리
   const results = new Map<string, PackageResult>();
+
+  // RebuildListrManager 생성
+  const rebuildManager = new RebuildListrManager(results, logger);
 
   // 종료 Promise 생성
   let resolveTerminate!: () => void;
@@ -257,20 +369,13 @@ export async function runWatch(options: WatchOptions): Promise<void> {
     // 빌드 시작 (리빌드 시)
     workerInfo.worker.on("buildStart", () => {
       if (!workerInfo.isInitialBuild) {
-        const buildPromise = new Promise<void>((resolve) => {
-          workerInfo.buildResolver = resolve;
-        });
-        const listr = new Listr([{ title: opts.listrTitle, task: () => buildPromise }]);
-        void listr
-          .run()
-          .then(() => printErrorsAndServers(results))
-          .catch((err) => logger.error("listr 실행 중 오류 발생", { error: String(err) }));
+        workerInfo.buildResolver = rebuildManager.registerBuild(opts.resultKey, opts.listrTitle);
       }
     });
 
     // 빌드 완료
     workerInfo.worker.on("build", (data) => {
-      const event = data as { success: boolean; errors?: string[] };
+      const event = data as BuildEventData;
       completeTask({
         name: workerInfo.name,
         target: workerInfo.config.target,
@@ -282,7 +387,7 @@ export async function runWatch(options: WatchOptions): Promise<void> {
 
     // 에러
     workerInfo.worker.on("error", (data) => {
-      const event = data as { message: string };
+      const event = data as ErrorEventData;
       completeTask({
         name: workerInfo.name,
         target: workerInfo.config.target,
@@ -307,7 +412,7 @@ export async function runWatch(options: WatchOptions): Promise<void> {
 
     // serverReady는 esbuild 전용 (client 타겟)
     workerInfo.worker.on("serverReady", (data) => {
-      const event = data as { port: number };
+      const event = data as ServerReadyEventData;
       completeTask({
         name: workerInfo.name,
         target: workerInfo.config.target,

@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { DateTimeFormatUtils, normalizeMonth } from "../utils/date-format";
+import { format, normalizeMonth } from "../utils/date-format";
 
 /**
  * 날짜시간 클래스 (불변)
@@ -80,7 +80,7 @@ export class DateTime {
     }
 
     const match1 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/.exec(str);
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(str);
     if (match1 != null) {
       const rawHour = Number(match1[5]);
       const isPM = match1[4] === "오후";
@@ -100,6 +100,7 @@ export class DateTime {
         hour,
         Number(match1[6]),
         Number(match1[7]),
+        match1[9] ? Number(match1[9].padEnd(3, "0")) : undefined,
       );
     }
 
@@ -337,10 +338,10 @@ export class DateTime {
   /**
    * 지정된 포맷으로 문자열 변환
    * @param format 포맷 문자열
-   * @see DateTimeFormatUtils.format 지원 포맷 문자열 참조
+   * @see dtFormat 지원 포맷 문자열 참조
    */
-  toFormatString(format: string): string {
-    return DateTimeFormatUtils.format(format, {
+  toFormatString(formatStr: string): string {
+    return format(formatStr, {
       year: this.year,
       month: this.month,
       day: this.day,

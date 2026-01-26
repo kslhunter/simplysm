@@ -18,8 +18,8 @@ pnpm add @simplysm/core-common
 import "@simplysm/core-common";
 ```
 
-이 임포트는 Array, Map, Set 프로토타입 확장을 전역으로 활성화합니다.
-확장 메서드(`single()`, `groupBy()`, `orderBy()` 등)를 사용하려면 반드시 앱 시작 시 임포트해야 합니다.
+이 임포트는 Map, Set 프로토타입 확장을 전역으로 활성화합니다.
+확장 메서드(`getOrCreate()`, `toggle()` 등)를 사용하려면 반드시 앱 시작 시 임포트해야 합니다.
 
 ## 주요 모듈
 
@@ -59,17 +59,18 @@ ZIP 파일 압축/해제 유틸리티입니다.
 
 유틸리티 함수들입니다.
 
-| 클래스/함수 | 설명 |
+| 함수/클래스 | 설명 |
 |--------|------|
-| `ObjectUtils` | 깊은 복사/비교/병합/3-way 병합 (충돌 감지) |
-| `JsonConvert` | 커스텀 타입 지원 JSON 직렬화 |
-| `XmlConvert` | XML 파싱/변환 |
-| `TransferableConvert` | Worker 데이터 변환 |
-| `StringUtils` | 한글 조사 처리, 케이스 변환 (camelCase, kebab-case 등) |
-| `DateTimeFormatUtils` | 날짜/시간 포맷팅 (C#과 동일한 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
-| `NumberUtils` | 숫자 파싱/포맷팅 |
-| `BytesUtils` | Uint8Array 연결, hex 변환 |
-| `Wait` | 비동기 대기 (`time()`: 지정 시간 대기, `until()`: 조건 충족 대기 + 최대 시도 횟수 제한) |
+| `objClone`, `objEqual`, `objMerge` | 깊은 복사/비교/병합/3-way 병합 (충돌 감지) |
+| `jsonStringify`, `jsonParse` | 커스텀 타입 지원 JSON 직렬화 |
+| `xmlParse`, `xmlStringify` | XML 파싱/변환 |
+| `transferableEncode`, `transferableDecode` | Worker 데이터 변환 |
+| `strJosa`, `strToCamelCase`, `strToKebabCase` 등 | 한글 조사 처리, 케이스 변환 (camelCase, kebab-case 등) |
+| `format`, `normalizeMonth` | 날짜/시간 포맷팅 (C#과 동일한 포맷 문자열 지원: yyyy, MM, dd, HH, mm, ss 등) |
+| `numParseInt`, `numParseFloat`, `numFormat` | 숫자 파싱/포맷팅 |
+| `bytesConcat`, `bytesToHex` | Uint8Array 연결, hex 변환 |
+| `waitTime`, `waitUntil` | 비동기 대기 (지정 시간 대기, 조건 충족 대기 + 최대 시도 횟수 제한) |
+| `arrSingle`, `arrToMap`, `arrDiffs` 등 | 배열 유틸리티 (Remeda에 없는 기능) |
 | `DebounceQueue` | 비동기 디바운스 큐 (마지막 요청만 실행) |
 | `SerialQueue` | 비동기 직렬 큐 (순차 실행) |
 | `SdEventEmitter` | EventTarget 래퍼 (type-safe 이벤트) |
@@ -77,16 +78,7 @@ ZIP 파일 압축/해제 유틸리티입니다.
 
 ### Extensions
 
-Array, Map, Set 프로토타입 확장입니다.
-
-**Array 확장 메서드**:
-- 검색: `single()`, `first()`, `last()`, `ofType()`, `filterExists()`
-- 비동기: `filterAsync()`, `mapAsync()`, `mapManyAsync()`, `parallelAsync()`
-- 변환: `mapMany()`, `groupBy()`, `toMap()`, `toArrayMap()`, `toSetMap()`, `toMapValues()`, `toObject()`, `toTree()`
-- 정렬: `orderBy()`, `orderByDesc()`
-- 비교: `distinct()`, `diffs()`, `oneWayDiffs()`, `merge()`
-- 통계: `sum()`, `min()`, `max()`, `shuffle()`
-- 변경: `distinctThis()`, `orderByThis()`, `orderByDescThis()`, `insert()`, `remove()`, `toggle()`, `clear()`
+Map, Set 프로토타입 확장입니다.
 
 **Map 확장 메서드**:
 - `getOrCreate()`: 키에 해당하는 값이 없으면 새 값 설정 후 반환
@@ -100,7 +92,7 @@ Array, Map, Set 프로토타입 확장입니다.
 
 ### 프로토타입 확장 충돌
 
-이 패키지는 Array, Map, Set 프로토타입을 확장한다.
+이 패키지는 Map, Set 프로토타입을 확장한다.
 동일한 메서드명을 확장하는 다른 라이브러리와 함께 사용 시 충돌이 발생할 수 있다.
 충돌 시 로드 순서에 따라 마지막에 정의된 구현이 적용된다.
 
@@ -121,12 +113,12 @@ Array, Map, Set 프로토타입 확장입니다.
 // gcInterval: GC 실행 간격 (ms), expireTime: 항목 만료 시간 (ms)
 using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
 
-// 또는 명시적 destroy() 호출
+// 또는 명시적 dispose() 호출
 const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
 try {
   // ... 사용
 } finally {
-  map.destroy();
+  map.dispose();
 }
 ```
 

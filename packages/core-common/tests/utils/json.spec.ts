@@ -1,20 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { JsonConvert, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
+import { jsonStringify as stringify, jsonParse as parse, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
 
 describe("JsonConvert", () => {
   //#region stringify
 
   describe("stringify()", () => {
     it("primitive 값을 직렬화한다", () => {
-      expect(JsonConvert.stringify(42)).toBe("42");
-      expect(JsonConvert.stringify("hello")).toBe('"hello"');
-      expect(JsonConvert.stringify(true)).toBe("true");
-      expect(JsonConvert.stringify(null)).toBe("null");
+      expect(stringify(42)).toBe("42");
+      expect(stringify("hello")).toBe('"hello"');
+      expect(stringify(true)).toBe("true");
+      expect(stringify(null)).toBe("null");
     });
 
     it("Date를 __type__으로 직렬화한다", () => {
       const date = new Date("2024-03-15T10:30:00.000Z");
-      const json = JsonConvert.stringify(date);
+      const json = stringify(date);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Date");
@@ -23,7 +23,7 @@ describe("JsonConvert", () => {
 
     it("DateTime을 __type__으로 직렬화한다", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
-      const json = JsonConvert.stringify(dt);
+      const json = stringify(dt);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("DateTime");
@@ -32,7 +32,7 @@ describe("JsonConvert", () => {
 
     it("DateOnly를 __type__으로 직렬화한다", () => {
       const d = new DateOnly(2024, 3, 15);
-      const json = JsonConvert.stringify(d);
+      const json = stringify(d);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("DateOnly");
@@ -40,7 +40,7 @@ describe("JsonConvert", () => {
 
     it("Time을 __type__으로 직렬화한다", () => {
       const t = new Time(10, 30, 45);
-      const json = JsonConvert.stringify(t);
+      const json = stringify(t);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Time");
@@ -48,7 +48,7 @@ describe("JsonConvert", () => {
 
     it("Uuid를 __type__으로 직렬화한다", () => {
       const uuid = new Uuid("12345678-9abc-def0-1234-56789abcdef0");
-      const json = JsonConvert.stringify(uuid);
+      const json = stringify(uuid);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Uuid");
@@ -57,7 +57,7 @@ describe("JsonConvert", () => {
 
     it("Set을 __type__으로 직렬화한다", () => {
       const set = new Set([1, 2, 3]);
-      const json = JsonConvert.stringify(set);
+      const json = stringify(set);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Set");
@@ -69,7 +69,7 @@ describe("JsonConvert", () => {
         ["a", 1],
         ["b", 2],
       ]);
-      const json = JsonConvert.stringify(map);
+      const json = stringify(map);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Map");
@@ -81,7 +81,7 @@ describe("JsonConvert", () => {
 
     it("Error를 __type__으로 직렬화한다", () => {
       const error = new Error("test error");
-      const json = JsonConvert.stringify(error);
+      const json = stringify(error);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Error");
@@ -96,7 +96,7 @@ describe("JsonConvert", () => {
       error.detail = { key: "value" };
       (error as Error & { cause: Error }).cause = cause;
 
-      const json = JsonConvert.stringify(error);
+      const json = stringify(error);
       const parsed = JSON.parse(json);
 
       expect(parsed.__type__).toBe("Error");
@@ -109,7 +109,7 @@ describe("JsonConvert", () => {
 
     it("hideBytes 옵션으로 Uint8Array를 숨긴다", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = JsonConvert.stringify(obj, { hideBytes: true });
+      const json = stringify(obj, { hideBytes: true });
       const parsed = JSON.parse(json);
 
       expect(parsed.data.data).toBe("__hidden__");
@@ -117,14 +117,14 @@ describe("JsonConvert", () => {
 
     it("space 옵션으로 들여쓰기한다", () => {
       const obj = { a: 1 };
-      const json = JsonConvert.stringify(obj, { space: 2 });
+      const json = stringify(obj, { space: 2 });
 
       expect(json).toBe('{\n  "a": 1\n}');
     });
 
     it("replacer 옵션으로 값을 변환한다", () => {
       const obj = { a: 1, b: 2, c: 3 };
-      const json = JsonConvert.stringify(obj, {
+      const json = stringify(obj, {
         replacer: (key, value) => {
           if (key === "b") return undefined;
           return value;
@@ -144,18 +144,18 @@ describe("JsonConvert", () => {
 
   describe("parse()", () => {
     it("primitive 값을 역직렬화한다", () => {
-      expect(JsonConvert.parse("42")).toBe(42);
-      expect(JsonConvert.parse('"hello"')).toBe("hello");
-      expect(JsonConvert.parse("true")).toBe(true);
+      expect(parse("42")).toBe(42);
+      expect(parse('"hello"')).toBe("hello");
+      expect(parse("true")).toBe(true);
     });
 
     it("null을 undefined로 변환한다", () => {
-      expect(JsonConvert.parse("null")).toBe(undefined);
+      expect(parse("null")).toBe(undefined);
     });
 
     it("Date를 복원한다", () => {
       const json = '{"__type__":"Date","data":"2024-03-15T10:30:00.000Z"}';
-      const result = JsonConvert.parse(json);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Date);
       expect((result as Date).toISOString()).toBe("2024-03-15T10:30:00.000Z");
@@ -163,8 +163,8 @@ describe("JsonConvert", () => {
 
     it("DateTime을 복원한다", () => {
       const dt = new DateTime(2024, 3, 15, 10, 30);
-      const json = JsonConvert.stringify(dt);
-      const result = JsonConvert.parse(json);
+      const json = stringify(dt);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(DateTime);
       expect((result as DateTime).year).toBe(2024);
@@ -174,8 +174,8 @@ describe("JsonConvert", () => {
 
     it("DateOnly를 복원한다", () => {
       const d = new DateOnly(2024, 3, 15);
-      const json = JsonConvert.stringify(d);
-      const result = JsonConvert.parse(json);
+      const json = stringify(d);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(DateOnly);
       expect((result as DateOnly).year).toBe(2024);
@@ -183,8 +183,8 @@ describe("JsonConvert", () => {
 
     it("Time을 복원한다", () => {
       const t = new Time(10, 30, 45);
-      const json = JsonConvert.stringify(t);
-      const result = JsonConvert.parse(json);
+      const json = stringify(t);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Time);
       expect((result as Time).hour).toBe(10);
@@ -192,7 +192,7 @@ describe("JsonConvert", () => {
 
     it("Uuid를 복원한다", () => {
       const json = '{"__type__":"Uuid","data":"12345678-9abc-def0-1234-56789abcdef0"}';
-      const result = JsonConvert.parse(json);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Uuid);
       expect((result as Uuid).toString()).toBe("12345678-9abc-def0-1234-56789abcdef0");
@@ -200,7 +200,7 @@ describe("JsonConvert", () => {
 
     it("Set을 복원한다", () => {
       const json = '{"__type__":"Set","data":[1,2,3]}';
-      const result = JsonConvert.parse(json);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Set);
       expect(Array.from(result as Set<number>)).toEqual([1, 2, 3]);
@@ -208,7 +208,7 @@ describe("JsonConvert", () => {
 
     it("Map을 복원한다", () => {
       const json = '{"__type__":"Map","data":[["a",1],["b",2]]}';
-      const result = JsonConvert.parse(json);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Map);
       expect((result as Map<string, number>).get("a")).toBe(1);
@@ -221,8 +221,8 @@ describe("JsonConvert", () => {
       error.detail = { key: "value" };
       error.cause = cause;
 
-      const json = JsonConvert.stringify(error);
-      const result = JsonConvert.parse<typeof error>(json);
+      const json = stringify(error);
+      const result = parse<typeof error>(json);
 
       expect(result).toBeInstanceOf(Error);
       expect(result.message).toBe("test error");
@@ -234,7 +234,7 @@ describe("JsonConvert", () => {
 
     it("Uint8Array를 복원한다", () => {
       const json = '{"__type__":"Uint8Array","data":"68656c6c6f"}';
-      const result = JsonConvert.parse(json);
+      const result = parse(json);
 
       expect(result).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result as Uint8Array)).toBe("hello");
@@ -252,8 +252,8 @@ describe("JsonConvert", () => {
         bytes: new TextEncoder().encode("hello"),
       };
 
-      const json = JsonConvert.stringify(original);
-      const result = JsonConvert.parse<typeof original>(json);
+      const json = stringify(original);
+      const result = parse<typeof original>(json);
 
       expect(result.date).toBeInstanceOf(Date);
       expect(result.dateTime).toBeInstanceOf(DateTime);
@@ -267,23 +267,23 @@ describe("JsonConvert", () => {
 
     it("hideBytes로 직렬화된 데이터는 parse 시 에러가 발생한다", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = JsonConvert.stringify(obj, { hideBytes: true });
+      const json = stringify(obj, { hideBytes: true });
 
       // "__hidden__"은 hideBytes 옵션으로 직렬화된 데이터이므로 parse 시 에러 발생
-      expect(() => JsonConvert.parse<typeof obj>(json)).toThrow(
+      expect(() => parse<typeof obj>(json)).toThrow(
         "hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
       );
     });
 
     it("잘못된 JSON은 에러를 던진다", () => {
-      expect(() => JsonConvert.parse("invalid json")).toThrow("JSON 파싱 에러");
+      expect(() => parse("invalid json")).toThrow("JSON 파싱 에러");
     });
 
     it("DEV 모드에서는 전체 JSON이 에러 메시지에 포함된다", () => {
       const longJson = "x".repeat(2000);
 
       try {
-        JsonConvert.parse(longJson);
+        parse(longJson);
         expect.fail("에러가 발생해야 합니다");
       } catch (err) {
         const message = (err as Error).message;
@@ -296,7 +296,7 @@ describe("JsonConvert", () => {
       const shortJson = "invalid";
 
       try {
-        JsonConvert.parse(shortJson);
+        parse(shortJson);
         expect.fail("에러가 발생해야 합니다");
       } catch (err) {
         const message = (err as Error).message;

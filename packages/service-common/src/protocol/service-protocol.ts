@@ -1,6 +1,7 @@
 import type { Bytes } from "@simplysm/core-common";
-import { ArgumentError, JsonConvert, LazyGcMap, Uuid, BytesUtils } from "@simplysm/core-common";
+import { ArgumentError, jsonStringify, jsonParse, LazyGcMap, Uuid, bytesConcat } from "@simplysm/core-common";
 import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
+import { filter, isNonNullish } from "remeda";
 
 /**
  * 서비스 프로토콜 인코더/디코더
@@ -21,7 +22,7 @@ export class ServiceProtocol {
    * 메시지 인코딩 (필요 시 자동 분할)
    */
   encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number } {
-    const msgJson = JsonConvert.stringify([
+    const msgJson = jsonStringify([
       message.name,
       ...("body" in message ? [message.body] : []),
     ]);
@@ -60,6 +61,18 @@ export class ServiceProtocol {
     return { chunks, totalSize };
   }
 
+  /**
+   * 메시지 청크 인코딩 (헤더 + 바디)
+   *
+   * 헤더 구조 (28 bytes, Big Endian):
+   * ```
+   * Offset  Size  Field
+   * ------  ----  -----
+   *   0     16    UUID (binary)
+   *  16      8    TotalSize (uint64)
+   *  24      4    Index (uint32)
+   * ```
+   */
   private _encode(
     header: {
       uuid: string;
@@ -70,16 +83,16 @@ export class ServiceProtocol {
   ): Bytes {
     const headerBytes = new Uint8Array(28);
 
-    // UUID
+    // UUID (0-15)
     const uuidBytes = new Uuid(header.uuid).toBytes();
     headerBytes.set(uuidBytes, 0);
 
-    // TOTAL_SIZE, INDEX
+    // TotalSize (16-23), Index (24-27)
     const headerView = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
     headerView.setBigUint64(16, BigInt(header.totalSize), false);
     headerView.setUint32(24, header.index, false);
 
-    return BytesUtils.concat([headerBytes, ...(bodyBytes ? [bodyBytes] : [])]);
+    return bytesConcat([headerBytes, ...(bodyBytes ? [bodyBytes] : [])]);
   }
 
   // -------------------------------------------------------------------
@@ -98,8 +111,14 @@ export class ServiceProtocol {
     expireTime: PROTOCOL_CONFIG.EXPIRE_TIME,
   });
 
+  /**
+   * 프로토콜 인스턴스를 정리한다.
+   *
+   * 내부 청크 누적기의 GC 타이머를 해제하고 메모리를 정리한다.
+   * 프로토콜 인스턴스 사용이 끝나면 반드시 호출해야 한다.
+   */
   dispose(): void {
-    this._accumulator.destroy();
+    this._accumulator.dispose();
   }
 
   /**
@@ -155,8 +174,13 @@ export class ServiceProtocol {
     } else {
       this._accumulator.delete(uuid); // 메모리 해제
 
-      const resultBytes = BytesUtils.concat(accItem.chunks.filterExists());
-      const messageArr = JsonConvert.parse<[string, unknown]>(new TextDecoder().decode(resultBytes));
+      const resultBytes = bytesConcat(filter(accItem.chunks, isNonNullish));
+      let messageArr: [string, unknown];
+      try {
+        messageArr = jsonParse<[string, unknown]>(new TextDecoder().decode(resultBytes));
+      } catch (err) {
+        throw new ArgumentError("메시지 디코딩에 실패했습니다.", { uuid, cause: err });
+      }
       return {
         type: "complete",
         uuid: uuid,
@@ -169,7 +193,12 @@ export class ServiceProtocol {
   }
 }
 
-/** 메시지 디코딩 결과 타입 */
+/**
+ * 메시지 디코딩 결과 타입 (유니온)
+ *
+ * - `type: "complete"`: 모든 청크가 수신되어 메시지 조립이 완료됨
+ * - `type: "progress"`: 분할 메시지 수신 중 (일부 청크만 도착)
+ */
 export type ServiceMessageDecodeResult<T extends ServiceMessage> =
   | { type: "complete"; uuid: string; message: T }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };

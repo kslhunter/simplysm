@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { SdEventEmitter, Uuid, Wait } from "@simplysm/core-common";
+import { EventEmitter, Uuid, waitUntil, waitTime } from "@simplysm/core-common";
 import { createConsola } from "consola";
 
 const logger = createConsola().withTag("service-client:SocketProvider");
@@ -9,7 +9,7 @@ interface SocketProviderEvents {
   state: "connected" | "closed" | "reconnecting";
 }
 
-export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
+export class SocketProvider extends EventEmitter<SocketProviderEvents> {
   // 설정상수
   private readonly _HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
   private readonly _HEARTBEAT_INTERVAL = 5000; // 5초마다 핑 전송
@@ -59,14 +59,14 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
     if (ws != null) {
       ws.close();
       // 완전히 닫힐 때까지 대기 (Graceful Shutdown)
-      await Wait.until(() => ws.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
+      await waitUntil(() => ws.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
     }
     this.emit("state", "closed");
   }
 
   async sendAsync(data: Bytes): Promise<void> {
     try {
-      await Wait.until(() => this.connected, undefined, 50);
+      await waitUntil(() => this.connected, undefined, 50);
     } catch {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
@@ -142,7 +142,7 @@ export class SocketProvider extends SdEventEmitter<SocketProviderEvents> {
         maxReconnectCount: this._maxReconnectCount,
       });
 
-      await Wait.time(this._RECONNECT_DELAY);
+      await waitTime(this._RECONNECT_DELAY);
 
       try {
         await this._createSocketAsync();

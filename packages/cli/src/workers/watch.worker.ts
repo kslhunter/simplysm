@@ -5,7 +5,7 @@ import { createServer, type ViteDevServer } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { createSdWorker } from "@simplysm/core-node";
+import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdPackageConfig, SdClientPackageConfig, SdBuildPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage, type TypecheckEnv } from "../utils/tsconfig";
@@ -251,7 +251,7 @@ async function startWatch(info: WatchInfo): Promise<void> {
   }
 }
 
-const sender = createSdWorker<{ startWatch: typeof startWatch }, WatchWorkerEvents>({
+const sender = createWorker<{ startWatch: typeof startWatch }, WatchWorkerEvents>({
   startWatch,
 });
 

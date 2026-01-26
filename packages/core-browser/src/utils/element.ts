@@ -1,60 +1,79 @@
 import { isFocusable } from "tabbable";
 
-/**
- * 셀렉터를 :scope 접두사가 붙은 형태로 정규화
- *
- * 콤마로 구분된 복수 셀렉터를 지원하며, 각 셀렉터에 :scope를 추가한다.
- *
- * @example
- * normalizeScopedSelector(".item, .card") // ":scope .item,:scope .card"
- */
-function normalizeScopedSelector(selector: string): string {
-  return selector
-    .split(",")
-    .map((item) => `:scope ${item.trim()}`)
-    .join(",");
-}
-
 export namespace ElementUtils {
   /**
+   * 셀렉터를 :scope 접두사가 붙은 형태로 정규화
+   *
+   * 콤마로 구분된 복수 셀렉터를 지원하며, 각 셀렉터에 :scope를 추가한다.
+   *
+   * @example
+   * normalizeScopedSelector(".item, .card") // ":scope .item,:scope .card"
+   */
+  function normalizeScopedSelector(selector: string): string {
+    return selector
+      .split(",")
+      .map((item) => `:scope ${item.trim()}`)
+      .join(",");
+  }
+  /**
    * 요소를 첫 번째 자식으로 삽입
+   *
+   * @param parent - 부모 요소
+   * @param child - 삽입할 자식 요소
+   * @returns 삽입된 자식 요소
    */
   export function prependChild<T extends Element>(parent: Element, child: T): T {
-    return parent.insertBefore(child, parent.children.item(0));
+    return parent.insertBefore(child, parent.firstElementChild);
   }
 
   /**
    * 셀렉터로 하위 요소 전체 검색 (:scope 자동 적용)
+   *
+   * @param el - 검색 기준 요소
+   * @param selector - CSS 셀렉터 (콤마 구분자 지원)
+   * @returns 검색된 요소 배열 (없으면 빈 배열)
    */
   export function findAll<T extends Element = Element>(el: Element, selector: string): T[] {
+    if (!selector.trim()) return [];
     return Array.from(el.querySelectorAll<T>(normalizeScopedSelector(selector)));
   }
 
   /**
    * 셀렉터로 첫 번째 하위 요소 검색 (:scope 자동 적용)
+   *
+   * @param el - 검색 기준 요소
+   * @param selector - CSS 셀렉터 (콤마 구분자 지원)
+   * @returns 검색된 첫 번째 요소 또는 undefined
    */
   export function findFirst<T extends Element = Element>(
     el: Element,
     selector: string,
   ): T | undefined {
+    if (!selector.trim()) return undefined;
     return el.querySelector<T>(normalizeScopedSelector(selector)) ?? undefined;
   }
 
   /**
    * 모든 부모 요소 목록 반환 (가까운 순서)
+   *
+   * @param el - 대상 요소
+   * @returns 부모 요소 배열 (가까운 부모부터 순서대로)
    */
-  export function getParents(el: Element): HTMLElement[] {
-    const result: HTMLElement[] = [];
-    let cursor = el.parentElement;
-    while (cursor !== null) {
+  export function getParents(el: Element): Element[] {
+    const result: Element[] = [];
+    let cursor = el.parentNode;
+    while (cursor !== null && cursor instanceof Element) {
       result.push(cursor);
-      cursor = cursor.parentElement;
+      cursor = cursor.parentNode;
     }
     return result;
   }
 
   /**
    * 부모 중 첫 번째 포커스 가능 요소 검색 (tabbable 사용)
+   *
+   * @param el - 대상 요소
+   * @returns 포커스 가능한 첫 번째 부모 요소 또는 undefined
    */
   export function findFocusableParent(el: Element): HTMLElement | undefined {
     let parentEl = el.parentElement;
@@ -69,6 +88,9 @@ export namespace ElementUtils {
 
   /**
    * 요소가 offset 기준 요소인지 확인 (position: relative/absolute/fixed/sticky)
+   *
+   * @param el - 대상 요소
+   * @returns position 속성이 relative, absolute, fixed, sticky 중 하나면 true
    */
   export function isOffsetElement(el: Element): boolean {
     return ["relative", "absolute", "fixed", "sticky"].includes(getComputedStyle(el).position);
@@ -76,6 +98,12 @@ export namespace ElementUtils {
 
   /**
    * 요소가 화면에 보이는지 확인
+   *
+   * @remarks
+   * clientRects 존재 여부, visibility: hidden, opacity: 0 여부를 확인한다.
+   *
+   * @param el - 대상 요소
+   * @returns 요소가 화면에 보이면 true
    */
   export function isVisible(el: Element): boolean {
     const style = getComputedStyle(el);

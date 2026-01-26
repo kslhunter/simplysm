@@ -607,6 +607,10 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
     const schemaName = def.schema ?? "public";
+    // SQL Injection 방어: 스키마명 유효성 검증
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
+      throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
+    }
     const schema = this.expr.escapeString(schemaName);
     return { sql: `
 DO $$

@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/solid-demo",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - SolidJS UI 데모",
   "author": "김석래",
@@ -12,6 +13,8 @@
   "type": "module",
   "dependencies": {
     "@simplysm/solid": "workspace:*",
+    "@solidjs/router": "^0.15.0",
+    "@tabler/icons-solidjs": "^3.30.0",
     "solid-js": "^1.9.10"
   }
 }

@@ -281,6 +281,95 @@ describe("HtmlElementUtils", () => {
       vi.unstubAllGlobals();
     });
 
+    it("중복 요소는 한 번만 처리", async () => {
+      const mockObserver = {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const MockIntersectionObserver = vi.fn(function (
+        this: IntersectionObserver,
+        callback: IntersectionObserverCallback,
+      ) {
+        setTimeout(() => {
+          callback(
+            [
+              {
+                target: container,
+                boundingClientRect: { top: 10, left: 20, width: 100, height: 50 },
+              },
+            ] as unknown as IntersectionObserverEntry[],
+            this,
+          );
+        }, 0);
+        return mockObserver;
+      });
+
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+      // 같은 요소를 3번 전달
+      const result = await HtmlElementUtils.getBoundsAsync([container, container, container]);
+
+      // 결과는 1개만 반환
+      expect(result.length).toBe(1);
+      expect(result[0].target).toBe(container);
+      // observe도 1번만 호출
+      expect(mockObserver.observe).toHaveBeenCalledTimes(1);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("결과가 입력 순서대로 정렬됨", async () => {
+      const el1 = document.createElement("div");
+      const el2 = document.createElement("div");
+      const el3 = document.createElement("div");
+
+      const mockObserver = {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const MockIntersectionObserver = vi.fn(function (
+        this: IntersectionObserver,
+        callback: IntersectionObserverCallback,
+      ) {
+        setTimeout(() => {
+          // 콜백은 역순으로 호출 (el3, el2, el1)
+          callback(
+            [
+              {
+                target: el3,
+                boundingClientRect: { top: 30, left: 30, width: 30, height: 30 },
+              },
+              {
+                target: el2,
+                boundingClientRect: { top: 20, left: 20, width: 20, height: 20 },
+              },
+              {
+                target: el1,
+                boundingClientRect: { top: 10, left: 10, width: 10, height: 10 },
+              },
+            ] as unknown as IntersectionObserverEntry[],
+            this,
+          );
+        }, 0);
+        return mockObserver;
+      });
+
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+      // 입력 순서: el1, el2, el3
+      const result = await HtmlElementUtils.getBoundsAsync([el1, el2, el3]);
+
+      // 결과도 입력 순서대로: el1, el2, el3
+      expect(result.length).toBe(3);
+      expect(result[0].target).toBe(el1);
+      expect(result[1].target).toBe(el2);
+      expect(result[2].target).toBe(el3);
+
+      vi.unstubAllGlobals();
+    });
+
     it("타임아웃 시 TimeoutError 발생", async () => {
       const mockObserver = {
         observe: vi.fn(),
@@ -330,6 +419,67 @@ describe("HtmlElementUtils", () => {
       // 200ms 타임아웃이면 성공해야 함
       const result = await HtmlElementUtils.getBoundsAsync([container], 200);
       expect(result.length).toBe(1);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("콜백이 여러 번 분할 호출되어도 모든 결과 수집", async () => {
+      const el1 = document.createElement("div");
+      const el2 = document.createElement("div");
+      const el3 = document.createElement("div");
+
+      const mockObserver = {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const MockIntersectionObserver = vi.fn(function (
+        this: IntersectionObserver,
+        callback: IntersectionObserverCallback,
+      ) {
+        // 첫 번째 콜백 - el1만
+        setTimeout(() => {
+          callback(
+            [
+              {
+                target: el1,
+                boundingClientRect: { top: 10, left: 10, width: 10, height: 10 },
+              },
+            ] as unknown as IntersectionObserverEntry[],
+            this,
+          );
+        }, 0);
+
+        // 두 번째 콜백 - el2, el3
+        setTimeout(() => {
+          callback(
+            [
+              {
+                target: el2,
+                boundingClientRect: { top: 20, left: 20, width: 20, height: 20 },
+              },
+              {
+                target: el3,
+                boundingClientRect: { top: 30, left: 30, width: 30, height: 30 },
+              },
+            ] as unknown as IntersectionObserverEntry[],
+            this,
+          );
+        }, 10);
+
+        return mockObserver;
+      });
+
+      vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+      const result = await HtmlElementUtils.getBoundsAsync([el1, el2, el3]);
+
+      // 모든 요소가 수집되어야 함
+      expect(result.length).toBe(3);
+      // 입력 순서대로 정렬되어야 함
+      expect(result[0].target).toBe(el1);
+      expect(result[1].target).toBe(el2);
+      expect(result[2].target).toBe(el3);
 
       vi.unstubAllGlobals();
     });

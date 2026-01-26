@@ -5,7 +5,14 @@ import type { ExcelXmlStyle, ExcelStyle } from "./xml/excel-xml-style";
 import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelAddressPoint, ExcelStyleOptions, ExcelValueType } from "./types";
-import { DateOnly, DateTime, NumberUtils, StringUtils, Time } from "@simplysm/core-common";
+import {
+  DateOnly,
+  DateTime,
+  numParseFloat,
+  numParseInt,
+  strIsNullOrEmpty,
+  Time,
+} from "@simplysm/core-common";
 import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
 import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
@@ -13,6 +20,18 @@ import { ExcelUtils } from "./utils/excel-utils";
 /**
  * Excel 셀을 나타내는 클래스.
  * 값 읽기/쓰기, 수식 설정, 스타일 설정, 셀 병합 등의 기능을 제공한다.
+ *
+ * @remarks
+ * ## 비동기 메서드 설계
+ *
+ * `getVal()`, `setVal()` 등 모든 셀 메서드가 `async`인 이유:
+ * - 셀 타입에 따라 필요한 XML만 선택적으로 로드한다
+ * - 문자열 셀: SharedStrings.xml 로드
+ * - 숫자 셀: SharedStrings 로드 안함
+ * - 스타일이 있는 셀: Styles.xml 로드
+ *
+ * 어떤 셀을 읽을지 미리 알 수 없기 때문에 동기 구조로는 구현할 수 없다.
+ * 동기 구조로 만들려면 모든 XML을 미리 로드해야 하므로 대용량 파일에서 메모리 문제가 발생한다.
  */
 export class ExcelCell {
   /** 셀 주소 (0-based 행/열 인덱스) */
@@ -87,14 +106,14 @@ export class ExcelCell {
   async getVal(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
-    if (cellVal === undefined || StringUtils.isNullOrEmpty(cellVal)) {
+    if (cellVal === undefined || strIsNullOrEmpty(cellVal)) {
       return undefined;
     }
 
     const cellType = wsData.getCellType(this.addr);
     if (cellType === "s") {
       const ssData = await this._getOrCreateSsData();
-      const ssId = NumberUtils.parseInt(cellVal);
+      const ssId = numParseInt(cellVal);
       if (ssId == null) {
         throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] SharedString ID 파싱 실패: ${cellVal}`);
       }
@@ -106,7 +125,7 @@ export class ExcelCell {
     } else if (cellType === "b") {
       return cellVal === "1";
     } else if (cellType === "n") {
-      return NumberUtils.parseFloat(cellVal);
+      return parseFloat(cellVal);
     } else if (cellType === "e") {
       throw new Error(
         `[${ExcelUtils.stringifyAddr(this.addr)}] 셀 타입 분석 실패: 셀에 에러 값이 포함되어 있습니다 (${cellVal})`,
@@ -115,17 +134,17 @@ export class ExcelCell {
       // cellType === undefined: 숫자 또는 날짜/시간 타입
       const cellStyleId = wsData.getCellStyleId(this.addr);
       if (cellStyleId === undefined) {
-        return NumberUtils.parseFloat(cellVal);
+        return parseFloat(cellVal);
       }
 
       const styleData = await this._getStyleData();
       if (styleData == null) {
-        return NumberUtils.parseFloat(cellVal);
+        return parseFloat(cellVal);
       }
 
       const numFmtId = styleData.get(cellStyleId).numFmtId;
       if (numFmtId === undefined) {
-        return NumberUtils.parseFloat(cellVal);
+        return parseFloat(cellVal);
       }
 
       const numFmtCode = styleData.getNumFmtCode(numFmtId);
@@ -133,7 +152,7 @@ export class ExcelCell {
       if (numFmtCode !== undefined) {
         numFmt = ExcelUtils.convertNumFmtCodeToName(numFmtCode);
       } else {
-        const numFmtIdNum = NumberUtils.parseInt(numFmtId);
+        const numFmtIdNum = numParseInt(numFmtId);
         if (numFmtIdNum == null) {
           throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] numFmtId 파싱 실패: ${numFmtId}`);
         }
@@ -141,12 +160,12 @@ export class ExcelCell {
       }
 
       if (numFmt === "number") {
-        return NumberUtils.parseFloat(cellVal);
+        return parseFloat(cellVal);
       } else if (numFmt === "string") {
         return cellVal;
       } else {
         // DateOnly, DateTime, Time
-        const dateNum = NumberUtils.parseFloat(cellVal);
+        const dateNum = numParseFloat(cellVal);
         if (dateNum == null) {
           throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 날짜 숫자 파싱 실패: ${cellVal}`);
         }
@@ -196,7 +215,13 @@ export class ExcelCell {
   }
 
   /**
-   * 셀 스타일 설정 (통합 API)
+   * 셀 스타일 설정
+   * @param opts 스타일 옵션
+   * @param opts.background 배경색 (ARGB 형식, 8자리 16진수. 예: "FFFF0000")
+   * @param opts.border 테두리 위치 배열 (예: ["left", "right", "top", "bottom"])
+   * @param opts.horizontalAlign 가로 정렬 ("left", "center", "right")
+   * @param opts.verticalAlign 세로 정렬 ("top", "center", "bottom")
+   * @param opts.numberFormat 숫자 형식 ("number", "DateOnly", "DateTime", "Time", "string")
    */
   async setStyle(opts: ExcelStyleOptions): Promise<void> {
     const style: ExcelStyle = {};

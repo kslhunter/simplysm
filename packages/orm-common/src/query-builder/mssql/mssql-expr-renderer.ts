@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid, BytesUtils } from "@simplysm/core-common";
+import { DateOnly, DateTime, Time, Uuid, bytesToHex } from "@simplysm/core-common";
 import type {
   ExprColumn,
   ExprValue,
@@ -110,7 +110,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
       return `'${value.toString()}'`;
     }
     if (value instanceof Uint8Array) {
-      return `0x${BytesUtils.toHex(value)}`;
+      return `0x${bytesToHex(value)}`;
     }
     throw new Error(`알 수 없는 값 타입: ${typeof value}`);
   }
@@ -164,11 +164,10 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected raw(expr: ExprRaw): string {
-    let sql = expr.sql;
-    expr.params.forEach((param, i) => {
-      sql = sql.replace(`$${i + 1}`, this.render(param));
+    return expr.sql.replace(/\$(\d+)/g, (_, num) => {
+      const idx = parseInt(num) - 1;
+      return idx < expr.params.length ? this.render(expr.params[idx]) : `$${num}`;
     });
-    return sql;
   }
 
   //#endregion

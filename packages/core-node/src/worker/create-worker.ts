@@ -1,6 +1,6 @@
 import { parentPort } from "worker_threads";
-import { SdError, TransferableConvert } from "@simplysm/core-common";
-import type { SdWorkerRequest, SdWorkerResponse } from "./types";
+import { SdError, transferableDecode, transferableEncode } from "@simplysm/core-common";
+import type { WorkerRequest, WorkerResponse } from "./types";
 
 //#region createSdWorker
 
@@ -9,7 +9,7 @@ import type { SdWorkerRequest, SdWorkerResponse } from "./types";
  *
  * @example
  * // 이벤트 없는 워커
- * export default createSdWorker({
+ * export default createWorker({
  *   add: (a: number, b: number) => a + b,
  * });
  *
@@ -18,19 +18,21 @@ import type { SdWorkerRequest, SdWorkerResponse } from "./types";
  * const methods = {
  *   calc: (x: number) => { sender.send("progress", 50); return x * 2; },
  * };
- * const sender = createSdWorker<typeof methods, MyEvents>(methods);
+ * const sender = createWorker<typeof methods, MyEvents>(methods);
  * export default sender;
  */
-export function createSdWorker<
+export function createWorker<
   TMethods extends Record<string, (...args: any[]) => unknown>,
   TEvents extends Record<string, unknown> = Record<string, never>,
->(methods: TMethods): {
+>(
+  methods: TMethods,
+): {
   send<K extends keyof TEvents & string>(event: K, data?: TEvents[K]): void;
   __methods: TMethods;
   __events: TEvents;
 } {
   if (parentPort === null) {
-    throw new SdError("This script must be run as a worker thread (parentPort required).");
+    throw new SdError("이 스크립트는 워커 스레드에서 실행되어야 합니다 (parentPort 필요).");
   }
 
   const port = parentPort;
@@ -43,8 +45,8 @@ export function createSdWorker<
     callback?: (err?: Error) => void,
   ): boolean => {
     const body = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
-    const response: SdWorkerResponse = { type: "log", body };
-    const serialized = TransferableConvert.encode(response);
+    const response: WorkerResponse = { type: "log", body };
+    const serialized = transferableEncode(response);
     port.postMessage(serialized.result, serialized.transferList);
 
     const cb = typeof encodingOrCallback === "function" ? encodingOrCallback : callback;
@@ -56,7 +58,7 @@ export function createSdWorker<
   };
 
   port.on("message", async (serializedRequest: unknown) => {
-    const decoded = TransferableConvert.decode(serializedRequest);
+    const decoded = transferableDecode(serializedRequest);
 
     // 요청 구조 검증
     if (
@@ -66,50 +68,56 @@ export function createSdWorker<
       !("method" in decoded) ||
       !("params" in decoded)
     ) {
-      const errorResponse: SdWorkerResponse = {
+      let decodedStr: string;
+      try {
+        decodedStr = JSON.stringify(decoded);
+      } catch {
+        decodedStr = String(decoded);
+      }
+      const errorResponse: WorkerResponse = {
         type: "error",
         request: { id: "unknown", method: "unknown", params: [] },
-        body: new SdError(`잘못된 형식의 워커 요청 수신: ${JSON.stringify(decoded)}`),
+        body: new SdError(`형식이 잘못된 워커 요청: ${decodedStr}`),
       };
-      const serialized = TransferableConvert.encode(errorResponse);
+      const serialized = transferableEncode(errorResponse);
       port.postMessage(serialized.result, serialized.transferList);
       return;
     }
-    const request = decoded as SdWorkerRequest;
+    const request = decoded as WorkerRequest;
 
     const methodFn = methods[request.method] as ((...args: unknown[]) => unknown) | undefined;
 
     if (methodFn == null) {
-      const response: SdWorkerResponse = {
+      const response: WorkerResponse = {
         request,
         type: "error",
         body: new SdError(`알 수 없는 메서드: ${request.method}`),
       };
 
-      const serialized = TransferableConvert.encode(response);
+      const serialized = transferableEncode(response);
       port.postMessage(serialized.result, serialized.transferList);
       return;
     }
 
     try {
-      const result = await methodFn(...(request.params));
+      const result = await methodFn(...request.params);
 
-      const response: SdWorkerResponse = {
+      const response: WorkerResponse = {
         request,
         type: "return",
         body: result,
       };
 
-      const serialized = TransferableConvert.encode(response);
+      const serialized = transferableEncode(response);
       port.postMessage(serialized.result, serialized.transferList);
     } catch (err) {
-      const response: SdWorkerResponse = {
+      const response: WorkerResponse = {
         request,
         type: "error",
         body: err instanceof Error ? err : new Error(String(err)),
       };
 
-      const serialized = TransferableConvert.encode(response);
+      const serialized = transferableEncode(response);
       port.postMessage(serialized.result, serialized.transferList);
     }
   });
@@ -118,13 +126,13 @@ export function createSdWorker<
     __methods: methods,
     __events: {} as TEvents,
     send<K extends keyof TEvents & string>(event: K, data?: TEvents[K]) {
-      const response: SdWorkerResponse = {
+      const response: WorkerResponse = {
         type: "event",
         event,
         body: data,
       };
 
-      const serialized = TransferableConvert.encode(response);
+      const serialized = transferableEncode(response);
       port.postMessage(serialized.result, serialized.transferList);
     },
   };

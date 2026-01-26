@@ -1,7 +1,7 @@
-import { SdEventEmitter } from "@simplysm/core-common";
+import { SdError, EventEmitter } from "@simplysm/core-common";
 import type { Pool } from "generic-pool";
 import type { ColumnMeta, IsolationLevel } from "@simplysm/orm-common";
-import type { DbConn, DbConnConfig } from "./types/db-conn";
+import { DB_CONN_ERRORS, type DbConn, type DbConnConfig } from "./types/db-conn";
 
 /**
  * 커넥션 풀에서 관리되는 DB 연결 래퍼
@@ -9,7 +9,7 @@ import type { DbConn, DbConnConfig } from "./types/db-conn";
  * generic-pool 라이브러리를 사용하여 커넥션 풀링을 지원합니다.
  * 실제 물리 연결은 풀에서 획득하고 반환합니다.
  */
-export class PooledDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
+export class PooledDbConn extends EventEmitter<{ close: void }> implements DbConn {
   // 풀에서 빌려온 실제 물리 커넥션
   private _rawConn?: DbConn;
 
@@ -38,7 +38,7 @@ export class PooledDbConn extends SdEventEmitter<{ close: void }> implements DbC
   // [Method] connectAsync
   async connectAsync(): Promise<void> {
     if (this._rawConn != null) {
-      throw new Error("이미 'Connection'이 연결되어있습니다.");
+      throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
 
     // 1. 풀에서 커넥션 획득
@@ -110,7 +110,7 @@ export class PooledDbConn extends SdEventEmitter<{ close: void }> implements DbC
 
   private _requireRawConn(): DbConn {
     if (this._rawConn == null) {
-      throw new Error("'Connection'이 연결되어있지 않습니다. (Pool Connection is not acquired)");
+      throw new SdError(`${DB_CONN_ERRORS.NOT_CONNECTED} (Pool Connection is not acquired)`);
     }
     return this._rawConn;
   }

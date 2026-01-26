@@ -7,6 +7,8 @@ Excel 파일(.xlsx) 처리 라이브러리이다. Node.js와 브라우저 환경
 ```bash
 npm install @simplysm/excel
 # or
+yarn add @simplysm/excel
+# or
 pnpm add @simplysm/excel
 ```
 
@@ -46,9 +48,9 @@ import { ExcelWorkbook } from "@simplysm/excel";
 const workbook = new ExcelWorkbook(bytes);
 
 // 워크시트 접근 (인덱스 또는 이름)
-const sheet = await workbook.getWorksheet(0);
+const sheetByIndex = await workbook.getWorksheet(0);
 // 또는
-const sheet = await workbook.getWorksheet("Sheet1");
+const sheetByName = await workbook.getWorksheet("Sheet1");
 
 // 셀 값 읽기
 const value = await sheet.cell(0, 0).getVal();
@@ -87,9 +89,9 @@ const records = [
   { name: "홍길동", age: 30, email: "hong@test.com" },
   { name: "김철수", age: 25 },
 ];
-const workbook = await wrapper.write("Users", records);
+// write()는 ExcelWorkbook을 반환하므로 반드시 리소스를 해제해야 한다
+await using workbook = await wrapper.write("Users", records);
 const bytes = await workbook.getBytes();
-await workbook.close();
 
 // Excel에서 레코드 읽기 (데이터가 없으면 에러 발생)
 const readRecords = await wrapper.read(bytes, "Users");
@@ -99,8 +101,8 @@ const readRecords = await wrapper.read(bytes, "Users");
 ### 셀 스타일
 
 ```typescript
-// 배경색 설정 (ARGB 형식)
-await cell.setStyle({ background: "00FF0000" }); // 빨간색
+// 배경색 설정 (ARGB 형식: AARRGGBB, AA는 alpha 값, 00=완전 투명, FF=완전 불투명)
+await cell.setStyle({ background: "FFFF0000" }); // 빨간색 (완전 불투명)
 
 // 테두리 설정
 await cell.setStyle({ border: ["left", "right", "top", "bottom"] });
@@ -140,6 +142,40 @@ await sheet.cell(0, 0).merge(2, 3);
 await sheet.cell(0, 0).setVal(10);
 await sheet.cell(0, 1).setVal(20);
 await sheet.cell(0, 2).setFormula("A1+B1");
+```
+
+## 아키텍처
+
+### 비동기 API 설계
+
+이 라이브러리의 모든 셀 관련 메서드는 `async`로 설계되어 있다. 이는 의도된 설계이며, 다음과 같은 이유로 필수적이다:
+
+#### Lazy Loading 구조
+
+대용량 Excel 파일에서 메모리 효율성을 위해 필요한 부분만 로드한다:
+
+- **문자열 셀 읽기**: SharedStrings.xml 로드
+- **숫자 셀 읽기**: SharedStrings 로드 안함
+- **스타일이 있는 셀**: Styles.xml 로드
+
+#### 극단적 케이스 대응
+
+SharedStrings가 1TB인 파일에서 숫자 셀 하나만 읽는 경우:
+- 비동기 구조: 숫자 셀만 읽으면 SharedStrings를 로드하지 않음
+- 동기 구조: 모든 XML을 미리 로드해야 하므로 메모리 부족 발생
+
+#### 사용 시 고려사항
+
+모든 셀 메서드가 `async`이므로 `await`를 사용해야 한다:
+
+```typescript
+// 올바른 사용
+const value = await cell.getVal();
+await cell.setVal("Hello");
+
+// 잘못된 사용
+const value = cell.getVal(); // Promise 객체를 반환
+cell.setVal("Hello"); // 즉시 실행되지 않음
 ```
 
 ## 클래스 구조

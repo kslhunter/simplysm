@@ -1,6 +1,6 @@
 import path from "path";
 import ts from "typescript";
-import { createSdWorker } from "@simplysm/core-node";
+import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import {
   getCompilerOptionsForPackage,
@@ -193,7 +193,7 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
   }
 }
 
-const sender = createSdWorker<{ startDtsWatch: typeof startDtsWatch }, DtsWorkerEvents>({
+const sender = createWorker<{ startDtsWatch: typeof startDtsWatch }, DtsWorkerEvents>({
   startDtsWatch,
 });
 

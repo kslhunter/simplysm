@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { DateTime, SdEventEmitter } from "@simplysm/core-common";
+import { DateTime, EventEmitter } from "@simplysm/core-common";
 import type { FastifyRequest } from "fastify";
 import { clearInterval } from "node:timers";
 import { createConsola } from "consola";
@@ -10,7 +10,7 @@ import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessag
 
 const logger = createConsola().withTag("service-server:ServiceSocket");
 
-export class ServiceSocket extends SdEventEmitter<{
+export class ServiceSocket extends EventEmitter<{
   error: Error;
   close: number;
   message: { uuid: string; msg: ServiceClientMessage };

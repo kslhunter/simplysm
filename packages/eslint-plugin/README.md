@@ -85,7 +85,9 @@ throw new NotImplementedError();     // 경고
 const err = new NotImplementedError(); // 경고
 ```
 
-**제한 사항**: 동적 import(`await import(...)`)로 가져온 `NotImplementedError`는 감지하지 않는다.
+**제한 사항**:
+- 동적 import(`await import(...)`)로 가져온 `NotImplementedError`는 감지하지 않는다.
+- 다른 모듈에서 re-export된 `NotImplementedError`는 감지하지 않는다.
 
 ## recommended 설정
 
@@ -103,14 +105,15 @@ recommended 설정에는 다음이 포함된다:
 
 - `no-console`: 콘솔 사용 금지 (error)
 - `eqeqeq`: `===` 사용 강제, null 체크 제외 (error)
-- `no-warning-comments`: TODO/FIXME 주석 경고 (warn)
+- `no-warning-comments`: TODO/FIXME 주석 경고 (error)
+- `no-shadow`: 변수 섀도잉 금지 (error)
 
 ### Node.js 내장 모듈 사용 금지
 
 모든 패키지에서 코드 통일을 위해 Node.js 전용 API 사용을 금지한다.
 
 - `Buffer` → `Uint8Array`, `@simplysm/core-common`의 `BytesUtils` 사용
-- `EventEmitter` → `@simplysm/core-common`의 `SdEventEmitter` 사용
+- `EventEmitter` → `@simplysm/core-common`의 `EventEmitter` 사용
 
 ### TypeScript 규칙
 
@@ -141,6 +144,15 @@ recommended 설정에는 다음이 포함된다:
 
 - **JS 파일** (`.js`, `.jsx`): JavaScript 전용 규칙 적용
 - **TS 파일** (`.ts`, `.tsx`): TypeScript ESLint 규칙 적용
+- **TSX 파일** (`.tsx`): SolidJS 규칙 추가 적용
+
+### TSX 파일 (SolidJS)
+
+TSX 파일에는 `eslint-plugin-solid`의 `flat/typescript` 규칙이 추가로 적용된다.
+
+| 규칙 | 설명 |
+|------|------|
+| `solid/jsx-no-undef` | use:directive import가 미사용으로 처리되지 않도록 허용 |
 
 ### JS 파일 전용 규칙
 

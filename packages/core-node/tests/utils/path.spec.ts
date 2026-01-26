@@ -1,28 +1,36 @@
 import { describe, expect, it } from "vitest";
 import path from "path";
-import { PathUtils, type NormPath } from "../../src/utils/path";
+import {
+  pathPosix,
+  pathNorm,
+  pathIsChildPath,
+  pathChangeFileDirectory,
+  pathGetBasenameWithoutExt,
+  pathFilterByTargets,
+  type NormPath,
+} from "../../src/utils/path";
 
-describe("PathUtils", () => {
+describe("path 함수들", () => {
   //#region posix
 
-  describe("posix", () => {
+  describe("pathPosix", () => {
     it("단일 경로 인자를 POSIX 스타일로 변환", () => {
-      const result = PathUtils.posix("C:\\Users\\test\\file.txt");
+      const result = pathPosix("C:\\Users\\test\\file.txt");
       expect(result).toBe("C:/Users/test/file.txt");
     });
 
     it("여러 경로 인자를 조합하여 POSIX 스타일로 변환", () => {
-      const result = PathUtils.posix("C:\\Users", "test", "file.txt");
+      const result = pathPosix("C:\\Users", "test", "file.txt");
       expect(result).toBe("C:/Users/test/file.txt");
     });
 
     it("이미 POSIX 스타일인 경로는 그대로 유지", () => {
-      const result = PathUtils.posix("/usr/local/bin");
+      const result = pathPosix("/usr/local/bin");
       expect(result).toBe("/usr/local/bin");
     });
 
     it("혼합된 경로 구분자 처리", () => {
-      const result = PathUtils.posix("C:/Users\\test/file.txt");
+      const result = pathPosix("C:/Users\\test/file.txt");
       expect(result).toBe("C:/Users/test/file.txt");
     });
   });
@@ -31,20 +39,20 @@ describe("PathUtils", () => {
 
   //#region norm
 
-  describe("norm", () => {
+  describe("pathNorm", () => {
     it("경로를 정규화하고 NormPath 타입으로 반환", () => {
-      const result: NormPath = PathUtils.norm("./test/../file.txt");
+      const result: NormPath = pathNorm("./test/../file.txt");
       expect(result).toBe(path.resolve("./test/../file.txt"));
     });
 
     it("여러 경로 인자를 조합하여 정규화", () => {
       const basePath = path.resolve("/base");
-      const result = PathUtils.norm(basePath, "sub", "file.txt");
+      const result = pathNorm(basePath, "sub", "file.txt");
       expect(result).toBe(path.resolve(basePath, "sub", "file.txt"));
     });
 
     it("상대 경로를 절대 경로로 변환", () => {
-      const result = PathUtils.norm("relative/path");
+      const result = pathNorm("relative/path");
       expect(path.isAbsolute(result)).toBe(true);
     });
   });
@@ -53,29 +61,29 @@ describe("PathUtils", () => {
 
   //#region isChildPath
 
-  describe("isChildPath", () => {
+  describe("pathIsChildPath", () => {
     it("자식 경로인 경우 true 반환", () => {
-      const parent = PathUtils.norm("/parent/dir");
-      const child = PathUtils.norm("/parent/dir/child/file.txt");
-      expect(PathUtils.isChildPath(child, parent)).toBe(true);
+      const parent = pathNorm("/parent/dir");
+      const child = pathNorm("/parent/dir/child/file.txt");
+      expect(pathIsChildPath(child, parent)).toBe(true);
     });
 
     it("같은 경로인 경우 false 반환", () => {
-      const parent = PathUtils.norm("/parent/dir");
-      const child = PathUtils.norm("/parent/dir");
-      expect(PathUtils.isChildPath(child, parent)).toBe(false);
+      const parent = pathNorm("/parent/dir");
+      const child = pathNorm("/parent/dir");
+      expect(pathIsChildPath(child, parent)).toBe(false);
     });
 
     it("자식 경로가 아닌 경우 false 반환", () => {
-      const parent = PathUtils.norm("/parent/dir");
-      const child = PathUtils.norm("/other/dir/file.txt");
-      expect(PathUtils.isChildPath(child, parent)).toBe(false);
+      const parent = pathNorm("/parent/dir");
+      const child = pathNorm("/other/dir/file.txt");
+      expect(pathIsChildPath(child, parent)).toBe(false);
     });
 
     it("부모 경로의 일부 문자열만 일치하는 경우 false 반환", () => {
-      const parent = PathUtils.norm("/parent/dir");
-      const child = PathUtils.norm("/parent/directory/file.txt");
-      expect(PathUtils.isChildPath(child, parent)).toBe(false);
+      const parent = pathNorm("/parent/dir");
+      const child = pathNorm("/parent/directory/file.txt");
+      expect(pathIsChildPath(child, parent)).toBe(false);
     });
   });
 
@@ -83,65 +91,65 @@ describe("PathUtils", () => {
 
   //#region changeFileDirectory
 
-  describe("changeFileDirectory", () => {
+  describe("pathChangeFileDirectory", () => {
     it("파일의 디렉토리를 변경", () => {
-      const file = PathUtils.norm("/source/sub/file.txt");
-      const from = PathUtils.norm("/source");
-      const to = PathUtils.norm("/target");
+      const file = pathNorm("/source/sub/file.txt");
+      const from = pathNorm("/source");
+      const to = pathNorm("/target");
 
-      const result = PathUtils.changeFileDirectory(file, from, to);
-      expect(result).toBe(PathUtils.norm("/target/sub/file.txt"));
+      const result = pathChangeFileDirectory(file, from, to);
+      expect(result).toBe(pathNorm("/target/sub/file.txt"));
     });
 
     it("중첩된 경로에서 디렉토리 변경", () => {
-      const file = PathUtils.norm("/a/b/c/d/file.txt");
-      const from = PathUtils.norm("/a/b");
-      const to = PathUtils.norm("/x/y");
+      const file = pathNorm("/a/b/c/d/file.txt");
+      const from = pathNorm("/a/b");
+      const to = pathNorm("/x/y");
 
-      const result = PathUtils.changeFileDirectory(file, from, to);
-      expect(result).toBe(PathUtils.norm("/x/y/c/d/file.txt"));
+      const result = pathChangeFileDirectory(file, from, to);
+      expect(result).toBe(pathNorm("/x/y/c/d/file.txt"));
     });
 
     it("파일이 fromDirectory 안에 없으면 에러 발생", () => {
-      const file = PathUtils.norm("/other/path/file.txt");
-      const from = PathUtils.norm("/source");
-      const to = PathUtils.norm("/target");
+      const file = pathNorm("/other/path/file.txt");
+      const from = pathNorm("/source");
+      const to = pathNorm("/target");
 
-      expect(() => PathUtils.changeFileDirectory(file, from, to)).toThrow();
+      expect(() => pathChangeFileDirectory(file, from, to)).toThrow();
     });
 
     it("filePath와 fromDirectory가 동일한 경우 toDirectory 반환", () => {
-      const file = PathUtils.norm("/source");
-      const from = PathUtils.norm("/source");
-      const to = PathUtils.norm("/target");
+      const file = pathNorm("/source");
+      const from = pathNorm("/source");
+      const to = pathNorm("/target");
 
-      const result = PathUtils.changeFileDirectory(file, from, to);
+      const result = pathChangeFileDirectory(file, from, to);
       expect(result).toBe(to);
     });
   });
 
   //#endregion
 
-  //#region removeExt
+  //#region getBasenameWithoutExt
 
-  describe("removeExt", () => {
+  describe("pathGetBasenameWithoutExt", () => {
     it("단일 확장자 제거 (basename만 반환)", () => {
-      const result = PathUtils.removeExt("/path/to/file.txt");
+      const result = pathGetBasenameWithoutExt("/path/to/file.txt");
       expect(result).toBe("file");
     });
 
     it("다중 확장자에서 마지막 확장자만 제거", () => {
-      const result = PathUtils.removeExt("/path/to/file.spec.ts");
+      const result = pathGetBasenameWithoutExt("/path/to/file.spec.ts");
       expect(result).toBe("file.spec");
     });
 
     it("확장자가 없는 파일은 basename 반환", () => {
-      const result = PathUtils.removeExt("/path/to/file");
+      const result = pathGetBasenameWithoutExt("/path/to/file");
       expect(result).toBe("file");
     });
 
     it("숨김 파일(점으로 시작)은 그대로 반환", () => {
-      const result = PathUtils.removeExt("/path/to/.gitignore");
+      const result = pathGetBasenameWithoutExt("/path/to/.gitignore");
       expect(result).toBe(".gitignore");
     });
   });
@@ -150,32 +158,32 @@ describe("PathUtils", () => {
 
   //#region filterByTargets
 
-  describe("filterByTargets", () => {
+  describe("pathFilterByTargets", () => {
     const cwd = "/proj";
     const files = ["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts", "/proj/lib/d.ts"];
 
     it("빈 타겟 배열이면 모든 파일 반환", () => {
-      const result = PathUtils.filterByTargets(files, [], cwd);
+      const result = pathFilterByTargets(files, [], cwd);
       expect(result).toEqual(files);
     });
 
     it("단일 타겟으로 필터링", () => {
-      const result = PathUtils.filterByTargets(files, ["src"], cwd);
+      const result = pathFilterByTargets(files, ["src"], cwd);
       expect(result).toEqual(["/proj/src/a.ts", "/proj/src/b.ts"]);
     });
 
     it("다중 타겟으로 필터링", () => {
-      const result = PathUtils.filterByTargets(files, ["src", "tests"], cwd);
+      const result = pathFilterByTargets(files, ["src", "tests"], cwd);
       expect(result).toEqual(["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts"]);
     });
 
     it("매칭되는 파일이 없으면 빈 배열 반환", () => {
-      const result = PathUtils.filterByTargets(files, ["nonexistent"], cwd);
+      const result = pathFilterByTargets(files, ["nonexistent"], cwd);
       expect(result).toEqual([]);
     });
 
     it("정확한 파일 경로로 필터링", () => {
-      const result = PathUtils.filterByTargets(files, ["src/a.ts"], cwd);
+      const result = pathFilterByTargets(files, ["src/a.ts"], cwd);
       expect(result).toEqual(["/proj/src/a.ts"]);
     });
   });

@@ -2,16 +2,14 @@ import ts from "typescript";
 import path from "path";
 import os from "os";
 import { Listr } from "listr2";
-import { FsUtils, PathUtils, SdWorker, type SdWorkerProxy } from "@simplysm/core-node";
+import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
+import { mapGetOrCreate } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { parseRootTsconfig, type TypecheckEnv } from "../utils/tsconfig";
 import { loadSdConfig } from "../utils/sd-config";
-import type {
-  TypecheckTaskInfo,
-  TypecheckResult,
-  SerializedDiagnostic,
-} from "../workers/typecheck.worker";
+import { deserializeDiagnostic } from "../utils/typecheck-serialization";
+import type { TypecheckTaskInfo, TypecheckResult } from "../workers/typecheck.worker";
 import type * as TypecheckWorkerModule from "../workers/typecheck.worker";
 
 //#region Types
@@ -22,6 +20,7 @@ import type * as TypecheckWorkerModule from "../workers/typecheck.worker";
 export interface TypecheckOptions {
   /** 타입체크할 경로 필터 (예: `packages/core-common`). 빈 배열이면 tsconfig.json에 정의된 모든 파일 대상 */
   targets: string[];
+  /** sd.config.ts에 전달할 추가 옵션 */
   options: string[];
 }
 
@@ -97,7 +96,7 @@ export function classifyFiles(fileNames: string[], cwd: string, config: SdConfig
   };
 
   for (const fileName of fileNames) {
-    const relativePath = PathUtils.posix(path.relative(cwd, fileName));
+    const relativePath = pathPosix(path.relative(cwd, fileName));
 
     // packages/{pkg}/tests/... - 패키지 테스트 (먼저 체크)
     const packageTestMatch = relativePath.match(PATH_PATTERNS.PACKAGE_TEST);
@@ -111,7 +110,7 @@ export function classifyFiles(fileNames: string[], cwd: string, config: SdConfig
         packageDir: path.resolve(cwd, "packages", pkgName),
         envs: toTypecheckEnvs(config.packages[pkgName]?.target),
       };
-      result.byPackageTests.getOrCreate(pkgName, { info, files: [] }).files.push(fileName);
+      mapGetOrCreate(result.byPackageTests, pkgName, { info, files: [] }).files.push(fileName);
       continue;
     }
 
@@ -126,7 +125,7 @@ export function classifyFiles(fileNames: string[], cwd: string, config: SdConfig
         dir: path.resolve(cwd, "packages", pkgName),
         envs: toTypecheckEnvs(config.packages[pkgName]?.target),
       };
-      result.byPackage.getOrCreate(pkgName, { info, files: [] }).files.push(fileName);
+      mapGetOrCreate(result.byPackage, pkgName, { info, files: [] }).files.push(fileName);
       continue;
     }
 
@@ -138,7 +137,7 @@ export function classifyFiles(fileNames: string[], cwd: string, config: SdConfig
         name: testName,
         dir: path.resolve(cwd, "tests", testName),
       };
-      result.byTests.getOrCreate(testName, { info, files: [] }).files.push(fileName);
+      mapGetOrCreate(result.byTests, testName, { info, files: [] }).files.push(fileName);
       continue;
     }
 
@@ -218,40 +217,6 @@ function createTypecheckTaskInfos(classified: ClassifiedFiles, cwd: string): Typ
   return tasks;
 }
 
-/**
- * SerializedDiagnostic을 ts.Diagnostic으로 복원
- * 실제 파일 내용을 읽어 formatDiagnosticsWithColorAndContext에서 소스 코드 컨텍스트가 표시되도록 함
- * @param fileCache 파일 내용 캐시 (동일 파일 중복 읽기 방지)
- */
-function deserializeDiagnostic(
-  serialized: SerializedDiagnostic,
-  fileCache: Map<string, string>,
-): ts.Diagnostic {
-  let file: ts.SourceFile | undefined;
-  if (serialized.file != null) {
-    const fileName = serialized.file.fileName;
-
-    // 캐시된 파일 내용 가져오기 (없으면 읽어서 캐시)
-    // 파일이 삭제되었거나 접근 불가능한 경우 빈 내용으로 처리
-    // (소스 코드 컨텍스트는 표시되지 않지만 진단 메시지는 정상 출력됨)
-    const content = fileCache.getOrCreate(fileName, () =>
-      FsUtils.exists(fileName) ? FsUtils.read(fileName) : "",
-    );
-
-    const scriptKind = fileName.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
-    file = ts.createSourceFile(fileName, content, ts.ScriptTarget.Latest, false, scriptKind);
-  }
-
-  return {
-    category: serialized.category,
-    code: serialized.code,
-    messageText: serialized.messageText,
-    file,
-    start: serialized.start,
-    length: serialized.length,
-  };
-}
-
 //#endregion
 
 //#region Main
@@ -305,7 +270,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   }
 
   // targets가 지정되면 fileNames 필터링
-  const fileNames = PathUtils.filterByTargets(parsedConfig.fileNames, targets, cwd);
+  const fileNames = pathFilterByTargets(parsedConfig.fileNames, targets, cwd);
 
   if (fileNames.length === 0) {
     process.stdout.write("✔ 타입체크할 파일이 없습니다.\n");
@@ -337,9 +302,9 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
 
   // Worker 풀 생성 (작업 수만큼만 생성)
   const workerPath = path.resolve(import.meta.dirname, "../workers/typecheck.worker.ts");
-  const workers: SdWorkerProxy<typeof TypecheckWorkerModule>[] = [];
+  const workers: WorkerProxy<typeof TypecheckWorkerModule>[] = [];
   for (let i = 0; i < concurrency; i++) {
-    workers.push(SdWorker.create<typeof TypecheckWorkerModule>(workerPath));
+    workers.push(Worker.create<typeof TypecheckWorkerModule>(workerPath));
   }
 
   // 결과 수집용
@@ -357,7 +322,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
     let taskIndex = 0;
 
     // Worker에서 작업 실행
-    async function runNextTask(worker: SdWorkerProxy<typeof TypecheckWorkerModule>): Promise<void> {
+    async function runNextTask(worker: WorkerProxy<typeof TypecheckWorkerModule>): Promise<void> {
       while (taskIndex < taskInfos.length) {
         const currentIndex = taskIndex++;
         const taskInfo = taskInfos[currentIndex];

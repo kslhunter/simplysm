@@ -1,5 +1,9 @@
 import type { ExcelXml, ExcelXmlContentTypeData } from "../types";
 
+/**
+ * [Content_Types].xml 파일을 관리하는 클래스.
+ * 파일별 MIME 타입 정보를 관리한다.
+ */
 export class ExcelXmlContentType implements ExcelXml {
   data: ExcelXmlContentTypeData;
 

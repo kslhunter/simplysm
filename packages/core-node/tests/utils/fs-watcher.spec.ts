@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import path from "path";
 import fs from "fs";
 import os from "os";
-import { SdFsWatcher } from "../../src/utils/fs-watcher";
+import { FsWatcher } from "../../src/features/fs-watcher";
 
 describe("SdFsWatcher", () => {
   const testDir = path.join(os.tmpdir(), "fs-watcher-test-" + Date.now());
-  let watcher: SdFsWatcher | undefined;
+  let watcher: FsWatcher | undefined;
 
   beforeEach(() => {
     fs.mkdirSync(testDir, { recursive: true });
@@ -24,14 +24,24 @@ describe("SdFsWatcher", () => {
 
   describe("watchAsync", () => {
     it("파일 감시 시작", async () => {
-      watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")]);
+      watcher = await FsWatcher.watchAsync([path.join(testDir, "**/*")]);
       expect(watcher).toBeDefined();
     });
 
     it("옵션과 함께 파일 감시 시작", async () => {
-      watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")], {
+      watcher = await FsWatcher.watchAsync([path.join(testDir, "**/*")], {
         ignoreInitial: false,
       });
+      expect(watcher).toBeDefined();
+    });
+
+    it("에러 이벤트 발생 시 로깅 처리", async () => {
+      // chokidar는 존재하지 않는 경로도 정상적으로 감시 시작함
+      // 에러 이벤트는 실제 파일 시스템 오류 시에만 발생
+      const nonExistentPath = path.join(testDir, "non-existent-dir-" + Date.now());
+      watcher = await FsWatcher.watchAsync([nonExistentPath]);
+
+      // 에러 핸들러가 등록되어 있어 에러 발생 시에도 크래시하지 않음
       expect(watcher).toBeDefined();
     });
   });
@@ -42,7 +52,7 @@ describe("SdFsWatcher", () => {
 
   describe("close", () => {
     it("감시 종료", async () => {
-      watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")]);
+      watcher = await FsWatcher.watchAsync([path.join(testDir, "**/*")]);
 
       // close()가 에러 없이 완료되면 테스트 통과
       await expect(watcher.close()).resolves.toBeUndefined();
@@ -58,7 +68,7 @@ describe("SdFsWatcher", () => {
 
   describe("onChange", () => {
     it("onChange 메서드 체이닝 지원", async () => {
-      watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")]);
+      watcher = await FsWatcher.watchAsync([path.join(testDir, "**/*")]);
 
       const fn = vi.fn();
       const result = watcher.onChange({ delay: 100 }, fn);
@@ -67,7 +77,7 @@ describe("SdFsWatcher", () => {
     });
 
     it("delay 옵션 지정 가능", async () => {
-      watcher = await SdFsWatcher.watchAsync([path.join(testDir, "**/*")]);
+      watcher = await FsWatcher.watchAsync([path.join(testDir, "**/*")]);
 
       const fn = vi.fn();
       // delay 옵션이 다양한 값으로 지정 가능해야 함
@@ -120,7 +130,7 @@ describe("SdFsWatcher", () => {
      * 이벤트 콜백이 호출될 때까지 대기하는 헬퍼 함수.
      */
     const waitForChanges = (
-      watcherInstance: SdFsWatcher,
+      watcherInstance: FsWatcher,
       delay: number,
     ): Promise<Array<{ event: string; path: string }>> => {
       return new Promise((resolve) => {
@@ -133,7 +143,7 @@ describe("SdFsWatcher", () => {
     it("파일 추가 후 변경 시 add 이벤트만 반환", async () => {
       const testFile = path.join(testDir, "test-add-change.txt");
 
-      watcher = await SdFsWatcher.watchAsync([testDir]);
+      watcher = await FsWatcher.watchAsync([testDir]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
@@ -155,7 +165,7 @@ describe("SdFsWatcher", () => {
     it("파일 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
       const testFile = path.join(testDir, "test-add-unlink.txt");
 
-      watcher = await SdFsWatcher.watchAsync([testDir]);
+      watcher = await FsWatcher.watchAsync([testDir]);
 
       const changes: Array<{ event: string; path: string }> = [];
       let resolved = false;
@@ -187,7 +197,7 @@ describe("SdFsWatcher", () => {
     it("디렉토리 추가 후 삭제 시 이벤트 없음 또는 변경 없음 처리", async () => {
       const testSubDir = path.join(testDir, "test-addDir-unlinkDir");
 
-      watcher = await SdFsWatcher.watchAsync([testDir]);
+      watcher = await FsWatcher.watchAsync([testDir]);
 
       const changes: Array<{ event: string; path: string }> = [];
       let resolved = false;
@@ -222,7 +232,7 @@ describe("SdFsWatcher", () => {
       // 파일 미리 생성
       fs.writeFileSync(testFile, "initial");
 
-      watcher = await SdFsWatcher.watchAsync([testDir]);
+      watcher = await FsWatcher.watchAsync([testDir]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
@@ -250,7 +260,7 @@ describe("SdFsWatcher", () => {
       // file3은 미리 생성 (change 이벤트 발생용)
       fs.writeFileSync(file3, "existing");
 
-      watcher = await SdFsWatcher.watchAsync([testDir]);
+      watcher = await FsWatcher.watchAsync([testDir]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 

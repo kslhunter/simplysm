@@ -112,7 +112,7 @@ export const insertIfNotExistsBasic: ExpectedSql = {
     SELECT '홍길동', 1
     WHERE NOT EXISTS (
       SELECT 1 AS "_" FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."name" IS NULL AND '홍길동' IS NULL) OR "T1"."name" = '홍길동')
+      WHERE "T1"."name" IS NOT DISTINCT FROM '홍길동'
     )
   `,
 };
@@ -140,8 +140,8 @@ export const insertIfNotExistsMultiple: ExpectedSql = {
     SELECT '홍길동', 1
     WHERE NOT EXISTS (
       SELECT 1 AS "_" FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."name" IS NULL AND '홍길동' IS NULL) OR "T1"."name" = '홍길동')
-        AND (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+      WHERE "T1"."name" IS NOT DISTINCT FROM '홍길동'
+        AND "T1"."departmentId" IS NOT DISTINCT FROM 1
     )
   `,
 };
@@ -185,7 +185,7 @@ export const insertIntoSelectWhere: ExpectedSql = {
     INSERT INTO "TestSchema"."EmployeeBackup" ("id", "name")
     SELECT "T1"."id" AS "id", "T1"."name" AS "name"
     FROM "TestSchema"."Employee" AS "T1"
-    WHERE (("T1"."departmentId" IS NULL AND 1 IS NULL) OR "T1"."departmentId" = 1)
+    WHERE "T1"."departmentId" IS NOT DISTINCT FROM 1
   `,
 };
 

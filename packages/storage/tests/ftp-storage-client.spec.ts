@@ -5,6 +5,7 @@ import { FtpStorageClient } from "../src/clients/ftp-storage-client";
 const mockAccess = vi.fn().mockResolvedValue(undefined);
 const mockEnsureDir = vi.fn().mockResolvedValue(undefined);
 const mockRename = vi.fn().mockResolvedValue(undefined);
+const mockSize = vi.fn().mockResolvedValue(100);
 const mockList = vi.fn().mockResolvedValue([
   { name: "file.txt", isFile: true },
   { name: "dir", isFile: false },
@@ -25,6 +26,7 @@ vi.mock("basic-ftp", () => {
         access = mockAccess;
         ensureDir = mockEnsureDir;
         rename = mockRename;
+        size = mockSize;
         list = mockList;
         downloadTo = mockDownloadTo;
         remove = mockRemove;
@@ -76,6 +78,12 @@ describe("FtpStorageClient", () => {
       await expect(client.connect({ host: "test" })).rejects.toThrow(
         "이미 FTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
       );
+    });
+
+    it("연결 실패 시 클라이언트를 정리해야 함", async () => {
+      mockAccess.mockRejectedValueOnce(new Error("Auth failed"));
+      await expect(client.connect({ host: "test" })).rejects.toThrow("Auth failed");
+      expect(mockClose).toHaveBeenCalled();
     });
   });
 
@@ -140,14 +148,25 @@ describe("FtpStorageClient", () => {
   });
 
   describe("exists", () => {
-    it("파일이 존재하면 true 반환", async () => {
+    it("파일이 존재하면 true 반환 (size로 확인)", async () => {
       await client.connect({ host: "test" });
       const result = await client.exists("/path/file.txt");
 
+      expect(mockSize).toHaveBeenCalledWith("/path/file.txt");
+      expect(result).toBe(true);
+    });
+
+    it("디렉토리가 존재하면 true 반환 (list로 확인)", async () => {
+      mockSize.mockRejectedValueOnce(new Error("Not a file"));
+      await client.connect({ host: "test" });
+      const result = await client.exists("/path/dir");
+
+      expect(mockList).toHaveBeenCalledWith("/path");
       expect(result).toBe(true);
     });
 
     it("파일이 존재하지 않으면 false 반환", async () => {
+      mockSize.mockRejectedValueOnce(new Error("Not a file"));
       mockList.mockResolvedValueOnce([]);
       await client.connect({ host: "test" });
       const result = await client.exists("/path/nonexistent.txt");
@@ -156,6 +175,7 @@ describe("FtpStorageClient", () => {
     });
 
     it("에러 발생 시 false 반환", async () => {
+      mockSize.mockRejectedValueOnce(new Error("Not a file"));
       mockList.mockRejectedValueOnce(new Error("Not found"));
       await client.connect({ host: "test" });
       const result = await client.exists("/path/error.txt");
@@ -164,8 +184,18 @@ describe("FtpStorageClient", () => {
     });
 
     it("루트 디렉토리 파일 존재 확인", async () => {
+      mockSize.mockRejectedValueOnce(new Error("Not a file"));
       await client.connect({ host: "test" });
       const result = await client.exists("/file.txt");
+
+      expect(mockList).toHaveBeenCalledWith("/");
+      expect(result).toBe(true);
+    });
+
+    it("슬래시 없는 경로 존재 확인", async () => {
+      mockSize.mockRejectedValueOnce(new Error("Not a file"));
+      await client.connect({ host: "test" });
+      const result = await client.exists("file.txt");
 
       expect(mockList).toHaveBeenCalledWith("/");
       expect(result).toBe(true);
@@ -211,6 +241,10 @@ describe("FtpStorageClient", () => {
   });
 
   describe("close", () => {
+    it("연결 전 close 호출 시 에러 없이 종료", async () => {
+      await expect(client.close()).resolves.toBeUndefined();
+    });
+
     it("연결을 닫아야 함", async () => {
       await client.connect({ host: "test" });
       await client.close();

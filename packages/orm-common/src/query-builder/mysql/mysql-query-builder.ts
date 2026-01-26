@@ -702,13 +702,18 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
     // MySQL: 모든 테이블 DROP (MySQL에서 database와 schema는 동의어)
     // information_schema에서 테이블 목록 조회 후 DROP
+    // SQL Injection 방지: 식별자 유효성 검증
+    if (!/^[a-zA-Z0-9_]+$/.test(def.database)) {
+      throw new Error(`유효하지 않은 데이터베이스명: ${def.database}`);
+    }
+
     const dbName = this.expr.escapeString(def.database);
     return { sql: `
 SET FOREIGN_KEY_CHECKS = 0;
 SET @tables = NULL;
 SELECT GROUP_CONCAT(table_name) INTO @tables FROM information_schema.tables WHERE table_schema = '${dbName}';
-SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables);
-PREPARE stmt FROM @tables;
+SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ', @tables));
+PREPARE stmt FROM @drop_stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 SET FOREIGN_KEY_CHECKS = 1` };

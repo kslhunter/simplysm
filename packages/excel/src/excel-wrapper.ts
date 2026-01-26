@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { DateOnly, DateTime, NumberUtils, Time } from "@simplysm/core-common";
+import { DateOnly, DateTime, numParseFloat, Time } from "@simplysm/core-common";
 import { type z, ZodBoolean, ZodDefault, ZodNullable, ZodNumber, ZodOptional, ZodString } from "zod";
 import { ExcelWorkbook } from "./excel-workbook";
 import type { ExcelValueType } from "./types";
@@ -167,7 +167,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
 
     if (innerSchema instanceof ZodNumber) {
       if (typeof rawValue === "number") return rawValue;
-      return NumberUtils.parseFloat(String(rawValue));
+      return numParseFloat(String(rawValue));
     }
 
     if (innerSchema instanceof ZodBoolean) {
@@ -215,7 +215,11 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
   }
 
   private _isRequired(schema: z.ZodType): boolean {
-    return !(schema instanceof ZodOptional) && !(schema instanceof ZodNullable);
+    return (
+      !(schema instanceof ZodOptional) &&
+      !(schema instanceof ZodNullable) &&
+      !(schema instanceof ZodDefault)
+    );
   }
 
   private _isBoolean(schema: z.ZodType): boolean {

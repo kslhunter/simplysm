@@ -169,6 +169,85 @@ describe("ServiceProtocol", () => {
     });
   });
 
+  describe("UUID interleaving", () => {
+    it("복수 UUID 청크 교차 수신", () => {
+      const uuid1 = Uuid.new().toString();
+      const uuid2 = Uuid.new().toString();
+
+      // 각각 4MB 데이터로 청킹 유발
+      const largeData1 = "A".repeat(4 * 1024 * 1024);
+      const largeData2 = "B".repeat(4 * 1024 * 1024);
+      const message1: ServiceMessage = { name: "test.method1", body: [largeData1] };
+      const message2: ServiceMessage = { name: "test.method2", body: [largeData2] };
+
+      const encoded1 = protocol.encode(uuid1, message1);
+      const encoded2 = protocol.encode(uuid2, message2);
+
+      expect(encoded1.chunks.length).toBeGreaterThan(1);
+      expect(encoded2.chunks.length).toBeGreaterThan(1);
+
+      // 교차로 청크 디코딩 (uuid1[0], uuid2[0], uuid1[1], uuid2[1], ...)
+      const maxChunks = Math.max(encoded1.chunks.length, encoded2.chunks.length);
+      let result1!: ReturnType<typeof protocol.decode>;
+      let result2!: ReturnType<typeof protocol.decode>;
+
+      for (let i = 0; i < maxChunks; i++) {
+        if (i < encoded1.chunks.length) {
+          result1 = protocol.decode(encoded1.chunks[i]);
+        }
+        if (i < encoded2.chunks.length) {
+          result2 = protocol.decode(encoded2.chunks[i]);
+        }
+      }
+
+      // 두 메시지 모두 완료되어야 함
+      expect(result1.type).toBe("complete");
+      expect(result2.type).toBe("complete");
+
+      if (result1.type === "complete" && result2.type === "complete") {
+        expect(result1.message.name).toBe("test.method1");
+        expect(result1.message.body).toEqual([largeData1]);
+        expect(result2.message.name).toBe("test.method2");
+        expect(result2.message.body).toEqual([largeData2]);
+      }
+    });
+
+    it("3개 UUID 무작위 순서 수신", () => {
+      const uuids = [Uuid.new().toString(), Uuid.new().toString(), Uuid.new().toString()];
+      const data = ["X".repeat(4 * 1024 * 1024), "Y".repeat(4 * 1024 * 1024), "Z".repeat(4 * 1024 * 1024)];
+      const messages: ServiceMessage[] = data.map((d, i) => ({ name: `test.method${i}`, body: [d] }));
+
+      const encodedList = uuids.map((uuid, i) => protocol.encode(uuid, messages[i]));
+
+      // 모든 청크를 하나의 배열로 합침
+      const allChunks: { uuid: string; chunk: Uint8Array; originalIndex: number }[] = [];
+      encodedList.forEach((encoded, msgIdx) => {
+        encoded.chunks.forEach((chunk, chunkIdx) => {
+          allChunks.push({ uuid: uuids[msgIdx], chunk, originalIndex: chunkIdx });
+        });
+      });
+
+      // 무작위 순서로 섞기 (시드 기반 섞기 대신 역순 사용)
+      allChunks.reverse();
+
+      // 모든 청크 디코딩
+      const results: Map<string, ReturnType<typeof protocol.decode>> = new Map();
+      for (const { uuid, chunk } of allChunks) {
+        results.set(uuid, protocol.decode(chunk));
+      }
+
+      // 모든 메시지 완료 확인
+      for (let i = 0; i < 3; i++) {
+        const result = results.get(uuids[i]);
+        expect(result?.type).toBe("complete");
+        if (result?.type === "complete") {
+          expect(result.message.name).toBe(`test.method${i}`);
+          expect(result.message.body).toEqual([data[i]]);
+        }
+      }
+    });
+  });
+
   describe("edge cases", () => {
     it("빈 body 처리", () => {
       const uuid = Uuid.new().toString();

@@ -8,7 +8,8 @@ import type {
   ExcelXmlStyleDataFill,
   ExcelXmlStyleDataXf,
 } from "../types";
-import { NumberUtils, ObjectUtils } from "@simplysm/core-common";
+import { numParseInt, objClone, objEqual, arrSingle } from "@simplysm/core-common";
+import { firstBy } from "remeda";
 
 export interface ExcelStyle {
   numFmtId?: string;
@@ -19,6 +20,10 @@ export interface ExcelStyle {
   horizontalAlign?: ExcelHorizontalAlign;
 }
 
+/**
+ * xl/styles.xml 파일을 관리하는 클래스.
+ * 숫자 형식, 배경색, 테두리, 정렬 등의 스타일을 처리한다.
+ */
 export class ExcelXmlStyle implements ExcelXml {
   data: ExcelXmlStyleData;
 
@@ -101,7 +106,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   addWithClone(id: string, style: ExcelStyle): string {
-    const idNum = NumberUtils.parseInt(id);
+    const idNum = numParseInt(id);
     if (idNum == null) {
       throw new Error(`잘못된 스타일 ID: ${id}`);
     }
@@ -110,7 +115,7 @@ export class ExcelXmlStyle implements ExcelXml {
       throw new Error(`존재하지 않는 스타일 ID: ${id} (범위: 0-${xfArray.length - 1})`);
     }
     const prevXf = xfArray[idNum];
-    const cloneXf = ObjectUtils.clone(prevXf);
+    const cloneXf = objClone(prevXf);
 
     if (style.numFmtId !== undefined) {
       cloneXf.$.numFmtId = style.numFmtId;
@@ -122,11 +127,11 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.background !== undefined) {
-      const fillIdNum = cloneXf.$.fillId !== undefined ? NumberUtils.parseInt(cloneXf.$.fillId) : undefined;
+      const fillIdNum = cloneXf.$.fillId !== undefined ? numParseInt(cloneXf.$.fillId) : undefined;
       const prevFill = fillIdNum !== undefined ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
 
       if (prevFill != null) {
-        const cloneFill = ObjectUtils.clone(prevFill);
+        const cloneFill = objClone(prevFill);
         cloneFill.patternFill[0].$.patternType = "solid";
 
         if (cloneFill.patternFill[0].fgColor == null) {
@@ -152,11 +157,11 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.border !== undefined) {
-      const borderIdNum = cloneXf.$.borderId !== undefined ? NumberUtils.parseInt(cloneXf.$.borderId) : undefined;
+      const borderIdNum = cloneXf.$.borderId !== undefined ? numParseInt(cloneXf.$.borderId) : undefined;
       const prevBorder = borderIdNum !== undefined ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
 
       if (prevBorder != null) {
-        const cloneBorder = ObjectUtils.clone(prevBorder);
+        const cloneBorder = objClone(prevBorder);
         this._applyBorderPosition(cloneBorder, "left", style.border.includes("left"));
         this._applyBorderPosition(cloneBorder, "right", style.border.includes("right"));
         this._applyBorderPosition(cloneBorder, "top", style.border.includes("top"));
@@ -177,7 +182,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   get(id: string): ExcelStyle {
-    const idNum = NumberUtils.parseInt(id);
+    const idNum = numParseInt(id);
     if (idNum == null) {
       throw new Error(`잘못된 스타일 ID: ${id}`);
     }
@@ -189,7 +194,7 @@ export class ExcelXmlStyle implements ExcelXml {
       result.numFmtId = xf.$.numFmtId;
 
       if (xf.$.fillId !== undefined) {
-        const fillIdNum = NumberUtils.parseInt(xf.$.fillId);
+        const fillIdNum = numParseInt(xf.$.fillId);
         if (fillIdNum != null) {
           const fill = this.data.styleSheet.fills[0].fill[fillIdNum] as ExcelXmlStyleDataFill | undefined;
           if (fill == null) {
@@ -200,7 +205,7 @@ export class ExcelXmlStyle implements ExcelXml {
       }
 
       if (xf.$.borderId !== undefined) {
-        const borderIdNum = NumberUtils.parseInt(xf.$.borderId);
+        const borderIdNum = numParseInt(xf.$.borderId);
         if (borderIdNum == null) {
           throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
         }
@@ -233,7 +238,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   getNumFmtCode(numFmtId: string): string | undefined {
-    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId === numFmtId)
+    return arrSingle(this.data.styleSheet.numFmts?.[0].numFmt ?? [], (item) => item.$.numFmtId === numFmtId)
       ?.$.formatCode;
   }
 
@@ -261,7 +266,8 @@ export class ExcelXmlStyle implements ExcelXml {
 
   private _setNumFmtCode(numFmtCode: string): string {
     // 이미 해당 code가 있으면 넘기기
-    const existsNumFmtId = this.data.styleSheet.numFmts?.[0].numFmt?.single(
+    const existsNumFmtId = arrSingle(
+      this.data.styleSheet.numFmts?.[0].numFmt ?? [],
       (item) => item.$.formatCode === numFmtCode,
     )?.$.numFmtId;
     if (existsNumFmtId != null) {
@@ -277,10 +283,10 @@ export class ExcelXmlStyle implements ExcelXml {
 
     this.data.styleSheet.numFmts[0].numFmt = this.data.styleSheet.numFmts[0].numFmt ?? [];
 
-    const maxId =
-      this.data.styleSheet.numFmts[0].numFmt.max(
-        (item) => NumberUtils.parseInt(item.$.numFmtId) ?? 180,
-      ) ?? 180;
+    // Excel 사용자 정의 숫자 형식은 ID 180 이상부터 시작한다 (0-163: 내장 형식, 164-179: 예약됨)
+    const numFmts = this.data.styleSheet.numFmts[0].numFmt;
+    const maxItem = numFmts.length > 0 ? firstBy(numFmts, [(item) => numParseInt(item.$.numFmtId) ?? 180, "desc"]) : undefined;
+    const maxId = maxItem ? (numParseInt(maxItem.$.numFmtId) ?? 180) : 180;
     const nextNumFmtId = (maxId + 1).toString();
     this.data.styleSheet.numFmts[0].numFmt.push({
       $: {
@@ -289,7 +295,7 @@ export class ExcelXmlStyle implements ExcelXml {
       },
     });
     this.data.styleSheet.numFmts[0].$.count = (
-      NumberUtils.parseInt(this.data.styleSheet.numFmts[0].$.count)! + 1
+      (numParseInt(this.data.styleSheet.numFmts[0].$.count) ?? 0) + 1
     ).toString();
 
     return nextNumFmtId;
@@ -352,8 +358,8 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateXf(xfItem: ExcelXmlStyleDataXf): string {
-    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) =>
-      ObjectUtils.equal(item, xfItem),
+    const prevSameXf = arrSingle(this.data.styleSheet.cellXfs[0].xf, (item) =>
+      objEqual(item, xfItem),
     );
 
     if (prevSameXf != null) {
@@ -367,8 +373,8 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateFill(fillItem: ExcelXmlStyleDataFill): string {
-    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) =>
-      ObjectUtils.equal(item, fillItem),
+    const prevSameFill = arrSingle(this.data.styleSheet.fills[0].fill, (item) =>
+      objEqual(item, fillItem),
     );
 
     if (prevSameFill != null) {
@@ -381,8 +387,8 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateBorder(borderItem: ExcelXmlStyleDataBorder): string {
-    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) =>
-      ObjectUtils.equal(item, borderItem),
+    const prevSameBorder = arrSingle(this.data.styleSheet.borders[0].border, (item) =>
+      objEqual(item, borderItem),
     );
 
     if (prevSameBorder != null) {

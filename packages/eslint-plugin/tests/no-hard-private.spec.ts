@@ -916,9 +916,8 @@ class Child extends Parent {
       });
     });
 
-    describe("제한사항: 기존 _field가 있을 때 이름 충돌 발생", () => {
-      // 주의: #field를 _field로 변환할 때 기존 _field가 있으면 충돌이 발생한다.
-      // 사용자가 수동으로 이름을 조정해야 한다.
+    describe("이름 충돌 시 autofix 미적용", () => {
+      // #field를 _field로 변환할 때 기존 _field가 있으면 충돌 경고만 표시하고 autofix는 적용하지 않는다.
       ruleTester.run("no-hard-private", rule, {
         valid: [],
         invalid: [
@@ -929,13 +928,55 @@ class MyClass {
   #field = 2;
 }
             `.trim(),
-            output: `
+            // output이 없음 = autofix 미적용
+            errors: [{ messageId: "nameConflict", data: { name: "field" } }],
+          },
+        ],
+      });
+    });
+
+    describe("이름 충돌 - 메서드", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
 class MyClass {
-  _field = 1;
-  private _field = 2;
+  _method() {}
+  #method() {}
 }
             `.trim(),
-            errors: [{ messageId: "preferSoftPrivate" }],
+            errors: [{ messageId: "nameConflict", data: { name: "method" } }],
+          },
+        ],
+      });
+    });
+
+    describe("static # private 필드 사용 (MyClass.#staticField)", () => {
+      ruleTester.run("no-hard-private", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+class MyClass {
+  static #staticValue = 1;
+  static getStatic() {
+    return MyClass.#staticValue;
+  }
+}
+            `.trim(),
+            output: `
+class MyClass {
+  private static _staticValue = 1;
+  static getStatic() {
+    return MyClass._staticValue;
+  }
+}
+            `.trim(),
+            errors: [
+              { messageId: "preferSoftPrivate" },
+              { messageId: "preferSoftPrivate" },
+            ],
           },
         ],
       });

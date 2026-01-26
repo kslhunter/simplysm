@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
+import { onMount } from "solid-js";
 import { ThemeProvider, useTheme } from "../../src/contexts/ThemeContext";
+import { SdProvider } from "../../src/contexts/SdContext";
 
 describe("ThemeContext", () => {
   beforeEach(() => {
@@ -14,9 +16,11 @@ describe("ThemeContext", () => {
 
   it("ThemeProvider 기본 렌더링", () => {
     const { container } = render(() => (
-      <ThemeProvider>
-        <div>테스트</div>
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <div>테스트</div>
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(container.textContent).toBe("테스트");
@@ -26,13 +30,15 @@ describe("ThemeContext", () => {
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(themeValue).toBe("light");
@@ -43,14 +49,16 @@ describe("ThemeContext", () => {
     let currentTheme: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumerWithSetTheme
-          onMount={(theme, setTheme) => {
-            currentTheme = theme;
-            setThemeFn = setTheme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumerWithSetTheme
+            onMount={(theme, setTheme) => {
+              currentTheme = theme;
+              setThemeFn = setTheme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(currentTheme).toBe("light");
@@ -63,13 +71,15 @@ describe("ThemeContext", () => {
     let toggleFn: (() => void) | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumerWithToggle
-          onMount={(toggle) => {
-            toggleFn = toggle;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumerWithToggle
+            onMount={(toggle) => {
+              toggleFn = toggle;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(document.documentElement.classList.contains("dark")).toBe(false);
@@ -85,31 +95,35 @@ describe("ThemeContext", () => {
     let setThemeFn: ((theme: "light" | "dark") => void) | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumerWithSetTheme
-          onMount={(_, setTheme) => {
-            setThemeFn = setTheme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumerWithSetTheme
+            onMount={(_, setTheme) => {
+              setThemeFn = setTheme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     setThemeFn?.("dark");
-    expect(localStorage.getItem("sd-theme")).toBe("dark");
+    expect(localStorage.getItem("test-app:theme")).toBe("dark");
   });
 
   it("localStorage에서 테마 복원", () => {
-    localStorage.setItem("sd-theme", "dark");
+    localStorage.setItem("test-app:theme", "dark");
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(themeValue).toBe("dark");
@@ -119,7 +133,11 @@ describe("ThemeContext", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => {
-      render(() => <TestConsumer onMount={() => {}} />);
+      render(() => (
+        <SdProvider clientName="test-app">
+          <TestConsumer onMount={() => {}} />
+        </SdProvider>
+      ));
     }).toThrow("useTheme은 ThemeProvider 내부에서만 사용할 수 있습니다.");
 
     consoleError.mockRestore();
@@ -129,13 +147,15 @@ describe("ThemeContext", () => {
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider defaultTheme="dark">
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider defaultTheme="dark">
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(themeValue).toBe("dark");
@@ -156,13 +176,15 @@ describe("ThemeContext", () => {
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(themeValue).toBe("dark");
@@ -177,13 +199,15 @@ describe("ThemeContext", () => {
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     // localStorage 실패해도 기본값(light) 또는 시스템 설정으로 정상 동작
@@ -202,14 +226,16 @@ describe("ThemeContext", () => {
     let currentTheme: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumerWithSetTheme
-          onMount={(theme, setTheme) => {
-            currentTheme = theme;
-            setThemeFn = setTheme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumerWithSetTheme
+            onMount={(theme, setTheme) => {
+              currentTheme = theme;
+              setThemeFn = setTheme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     expect(currentTheme).toBe("light");
@@ -222,29 +248,72 @@ describe("ThemeContext", () => {
   });
 
   it("localStorage에 유효하지 않은 값이 있으면 기본값으로 fallback", () => {
-    localStorage.setItem("sd-theme", "invalid");
+    localStorage.setItem("test-app:theme", "invalid");
 
     let themeValue: string | undefined;
 
     render(() => (
-      <ThemeProvider>
-        <TestConsumer
-          onMount={(theme) => {
-            themeValue = theme;
-          }}
-        />
-      </ThemeProvider>
+      <SdProvider clientName="test-app">
+        <ThemeProvider>
+          <TestConsumer
+            onMount={(theme) => {
+              themeValue = theme;
+            }}
+          />
+        </ThemeProvider>
+      </SdProvider>
     ));
 
     // "invalid"는 유효하지 않으므로 시스템 설정 또는 light로 fallback
     expect(themeValue).toBeDefined();
     expect(["light", "dark"]).toContain(themeValue);
   });
+
+  it("다른 clientName으로 테마 격리", () => {
+    let setTheme1: ((theme: "light" | "dark") => void) | undefined;
+    let setTheme2: ((theme: "light" | "dark") => void) | undefined;
+    let theme1: string | undefined;
+    let theme2: string | undefined;
+
+    render(() => (
+      <>
+        <SdProvider clientName="app1">
+          <ThemeProvider>
+            <TestConsumerWithSetTheme
+              onMount={(theme, setTheme) => {
+                theme1 = theme;
+                setTheme1 = setTheme;
+              }}
+            />
+          </ThemeProvider>
+        </SdProvider>
+        <SdProvider clientName="app2">
+          <ThemeProvider>
+            <TestConsumerWithSetTheme
+              onMount={(theme, setTheme) => {
+                theme2 = theme;
+                setTheme2 = setTheme;
+              }}
+            />
+          </ThemeProvider>
+        </SdProvider>
+      </>
+    ));
+
+    expect(theme1).toBe("light");
+    expect(theme2).toBe("light");
+
+    setTheme1?.("dark");
+    setTheme2?.("light");
+
+    expect(localStorage.getItem("app1:theme")).toBe("dark");
+    expect(localStorage.getItem("app2:theme")).toBe("light");
+  });
 });
 
 function TestConsumer(props: { onMount: (theme: string) => void }) {
   const { theme } = useTheme();
-  props.onMount(theme());
+  onMount(() => props.onMount(theme()));
   return null;
 }
 
@@ -252,12 +321,12 @@ function TestConsumerWithSetTheme(props: {
   onMount: (theme: string, setTheme: (theme: "light" | "dark") => void) => void;
 }) {
   const { theme, setTheme } = useTheme();
-  props.onMount(theme(), setTheme);
+  onMount(() => props.onMount(theme(), setTheme));
   return null;
 }
 
 function TestConsumerWithToggle(props: { onMount: (toggle: () => void) => void }) {
   const { toggleTheme } = useTheme();
-  props.onMount(toggleTheme);
+  onMount(() => props.onMount(toggleTheme));
   return null;
 }

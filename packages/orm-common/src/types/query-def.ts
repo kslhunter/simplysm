@@ -388,10 +388,37 @@ export interface SchemaExistsQueryDef {
 //#region ========== DDL 타입 상수 ==========
 
 /**
+ * DDL QueryDef 유니언 (컴파일 타임 검증용)
+ *
+ * @remarks
+ * switchFk는 DDL이 아니므로 제외 (트랜잭션 내 사용 가능)
+ */
+type DdlQueryDef =
+  | ClearSchemaQueryDef
+  | CreateTableQueryDef
+  | DropTableQueryDef
+  | RenameTableQueryDef
+  | TruncateQueryDef
+  | AddColumnQueryDef
+  | DropColumnQueryDef
+  | ModifyColumnQueryDef
+  | RenameColumnQueryDef
+  | DropPkQueryDef
+  | AddPkQueryDef
+  | AddFkQueryDef
+  | DropFkQueryDef
+  | AddIdxQueryDef
+  | DropIdxQueryDef
+  | CreateViewQueryDef
+  | DropViewQueryDef
+  | CreateProcQueryDef
+  | DropProcQueryDef;
+
+/**
  * DDL (Data Definition Language) 타입 상수
  *
  * 트랜잭션 내 DDL 차단 및 DDL 타입 검증에 사용
- * 새 DDL QueryDef 추가 시 이 배열도 함께 업데이트 필요
+ * satisfies 키워드로 DdlQueryDef와의 동기화를 컴파일 타임에 검증
  *
  * @remarks
  * switchFk는 DDL이 아니므로 제외 (트랜잭션 내 사용 가능)
@@ -416,7 +443,7 @@ export const DDL_TYPES = [
   "dropView",
   "createProc",
   "dropProc",
-] as const;
+] as const satisfies readonly DdlQueryDef["type"][];
 
 /** DDL 타입 유니언 */
 export type DdlType = (typeof DDL_TYPES)[number];

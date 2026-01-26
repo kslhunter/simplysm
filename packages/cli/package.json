@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/cli",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - CLI 도구",
   "author": "김석래",
@@ -25,6 +26,7 @@
     "glob": "^13.0.0",
     "jiti": "^2.6.1",
     "listr2": "^10.0.0",
+    "remeda": "^2.33.4",
     "solid-js": "^1.9.10",
     "typescript": "~5.8.3",
     "vite": "^7.3.1",

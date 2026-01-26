@@ -41,7 +41,7 @@ export const ifCond: ExpectedSql = {
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT CASE WHEN (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE) THEN 'Active' ELSE 'Inactive' END AS "status"
+    SELECT CASE WHEN "T1"."isActive" IS NOT DISTINCT FROM TRUE THEN 'Active' ELSE 'Inactive' END AS "status"
     FROM "TestSchema"."User" AS "T1"
   `,
 };
@@ -83,7 +83,7 @@ export const isExpr: ExpectedSql = {
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT ((("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE))::INTEGER AS "isActiveFlag"
+    SELECT ("T1"."isActive" IS NOT DISTINCT FROM TRUE)::INTEGER AS "isActiveFlag"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

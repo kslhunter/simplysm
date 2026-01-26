@@ -1,4 +1,4 @@
-// core-browser: 브라우저 전용 DOM 유틸리티
+// core-browser: 브라우저 전용 유틸리티
 
 // utils
 export * from "./utils/blob";

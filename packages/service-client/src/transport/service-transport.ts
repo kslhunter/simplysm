@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { SdEventEmitter, Uuid } from "@simplysm/core-common";
+import { EventEmitter, Uuid } from "@simplysm/core-common";
 import type {
   ServiceErrorMessage,
   ServiceResponseMessage,
@@ -14,7 +14,7 @@ interface ServiceTransportEvents {
   event: { keys: string[]; data: unknown };
 }
 
-export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
+export class ServiceTransport extends EventEmitter<ServiceTransportEvents> {
   private readonly _protocol = new ClientProtocolWrapper();
 
   private readonly _pendingRequests = new Map<
@@ -25,6 +25,9 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
       progress?: ServiceProgress;
     }
   >();
+
+  // 응답 progress의 totalSize 저장 (complete 시 100% emit용)
+  private readonly _responseProgressTotalSize = new Map<string, number>();
 
   constructor(private readonly _socket: SocketProvider) {
     super();
@@ -82,6 +85,9 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
 
     try {
       if (decoded.type === "progress") {
+        // totalSize 기억 (complete 시 100% emit용)
+        this._responseProgressTotalSize.set(decoded.uuid, decoded.totalSize);
+
         listenerInfo?.progress?.response?.({
           uuid: decoded.uuid,
           totalSize: decoded.totalSize,
@@ -96,11 +102,25 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
             completedSize: body.completedSize,
           });
         } else if (decoded.message.name === "response") {
+          // split된 메시지였으면 100% progress emit
+          const totalSize = this._responseProgressTotalSize.get(decoded.uuid);
+          if (totalSize != null) {
+            this._responseProgressTotalSize.delete(decoded.uuid);
+            listenerInfo?.progress?.response?.({
+              uuid: decoded.uuid,
+              totalSize,
+              completedSize: totalSize,
+            });
+          }
+
           // 응답을 받았으므로 Map에서 제거
           this._pendingRequests.delete(decoded.uuid);
 
           listenerInfo?.resolve(decoded.message.body as ServiceResponseMessage);
         } else if (decoded.message.name === "error") {
+          // progress totalSize 정리
+          this._responseProgressTotalSize.delete(decoded.uuid);
+
           // 에러를 받았으므로 Map에서 제거
           this._pendingRequests.delete(decoded.uuid);
 
@@ -128,6 +148,7 @@ export class ServiceTransport extends SdEventEmitter<ServiceTransportEvents> {
       listenerInfo.reject(new Error(`Request canceled: ${reason}`));
     }
     this._pendingRequests.clear();
+    this._responseProgressTotalSize.clear();
   }
 
   private _toError(body: ServiceErrorMessage["body"]): Error {

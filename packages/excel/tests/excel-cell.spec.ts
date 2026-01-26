@@ -131,6 +131,72 @@ describe("ExcelCell", () => {
       expect((val as Time).minute).toBe(30);
       expect((val as Time).second).toBe(45);
     });
+
+    it("DateOnly 값이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      const date = new DateOnly(2024, 6, 15);
+      await ws.cell(0, 0).setVal(date);
+
+      const bytes = await wb.getBytes();
+      await wb.close();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      const ws2 = await wb2.getWorksheet(0);
+
+      const val = await ws2.cell(0, 0).getVal();
+      expect(val).toBeInstanceOf(DateOnly);
+      expect((val as DateOnly).year).toBe(2024);
+      expect((val as DateOnly).month).toBe(6);
+      expect((val as DateOnly).day).toBe(15);
+      await wb2.close();
+    });
+
+    it("DateTime 값이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      const dateTime = new DateTime(2024, 6, 15, 14, 30, 45);
+      await ws.cell(0, 0).setVal(dateTime);
+
+      const bytes = await wb.getBytes();
+      await wb.close();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      const ws2 = await wb2.getWorksheet(0);
+
+      const val = await ws2.cell(0, 0).getVal();
+      expect(val).toBeInstanceOf(DateTime);
+      expect((val as DateTime).year).toBe(2024);
+      expect((val as DateTime).month).toBe(6);
+      expect((val as DateTime).day).toBe(15);
+      expect((val as DateTime).hour).toBe(14);
+      expect((val as DateTime).minute).toBe(30);
+      expect((val as DateTime).second).toBe(45);
+      await wb2.close();
+    });
+
+    it("Time 값이 라운드트립 후에도 유지된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.createWorksheet("Test");
+
+      const time = new Time(14, 30, 45);
+      await ws.cell(0, 0).setVal(time);
+
+      const bytes = await wb.getBytes();
+      await wb.close();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      const ws2 = await wb2.getWorksheet(0);
+
+      const val = await ws2.cell(0, 0).getVal();
+      expect(val).toBeInstanceOf(Time);
+      expect((val as Time).hour).toBe(14);
+      expect((val as Time).minute).toBe(30);
+      expect((val as Time).second).toBe(45);
+      await wb2.close();
+    });
   });
 
   describe("수식", () => {

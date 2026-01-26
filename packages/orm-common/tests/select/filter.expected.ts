@@ -20,7 +20,7 @@ export const whereEq: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1)
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
   `,
 };
 
@@ -38,7 +38,7 @@ export const whereNotEq: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE NOT ((("T1"."id" IS NULL AND 1 IS NULL) OR "T1"."id" = 1))
+    WHERE NOT ("T1"."id" IS NOT DISTINCT FROM 1)
   `,
 };
 
@@ -252,7 +252,7 @@ export const whereMultipleAnd: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE (("T1"."isActive" IS NULL AND TRUE IS NULL) OR "T1"."isActive" = TRUE) AND "T1"."age" > 20
+    WHERE "T1"."isActive" IS NOT DISTINCT FROM TRUE AND "T1"."age" > 20
   `,
 };
 
@@ -270,7 +270,7 @@ export const whereOr: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE ((("T1"."age" IS NULL AND 20 IS NULL) OR "T1"."age" = 20) OR (("T1"."age" IS NULL AND 30 IS NULL) OR "T1"."age" = 30))
+    WHERE ("T1"."age" IS NOT DISTINCT FROM 20 OR "T1"."age" IS NOT DISTINCT FROM 30)
   `,
 };
 
@@ -332,7 +332,7 @@ export const whereExists: ExpectedSql = {
   postgresql: pgsql`
     SELECT *
     FROM "TestSchema"."User" AS "T1"
-    WHERE EXISTS (SELECT 1 AS "_" FROM "TestSchema"."Post" AS "T2" WHERE (("T2"."userId" IS NULL AND "T1"."id" IS NULL) OR "T2"."userId" = "T1"."id"))
+    WHERE EXISTS (SELECT 1 AS "_" FROM "TestSchema"."Post" AS "T2" WHERE "T2"."userId" IS NOT DISTINCT FROM "T1"."id")
   `,
 };
 

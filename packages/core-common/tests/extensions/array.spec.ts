@@ -1,219 +1,24 @@
 import { describe, it, expect } from "vitest";
-import "@simplysm/core-common";
+import { pipe, filter } from "remeda";
+import {
+  pipeAsync,
+  arrSingle as single,
+  arrParallelAsync as parallelAsync,
+  arrMapAsync as mapAsync,
+  arrFilterAsync as filterAsync,
+  arrToMap as toMap,
+  arrToMapAsync as toMapAsync,
+  arrToArrayMap as toArrayMap,
+  arrToSetMap as toSetMap,
+  arrToMapValues as toMapValues,
+  arrToTree as toTree,
+  arrDiffs as diffs,
+  arrOneWayDiffs as oneWayDiffs,
+  arrMerge as merge,
+} from "@simplysm/core-common";
 
-describe("Array.ext", () => {
-  //#region 정렬
-
-  describe("orderBy()", () => {
-    it("단일 키로 오름차순 정렬한다", () => {
-      const arr = [{ a: 3 }, { a: 1 }, { a: 2 }];
-      const result = arr.orderBy((item) => item.a);
-
-      expect(result.map((item) => item.a)).toEqual([1, 2, 3]);
-    });
-
-    it("원본 배열을 변경하지 않는다", () => {
-      const arr = [{ a: 3 }, { a: 1 }, { a: 2 }];
-      arr.orderBy((item) => item.a);
-
-      expect(arr.map((item) => item.a)).toEqual([3, 1, 2]);
-    });
-
-    it("undefined 값은 오름차순 시 앞으로 정렬된다", () => {
-      const arr = [{ a: 2 }, { a: undefined }, { a: 1 }];
-      const result = arr.orderBy((item) => item.a);
-
-      expect(result.map((item) => item.a)).toEqual([undefined, 1, 2]);
-    });
-  });
-
-  describe("orderByDesc()", () => {
-    it("단일 키로 내림차순 정렬한다", () => {
-      const arr = [{ a: 1 }, { a: 3 }, { a: 2 }];
-      const result = arr.orderByDesc((item) => item.a);
-
-      expect(result.map((item) => item.a)).toEqual([3, 2, 1]);
-    });
-
-    it("undefined 값은 내림차순 시 뒤로 정렬된다", () => {
-      const arr = [{ a: 2 }, { a: undefined }, { a: 1 }];
-      const result = arr.orderByDesc((item) => item.a);
-
-      expect(result.map((item) => item.a)).toEqual([2, 1, undefined]);
-    });
-  });
-
-  //#endregion
-
-  //#region 필터링
-
-  describe("distinct()", () => {
-    it("중복을 제거한다 (primitive)", () => {
-      const arr = [1, 2, 2, 3, 3, 3];
-      const result = arr.distinct();
-
-      expect(result).toEqual([1, 2, 3]);
-    });
-
-    it("matchAddress: true로 주소 기반 중복을 제거한다", () => {
-      const obj1 = { id: 1 };
-      const obj2 = { id: 2 };
-      const arr = [obj1, obj2, obj1];
-      const result = arr.distinct(true);
-
-      expect(result).toHaveLength(2);
-    });
-
-    it("문자열 키로 최적화된다", () => {
-      const arr = ["a", "b", "a", "c", "b"];
-      const result = arr.distinct();
-
-      expect(result).toEqual(["a", "b", "c"]);
-    });
-
-    it("keyFn으로 커스텀 키 기반 중복 제거", () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-        { id: 1, name: "c" },
-      ];
-      const result = arr.distinct({ keyFn: (item) => item.id });
-
-      expect(result).toHaveLength(2);
-      expect(result[0].name).toBe("a"); // 첫 번째 id:1 유지
-      expect(result[1].name).toBe("b");
-    });
-
-    it("options 객체로 matchAddress 전달", () => {
-      const obj1 = { id: 1 };
-      const obj2 = { id: 2 };
-      const arr = [obj1, obj2, obj1];
-      const result = arr.distinct({ matchAddress: true });
-
-      expect(result).toHaveLength(2);
-    });
-
-    it("NaN을 포함한 배열에서 matchAddress: true로 중복을 제거한다", () => {
-      const arr = [NaN, 1, NaN, 2];
-      // Set은 SameValueZero 알고리즘을 사용하므로 NaN을 같은 값으로 취급
-      const result = arr.distinct(true);
-
-      expect(result.filter((v) => Number.isNaN(v))).toHaveLength(1);
-      expect(result).toContain(1);
-      expect(result).toContain(2);
-    });
-
-    it("NaN을 포함한 배열에서 기본값(matchAddress: false)으로 중복을 제거한다", () => {
-      const arr = [NaN, 1, NaN, 2];
-      // matchAddress: false는 JSON.stringify 기반 비교를 사용
-      // JSON.stringify(NaN)은 "null"을 반환하므로 모든 NaN이 같은 것으로 취급됨
-      const result = arr.distinct();
-
-      // NaN은 JSON.stringify로 null이 되어 중복 제거됨
-      expect(result.filter((v) => Number.isNaN(v))).toHaveLength(1);
-      expect(result).toContain(1);
-      expect(result).toContain(2);
-    });
-
-    it("-0과 0을 matchAddress: true로 동일하게 취급한다", () => {
-      const arr = [0, -0, 1];
-      // Set은 SameValueZero 알고리즘을 사용하므로 0과 -0을 같은 값으로 취급
-      const result = arr.distinct(true);
-
-      expect(result).toHaveLength(2);
-      expect(result).toContain(0);
-      expect(result).toContain(1);
-    });
-
-    it("Symbol을 포함한 배열에서 matchAddress: true로 중복을 제거한다", () => {
-      const sym = Symbol("test");
-      const arr = [sym, 1, sym, 2];
-      const result = arr.distinct(true);
-
-      expect(result).toHaveLength(3);
-      expect(result).toContain(sym);
-      expect(result).toContain(1);
-      expect(result).toContain(2);
-    });
-  });
-
-  describe("filterExists()", () => {
-    it("null과 undefined를 제외한 요소만 반환한다", () => {
-      const arr = [1, null, 2, undefined, 3];
-      const result = arr.filterExists();
-
-      expect(result).toEqual([1, 2, 3]);
-    });
-
-    it("모든 요소가 존재하면 그대로 반환한다", () => {
-      const arr = [1, 2, 3];
-      const result = arr.filterExists();
-
-      expect(result).toEqual([1, 2, 3]);
-    });
-
-    it("빈 배열은 빈 배열을 반환한다", () => {
-      const arr: (number | null)[] = [];
-      const result = arr.filterExists();
-
-      expect(result).toEqual([]);
-    });
-
-    it("0과 빈 문자열은 유지한다", () => {
-      const arr = [0, "", null, undefined, false];
-      const result = arr.filterExists();
-
-      expect(result).toEqual([0, "", false]);
-    });
-  });
-
-  describe("ofType()", () => {
-    it("지정한 클래스의 인스턴스만 필터링한다", () => {
-      class Dog {
-        name = "dog";
-      }
-      class Cat {
-        name = "cat";
-      }
-
-      const dog1 = new Dog();
-      const dog2 = new Dog();
-      const cat1 = new Cat();
-
-      const arr = [dog1, cat1, dog2];
-      const result = arr.ofType(Dog);
-
-      expect(result).toHaveLength(2);
-      expect(result).toContain(dog1);
-      expect(result).toContain(dog2);
-    });
-
-    it("일치하는 타입이 없으면 빈 배열을 반환한다", () => {
-      class Dog {
-        name = "dog";
-      }
-      class Cat {
-        name = "cat";
-      }
-
-      const dog = new Dog();
-      const arr = [dog];
-      const result = arr.ofType(Cat);
-
-      expect(result).toEqual([]);
-    });
-
-    it("PrimitiveTypeStr로 필터링한다", () => {
-      const arr = [1, "a", 2, "b", 3];
-      const result = arr.ofType("string");
-
-      expect(result).toEqual(["a", "b"]);
-    });
-  });
-
-  //#endregion
-
-  //#region 검색
+describe("array-utils", () => {
+  //#region single
 
   describe("single()", () => {
     it("조건에 맞는 단일 요소를 반환한다", () => {
@@ -221,14 +26,14 @@ describe("Array.ext", () => {
         { id: 1, name: "a" },
         { id: 2, name: "b" },
       ];
-      const result = arr.single((item) => item.id === 2);
+      const result = single(arr, (item) => item.id === 2);
 
       expect(result).toEqual({ id: 2, name: "b" });
     });
 
     it("조건에 맞는 요소가 없으면 undefined를 반환한다", () => {
       const arr = [{ id: 1 }, { id: 2 }];
-      const result = arr.single((item) => item.id === 3);
+      const result = single(arr, (item) => item.id === 3);
 
       expect(result).toBe(undefined);
     });
@@ -236,172 +41,77 @@ describe("Array.ext", () => {
     it("조건에 맞는 요소가 여러 개면 에러를 던진다", () => {
       const arr = [{ id: 1 }, { id: 1 }];
 
-      expect(() => arr.single((item) => item.id === 1)).toThrow();
+      expect(() => single(arr, (item) => item.id === 1)).toThrow();
     });
 
     it("빈 배열은 undefined를 반환한다", () => {
       const arr: { id: number }[] = [];
-      const result = arr.single((item) => item.id === 1);
-
-      expect(result).toBe(undefined);
-    });
-  });
-
-  describe("first()", () => {
-    it("조건 없이 첫 번째 요소를 반환한다", () => {
-      const arr = [1, 2, 3];
-      const result = arr.first();
-
-      expect(result).toBe(1);
-    });
-
-    it("조건에 맞는 첫 번째 요소를 반환한다", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.first((item) => item > 2);
-
-      expect(result).toBe(3);
-    });
-
-    it("조건에 맞는 요소가 없으면 undefined를 반환한다", () => {
-      const arr = [1, 2, 3];
-      const result = arr.first((item) => item > 10);
+      const result = single(arr, (item) => item.id === 1);
 
       expect(result).toBe(undefined);
     });
 
-    it("빈 배열에서 undefined를 반환한다", () => {
-      const arr: number[] = [];
-      const result = arr.first();
-
-      expect(result).toBe(undefined);
-    });
-  });
-
-  describe("last()", () => {
-    it("조건에 맞는 마지막 요소를 반환한다", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.last((item) => item < 4);
-
-      expect(result).toBe(3);
-    });
-
-    it("조건 없이 마지막 요소를 반환한다", () => {
-      const arr = [1, 2, 3];
-      const result = arr.last();
-
-      expect(result).toBe(3);
+    it("조건 없이 호출하면 배열 전체를 대상으로 한다", () => {
+      expect(single([1])).toBe(1);
+      expect(single([])).toBe(undefined);
+      expect(() => single([1, 2])).toThrow();
     });
   });
 
   //#endregion
 
-  //#region 집계
+  //#region 비동기
 
-  describe("sum()", () => {
-    it("숫자 배열의 합을 구한다", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.sum();
+  describe("parallelAsync()", () => {
+    it("병렬 비동기 실행을 수행한다", async () => {
+      const arr = [1, 2, 3];
+      const result = await parallelAsync(arr, async (item) => Promise.resolve(item * 2));
 
-      expect(result).toBe(15);
+      expect(result).toEqual([2, 4, 6]);
     });
 
-    it("키 함수로 합을 구한다", () => {
-      const arr = [{ value: 10 }, { value: 20 }, { value: 30 }];
-      const result = arr.sum((item) => item.value);
+    it("빈 배열은 빈 배열을 반환한다", async () => {
+      const result = await parallelAsync([], (item) => Promise.resolve(item));
 
-      expect(result).toBe(60);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("mapAsync()", () => {
+    it("비동기 순차 매핑을 수행한다", async () => {
+      const arr = [1, 2, 3];
+      const result = await mapAsync(arr, async (item) => Promise.resolve(item * 2));
+
+      expect(result).toEqual([2, 4, 6]);
     });
 
-    it("빈 배열은 0을 반환한다", () => {
-      const arr: number[] = [];
-      const result = arr.sum();
-
-      expect(result).toBe(0);
-    });
-
-    it("숫자가 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
+    it("인덱스를 전달받는다", async () => {
       const arr = ["a", "b", "c"];
+      const result = await mapAsync(arr, (item, index) => Promise.resolve(`${item}-${index}`));
 
-      expect(() => (arr as any).sum()).toThrow();
+      expect(result).toEqual(["a-0", "b-1", "c-2"]);
     });
   });
 
-  describe("min()", () => {
-    it("최솟값을 반환한다", () => {
-      const arr = [3, 1, 4, 1, 5];
-      const result = arr.min();
+  describe("filterAsync()", () => {
+    it("비동기 필터링을 수행한다", async () => {
+      const arr = [1, 2, 3, 4, 5];
+      const result = await filterAsync(arr, async (item) => Promise.resolve(item > 2));
 
-      expect(result).toBe(1);
+      expect(result).toEqual([3, 4, 5]);
     });
 
-    it("키 함수로 최솟값을 반환한다", () => {
-      const arr = [{ value: 30 }, { value: 10 }, { value: 20 }];
-      const result = arr.min((item) => item.value);
+    it("인덱스를 전달받는다", async () => {
+      const arr = ["a", "b", "c", "d"];
+      const result = await filterAsync(arr, (_, index) => Promise.resolve(index % 2 === 0));
 
-      expect(result).toBe(10);
-    });
-
-    it("빈 배열은 undefined를 반환한다", () => {
-      const arr: number[] = [];
-      const result = arr.min();
-
-      expect(result).toBe(undefined);
-    });
-
-    it("숫자/문자열이 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
-      const arr = [{ a: 1 }, { a: 2 }];
-
-      expect(() => (arr as any).min()).toThrow();
-    });
-  });
-
-  describe("max()", () => {
-    it("최댓값을 반환한다", () => {
-      const arr = [3, 1, 4, 1, 5];
-      const result = arr.max();
-
-      expect(result).toBe(5);
-    });
-
-    it("키 함수로 최댓값을 반환한다", () => {
-      const arr = [{ value: 30 }, { value: 10 }, { value: 20 }];
-      const result = arr.max((item) => item.value);
-
-      expect(result).toBe(30);
-    });
-
-    it("빈 배열은 undefined를 반환한다", () => {
-      const arr: number[] = [];
-      const result = arr.max();
-
-      expect(result).toBe(undefined);
-    });
-
-    it("숫자/문자열이 아닌 배열에서 selector 없이 호출하면 에러를 던진다", () => {
-      const arr = [{ a: 1 }, { a: 2 }];
-
-      expect(() => (arr as any).max()).toThrow();
+      expect(result).toEqual(["a", "c"]);
     });
   });
 
   //#endregion
 
-  //#region 그룹화
-
-  describe("groupBy()", () => {
-    it("키 함수로 그룹화한다", () => {
-      const arr = [
-        { category: "a", value: 1 },
-        { category: "b", value: 2 },
-        { category: "a", value: 3 },
-      ];
-      const result = arr.groupBy((item) => item.category);
-
-      expect(result).toHaveLength(2);
-      expect(result.find((g) => g.key === "a")?.values).toHaveLength(2);
-      expect(result.find((g) => g.key === "b")?.values).toHaveLength(1);
-    });
-  });
+  //#region Map 변환
 
   describe("toMap()", () => {
     it("키 함수로 Map을 생성한다", () => {
@@ -409,7 +119,7 @@ describe("Array.ext", () => {
         { id: 1, name: "a" },
         { id: 2, name: "b" },
       ];
-      const result = arr.toMap((item) => item.id);
+      const result = toMap(arr, (item) => item.id);
 
       expect(result.get(1)).toEqual({ id: 1, name: "a" });
       expect(result.get(2)).toEqual({ id: 2, name: "b" });
@@ -420,7 +130,8 @@ describe("Array.ext", () => {
         { id: 1, name: "a" },
         { id: 2, name: "b" },
       ];
-      const result = arr.toMap(
+      const result = toMap(
+        arr,
         (item) => item.id,
         (item) => item.name,
       );
@@ -435,7 +146,56 @@ describe("Array.ext", () => {
         { id: 1, name: "b" },
       ];
 
-      expect(() => arr.toMap((item) => item.id)).toThrow("키가 중복되었습니다");
+      expect(() => toMap(arr, (item) => item.id)).toThrow("키가 중복되었습니다");
+    });
+
+    it("인덱스를 전달받는다", () => {
+      const arr = ["a", "b", "c"];
+      const result = toMap(
+        arr,
+        (_, index) => index,
+        (item) => item,
+      );
+
+      expect(result.get(0)).toBe("a");
+      expect(result.get(1)).toBe("b");
+      expect(result.get(2)).toBe("c");
+    });
+  });
+
+  describe("toMapAsync()", () => {
+    it("비동기 키/값 함수로 Map을 생성한다", async () => {
+      const arr = [
+        { id: 1, name: "a" },
+        { id: 2, name: "b" },
+      ];
+      const result = await toMapAsync(arr, async (item) => Promise.resolve(item.id));
+
+      expect(result.get(1)).toEqual({ id: 1, name: "a" });
+    });
+
+    it("비동기 값 변환을 수행한다", async () => {
+      const arr = [
+        { id: 1, name: "a" },
+        { id: 2, name: "b" },
+      ];
+      const result = await toMapAsync(
+        arr,
+        async (item) => Promise.resolve(item.id),
+        async (item) => Promise.resolve(item.name.toUpperCase()),
+      );
+
+      expect(result.get(1)).toBe("A");
+      expect(result.get(2)).toBe("B");
+    });
+
+    it("키가 중복되면 에러를 던진다", async () => {
+      const arr = [
+        { id: 1, name: "a" },
+        { id: 1, name: "b" },
+      ];
+
+      await expect(toMapAsync(arr, (item) => Promise.resolve(item.id))).rejects.toThrow("키가 중복되었습니다");
     });
   });
 
@@ -446,139 +206,77 @@ describe("Array.ext", () => {
         { category: "b", value: 2 },
         { category: "a", value: 3 },
       ];
-      const result = arr.toArrayMap((item) => item.category);
+      const result = toArrayMap(arr, (item) => item.category);
 
       expect(result.get("a")).toHaveLength(2);
       expect(result.get("b")).toHaveLength(1);
     });
-  });
 
-  //#endregion
-
-  //#region 조작
-
-  describe("mapMany()", () => {
-    it("중첩 배열을 평탄화한다", () => {
+    it("값 함수로 값을 변환한다", () => {
       const arr = [
-        { items: [1, 2] },
-        { items: [3, 4] },
+        { category: "a", value: 1 },
+        { category: "a", value: 2 },
       ];
-      const result = arr.mapMany((item) => item.items);
-
-      expect(result).toEqual([1, 2, 3, 4]);
-    });
-  });
-
-  describe("insert()", () => {
-    it("지정한 위치에 요소를 삽입한다", () => {
-      const arr = [1, 2, 4, 5];
-      const result = arr.insert(2, 3);
-
-      expect(result).toEqual([1, 2, 3, 4, 5]);
-    });
-  });
-
-  describe("remove()", () => {
-    it("조건에 맞는 요소를 제거한다 (원본 변경)", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.remove((item) => item === 3);
-
-      // remove는 원본을 변경하고 this를 반환
-      expect(result).toBe(arr);
-      expect(arr).toEqual([1, 2, 4, 5]);
-    });
-
-    it("특정 값을 제거한다", () => {
-      const arr = [1, 2, 3, 2, 4];
-      arr.remove(2);
-
-      expect(arr).toEqual([1, 3, 4]);
-    });
-  });
-
-  //#endregion
-
-  //#region 비동기
-
-  describe("filterAsync()", () => {
-    it("비동기 필터링을 수행한다", async () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = await arr.filterAsync(async (item) => Promise.resolve(item > 2));
-
-      expect(result).toEqual([3, 4, 5]);
-    });
-  });
-
-  describe("mapAsync()", () => {
-    it("비동기 매핑을 수행한다", async () => {
-      const arr = [1, 2, 3];
-      const result = await arr.mapAsync(async (item) => Promise.resolve(item * 2));
-
-      expect(result).toEqual([2, 4, 6]);
-    });
-  });
-
-  describe("parallelAsync()", () => {
-    it("병렬 비동기 실행을 수행한다", async () => {
-      const arr = [1, 2, 3];
-      const result = await arr.parallelAsync(async (item) => Promise.resolve(item * 2));
-
-      expect(result).toEqual([2, 4, 6]);
-    });
-  });
-
-  describe("mapManyAsync()", () => {
-    it("비동기 flatMap을 수행한다", async () => {
-      const arr = [
-        { items: [1, 2] },
-        { items: [3, 4] },
-      ];
-      const result = await arr.mapManyAsync(async (item) => Promise.resolve(item.items));
-
-      expect(result).toEqual([1, 2, 3, 4]);
-    });
-  });
-
-  //#endregion
-
-  //#region 변환
-
-  describe("toObject()", () => {
-    it("객체로 변환한다", () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-      ];
-      const result = arr.toObject((item) => item.id.toString());
-
-      expect(result).toEqual({
-        "1": { id: 1, name: "a" },
-        "2": { id: 2, name: "b" },
-      });
-    });
-
-    it("값 함수로 변환한다", () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-      ];
-      const result = arr.toObject(
-        (item) => item.id.toString(),
-        (item) => item.name,
+      const result = toArrayMap(
+        arr,
+        (item) => item.category,
+        (item) => item.value,
       );
 
-      expect(result).toEqual({ "1": "a", "2": "b" });
-    });
-
-    it("키가 중복되면 에러를 던진다", () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 1, name: "b" },
-      ];
-
-      expect(() => arr.toObject((item) => item.id.toString())).toThrow("키가 중복되었습니다");
+      expect(result.get("a")).toEqual([1, 2]);
     });
   });
+
+  describe("toSetMap()", () => {
+    it("Set 값을 가진 Map을 생성한다", () => {
+      const arr = [
+        { category: "a", value: 1 },
+        { category: "b", value: 2 },
+        { category: "a", value: 3 },
+      ];
+      const result = toSetMap(arr, (item) => item.category);
+
+      expect(result.get("a")?.size).toBe(2);
+      expect(result.get("b")?.size).toBe(1);
+    });
+
+    it("값 함수로 Set 값을 변환한다", () => {
+      const arr = [
+        { category: "a", value: 1 },
+        { category: "a", value: 1 }, // 중복
+        { category: "a", value: 2 },
+      ];
+      const result = toSetMap(
+        arr,
+        (item) => item.category,
+        (item) => item.value,
+      );
+
+      expect(result.get("a")?.size).toBe(2); // Set이므로 중복 제거
+    });
+  });
+
+  describe("toMapValues()", () => {
+    it("그룹별 집계 결과를 Map으로 생성한다", () => {
+      const arr = [
+        { category: "a", value: 10 },
+        { category: "b", value: 20 },
+        { category: "a", value: 30 },
+      ];
+      const result = toMapValues(
+        arr,
+        (item) => item.category,
+        (items) => items.reduce((sum, item) => sum + item.value, 0),
+      );
+
+      expect(result.get("a")).toBe(40);
+      expect(result.get("b")).toBe(20);
+    });
+  });
+
+  //#endregion
+
+  //#region 트리 변환
 
   describe("toTree()", () => {
     it("트리 구조로 변환한다", () => {
@@ -595,82 +293,29 @@ describe("Array.ext", () => {
         { id: 4, parentId: 2, name: "grandchild" },
       ];
 
-      const result = arr.toTree("id", "parentId");
+      const result = toTree(arr, "id", "parentId");
 
       expect(result).toHaveLength(1); // root 1개
       expect(result[0].children).toHaveLength(2); // child1, child2
       expect(result[0].children[0].children).toHaveLength(1); // grandchild
     });
-  });
 
-  describe("toSetMap()", () => {
-    it("Set 값을 가진 Map을 생성한다", () => {
+    it("여러 루트가 있을 수 있다", () => {
       const arr = [
-        { category: "a", value: 1 },
-        { category: "b", value: 2 },
-        { category: "a", value: 3 },
+        { id: 1, parentId: undefined, name: "root1" },
+        { id: 2, parentId: undefined, name: "root2" },
+        { id: 3, parentId: 1, name: "child1" },
       ];
-      const result = arr.toSetMap((item) => item.category);
 
-      expect(result.get("a")?.size).toBe(2);
-      expect(result.get("b")?.size).toBe(1);
+      const result = toTree(arr, "id", "parentId");
+
+      expect(result).toHaveLength(2);
     });
 
-    it("값 함수로 Set 값을 변환한다", () => {
-      const arr = [
-        { category: "a", value: 1 },
-        { category: "a", value: 1 }, // 중복
-        { category: "a", value: 2 },
-      ];
-      const result = arr.toSetMap(
-        (item) => item.category,
-        (item) => item.value,
-      );
+    it("빈 배열은 빈 배열을 반환한다", () => {
+      const result = toTree([], "id", "parentId");
 
-      expect(result.get("a")?.size).toBe(2); // Set이므로 중복 제거
-    });
-  });
-
-  describe("toMapValues()", () => {
-    it("그룹별 집계 결과를 Map으로 생성한다", () => {
-      const arr = [
-        { category: "a", value: 10 },
-        { category: "b", value: 20 },
-        { category: "a", value: 30 },
-      ];
-      const result = arr.toMapValues(
-        (item) => item.category,
-        (items) => items.sum((item) => item.value),
-      );
-
-      expect(result.get("a")).toBe(40);
-      expect(result.get("b")).toBe(20);
-    });
-  });
-
-  describe("toMapAsync()", () => {
-    it("비동기 키/값 함수로 Map을 생성한다", async () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-      ];
-      const result = await arr.toMapAsync(async (item) => Promise.resolve(item.id));
-
-      expect(result.get(1)).toEqual({ id: 1, name: "a" });
-    });
-
-    it("비동기 값 변환을 수행한다", async () => {
-      const arr = [
-        { id: 1, name: "a" },
-        { id: 2, name: "b" },
-      ];
-      const result = await arr.toMapAsync(
-        async (item) => Promise.resolve(item.id),
-        async (item) => Promise.resolve(item.name.toUpperCase()),
-      );
-
-      expect(result.get(1)).toBe("A");
-      expect(result.get(2)).toBe("B");
+      expect(result).toEqual([]);
     });
   });
 
@@ -697,7 +342,7 @@ describe("Array.ext", () => {
         { id: 4, value: "d" },
       ];
 
-      const result = source.diffs(target, { keys: ["id"] });
+      const result = diffs(source, target, { keys: ["id"] });
 
       const deleted = result.find((d) => d.source?.id === 1);
       expect(deleted?.target).toBe(undefined);
@@ -707,6 +352,26 @@ describe("Array.ext", () => {
 
       const inserted = result.find((d) => d.target?.id === 4);
       expect(inserted?.source).toBe(undefined);
+    });
+
+    it("keys 없이 전체 비교를 수행한다", () => {
+      const source = [{ a: 1, b: 2 }];
+      const target = [{ a: 1, b: 3 }];
+
+      const result = diffs(source, target);
+
+      // 전체 비교 시 다른 항목으로 취급
+      expect(result).toHaveLength(2); // delete + insert
+    });
+
+    it("excludes 옵션으로 비교 제외 가능", () => {
+      const source = [{ id: 1, value: "a", timestamp: 100 }];
+      const target = [{ id: 1, value: "a", timestamp: 200 }];
+
+      const result = diffs(source, target, { excludes: ["timestamp"] });
+
+      // timestamp 제외하면 같은 항목
+      expect(result).toHaveLength(0);
     });
   });
 
@@ -727,7 +392,7 @@ describe("Array.ext", () => {
         { id: 3, value: "c" },
       ];
 
-      const result = items.oneWayDiffs(orgItems, "id");
+      const result = oneWayDiffs(items, orgItems, "id");
 
       const updated = result.find((d) => d.item.id === 2);
       expect(updated?.type).toBe("update");
@@ -740,7 +405,7 @@ describe("Array.ext", () => {
       const orgItems = [{ id: 1, value: "a" }];
       const items = [{ id: 1, value: "a" }];
 
-      const result = items.oneWayDiffs(orgItems, "id", { includeSame: true });
+      const result = oneWayDiffs(items, orgItems, "id", { includeSame: true });
 
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe("same");
@@ -762,7 +427,7 @@ describe("Array.ext", () => {
         { id: 3, value: "c" },
       ];
 
-      const result = items.oneWayDiffs(orgMap, "id");
+      const result = oneWayDiffs(items, orgMap, "id");
 
       const updated = result.find((d) => d.item.id === 2);
       expect(updated?.type).toBe("update");
@@ -787,7 +452,7 @@ describe("Array.ext", () => {
         { id: 2, value: "changed" },
       ];
 
-      const result = items.oneWayDiffs(orgItems, "id");
+      const result = oneWayDiffs(items, orgItems, "id");
 
       const created = result.find((d) => d.item.id === undefined);
       expect(created?.type).toBe("create");
@@ -808,7 +473,7 @@ describe("Array.ext", () => {
       const items: Item[] = [{ id: 1, value: "a", timestamp: 200 }];
 
       // timestamp를 제외하면 같은 항목으로 취급
-      const result = items.oneWayDiffs(orgItems, "id", {
+      const result = oneWayDiffs(items, orgItems, "id", {
         excludes: ["timestamp"],
         includeSame: true,
       });
@@ -829,13 +494,23 @@ describe("Array.ext", () => {
       const items: Item[] = [{ id: 1, value: "a", other: "changed" }];
 
       // value만 비교하면 같은 항목으로 취급
-      const result = items.oneWayDiffs(orgItems, "id", {
+      const result = oneWayDiffs(items, orgItems, "id", {
         includes: ["id", "value"],
         includeSame: true,
       });
 
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe("same");
+    });
+
+    it("함수로 키를 추출할 수 있다", () => {
+      const orgItems = [{ id: 1, value: "a" }];
+      const items = [{ id: 1, value: "changed" }];
+
+      const result = oneWayDiffs(items, orgItems, (item) => item.id);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe("update");
     });
   });
 
@@ -859,7 +534,7 @@ describe("Array.ext", () => {
         { id: 2, value: "changed" },
       ];
 
-      const result = source.merge(target, { keys: ["id"] });
+      const result = merge(source, target, { keys: ["id"] });
 
       expect(result).toHaveLength(2);
       expect(result.find((r) => r.id === 2)?.value).toBe("changed");
@@ -877,7 +552,7 @@ describe("Array.ext", () => {
         { id: 2, value: "b" },
       ];
 
-      const result = source.merge(target, { keys: ["id"] });
+      const result = merge(source, target, { keys: ["id"] });
 
       expect(result).toHaveLength(2);
       expect(result.find((r) => r.id === 2)?.value).toBe("b");
@@ -893,7 +568,7 @@ describe("Array.ext", () => {
       const source: Item[] = [{ id: 1, name: "item1", count: 10 }];
       const target: Item[] = [{ id: 1, name: "item1", count: 20 }];
 
-      const result = source.merge(target, { keys: ["id"] });
+      const result = merge(source, target, { keys: ["id"] });
 
       // id가 같으므로 target 값으로 병합됨
       expect(result[0].count).toBe(20);
@@ -910,7 +585,7 @@ describe("Array.ext", () => {
       const target: Item[] = [{ id: 1, value: "a", timestamp: 200 }];
 
       // timestamp를 제외하면 같은 항목으로 취급
-      const result = source.merge(target, { excludes: ["timestamp"] });
+      const result = merge(source, target, { excludes: ["timestamp"] });
 
       expect(result).toHaveLength(1);
       // 같은 항목이므로 source 값 유지
@@ -921,7 +596,7 @@ describe("Array.ext", () => {
       const source = [{ id: 1, value: "a" }];
       const target = [{ id: 2, value: "b" }];
 
-      source.merge(target, { keys: ["id"] });
+      merge(source, target, { keys: ["id"] });
 
       expect(source).toHaveLength(1);
       expect(source[0].value).toBe("a");
@@ -931,7 +606,7 @@ describe("Array.ext", () => {
       const source = [1, 2, 3];
       const target = [3, 4, 5];
 
-      const result = source.merge(target);
+      const result = merge(source, target);
 
       expect(result).toContain(1);
       expect(result).toContain(2);
@@ -943,109 +618,274 @@ describe("Array.ext", () => {
 
   //#endregion
 
-  //#region 랜덤
+  //#region pipeAsync
 
-  describe("shuffle()", () => {
-    it("배열을 섞는다", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.shuffle();
+  describe("pipeAsync()", () => {
+    it("동기 함수를 파이프라인으로 연결한다", async () => {
+      const result = await pipeAsync(
+        [1, 2, 3],
+        (arr) => arr.map((x) => x * 2),
+      );
 
-      // 원본 불변
-      expect(arr).toEqual([1, 2, 3, 4, 5]);
-
-      // 같은 요소를 가지고 있는지 확인
-      expect(result.sort()).toEqual([1, 2, 3, 4, 5]);
+      expect(result).toEqual([2, 4, 6]);
     });
 
-    it("빈 배열은 빈 배열을 반환한다", () => {
-      const arr: number[] = [];
-      const result = arr.shuffle();
+    it("비동기 함수를 파이프라인으로 연결한다", async () => {
+      const result = await pipeAsync(
+        [1, 2, 3],
+        (arr) => Promise.resolve(arr.map((x) => x * 2)),
+      );
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([2, 4, 6]);
+    });
+
+    it("동기/비동기 함수를 혼합하여 사용할 수 있다", async () => {
+      const result = await pipeAsync(
+        [1, 2, 3, 4, 5],
+        (arr) => arr.filter((x) => x > 2), // 동기
+        (arr) => Promise.resolve(arr.map((x) => x * 10)), // 비동기
+        (arr) => arr.reduce((sum, x) => sum + x, 0), // 동기
+      );
+
+      expect(result).toBe(120); // (3 + 4 + 5) * 10 = 120
+    });
+
+    it("array-utils 비동기 함수와 함께 사용할 수 있다 (data-last)", async () => {
+      const result = await pipeAsync(
+        [1, 2, 3, 4, 5],
+        filterAsync(async (x) => Promise.resolve(x > 2)),
+        mapAsync(async (x) => Promise.resolve(x * 10)),
+      );
+
+      expect(result).toEqual([30, 40, 50]);
+    });
+
+    it("여러 단계의 파이프라인을 처리한다", async () => {
+      const result = await pipeAsync(
+        1,
+        (x) => x + 1,
+        (x) => Promise.resolve(x * 2),
+        (x) => x + 10,
+        (x) => Promise.resolve(x * 3),
+        (x) => x.toString(),
+      );
+
+      expect(result).toBe("42"); // ((1+1)*2+10)*3 = 42
     });
   });
 
   //#endregion
 
-  //#region 원본 변경
+  //#region data-last (pipe 호환)
 
-  describe("distinctThis()", () => {
-    it("원본 배열에서 중복을 제거한다", () => {
-      const arr = [1, 2, 2, 3, 3, 3];
-      const result = arr.distinctThis();
+  describe("data-last 패턴 (pipe 호환)", () => {
+    describe("single() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [1, 2, 3],
+          filter((x) => x === 2),
+          single(),
+        );
 
-      expect(result).toBe(arr); // 원본 반환
-      expect(arr).toEqual([1, 2, 3]);
+        expect(result).toBe(2);
+      });
+
+      it("predicate와 함께 pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [1, 2, 3],
+          single((x) => x === 2),
+        );
+
+        expect(result).toBe(2);
+      });
     });
 
-    it("matchAddress로 주소 기반 중복을 제거한다", () => {
-      const obj1 = { id: 1 };
-      const obj2 = { id: 2 };
-      const arr = [obj1, obj2, obj1];
+    describe("toMap() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { id: 1, name: "a" },
+            { id: 2, name: "b" },
+          ],
+          toMap((x) => x.id),
+        );
 
-      arr.distinctThis(true);
+        expect(result.get(1)).toEqual({ id: 1, name: "a" });
+        expect(result.get(2)).toEqual({ id: 2, name: "b" });
+      });
 
-      expect(arr).toHaveLength(2);
-    });
-  });
+      it("valueSelector와 함께 pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { id: 1, name: "a" },
+            { id: 2, name: "b" },
+          ],
+          toMap(
+            (x) => x.id,
+            (x) => x.name,
+          ),
+        );
 
-  describe("orderByThis()", () => {
-    it("원본 배열을 오름차순 정렬한다", () => {
-      const arr = [{ a: 3 }, { a: 1 }, { a: 2 }];
-      const result = arr.orderByThis((item) => item.a);
-
-      expect(result).toBe(arr); // 원본 반환
-      expect(arr.map((item) => item.a)).toEqual([1, 2, 3]);
-    });
-  });
-
-  describe("orderByDescThis()", () => {
-    it("원본 배열을 내림차순 정렬한다", () => {
-      const arr = [{ a: 1 }, { a: 3 }, { a: 2 }];
-      const result = arr.orderByDescThis((item) => item.a);
-
-      expect(result).toBe(arr); // 원본 반환
-      expect(arr.map((item) => item.a)).toEqual([3, 2, 1]);
-    });
-
-    it("selector 없이 primitive 배열을 내림차순 정렬한다", () => {
-      const arr = [1, 3, 2, 5, 4];
-      arr.orderByDescThis();
-
-      expect(arr).toEqual([5, 4, 3, 2, 1]);
+        expect(result.get(1)).toBe("a");
+        expect(result.get(2)).toBe("b");
+      });
     });
 
-    it("문자열 배열을 내림차순 정렬한다", () => {
-      const arr = ["a", "c", "b"];
-      arr.orderByDescThis();
+    describe("toArrayMap() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { type: "a", v: 1 },
+            { type: "b", v: 2 },
+            { type: "a", v: 3 },
+          ],
+          toArrayMap((x) => x.type),
+        );
 
-      expect(arr).toEqual(["c", "b", "a"]);
+        expect(result.get("a")).toHaveLength(2);
+        expect(result.get("b")).toHaveLength(1);
+      });
     });
-  });
 
-  describe("toggle()", () => {
-    it("없는 항목을 추가한다", () => {
-      const arr = [1, 2, 3];
-      arr.toggle(4);
+    describe("toSetMap() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { type: "a", v: 1 },
+            { type: "a", v: 1 }, // 중복
+            { type: "b", v: 2 },
+          ],
+          toSetMap(
+            (x) => x.type,
+            (x) => x.v,
+          ),
+        );
 
-      expect(arr).toEqual([1, 2, 3, 4]);
+        expect(result.get("a")?.size).toBe(1); // Set이므로 중복 제거
+        expect(result.get("b")?.size).toBe(1);
+      });
     });
 
-    it("있는 항목을 제거한다", () => {
-      const arr = [1, 2, 3];
-      arr.toggle(2);
+    describe("toMapValues() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { type: "a", v: 10 },
+            { type: "b", v: 20 },
+            { type: "a", v: 30 },
+          ],
+          toMapValues(
+            (x) => x.type,
+            (items) => items.reduce((sum, x) => sum + x.v, 0),
+          ),
+        );
 
-      expect(arr).toEqual([1, 3]);
+        expect(result.get("a")).toBe(40);
+        expect(result.get("b")).toBe(20);
+      });
     });
-  });
 
-  describe("clear()", () => {
-    it("배열의 모든 요소를 제거한다", () => {
-      const arr = [1, 2, 3, 4, 5];
-      const result = arr.clear();
+    describe("toTree() data-last", () => {
+      it("pipe에서 사용할 수 있다", () => {
+        interface Item {
+          id: number;
+          parentId?: number;
+          name: string;
+        }
 
-      expect(result).toBe(arr); // 원본 반환
-      expect(arr).toEqual([]);
+        const result = pipe(
+          [
+            { id: 1, name: "root" } as Item,
+            { id: 2, parentId: 1, name: "child1" } as Item,
+            { id: 3, parentId: 1, name: "child2" } as Item,
+          ],
+          toTree("id", "parentId"),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].children).toHaveLength(2);
+      });
+    });
+
+    describe("parallelAsync() data-last", () => {
+      it("pipeAsync에서 사용할 수 있다", async () => {
+        const result = await pipeAsync(
+          [1, 2, 3],
+          parallelAsync(async (x) => Promise.resolve(x * 2)),
+        );
+
+        expect(result).toEqual([2, 4, 6]);
+      });
+    });
+
+    describe("mapAsync() data-last", () => {
+      it("pipeAsync에서 사용할 수 있다", async () => {
+        const result = await pipeAsync(
+          [1, 2, 3],
+          mapAsync(async (x) => Promise.resolve(x * 2)),
+        );
+
+        expect(result).toEqual([2, 4, 6]);
+      });
+    });
+
+    describe("filterAsync() data-last", () => {
+      it("pipeAsync에서 사용할 수 있다", async () => {
+        const result = await pipeAsync(
+          [1, 2, 3, 4, 5],
+          filterAsync(async (x) => Promise.resolve(x > 2)),
+        );
+
+        expect(result).toEqual([3, 4, 5]);
+      });
+    });
+
+    describe("toMapAsync() data-last", () => {
+      it("pipeAsync에서 사용할 수 있다", async () => {
+        const result = await pipeAsync(
+          [
+            { id: 1, name: "a" },
+            { id: 2, name: "b" },
+          ],
+          toMapAsync(async (x) => Promise.resolve(x.id)),
+        );
+
+        expect(result.get(1)).toEqual({ id: 1, name: "a" });
+        expect(result.get(2)).toEqual({ id: 2, name: "b" });
+      });
+    });
+
+    describe("혼합 사용", () => {
+      it("Remeda와 array-utils를 함께 pipe에서 사용할 수 있다", () => {
+        const result = pipe(
+          [
+            { id: 1, name: "a", active: true },
+            { id: 2, name: "b", active: false },
+            { id: 3, name: "c", active: true },
+          ],
+          filter((x) => x.active), // Remeda
+          toMap((x) => x.id), // array-utils
+        );
+
+        expect(result.size).toBe(2);
+        expect(result.has(1)).toBe(true);
+        expect(result.has(3)).toBe(true);
+        expect(result.has(2)).toBe(false);
+      });
+
+      it("pipeAsync에서 동기/비동기 함수를 혼합할 수 있다", async () => {
+        const result = await pipeAsync(
+          [1, 2, 3, 4, 5],
+          filterAsync(async (x) => Promise.resolve(x > 2)), // 비동기
+          (arr) => arr.map((x) => x * 10), // 동기
+          toMap((x) => x), // 동기 (array-utils)
+        );
+
+        expect(result.size).toBe(3);
+        expect(result.has(30)).toBe(true);
+        expect(result.has(40)).toBe(true);
+        expect(result.has(50)).toBe(true);
+      });
     });
   });
 

@@ -2,7 +2,6 @@ import { DateTime } from "./types/date-time";
 import { DateOnly } from "./types/date-only";
 import { Time } from "./types/time";
 import { Uuid } from "./types/uuid";
-import { ArgumentError } from "./errors/argument-error";
 
 //#region Bytes 타입
 
@@ -40,39 +39,32 @@ export type PrimitiveTypeStr = keyof PrimitiveTypeMap;
  */
 export type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
 
-/**
- * 값에서 PrimitiveTypeStr 추론
- *
- * 런타임에서 값의 타입을 검사하여 해당하는 PrimitiveTypeStr을 반환합니다.
- *
- * @param value 타입을 추론할 값
- * @returns 값에 해당하는 PrimitiveTypeStr
- * @throws ArgumentError 지원하지 않는 타입인 경우
- *
- * @example
- * getPrimitiveTypeStr("hello") // "string"
- * getPrimitiveTypeStr(123) // "number"
- * getPrimitiveTypeStr(new DateTime()) // "DateTime"
- * getPrimitiveTypeStr(new Uint8Array()) // "Bytes"
- */
-export function getPrimitiveTypeStr(value: PrimitiveTypeMap[PrimitiveTypeStr]): PrimitiveTypeStr {
-  if (typeof value === "string") return "string";
-  if (typeof value === "number") return "number";
-  if (typeof value === "boolean") return "boolean";
-  if (value instanceof DateTime) return "DateTime";
-  if (value instanceof DateOnly) return "DateOnly";
-  if (value instanceof Time) return "Time";
-  if (value instanceof Uuid) return "Uuid";
-  if (value instanceof Uint8Array) return "Bytes";
-  throw new ArgumentError("알 수 없는 값 타입입니다.", { type: typeof value });
-}
-
 //#endregion
 
 //#region 유틸리티 타입
 
 /**
  * 깊은 Partial 타입
+ *
+ * 객체의 모든 속성을 재귀적으로 선택적(optional)으로 만듭니다.
+ * Primitive 타입(string, number, boolean 등)은 그대로 유지하고,
+ * 객체/배열 타입만 재귀적으로 Partial을 적용합니다.
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   name: string;
+ *   profile: {
+ *     age: number;
+ *     address: { city: string };
+ *   };
+ * }
+ *
+ * // 모든 깊이의 속성이 선택적이 됨
+ * const partial: DeepPartial<User> = {
+ *   profile: { address: {} }
+ * };
+ * ```
  */
 export type DeepPartial<T> = Partial<{
   [K in keyof T]: T[K] extends PrimitiveType ? T[K] : DeepPartial<T[K]>;

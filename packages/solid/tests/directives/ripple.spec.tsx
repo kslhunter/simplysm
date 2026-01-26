@@ -103,7 +103,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
 
     fireEvent.pointerUp(button);
@@ -115,7 +115,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
 
     fireEvent.pointerCancel(button);
@@ -127,7 +127,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
 
     fireEvent.pointerLeave(button);
@@ -136,8 +136,7 @@ describe("ripple directive", () => {
 
   it("언마운트 시 이벤트 리스너 정리", () => {
     const removeEventListenerSpy = vi.spyOn(HTMLElement.prototype, "removeEventListener");
-    const { getByTestId, unmount } = render(() => <button data-testid="btn" use:ripple={true} />);
-    getByTestId("btn");
+    const { unmount } = render(() => <button data-testid="btn" use:ripple={true} />);
 
     unmount();
 
@@ -154,7 +153,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
 
     // opacity transitionend 이벤트 발생
@@ -168,7 +167,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
 
     // transform transitionend 이벤트 발생
@@ -183,7 +182,7 @@ describe("ripple directive", () => {
     const button = getByTestId("btn");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 50 });
-    const rippleEl = button.querySelector("span") as HTMLSpanElement;
+    const rippleEl = button.querySelector("span")!;
     expect(rippleEl).not.toBeNull();
     expect(rippleEl.style.transform).toBe("scale(0)");
 
@@ -191,5 +190,40 @@ describe("ripple directive", () => {
     vi.advanceTimersToNextFrame();
 
     expect(rippleEl.style.transform).toBe("scale(1)");
+  });
+
+  it("중첩 요소에서 pointerdown 시 부모에 ripple 생성", () => {
+    const { getByTestId } = render(() => (
+      <button data-testid="btn" use:ripple={true}>
+        <span data-testid="inner">내부 텍스트</span>
+      </button>
+    ));
+    const button = getByTestId("btn");
+    const inner = getByTestId("inner");
+
+    // 내부 요소에서 이벤트 발생 (이벤트 버블링)
+    fireEvent.pointerDown(inner, { clientX: 50, clientY: 50, bubbles: true });
+
+    // 부모 버튼에 ripple이 생성되어야 함
+    const rippleEl = button.querySelector("span:not([data-testid])");
+    expect(rippleEl).not.toBeNull();
+  });
+
+  it("중첩된 ripple 요소가 있는 경우 각각 독립적으로 동작", () => {
+    const { getByTestId } = render(() => (
+      <div data-testid="outer" use:ripple={true}>
+        <button data-testid="inner" use:ripple={true}>
+          버튼
+        </button>
+      </div>
+    ));
+    const _outer = getByTestId("outer");
+    const inner = getByTestId("inner");
+
+    // 내부 버튼 클릭 (stopPropagation 없음 - 버블링됨)
+    fireEvent.pointerDown(inner, { clientX: 50, clientY: 50 });
+
+    const innerRipple = inner.querySelector("span");
+    expect(innerRipple).not.toBeNull();
   });
 });

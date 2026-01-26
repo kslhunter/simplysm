@@ -159,7 +159,7 @@ interface StorageConnConfig {
 
 interface FileInfo {
   name: string;
-  isFile: boolean;
+  isFile: boolean; // 파일 여부 (false면 디렉토리)
 }
 ```
 

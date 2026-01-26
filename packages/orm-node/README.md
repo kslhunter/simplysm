@@ -29,94 +29,120 @@ npm install pg pg-copy-streams
 
 ### SdOrm
 
-ORM 초기화 및 데이터베이스 연결을 관리합니다.
+ORM 초기화 및 데이터베이스 연결을 관리합니다. `SdOrm`은 DbContext 타입과 연결 설정을 인자로 받습니다.
 
 ```typescript
 import { SdOrm } from "@simplysm/orm-node";
-import { DbContext } from "@simplysm/orm-common";
+import { DbContext, queryable } from "@simplysm/orm-common";
 
-const orm = new SdOrm({
+// DbContext 정의
+class MyDb extends DbContext {
+  readonly user = queryable(this, User);
+  readonly order = queryable(this, Order);
+}
+
+// SdOrm 인스턴스 생성 (DbContext 타입을 첫 번째 인자로 전달)
+const orm = new SdOrm(MyDb, {
   dialect: "mysql",
   host: "localhost",
   port: 3306,
   database: "mydb",
-  user: "root",
+  username: "root",
   password: "password",
 });
 
-await orm.connectAsync(async (db: DbContext) => {
-  // 쿼리 실행
-  const users = await db.from(User).resultAsync();
+// 트랜잭션 내에서 실행
+await orm.connectAsync(async (db) => {
+  const users = await db.user().resultAsync();
+  return users;
 });
 ```
 
 ### 트랜잭션
 
+`connectAsync`는 트랜잭션 내에서 콜백을 실행합니다. 콜백이 성공하면 커밋, 예외 발생 시 롤백됩니다.
+
 ```typescript
-await orm.transAsync(async (db) => {
-  await db.from(User)
+await orm.connectAsync(async (db) => {
+  await db.user()
     .insert({ name: "John", email: "john@example.com" })
     .executeAsync();
 
-  await db.from(Order)
+  await db.order()
     .insert({ userId: 1, amount: 100 })
     .executeAsync();
 
   // 모든 쿼리가 성공하면 커밋, 실패하면 롤백
 });
+
+// 트랜잭션 없이 실행
+await orm.connectWithoutTransactionAsync(async (db) => {
+  const users = await db.user().resultAsync();
+  return users;
+});
 ```
 
 ### 커넥션 풀
 
-자동으로 커넥션 풀을 관리합니다.
+`PooledDbConn`을 사용하여 커넥션 풀을 관리할 수 있습니다. 풀 설정은 `DbConnConfig` 내부의 `pool` 필드로 지정합니다.
 
 ```typescript
 import { SdOrm } from "@simplysm/orm-node";
 
-const orm = new SdOrm({
+const orm = new SdOrm(MyDb, {
   dialect: "mssql",
   host: "localhost",
   database: "mydb",
-  user: "sa",
+  username: "sa",
   password: "password",
-  pool: {
-    min: 2,
-    max: 10,
+  pool: {        // DbConnConfig 내부의 pool 설정
+    min: 2,      // 최소 연결 수
+    max: 10,     // 최대 연결 수
   },
 });
 ```
 
 ### 개별 커넥션 사용
 
+`DbConnFactory`를 통해 개별 커넥션을 생성할 수 있습니다.
+
 ```typescript
-import { MysqlDbConn, MssqlDbConn, PostgresqlDbConn } from "@simplysm/orm-node";
+import { DbConnFactory } from "@simplysm/orm-node";
 
 // MySQL
-const mysqlConn = new MysqlDbConn({
+const mysqlConn = await DbConnFactory.createAsync({
+  dialect: "mysql",
   host: "localhost",
   port: 3306,
   database: "mydb",
-  user: "root",
+  username: "root",
   password: "password",
 });
 
 // MSSQL
-const mssqlConn = new MssqlDbConn({
+const mssqlConn = await DbConnFactory.createAsync({
+  dialect: "mssql",
   host: "localhost",
   port: 1433,
   database: "mydb",
-  user: "sa",
+  username: "sa",
   password: "password",
 });
 
 // PostgreSQL
-const pgConn = new PostgresqlDbConn({
+const pgConn = await DbConnFactory.createAsync({
+  dialect: "postgresql",
   host: "localhost",
   port: 5432,
   database: "mydb",
-  user: "postgres",
+  username: "postgres",
   password: "password",
 });
+
+// 연결 및 사용
+await mysqlConn.connectAsync();
+const results = await mysqlConn.executeAsync(["SELECT * FROM users"]);
+await mysqlConn.closeAsync();
 ```
 
 ## 클래스 구조

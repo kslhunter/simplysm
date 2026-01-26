@@ -6,6 +6,12 @@ import type {
   ResultMeta,
 } from "@simplysm/orm-common";
 
+/**
+ * ORM 서비스 인터페이스
+ *
+ * 데이터베이스 연결, 트랜잭션 관리, 쿼리 실행 기능을 제공한다.
+ * MySQL, MSSQL, PostgreSQL을 지원한다.
+ */
 export interface OrmService {
   getInfo(opt: DbConnOptions & { configName: string }): Promise<{
     dialect: Dialect;
@@ -39,7 +45,5 @@ export interface OrmService {
   ): Promise<void>;
 }
 
-export type DbConnOptions = { configName?: string; config?: Record<string, unknown> } & Record<
-  string,
-  unknown
->;
+/** 데이터베이스 연결 옵션 */
+export type DbConnOptions = { configName?: string; config?: Record<string, unknown> };

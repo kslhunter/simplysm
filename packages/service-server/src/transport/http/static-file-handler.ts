@@ -1,5 +1,5 @@
 import path from "path";
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists, fsStatAsync } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { createConsola } from "consola";
@@ -34,7 +34,7 @@ export class StaticFileHandler {
     }
 
     // 디렉토리면 index.html로
-    if (FsUtils.exists(targetFilePath) && (await FsUtils.statAsync(targetFilePath)).isDirectory()) {
+    if (fsExists(targetFilePath) && (await fsStatAsync(targetFilePath)).isDirectory()) {
       targetFilePath = path.resolve(targetFilePath, "index.html");
     }
 

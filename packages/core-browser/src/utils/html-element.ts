@@ -3,12 +3,13 @@ import { ArgumentError, TimeoutError } from "@simplysm/core-common";
 export namespace HtmlElementUtils {
   /**
    * 강제 리페인트 (reflow 트리거)
+   *
+   * @param el - 리페인트할 대상 요소
    */
   export function repaint(el: HTMLElement): void {
     // offsetHeight 접근 시 브라우저는 동기적 레이아웃 계산(forced synchronous layout)을 수행하며,
     // 이로 인해 현재 배치된 스타일 변경사항이 즉시 적용되어 리페인트가 트리거된다.
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    el.offsetHeight;
+    void el.offsetHeight;
   }
 
   /**
@@ -56,7 +57,7 @@ export namespace HtmlElementUtils {
 
     let currentEl = el.parentElement;
     while (currentEl !== null && currentEl !== parentEl) {
-      const style = window.getComputedStyle(currentEl);
+      const style = getComputedStyle(currentEl);
       relativeOffset.top += parseFloat(style.borderTopWidth) || 0;
       relativeOffset.left += parseFloat(style.borderLeftWidth) || 0;
       currentEl = currentEl.parentElement;
@@ -117,10 +118,15 @@ export namespace HtmlElementUtils {
    * 요소 bounds 정보 타입
    */
   export interface ElementBounds {
+    /** 측정 대상 요소 */
     target: HTMLElement;
+    /** 뷰포트 기준 상단 위치 */
     top: number;
+    /** 뷰포트 기준 왼쪽 위치 */
     left: number;
+    /** 요소 너비 */
     width: number;
+    /** 요소 높이 */
     height: number;
   }
 
@@ -135,30 +141,45 @@ export namespace HtmlElementUtils {
     els: HTMLElement[],
     timeout: number = 5000,
   ): Promise<ElementBounds[]> {
-    if (els.length === 0) {
+    // 중복 제거 및 입력 순서대로 결과를 정렬하기 위한 인덱스 맵
+    const indexMap = new Map(els.map((el, i) => [el, i] as const));
+    if (indexMap.size === 0) {
       return [];
     }
+
+    // 정렬 성능 최적화를 위한 인덱스 맵
+    const sortIndexMap = new Map(els.map((el, i) => [el, i] as const));
 
     let observer: IntersectionObserver | undefined;
 
     try {
       return await Promise.race([
         new Promise<ElementBounds[]>((resolve) => {
-          observer = new IntersectionObserver((entries) => {
-            observer?.disconnect();
+          const results: ElementBounds[] = [];
 
-            resolve(
-              entries.map((entry) => ({
-                target: entry.target as HTMLElement,
-                top: entry.boundingClientRect.top,
-                left: entry.boundingClientRect.left,
-                width: entry.boundingClientRect.width,
-                height: entry.boundingClientRect.height,
-              })),
-            );
+          observer = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              const target = entry.target as HTMLElement;
+              if (indexMap.has(target)) {
+                indexMap.delete(target);
+                results.push({
+                  target,
+                  top: entry.boundingClientRect.top,
+                  left: entry.boundingClientRect.left,
+                  width: entry.boundingClientRect.width,
+                  height: entry.boundingClientRect.height,
+                });
+              }
+            }
+
+            if (indexMap.size === 0) {
+              observer?.disconnect();
+              // 입력 순서대로 정렬
+              resolve(results.sort((a, b) => sortIndexMap.get(a.target)! - sortIndexMap.get(b.target)!));
+            }
           });
 
-          for (const el of els) {
+          for (const el of indexMap.keys()) {
             observer.observe(el);
           }
         }),

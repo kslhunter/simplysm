@@ -1,76 +1,113 @@
-import { SdButton, useTheme } from "@simplysm/solid";
+import { useLocation, useNavigate, type RouteSectionProps } from "@solidjs/router";
+import {
+  IconHome,
+  IconComponents,
+  IconSettings,
+  IconUser,
+} from "@tabler/icons-solidjs";
+import {
+  SdSidebarContainer,
+  SdSidebar,
+  SdSidebarMenu,
+  SdSidebarUser,
+  useTheme,
+} from "@simplysm/solid";
+import type { SdSidebarMenuItem } from "@simplysm/solid";
 
-export function App() {
+export function App(props: RouteSectionProps) {
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const menus: SdSidebarMenuItem[] = [
+    {
+      title: "대시보드",
+      codeChain: ["dashboard"],
+      icon: IconHome,
+    },
+    {
+      title: "컴포넌트",
+      codeChain: ["components"],
+      icon: IconComponents,
+      children: [
+        { title: "앵커", codeChain: ["components", "anchor"] },
+        { title: "버튼", codeChain: ["components", "button"] },
+        { title: "체크박스", codeChain: ["components", "checkbox"] },
+        { title: "필드", codeChain: ["components", "fields"] },
+        { title: "리스트", codeChain: ["components", "list"] },
+      ],
+    },
+    {
+      title: "설정",
+      codeChain: ["settings"],
+      icon: IconSettings,
+    },
+  ];
+
+  const userMenu = {
+    title: "메뉴",
+    menus: [
+      {
+        title: theme() === "light" ? "다크 모드" : "라이트 모드",
+        onClick: toggleTheme,
+      },
+      {
+        title: "로그아웃",
+        onClick: () => alert("로그아웃"),
+      },
+    ],
+  };
+
+  const isMenuSelected = (item: SdSidebarMenuItem): boolean => {
+    const path = "/" + item.codeChain.join("/");
+    const hasChildren = item.children && item.children.length > 0;
+
+    if (hasChildren) {
+      // 자식 있는 메뉴는 exact match만
+      return location.pathname === path;
+    }
+
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
+
+  const onMenuClick = (item: SdSidebarMenuItem) => {
+    // 자식이 있는 메뉴는 아코디언만 토글 (네비게이션 안 함)
+    if (item.children && item.children.length > 0) {
+      return;
+    }
+    const path = "/" + item.codeChain.join("/");
+    navigate(path);
+  };
 
   return (
-    <div class="min-h-screen bg-bg-base text-text-base p-8 space-y-8 transition-colors">
-      <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold">SdButton Demo</h1>
-        <SdButton onClick={toggleTheme}>
-          {theme() === "light" ? "🌙 Dark" : "☀️ Light"}
-        </SdButton>
+    <SdSidebarContainer>
+      <SdSidebar>
+        <SdSidebarUser userMenu={userMenu}>
+          <div class="flex items-center gap-3">
+            <div class="
+              flex size-10 items-center justify-center rounded-full
+              bg-primary/20
+            ">
+              <IconUser size={24} />
+            </div>
+            <div>
+              <div class="font-medium">홍길동</div>
+              <div class="text-sm text-text-muted">hong@example.com</div>
+            </div>
+          </div>
+        </SdSidebarUser>
+        <SdSidebarMenu
+          menus={menus}
+          isMenuSelected={isMenuSelected}
+          onMenuClick={onMenuClick}
+        />
+      </SdSidebar>
+
+      <div class="
+        h-full flex-1 overflow-auto bg-bg-base text-text-base transition-colors
+      ">
+        {props.children}
       </div>
-
-      {/* Theme variants */}
-      <section>
-        <h2 class="text-lg font-semibold mb-3">Theme Variants</h2>
-        <div class="flex flex-wrap gap-2">
-          <SdButton>Default</SdButton>
-          <SdButton theme="primary">Primary</SdButton>
-          <SdButton theme="secondary">Secondary</SdButton>
-          <SdButton theme="info">Info</SdButton>
-          <SdButton theme="success">Success</SdButton>
-          <SdButton theme="warning">Warning</SdButton>
-          <SdButton theme="danger">Danger</SdButton>
-          <SdButton theme="gray">Gray</SdButton>
-          <SdButton theme="blue-gray">Blue Gray</SdButton>
-        </div>
-      </section>
-
-      {/* Link variants */}
-      <section>
-        <h2 class="text-lg font-semibold mb-3">Link Variants</h2>
-        <div class="flex flex-wrap gap-2">
-          <SdButton theme="link-primary">Link Primary</SdButton>
-          <SdButton theme="link-secondary">Link Secondary</SdButton>
-          <SdButton theme="link-info">Link Info</SdButton>
-          <SdButton theme="link-success">Link Success</SdButton>
-          <SdButton theme="link-warning">Link Warning</SdButton>
-          <SdButton theme="link-danger">Link Danger</SdButton>
-          <SdButton theme="link-gray">Link Gray</SdButton>
-          <SdButton theme="link-blue-gray">Link Blue Gray</SdButton>
-        </div>
-      </section>
-
-      {/* Size variants */}
-      <section>
-        <h2 class="text-lg font-semibold mb-3">Size Variants</h2>
-        <div class="flex flex-wrap items-center gap-2">
-          <SdButton theme="primary" size="sm">Small</SdButton>
-          <SdButton theme="primary">Default</SdButton>
-          <SdButton theme="primary" size="lg">Large</SdButton>
-        </div>
-      </section>
-
-      {/* Disabled state */}
-      <section>
-        <h2 class="text-lg font-semibold mb-3">Disabled State</h2>
-        <div class="flex flex-wrap gap-2">
-          <SdButton disabled>Default Disabled</SdButton>
-          <SdButton theme="primary" disabled>Primary Disabled</SdButton>
-          <SdButton theme="link-primary" disabled>Link Disabled</SdButton>
-        </div>
-      </section>
-
-      {/* Inset style */}
-      <section>
-        <h2 class="text-lg font-semibold mb-3">Inset Style</h2>
-        <div class="flex flex-wrap gap-2">
-          <SdButton inset>Inset Default</SdButton>
-          <SdButton theme="primary" inset>Inset Primary</SdButton>
-        </div>
-      </section>
-    </div>
+    </SdSidebarContainer>
   );
 }

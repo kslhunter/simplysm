@@ -1,5 +1,9 @@
 import type { ExcelXml, ExcelXmlDrawingData } from "../types";
 
+/**
+ * xl/drawings/drawing*.xml 파일을 관리하는 클래스.
+ * 이미지 삽입 시 위치 및 참조 정보를 처리한다.
+ */
 export class ExcelXmlDrawing implements ExcelXml {
   data: ExcelXmlDrawingData;
 

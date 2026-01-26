@@ -113,7 +113,7 @@ LEFT OUTER JOIN LATERAL (
   UNION ALL
   SELECT 'mar' AS "month", "T1"."mar" AS "amount"
 ) AS "T1.unpvt" ON TRUE
-WHERE (("T1"."category" IS NULL AND 'A' IS NULL) OR "T1"."category" = 'A')
+WHERE "T1"."category" IS NOT DISTINCT FROM 'A'
   `,
 };
 

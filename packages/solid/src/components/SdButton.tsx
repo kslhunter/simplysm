@@ -3,23 +3,29 @@ import { twJoin } from "tailwind-merge";
 import { tv, type VariantProps } from "tailwind-variants";
 import { ripple } from "../directives/ripple";
 
-// directive 등록 (tree-shaking 방지)
-ripple;
-
 // 공통 disabled 스타일 상수
 const filledDisabled = "disabled:bg-disabled-bg disabled:border-disabled-border disabled:text-disabled-text";
 const linkDisabled = "disabled:bg-transparent disabled:border-transparent disabled:text-disabled-text";
 
-// tailwind-variants로 버튼 스타일 정의
-const buttonVariants = tv({
+/**
+ * 버튼 스타일 variants
+ *
+ * @remarks
+ * 다양한 요소에 버튼 스타일을 적용할 수 있다.
+ *
+ * @example
+ * // Router Link에 버튼 스타일 적용
+ * <A class={buttonVariants({ theme: "primary", size: "lg" })} href="/page">링크</A>
+ */
+export const buttonVariants = tv({
   base: twJoin(
     "inline-flex",
     "items-center",
     "justify-center",
     "border",
-    "rounded",
+    "rounded-sm",
     "font-semibold",
-    "text-sm",
+    "text-base",
     "cursor-pointer",
     "select-none",
     "transition-colors",
@@ -87,11 +93,11 @@ const buttonVariants = tv({
         "hover:bg-gray-dark",
         filledDisabled,
       ),
-      "blue-gray": twJoin(
-        "bg-blue-gray",
-        "border-blue-gray",
+      "slate": twJoin(
+        "bg-slate",
+        "border-slate",
         "text-white",
-        "hover:bg-blue-gray-dark",
+        "hover:bg-slate-dark",
         filledDisabled,
       ),
       // link 스타일: 투명 배경, 텍스트 색상만 테마 색상 적용
@@ -100,7 +106,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-primary",
         "hover:bg-bg-hover",
-        "hover:text-primary-text-hover",
+        "hover:text-text-primary-hover",
         linkDisabled,
       ),
       "link-secondary": twJoin(
@@ -108,7 +114,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-secondary",
         "hover:bg-bg-hover",
-        "hover:text-secondary-text-hover",
+        "hover:text-text-secondary-hover",
         linkDisabled,
       ),
       "link-info": twJoin(
@@ -116,7 +122,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-info",
         "hover:bg-bg-hover",
-        "hover:text-info-text-hover",
+        "hover:text-text-info-hover",
         linkDisabled,
       ),
       "link-success": twJoin(
@@ -124,7 +130,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-success",
         "hover:bg-bg-hover",
-        "hover:text-success-text-hover",
+        "hover:text-text-success-hover",
         linkDisabled,
       ),
       "link-warning": twJoin(
@@ -132,7 +138,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-warning",
         "hover:bg-bg-hover",
-        "hover:text-warning-text-hover",
+        "hover:text-text-warning-hover",
         linkDisabled,
       ),
       "link-danger": twJoin(
@@ -140,7 +146,7 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-danger",
         "hover:bg-bg-hover",
-        "hover:text-danger-text-hover",
+        "hover:text-text-danger-hover",
         linkDisabled,
       ),
       "link-gray": twJoin(
@@ -148,22 +154,24 @@ const buttonVariants = tv({
         "bg-transparent",
         "text-gray",
         "hover:bg-bg-hover",
-        "hover:text-gray-text-hover",
+        "hover:text-text-gray-hover",
         linkDisabled,
       ),
-      "link-blue-gray": twJoin(
+      "link-slate": twJoin(
         "border-transparent",
         "bg-transparent",
-        "text-blue-gray",
+        "text-slate",
         "hover:bg-bg-hover",
-        "hover:text-blue-gray-text-hover",
+        "hover:text-text-slate-hover",
         linkDisabled,
       ),
     },
     size: {
-      default: twJoin("px-3", "py-1.5"),
-      sm: twJoin("px-2", "py-1", "text-xs"),
-      lg: twJoin("px-4", "py-2", "text-base"),
+      xs: twJoin("px-ctrl-xs", "py-ctrl-xxs", "text-xs"),
+      sm: twJoin("px-ctrl-sm", "py-ctrl-xs"),
+      default: twJoin("px-ctrl", "py-ctrl-sm"),
+      lg: twJoin("px-ctrl-lg", "py-ctrl"),
+      xl: twJoin("px-ctrl-xl", "py-ctrl-lg", "text-lg"),
     },
     inset: {
       true: twJoin("rounded-none", "border-none"),
@@ -174,6 +182,11 @@ const buttonVariants = tv({
     size: "default",
   },
 });
+
+/**
+ * buttonVariants의 variant props 타입
+ */
+export type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 
 /**
  * SdButton 컴포넌트의 Props 타입
@@ -206,7 +219,7 @@ export function SdButton(props: SdButtonProps) {
    * 명시적으로 theme을 지정한 경우에는 그대로 사용한다.
    */
   const effectiveTheme = () => {
-    if (local.inset && (local.theme == null || local.theme === "default")) {
+    if (local.inset && (local.theme ?? "default") === "default") {
       return "link-primary" as const;
     }
     return local.theme;

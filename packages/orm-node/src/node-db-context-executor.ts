@@ -100,10 +100,11 @@ export class NodeDbContextExecutor implements DbContextExecutor {
     const builder = createQueryBuilder(this._dialect);
 
     // 가져올 데이터가 없는 것으로 옵션 설정을 했을 때, 하나의 쿼리로 한번의 요청 보냄
+    // 결과가 필요 없으므로 defs.length개의 빈 배열을 반환하여 인터페이스 계약 유지
     if (resultMetas != null && resultMetas.every((item) => item == null)) {
       const combinedSql = defs.map((def) => builder.build(def).sql).join("\n");
-      const results = await conn.executeAsync([combinedSql]);
-      return results as T[][];
+      await conn.executeAsync([combinedSql]);
+      return defs.map(() => []) as T[][];
     }
 
     // 각 def를 개별 실행

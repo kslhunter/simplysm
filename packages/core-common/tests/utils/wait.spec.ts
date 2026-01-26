@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Wait, TimeoutError } from "@simplysm/core-common";
+import { waitTime as time, waitUntil as until, TimeoutError } from "@simplysm/core-common";
 
 describe("Wait", () => {
   //#region time
@@ -7,7 +7,7 @@ describe("Wait", () => {
   describe("time()", () => {
     it("지정된 시간만큼 대기한다", async () => {
       const start = Date.now();
-      await Wait.time(100);
+      await time(100);
       const elapsed = Date.now() - start;
 
       // 100ms ± 오차 범위 - CI 환경 부하 및 타이머 정밀도 고려
@@ -17,7 +17,7 @@ describe("Wait", () => {
 
     it("0ms 대기도 정상 동작한다", async () => {
       const start = Date.now();
-      await Wait.time(0);
+      await time(0);
       const elapsed = Date.now() - start;
 
       expect(elapsed).toBeLessThan(50);
@@ -32,7 +32,7 @@ describe("Wait", () => {
     it("조건이 참이 될 때까지 대기한다", async () => {
       let count = 0;
 
-      await Wait.until(() => {
+      await until(() => {
         count++;
         return count >= 3;
       }, 10);
@@ -43,8 +43,8 @@ describe("Wait", () => {
     it("비동기 조건 함수도 지원한다", async () => {
       let count = 0;
 
-      await Wait.until(async () => {
-        await Wait.time(10);
+      await until(async () => {
+        await time(10);
         count++;
         return count >= 3;
       }, 10);
@@ -54,7 +54,7 @@ describe("Wait", () => {
 
     it("조건이 이미 참이면 즉시 반환한다", async () => {
       const start = Date.now();
-      await Wait.until(() => true, 100);
+      await until(() => true, 100);
       const elapsed = Date.now() - start;
 
       expect(elapsed).toBeLessThan(50);
@@ -64,7 +64,7 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await Wait.until(() => {
+        await until(() => {
           count++;
           return false;
         }, 10, 5);
@@ -77,7 +77,7 @@ describe("Wait", () => {
       let count = 0;
 
       // 무제한 대기지만 조건이 참이 되면 반환
-      await Wait.until(() => {
+      await until(() => {
         count++;
         return count >= 10;
       }, 10, undefined);
@@ -89,7 +89,7 @@ describe("Wait", () => {
       let count = 0;
       const start = Date.now();
 
-      await Wait.until(() => {
+      await until(() => {
         count++;
         return count >= 3;
       });
@@ -104,7 +104,7 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await Wait.until(() => {
+        await until(() => {
           count++;
           return false;
         }, 10, 1);
@@ -116,7 +116,7 @@ describe("Wait", () => {
     it("조건이 maxCount 내에 참이 되면 성공", async () => {
       let count = 0;
 
-      await Wait.until(() => {
+      await until(() => {
         count++;
         return count >= 3;
       }, 10, 5);

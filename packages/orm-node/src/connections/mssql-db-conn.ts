@@ -1,5 +1,6 @@
 import { createConsola } from "consola";
-import { DateOnly, DateTime, JsonConvert, SdError, SdEventEmitter, StringUtils, Time, Uuid, Wait } from "@simplysm/core-common";
+import { filter } from "remeda";
+import { DateOnly, DateTime, jsonStringify, SdError, EventEmitter, strIsNullOrEmpty, Time, Uuid, waitUntil } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
   DB_CONN_DEFAULT_TIMEOUT,
@@ -17,7 +18,7 @@ const logger = createConsola().withTag("mssql-db-conn");
  *
  * tedious 라이브러리를 사용하여 MSSQL/Azure SQL 연결을 관리합니다.
  */
-export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbConn {
+export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _conn?: tediousType.Connection;
@@ -80,7 +81,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     await new Promise<void>((resolve, reject) => {
       conn.connect((err: Error | undefined) => {
         if (err != null) {
-          reject(new Error(err.message));
+          reject(new SdError(err));
           return;
         }
 
@@ -105,12 +106,12 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
     // 진행 중인 요청 취소
     conn.cancel();
-    await Wait.until(() => this._requests.length < 1, undefined, 100);
+    await waitUntil(() => this._requests.length < 1, undefined, 100);
 
     // 연결 종료 대기
     await new Promise<void>((resolve) => {
       conn.on("end", () => {
-        Wait.until(() => this._conn == null, undefined, 100)
+        waitUntil(() => this._conn == null, undefined, 100)
           .then(() => resolve())
           .catch(() => resolve());
       });
@@ -128,7 +129,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
       conn.beginTransaction(
         (err) => {
           if (err != null) {
-            reject(new Error(err.message));
+            reject(new SdError(err));
             return;
           }
 
@@ -152,7 +153,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     await new Promise<void>((resolve, reject) => {
       conn.commitTransaction((err) => {
         if (err != null) {
-          reject(new Error(err.message));
+          reject(new SdError(err));
           return;
         }
 
@@ -171,7 +172,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     await new Promise<void>((resolve, reject) => {
       conn.rollbackTransaction((err) => {
         if (err != null) {
-          reject(new Error(err.message));
+          reject(new SdError(err));
           return;
         }
 
@@ -183,7 +184,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
   async executeAsync(queries: string[]): Promise<unknown[][]> {
     const results: unknown[][] = [];
-    for (const query of queries.filter((item) => !StringUtils.isNullOrEmpty(item))) {
+    for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrizedAsync(query);
       results.push(...resultItems);
     }
@@ -205,7 +206,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
       const queryRequest = new this._tedious.Request(query, (err) => {
         if (err != null) {
           rejected = true;
-          this._requests.remove(queryRequest);
+          this._requests = filter(this._requests, (r) => r !== queryRequest);
 
           const errRec = err as unknown as Record<string, unknown>;
           if (errRec["code"] === "ECANCEL") {
@@ -250,7 +251,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
           }
 
           rejected = true;
-          this._requests.remove(queryRequest);
+          this._requests = filter(this._requests, (r) => r !== queryRequest);
           reject(new SdError(err, `쿼리 수행중 오류발생\n-- query\n${query}\n--`));
         })
         .on("requestCompleted", () => {
@@ -260,7 +261,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
             return;
           }
 
-          this._requests.remove(queryRequest);
+          this._requests = filter(this._requests, (r) => r !== queryRequest);
           resolve();
         });
 
@@ -289,6 +290,8 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
   ): Promise<void> {
+    if (records.length === 0) return;
+
     this._assertConnected();
     this._startTimeout();
 
@@ -302,7 +305,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
           reject(
             new SdError(
               err,
-              `Bulk Insert 오류발생\n${JsonConvert.stringify(tediousColumnDefs)}\n-- data\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`,
+              `Bulk Insert 오류발생\n${jsonStringify(tediousColumnDefs)}\n-- data\n${jsonStringify(records).substring(0, 10000)}...\n--`,
             ),
           );
           return;
@@ -330,7 +333,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
 
   private _assertConnected(): void {
     if (this._conn == null || !this.isConnected) {
-      throw new Error(DB_CONN_ERRORS.NOT_CONNECTED);
+      throw new SdError(DB_CONN_ERRORS.NOT_CONNECTED);
     }
   }
 
@@ -429,11 +432,20 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
       case "uuid":
         return { type: this._tedious.TYPES.UniqueIdentifier };
       default:
-        throw new Error(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
+        throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);
     }
   }
 
+  /**
+   * 값의 타입을 추론하여 Tedious 데이터 타입 반환
+   *
+   * @param value - 타입을 추론할 값 (null/undefined 전달 시 오류 발생)
+   * @throws null/undefined가 전달되면 오류 발생
+   */
   private _guessTediousType(value: unknown): TediousDataType {
+    if (value == null) {
+      throw new SdError("_guessTediousType: null/undefined 값은 지원하지 않습니다.");
+    }
     if (typeof value === "string") {
       return this._tedious.TYPES.NVarChar;
     }
@@ -447,7 +459,7 @@ export class MssqlDbConn extends SdEventEmitter<{ close: void }> implements DbCo
     if (value instanceof Uuid) return this._tedious.TYPES.UniqueIdentifier;
     if (value instanceof Uint8Array) return this._tedious.TYPES.VarBinary;
 
-    throw new Error(`알 수 없는 값 타입: ${typeof value}`);
+    throw new SdError(`알 수 없는 값 타입: ${typeof value}`);
   }
 }
 

@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { DateTimeFormatUtils } from "../utils/date-format";
+import { format } from "../utils/date-format";
 
 /**
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)
@@ -208,10 +208,10 @@ export class Time {
   /**
    * 지정된 포맷으로 문자열 변환
    * @param format 포맷 문자열
-   * @see DateTimeFormatUtils.format 지원 포맷 문자열 참조
+   * @see dtFormat 지원 포맷 문자열 참조
    */
-  toFormatString(format: string): string {
-    return DateTimeFormatUtils.format(format, {
+  toFormatString(formatStr: string): string {
+    return format(formatStr, {
       hour: this.hour,
       minute: this.minute,
       second: this.second,

@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { ZipArchive, XmlConvert } from "@simplysm/core-common";
+import { ZipArchive, xmlStringify, xmlParse } from "@simplysm/core-common";
 import type {
   ExcelXml,
   ExcelXmlContentTypeData,
@@ -19,6 +19,17 @@ import { ExcelXmlUnknown } from "../xml/excel-xml-unknown";
 import { ExcelXmlWorkbook } from "../xml/excel-xml-workbook";
 import { ExcelXmlWorksheet } from "../xml/excel-xml-worksheet";
 
+/**
+ * Excel ZIP 아카이브의 파일 캐시를 관리하는 클래스.
+ * XML 파일은 파싱하여 ExcelXml 객체로, 그 외 파일은 바이트 배열로 캐싱한다.
+ *
+ * @remarks
+ * ## Lazy Loading 캐시 전략
+ *
+ * - 파일은 첫 접근 시에만 ZIP에서 읽고 파싱한다
+ * - 이후 접근은 캐시된 객체를 반환한다
+ * - 대용량 Excel 파일에서 필요한 부분만 로드하여 메모리 효율성을 높인다
+ */
 export class ZipCache {
   private readonly _cache = new Map<string, ExcelXml | Bytes | undefined>();
   private readonly _zip: ZipArchive;
@@ -40,7 +51,7 @@ export class ZipCache {
 
     if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
       const fileText = new TextDecoder().decode(fileData);
-      const xml = XmlConvert.parse(fileText, { stripTagPrefix: true });
+      const xml = xmlParse(fileText, { stripTagPrefix: true });
       if (filePath.endsWith(".rels")) {
         this._cache.set(filePath, new ExcelXmlRelationship(xml as ExcelXmlRelationshipData));
       } else if (filePath === "[Content_Types].xml") {
@@ -76,7 +87,7 @@ export class ZipCache {
 
       if ("cleanup" in content) {
         content.cleanup();
-        this._zip.write(filePath, new TextEncoder().encode(XmlConvert.stringify(content.data)));
+        this._zip.write(filePath, new TextEncoder().encode(xmlStringify(content.data)));
       } else {
         this._zip.write(filePath, content);
       }

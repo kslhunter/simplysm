@@ -23,7 +23,13 @@
       "Skill(sd-check)",
       "Skill(sd-improve)",
       "Skill(sd-improve-scan)",
-      "Skill(sd-improve-validate)"
+      "Skill(sd-improve-validate)",
+      "mcp__playwright__playwright_hover",
+      "mcp__playwright__playwright_evaluate",
+      "mcp__playwright__playwright_navigate",
+      "mcp__playwright__playwright_screenshot",
+      "mcp__playwright__playwright_click",
+      "mcp__playwright__playwright_press_key"
     ],
     "deny": [
       "Read(.back/**)",
@@ -31,5 +37,6 @@
       "Bash(git checkout:*)"
     ],
     "respectGitignore": true
-  }
+  },
+  "plansDirectory": ".plans"
 }

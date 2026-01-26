@@ -39,12 +39,12 @@ export const basicSubordinates: ExpectedSql = {
     WITH RECURSIVE "T2" AS (
       SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."managerId" AS "managerId", 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."managerId" IS NULL AND 1 IS NULL) OR "T1"."managerId" = 1)
+      WHERE "T1"."managerId" IS NOT DISTINCT FROM 1
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2"."managerId" AS "managerId", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
       LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
-      WHERE (("T2"."managerId" IS NULL AND "T2.self"."id" IS NULL) OR "T2"."managerId" = "T2.self"."id")
+      WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."managerId" AS "managerId", "T1"."depth" AS "depth"
     FROM "T2" AS "T1"
@@ -84,12 +84,12 @@ export const depthLimit: ExpectedSql = {
     WITH RECURSIVE "T2" AS (
       SELECT "T1"."id" AS "id", "T1"."name" AS "name", 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."managerId" IS NULL AND 1 IS NULL) OR "T1"."managerId" = 1)
+      WHERE "T1"."managerId" IS NOT DISTINCT FROM 1
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
       LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
-      WHERE (("T2"."managerId" IS NULL AND "T2.self"."id" IS NULL) OR "T2"."managerId" = "T2.self"."id") AND "T2.self"."depth" < 3
+      WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id" AND "T2.self"."depth" < 3
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"
     FROM "T2" AS "T1"
@@ -129,12 +129,12 @@ export const upwardManagers: ExpectedSql = {
     WITH RECURSIVE "T2" AS (
       SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."managerId" AS "managerId", 0 AS "level"
       FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."id" IS NULL AND 100 IS NULL) OR "T1"."id" = 100)
+      WHERE "T1"."id" IS NOT DISTINCT FROM 100
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2"."managerId" AS "managerId", "T2.self"."level" - 1 AS "level"
       FROM "TestSchema"."Employee" AS "T2"
       LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
-      WHERE (("T2"."id" IS NULL AND "T2.self"."managerId" IS NULL) OR "T2"."id" = "T2.self"."managerId")
+      WHERE "T2"."id" IS NOT DISTINCT FROM "T2.self"."managerId"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."level" AS "level"
     FROM "T2" AS "T1"
@@ -180,12 +180,12 @@ export const cteWithOrderBy: ExpectedSql = {
     WITH RECURSIVE "T2" AS (
       SELECT "T1"."id" AS "id", "T1"."name" AS "name", 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."managerId" IS NULL AND 1 IS NULL) OR "T1"."managerId" = 1)
+      WHERE "T1"."managerId" IS NOT DISTINCT FROM 1
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
       LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
-      WHERE (("T2"."managerId" IS NULL AND "T2.self"."id" IS NULL) OR "T2"."managerId" = "T2.self"."id")
+      WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"
     FROM "T2" AS "T1"
@@ -228,12 +228,12 @@ export const cteWithWhere: ExpectedSql = {
     WITH RECURSIVE "T2" AS (
       SELECT "T1"."id" AS "id", "T1"."name" AS "name", 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T1"
-      WHERE (("T1"."managerId" IS NULL AND 1 IS NULL) OR "T1"."managerId" = 1)
+      WHERE "T1"."managerId" IS NOT DISTINCT FROM 1
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
       LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
-      WHERE (("T2"."managerId" IS NULL AND "T2.self"."id" IS NULL) OR "T2"."managerId" = "T2.self"."id")
+      WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"
     FROM "T2" AS "T1"

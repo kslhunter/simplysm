@@ -22,7 +22,7 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
-import { ArgumentError, ObjectUtils } from "@simplysm/core-common";
+import { ArgumentError, objClearUndefined } from "@simplysm/core-common";
 import {
   ForeignKeyBuilder,
   ForeignKeyTargetBuilder,
@@ -471,9 +471,9 @@ export class Queryable<
    * 텍스트 검색을 수행
    *
    * 검색 문법은 {@link parseSearchQuery}를 참조
-   * - 공백으로 구분된 단어는 AND 조건
-   * - `|`로 구분된 단어는 OR 조건
-   * - `-`로 시작하는 단어는 NOT 조건
+   * - 공백으로 구분된 단어는 OR 조건
+   * - `+`로 시작하는 단어는 필수 포함 (AND 조건)
+   * - `-`로 시작하는 단어는 제외 (NOT 조건)
    *
    * @param fn - 검색 대상 컬럼을 반환하는 함수
    * @param searchText - 검색 텍스트
@@ -929,7 +929,10 @@ export class Queryable<
     ...queries: Queryable<TData, any>[]
   ): Queryable<TData, never> {
     if (queries.length < 2) {
-      throw new Error("union은 최소 2개의 queryable이 필요합니다.");
+      throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
+        provided: queries.length,
+        minimum: 2,
+      });
     }
 
     const first = queries[0];
@@ -1038,9 +1041,24 @@ export class Queryable<
   async singleAsync(): Promise<TData | undefined> {
     const result = await this.top(2).resultAsync();
     if (result.length > 1) {
-      throw new Error(`단일 결과를 기대했지만 ${result.length}개 이상의 결과가 반환되었습니다.`);
+      const tableName = this._getSourceName();
+      throw new Error(`단일 결과를 기대했지만 ${result.length}개 이상의 결과가 반환되었습니다. (테이블: ${tableName})`);
     }
     return result[0];
+  }
+
+  /**
+   * 쿼리 소스 이름 반환 (에러 메시지용)
+   */
+  private _getSourceName(): string {
+    const from = this.meta.from;
+    if (from instanceof TableBuilder || from instanceof ViewBuilder) {
+      return from.meta.name;
+    }
+    if (typeof from === "string") {
+      return from;
+    }
+    return this.meta.as;
   }
 
   /**
@@ -1115,7 +1133,7 @@ export class Queryable<
   }
 
   getSelectQueryDef(): SelectQueryDef {
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "select",
       from: this._buildFromDef(),
       as: this.meta.as,
@@ -1371,7 +1389,7 @@ export class Queryable<
       outputDef.aiColName != null &&
       records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] !== undefined);
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "insert",
       table: this.meta.db.getQueryDefObjectName(from),
       records,
@@ -1395,7 +1413,7 @@ export class Queryable<
 
     const { select: _, ...existsSelectQuery } = this.getSelectQueryDef();
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "insertIfNotExists",
       table: this.meta.db.getQueryDefObjectName(from),
       record,
@@ -1416,7 +1434,7 @@ export class Queryable<
   ): InsertIntoQueryDef {
     const outputDef = this._getCudOutputDef();
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "insertInto",
       table: this.meta.db.getQueryDefObjectName(targetTable),
       recordsSelectQuery: this.getSelectQueryDef(),
@@ -1522,7 +1540,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "update",
       table: this.meta.db.getQueryDefObjectName(from),
       as: this.meta.as,
@@ -1545,7 +1563,7 @@ export class Queryable<
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "delete",
       table: this.meta.db.getQueryDefObjectName(from),
       as: this.meta.as,
@@ -1667,7 +1685,7 @@ export class Queryable<
       Object.entries(insertRecordRaw).map(([key, value]) => [key, expr.toExpr(value)]),
     );
 
-    return ObjectUtils.clearUndefined({
+    return objClearUndefined({
       type: "upsert",
       table: this.meta.db.getQueryDefObjectName(from),
       existsSelectQuery,
@@ -1750,7 +1768,9 @@ export function getMatchedPrimaryKeys(
 ): string[] {
   const pk = targetTable.meta.primaryKey;
   if (pk == null || fkCols.length !== pk.length) {
-    throw new Error(`FK/PK 컬럼 개수가 일치하지 않습니다 (대상: ${targetTable.meta.name})`);
+    throw new Error(
+      `FK/PK 컬럼 개수가 일치하지 않습니다 (대상: ${targetTable.meta.name}, FK: ${fkCols.length}개, PK: ${pk?.length ?? 0}개)`,
+    );
   }
   return pk;
 }

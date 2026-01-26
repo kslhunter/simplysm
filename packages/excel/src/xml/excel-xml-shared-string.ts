@@ -4,7 +4,12 @@ import type {
   ExcelXmlSharedStringDataSi,
   ExcelXmlSharedStringDataText,
 } from "../types";
+import { arrToArrayMap, mapGetOrCreate } from "@simplysm/core-common";
 
+/**
+ * xl/sharedStrings.xml 파일을 관리하는 클래스.
+ * 문자열 중복을 방지하여 파일 크기를 최적화한다.
+ */
 export class ExcelXmlSharedString implements ExcelXml {
   data: ExcelXmlSharedStringData;
 
@@ -23,14 +28,15 @@ export class ExcelXmlSharedString implements ExcelXml {
       this.data = data;
     }
 
-    this._stringIndexesMap =
-      this.data.sst.si
-        ?.map((tag, id) => ({ id, tag }))
-        .filter((item) => !this._getHasInnerStyleOnSiTag(item.tag))
-        .toArrayMap(
+    this._stringIndexesMap = this.data.sst.si
+      ? arrToArrayMap(
+          this.data.sst.si
+            .map((tag, id) => ({ id, tag }))
+            .filter((item) => !this._getHasInnerStyleOnSiTag(item.tag)),
           (item) => this._getStringFromSiTag(item.tag),
           (item) => item.id,
-        ) ?? new Map<string, number[]>();
+        )
+      : new Map<string, number[]>();
   }
 
   getIdByString(str: string): number | undefined {
@@ -45,7 +51,7 @@ export class ExcelXmlSharedString implements ExcelXml {
   add(str: string): number {
     this.data.sst.si = this.data.sst.si ?? [];
     const newLength = this.data.sst.si.push({ t: [str] });
-    const arr = this._stringIndexesMap.getOrCreate(str, []);
+    const arr = mapGetOrCreate(this._stringIndexesMap, str, []);
     arr.push(newLength - 1);
     return newLength - 1;
   }

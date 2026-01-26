@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { DateTimeFormatUtils, normalizeMonth } from "../utils/date-format";
+import { format, normalizeMonth } from "../utils/date-format";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
@@ -105,17 +105,23 @@ export class DateOnly {
    * new DateOnly(2024, 1, 1).getBaseYearMonthSeqForWeekSeq(0, 1)
    */
   getBaseYearMonthSeqForWeekSeq(weekStartDay: number = 1, minDaysInFirstWeek: number = 4) {
+    // 주의 시작 요일 기준으로 현재 날짜의 요일 인덱스 계산 (0 = 주 시작일)
     const dayOfWeek = (this.dayOfWeek + 7 - weekStartDay) % 7;
+    // 현재 주의 남은 일수 (현재 날짜 포함)
     const daysInWeek = 7 - dayOfWeek;
 
+    // 현재 주의 남은 일수가 첫 주 최소 일수 미만이면 이전 주로 간주
     if (daysInWeek < minDaysInFirstWeek) {
       const prevWeek = this.addDays(-7);
       return { year: prevWeek.year, monthSeq: prevWeek.month };
     } else {
+      // 월 경계를 고려한 실제 주의 남은 일수 계산
       const nextMonthDate = this.addMonths(1).setDay(1);
       const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly.MS_PER_DAY;
 
+      // 월 경계까지의 실제 일수와 주의 남은 일수 중 작은 값
       const realDaysInWeek = Math.min(daysInWeek, remainedDays);
+      // 월 경계 고려 시에도 첫 주 최소 일수 미만이면 다음 주로 간주
       if (realDaysInWeek < minDaysInFirstWeek) {
         const nextWeek = this.addDays(7);
         return { year: nextWeek.year, monthSeq: nextWeek.month };
@@ -316,10 +322,10 @@ export class DateOnly {
   /**
    * 지정된 포맷으로 문자열 변환
    * @param format 포맷 문자열
-   * @see DateTimeFormatUtils.format 지원 포맷 문자열 참조
+   * @see dtFormat 지원 포맷 문자열 참조
    */
-  toFormatString(format: string): string {
-    return DateTimeFormatUtils.format(format, {
+  toFormatString(formatStr: string): string {
+    return format(formatStr, {
       year: this.year,
       month: this.month,
       day: this.day,

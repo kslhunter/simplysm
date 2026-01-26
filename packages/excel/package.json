@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/excel",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "Excel 파일 처리 라이브러리",
   "author": "김석래",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "mime": "^4.1.0",
+    "remeda": "^2.33.4",
     "zod": "^4.3.5"
   }
 }

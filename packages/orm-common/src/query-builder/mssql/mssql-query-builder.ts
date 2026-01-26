@@ -560,8 +560,16 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   //#region ========== Utils ==========
 
   protected clearSchema(def: ClearSchemaQueryDef): QueryBuildResult {
-    const db = this.expr.wrap(def.database);
+    // SQL Injection 방지: 식별자 유효성 검증
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
+      throw new Error(`유효하지 않은 데이터베이스명: ${def.database}`);
+    }
     const schemaName = def.schema ?? "dbo";
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
+      throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
+    }
+
+    const db = this.expr.wrap(def.database);
     const schema = this.expr.escapeString(schemaName);
     return { sql: `
 DECLARE @sql NVARCHAR(MAX);
@@ -591,8 +599,16 @@ EXEC sp_executesql @sql;` };
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
-    const dbName = this.expr.escapeString(def.database);
+    // SQL Injection 방지: 식별자 유효성 검증
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(def.database)) {
+      throw new Error(`유효하지 않은 데이터베이스명: ${def.database}`);
+    }
     const schemaName = def.schema ?? "dbo";
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schemaName)) {
+      throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
+    }
+
+    const dbName = this.expr.escapeString(def.database);
     const schema = this.expr.escapeString(schemaName);
     // MSSQL: database 존재 확인 후 schema 확인 (동적 SQL 사용)
     return {

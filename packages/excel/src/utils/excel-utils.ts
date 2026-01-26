@@ -1,4 +1,4 @@
-import { NumberUtils } from "@simplysm/core-common";
+import { numParseInt } from "@simplysm/core-common";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelNumberFormat } from "../types";
 
 /**
@@ -20,8 +20,8 @@ export class ExcelUtils {
 
   /** 열 인덱스(0-based)를 열 주소 문자열로 변환 (예: 0 -> "A", 26 -> "AA") */
   static stringifyColAddr(c: number): string {
-    if (c < 0) {
-      throw new Error(`열 인덱스는 0 이상이어야 합니다: ${c}`);
+    if (c < 0 || c > 16383) {
+      throw new Error(`열 인덱스는 0~16383 범위여야 합니다: ${c}`);
     }
 
     let remained = c;
@@ -37,7 +37,7 @@ export class ExcelUtils {
   /** 셀 주소에서 행 인덱스 추출 (예: "A3" -> 2) */
   static parseRowAddrCode(addrCode: string): number {
     const rowAddrCode = /\d*$/.exec(addrCode)?.[0] ?? "";
-    const parsed = NumberUtils.parseInt(rowAddrCode);
+    const parsed = numParseInt(rowAddrCode);
     if (parsed == null) {
       throw new Error(`잘못된 행 주소 코드: ${addrCode}`);
     }
@@ -67,11 +67,10 @@ export class ExcelUtils {
 
   /** 범위 주소를 좌표로 변환 (예: "A1:C3" -> {s: {r:0,c:0}, e: {r:2,c:2}}) */
   static parseRangeAddrCode(rangeAddr: string): ExcelAddressRangePoint {
-    const sAddr = rangeAddr.split(":")[0];
-    const eAddr = rangeAddr.split(":")[1] ?? rangeAddr.split(":")[0];
+    const parts = rangeAddr.split(":");
     return {
-      s: ExcelUtils.parseCellAddrCode(sAddr),
-      e: ExcelUtils.parseCellAddrCode(eAddr),
+      s: ExcelUtils.parseCellAddrCode(parts[0]),
+      e: ExcelUtils.parseCellAddrCode(parts[1] ?? parts[0]),
     };
   }
 
@@ -89,7 +88,7 @@ export class ExcelUtils {
 
   /**
    * JavaScript 타임스탬프(ms)를 Excel 날짜 숫자로 변환.
-   * Excel은 1899-12-31을 기준(0)으로 일수를 계산한다.
+   * Excel은 1900-01-01을 1로 계산한다 (1899-12-30이 날짜 0).
    */
   static convertTimeTickToNumber(tick: number): number {
     const currDate = new Date(tick);
@@ -101,7 +100,7 @@ export class ExcelUtils {
 
   /**
    * Excel 날짜 숫자를 JavaScript 타임스탬프(ms)로 변환.
-   * Excel은 1899-12-31을 기준(0)으로 일수를 계산한다.
+   * Excel은 1900-01-01을 1로 계산한다 (1899-12-30이 날짜 0).
    */
   static convertNumberToTimeTick(num: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
@@ -194,11 +193,9 @@ export class ExcelUtils {
       return 22;
     } else if (numFmtName === "Time") {
       return 18;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    } else if (numFmtName === "string") {
-      return 49;
     } else {
-      throw new Error(`'${numFmtName}'에 대한 'numFmtId'를 알 수 없습니다.`);
+      // 마지막 케이스: "string" (TypeScript가 타입 좁히기를 통해 자동으로 확인)
+      return 49;
     }
   }
 }

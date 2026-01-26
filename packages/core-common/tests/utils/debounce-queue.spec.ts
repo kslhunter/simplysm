@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DebounceQueue, Wait, SdError } from "@simplysm/core-common";
+import { DebounceQueue, waitTime as time, SdError } from "@simplysm/core-common";
 
 describe("DebounceQueue", () => {
   //#region 디바운스 동작
@@ -20,7 +20,7 @@ describe("DebounceQueue", () => {
       });
 
       // 디바운스 대기
-      await Wait.time(100);
+      await time(100);
 
       // 마지막 요청만 실행됨
       expect(calls).toEqual([3]);
@@ -36,11 +36,11 @@ describe("DebounceQueue", () => {
       });
 
       // 50ms 후에는 아직 실행 안 됨
-      await Wait.time(50);
+      await time(50);
       expect(calls).toEqual([]);
 
       // 100ms 후에는 실행됨
-      await Wait.time(100);
+      await time(100);
       expect(calls).toEqual([1]);
 
       const elapsed = Date.now() - start;
@@ -56,7 +56,7 @@ describe("DebounceQueue", () => {
       });
 
       // 약간의 대기 (이벤트 루프)
-      await Wait.time(10);
+      await time(10);
 
       expect(calls).toEqual([1]);
     });
@@ -67,11 +67,11 @@ describe("DebounceQueue", () => {
 
       queue.run(async () => {
         calls.push(1);
-        await Wait.time(50); // 실행 중 대기
+        await time(50); // 실행 중 대기
       });
 
       // 첫 실행 시작 대기
-      await Wait.time(20);
+      await time(20);
 
       // 실행 중에 새 요청 추가
       queue.run(() => {
@@ -79,7 +79,7 @@ describe("DebounceQueue", () => {
       });
 
       // 모든 작업 완료 대기
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2]);
     });
@@ -102,7 +102,7 @@ describe("DebounceQueue", () => {
         throw new Error("test error");
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(errors).toHaveLength(1);
       expect(errors[0]).toBeInstanceOf(SdError);
@@ -124,13 +124,13 @@ describe("DebounceQueue", () => {
         throw new Error("error");
       });
 
-      await Wait.time(50);
+      await time(50);
 
       queue.run(() => {
         calls.push(1);
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(calls).toEqual([1]);
       expect(errors).toHaveLength(1);
@@ -151,14 +151,14 @@ describe("DebounceQueue", () => {
         throw new Error("error 1");
       });
 
-      await Wait.time(20);
+      await time(20);
 
       // 실행 중 새 요청 추가
       queue.run(() => {
         calls.push(2);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([1, 2]);
       expect(errors).toHaveLength(1);
@@ -179,11 +179,11 @@ describe("DebounceQueue", () => {
       });
 
       // 디바운스 대기 중 dispose
-      await Wait.time(50);
+      await time(50);
       queue.dispose();
 
       // 디바운스 시간 경과 후에도 실행 안 됨
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([]);
     });
@@ -202,7 +202,7 @@ describe("DebounceQueue", () => {
         calls.push(2);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       expect(calls).toEqual([2]);
     });
@@ -223,9 +223,9 @@ describe("DebounceQueue", () => {
         queue.run(() => {
           calls.push(1);
         });
-        await Wait.time(50);
+        await time(50);
       } // using 블록 종료 시 dispose 자동 호출
-      await Wait.time(100);
+      await time(100);
       // 디바운스 대기 중 dispose되어 실행 안 됨
       expect(calls).toEqual([]);
     });
@@ -244,7 +244,7 @@ describe("DebounceQueue", () => {
         calls.push(1);
       });
 
-      await Wait.time(50);
+      await time(50);
 
       expect(calls).toEqual([1]);
     });
@@ -257,14 +257,14 @@ describe("DebounceQueue", () => {
         calls.push(1);
       });
       queue.run(async () => {
-        await Wait.time(10);
+        await time(10);
         calls.push(2);
       });
       queue.run(() => {
         calls.push(3);
       });
 
-      await Wait.time(100);
+      await time(100);
 
       // 마지막 요청만 실행
       expect(calls).toEqual([3]);

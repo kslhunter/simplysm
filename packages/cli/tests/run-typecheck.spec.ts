@@ -48,24 +48,20 @@ vi.mock("@simplysm/core-node", () => {
   });
 
   return {
-    FsUtils: {
-      exists: vi.fn(),
-      readJsonAsync: vi.fn(),
-    },
-    PathUtils: {
-      posix: vi.fn(posix),
-      isChildPath: vi.fn(isChildPath),
-      filterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
-        if (targets.length === 0) return files;
-        return files.filter((file) => {
-          const relativePath = posix(file.replace(cwd + "/", ""));
-          return targets.some(
-            (target) => relativePath === target || isChildPath(relativePath, target),
-          );
-        });
-      }),
-    },
-    SdWorker: {
+    fsExists: vi.fn(),
+    fsReadJsonAsync: vi.fn(),
+    pathPosix: vi.fn(posix),
+    pathIsChildPath: vi.fn(isChildPath),
+    pathFilterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
+      if (targets.length === 0) return files;
+      return files.filter((file) => {
+        const relativePath = posix(file.replace(cwd + "/", ""));
+        return targets.some(
+          (target) => relativePath === target || isChildPath(relativePath, target),
+        );
+      });
+    }),
+    Worker: {
       create: vi.fn(() => createMockWorkerProxy()),
     },
   };
@@ -107,7 +103,7 @@ vi.mock("jiti", () => ({
 }));
 
 import ts from "typescript";
-import { FsUtils } from "@simplysm/core-node";
+import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
 import { runTypecheck } from "../src/commands/typecheck";
 
 describe("runTypecheck", () => {
@@ -193,8 +189,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -218,7 +214,7 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
+    vi.mocked(fsExists).mockReturnValue(false);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -239,8 +235,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
 
     // sd.config.ts의 default export가 함수가 아닌 객체인 경우
     mockJitiImport.mockResolvedValue({
@@ -266,8 +262,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
 
     // sd.config.ts에 default export가 없는 경우
     mockJitiImport.mockResolvedValue({
@@ -297,8 +293,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -316,12 +312,12 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(FsUtils.exists).mockReturnValue(false);
-    vi.mocked(FsUtils.readJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
 
     // Worker가 에러 결과를 반환하도록 모킹
-    const { SdWorker } = await import("@simplysm/core-node");
-    vi.mocked(SdWorker.create).mockReturnValue({
+    const { Worker } = await import("@simplysm/core-node");
+    vi.mocked(Worker.create).mockReturnValue({
       typecheck: vi.fn(() =>
         Promise.resolve({
           taskName: "패키지: core-common",
@@ -332,7 +328,7 @@ describe("runTypecheck", () => {
         }),
       ),
       terminate: vi.fn(() => Promise.resolve()),
-    } as unknown as ReturnType<typeof SdWorker.create>);
+    } as unknown as ReturnType<typeof Worker.create>);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");

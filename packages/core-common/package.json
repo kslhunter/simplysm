@@ -1,5 +1,6 @@
 {
   "name": "@simplysm/core-common",
+  "sideEffects": false,
   "version": "13.0.0-beta.0",
   "description": "심플리즘 패키지 - 코어 모듈 (common)",
   "author": "김석래",
@@ -16,6 +17,7 @@
     "@zip.js/zip.js": "^2.8.15",
     "consola": "^3.4.2",
     "fast-xml-parser": "^5.3.3",
+    "remeda": "^2.33.4",
     "yaml": "^2.8.2"
   }
 }

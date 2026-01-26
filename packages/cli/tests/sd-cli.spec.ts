@@ -85,6 +85,15 @@ describe("sd-cli", () => {
         options: [],
       });
     });
+
+    it("typecheck 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["typecheck", "-o", "dev", "-o", "test"]).parse();
+
+      expect(runTypecheck).toHaveBeenCalledWith({
+        targets: [],
+        options: ["dev", "test"],
+      });
+    });
   });
 
   describe("watch 명령어", () => {
@@ -112,6 +121,15 @@ describe("sd-cli", () => {
       expect(runWatch).toHaveBeenCalledWith({
         targets: [],
         options: [],
+      });
+    });
+
+    it("watch 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["watch", "-o", "dev"]).parse();
+
+      expect(runWatch).toHaveBeenCalledWith({
+        targets: [],
+        options: ["dev"],
       });
     });
   });

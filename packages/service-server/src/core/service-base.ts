@@ -1,7 +1,7 @@
 import type { ServiceServer } from "../service-server";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import type { AuthTokenPayload } from "../auth/auth-token-payload";
-import { ObjectUtils } from "@simplysm/core-common";
+import { objMerge } from "@simplysm/core-common";
 import { ConfigManager } from "../utils/config-manager";
 import path from "path";
 
@@ -60,7 +60,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
       const clientFilePath = path.resolve(targetPath, ".config.json");
       const clientConfig = await ConfigManager.getConfigAsync<Record<string, T>>(clientFilePath);
       if (clientConfig != null) {
-        configParent = ObjectUtils.merge(configParent, clientConfig);
+        configParent = objMerge(configParent, clientConfig);
       }
     }
 

@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/core-common";
+import { LazyGcMap, transferableDecode, Uuid } from "@simplysm/core-common";
 import type { ServiceMessageDecodeResult, ServiceMessage } from "@simplysm/service-common";
 import { ServiceProtocol } from "@simplysm/service-common";
 
@@ -123,7 +123,7 @@ export class ClientProtocolWrapper {
     const rawResult = await this._runWorkerAsync("decode", bytes, [bytes.buffer]);
 
     // Worker에서 온 결과(Plain Object)를 클래스 인스턴스(DateTime 등)로 복원
-    return TransferableConvert.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
+    return transferableDecode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
   }
 
   private _shouldUseWorkerForEncode(msg: ServiceMessage): boolean {
