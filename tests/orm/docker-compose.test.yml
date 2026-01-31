@@ -1,0 +1,50 @@
+# 통합 테스트용 DB 컨테이너
+# 사용법:
+#   시작: docker-compose -f docker-compose.test.yml up -d
+#   종료: docker-compose -f docker-compose.test.yml down
+
+services:
+  mysql:
+    image: mysql:8.0.14
+    ports:
+      - "23306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: TestDb
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --local-infile=1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgresql:
+    image: postgres:9.6
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: TestDb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d TestDb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    ports:
+      - "21433:1433"
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: YourStrong@Passw0rd
+      MSSQL_COLLATION: SQL_Latin1_General_CP1_CS_AS
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/service-client",
+  "sideEffects": false,
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - 서비스 모듈 (client)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/service-client"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/orm-common": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "consola": "^3.4.2"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "ws": "^8.19.0"
+  }
+}

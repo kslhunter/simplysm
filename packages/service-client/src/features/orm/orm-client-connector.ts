@@ -1,0 +1,50 @@
+import { OrmClientDbContextExecutor } from "./orm-client-db-context-executor";
+import type { OrmConnectConfig } from "./orm-connect-config";
+import type { DbContext } from "@simplysm/orm-common";
+import type { ServiceClient } from "../../service-client";
+
+export class OrmClientConnector {
+  constructor(private readonly _serviceClient: ServiceClient) {}
+
+  async connectAsync<T extends DbContext, R>(
+    config: OrmConnectConfig<T>,
+    callback: (conn: T) => Promise<R> | R,
+  ): Promise<R> {
+    const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
+    const info = await executor.getInfoAsync();
+    const db = new config.dbContextType(executor, {
+      dialect: info.dialect,
+      database: config.dbContextOpt?.database ?? info.database,
+      schema: config.dbContextOpt?.schema ?? info.schema,
+    });
+    return db.connectAsync(async () => {
+      try {
+        return await callback(db);
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          (err.message.includes("a parent row: a foreign key constraint") ||
+            err.message.includes("conflicted with the REFERENCE"))
+        ) {
+          err.message = "경고! 연결된 작업에 의한 처리 거부. 후속작업 확인요망";
+        }
+
+        throw err;
+      }
+    });
+  }
+
+  async connectWithoutTransactionAsync<T extends DbContext, R>(
+    config: OrmConnectConfig<T>,
+    callback: (conn: T) => Promise<R> | R,
+  ): Promise<R> {
+    const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
+    const info = await executor.getInfoAsync();
+    const db = new config.dbContextType(executor, {
+      dialect: info.dialect,
+      database: config.dbContextOpt?.database ?? info.database,
+      schema: config.dbContextOpt?.schema ?? info.schema,
+    });
+    return db.connectWithoutTransactionAsync(async () => callback(db));
+  }
+}

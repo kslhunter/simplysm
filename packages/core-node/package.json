@@ -1,0 +1,23 @@
+{
+  "name": "@simplysm/core-node",
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - 코어 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/core-node"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "chokidar": "^5.0.0",
+    "consola": "^3.4.0",
+    "glob": "^13.0.0",
+    "tsx": "^4.21.0"
+  }
+}

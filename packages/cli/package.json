@@ -1,0 +1,39 @@
+{
+  "name": "@simplysm/cli",
+  "sideEffects": false,
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - CLI 도구",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/cli"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "sd-cli": "./dist/sd-cli.js"
+  },
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/core-node": "workspace:*",
+    "@vanilla-extract/vite-plugin": "^5.1.4",
+    "consola": "^3.4.2",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
+    "glob": "^13.0.0",
+    "jiti": "^2.6.1",
+    "listr2": "^10.0.0",
+    "solid-js": "^1.9.10",
+    "typescript": "~5.8.3",
+    "vite": "^7.3.1",
+    "vite-plugin-solid": "^2.11.10",
+    "vite-tsconfig-paths": "^6.0.4",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.35"
+  }
+}

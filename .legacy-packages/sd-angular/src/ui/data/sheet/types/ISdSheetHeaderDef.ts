@@ -1,0 +1,15 @@
+import type { SdSheetColumnDirective } from "../directives/sd-sheet-column.directive";
+
+export interface ISdSheetHeaderDef {
+  control: SdSheetColumnDirective<any>;
+
+  fixed: boolean;
+  width: string | undefined;
+  style: string | undefined;
+
+  text: string;
+
+  colspan: number;
+  rowspan: number;
+  isLastRow: boolean;
+}

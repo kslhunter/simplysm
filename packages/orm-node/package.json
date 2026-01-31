@@ -1,0 +1,50 @@
+{
+  "name": "@simplysm/orm-node",
+  "sideEffects": false,
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - ORM 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/orm-node"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/orm-common": "workspace:*",
+    "consola": "^3.4.2",
+    "generic-pool": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.16.0",
+    "@types/pg-copy-streams": "^1.2.5",
+    "mysql2": "^3.16.1",
+    "pg": "^8.17.2",
+    "pg-copy-streams": "^7.0.0",
+    "tedious": "^19.2.0"
+  },
+  "peerDependencies": {
+    "mysql2": "^3.16.0",
+    "pg": "^8.16.3",
+    "pg-copy-streams": "^7.0.0",
+    "tedious": "^19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "pg-copy-streams": {
+      "optional": true
+    },
+    "tedious": {
+      "optional": true
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@simplysm/excel",
+  "sideEffects": false,
+  "version": "13.0.0-beta.0",
+  "description": "Excel 파일 처리 라이브러리",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/excel"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*",
+    "mime": "^4.1.0",
+    "zod": "^4.3.5"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/core-common",
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - 코어 모듈 (common)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/core-common"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "./dist/extensions/arr-ext.js",
+    "./dist/extensions/map-ext.js",
+    "./dist/extensions/set-ext.js"
+  ],
+  "dependencies": {
+    "@zip.js/zip.js": "^2.8.15",
+    "consola": "^3.4.2",
+    "fast-xml-parser": "^5.3.3",
+    "yaml": "^2.8.2"
+  }
+}
