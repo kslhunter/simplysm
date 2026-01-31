@@ -1,0 +1,125 @@
+# generated: 2026-02-01
+# project: simplysm
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-01
+project: simplysm
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: 기반 인프라 (Foundation Infrastructure)
+  epic-1: done
+  1-1-configprovider-구현: done
+  1-2-themeprovider-구현: done
+  1-3-스타일-시스템-통합-검증: done
+  epic-1-retrospective: optional
+
+  # Epic 2: 기본 폼 컨트롤 (Basic Form Controls)
+  epic-2: backlog
+  2-1-button-컴포넌트-마이그레이션: backlog
+  2-2-anchor-컴포넌트-마이그레이션: backlog
+  2-3-textfield-컴포넌트-마이그레이션: backlog
+  2-4-textarea-컴포넌트-마이그레이션: backlog
+  2-5-checkbox-컴포넌트-마이그레이션: backlog
+  2-6-switch-컴포넌트-마이그레이션: backlog
+  2-7-유효성-검사-스타일-통합: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: 레이아웃 구성 (Layout Composition)
+  epic-3: backlog
+  3-1-dock-컴포넌트-마이그레이션: backlog
+  3-2-card-컴포넌트-마이그레이션: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: 선택 컨트롤 (Selection Controls)
+  epic-4: backlog
+  4-1-dropdown-컴포넌트-마이그레이션: backlog
+  4-2-select-컴포넌트-마이그레이션: backlog
+  4-3-checkboxgroup-컴포넌트-마이그레이션: backlog
+  4-4-radio-컴포넌트-마이그레이션: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: 날짜/숫자 입력 (Date & Number Input)
+  epic-5: backlog
+  5-1-numberfield-컴포넌트-마이그레이션: backlog
+  5-2-range-컴포넌트-마이그레이션: backlog
+  5-3-datefield-컴포넌트-마이그레이션: backlog
+  5-4-timefield-컴포넌트-마이그레이션: backlog
+  5-5-daterange-컴포넌트-마이그레이션: backlog
+  5-6-colorfield-컴포넌트-마이그레이션: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: 네비게이션 (Navigation)
+  epic-6: backlog
+  6-1-tab-컴포넌트-마이그레이션: backlog
+  6-2-sidebar-컴포넌트-마이그레이션: backlog
+  6-3-topbar-컴포넌트-마이그레이션: backlog
+  6-4-pagination-컴포넌트-마이그레이션: backlog
+  6-5-collapse-컴포넌트-마이그레이션: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: 오버레이 (Overlay)
+  epic-7: backlog
+  7-1-modal-컴포넌트-마이그레이션: backlog
+  7-2-toast-컴포넌트-마이그레이션: backlog
+  7-3-busy-상태-관리-구현: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: 시각적 피드백 (Visual Feedback)
+  epic-8: backlog
+  8-1-progress-컴포넌트-마이그레이션: backlog
+  8-2-note-컴포넌트-마이그레이션: backlog
+  8-3-label-컴포넌트-마이그레이션: backlog
+  epic-8-retrospective: optional
+
+  # Epic 9: 폼 통합 (Form Integration)
+  epic-9: backlog
+  9-1-form-컴포넌트-마이그레이션: backlog
+  9-2-키보드-네비게이션-통합: backlog
+  epic-9-retrospective: optional
+
+  # Epic 10: 데이터 목록 (Data List)
+  epic-10: backlog
+  10-1-list-컴포넌트-마이그레이션: backlog
+  epic-10-retrospective: optional
+
+  # Epic 11: 데이터 시트 (Data Sheet)
+  epic-11: backlog
+  11-1-sheet-기본-구조-마이그레이션: backlog
+  11-2-sheet-열-정렬-기능: backlog
+  11-3-sheet-행-선택-기능: backlog
+  11-4-sheet-필터링-기능: backlog
+  epic-11-retrospective: optional

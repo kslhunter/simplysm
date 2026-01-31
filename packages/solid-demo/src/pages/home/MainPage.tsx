@@ -17,8 +17,8 @@ export default function HomePage() {
           onInput={(e) => setTheme(e.currentTarget.value as "light" | "dark")}
           style={{
             "width": "100%",
-            "padding": "0.5rem",
-            "border-radius": "4px",
+            "padding": tokenVars.spacing.base,
+            "border-radius": tokenVars.radius.base,
             "border": `1px solid rgb(${themeVars.border.base})`,
             "background": `rgb(${themeVars.surface.base})`,
             "color": `rgb(${themeVars.text.base})`,

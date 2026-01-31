@@ -1,5 +1,6 @@
 import { style } from "@vanilla-extract/css";
 import { vars } from "../../styles/variables/vars.css";
+import { tokenVars } from "../../styles/variables/token.css";
 
 /**
  * Topbar 스타일
@@ -16,7 +17,7 @@ export const topbar = style({
   paddingRight: vars.spacing.lg,
   backgroundColor: `rgb(${vars.surface.base})`,
   borderBottom: `1px solid rgb(${vars.border.base})`,
-  boxShadow: `0 1px 3px rgba(0, 0, 0, 0.05)`,
+  boxShadow: tokenVars.shadow.sm,
   overflowX: "auto",
   overflowY: "hidden",
   userSelect: "none",

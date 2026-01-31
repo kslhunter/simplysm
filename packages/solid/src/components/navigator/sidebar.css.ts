@@ -22,7 +22,7 @@ export const sidebar = recipe({
     height: "100%",
     backgroundColor: `rgb(${themeVars.surface.base})`,
     borderRight: `1px solid rgb(${themeVars.border.base})`,
-    boxShadow: `1px 0 4px rgba(0, 0, 0, 0.04)`,
+    boxShadow: tokenVars.shadow.sm,
     display: "flex",
     flexDirection: "column",
     overflowY: "auto",
