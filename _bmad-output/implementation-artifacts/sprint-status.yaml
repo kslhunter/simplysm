@@ -45,7 +45,7 @@ development_status:
   1-1-configprovider-구현: done
   1-2-themeprovider-구현: done
   1-3-스타일-시스템-통합-검증: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: 기본 폼 컨트롤 (Basic Form Controls)
   epic-2: backlog
