@@ -32,7 +32,7 @@ describe("use:invalid directive", () => {
       expect(container).toHaveAttribute("aria-invalid", "false");
     });
 
-    it("에러 상태가 변경되면 aria-invalid도 업데이트된다", async () => {
+    it("에러 상태가 변경되면 aria-invalid도 업데이트된다", () => {
       function TestComponent() {
         const [hasError, setHasError] = createSignal(false);
         const errorMessage = () => (hasError() ? "에러!" : "");

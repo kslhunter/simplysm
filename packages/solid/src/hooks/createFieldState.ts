@@ -74,7 +74,7 @@ export interface FieldState<T> {
  */
 export function createFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   // uncontrolled 모드를 위한 내부 상태 (value를 초기값으로 사용)
-  // eslint-disable-next-line solid/reactivity -- 초기값 설정에만 사용
+  // NOTE: options.value()는 초기값 설정에만 사용됨 (eslint-plugin-solid 추가 시 reactivity 검토 필요)
   const [internalValue, setInternalValue] = createSignal<T | undefined>(options.value());
 
   const isControlled = () => options.onChange() !== undefined;

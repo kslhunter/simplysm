@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, fireEvent } from "@solidjs/testing-library";
 import { DateField } from "../../../src/components/controls/date-field";
 import { DateOnly } from "@simplysm/core-common";
 

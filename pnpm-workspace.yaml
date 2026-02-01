@@ -1,3 +1,10 @@
 packages:
   - packages/*
   - tests/*
+
+onlyBuiltDependencies:
+  - bufferutil
+  - cpu-features
+  - esbuild
+  - ssh2
+  - utf-8-validate
