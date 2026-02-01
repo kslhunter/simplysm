@@ -6,7 +6,7 @@ import { TQueryValue } from "../types";
 
 export class SdOrmUtils {
   static replaceString(str: string) {
-    return str.replace(/'/g, "''").replace(/\\/g, "\\\\");
+    return str.replace(/'/g, "''");
   }
 
   static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
