@@ -8,6 +8,7 @@ import {
   parseRootTsconfig,
   type TypecheckEnv,
 } from "../utils/tsconfig";
+import { serializeDiagnostic, type SerializedDiagnostic } from "../utils/typecheck-serialization";
 
 //#region Types
 
@@ -19,6 +20,29 @@ export interface DtsWatchInfo {
   cwd: string;
   pkgDir: string;
   env: TypecheckEnv;
+}
+
+/**
+ * DTS 일회성 빌드 정보
+ */
+export interface DtsBuildInfo {
+  name: string;
+  cwd: string;
+  pkgDir: string;
+  env: TypecheckEnv;
+  /** true면 dts 생성 없이 typecheck만 (client 타겟용) */
+  noEmit?: boolean;
+}
+
+/**
+ * DTS 일회성 빌드 결과
+ */
+export interface DtsBuildResult {
+  success: boolean;
+  errors?: string[];
+  diagnostics: SerializedDiagnostic[];
+  errorCount: number;
+  warningCount: number;
 }
 
 /**
@@ -84,7 +108,120 @@ process.on("SIGINT", () => {
 
 //#endregion
 
-//#region Worker
+//#region buildDts (일회성 빌드)
+
+/**
+ * DTS 일회성 빌드 (타입체크 + dts 생성)
+ */
+async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
+  try {
+    const parsedConfig = parseRootTsconfig(info.cwd);
+    const rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
+    const baseOptions = await getCompilerOptionsForPackage(parsedConfig.options, info.env, info.pkgDir);
+
+    // 해당 패키지 경로 (필터링용)
+    const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
+
+    const options: ts.CompilerOptions = {
+      ...baseOptions,
+      sourceMap: false,
+      incremental: true,
+      tsBuildInfoFile: path.join(info.pkgDir, ".cache", info.noEmit ? "typecheck.tsbuildinfo" : "dts.tsbuildinfo"),
+    };
+
+    // noEmit 여부에 따라 emit 관련 옵션 설정
+    if (info.noEmit) {
+      // typecheck만 수행 (dts 생성 안 함)
+      options.noEmit = true;
+      options.emitDeclarationOnly = false;
+      options.declaration = false;
+      options.declarationMap = false;
+      // noEmit일 때 outDir/declarationDir 불필요
+    } else {
+      // dts 생성
+      options.noEmit = false;
+      options.emitDeclarationOnly = true;
+      options.declaration = true;
+      options.declarationMap = true;
+      options.outDir = path.join(info.pkgDir, "dist");
+      options.declarationDir = path.join(info.pkgDir, "dist");
+    }
+
+    // incremental program 생성
+    const host = ts.createIncrementalCompilerHost(options);
+
+    // 해당 패키지 dist 폴더로 가는 파일만 실제로 쓰기 (다른 패키지 .d.ts 생성 방지)
+    if (!info.noEmit) {
+      const pkgDistPrefix = path.join(info.pkgDir, "dist") + path.sep;
+      const originalWriteFile = host.writeFile;
+      host.writeFile = (fileName, content, writeByteOrderMark, onError, sourceFiles, data) => {
+        if (fileName.startsWith(pkgDistPrefix)) {
+          originalWriteFile(fileName, content, writeByteOrderMark, onError, sourceFiles, data);
+        }
+      };
+    }
+
+    const program = ts.createIncrementalProgram({
+      rootNames: rootFiles,
+      options,
+      host,
+    });
+
+    // emit (noEmit일 경우에도 호출해야 diagnostics가 수집됨)
+    const emitResult = program.emit();
+
+    // diagnostics 수집
+    const allDiagnostics = [
+      ...program.getConfigFileParsingDiagnostics(),
+      ...program.getSyntacticDiagnostics(),
+      ...program.getOptionsDiagnostics(),
+      ...program.getGlobalDiagnostics(),
+      ...program.getSemanticDiagnostics(),
+      ...emitResult.diagnostics,
+    ];
+
+    // 해당 패키지 src 폴더 내 파일만 에러 수집 (다른 패키지 에러 무시)
+    const filteredDiagnostics = allDiagnostics.filter(
+      (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix),
+    );
+
+    const serializedDiagnostics = filteredDiagnostics.map(serializeDiagnostic);
+    const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
+    const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
+
+    // 에러 메시지 문자열 배열 (하위 호환용)
+    const errors = filteredDiagnostics
+      .filter((d) => d.category === ts.DiagnosticCategory.Error)
+      .map((d) => {
+        const message = ts.flattenDiagnosticMessageText(d.messageText, "\n");
+        if (d.file != null && d.start != null) {
+          const { line, character } = d.file.getLineAndCharacterOfPosition(d.start);
+          return `${d.file.fileName}:${line + 1}:${character + 1}: TS${d.code}: ${message}`;
+        }
+        return `TS${d.code}: ${message}`;
+      });
+
+    return {
+      success: errorCount === 0,
+      errors: errors.length > 0 ? errors : undefined,
+      diagnostics: serializedDiagnostics,
+      errorCount,
+      warningCount,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      errors: [err instanceof Error ? err.message : String(err)],
+      diagnostics: [],
+      errorCount: 1,
+      warningCount: 0,
+    };
+  }
+}
+
+//#endregion
+
+//#region startDtsWatch (watch 모드)
 
 /** startDtsWatch 호출 여부 플래그 */
 let isWatchStarted = false;
@@ -193,8 +330,9 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
   }
 }
 
-const sender = createWorker<{ startDtsWatch: typeof startDtsWatch }, DtsWorkerEvents>({
+const sender = createWorker<{ startDtsWatch: typeof startDtsWatch; buildDts: typeof buildDts }, DtsWorkerEvents>({
   startDtsWatch,
+  buildDts,
 });
 
 export default sender;
