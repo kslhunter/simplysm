@@ -14,10 +14,20 @@ vi.mock("../src/commands/watch", () => ({
   runWatch: vi.fn(),
 }));
 
+vi.mock("../src/commands/build", () => ({
+  runBuild: vi.fn(),
+}));
+
+vi.mock("../src/commands/publish", () => ({
+  runPublish: vi.fn(),
+}));
+
 import { createCliParser } from "../src/sd-cli";
 import { runLint } from "../src/commands/lint";
 import { runTypecheck } from "../src/commands/typecheck";
 import { runWatch } from "../src/commands/watch";
+import { runBuild } from "../src/commands/build";
+import { runPublish } from "../src/commands/publish";
 
 describe("sd-cli", () => {
   let originalConsolaLevel: number;
@@ -27,6 +37,8 @@ describe("sd-cli", () => {
     vi.mocked(runLint).mockResolvedValue(undefined);
     vi.mocked(runTypecheck).mockResolvedValue(undefined);
     vi.mocked(runWatch).mockResolvedValue(undefined);
+    vi.mocked(runBuild).mockResolvedValue(undefined);
+    vi.mocked(runPublish).mockResolvedValue(undefined);
     originalConsolaLevel = consola.level;
   });
 
@@ -130,6 +142,114 @@ describe("sd-cli", () => {
       expect(runWatch).toHaveBeenCalledWith({
         targets: [],
         options: ["dev"],
+      });
+    });
+  });
+
+  describe("build 명령어", () => {
+    it("build 명령어가 올바른 옵션으로 runBuild를 호출", async () => {
+      await createCliParser(["build", "solid", "core-common"]).parse();
+
+      expect(runBuild).toHaveBeenCalledWith({
+        targets: ["solid", "core-common"],
+        options: [],
+      });
+    });
+
+    it("build 명령어에 targets 없이 실행 가능", async () => {
+      await createCliParser(["build"]).parse();
+
+      expect(runBuild).toHaveBeenCalledWith({
+        targets: [],
+        options: [],
+      });
+    });
+
+    it("build 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["build", "-o", "prod"]).parse();
+
+      expect(runBuild).toHaveBeenCalledWith({
+        targets: [],
+        options: ["prod"],
+      });
+    });
+  });
+
+  describe("publish 명령어", () => {
+    it("publish 명령어가 올바른 옵션으로 runPublish를 호출", async () => {
+      await createCliParser(["publish", "solid", "core-common"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: ["solid", "core-common"],
+        noBuild: false,
+        dryRun: false,
+        options: [],
+      });
+    });
+
+    it("publish 명령어에 targets 없이 실행 가능", async () => {
+      await createCliParser(["publish"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: [],
+        noBuild: false,
+        dryRun: false,
+        options: [],
+      });
+    });
+
+    it("publish 명령어의 --no-build 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["publish", "--no-build"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: [],
+        noBuild: true,
+        dryRun: false,
+        options: [],
+      });
+    });
+
+    it("publish 명령어의 --options 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["publish", "-o", "prod", "-o", "test"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: [],
+        noBuild: false,
+        dryRun: false,
+        options: ["prod", "test"],
+      });
+    });
+
+    it("publish 명령어에 모든 옵션을 함께 전달 가능", async () => {
+      await createCliParser(["publish", "solid", "--no-build", "-o", "prod"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: ["solid"],
+        noBuild: true,
+        dryRun: false,
+        options: ["prod"],
+      });
+    });
+
+    it("publish 명령어의 --dry-run 옵션이 올바르게 전달됨", async () => {
+      await createCliParser(["publish", "--dry-run"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: [],
+        noBuild: false,
+        dryRun: true,
+        options: [],
+      });
+    });
+
+    it("publish 명령어에 --dry-run과 다른 옵션을 함께 사용 가능", async () => {
+      await createCliParser(["publish", "solid", "--dry-run", "-o", "prod"]).parse();
+
+      expect(runPublish).toHaveBeenCalledWith({
+        targets: ["solid"],
+        noBuild: false,
+        dryRun: true,
+        options: ["prod"],
       });
     });
   });

@@ -8,6 +8,7 @@ import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
 import { runWatch } from "./commands/watch";
 import { runBuild } from "./commands/build";
+import { runPublish } from "./commands/publish";
 import { runDevice } from "./commands/device";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -185,6 +186,47 @@ export function createCliParser(argv: string[]): Argv {
         await runDevice({
           package: args.package,
           url: args.url,
+          options: args.options,
+        });
+      },
+    )
+    .command(
+      "publish [targets..]",
+      "패키지를 배포한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .positional("targets", {
+            type: "string",
+            array: true,
+            describe: "배포할 패키지 (예: solid, core-common)",
+            default: [],
+          })
+          .options({
+            build: {
+              type: "boolean",
+              describe: "빌드 실행 (--no-build로 스킵)",
+              default: true,
+            },
+            "dry-run": {
+              type: "boolean",
+              describe: "실제 배포 없이 시뮬레이션",
+              default: false,
+            },
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "옵션",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        await runPublish({
+          targets: args.targets,
+          noBuild: !args.build,
+          dryRun: args.dryRun,
           options: args.options,
         });
       },
