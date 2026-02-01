@@ -1,12 +1,13 @@
 import path from "path";
 import { Listr } from "listr2";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
-import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
+import type { BuildTarget, SdConfig, SdPackageConfig, SdClientPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import type * as WatchWorkerModule from "../workers/watch.worker";
 import type * as DtsWorkerModule from "../workers/dts.worker";
+import { Capacitor } from "../capacitor/capacitor";
 
 //#region Types
 
@@ -48,7 +49,7 @@ interface DtsWorkerInfo {
 interface PackageResult {
   name: string;
   target: string;
-  type: "build" | "dts" | "server";
+  type: "build" | "dts" | "server" | "capacitor";
   status: "success" | "error" | "server";
   message?: string;
   port?: number;
@@ -497,6 +498,51 @@ export async function runWatch(options: WatchOptions): Promise<void> {
 
   // listr 실행 (초기 빌드 완료까지 대기)
   await initialListr.run();
+
+  // Capacitor 초기화 (client 타겟 중 capacitor 설정이 있는 패키지)
+  const capacitorPackages: Array<[string, SdClientPackageConfig]> = [];
+  for (const [name, config] of Object.entries(packages)) {
+    if (config.target === "client" && config.capacitor != null) {
+      capacitorPackages.push([name, config]);
+    }
+  }
+
+  if (capacitorPackages.length > 0) {
+    const capacitorListr = new Listr(
+      capacitorPackages.map(([name, config]) => ({
+        title: `${name} (capacitor)`,
+        task: async () => {
+          const pkgDir = path.join(cwd, "packages", name);
+          try {
+            const cap = await Capacitor.create(pkgDir, config.capacitor!);
+            await cap.initializeAsync();
+            results.set(`${name}:capacitor`, {
+              name,
+              target: "client",
+              type: "capacitor",
+              status: "success",
+            });
+          } catch (err) {
+            results.set(`${name}:capacitor`, {
+              name,
+              target: "client",
+              type: "capacitor",
+              status: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            throw err;
+          }
+        },
+      })),
+      { concurrent: false, exitOnError: false },
+    );
+
+    try {
+      await capacitorListr.run();
+    } catch {
+      // 에러는 results에 이미 기록됨
+    }
+  }
 
   // 초기 빌드 결과 출력
   printErrorsAndServers(results);

@@ -8,6 +8,7 @@ import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
 import { runWatch } from "./commands/watch";
 import { runBuild } from "./commands/build";
+import { runDevice } from "./commands/device";
 import path from "path";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
@@ -149,6 +150,41 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runBuild({
           targets: args.targets,
+          options: args.options,
+        });
+      },
+    )
+    .command(
+      "device",
+      "Android 디바이스에서 앱을 실행한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .options({
+            package: {
+              type: "string",
+              alias: "p",
+              describe: "패키지 이름",
+              demandOption: true,
+            },
+            url: {
+              type: "string",
+              alias: "u",
+              describe: "개발 서버 URL (미지정 시 sd.config.ts의 server 설정 사용)",
+            },
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "옵션",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        await runDevice({
+          package: args.package,
+          url: args.url,
           options: args.options,
         });
       },

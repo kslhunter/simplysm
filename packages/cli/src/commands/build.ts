@@ -16,6 +16,7 @@ import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import { runLint, type LintOptions } from "./lint";
 import type * as BuildWorkerModule from "../workers/build.worker";
 import type * as DtsWorkerModule from "../workers/dts.worker";
+import { Capacitor } from "../capacitor/capacitor";
 
 //#region Types
 
@@ -35,7 +36,7 @@ export interface BuildOptions {
 interface BuildResult {
   name: string;
   target: string;
-  type: "js" | "dts" | "vite";
+  type: "js" | "dts" | "vite" | "capacitor";
   success: boolean;
   errors?: string[];
   diagnostics?: ts.Diagnostic[];
@@ -253,8 +254,8 @@ export async function runBuild(options: BuildOptions): Promise<void> {
             });
           }
 
-          // clientPackages: Vite 빌드 + typecheck
-          for (const { name } of clientPackages) {
+          // clientPackages: Vite 빌드 + typecheck + Capacitor 빌드
+          for (const { name, config } of clientPackages) {
             const pkgDir = path.join(cwd, "packages", name);
             const tsconfigPath = path.join(cwd, "tsconfig.json");
 
@@ -318,6 +319,31 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   if (!dtsResult.success) state.hasError = true;
                 } finally {
                   await dtsWorker.terminate();
+                }
+
+                // Capacitor 빌드 (설정이 있는 경우만)
+                if (config.capacitor != null) {
+                  const outPath = path.join(pkgDir, "dist");
+                  try {
+                    const cap = await Capacitor.create(pkgDir, config.capacitor);
+                    await cap.initializeAsync();
+                    await cap.buildAsync(outPath);
+                    results.push({
+                      name,
+                      target: "client",
+                      type: "capacitor",
+                      success: true,
+                    });
+                  } catch (err) {
+                    results.push({
+                      name,
+                      target: "client",
+                      type: "capacitor",
+                      success: false,
+                      errors: [err instanceof Error ? err.message : String(err)],
+                    });
+                    state.hasError = true;
+                  }
                 }
               },
             });
