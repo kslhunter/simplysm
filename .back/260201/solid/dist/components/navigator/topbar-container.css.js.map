@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/topbar-container.css.ts"],
+  "sourcesContent": ["import { style } from \"@vanilla-extract/css\";\n\n/**\n * TopbarContainer \uC2A4\uD0C0\uC77C\n *\n * flex-column \uB808\uC774\uC544\uC6C3\uC73C\uB85C Topbar\uC640 \uCF58\uD150\uCE20 \uC601\uC5ED\uC744 \uC218\uC9C1 \uBC30\uCE58\uD55C\uB2E4.\n */\nexport const topbarContainer = style({\n  display: \"flex\",\n  flexDirection: \"column\",\n  height: \"100%\",\n  width: \"100%\",\n  overflow: \"hidden\",\n});\n"],
+  "mappings": "AAAA,SAAS,aAAa;AAOf,MAAM,kBAAkB,MAAM;AAAA,EACnC,SAAS;AAAA,EACT,eAAe;AAAA,EACf,QAAQ;AAAA,EACR,OAAO;AAAA,EACP,UAAU;AACZ,CAAC;",
+  "names": []
+}

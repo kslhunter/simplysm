@@ -1,0 +1,3 @@
+@import "@simplysm/solid/src/base.css";
+@tailwind components;
+@tailwind utilities;

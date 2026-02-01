@@ -1,110 +1,147 @@
 # 컴포넌트 인벤토리
 
-> 생성일: 2026-01-31
+> 생성일: 2026-02-01
+> 버전: 13.0.0-beta.0
 
 ## @simplysm/solid 컴포넌트
 
-### Controls (입력 컴포넌트)
+> ⚠️ **현재 상태**: Tailwind CSS로 마이그레이션 진행 중
+>
+> 기존 vanilla-extract 기반 컴포넌트들이 백업되었으며, Tailwind CSS 기반으로 재작성 중입니다.
 
-| 컴포넌트 | 파일 | 설명 |
+### 활성 컴포넌트
+
+| 컴포넌트 | 파일 | 설명 | 상태 |
+|----------|------|------|------|
+| `Button` | `components/controls/Button.tsx` | 기본 버튼 컴포넌트 | ✅ 활성 |
+
+### 제공 유틸리티
+
+| 유틸리티 | 파일 | 설명 |
 |----------|------|------|
-| `Button` | `components/controls/button.tsx` | 기본 버튼 컴포넌트 |
-| `Checkbox` | `components/controls/checkbox.tsx` | 체크박스 컴포넌트 |
-| `Radio` | `components/controls/radio.tsx` | 라디오 버튼 컴포넌트 |
-| `TextField` | `components/controls/text-field.tsx` | 텍스트 입력 필드 |
-| `NumberField` | `components/controls/number-field.tsx` | 숫자 입력 필드 |
-| `DateField` | `components/controls/date-field.tsx` | 날짜 선택 필드 |
-| `TimeField` | `components/controls/time-field.tsx` | 시간 선택 필드 |
-| `DatetimeField` | `components/controls/datetime-field.tsx` | 날짜+시간 선택 필드 |
-| `ColorField` | `components/controls/color-field.tsx` | 색상 선택 필드 |
+| `tailwindPreset` | `tailwind-preset.ts` | Tailwind CSS 프리셋 (Chrome 84+ 호환) |
 
-### Overlay (오버레이 컴포넌트)
+## 마이그레이션 계획 (백업된 컴포넌트)
 
-| 컴포넌트 | 파일 | 설명 |
+기존 컴포넌트들은 `.back/260201/solid/` 디렉토리에 백업되어 있습니다.
+마이그레이션 완료 후 다음 컴포넌트들이 Tailwind CSS 기반으로 재작성될 예정입니다:
+
+### Controls (입력 컴포넌트) - 예정
+
+| 컴포넌트 | 설명 | 마이그레이션 상태 |
+|----------|------|------------------|
+| `Checkbox` | 체크박스 컴포넌트 | 📋 예정 |
+| `Switch` | 토글 스위치 컴포넌트 | 📋 예정 |
+| `Radio` | 라디오 버튼 컴포넌트 | 📋 예정 |
+| `TextField` | 텍스트 입력 필드 | 📋 예정 |
+| `Textarea` | 멀티라인 텍스트 입력 | 📋 예정 |
+| `NumberField` | 숫자 입력 필드 | 📋 예정 |
+| `DateField` | 날짜 선택 필드 | 📋 예정 |
+| `TimeField` | 시간 선택 필드 | 📋 예정 |
+| `DatetimeField` | 날짜+시간 선택 필드 | 📋 예정 |
+| `ColorField` | 색상 선택 필드 | 📋 예정 |
+
+### Overlay (오버레이 컴포넌트) - 예정
+
+| 컴포넌트 | 설명 | 마이그레이션 상태 |
+|----------|------|------------------|
+| `Dropdown` | 드롭다운 래퍼 | 📋 예정 |
+| `DropdownPopup` | 드롭다운 팝업 | 📋 예정 |
+
+### Navigator (네비게이션 컴포넌트) - 예정
+
+| 컴포넌트 | 설명 | 마이그레이션 상태 |
+|----------|------|------------------|
+| `Collapse` | 접기/펼치기 컴포넌트 | 📋 예정 |
+| `Sidebar` | 사이드바 | 📋 예정 |
+| `SidebarMenu` | 사이드바 메뉴 | 📋 예정 |
+| `Topbar` | 상단바 | 📋 예정 |
+| `TopbarMenu` | 상단바 메뉴 | 📋 예정 |
+
+### Data (데이터 표시 컴포넌트) - 예정
+
+| 컴포넌트 | 설명 | 마이그레이션 상태 |
+|----------|------|------------------|
+| `List` | 리스트 컴포넌트 | 📋 예정 |
+| `ListItem` | 리스트 아이템 | 📋 예정 |
+
+## 컴포넌트 통계
+
+| 카테고리 | 활성 | 예정 |
 |----------|------|------|
-| `Dropdown` | `components/overlay/dropdown.tsx` | 드롭다운 래퍼 |
-| `DropdownPopup` | `components/overlay/dropdown-popup.tsx` | 드롭다운 팝업 |
-| `DropdownContext` | `components/overlay/dropdown-context.tsx` | 드롭다운 컨텍스트 |
-
-### Navigator (네비게이션 컴포넌트)
-
-| 컴포넌트 | 파일 | 설명 |
-|----------|------|------|
-| `Collapse` | `components/navigator/collapse.tsx` | 접기/펼치기 컴포넌트 |
-| `CollapseIcon` | `components/navigator/collapse-icon.tsx` | 접기 아이콘 |
-| `SidebarContainer` | `components/navigator/sidebar-container.tsx` | 사이드바 컨테이너 |
-| `Sidebar` | `components/navigator/sidebar.tsx` | 사이드바 |
-| `SidebarMenu` | `components/navigator/sidebar-menu.tsx` | 사이드바 메뉴 |
-| `SidebarUser` | `components/navigator/sidebar-user.tsx` | 사이드바 사용자 정보 |
-| `SidebarContext` | `components/navigator/sidebar-context.tsx` | 사이드바 컨텍스트 |
-| `TopbarContainer` | `components/navigator/topbar-container.tsx` | 상단바 컨테이너 |
-| `Topbar` | `components/navigator/topbar.tsx` | 상단바 |
-| `TopbarMenu` | `components/navigator/topbar-menu.tsx` | 상단바 메뉴 |
-| `TopbarUser` | `components/navigator/topbar-user.tsx` | 상단바 사용자 정보 |
-
-### Data (데이터 표시 컴포넌트)
-
-| 컴포넌트 | 파일 | 설명 |
-|----------|------|------|
-| `List` | `components/data/list.tsx` | 리스트 컴포넌트 |
-| `ListItem` | `components/data/list-item.tsx` | 리스트 아이템 |
-
-### Contexts (컨텍스트)
-
-| 컨텍스트 | 파일 | 설명 |
-|----------|------|------|
-| `ConfigContext` | `contexts/ConfigContext.tsx` | 앱 설정 컨텍스트 |
-| `ThemeContext` | `contexts/ThemeContext.tsx` | 테마 컨텍스트 (다크/라이트) |
-
-### Directives (디렉티브)
-
-| 디렉티브 | 파일 | 설명 |
-|----------|------|------|
-| `ripple` | `directives/ripple.ts` | 리플 효과 디렉티브 |
-| `invalid` | `directives/invalid.ts` | 유효성 검사 스타일 |
-
-### Hooks
-
-| 훅 | 파일 | 설명 |
-|----|------|------|
-| `useLocalStorage` | `hooks/useLocalStorage.ts` | 로컬 스토리지 상태 훅 |
+| Controls | 1 | 10 |
+| Overlay | 0 | 2 |
+| Navigator | 0 | 5 |
+| Data | 0 | 2 |
+| **총계** | **1** | **19** |
 
 ## 스타일링 시스템
 
-### vanilla-extract 기반 스타일
+### 현재: Tailwind CSS
 
-| 파일 | 설명 |
-|------|------|
-| `styles.ts` | 스타일 통합 export |
-| `styles/global.css.ts` | 글로벌 스타일 |
-| `styles/atoms.css.ts` | 원자 스타일 (sprinkles) |
-| `styles/variables/colors.css.ts` | 색상 변수 |
-| `styles/variables/theme.css.ts` | 테마 변수 |
-| `styles/variables/token.css.ts` | 디자인 토큰 |
-| `styles/variables/vars.css.ts` | CSS 변수 |
-| `styles/mixins/boolean-transition.css.ts` | 트랜지션 믹스인 |
+```typescript
+// tailwind-preset.ts
+import type { Config } from "tailwindcss";
+
+const preset: Partial<Config> = {
+  content: [`${__dirname}**/*.{ts,tsx}`],
+  corePlugins: {
+    aspectRatio: false, // Chrome 84 미지원
+  },
+};
+
+export default preset;
+```
+
+### 사용법
+
+```typescript
+// tailwind.config.ts
+import { tailwindPreset } from "@simplysm/solid";
+
+export default {
+  presets: [tailwindPreset],
+  content: ["./src/**/*.{ts,tsx}"],
+} satisfies Config;
+```
 
 ## 사용 예시
 
+### Button 컴포넌트
+
 ```tsx
-import { ConfigProvider, ThemeProvider, Button, TextField } from "@simplysm/solid";
-import "@simplysm/solid/styles"; // 스타일 import
+import { Button } from "@simplysm/solid";
 
 function App() {
   return (
-    <ConfigProvider>
-      <ThemeProvider>
-        <div>
-          <TextField placeholder="이름을 입력하세요" />
-          <Button>저장</Button>
-        </div>
-      </ThemeProvider>
-    </ConfigProvider>
+    <Button onClick={() => console.log("clicked")}>
+      클릭
+    </Button>
   );
 }
 ```
 
+### Button Props
+
+```typescript
+interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+  // HTML button 속성 모두 지원
+}
+```
+
+## 브라우저 호환성
+
+- **Chrome 84+** 지원 필수
+- TypeScript는 esbuild로 Chrome 84 타겟으로 트랜스파일됨
+- **CSS는 트랜스파일되지 않음** - Chrome 84 미지원 CSS 기능 사용 금지
+  - ✅ 사용 가능: Flexbox gap
+  - ❌ 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
+
 ## 반응형 디자인
 
 - **모바일 브레이크포인트**: 520px 미만
-- 520px 미만에서 모바일 UI로 자동 전환
+- Tailwind CSS 반응형 유틸리티 사용 권장
+
+---
+
+*이 문서는 document-project 워크플로우에 의해 자동 생성되었습니다.*

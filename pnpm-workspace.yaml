@@ -6,5 +6,6 @@ onlyBuiltDependencies:
   - bufferutil
   - cpu-features
   - esbuild
+  - sharp
   - ssh2
   - utf-8-validate

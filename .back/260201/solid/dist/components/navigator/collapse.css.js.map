@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/collapse.css.ts"],
+  "sourcesContent": ["import { recipe, type RecipeVariants } from \"@vanilla-extract/recipes\";\nimport { booleanTransitionCss } from \"../../styles/mixins/boolean-transition.css\";\n\nexport const collapse = recipe({\n  base: {\n    overflow: \"hidden\",\n    transitionProperty: \"height\",\n  },\n  variants: {\n    open: booleanTransitionCss,\n  },\n});\n\nexport type CollapseStyles = NonNullable<RecipeVariants<typeof collapse>>;\n"],
+  "mappings": "AAAA,SAAS,cAAmC;AAC5C,SAAS,4BAA4B;AAE9B,MAAM,WAAW,OAAO;AAAA,EAC7B,MAAM;AAAA,IACJ,UAAU;AAAA,IACV,oBAAoB;AAAA,EACtB;AAAA,EACA,UAAU;AAAA,IACR,MAAM;AAAA,EACR;AACF,CAAC;",
+  "names": []
+}

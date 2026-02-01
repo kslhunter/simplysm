@@ -1,0 +1,1 @@
+{"version":3,"file":"ConfigContext.d.ts","sourceRoot":"","sources":["../../../../src/contexts/ConfigContext.tsx"],"names":[],"mappings":"AAAA,OAAO,EAAiB,KAAK,eAAe,EAAc,MAAM,UAAU,CAAC;AAE3E,UAAU,kBAAkB;IAC1B,UAAU,EAAE,MAAM,CAAC;CACpB;AAID;;;;;;;;;;;;;GAaG;AACH,eAAO,MAAM,cAAc,EAAE,eAAe,CAAC;IAAE,gBAAgB,EAAE,MAAM,CAAA;CAAE,CAMxE,CAAC;AAEF;;;;;;;;;;GAUG;AACH,wBAAgB,SAAS,uBAUxB"}

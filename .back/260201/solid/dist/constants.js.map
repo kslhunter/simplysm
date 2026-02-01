@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/constants.ts"],
+  "sourcesContent": ["/**\n * @simplysm/solid \uD328\uD0A4\uC9C0\uC758 \uACF5\uD1B5 \uC0C1\uC218\n */\n\n/**\n * \uBAA8\uBC14\uC77C \uBE0C\uB808\uC774\uD06C\uD3EC\uC778\uD2B8 (\uD53D\uC140 \uB2E8\uC704 \uC22B\uC790)\n *\n * 520px\uC740 \uB300\uBD80\uBD84\uC758 \uC2A4\uB9C8\uD2B8\uD3F0 \uC138\uB85C \uBAA8\uB4DC (iPhone SE: 375px, iPhone 14: 390px,\n * Galaxy S21: 360px)\uB97C \uD3EC\uD568\uD558\uBA74\uC11C \uC18C\uD615 \uD0DC\uBE14\uB9BF (iPad Mini: 744px)\uC740 \uB370\uC2A4\uD06C\uD1B1\n * UI\uB85C \uD45C\uC2DC\uD558\uAE30 \uC704\uD55C \uC784\uACC4\uAC12\uC774\uB2E4.\n *\n * \uC774 \uAC12 \uC774\uD558\uC5D0\uC11C\uB294:\n * - Dropdown\uC774 Bottom Sheet\uB85C \uC804\uD658\uB428\n * - Sidebar\uAC00 \uAE30\uBCF8\uC801\uC73C\uB85C \uC228\uACA8\uC9C0\uACE0 \uD1A0\uAE00\uB85C \uD45C\uC2DC\uB428\n */\nexport const MOBILE_BREAKPOINT_PX = 520;\n\n/** \uBAA8\uBC14\uC77C \uBE0C\uB808\uC774\uD06C\uD3EC\uC778\uD2B8 (CSS\uC6A9 \uBB38\uC790\uC5F4) */\nexport const MOBILE_BREAKPOINT = `${MOBILE_BREAKPOINT_PX}px`;\n"],
+  "mappings": "AAeO,MAAM,uBAAuB;AAG7B,MAAM,oBAAoB,GAAG,oBAAoB;",
+  "names": []
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"invalid.d.ts","sourceRoot":"","sources":["../../../../src/directives/invalid.ts"],"names":[],"mappings":"AAGA,OAAO,QAAQ,UAAU,CAAC;IACxB,UAAU,GAAG,CAAC;QACZ,UAAU,UAAU;YAClB;;;eAGG;YACH,OAAO,EAAE,MAAM,MAAM,CAAC;SACvB;KACF;CACF;AAED;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GA6BG;AACH,eAAO,MAAM,OAAO,GAAI,IAAI,WAAW,EAAE,UAAU,MAAM,MAAM,MAAM,SAmCpE,CAAC;AAGF,eAAe,OAAO,CAAC"}

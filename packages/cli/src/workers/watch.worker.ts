@@ -3,8 +3,8 @@ import ts from "typescript";
 import esbuild from "esbuild";
 import { createServer, type ViteDevServer } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "tailwindcss";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdPackageConfig, SdClientPackageConfig, SdBuildPackageConfig } from "../sd-config.types";
@@ -205,8 +205,12 @@ async function startViteWatch(
     plugins: [
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
-      vanillaExtractPlugin(),
     ],
+    css: {
+      postcss: {
+        plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
+      },
+    },
     esbuild: {
       tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
     },

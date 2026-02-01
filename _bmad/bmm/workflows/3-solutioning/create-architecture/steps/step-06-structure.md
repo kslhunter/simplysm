@@ -140,7 +140,7 @@ project-name/
 ├── README.md
 ├── package.json
 ├── next.config.js
-├── tailwind.config.js
+├── tailwind.config.ts
 ├── tsconfig.json
 ├── .env.local
 ├── .env.example

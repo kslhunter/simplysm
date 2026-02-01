@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/topbar-menu.css.ts"],
+  "sourcesContent": ["import { style } from \"@vanilla-extract/css\";\nimport { vars } from \"../../styles/variables/vars.css\";\n\n/**\n * TopbarMenu \uCEE8\uD14C\uC774\uB108 \uC2A4\uD0C0\uC77C\n */\nexport const topbarMenu = style({\n  display: \"flex\",\n  flexDirection: \"row\",\n  alignItems: \"center\",\n  gap: vars.spacing.sm,\n});\n\n/**\n * \uC911\uCCA9 \uB9AC\uC2A4\uD2B8 \uBC30\uACBD \uC2A4\uD0C0\uC77C (\uB4DC\uB86D\uB2E4\uC6B4 \uB0B4)\n */\nexport const topbarMenuNestedList = style({\n  backgroundColor: `rgba(${vars.text.base}, 0.03)`,\n});\n"],
+  "mappings": "AAAA,SAAS,aAAa;AACtB,SAAS,YAAY;AAKd,MAAM,aAAa,MAAM;AAAA,EAC9B,SAAS;AAAA,EACT,eAAe;AAAA,EACf,YAAY;AAAA,EACZ,KAAK,KAAK,QAAQ;AACpB,CAAC;AAKM,MAAM,uBAAuB,MAAM;AAAA,EACxC,iBAAiB,QAAQ,KAAK,KAAK,IAAI;AACzC,CAAC;",
+  "names": []
+}

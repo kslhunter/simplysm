@@ -1,11 +1,11 @@
 {
   "workflow_version": "1.2.0",
   "timestamps": {
-    "started": "2026-01-31T08:56:00.000Z",
-    "last_updated": "2026-01-31T10:30:00.000Z",
-    "completed": "2026-01-31T10:30:00.000Z"
+    "started": "2026-02-01T14:35:00.000Z",
+    "last_updated": "2026-02-01T14:50:00.000Z",
+    "completed": "2026-02-01T14:50:00.000Z"
   },
-  "mode": "initial_scan",
+  "mode": "full_rescan",
   "scan_level": "deep",
   "project_root": "/home/kslhunter/projects/simplysm",
   "output_folder": "/home/kslhunter/projects/simplysm/docs",
@@ -13,56 +13,38 @@
     {
       "step": "step_1",
       "status": "completed",
-      "timestamp": "2026-01-31T09:00:00.000Z",
+      "timestamp": "2026-02-01T14:35:00.000Z",
       "summary": "Classified as monorepo with 14 packages"
     },
     {
       "step": "step_2",
       "status": "completed",
-      "timestamp": "2026-01-31T09:15:00.000Z",
-      "summary": "Found 14 existing docs (13 package READMEs + CLAUDE.md)"
+      "timestamp": "2026-02-01T14:38:00.000Z",
+      "summary": "Discovered existing documentation"
     },
     {
       "step": "step_3",
       "status": "completed",
-      "timestamp": "2026-01-31T09:30:00.000Z",
-      "summary": "Tech stack: TypeScript 5.9.3, SolidJS 1.9.11, Fastify 5.7.1, Vite 7.3.1"
+      "timestamp": "2026-02-01T14:42:00.000Z",
+      "summary": "Technology stack analysis completed"
     },
     {
       "step": "step_4",
       "status": "completed",
-      "timestamp": "2026-01-31T09:45:00.000Z",
-      "summary": "Conditional analysis: 25 UI components, HTTP/WebSocket APIs, ORM patterns"
+      "timestamp": "2026-02-01T14:45:00.000Z",
+      "summary": "Conditional analysis completed (UI components, source tree)"
     },
     {
       "step": "step_5",
       "status": "completed",
-      "timestamp": "2026-01-31T10:00:00.000Z",
-      "summary": "Source tree documented with 14 packages"
+      "timestamp": "2026-02-01T14:48:00.000Z",
+      "summary": "Architecture document updated"
     },
     {
       "step": "step_6",
       "status": "completed",
-      "timestamp": "2026-01-31T10:15:00.000Z",
-      "summary": "Development guide with test environments documented"
-    },
-    {
-      "step": "step_8",
-      "status": "completed",
-      "timestamp": "2026-01-31T10:20:00.000Z",
-      "summary": "Architecture documentation generated"
-    },
-    {
-      "step": "step_10",
-      "status": "completed",
-      "timestamp": "2026-01-31T10:25:00.000Z",
-      "summary": "Master index generated with all documentation links"
-    },
-    {
-      "step": "step_12",
-      "status": "completed",
-      "timestamp": "2026-01-31T10:30:00.000Z",
-      "summary": "Workflow complete - 7 documents generated"
+      "timestamp": "2026-02-01T14:50:00.000Z",
+      "summary": "Master index updated"
     }
   ],
   "current_step": "completed",
@@ -71,15 +53,18 @@
       "repository_type": "monorepo",
       "parts_count": 14,
       "primary_language": "TypeScript",
-      "workspace_tool": "pnpm"
+      "typescript_version": "5.9.3",
+      "workspace_tool": "pnpm",
+      "version": "13.0.0-beta.0",
+      "license": "Apache-2.0",
+      "author": "김석래"
     },
-    "technology_summary": {
-      "language": "TypeScript 5.9.3",
-      "ui_framework": "SolidJS 1.9.11",
-      "server": "Fastify 5.7.1",
-      "build": "Vite 7.3.1",
-      "test": "Vitest 4.0.18"
-    }
+    "current_status": {
+      "solid_package": "Tailwind CSS migration in progress",
+      "active_components": ["Button"],
+      "backup_location": ".back/260201/solid/"
+    },
+    "cli_commands": ["lint", "typecheck", "watch", "build", "publish", "device"]
   },
   "project_types": [
     {"part_id": "cli", "project_type_id": "cli", "target": "node"},
@@ -103,8 +88,7 @@
     "architecture.md",
     "technology-stack.md",
     "source-tree-analysis.md",
-    "component-inventory.md",
-    "api-contracts.md",
-    "development-guide.md"
-  ]
+    "component-inventory.md"
+  ],
+  "resume_instructions": "Scan completed successfully"
 }

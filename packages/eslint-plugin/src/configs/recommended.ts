@@ -4,6 +4,7 @@ import plugin from "../plugin";
 import importPlugin from "eslint-plugin-import";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import solidPlugin from "eslint-plugin-solid";
+import tailwindcssPlugin from "eslint-plugin-tailwindcss";
 import { defineConfig, globalIgnores } from "eslint/config";
 import { ESLint } from "eslint";
 
@@ -35,8 +36,7 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
     "error",
     {
       name: "Buffer",
-      message:
-        "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+      message: "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
     },
   ],
   "no-restricted-imports": [
@@ -45,8 +45,7 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
       paths: [
         {
           name: "buffer",
-          message:
-            "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+          message: "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
         },
         {
           name: "events",
@@ -122,12 +121,7 @@ export default defineConfig([
       "import/no-extraneous-dependencies": [
         "error",
         {
-          devDependencies: [
-            "**/lib/**",
-            "**/eslint.config.js",
-            "**/simplysm.js",
-            "**/vitest.config.js",
-          ],
+          devDependencies: ["**/lib/**", "**/eslint.config.js", "**/simplysm.js", "**/vitest.config.js"],
         },
       ],
 
@@ -160,10 +154,7 @@ export default defineConfig([
       "@typescript-eslint/return-await": ["error", "in-try-catch"],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-shadow": "error",
-      "@typescript-eslint/no-unnecessary-condition": [
-        "error",
-        { allowConstantLoopConditions: true },
-      ],
+      "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
       "@typescript-eslint/no-unnecessary-type-assertion": [
         "error",
         {
@@ -232,7 +223,7 @@ export default defineConfig([
   },
   // 테스트 폴더: 루트 devDependencies(vitest 등) 사용 허용
   {
-    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx", "**/tests/**/*.js", "**/tests/**/*.jsx"],
+    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
     rules: {
       "import/no-extraneous-dependencies": "off",
       "@simplysm/ts-no-throw-not-implemented-error": "off",
@@ -240,9 +231,10 @@ export default defineConfig([
   },
   // SolidJS TSX 파일: 모든 규칙 명시적으로 설정 (error)
   {
-    files: ["**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx"],
     plugins: {
-      "solid": solidPlugin as unknown as ESLint.Plugin,
+      solid: solidPlugin as unknown as ESLint.Plugin,
+      tailwindcss: tailwindcssPlugin as unknown as ESLint.Plugin,
     },
     rules: {
       // ─── 실수 방지 ───
@@ -267,11 +259,19 @@ export default defineConfig([
       "solid/imports": "error", // import 일관성
       "solid/style-prop": "error", // style prop 형식
       "solid/self-closing-comp": "error", // 자체 닫기 태그
+
+      // ─── Tailwind CSS ───
+      "tailwindcss/classnames-order": "warn", // 클래스 순서 자동 정렬
+      "tailwindcss/enforces-negative-arbitrary-values": "error", // 음수 임의값 형식 통일
+      "tailwindcss/enforces-shorthand": "error", // 축약형 사용 권장
+      "tailwindcss/no-contradicting-classname": "error", // 충돌하는 클래스 금지 (p-2 p-4 등)
+      "tailwindcss/no-custom-classname": "error", // Tailwind에 없는 커스텀 클래스 금지
+      "tailwindcss/no-unnecessary-arbitrary-value": "error", // 불필요한 임의값 금지
     },
   },
   // 테스트 폴더: solid/reactivity 비활성화
   {
-    files: ["**/tests/**/*.tsx"],
+    files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
     rules: {
       // 테스트에서는 waitFor 등 비동기 콜백 내 signal 접근이 의도된 동작
       "solid/reactivity": "off",

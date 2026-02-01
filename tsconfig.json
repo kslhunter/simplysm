@@ -35,12 +35,12 @@
     // 경로
     "baseUrl": ".",
     "paths": {
-      "@simplysm/solid/styles": ["packages/solid/src/styles.ts"],
       "@simplysm/*": ["packages/*/src/index.ts"]
     }
   },
   "include": [
     "*.ts",
+    "packages/*/*.ts",
     "packages/*/src/**/*.ts",
     "packages/*/src/**/*.tsx",
     "packages/*/tests/**/*.ts",

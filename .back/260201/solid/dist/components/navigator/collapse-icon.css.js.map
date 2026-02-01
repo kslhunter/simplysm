@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/collapse-icon.css.ts"],
+  "sourcesContent": ["import { recipe, type RecipeVariants } from \"@vanilla-extract/recipes\";\nimport { booleanTransitionCss } from \"../../styles/mixins/boolean-transition.css\";\n\nexport const collapseIcon = recipe({\n  base: {\n    display: \"inline-block\",\n    transitionProperty: \"transform\",\n  },\n  variants: {\n    open: booleanTransitionCss,\n  },\n});\n\nexport type CollapseIconStyles = NonNullable<RecipeVariants<typeof collapseIcon>>;\n"],
+  "mappings": "AAAA,SAAS,cAAmC;AAC5C,SAAS,4BAA4B;AAE9B,MAAM,eAAe,OAAO;AAAA,EACjC,MAAM;AAAA,IACJ,SAAS;AAAA,IACT,oBAAoB;AAAA,EACtB;AAAA,EACA,UAAU;AAAA,IACR,MAAM;AAAA,EACR;AACF,CAAC;",
+  "names": []
+}

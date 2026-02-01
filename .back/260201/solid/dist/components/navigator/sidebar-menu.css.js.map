@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/sidebar-menu.css.ts"],
+  "sourcesContent": ["import { style } from \"@vanilla-extract/css\";\nimport { tokenVars } from \"../../styles/variables/token.css\";\nimport { themeVars } from \"../../styles/variables/theme.css\";\n\nexport const sidebarMenu = style({\n  display: \"flex\",\n  flexDirection: \"column\",\n  flex: 1,\n  overflow: \"auto\"\n});\n\nexport const sidebarMenuHeader = style({\n  padding: `${tokenVars.spacing.xl} ${tokenVars.spacing.lg}`,\n  paddingBottom: tokenVars.spacing.base,\n  fontWeight: \"bold\",\n  fontSize: tokenVars.font.size.sm,\n  textTransform: \"uppercase\",\n  color: `rgb(${themeVars.text.muted})`,\n  letterSpacing: \"0.08rem\",\n});\n\nexport const sidebarMenuList = style({\n  flex: 1,\n  overflow: \"auto\"\n});\n"],
+  "mappings": "AAAA,SAAS,aAAa;AACtB,SAAS,iBAAiB;AAC1B,SAAS,iBAAiB;AAEnB,MAAM,cAAc,MAAM;AAAA,EAC/B,SAAS;AAAA,EACT,eAAe;AAAA,EACf,MAAM;AAAA,EACN,UAAU;AACZ,CAAC;AAEM,MAAM,oBAAoB,MAAM;AAAA,EACrC,SAAS,GAAG,UAAU,QAAQ,EAAE,IAAI,UAAU,QAAQ,EAAE;AAAA,EACxD,eAAe,UAAU,QAAQ;AAAA,EACjC,YAAY;AAAA,EACZ,UAAU,UAAU,KAAK,KAAK;AAAA,EAC9B,eAAe;AAAA,EACf,OAAO,OAAO,UAAU,KAAK,KAAK;AAAA,EAClC,eAAe;AACjB,CAAC;AAEM,MAAM,kBAAkB,MAAM;AAAA,EACnC,MAAM;AAAA,EACN,UAAU;AACZ,CAAC;",
+  "names": []
+}

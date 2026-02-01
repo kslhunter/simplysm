@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/styles/variables/vars.css.ts"],
+  "sourcesContent": ["import { tokenVars } from \"./token.css\";\nimport { themeVars } from \"./theme.css\";\nimport { colorVars } from \"./colors.css\";\n\nexport const vars = {\n  ...colorVars,\n  ...tokenVars,\n  ...themeVars,\n};\n"],
+  "mappings": "AAAA,SAAS,iBAAiB;AAC1B,SAAS,iBAAiB;AAC1B,SAAS,iBAAiB;AAEnB,MAAM,OAAO;AAAA,EAClB,GAAG;AAAA,EACH,GAAG;AAAA,EACH,GAAG;AACL;",
+  "names": []
+}

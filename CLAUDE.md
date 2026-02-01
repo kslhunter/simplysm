@@ -8,7 +8,7 @@ Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포이다. p
 
 ### 설계 철학
 
-- **표준 패턴 우선**: TypeScript/JavaScript/React(SolidJS)의 표준 패턴과 관용적인 코드 스타일을 최대한 활용하여 러닝커브를 낮춘다. 독자적인 패턴보다 익숙한 패턴을 선호한다.
+- **표준 패턴 우선**: TypeScript/JavaScript/SolidJS의 표준 패턴과 관용적인 코드 스타일을 최대한 활용하여 러닝커브를 낮춘다. 독자적인 패턴보다 익숙한 패턴을 선호한다.
 - **명시적이고 예측 가능한 코드**: 암묵적인 동작보다 명시적인 코드를 선호하여 코드의 의도를 쉽게 파악할 수 있게 한다.
 - **점진적 학습**: 각 패키지가 독립적으로 사용 가능하여 필요한 부분만 학습하고 적용할 수 있다.
 
@@ -27,9 +27,17 @@ pnpm lint --fix              # 자동 수정
 pnpm typecheck
 pnpm typecheck packages/core-common
 
+# 빌드 (프로덕션)
+pnpm build
+pnpm build solid              # 특정 패키지만 빌드
+
 # Watch 모드 (빌드 + .d.ts 생성, client 타겟은 Vite dev server)
 pnpm watch
-pnpm watch solid solid-demo
+pnpm watch solid solid-demo   # solid-demo: http://localhost:40080
+
+# NPM 배포
+pnpm publish                  # 빌드 후 배포
+pnpm publish:no-build         # 빌드 없이 배포
 
 # 테스트 (Vitest)
 pnpm vitest                     # 모든 프로젝트
@@ -39,6 +47,8 @@ pnpm vitest --project=solid     # SolidJS 컴포넌트 테스트
 pnpm vitest --project=orm       # ORM 통합 테스트 (Docker DB 필요)
 pnpm vitest --project=service   # Service 통합 테스트
 pnpm vitest packages/core-common      # 패키지 테스트
+pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node  # 단일 파일
+pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 ```
 
 ## 패키지 구조
@@ -57,6 +67,7 @@ pnpm vitest packages/core-common      # 패키지 테스트
 | `service-client` | neutral | WebSocket 클라이언트 |
 | `service-server` | node | Fastify 기반 HTTP/WebSocket 서버 |
 | `solid` | browser | SolidJS UI 컴포넌트 |
+| `solid-demo` | client | SolidJS 데모 앱 (http://localhost:40080) |
 | `excel` | neutral | Excel(.xlsx) 읽기/쓰기 |
 | `storage` | node | FTP/SFTP 클라이언트 |
 
@@ -104,9 +115,17 @@ const User = Table("User")
 - `ServiceProtocol`: 메시지 분할/병합 (3MB 초과 시 300KB 청크)
 
 **SolidJS 컴포넌트:**
-- `ConfigProvider` + `ThemeProvider`로 앱 감싸기
-- vanilla-extract 기반 스타일링 (`atoms`, `themeVars`)
 - 반응형: 520px 미만에서 모바일 UI
+- Chrome 84+ 타겟 (CSS는 트랜스파일 안됨)
+  - 사용 가능: Flexbox gap
+  - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
+
+### SolidJS vs React 핵심 차이점
+
+- **컴포넌트 함수는 마운트 시 한 번만 실행됨** (React는 상태 변경마다 재실행)
+- **`createMemo` 대부분 불필요** → 그냥 함수 `() => count() * 2`로 충분
+- **Props 구조 분해 금지** → `{ label }` 대신 `props.label`로 접근 (반응성 유지)
+- **조건부: `<Show when={...}>`**, 리스트: **`<For each={...}>`** 사용
 
 ## 코드 컨벤션
 
@@ -184,3 +203,13 @@ const User = Table("User")
 - 이 프로젝트의 코드와 문서에서 확인된 정보만 사용
 - 일반적인 지식으로 추측하지 말고, 실제 구현을 확인
 - 버전별 API 차이가 있을 수 있으므로 코드베이스의 실제 사용 예시 우선
+
+## 언어 설정
+
+**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다.
+
+- 사용자와의 모든 대화, 설명, 안내는 한국어로 작성
+- 코드 주석이나 문서 작성 시에도 한국어 사용
+- 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
+- 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
+- BMAD 워크플로우 실행 시에도 한국어로 응답

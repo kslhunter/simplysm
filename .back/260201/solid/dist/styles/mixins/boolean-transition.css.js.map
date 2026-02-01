@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/styles/mixins/boolean-transition.css.ts"],
+  "sourcesContent": ["import { tokenVars } from \"../variables/token.css\";\n\nexport const booleanTransitionCss = {\n  true: {\n    transition: `${tokenVars.duration.base} ease-out`,\n  },\n  false: {\n    transition: `${tokenVars.duration.base} ease-in`,\n  },\n} as const;\n"],
+  "mappings": "AAAA,SAAS,iBAAiB;AAEnB,MAAM,uBAAuB;AAAA,EAClC,MAAM;AAAA,IACJ,YAAY,GAAG,UAAU,SAAS,IAAI;AAAA,EACxC;AAAA,EACA,OAAO;AAAA,IACL,YAAY,GAAG,UAAU,SAAS,IAAI;AAAA,EACxC;AACF;",
+  "names": []
+}

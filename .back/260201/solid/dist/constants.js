@@ -1,0 +1,7 @@
+const MOBILE_BREAKPOINT_PX = 520;
+const MOBILE_BREAKPOINT = `${MOBILE_BREAKPOINT_PX}px`;
+export {
+  MOBILE_BREAKPOINT,
+  MOBILE_BREAKPOINT_PX
+};
+//# sourceMappingURL=constants.js.map

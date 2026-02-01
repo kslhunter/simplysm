@@ -1,7 +1,6 @@
 .tmp
 .coverage
-.plans
-.worktrees
+.playwright-mcp
 
 .cache
 node_modules
@@ -28,5 +27,3 @@ tests/**/*.js
 tests/**/*.js.map
 tests/**/*.d.ts
 tests/**/*.d.ts.map
-
-.playwright-mcp

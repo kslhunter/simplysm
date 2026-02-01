@@ -1,0 +1,47 @@
+export declare const atoms: ((props: {
+    display?: "none" | "flex" | "grid" | "block" | "inline" | "inline-flex" | undefined;
+    flexDirection?: "column" | "column-reverse" | "row" | "row-reverse" | undefined;
+    flexWrap?: "nowrap" | "wrap" | "wrap-reverse" | undefined;
+    alignItems?: "center" | "flex-end" | "flex-start" | "baseline" | "stretch" | undefined;
+    justifyContent?: "center" | "flex-end" | "flex-start" | "space-around" | "space-between" | "space-evenly" | undefined;
+    gap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    rowGap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    columnGap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    padding?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    paddingTop?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    paddingRight?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    paddingBottom?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    paddingLeft?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    margin?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    marginTop?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    marginRight?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    marginBottom?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    marginLeft?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    fontSize?: "sm" | "base" | "lg" | "h6" | "h5" | "h4" | "h3" | "h2" | "h1" | undefined;
+    lineHeight?: "tight" | "normal" | "relaxed" | undefined;
+    borderRadius?: "sm" | "base" | "lg" | "none" | "xs" | "xl" | "xxl" | "full" | undefined;
+    boxShadow?: "sm" | "base" | "lg" | "xl" | undefined;
+    opacity?: "base" | "muted" | "light" | undefined;
+    width?: "auto" | "full" | undefined;
+    height?: "auto" | "full" | undefined;
+    position?: "fixed" | "absolute" | "relative" | "static" | undefined;
+    fontWeight?: "bold" | "normal" | undefined;
+    color?: "base" | "muted" | "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "gray" | "slate" | "inverted" | undefined;
+    p?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    pt?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    pr?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    pb?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    pl?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    px?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    py?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    m?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    mt?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    mr?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    mb?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    ml?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    mx?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+    my?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+}) => string) & {
+    properties: Set<"lineHeight" | "m" | "p" | "display" | "alignItems" | "boxShadow" | "color" | "columnGap" | "flexDirection" | "flexWrap" | "fontSize" | "fontWeight" | "height" | "justifyContent" | "marginBottom" | "marginLeft" | "marginRight" | "marginTop" | "opacity" | "paddingBottom" | "paddingLeft" | "paddingRight" | "paddingTop" | "position" | "rowGap" | "width" | "borderRadius" | "gap" | "margin" | "padding" | "pt" | "pr" | "pb" | "pl" | "px" | "py" | "mt" | "mr" | "mb" | "ml" | "mx" | "my">;
+};
+//# sourceMappingURL=atoms.css.d.ts.map

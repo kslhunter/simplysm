@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/navigator/sidebar-constants.ts"],
+  "sourcesContent": ["/**\n * Sidebar \uCEF4\uD3EC\uB10C\uD2B8\uC5D0\uC11C \uC0AC\uC6A9\uD558\uB294 \uACF5\uD1B5 \uC0C1\uC218\n *\n * @deprecated MOBILE_BREAKPOINT\uB294 `@simplysm/solid`\uC758 `constants.ts`\uC5D0\uC11C import\uD558\uC138\uC694.\n */\n\n// \uACF5\uD1B5 \uC0C1\uC218 \uD30C\uC77C\uC5D0\uC11C re-export (\uD558\uC704 \uD638\uD658\uC131 \uC720\uC9C0)\nexport { MOBILE_BREAKPOINT_PX, MOBILE_BREAKPOINT } from \"../../constants.js\";\n"],
+  "mappings": "AAOA,SAAS,sBAAsB,yBAAyB;",
+  "names": []
+}

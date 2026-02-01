@@ -3,8 +3,8 @@ import ts from "typescript";
 import { Listr, type ListrTask } from "listr2";
 import { build as viteBuild } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { Worker, type WorkerProxy, fsRmAsync } from "@simplysm/core-node";
 import "@simplysm/core-common";
@@ -273,8 +273,12 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     plugins: [
                       tsconfigPaths({ projects: [tsconfigPath] }),
                       solidPlugin(),
-                      vanillaExtractPlugin(),
                     ],
+                    css: {
+                      postcss: {
+                        plugins: [tailwindcss()],
+                      },
+                    },
                     esbuild: {
                       tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
                     },

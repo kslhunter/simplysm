@@ -1,6 +1,7 @@
 # 아키텍처 문서
 
-> 생성일: 2026-01-31
+> 생성일: 2026-02-01
+> 버전: 13.0.0-beta.0
 
 ## 개요
 
@@ -8,7 +9,7 @@ Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포입니다
 
 ## 설계 철학
 
-1. **표준 패턴 우선**: TypeScript/JavaScript/React(SolidJS)의 표준 패턴 활용
+1. **표준 패턴 우선**: TypeScript/JavaScript/SolidJS의 표준 패턴 활용
 2. **명시적이고 예측 가능한 코드**: 암묵적인 동작보다 명시적인 코드 선호
 3. **점진적 학습**: 각 패키지가 독립적으로 사용 가능
 
@@ -25,7 +26,8 @@ Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포입니다
 ┌─────────┼───────────────────────────────────────────────────────┐
 │         ▼           UI Layer                                     │
 │  ┌─────────────┐                                                │
-│  │    solid    │  SolidJS UI 컴포넌트 + vanilla-extract 스타일   │
+│  │    solid    │  SolidJS UI 컴포넌트 + Tailwind CSS            │
+│  │             │  ⚠️ 마이그레이션 중 (현재: Button만 활성)        │
 │  └──────┬──────┘                                                │
 └─────────┼───────────────────────────────────────────────────────┘
           │
@@ -63,7 +65,7 @@ Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포입니다
 │  └─────────────┘  └─────────────┘  └───────────────────┘        │
 │                                                                  │
 │  ┌─────────────┐                                                │
-│  │     cli     │  빌드/린트/타입체크 CLI                         │
+│  │     cli     │  빌드/린트/타입체크/publish/device CLI          │
 │  └─────────────┘                                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -136,6 +138,18 @@ const result = array.single(); // Array 확장
 const value = map.getOrCreate(key, () => defaultValue); // Map 확장
 ```
 
+### 5. Tailwind CSS Preset (solid 패키지)
+
+```typescript
+// tailwind.config.ts
+import { tailwindPreset } from "@simplysm/solid";
+
+export default {
+  presets: [tailwindPreset],
+  content: ["./src/**/*.{ts,tsx}"],
+} satisfies Config;
+```
+
 ## 데이터 흐름
 
 ### 클라이언트-서버 통신
@@ -158,7 +172,7 @@ const value = map.getOrCreate(key, () => defaultValue); // Map 확장
 
 - **메시지 분할**: 3MB 초과 시 300KB 청크로 분할
 - **직렬화**: JSON (DateTime, Uuid 등 커스텀 타입 지원)
-- **인증**: JWT 기반
+- **인증**: JWT 기반 (jose 라이브러리)
 
 ## 보안 아키텍처
 
@@ -185,7 +199,7 @@ const value = map.getOrCreate(key, () => defaultValue); // Map 확장
 ### 새 UI 컴포넌트 추가
 
 1. `solid/src/components/`에 카테고리 폴더 생성
-2. 컴포넌트 + CSS 파일 작성
+2. 컴포넌트 `.tsx` 파일 작성 (Tailwind CSS 사용)
 3. `index.ts`에 export 추가
 
 ### 새 서비스 추가
@@ -193,3 +207,12 @@ const value = map.getOrCreate(key, () => defaultValue); // Map 확장
 1. `ServiceBase` 상속
 2. `@Service()` 데코레이터 적용
 3. `service-server/index.ts`에 export
+
+### 새 CLI 명령어 추가
+
+1. `cli/src/commands/`에 명령어 파일 생성
+2. `sd-cli.ts`에 명령어 등록
+
+---
+
+*이 문서는 document-project 워크플로우에 의해 자동 생성되었습니다.*

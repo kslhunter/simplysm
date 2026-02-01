@@ -1,7 +1,8 @@
 # Simplysm 프로젝트 문서
 
-> 생성일: 2026-01-31
+> 생성일: 2026-02-01
 > 버전: 13.0.0-beta.0
+> 마지막 스캔: 2026-02-01 (Deep Scan)
 
 ## 프로젝트 개요
 
@@ -9,6 +10,7 @@
 - **언어**: TypeScript 5.9.3
 - **아키텍처**: 풀스택 프레임워크 (UI + ORM + 서비스)
 - **워크스페이스 도구**: pnpm
+- **저장소**: https://github.com/kslhunter/simplysm
 
 ## 빠른 참조
 
@@ -20,26 +22,27 @@
 | UI 프레임워크 | SolidJS | 1.9.11 |
 | 서버 | Fastify | 5.7.1 |
 | 빌드 | Vite | 7.3.1 |
+| 스타일링 | Tailwind CSS | 3.4.19 |
 | 테스트 | Vitest + Playwright | 4.0.18 |
 
 ### 패키지 목록
 
-| 패키지 | 타입 | 설명 |
-|--------|------|------|
-| @simplysm/cli | cli | 빌드/린트/타입체크 CLI |
-| @simplysm/core-common | library | 공통 유틸리티 |
-| @simplysm/core-browser | library | 브라우저 유틸리티 |
-| @simplysm/core-node | library | Node.js 유틸리티 |
-| @simplysm/eslint-plugin | library | ESLint 규칙 |
-| @simplysm/excel | library | Excel 읽기/쓰기 |
-| @simplysm/orm-common | library | ORM 쿼리 빌더 |
-| @simplysm/orm-node | backend | DB 커넥션 |
-| @simplysm/service-common | library | 서비스 프로토콜 |
-| @simplysm/service-client | library | WebSocket 클라이언트 |
-| @simplysm/service-server | backend | HTTP/WebSocket 서버 |
-| @simplysm/solid | web | SolidJS UI 컴포넌트 |
-| @simplysm/solid-demo | web | 데모 앱 |
-| @simplysm/storage | backend | FTP/SFTP 클라이언트 |
+| 패키지 | 타입 | 타겟 | 설명 |
+|--------|------|------|------|
+| @simplysm/cli | cli | node | 빌드/린트/타입체크/publish/device CLI |
+| @simplysm/core-common | library | neutral | 공통 유틸리티 |
+| @simplysm/core-browser | library | browser | 브라우저 유틸리티 |
+| @simplysm/core-node | library | node | Node.js 유틸리티 |
+| @simplysm/eslint-plugin | library | node | ESLint 규칙 |
+| @simplysm/excel | library | neutral | Excel 읽기/쓰기 |
+| @simplysm/orm-common | library | neutral | ORM 쿼리 빌더 |
+| @simplysm/orm-node | backend | node | DB 커넥션 |
+| @simplysm/service-common | library | neutral | 서비스 프로토콜 |
+| @simplysm/service-client | library | neutral | WebSocket 클라이언트 |
+| @simplysm/service-server | backend | node | HTTP/WebSocket 서버 |
+| @simplysm/solid | web | browser | SolidJS UI (마이그레이션 중) |
+| @simplysm/solid-demo | web | client | 데모 앱 |
+| @simplysm/storage | backend | node | FTP/SFTP 클라이언트 |
 
 ## 생성된 문서
 
@@ -52,7 +55,7 @@
 ### API 및 컴포넌트
 
 - [API 계약](./api-contracts.md) - HTTP/WebSocket API, ORM 패턴
-- [컴포넌트 인벤토리](./component-inventory.md) - SolidJS UI 컴포넌트 목록
+- [컴포넌트 인벤토리](./component-inventory.md) - SolidJS UI 컴포넌트 (마이그레이션 중)
 
 ### 개발 가이드
 
@@ -73,12 +76,12 @@
 - [service-common/README.md](../packages/service-common/README.md)
 - [service-client/README.md](../packages/service-client/README.md)
 - [service-server/README.md](../packages/service-server/README.md)
-- [solid/README.md](../packages/solid/README.md)
 - [storage/README.md](../packages/storage/README.md)
 
 ### 프로젝트 가이드
 
 - [CLAUDE.md](../CLAUDE.md) - AI 어시스턴트 가이드
+- [packages/solid/CLAUDE.md](../packages/solid/CLAUDE.md) - Solid 패키지 특화 규칙
 
 ## 시작하기
 
@@ -109,13 +112,22 @@ pnpm vitest
 # 특정 환경만
 pnpm vitest --project=node
 pnpm vitest --project=browser
+pnpm vitest --project=solid
 ```
 
 ### 4. 린트 및 타입체크
 
 ```bash
 pnpm lint
+pnpm lint --fix  # 자동 수정
 pnpm typecheck
+```
+
+### 5. 프로덕션 빌드
+
+```bash
+pnpm build
+pnpm build solid  # 특정 패키지만
 ```
 
 ## 주요 사용 패턴
@@ -160,19 +172,25 @@ await server.listenAsync();
 ### SolidJS 컴포넌트 사용
 
 ```tsx
-import { ConfigProvider, ThemeProvider, Button } from "@simplysm/solid";
-import "@simplysm/solid/styles";
+import { Button } from "@simplysm/solid";
 
 function App() {
-  return (
-    <ConfigProvider>
-      <ThemeProvider>
-        <Button>클릭</Button>
-      </ThemeProvider>
-    </ConfigProvider>
-  );
+  return <Button onClick={() => console.log("clicked")}>클릭</Button>;
 }
 ```
+
+## 현재 진행 중인 작업
+
+### solid 패키지 마이그레이션
+
+- **상태**: vanilla-extract → Tailwind CSS 마이그레이션 중
+- **완료된 컴포넌트**: Button
+- **예정된 컴포넌트**: Checkbox, Switch, Radio, TextField 외 15개
+- **백업 위치**: `.back/260201/solid/`
+
+### 새로 추가된 CLI 명령어
+
+- `device` - Capacitor Android 빌드 지원
 
 ---
 

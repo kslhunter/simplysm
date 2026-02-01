@@ -18,6 +18,11 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/core-common/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.back" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/solid/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/eslint-plugin/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

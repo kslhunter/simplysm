@@ -27,6 +27,13 @@ pnpm install
 ### 빌드 및 개발
 
 ```bash
+# 프로덕션 빌드 (lint + typecheck + dts + JS 빌드)
+pnpm build
+
+# 특정 패키지만 빌드
+pnpm build core-common
+pnpm build solid solid-demo
+
 # Watch 모드 (빌드 + .d.ts 생성)
 pnpm watch
 
@@ -193,9 +200,12 @@ logger.error("Error message");
 # 버전 업데이트 (root package.json)
 # 현재: 13.0.0-beta.0
 
-# 빌드 확인
-pnpm typecheck
+# 프로덕션 빌드 (lint + typecheck + dts + JS 빌드 포함)
+pnpm build
+
+# 또는 개별 확인
 pnpm lint
+pnpm typecheck
 pnpm vitest run
 
 # npm 배포 (각 패키지별)
