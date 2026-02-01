@@ -16,6 +16,8 @@
     "lint": "pnpm _sd-cli_ lint",
     "watch": "pnpm _sd-cli_ watch",
     "build": "pnpm _sd-cli_ build",
+    "publish": "pnpm _sd-cli_ publish",
+    "publish:no-build": "pnpm _sd-cli_ --no-build",
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/cli/src/sd-cli.ts",
     "reinstall": "pnpm install --force",

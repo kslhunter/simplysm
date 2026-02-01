@@ -1,0 +1,593 @@
+import path from "path";
+import { spawn } from "child_process";
+import semver from "semver";
+import { consola } from "consola";
+import { StorageFactory } from "@simplysm/storage";
+import {
+  fsExists,
+  fsReadJson,
+  fsWrite,
+  fsGlob,
+  fsCopyAsync,
+} from "@simplysm/core-node";
+import { jsonStringify } from "@simplysm/core-common";
+import "@simplysm/core-common";
+import type {
+  SdConfig,
+  SdPublishConfig,
+} from "../sd-config.types";
+import { loadSdConfig } from "../utils/sd-config";
+import { runBuild } from "./build";
+
+//#region Types
+
+/**
+ * Publish 명령 옵션
+ */
+export interface PublishOptions {
+  /** 배포할 패키지 필터 (빈 배열이면 publish 설정이 있는 모든 패키지) */
+  targets: string[];
+  /** 빌드 없이 배포 (위험) */
+  noBuild: boolean;
+  /** 실제 배포 없이 시뮬레이션 */
+  dryRun: boolean;
+  /** sd.config.ts에 전달할 추가 옵션 */
+  options: string[];
+}
+
+/**
+ * package.json 타입 (필요한 필드만)
+ */
+interface PackageJson {
+  name: string;
+  version: string;
+  workspaces?: string[];
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+}
+
+//#endregion
+
+//#region Utilities
+
+/**
+ * child_process.spawn 래퍼 (stdout 반환)
+ */
+async function spawnAsync(
+  cmd: string,
+  args: string[],
+  options?: { cwd?: string },
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, {
+      cwd: options?.cwd,
+      shell: true,
+      stdio: ["inherit", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (data: Buffer) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on("data", (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    child.on("error", (err) => {
+      reject(err);
+    });
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Command failed: ${cmd} ${args.join(" ")}\n${stderr || stdout}`));
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+/**
+ * 환경변수 치환 (%VAR% 형식)
+ * @throws 치환 결과가 빈 문자열이면 에러
+ */
+function replaceEnvVariables(str: string, version: string, projectPath: string): string {
+  const result = str.replace(/%([^%]+)%/g, (match, envName: string) => {
+    if (envName === "SD_VERSION") {
+      return version;
+    }
+    if (envName === "SD_PROJECT_PATH") {
+      return projectPath;
+    }
+    return process.env[envName] ?? match;
+  });
+
+  // 치환되지 않은 환경변수가 남아있으면 에러
+  if (/%[^%]+%/.test(result)) {
+    throw new Error(`환경변수 치환 실패: ${str} → ${result}`);
+  }
+
+  return result;
+}
+
+/**
+ * 카운트다운 대기
+ */
+async function waitWithCountdown(message: string, seconds: number): Promise<void> {
+  for (let i = seconds; i > 0; i--) {
+    if (i !== seconds && process.stdout.isTTY) {
+      process.stdout.cursorTo(0);
+    }
+    process.stdout.write(`${message} ${i}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  if (process.stdout.isTTY) {
+    process.stdout.cursorTo(0);
+    process.stdout.clearLine(0);
+  } else {
+    process.stdout.write("\n");
+  }
+}
+
+//#endregion
+
+//#region Version Upgrade
+
+/**
+ * 프로젝트 및 패키지 버전 업그레이드
+ * @param dryRun true면 파일 수정 없이 새 버전만 계산
+ */
+function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolean): string {
+  const projPkgPath = path.resolve(cwd, "package.json");
+  const projPkg = fsReadJson<PackageJson>(projPkgPath);
+
+  const currentVersion = projPkg.version;
+  const prereleaseInfo = semver.prerelease(currentVersion);
+
+  // prerelease 여부에 따라 증가 방식 결정
+  const newVersion =
+    prereleaseInfo !== null
+      ? semver.inc(currentVersion, "prerelease")!
+      : semver.inc(currentVersion, "patch")!;
+
+  if (dryRun) {
+    // dry-run: 파일 수정 없이 새 버전만 반환
+    return newVersion;
+  }
+
+  projPkg.version = newVersion;
+  fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
+
+  // 각 패키지 package.json 버전 설정
+  for (const pkgPath of allPkgPaths) {
+    const pkgJsonPath = path.resolve(pkgPath, "package.json");
+    const pkgJson = fsReadJson<PackageJson>(pkgJsonPath);
+    pkgJson.version = newVersion;
+    fsWrite(pkgJsonPath, jsonStringify(pkgJson, { space: 2 }) + "\n");
+  }
+
+  return newVersion;
+}
+
+//#endregion
+
+//#region Package Publishing
+
+/**
+ * 개별 패키지 배포
+ * @param dryRun true면 실제 배포 없이 시뮬레이션
+ */
+async function publishPackage(
+  pkgPath: string,
+  publishConfig: SdPublishConfig,
+  version: string,
+  projectPath: string,
+  logger: ReturnType<typeof consola.withTag>,
+  dryRun: boolean,
+): Promise<void> {
+  const pkgName = path.basename(pkgPath);
+
+  if (publishConfig === "npm") {
+    // npm publish
+    const prereleaseInfo = semver.prerelease(version);
+    const args = ["publish", "--access", "public"];
+
+    if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
+      args.push("--tag", prereleaseInfo[0]);
+    }
+
+    if (dryRun) {
+      args.push("--dry-run");
+      logger.info(`[DRY-RUN] [${pkgName}] npm ${args.join(" ")}`);
+    } else {
+      logger.debug(`[${pkgName}] npm ${args.join(" ")}`);
+    }
+
+    await spawnAsync("npm", args, { cwd: pkgPath });
+  } else if (publishConfig.type === "local-directory") {
+    // 로컬 디렉토리 복사
+    const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
+    const distPath = path.resolve(pkgPath, "dist");
+
+    if (dryRun) {
+      logger.info(`[DRY-RUN] [${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
+    } else {
+      logger.debug(`[${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
+      await fsCopyAsync(distPath, targetPath);
+    }
+  } else {
+    // 스토리지 업로드
+    const distPath = path.resolve(pkgPath, "dist");
+    const remotePath = publishConfig.path ?? "/";
+
+    if (dryRun) {
+      logger.info(`[DRY-RUN] [${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`);
+    } else {
+      logger.debug(`[${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`);
+      await StorageFactory.connect(
+        publishConfig.type,
+        {
+          host: publishConfig.host,
+          port: publishConfig.port,
+          user: publishConfig.user,
+          pass: publishConfig.pass,
+        },
+        async (storage) => {
+          await storage.uploadDir(distPath, remotePath);
+        },
+      );
+    }
+  }
+}
+
+//#endregion
+
+//#region Main
+
+/**
+ * publish 명령을 실행한다.
+ *
+ * **배포 순서 (안전성 우선):**
+ * 1. 사전 검증 (npm 인증, Git 상태)
+ * 2. 버전 업그레이드
+ * 3. 빌드 (실패 시 롤백)
+ * 4. Git 커밋/태그/푸시 (실패 시 롤백)
+ * 5. npm/sftp/local 배포 (실패 시 수동 복구 안내)
+ * 6. postPublish (실패해도 계속)
+ */
+export async function runPublish(options: PublishOptions): Promise<void> {
+  const { targets, noBuild, dryRun } = options;
+  const cwd = process.cwd();
+  const logger = consola.withTag("sd:cli:publish");
+
+  if (dryRun) {
+    logger.info("[DRY-RUN] 시뮬레이션 모드 - 실제 배포 없음");
+  }
+
+  logger.debug("배포 시작", { targets, noBuild, dryRun });
+
+  // sd.config.ts 로드
+  let sdConfig: SdConfig;
+  try {
+    sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
+    logger.debug("sd.config.ts 로드 완료");
+  } catch (err) {
+    logger.error("sd.config.ts 로드 실패", err);
+    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    process.exitCode = 1;
+    return;
+  }
+
+  // package.json 로드
+  const projPkgPath = path.resolve(cwd, "package.json");
+  const projPkg = fsReadJson<PackageJson>(projPkgPath);
+
+  // 패키지 경로 수집
+  const allPkgPaths = (projPkg.workspaces ?? [])
+    .flatMap((item) => fsGlob(path.resolve(cwd, item)))
+    .filter((item) => !item.includes("."));
+
+  // publish 설정이 있는 패키지 필터링
+  const publishPackages: Array<{
+    name: string;
+    path: string;
+    config: SdPublishConfig;
+  }> = [];
+
+  for (const [name, config] of Object.entries(sdConfig.packages)) {
+    if (config == null) continue;
+    if (config.target === "scripts") continue;
+
+    const pkgConfig = config;
+    if (pkgConfig.publish == null) continue;
+
+    // targets가 지정되면 해당 패키지만 포함
+    if (targets.length > 0 && !targets.includes(name)) continue;
+
+    const pkgPath = allPkgPaths.find((p) => path.basename(p) === name);
+    if (pkgPath == null) {
+      logger.warn(`패키지를 찾을 수 없습니다: ${name}`);
+      continue;
+    }
+
+    publishPackages.push({
+      name,
+      path: pkgPath,
+      config: pkgConfig.publish,
+    });
+  }
+
+  if (publishPackages.length === 0) {
+    process.stdout.write("✔ 배포할 패키지가 없습니다.\n");
+    return;
+  }
+
+  logger.debug("배포 대상 패키지", publishPackages.map((p) => p.name));
+
+  // Git 사용 여부 확인
+  const hasGit = fsExists(path.resolve(cwd, ".git"));
+
+  //#region Phase 1: 사전 검증
+
+  // npm 인증 확인 (npm publish 설정이 있는 경우)
+  if (publishPackages.some((p) => p.config === "npm")) {
+    logger.debug("npm 인증 확인...");
+    try {
+      const whoami = await spawnAsync("npm", ["whoami"]);
+      if (whoami.trim() === "") {
+        throw new Error("npm 로그인 정보가 없습니다.");
+      }
+      logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
+    } catch {
+      logger.error("npm 인증 실패");
+      process.stderr.write(
+        "✖ npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
+          "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
+          "  npm config set //registry.npmjs.org/:_authToken <토큰>\n",
+      );
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  // Git 미커밋 변경사항 확인 (noBuild가 아닌 경우)
+  if (!noBuild && hasGit) {
+    logger.debug("Git 커밋 여부 확인...");
+    try {
+      // unstaged 변경사항 확인
+      const diff = await spawnAsync("git", [
+        "diff",
+        "--name-only",
+        "--",
+        ".",
+        ":(exclude).*",
+        ":(exclude)_*",
+        ":(exclude)yarn.lock",
+        ":(exclude)pnpm-lock.yaml",
+        ":(exclude)package-lock.json",
+      ]);
+      if (diff.trim() !== "") {
+        throw new Error("커밋되지 않은 변경사항이 있습니다.\n" + diff);
+      }
+
+      // staged 변경사항 확인
+      const stagedDiff = await spawnAsync("git", [
+        "diff",
+        "--cached",
+        "--name-only",
+        "--",
+        ".",
+        ":(exclude).*",
+        ":(exclude)_*",
+      ]);
+      if (stagedDiff.trim() !== "") {
+        throw new Error("staged된 변경사항이 있습니다. 먼저 커밋하거나 unstage하세요.\n" + stagedDiff);
+      }
+    } catch (err) {
+      logger.error("Git 상태 확인 실패", err);
+      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  //#endregion
+
+  //#region Phase 2 & 3: 빌드 또는 noBuild 경고
+
+  let version = projPkg.version;
+
+  if (noBuild) {
+    // noBuild 경고
+    logger.warn("빌드하지 않고 배포하는 것은 상당히 위험합니다.");
+    await waitWithCountdown("프로세스를 중지하려면 'CTRL+C'를 누르세요.", 5);
+  } else {
+    // 버전 업그레이드
+    logger.debug("버전 업그레이드...");
+    version = upgradeVersion(cwd, allPkgPaths, dryRun);
+    if (dryRun) {
+      logger.info(`[DRY-RUN] 버전 업그레이드: ${projPkg.version} → ${version} (파일 수정 없음)`);
+    } else {
+      logger.info(`버전 업그레이드: ${projPkg.version} → ${version}`);
+    }
+
+    // 빌드 실행
+    if (dryRun) {
+      logger.info("[DRY-RUN] 빌드 시작 (검증용)...");
+    } else {
+      logger.debug("빌드 시작...");
+    }
+
+    try {
+      await runBuild({
+        targets: publishPackages.map((p) => p.name),
+        options: options.options,
+      });
+
+      // 빌드 실패 확인
+      if (process.exitCode === 1) {
+        throw new Error("빌드 실패");
+      }
+    } catch {
+      // 빌드 실패 시 롤백 (dryRun이면 롤백 불필요)
+      if (dryRun) {
+        logger.error("[DRY-RUN] 빌드 실패");
+      } else {
+        logger.error("빌드 실패, 변경사항 롤백...");
+        if (hasGit) {
+          try {
+            await spawnAsync("git", ["checkout", "."]);
+            logger.debug("Git 롤백 완료");
+          } catch (rollbackErr) {
+            logger.error("Git 롤백 실패", rollbackErr);
+            process.stderr.write(
+              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+                "  git checkout .\n" +
+                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)\n",
+            );
+          }
+        }
+      }
+      process.exitCode = 1;
+      return;
+    }
+
+    //#region Phase 3: Git 커밋/태그/푸시
+
+    if (hasGit) {
+      if (dryRun) {
+        logger.info("[DRY-RUN] Git 커밋/태그/푸시 시뮬레이션...");
+        logger.info(`[DRY-RUN] git add .`);
+        logger.info(`[DRY-RUN] git commit -m "v${version}"`);
+        logger.info(`[DRY-RUN] git tag -a v${version} -m "v${version}"`);
+        // push만 실제 dry-run 실행
+        logger.info("[DRY-RUN] git push --dry-run");
+        await spawnAsync("git", ["push", "--dry-run"]);
+        logger.info("[DRY-RUN] git push --tags --dry-run");
+        await spawnAsync("git", ["push", "--tags", "--dry-run"]);
+        logger.info("[DRY-RUN] Git 작업 시뮬레이션 완료");
+      } else {
+        logger.debug("Git 커밋/태그/푸시...");
+        try {
+          await spawnAsync("git", ["add", "."]);
+          await spawnAsync("git", ["commit", "-m", `v${version}`]);
+          await spawnAsync("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
+          await spawnAsync("git", ["push"]);
+          await spawnAsync("git", ["push", "--tags"]);
+          logger.debug("Git 작업 완료");
+        } catch (err) {
+          // Git 실패 시 롤백
+          logger.error("Git 작업 실패, 롤백 시도...");
+          try {
+            await spawnAsync("git", ["checkout", "."]);
+            logger.debug("Git 롤백 완료");
+          } catch (rollbackErr) {
+            logger.error("Git 롤백 실패", rollbackErr);
+            process.stderr.write(
+              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+                "  git reset --hard HEAD~1\n" +
+                "  git tag -d v" +
+                version +
+                "\n",
+            );
+          }
+          process.stderr.write(`✖ Git 작업 실패: ${err instanceof Error ? err.message : err}\n`);
+          process.exitCode = 1;
+          return;
+        }
+      }
+    }
+
+    //#endregion
+  }
+
+  //#endregion
+
+  //#region Phase 4: 배포
+
+  if (dryRun) {
+    logger.info("[DRY-RUN] 배포 시뮬레이션 시작...");
+  } else {
+    logger.debug("배포 시작...");
+  }
+  const publishedPackages: string[] = [];
+
+  for (const pkg of publishPackages) {
+    try {
+      if (dryRun) {
+        logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션...`);
+      } else {
+        logger.info(`[${pkg.name}] 배포 중...`);
+      }
+      await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+      publishedPackages.push(pkg.name);
+      if (dryRun) {
+        logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션 완료`);
+      } else {
+        logger.info(`[${pkg.name}] 배포 완료`);
+      }
+    } catch (err) {
+      logger.error(`[${pkg.name}] 배포 실패`, err);
+
+      // 이미 배포된 패키지 목록 출력
+      if (publishedPackages.length > 0) {
+        process.stderr.write(
+          "\n✖ 배포 중 오류가 발생했습니다.\n" +
+            "이미 배포된 패키지:\n" +
+            publishedPackages.map((n) => `  - ${n}`).join("\n") +
+            "\n\n수동 복구가 필요할 수 있습니다.\n" +
+            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.\n",
+        );
+      }
+
+      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  //#endregion
+
+  //#region Phase 5: postPublish
+
+  if (sdConfig.postPublish != null && sdConfig.postPublish.length > 0) {
+    if (dryRun) {
+      logger.info("[DRY-RUN] postPublish 스크립트 시뮬레이션...");
+    } else {
+      logger.debug("postPublish 스크립트 실행...");
+    }
+
+    for (const script of sdConfig.postPublish) {
+      try {
+        const cmd = replaceEnvVariables(script.cmd, version, cwd);
+        const args = script.args.map((arg) => replaceEnvVariables(arg, version, cwd));
+
+        if (dryRun) {
+          logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
+        } else {
+          logger.debug(`실행: ${cmd} ${args.join(" ")}`);
+          await spawnAsync(cmd, args, { cwd });
+        }
+      } catch (err) {
+        // postPublish 실패 시 경고만 출력 (배포 롤백 불가)
+        logger.warn(`postPublish 스크립트 실패 (계속 진행): ${err instanceof Error ? err.message : err}`);
+      }
+    }
+  }
+
+  //#endregion
+
+  if (dryRun) {
+    logger.info(`[DRY-RUN] 시뮬레이션 완료. 실제 배포 시 버전: v${version}`);
+  } else {
+    logger.info(`모든 배포가 완료되었습니다. (v${version})`);
+  }
+}
+
+//#endregion
