@@ -85,9 +85,9 @@ HtmlElementUtils.scrollIntoViewIfNeeded(
 
 // 요소들의 bounds 정보 비동기 조회 (IntersectionObserver 사용)
 // timeout 기본값은 5000ms이며, 초과 시 TimeoutError 발생
-const bounds = await HtmlElementUtils.getBoundsAsync([el1, el2]);
+const bounds = await HtmlElementUtils.getBounds([el1, el2]);
 // 또는 커스텀 타임아웃 지정
-const bounds2 = await HtmlElementUtils.getBoundsAsync([el1, el2], 3000);
+const bounds2 = await HtmlElementUtils.getBounds([el1, el2], 3000);
 
 // ElementBounds 구조: { target, top, left, width, height }
 console.log(bounds[0].target); // 측정 대상 요소

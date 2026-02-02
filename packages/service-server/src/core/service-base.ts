@@ -44,12 +44,12 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
           path.resolve(this.server.options.rootPath, "www", this.clientName));
   }
 
-  async getConfigAsync<T>(section: string): Promise<T> {
+  async getConfig<T>(section: string): Promise<T> {
     let configParent: Record<string, T | undefined> = {};
 
     // 1. Root Config
     const rootFilePath = path.resolve(this.server.options.rootPath, ".config.json");
-    const rootConfig = await ConfigManager.getConfigAsync<Record<string, T>>(rootFilePath);
+    const rootConfig = await ConfigManager.getConfig<Record<string, T>>(rootFilePath);
     if (rootConfig != null) {
       configParent = rootConfig;
     }
@@ -58,7 +58,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
     const targetPath = this.clientPath;
     if (targetPath != null) {
       const clientFilePath = path.resolve(targetPath, ".config.json");
-      const clientConfig = await ConfigManager.getConfigAsync<Record<string, T>>(clientFilePath);
+      const clientConfig = await ConfigManager.getConfig<Record<string, T>>(clientFilePath);
       if (clientConfig != null) {
         configParent = objMerge(configParent, clientConfig);
       }

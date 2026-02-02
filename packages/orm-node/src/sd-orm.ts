@@ -42,14 +42,14 @@ export interface SdOrmOptions {
  * });
  *
  * // 트랜잭션 내에서 실행
- * await orm.connectAsync(async (db) => {
- *   const users = await db.user().resultAsync();
+ * await orm.connect(async (db) => {
+ *   const users = await db.user().result();
  *   return users;
  * });
  *
  * // 트랜잭션 없이 실행
- * await orm.connectWithoutTransactionAsync(async (db) => {
- *   const users = await db.user().resultAsync();
+ * await orm.connectWithoutTransaction(async (db) => {
+ *   const users = await db.user().result();
  *   return users;
  * });
  * ```
@@ -68,12 +68,12 @@ export class SdOrm<T extends DbContext> {
    * @param isolationLevel - 트랜잭션 격리 수준
    * @returns 콜백 결과
    */
-  async connectAsync<R>(
+  async connect<R>(
     callback: (conn: T) => Promise<R>,
     isolationLevel?: IsolationLevel,
   ): Promise<R> {
     const db = this._createDbContext();
-    return db.connectAsync(async () => callback(db), isolationLevel);
+    return db.connect(async () => callback(db), isolationLevel);
   }
 
   /**
@@ -82,9 +82,9 @@ export class SdOrm<T extends DbContext> {
    * @param callback - DB 연결 후 실행할 콜백
    * @returns 콜백 결과
    */
-  async connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R> {
+  async connectWithoutTransaction<R>(callback: (conn: T) => Promise<R>): Promise<R> {
     const db = this._createDbContext();
-    return db.connectWithoutTransactionAsync(async () => callback(db));
+    return db.connectWithoutTransaction(async () => callback(db));
   }
 
   /**

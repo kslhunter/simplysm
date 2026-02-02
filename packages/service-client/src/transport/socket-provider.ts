@@ -37,12 +37,12 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
     super();
   }
 
-  async connectAsync(): Promise<void> {
+  async connect(): Promise<void> {
     if (this.connected) return;
     this._isManualClose = false;
 
     try {
-      await this._createSocketAsync();
+      await this._createSocket();
       this._startHeartbeat();
       this._reconnectCount = 0; // 연결 성공 시 카운트 초기화
       this.emit("state", "connected");
@@ -52,7 +52,7 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
     }
   }
 
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     this._isManualClose = true;
     this._stopHeartbeat();
     const ws = this._ws;
@@ -64,7 +64,7 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
     this.emit("state", "closed");
   }
 
-  async sendAsync(data: Bytes): Promise<void> {
+  async send(data: Bytes): Promise<void> {
     try {
       await waitUntil(() => this.connected, undefined, 50);
     } catch {
@@ -77,7 +77,7 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
     ws.send(data);
   }
 
-  private async _createSocketAsync(): Promise<void> {
+  private async _createSocket(): Promise<void> {
     const clientId = Uuid.new().toString();
     const params = new URLSearchParams({
       ver: "2",
@@ -127,12 +127,12 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
     currentWs.onclose = async () => {
       this._stopHeartbeat();
       if (!this._isManualClose) {
-        await this._tryReconnectAsync();
+        await this._tryReconnect();
       }
     };
   }
 
-  private async _tryReconnectAsync(): Promise<void> {
+  private async _tryReconnect(): Promise<void> {
     // 루프 기반 재연결 (재귀 대신 사용하여 스택 안전성 확보)
     while (this._reconnectCount < this._maxReconnectCount) {
       this._reconnectCount++;
@@ -145,7 +145,7 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
       await waitTime(this._RECONNECT_DELAY);
 
       try {
-        await this._createSocketAsync();
+        await this._createSocket();
         this._startHeartbeat();
         this._reconnectCount = 0;
         this.emit("state", "connected"); // 재연결 성공 알림
@@ -193,7 +193,7 @@ export class SocketProvider extends EventEmitter<SocketProviderEvents> {
 
           // 수동 종료가 아니라면 재연결 로직 강제 실행
           if (!this._isManualClose) {
-            void this._tryReconnectAsync();
+            void this._tryReconnect();
           }
         }
         return;

@@ -17,7 +17,7 @@ class TestDbContext extends DbContext {
   user = queryable(this, User);
 }
 
-describe("MySQL DbContext - transAsync", () => {
+describe("MySQL DbContext - trans", () => {
   let mysql2: typeof import("mysql2/promise");
   let conn: MysqlDbConn;
   let executor: NodeDbContextExecutor;
@@ -28,15 +28,15 @@ describe("MySQL DbContext - transAsync", () => {
 
     // raw SQL 실행을 위한 직접 연결
     conn = new MysqlDbConn(mysql2, mysqlConfig);
-    await conn.connectAsync();
-    await conn.executeAsync([
+    await conn.connect();
+    await conn.execute([
       `DROP TABLE IF EXISTS \`TestDb\`.\`User\``,
       `CREATE TABLE \`TestDb\`.\`User\` (
         id INT PRIMARY KEY,
         name VARCHAR(100)
       )`,
     ]);
-    await conn.closeAsync();
+    await conn.close();
 
     // DbContext 실행기 생성
     executor = new NodeDbContextExecutor(mysqlConfig);
@@ -46,28 +46,28 @@ describe("MySQL DbContext - transAsync", () => {
   afterAll(async () => {
     // 테이블 정리
     const cleanupConn = new MysqlDbConn(mysql2, mysqlConfig);
-    await cleanupConn.connectAsync();
-    await cleanupConn.executeAsync([`DROP TABLE IF EXISTS \`TestDb\`.\`User\``]);
-    await cleanupConn.closeAsync();
+    await cleanupConn.connect();
+    await cleanupConn.execute([`DROP TABLE IF EXISTS \`TestDb\`.\`User\``]);
+    await cleanupConn.close();
   });
 
   it("에러 발생 시 자동 롤백", async () => {
-    await db.connectWithoutTransactionAsync(async () => {
+    await db.connectWithoutTransaction(async () => {
       // 초기 데이터 삽입 (트랜잭션 내)
-      await db.transAsync(async () => {
-        await db.user().insertAsync([{ id: 1, name: "initial" }]);
+      await db.trans(async () => {
+        await db.user().insert([{ id: 1, name: "initial" }]);
       });
 
-      // transAsync 내부에서 에러 발생 시 롤백되어야 함
+      // trans 내부에서 에러 발생 시 롤백되어야 함
       await expect(
-        db.transAsync(async () => {
-          await db.user().insertAsync([{ id: 2, name: "should-rollback" }]);
+        db.trans(async () => {
+          await db.user().insert([{ id: 2, name: "should-rollback" }]);
           throw new Error("Intentional error");
         }),
       ).rejects.toThrow("Intentional error");
 
       // 롤백되어 1건만 존재해야 함
-      const result = await db.user().resultAsync();
+      const result = await db.user().result();
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({ id: 1, name: "initial" });
     });

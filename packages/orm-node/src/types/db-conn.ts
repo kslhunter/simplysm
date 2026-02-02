@@ -52,29 +52,29 @@ export interface DbConn extends EventEmitter<{ close: void }> {
   /**
    * DB 연결 수립
    */
-  connectAsync(): Promise<void>;
+  connect(): Promise<void>;
 
   /**
    * DB 연결 종료
    */
-  closeAsync(): Promise<void>;
+  close(): Promise<void>;
 
   /**
    * 트랜잭션 시작
    *
    * @param isolationLevel - 격리 수준 (선택)
    */
-  beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void>;
+  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
 
   /**
    * 트랜잭션 커밋
    */
-  commitTransactionAsync(): Promise<void>;
+  commitTransaction(): Promise<void>;
 
   /**
    * 트랜잭션 롤백
    */
-  rollbackTransactionAsync(): Promise<void>;
+  rollbackTransaction(): Promise<void>;
 
   /**
    * SQL 쿼리 배열 실행
@@ -82,7 +82,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
    * @param queries - 실행할 SQL 문자열 배열
    * @returns 각 쿼리별 결과 배열의 배열
    */
-  executeAsync(queries: string[]): Promise<unknown[][]>;
+  execute(queries: string[]): Promise<unknown[][]>;
 
   /**
    * 파라미터화된 쿼리 실행
@@ -91,7 +91,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
    * @param params - 바인딩 파라미터 (선택)
    * @returns 결과 배열의 배열
    */
-  executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]>;
+  executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>;
 
   /**
    * 대량 INSERT (네이티브 벌크 API 사용)
@@ -104,7 +104,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
    * @param columnMetas - 컬럼명 → ColumnMeta 매핑
    * @param records - 삽입할 레코드 배열
    */
-  bulkInsertAsync(
+  bulkInsert(
     tableName: string,
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],

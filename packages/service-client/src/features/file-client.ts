@@ -7,7 +7,7 @@ export class FileClient {
     private readonly _clientName: string,
   ) {}
 
-  async downloadAsync(relPath: string): Promise<Bytes> {
+  async download(relPath: string): Promise<Bytes> {
     // URL 구성
     const url = `${this._hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
@@ -20,7 +20,7 @@ export class FileClient {
     return new Uint8Array(await res.arrayBuffer());
   }
 
-  async uploadAsync(
+  async upload(
     files: File[] | FileList | { name: string; data: BlobPart }[],
     authToken: string,
   ): Promise<ServiceUploadResult[]> {

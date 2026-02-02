@@ -61,9 +61,9 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
         try {
           if (this._authToken != null) {
-            await this.authAsync(this._authToken); // 재인증
+            await this.auth(this._authToken); // 재인증
           }
-          await this._eventClient.reRegisterAllAsync();
+          await this._eventClient.reRegisterAll();
         } catch (err) {
           logger.error("이벤트 리스너 복구 실패", err);
         }
@@ -81,27 +81,27 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
       get: (_target, prop) => {
         const methodName = String(prop);
         return async (...params: unknown[]) => {
-          return this.sendAsync(serviceName, methodName, params);
+          return this.send(serviceName, methodName, params);
         };
       },
     });
   }
 
-  async connectAsync(): Promise<void> {
-    await this._socket.connectAsync();
+  async connect(): Promise<void> {
+    await this._socket.connect();
   }
 
-  async closeAsync(): Promise<void> {
-    await this._socket.closeAsync();
+  async close(): Promise<void> {
+    await this._socket.close();
   }
 
-  async sendAsync(
+  async send(
     serviceName: string,
     methodName: string,
     params: unknown[],
     progress?: ServiceProgress,
   ): Promise<unknown> {
-    return this._transport.sendAsync(
+    return this._transport.send(
       {
         name: `${serviceName}.${methodName}`,
         body: params,
@@ -119,43 +119,43 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     );
   }
 
-  async authAsync(token: string): Promise<void> {
-    await this._transport.sendAsync({ name: "auth", body: token });
+  async auth(token: string): Promise<void> {
+    await this._transport.send({ name: "auth", body: token });
     this._authToken = token;
   }
 
-  async addEventListenerAsync<T extends ServiceEventListener<unknown, unknown>>(
+  async addEventListener<T extends ServiceEventListener<unknown, unknown>>(
     eventType: Type<T>,
     info: T["$info"],
     cb: (data: T["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     if (!this.connected) throw new Error("서버와 연결되어있지 않습니다.");
-    return this._eventClient.addListenerAsync(eventType, info, cb);
+    return this._eventClient.addListener(eventType, info, cb);
   }
 
-  async removeEventListenerAsync(key: string): Promise<void> {
-    await this._eventClient.removeListenerAsync(key);
+  async removeEventListener(key: string): Promise<void> {
+    await this._eventClient.removeListener(key);
   }
 
-  async emitAsync<T extends ServiceEventListener<unknown, unknown>>(
+  async emitToServer<T extends ServiceEventListener<unknown, unknown>>(
     eventType: Type<T>,
     infoSelector: (item: T["$info"]) => boolean,
     data: T["$data"],
   ): Promise<void> {
-    await this._eventClient.emitAsync(eventType, infoSelector, data);
+    await this._eventClient.emitToServer(eventType, infoSelector, data);
   }
 
-  async uploadFileAsync(files: File[] | FileList | { name: string; data: BlobPart }[]) {
+  async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
       throw new Error(
-        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.",
+        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.",
       );
     }
-    return this._fileClient.uploadAsync(files, this._authToken);
+    return this._fileClient.upload(files, this._authToken);
   }
 
-  async downloadFileBufferAsync(relPath: string) {
-    return this._fileClient.downloadAsync(relPath);
+  async downloadFileBuffer(relPath: string) {
+    return this._fileClient.download(relPath);
   }
 }
 

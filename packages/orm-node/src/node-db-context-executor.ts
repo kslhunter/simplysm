@@ -7,7 +7,7 @@ import type {
   ColumnMeta,
   DataRecord,
 } from "@simplysm/orm-common";
-import { createQueryBuilder, parseQueryResultAsync } from "@simplysm/orm-common";
+import { createQueryBuilder, parseQueryResult } from "@simplysm/orm-common";
 import type { DbConn, DbConnConfig } from "./types/db-conn";
 import { getDialectFromConfig } from "./types/db-conn";
 import { DbConnFactory } from "./db-conn-factory";
@@ -30,9 +30,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    *
    * 커넥션 풀에서 연결을 획득하고 연결 상태를 활성화한다.
    */
-  async connectAsync(): Promise<void> {
-    this._conn = await DbConnFactory.createAsync(this._config);
-    await this._conn.connectAsync();
+  async connect(): Promise<void> {
+    this._conn = await DbConnFactory.create(this._config);
+    await this._conn.connect();
   }
 
   /**
@@ -42,9 +42,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    *
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     const conn = this._requireConn();
-    await conn.closeAsync();
+    await conn.close();
     this._conn = undefined;
   }
 
@@ -54,9 +54,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @param isolationLevel - 트랜잭션 격리 수준
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
+  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._requireConn();
-    await conn.beginTransactionAsync(isolationLevel);
+    await conn.beginTransaction(isolationLevel);
   }
 
   /**
@@ -64,9 +64,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    *
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async commitTransactionAsync(): Promise<void> {
+  async commitTransaction(): Promise<void> {
     const conn = this._requireConn();
-    await conn.commitTransactionAsync();
+    await conn.commitTransaction();
   }
 
   /**
@@ -74,9 +74,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    *
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransaction(): Promise<void> {
     const conn = this._requireConn();
-    await conn.rollbackTransactionAsync();
+    await conn.rollbackTransaction();
   }
 
   /**
@@ -87,9 +87,9 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @returns 쿼리 결과 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._requireConn();
-    return conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrized(query, params);
   }
 
   /**
@@ -100,13 +100,13 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @param records - 삽입할 레코드 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async bulkInsertAsync(
+  async bulkInsert(
     tableName: string,
     columnMetas: Record<string, ColumnMeta>,
     records: DataRecord[],
   ): Promise<void> {
     const conn = this._requireConn();
-    await conn.bulkInsertAsync(tableName, columnMetas, records);
+    await conn.bulkInsert(tableName, columnMetas, records);
   }
 
   /**
@@ -119,7 +119,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @returns 각 QueryDef의 실행 결과 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async executeDefsAsync<T = DataRecord>(
+  async executeDefs<T = DataRecord>(
     defs: QueryDef[],
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
@@ -131,7 +131,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
     // 결과가 필요 없으므로 defs.length개의 빈 배열을 반환하여 인터페이스 계약 유지
     if (resultMetas != null && resultMetas.every((item) => item == null)) {
       const combinedSql = defs.map((def) => builder.build(def).sql).join("\n");
-      await conn.executeAsync([combinedSql]);
+      await conn.execute([combinedSql]);
       return defs.map(() => []) as T[][];
     }
 
@@ -142,14 +142,14 @@ export class NodeDbContextExecutor implements DbContextExecutor {
       const meta = resultMetas?.[i];
       const buildResult = builder.build(def);
 
-      const rawResults = await conn.executeAsync([buildResult.sql]);
+      const rawResults = await conn.execute([buildResult.sql]);
 
       // resultSetIndex가 지정된 경우 해당 인덱스의 결과셋 사용
       const targetResultSet =
         buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
 
       if (meta != null) {
-        const parsed = await parseQueryResultAsync<T>(
+        const parsed = await parseQueryResult<T>(
           targetResultSet as Record<string, unknown>[],
           meta,
         );

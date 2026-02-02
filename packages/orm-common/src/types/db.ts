@@ -103,7 +103,7 @@ export type DataRecord = {
  * ```typescript
  * // 서버 측 구현 예시
  * class NodeDbContextExecutor implements IDbContextExecutor {
- *   async connectAsync(): Promise<void> {
+ *   async connect(): Promise<void> {
  *     await this.connection.connect();
  *   }
  *   // ...
@@ -116,29 +116,29 @@ export interface DbContextExecutor {
   /**
    * DB 연결 수립
    */
-  connectAsync(): Promise<void>;
+  connect(): Promise<void>;
 
   /**
    * DB 연결 종료
    */
-  closeAsync(): Promise<void>;
+  close(): Promise<void>;
 
   /**
    * 트랜잭션 시작
    *
    * @param isolationLevel - 격리 수준 (선택)
    */
-  beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void>;
+  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
 
   /**
    * 트랜잭션 커밋
    */
-  commitTransactionAsync(): Promise<void>;
+  commitTransaction(): Promise<void>;
 
   /**
    * 트랜잭션 롤백
    */
-  rollbackTransactionAsync(): Promise<void>;
+  rollbackTransaction(): Promise<void>;
 
   /**
    * QueryDef 배열 실행
@@ -148,7 +148,7 @@ export interface DbContextExecutor {
    * @param resultMetas - 결과 변환을 위한 메타데이터 (선택)
    * @returns 각 QueryDef별 결과 배열의 배열
    */
-  executeDefsAsync<T = DataRecord>(
+  executeDefs<T = DataRecord>(
     defs: QueryDef[],
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]>;
@@ -185,13 +185,13 @@ export interface ResultMeta {
  *   {
  *     name: "20260105_001_create_user_table",
  *     up: async (db) => {
- *       await db.createTableAsync(User);
+ *       await db.createTable(User);
  *     },
  *   },
  *   {
  *     name: "20260105_002_add_email_column",
  *     up: async (db) => {
- *       await db.addColumnAsync(User, "email", {
+ *       await db.addColumn(User, "email", {
  *         type: "varchar",
  *         length: 200,
  *       });
@@ -200,7 +200,7 @@ export interface ResultMeta {
  * ];
  * ```
  *
- * @see {@link DbContext.initializeAsync} 마이그레이션 실행
+ * @see {@link DbContext.initialize} 마이그레이션 실행
  */
 export interface Migration {
   name: string;

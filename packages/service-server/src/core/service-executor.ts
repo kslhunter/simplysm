@@ -6,7 +6,7 @@ import { getAuthPermissions } from "../auth/auth.decorators";
 export class ServiceExecutor {
   constructor(private readonly _server: ServiceServer) {}
 
-  async runMethodAsync(def: {
+  async runMethod(def: {
     serviceName: string;
     methodName: string;
     params: unknown[];

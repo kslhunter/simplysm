@@ -14,7 +14,7 @@
  * }
  *
  * // 클라이언트에서 사용
- * await client.addEventListenerAsync(
+ * await client.addEventListener(
  *   SharedDataChangeEvent,
  *   { name: "test", filter: null },
  *   (data) => console.log(data)

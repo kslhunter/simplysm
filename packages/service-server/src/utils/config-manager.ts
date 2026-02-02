@@ -1,5 +1,5 @@
 import { LazyGcMap } from "@simplysm/core-common";
-import { fsExists, fsReadJsonAsync, FsWatcher } from "@simplysm/core-node";
+import { fsExists, fsReadJson, FsWatcher } from "@simplysm/core-node";
 import path from "path";
 import { createConsola } from "consola";
 
@@ -18,7 +18,7 @@ export class ConfigManager {
 
   private static readonly _watchers = new Map<string, FsWatcher>();
 
-  static async getConfigAsync<T>(filePath: string): Promise<T | undefined> {
+  static async getConfig<T>(filePath: string): Promise<T | undefined> {
     // 1. 캐시 적중 (시간 자동 갱신)
     if (this._cache.has(filePath)) {
       return this._cache.get(filePath) as T;
@@ -27,13 +27,13 @@ export class ConfigManager {
     if (!fsExists(filePath)) return undefined;
 
     // 2. 로드 및 캐시
-    const config = await fsReadJsonAsync(filePath);
+    const config = await fsReadJson(filePath);
     this._cache.set(filePath, config);
 
     // 3. Watcher 등록
     if (!this._watchers.has(filePath)) {
       try {
-        const watcher = await FsWatcher.watchAsync([filePath]);
+        const watcher = await FsWatcher.watch([filePath]);
         this._watchers.set(filePath, watcher);
 
         watcher.onChange({ delay: 100 }, async () => {
@@ -45,7 +45,7 @@ export class ConfigManager {
           }
 
           try {
-            const newConfig = await fsReadJsonAsync(filePath);
+            const newConfig = await fsReadJson(filePath);
             this._cache.set(filePath, newConfig);
             logger.debug(`설정 파일 실시간 갱신: ${path.basename(filePath)}`);
           } catch (err) {

@@ -28,7 +28,7 @@ export class ProtocolWrapper {
   /**
    * 메시지 인코딩 (자동 분기 처리)
    */
-  async encodeAsync(
+  async encode(
     uuid: string,
     message: ServiceMessage,
   ): Promise<{ chunks: Bytes[]; totalSize: number }> {
@@ -42,7 +42,7 @@ export class ProtocolWrapper {
   /**
    * 메시지 디코딩 (자동 분기 처리)
    */
-  async decodeAsync(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+  async decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = bytes.length;
     if (totalSize > this._SIZE_THRESHOLD) {
       return ProtocolWrapper.worker.decode(bytes);

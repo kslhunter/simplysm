@@ -36,7 +36,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     super();
   }
 
-  async connectAsync(): Promise<void> {
+  async connect(): Promise<void> {
     if (this.isConnected) {
       throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
@@ -66,7 +66,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     this.isConnected = true;
   }
 
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     this._stopTimeout();
 
     if (this._conn == null || !this.isConnected) {
@@ -79,7 +79,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     this._resetState();
   }
 
-  async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
+  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._assertConnected();
 
     const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(
@@ -99,28 +99,28 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     this.isOnTransaction = true;
   }
 
-  async commitTransactionAsync(): Promise<void> {
+  async commitTransaction(): Promise<void> {
     const conn = this._assertConnected();
     await conn.commit();
     this.isOnTransaction = false;
   }
 
-  async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransaction(): Promise<void> {
     const conn = this._assertConnected();
     await conn.rollback();
     this.isOnTransaction = false;
   }
 
-  async executeAsync(queries: string[]): Promise<unknown[][]> {
+  async execute(queries: string[]): Promise<unknown[][]> {
     const results: unknown[][] = [];
     for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
-      const resultItems = await this.executeParametrizedAsync(query);
+      const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
     }
     return results;
   }
 
-  async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._assertConnected();
 
     logger.debug("쿼리 실행", { queryLength: query.length, params });
@@ -164,7 +164,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     }
   }
 
-  async bulkInsertAsync(
+  async bulkInsert(
     tableName: string,
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
@@ -282,8 +282,8 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   private _startTimeout(): void {
     this._stopTimeout();
     this._connTimeout = setTimeout(() => {
-      this.closeAsync().catch((err) => {
-        logger.error("closeAsync error", err instanceof Error ? err.message : String(err));
+      this.close().catch((err) => {
+        logger.error("close error", err instanceof Error ? err.message : String(err));
       });
     }, this._timeout * 2);
   }

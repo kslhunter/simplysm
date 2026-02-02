@@ -44,7 +44,7 @@ export class WebSocketHandler {
 
       serviceSocket.on("message", async ({ uuid, msg }) => {
         logger.debug("요청 수신", msg);
-        const sentSize = await this._processRequestAsync(serviceSocket, uuid, msg);
+        const sentSize = await this._processRequest(serviceSocket, uuid, msg);
         logger.debug(`응답 전송 (size: ${sentSize})`);
       });
 
@@ -65,9 +65,9 @@ export class WebSocketHandler {
     }
   }
 
-  async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
+  async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
     for (const serviceSocket of this._socketMap.values()) {
-      await serviceSocket.sendAsync(Uuid.new().toString(), {
+      await serviceSocket.send(Uuid.new().toString(), {
         name: "reload",
         body: {
           clientName,
@@ -77,7 +77,7 @@ export class WebSocketHandler {
     }
   }
 
-  async emitAsync<T extends ServiceEventListener<unknown, unknown>>(
+  async emitToServer<T extends ServiceEventListener<unknown, unknown>>(
     eventType: Type<T>,
     infoSelector: (item: T["$info"]) => boolean,
     data: T["$data"],
@@ -91,7 +91,7 @@ export class WebSocketHandler {
     for (const subSock of this._socketMap.values()) {
       const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
       if (subTargetKeys.length > 0) {
-        await subSock.sendAsync(Uuid.new().toString(), {
+        await subSock.send(Uuid.new().toString(), {
           name: "evt:on",
           body: {
             keys: subTargetKeys,
@@ -102,7 +102,7 @@ export class WebSocketHandler {
     }
   }
 
-  private async _processRequestAsync(
+  private async _processRequest(
     serviceSocket: ServiceSocket,
     uuid: string,
     message: ServiceClientMessage,
@@ -111,35 +111,35 @@ export class WebSocketHandler {
       if (message.name.includes(".") && Array.isArray(message.body)) {
         const [serviceName, methodName] = message.name.split(".");
 
-        const result = await this._executor.runMethodAsync({
+        const result = await this._executor.runMethod({
           serviceName,
           methodName,
           params: message.body,
           socket: serviceSocket,
         });
 
-        return await serviceSocket.sendAsync(uuid, { name: "response", body: result });
+        return await serviceSocket.send(uuid, { name: "response", body: result });
       } else if (message.name === "evt:add") {
         const { key, name, info } = message.body as { key: string; name: string; info: unknown };
         serviceSocket.addEventListener(key, name, info);
-        return await serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:remove") {
         const { key } = message.body as { key: string };
         serviceSocket.removeEventListener(key);
-        return await serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body as { name: string };
         const infos = Array.from(this._socketMap.values()).flatMap((subSock) =>
           subSock.getEventListeners(name),
         );
-        return await serviceSocket.sendAsync(uuid, { name: "response", body: infos });
+        return await serviceSocket.send(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body as { keys: string[]; data: unknown };
 
         for (const subSock of this._socketMap.values()) {
           const targetKeys = subSock.filterEventTargetKeys(keys);
           if (targetKeys.length > 0) {
-            await subSock.sendAsync(uuid, {
+            await subSock.send(uuid, {
               name: "evt:on",
               body: {
                 keys: targetKeys,
@@ -149,15 +149,15 @@ export class WebSocketHandler {
           }
         }
 
-        return await serviceSocket.sendAsync(uuid, { name: "response" });
+        return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "auth") {
         const token = message.body;
-        serviceSocket.authTokenPayload = await this._jwt.verifyAsync(token);
-        return await serviceSocket.sendAsync(uuid, { name: "response" });
+        serviceSocket.authTokenPayload = await this._jwt.verify(token);
+        return await serviceSocket.send(uuid, { name: "response" });
       } else {
         const err = new Error("요청이 잘못되었습니다.");
 
-        return await serviceSocket.sendAsync(uuid, {
+        return await serviceSocket.send(uuid, {
           name: "error",
           body: {
             name: err.name,
@@ -173,7 +173,7 @@ export class WebSocketHandler {
           ? err
           : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
-      return serviceSocket.sendAsync(uuid, {
+      return serviceSocket.send(uuid, {
         name: "error",
         body: {
           name: error.name,

@@ -118,7 +118,7 @@ const configs = fsFindAllParentChildPaths("package.json", "/proj/src/sub", "/pro
 import { FsWatcher } from "@simplysm/core-node";
 
 // 파일 감시 시작
-const watcher = await FsWatcher.watchAsync(["src/**/*.ts"]);
+const watcher = await FsWatcher.watch(["src/**/*.ts"]);
 
 // 변경 이벤트 핸들러 등록 (이벤트 병합 지원)
 watcher.onChange({ delay: 300 }, (changes) => {

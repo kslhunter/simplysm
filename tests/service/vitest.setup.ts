@@ -46,7 +46,7 @@ export async function setup() {
     services: [TestService],
   });
 
-  await testServer.listenAsync();
+  await testServer.listen();
   console.log(`[service] Test server started on port ${TEST_PORT}`);
 }
 
@@ -55,7 +55,7 @@ export async function teardown() {
 
   // 서버 종료
   if (testServer?.isOpen === true) {
-    await testServer.closeAsync();
+    await testServer.close();
   }
 
   // 테스트 디렉토리 정리

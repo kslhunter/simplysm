@@ -181,7 +181,7 @@ export function pasteToElement(event: ClipboardEvent): void {
  * @param timeout - 타임아웃 (밀리초, 기본: 5000)
  * @throws {TimeoutError} 타임아웃 시간 내에 응답이 없을 경우
  */
-export async function getBoundsAsync(els: Element[], timeout: number = 5000): Promise<ElementBounds[]> {
+export async function getBounds(els: Element[], timeout: number = 5000): Promise<ElementBounds[]> {
   // 중복 제거 및 입력 순서대로 결과를 정렬하기 위한 인덱스 맵
   const indexMap = new Map(els.map((el, i) => [el, i] as const));
   if (indexMap.size === 0) {

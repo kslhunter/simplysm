@@ -16,7 +16,7 @@ import { expr } from "../expr/expr";
  * @example
  * ```typescript
  * // 프로시저 실행
- * const result = await db.getUserById().executeAsync({ userId: 1n });
+ * const result = await db.getUserById().execute({ userId: 1n });
  * ```
  *
  * @see {@link executable} 팩토리 함수
@@ -61,8 +61,8 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
   /**
    * 프로시저 실행
    */
-  async executeAsync(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]> {
-    return this._db.executeDefsAsync<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
+  async execute(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]> {
+    return this._db.executeDefs<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
   }
 }
 
@@ -97,7 +97,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
  * }
  *
  * // 사용
- * const result = await db.getUserById().executeAsync({ userId: 1n });
+ * const result = await db.getUserById().execute({ userId: 1n });
  * ```
  *
  * @see {@link Executable} 실행 클래스

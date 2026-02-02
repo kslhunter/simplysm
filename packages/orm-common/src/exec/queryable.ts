@@ -214,15 +214,15 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  * const users = await db.user()
  *   .where((u) => [expr.eq(u.isActive, true)])
  *   .orderBy((u) => u.name)
- *   .resultAsync();
+ *   .result();
  *
  * // JOIN 조회
  * const posts = await db.post()
  *   .include((p) => p.user)
- *   .resultAsync();
+ *   .result();
  *
  * // INSERT
- * await db.user().insertAsync([{ name: "홍길동", email: "test@test.com" }]);
+ * await db.user().insert([{ name: "홍길동", email: "test@test.com" }]);
  * ```
  */
 export class Queryable<
@@ -304,11 +304,11 @@ export class Queryable<
    *
    * @example
    * ```typescript
-   * await db.connectAsync(async () => {
+   * await db.connect(async () => {
    *   const user = await db.user()
    *     .where((u) => [expr.eq(u.id, 1)])
    *     .lock()
-   *     .singleAsync();
+   *     .single();
    * });
    * ```
    */
@@ -888,7 +888,7 @@ export class Queryable<
   /**
    * 현재 Queryable을 서브쿼리로 감싸기
    *
-   * distinct() 또는 groupBy() 후 countAsync() 사용 시 필요
+   * distinct() 또는 groupBy() 후 count() 사용 시 필요
    *
    * @returns 서브쿼리로 감싸진 Queryable
    *
@@ -899,7 +899,7 @@ export class Queryable<
    *   .select((u) => ({ name: u.name }))
    *   .distinct()
    *   .wrap()
-   *   .countAsync();
+   *   .count();
    * ```
    */
   wrap(): Queryable<TData, never> {
@@ -1017,11 +1017,11 @@ export class Queryable<
    * ```typescript
    * const users = await db.user()
    *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .resultAsync();
+   *   .result();
    * ```
    */
-  async resultAsync(): Promise<TData[]> {
-    const results = await this.meta.db.executeDefsAsync<TData>(
+  async result(): Promise<TData[]> {
+    const results = await this.meta.db.executeDefs<TData>(
       [this.getSelectQueryDef()],
       [this.getResultMeta()],
     );
@@ -1038,11 +1038,11 @@ export class Queryable<
    * ```typescript
    * const user = await db.user()
    *   .where((u) => [expr.eq(u.id, 1)])
-   *   .singleAsync();
+   *   .single();
    * ```
    */
-  async singleAsync(): Promise<TData | undefined> {
-    const result = await this.top(2).resultAsync();
+  async single(): Promise<TData | undefined> {
+    const result = await this.top(2).result();
     if (result.length > 1) {
       throw new ArgumentError("단일 결과를 기대했지만 2개 이상의 결과가 반환되었습니다.", {
         table: this._getSourceName(),
@@ -1075,11 +1075,11 @@ export class Queryable<
    * ```typescript
    * const latestUser = await db.user()
    *   .orderBy((u) => u.createdAt, "DESC")
-   *   .firstAsync();
+   *   .first();
    * ```
    */
-  async firstAsync(): Promise<TData | undefined> {
-    const results = await this.top(1).resultAsync();
+  async first(): Promise<TData | undefined> {
+    const results = await this.top(1).result();
     return results[0];
   }
 
@@ -1094,20 +1094,20 @@ export class Queryable<
    * ```typescript
    * const count = await db.user()
    *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .countAsync();
+   *   .count();
    * ```
    */
-  async countAsync(
+  async count(
     fwd?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>,
   ): Promise<number> {
     if (this.meta.distinct) {
       throw new Error(
-        "distinct() 후에는 countAsync()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.",
+        "distinct() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.",
       );
     }
     if (this.meta.groupBy) {
       throw new Error(
-        "groupBy() 후에는 countAsync()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.",
+        "groupBy() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.",
       );
     }
 
@@ -1115,7 +1115,7 @@ export class Queryable<
       ? this.select((c) => ({ cnt: expr.count(fwd(c)) }))
       : this.select(() => ({ cnt: expr.count() }));
 
-    const result = await countQr.singleAsync();
+    const result = await countQr.single();
 
     return result?.cnt ?? 0;
   }
@@ -1129,11 +1129,11 @@ export class Queryable<
    * ```typescript
    * const hasAdmin = await db.user()
    *   .where((u) => [expr.eq(u.role, "admin")])
-   *   .existsAsync();
+   *   .exists();
    * ```
    */
-  async existsAsync(): Promise<boolean> {
-    const count = await this.countAsync();
+  async exists(): Promise<boolean> {
+    const count = await this.count();
     return count > 0;
   }
 
@@ -1267,23 +1267,23 @@ export class Queryable<
    * @example
    * ```typescript
    * // 단순 삽입
-   * await db.user().insertAsync([
+   * await db.user().insert([
    *   { name: "홍길동", email: "hong@test.com" },
    * ]);
    *
    * // 삽입 후 ID 반환
-   * const [inserted] = await db.user().insertAsync(
+   * const [inserted] = await db.user().insert(
    *   [{ name: "홍길동" }],
    *   ["id"],
    * );
    * ```
    */
-  async insertAsync(records: TFrom["$inferInsert"][]): Promise<void>;
-  async insertAsync<K extends keyof TFrom["$inferColumns"] & string>(
+  async insert(records: TFrom["$inferInsert"][]): Promise<void>;
+  async insert<K extends keyof TFrom["$inferColumns"] & string>(
     records: TFrom["$inferInsert"][],
     outputColumns: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async insertAsync<K extends keyof TFrom["$inferColumns"] & string>(
+  async insert<K extends keyof TFrom["$inferColumns"] & string>(
     records: TFrom["$inferInsert"][],
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
@@ -1298,7 +1298,7 @@ export class Queryable<
     for (let i = 0; i < records.length; i += CHUNK_SIZE) {
       const chunk = records.slice(i, i + CHUNK_SIZE);
 
-      const results = await this.meta.db.executeDefsAsync<Pick<TFrom["$inferColumns"], K>>(
+      const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
         [this.getInsertQueryDef(chunk, outputColumns)],
         outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
       );
@@ -1324,19 +1324,19 @@ export class Queryable<
    * ```typescript
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .insertIfNotExistsAsync({ name: "테스트", email: "test@test.com" });
+   *   .insertIfNotExists({ name: "테스트", email: "test@test.com" });
    * ```
    */
-  async insertIfNotExistsAsync(record: TFrom["$inferInsert"]): Promise<void>;
-  async insertIfNotExistsAsync<K extends keyof TFrom["$inferColumns"] & string>(
+  async insertIfNotExists(record: TFrom["$inferInsert"]): Promise<void>;
+  async insertIfNotExists<K extends keyof TFrom["$inferColumns"] & string>(
     record: TFrom["$inferInsert"],
     outputColumns: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>>;
-  async insertIfNotExistsAsync<K extends keyof TFrom["$inferColumns"] & string>(
+  async insertIfNotExists<K extends keyof TFrom["$inferColumns"] & string>(
     record: TFrom["$inferInsert"],
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K> | void> {
-    const results = await this.meta.db.executeDefsAsync<Pick<TFrom["$inferColumns"], K>>(
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
       [this.getInsertIfNotExistsQueryDef(record)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1358,21 +1358,21 @@ export class Queryable<
    * await db.user()
    *   .select((u) => ({ name: u.name, createdAt: u.createdAt }))
    *   .where((u) => [expr.eq(u.isArchived, false)])
-   *   .insertIntoAsync(ArchivedUser);
+   *   .insertInto(ArchivedUser);
    * ```
    */
-  async insertIntoAsync<TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>>(
+  async insertInto<TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>>(
     targetTable: TTable,
   ): Promise<void>;
-  async insertIntoAsync<
+  async insertInto<
     TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns: TOut[]): Promise<Pick<TData, TOut>[]>;
-  async insertIntoAsync<
+  async insertInto<
     TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns?: TOut[]): Promise<Pick<TData, TOut>[] | void> {
-    const results = await this.meta.db.executeDefsAsync<Pick<TData, TOut>>(
+    const results = await this.meta.db.executeDefs<Pick<TData, TOut>>(
       [this.getInsertIntoQueryDef(targetTable)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1469,30 +1469,30 @@ export class Queryable<
    * // 단순 업데이트
    * await db.user()
    *   .where((u) => [expr.eq(u.id, 1)])
-   *   .updateAsync((u) => ({
+   *   .update((u) => ({
    *     name: expr.val("string", "새이름"),
    *     updatedAt: expr.val("DateTime", DateTime.now()),
    *   }));
    *
    * // 기존 값 참조
    * await db.product()
-   *   .updateAsync((p) => ({
+   *   .update((p) => ({
    *     price: expr.mul(p.price, expr.val("number", 1.1)),
    *   }));
    * ```
    */
-  async updateAsync(
+  async update(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
-  async updateAsync<K extends keyof TFrom["$columns"] & string>(
+  async update<K extends keyof TFrom["$columns"] & string>(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
     outputColumns: K[],
   ): Promise<Pick<TFrom["$columns"], K>[]>;
-  async updateAsync<K extends keyof TFrom["$columns"] & string>(
+  async update<K extends keyof TFrom["$columns"] & string>(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$columns"], K>[] | void> {
-    const results = await this.meta.db.executeDefsAsync<Pick<TFrom["$columns"], K>>(
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
       [this.getUpdateQueryDef(recordFwd, outputColumns)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1513,22 +1513,22 @@ export class Queryable<
    * // 단순 삭제
    * await db.user()
    *   .where((u) => [expr.eq(u.id, 1)])
-   *   .deleteAsync();
+   *   .delete();
    *
    * // 삭제된 데이터 반환
    * const deleted = await db.user()
    *   .where((u) => [expr.eq(u.isExpired, true)])
-   *   .deleteAsync(["id", "name"]);
+   *   .delete(["id", "name"]);
    * ```
    */
-  async deleteAsync(): Promise<void>;
-  async deleteAsync<K extends keyof TFrom["$columns"] & string>(
+  async delete(): Promise<void>;
+  async delete<K extends keyof TFrom["$columns"] & string>(
     outputColumns: K[],
   ): Promise<Pick<TFrom["$columns"], K>[]>;
-  async deleteAsync<K extends keyof TFrom["$columns"] & string>(
+  async delete<K extends keyof TFrom["$columns"] & string>(
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$columns"], K>[] | void> {
-    const results = await this.meta.db.executeDefsAsync<Pick<TFrom["$columns"], K>>(
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
       [this.getDeleteQueryDef(outputColumns)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1605,7 +1605,7 @@ export class Queryable<
    * // UPDATE/INSERT 동일 데이터
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .upsertAsync(() => ({
+   *   .upsert(() => ({
    *     name: expr.val("string", "테스트"),
    *     email: expr.val("string", "test@test.com"),
    *   }));
@@ -1613,24 +1613,24 @@ export class Queryable<
    * // UPDATE/INSERT 다른 데이터
    * await db.user()
    *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .upsertAsync(
+   *   .upsert(
    *     () => ({ loginCount: expr.val("number", 1) }),
    *     (update) => ({ ...update, email: expr.val("string", "test@test.com") }),
    *   );
    * ```
    */
-  async upsertAsync(
+  async upsert(
     updateFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
-  async upsertAsync<K extends keyof TFrom["$inferColumns"] & string>(
+  async upsert<K extends keyof TFrom["$inferColumns"] & string>(
     insertFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async upsertAsync<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
+  async upsert<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
     updateFwd: (cols: QueryableRecord<TData>) => U,
     insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
   ): Promise<void>;
-  async upsertAsync<
+  async upsert<
     U extends QueryableRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
@@ -1638,7 +1638,7 @@ export class Queryable<
     insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async upsertAsync<
+  async upsert<
     U extends QueryableRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
@@ -1657,7 +1657,7 @@ export class Queryable<
     const realOutputColumns =
       insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
 
-    const results = await this.meta.db.executeDefsAsync<Pick<TFrom["$inferColumns"], K>>(
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
       [this.getUpsertQueryDef(updateRecordFwd, insertRecordFwd, realOutputColumns)],
       [realOutputColumns ? this.getResultMeta(realOutputColumns) : undefined],
     );
@@ -1713,14 +1713,14 @@ export class Queryable<
   /**
    * FK 제약조건 on/off (트랜잭션 내 사용 가능)
    */
-  async switchFkAsync(switch_: "on" | "off"): Promise<void> {
+  async switchFk(switch_: "on" | "off"): Promise<void> {
     const from = this.meta.from;
     if (!(from instanceof TableBuilder) && !(from instanceof ViewBuilder)) {
       throw new Error(
-        "switchFkAsync는 TableBuilder 또는 ViewBuilder 기반 queryable에서만 사용할 수 있습니다.",
+        "switchFk는 TableBuilder 또는 ViewBuilder 기반 queryable에서만 사용할 수 있습니다.",
       );
     }
-    await this.meta.db.switchFkAsync(this.meta.db.getQueryDefObjectName(from), switch_);
+    await this.meta.db.switchFk(this.meta.db.getQueryDefObjectName(from), switch_);
   }
 
   //#endregion
@@ -1940,7 +1940,7 @@ function createPathProxy<T>(path: string[] = []): PathProxy<T> {
  *   async getActiveUsers() {
  *     return this.user()
  *       .where((u) => [expr.eq(u.isActive, true)])
- *       .resultAsync();
+ *       .result();
  *   }
  * }
  * ```

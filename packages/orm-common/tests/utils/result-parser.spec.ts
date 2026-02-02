@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bytesFromHex, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
-import { parseQueryResultAsync } from "../../src/utils/result-parser";
+import { parseQueryResult } from "../../src/utils/result-parser";
 import type { ResultMeta } from "../../src/types/db";
 
 describe("result-parser", () => {
@@ -14,7 +14,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 123, count: 456 }]);
     });
 
@@ -25,7 +25,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ name: "홍길동", code: "12345" }]);
     });
 
@@ -36,7 +36,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
@@ -47,7 +47,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
@@ -58,7 +58,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ active: true, deleted: false }]);
     });
 
@@ -69,7 +69,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ createdAt: DateTime }>(raw, meta);
+      const result = await parseQueryResult<{ createdAt: DateTime }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].createdAt).toBeInstanceOf(DateTime);
       expect(result![0].createdAt.year).toBe(2026);
@@ -86,7 +86,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ birthDate: DateOnly }>(raw, meta);
+      const result = await parseQueryResult<{ birthDate: DateOnly }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].birthDate).toBeInstanceOf(DateOnly);
       expect(result![0].birthDate.toString()).toBe("2000-05-15");
@@ -99,7 +99,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ startTime: Time }>(raw, meta);
+      const result = await parseQueryResult<{ startTime: Time }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].startTime).toBeInstanceOf(Time);
       expect(result![0].startTime.hour).toBe(14);
@@ -115,7 +115,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ id: Uuid }>(raw, meta);
+      const result = await parseQueryResult<{ id: Uuid }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].id).toBeInstanceOf(Uuid);
       expect(result![0].id.toString()).toBe(uuidStr);
@@ -130,7 +130,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ id: Uuid }>(raw, meta);
+      const result = await parseQueryResult<{ id: Uuid }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].id).toBeInstanceOf(Uuid);
       expect(result![0].id.toString()).toBe(uuidStr);
@@ -144,7 +144,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ data: Uint8Array }>(raw, meta);
+      const result = await parseQueryResult<{ data: Uint8Array }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].data).toBeInstanceOf(Uint8Array);
       expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
@@ -159,7 +159,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync<{ data: Uint8Array }>(raw, meta);
+      const result = await parseQueryResult<{ data: Uint8Array }>(raw, meta);
       expect(result).toBeDefined();
       expect(result![0].data).toBeInstanceOf(Uint8Array);
       expect(Array.from(result![0].data)).toEqual([0x01, 0x02, 0x03]);
@@ -178,7 +178,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1 }]);
       expect(result![0]).not.toHaveProperty("name");
     });
@@ -190,7 +190,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1 }]);
       expect(result![0]).not.toHaveProperty("name");
     });
@@ -202,7 +202,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toBeUndefined();
     });
 
@@ -213,7 +213,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toBeUndefined();
     });
 
@@ -224,7 +224,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1, name: "홍길동" }]);
       expect(result![0]).not.toHaveProperty("extra");
     });
@@ -242,7 +242,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("number 파싱 실패");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("number 파싱 실패");
     });
 
     it("DateTime 파싱 실패 시 throw", async () => {
@@ -252,7 +252,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow();
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow();
     });
 
     it("Uuid 파싱 실패 시 throw", async () => {
@@ -262,7 +262,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("UUID 형식이 올바르지 않습니다");
     });
 
     it("Bytes 파싱 실패 시 throw", async () => {
@@ -272,7 +272,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow("Bytes 파싱 실패");
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow("Bytes 파싱 실패");
     });
   });
 
@@ -293,7 +293,7 @@ describe("result-parser", () => {
         joins: { company: { isSingle: true } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -318,7 +318,7 @@ describe("result-parser", () => {
         joins: { posts: { isSingle: false } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -346,7 +346,7 @@ describe("result-parser", () => {
         joins: { company: { isSingle: true } },
       };
 
-      await expect(parseQueryResultAsync(raw, meta)).rejects.toThrow(
+      await expect(parseQueryResult(raw, meta)).rejects.toThrow(
         "isSingle 관계 'company'에 여러 개의 다른 결과가 존재합니다",
       );
     });
@@ -363,7 +363,7 @@ describe("result-parser", () => {
         joins: { company: { isSingle: true } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1, name: "User1" }]);
       expect(result![0]).not.toHaveProperty("company");
     });
@@ -384,7 +384,7 @@ describe("result-parser", () => {
         joins: { posts: { isSingle: false } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -442,7 +442,7 @@ describe("result-parser", () => {
         },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -502,7 +502,7 @@ describe("result-parser", () => {
         },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -561,7 +561,7 @@ describe("result-parser", () => {
         },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -601,7 +601,7 @@ describe("result-parser", () => {
         },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -625,7 +625,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1, name: "User1" }]);
     });
 
@@ -644,7 +644,7 @@ describe("result-parser", () => {
         joins: { posts: { isSingle: false } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -669,7 +669,7 @@ describe("result-parser", () => {
         joins: { company: { isSingle: true } },
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([
         {
           id: 1,
@@ -690,7 +690,7 @@ describe("result-parser", () => {
         joins: {},
       };
 
-      const result = await parseQueryResultAsync(raw, meta);
+      const result = await parseQueryResult(raw, meta);
       expect(result).toHaveLength(250);
       expect(result![0]).toEqual({ id: 1, name: "User1" });
       expect(result![249]).toEqual({ id: 250, name: "User250" });

@@ -136,7 +136,7 @@ const YIELD_INTERVAL = 100;
  * // 1. 단순 타입 파싱
  * const raw = [{ id: "1", createdAt: "2026-01-07T10:00:00.000Z" }];
  * const meta = { columns: { id: "number", createdAt: "DateTime" }, joins: {} };
- * const result = await parseQueryResultAsync(raw, meta);
+ * const result = await parseQueryResult(raw, meta);
  * // [{ id: 1, createdAt: DateTime(...) }]
  *
  * // 2. JOIN 결과 중첩화
@@ -148,11 +148,11 @@ const YIELD_INTERVAL = 100;
  *   columns: { id: "number", name: "string", "posts.id": "number", "posts.title": "string" },
  *   joins: { posts: { isSingle: false } }
  * };
- * const result = await parseQueryResultAsync(raw, meta);
+ * const result = await parseQueryResult(raw, meta);
  * // [{ id: 1, name: "User1", posts: [{ id: 10, title: "Post1" }, { id: 11, title: "Post2" }] }]
  * ```
  */
-export async function parseQueryResultAsync<T>(
+export async function parseQueryResult<T>(
   rawResults: Record<string, unknown>[],
   meta: ResultMeta,
 ): Promise<T[] | undefined> {

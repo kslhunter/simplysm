@@ -26,7 +26,7 @@ export enum DbErrorCode {
  * @example
  * ```typescript
  * try {
- *   await db.rollbackTransactionAsync();
+ *   await db.rollbackTransaction();
  * } catch (err) {
  *   if (err instanceof DbTransactionError) {
  *     if (err.code === DbErrorCode.NO_ACTIVE_TRANSACTION) {

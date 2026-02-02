@@ -11,7 +11,7 @@ export class HttpRequestHandler {
     private readonly _jwt: JwtManager,
   ) {}
 
-  async handleAsync(req: FastifyRequest, reply: FastifyReply) {
+  async handle(req: FastifyRequest, reply: FastifyReply) {
     const { service, method } = req.params as { service: string; method: string };
 
     // ClientName 헤더
@@ -24,7 +24,7 @@ export class HttpRequestHandler {
       const authHeader = req.headers.authorization;
       if (authHeader != null) {
         const token = authHeader.split(" ")[1]; // "Bearer <token>"
-        authTokenPayload = await this._jwt.verifyAsync(token);
+        authTokenPayload = await this._jwt.verify(token);
       }
     } catch (err) {
       reply.status(401).send({
@@ -56,7 +56,7 @@ export class HttpRequestHandler {
 
     // 서비스 실행 및 응답
     if (params != null) {
-      const serviceResult = await this._executor.runMethodAsync({
+      const serviceResult = await this._executor.runMethod({
         serviceName: service,
         methodName: method,
         params,

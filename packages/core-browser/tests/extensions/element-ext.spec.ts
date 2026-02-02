@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TimeoutError } from "@simplysm/core-common";
 import "../../src/extensions/element-ext";
-import { copyElement, pasteToElement, getBoundsAsync } from "../../src/extensions/element-ext";
+import { copyElement, pasteToElement, getBounds } from "../../src/extensions/element-ext";
 
 describe("Element prototype extensions", () => {
   let container: HTMLDivElement;
@@ -436,9 +436,9 @@ describe("Element prototype extensions", () => {
     });
   });
 
-  describe("getBoundsAsync", () => {
+  describe("getBounds", () => {
     it("빈 배열 전달 시 즉시 빈 배열 반환", async () => {
-      const result = await getBoundsAsync([]);
+      const result = await getBounds([]);
       expect(result).toEqual([]);
     });
 
@@ -473,7 +473,7 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      const result = await getBoundsAsync([container]);
+      const result = await getBounds([container]);
 
       expect(result.length).toBe(1);
       expect(result[0].target).toBe(container);
@@ -521,7 +521,7 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      const result = await getBoundsAsync([el1, el2]);
+      const result = await getBounds([el1, el2]);
 
       expect(result.length).toBe(2);
       expect(mockObserver.observe).toHaveBeenCalledTimes(2);
@@ -556,7 +556,7 @@ describe("Element prototype extensions", () => {
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
       // 같은 요소를 3번 전달
-      const result = await getBoundsAsync([container, container, container]);
+      const result = await getBounds([container, container, container]);
 
       // 결과는 1개만 반환
       expect(result.length).toBe(1);
@@ -607,7 +607,7 @@ describe("Element prototype extensions", () => {
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
       // 입력 순서: el1, el2, el3
-      const result = await getBoundsAsync([el1, el2, el3]);
+      const result = await getBounds([el1, el2, el3]);
 
       // 결과도 입력 순서대로: el1, el2, el3
       expect(result.length).toBe(3);
@@ -632,7 +632,7 @@ describe("Element prototype extensions", () => {
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
       // 50ms 타임아웃으로 테스트
-      await expect(getBoundsAsync([container], 50)).rejects.toThrow(TimeoutError);
+      await expect(getBounds([container], 50)).rejects.toThrow(TimeoutError);
 
       vi.unstubAllGlobals();
     });
@@ -665,7 +665,7 @@ describe("Element prototype extensions", () => {
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
       // 200ms 타임아웃이면 성공해야 함
-      const result = await getBoundsAsync([container], 200);
+      const result = await getBounds([container], 200);
       expect(result.length).toBe(1);
 
       vi.unstubAllGlobals();
@@ -720,7 +720,7 @@ describe("Element prototype extensions", () => {
 
       vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 
-      const result = await getBoundsAsync([el1, el2, el3]);
+      const result = await getBounds([el1, el2, el3]);
 
       // 모든 요소가 수집되어야 함
       expect(result.length).toBe(3);

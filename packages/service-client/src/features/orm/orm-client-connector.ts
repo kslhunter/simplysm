@@ -6,18 +6,18 @@ import type { ServiceClient } from "../../service-client";
 export class OrmClientConnector {
   constructor(private readonly _serviceClient: ServiceClient) {}
 
-  async connectAsync<T extends DbContext, R>(
+  async connect<T extends DbContext, R>(
     config: OrmConnectConfig<T>,
     callback: (conn: T) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
-    const info = await executor.getInfoAsync();
+    const info = await executor.getInfo();
     const db = new config.dbContextType(executor, {
       dialect: info.dialect,
       database: config.dbContextOpt?.database ?? info.database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
-    return db.connectAsync(async () => {
+    return db.connect(async () => {
       try {
         return await callback(db);
       } catch (err) {
@@ -34,17 +34,17 @@ export class OrmClientConnector {
     });
   }
 
-  async connectWithoutTransactionAsync<T extends DbContext, R>(
+  async connectWithoutTransaction<T extends DbContext, R>(
     config: OrmConnectConfig<T>,
     callback: (conn: T) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
-    const info = await executor.getInfoAsync();
+    const info = await executor.getInfo();
     const db = new config.dbContextType(executor, {
       dialect: info.dialect,
       database: config.dbContextOpt?.database ?? info.database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
-    return db.connectWithoutTransactionAsync(async () => callback(db));
+    return db.connectWithoutTransaction(async () => callback(db));
   }
 }

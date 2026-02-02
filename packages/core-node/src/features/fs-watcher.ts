@@ -40,7 +40,7 @@ export interface FsWatcherChangeInfo {
  * 이는 이벤트 병합 로직과의 충돌을 방지하기 위한 의도된 동작이다.
  *
  * @example
- * const watcher = await FsWatcher.watchAsync(["src/**\/*.ts"]);
+ * const watcher = await FsWatcher.watch(["src/**\/*.ts"]);
  * watcher.onChange({ delay: 300 }, (changes) => {
  *   for (const { path, event } of changes) {
  *     console.log(`${event}: ${path}`);
@@ -58,7 +58,7 @@ export class FsWatcher {
    * @param paths - 감시할 파일/디렉토리 경로 또는 glob 패턴 배열
    * @param options - chokidar 옵션
    */
-  static async watchAsync(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher> {
+  static async watch(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher> {
     return new Promise<FsWatcher>((resolve, reject) => {
       const watcher = new FsWatcher(paths, options);
       watcher._watcher.on("ready", () => {

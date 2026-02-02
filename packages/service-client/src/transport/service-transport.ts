@@ -42,7 +42,7 @@ export class ServiceTransport extends EventEmitter<ServiceTransportEvents> {
     });
   }
 
-  async sendAsync(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown> {
+  async send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown> {
     const uuid = Uuid.new().toString();
 
     // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
@@ -52,7 +52,7 @@ export class ServiceTransport extends EventEmitter<ServiceTransportEvents> {
 
     // 요청 전송
     try {
-      const { chunks, totalSize } = await this._protocol.encodeAsync(uuid, message);
+      const { chunks, totalSize } = await this._protocol.encode(uuid, message);
 
       // 진행률 초기화
       if (chunks.length > 1) {
@@ -65,7 +65,7 @@ export class ServiceTransport extends EventEmitter<ServiceTransportEvents> {
 
       // 전송
       for (const chunk of chunks) {
-        await this._socket.sendAsync(chunk);
+        await this._socket.send(chunk);
       }
     } catch (err) {
       // 전송 실패 시 즉시 정리
@@ -79,7 +79,7 @@ export class ServiceTransport extends EventEmitter<ServiceTransportEvents> {
   }
 
   private async _onMessage(buf: Bytes): Promise<void> {
-    const decoded = await this._protocol.decodeAsync(buf);
+    const decoded = await this._protocol.decode(buf);
 
     const listenerInfo = this._pendingRequests.get(decoded.uuid);
 

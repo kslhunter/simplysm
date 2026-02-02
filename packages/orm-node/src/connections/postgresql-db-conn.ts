@@ -35,7 +35,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     super();
   }
 
-  async connectAsync(): Promise<void> {
+  async connect(): Promise<void> {
     if (this.isConnected) {
       throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
@@ -66,7 +66,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     this.isConnected = true;
   }
 
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     this._stopTimeout();
 
     if (this._client == null || !this.isConnected) {
@@ -79,7 +79,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     this._resetState();
   }
 
-  async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
+  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     this._assertConnected();
 
     const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(
@@ -93,28 +93,28 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     this.isOnTransaction = true;
   }
 
-  async commitTransactionAsync(): Promise<void> {
+  async commitTransaction(): Promise<void> {
     this._assertConnected();
     await this._client!.query("COMMIT");
     this.isOnTransaction = false;
   }
 
-  async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransaction(): Promise<void> {
     this._assertConnected();
     await this._client!.query("ROLLBACK");
     this.isOnTransaction = false;
   }
 
-  async executeAsync(queries: string[]): Promise<unknown[][]> {
+  async execute(queries: string[]): Promise<unknown[][]> {
     const results: unknown[][] = [];
     for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
-      const resultItems = await this.executeParametrizedAsync(query);
+      const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
     }
     return results;
   }
 
-  async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     this._assertConnected();
 
     logger.debug("쿼리 실행", { queryLength: query.length, params });
@@ -133,7 +133,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     }
   }
 
-  async bulkInsertAsync(
+  async bulkInsert(
     tableName: string,
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
@@ -247,8 +247,8 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   private _startTimeout(): void {
     this._stopTimeout();
     this._connTimeout = setTimeout(() => {
-      this.closeAsync().catch((err) => {
-        logger.error("closeAsync error", err instanceof Error ? err.message : String(err));
+      this.close().catch((err) => {
+        logger.error("close error", err instanceof Error ? err.message : String(err));
       });
     }, this._timeout * 2);
   }

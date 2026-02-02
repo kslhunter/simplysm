@@ -78,7 +78,7 @@ export class ClientProtocolWrapper {
    * Worker에 작업 위임 및 결과 대기
    * 주의: workerAvailable이 true일 때만 호출해야 함
    */
-  private async _runWorkerAsync(
+  private async _runWorker(
     type: "encode" | "decode",
     data: unknown,
     transfer: Transferable[] = [],
@@ -92,7 +92,7 @@ export class ClientProtocolWrapper {
     });
   }
 
-  async encodeAsync(
+  async encode(
     uuid: string,
     message: ServiceMessage,
   ): Promise<{ chunks: Bytes[]; totalSize: number }> {
@@ -104,13 +104,13 @@ export class ClientProtocolWrapper {
     // [Worker]
     // Encode는 객체를 보내야 하므로 Structured Clone이 발생함.
     // 하지만 JSON.stringify 비용을 메인 스레드에서 제거하는 이득이 더 큼.
-    return (await this._runWorkerAsync("encode", { uuid, message })) as {
+    return (await this._runWorker("encode", { uuid, message })) as {
       chunks: Bytes[];
       totalSize: number;
     };
   }
 
-  async decodeAsync(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
+  async decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
     const totalSize = bytes.length;
 
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
@@ -120,7 +120,7 @@ export class ClientProtocolWrapper {
 
     // [Worker]
     // Zero-Copy 전송 (buffer의 소유권이 Worker로 넘어감)
-    const rawResult = await this._runWorkerAsync("decode", bytes, [bytes.buffer]);
+    const rawResult = await this._runWorker("decode", bytes, [bytes.buffer]);
 
     // Worker에서 온 결과(Plain Object)를 클래스 인스턴스(DateTime 등)로 복원
     return transferableDecode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;

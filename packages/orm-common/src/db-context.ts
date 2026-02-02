@@ -69,9 +69,9 @@ export type DbContextStatus = "ready" | "connect" | "transact";
  * const db = new MyDb(executor, { database: "mydb" });
  *
  * // 3. 트랜잭션 내에서 쿼리 실행
- * await db.connectAsync(async () => {
- *   const users = await db.user().resultAsync();
- *   await db.user().insertAsync([{ name: "홍길동" }]);
+ * await db.connect(async () => {
+ *   const users = await db.user().result();
+ *   await db.user().insert([{ name: "홍길동" }]);
  * });
  * ```
  *
@@ -102,7 +102,7 @@ export abstract class DbContext {
    *     {
    *       name: "20240101_add_status",
    *       up: async (db) => {
-   *         await db.addColumnAsync(
+   *         await db.addColumn(
    *           { database: "mydb", name: "User" },
    *           "status",
    *           c.varchar(20).nullable(),
@@ -159,7 +159,7 @@ export abstract class DbContext {
   /**
    * alias 카운터 초기화
    *
-   * connectAsync() 또는 connectWithoutTransactionAsync() 시작 시 자동 호출
+   * connect() 또는 connectWithoutTransaction() 시작 시 자동 호출
    */
   resetAliasCounter(): void {
     this._aliasCounter = 0;
@@ -195,9 +195,9 @@ export abstract class DbContext {
    * @example
    * ```typescript
    * // DDL 작업 (트랜잭션 내 실행 불가)
-   * await db.connectWithoutTransactionAsync(async () => {
-   *   await db.createTableAsync(User);
-   *   await db.addColumnAsync(
+   * await db.connectWithoutTransaction(async () => {
+   *   await db.createTable(User);
+   *   await db.addColumn(
    *     { database: "mydb", name: "User" },
    *     "status",
    *     c.varchar(20),
@@ -205,23 +205,23 @@ export abstract class DbContext {
    * });
    * ```
    */
-  async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {
+  async connectWithoutTransaction<R>(callback: () => Promise<R>): Promise<R> {
     this._validateRelations();
     this.resetAliasCounter();
 
-    await this._executor.connectAsync();
+    await this._executor.connect();
     this.status = "connect";
 
     let result: R;
     try {
       result = await callback();
     } catch (err) {
-      await this._executor.closeAsync();
+      await this._executor.close();
       this.status = "ready";
       throw err;
     }
 
-    await this._executor.closeAsync();
+    await this._executor.close();
     this.status = "ready";
     return result;
   }
@@ -241,64 +241,64 @@ export abstract class DbContext {
    * @example
    * ```typescript
    * // 기본 사용
-   * const result = await db.connectAsync(async () => {
-   *   const users = await db.user().resultAsync();
-   *   await db.user().insertAsync([{ name: "홍길동" }]);
+   * const result = await db.connect(async () => {
+   *   const users = await db.user().result();
+   *   await db.user().insert([{ name: "홍길동" }]);
    *   return users;
    * });
    *
    * // 격리 수준 지정
-   * await db.connectAsync(async () => {
-   *   await db.user().updateAsync({ name: "김철수" }, (u) => [
+   * await db.connect(async () => {
+   *   await db.user().update({ name: "김철수" }, (u) => [
    *     expr.eq(u.id, 1),
    *   ]);
    * }, "SERIALIZABLE");
    * ```
    *
-   * @see {@link transAsync} 이미 연결된 상태에서 트랜잭션 시작
+   * @see {@link trans} 이미 연결된 상태에서 트랜잭션 시작
    */
-  async connectAsync<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
+  async connect<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
     this._validateRelations();
     this.resetAliasCounter();
 
-    await this._executor.connectAsync();
+    await this._executor.connect();
     this.status = "connect";
 
-    await this._executor.beginTransactionAsync(isolationLevel);
+    await this._executor.beginTransaction(isolationLevel);
     this.status = "transact";
 
     let result: R;
     try {
       result = await fn();
 
-      await this._executor.commitTransactionAsync();
+      await this._executor.commitTransaction();
       this.status = "connect";
     } catch (err) {
       try {
-        await this._executor.rollbackTransactionAsync();
+        await this._executor.rollbackTransaction();
         this.status = "connect";
       } catch (err1) {
         // DbTransactionError 코드 기반 판단
         if (err1 instanceof DbTransactionError) {
           if (err1.code !== DbErrorCode.NO_ACTIVE_TRANSACTION) {
-            await this._executor.closeAsync();
+            await this._executor.close();
             this.status = "ready";
             throw err1;
           }
         } else {
           // DbTransactionError가 아닌 에러는 항상 re-throw
-          await this._executor.closeAsync();
+          await this._executor.close();
           this.status = "ready";
           throw err1;
         }
       }
 
-      await this._executor.closeAsync();
+      await this._executor.close();
       this.status = "ready";
       throw err;
     }
 
-    await this._executor.closeAsync();
+    await this._executor.close();
     this.status = "ready";
     return result;
   }
@@ -306,7 +306,7 @@ export abstract class DbContext {
   /**
    * 이미 연결된 상태에서 트랜잭션 시작 (자동 커밋/롤백)
    *
-   * connectWithoutTransactionAsync 내에서 부분적으로 트랜잭션이 필요할 때 사용
+   * connectWithoutTransaction 내에서 부분적으로 트랜잭션이 필요할 때 사용
    * 연결 관리는 외부에서 담당하므로 연결 종료하지 않음
    *
    * @template R - 콜백 반환 타입
@@ -318,36 +318,36 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.connectWithoutTransactionAsync(async () => {
+   * await db.connectWithoutTransaction(async () => {
    *   // DDL 작업 (트랜잭션 외부)
-   *   await db.createTableAsync(User);
+   *   await db.createTable(User);
    *
    *   // DML 작업 (트랜잭션 내부)
-   *   await db.transAsync(async () => {
-   *     await db.user().insertAsync([{ name: "홍길동" }]);
+   *   await db.trans(async () => {
+   *     await db.user().insert([{ name: "홍길동" }]);
    *   });
    * });
    * ```
    *
-   * @see {@link connectAsync} 연결부터 트랜잭션까지 한번에 처리
+   * @see {@link connect} 연결부터 트랜잭션까지 한번에 처리
    */
-  async transAsync<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
+  async trans<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
     if (this.status === "transact") {
       throw new Error("이미 TRANSACTION 상태입니다.");
     }
 
-    await this._executor.beginTransactionAsync(isolationLevel);
+    await this._executor.beginTransaction(isolationLevel);
     this.status = "transact";
 
     let result: R;
     try {
       result = await fn();
 
-      await this._executor.commitTransactionAsync();
+      await this._executor.commitTransaction();
       this.status = "connect";
     } catch (err) {
       try {
-        await this._executor.rollbackTransactionAsync();
+        await this._executor.rollbackTransaction();
         this.status = "connect";
       } catch (err1) {
         // 롤백 실패 시 - DbTransactionError 코드 기반 판단
@@ -390,10 +390,10 @@ export abstract class DbContext {
    * // 일반적으로는 Queryable 메서드 사용을 권장
    * // 직접 실행이 필요한 경우만 사용
    * const selectDef = db.user().getSelectQueryDef();
-   * const results = await db.executeDefsAsync([selectDef]);
+   * const results = await db.executeDefs([selectDef]);
    * ```
    */
-  executeDefsAsync<T = DataRecord>(
+  executeDefs<T = DataRecord>(
     defs: QueryDef[],
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
@@ -404,7 +404,7 @@ export abstract class DbContext {
       throw new Error("TRANSACTION 상태에서는 DDL을 실행할 수 없습니다.");
     }
 
-    return this._executor.executeDefsAsync(defs, resultMetas);
+    return this._executor.executeDefs(defs, resultMetas);
   }
 
   //#endregion
@@ -432,17 +432,17 @@ export abstract class DbContext {
    * @example
    * ```typescript
    * // 기본 초기화 (마이그레이션 기반)
-   * await db.connectWithoutTransactionAsync(async () => {
-   *   await db.initializeAsync();
+   * await db.connectWithoutTransaction(async () => {
+   *   await db.initialize();
    * });
    *
    * // 강제 초기화 (기존 데이터 삭제)
-   * await db.connectWithoutTransactionAsync(async () => {
-   *   await db.initializeAsync({ force: true });
+   * await db.connectWithoutTransaction(async () => {
+   *   await db.initialize({ force: true });
    * });
    * ```
    */
-  async initializeAsync(options?: { dbs?: string[]; force?: boolean }): Promise<void> {
+  async initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void> {
     const dbNames = options?.dbs ?? (this.database !== undefined ? [this.database] : []);
     if (dbNames.length < 1) {
       throw new Error("초기화할 데이터베이스가 없습니다.");
@@ -452,7 +452,7 @@ export abstract class DbContext {
 
     // 1. DB 존재 확인
     for (const dbName of dbNames) {
-      const schemaExists = await this.schemaExistsAsync(dbName);
+      const schemaExists = await this.schemaExists(dbName);
       if (!schemaExists) {
         throw new Error(`데이터베이스 '${dbName}'가 존재하지 않습니다.`);
       }
@@ -461,19 +461,19 @@ export abstract class DbContext {
     if (force) {
       // 2. force: dbs 전체 초기화
       for (const dbName of dbNames) {
-        await this.clearSchemaAsync({ database: dbName, schema: this.schema });
+        await this.clearSchema({ database: dbName, schema: this.schema });
       }
-      await this._createAllObjectsAsync();
+      await this._createAllObjects();
 
       // 모든 migration을 "적용됨"으로 등록
       if (this.migrations.length > 0) {
-        await this.systemMigration().insertAsync(this.migrations.map((m) => ({ code: m.name })));
+        await this.systemMigration().insert(this.migrations.map((m) => ({ code: m.name })));
       }
     } else {
       // 3. Migration 기반 초기화
       let appliedMigrations: { code: string }[] | undefined;
       try {
-        appliedMigrations = await this.systemMigration().resultAsync();
+        appliedMigrations = await this.systemMigration().result();
       } catch (err) {
         // 테이블 없음 = 신규 환경
         if (!this._isTableNotExistsError(err)) {
@@ -483,11 +483,11 @@ export abstract class DbContext {
 
       if (appliedMigrations == null) {
         // 신규 환경: 전체 생성
-        await this._createAllObjectsAsync();
+        await this._createAllObjects();
 
         // 모든 migration을 "적용됨"으로 등록
         if (this.migrations.length > 0) {
-          await this.systemMigration().insertAsync(this.migrations.map((m) => ({ code: m.name })));
+          await this.systemMigration().insert(this.migrations.map((m) => ({ code: m.name })));
         }
       } else {
         // 기존 환경: 미적용 migration만 실행
@@ -496,7 +496,7 @@ export abstract class DbContext {
 
         for (const migration of pendingMigrations) {
           await migration.up(this);
-          await this.systemMigration().insertAsync([{ code: migration.name }]);
+          await this.systemMigration().insert([{ code: migration.name }]);
         }
       }
     }
@@ -505,7 +505,7 @@ export abstract class DbContext {
   /**
    * 전체 객체 생성 (테이블/뷰/프로시저/FK/Index)
    */
-  private async _createAllObjectsAsync(): Promise<void> {
+  private async _createAllObjects(): Promise<void> {
     // 1. 테이블/뷰/프로시저 생성
     const builders = this._getBuilders();
     const createDefs: QueryDef[] = [];
@@ -513,7 +513,7 @@ export abstract class DbContext {
       createDefs.push(this.getCreateObjectQueryDef(builder));
     }
     if (createDefs.length > 0) {
-      await this.executeDefsAsync(createDefs);
+      await this.executeDefs(createDefs);
     }
 
     // 2. FK 생성 (TableBuilder만)
@@ -531,7 +531,7 @@ export abstract class DbContext {
       }
     }
     if (addFkDefs.length > 0) {
-      await this.executeDefsAsync(addFkDefs);
+      await this.executeDefs(addFkDefs);
     }
 
     // 3. Index 생성 (TableBuilder만)
@@ -546,7 +546,7 @@ export abstract class DbContext {
       }
     }
     if (createIndexDefs.length > 0) {
-      await this.executeDefsAsync(createIndexDefs);
+      await this.executeDefs(createIndexDefs);
     }
   }
 
@@ -628,11 +628,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.createTableAsync(User);
+   * await db.createTable(User);
    * ```
    */
-  async createTableAsync(table: TableBuilder<any, any>): Promise<void> {
-    await this.executeDefsAsync([this.getCreateTableQueryDef(table)]);
+  async createTable(table: TableBuilder<any, any>): Promise<void> {
+    await this.executeDefs([this.getCreateTableQueryDef(table)]);
   }
 
   /**
@@ -642,11 +642,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropTableAsync({ database: "mydb", name: "User" });
+   * await db.dropTable({ database: "mydb", name: "User" });
    * ```
    */
-  async dropTableAsync(table: QueryDefObjectName): Promise<void> {
-    await this.executeDefsAsync([this.getDropTableQueryDef(table)]);
+  async dropTable(table: QueryDefObjectName): Promise<void> {
+    await this.executeDefs([this.getDropTableQueryDef(table)]);
   }
 
   /**
@@ -657,11 +657,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.renameTableAsync({ database: "mydb", name: "User" }, "Member");
+   * await db.renameTable({ database: "mydb", name: "User" }, "Member");
    * ```
    */
-  async renameTableAsync(table: QueryDefObjectName, newName: string): Promise<void> {
-    await this.executeDefsAsync([this.getRenameTableQueryDef(table, newName)]);
+  async renameTable(table: QueryDefObjectName, newName: string): Promise<void> {
+    await this.executeDefs([this.getRenameTableQueryDef(table, newName)]);
   }
 
   /**
@@ -671,11 +671,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.createViewAsync(UserSummary);
+   * await db.createView(UserSummary);
    * ```
    */
-  async createViewAsync(view: ViewBuilder<any, any, any>): Promise<void> {
-    await this.executeDefsAsync([this.getCreateViewQueryDef(view)]);
+  async createView(view: ViewBuilder<any, any, any>): Promise<void> {
+    await this.executeDefs([this.getCreateViewQueryDef(view)]);
   }
 
   /**
@@ -685,11 +685,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropViewAsync({ database: "mydb", name: "UserSummary" });
+   * await db.dropView({ database: "mydb", name: "UserSummary" });
    * ```
    */
-  async dropViewAsync(view: QueryDefObjectName): Promise<void> {
-    await this.executeDefsAsync([this.getDropViewQueryDef(view)]);
+  async dropView(view: QueryDefObjectName): Promise<void> {
+    await this.executeDefs([this.getDropViewQueryDef(view)]);
   }
 
   /**
@@ -699,11 +699,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.createProcAsync(GetUserById);
+   * await db.createProc(GetUserById);
    * ```
    */
-  async createProcAsync(procedure: ProcedureBuilder<any, any>): Promise<void> {
-    await this.executeDefsAsync([this.getCreateProcQueryDef(procedure)]);
+  async createProc(procedure: ProcedureBuilder<any, any>): Promise<void> {
+    await this.executeDefs([this.getCreateProcQueryDef(procedure)]);
   }
 
   /**
@@ -713,11 +713,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropProcAsync({ database: "mydb", name: "GetUserById" });
+   * await db.dropProc({ database: "mydb", name: "GetUserById" });
    * ```
    */
-  async dropProcAsync(procedure: QueryDefObjectName): Promise<void> {
-    await this.executeDefsAsync([this.getDropProcQueryDef(procedure)]);
+  async dropProc(procedure: QueryDefObjectName): Promise<void> {
+    await this.executeDefs([this.getDropProcQueryDef(procedure)]);
   }
 
   /**
@@ -864,19 +864,19 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.addColumnAsync(
+   * await db.addColumn(
    *   { database: "mydb", name: "User" },
    *   "status",
    *   c.varchar(20).nullable(),
    * );
    * ```
    */
-  async addColumnAsync(
+  async addColumn(
     table: QueryDefObjectName,
     columnName: string,
     column: ColumnBuilder<any, any>,
   ): Promise<void> {
-    await this.executeDefsAsync([this.getAddColumnQueryDef(table, columnName, column)]);
+    await this.executeDefs([this.getAddColumnQueryDef(table, columnName, column)]);
   }
 
   /**
@@ -887,14 +887,14 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropColumnAsync(
+   * await db.dropColumn(
    *   { database: "mydb", name: "User" },
    *   "status",
    * );
    * ```
    */
-  async dropColumnAsync(table: QueryDefObjectName, column: string): Promise<void> {
-    await this.executeDefsAsync([this.getDropColumnQueryDef(table, column)]);
+  async dropColumn(table: QueryDefObjectName, column: string): Promise<void> {
+    await this.executeDefs([this.getDropColumnQueryDef(table, column)]);
   }
 
   /**
@@ -906,19 +906,19 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.modifyColumnAsync(
+   * await db.modifyColumn(
    *   { database: "mydb", name: "User" },
    *   "status",
    *   c.varchar(50).nullable(),  // 길이 변경
    * );
    * ```
    */
-  async modifyColumnAsync(
+  async modifyColumn(
     table: QueryDefObjectName,
     columnName: string,
     column: ColumnBuilder<any, any>,
   ): Promise<void> {
-    await this.executeDefsAsync([this.getModifyColumnQueryDef(table, columnName, column)]);
+    await this.executeDefs([this.getModifyColumnQueryDef(table, columnName, column)]);
   }
 
   /**
@@ -930,19 +930,19 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.renameColumnAsync(
+   * await db.renameColumn(
    *   { database: "mydb", name: "User" },
    *   "status",
    *   "userStatus",
    * );
    * ```
    */
-  async renameColumnAsync(
+  async renameColumn(
     table: QueryDefObjectName,
     column: string,
     newName: string,
   ): Promise<void> {
-    await this.executeDefsAsync([this.getRenameColumnQueryDef(table, column, newName)]);
+    await this.executeDefs([this.getRenameColumnQueryDef(table, column, newName)]);
   }
 
   /** ADD COLUMN QueryDef 생성 */
@@ -1009,14 +1009,14 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.addPkAsync(
+   * await db.addPk(
    *   { database: "mydb", name: "User" },
    *   ["id"],
    * );
    * ```
    */
-  async addPkAsync(table: QueryDefObjectName, columns: string[]): Promise<void> {
-    await this.executeDefsAsync([this.getAddPkQueryDef(table, columns)]);
+  async addPk(table: QueryDefObjectName, columns: string[]): Promise<void> {
+    await this.executeDefs([this.getAddPkQueryDef(table, columns)]);
   }
 
   /**
@@ -1026,11 +1026,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropPkAsync({ database: "mydb", name: "User" });
+   * await db.dropPk({ database: "mydb", name: "User" });
    * ```
    */
-  async dropPkAsync(table: QueryDefObjectName): Promise<void> {
-    await this.executeDefsAsync([this.getDropPkQueryDef(table)]);
+  async dropPk(table: QueryDefObjectName): Promise<void> {
+    await this.executeDefs([this.getDropPkQueryDef(table)]);
   }
 
   /**
@@ -1042,19 +1042,19 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.addFkAsync(
+   * await db.addFk(
    *   { database: "mydb", name: "Post" },
    *   "author",
    *   ForeignKey(User, ["authorId"]),
    * );
    * ```
    */
-  async addFkAsync(
+  async addFk(
     table: QueryDefObjectName,
     relationName: string,
     relationDef: ForeignKeyBuilder<any, any>,
   ): Promise<void> {
-    await this.executeDefsAsync([this.getAddFkQueryDef(table, relationName, relationDef)]);
+    await this.executeDefs([this.getAddFkQueryDef(table, relationName, relationDef)]);
   }
 
   /**
@@ -1065,17 +1065,17 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.addIdxAsync(
+   * await db.addIdx(
    *   { database: "mydb", name: "User" },
    *   Index(["email"]).unique(),
    * );
    * ```
    */
-  async addIdxAsync(
+  async addIdx(
     table: QueryDefObjectName,
     indexBuilder: IndexBuilder<string[]>,
   ): Promise<void> {
-    await this.executeDefsAsync([this.getAddIdxQueryDef(table, indexBuilder)]);
+    await this.executeDefs([this.getAddIdxQueryDef(table, indexBuilder)]);
   }
 
   /**
@@ -1086,11 +1086,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropFkAsync({ database: "mydb", name: "Post" }, "author");
+   * await db.dropFk({ database: "mydb", name: "Post" }, "author");
    * ```
    */
-  async dropFkAsync(table: QueryDefObjectName, relationName: string): Promise<void> {
-    await this.executeDefsAsync([this.getDropFkQueryDef(table, relationName)]);
+  async dropFk(table: QueryDefObjectName, relationName: string): Promise<void> {
+    await this.executeDefs([this.getDropFkQueryDef(table, relationName)]);
   }
 
   /**
@@ -1101,11 +1101,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.dropIdxAsync({ database: "mydb", name: "User" }, ["email"]);
+   * await db.dropIdx({ database: "mydb", name: "User" }, ["email"]);
    * ```
    */
-  async dropIdxAsync(table: QueryDefObjectName, columns: string[]): Promise<void> {
-    await this.executeDefsAsync([this.getDropIdxQueryDef(table, columns)]);
+  async dropIdx(table: QueryDefObjectName, columns: string[]): Promise<void> {
+    await this.executeDefs([this.getDropIdxQueryDef(table, columns)]);
   }
 
   /** DROP PRIMARY KEY QueryDef 생성 */
@@ -1183,12 +1183,12 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.clearSchemaAsync({ database: "mydb", schema: "public" });
+   * await db.clearSchema({ database: "mydb", schema: "public" });
    * ```
    */
-  async clearSchemaAsync(params: { database: string; schema?: string }): Promise<void> {
+  async clearSchema(params: { database: string; schema?: string }): Promise<void> {
     const queryDef = this.getClearSchemaQueryDef(params);
-    await this.executeDefsAsync([queryDef]);
+    await this.executeDefs([queryDef]);
   }
 
   /**
@@ -1200,15 +1200,15 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * const exists = await db.schemaExistsAsync("mydb");
+   * const exists = await db.schemaExists("mydb");
    * if (!exists) {
    *   throw new Error("Database not found");
    * }
    * ```
    */
-  async schemaExistsAsync(database: string, schema?: string): Promise<boolean> {
+  async schemaExists(database: string, schema?: string): Promise<boolean> {
     const queryDef = this.getSchemaExistsQueryDef(database, schema);
-    const result = await this.executeDefsAsync([queryDef]);
+    const result = await this.executeDefs([queryDef]);
     return result[0].length > 0;
   }
 
@@ -1235,11 +1235,11 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.truncateAsync({ database: "mydb", name: "User" });
+   * await db.truncate({ database: "mydb", name: "User" });
    * ```
    */
-  async truncateAsync(table: QueryDefObjectName): Promise<void> {
-    await this.executeDefsAsync([this.getTruncateQueryDef(table)]);
+  async truncate(table: QueryDefObjectName): Promise<void> {
+    await this.executeDefs([this.getTruncateQueryDef(table)]);
   }
 
   /**
@@ -1253,15 +1253,15 @@ export abstract class DbContext {
    *
    * @example
    * ```typescript
-   * await db.connectAsync(async () => {
-   *   await db.switchFkAsync({ database: "mydb", name: "Post" }, "off");
+   * await db.connect(async () => {
+   *   await db.switchFk({ database: "mydb", name: "Post" }, "off");
    *   await db.post().deleteAsync(() => []);
-   *   await db.switchFkAsync({ database: "mydb", name: "Post" }, "on");
+   *   await db.switchFk({ database: "mydb", name: "Post" }, "on");
    * });
    * ```
    */
-  async switchFkAsync(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void> {
-    await this.executeDefsAsync([this.getSwitchFkQueryDef(table, switch_)]);
+  async switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void> {
+    await this.executeDefs([this.getSwitchFkQueryDef(table, switch_)]);
   }
 
   /** TRUNCATE TABLE QueryDef 생성 */

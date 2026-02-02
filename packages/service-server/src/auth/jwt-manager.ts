@@ -5,7 +5,7 @@ import type { AuthTokenPayload } from "./auth-token-payload";
 export class JwtManager<TAuthInfo = unknown> {
   constructor(private readonly _server: ServiceServer<TAuthInfo>) {}
 
-  async signAsync(payload: AuthTokenPayload<TAuthInfo>): Promise<string> {
+  async sign(payload: AuthTokenPayload<TAuthInfo>): Promise<string> {
     const jwtSecret = this._server.options.auth?.jwtSecret;
     if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
 
@@ -18,7 +18,7 @@ export class JwtManager<TAuthInfo = unknown> {
       .sign(secret);
   }
 
-  async verifyAsync(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
+  async verify(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
     const jwtSecret = this._server.options.auth?.jwtSecret;
     if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
 

@@ -59,14 +59,14 @@ export class ServiceSocket extends EventEmitter<{
     this._socket.terminate();
   }
 
-  async sendAsync(uuid: string, msg: ServiceServerMessage) {
-    return this._sendAsync(uuid, msg);
+  async send(uuid: string, msg: ServiceServerMessage) {
+    return this._send(uuid, msg);
   }
 
-  private async _sendAsync(uuid: string, msg: ServiceServerRawMessage) {
+  private async _send(uuid: string, msg: ServiceServerRawMessage) {
     if (this._socket.readyState !== WebSocket.OPEN) return 0;
 
-    const { chunks } = await this._protocol.encodeAsync(uuid, msg);
+    const { chunks } = await this._protocol.encode(uuid, msg);
     for (const chunk of chunks) {
       this._socket.send(chunk);
     }
@@ -118,9 +118,9 @@ export class ServiceSocket extends EventEmitter<{
         return;
       }
 
-      const decodeResult = await this._protocol.decodeAsync(msgBuffer);
+      const decodeResult = await this._protocol.decode(msgBuffer);
       if (decodeResult.type === "progress") {
-        await this._sendAsync(decodeResult.uuid, {
+        await this._send(decodeResult.uuid, {
           name: "progress",
           body: {
             totalSize: decodeResult.totalSize,

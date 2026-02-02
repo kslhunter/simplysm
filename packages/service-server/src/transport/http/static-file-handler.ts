@@ -1,5 +1,5 @@
 import path from "path";
-import { fsExists, fsStatAsync } from "@simplysm/core-node";
+import { fsExists, fsStat } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { createConsola } from "consola";
@@ -9,7 +9,7 @@ const logger = createConsola().withTag("service-server:StaticFileHandler");
 export class StaticFileHandler {
   constructor(private readonly _server: ServiceServer) {}
 
-  async handleAsync(req: FastifyRequest, reply: FastifyReply, urlPath: string): Promise<void> {
+  async handle(req: FastifyRequest, reply: FastifyReply, urlPath: string): Promise<void> {
     let targetFilePath = path.resolve(this._server.options.rootPath, "www", urlPath);
     let allowedRootPath = path.resolve(this._server.options.rootPath, "www");
 
@@ -34,7 +34,7 @@ export class StaticFileHandler {
     }
 
     // 디렉토리면 index.html로
-    if (fsExists(targetFilePath) && (await fsStatAsync(targetFilePath)).isDirectory()) {
+    if (fsExists(targetFilePath) && (await fsStat(targetFilePath)).isDirectory()) {
       targetFilePath = path.resolve(targetFilePath, "index.html");
     }
 

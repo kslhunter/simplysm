@@ -51,7 +51,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     super();
   }
 
-  async listenAsync(): Promise<void> {
+  async listen(): Promise<void> {
     logger.debug(`서버 시작... ${process.env["SD_VERSION"] ?? ""}`);
 
     const httpsConf = this.options.ssl
@@ -139,12 +139,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
     // API 라우트
     this._fastify.all("/api/:service/:method", async (req, reply) => {
-      await this._httpRequestHandler.handleAsync(req, reply);
+      await this._httpRequestHandler.handle(req, reply);
     });
 
     // 업로드 라우트
     this._fastify.all("/upload", async (req, reply) => {
-      await this._uploadHandler.handleAsync(req, reply);
+      await this._uploadHandler.handle(req, reply);
     });
 
     // WebSocket 라우트
@@ -191,7 +191,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
           }
         }
 
-        await this._staticFileHandler.handleAsync(req, reply, urlPath);
+        await this._staticFileHandler.handle(req, reply, urlPath);
       },
     });
 
@@ -211,7 +211,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.emit("ready");
   }
 
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     this._wsHandler.closeAll();
     await this._fastify?.close();
 
@@ -220,9 +220,9 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.emit("close");
   }
 
-  async broadcastReloadAsync(clientName: string | undefined, changedFileSet: Set<string>) {
+  async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
     logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    await this._wsHandler.broadcastReloadAsync(clientName, changedFileSet);
+    await this._wsHandler.broadcastReload(clientName, changedFileSet);
   }
 
   async emitEvent<T extends ServiceEventListener<unknown, unknown>>(
@@ -230,15 +230,15 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     infoSelector: (item: T["$info"]) => boolean,
     data: T["$data"],
   ) {
-    await this._wsHandler.emitAsync(eventType, infoSelector, data);
+    await this._wsHandler.emitToServer(eventType, infoSelector, data);
   }
 
-  async generateAuthTokenAsync(payload: AuthTokenPayload<TAuthInfo>) {
-    return this._jwt.signAsync(payload);
+  async generateAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
+    return this._jwt.sign(payload);
   }
 
-  async verifyAuthTokenAsync(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
-    return this._jwt.verifyAsync(token);
+  async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
+    return this._jwt.verify(token);
   }
 
   private _registerGracefulShutdown() {
@@ -252,7 +252,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
       try {
         if (this.isOpen) {
-          await this.closeAsync();
+          await this.close();
         }
         logger.info("서버가 안전하게 종료되었습니다.");
         clearTimeout(forceExitTimer);

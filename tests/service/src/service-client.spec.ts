@@ -40,11 +40,11 @@ describe("ServiceClient 브라우저 테스트", () => {
       maxReconnectCount: 0,
     });
 
-    await client.connectAsync();
+    await client.connect();
   });
 
   afterAll(async () => {
-    await client.closeAsync();
+    await client.close();
   });
 
   describe("Worker 환경 확인", () => {
@@ -133,7 +133,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       const token = await createTestToken(authInfo);
 
       // 인증
-      await client.authAsync(token);
+      await client.auth(token);
 
       // 인증 정보 조회
       const svc = client.getService<TestService>("TestService");
@@ -153,7 +153,7 @@ describe("ServiceClient 브라우저 테스트", () => {
         roles: ["user"],
       };
       const token = await createTestToken(authInfo);
-      await client.authAsync(token);
+      await client.auth(token);
 
       const svc = client.getService<TestService>("TestService");
 
@@ -169,7 +169,7 @@ describe("ServiceClient 브라우저 테스트", () => {
         roles: ["admin"],
       };
       const token = await createTestToken(authInfo);
-      await client.authAsync(token);
+      await client.auth(token);
 
       const svc = client.getService<TestService>("TestService");
       const result = await svc.adminOnly();
@@ -206,11 +206,11 @@ describe("ServiceClient 브라우저 테스트", () => {
         roles: ["user"],
       };
       const token = await createTestToken(authInfo);
-      await client.authAsync(token);
+      await client.auth(token);
 
       // 이벤트 수신 콜백
       const receivedData: string[] = [];
-      const listenerKey = await client.addEventListenerAsync(
+      const listenerKey = await client.addEventListener(
         TestEvent,
         { channel: "test-channel" },
         (data) => {
@@ -223,7 +223,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       expect(typeof listenerKey).toBe("string");
 
       // 리스너 해제
-      await client.removeEventListenerAsync(listenerKey);
+      await client.removeEventListener(listenerKey);
     });
   });
 });

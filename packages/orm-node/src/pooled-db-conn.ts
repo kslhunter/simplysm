@@ -40,7 +40,7 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    *
    * @throws {SdError} 이미 연결된 상태일 때
    */
-  async connectAsync(): Promise<void> {
+  async connect(): Promise<void> {
     if (this._rawConn != null) {
       throw new SdError(DB_CONN_ERRORS.ALREADY_CONNECTED);
     }
@@ -56,7 +56,7 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   /**
    * 풀에 DB 연결을 반환한다. (실제 연결을 종료하지 않음)
    */
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     if (this._rawConn != null) {
       // 1. 리스너 해제 (Pool에 돌아가서 다른 래퍼에 의해 재사용될 때 영향 주지 않도록)
       this._rawConn.off("close", this._onRawConnClose);
@@ -86,9 +86,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @param isolationLevel - 트랜잭션 격리 수준
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
+  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._requireRawConn();
-    await conn.beginTransactionAsync(isolationLevel);
+    await conn.beginTransaction(isolationLevel);
   }
 
   /**
@@ -96,9 +96,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    *
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async commitTransactionAsync(): Promise<void> {
+  async commitTransaction(): Promise<void> {
     const conn = this._requireRawConn();
-    await conn.commitTransactionAsync();
+    await conn.commitTransaction();
   }
 
   /**
@@ -106,9 +106,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    *
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransaction(): Promise<void> {
     const conn = this._requireRawConn();
-    await conn.rollbackTransactionAsync();
+    await conn.rollbackTransaction();
   }
 
   /**
@@ -118,9 +118,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @returns 각 쿼리의 결과 배열
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async executeAsync(queries: string[]): Promise<unknown[][]> {
+  async execute(queries: string[]): Promise<unknown[][]> {
     const conn = this._requireRawConn();
-    return conn.executeAsync(queries);
+    return conn.execute(queries);
   }
 
   /**
@@ -131,9 +131,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @returns 쿼리 결과 배열
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     const conn = this._requireRawConn();
-    return conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrized(query, params);
   }
 
   /**
@@ -144,13 +144,13 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @param records - 삽입할 레코드 배열
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async bulkInsertAsync(
+  async bulkInsert(
     tableName: string,
     columnMetas: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
   ): Promise<void> {
     const conn = this._requireRawConn();
-    await conn.bulkInsertAsync(tableName, columnMetas, records);
+    await conn.bulkInsert(tableName, columnMetas, records);
   }
 
   private _requireRawConn(): DbConn {

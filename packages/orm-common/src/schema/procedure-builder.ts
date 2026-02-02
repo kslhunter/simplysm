@@ -34,7 +34,7 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  * }
  *
  * // 호출
- * const users = await db.getUserById({ userId: 1n }).resultAsync();
+ * const users = await db.getUserById({ userId: 1n }).result();
  * ```
  *
  * @see {@link Procedure} 팩토리 함수

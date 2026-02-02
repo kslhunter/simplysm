@@ -4,7 +4,7 @@ import {
   createQueryBuilder,
   type Dialect,
   type IsolationLevel,
-  parseQueryResultAsync,
+  parseQueryResult,
   type QueryDef,
   type ResultMeta,
 } from "@simplysm/orm-common";
@@ -21,7 +21,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
   private static readonly _socketConns = new WeakMap<ServiceSocket, Map<number, DbConn>>();
 
   private async _getConf(opt: DbConnOptions & { configName: string }): Promise<DbConnConfig> {
-    const config = (await this.getConfigAsync<Record<string, DbConnConfig | undefined>>("orm"))[
+    const config = (await this.getConfig<Record<string, DbConnConfig | undefined>>("orm"))[
       opt.configName
     ];
     if (config == null) {
@@ -76,7 +76,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
           conns.map(async (conn) => {
             try {
               if (conn.isConnected) {
-                await conn.closeAsync();
+                await conn.close();
               }
             } catch (err) {
               logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
@@ -89,8 +89,8 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     }
 
     const config = await this._getConf(opt);
-    const dbConn = await DbConnFactory.createAsync(config);
-    await dbConn.connectAsync();
+    const dbConn = await DbConnFactory.create(config);
+    await dbConn.connect();
 
     const lastConnId = Math.max(0, ...Array.from(myConns.keys()));
     const connId = lastConnId + 1;
@@ -106,7 +106,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
   async close(connId: number): Promise<void> {
     try {
       const conn = this._getConn(connId);
-      await conn.closeAsync();
+      await conn.close();
     } catch (err) {
       logger.warn("DB 연결 종료 중 오류 무시됨", err);
     }
@@ -114,17 +114,17 @@ export class OrmService extends ServiceBase implements OrmServiceType {
 
   async beginTransaction(connId: number, isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._getConn(connId);
-    await conn.beginTransactionAsync(isolationLevel);
+    await conn.beginTransaction(isolationLevel);
   }
 
   async commitTransaction(connId: number): Promise<void> {
     const conn = this._getConn(connId);
-    await conn.commitTransactionAsync();
+    await conn.commitTransaction();
   }
 
   async rollbackTransaction(connId: number): Promise<void> {
     const conn = this._getConn(connId);
-    await conn.rollbackTransactionAsync();
+    await conn.rollbackTransaction();
   }
 
   async executeParametrized(
@@ -133,7 +133,7 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     params?: unknown[],
   ): Promise<unknown[][]> {
     const conn = this._getConn(connId);
-    return conn.executeParametrizedAsync(query, params);
+    return conn.executeParametrized(query, params);
   }
 
   async executeDefs(
@@ -146,19 +146,19 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     const queryBuilder = createQueryBuilder(dialect);
 
     if (options == null || options.every((item) => item == null)) {
-      return conn.executeAsync([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
+      return conn.execute([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
     } else {
       const queries = defs.flatMap((def) => {
         const query = queryBuilder.build(def);
         return Array.isArray(query) ? query : [query];
       });
-      const result = await conn.executeAsync(queries);
+      const result = await conn.execute(queries);
 
       const parsed: unknown[][] = [];
       for (let i = 0; i < result.length; i++) {
         const opt = options[i];
         if (opt != null) {
-          const parsedResult = await parseQueryResultAsync(
+          const parsedResult = await parseQueryResult(
             result[i] as Record<string, unknown>[],
             opt,
           );
@@ -178,6 +178,6 @@ export class OrmService extends ServiceBase implements OrmServiceType {
     records: Record<string, unknown>[],
   ): Promise<void> {
     const conn = this._getConn(connId);
-    await conn.bulkInsertAsync(tableName, columnDefs, records);
+    await conn.bulkInsert(tableName, columnDefs, records);
   }
 }

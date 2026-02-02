@@ -21,7 +21,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     this._ormService = _client.getService<OrmService>("OrmService");
   }
 
-  async getInfoAsync(): Promise<{
+  async getInfo(): Promise<{
     dialect: Dialect;
     database?: string;
     schema?: string;
@@ -29,11 +29,11 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     return this._ormService.getInfo(this._opt);
   }
 
-  async connectAsync(): Promise<void> {
+  async connect(): Promise<void> {
     this._connId = await this._ormService.connect(this._opt);
   }
 
-  async beginTransactionAsync(isolationLevel?: IsolationLevel): Promise<void> {
+  async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -41,7 +41,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     await this._ormService.beginTransaction(this._connId, isolationLevel);
   }
 
-  async commitTransactionAsync(): Promise<void> {
+  async commitTransaction(): Promise<void> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -49,7 +49,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     await this._ormService.commitTransaction(this._connId);
   }
 
-  async rollbackTransactionAsync(): Promise<void> {
+  async rollbackTransaction(): Promise<void> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -57,7 +57,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     await this._ormService.rollbackTransaction(this._connId);
   }
 
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -65,7 +65,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     await this._ormService.close(this._connId);
   }
 
-  async executeDefsAsync<T = Record<string, unknown>>(
+  async executeDefs<T = Record<string, unknown>>(
     defs: QueryDef[],
     options?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
@@ -76,7 +76,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     return (await this._ormService.executeDefs(this._connId, defs, options)) as T[][];
   }
 
-  async executeParametrizedAsync(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -84,7 +84,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     return this._ormService.executeParametrized(this._connId, query, params);
   }
 
-  async bulkInsertAsync(
+  async bulkInsert(
     tableName: string,
     columnDefs: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],

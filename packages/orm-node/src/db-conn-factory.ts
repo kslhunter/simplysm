@@ -25,7 +25,7 @@ export class DbConnFactory {
    * @param config - 데이터베이스 연결 설정
    * @returns 풀링된 DB 연결 객체
    */
-  static createAsync(config: DbConnConfig): Promise<DbConn> {
+  static create(config: DbConnConfig): Promise<DbConn> {
     // 1. 풀 가져오기 (없으면 생성)
     const pool = this._getOrCreatePool(config);
 
@@ -41,12 +41,12 @@ export class DbConnFactory {
       const pool = createPool<DbConn>(
         {
           create: async () => {
-            const conn = await this._createRawConnectionAsync(config);
-            await conn.connectAsync();
+            const conn = await this._createRawConnection(config);
+            await conn.connect();
             return conn;
           },
           destroy: async (conn) => {
-            await conn.closeAsync(); // 풀에서 제거될 때 실제 연결 종료
+            await conn.close(); // 풀에서 제거될 때 실제 연결 종료
           },
           validate: (conn) => {
             // 획득 시 연결 상태 확인 (끊겨있으면 Pool이 폐기하고 새로 만듦)
@@ -68,17 +68,17 @@ export class DbConnFactory {
     return this._poolMap.get(configKey)!;
   }
 
-  private static async _createRawConnectionAsync(config: DbConnConfig): Promise<DbConn> {
+  private static async _createRawConnection(config: DbConnConfig): Promise<DbConn> {
     if (config.dialect === "mysql") {
-      const mysql = await this._ensureModuleAsync("mysql");
+      const mysql = await this._ensureModule("mysql");
       return new MysqlDbConn(mysql, config);
     } else if (config.dialect === "postgresql") {
-      const pg = await this._ensureModuleAsync("pg");
-      const pgCopyStreams = await this._ensureModuleAsync("pgCopyStreams");
+      const pg = await this._ensureModule("pg");
+      const pgCopyStreams = await this._ensureModule("pgCopyStreams");
       return new PostgresqlDbConn(pg, pgCopyStreams.from, config);
     } else {
       // mssql, mssql-azure
-      const tedious = await this._ensureModuleAsync("tedious");
+      const tedious = await this._ensureModule("tedious");
       return new MssqlDbConn(tedious, config);
     }
   }
@@ -91,7 +91,7 @@ export class DbConnFactory {
     pgCopyStreams?: typeof import("pg-copy-streams");
   } = {};
 
-  private static async _ensureModuleAsync<K extends keyof typeof this._modules>(
+  private static async _ensureModule<K extends keyof typeof this._modules>(
     name: K,
   ): Promise<NonNullable<(typeof this._modules)[K]>> {
     if (this._modules[name] == null) {
