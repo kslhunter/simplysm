@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
+import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 
 /**
@@ -18,7 +18,7 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
     return [];
   }
 
-  const packageJson = await fsReadJsonAsync<{ devDependencies?: Record<string, string> }>(
+  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(
     packageJsonPath,
   );
   const devDeps = packageJson.devDependencies ?? {};

@@ -3,35 +3,35 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import {
+  fsExistsSync,
   fsExists,
-  fsExistsAsync,
+  fsMkdirSync,
   fsMkdir,
-  fsMkdirAsync,
+  fsRmSync,
   fsRm,
-  fsRmAsync,
+  fsCopySync,
   fsCopy,
-  fsCopyAsync,
+  fsReadSync,
   fsRead,
-  fsReadAsync,
+  fsReadBufferSync,
   fsReadBuffer,
-  fsReadBufferAsync,
+  fsReadJsonSync,
   fsReadJson,
-  fsReadJsonAsync,
+  fsWriteSync,
   fsWrite,
-  fsWriteAsync,
+  fsWriteJsonSync,
   fsWriteJson,
-  fsWriteJsonAsync,
+  fsReaddirSync,
   fsReaddir,
-  fsReaddirAsync,
+  fsStatSync,
   fsStat,
-  fsStatAsync,
+  fsLstatSync,
   fsLstat,
-  fsLstatAsync,
+  fsGlobSync,
   fsGlob,
-  fsGlobAsync,
-  fsClearEmptyDirectoryAsync,
+  fsClearEmptyDirectory,
+  fsFindAllParentChildPathsSync,
   fsFindAllParentChildPaths,
-  fsFindAllParentChildPathsAsync,
 } from "../../src/utils/fs";
 import { SdError } from "@simplysm/core-common";
 
@@ -48,39 +48,39 @@ describe("fs 함수들", () => {
 
   //#region exists
 
-  describe("fsExists", () => {
+  describe("fsExistsSync", () => {
     it("존재하는 파일에 대해 true 반환", () => {
       const filePath = path.join(testDir, "test.txt");
       fs.writeFileSync(filePath, "test");
 
-      expect(fsExists(filePath)).toBe(true);
+      expect(fsExistsSync(filePath)).toBe(true);
     });
 
     it("존재하지 않는 파일에 대해 false 반환", () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(fsExists(filePath)).toBe(false);
+      expect(fsExistsSync(filePath)).toBe(false);
     });
 
     it("존재하는 디렉토리에 대해 true 반환", () => {
-      expect(fsExists(testDir)).toBe(true);
+      expect(fsExistsSync(testDir)).toBe(true);
     });
   });
 
-  describe("fsExistsAsync", () => {
+  describe("fsExists", () => {
     it("존재하는 파일에 대해 true 반환", async () => {
       const filePath = path.join(testDir, "test.txt");
       fs.writeFileSync(filePath, "test");
 
-      expect(await fsExistsAsync(filePath)).toBe(true);
+      expect(await fsExists(filePath)).toBe(true);
     });
 
     it("존재하지 않는 파일에 대해 false 반환", async () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(await fsExistsAsync(filePath)).toBe(false);
+      expect(await fsExists(filePath)).toBe(false);
     });
 
     it("존재하는 디렉토리에 대해 true 반환", async () => {
-      expect(await fsExistsAsync(testDir)).toBe(true);
+      expect(await fsExists(testDir)).toBe(true);
     });
   });
 
@@ -88,10 +88,10 @@ describe("fs 함수들", () => {
 
   //#region mkdir
 
-  describe("fsMkdir", () => {
+  describe("fsMkdirSync", () => {
     it("디렉토리 생성", () => {
       const dirPath = path.join(testDir, "newdir");
-      fsMkdir(dirPath);
+      fsMkdirSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
       expect(fs.statSync(dirPath).isDirectory()).toBe(true);
@@ -99,20 +99,20 @@ describe("fs 함수들", () => {
 
     it("중첩 디렉토리 생성 (recursive)", () => {
       const dirPath = path.join(testDir, "a/b/c");
-      fsMkdir(dirPath);
+      fsMkdirSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
     });
 
     it("이미 존재하는 디렉토리는 에러 없이 통과", () => {
-      expect(() => fsMkdir(testDir)).not.toThrow();
+      expect(() => fsMkdirSync(testDir)).not.toThrow();
     });
   });
 
-  describe("fsMkdirAsync", () => {
+  describe("fsMkdir", () => {
     it("비동기로 디렉토리 생성", async () => {
       const dirPath = path.join(testDir, "asyncdir");
-      await fsMkdirAsync(dirPath);
+      await fsMkdir(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(true);
     });
@@ -122,12 +122,12 @@ describe("fs 함수들", () => {
 
   //#region rm
 
-  describe("fsRm", () => {
+  describe("fsRmSync", () => {
     it("파일 삭제", () => {
       const filePath = path.join(testDir, "todelete.txt");
       fs.writeFileSync(filePath, "test");
 
-      fsRm(filePath);
+      fsRmSync(filePath);
 
       expect(fs.existsSync(filePath)).toBe(false);
     });
@@ -137,22 +137,22 @@ describe("fs 함수들", () => {
       fs.mkdirSync(dirPath);
       fs.writeFileSync(path.join(dirPath, "file.txt"), "test");
 
-      fsRm(dirPath);
+      fsRmSync(dirPath);
 
       expect(fs.existsSync(dirPath)).toBe(false);
     });
 
     it("존재하지 않는 경로는 에러 없이 통과", () => {
-      expect(() => fsRm(path.join(testDir, "nonexistent"))).not.toThrow();
+      expect(() => fsRmSync(path.join(testDir, "nonexistent"))).not.toThrow();
     });
   });
 
-  describe("fsRmAsync", () => {
+  describe("fsRm", () => {
     it("비동기로 파일 삭제", async () => {
       const filePath = path.join(testDir, "asyncdelete.txt");
       fs.writeFileSync(filePath, "test");
 
-      await fsRmAsync(filePath);
+      await fsRm(filePath);
 
       expect(fs.existsSync(filePath)).toBe(false);
     });
@@ -162,12 +162,12 @@ describe("fs 함수들", () => {
 
   //#region read/write
 
-  describe("fsRead", () => {
+  describe("fsReadSync", () => {
     it("파일 내용을 UTF-8 문자열로 읽기", () => {
       const filePath = path.join(testDir, "read.txt");
       fs.writeFileSync(filePath, "Hello, World!");
 
-      const content = fsRead(filePath);
+      const content = fsReadSync(filePath);
 
       expect(content).toBe("Hello, World!");
     });
@@ -176,52 +176,52 @@ describe("fs 함수들", () => {
       const filePath = path.join(testDir, "korean.txt");
       fs.writeFileSync(filePath, "안녕하세요");
 
-      const content = fsRead(filePath);
+      const content = fsReadSync(filePath);
 
       expect(content).toBe("안녕하세요");
     });
   });
 
-  describe("fsReadAsync", () => {
+  describe("fsRead", () => {
     it("비동기로 파일 읽기", async () => {
       const filePath = path.join(testDir, "asyncread.txt");
       fs.writeFileSync(filePath, "async content");
 
-      const content = await fsReadAsync(filePath);
+      const content = await fsRead(filePath);
 
       expect(content).toBe("async content");
     });
   });
 
-  describe("fsReadBuffer", () => {
+  describe("fsReadBufferSync", () => {
     it("파일을 Buffer로 읽기", () => {
       const filePath = path.join(testDir, "buffer.txt");
       fs.writeFileSync(filePath, "buffer content");
 
-      const buffer = fsReadBuffer(filePath);
+      const buffer = fsReadBufferSync(filePath);
 
       expect(buffer instanceof Uint8Array).toBe(true);
       expect(buffer.toString()).toBe("buffer content");
     });
   });
 
-  describe("fsReadBufferAsync", () => {
+  describe("fsReadBuffer", () => {
     it("비동기로 파일을 Buffer로 읽기", async () => {
       const filePath = path.join(testDir, "asyncbuffer.txt");
       fs.writeFileSync(filePath, "async buffer content");
 
-      const buffer = await fsReadBufferAsync(filePath);
+      const buffer = await fsReadBuffer(filePath);
 
       expect(buffer instanceof Uint8Array).toBe(true);
       expect(buffer.toString()).toBe("async buffer content");
     });
   });
 
-  describe("fsWrite", () => {
+  describe("fsWriteSync", () => {
     it("문자열을 파일로 쓰기", () => {
       const filePath = path.join(testDir, "write.txt");
 
-      fsWrite(filePath, "written content");
+      fsWriteSync(filePath, "written content");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("written content");
     });
@@ -230,7 +230,7 @@ describe("fs 함수들", () => {
       const filePath = path.join(testDir, "buffer-write.bin");
       const buffer = new Uint8Array([0x00, 0x01, 0x02, 0xff]);
 
-      fsWrite(filePath, buffer);
+      fsWriteSync(filePath, buffer);
 
       expect(new Uint8Array(fs.readFileSync(filePath))).toEqual(buffer);
     });
@@ -238,17 +238,17 @@ describe("fs 함수들", () => {
     it("부모 디렉토리가 없으면 자동 생성", () => {
       const filePath = path.join(testDir, "sub/dir/write.txt");
 
-      fsWrite(filePath, "nested content");
+      fsWriteSync(filePath, "nested content");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("nested content");
     });
   });
 
-  describe("fsWriteAsync", () => {
+  describe("fsWrite", () => {
     it("비동기로 파일 쓰기", async () => {
       const filePath = path.join(testDir, "asyncwrite.txt");
 
-      await fsWriteAsync(filePath, "async written");
+      await fsWrite(filePath, "async written");
 
       expect(fs.readFileSync(filePath, "utf-8")).toBe("async written");
     });
@@ -258,12 +258,12 @@ describe("fs 함수들", () => {
 
   //#region JSON
 
-  describe("fsReadJson", () => {
+  describe("fsReadJsonSync", () => {
     it("JSON 파일 읽기", () => {
       const filePath = path.join(testDir, "data.json");
       fs.writeFileSync(filePath, '{"name": "test", "value": 42}');
 
-      const data = fsReadJson<{ name: string; value: number }>(filePath);
+      const data = fsReadJsonSync<{ name: string; value: number }>(filePath);
 
       expect(data).toEqual({ name: "test", value: 42 });
     });
@@ -274,7 +274,7 @@ describe("fs 함수들", () => {
       fs.writeFileSync(filePath, longContent);
 
       try {
-        fsReadJson(filePath);
+        fsReadJsonSync(filePath);
         expect.fail("에러가 발생해야 함");
       } catch (err) {
         expect((err as Error).message).toContain("...(truncated)");
@@ -282,12 +282,12 @@ describe("fs 함수들", () => {
     });
   });
 
-  describe("fsWriteJson", () => {
+  describe("fsWriteJsonSync", () => {
     it("JSON 파일 쓰기", () => {
       const filePath = path.join(testDir, "output.json");
       const data = { name: "test", value: 42 };
 
-      fsWriteJson(filePath, data);
+      fsWriteJsonSync(filePath, data);
 
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
       expect(content).toEqual(data);
@@ -297,7 +297,7 @@ describe("fs 함수들", () => {
       const filePath = path.join(testDir, "formatted.json");
       const data = { name: "test" };
 
-      fsWriteJson(filePath, data, { space: 2 });
+      fsWriteJsonSync(filePath, data, { space: 2 });
 
       const content = fs.readFileSync(filePath, "utf-8");
       expect(content).toContain("\n");
@@ -307,7 +307,7 @@ describe("fs 함수들", () => {
       const filePath = path.join(testDir, "replaced.json");
       const data = { name: "test", secret: "hidden" };
 
-      fsWriteJson(filePath, data, {
+      fsWriteJsonSync(filePath, data, {
         replacer: (_key, value) => (typeof value === "string" && value === "hidden" ? undefined : value),
       });
 
@@ -317,23 +317,23 @@ describe("fs 함수들", () => {
     });
   });
 
-  describe("fsReadJsonAsync", () => {
+  describe("fsReadJson", () => {
     it("비동기로 JSON 파일 읽기", async () => {
       const filePath = path.join(testDir, "asyncdata.json");
       fs.writeFileSync(filePath, '{"name": "async", "value": 100}');
 
-      const data = await fsReadJsonAsync<{ name: string; value: number }>(filePath);
+      const data = await fsReadJson<{ name: string; value: number }>(filePath);
 
       expect(data).toEqual({ name: "async", value: 100 });
     });
   });
 
-  describe("fsWriteJsonAsync", () => {
+  describe("fsWriteJson", () => {
     it("비동기로 JSON 파일 쓰기", async () => {
       const filePath = path.join(testDir, "asyncoutput.json");
       const data = { name: "async", value: 100 };
 
-      await fsWriteJsonAsync(filePath, data);
+      await fsWriteJson(filePath, data);
 
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
       expect(content).toEqual(data);
@@ -344,13 +344,13 @@ describe("fs 함수들", () => {
 
   //#region copy
 
-  describe("fsCopy", () => {
+  describe("fsCopySync", () => {
     it("파일 복사", () => {
       const source = path.join(testDir, "source.txt");
       const target = path.join(testDir, "target.txt");
       fs.writeFileSync(source, "source content");
 
-      fsCopy(source, target);
+      fsCopySync(source, target);
 
       expect(fs.readFileSync(target, "utf-8")).toBe("source content");
     });
@@ -363,7 +363,7 @@ describe("fs 함수들", () => {
       fs.mkdirSync(path.join(sourceDir, "sub"));
       fs.writeFileSync(path.join(sourceDir, "sub/nested.txt"), "nested");
 
-      fsCopy(sourceDir, targetDir);
+      fsCopySync(sourceDir, targetDir);
 
       expect(fs.existsSync(path.join(targetDir, "file.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "sub/nested.txt"))).toBe(true);
@@ -373,7 +373,7 @@ describe("fs 함수들", () => {
       const source = path.join(testDir, "nonexistent");
       const target = path.join(testDir, "target");
 
-      expect(() => fsCopy(source, target)).not.toThrow();
+      expect(() => fsCopySync(source, target)).not.toThrow();
     });
 
     it("filter 옵션으로 선택적 복사", () => {
@@ -383,7 +383,7 @@ describe("fs 함수들", () => {
       fs.writeFileSync(path.join(sourceDir, "include.txt"), "include");
       fs.writeFileSync(path.join(sourceDir, "exclude.log"), "exclude");
 
-      fsCopy(sourceDir, targetDir, (p) => !p.endsWith(".log"));
+      fsCopySync(sourceDir, targetDir, (p) => !p.endsWith(".log"));
 
       expect(fs.existsSync(path.join(targetDir, "include.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "exclude.log"))).toBe(false);
@@ -398,7 +398,7 @@ describe("fs 함수들", () => {
       fs.writeFileSync(path.join(sourceDir, "excluded", "nested.txt"), "nested");
       fs.writeFileSync(path.join(sourceDir, "included", "nested.txt"), "nested");
 
-      fsCopy(sourceDir, targetDir, (p) => !p.includes("excluded"));
+      fsCopySync(sourceDir, targetDir, (p) => !p.includes("excluded"));
 
       expect(fs.existsSync(path.join(targetDir, "excluded"))).toBe(false);
       expect(fs.existsSync(path.join(targetDir, "excluded", "nested.txt"))).toBe(false);
@@ -407,13 +407,13 @@ describe("fs 함수들", () => {
     });
   });
 
-  describe("fsCopyAsync", () => {
+  describe("fsCopy", () => {
     it("비동기로 파일 복사", async () => {
       const source = path.join(testDir, "asyncSource.txt");
       const target = path.join(testDir, "asyncTarget.txt");
       fs.writeFileSync(source, "async source content");
 
-      await fsCopyAsync(source, target);
+      await fsCopy(source, target);
 
       expect(fs.readFileSync(target, "utf-8")).toBe("async source content");
     });
@@ -426,7 +426,7 @@ describe("fs 함수들", () => {
       fs.mkdirSync(path.join(sourceDir, "sub"));
       fs.writeFileSync(path.join(sourceDir, "sub/nested.txt"), "nested");
 
-      await fsCopyAsync(sourceDir, targetDir);
+      await fsCopy(sourceDir, targetDir);
 
       expect(fs.existsSync(path.join(targetDir, "file.txt"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "sub/nested.txt"))).toBe(true);
@@ -439,7 +439,7 @@ describe("fs 함수들", () => {
       fs.writeFileSync(path.join(sourceDir, "keep.ts"), "keep");
       fs.writeFileSync(path.join(sourceDir, "skip.js"), "skip");
 
-      await fsCopyAsync(sourceDir, targetDir, (p) => p.endsWith(".ts"));
+      await fsCopy(sourceDir, targetDir, (p) => p.endsWith(".ts"));
 
       expect(fs.existsSync(path.join(targetDir, "keep.ts"))).toBe(true);
       expect(fs.existsSync(path.join(targetDir, "skip.js"))).toBe(false);
@@ -450,13 +450,13 @@ describe("fs 함수들", () => {
 
   //#region readdir
 
-  describe("fsReaddir", () => {
+  describe("fsReaddirSync", () => {
     it("디렉토리 내용 읽기", () => {
       fs.writeFileSync(path.join(testDir, "file1.txt"), "");
       fs.writeFileSync(path.join(testDir, "file2.txt"), "");
       fs.mkdirSync(path.join(testDir, "subdir"));
 
-      const entries = fsReaddir(testDir);
+      const entries = fsReaddirSync(testDir);
 
       expect(entries).toContain("file1.txt");
       expect(entries).toContain("file2.txt");
@@ -464,12 +464,12 @@ describe("fs 함수들", () => {
     });
   });
 
-  describe("fsReaddirAsync", () => {
+  describe("fsReaddir", () => {
     it("비동기로 디렉토리 내용 읽기", async () => {
       fs.writeFileSync(path.join(testDir, "async1.txt"), "");
       fs.writeFileSync(path.join(testDir, "async2.txt"), "");
 
-      const entries = await fsReaddirAsync(testDir);
+      const entries = await fsReaddir(testDir);
 
       expect(entries).toContain("async1.txt");
       expect(entries).toContain("async2.txt");
@@ -480,41 +480,41 @@ describe("fs 함수들", () => {
 
   //#region stat
 
-  describe("fsStat", () => {
+  describe("fsStatSync", () => {
     it("파일 정보 가져오기", () => {
       const filePath = path.join(testDir, "statfile.txt");
       fs.writeFileSync(filePath, "content");
 
-      const result = fsStat(filePath);
+      const result = fsStatSync(filePath);
 
       expect(result.isFile()).toBe(true);
       expect(result.size).toBeGreaterThan(0);
     });
 
     it("디렉토리 정보 가져오기", () => {
-      const result = fsStat(testDir);
+      const result = fsStatSync(testDir);
       expect(result.isDirectory()).toBe(true);
     });
   });
 
-  describe("fsStatAsync", () => {
+  describe("fsStat", () => {
     it("비동기로 파일 정보 가져오기", async () => {
       const filePath = path.join(testDir, "asyncstatfile.txt");
       fs.writeFileSync(filePath, "async content");
 
-      const stat = await fsStatAsync(filePath);
+      const stat = await fsStat(filePath);
 
       expect(stat.isFile()).toBe(true);
       expect(stat.size).toBeGreaterThan(0);
     });
   });
 
-  describe("fsLstat", () => {
+  describe("fsLstatSync", () => {
     it("일반 파일 정보 가져오기", () => {
       const filePath = path.join(testDir, "lstatfile.txt");
       fs.writeFileSync(filePath, "content");
 
-      const stat = fsLstat(filePath);
+      const stat = fsLstatSync(filePath);
 
       expect(stat.isFile()).toBe(true);
     });
@@ -525,8 +525,8 @@ describe("fs 함수들", () => {
       fs.writeFileSync(targetPath, "target content");
       fs.symlinkSync(targetPath, linkPath);
 
-      const lstatResult = fsLstat(linkPath);
-      const statResult = fsStat(linkPath);
+      const lstatResult = fsLstatSync(linkPath);
+      const statResult = fsStatSync(linkPath);
 
       // lstat은 심볼릭 링크 자체의 정보를 반환
       expect(lstatResult.isSymbolicLink()).toBe(true);
@@ -538,12 +538,12 @@ describe("fs 함수들", () => {
     });
   });
 
-  describe("fsLstatAsync", () => {
+  describe("fsLstat", () => {
     it("비동기로 파일 정보 가져오기", async () => {
       const filePath = path.join(testDir, "asynclstatfile.txt");
       fs.writeFileSync(filePath, "async content");
 
-      const stat = await fsLstatAsync(filePath);
+      const stat = await fsLstat(filePath);
 
       expect(stat.isFile()).toBe(true);
     });
@@ -554,8 +554,8 @@ describe("fs 함수들", () => {
       fs.writeFileSync(targetPath, "target content");
       fs.symlinkSync(targetPath, linkPath);
 
-      const lstatResult = await fsLstatAsync(linkPath);
-      const statResult = await fsStatAsync(linkPath);
+      const lstatResult = await fsLstat(linkPath);
+      const statResult = await fsStat(linkPath);
 
       // lstat은 심볼릭 링크 자체의 정보를 반환
       expect(lstatResult.isSymbolicLink()).toBe(true);
@@ -571,13 +571,13 @@ describe("fs 함수들", () => {
 
   //#region glob
 
-  describe("fsGlob", () => {
+  describe("fsGlobSync", () => {
     it("글로브 패턴으로 파일 검색", () => {
       fs.writeFileSync(path.join(testDir, "a.txt"), "");
       fs.writeFileSync(path.join(testDir, "b.txt"), "");
       fs.writeFileSync(path.join(testDir, "c.js"), "");
 
-      const txtFiles = fsGlob(path.join(testDir, "*.txt"));
+      const txtFiles = fsGlobSync(path.join(testDir, "*.txt"));
 
       expect(txtFiles.length).toBe(2);
       expect(txtFiles.some((f) => f.endsWith("a.txt"))).toBe(true);
@@ -588,7 +588,7 @@ describe("fs 함수들", () => {
       fs.mkdirSync(path.join(testDir, "nested"));
       fs.writeFileSync(path.join(testDir, "nested/deep.txt"), "");
 
-      const files = fsGlob(path.join(testDir, "**/*.txt"));
+      const files = fsGlobSync(path.join(testDir, "**/*.txt"));
 
       expect(files.some((f) => f.endsWith("deep.txt"))).toBe(true);
     });
@@ -597,19 +597,19 @@ describe("fs 함수들", () => {
       fs.writeFileSync(path.join(testDir, ".hidden"), "");
       fs.writeFileSync(path.join(testDir, "visible"), "");
 
-      const withoutDot = fsGlob(path.join(testDir, "*"));
-      const withDot = fsGlob(path.join(testDir, "*"), { dot: true });
+      const withoutDot = fsGlobSync(path.join(testDir, "*"));
+      const withDot = fsGlobSync(path.join(testDir, "*"), { dot: true });
 
       expect(withoutDot.some((f) => f.endsWith(".hidden"))).toBe(false);
       expect(withDot.some((f) => f.endsWith(".hidden"))).toBe(true);
     });
   });
 
-  describe("fsGlobAsync", () => {
+  describe("fsGlob", () => {
     it("비동기 글로브 검색", async () => {
       fs.writeFileSync(path.join(testDir, "async.txt"), "");
 
-      const files = await fsGlobAsync(path.join(testDir, "*.txt"));
+      const files = await fsGlob(path.join(testDir, "*.txt"));
 
       expect(files.length).toBeGreaterThan(0);
     });
@@ -619,12 +619,12 @@ describe("fs 함수들", () => {
 
   //#region clearEmptyDirectoryAsync
 
-  describe("fsClearEmptyDirectoryAsync", () => {
+  describe("fsClearEmptyDirectory", () => {
     it("빈 디렉토리 재귀적으로 삭제", async () => {
       const emptyDir = path.join(testDir, "empty/nested/deep");
       fs.mkdirSync(emptyDir, { recursive: true });
 
-      await fsClearEmptyDirectoryAsync(path.join(testDir, "empty"));
+      await fsClearEmptyDirectory(path.join(testDir, "empty"));
 
       expect(fs.existsSync(path.join(testDir, "empty"))).toBe(false);
     });
@@ -634,7 +634,7 @@ describe("fs 함수들", () => {
       fs.mkdirSync(dirWithFile);
       fs.writeFileSync(path.join(dirWithFile, "file.txt"), "content");
 
-      await fsClearEmptyDirectoryAsync(dirWithFile);
+      await fsClearEmptyDirectory(dirWithFile);
 
       expect(fs.existsSync(dirWithFile)).toBe(true);
     });
@@ -644,14 +644,14 @@ describe("fs 함수들", () => {
 
   //#region findAllParentChildPaths
 
-  describe("fsFindAllParentChildPaths", () => {
+  describe("fsFindAllParentChildPathsSync", () => {
     it("부모 디렉토리들에서 특정 파일 찾기", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "marker.txt"), "");
       fs.writeFileSync(path.join(testDir, "a/marker.txt"), "");
 
-      const results = fsFindAllParentChildPaths("marker.txt", deepDir, testDir);
+      const results = fsFindAllParentChildPathsSync("marker.txt", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -660,20 +660,20 @@ describe("fs 함수들", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = fsFindAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
+      const results = fsFindAllParentChildPathsSync("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });
   });
 
-  describe("fsFindAllParentChildPathsAsync", () => {
+  describe("fsFindAllParentChildPaths", () => {
     it("비동기로 부모 디렉토리들에서 특정 파일 찾기", async () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "config.json"), "");
       fs.writeFileSync(path.join(testDir, "x/config.json"), "");
 
-      const results = await fsFindAllParentChildPathsAsync("config.json", deepDir, testDir);
+      const results = await fsFindAllParentChildPaths("config.json", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -682,7 +682,7 @@ describe("fs 함수들", () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = await fsFindAllParentChildPathsAsync("nonexistent-file.txt", deepDir, testDir);
+      const results = await fsFindAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });
@@ -695,9 +695,9 @@ describe("fs 함수들", () => {
   describe("에러 케이스", () => {
     it("존재하지 않는 파일 읽기 시 SdError에 경로 정보 포함", () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      expect(() => fsRead(filePath)).toThrow(SdError);
+      expect(() => fsReadSync(filePath)).toThrow(SdError);
       try {
-        fsRead(filePath);
+        fsReadSync(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
       }
@@ -705,20 +705,20 @@ describe("fs 함수들", () => {
 
     it("존재하지 않는 파일 비동기 읽기 시 SdError에 경로 정보 포함", async () => {
       const filePath = path.join(testDir, "nonexistent.txt");
-      await expect(fsReadAsync(filePath)).rejects.toThrow(SdError);
+      await expect(fsRead(filePath)).rejects.toThrow(SdError);
       try {
-        await fsReadAsync(filePath);
+        await fsRead(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
       }
     });
 
     it("존재하지 않는 디렉토리 내용 읽기 시 에러 발생", () => {
-      expect(() => fsReaddir(path.join(testDir, "nonexistent"))).toThrow();
+      expect(() => fsReaddirSync(path.join(testDir, "nonexistent"))).toThrow();
     });
 
     it("존재하지 않는 파일 stat 시 에러 발생", () => {
-      expect(() => fsStat(path.join(testDir, "nonexistent.txt"))).toThrow();
+      expect(() => fsStatSync(path.join(testDir, "nonexistent.txt"))).toThrow();
     });
 
     it("잘못된 JSON 형식 파일 읽기 시 SdError에 경로와 내용 정보 포함", () => {
@@ -726,9 +726,9 @@ describe("fs 함수들", () => {
       const content = "{ invalid json }";
       fs.writeFileSync(filePath, content);
 
-      expect(() => fsReadJson(filePath)).toThrow(SdError);
+      expect(() => fsReadJsonSync(filePath)).toThrow(SdError);
       try {
-        fsReadJson(filePath);
+        fsReadJsonSync(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
         expect((err as Error).message).toContain(content);
@@ -740,9 +740,9 @@ describe("fs 함수들", () => {
       const content = "{ invalid json }";
       fs.writeFileSync(filePath, content);
 
-      await expect(fsReadJsonAsync(filePath)).rejects.toThrow(SdError);
+      await expect(fsReadJson(filePath)).rejects.toThrow(SdError);
       try {
-        await fsReadJsonAsync(filePath);
+        await fsReadJson(filePath);
       } catch (err) {
         expect((err as Error).message).toContain(filePath);
         expect((err as Error).message).toContain(content);

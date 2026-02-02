@@ -2,7 +2,7 @@ import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
 import { Listr } from "listr2";
-import { fsExists, fsGlobAsync, pathFilterByTargets } from "@simplysm/core-node";
+import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
 import { consola } from "consola";
@@ -137,7 +137,7 @@ export async function runLint(options: LintOptions): Promise<void> {
       {
         title: "린트 대상 파일 수집",
         task: async (ctx, task) => {
-          let files = await fsGlobAsync("**/*.{ts,tsx,js,jsx}", {
+          let files = await fsGlob("**/*.{ts,tsx,js,jsx}", {
             cwd,
             ignore: ctx.ignorePatterns,
             nodir: true,

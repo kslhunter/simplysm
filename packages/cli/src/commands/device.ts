@@ -1,6 +1,6 @@
 import path from "path";
 import { Listr } from "listr2";
-import { fsExistsAsync } from "@simplysm/core-node";
+import { fsExists } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdConfig, SdClientPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
@@ -91,7 +91,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   const pkgDir = path.join(cwd, "packages", packageName);
   const capPath = path.join(pkgDir, ".capacitor");
 
-  if (!(await fsExistsAsync(capPath))) {
+  if (!(await fsExists(capPath))) {
     logger.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
     process.stderr.write(`✖ Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.\n`);
     process.exitCode = 1;
@@ -104,7 +104,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       title: `${packageName} (device)`,
       task: async () => {
         const cap = await Capacitor.create(pkgDir, clientConfig.capacitor!);
-        await cap.runOnDeviceAsync(serverUrl);
+        await cap.runOnDevice(serverUrl);
       },
     },
   ]);

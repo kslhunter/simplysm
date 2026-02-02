@@ -8,7 +8,7 @@ import {
   fsReadJson,
   fsWrite,
   fsGlob,
-  fsCopyAsync,
+  fsCopy,
 } from "@simplysm/core-node";
 import { jsonStringify } from "@simplysm/core-common";
 import "@simplysm/core-common";
@@ -219,7 +219,7 @@ async function publishPackage(
       logger.info(`[DRY-RUN] [${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
     } else {
       logger.debug(`[${pkgName}] 로컬 복사: ${distPath} → ${targetPath}`);
-      await fsCopyAsync(distPath, targetPath);
+      await fsCopy(distPath, targetPath);
     }
   } else {
     // 스토리지 업로드

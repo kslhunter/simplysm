@@ -136,6 +136,18 @@ const User = Table("User")
 - Node.js 내장 `Buffer` → `Uint8Array` 사용
 - async 함수에 await 필수
 
+### 함수 명명 규칙
+- 함수명 끝에 `Async` 접미사 사용 금지 → 비동기 함수가 기본
+- 동기/비동기 버전이 모두 존재할 때는 동기 함수에 `Sync` 접미사 사용
+  ```typescript
+  // 좋은 예
+  async function readFile() { ... }      // 비동기 (기본)
+  function readFileSync() { ... }        // 동기 버전
+
+  // 나쁜 예
+  async function readFileAsync() { ... } // Async 접미사 금지
+  ```
+
 ### TypeScript 설정
 - `strict: true`, `verbatimModuleSyntax: true`
 - 경로 별칭: `@simplysm/*` → `packages/*/src/index.ts`
@@ -193,6 +205,7 @@ const User = Table("User")
 - React 패턴 사용 금지 → SolidJS 패턴 사용 (예: `useState` 대신 `createSignal`)
 - 존재하지 않는 확장 메서드 사용 금지 → `core-common`의 실제 확장 메서드만 사용
 - SolidJS 스타일에서 `em` 단위 사용 금지 → `rem` 단위로 통일
+- 함수명에 `Async` 접미사 사용 금지 → 동기 버전에만 `Sync` 접미사 사용
 
 ### 검증 절차
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증

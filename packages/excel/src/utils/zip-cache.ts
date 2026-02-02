@@ -43,7 +43,7 @@ export class ZipCache {
       return this._cache.get(filePath);
     }
 
-    const fileData = await this._zip.getAsync(filePath);
+    const fileData = await this._zip.get(filePath);
     if (fileData == null) {
       this._cache.set(filePath, undefined);
       return undefined;
@@ -93,11 +93,11 @@ export class ZipCache {
       }
     }
 
-    return this._zip.compressAsync();
+    return this._zip.compress();
   }
 
   async close(): Promise<void> {
-    await this._zip.closeAsync();
+    await this._zip.close();
     this._cache.clear();
   }
 }

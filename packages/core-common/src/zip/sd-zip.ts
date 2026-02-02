@@ -26,19 +26,19 @@ export interface ZipArchiveProgress {
  * @example
  * // ZIP 파일 읽기
  * await using archive = new ZipArchive(zipBytes);
- * const content = await archive.getAsync("file.txt");
+ * const content = await archive.get("file.txt");
  *
  * @example
  * // ZIP 파일 생성
  * await using archive = new ZipArchive();
  * archive.write("file.txt", textBytes);
  * archive.write("data.json", jsonBytes);
- * const zipBytes = await archive.compressAsync();
+ * const zipBytes = await archive.compress();
  *
  * @example
  * // 전체 압축 해제 (진행률 표시)
  * await using archive = new ZipArchive(zipBytes);
- * const files = await archive.extractAllAsync((progress) => {
+ * const files = await archive.extractAll((progress) => {
  *   console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
  * });
  */
@@ -68,12 +68,12 @@ export class ZipArchive {
     return this._entries;
   }
 
-  //#region extractAllAsync
+  //#region extractAll
   /**
    * 모든 파일을 압축 해제
    * @param progressCallback 진행률 콜백
    */
-  async extractAllAsync(
+  async extractAll(
     progressCallback?: (progress: ZipArchiveProgress) => void,
   ): Promise<Map<string, Bytes | undefined>> {
     const entries = await this._getEntries();
@@ -126,12 +126,12 @@ export class ZipArchive {
   }
   //#endregion
 
-  //#region getAsync
+  //#region get
   /**
    * 특정 파일 압축 해제
    * @param fileName 파일 이름
    */
-  async getAsync(fileName: string): Promise<Bytes | undefined> {
+  async get(fileName: string): Promise<Bytes | undefined> {
     if (this._cache.has(fileName)) {
       return this._cache.get(fileName);
     }
@@ -154,12 +154,12 @@ export class ZipArchive {
   }
   //#endregion
 
-  //#region existsAsync
+  //#region exists
   /**
    * 파일 존재 여부 확인
    * @param fileName 파일 이름
    */
-  async existsAsync(fileName: string): Promise<boolean> {
+  async exists(fileName: string): Promise<boolean> {
     if (this._cache.has(fileName)) {
       return this._cache.get(fileName) != null;
     }
@@ -185,16 +185,16 @@ export class ZipArchive {
   }
   //#endregion
 
-  //#region compressAsync
+  //#region compress
   /**
    * 캐시된 파일들을 ZIP으로 압축
    *
    * @remarks
-   * 내부적으로 `extractAllAsync()`를 호출하여 모든 파일을 메모리에 로드한 후 압축합니다.
+   * 내부적으로 `extractAll()`을 호출하여 모든 파일을 메모리에 로드한 후 압축합니다.
    * 대용량 ZIP 파일의 경우 메모리 사용량에 주의가 필요합니다.
    */
-  async compressAsync(): Promise<Bytes> {
-    const fileMap = await this.extractAllAsync();
+  async compress(): Promise<Bytes> {
+    const fileMap = await this.extractAll();
 
     const writer = new ZipWriter(new Uint8ArrayWriter());
 
@@ -209,11 +209,11 @@ export class ZipArchive {
   }
   //#endregion
 
-  //#region closeAsync
+  //#region close
   /**
    * 리더 닫기 및 캐시 정리
    */
-  async closeAsync(): Promise<void> {
+  async close(): Promise<void> {
     await this._reader?.close();
     this._cache.clear();
   }
@@ -222,7 +222,7 @@ export class ZipArchive {
    * await using 지원
    */
   async [Symbol.asyncDispose](): Promise<void> {
-    await this.closeAsync();
+    await this.close();
   }
   //#endregion
 }

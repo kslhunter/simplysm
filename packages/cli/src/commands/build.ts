@@ -6,7 +6,7 @@ import solidPlugin from "vite-plugin-solid";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
-import { Worker, type WorkerProxy, fsRmAsync } from "@simplysm/core-node";
+import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdConfig, SdBuildPackageConfig, SdClientPackageConfig } from "../sd-config.types";
@@ -91,7 +91,7 @@ function classifyPackages(
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
   await Promise.all(
-    packageNames.map((name) => fsRmAsync(path.join(cwd, "packages", name, "dist"))),
+    packageNames.map((name) => fsRm(path.join(cwd, "packages", name, "dist"))),
   );
 }
 
@@ -330,8 +330,8 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   const outPath = path.join(pkgDir, "dist");
                   try {
                     const cap = await Capacitor.create(pkgDir, config.capacitor);
-                    await cap.initializeAsync();
-                    await cap.buildAsync(outPath);
+                    await cap.initialize();
+                    await cap.build(outPath);
                     results.push({
                       name,
                       target: "client",

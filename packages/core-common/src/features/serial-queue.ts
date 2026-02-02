@@ -57,10 +57,10 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
    */
   run(fn: () => void | Promise<void>): void {
     this._queue.push(fn);
-    void this._processAsync();
+    void this._process();
   }
 
-  private async _processAsync(): Promise<void> {
+  private async _process(): Promise<void> {
     if (this._isQueueRunning) return;
     this._isQueueRunning = true;
 

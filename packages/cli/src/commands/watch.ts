@@ -515,7 +515,7 @@ export async function runWatch(options: WatchOptions): Promise<void> {
           const pkgDir = path.join(cwd, "packages", name);
           try {
             const cap = await Capacitor.create(pkgDir, config.capacitor!);
-            await cap.initializeAsync();
+            await cap.initialize();
             results.set(`${name}:capacitor`, {
               name,
               target: "client",

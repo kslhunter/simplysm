@@ -1,9 +1,9 @@
-import { spawn, type SpawnOptions } from "child_process";
+import { spawn as cpSpawn, type SpawnOptions as CpSpawnOptions } from "child_process";
 
 /**
  * spawn 옵션
  */
-export interface SpawnAsyncOptions {
+export interface SpawnOptions {
   /** 작업 디렉토리 */
   cwd?: string;
   /** 환경변수 (process.env와 병합) */
@@ -25,10 +25,10 @@ export interface SpawnAsyncOptions {
  * @param options - 실행 옵션
  * @returns stdout 출력 (stderr는 stdout에 병합됨)
  */
-export async function spawnAsync(
+export async function spawn(
   cmd: string,
   args: string[],
-  options?: SpawnAsyncOptions,
+  options?: SpawnOptions,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     // NO_COLOR 환경변수 존중 (https://no-color.org/)
@@ -43,7 +43,7 @@ export async function spawnAsync(
         }
       : {};
 
-    const spawnOptions: SpawnOptions = {
+    const spawnOptions: CpSpawnOptions = {
       cwd: options?.cwd,
       env: {
         ...process.env,
@@ -56,7 +56,7 @@ export async function spawnAsync(
       stdio: ["inherit", "pipe", "pipe"],
     };
 
-    const child = spawn(cmd, args, spawnOptions);
+    const child = cpSpawn(cmd, args, spawnOptions);
 
     let output = "";
 
