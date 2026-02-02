@@ -58,7 +58,7 @@ describe("List 컴포넌트", () => {
       ));
 
       const list = container.querySelector("[data-list]") as HTMLElement;
-      expect(list.classList.contains("bg-white")).toBe(true);
+      expect(list.classList.contains("bg-gray-50")).toBe(true);
     });
   });
 
@@ -385,7 +385,7 @@ describe("ListItem 컴포넌트", () => {
       ));
 
       const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("bg-primary-50")).toBe(true);
+      expect(button.classList.contains("bg-primary-100")).toBe(true);
     });
 
     it("selected=true일 때 font-bold 스타일이 적용된다", () => {
@@ -436,7 +436,7 @@ describe("ListItem 컴포넌트", () => {
       ));
 
       const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("cursor-default")).toBe(true);
+      expect(button.classList.contains("cursor-auto")).toBe(true);
     });
   });
 

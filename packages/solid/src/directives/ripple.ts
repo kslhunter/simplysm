@@ -1,8 +1,8 @@
 import type { Accessor } from "solid-js";
 import { onCleanup } from "solid-js";
+import clsx from "clsx";
 
 declare module "solid-js" {
-   
   namespace JSX {
     interface Directives {
       ripple: boolean;
@@ -14,9 +14,9 @@ declare module "solid-js" {
  * 인터랙티브 요소에 ripple 효과를 추가하는 directive.
  *
  * @remarks
- * - 첫 pointerdown 시 스타일 적용 (class 적용 후 시점)
- * - 요소의 position이 `static`일 때만 `relative` 클래스 추가 (cleanup 시 제거)
- * - `overflow-hidden` 클래스 추가 (cleanup 시 제거) - 외부로 넘치는 콘텐츠(툴팁, 배지 등)가 잘릴 수 있음
+ * - 매 pointerdown 시 인라인 스타일로 position/overflow 확인 및 적용 (SolidJS style 업데이트로 제거될 수 있음)
+ * - 요소의 position이 `static`일 때만 `relative`로 변경 (cleanup 시 원래 값 복원)
+ * - `overflow: hidden` 적용 (cleanup 시 원래 값 복원) - 외부로 넘치는 콘텐츠(툴팁, 배지 등)가 잘릴 수 있음
  * - 단일 ripple 모드: 새 클릭 시 이전 ripple 제거
  * - `prefers-reduced-motion: reduce` 설정 시 ripple 비활성화
  *
@@ -28,8 +28,9 @@ declare module "solid-js" {
 export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
   let indicatorEl: HTMLDivElement | undefined;
   let rafId: number | undefined;
-  let addedRelative = false;
-  let addedOverflowHidden = false;
+  let originalPosition: string | undefined;
+  let originalOverflow: string | undefined;
+  let styleApplied = false;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -37,15 +38,16 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
     if (!accessor()) return;
     if (prefersReducedMotion.matches) return;
 
-    // 첫 ripple 생성 시 스타일 적용 (class가 이미 적용된 후)
-    if (!addedOverflowHidden) {
-      if (getComputedStyle(el).position === "static") {
-        el.classList.add("relative");
-        addedRelative = true;
-      }
-      el.classList.add("overflow-hidden");
-      addedOverflowHidden = true;
+    // 매 클릭마다 인라인 스타일 확인 및 적용 (SolidJS style 업데이트로 제거될 수 있음)
+    if (getComputedStyle(el).position === "static") {
+      if (!styleApplied) originalPosition = el.style.position;
+      el.style.position = "relative";
     }
+    if (getComputedStyle(el).overflow !== "hidden") {
+      if (!styleApplied) originalOverflow = el.style.overflow;
+      el.style.overflow = "hidden";
+    }
+    styleApplied = true;
 
     if (indicatorEl) {
       indicatorEl.remove();
@@ -53,10 +55,17 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
     }
 
     const rect = el.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height) * 2;
-
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
+
+    // 클릭 위치에서 가장 먼 모서리까지의 거리를 반지름으로 사용
+    const maxDist = Math.max(
+      Math.hypot(x, y),
+      Math.hypot(rect.width - x, y),
+      Math.hypot(x, rect.height - y),
+      Math.hypot(rect.width - x, rect.height - y),
+    );
+    const size = maxDist * 2;
 
     indicatorEl = document.createElement("div");
     indicatorEl.classList.add(
@@ -66,8 +75,8 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
       "bg-black/20",
       "dark:bg-white/20",
       "transition-[transform,opacity]",
-      "duration-300",
-      "ease-out",
+      "duration-500",
+      "ease-in-out"
     );
     Object.assign(indicatorEl.style, {
       width: `${size}px`,
@@ -122,11 +131,11 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
       indicatorEl = undefined;
     }
 
-    if (addedRelative) {
-      el.classList.remove("relative");
-    }
-    if (addedOverflowHidden) {
-      el.classList.remove("overflow-hidden");
+    if (styleApplied) {
+      if (originalPosition !== undefined) {
+        el.style.position = originalPosition;
+      }
+      el.style.overflow = originalOverflow ?? "";
     }
   });
 }

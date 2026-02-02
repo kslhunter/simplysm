@@ -15,21 +15,20 @@ const headerBaseClass = clsx(
   "gap-2",
   "py-1",
   "px-1.5",
+  "m-px",
   "cursor-pointer",
   "rounded-md",
   "transition-colors",
   "focus:outline-none",
-  "focus-visible:bg-gray-100",
-  "dark:focus-visible:bg-gray-800",
-  "hover:bg-gray-100",
-  "dark:hover:bg-gray-800",
+  "focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800",
+  "hover:bg-gray-500/10 dark:hover:bg-gray-800",
 );
 
-const selectedClass = clsx("bg-primary-50", "dark:bg-primary-900/20", "font-bold");
+const selectedClass = clsx("bg-primary-100", "dark:bg-primary-900/20", "font-bold");
 
-const readonlyClass = clsx("cursor-default");
+const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text");
 
-const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-default");
+const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
 
 const chevronClass = clsx("w-4", "h-4", "transition-transform", "duration-200", "motion-reduce:transition-none");
 
@@ -100,6 +99,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "children",
     "class",
+    "style",
     "open",
     "onOpenChange",
     "selected",
@@ -164,13 +164,16 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
     clsx("w-4", "h-4", local.selected ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
 
   return (
-    <div>
+    <>
       <button
         {...rest}
         type="button"
         use:ripple={useRipple()}
         class={getHeaderClassName()}
-        style={{ "padding-left": getIndentPadding() }}
+        style={{
+          "padding-left": getIndentPadding(),
+          ...(typeof local.style === "object" ? local.style : {}),
+        }}
         data-list-item
         role="treeitem"
         aria-expanded={hasChildren() ? openState() : undefined}
@@ -180,7 +183,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
         tabIndex={local.disabled ? -1 : 0}
         onClick={onHeaderClick}
         onFocus={(e) => {
-          const treeRoot = e.currentTarget.closest("[role='tree']");
+          const treeRoot = e.currentTarget.closest("[data-list]");
           treeRoot?.querySelectorAll("[data-list-item]").forEach((el) => {
             (el as HTMLElement).tabIndex = -1;
           });
@@ -200,6 +203,6 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
           {nestedList()}
         </Collapse>
       </Show>
-    </div>
+    </>
   );
 };

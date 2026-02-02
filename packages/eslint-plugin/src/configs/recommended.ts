@@ -155,19 +155,7 @@ export default defineConfig([
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-shadow": "error",
       "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
-      "@typescript-eslint/no-unnecessary-type-assertion": [
-        "error",
-        {
-          typesToIgnore: [
-            "HTMLButtonElement",
-            "HTMLInputElement",
-            "HTMLSelectElement",
-            "HTMLTextAreaElement",
-            "HTMLAnchorElement",
-            "HTMLFormElement",
-          ],
-        },
-      ],
+      "@typescript-eslint/no-unnecessary-type-assertion": "error",
       // "@typescript-eslint/non-nullable-type-assertion-style": "error",
       "@typescript-eslint/prefer-reduce-type-parameter": "error",
       "@typescript-eslint/prefer-return-this-type": "error",

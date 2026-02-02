@@ -3,9 +3,13 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ListContext, useListContext } from "./ListContext";
 
-const baseClass = clsx("flex", "flex-col", "bg-white", "dark:bg-gray-900", "rounded-md");
+const baseClass = clsx("flex flex-col", "rounded-md");
 
-const insetClass = clsx("bg-transparent");
+const rootClass = clsx("border border-gray-300 dark:border-gray-700", "bg-gray-50 dark:bg-gray-950", "p-px");
+
+const nestedClass = clsx("py-1", "rounded-none");
+
+const insetClass = clsx("bg-transparent", "border-transparent");
 
 export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**
@@ -67,7 +71,7 @@ export const List: ParentComponent<ListProps> = (props) => {
     } else {
       // button의 다음 형제 요소(Collapse) 내에서 첫 번째 자식 항목 찾기
       const collapse = current.nextElementSibling;
-      const nestedItem = collapse?.querySelector("[data-list-item]") as HTMLElement | null;
+      const nestedItem = collapse?.querySelector<HTMLElement>("[data-list-item]");
       nestedItem?.focus();
     }
   };
@@ -143,7 +147,14 @@ export const List: ParentComponent<ListProps> = (props) => {
     }
   };
 
-  const getClassName = () => twMerge(baseClass, local.inset && insetClass, local.class);
+  const getClassName = () =>
+    twMerge(
+      baseClass,
+      !isNested && rootClass,
+      (local.inset || isNested) && insetClass,
+      isNested && nestedClass,
+      local.class,
+    );
 
   return (
     <ListContext.Provider value={{ level: currentLevel }}>

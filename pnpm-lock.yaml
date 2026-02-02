@@ -418,6 +418,9 @@ importers:
       '@simplysm/solid':
         specifier: workspace:*
         version: link:../solid
+      '@tabler/icons-solidjs':
+        specifier: ^3.31.0
+        version: 3.36.1(solid-js@1.9.11)
       solid-js:
         specifier: ^1.9.11
         version: 1.9.11
