@@ -2,6 +2,7 @@ import type { SdConfigFn } from "@simplysm/cli";
 
 const config: SdConfigFn = () => ({
   packages: {
+    "capacitor-plugin-file-system": { target: "browser" },
     // "claude": { target: "scripts" },
     "cli": { target: "node" },
     "core-browser": { target: "browser" },
