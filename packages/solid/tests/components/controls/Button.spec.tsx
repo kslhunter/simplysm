@@ -206,6 +206,7 @@ describe("Button 컴포넌트", () => {
 
   describe("class 병합", () => {
     it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+      // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => <Button class="my-custom-class">Click</Button>);
       const button = getByRole("button");
 

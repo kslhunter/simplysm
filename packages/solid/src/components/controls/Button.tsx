@@ -10,7 +10,7 @@ type ButtonTheme = "primary" | "info" | "success" | "warning" | "danger" | "gray
 type ButtonVariant = "solid" | "outline" | "ghost";
 type ButtonSize = "sm" | "lg";
 
-const baseStyles = clsx(
+const baseClass = clsx(
   "py-1",
   "px-1.5",
   "font-bold",
@@ -22,7 +22,7 @@ const baseStyles = clsx(
   "focus-visible:ring-2",
 );
 
-const themeStyles: Record<ButtonTheme, Record<ButtonVariant, string>> = {
+const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   primary: {
     solid: clsx(
       "bg-primary-500 dark:bg-primary-600",
@@ -131,7 +131,7 @@ const themeStyles: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   },
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
+const sizeClasses: Record<ButtonSize, string> = {
   sm: clsx("py-0.5", "px-1.5"),
   lg: clsx("py-1.5", "px-3"),
 };
@@ -160,9 +160,9 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
     const variant = local.variant ?? "outline";
 
     return twMerge(
-      baseStyles,
-      themeStyles[theme][variant],
-      local.size && sizeStyles[local.size],
+      baseClass,
+      themeClasses[theme][variant],
+      local.size && sizeClasses[local.size],
       local.inset && "rounded-none border-none",
       local.disabled && "cursor-default opacity-50 pointer-events-none",
       local.class,
