@@ -119,6 +119,7 @@ const User = Table("User")
 - Chrome 84+ 타겟 (CSS는 트랜스파일 안됨)
   - 사용 가능: Flexbox gap
   - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
+- **SSR 미지원**: 서버 사이드 렌더링은 고려하지 않음. `window`, `document` 등 브라우저 API 직접 사용 가능
 
 ### SolidJS vs React 핵심 차이점
 

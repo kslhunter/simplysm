@@ -7,3 +7,4 @@ export * from "./contexts/ConfigContext";
 export * from "./contexts/usePersisted";
 export { ripple } from "./directives/ripple";
 export { createPropSignal } from "./hooks/createPropSignal";
+export { useRouterLink } from "./hooks/useRouterLink";
