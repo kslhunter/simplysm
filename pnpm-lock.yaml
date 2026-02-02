@@ -390,9 +390,15 @@ importers:
 
   packages/solid:
     dependencies:
+      '@simplysm/core-common':
+        specifier: workspace:*
+        version: link:../core-common
       '@solid-primitives/resize-observer':
         specifier: ^2.0.26
         version: 2.1.3(solid-js@1.9.11)
+      '@solid-primitives/storage':
+        specifier: ^4.3.1
+        version: 4.3.3(solid-js@1.9.11)
       '@tabler/icons-solidjs':
         specifier: ^3.31.0
         version: 3.36.1(solid-js@1.9.11)
@@ -1622,6 +1628,18 @@ packages:
     resolution: {integrity: sha512-ReK+5O38lJ7fT+L6mUFvUr6igFwHBESZF+2Ug842s7fvlVeBdIVEdTCErygff6w7uR6+jrr7J8jQo+cYrEq4Iw==}
     peerDependencies:
       solid-js: ^1.6.12
+
+  '@solid-primitives/storage@4.3.3':
+    resolution: {integrity: sha512-ACbNwMZ1s8VAvld6EUXkDkX/US3IhtlPLxg6+B2s9MwNUugwdd51I98LPEaHrdLpqPmyzqgoJe0TxEFlf3Dqrw==}
+    peerDependencies:
+      '@tauri-apps/plugin-store': '*'
+      solid-js: ^1.6.12
+      solid-start: '*'
+    peerDependenciesMeta:
+      '@tauri-apps/plugin-store':
+        optional: true
+      solid-start:
+        optional: true
 
   '@solid-primitives/utils@6.3.2':
     resolution: {integrity: sha512-hZ/M/qr25QOCcwDPOHtGjxTD8w2mNyVAYvcfgwzBHq2RwNqHNdDNsMZYap20+ruRwW4A3Cdkczyoz0TSxLCAPQ==}
@@ -5655,6 +5673,11 @@ snapshots:
       solid-js: 1.9.11
 
   '@solid-primitives/static-store@0.1.2(solid-js@1.9.11)':
+    dependencies:
+      '@solid-primitives/utils': 6.3.2(solid-js@1.9.11)
+      solid-js: 1.9.11
+
+  '@solid-primitives/storage@4.3.3(solid-js@1.9.11)':
     dependencies:
       '@solid-primitives/utils': 6.3.2(solid-js@1.9.11)
       solid-js: 1.9.11
