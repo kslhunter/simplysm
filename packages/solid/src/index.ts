@@ -1,2 +1,2 @@
 export * from "./components/controls/Button";
-export * from "./tailwind-preset";
+export { ripple } from "./directives/ripple";

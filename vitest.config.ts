@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { playwright } from "@vitest/browser-playwright";
+import tailwindcss from "tailwindcss";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -66,18 +67,21 @@ export default defineConfig({
           },
         },
       },
-      // SolidJS 테스트 (solid 패키지 전용, vite-plugin-solid + vanilla-extract 필요)
+      // SolidJS 테스트 (solid 패키지 전용)
       {
         extends: true,
         plugins: [
           tsconfigPaths({ projects: ["tsconfig.json"] }),
-          (await import("@vanilla-extract/vite-plugin")).vanillaExtractPlugin() as never,
           (await import("vite-plugin-solid")).default() as never,
         ],
+        css: {
+          postcss: {
+            plugins: [tailwindcss({ config: "./packages/solid/tailwind.config.ts" })],
+          },
+        },
         test: {
           name: "solid",
           include: ["packages/solid/tests/**/*.spec.{ts,tsx,js}"],
-          setupFiles: ["./packages/solid/tests/vitest-setup.ts"],
           browser: {
             enabled: true,
             provider: playwright(),

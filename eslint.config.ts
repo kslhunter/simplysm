@@ -7,7 +7,7 @@ export default [
     files: ["**/*.{ts,tsx}"],
     settings: {
       tailwindcss: {
-        config: "packages/solid/tailwind.config.ts",
+        config: "packages/solid-demo/tailwind.config.ts",
       },
     },
   },

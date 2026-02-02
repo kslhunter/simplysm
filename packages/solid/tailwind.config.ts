@@ -18,7 +18,7 @@ export default {
       },
     },
   },
-  content: [`${__dirname}src/**/*.tsx`],
+  content: [`${__dirname}src/**/*.{ts,tsx}`],
   corePlugins: {
     aspectRatio: false, // Chrome 84 미지원
   },

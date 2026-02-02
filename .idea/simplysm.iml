@@ -22,7 +22,16 @@
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core-browser/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core-node/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/eslint-plugin/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/excel/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-node/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-client/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-common/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/service-server/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/storage/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

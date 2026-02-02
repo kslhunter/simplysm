@@ -276,7 +276,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     ],
                     css: {
                       postcss: {
-                        plugins: [tailwindcss()],
+                        plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
                       },
                     },
                     esbuild: {
