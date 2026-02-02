@@ -82,6 +82,16 @@ importers:
         specifier: ^7.4.4
         version: 7.4.5
 
+  packages/capacitor-plugin-usb-storage:
+    dependencies:
+      '@simplysm/core-common':
+        specifier: workspace:*
+        version: link:../core-common
+    devDependencies:
+      '@capacitor/core':
+        specifier: ^7.4.4
+        version: 7.4.5
+
   packages/cli:
     dependencies:
       '@simplysm/core-common':
