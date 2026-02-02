@@ -72,6 +72,12 @@ importers:
         specifier: ^4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.19.30)(@vitest/browser-playwright@4.0.18)(happy-dom@20.3.7(bufferutil@4.1.0)(utf-8-validate@6.0.6))(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
+  packages/capacitor-plugin-broadcast:
+    devDependencies:
+      '@capacitor/core':
+        specifier: ^7.4.4
+        version: 7.4.5
+
   packages/capacitor-plugin-file-system:
     dependencies:
       '@simplysm/core-common':
