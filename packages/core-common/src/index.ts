@@ -43,6 +43,7 @@ export * from "./utils/template-strings";
 export * from "./utils/transferable";
 export * from "./utils/wait";
 export * from "./utils/xml";
+export * from "./utils/path";
 //#endregion
 
 //#region zip

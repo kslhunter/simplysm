@@ -8,3 +8,4 @@ import "./extensions/html-element-ext";
 export * from "./extensions/element-ext";
 export * from "./extensions/html-element-ext";
 export * from "./utils/blob";
+export * from "./utils/download";
