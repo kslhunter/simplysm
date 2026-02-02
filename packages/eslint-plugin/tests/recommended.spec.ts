@@ -169,12 +169,14 @@ describe("recommended 설정", () => {
   });
 
   it("TSX 파일에 solid 플러그인이 적용되어야 함", () => {
-    // TSX 전용 설정 (solid 플러그인이 있는 설정)
+    // TSX를 포함하는 설정에서 solid 플러그인이 있는 설정을 찾음
+    // (현재 구현에서는 **/*.ts, **/*.tsx를 함께 처리)
     const tsxSolidConfig = recommended.find(
       (config) =>
         hasFiles(config) &&
-        flattenFiles(config.files).length === 1 &&
-        flattenFiles(config.files)[0] === "**/*.tsx",
+        flattenFiles(config.files).some((f) => f.includes(".tsx")) &&
+        hasPlugins(config) &&
+        "solid" in config.plugins,
     );
     expect(tsxSolidConfig).toBeDefined();
     if (tsxSolidConfig == null) return;

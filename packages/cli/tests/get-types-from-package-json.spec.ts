@@ -4,11 +4,11 @@ import path from "path";
 // core-node 함수 모킹
 vi.mock("@simplysm/core-node", () => ({
   fsExists: vi.fn(),
-  fsReadJsonAsync: vi.fn(),
+  fsReadJson: vi.fn(),
   pathPosix: vi.fn((p: string) => p.replace(/\\/g, "/")),
 }));
 
-import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
+import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { getTypesFromPackageJson } from "../src/utils/tsconfig";
 
 describe("getTypesFromPackageJson", () => {
@@ -23,10 +23,10 @@ describe("getTypesFromPackageJson", () => {
   it("@types/* devDependencies를 types 목록으로 변환", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJsonAsync = vi.mocked(fsReadJsonAsync);
+    const mockFsReadJson = vi.mocked(fsReadJson);
 
-    mockFsExists.mockReturnValue(true);
-    mockFsReadJsonAsync.mockResolvedValue({
+    mockFsExists.mockResolvedValue(true);
+    mockFsReadJson.mockResolvedValue({
       devDependencies: {
         "@types/node": "^20.0.0",
         "@types/express": "^4.17.0",
@@ -45,7 +45,7 @@ describe("getTypesFromPackageJson", () => {
     const packageDir = "/project/packages/unknown";
     const mockFsExists = vi.mocked(fsExists);
 
-    mockFsExists.mockReturnValue(false);
+    mockFsExists.mockResolvedValue(false);
 
     const result = await getTypesFromPackageJson(packageDir);
 
@@ -55,10 +55,10 @@ describe("getTypesFromPackageJson", () => {
   it("devDependencies가 없으면 빈 배열 반환", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJsonAsync = vi.mocked(fsReadJsonAsync);
+    const mockFsReadJson = vi.mocked(fsReadJson);
 
-    mockFsExists.mockReturnValue(true);
-    mockFsReadJsonAsync.mockResolvedValue({
+    mockFsExists.mockResolvedValue(true);
+    mockFsReadJson.mockResolvedValue({
       name: "@simplysm/core-common",
       version: "1.0.0",
     });
@@ -71,10 +71,10 @@ describe("getTypesFromPackageJson", () => {
   it("@types/*가 아닌 의존성은 필터링", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJsonAsync = vi.mocked(fsReadJsonAsync);
+    const mockFsReadJson = vi.mocked(fsReadJson);
 
-    mockFsExists.mockReturnValue(true);
-    mockFsReadJsonAsync.mockResolvedValue({
+    mockFsExists.mockResolvedValue(true);
+    mockFsReadJson.mockResolvedValue({
       devDependencies: {
         "typescript": "^5.0.0",
         "vitest": "^1.0.0",
@@ -90,10 +90,10 @@ describe("getTypesFromPackageJson", () => {
   it("scoped @types 패키지도 올바르게 처리", async () => {
     const packageDir = "/project/packages/core-common";
     const mockFsExists = vi.mocked(fsExists);
-    const mockFsReadJsonAsync = vi.mocked(fsReadJsonAsync);
+    const mockFsReadJson = vi.mocked(fsReadJson);
 
-    mockFsExists.mockReturnValue(true);
-    mockFsReadJsonAsync.mockResolvedValue({
+    mockFsExists.mockResolvedValue(true);
+    mockFsReadJson.mockResolvedValue({
       devDependencies: {
         "@types/node": "^20.0.0",
         "@types/babel__core": "^7.0.0",

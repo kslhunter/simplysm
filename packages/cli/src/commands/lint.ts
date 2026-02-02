@@ -64,9 +64,14 @@ function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
  * @internal 테스트용으로 export
  */
 export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
-  const configPath = ESLINT_CONFIG_FILES
-    .map((f) => path.join(cwd, f))
-    .find((p) => fsExists(p));
+  let configPath: string | undefined;
+  for (const f of ESLINT_CONFIG_FILES) {
+    const p = path.join(cwd, f);
+    if (await fsExists(p)) {
+      configPath = p;
+      break;
+    }
+  }
 
   if (configPath == null) {
     throw new SdError(

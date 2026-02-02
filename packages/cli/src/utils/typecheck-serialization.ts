@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { fsExists, fsRead } from "@simplysm/core-node";
+import { fsExistsSync, fsReadSync } from "@simplysm/core-node";
 
 /**
  * Worker로 전달 가능한 직렬화된 Diagnostic
@@ -54,10 +54,7 @@ function getScriptKind(fileName: string): ts.ScriptKind {
  * @param fileCache 파일 내용 캐시 (동일 파일 중복 읽기 방지)
  * @returns 복원된 ts.Diagnostic 객체
  */
-export function deserializeDiagnostic(
-  serialized: SerializedDiagnostic,
-  fileCache: Map<string, string>,
-): ts.Diagnostic {
+export function deserializeDiagnostic(serialized: SerializedDiagnostic, fileCache: Map<string, string>): ts.Diagnostic {
   let file: ts.SourceFile | undefined;
   if (serialized.file != null) {
     const fileName = serialized.file.fileName;
@@ -66,7 +63,7 @@ export function deserializeDiagnostic(
     // 파일이 삭제되었거나 접근 불가능한 경우 빈 내용으로 처리
     // (소스 코드 컨텍스트는 표시되지 않지만 진단 메시지는 정상 출력됨)
     if (!fileCache.has(fileName)) {
-      fileCache.set(fileName, fsExists(fileName) ? fsRead(fileName) : "");
+      fileCache.set(fileName, fsExistsSync(fileName) ? fsReadSync(fileName) : "");
     }
     const content = fileCache.get(fileName)!;
 

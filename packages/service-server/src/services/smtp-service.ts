@@ -40,7 +40,7 @@ export class SmtpService extends ServiceBase implements SmtpServiceType {
   }
 
   async sendByConfig(configName: string, options: SmtpSendByConfigOption): Promise<string> {
-    const config = (await this.getConfigAsync<Record<string, SmtpConfig | undefined>>("smtp"))[
+    const config = (await this.getConfig<Record<string, SmtpConfig | undefined>>("smtp"))[
       configName
     ];
     if (config == null) {

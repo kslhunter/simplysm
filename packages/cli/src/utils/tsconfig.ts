@@ -14,7 +14,7 @@ const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
  */
 export async function getTypesFromPackageJson(packageDir: string): Promise<string[]> {
   const packageJsonPath = path.join(packageDir, "package.json");
-  if (!fsExists(packageJsonPath)) {
+  if (!(await fsExists(packageJsonPath))) {
     return [];
   }
 

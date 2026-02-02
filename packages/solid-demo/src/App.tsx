@@ -1,4 +1,5 @@
 import { createSignal, For } from "solid-js";
+import { A } from "@solidjs/router";
 import { Button, Collapse, List, ListItem } from "@simplysm/solid";
 import {
   IconCheck,
@@ -27,6 +28,15 @@ export const App = () => {
 
   return (
     <div class="space-y-8 p-8">
+      {/* Navigation */}
+      <section>
+        <A href="/sidebar" class="text-primary-600 hover:underline">
+          → Sidebar Demo
+        </A>
+      </section>
+
+      <hr class="my-8 border-gray-300" />
+
       <h1 class="mb-4 text-2xl font-bold">Button Demo</h1>
 
       {/* Variants by Theme */}

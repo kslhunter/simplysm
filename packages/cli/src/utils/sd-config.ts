@@ -16,7 +16,7 @@ export async function loadSdConfig(params: {
 }): Promise<SdConfig> {
   const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
 
-  if (!fsExists(sdConfigPath)) {
+  if (!(await fsExists(sdConfigPath))) {
     throw new SdError(`sd.config.ts 파일을 찾을 수 없습니다: ${sdConfigPath}`);
   }
 

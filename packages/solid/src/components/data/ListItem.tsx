@@ -1,4 +1,4 @@
-import { children, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import { children, createMemo, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -119,15 +119,23 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
 
   const resolved = children(() => local.children);
 
-  const nestedList = () =>
-    resolved.toArray().find((c) => c instanceof HTMLElement && c.dataset["list"] !== undefined) as
-      | HTMLElement
-      | undefined;
+  const slots = createMemo(() => {
+    const arr = resolved.toArray();
+    let nestedList: HTMLElement | undefined;
+    const content: (typeof arr)[number][] = [];
 
-  const content = () =>
-    resolved.toArray().filter((c) => !(c instanceof HTMLElement && c.dataset["list"] !== undefined));
+    for (const c of arr) {
+      if (c instanceof HTMLElement && c.dataset["list"] !== undefined) {
+        nestedList = c;
+      } else {
+        content.push(c);
+      }
+    }
 
-  const hasChildren = () => nestedList() !== undefined;
+    return { nestedList, content };
+  });
+
+  const hasChildren = () => slots().nestedList !== undefined;
 
   const useRipple = () => !(local.readonly || local.disabled);
 
@@ -193,14 +201,14 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
         <Show when={local.selectedIcon && !hasChildren()}>
           {local.selectedIcon?.({ class: getSelectedIconClassName() })}
         </Show>
-        <span class="flex-1 text-left">{content()}</span>
+        <span class="flex-1 text-left">{slots().content}</span>
         <Show when={hasChildren()}>
           <IconChevronDown class={getChevronClassName()} />
         </Show>
       </button>
       <Show when={hasChildren()}>
         <Collapse open={openState()} data-collapsed={!openState() || undefined}>
-          {nestedList()}
+          {slots().nestedList}
         </Collapse>
       </Show>
     </>

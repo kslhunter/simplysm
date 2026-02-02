@@ -123,8 +123,8 @@ describe("Queryable 에러 케이스", () => {
           .user()
           .select((u) => ({ name: u.name }))
           .distinct()
-          .countAsync(),
-      ).rejects.toThrow("distinct() 후에는 countAsync()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
+          .count(),
+      ).rejects.toThrow("distinct() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
     });
 
     it("groupBy() 후 직접 호출하면 에러", async () => {
@@ -134,8 +134,8 @@ describe("Queryable 에러 케이스", () => {
         db
           .user()
           .groupBy((u) => [u.name])
-          .countAsync(),
-      ).rejects.toThrow("groupBy() 후에는 countAsync()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
+          .count(),
+      ).rejects.toThrow("groupBy() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
     });
   });
 

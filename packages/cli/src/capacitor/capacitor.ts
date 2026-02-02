@@ -136,7 +136,7 @@ export class Capacitor {
    */
   private async _validateTools(): Promise<void> {
     // Android SDK 확인
-    const sdkPath = this._findAndroidSdk();
+    const sdkPath = await this._findAndroidSdk();
     if (sdkPath == null) {
       throw new Error(
         "Android SDK를 찾을 수 없습니다.\n" +
@@ -425,7 +425,7 @@ export default config;
   private async _addPlatforms(): Promise<void> {
     for (const platform of this._platforms) {
       const platformPath = path.resolve(this._capPath, platform);
-      if (fsExists(platformPath)) {
+      if (await fsExists(platformPath)) {
         Capacitor._logger.debug(`플랫폼 이미 존재: ${platform}`);
         continue;
       }
@@ -569,7 +569,7 @@ export default config;
   private async _configureAndroidSdkPath(androidPath: string): Promise<void> {
     const localPropsPath = path.resolve(androidPath, "local.properties");
 
-    const sdkPath = this._findAndroidSdk();
+    const sdkPath = await this._findAndroidSdk();
     if (sdkPath != null) {
       // F9: 항상 forward slash 사용 (Gradle 호환)
       await fsWrite(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
@@ -585,9 +585,9 @@ export default config;
   /**
    * Android SDK 경로 탐색
    */
-  private _findAndroidSdk(): string | undefined {
+  private async _findAndroidSdk(): Promise<string | undefined> {
     const fromEnv = process.env["ANDROID_HOME"] ?? process.env["ANDROID_SDK_ROOT"];
-    if (fromEnv != null && fsExists(fromEnv)) {
+    if (fromEnv != null && (await fsExists(fromEnv))) {
       return fromEnv;
     }
 
@@ -599,7 +599,7 @@ export default config;
     ];
 
     for (const candidate of candidates) {
-      if (fsExists(candidate)) {
+      if (await fsExists(candidate)) {
         return candidate;
       }
     }

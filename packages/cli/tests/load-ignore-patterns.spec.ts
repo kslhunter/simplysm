@@ -31,7 +31,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -51,7 +51,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -71,7 +71,7 @@ describe("loadIgnorePatterns", () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
-    mockExists.mockReturnValue(false);
+    mockExists.mockResolvedValue(false);
 
     await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint 설정 파일을 찾을 수 없습니다");
   });
@@ -81,7 +81,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -96,7 +96,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -116,7 +116,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.js");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.js"));
     });
 
     mockJitiImportFn.mockResolvedValue([
@@ -133,7 +133,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -151,7 +151,7 @@ describe("loadIgnorePatterns", () => {
 
     mockExists.mockImplementation((filePath: string) => {
       // eslint.config.ts는 없고 eslint.config.mts만 존재
-      return filePath === path.join(cwd, "eslint.config.mts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.mts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -171,7 +171,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockResolvedValue({
@@ -188,7 +188,7 @@ describe("loadIgnorePatterns", () => {
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      return filePath === path.join(cwd, "eslint.config.ts");
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
     });
 
     mockJitiImportFn.mockRejectedValue(new Error("Syntax error in config file"));

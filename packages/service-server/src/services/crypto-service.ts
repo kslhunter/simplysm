@@ -33,6 +33,6 @@ export class CryptoService extends ServiceBase implements CryptoServiceType {
   }
 
   private async _getConf() {
-    return this.getConfigAsync<CryptoConfig>("crypto");
+    return this.getConfig<CryptoConfig>("crypto");
   }
 }

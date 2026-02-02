@@ -58,13 +58,13 @@ describe("ripple directive", () => {
     const { getByRole } = render(() => <Button>Click</Button>);
     const button = getByRole("button");
 
-    // pointerdown 전에는 overflow-hidden 없음
-    expect(button.classList.contains("overflow-hidden")).toBe(false);
+    // pointerdown 전에는 overflow: hidden 스타일 없음
+    expect(button.style.overflow).not.toBe("hidden");
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 25 });
 
-    // pointerdown 후에는 overflow-hidden 있음
-    expect(button.classList.contains("overflow-hidden")).toBe(true);
+    // pointerdown 후에는 overflow: hidden 인라인 스타일 적용됨
+    expect(button.style.overflow).toBe("hidden");
   });
 
   it("마우스를 누르고 있는 동안 ripple이 유지된다", () => {

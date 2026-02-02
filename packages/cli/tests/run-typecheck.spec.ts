@@ -49,7 +49,9 @@ vi.mock("@simplysm/core-node", () => {
 
   return {
     fsExists: vi.fn(),
-    fsReadJsonAsync: vi.fn(),
+    fsExistsSync: vi.fn(() => false),
+    fsReadJson: vi.fn(),
+    fsReadSync: vi.fn(() => ""),
     pathPosix: vi.fn(posix),
     pathIsChildPath: vi.fn(isChildPath),
     pathFilterByTargets: vi.fn((files: string[], targets: string[], cwd: string) => {
@@ -103,7 +105,7 @@ vi.mock("jiti", () => ({
 }));
 
 import ts from "typescript";
-import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
+import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { runTypecheck } from "../src/commands/typecheck";
 
 describe("runTypecheck", () => {
@@ -189,8 +191,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -214,7 +216,7 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsExists).mockResolvedValue(false);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -235,8 +237,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     // sd.config.ts의 default export가 함수가 아닌 객체인 경우
     mockJitiImport.mockResolvedValue({
@@ -262,8 +264,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     // sd.config.ts에 default export가 없는 경우
     mockJitiImport.mockResolvedValue({
@@ -293,8 +295,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
 
@@ -312,8 +314,8 @@ describe("runTypecheck", () => {
       errors: [],
     } as unknown as ts.ParsedCommandLine);
 
-    vi.mocked(fsExists).mockReturnValue(false);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({ devDependencies: {} });
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
     // Worker가 에러 결과를 반환하도록 모킹
     const { Worker } = await import("@simplysm/core-node");

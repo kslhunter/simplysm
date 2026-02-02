@@ -143,9 +143,9 @@ async function waitWithCountdown(message: string, seconds: number): Promise<void
  * 프로젝트 및 패키지 버전 업그레이드
  * @param dryRun true면 파일 수정 없이 새 버전만 계산
  */
-function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolean): string {
+async function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolean): Promise<string> {
   const projPkgPath = path.resolve(cwd, "package.json");
-  const projPkg = fsReadJson<PackageJson>(projPkgPath);
+  const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
   const currentVersion = projPkg.version;
   const prereleaseInfo = semver.prerelease(currentVersion);
@@ -162,14 +162,14 @@ function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolean): st
   }
 
   projPkg.version = newVersion;
-  fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
+  await fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
 
   // 각 패키지 package.json 버전 설정
   for (const pkgPath of allPkgPaths) {
     const pkgJsonPath = path.resolve(pkgPath, "package.json");
-    const pkgJson = fsReadJson<PackageJson>(pkgJsonPath);
+    const pkgJson = await fsReadJson<PackageJson>(pkgJsonPath);
     pkgJson.version = newVersion;
-    fsWrite(pkgJsonPath, jsonStringify(pkgJson, { space: 2 }) + "\n");
+    await fsWrite(pkgJsonPath, jsonStringify(pkgJson, { space: 2 }) + "\n");
   }
 
   return newVersion;
@@ -286,11 +286,15 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   // package.json 로드
   const projPkgPath = path.resolve(cwd, "package.json");
-  const projPkg = fsReadJson<PackageJson>(projPkgPath);
+  const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
   // 패키지 경로 수집
-  const allPkgPaths = (projPkg.workspaces ?? [])
-    .flatMap((item) => fsGlob(path.resolve(cwd, item)))
+  const allPkgPaths = (
+    await Promise.all(
+      (projPkg.workspaces ?? []).map((item) => fsGlob(path.resolve(cwd, item))),
+    )
+  )
+    .flat()
     .filter((item) => !item.includes("."));
 
   // publish 설정이 있는 패키지 필터링
@@ -331,7 +335,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   logger.debug("배포 대상 패키지", publishPackages.map((p) => p.name));
 
   // Git 사용 여부 확인
-  const hasGit = fsExists(path.resolve(cwd, ".git"));
+  const hasGit = await fsExists(path.resolve(cwd, ".git"));
 
   //#region Phase 1: 사전 검증
 
@@ -410,7 +414,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   } else {
     // 버전 업그레이드
     logger.debug("버전 업그레이드...");
-    version = upgradeVersion(cwd, allPkgPaths, dryRun);
+    version = await upgradeVersion(cwd, allPkgPaths, dryRun);
     if (dryRun) {
       logger.info(`[DRY-RUN] 버전 업그레이드: ${projPkg.version} → ${version} (파일 수정 없음)`);
     } else {

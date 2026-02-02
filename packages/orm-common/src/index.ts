@@ -93,7 +93,7 @@ export type {
 export { dialects } from "./types/db";
 
 // Result parsing
-export { parseQueryResultAsync } from "./utils/result-parser";
+export { parseQueryResult } from "./utils/result-parser";
 
 // Column types
 export type {

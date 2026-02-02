@@ -5,7 +5,7 @@ import type { AutoUpdateService as AutoUpdateServiceType } from "@simplysm/servi
 import { ServiceBase } from "../core/service-base";
 
 export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceType {
-  getLastVersion(platform: string): Promise<
+  async getLastVersion(platform: string): Promise<
     | {
         version: string;
         downloadPath: string;
@@ -15,9 +15,9 @@ export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceT
     const clientPath = this.clientPath;
     if (clientPath == null) throw new Error("클라이언트 경로를 찾을 수 없습니다.");
 
-    if (!fsExists(path.resolve(clientPath, platform, "updates"))) return Promise.resolve(undefined);
+    if (!(await fsExists(path.resolve(clientPath, platform, "updates")))) return undefined;
 
-    const updates = fsReaddir(path.resolve(clientPath, platform, "updates"));
+    const updates = await fsReaddir(path.resolve(clientPath, platform, "updates"));
     const versions = updates
       .map((item) => ({
         fileName: item,
@@ -37,17 +37,17 @@ export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceT
       "*",
     );
 
-    if (version == null) return Promise.resolve(undefined);
+    if (version == null) return undefined;
 
     const versionItem = versions.find((item) => item.version === version);
-    if (versionItem == null) return Promise.resolve(undefined);
+    if (versionItem == null) return undefined;
 
     const downloadPath =
       "/" + path.join(this.clientName ?? "", platform, "updates", versionItem.fileName);
 
-    return Promise.resolve({
-      version,
+    return {
+      version: version.toString(),
       downloadPath,
-    });
+    };
   }
 }

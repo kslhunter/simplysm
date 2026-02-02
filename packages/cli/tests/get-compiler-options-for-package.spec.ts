@@ -4,11 +4,11 @@ import type ts from "typescript";
 // core-node 함수 모킹
 vi.mock("@simplysm/core-node", () => ({
   fsExists: vi.fn(),
-  fsReadJsonAsync: vi.fn(),
+  fsReadJson: vi.fn(),
   pathPosix: vi.fn((p: string) => p.replace(/\\/g, "/")),
 }));
 
-import { fsExists, fsReadJsonAsync } from "@simplysm/core-node";
+import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { getCompilerOptionsForPackage } from "../src/utils/tsconfig";
 
 describe("getCompilerOptionsForPackage", () => {
@@ -28,8 +28,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("node 타겟: DOM lib 제거, types에 node 포함", async () => {
     const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockReturnValue(true);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({
+    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fsReadJson).mockResolvedValue({
       devDependencies: {
         "@types/express": "^4.17.0",
       },
@@ -46,8 +46,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("browser 타겟: lib 유지, types에서 node 제거", async () => {
     const packageDir = "/project/packages/core-browser";
-    vi.mocked(fsExists).mockReturnValue(true);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({
+    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fsReadJson).mockResolvedValue({
       devDependencies: {
         "@types/node": "^20.0.0",
         "@types/react": "^18.0.0",
@@ -65,8 +65,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("neutral 타겟: lib 유지, types에 node 포함", async () => {
     const packageDir = "/project/packages/core-common";
-    vi.mocked(fsExists).mockReturnValue(true);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({
+    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fsReadJson).mockResolvedValue({
       devDependencies: {
         "@types/lodash": "^4.0.0",
       },
@@ -83,8 +83,8 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("node 타겟: 중복된 node 타입 제거", async () => {
     const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockReturnValue(true);
-    vi.mocked(fsReadJsonAsync).mockResolvedValue({
+    vi.mocked(fsExists).mockResolvedValue(true);
+    vi.mocked(fsReadJson).mockResolvedValue({
       devDependencies: {
         "@types/node": "^20.0.0",
       },
@@ -98,7 +98,7 @@ describe("getCompilerOptionsForPackage", () => {
 
   it("package.json이 없는 경우 빈 types로 처리", async () => {
     const packageDir = "/project/packages/unknown";
-    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsExists).mockResolvedValue(false);
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 
@@ -111,7 +111,7 @@ describe("getCompilerOptionsForPackage", () => {
       strict: true,
     };
     const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsExists).mockResolvedValue(false);
 
     const result = await getCompilerOptionsForPackage(optionsWithoutLib, "node", packageDir);
 
@@ -127,7 +127,7 @@ describe("getCompilerOptionsForPackage", () => {
       strict: true,
     };
     const packageDir = "/project/packages/core-node";
-    vi.mocked(fsExists).mockReturnValue(false);
+    vi.mocked(fsExists).mockResolvedValue(false);
 
     await getCompilerOptionsForPackage(originalOptions, "node", packageDir);
 

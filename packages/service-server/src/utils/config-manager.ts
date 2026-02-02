@@ -24,7 +24,7 @@ export class ConfigManager {
       return this._cache.get(filePath) as T;
     }
 
-    if (!fsExists(filePath)) return undefined;
+    if (!(await fsExists(filePath))) return undefined;
 
     // 2. 로드 및 캐시
     const config = await fsReadJson(filePath);
@@ -37,7 +37,7 @@ export class ConfigManager {
         this._watchers.set(filePath, watcher);
 
         watcher.onChange({ delay: 100 }, async () => {
-          if (!fsExists(filePath)) {
+          if (!(await fsExists(filePath))) {
             this._cache.delete(filePath);
             await this._closeWatcher(filePath);
             logger.debug(`설정 파일 삭제됨: ${path.basename(filePath)}`);

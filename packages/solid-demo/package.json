@@ -13,6 +13,7 @@
   "private": true,
   "dependencies": {
     "@simplysm/solid": "workspace:*",
+    "@solidjs/router": "^0.15.4",
     "@tabler/icons-solidjs": "^3.31.0",
     "solid-js": "^1.9.11"
   },

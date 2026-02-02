@@ -34,7 +34,7 @@ export class StaticFileHandler {
     }
 
     // 디렉토리면 index.html로
-    if (fsExists(targetFilePath) && (await fsStat(targetFilePath)).isDirectory()) {
+    if ((await fsExists(targetFilePath)) && (await fsStat(targetFilePath)).isDirectory()) {
       targetFilePath = path.resolve(targetFilePath, "index.html");
     }
 

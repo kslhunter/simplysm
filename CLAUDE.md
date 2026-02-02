@@ -123,8 +123,12 @@ const User = Table("User")
 
 ### SolidJS vs React 핵심 차이점
 
+**SolidJS와 React는 다르다! React에 대한 지식으로 SolidJS를 추측하지 말라**
 - **컴포넌트 함수는 마운트 시 한 번만 실행됨** (React는 상태 변경마다 재실행)
-- **`createMemo` 대부분 불필요** → 그냥 함수 `() => count() * 2`로 충분
+- **Fine-grained Reactivity**: 시그널이 변경되지 않으면 해당 expression 자체가 다시 평가되지 않음
+- **`createMemo`**: 비용이 비싼 계산을 여러 곳에서 사용할 때 필요
+  - 시그널 변경 시 같은 함수를 3곳에서 호출하면 3번 실행됨, `createMemo`는 1번 계산 + 캐시 반환
+  - 단순 조건 분기나 가벼운 연산은 일반 함수 `() => count() * 2`로도 충분
 - **Props 구조 분해 금지** → `{ label }` 대신 `props.label`로 접근 (반응성 유지)
 - **조건부: `<Show when={...}>`**, 리스트: **`<For each={...}>`** 사용
 
@@ -207,6 +211,7 @@ const User = Table("User")
 - 존재하지 않는 확장 메서드 사용 금지 → `core-common`의 실제 확장 메서드만 사용
 - SolidJS 스타일에서 `em` 단위 사용 금지 → `rem` 단위로 통일
 - 함수명에 `Async` 접미사 사용 금지 → 동기 버전에만 `Sync` 접미사 사용
+- 비용이 비싼 계산을 여러 곳에서 사용할 때 `createMemo` 미사용 → 시그널 변경 시 중복 계산 발생
 
 ### 검증 절차
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증

@@ -16,6 +16,10 @@ export default {
         warning: colors.amber,
         danger: colors.red,
       },
+      zIndex: {
+        sidebar: "100",
+        "sidebar-backdrop": "99",
+      },
     },
   },
   content: [`${__dirname}src/**/*.{ts,tsx}`],

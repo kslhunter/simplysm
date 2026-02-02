@@ -1,6 +1,5 @@
 import type { Accessor } from "solid-js";
 import { onCleanup } from "solid-js";
-import clsx from "clsx";
 
 declare module "solid-js" {
   namespace JSX {
