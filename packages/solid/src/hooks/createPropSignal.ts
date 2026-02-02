@@ -1,0 +1,57 @@
+import { createSignal } from "solid-js";
+
+/**
+ * 함수 타입을 제한하는 유틸리티 타입
+ * 함수 타입이 전달되면 never로 변환되어 컴파일 타임 에러 발생
+ *
+ * @remarks
+ * 함수를 저장해야 할 경우 객체로 감싸기: `createPropSignal<{ fn: () => void }>(...)`
+ */
+type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
+
+/**
+ * Controlled/Uncontrolled 패턴을 지원하는 signal hook
+ *
+ * @remarks
+ * - `onChange`가 제공되면 controlled 모드: 외부에서 값 관리
+ * - `onChange`가 없으면 uncontrolled 모드: 내부 상태 사용
+ * - 함수형 setter 지원: `setValue(prev => !prev)`
+ *
+ * @example
+ * ```tsx
+ * // Controlled 모드 (onOpenChange 제공)
+ * const [open, setOpen] = createPropSignal({
+ *   value: () => props.open ?? false,
+ *   onChange: () => props.onOpenChange,
+ * });
+ *
+ * // Uncontrolled 모드 (onOpenChange 미제공)
+ * const [open, setOpen] = createPropSignal({
+ *   value: () => props.open ?? false,
+ *   onChange: () => undefined,
+ * });
+ *
+ * // 함수형 setter
+ * setOpen(prev => !prev);
+ * ```
+ */
+export function createPropSignal<T>(options: {
+  value: () => T & NotFunction<T>;
+  onChange: () => ((value: T) => void) | undefined;
+}) {
+  const [internalValue, setInternalValue] = createSignal<T>(options.value());
+
+  const isControlled = () => options.onChange() !== undefined;
+  const value = () => (isControlled() ? options.value() : internalValue());
+  const setValue = (newValue: T | ((prev: T) => T)) => {
+    const resolved = typeof newValue === "function" ? (newValue as (prev: T) => T)(value()) : newValue;
+
+    if (isControlled()) {
+      options.onChange()?.(resolved);
+    } else {
+      setInternalValue(() => resolved);
+    }
+  };
+
+  return [value, setValue] as const;
+}

@@ -55,6 +55,7 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
   return (
     <div
       {...rest}
+      data-collapse
       class={twMerge("block", local.class)}
       style={{
         ...(typeof local.style === "object" ? local.style : {}),
