@@ -105,12 +105,12 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     // 진행 중인 요청 취소
     conn.cancel();
-    await waitUntil(() => this._requests.length < 1, undefined, 100);
+    await waitUntil(() => this._requests.length < 1, 30000, 100);
 
     // 연결 종료 대기
     await new Promise<void>((resolve) => {
       conn.on("end", () => {
-        waitUntil(() => this._conn == null, undefined, 100)
+        waitUntil(() => this._conn == null, 30000, 100)
           .then(() => resolve())
           .catch(() => resolve());
       });
@@ -299,7 +299,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     );
 
     await new Promise<void>((resolve, reject) => {
-      const bulkLoad = this._conn?.newBulkLoad(tableName, (err) => {
+      const bulkLoad = this._conn!.newBulkLoad(tableName, (err) => {
         if (err != null) {
           reject(
             new SdError(
@@ -311,7 +311,6 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         }
         resolve();
       });
-      if (bulkLoad == null) throw new SdError("BulkLoad 생성 실패");
 
       const colNames = Object.keys(columnMetas);
 
@@ -322,7 +321,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       // 레코드를 row 배열로 변환 (컬럼 순서 유지)
       const rows = records.map((record) => colNames.map((colName) => record[colName]));
 
-      this._conn?.execBulkLoad(bulkLoad, rows);
+      this._conn!.execBulkLoad(bulkLoad, rows);
     });
   }
 

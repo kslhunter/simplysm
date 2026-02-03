@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSignal } from "solid-js";
 
 // 미디어 쿼리 mock
-const mockCreateMediaQuery = vi.fn(() => () => true);
+const mockCreateMediaQuery = vi.fn(() => () => true as boolean);
 vi.mock("@solid-primitives/media", () => ({
   createMediaQuery: () => mockCreateMediaQuery(),
 }));

@@ -6,7 +6,7 @@ import { ripple } from "../../directives/ripple";
 import { Collapse } from "../disclosure/Collapse";
 import { createPropSignal } from "../../hooks/createPropSignal";
 import { useListContext } from "./ListContext";
-import { mergeStyles } from "../../utils/mergeStyles";
+import { List } from "./List";
 
 void ripple;
 
@@ -32,6 +32,35 @@ const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text")
 const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
 
 const chevronClass = clsx("w-4", "h-4", "transition-transform", "duration-200", "motion-reduce:transition-none");
+
+const indentGuideClass = clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-gray-700");
+
+/**
+ * 중첩 리스트를 담는 서브 컴포넌트
+ *
+ * ListItem의 하위 아이템을 정의할 때 사용한다.
+ * 내부적으로 `<List inset>`으로 감싸서 Context와 키보드 네비게이션이 동작한다.
+ * 세로선 가이드가 자동으로 표시된다.
+ *
+ * @example
+ * ```tsx
+ * <ListItem>
+ *   Folder
+ *   <ListItem.Children>
+ *     <ListItem>File 1</ListItem>
+ *     <ListItem>File 2</ListItem>
+ *   </ListItem.Children>
+ * </ListItem>
+ * ```
+ */
+const ListItemChildren: ParentComponent = (props) => (
+  <div class="flex" data-list-item-children>
+    <div class={indentGuideClass} />
+    <List inset class="flex-1">
+      {props.children}
+    </List>
+  </div>
+);
 
 export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> {
   /**
@@ -73,7 +102,7 @@ export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonE
 /**
  * 리스트 아이템 컴포넌트
  *
- * 중첩 리스트를 children으로 포함하면 아코디언 동작을 지원한다.
+ * `ListItem.Children`으로 중첩 리스트를 포함하면 아코디언 동작을 지원한다.
  * controlled 모드로 사용하려면 open과 onOpenChange를 함께 제공한다.
  *
  * @example
@@ -90,13 +119,17 @@ export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonE
  * // 중첩 리스트 (아코디언)
  * <ListItem>
  *   Folder
- *   <List>
+ *   <ListItem.Children>
  *     <ListItem>File</ListItem>
- *   </List>
+ *   </ListItem.Children>
  * </ListItem>
  * ```
  */
-export const ListItem: ParentComponent<ListItemProps> = (props) => {
+interface ListItemComponent extends ParentComponent<ListItemProps> {
+  Children: typeof ListItemChildren;
+}
+
+export const ListItem: ListItemComponent = (props) => {
   const [local, rest] = splitProps(props, [
     "children",
     "class",
@@ -122,21 +155,21 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
 
   const slots = createMemo(() => {
     const arr = resolved.toArray();
-    let nestedList: HTMLElement | undefined;
+    let childrenSlot: HTMLElement | undefined;
     const content: (typeof arr)[number][] = [];
 
     for (const c of arr) {
-      if (c instanceof HTMLElement && c.dataset["list"] !== undefined) {
-        nestedList = c;
+      if (c instanceof HTMLElement && c.dataset["listItemChildren"] !== undefined) {
+        childrenSlot = c;
       } else {
         content.push(c);
       }
     }
 
-    return { nestedList, content };
+    return { childrenSlot, content };
   });
 
-  const hasChildren = () => slots().nestedList !== undefined;
+  const hasChildren = () => slots().childrenSlot !== undefined;
 
   const useRipple = () => !(local.readonly || local.disabled);
 
@@ -150,14 +183,6 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
     }
   };
 
-  const getIndentPadding = () => {
-    // level 1 = pl-1.5, level 2 = pl-6, level 3 = pl-10.5, ...
-    // 기본 패딩 1.5 + (level - 1) * 4.5
-    if (level <= 1) return undefined;
-    const padding = 1.5 + (level - 1) * 4.5;
-    return `${padding * 0.25}rem`; // 1 = 0.25rem
-  };
-
   const getHeaderClassName = () =>
     twMerge(
       headerBaseClass,
@@ -167,7 +192,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
       local.class,
     );
 
-  const getChevronClassName = () => twMerge(chevronClass, openState() ? "rotate-90" : "rotate-0");
+  const getChevronClassName = () => twMerge(chevronClass, openState() ? "rotate-0" : "rotate-90");
 
   const getSelectedIconClassName = () =>
     clsx("w-4", "h-4", local.selected ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
@@ -179,7 +204,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
         type="button"
         use:ripple={useRipple()}
         class={getHeaderClassName()}
-        style={mergeStyles(local.style, { "padding-left": getIndentPadding() })}
+        style={local.style}
         data-list-item
         role="treeitem"
         aria-expanded={hasChildren() ? openState() : undefined}
@@ -206,9 +231,11 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
       </button>
       <Show when={hasChildren()}>
         <Collapse open={openState()} data-collapsed={!openState() || undefined}>
-          {slots().nestedList}
+          {slots().childrenSlot}
         </Collapse>
       </Show>
     </>
   );
 };
+
+ListItem.Children = ListItemChildren;

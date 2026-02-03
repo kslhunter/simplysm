@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PostgresqlDbConn } from "@simplysm/orm-node";
 import { postgresqlConfig } from "../test-configs";
 import type { ColumnMeta } from "@simplysm/orm-common";
-import { DateTime, DateOnly } from "@simplysm/core-common";
+import { DateTime, DateOnly, Uuid } from "@simplysm/core-common";
 
 describe("PostgresqlDbConn", () => {
   let pg: typeof import("pg");
@@ -308,6 +308,168 @@ describe("PostgresqlDbConn", () => {
       expect((results[0][0] as Record<string, unknown>)["int_val"]).toBe(42);
       expect((results[0][1] as Record<string, unknown>)["bool_val"]).toBe(false);
       expect((results[0][1] as Record<string, unknown>)["int_val"]).toBe(-100);
+    });
+  });
+
+  describe("bulkInsert NULL 및 특수 타입 테스트", () => {
+    beforeAll(async () => {
+      conn = new PostgresqlDbConn(pg, pgCopyFrom, postgresqlConfig);
+      await conn.connect();
+
+      await conn.execute([
+        `DROP TABLE IF EXISTS "NullableTable"`,
+        `CREATE TABLE "NullableTable" (
+          id INT NOT NULL,
+          name VARCHAR(100) NULL,
+          value INT NULL
+        )`,
+      ]);
+    });
+
+    afterAll(async () => {
+      await conn.execute([`DROP TABLE IF EXISTS "NullableTable"`]);
+      await conn.close();
+    });
+
+    it("bulkInsert - NULL 값 삽입", async () => {
+      const columnMetas: Record<string, ColumnMeta> = {
+        id: { type: "number", dataType: { type: "int" } },
+        name: { type: "string", dataType: { type: "varchar", length: 100 }, nullable: true },
+        value: { type: "number", dataType: { type: "int" }, nullable: true },
+      };
+
+      const records = [
+        { id: 1, name: "test1", value: 100 },
+        { id: 2, name: null, value: 200 },
+        { id: 3, name: "test3", value: null },
+        { id: 4, name: null, value: null },
+      ];
+
+      await conn.bulkInsert('"NullableTable"', columnMetas, records);
+
+      const results = await conn.execute([`SELECT * FROM "NullableTable" ORDER BY id`]);
+
+      expect(results[0]).toHaveLength(4);
+      expect((results[0][0] as Record<string, unknown>)["name"]).toBe("test1");
+      expect((results[0][0] as Record<string, unknown>)["value"]).toBe(100);
+      expect((results[0][1] as Record<string, unknown>)["name"]).toBeNull();
+      expect((results[0][1] as Record<string, unknown>)["value"]).toBe(200);
+      expect((results[0][2] as Record<string, unknown>)["name"]).toBe("test3");
+      expect((results[0][2] as Record<string, unknown>)["value"]).toBeNull();
+      expect((results[0][3] as Record<string, unknown>)["name"]).toBeNull();
+      expect((results[0][3] as Record<string, unknown>)["value"]).toBeNull();
+    });
+  });
+
+  describe("bulkInsert UUID 및 binary 타입 테스트", () => {
+    beforeAll(async () => {
+      conn = new PostgresqlDbConn(pg, pgCopyFrom, postgresqlConfig);
+      await conn.connect();
+
+      await conn.execute([
+        `DROP TABLE IF EXISTS "UuidBinaryTable"`,
+        `CREATE TABLE "UuidBinaryTable" (
+          id INT NOT NULL,
+          uuid_val UUID NOT NULL,
+          binary_val BYTEA NOT NULL
+        )`,
+      ]);
+    });
+
+    afterAll(async () => {
+      await conn.execute([`DROP TABLE IF EXISTS "UuidBinaryTable"`]);
+      await conn.close();
+    });
+
+    it("bulkInsert - UUID 및 binary 타입 삽입", async () => {
+      const columnMetas: Record<string, ColumnMeta> = {
+        id: { type: "number", dataType: { type: "int" } },
+        uuid_val: { type: "Uuid", dataType: { type: "uuid" } },
+        binary_val: { type: "Bytes", dataType: { type: "binary" } },
+      };
+
+      const testUuid1 = Uuid.new();
+      const testUuid2 = Uuid.new();
+      const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
+      const testBinary2 = new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]);
+
+      const records = [
+        { id: 1, uuid_val: testUuid1, binary_val: testBinary1 },
+        { id: 2, uuid_val: testUuid2, binary_val: testBinary2 },
+      ];
+
+      await conn.bulkInsert('"UuidBinaryTable"', columnMetas, records);
+
+      const results = await conn.execute([`SELECT * FROM "UuidBinaryTable" ORDER BY id`]);
+
+      expect(results[0]).toHaveLength(2);
+      expect((results[0][0] as Record<string, unknown>)["uuid_val"]).toBe(testUuid1.toString());
+      expect((results[0][1] as Record<string, unknown>)["uuid_val"]).toBe(testUuid2.toString());
+      // PostgreSQL BYTEA는 Buffer로 반환됨
+      expect(new Uint8Array((results[0][0] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(testBinary1);
+      expect(new Uint8Array((results[0][1] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(testBinary2);
+    });
+  });
+
+  describe("트랜잭션 격리 수준 테스트", () => {
+    beforeAll(async () => {
+      conn = new PostgresqlDbConn(pg, pgCopyFrom, postgresqlConfig);
+      await conn.connect();
+
+      await conn.execute([
+        `DROP TABLE IF EXISTS "IsolationTable"`,
+        `CREATE TABLE "IsolationTable" (
+          id INT PRIMARY KEY,
+          value INT
+        )`,
+        `INSERT INTO "IsolationTable" (id, value) VALUES (1, 100)`,
+      ]);
+    });
+
+    afterAll(async () => {
+      await conn.execute([`DROP TABLE IF EXISTS "IsolationTable"`]);
+      await conn.close();
+    });
+
+    it("READ_UNCOMMITTED 격리 수준", async () => {
+      // PostgreSQL에서 READ_UNCOMMITTED는 READ_COMMITTED와 동일하게 동작
+      await conn.beginTransaction("READ_UNCOMMITTED");
+      expect(conn.isOnTransaction).toBe(true);
+
+      await conn.execute([`UPDATE "IsolationTable" SET value = 200 WHERE id = 1`]);
+      await conn.rollbackTransaction();
+      expect(conn.isOnTransaction).toBe(false);
+    });
+
+    it("READ_COMMITTED 격리 수준", async () => {
+      await conn.beginTransaction("READ_COMMITTED");
+      expect(conn.isOnTransaction).toBe(true);
+
+      await conn.execute([`UPDATE "IsolationTable" SET value = 300 WHERE id = 1`]);
+      await conn.commitTransaction();
+      expect(conn.isOnTransaction).toBe(false);
+    });
+
+    it("REPEATABLE_READ 격리 수준", async () => {
+      await conn.beginTransaction("REPEATABLE_READ");
+      expect(conn.isOnTransaction).toBe(true);
+
+      const results = await conn.execute([`SELECT * FROM "IsolationTable" WHERE id = 1`]);
+      expect(results[0]).toHaveLength(1);
+
+      await conn.rollbackTransaction();
+      expect(conn.isOnTransaction).toBe(false);
+    });
+
+    it("SERIALIZABLE 격리 수준", async () => {
+      await conn.beginTransaction("SERIALIZABLE");
+      expect(conn.isOnTransaction).toBe(true);
+
+      const results = await conn.execute([`SELECT * FROM "IsolationTable" WHERE id = 1`]);
+      expect(results[0]).toHaveLength(1);
+
+      await conn.commitTransaction();
+      expect(conn.isOnTransaction).toBe(false);
     });
   });
 });

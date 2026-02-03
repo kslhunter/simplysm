@@ -12,6 +12,7 @@ import {
 import {
   IconFold,
   IconHome,
+  IconLayersSubtract,
   IconLayoutList,
   IconLayoutSidebar,
   IconMenu2,
@@ -49,6 +50,11 @@ const menuItems: SidebarMenuItem[] = [
     title: "Navigation",
     icon: IconLayoutSidebar,
     children: [{ title: "Sidebar", href: "/home/navigation/sidebar" }],
+  },
+  {
+    title: "Overlay",
+    icon: IconLayersSubtract,
+    children: [{ title: "Dropdown", href: "/home/overlay/dropdown" }],
   },
 ];
 

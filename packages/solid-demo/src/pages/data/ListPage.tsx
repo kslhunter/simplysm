@@ -83,7 +83,7 @@ export default function ListPage() {
             <ListItem open={treeOpen1()} onOpenChange={setTreeOpen1}>
               <IconFolder class="mr-2 size-4 text-yellow-500" />
               Documents
-              <List>
+              <ListItem.Children>
                 <ListItem onClick={() => alert("Report.pdf")}>
                   <IconFile class="mr-2 size-4 text-gray-500" />
                   Report.pdf
@@ -92,12 +92,12 @@ export default function ListPage() {
                   <IconFile class="mr-2 size-4 text-gray-500" />
                   Notes.txt
                 </ListItem>
-              </List>
+              </ListItem.Children>
             </ListItem>
             <ListItem open={treeOpen2()} onOpenChange={setTreeOpen2}>
               <IconFolder class="mr-2 size-4 text-yellow-500" />
               Photos
-              <List>
+              <ListItem.Children>
                 <ListItem onClick={() => alert("Vacation.jpg")}>
                   <IconFile class="mr-2 size-4 text-gray-500" />
                   Vacation.jpg
@@ -105,7 +105,7 @@ export default function ListPage() {
                 <ListItem>
                   <IconFolder class="mr-2 size-4 text-yellow-500" />
                   2024
-                  <List>
+                  <ListItem.Children>
                     <ListItem onClick={() => alert("January.jpg")}>
                       <IconFile class="mr-2 size-4 text-gray-500" />
                       January.jpg
@@ -114,9 +114,9 @@ export default function ListPage() {
                       <IconFile class="mr-2 size-4 text-gray-500" />
                       February.jpg
                     </ListItem>
-                  </List>
+                  </ListItem.Children>
                 </ListItem>
-              </List>
+              </ListItem.Children>
             </ListItem>
           </List>
         </div>

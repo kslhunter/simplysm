@@ -136,9 +136,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -159,9 +159,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -179,9 +179,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -201,9 +201,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem open>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -221,9 +221,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem open>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -243,9 +243,9 @@ describe("List 컴포넌트", () => {
         <List>
           <ListItem open>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -294,14 +294,14 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("중첩 리스트", () => {
-    it("중첩 List가 있을 때 클릭 시 collapse 토글", () => {
+    it("ListItem.Children이 있을 때 클릭 시 collapse 토글", () => {
       const { getByRole } = render(() => (
         <List>
           <ListItem>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -319,14 +319,14 @@ describe("ListItem 컴포넌트", () => {
       expect(item.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("중첩 List가 있을 때 chevron 아이콘이 표시된다", () => {
+    it("ListItem.Children이 있을 때 chevron 아이콘이 표시된다", () => {
       const { container } = render(() => (
         <List>
           <ListItem>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -336,7 +336,7 @@ describe("ListItem 컴포넌트", () => {
       expect(svg).toBeTruthy();
     });
 
-    it("중첩 List가 없을 때 chevron 아이콘이 숨겨진다", () => {
+    it("ListItem.Children이 없을 때 chevron 아이콘이 숨겨진다", () => {
       const { container } = render(() => (
         <List>
           <ListItem>Simple Item</ListItem>
@@ -349,7 +349,7 @@ describe("ListItem 컴포넌트", () => {
       expect(svg).toBeFalsy();
     });
 
-    it("aria-expanded가 없으면 중첩 List가 없는 것으로 간주", () => {
+    it("aria-expanded가 없으면 ListItem.Children이 없는 것으로 간주", () => {
       const { getByRole } = render(() => (
         <List>
           <ListItem>Simple Item</ListItem>
@@ -360,14 +360,14 @@ describe("ListItem 컴포넌트", () => {
       expect(item.hasAttribute("aria-expanded")).toBe(false);
     });
 
-    it("중첩 List에 role=group이 적용된다", () => {
+    it("ListItem.Children 내부에 role=group이 적용된다", () => {
       const { getByRole } = render(() => (
         <List>
           <ListItem open>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -492,7 +492,7 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("selectedIcon", () => {
-    it("selectedIcon이 제공되고 중첩 List가 없을 때 아이콘이 표시된다", () => {
+    it("selectedIcon이 제공되고 ListItem.Children이 없을 때 아이콘이 표시된다", () => {
       const { container } = render(() => (
         <List>
           <ListItem selectedIcon={IconCheck}>Item</ListItem>
@@ -527,14 +527,14 @@ describe("ListItem 컴포넌트", () => {
       expect(svg?.classList.contains("text-black/30")).toBe(true);
     });
 
-    it("selectedIcon이 제공되고 중첩 List가 있을 때 아이콘이 숨겨진다", () => {
+    it("selectedIcon이 제공되고 ListItem.Children이 있을 때 아이콘이 숨겨진다", () => {
       const { container } = render(() => (
         <List>
           <ListItem selectedIcon={IconCheck}>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -549,7 +549,7 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("onClick", () => {
-    it("중첩 List가 없고 onClick이 제공될 때 클릭 시 호출된다", () => {
+    it("ListItem.Children이 없고 onClick이 제공될 때 클릭 시 호출된다", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -563,15 +563,15 @@ describe("ListItem 컴포넌트", () => {
       expect(onClick).toHaveBeenCalledTimes(1);
     });
 
-    it("중첩 List가 있을 때는 onClick 대신 collapse 토글이 발생한다", () => {
+    it("ListItem.Children이 있을 때는 onClick 대신 collapse 토글이 발생한다", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
           <ListItem onClick={onClick}>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -592,9 +592,9 @@ describe("ListItem 컴포넌트", () => {
         <List>
           <ListItem open={false} onOpenChange={onOpenChange}>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -614,9 +614,9 @@ describe("ListItem 컴포넌트", () => {
         <List>
           <ListItem open={open()} onOpenChange={setOpen}>
             Folder
-            <List>
+            <ListItem.Children>
               <ListItem>File</ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));
@@ -638,14 +638,14 @@ describe("ListItem 컴포넌트", () => {
         <List>
           <ListItem open>
             Level 1
-            <List>
+            <ListItem.Children>
               <ListItem open>
                 Level 2
-                <List>
+                <ListItem.Children>
                   <ListItem>Level 3</ListItem>
-                </List>
+                </ListItem.Children>
               </ListItem>
-            </List>
+            </ListItem.Children>
           </ListItem>
         </List>
       ));

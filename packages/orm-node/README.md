@@ -52,32 +52,32 @@ const orm = new SdOrm(MyDb, {
 });
 
 // 트랜잭션 내에서 실행
-await orm.connectAsync(async (db) => {
-  const users = await db.user().resultAsync();
+await orm.connect(async (db) => {
+  const users = await db.user().result();
   return users;
 });
 ```
 
 ### 트랜잭션
 
-`connectAsync`는 트랜잭션 내에서 콜백을 실행한다. 콜백이 성공하면 커밋, 예외 발생 시 롤백된다.
+`connect`는 트랜잭션 내에서 콜백을 실행한다. 콜백이 성공하면 커밋, 예외 발생 시 롤백된다.
 
 ```typescript
-await orm.connectAsync(async (db) => {
+await orm.connect(async (db) => {
   await db.user()
     .insert({ name: "John", email: "john@example.com" })
-    .executeAsync();
+    .execute();
 
   await db.order()
     .insert({ userId: 1, amount: 100 })
-    .executeAsync();
+    .execute();
 
   // 모든 쿼리가 성공하면 커밋, 실패하면 롤백
 });
 
 // 트랜잭션 없이 실행
-await orm.connectWithoutTransactionAsync(async (db) => {
-  const users = await db.user().resultAsync();
+await orm.connectWithoutTransaction(async (db) => {
+  const users = await db.user().result();
   return users;
 });
 ```
@@ -110,7 +110,7 @@ const orm = new SdOrm(MyDb, {
 import { DbConnFactory } from "@simplysm/orm-node";
 
 // MySQL
-const mysqlConn = await DbConnFactory.createAsync({
+const mysqlConn = await DbConnFactory.create({
   dialect: "mysql",
   host: "localhost",
   port: 3306,
@@ -120,7 +120,7 @@ const mysqlConn = await DbConnFactory.createAsync({
 });
 
 // MSSQL
-const mssqlConn = await DbConnFactory.createAsync({
+const mssqlConn = await DbConnFactory.create({
   dialect: "mssql",
   host: "localhost",
   port: 1433,
@@ -130,7 +130,7 @@ const mssqlConn = await DbConnFactory.createAsync({
 });
 
 // PostgreSQL
-const pgConn = await DbConnFactory.createAsync({
+const pgConn = await DbConnFactory.create({
   dialect: "postgresql",
   host: "localhost",
   port: 5432,
@@ -140,9 +140,9 @@ const pgConn = await DbConnFactory.createAsync({
 });
 
 // 연결 및 사용
-await mysqlConn.connectAsync();
-const results = await mysqlConn.executeAsync(["SELECT * FROM users"]);
-await mysqlConn.closeAsync();
+await mysqlConn.connect();
+const results = await mysqlConn.execute(["SELECT * FROM users"]);
+await mysqlConn.close();
 ```
 
 ## 클래스 구조

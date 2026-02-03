@@ -14,7 +14,7 @@ const baseClass = clsx(
   "z-sidebar",
   "flex",
   "flex-col",
-  "bg-gray-50",
+  "bg-gray-100",
   "dark:bg-gray-950",
   "border-r",
   "border-gray-200",

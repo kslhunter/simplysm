@@ -115,6 +115,7 @@ const User = Table("User")
 - `ServiceProtocol`: 메시지 분할/병합 (3MB 초과 시 300KB 청크)
 
 **SolidJS 컴포넌트:**
+- **Compound Components 패턴**: 복합 컴포넌트는 부모-자식 관계를 명시적으로 표현하는 Compound Components 패턴을 사용
 - 반응형: 520px 미만에서 모바일 UI
 - Chrome 84+ 타겟
   - TypeScript는 esbuild로 트랜스파일됨 → `?.`, `??` 등 최신 JS 문법 사용 가능

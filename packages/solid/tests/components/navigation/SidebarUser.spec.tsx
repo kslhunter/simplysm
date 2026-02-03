@@ -1,0 +1,185 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, fireEvent } from "@solidjs/testing-library";
+import { SidebarUser, type SidebarUserMenu } from "../../../src";
+
+describe("SidebarUser", () => {
+  beforeEach(() => {
+    // requestAnimationFrame mock (Collapse 애니메이션용)
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 0;
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe("렌더링", () => {
+    it("children을 렌더링", () => {
+      const { getByText } = render(() => (
+        <SidebarUser>
+          <span>사용자 이름</span>
+        </SidebarUser>
+      ));
+
+      expect(getByText("사용자 이름")).toBeTruthy();
+    });
+
+    it("menus가 없을 때 버튼에 aria-expanded 없음", () => {
+      const { container } = render(() => (
+        <SidebarUser>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button");
+      expect(button?.hasAttribute("aria-expanded")).toBe(false);
+    });
+
+    it("menus가 있을 때 버튼에 aria-expanded=false", () => {
+      const menus: SidebarUserMenu[] = [
+        { title: "로그아웃", onClick: () => {} },
+      ];
+
+      const { container } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button");
+      expect(button?.getAttribute("aria-expanded")).toBe("false");
+    });
+  });
+
+  describe("클릭 동작", () => {
+    it("menus가 없을 때 클릭해도 드롭다운이 열리지 않음", () => {
+      const { container } = render(() => (
+        <SidebarUser>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button")!;
+      fireEvent.click(button);
+
+      // aria-expanded가 없거나 변경되지 않음
+      expect(button.hasAttribute("aria-expanded")).toBe(false);
+    });
+
+    it("menus가 있을 때 클릭으로 드롭다운 토글", () => {
+      const menus: SidebarUserMenu[] = [
+        { title: "로그아웃", onClick: () => {} },
+      ];
+
+      const { container } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button")!;
+
+      // 초기 상태: 닫힘
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+
+      // 첫 번째 클릭: 열림
+      fireEvent.click(button);
+      expect(button.getAttribute("aria-expanded")).toBe("true");
+
+      // 두 번째 클릭: 닫힘
+      fireEvent.click(button);
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+    });
+  });
+
+  describe("메뉴 아이템 클릭", () => {
+    it("메뉴 아이템 클릭 시 onClick 호출", () => {
+      const onLogout = vi.fn();
+      const menus: SidebarUserMenu[] = [
+        { title: "로그아웃", onClick: onLogout },
+      ];
+
+      const { container, getByText } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      // 드롭다운 열기
+      const button = container.querySelector("button")!;
+      fireEvent.click(button);
+
+      // 메뉴 아이템 클릭
+      fireEvent.click(getByText("로그아웃"));
+
+      expect(onLogout).toHaveBeenCalledTimes(1);
+    });
+
+    it("메뉴 아이템 클릭 시 드롭다운 닫힘", () => {
+      const menus: SidebarUserMenu[] = [
+        { title: "프로필", onClick: () => {} },
+      ];
+
+      const { container, getByText } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button")!;
+
+      // 드롭다운 열기
+      fireEvent.click(button);
+      expect(button.getAttribute("aria-expanded")).toBe("true");
+
+      // 메뉴 아이템 클릭
+      fireEvent.click(getByText("프로필"));
+
+      // 드롭다운 닫힘
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+    });
+  });
+
+  describe("스타일 적용", () => {
+    it("custom class가 병합됨", () => {
+      const { container } = render(() => (
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        <SidebarUser class="my-custom-class">
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      expect(container.querySelector(".my-custom-class")).toBeTruthy();
+    });
+
+    it("menus가 없을 때 hover 스타일이 적용되지 않음", () => {
+      const { container } = render(() => (
+        <SidebarUser>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button")!;
+      // cursor-default 클래스가 적용되어야 함
+      expect(button.classList.contains("cursor-default")).toBe(true);
+    });
+
+    it("menus가 있을 때 cursor-pointer 스타일 적용", () => {
+      const menus: SidebarUserMenu[] = [
+        { title: "로그아웃", onClick: () => {} },
+      ];
+
+      const { container } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const button = container.querySelector("button")!;
+      // cursor-pointer 클래스가 적용되어야 함
+      expect(button.classList.contains("cursor-pointer")).toBe(true);
+    });
+  });
+});

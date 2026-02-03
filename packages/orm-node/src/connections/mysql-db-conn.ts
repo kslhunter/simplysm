@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -46,6 +47,8 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
+      // root 사용자는 특정 database에 바인딩되지 않고 연결하여
+      // 모든 데이터베이스에 접근할 수 있도록 함 (관리 작업용)
       database: this.config.username === MysqlDbConn._ROOT_USER ? undefined : this.config.database,
       multipleStatements: true,
       charset: "utf8mb4",
@@ -177,7 +180,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     // 임시 CSV 파일 생성
     const tmpDir = os.tmpdir();
-    const tmpFile = path.join(tmpDir, `mysql_bulk_${Date.now()}_${Math.random().toString(36).slice(2)}.csv`);
+    const tmpFile = path.join(tmpDir, `mysql_bulk_${randomUUID()}.csv`);
 
     try {
       // CSV 데이터 생성

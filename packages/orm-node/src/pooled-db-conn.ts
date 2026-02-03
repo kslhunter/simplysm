@@ -1,7 +1,10 @@
+import { createConsola } from "consola";
 import { SdError, EventEmitter } from "@simplysm/core-common";
 import type { Pool } from "generic-pool";
 import type { ColumnMeta, IsolationLevel } from "@simplysm/orm-common";
 import { DB_CONN_ERRORS, type DbConn, type DbConnConfig } from "./types/db-conn";
+
+const logger = createConsola().withTag("pooled-db-conn");
 
 /**
  * 커넥션 풀에서 관리되는 DB 연결 래퍼
@@ -58,14 +61,24 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    */
   async close(): Promise<void> {
     if (this._rawConn != null) {
-      // 1. 리스너 해제 (Pool에 돌아가서 다른 래퍼에 의해 재사용될 때 영향 주지 않도록)
+      // 1. 트랜잭션 진행 중이면 롤백하여 깨끗한 상태로 풀에 반환
+      if (this._rawConn.isOnTransaction) {
+        try {
+          await this._rawConn.rollbackTransaction();
+        } catch (err) {
+          // 롤백 실패 시 로그만 남기고 계속 진행 (연결이 이미 끊긴 경우 등)
+          logger.warn("풀 반환 시 롤백 실패", err instanceof Error ? err.message : String(err));
+        }
+      }
+
+      // 2. 리스너 해제 (Pool에 돌아가서 다른 래퍼에 의해 재사용될 때 영향 주지 않도록)
       this._rawConn.off("close", this._onRawConnClose);
 
-      // 2. 풀에 커넥션 반환 (실제로 끊지 않음)
+      // 3. 풀에 커넥션 반환 (실제로 끊지 않음)
       await this._pool.release(this._rawConn);
       this._rawConn = undefined;
 
-      // 3. 소비자에게 논리적으로 연결이 닫혔음을 알림
+      // 4. 소비자에게 논리적으로 연결이 닫혔음을 알림
       this.emit("close");
     }
   }

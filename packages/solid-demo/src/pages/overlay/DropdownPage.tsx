@@ -1,0 +1,222 @@
+import { createSignal, For } from "solid-js";
+import { Button, Dropdown } from "@simplysm/solid";
+
+const menuItems = ["복사", "붙여넣기", "잘라내기", "삭제"];
+const longMenuItems = Array.from({ length: 20 }, (_, i) => `항목 ${i + 1}`);
+
+export default function DropdownPage() {
+  // 기본 드롭다운 상태
+  const [basicOpen, setBasicOpen] = createSignal(false);
+  const [basicSelected, setBasicSelected] = createSignal<string | null>(null);
+  let basicButtonRef: HTMLButtonElement | undefined;
+
+  // 컨텍스트 메뉴 상태
+  const [contextOpen, setContextOpen] = createSignal(false);
+  const [contextPosition, setContextPosition] = createSignal({ x: 0, y: 0 });
+  const [contextSelected, setContextSelected] = createSignal<string | null>(null);
+
+  // 위치 자동 조정 상태
+  const [autoPositionOpen, setAutoPositionOpen] = createSignal(false);
+  let autoPositionButtonRef: HTMLButtonElement | undefined;
+
+  // 최대 높이 상태
+  const [maxHeightOpen, setMaxHeightOpen] = createSignal(false);
+  const [maxHeightSelected, setMaxHeightSelected] = createSignal<string | null>(null);
+  let maxHeightButtonRef: HTMLButtonElement | undefined;
+
+  const handleContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+    setContextPosition({ x: e.clientX, y: e.clientY });
+    setContextOpen(true);
+  };
+
+  return (
+    <div class="space-y-8">
+      <h1 class="mb-4 text-2xl font-bold">Dropdown Demo</h1>
+
+      {/* 기본 드롭다운 메뉴 */}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">기본 드롭다운 메뉴</h2>
+        <p class="mb-4 text-sm text-gray-600">
+          외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.
+        </p>
+        <div class="flex items-center gap-4">
+          <Button
+            ref={basicButtonRef}
+            theme="primary"
+            variant="solid"
+            onClick={() => setBasicOpen(!basicOpen())}
+          >
+            메뉴 열기
+          </Button>
+          {basicSelected() != null && <span class="text-sm text-gray-600">선택: {basicSelected()}</span>}
+        </div>
+        <Dropdown triggerRef={() => basicButtonRef} open={basicOpen()} onOpenChange={setBasicOpen}>
+          <ul class="py-1">
+            <For each={menuItems}>
+              {(item) => (
+                <li
+                  role="menuitem"
+                  tabIndex={0}
+                  class="cursor-pointer px-4 py-2 outline-none hover:bg-gray-100 focus:bg-gray-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                  onClick={() => {
+                    setBasicSelected(item);
+                    setBasicOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setBasicSelected(item);
+                      setBasicOpen(false);
+                    }
+                  }}
+                >
+                  {item}
+                </li>
+              )}
+            </For>
+          </ul>
+        </Dropdown>
+      </section>
+
+      {/* 컨텍스트 메뉴 */}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">컨텍스트 메뉴</h2>
+        <p class="mb-4 text-sm text-gray-600">아래 영역에서 우클릭하세요.</p>
+        <div
+          class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800"
+          onContextMenu={handleContextMenu}
+        >
+          <span class="text-gray-500 dark:text-gray-400">우클릭 영역</span>
+        </div>
+        {contextSelected() != null && (
+          <p class="mt-2 text-sm text-gray-600">선택: {contextSelected()}</p>
+        )}
+        <Dropdown
+          position={contextPosition()}
+          open={contextOpen()}
+          onOpenChange={setContextOpen}
+        >
+          <ul class="py-1">
+            <For each={menuItems}>
+              {(item) => (
+                <li
+                  role="menuitem"
+                  tabIndex={0}
+                  class="cursor-pointer px-4 py-2 outline-none hover:bg-gray-100 focus:bg-gray-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                  onClick={() => {
+                    setContextSelected(item);
+                    setContextOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setContextSelected(item);
+                      setContextOpen(false);
+                    }
+                  }}
+                >
+                  {item}
+                </li>
+              )}
+            </For>
+          </ul>
+        </Dropdown>
+      </section>
+
+      {/* 위치 자동 조정 */}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">위치 자동 조정</h2>
+        <p class="mb-4 text-sm text-gray-600">
+          화면 하단에서 열면 위쪽으로 펼쳐집니다. 브라우저 창 크기를 줄여 테스트해 보세요.
+        </p>
+        <Button
+          ref={autoPositionButtonRef}
+          theme="info"
+          variant="solid"
+          onClick={() => setAutoPositionOpen(!autoPositionOpen())}
+        >
+          드롭다운 열기
+        </Button>
+        <Dropdown
+          triggerRef={() => autoPositionButtonRef}
+          open={autoPositionOpen()}
+          onOpenChange={setAutoPositionOpen}
+        >
+          <ul class="py-1">
+            <For each={menuItems}>
+              {(item) => (
+                <li
+                  role="menuitem"
+                  tabIndex={0}
+                  class="cursor-pointer px-4 py-2 outline-none hover:bg-gray-100 focus:bg-gray-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                  onClick={() => setAutoPositionOpen(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setAutoPositionOpen(false);
+                    }
+                  }}
+                >
+                  {item}
+                </li>
+              )}
+            </For>
+          </ul>
+        </Dropdown>
+      </section>
+
+      {/* 최대 높이 설정 */}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">최대 높이 설정</h2>
+        <p class="mb-4 text-sm text-gray-600">
+          maxHeight prop으로 최대 높이를 설정하면 내용이 넘칠 때 스크롤됩니다.
+        </p>
+        <div class="flex items-center gap-4">
+          <Button
+            ref={maxHeightButtonRef}
+            theme="success"
+            variant="solid"
+            onClick={() => setMaxHeightOpen(!maxHeightOpen())}
+          >
+            긴 목록 열기
+          </Button>
+          {maxHeightSelected() != null && (
+            <span class="text-sm text-gray-600">선택: {maxHeightSelected()}</span>
+          )}
+        </div>
+        <Dropdown
+          triggerRef={() => maxHeightButtonRef}
+          open={maxHeightOpen()}
+          onOpenChange={setMaxHeightOpen}
+          maxHeight={200}
+        >
+          <ul class="py-1">
+            <For each={longMenuItems}>
+              {(item) => (
+                <li
+                  role="menuitem"
+                  tabIndex={0}
+                  class="cursor-pointer px-4 py-2 outline-none hover:bg-gray-100 focus:bg-gray-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                  onClick={() => {
+                    setMaxHeightSelected(item);
+                    setMaxHeightOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMaxHeightSelected(item);
+                      setMaxHeightOpen(false);
+                    }
+                  }}
+                >
+                  {item}
+                </li>
+              )}
+            </For>
+          </ul>
+        </Dropdown>
+      </section>
+    </div>
+  );
+}

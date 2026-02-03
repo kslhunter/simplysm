@@ -34,8 +34,12 @@ export class DbConnFactory {
   }
 
   private static _getOrCreatePool(config: DbConnConfig): Pool<DbConn> {
-    // 객체를 키로 쓰기 위해 문자열 변환 (속성 정렬로 동일 설정의 일관된 키 보장)
-    const configKey = JSON.stringify(config, Object.keys(config).sort());
+    // 객체를 키로 쓰기 위해 문자열 변환 (중첩 객체도 정렬하여 동일 설정의 일관된 키 보장)
+    const configKey = JSON.stringify(config, (_, value: unknown) =>
+      value != null && typeof value === "object" && !Array.isArray(value)
+        ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+        : value
+    );
 
     if (!this._poolMap.has(configKey)) {
       const pool = createPool<DbConn>(

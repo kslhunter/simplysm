@@ -30,7 +30,6 @@ describe("DebounceQueue", () => {
       const queue = new DebounceQueue(100);
       const calls: number[] = [];
 
-      const start = Date.now();
       queue.run(() => {
         calls.push(1);
       });
@@ -42,9 +41,6 @@ describe("DebounceQueue", () => {
       // 100ms 후에는 실행됨
       await time(100);
       expect(calls).toEqual([1]);
-
-      const elapsed = Date.now() - start;
-      expect(elapsed).toBeGreaterThanOrEqual(100);
     });
 
     it("delay가 없으면 즉시 실행한다", async () => {

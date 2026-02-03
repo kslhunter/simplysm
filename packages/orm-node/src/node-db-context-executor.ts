@@ -1,3 +1,4 @@
+import { SdError } from "@simplysm/core-common";
 import type {
   DbContextExecutor,
   IsolationLevel,
@@ -9,7 +10,7 @@ import type {
 } from "@simplysm/orm-common";
 import { createQueryBuilder, parseQueryResult } from "@simplysm/orm-common";
 import type { DbConn, DbConnConfig } from "./types/db-conn";
-import { getDialectFromConfig } from "./types/db-conn";
+import { DB_CONN_ERRORS, getDialectFromConfig } from "./types/db-conn";
 import { DbConnFactory } from "./db-conn-factory";
 
 /**
@@ -164,7 +165,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
   private _requireConn(): DbConn {
     if (this._conn == null) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new SdError(DB_CONN_ERRORS.NOT_CONNECTED);
     }
     return this._conn;
   }

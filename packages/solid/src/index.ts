@@ -8,6 +8,7 @@ export * from "./components/navigation/SidebarContainer";
 export * from "./components/navigation/SidebarContext";
 export * from "./components/navigation/SidebarMenu";
 export * from "./components/navigation/SidebarUser";
+export * from "./components/overlay/Dropdown";
 export * from "./contexts/ConfigContext";
 export * from "./contexts/usePersisted";
 export { ripple } from "./directives/ripple";

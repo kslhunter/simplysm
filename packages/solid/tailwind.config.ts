@@ -19,6 +19,7 @@ export default {
       zIndex: {
         sidebar: "100",
         "sidebar-backdrop": "99",
+        dropdown: "1000",
       },
     },
   },
