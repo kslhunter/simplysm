@@ -141,12 +141,26 @@ export interface SdCapacitorConfig {
 export interface SdClientPackageConfig {
   /** 빌드 타겟 */
   target: "client";
-  /** 개발 서버 포트 (필수) */
-  server: number;
+  /**
+   * 서버 설정
+   * - string: 연결할 서버 패키지명 (예: "solid-demo-server")
+   * - number: Vite 직접 포트 사용 (하위 호환성)
+   */
+  server: string | number;
   /** publish 설정 */
   publish?: SdPublishConfig;
   /** Capacitor 설정 */
   capacitor?: SdCapacitorConfig;
+}
+
+/**
+ * 서버 패키지 설정 (Fastify 서버)
+ */
+export interface SdServerPackageConfig {
+  /** 빌드 타겟 */
+  target: "server";
+  /** publish 설정 */
+  publish?: SdPublishConfig;
 }
 
 /**
@@ -160,7 +174,11 @@ export interface SdScriptsPackageConfig {
 /**
  * 패키지 설정
  */
-export type SdPackageConfig = SdBuildPackageConfig | SdClientPackageConfig | SdScriptsPackageConfig;
+export type SdPackageConfig =
+  | SdBuildPackageConfig
+  | SdClientPackageConfig
+  | SdServerPackageConfig
+  | SdScriptsPackageConfig;
 
 /**
  * sd.config.ts 설정 타입

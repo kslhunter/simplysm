@@ -11,25 +11,10 @@ export class StaticFileHandler {
 
   async handle(req: FastifyRequest, reply: FastifyReply, urlPath: string): Promise<void> {
     let targetFilePath = path.resolve(this._server.options.rootPath, "www", urlPath);
-    let allowedRootPath = path.resolve(this._server.options.rootPath, "www");
+    const allowedRootPath = path.resolve(this._server.options.rootPath, "www");
 
-    // 프록시 및 타겟 파일 경로 결정
-    if (this._server.options.pathProxy != null) {
-      const currPathProxyFrom = Object.keys(this._server.options.pathProxy).find((from) =>
-        urlPath.startsWith(from),
-      );
-
-      if (currPathProxyFrom != null) {
-        targetFilePath = path.resolve(
-          this._server.options.pathProxy[currPathProxyFrom] +
-            urlPath.substring(currPathProxyFrom.length),
-        );
-        allowedRootPath = path.resolve(this._server.options.pathProxy[currPathProxyFrom]);
-      }
-    }
-
-    // targetPath 보안 방어
-    if (process.env["NODE_ENV"] === "production" && !targetFilePath.startsWith(allowedRootPath)) {
+    // targetPath 보안 방어 (Path Traversal 방지)
+    if (!targetFilePath.startsWith(allowedRootPath)) {
       throw new Error("Access denied");
     }
 

@@ -29,8 +29,13 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
     const clientName = this.socket?.clientName ?? this.http?.clientName ?? this.legacy?.clientName;
     if (clientName == null) return undefined;
 
-    // Path Traversal 방지
-    if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
+    // 빈 문자열 및 Path Traversal 방지
+    if (
+      clientName === "" ||
+      clientName.includes("..") ||
+      clientName.includes("/") ||
+      clientName.includes("\\")
+    ) {
       throw new Error(`유효하지 않은 클라이언트 명입니다: ${clientName}`);
     }
 
@@ -40,8 +45,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
   get clientPath(): string | undefined {
     return this.clientName == null
       ? undefined
-      : (this.server.options.pathProxy?.[this.clientName] ??
-          path.resolve(this.server.options.rootPath, "www", this.clientName));
+      : path.resolve(this.server.options.rootPath, "www", this.clientName);
   }
 
   async getConfig<T>(section: string): Promise<T> {

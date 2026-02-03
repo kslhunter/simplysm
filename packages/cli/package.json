@@ -17,6 +17,7 @@
     "sd-cli": "./dist/sd-cli.js"
   },
   "dependencies": {
+    "@fastify/http-proxy": "^11.4.1",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",

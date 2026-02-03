@@ -6,14 +6,13 @@ import type { Type } from "@simplysm/core-common";
 import { jsonStringify, jsonParse, EventEmitter } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
-import fastifyMiddie from "@fastify/middie";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
-import fastifyReplyFrom from "@fastify/reply-from";
 import path from "path";
+import { Buffer } from "node:buffer";
 import { UploadHandler } from "./transport/http/upload-handler";
 import { WebSocketHandler } from "./transport/socket/websocket-handler";
 import type { WebSocket } from "ws";
@@ -45,31 +44,28 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   private readonly _wsHandler = new WebSocketHandler(this._serviceExecutor, this._jwt);
 
-  private _fastify?: FastifyInstance;
+  readonly fastify: FastifyInstance;
 
   constructor(readonly options: ServiceServerOptions) {
     super();
+
+    // SSL 설정 (동기)
+    // Note: Fastify HTTPS 설정은 Buffer 타입을 요구함 (Uint8Array 직접 사용 불가)
+    const httpsConf = options.ssl
+      ? { pfx: Buffer.from(options.ssl.pfxBytes), passphrase: options.ssl.passphrase }
+      : null;
+
+    this.fastify = fastify({ https: httpsConf });
   }
 
   async listen(): Promise<void> {
     logger.debug(`서버 시작... ${process.env["SD_VERSION"] ?? ""}`);
 
-    const httpsConf = this.options.ssl
-      ? {
-          pfx:
-            typeof this.options.ssl.pfxBuffer === "function"
-              ? await this.options.ssl.pfxBuffer()
-              : this.options.ssl.pfxBuffer,
-          passphrase: this.options.ssl.passphrase,
-        }
-      : null;
-    this._fastify = fastify({ https: httpsConf });
-
     // Websocket 플러그인
-    await this._fastify.register(fastifyWebsocket);
+    await this.fastify.register(fastifyWebsocket);
 
     // 보안 플러그인
-    await this._fastify.register(fastifyHelmet, {
+    await this.fastify.register(fastifyHelmet, {
       global: true,
       contentSecurityPolicy: {
         directives: {
@@ -90,27 +86,17 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     });
 
     // 업로드 플러그인
-    await this._fastify.register(fastifyMultipart);
-
-    // 미들웨어 설정
-    await this._fastify.register(fastifyMiddie);
-    if (this.options.middlewares != null) {
-      for (const mdw of this.options.middlewares) {
-        this._fastify.use(mdw);
-      }
-    }
-
-    await this._fastify.register(fastifyReplyFrom);
+    await this.fastify.register(fastifyMultipart);
 
     // @fastify/static 등록
-    await this._fastify.register(fastifyStatic, {
+    await this.fastify.register(fastifyStatic, {
       root: path.resolve(this.options.rootPath, "www"),
       wildcard: false,
       serve: false,
     });
 
     // CORS 설정
-    await this._fastify.register(fastifyCors, {
+    await this.fastify.register(fastifyCors, {
       origin: (_origin, cb) => {
         cb(null, true);
       },
@@ -119,7 +105,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     });
 
     // JSON 파서
-    this._fastify.addContentTypeParser(
+    this.fastify.addContentTypeParser(
       "application/json",
       { parseAs: "string" },
       (req, body, done) => {
@@ -135,15 +121,15 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     );
 
     // JSON 생성기
-    this._fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
+    this.fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
 
     // API 라우트
-    this._fastify.all("/api/:service/:method", async (req, reply) => {
+    this.fastify.all("/api/:service/:method", async (req, reply) => {
       await this._httpRequestHandler.handle(req, reply);
     });
 
     // 업로드 라우트
-    this._fastify.all("/upload", async (req, reply) => {
+    this.fastify.all("/upload", async (req, reply) => {
       await this._uploadHandler.handle(req, reply);
     });
 
@@ -168,40 +154,28 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         handleV1Connection(socket, autoUpdateService);
       }
     };
-    this._fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
-    this._fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
+    this.fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
+    this.fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
 
     // 정적 파일 와일드카드 핸들러
-    this._fastify.route({
+    this.fastify.route({
       method: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
       url: "/*",
       handler: async (req, reply) => {
         const urlObj = new URL(req.raw.url!, "http://localhost");
         const urlPath = decodeURI(urlObj.pathname.slice(1));
 
-        // portProxy
-        if (this.options.portProxy != null) {
-          const proxyKey = Object.keys(this.options.portProxy).find((key) =>
-            urlPath.startsWith(key),
-          );
-          if (proxyKey != null) {
-            const targetPort = this.options.portProxy[proxyKey];
-            const target = `http://127.0.0.1:${targetPort}${req.raw.url}`;
-            return reply.from(target);
-          }
-        }
-
         await this._staticFileHandler.handle(req, reply, urlPath);
       },
     });
 
     // HTTP 서버 수준의 에러 핸들링
-    this._fastify.server.on("error", (err) => {
+    this.fastify.server.on("error", (err) => {
       logger.error("HTTP 서버 오류 발생", err);
     });
 
     // 리슨
-    await this._fastify.listen({ port: this.options.port, host: "0.0.0.0" });
+    await this.fastify.listen({ port: this.options.port, host: "0.0.0.0" });
 
     // Graceful Shutdown 핸들러 등록
     this._registerGracefulShutdown();
@@ -213,7 +187,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   async close(): Promise<void> {
     this._wsHandler.closeAll();
-    await this._fastify?.close();
+    await this.fastify.close();
 
     this.isOpen = false;
     logger.debug("서버 종료됨");

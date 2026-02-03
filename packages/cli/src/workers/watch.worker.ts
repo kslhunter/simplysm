@@ -199,6 +199,11 @@ async function startViteWatch(
   // browser 타겟용 compilerOptions 생성
   const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "browser", pkgDir);
 
+  // server가 0이면 자동 포트 할당 (서버 연결 클라이언트)
+  // server가 숫자면 해당 포트로 고정 (standalone 클라이언트)
+  const serverPort = typeof config.server === "number" ? config.server : 0;
+  const useStrictPort = serverPort !== 0;
+
   viteServer = await createServer({
     root: pkgDir,
     base: `/${name}/`,
@@ -215,14 +220,15 @@ async function startViteWatch(
       tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
     },
     server: {
-      port: config.server,
-      strictPort: true,
+      port: serverPort === 0 ? undefined : serverPort,
+      strictPort: useStrictPort,
     },
   });
 
   await viteServer.listen();
 
-  sender.send("serverReady", { port: config.server });
+  // 실제 할당된 포트 반환
+  sender.send("serverReady", { port: viteServer.config.server.port });
 }
 
 //#endregion
@@ -249,7 +255,11 @@ async function startWatch(info: WatchInfo): Promise<void> {
 
     if (info.config.target === "client") {
       await startViteWatch(info.pkgDir, info.config, info.cwd, info.name, parsedConfig);
-    } else if (info.config.target !== "scripts") {
+    } else if (
+      info.config.target === "node" ||
+      info.config.target === "browser" ||
+      info.config.target === "neutral"
+    ) {
       await startEsbuildWatch(info.pkgDir, info.config, parsedConfig);
     }
   } catch (err) {

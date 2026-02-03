@@ -9,7 +9,12 @@ import type esbuild from "esbuild";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { consola } from "consola";
-import type { SdConfig, SdBuildPackageConfig, SdClientPackageConfig } from "../sd-config.types";
+import type {
+  SdConfig,
+  SdBuildPackageConfig,
+  SdClientPackageConfig,
+  SdServerPackageConfig,
+} from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { parseRootTsconfig, getCompilerOptionsForPackage, type TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
@@ -50,6 +55,8 @@ interface ClassifiedPackages {
   buildPackages: Array<{ name: string; config: SdBuildPackageConfig }>;
   /** client 타겟 (Vite build + typecheck) */
   clientPackages: Array<{ name: string; config: SdClientPackageConfig }>;
+  /** server 타겟 (JS 빌드, dts 제외) */
+  serverPackages: Array<{ name: string; config: SdServerPackageConfig }>;
 }
 
 //#endregion
@@ -60,14 +67,19 @@ interface ClassifiedPackages {
  * 패키지를 타겟별로 분류
  * - node/browser/neutral: buildPackages (JS + dts)
  * - client: clientPackages (Vite build + typecheck)
+ * - server: serverPackages (JS 빌드, dts 제외)
  * - scripts: 제외
  */
 function classifyPackages(
-  packages: Record<string, SdBuildPackageConfig | SdClientPackageConfig | { target: "scripts" } | undefined>,
+  packages: Record<
+    string,
+    SdBuildPackageConfig | SdClientPackageConfig | SdServerPackageConfig | { target: "scripts" } | undefined
+  >,
   targets: string[],
 ): ClassifiedPackages {
   const buildPackages: ClassifiedPackages["buildPackages"] = [];
   const clientPackages: ClassifiedPackages["clientPackages"] = [];
+  const serverPackages: ClassifiedPackages["serverPackages"] = [];
 
   for (const [name, config] of Object.entries(packages)) {
     if (config == null) continue;
@@ -78,12 +90,14 @@ function classifyPackages(
 
     if (config.target === "client") {
       clientPackages.push({ name, config });
+    } else if (config.target === "server") {
+      serverPackages.push({ name, config });
     } else {
       buildPackages.push({ name, config });
     }
   }
 
-  return { buildPackages, clientPackages };
+  return { buildPackages, clientPackages, serverPackages };
 }
 
 /**
@@ -132,8 +146,12 @@ export async function runBuild(options: BuildOptions): Promise<void> {
   }
 
   // 패키지 분류
-  const { buildPackages, clientPackages } = classifyPackages(sdConfig.packages, targets);
-  const allPackageNames = [...buildPackages.map((p) => p.name), ...clientPackages.map((p) => p.name)];
+  const { buildPackages, clientPackages, serverPackages } = classifyPackages(sdConfig.packages, targets);
+  const allPackageNames = [
+    ...buildPackages.map((p) => p.name),
+    ...clientPackages.map((p) => p.name),
+    ...serverPackages.map((p) => p.name),
+  ];
 
   if (allPackageNames.length === 0) {
     process.stdout.write("✔ 빌드할 패키지가 없습니다.\n");
@@ -143,6 +161,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
   logger.debug("패키지 분류 완료", {
     buildPackages: buildPackages.map((p) => p.name),
     clientPackages: clientPackages.map((p) => p.name),
+    serverPackages: serverPackages.map((p) => p.name),
   });
 
   // tsconfig 파싱 (한 번만 수행)
@@ -348,6 +367,40 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     });
                     state.hasError = true;
                   }
+                }
+              },
+            });
+          }
+
+          // serverPackages: JS 빌드만 (dts 생성 제외)
+          for (const { name } of serverPackages) {
+            const pkgDir = path.join(cwd, "packages", name);
+
+            buildTasks.push({
+              title: `${name} (server)`,
+              task: async () => {
+                const buildWorker: WorkerProxy<typeof BuildWorkerModule> =
+                  Worker.create<typeof BuildWorkerModule>(buildWorkerPath);
+
+                try {
+                  // server 타겟은 node로 빌드
+                  const buildResult = await buildWorker.build({
+                    name,
+                    config: { target: "node" },
+                    cwd,
+                    pkgDir,
+                  });
+
+                  results.push({
+                    name,
+                    target: "server",
+                    type: "js",
+                    success: buildResult.success,
+                    errors: buildResult.errors,
+                  });
+                  if (!buildResult.success) state.hasError = true;
+                } finally {
+                  await buildWorker.terminate();
                 }
               },
             });

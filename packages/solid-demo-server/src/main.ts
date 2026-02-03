@@ -1,0 +1,15 @@
+import { ServiceServer } from "@simplysm/service-server";
+import { EchoService } from "./services/echo-service";
+import { HealthService } from "./services/health-service";
+
+export const server = new ServiceServer({
+  rootPath: process.cwd(),
+  port: 40081,
+  services: [EchoService, HealthService],
+});
+
+// 프로덕션 모드: 정적 파일 서빙 포함하여 직접 listen
+// Watch 모드 (__DEV__): Server Runtime Worker가 proxy 설정 후 listen 호출
+if (process.env["__DEV__"] == null) {
+  await server.listen();
+}
