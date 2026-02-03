@@ -155,18 +155,16 @@ const MenuItem: Component<MenuItemProps> = (props) => {
       setOpen((v) => !v);
     } else if (props.menu.href !== undefined) {
       if (isExternalLink()) {
-        window.open(props.menu.href, "_blank");
+        window.open(props.menu.href, "_blank", "noopener,noreferrer");
       } else {
         navigate(props.menu.href);
       }
     }
   };
 
-  const iconClass = clsx("w-5", "h-5", "shrink-0");
-
   return (
     <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick}>
-      {props.menu.icon?.({ class: iconClass })}
+      {props.menu.icon?.({})}
       <span class="truncate">{props.menu.title}</span>
       <Show when={hasChildren()}>
         <ListItem.Children>

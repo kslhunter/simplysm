@@ -28,3 +28,13 @@ export function useSidebarContext(): SidebarContextValue {
   }
   return context;
 }
+
+/**
+ * SidebarContext를 선택적으로 사용 (Context 없으면 undefined 반환)
+ *
+ * @remarks
+ * SidebarContainer 외부에서도 사용 가능한 컴포넌트(예: Topbar)에서 사용
+ */
+export function useSidebarContextOptional(): SidebarContextValue | undefined {
+  return useContext(SidebarContext);
+}

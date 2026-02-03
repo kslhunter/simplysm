@@ -195,7 +195,7 @@ export const ListItem: ListItemComponent = (props) => {
   const getChevronClassName = () => twMerge(chevronClass, openState() ? "rotate-0" : "rotate-90");
 
   const getSelectedIconClassName = () =>
-    clsx("w-4", "h-4", local.selected ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
+    clsx(local.selected ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
 
   return (
     <>
