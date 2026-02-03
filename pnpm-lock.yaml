@@ -128,6 +128,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@fastify/http-proxy':
+        specifier: ^11.4.1
+        version: 11.4.1(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@simplysm/core-common':
         specifier: workspace:*
         version: link:../core-common
@@ -487,6 +490,12 @@ importers:
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/solid-demo-server:
+    dependencies:
+      '@simplysm/service-server':
+        specifier: workspace:*
+        version: link:../service-server
 
   packages/storage:
     dependencies:
@@ -1102,6 +1111,9 @@ packages:
 
   '@fastify/helmet@13.0.2':
     resolution: {integrity: sha512-tO1QMkOfNeCt9l4sG/FiWErH4QMm+RjHzbMTrgew1DYOQ2vb/6M1G2iNABBrD7Xq6dUk+HLzWW8u+rmmhQHifA==}
+
+  '@fastify/http-proxy@11.4.1':
+    resolution: {integrity: sha512-sMYEIB0c7qCYutpZyS12c8xnVgmEMSUUVU2XjcNq2JzHf6Hta1BWcpnG5FXxR3WEm48uZNCi0MxnIYtwjwd21Q==}
 
   '@fastify/merge-json-schemas@0.2.1':
     resolution: {integrity: sha512-OA3KGBCy6KtIvLf8DINC5880o5iBlDX4SxzLQS8HorJAbqluzLRn80UXU0bxZn7UOFhFgpRJDasfwn9nG4FG4A==}
@@ -5144,6 +5156,16 @@ snapshots:
     dependencies:
       fastify-plugin: 5.1.0
       helmet: 8.1.0
+
+  '@fastify/http-proxy@11.4.1(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+    dependencies:
+      '@fastify/reply-from': 12.5.0
+      fast-querystring: 1.1.2
+      fastify-plugin: 5.1.0
+      ws: 8.19.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@fastify/merge-json-schemas@0.2.1':
     dependencies:

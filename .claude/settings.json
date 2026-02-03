@@ -11,6 +11,7 @@
       "Bash(pnpm vitest:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm lint:*)",
+      "Bash(tree:*)",
       "Skill(sd-improve-scan)",
       "Skill(sd-improve-validate)",
       "mcp__plugin_playwright_playwright__browser_close",

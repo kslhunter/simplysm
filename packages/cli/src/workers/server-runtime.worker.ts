@@ -1,0 +1,121 @@
+import proxy from "@fastify/http-proxy";
+import { createWorker } from "@simplysm/core-node";
+import { consola } from "consola";
+
+//#region Types
+
+/**
+ * Server Runtime 시작 정보
+ */
+export interface ServerRuntimeStartInfo {
+  mainJsPath: string;
+  clientPorts: Record<string, number>;
+}
+
+/**
+ * 서버 준비 이벤트
+ */
+export interface ServerRuntimeReadyEvent {
+  port: number;
+}
+
+/**
+ * 에러 이벤트
+ */
+export interface ServerRuntimeErrorEvent {
+  message: string;
+}
+
+/**
+ * Worker 이벤트 타입
+ */
+export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
+  serverReady: ServerRuntimeReadyEvent;
+  error: ServerRuntimeErrorEvent;
+}
+
+//#endregion
+
+const logger = consola.withTag("sd:cli:server-runtime:worker");
+
+/** 서버 인스턴스 (정리 대상) */
+let serverInstance: { close: () => Promise<void> } | undefined;
+
+/**
+ * 리소스 정리
+ */
+async function cleanup(): Promise<void> {
+  const server = serverInstance;
+  if (server != null) {
+    await server.close();
+  }
+  serverInstance = undefined;
+}
+
+process.on("SIGTERM", () => {
+  cleanup()
+    .catch((err) => {
+      logger.error("cleanup 실패", err);
+    })
+    .finally(() => {
+      process.exit(0);
+    });
+});
+
+process.on("SIGINT", () => {
+  cleanup()
+    .catch((err) => {
+      logger.error("cleanup 실패", err);
+    })
+    .finally(() => {
+      process.exit(0);
+    });
+});
+
+/**
+ * Server Runtime 시작
+ * main.js를 import하고, Vite proxy를 설정한 후 listen
+ */
+async function start(info: ServerRuntimeStartInfo): Promise<void> {
+  try {
+    // __DEV__ 환경변수 설정 (Watch 모드임을 알림)
+    process.env["__DEV__"] = "true";
+
+    // main.js import (server 인스턴스를 export해야 함)
+    const module = await import(info.mainJsPath);
+    const server = module.server;
+
+    if (server == null) {
+      throw new Error("main.js에서 server 인스턴스를 export해야 합니다.");
+    }
+
+    // 서버 인스턴스 저장 (cleanup용)
+    serverInstance = server;
+
+    // Vite proxy 설정 (clientPorts가 있는 경우만)
+    for (const [name, port] of Object.entries(info.clientPorts)) {
+      await server.fastify.register(proxy, {
+        prefix: `/${name}`,
+        upstream: `http://127.0.0.1:${port}`,
+        rewritePrefix: `/${name}`,
+        websocket: true,
+      });
+    }
+
+    // 서버 시작
+    await server.listen();
+
+    sender.send("serverReady", { port: server.options.port });
+  } catch (err) {
+    logger.error("Server Runtime 시작 실패", err);
+    sender.send("error", {
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+const sender = createWorker<{ start: typeof start }, ServerRuntimeWorkerEvents>({
+  start,
+});
+
+export default sender;
