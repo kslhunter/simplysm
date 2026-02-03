@@ -12,7 +12,7 @@ model: inherit
 ## 인자
 
 - `$ARGUMENTS` (선택): 기존 기획서 md 파일 경로
-  - 지정 시: 해당 파일이 기획서(`docs/plans/`)라면 작업 흐름 3번부터 시작 (그 외에는 요청문서로 봄)
+  - 지정 시: 해당 파일이 기획서(`_sd-output/plans/`)라면 작업 흐름 3번부터 시작 (그 외에는 요청문서로 봄)
   - 미지정 시: 작업 흐름 1번부터 시작
 
 ## 작업 흐름
@@ -25,9 +25,9 @@ model: inherit
 ### 2. 기획서 초안 작성 (인자가 없을 때만)
 
 - 기획 내용을 바탕으로 기획서 초안을 md 파일로 작성한다.
-- 파일 위치: `docs/plans/{{yyyyMMdd}}_{{기획제목-kebab-case}}_{{seq}}.md`
+- 파일 위치: `_sd-output/plans/{{yyyyMMdd}}_{{기획제목-kebab-case}}_{{seq}}.md`
   - seq: 동일 파일이 존재하면, 순번지정
-  - 예: "solid 패키지의 리뷰에 따른 수정 적용" → `docs/plans/260203_solid_review_fixes_1.md`
+  - 예: "solid 패키지의 리뷰에 따른 수정 적용" → `_sd-output/plans/260203_solid_review_fixes_1.md`
 - 기획서에는 다음 섹션을 포함한다:
   - `## 개요`: 기획 배경 및 목적
   - `## 범위`: 기획 범위 및 제외 사항
