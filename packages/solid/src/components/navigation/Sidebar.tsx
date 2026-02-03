@@ -6,7 +6,7 @@ import { useSidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
 import { mergeStyles } from "../../utils/mergeStyles";
 
 const baseClass = clsx(
-  "fixed",
+  "absolute",
   "top-0",
   "left-0",
   "bottom-0",
@@ -34,7 +34,7 @@ export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
  * 사이드바 본체 컴포넌트
  *
  * @remarks
- * - SidebarContainer 내부에서 사용해야 함
+ * - SidebarContainer 내부에서 사용해야 함 (`position: absolute`로 컨테이너에 종속)
  * - Context에서 toggle 상태를 읽어 열림/닫힘 애니메이션 적용
  * - 토글 버튼 미포함 - useSidebarContext().setToggle로 외부에서 제어
  *

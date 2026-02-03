@@ -199,7 +199,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
         <Show when={local.selectedIcon && !hasChildren()}>
           {local.selectedIcon?.({ class: getSelectedIconClassName() })}
         </Show>
-        <span class="flex-1 text-left">{slots().content}</span>
+        <span class="flex flex-1 flex-row items-center gap-1 text-left">{slots().content}</span>
         <Show when={hasChildren()}>
           <IconChevronDown class={getChevronClassName()} />
         </Show>

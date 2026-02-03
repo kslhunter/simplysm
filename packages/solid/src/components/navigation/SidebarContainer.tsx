@@ -8,7 +8,7 @@ import { usePersisted } from "../../contexts/usePersisted";
 import { mergeStyles } from "../../utils/mergeStyles";
 
 const backdropClass = clsx(
-  "fixed",
+  "absolute",
   "top-0",
   "left-0",
   "right-0",
@@ -18,7 +18,7 @@ const backdropClass = clsx(
   "sm:hidden",
 );
 
-const containerClass = clsx("flex", "flex-col", "min-h-screen", "transition-[padding-left]", "duration-100");
+const containerClass = clsx("relative", "h-full", "transition-[padding-left]", "duration-100");
 
 export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;
@@ -28,6 +28,9 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
  * 사이드바 컨테이너 컴포넌트
  *
  * @remarks
+ * - `position: relative`로 Sidebar를 포함하는 컨테이너 역할
+ * - 부모 요소에 높이가 지정되어야 함 (`h-full` 사용)
+ * - 콘텐츠 영역의 `overflow-auto`는 사용자가 직접 적용해야 함
  * - SidebarContext.Provider로 toggle 상태 공유
  * - usePersisted로 toggle 상태 localStorage 저장 (키: sidebar.toggle)
  * - 데스크탑(640px+)에서 padding-left + transition으로 콘텐츠 확장/축소
@@ -36,15 +39,17 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
  *
  * @example
  * ```tsx
- * <SidebarContainer>
- *   <Sidebar>
- *     <SidebarUser menus={userMenus}>
- *       <span>사용자</span>
- *     </SidebarUser>
- *     <SidebarMenu menus={menuItems} />
- *   </Sidebar>
- *   <main>콘텐츠</main>
- * </SidebarContainer>
+ * <div class="h-screen">
+ *   <SidebarContainer>
+ *     <Sidebar>
+ *       <SidebarUser menus={userMenus}>
+ *         <span>사용자</span>
+ *       </SidebarUser>
+ *       <SidebarMenu menus={menuItems} />
+ *     </Sidebar>
+ *     <main class="h-full overflow-auto">콘텐츠</main>
+ *   </SidebarContainer>
+ * </div>
  * ```
  */
 export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {

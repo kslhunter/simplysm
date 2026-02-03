@@ -1,4 +1,4 @@
-import { type JSX, type ParentComponent, Show, For, splitProps, createSignal } from "solid-js";
+import { createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../directives/ripple";
@@ -8,12 +8,13 @@ import { ListItem } from "../data/ListItem";
 
 void ripple;
 
-const containerClass = clsx("flex", "flex-col", "border-b", "border-gray-200", "dark:border-gray-800");
+const containerClass = clsx("flex", "flex-col", "bg-white dark:bg-gray-800", "m-2", "rounded", "overflow-hidden");
 
 const headerClass = clsx(
   "flex",
   "items-center",
-  "p-4",
+  "p-2",
+  "text-left",
   "cursor-pointer",
   "transition-colors",
   "hover:bg-gray-500/10",
@@ -76,7 +77,7 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass);
+  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-gray-50");
 
   const getContainerClassName = () => twMerge(containerClass, local.class);
 

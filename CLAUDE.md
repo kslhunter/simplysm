@@ -116,9 +116,11 @@ const User = Table("User")
 
 **SolidJS 컴포넌트:**
 - 반응형: 520px 미만에서 모바일 UI
-- Chrome 84+ 타겟 (CSS는 트랜스파일 안됨)
-  - 사용 가능: Flexbox gap
-  - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
+- Chrome 84+ 타겟
+  - TypeScript는 esbuild로 트랜스파일됨 → `?.`, `??` 등 최신 JS 문법 사용 가능
+  - CSS는 트랜스파일 안됨 → Chrome 84 미지원 CSS 기능 사용 금지
+    - 사용 가능: Flexbox gap
+    - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 - **SSR 미지원**: 서버 사이드 렌더링은 고려하지 않음. `window`, `document` 등 브라우저 API 직접 사용 가능
 
 ### SolidJS vs React 핵심 차이점
@@ -136,7 +138,7 @@ const User = Table("User")
 
 ### ESLint 규칙 (`@simplysm/eslint-plugin`)
 - ECMAScript private 필드(`#field`) 금지 → TypeScript `private` 사용
-- `@simplysm/*/src/` 경로 import 금지
+- `@simplysm/*/src/` 경로 import 금지 (*.ts, *.tsx 파일만 해당)
 - `no-console`, `eqeqeq`, `no-shadow` 적용
 - Node.js 내장 `Buffer` → `Uint8Array` 사용
 - async 함수에 await 필수
@@ -204,7 +206,7 @@ const User = Table("User")
 - **CLI 명령어 실행 전**: 이 문서의 "주요 명령어" 섹션 참조 (임의의 플래그 사용 금지)
 
 ### 이 프로젝트에서 자주 발생하는 실수
-- `@simplysm/*/src/` 경로로 import 하지 말 것 → `@simplysm/*`만 사용
+- `@simplysm/*/src/` 경로로 import 하지 말 것 → `@simplysm/*`만 사용 (*.ts, *.tsx 파일만 해당)
 - Node.js `Buffer` 사용 금지 → `Uint8Array` 사용
 - `#privateField` 사용 금지 → `private _privateField` 사용
 - React 패턴 사용 금지 → SolidJS 패턴 사용 (예: `useState` 대신 `createSignal`)
