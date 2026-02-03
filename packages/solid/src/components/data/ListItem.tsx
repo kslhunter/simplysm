@@ -6,6 +6,7 @@ import { ripple } from "../../directives/ripple";
 import { Collapse } from "../disclosure/Collapse";
 import { createPropSignal } from "../../hooks/createPropSignal";
 import { useListContext } from "./ListContext";
+import { mergeStyles } from "../../utils/mergeStyles";
 
 void ripple;
 
@@ -178,10 +179,7 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
         type="button"
         use:ripple={useRipple()}
         class={getHeaderClassName()}
-        style={{
-          "padding-left": getIndentPadding(),
-          ...(typeof local.style === "object" ? local.style : {}),
-        }}
+        style={mergeStyles(local.style, { "padding-left": getIndentPadding() })}
         data-list-item
         role="treeitem"
         aria-expanded={hasChildren() ? openState() : undefined}

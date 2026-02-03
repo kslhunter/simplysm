@@ -13,3 +13,4 @@ export * from "./contexts/usePersisted";
 export { ripple } from "./directives/ripple";
 export { createPropSignal } from "./hooks/createPropSignal";
 export { useRouterLink } from "./hooks/useRouterLink";
+export { mergeStyles } from "./utils/mergeStyles";

@@ -2,6 +2,7 @@ import { type JSX, type ParentComponent, splitProps, createSignal, onMount, onCl
 import { createElementSize } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import { mergeStyles } from "../../utils/mergeStyles";
 
 export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**
@@ -57,10 +58,7 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
       {...rest}
       data-collapse
       class={twMerge("block", local.class)}
-      style={{
-        ...(typeof local.style === "object" ? local.style : {}),
-        overflow: "hidden", // 필수: 애니메이션 동작에 필요
-      }}
+      style={mergeStyles(local.style, { overflow: "hidden" })}
       aria-hidden={!isOpen()}
     >
       <div

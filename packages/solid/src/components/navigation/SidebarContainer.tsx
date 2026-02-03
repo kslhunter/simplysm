@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { SidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
 import { usePersisted } from "../../contexts/usePersisted";
+import { mergeStyles } from "../../utils/mergeStyles";
 
 const backdropClass = clsx(
   "fixed",
@@ -89,14 +90,18 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
       <div
         {...rest}
         class={getClassName()}
-        style={{
-          "padding-left": getPaddingLeft(),
-          ...(typeof local.style === "object" ? local.style : {}),
-        }}
+        style={mergeStyles(local.style, { "padding-left": getPaddingLeft() })}
       >
         {local.children}
         <Show when={!isDesktop() && isOpen()}>
-          <div class={backdropClass} onClick={handleBackdropClick} />
+          <div
+            class={backdropClass}
+            onClick={handleBackdropClick}
+            onKeyDown={(e) => e.key === "Escape" && handleBackdropClick()}
+            role="button"
+            aria-label="사이드바 닫기"
+            tabIndex={0}
+          />
         </Show>
       </div>
     </SidebarContext.Provider>

@@ -3,6 +3,7 @@ import { createMediaQuery } from "@solid-primitives/media";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
+import { mergeStyles } from "../../utils/mergeStyles";
 
 const baseClass = clsx(
   "fixed",
@@ -75,10 +76,9 @@ export const Sidebar: ParentComponent<SidebarProps> = (props) => {
     <aside
       {...rest}
       class={getClassName()}
-      style={{
-        transform: getTransform(),
-        ...(typeof local.style === "object" ? local.style : {}),
-      }}
+      style={mergeStyles(local.style, { transform: getTransform() })}
+      aria-hidden={!isOpen()}
+      inert={!isOpen() || undefined}
     >
       {local.children}
     </aside>

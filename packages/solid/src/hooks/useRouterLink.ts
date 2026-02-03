@@ -47,8 +47,8 @@ export function useRouterLink(): (options: RouterLinkOptions) => (e: MouseEvent 
       e.preventDefault();
       e.stopPropagation();
 
-      if (e.ctrlKey || e.altKey) {
-        // Ctrl/Alt + 클릭: 새 탭
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        // Ctrl/Cmd/Alt + 클릭: 새 탭
         window.open(options.href, "_blank");
       } else if (e.shiftKey) {
         // Shift + 클릭: 새 창

@@ -2,6 +2,7 @@ import {
   type Component,
   type JSX,
   For,
+  Show,
   splitProps,
   createSignal,
   onMount,
@@ -162,11 +163,11 @@ const MenuItem: Component<MenuItemProps> = (props) => {
     <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick}>
       {props.menu.icon?.({ class: iconClass })}
       <span class="truncate">{props.menu.title}</span>
-      {hasChildren() && (
+      <Show when={hasChildren()}>
         <List>
           <For each={props.menu.children}>{(child) => <MenuItem menu={child} />}</For>
         </List>
-      )}
+      </Show>
     </ListItem>
   );
 };

@@ -13,9 +13,8 @@ declare module "solid-js" {
  * 인터랙티브 요소에 ripple 효과를 추가하는 directive.
  *
  * @remarks
- * - 매 pointerdown 시 인라인 스타일로 position/overflow 확인 및 적용 (SolidJS style 업데이트로 제거될 수 있음)
+ * - 내부에 ripple-container div를 생성하여 overflow: hidden 적용 (부모 요소 영향 없음)
  * - 요소의 position이 `static`일 때만 `relative`로 변경 (cleanup 시 원래 값 복원)
- * - `overflow: hidden` 적용 (cleanup 시 원래 값 복원) - 외부로 넘치는 콘텐츠(툴팁, 배지 등)가 잘릴 수 있음
  * - 단일 ripple 모드: 새 클릭 시 이전 ripple 제거
  * - `prefers-reduced-motion: reduce` 설정 시 ripple 비활성화
  *
@@ -25,28 +24,38 @@ declare module "solid-js" {
  * ```
  */
 export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
+  let containerEl: HTMLDivElement | undefined;
   let indicatorEl: HTMLDivElement | undefined;
   let rafId: number | undefined;
   let originalPosition: string | undefined;
-  let originalOverflow: string | undefined;
-  let styleApplied = false;
+  let positionApplied = false;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  // ripple container 생성 (내부에서 overflow: hidden 처리)
+  const ensureContainer = () => {
+    if (containerEl) return containerEl;
+
+    containerEl = document.createElement("div");
+    containerEl.style.cssText =
+      "position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; border-radius: inherit;";
+    el.appendChild(containerEl);
+
+    return containerEl;
+  };
 
   const onPointerDown = (event: PointerEvent) => {
     if (!accessor()) return;
     if (prefersReducedMotion.matches) return;
 
-    // 매 클릭마다 인라인 스타일 확인 및 적용 (SolidJS style 업데이트로 제거될 수 있음)
+    // position 확인 및 적용 (container 배치를 위해 필요)
     if (getComputedStyle(el).position === "static") {
-      if (!styleApplied) originalPosition = el.style.position;
+      if (!positionApplied) originalPosition = el.style.position;
       el.style.position = "relative";
+      positionApplied = true;
     }
-    if (getComputedStyle(el).overflow !== "hidden") {
-      if (!styleApplied) originalOverflow = el.style.overflow;
-      el.style.overflow = "hidden";
-    }
-    styleApplied = true;
+
+    const container = ensureContainer();
 
     if (indicatorEl) {
       indicatorEl.remove();
@@ -75,7 +84,7 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
       "dark:bg-white/20",
       "transition-[transform,opacity]",
       "duration-500",
-      "ease-in-out"
+      "ease-in-out",
     );
     Object.assign(indicatorEl.style, {
       width: `${size}px`,
@@ -93,7 +102,7 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
       }
     });
 
-    el.appendChild(indicatorEl);
+    container.appendChild(indicatorEl);
 
     rafId = requestAnimationFrame(() => {
       rafId = undefined;
@@ -130,11 +139,13 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
       indicatorEl = undefined;
     }
 
-    if (styleApplied) {
-      if (originalPosition !== undefined) {
-        el.style.position = originalPosition;
-      }
-      el.style.overflow = originalOverflow ?? "";
+    if (containerEl) {
+      containerEl.remove();
+      containerEl = undefined;
+    }
+
+    if (positionApplied && originalPosition !== undefined) {
+      el.style.position = originalPosition;
     }
   });
 }

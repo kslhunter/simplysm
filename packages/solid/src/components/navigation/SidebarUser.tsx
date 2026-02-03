@@ -82,9 +82,15 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
 
   return (
     <div {...rest} class={getContainerClassName()}>
-      <div use:ripple={hasMenus()} class={getHeaderClassName()} onClick={handleClick}>
+      <button
+        type="button"
+        use:ripple={hasMenus()}
+        class={getHeaderClassName()}
+        onClick={handleClick}
+        aria-expanded={hasMenus() ? open() : undefined}
+      >
         {local.children}
-      </div>
+      </button>
       <Show when={hasMenus()}>
         <Collapse open={open()}>
           <List inset>

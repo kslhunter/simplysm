@@ -54,17 +54,22 @@ describe("ripple directive", () => {
     expect(ripples.length).toBe(1);
   });
 
-  it("첫 pointerdown 시 overflow-hidden 클래스가 추가된다", () => {
+  it("첫 pointerdown 시 ripple container가 생성되고 overflow: hidden이 적용된다", () => {
     const { getByRole } = render(() => <Button>Click</Button>);
     const button = getByRole("button");
 
-    // pointerdown 전에는 overflow: hidden 스타일 없음
-    expect(button.style.overflow).not.toBe("hidden");
+    // pointerdown 전에는 ripple container 없음
+    expect(button.children.length).toBe(0); // 텍스트 노드만 있음
 
     fireEvent.pointerDown(button, { clientX: 50, clientY: 25 });
 
-    // pointerdown 후에는 overflow: hidden 인라인 스타일 적용됨
-    expect(button.style.overflow).toBe("hidden");
+    // pointerdown 후에는 ripple container가 생성됨
+    expect(button.children.length).toBeGreaterThan(0);
+    const container = button.firstElementChild as HTMLElement;
+    expect(container).toBeTruthy();
+    expect(container.style.overflow).toBe("hidden");
+    // 부모 버튼의 overflow는 변경되지 않음
+    expect(button.style.overflow).not.toBe("hidden");
   });
 
   it("마우스를 누르고 있는 동안 ripple이 유지된다", () => {

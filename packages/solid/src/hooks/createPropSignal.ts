@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, createEffect } from "solid-js";
 
 /**
  * 함수 타입을 제한하는 유틸리티 타입
@@ -40,6 +40,12 @@ export function createPropSignal<T>(options: {
   onChange: () => ((value: T) => void) | undefined;
 }) {
   const [internalValue, setInternalValue] = createSignal<T>(options.value());
+
+  // props 변경 시 내부 상태 동기화 (props 우선)
+  createEffect(() => {
+    const propValue = options.value();
+    setInternalValue(() => propValue);
+  });
 
   const isControlled = () => options.onChange() !== undefined;
   const value = () => (isControlled() ? options.value() : internalValue());

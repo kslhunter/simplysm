@@ -162,8 +162,11 @@ export const List: ParentComponent<ListProps> = (props) => {
         ref={listRef}
         role={isNested ? "group" : "tree"}
         data-list
-        onKeyDown={handleKeyDown}
         {...rest}
+        onKeyDown={(e) => {
+          handleKeyDown(e);
+          if (typeof rest.onKeyDown === "function") rest.onKeyDown(e);
+        }}
         class={getClassName()}
       >
         {local.children}
