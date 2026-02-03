@@ -63,8 +63,8 @@ model: inherit
 
 모든 질문이 완료되면 리뷰 결과를 md 파일로 저장(갱신)한다.
 
-- 파일 위치: `_sd-output/reviews/{{yyyyMMdd}}_{{리뷰대상-kebab-case}}_{{seq}}.md`
-  - seq: 동일 파일이 존재하면, 순번지정 
+- 파일 위치: `_sd-output/reviews/{{yyyyMMdd}}_{{리뷰대상-kebab-case}}_{{seq++}}.md`
+  - seq: 동일 파일이 존재할 경우만 순번지정
   - 예: "solid 패키지 리뷰" → `_sd-output/plans/260203_solid.md`
 - 리뷰 결과에는 다음 섹션을 포함한다:
   - `## 개요`: 리뷰 대상, 리뷰 범위, 제외 사항

@@ -1,32 +1,21 @@
 import { Suspense } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
 import {
-  Button,
   Sidebar,
   SidebarContainer,
   SidebarMenu,
   type SidebarMenuItem,
   SidebarUser,
-  useSidebarContext,
 } from "@simplysm/solid";
 import {
   IconFold,
   IconHome,
   IconLayoutList,
   IconLayoutSidebar,
-  IconMenu2,
   IconSettings,
   IconUser,
+  IconWindowMaximize,
 } from "@tabler/icons-solidjs";
-
-const SidebarToggleButton = () => {
-  const { setToggle } = useSidebarContext();
-  return (
-    <Button variant="ghost" onClick={() => setToggle((v) => !v)} class="p-2">
-      <IconMenu2 class="size-6" />
-    </Button>
-  );
-};
 
 const menuItems: SidebarMenuItem[] = [
   { title: "메인", href: "/home", icon: IconHome },
@@ -52,6 +41,11 @@ const menuItems: SidebarMenuItem[] = [
       { title: "Sidebar", href: "/home/navigation/sidebar" },
       { title: "Topbar", href: "/home/navigation/topbar" },
     ],
+  },
+  {
+    title: "Overlay",
+    icon: IconWindowMaximize,
+    children: [{ title: "Dropdown", href: "/home/overlay/dropdown" }],
   },
 ];
 
@@ -80,10 +74,7 @@ export function Home(props: RouteSectionProps) {
         </SidebarUser>
         <SidebarMenu menus={menuItems} />
       </Sidebar>
-      <main class="h-full overflow-auto p-4">
-        <div class="mb-4">
-          <SidebarToggleButton />
-        </div>
+      <main class="h-full overflow-auto">
         <Suspense fallback={<div>로딩 중...</div>}>{props.children}</Suspense>
       </main>
     </SidebarContainer>

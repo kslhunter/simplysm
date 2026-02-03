@@ -11,6 +11,8 @@ render(
   () => (
     <HashRouter>
       <Route path="/" component={App}>
+        {/* 모바일 레이아웃 데모 (Home 레이아웃 외부) */}
+        <Route path="/mobile-layout-demo" component={lazy(() => import("./pages/mobile/MobileLayoutDemoPage"))} />
         {/* 향후 확장: <Route path="/login" component={LoginPage} /> */}
         <Route path="/" component={Home}>
           <Route path="/" component={() => <Navigate href="/home" />} />
