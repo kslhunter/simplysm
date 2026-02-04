@@ -1,4 +1,4 @@
-import { bytesFromHex, DateOnly, DateTime, objClone, objEqual, Time, Uuid } from "@simplysm/core-common";
+import { bytesFromHex, DateOnly, DateTime, objEqual, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -244,9 +244,12 @@ async function parseJoinedRecords<T>(
  *
  * JSON.stringify보다 빠른 커스텀 직렬화
  */
-function serializeGroupKey(groupKey: Record<string, unknown>): string {
-  const entries = Object.entries(groupKey).sort(([a], [b]) => a.localeCompare(b));
-  return entries.map(([k, v]) => `${k}:${v === null ? "null" : String(v)}`).join("|");
+function serializeGroupKey(
+  groupKey: Record<string, unknown>,
+  cachedKeyOrder?: string[],
+): string {
+  const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
+  return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
 }
 
 /**
@@ -286,10 +289,16 @@ function groupRecordsRecursively(
   // Map 기반 그룹핑 (O(n) 복잡도)
   const groupMap = new Map<string, Record<string, unknown>>();
 
+  // 키 순서 캐싱 (첫 번째 레코드에서 결정 후 재사용)
+  let groupKeyOrder: string[] | undefined;
+
   for (const record of records) {
     // 그룹 키 추출 및 직렬화 (JOIN 키 제외)
     const groupKey = extractGroupKey(record, childJoinKeys);
-    const keyStr = serializeGroupKey(groupKey);
+    if (groupKeyOrder == null) {
+      groupKeyOrder = Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
+    }
+    const keyStr = serializeGroupKey(groupKey, groupKeyOrder);
 
     const existingGroup = groupMap.get(keyStr);
 
@@ -301,7 +310,7 @@ function groupRecordsRecursively(
       }
     } else {
       // 새 그룹 생성
-      const newGroup = objClone(record);
+      const newGroup = { ...record };
 
       // 각 JOIN 키를 배열 또는 단일 객체로 초기화
       for (const joinKey of childJoinKeys) {
@@ -411,23 +420,23 @@ function mergeJoinData(
         throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
       }
     } else {
-      existingGroup[localKey] = objClone(newJoinData);
+      existingGroup[localKey] = newJoinData;
     }
   } else {
     // isSingle: false → 배열에 추가
     const hashSetKey = `__hashSet__${localKey}`;
     if (!Array.isArray(existingJoinData)) {
-      existingGroup[localKey] = [objClone(newJoinData)];
+      existingGroup[localKey] = [newJoinData];
       // Set 기반 해시 중복 체크를 위한 내부 속성 초기화
-      existingGroup[hashSetKey] = new Set([JSON.stringify(newJoinData)]);
+      existingGroup[hashSetKey] = new Set([serializeGroupKey(newJoinData)]);
     } else {
       // Set 기반 중복 체크 (O(1))
       const hashSet = existingGroup[hashSetKey] as Set<string> | undefined;
-      const newHash = JSON.stringify(newJoinData);
+      const newHash = serializeGroupKey(newJoinData);
       if (hashSet != null) {
         if (!hashSet.has(newHash)) {
           hashSet.add(newHash);
-          existingJoinData.push(objClone(newJoinData));
+          existingJoinData.push(newJoinData);
         }
       } else {
         // hashSet이 없으면 폴백 (기존 방식)
@@ -435,7 +444,7 @@ function mergeJoinData(
           (item) => objEqual(item as Record<string, unknown>, newJoinData),
         );
         if (!isDuplicate) {
-          existingJoinData.push(objClone(newJoinData));
+          existingJoinData.push(newJoinData);
         }
       }
     }
