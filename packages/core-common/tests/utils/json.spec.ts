@@ -449,26 +449,15 @@ describe("JsonConvert", () => {
     });
 
     it("DEV 모드에서는 전체 JSON이 에러 메시지에 포함된다", () => {
-      const originalDev = process.env["__DEV__"];
-      process.env["__DEV__"] = "true";
+      const longJson = "x".repeat(2000);
 
       try {
-        const longJson = "x".repeat(2000);
-
-        try {
-          parse(longJson);
-          expect.fail("에러가 발생해야 합니다");
-        } catch (err) {
-          const message = (err as Error).message;
-          // DEV 모드에서는 전체 JSON이 포함됨
-          expect(message).toContain(longJson);
-        }
-      } finally {
-        if (originalDev === undefined) {
-          delete process.env["__DEV__"];
-        } else {
-          process.env["__DEV__"] = originalDev;
-        }
+        parse(longJson);
+        expect.fail("에러가 발생해야 합니다");
+      } catch (err) {
+        const message = (err as Error).message;
+        // DEV 모드에서는 전체 JSON이 포함됨
+        expect(message).toContain(longJson);
       }
     });
 

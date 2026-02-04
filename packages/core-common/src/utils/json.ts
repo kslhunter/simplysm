@@ -183,7 +183,7 @@ export function jsonStringify(
  * 사용자 데이터에 `{ __type__: "Date" | "DateTime" | "DateOnly" | "Time" | "Uuid" | "Set" | "Map" | "Error" | "Uint8Array", data: ... }`
  * 형태가 있으면 의도치 않게 타입 변환될 수 있으므로 주의한다.
  *
- * @security 개발 모드(`process.env["__DEV__"]`)에서만 에러 메시지에 JSON 문자열 전체가 포함된다.
+ * @security 개발 모드(`__DEV__`)에서만 에러 메시지에 JSON 문자열 전체가 포함된다.
  * 프로덕션 모드에서는 JSON 길이만 포함된다.
  */
 export function jsonParse<T = unknown>(json: string): T {
@@ -248,8 +248,7 @@ export function jsonParse<T = unknown>(json: string): T {
       }),
     ) as T;
   } catch (err) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if ((globalThis as { process?: { env?: Record<string, string> } }).process?.env?.["__DEV__"] === "true") {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
       throw new SdError(err, "JSON 파싱 에러: \n" + json);
     }
     throw new SdError(err, `JSON 파싱 에러 (length: ${json.length})`);

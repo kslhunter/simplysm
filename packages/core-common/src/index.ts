@@ -1,6 +1,7 @@
 // @simplysm/core-common
 // 공통 유틸리티 패키지
 
+import "./globals";
 import "./extensions/arr-ext";
 import "./extensions/set-ext";
 import "./extensions/map-ext";
