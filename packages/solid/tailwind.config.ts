@@ -21,6 +21,15 @@ export default {
         "sidebar-backdrop": "99",
         dropdown: "1000",
       },
+      animation: {
+        "card-in": "card-in 0.3s ease-out forwards",
+      },
+      keyframes: {
+        "card-in": {
+          from: { opacity: "0", transform: "translateY(-1rem)" },
+          to: { opacity: "1", transform: "none" },
+        },
+      },
     },
   },
   content: [`${__dirname}src/**/*.{ts,tsx}`],
