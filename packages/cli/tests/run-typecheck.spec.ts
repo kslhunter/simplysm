@@ -35,13 +35,14 @@ vi.mock("@simplysm/core-node", () => {
     return child.startsWith(parentWithSlash);
   };
 
-  // Worker proxy 모킹 - typecheck 메서드와 terminate 메서드 제공
+  // Worker proxy 모킹 - buildDts 메서드와 terminate 메서드 제공
   const createMockWorkerProxy = () => ({
-    typecheck: vi.fn((taskInfo: { name: string }) =>
+    buildDts: vi.fn(() =>
       Promise.resolve({
-        taskName: taskInfo.name,
+        success: true,
         diagnostics: [],
-        hasErrors: false,
+        errorCount: 0,
+        warningCount: 0,
       }),
     ),
     terminate: vi.fn(() => Promise.resolve()),
@@ -320,11 +321,10 @@ describe("runTypecheck", () => {
     // Worker가 에러 결과를 반환하도록 모킹
     const { Worker } = await import("@simplysm/core-node");
     vi.mocked(Worker.create).mockReturnValue({
-      typecheck: vi.fn(() =>
+      buildDts: vi.fn(() =>
         Promise.resolve({
-          taskName: "패키지: core-common",
-          diagnostics: [{ category: 1, code: 2322, messageText: "Type error", file: { fileName: "/project/packages/core-common/src/index.ts" } }],
-          hasErrors: true,
+          success: false,
+          diagnostics: [{ category: 1, code: 2322, messageText: "Type error", fileName: "/project/packages/core-common/src/index.ts" }],
           errorCount: 1,
           warningCount: 0,
         }),
