@@ -4,6 +4,11 @@ import clsx from "clsx";
 import { useNotification } from "./NotificationContext";
 import { Dropdown } from "../overlay/Dropdown";
 import { Icon } from "../display/Icon";
+import { NotificationBanner } from "./NotificationBanner";
+
+export interface NotificationBellProps {
+  showBanner?: boolean;
+}
 
 const buttonClass = clsx(
   "relative",
@@ -41,7 +46,7 @@ const themeStyles: Record<string, string> = {
   danger: "border-l-danger-500 bg-danger-50 dark:bg-danger-900/10",
 };
 
-export const NotificationBell: Component = () => {
+export const NotificationBell: Component<NotificationBellProps> = (props) => {
   const notification = useNotification();
   const [open, setOpen] = createSignal(false);
   let buttonRef: HTMLButtonElement | undefined;
@@ -60,6 +65,10 @@ export const NotificationBell: Component = () => {
 
   return (
     <>
+      <Show when={props.showBanner !== false}>
+        <NotificationBanner />
+      </Show>
+
       <button
         ref={(el) => (buttonRef = el)}
         type="button"

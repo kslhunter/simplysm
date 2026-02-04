@@ -1,7 +1,6 @@
 import { type Component } from "solid-js";
 import {
   NotificationProvider,
-  NotificationBanner,
   NotificationBell,
   useNotification,
   Button,
@@ -106,7 +105,6 @@ export default function NotificationPage() {
           <h1 class="m-0 flex-1 text-base">Notification</h1>
           <NotificationBell />
         </Topbar>
-        <NotificationBanner />
         <div class="flex-1 overflow-auto p-6">
           <NotificationDemo />
         </div>

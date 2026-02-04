@@ -1,7 +1,6 @@
 import { type Component, createSignal, onMount, onCleanup, Show } from "solid-js";
 import {
   NotificationProvider,
-  NotificationBanner,
   NotificationBell,
   useNotification,
   ServiceClientProvider,
@@ -191,7 +190,6 @@ export default function ServiceClientPage() {
             <h1 class="m-0 flex-1 text-base">ServiceClient</h1>
             <NotificationBell />
           </Topbar>
-          <NotificationBanner />
           <div class="flex-1 overflow-auto p-6">
             <ServiceClientDemo />
           </div>
