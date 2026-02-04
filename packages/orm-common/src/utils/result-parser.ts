@@ -301,7 +301,7 @@ function groupRecordsRecursively(
       }
     } else {
       // 새 그룹 생성
-      const newGroup = objClone(record);
+      const newGroup = { ...record };
 
       // 각 JOIN 키를 배열 또는 단일 객체로 초기화
       for (const joinKey of childJoinKeys) {
