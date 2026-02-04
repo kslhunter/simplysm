@@ -227,4 +227,107 @@ describe("NotificationProvider", () => {
       expect(notification!.items()[0].id).toBe(id);
     });
   });
+
+  it("update 호출 시 알림 내용이 수정된다", async () => {
+    let notification: NotificationContextValue;
+
+    render(() => (
+      <NotificationProvider>
+        {(() => {
+          notification = useNotification();
+          return null;
+        })()}
+      </NotificationProvider>
+    ));
+
+    const id = notification!.info("원래 제목", "원래 메시지");
+
+    notification!.update(id, { title: "수정된 제목", message: "수정된 메시지" });
+
+    await waitFor(() => {
+      const item = notification!.items()[0];
+      expect(item.title).toBe("수정된 제목");
+      expect(item.message).toBe("수정된 메시지");
+    });
+  });
+
+  it("remove 호출 시 알림이 삭제된다", async () => {
+    let notification: NotificationContextValue;
+
+    render(() => (
+      <NotificationProvider>
+        {(() => {
+          notification = useNotification();
+          return null;
+        })()}
+      </NotificationProvider>
+    ));
+
+    const id = notification!.info("삭제될 알림");
+    notification!.info("유지될 알림");
+
+    await waitFor(() => {
+      expect(notification!.items().length).toBe(2);
+    });
+
+    notification!.remove(id);
+
+    await waitFor(() => {
+      expect(notification!.items().length).toBe(1);
+      expect(notification!.items()[0].title).toBe("유지될 알림");
+    });
+  });
+
+  it("update with renotify: 읽은 알림이 다시 읽지 않음으로 변경된다", async () => {
+    let notification: NotificationContextValue;
+
+    render(() => (
+      <NotificationProvider>
+        {(() => {
+          notification = useNotification();
+          return null;
+        })()}
+      </NotificationProvider>
+    ));
+
+    const id = notification!.info("알림");
+    notification!.markAsRead(id);
+
+    await waitFor(() => {
+      expect(notification!.unreadCount()).toBe(0);
+    });
+
+    notification!.update(id, { message: "완료!" }, { renotify: true });
+
+    await waitFor(() => {
+      expect(notification!.unreadCount()).toBe(1);
+      expect(notification!.items()[0].read).toBe(false);
+    });
+  });
+
+  it("update with renotify: 읽지 않은 알림은 그대로 읽지 않음 상태 유지", async () => {
+    let notification: NotificationContextValue;
+
+    render(() => (
+      <NotificationProvider>
+        {(() => {
+          notification = useNotification();
+          return null;
+        })()}
+      </NotificationProvider>
+    ));
+
+    const id = notification!.info("알림");
+
+    await waitFor(() => {
+      expect(notification!.unreadCount()).toBe(1);
+    });
+
+    notification!.update(id, { message: "업데이트" }, { renotify: true });
+
+    await waitFor(() => {
+      // 여전히 1개 (증가하지 않음)
+      expect(notification!.unreadCount()).toBe(1);
+    });
+  });
 });
