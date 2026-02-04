@@ -76,7 +76,13 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   // 개발 서버 URL 결정
   let serverUrl = url;
   if (serverUrl == null) {
-    serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
+    if (typeof clientConfig.server === "number") {
+      serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
+    } else {
+      consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+      process.exitCode = 1;
+      return;
+    }
   } else if (!serverUrl.endsWith("/")) {
     serverUrl = `${serverUrl}/${packageName}/capacitor/`;
   }
