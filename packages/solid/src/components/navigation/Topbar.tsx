@@ -1,6 +1,7 @@
 import { type JSX, type ParentComponent, splitProps, Show } from "solid-js";
 import { IconMenu2 } from "@tabler/icons-solidjs";
 import clsx from "clsx";
+import { Icon } from "../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../controls/Button";
 import { useSidebarContextOptional } from "./SidebarContext";
@@ -65,7 +66,7 @@ export const Topbar: ParentComponent<TopbarProps> = (props) => {
     <header {...rest} class={getClassName()}>
       <Show when={sidebarContext}>
         <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="사이드바 토글">
-          <IconMenu2 class="size-6" />
+          <Icon icon={IconMenu2} size="1.5rem" />
         </Button>
       </Show>
       {local.children}

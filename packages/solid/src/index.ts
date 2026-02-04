@@ -1,5 +1,6 @@
 export * from "./components/controls/Button";
 export * from "./components/data/List";
+export * from "./components/display/Icon";
 export * from "./components/data/ListContext";
 export * from "./components/data/ListItem";
 export * from "./components/disclosure/Collapse";

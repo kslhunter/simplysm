@@ -1,5 +1,6 @@
 import { children, createMemo, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
+import { Icon } from "../display/Icon";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../directives/ripple";
@@ -31,7 +32,7 @@ const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text")
 
 const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
 
-const chevronClass = clsx("w-4", "h-4", "transition-transform", "duration-200", "motion-reduce:transition-none");
+const chevronClass = clsx("transition-transform", "duration-200", "motion-reduce:transition-none");
 
 const indentGuideClass = clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-gray-700");
 
@@ -222,11 +223,11 @@ export const ListItem: ListItemComponent = (props) => {
         }}
       >
         <Show when={local.selectedIcon && !hasChildren()}>
-          {local.selectedIcon?.({ class: getSelectedIconClassName() })}
+          <Icon icon={local.selectedIcon!} class={getSelectedIconClassName()} />
         </Show>
         <span class="flex flex-1 flex-row items-center gap-1 text-left">{slots().content}</span>
         <Show when={hasChildren()}>
-          <IconChevronDown class={getChevronClassName()} />
+          <Icon icon={IconChevronDown} size="1rem" class={getChevronClassName()} />
         </Show>
       </button>
       <Show when={hasChildren()}>
