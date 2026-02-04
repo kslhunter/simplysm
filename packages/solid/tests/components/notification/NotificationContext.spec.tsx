@@ -207,4 +207,24 @@ describe("NotificationProvider", () => {
       expect(notification!.items().length).toBe(1);
     });
   });
+
+  it("info 호출 시 생성된 알림의 id를 반환한다", async () => {
+    let notification: NotificationContextValue;
+
+    render(() => (
+      <NotificationProvider>
+        {(() => {
+          notification = useNotification();
+          return null;
+        })()}
+      </NotificationProvider>
+    ));
+
+    const id = notification!.info("테스트 제목");
+
+    await waitFor(() => {
+      expect(typeof id).toBe("string");
+      expect(notification!.items()[0].id).toBe(id);
+    });
+  });
 });

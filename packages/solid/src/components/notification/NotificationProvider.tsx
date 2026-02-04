@@ -5,6 +5,7 @@ import {
   type NotificationItem,
   type NotificationOptions,
   type NotificationTheme,
+  type NotificationUpdateOptions,
 } from "./NotificationContext";
 
 const MAX_ITEMS = 50;
@@ -27,9 +28,10 @@ export const NotificationProvider: ParentComponent = (props) => {
     title: string,
     message?: string,
     options?: NotificationOptions
-  ) => {
+  ): string => {
+    const id = crypto.randomUUID();
     const newItem: NotificationItem = {
-      id: crypto.randomUUID(),
+      id,
       theme,
       title,
       message,
@@ -47,22 +49,50 @@ export const NotificationProvider: ParentComponent = (props) => {
     });
 
     setDismissedBannerId(null);
+    return id;
   };
 
-  const info = (title: string, message?: string, options?: NotificationOptions) => {
-    addNotification("info", title, message, options);
+  const info = (title: string, message?: string, options?: NotificationOptions): string => {
+    return addNotification("info", title, message, options);
   };
 
-  const success = (title: string, message?: string, options?: NotificationOptions) => {
-    addNotification("success", title, message, options);
+  const success = (title: string, message?: string, options?: NotificationOptions): string => {
+    return addNotification("success", title, message, options);
   };
 
-  const warning = (title: string, message?: string, options?: NotificationOptions) => {
-    addNotification("warning", title, message, options);
+  const warning = (title: string, message?: string, options?: NotificationOptions): string => {
+    return addNotification("warning", title, message, options);
   };
 
-  const danger = (title: string, message?: string, options?: NotificationOptions) => {
-    addNotification("danger", title, message, options);
+  const danger = (title: string, message?: string, options?: NotificationOptions): string => {
+    return addNotification("danger", title, message, options);
+  };
+
+  const update = (
+    id: string,
+    updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
+    options?: NotificationUpdateOptions
+  ): void => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+
+        const updated = { ...item, ...updates };
+
+        // renotify: 읽은 상태면 다시 읽지 않음으로 변경
+        if (options?.renotify && item.read) {
+          updated.read = false;
+          // 배너가 dismiss된 상태에서 renotify되면 다시 보이게
+          setDismissedBannerId(null);
+        }
+
+        return updated;
+      })
+    );
+  };
+
+  const remove = (id: string): void => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const markAsRead = (id: string) => {
@@ -95,6 +125,8 @@ export const NotificationProvider: ParentComponent = (props) => {
     success,
     warning,
     danger,
+    update,
+    remove,
     markAsRead,
     markAllAsRead,
     dismissBanner,

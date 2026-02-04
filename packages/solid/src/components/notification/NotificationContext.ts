@@ -21,17 +21,31 @@ export interface NotificationOptions {
   action?: NotificationAction;
 }
 
+export interface NotificationUpdateOptions {
+  renotify?: boolean;
+}
+
 export interface NotificationContextValue {
   // 상태
   items: Accessor<NotificationItem[]>;
   unreadCount: Accessor<number>;
   latestUnread: Accessor<NotificationItem | undefined>;
 
-  // 알림 발생
-  info: (title: string, message?: string, options?: NotificationOptions) => void;
-  success: (title: string, message?: string, options?: NotificationOptions) => void;
-  warning: (title: string, message?: string, options?: NotificationOptions) => void;
-  danger: (title: string, message?: string, options?: NotificationOptions) => void;
+  // 알림 발생 (id 반환)
+  info: (title: string, message?: string, options?: NotificationOptions) => string;
+  success: (title: string, message?: string, options?: NotificationOptions) => string;
+  warning: (title: string, message?: string, options?: NotificationOptions) => string;
+  danger: (title: string, message?: string, options?: NotificationOptions) => string;
+
+  // 알림 수정
+  update: (
+    id: string,
+    updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
+    options?: NotificationUpdateOptions
+  ) => void;
+
+  // 알림 삭제
+  remove: (id: string) => void;
 
   // 관리
   markAsRead: (id: string) => void;
