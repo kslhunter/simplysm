@@ -289,10 +289,16 @@ function groupRecordsRecursively(
   // Map 기반 그룹핑 (O(n) 복잡도)
   const groupMap = new Map<string, Record<string, unknown>>();
 
+  // 키 순서 캐싱 (첫 번째 레코드에서 결정 후 재사용)
+  let groupKeyOrder: string[] | undefined;
+
   for (const record of records) {
     // 그룹 키 추출 및 직렬화 (JOIN 키 제외)
     const groupKey = extractGroupKey(record, childJoinKeys);
-    const keyStr = serializeGroupKey(groupKey);
+    if (groupKeyOrder == null) {
+      groupKeyOrder = Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
+    }
+    const keyStr = serializeGroupKey(groupKey, groupKeyOrder);
 
     const existingGroup = groupMap.get(keyStr);
 
