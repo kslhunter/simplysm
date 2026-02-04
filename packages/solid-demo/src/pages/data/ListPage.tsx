@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { List, ListItem, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Icon, List, ListItem, Topbar, TopbarContainer } from "@simplysm/solid";
 import {
   IconCheck,
   IconFile,
@@ -62,15 +62,15 @@ export default function ListPage() {
             <div class="max-w-md">
               <List>
                 <ListItem onClick={() => alert("Settings clicked")}>
-                  <IconSettings class="mr-2 size-4" />
+                  <Icon icon={IconSettings} class="mr-2 size-4" />
                   Settings
                 </ListItem>
                 <ListItem onClick={() => alert("Profile clicked")}>
-                  <IconUser class="mr-2 size-4" />
+                  <Icon icon={IconUser} class="mr-2 size-4" />
                   Profile
                 </ListItem>
                 <ListItem onClick={() => alert("Messages clicked")}>
-                  <IconMail class="mr-2 size-4" />
+                  <Icon icon={IconMail} class="mr-2 size-4" />
                   Messages
                 </ListItem>
               </List>
@@ -84,37 +84,37 @@ export default function ListPage() {
             <div class="max-w-md">
               <List>
                 <ListItem open={treeOpen1()} onOpenChange={setTreeOpen1}>
-                  <IconFolder class="mr-2 size-4 text-yellow-500" />
+                  <Icon icon={IconFolder} class="mr-2 size-4 text-yellow-500" />
                   Documents
                   <ListItem.Children>
                     <ListItem onClick={() => alert("Report.pdf")}>
-                      <IconFile class="mr-2 size-4 text-gray-500" />
+                      <Icon icon={IconFile} class="mr-2 size-4 text-gray-500" />
                       Report.pdf
                     </ListItem>
                     <ListItem onClick={() => alert("Notes.txt")}>
-                      <IconFile class="mr-2 size-4 text-gray-500" />
+                      <Icon icon={IconFile} class="mr-2 size-4 text-gray-500" />
                       Notes.txt
                     </ListItem>
                   </ListItem.Children>
                 </ListItem>
                 <ListItem open={treeOpen2()} onOpenChange={setTreeOpen2}>
-                  <IconFolder class="mr-2 size-4 text-yellow-500" />
+                  <Icon icon={IconFolder} class="mr-2 size-4 text-yellow-500" />
                   Photos
                   <ListItem.Children>
                     <ListItem onClick={() => alert("Vacation.jpg")}>
-                      <IconFile class="mr-2 size-4 text-gray-500" />
+                      <Icon icon={IconFile} class="mr-2 size-4 text-gray-500" />
                       Vacation.jpg
                     </ListItem>
                     <ListItem>
-                      <IconFolder class="mr-2 size-4 text-yellow-500" />
+                      <Icon icon={IconFolder} class="mr-2 size-4 text-yellow-500" />
                       2024
                       <ListItem.Children>
                         <ListItem onClick={() => alert("January.jpg")}>
-                          <IconFile class="mr-2 size-4 text-gray-500" />
+                          <Icon icon={IconFile} class="mr-2 size-4 text-gray-500" />
                           January.jpg
                         </ListItem>
                         <ListItem onClick={() => alert("February.jpg")}>
-                          <IconFile class="mr-2 size-4 text-gray-500" />
+                          <Icon icon={IconFile} class="mr-2 size-4 text-gray-500" />
                           February.jpg
                         </ListItem>
                       </ListItem.Children>

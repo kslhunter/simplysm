@@ -1,4 +1,5 @@
 import {
+  Icon,
   Sidebar,
   SidebarContainer,
   SidebarMenu,
@@ -271,7 +272,7 @@ export default function TopbarPage() {
                       >
                         <div class="flex items-center gap-3">
                           <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <IconUser class="size-6" />
+                            <Icon icon={IconUser} class="size-6" />
                           </div>
                           <div class="flex flex-col">
                             <span class="font-semibold">홍길동</span>

@@ -1,5 +1,6 @@
 import {
   Button,
+  Icon,
   Sidebar,
   SidebarContainer,
   SidebarMenu,
@@ -28,7 +29,7 @@ const SidebarToggleButton = () => {
   const { setToggle } = useSidebarContext();
   return (
     <Button variant="ghost" onClick={() => setToggle((v) => !v)} class="p-2">
-      <IconMenu2 class="size-6" />
+      <Icon icon={IconMenu2} class="size-6" />
     </Button>
   );
 };
@@ -60,7 +61,7 @@ export default function SidebarPage() {
                   >
                     <div class="flex items-center gap-3">
                       <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                        <IconUser class="size-6" />
+                        <Icon icon={IconUser} class="size-6" />
                       </div>
                       <div class="flex flex-col">
                         <span class="font-semibold">홍길동</span>
@@ -143,7 +144,7 @@ export default function SidebarPage() {
                       <SidebarUser>
                         <div class="flex items-center gap-3">
                           <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <IconUser class="size-6" />
+                            <Icon icon={IconUser} class="size-6" />
                           </div>
                           <div class="flex flex-col">
                             <span class="font-semibold">홍길동</span>
@@ -178,7 +179,7 @@ export default function SidebarPage() {
                       >
                         <div class="flex items-center gap-3">
                           <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <IconUser class="size-6" />
+                            <Icon icon={IconUser} class="size-6" />
                           </div>
                           <div class="flex flex-col">
                             <span class="font-semibold">홍길동</span>
