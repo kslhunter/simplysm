@@ -265,7 +265,7 @@ import { describe, it, expect } from "vitest";
 describe("env define", () => {
   describe("server build define", () => {
     it("should create define object from env config", () => {
-      const env = { SD_VERSION: "1.0.0", __DEV__: "true" };
+      const env = { __VER__: "1.0.0", __DEV__: "true" };
       const define: Record<string, string> = {};
 
       for (const [key, value] of Object.entries(env)) {
@@ -273,7 +273,7 @@ describe("env define", () => {
       }
 
       expect(define).toEqual({
-        'process.env["SD_VERSION"]': '"1.0.0"',
+        'process.env["__VER__"]': '"1.0.0"',
         'process.env["__DEV__"]': '"true"',
       });
     });
@@ -281,12 +281,12 @@ describe("env define", () => {
 
   describe("client build define", () => {
     it("should create define object with process.env as object", () => {
-      const env = { SD_VERSION: "1.0.0", __DEV__: "true" };
+      const env = { __VER__: "1.0.0", __DEV__: "true" };
       const envDefine: Record<string, string> = {};
       envDefine["process.env"] = JSON.stringify(env);
 
       expect(envDefine).toEqual({
-        "process.env": '{"SD_VERSION":"1.0.0","__DEV__":"true"}',
+        "process.env": '{"__VER__":"1.0.0","__DEV__":"true"}',
       });
     });
   });
@@ -318,14 +318,14 @@ git commit -m "test(cli): add unit tests for env define generation"
   target: "client",
   server: "solid-demo-server",
   env: {
-    SD_VERSION: "1.0.0-test",
+    __VER__: "1.0.0-test",
     __DEV__: "true",
   },
 },
 "solid-demo-server": {
   target: "server",
   env: {
-    SD_VERSION: "1.0.0-test",
+    __VER__: "1.0.0-test",
     __DEV__: "true",
   },
 },
@@ -341,7 +341,7 @@ pnpm dev solid-demo solid-demo-server
 
 **Step 3: 빌드된 파일에서 치환 확인**
 
-- server: `packages/solid-demo-server/dist/main.js`에서 `process.env["SD_VERSION"]`이 `"1.0.0-test"`로 치환되었는지 확인
+- server: `packages/solid-demo-server/dist/main.js`에서 `process.env["__VER__"]`이 `"1.0.0-test"`로 치환되었는지 확인
 - client: 브라우저 개발자 도구에서 `process.env`가 객체로 치환되었는지 확인
 
 **Step 4: 전체 Commit**

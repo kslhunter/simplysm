@@ -25,7 +25,7 @@
 
 ```typescript
 // 모든 환경에서 동일하게 사용
-const version = process.env["SD_VERSION"];
+const version = process.env["__VER__"];
 const isDev = process.env["__DEV__"] === "true";
 ```
 
@@ -36,7 +36,7 @@ const isDev = process.env["__DEV__"] === "true";
 | library (node) | false | 없음 |
 | library (browser) | false | 없음 |
 | library (neutral) | false | 없음 |
-| server | **true** | `'process.env.SD_VERSION': '"x.x.x"'` 등 |
+| server | **true** | `'process.env.__VER__': '"x.x.x"'` 등 |
 | client (Vite) | Vite | `'process.env': JSON.stringify({ ... })` |
 
 ### 3. 환경변수 체인
@@ -63,7 +63,7 @@ export default ({ dev }: SdConfigParams): SdConfig => ({
     "my-server": {
       target: "server",
       env: {
-        SD_VERSION: "1.0.0",
+        __VER__: "1.0.0",
         __DEV__: dev ? "true" : "false",
       },
     },
@@ -71,7 +71,7 @@ export default ({ dev }: SdConfigParams): SdConfig => ({
       target: "client",
       server: "my-server",
       env: {
-        SD_VERSION: "1.0.0",
+        __VER__: "1.0.0",
         __DEV__: dev ? "true" : "false",
       },
     },
@@ -108,7 +108,7 @@ export default ({ dev }: SdConfigParams): SdConfig => ({
 // watch.worker.ts - Vite 설정
 define: {
   'process.env': JSON.stringify({
-    SD_VERSION: config.env?.SD_VERSION ?? "",
+    __VER__: config.env?.__VER__ ?? "",
     __DEV__: config.env?.__DEV__ ?? "false",
     // 필요한 환경변수만 명시적으로 포함
   }),
@@ -117,6 +117,22 @@ define: {
 
 ## 테스트 계획
 
-1. server 빌드 후 `process.env.SD_VERSION`이 상수로 치환되었는지 확인
+1. server 빌드 후 `process.env["__VER__"]`이 상수로 치환되었는지 확인
 2. client 빌드 후 `process.env`가 객체로 치환되었는지 확인
 3. neutral 라이브러리가 server/client 양쪽에서 정상 동작하는지 확인
+
+## 환경변수 네이밍 컨벤션
+
+### 프로젝트 전용 환경변수
+- `__DEV__`: 개발 모드 플래그 ("true" | "false")
+- `__VER__`: 앱 버전 정보 (예: "1.0.0")
+
+### 외부 표준 환경변수 (변경 금지)
+- `NO_COLOR`: CLI 색상 출력 비활성화 (https://no-color.org/)
+- `TIMING`: ESLint 규칙별 실행 시간 출력
+- `ANDROID_HOME`, `ANDROID_SDK_ROOT`: Android SDK 경로
+- `HOME`, `LOCALAPPDATA`: 시스템 경로
+
+### CONSOLA_LEVEL 제거
+- 환경변수 대신 `consola.level` API 직접 사용
+- `--debug` CLI 옵션으로 `consola.level = LogLevels.debug` 설정

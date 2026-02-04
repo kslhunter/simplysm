@@ -11,7 +11,7 @@ export class HealthService extends ServiceBase {
     return {
       status: "ok",
       timestamp: Date.now(),
-      version: process.env["SD_VERSION"],
+      version: process.env["__VER__"],
     };
   }
 

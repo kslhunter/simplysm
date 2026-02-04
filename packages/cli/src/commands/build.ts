@@ -8,7 +8,7 @@ import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
 import type {
   SdConfig,
   SdBuildPackageConfig,
@@ -411,7 +411,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
     {
       concurrent: false,
       exitOnError: false,
-      renderer: process.env["CONSOLA_LEVEL"] === "debug" ? "verbose" : "default",
+      renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
     },
   );
 

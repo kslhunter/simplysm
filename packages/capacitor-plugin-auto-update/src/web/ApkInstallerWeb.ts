@@ -24,7 +24,7 @@ export class ApkInstallerWeb extends WebPlugin implements IApkInstallerPlugin {
 
   async getVersionInfo(): Promise<IVersionInfo> {
     return Promise.resolve({
-      versionName: (import.meta as unknown as { env?: Record<string, string> }).env?.["SD_VERSION"] ?? "0.0.0",
+      versionName: (import.meta as unknown as { env?: Record<string, string> }).env?.["__VER__"] ?? "0.0.0",
       versionCode: "0",
     });
   }

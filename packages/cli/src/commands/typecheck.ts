@@ -4,7 +4,7 @@ import os from "os";
 import { Listr } from "listr2";
 import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
 import "@simplysm/core-common";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { parseRootTsconfig, type TypecheckEnv } from "../utils/tsconfig";
 import { loadSdConfig } from "../utils/sd-config";
@@ -361,7 +361,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
       {
         concurrent: concurrency,
         exitOnError: false,
-        renderer: process.env["CONSOLA_LEVEL"] === "debug" ? "verbose" : "default",
+        renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
       },
     );
 

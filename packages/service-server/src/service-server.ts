@@ -59,7 +59,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async listen(): Promise<void> {
-    logger.debug(`서버 시작... ${process.env["SD_VERSION"] ?? ""}`);
+    logger.debug(`서버 시작... ${process.env["__VER__"] ?? ""}`);
 
     // Websocket 플러그인
     await this.fastify.register(fastifyWebsocket);

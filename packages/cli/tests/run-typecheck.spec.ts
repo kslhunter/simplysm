@@ -76,10 +76,12 @@ vi.mock("consola", () => {
     error: vi.fn(),
     warn: vi.fn(),
     withTag: vi.fn(() => mockLogger),
+    level: 3, // info level
   };
   return {
     consola: mockLogger,
     createConsola: vi.fn(() => mockLogger),
+    LogLevels: { debug: 4, info: 3, warn: 2, error: 1 },
   };
 });
 

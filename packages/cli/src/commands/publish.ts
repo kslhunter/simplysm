@@ -58,7 +58,7 @@ interface PackageJson {
  */
 function replaceEnvVariables(str: string, version: string, projectPath: string): string {
   const result = str.replace(/%([^%]+)%/g, (match, envName: string) => {
-    if (envName === "SD_VERSION") {
+    if (envName === "__VER__") {
       return version;
     }
     if (envName === "SD_PROJECT_PATH") {

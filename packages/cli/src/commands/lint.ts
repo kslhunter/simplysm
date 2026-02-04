@@ -5,7 +5,7 @@ import { Listr } from "listr2";
 import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
 
 //#region Types
 
@@ -187,7 +187,7 @@ export async function runLint(options: LintOptions): Promise<void> {
       },
     ],
     {
-      renderer: process.env["CONSOLA_LEVEL"] === "debug" ? "verbose" : "default",
+      renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
     },
   );
 
