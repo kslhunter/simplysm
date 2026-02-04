@@ -11,6 +11,7 @@ import type {
   SdServerPackageConfig,
 } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
+import { getVersion } from "../utils/build-env";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import { runLint, type LintOptions } from "./lint";
@@ -140,6 +141,10 @@ export async function runBuild(options: BuildOptions): Promise<void> {
     process.exitCode = 1;
     return;
   }
+
+  // VER, DEV 환경변수 준비
+  const version = await getVersion(cwd);
+  const baseEnv = { VER: version, DEV: "false" };
 
   // 패키지 분류
   const { buildPackages, clientPackages, serverPackages } = classifyPackages(sdConfig.packages, targets);
@@ -272,9 +277,13 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                 const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
                 try {
+                  const clientConfig: SdClientPackageConfig = {
+                    ...config,
+                    env: { ...baseEnv, ...config.env },
+                  };
                   const [clientResult, dtsResult] = await Promise.all([
                     // Vite production 빌드
-                    clientWorker.build({ name, config, cwd, pkgDir }),
+                    clientWorker.build({ name, config: clientConfig, cwd, pkgDir }),
                     // typecheck (dts 없이)
                     dtsWorker.buildDts({
                       name,
@@ -353,7 +362,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     name,
                     cwd,
                     pkgDir,
-                    env: config.env,
+                    env: { ...baseEnv, ...config.env },
                   });
 
                   results.push({

@@ -3,7 +3,7 @@ import { StaticFileHandler } from "./transport/http/static-file-handler";
 import { HttpRequestHandler } from "./transport/http/http-request-handler";
 import { ServiceExecutor } from "./core/service-executor";
 import type { Type } from "@simplysm/core-common";
-import { jsonStringify, jsonParse, EventEmitter } from "@simplysm/core-common";
+import { jsonStringify, jsonParse, EventEmitter, env } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
@@ -59,7 +59,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async listen(): Promise<void> {
-    logger.debug(`서버 시작... ${process.env["__VER__"] ?? ""}`);
+    logger.debug(`서버 시작... ${env.VER ?? ""}`);
 
     // Websocket 플러그인
     await this.fastify.register(fastifyWebsocket);

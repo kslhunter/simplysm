@@ -9,6 +9,7 @@ import { Uuid } from "../types/uuid";
 import { objNullToUndefined } from "./obj";
 import { SdError } from "../errors/sd-error";
 import { bytesToHex, bytesFromHex } from "./bytes";
+import { env } from "../env";
 
 interface TypedObject {
   __type__: string;
@@ -248,7 +249,7 @@ export function jsonParse<T = unknown>(json: string): T {
       }),
     ) as T;
   } catch (err) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
+    if (env.DEV) {
       throw new SdError(err, "JSON 파싱 에러: \n" + json);
     }
     throw new SdError(err, `JSON 파싱 에러 (length: ${json.length})`);

@@ -13,9 +13,14 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": [
+    "./src/extensions/arr-ext.ts",
+    "./src/extensions/map-ext.ts",
+    "./src/extensions/set-ext.ts",
+    "./src/index.ts",
     "./dist/extensions/arr-ext.js",
     "./dist/extensions/map-ext.js",
-    "./dist/extensions/set-ext.js"
+    "./dist/extensions/set-ext.js",
+    "./dist/index.js"
   ],
   "dependencies": {
     "@zip.js/zip.js": "^2.8.15",

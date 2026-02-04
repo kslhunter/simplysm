@@ -10,6 +10,7 @@ import {
   fsCopy,
   fsRm,
 } from "@simplysm/core-node";
+import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import sharp from "sharp";
 import type { SdCapacitorConfig } from "../sd-config.types";
@@ -586,14 +587,14 @@ export default config;
    * Android SDK 경로 탐색
    */
   private async _findAndroidSdk(): Promise<string | undefined> {
-    const fromEnv = process.env["ANDROID_HOME"] ?? process.env["ANDROID_SDK_ROOT"];
+    const fromEnv = (env["ANDROID_HOME"] ?? env["ANDROID_SDK_ROOT"]) as string | undefined;
     if (fromEnv != null && (await fsExists(fromEnv))) {
       return fromEnv;
     }
 
     const candidates = [
-      path.resolve(process.env["LOCALAPPDATA"] ?? "", "Android/Sdk"),
-      path.resolve(process.env["HOME"] ?? "", "Android/Sdk"),
+      path.resolve((env["LOCALAPPDATA"] as string | undefined) ?? "", "Android/Sdk"),
+      path.resolve((env["HOME"] as string | undefined) ?? "", "Android/Sdk"),
       "C:/Program Files/Android/Sdk",
       "C:/Android/Sdk",
     ];

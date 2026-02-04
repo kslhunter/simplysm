@@ -1,13 +1,7 @@
-import { Suspense } from "solid-js";
+import { Show, Suspense } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
-import {
-  Icon,
-  Sidebar,
-  SidebarContainer,
-  SidebarMenu,
-  type SidebarMenuItem,
-  SidebarUser,
-} from "@simplysm/solid";
+import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser } from "@simplysm/solid";
+import { env } from "@simplysm/core-common";
 import {
   IconBell,
   IconFold,
@@ -75,7 +69,7 @@ export function Home(props: RouteSectionProps) {
             { title: "로그아웃", onClick: () => alert("로그아웃") },
           ]}
         >
-          <div class="flex items-center gap-3">
+          <div class="relative flex flex-1 items-center gap-3">
             <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
               <Icon icon={IconUser} class="size-6" />
             </div>
@@ -86,6 +80,12 @@ export function Home(props: RouteSectionProps) {
           </div>
         </SidebarUser>
         <SidebarMenu menus={menuItems} />
+        <Show when={env.VER}>
+          <div class="pointer-events-none absolute bottom-0 left-0 px-2 py-1 text-sm text-black/30 dark:text-white/30">
+            v{env.VER}
+            <Show when={env.DEV}>_dev</Show>
+          </div>
+        </Show>
       </Sidebar>
       <main class="h-full overflow-auto">
         <Suspense fallback={<div>로딩 중...</div>}>{props.children}</Suspense>

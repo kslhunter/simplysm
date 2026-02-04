@@ -9,7 +9,7 @@ import {
   fsGlob,
   fsCopy,
 } from "@simplysm/core-node";
-import { jsonStringify } from "@simplysm/core-common";
+import { env, jsonStringify } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type {
   SdConfig,
@@ -58,13 +58,13 @@ interface PackageJson {
  */
 function replaceEnvVariables(str: string, version: string, projectPath: string): string {
   const result = str.replace(/%([^%]+)%/g, (match, envName: string) => {
-    if (envName === "__VER__") {
+    if (envName === "VER") {
       return version;
     }
-    if (envName === "SD_PROJECT_PATH") {
+    if (envName === "PROJECT") {
       return projectPath;
     }
-    return process.env[envName] ?? match;
+    return (env[envName] as string | undefined) ?? match;
   });
 
   // 치환되지 않은 환경변수가 남아있으면 에러

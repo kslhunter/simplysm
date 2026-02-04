@@ -1,10 +1,11 @@
 // @simplysm/core-common
 // 공통 유틸리티 패키지
 
-import "./globals";
 import "./extensions/arr-ext";
 import "./extensions/set-ext";
 import "./extensions/map-ext";
+
+export * from "./env";
 
 // arr-extension에서 타입만 re-export
 export type { ArrayDiffsResult, ArrayDiffs2Result, TreeArray } from "./extensions/arr-ext";

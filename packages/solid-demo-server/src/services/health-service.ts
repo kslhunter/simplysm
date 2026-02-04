@@ -1,3 +1,4 @@
+import { env } from "@simplysm/core-common";
 import { ServiceBase } from "@simplysm/service-server";
 
 export interface HealthStatus {
@@ -11,7 +12,7 @@ export class HealthService extends ServiceBase {
     return {
       status: "ok",
       timestamp: Date.now(),
-      version: process.env["__VER__"],
+      version: env.VER,
     };
   }
 

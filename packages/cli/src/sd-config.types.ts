@@ -21,7 +21,7 @@ export type SdPublishConfig = "npm" | SdLocalDirectoryPublishConfig | SdStorageP
  */
 export interface SdLocalDirectoryPublishConfig {
   type: "local-directory";
-  /** 배포 대상 경로 (환경변수 치환 지원: %__VER__%, %SD_PROJECT_PATH%) */
+  /** 배포 대상 경로 (환경변수 치환 지원: %VER%, %PROJECT%) */
   path: string;
 }
 
@@ -43,7 +43,7 @@ export interface SdStoragePublishConfig {
 export interface SdPostPublishScriptConfig {
   type: "script";
   cmd: string;
-  /** 스크립트 인자 (환경변수 치환 지원: %__VER__%, %SD_PROJECT_PATH%) */
+  /** 스크립트 인자 (환경변수 치환 지원: %VER%, %PROJECT%) */
   args: string[];
 }
 

@@ -16,8 +16,7 @@ export interface LibraryEsbuildOptions {
 
 /**
  * Server 빌드용 esbuild 옵션
- * - bundle: true (단일 번들)
- * - packages: external (외부 패키지는 번들에서 제외)
+ * - bundle: true (모든 의존성 포함한 단일 번들)
  */
 export interface ServerEsbuildOptions {
   pkgDir: string;
@@ -51,8 +50,8 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
  * Server용 esbuild 설정 생성
  *
  * 서버 패키지 빌드에 사용합니다.
- * - bundle: true (모든 소스를 단일 번들로)
- * - packages: external (node_modules 패키지는 번들에서 제외)
+ * - bundle: true (모든 의존성 포함한 단일 번들)
+ * - banner: CJS 패키지의 require() 지원을 위한 createRequire shim
  * - env를 define 옵션으로 치환 (process.env["KEY"] 형태)
  */
 export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbuild.BuildOptions {
@@ -71,7 +70,9 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     platform: "node",
     target: "node20",
     bundle: true,
-    packages: "external",
+    banner: {
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+    },
     define,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
   };

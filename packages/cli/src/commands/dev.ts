@@ -8,6 +8,7 @@ import type {
 } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
+import { getVersion } from "../utils/build-env";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
@@ -78,6 +79,10 @@ export async function runDev(options: DevOptions): Promise<void> {
     process.exitCode = 1;
     return;
   }
+
+  // VER, DEV 환경변수 준비
+  const version = await getVersion(cwd);
+  const baseEnv = { VER: version, DEV: "true" };
 
   // targets 필터링
   const allPackages = filterPackagesByTargets(sdConfig.packages, targets);
@@ -444,10 +449,14 @@ export async function runDev(options: DevOptions): Promise<void> {
   for (const workerInfo of standaloneClientWorkers) {
     const pkgDir = path.join(cwd, "packages", workerInfo.name);
     const completeTask = clientCompleteTasks.get(workerInfo.name)!;
+    const clientConfig: SdClientPackageConfig = {
+      ...workerInfo.config,
+      env: { ...baseEnv, ...workerInfo.config.env },
+    };
     workerInfo.worker
       .startWatch({
         name: workerInfo.name,
-        config: workerInfo.config,
+        config: clientConfig,
         cwd,
         pkgDir,
       })
@@ -470,6 +479,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     const viteConfig: SdClientPackageConfig = {
       ...workerInfo.config,
       server: 0, // Vite가 자동으로 포트 할당
+      env: { ...baseEnv, ...workerInfo.config.env },
     };
     workerInfo.worker
       .startWatch({
@@ -498,7 +508,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         name,
         cwd,
         pkgDir,
-        env: config.env,
+        env: { ...baseEnv, ...config.env },
       })
       .catch((err: unknown) => {
         results.set(`${name}:build`, {

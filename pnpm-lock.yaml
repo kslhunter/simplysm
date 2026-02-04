@@ -493,6 +493,9 @@ importers:
 
   packages/solid-demo-server:
     dependencies:
+      '@simplysm/core-common':
+        specifier: workspace:*
+        version: link:../core-common
       '@simplysm/service-server':
         specifier: workspace:*
         version: link:../service-server

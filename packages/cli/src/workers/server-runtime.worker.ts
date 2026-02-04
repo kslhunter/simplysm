@@ -78,9 +78,6 @@ process.on("SIGINT", () => {
  */
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
-    // __DEV__ 환경변수 설정 (Watch 모드임을 알림)
-    process.env["__DEV__"] = "true";
-
     // main.js import (server 인스턴스를 export해야 함)
     const module = await import(info.mainJsPath);
     const server = module.server;
