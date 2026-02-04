@@ -30,8 +30,8 @@ export interface DtsBuildInfo {
   cwd: string;
   pkgDir: string;
   env: TypecheckEnv;
-  /** true면 dts 생성 없이 typecheck만 (client 타겟용) */
-  noEmit?: boolean;
+  /** true면 .d.ts 생성 + 타입체크, false면 타입체크만 (기본값: true) */
+  emit?: boolean;
 }
 
 /**
@@ -122,36 +122,39 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     // 해당 패키지 경로 (필터링용)
     const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
 
+    // emit 여부 결정 (기본값: true)
+    const shouldEmit = info.emit !== false;
+
     const options: ts.CompilerOptions = {
       ...baseOptions,
       sourceMap: false,
       incremental: true,
-      tsBuildInfoFile: path.join(info.pkgDir, ".cache", info.noEmit ? "typecheck.tsbuildinfo" : "dts.tsbuildinfo"),
+      tsBuildInfoFile: path.join(info.pkgDir, ".cache", shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`),
     };
 
-    // noEmit 여부에 따라 emit 관련 옵션 설정
-    if (info.noEmit) {
-      // typecheck만 수행 (dts 생성 안 함)
-      options.noEmit = true;
-      options.emitDeclarationOnly = false;
-      options.declaration = false;
-      options.declarationMap = false;
-      // noEmit일 때 outDir/declarationDir 불필요
-    } else {
-      // dts 생성
+    // emit 여부에 따라 관련 옵션 설정
+    if (shouldEmit) {
+      // dts 생성 + 타입체크
       options.noEmit = false;
       options.emitDeclarationOnly = true;
       options.declaration = true;
       options.declarationMap = true;
       options.outDir = path.join(info.pkgDir, "dist");
       options.declarationDir = path.join(info.pkgDir, "dist");
+    } else {
+      // 타입체크만 수행 (dts 생성 안 함)
+      options.noEmit = true;
+      options.emitDeclarationOnly = false;
+      options.declaration = false;
+      options.declarationMap = false;
+      // emit 안 할 때 outDir/declarationDir 불필요
     }
 
     // incremental program 생성
     const host = ts.createIncrementalCompilerHost(options);
 
     // 해당 패키지 dist 폴더로 가는 파일만 실제로 쓰기 (다른 패키지 .d.ts 생성 방지)
-    if (!info.noEmit) {
+    if (shouldEmit) {
       const pkgDistPrefix = path.join(info.pkgDir, "dist") + path.sep;
       const originalWriteFile = host.writeFile;
       host.writeFile = (fileName, content, writeByteOrderMark, onError, sourceFiles, data) => {

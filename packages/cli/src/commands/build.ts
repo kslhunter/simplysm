@@ -240,7 +240,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     // JS 빌드
                     buildWorker.build({ name, config, cwd, pkgDir }),
                     // DTS 생성
-                    dtsWorker.buildDts({ name, cwd, pkgDir, env, noEmit: false }),
+                    dtsWorker.buildDts({ name, cwd, pkgDir, env, emit: true }),
                   ]);
 
                   // JS 빌드 결과 처리
@@ -326,7 +326,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     cwd,
                     pkgDir,
                     env: "browser",
-                    noEmit: true,
+                    emit: false,
                   });
                   const diagnostics = dtsResult.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
                   results.push({
