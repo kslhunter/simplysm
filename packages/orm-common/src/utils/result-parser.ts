@@ -1,4 +1,4 @@
-import { bytesFromHex, DateOnly, DateTime, objClone, objEqual, Time, Uuid } from "@simplysm/core-common";
+import { bytesFromHex, DateOnly, DateTime, objEqual, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
@@ -435,7 +435,7 @@ function mergeJoinData(
           (item) => objEqual(item as Record<string, unknown>, newJoinData),
         );
         if (!isDuplicate) {
-          existingJoinData.push(objClone(newJoinData));
+          existingJoinData.push(newJoinData);
         }
       }
     }
