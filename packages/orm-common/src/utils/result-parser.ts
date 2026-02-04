@@ -244,9 +244,12 @@ async function parseJoinedRecords<T>(
  *
  * JSON.stringify보다 빠른 커스텀 직렬화
  */
-function serializeGroupKey(groupKey: Record<string, unknown>): string {
-  const entries = Object.entries(groupKey).sort(([a], [b]) => a.localeCompare(b));
-  return entries.map(([k, v]) => `${k}:${v === null ? "null" : String(v)}`).join("|");
+function serializeGroupKey(
+  groupKey: Record<string, unknown>,
+  cachedKeyOrder?: string[],
+): string {
+  const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
+  return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
 }
 
 /**
