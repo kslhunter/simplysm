@@ -1,5 +1,6 @@
 import {
   children,
+  createEffect,
   createMemo,
   createSignal,
   type JSX,
@@ -16,7 +17,6 @@ import { Dropdown } from "../../overlay/Dropdown";
 import { List } from "../../data/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
-import { createPropSignal } from "../../../hooks/createPropSignal";
 
 // 트리거 스타일
 const triggerBaseClass = clsx(
@@ -207,15 +207,28 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   const [open, setOpen] = createSignal(false);
 
-  // 선택된 값 관리
-  const [internalValue, setInternalValue] = createPropSignal<T | T[] | undefined>({
-    value: () => local.value,
-    onChange: () => local.onValueChange as ((v: T | T[] | undefined) => void) | undefined,
+  // 선택된 값 관리 (controlled/uncontrolled 패턴)
+  type ValueType = T | T[] | undefined;
+  const [internalValue, setInternalValueRaw] = createSignal<ValueType>(local.value);
+
+  // props 변경 시 내부 상태 동기화
+  createEffect(() => {
+    setInternalValueRaw(() => local.value);
   });
+
+  const isControlled = () => local.onValueChange !== undefined;
+  const getValue = () => (isControlled() ? local.value : internalValue());
+  const setInternalValue = (newValue: ValueType) => {
+    if (isControlled()) {
+      local.onValueChange?.(newValue as T | T[]);
+    } else {
+      setInternalValueRaw(() => newValue);
+    }
+  };
 
   // 값이 선택되어 있는지 확인
   const isSelected = (value: T): boolean => {
-    const current = internalValue();
+    const current = getValue();
     if (current === undefined) return false;
 
     if (local.multiple) {
@@ -227,7 +240,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 값 토글
   const toggleValue = (value: T) => {
     if (local.multiple) {
-      const current = (internalValue() as T[] | undefined) ?? [];
+      const current = (getValue() as T[] | undefined) ?? [];
       const idx = current.indexOf(value);
       if (idx >= 0) {
         setInternalValue([...current.slice(0, idx), ...current.slice(idx + 1)] as T[]);
@@ -270,7 +283,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   // 선택된 값 표시
   const renderSelectedValue = () => {
-    const current = internalValue();
+    const current = getValue();
 
     if (current === undefined || (Array.isArray(current) && current.length === 0)) {
       return <span class="text-neutral-400">{local.placeholder ?? ""}</span>;
