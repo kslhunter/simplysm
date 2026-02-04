@@ -238,8 +238,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error("sd.config.ts 로드 실패", err);
-    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -309,11 +308,10 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       }
       logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
     } catch {
-      logger.error("npm 인증 실패");
-      process.stderr.write(
-        "✖ npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
+      consola.error(
+        "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
           "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
-          "  npm config set //registry.npmjs.org/:_authToken <토큰>\n",
+          "  npm config set //registry.npmjs.org/:_authToken <토큰>",
       );
       process.exitCode = 1;
       return;
@@ -354,8 +352,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         throw new Error("staged된 변경사항이 있습니다. 먼저 커밋하거나 unstage하세요.\n" + stagedDiff);
       }
     } catch (err) {
-      logger.error("Git 상태 확인 실패", err);
-      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      consola.error(err instanceof Error ? err.message : err);
       process.exitCode = 1;
       return;
     }
@@ -408,12 +405,11 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           try {
             await spawn("git", ["checkout", "."]);
             logger.debug("Git 롤백 완료");
-          } catch (rollbackErr) {
-            logger.error("Git 롤백 실패", rollbackErr);
-            process.stderr.write(
-              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+          } catch {
+            consola.error(
+              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
                 "  git checkout .\n" +
-                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)\n",
+                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)",
             );
           }
         }
@@ -451,17 +447,15 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           try {
             await spawn("git", ["checkout", "."]);
             logger.debug("Git 롤백 완료");
-          } catch (rollbackErr) {
-            logger.error("Git 롤백 실패", rollbackErr);
-            process.stderr.write(
-              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+          } catch {
+            consola.error(
+              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
                 "  git reset --hard HEAD~1\n" +
                 "  git tag -d v" +
-                version +
-                "\n",
+                version,
             );
           }
-          process.stderr.write(`✖ Git 작업 실패: ${err instanceof Error ? err.message : err}\n`);
+          consola.error(`Git 작업 실패: ${err instanceof Error ? err.message : err}`);
           process.exitCode = 1;
           return;
         }
@@ -497,20 +491,18 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.info(`[${pkg.name}] 배포 완료`);
       }
     } catch (err) {
-      logger.error(`[${pkg.name}] 배포 실패`, err);
-
       // 이미 배포된 패키지 목록 출력
       if (publishedPackages.length > 0) {
-        process.stderr.write(
-          "\n✖ 배포 중 오류가 발생했습니다.\n" +
+        consola.error(
+          "배포 중 오류가 발생했습니다.\n" +
             "이미 배포된 패키지:\n" +
             publishedPackages.map((n) => `  - ${n}`).join("\n") +
             "\n\n수동 복구가 필요할 수 있습니다.\n" +
-            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.\n",
+            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.",
         );
       }
 
-      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      consola.error(`[${pkg.name}] 배포 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       return;
     }

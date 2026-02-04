@@ -252,8 +252,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   try {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
-    logger.error("tsconfig.json 로드 실패", err);
-    process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+    consola.error(err instanceof Error ? err.message : err);
     process.exitCode = 1;
     return;
   }

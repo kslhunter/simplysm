@@ -74,8 +74,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: true, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error("sd.config.ts 로드 실패", err);
-    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }

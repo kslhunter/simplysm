@@ -46,8 +46,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: true, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error("sd.config.ts 로드 실패", err);
-    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -55,15 +54,13 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   // 패키지 설정 확인
   const pkgConfig = sdConfig.packages[packageName];
   if (pkgConfig == null) {
-    logger.error(`패키지를 찾을 수 없습니다: ${packageName}`);
-    process.stderr.write(`✖ 패키지를 찾을 수 없습니다: ${packageName}\n`);
+    consola.error(`패키지를 찾을 수 없습니다: ${packageName}`);
     process.exitCode = 1;
     return;
   }
 
   if (pkgConfig.target !== "client") {
-    logger.error(`client 타겟 패키지만 지원합니다: ${packageName} (현재: ${pkgConfig.target})`);
-    process.stderr.write(`✖ client 타겟 패키지만 지원합니다: ${packageName} (현재: ${pkgConfig.target})\n`);
+    consola.error(`client 타겟 패키지만 지원합니다: ${packageName} (현재: ${pkgConfig.target})`);
     process.exitCode = 1;
     return;
   }
@@ -71,8 +68,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   // pkgConfig.target === "client" 이므로 타입 좁힘
   const clientConfig: SdClientPackageConfig = pkgConfig;
   if (clientConfig.capacitor == null) {
-    logger.error(`capacitor 설정이 없습니다: ${packageName}`);
-    process.stderr.write(`✖ capacitor 설정이 없습니다: ${packageName}\n`);
+    consola.error(`capacitor 설정이 없습니다: ${packageName}`);
     process.exitCode = 1;
     return;
   }
@@ -92,8 +88,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   const capPath = path.join(pkgDir, ".capacitor");
 
   if (!(await fsExists(capPath))) {
-    logger.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
-    process.stderr.write(`✖ Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.\n`);
+    consola.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
     process.exitCode = 1;
     return;
   }
@@ -113,8 +108,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     await listr.run();
     logger.info("디바이스 실행 완료");
   } catch (err) {
-    logger.error("디바이스 실행 실패", err);
-    process.stderr.write(`✖ 디바이스 실행 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`디바이스 실행 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   }
 }
