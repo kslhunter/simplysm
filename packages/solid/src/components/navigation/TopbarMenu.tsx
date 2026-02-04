@@ -1,6 +1,7 @@
 import { type Component, type JSX, For, Show, splitProps, createSignal, createMemo } from "solid-js";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { IconChevronDown, IconDotsVertical, type IconProps } from "@tabler/icons-solidjs";
+import { Icon } from "../display/Icon";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../controls/Button";
@@ -69,7 +70,7 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
           aria-haspopup="menu"
           aria-expanded={mobileMenuOpen()}
         >
-          <IconDotsVertical class="size-5" />
+          <Icon icon={IconDotsVertical} size="1.25rem" />
         </Button>
         <Dropdown triggerRef={() => mobileButtonRef} open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
           <List inset>
@@ -137,10 +138,12 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
         aria-haspopup={hasChildren() ? "menu" : undefined}
         aria-expanded={hasChildren() ? open() : undefined}
       >
-        {props.menu.icon?.({})}
+        <Show when={props.menu.icon}>
+          <Icon icon={props.menu.icon!} />
+        </Show>
         <span>{props.menu.title}</span>
         <Show when={hasChildren()}>
-          <IconChevronDown class={clsx("size-4 transition-transform", open() && "rotate-180")} />
+          <Icon icon={IconChevronDown} size="1rem" class={clsx("transition-transform", open() && "rotate-180")} />
         </Show>
       </Button>
       <Show when={hasChildren()}>
@@ -187,7 +190,9 @@ const TopbarMenuDropdownItem: Component<TopbarMenuDropdownItemProps> = (props) =
       readonly={props.menu.href === undefined && hasChildren()}
       onClick={handleClick}
     >
-      {props.menu.icon?.({})}
+      <Show when={props.menu.icon}>
+        <Icon icon={props.menu.icon!} />
+      </Show>
       <span class="truncate">{props.menu.title}</span>
       <Show when={hasChildren()}>
         <ListItem.Children>

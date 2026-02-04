@@ -1,6 +1,7 @@
 import { createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown } from "@tabler/icons-solidjs";
 import clsx from "clsx";
+import { Icon } from "../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../controls/Button";
 import { Dropdown } from "../overlay/Dropdown";
@@ -75,7 +76,7 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
       >
         {local.children}
         <Show when={hasMenus()}>
-          <IconChevronDown class={clsx("size-4 transition-transform", open() && "rotate-180")} />
+          <Icon icon={IconChevronDown} size="1rem" class={clsx("transition-transform", open() && "rotate-180")} />
         </Show>
       </Button>
       <Show when={hasMenus()}>

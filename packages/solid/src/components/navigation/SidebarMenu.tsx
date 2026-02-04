@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps } from "@tabler/icons-solidjs";
+import { Icon } from "../display/Icon";
 import { List } from "../data/List";
 import { ListItem } from "../data/ListItem";
 
@@ -164,7 +165,9 @@ const MenuItem: Component<MenuItemProps> = (props) => {
 
   return (
     <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick}>
-      {props.menu.icon?.({})}
+      <Show when={props.menu.icon}>
+        <Icon icon={props.menu.icon!} />
+      </Show>
       <span class="truncate">{props.menu.title}</span>
       <Show when={hasChildren()}>
         <ListItem.Children>
