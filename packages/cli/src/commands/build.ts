@@ -1,11 +1,6 @@
 import path from "path";
 import ts from "typescript";
 import { Listr, type ListrTask } from "listr2";
-import { build as viteBuild } from "vite";
-import solidPlugin from "vite-plugin-solid";
-import tsconfigPaths from "vite-tsconfig-paths";
-import tailwindcss from "tailwindcss";
-import type esbuild from "esbuild";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { consola } from "consola";
@@ -16,10 +11,12 @@ import type {
   SdServerPackageConfig,
 } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
-import { parseRootTsconfig, getCompilerOptionsForPackage, type TypecheckEnv } from "../utils/tsconfig";
+import type { TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import { runLint, type LintOptions } from "./lint";
-import type * as BuildWorkerModule from "../workers/build.worker";
+import type * as LibraryWorkerModule from "../workers/library.worker";
+import type * as ServerWorkerModule from "../workers/server.worker";
+import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import { Capacitor } from "../capacitor/capacitor";
 
@@ -163,23 +160,15 @@ export async function runBuild(options: BuildOptions): Promise<void> {
     serverPackages: serverPackages.map((p) => p.name),
   });
 
-  // tsconfig 파싱 (한 번만 수행)
-  let parsedConfig: ts.ParsedCommandLine;
-  try {
-    parsedConfig = parseRootTsconfig(cwd);
-  } catch (err) {
-    consola.error(err instanceof Error ? err.message : err);
-    process.exitCode = 1;
-    return;
-  }
-
   // 결과 수집
   const results: BuildResult[] = [];
   // 에러 추적 (객체로 래핑하여 콜백 내 수정 추적 가능하게 함)
   const state = { hasError: false };
 
   // Worker 경로
-  const buildWorkerPath = path.resolve(import.meta.dirname, "../workers/build.worker.ts");
+  const libraryWorkerPath = path.resolve(import.meta.dirname, "../workers/library.worker.ts");
+  const serverWorkerPath = path.resolve(import.meta.dirname, "../workers/server.worker.ts");
+  const clientWorkerPath = path.resolve(import.meta.dirname, "../workers/client.worker.ts");
   const dtsWorkerPath = path.resolve(import.meta.dirname, "../workers/dts.worker.ts");
 
   // 파일 캐시 (diagnostics 출력용)
@@ -232,13 +221,13 @@ export async function runBuild(options: BuildOptions): Promise<void> {
               title: `${name} (${config.target})`,
               task: async () => {
                 // JS 빌드와 DTS 생성을 병렬 실행
-                const buildWorker: WorkerProxy<typeof BuildWorkerModule> = Worker.create<typeof BuildWorkerModule>(buildWorkerPath);
+                const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> = Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
                 const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
                 try {
                   const [buildResult, dtsResult] = await Promise.all([
                     // JS 빌드
-                    buildWorker.build({ name, config, cwd, pkgDir }),
+                    libraryWorker.build({ name, config, cwd, pkgDir }),
                     // DTS 생성
                     dtsWorker.buildDts({ name, cwd, pkgDir, env, emit: true }),
                   ]);
@@ -265,7 +254,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   });
                   if (!dtsResult.success) state.hasError = true;
                 } finally {
-                  await Promise.all([buildWorker.terminate(), dtsWorker.terminate()]);
+                  await Promise.all([libraryWorker.terminate(), dtsWorker.terminate()]);
                 }
               },
             });
@@ -274,60 +263,39 @@ export async function runBuild(options: BuildOptions): Promise<void> {
           // clientPackages: Vite 빌드 + typecheck + Capacitor 빌드
           for (const { name, config } of clientPackages) {
             const pkgDir = path.join(cwd, "packages", name);
-            const tsconfigPath = path.join(cwd, "tsconfig.json");
 
             buildTasks.push({
               title: `${name} (client)`,
               task: async () => {
-                // browser 타겟용 compilerOptions 생성
-                const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "browser", pkgDir);
-
-                // Vite production 빌드
-                try {
-                  await viteBuild({
-                    root: pkgDir,
-                    base: `/${name}/`,
-                    plugins: [
-                      tsconfigPaths({ projects: [tsconfigPath] }),
-                      solidPlugin(),
-                    ],
-                    css: {
-                      postcss: {
-                        plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
-                      },
-                    },
-                    esbuild: {
-                      tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
-                    },
-                    logLevel: "silent",
-                  });
-                  results.push({
-                    name,
-                    target: "client",
-                    type: "vite",
-                    success: true,
-                  });
-                } catch (err) {
-                  results.push({
-                    name,
-                    target: "client",
-                    type: "vite",
-                    success: false,
-                    errors: [err instanceof Error ? err.message : String(err)],
-                  });
-                  state.hasError = true;
-                }
-
-                // typecheck (dts 없이)
+                // Vite 빌드와 타입체크를 병렬 실행
+                const clientWorker: WorkerProxy<typeof ClientWorkerModule> = Worker.create<typeof ClientWorkerModule>(clientWorkerPath);
                 const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
+
                 try {
-                  const dtsResult = await dtsWorker.buildDts({
+                  const [clientResult, dtsResult] = await Promise.all([
+                    // Vite production 빌드
+                    clientWorker.build({ name, config, cwd, pkgDir }),
+                    // typecheck (dts 없이)
+                    dtsWorker.buildDts({
+                      name,
+                      cwd,
+                      pkgDir,
+                      env: "browser",
+                      emit: false,
+                    }),
+                  ]);
+
+                  // Vite 빌드 결과 처리
+                  results.push({
                     name,
-                    cwd,
-                    pkgDir,
-                    env: "browser",
-                    emit: false,
+                    target: "client",
+                    type: "vite",
+                    success: clientResult.success,
+                    errors: clientResult.errors,
                   });
+                  if (!clientResult.success) state.hasError = true;
+
+                  // 타입체크 결과 처리
                   const diagnostics = dtsResult.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
                   results.push({
                     name,
@@ -339,7 +307,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   });
                   if (!dtsResult.success) state.hasError = true;
                 } finally {
-                  await dtsWorker.terminate();
+                  await Promise.all([clientWorker.terminate(), dtsWorker.terminate()]);
                 }
 
                 // Capacitor 빌드 (설정이 있는 경우만)
@@ -371,22 +339,21 @@ export async function runBuild(options: BuildOptions): Promise<void> {
           }
 
           // serverPackages: JS 빌드만 (dts 생성 제외)
-          for (const { name } of serverPackages) {
+          for (const { name, config } of serverPackages) {
             const pkgDir = path.join(cwd, "packages", name);
 
             buildTasks.push({
               title: `${name} (server)`,
               task: async () => {
-                const buildWorker: WorkerProxy<typeof BuildWorkerModule> =
-                  Worker.create<typeof BuildWorkerModule>(buildWorkerPath);
+                const serverWorker: WorkerProxy<typeof ServerWorkerModule> =
+                  Worker.create<typeof ServerWorkerModule>(serverWorkerPath);
 
                 try {
-                  // server 타겟은 node로 빌드
-                  const buildResult = await buildWorker.build({
+                  const buildResult = await serverWorker.build({
                     name,
-                    config: { target: "node" },
                     cwd,
                     pkgDir,
+                    env: config.env,
                   });
 
                   results.push({
@@ -398,7 +365,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   });
                   if (!buildResult.success) state.hasError = true;
                 } finally {
-                  await buildWorker.terminate();
+                  await serverWorker.terminate();
                 }
               },
             });
