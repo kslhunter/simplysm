@@ -428,11 +428,11 @@ function mergeJoinData(
     if (!Array.isArray(existingJoinData)) {
       existingGroup[localKey] = [newJoinData];
       // Set 기반 해시 중복 체크를 위한 내부 속성 초기화
-      existingGroup[hashSetKey] = new Set([JSON.stringify(newJoinData)]);
+      existingGroup[hashSetKey] = new Set([serializeGroupKey(newJoinData)]);
     } else {
       // Set 기반 중복 체크 (O(1))
       const hashSet = existingGroup[hashSetKey] as Set<string> | undefined;
-      const newHash = JSON.stringify(newJoinData);
+      const newHash = serializeGroupKey(newJoinData);
       if (hashSet != null) {
         if (!hashSet.has(newHash)) {
           hashSet.add(newHash);
