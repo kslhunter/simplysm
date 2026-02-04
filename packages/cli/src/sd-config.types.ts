@@ -147,6 +147,8 @@ export interface SdClientPackageConfig {
    * - number: Vite 직접 포트 사용 (하위 호환성)
    */
   server: string | number;
+  /** 빌드 시 치환할 환경변수 (process.env를 객체로 치환) */
+  env?: Record<string, string>;
   /** publish 설정 */
   publish?: SdPublishConfig;
   /** Capacitor 설정 */
@@ -159,6 +161,8 @@ export interface SdClientPackageConfig {
 export interface SdServerPackageConfig {
   /** 빌드 타겟 */
   target: "server";
+  /** 빌드 시 치환할 환경변수 (process.env.KEY를 상수로 치환) */
+  env?: Record<string, string>;
   /** publish 설정 */
   publish?: SdPublishConfig;
 }
