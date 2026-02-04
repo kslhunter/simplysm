@@ -44,7 +44,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     client.on("request-progress", (state) => {
       const existing = reqProgressMap.get(state.uuid);
 
-      if (!existing) {
+      if (existing == null) {
         const id = notification.info("요청을 전송하는 중입니다.", "0%");
         reqProgressMap.set(state.uuid, id);
       } else {
@@ -54,7 +54,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
 
       if (state.completedSize === state.totalSize) {
         const id = reqProgressMap.get(state.uuid);
-        if (id) {
+        if (id != null) {
           notification.update(id, {
             title: "요청 전송 완료",
             message: "100%",
@@ -68,7 +68,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     client.on("response-progress", (state) => {
       const existing = resProgressMap.get(state.uuid);
 
-      if (!existing) {
+      if (existing == null) {
         const id = notification.info("응답을 전송받는 중입니다.", "0%");
         resProgressMap.set(state.uuid, id);
       } else {
@@ -78,7 +78,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
 
       if (state.completedSize === state.totalSize) {
         const id = resProgressMap.get(state.uuid);
-        if (id) {
+        if (id != null) {
           notification.update(id, {
             title: "응답 전송 완료",
             message: "100%",
