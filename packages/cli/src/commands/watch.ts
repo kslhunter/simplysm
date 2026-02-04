@@ -279,12 +279,29 @@ export async function runWatch(options: WatchOptions): Promise<void> {
   // 종료 시그널까지 대기
   await terminatePromise;
 
-  // Worker 종료 (모든 워커)
+  // Worker 종료 (graceful shutdown)
   process.stdout.write("⏳ 종료 중...\n");
-  await Promise.all([
-    ...esbuildWorkers.map(({ worker }) => worker.terminate()),
-    ...dtsWorkers.map(({ worker }) => worker.terminate()),
-  ]);
+
+  const shutdownTimeout = 3000; // 3초 타임아웃
+
+  // esbuild 워커 graceful shutdown
+  await Promise.all(
+    esbuildWorkers.map(async ({ worker }) => {
+      try {
+        await Promise.race([
+          worker.shutdown(),
+          new Promise<void>((resolve) => setTimeout(resolve, shutdownTimeout)),
+        ]);
+      } catch {
+        // shutdown 실패해도 계속 진행
+      }
+      await worker.terminate();
+    }),
+  );
+
+  // dts 워커는 shutdown 메서드가 없으므로 바로 terminate
+  await Promise.all(dtsWorkers.map(({ worker }) => worker.terminate()));
+
   process.stdout.write("✔ 완료\n");
 }
 

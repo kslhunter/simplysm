@@ -269,8 +269,17 @@ async function startWatch(info: WatchInfo): Promise<void> {
   }
 }
 
-const sender = createWorker<{ startWatch: typeof startWatch }, WatchWorkerEvents>({
+/**
+ * graceful shutdown
+ * @remarks esbuild context와 Vite server를 정리합니다.
+ */
+async function shutdown(): Promise<void> {
+  await cleanup();
+}
+
+const sender = createWorker<{ startWatch: typeof startWatch; shutdown: typeof shutdown }, WatchWorkerEvents>({
   startWatch,
+  shutdown,
 });
 
 export default sender;
