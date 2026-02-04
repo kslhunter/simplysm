@@ -15,6 +15,7 @@
     "typecheck": "pnpm _sd-cli_ typecheck",
     "lint": "pnpm _sd-cli_ lint",
     "watch": "pnpm _sd-cli_ watch",
+    "dev": "pnpm _sd-cli_ dev",
     "build": "pnpm _sd-cli_ build",
     "publish": "pnpm _sd-cli_ publish",
     "publish:no-build": "pnpm _sd-cli_ --no-build",

@@ -62,17 +62,41 @@ sd-cli typecheck packages/core-common tests/orm
 
 ### watch
 
-패키지를 watch 모드로 빌드한다. 파일 변경 시 자동으로 리빌드되며, `node`/`browser`/`neutral` 타겟의 경우 `.d.ts` 타입 정의 파일도 자동 생성된다. `client` 타겟의 경우 Vite dev server가 시작된다.
+**라이브러리 패키지**(`node`/`browser`/`neutral` 타겟)를 watch 모드로 빌드한다. 파일 변경 시 자동으로 리빌드되며, `.d.ts` 타입 정의 파일도 자동 생성된다.
+
+> **참고**: `client`/`server` 타겟은 `dev` 명령어를 사용한다.
 
 ```bash
-# 모든 패키지 watch
+# 모든 라이브러리 패키지 watch
 sd-cli watch
 
 # 특정 패키지만 watch
 sd-cli watch solid
 
 # 여러 패키지 watch
-sd-cli watch solid solid-demo
+sd-cli watch solid core-common
+```
+
+**옵션:**
+
+| 옵션 | 설명 | 기본값 |
+|------|------|--------|
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
+| `--debug` | debug 로그 출력 | `false` |
+
+### dev
+
+**Client 및 Server 패키지**를 개발 모드로 실행한다. `client` 타겟은 Vite dev server로 실행되며, `server` 타겟은 Server Build Worker + Server Runtime Worker로 실행된다. Server-Client 프록시 연결 및 Capacitor 초기화를 지원한다.
+
+```bash
+# 모든 client/server 패키지 실행
+sd-cli dev
+
+# 특정 패키지만 실행
+sd-cli dev solid-demo
+
+# 여러 패키지 실행
+sd-cli dev solid-demo my-server
 ```
 
 **옵션:**
@@ -113,7 +137,7 @@ export default config;
 코드에서 직접 함수를 호출할 수 있다:
 
 ```typescript
-import { runLint, runTypecheck, runWatch } from "@simplysm/cli";
+import { runLint, runTypecheck, runWatch, runDev } from "@simplysm/cli";
 
 // 린트 실행
 await runLint({
@@ -127,9 +151,16 @@ await runTypecheck({
   targets: ["packages/core-common"],
 });
 
-// watch 실행
+// watch 실행 (라이브러리 패키지)
 await runWatch({
   targets: ["solid"],
+  options: [],
+});
+
+// dev 실행 (client/server 패키지)
+await runDev({
+  targets: ["solid-demo"],
+  options: [],
 });
 ```
 
@@ -154,12 +185,19 @@ await runWatch({
 
 | 속성 | 타입 | 설명 |
 |------|------|------|
-| `targets` | `string[]` | watch할 패키지 목록. 빈 배열이면 전체 |
+| `targets` | `string[]` | watch할 라이브러리 패키지 목록. 빈 배열이면 전체 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+
+#### DevOptions
+
+| 속성 | 타입 | 설명 |
+|------|------|------|
+| `targets` | `string[]` | dev 실행할 client/server 패키지 목록. 빈 배열이면 전체 |
 | `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
 
 **API 동작:**
 - `runLint`, `runTypecheck`: `Promise<void>` 반환. 에러 발견 시 `process.exitCode = 1`을 설정하고 resolve (throw하지 않음)
-- `runWatch`: `Promise<void>` 반환. SIGINT/SIGTERM 시그널 수신 시 resolve
+- `runWatch`, `runDev`: `Promise<void>` 반환. SIGINT/SIGTERM 시그널 수신 시 resolve
 
 ## 캐시
 
