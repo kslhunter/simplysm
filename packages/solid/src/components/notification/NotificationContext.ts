@@ -35,6 +35,7 @@ export interface NotificationContextValue {
 
   // 관리
   markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
   dismissBanner: () => void;
   clear: () => void;
 }

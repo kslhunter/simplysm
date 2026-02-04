@@ -146,7 +146,7 @@ describe("NotificationBell", () => {
     });
   });
 
-  it("알림 클릭 시 markAsRead가 호출된다", async () => {
+  it("드롭다운 열면 모든 알림이 읽음 처리된다", async () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
@@ -159,17 +159,15 @@ describe("NotificationBell", () => {
       </NotificationProvider>
     ));
 
-    notification!.info("테스트");
+    notification!.info("테스트1");
+    notification!.info("테스트2");
+
+    await waitFor(() => {
+      expect(notification!.unreadCount()).toBe(2);
+    });
 
     const button = document.querySelector("[data-notification-bell]");
     fireEvent.click(button!);
-
-    await waitFor(() => {
-      expect(document.querySelector("[data-dropdown]")).not.toBeNull();
-    });
-
-    const listItem = document.querySelector("[data-list-item]");
-    fireEvent.click(listItem!);
 
     await waitFor(() => {
       expect(notification!.unreadCount()).toBe(0);

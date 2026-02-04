@@ -71,6 +71,10 @@ export const NotificationProvider: ParentComponent = (props) => {
     );
   };
 
+  const markAllAsRead = () => {
+    setItems((prev) => prev.map((item) => ({ ...item, read: true })));
+  };
+
   const dismissBanner = () => {
     const latest = latestUnread();
     if (latest) {
@@ -92,6 +96,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     warning,
     danger,
     markAsRead,
+    markAllAsRead,
     dismissBanner,
     clear,
   };

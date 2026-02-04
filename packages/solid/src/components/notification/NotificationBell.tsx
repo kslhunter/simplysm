@@ -3,8 +3,6 @@ import { IconBell } from "@tabler/icons-solidjs";
 import clsx from "clsx";
 import { useNotification } from "./NotificationContext";
 import { Dropdown } from "../overlay/Dropdown";
-import { List } from "../data/List";
-import { ListItem } from "../data/ListItem";
 import { Icon } from "../display/Icon";
 
 const buttonClass = clsx(
@@ -36,11 +34,11 @@ const badgeClass = clsx(
   "rounded-full"
 );
 
-const themeIconColors: Record<string, string> = {
-  info: "text-info-500",
-  success: "text-success-500",
-  warning: "text-warning-500",
-  danger: "text-danger-500",
+const themeStyles: Record<string, string> = {
+  info: "border-l-info-500 bg-info-50 dark:bg-info-900/10",
+  success: "border-l-success-500 bg-success-50 dark:bg-success-900/10",
+  warning: "border-l-warning-500 bg-warning-50 dark:bg-warning-900/10",
+  danger: "border-l-danger-500 bg-danger-50 dark:bg-danger-900/10",
 };
 
 export const NotificationBell: Component = () => {
@@ -48,13 +46,16 @@ export const NotificationBell: Component = () => {
   const [open, setOpen] = createSignal(false);
   let buttonRef: HTMLButtonElement | undefined;
 
-  const handleItemClick = (id: string) => {
-    notification.markAsRead(id);
-  };
-
   const handleClear = () => {
     notification.clear();
     setOpen(false);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      notification.markAllAsRead();
+    }
   };
 
   return (
@@ -67,9 +68,9 @@ export const NotificationBell: Component = () => {
         aria-label={`알림 ${notification.unreadCount()}개`}
         aria-haspopup="true"
         aria-expanded={open()}
-        onClick={() => setOpen(!open())}
+        onClick={() => handleOpenChange(!open())}
       >
-        <Icon icon={IconBell} size="1.25rem" />
+        <Icon icon={IconBell} />
         <Show when={notification.unreadCount() > 0}>
           <span data-notification-badge aria-hidden="true" class={badgeClass}>
             {notification.unreadCount()}
@@ -80,7 +81,7 @@ export const NotificationBell: Component = () => {
       <Dropdown
         triggerRef={() => buttonRef}
         open={open()}
-        onOpenChange={setOpen}
+        onOpenChange={handleOpenChange}
         maxHeight={400}
         class="w-80"
       >
@@ -105,33 +106,28 @@ export const NotificationBell: Component = () => {
               <div class="py-8 text-center text-gray-500">알림이 없습니다</div>
             }
           >
-            <List inset>
+            <div class="flex flex-col gap-2">
               <For each={[...notification.items()].reverse()}>
                 {(item) => (
-                  <ListItem
-                    class={clsx(!item.read && "bg-primary-50 dark:bg-primary-900/10")}
-                    onClick={() => handleItemClick(item.id)}
+                  <div
+                    class={clsx(
+                      "rounded-lg border-l-4 p-2",
+                      themeStyles[item.theme]
+                    )}
                   >
-                    <div class="flex items-start gap-3">
-                      <div class={clsx("mt-0.5", themeIconColors[item.theme])}>
-                        <Icon icon={IconBell} size="1rem" />
+                    <div class="font-medium">{item.title}</div>
+                    <Show when={item.message}>
+                      <div class="text-sm text-gray-600 dark:text-gray-400">
+                        {item.message}
                       </div>
-                      <div class="flex-1">
-                        <div class="font-medium">{item.title}</div>
-                        <Show when={item.message}>
-                          <div class="text-sm text-gray-600 dark:text-gray-400">
-                            {item.message}
-                          </div>
-                        </Show>
-                        <div class="mt-1 text-xs text-gray-400">
-                          {item.createdAt.toLocaleTimeString()}
-                        </div>
-                      </div>
+                    </Show>
+                    <div class="mt-1 text-xs text-gray-400">
+                      {item.createdAt.toLocaleTimeString()}
                     </div>
-                  </ListItem>
+                  </div>
                 )}
               </For>
-            </List>
+            </div>
           </Show>
         </div>
       </Dropdown>

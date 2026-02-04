@@ -5,18 +5,19 @@ import { useNotification } from "./NotificationContext";
 
 const baseClass = clsx(
   "fixed",
-  "top-12",
-  "left-0",
-  "right-0",
+  "top-4",
+  "right-4",
   "z-50",
   "flex",
   "items-center",
   "justify-between",
   "gap-4",
-  "px-4",
-  "py-3",
+  "px-3",
+  "py-2",
   "text-white",
   "shadow-lg",
+  "rounded-lg",
+  "max-w-sm",
 );
 
 const themeClasses: Record<string, string> = {
