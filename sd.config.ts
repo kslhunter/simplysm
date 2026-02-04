@@ -18,8 +18,21 @@ const config: SdConfigFn = () => ({
     "service-common": { target: "neutral", publish: "npm" },
     "service-server": { target: "node", publish: "npm" },
     "solid": { target: "browser", publish: "npm" },
-    "solid-demo": { target: "client", server: "solid-demo-server" },
-    "solid-demo-server": { target: "server" },
+    "solid-demo": {
+      target: "client",
+      server: "solid-demo-server",
+      env: {
+        SD_VERSION: "1.0.0-test",
+        __DEV__: "true",
+      },
+    },
+    "solid-demo-server": {
+      target: "server",
+      env: {
+        SD_VERSION: "1.0.0-test",
+        __DEV__: "true",
+      },
+    },
     "storage": { target: "node", publish: "npm" },
   },
 });
