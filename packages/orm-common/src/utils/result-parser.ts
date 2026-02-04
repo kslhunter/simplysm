@@ -417,7 +417,7 @@ function mergeJoinData(
     // isSingle: false → 배열에 추가
     const hashSetKey = `__hashSet__${localKey}`;
     if (!Array.isArray(existingJoinData)) {
-      existingGroup[localKey] = [objClone(newJoinData)];
+      existingGroup[localKey] = [newJoinData];
       // Set 기반 해시 중복 체크를 위한 내부 속성 초기화
       existingGroup[hashSetKey] = new Set([JSON.stringify(newJoinData)]);
     } else {
