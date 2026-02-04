@@ -7,6 +7,7 @@ import { hideBin } from "yargs/helpers";
 import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
 import { runWatch } from "./commands/watch";
+import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
 import { runPublish } from "./commands/publish";
 import { runDevice } from "./commands/device";
@@ -121,6 +122,35 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runWatch({
+          targets: args.targets,
+          options: args.options,
+        });
+      },
+    )
+    .command(
+      "dev [targets..]",
+      "Client와 Server 패키지를 개발 모드로 실행한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .positional("targets", {
+            type: "string",
+            array: true,
+            describe: "실행할 패키지 (예: solid-demo)",
+            default: [],
+          })
+          .options({
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "옵션",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        await runDev({
           targets: args.targets,
           options: args.options,
         });

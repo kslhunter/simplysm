@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterPackagesByTargets } from "../src/commands/watch";
+import { filterPackagesByTargets } from "../src/utils/package-utils";
 import type { SdPackageConfig } from "../src/sd-config.types";
 
 describe("filterPackagesByTargets", () => {
