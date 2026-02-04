@@ -15,7 +15,8 @@ export default defineConfig({
     }),
   ],
   define: {
-    __DEV__: true,
+    "process.env.DEV": JSON.stringify("true"),
+    "process.env.VER": JSON.stringify("1.0.0-test"),
   },
   test: {
     globals: true,

@@ -63,8 +63,8 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "px-2 border-l border-neutral-300 dark:border-neutral-600",
-          "text-primary-500 font-bold",
+          "border-l border-neutral-300 px-2 dark:border-neutral-600",
+          "font-bold text-primary-500",
           "hover:bg-neutral-100 dark:hover:bg-neutral-800",
         ),
         local.class,
@@ -209,11 +209,12 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
   type ValueType = T | T[] | undefined;
-  const [internalValue, setInternalValueRaw] = createSignal<ValueType>(local.value);
+  const [internalValue, setInternalValueRaw] = createSignal<ValueType>(undefined);
 
   // props 변경 시 내부 상태 동기화
   createEffect(() => {
-    setInternalValueRaw(() => local.value);
+    const propValue = local.value;
+    setInternalValueRaw(() => propValue);
   });
 
   const isControlled = () => local.onValueChange !== undefined;

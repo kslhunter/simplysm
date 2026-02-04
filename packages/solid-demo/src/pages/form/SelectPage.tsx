@@ -200,7 +200,7 @@ export default function SelectPage() {
           {/* 상태 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">상태</h2>
-            <div class="flex flex-col gap-4 max-w-xs">
+            <div class="flex max-w-xs flex-col gap-4">
               <div>
                 <p class="mb-1 text-sm text-gray-600">Disabled</p>
                 <Select disabled placeholder="비활성화됨" renderValue={(v: string) => <>{v}</>}>

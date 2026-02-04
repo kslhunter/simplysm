@@ -292,7 +292,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
       if (dir === "down") {
         if (e.key === "ArrowDown") {
-          if (isOnTrigger && firstFocusable) {
+          if (isOnTrigger && focusables.length > 0) {
             e.preventDefault();
             firstFocusable.focus();
           }
@@ -308,7 +308,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
       } else {
         // direction === "up"
         if (e.key === "ArrowUp") {
-          if (isOnTrigger && lastFocusable) {
+          if (isOnTrigger && focusables.length > 0) {
             e.preventDefault();
             lastFocusable.focus();
           }
