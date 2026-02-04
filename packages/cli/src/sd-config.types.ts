@@ -191,13 +191,24 @@ export interface SdConfig {
 }
 
 /**
- * sd.config.ts 설정 함수 타입
+ * sd.config.ts 함수에 전달되는 파라미터
+ */
+export interface SdConfigParams {
+  /** 현재 작업 디렉토리 */
+  cwd: string;
+  /** 개발 모드 여부 */
+  dev: boolean;
+  /** 추가 옵션 (CLI의 -o 플래그) */
+  opt: string[];
+}
+
+/**
+ * sd.config.ts는 다음과 같은 형태의 함수를 default export해야 한다:
  *
- * @example
  * ```typescript
- * import type { SdConfigFn } from "@simplysm/cli";
+ * import type { SdConfig, SdConfigFn, SdConfigParams } from "@simplysm/cli";
  *
- * const config: SdConfigFn = () => ({
+ * const config: SdConfigFn = (params: SdConfigParams) => ({
  *   packages: {
  *     "core-common": { target: "neutral" },
  *     "core-node": { target: "node" },
@@ -207,4 +218,4 @@ export interface SdConfig {
  * export default config;
  * ```
  */
-export type SdConfigFn = () => SdConfig;
+export type SdConfigFn = (params: SdConfigParams) => SdConfig | Promise<SdConfig>;
