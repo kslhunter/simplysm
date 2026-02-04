@@ -125,7 +125,7 @@ describe("SidebarMenu", () => {
 
       fireEvent.click(getByText("외부 링크"));
 
-      expect(mockWindowOpen).toHaveBeenCalledWith("https://example.com", "_blank");
+      expect(mockWindowOpen).toHaveBeenCalledWith("https://example.com", "_blank", "noopener,noreferrer");
     });
   });
 
