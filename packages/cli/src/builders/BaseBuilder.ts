@@ -38,7 +38,7 @@ export abstract class BaseBuilder implements IBuilder {
   /**
    * Builder 초기화
    */
-  async initialize(): Promise<void> {
+  initialize(): Promise<void> {
     // 초기 빌드 Promise 생성
     for (const pkg of this.packages) {
       const key = this.getPackageKey(pkg);
@@ -55,6 +55,8 @@ export abstract class BaseBuilder implements IBuilder {
 
     // 이벤트 핸들러 등록
     this.registerEventHandlers();
+
+    return Promise.resolve();
   }
 
   /**
