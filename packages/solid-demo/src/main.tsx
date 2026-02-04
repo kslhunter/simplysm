@@ -21,6 +21,7 @@ render(
           <Route path="/home/controls/button" component={lazy(() => import("./pages/controls/./ButtonPage"))} />
           <Route path="/home/data/list" component={lazy(() => import("./pages/data/./ListPage"))} />
           <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/./CollapsePage"))} />
+          <Route path="/home/form/select" component={lazy(() => import("./pages/form/SelectPage"))} />
           <Route path="/home/navigation/sidebar" component={lazy(() => import("./pages/navigation/./SidebarPage"))} />
           <Route path="/home/navigation/topbar" component={lazy(() => import("./pages/navigation/./TopbarPage"))} />
           <Route path="/home/overlay/dropdown" component={lazy(() => import("./pages/overlay/./DropdownPage"))} />

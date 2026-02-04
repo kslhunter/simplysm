@@ -5,6 +5,7 @@ import { env } from "@simplysm/core-common";
 import {
   IconBell,
   IconFold,
+  IconForms,
   IconHome,
   IconLayoutList,
   IconLayoutSidebar,
@@ -30,6 +31,11 @@ const menuItems: SidebarMenuItem[] = [
     title: "Disclosure",
     icon: IconFold,
     children: [{ title: "Collapse", href: "/home/disclosure/collapse" }],
+  },
+  {
+    title: "Form",
+    icon: IconForms,
+    children: [{ title: "Select", href: "/home/form/select" }],
   },
   {
     title: "Navigation",
