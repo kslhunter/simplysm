@@ -42,6 +42,21 @@ export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
   maxHeight?: number;
 
   /**
+   * 키보드 네비게이션 활성화 (Select 등에서 사용)
+   *
+   * direction=down일 때:
+   * - 트리거에서 ArrowDown → 첫 focusable 아이템 포커스
+   * - 첫 아이템에서 ArrowUp → 트리거 포커스
+   * - 트리거에서 ArrowUp → 닫기
+   *
+   * direction=up일 때:
+   * - 트리거에서 ArrowUp → 마지막 focusable 아이템 포커스
+   * - 마지막 아이템에서 ArrowDown → 트리거 포커스
+   * - 트리거에서 ArrowDown → 닫기
+   */
+  enableKeyboardNav?: boolean;
+
+  /**
    * children
    */
   children: JSX.Element;
@@ -71,6 +86,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     "open",
     "onOpenChange",
     "maxHeight",
+    "enableKeyboardNav",
     "class",
     "style",
     "children",
@@ -240,6 +256,71 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
+  });
+
+  // 키보드 네비게이션 (enableKeyboardNav=true일 때)
+  createEffect(() => {
+    if (!open() || !local.enableKeyboardNav) return;
+
+    const trigger = local.triggerRef?.();
+    if (!trigger) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const popup = popupRef();
+      if (!popup) return;
+
+      const dir = direction();
+      const target = e.target as HTMLElement;
+      const isOnTrigger = trigger.contains(target);
+      const isInPopup = popup.contains(target);
+
+      // 팝업 내 focusable 요소들
+      const focusables = [
+        ...popup.querySelectorAll<HTMLElement>(
+          '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
+        ),
+      ];
+      const firstFocusable = focusables[0];
+      const lastFocusable = focusables[focusables.length - 1];
+      const isFirstFocused = document.activeElement === firstFocusable;
+      const isLastFocused = document.activeElement === lastFocusable;
+
+      if (dir === "down") {
+        if (e.key === "ArrowDown") {
+          if (isOnTrigger && firstFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+          }
+        } else if (e.key === "ArrowUp") {
+          if (isInPopup && isFirstFocused) {
+            e.preventDefault();
+            trigger.focus();
+          } else if (isOnTrigger) {
+            e.preventDefault();
+            setOpen(false);
+          }
+        }
+      } else {
+        // direction === "up"
+        if (e.key === "ArrowUp") {
+          if (isOnTrigger && lastFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+          }
+        } else if (e.key === "ArrowDown") {
+          if (isInPopup && isLastFocused) {
+            e.preventDefault();
+            trigger.focus();
+          } else if (isOnTrigger) {
+            e.preventDefault();
+            setOpen(false);
+          }
+        }
       }
     };
 

@@ -332,4 +332,69 @@ describe("Dropdown 컴포넌트", () => {
       });
     });
   });
+
+  describe("키보드 핸들링", () => {
+    it("direction=down일 때 트리거에서 ArrowDown으로 첫 아이템 포커스", async () => {
+      const handleOpenChange = vi.fn();
+      let triggerRef: HTMLButtonElement;
+
+      render(() => (
+        <>
+          <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
+          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} enableKeyboardNav>
+            <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
+            <div data-testid="second-item" tabIndex={0}>두 번째 아이템</div>
+          </Dropdown>
+        </>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      // 트리거에 포커스
+      triggerRef!.focus();
+
+      // ArrowDown 키 입력
+      fireEvent.keyDown(triggerRef!, { key: "ArrowDown" });
+
+      // 첫 아이템에 포커스 이동
+      await waitFor(() => {
+        const firstItem = document.querySelector('[data-testid="first-item"]');
+        expect(document.activeElement).toBe(firstItem);
+      });
+    });
+
+    it("direction=down일 때 첫 아이템에서 ArrowUp으로 트리거 포커스 후 닫기", async () => {
+      const handleOpenChange = vi.fn();
+      let triggerRef: HTMLButtonElement;
+
+      render(() => (
+        <>
+          <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
+          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} enableKeyboardNav>
+            <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
+          </Dropdown>
+        </>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const firstItem = document.querySelector('[data-testid="first-item"]') as HTMLElement;
+      firstItem.focus();
+
+      // 첫 아이템에서 ArrowUp → 트리거 포커스
+      fireEvent.keyDown(firstItem, { key: "ArrowUp" });
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(triggerRef);
+      });
+
+      // 트리거에서 ArrowUp → 닫기
+      fireEvent.keyDown(triggerRef!, { key: "ArrowUp" });
+      expect(handleOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
 });
