@@ -24,6 +24,7 @@ render(
           <Route path="/home/navigation/sidebar" component={lazy(() => import("./pages/navigation/./SidebarPage"))} />
           <Route path="/home/navigation/topbar" component={lazy(() => import("./pages/navigation/./TopbarPage"))} />
           <Route path="/home/overlay/dropdown" component={lazy(() => import("./pages/overlay/./DropdownPage"))} />
+          <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
           <Route path="/*" component={NotFoundPage} />
         </Route>
       </Route>
