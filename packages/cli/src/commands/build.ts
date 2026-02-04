@@ -139,8 +139,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error("sd.config.ts 로드 실패", err);
-    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -169,8 +168,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
   try {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
-    logger.error("tsconfig.json 로드 실패", err);
-    process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+    consola.error(err instanceof Error ? err.message : err);
     process.exitCode = 1;
     return;
   }

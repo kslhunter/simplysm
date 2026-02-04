@@ -1,5 +1,4 @@
 import path from "path";
-import { spawn } from "child_process";
 import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
@@ -17,6 +16,7 @@ import type {
   SdPublishConfig,
 } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
+import { spawn } from "../utils/spawn";
 import { runBuild } from "./build";
 
 //#region Types
@@ -51,46 +51,6 @@ interface PackageJson {
 //#endregion
 
 //#region Utilities
-
-/**
- * child_process.spawn 래퍼 (stdout 반환)
- */
-async function spawnAsync(
-  cmd: string,
-  args: string[],
-  options?: { cwd?: string },
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, {
-      cwd: options?.cwd,
-      shell: true,
-      stdio: ["inherit", "pipe", "pipe"],
-    });
-
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout.on("data", (data: Buffer) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on("data", (data: Buffer) => {
-      stderr += data.toString();
-    });
-
-    child.on("error", (err) => {
-      reject(err);
-    });
-
-    child.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`Command failed: ${cmd} ${args.join(" ")}\n${stderr || stdout}`));
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
-}
 
 /**
  * 환경변수 치환 (%VAR% 형식)
@@ -209,7 +169,7 @@ async function publishPackage(
       logger.debug(`[${pkgName}] npm ${args.join(" ")}`);
     }
 
-    await spawnAsync("npm", args, { cwd: pkgPath });
+    await spawn("npm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
     // 로컬 디렉토리 복사
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
@@ -278,8 +238,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error("sd.config.ts 로드 실패", err);
-    process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
+    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -343,17 +302,16 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (publishPackages.some((p) => p.config === "npm")) {
     logger.debug("npm 인증 확인...");
     try {
-      const whoami = await spawnAsync("npm", ["whoami"]);
+      const whoami = await spawn("npm", ["whoami"]);
       if (whoami.trim() === "") {
         throw new Error("npm 로그인 정보가 없습니다.");
       }
       logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
     } catch {
-      logger.error("npm 인증 실패");
-      process.stderr.write(
-        "✖ npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
+      consola.error(
+        "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
           "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
-          "  npm config set //registry.npmjs.org/:_authToken <토큰>\n",
+          "  npm config set //registry.npmjs.org/:_authToken <토큰>",
       );
       process.exitCode = 1;
       return;
@@ -365,7 +323,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     logger.debug("Git 커밋 여부 확인...");
     try {
       // unstaged 변경사항 확인
-      const diff = await spawnAsync("git", [
+      const diff = await spawn("git", [
         "diff",
         "--name-only",
         "--",
@@ -381,7 +339,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       }
 
       // staged 변경사항 확인
-      const stagedDiff = await spawnAsync("git", [
+      const stagedDiff = await spawn("git", [
         "diff",
         "--cached",
         "--name-only",
@@ -394,8 +352,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         throw new Error("staged된 변경사항이 있습니다. 먼저 커밋하거나 unstage하세요.\n" + stagedDiff);
       }
     } catch (err) {
-      logger.error("Git 상태 확인 실패", err);
-      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      consola.error(err instanceof Error ? err.message : err);
       process.exitCode = 1;
       return;
     }
@@ -446,14 +403,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.error("빌드 실패, 변경사항 롤백...");
         if (hasGit) {
           try {
-            await spawnAsync("git", ["checkout", "."]);
+            await spawn("git", ["checkout", "."]);
             logger.debug("Git 롤백 완료");
-          } catch (rollbackErr) {
-            logger.error("Git 롤백 실패", rollbackErr);
-            process.stderr.write(
-              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+          } catch {
+            consola.error(
+              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
                 "  git checkout .\n" +
-                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)\n",
+                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)",
             );
           }
         }
@@ -472,36 +428,34 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.info(`[DRY-RUN] git tag -a v${version} -m "v${version}"`);
         // push만 실제 dry-run 실행
         logger.info("[DRY-RUN] git push --dry-run");
-        await spawnAsync("git", ["push", "--dry-run"]);
+        await spawn("git", ["push", "--dry-run"]);
         logger.info("[DRY-RUN] git push --tags --dry-run");
-        await spawnAsync("git", ["push", "--tags", "--dry-run"]);
+        await spawn("git", ["push", "--tags", "--dry-run"]);
         logger.info("[DRY-RUN] Git 작업 시뮬레이션 완료");
       } else {
         logger.debug("Git 커밋/태그/푸시...");
         try {
-          await spawnAsync("git", ["add", "."]);
-          await spawnAsync("git", ["commit", "-m", `v${version}`]);
-          await spawnAsync("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
-          await spawnAsync("git", ["push"]);
-          await spawnAsync("git", ["push", "--tags"]);
+          await spawn("git", ["add", "."]);
+          await spawn("git", ["commit", "-m", `v${version}`]);
+          await spawn("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
+          await spawn("git", ["push"]);
+          await spawn("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
           // Git 실패 시 롤백
           logger.error("Git 작업 실패, 롤백 시도...");
           try {
-            await spawnAsync("git", ["checkout", "."]);
+            await spawn("git", ["checkout", "."]);
             logger.debug("Git 롤백 완료");
-          } catch (rollbackErr) {
-            logger.error("Git 롤백 실패", rollbackErr);
-            process.stderr.write(
-              "✖ Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+          } catch {
+            consola.error(
+              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
                 "  git reset --hard HEAD~1\n" +
                 "  git tag -d v" +
-                version +
-                "\n",
+                version,
             );
           }
-          process.stderr.write(`✖ Git 작업 실패: ${err instanceof Error ? err.message : err}\n`);
+          consola.error(`Git 작업 실패: ${err instanceof Error ? err.message : err}`);
           process.exitCode = 1;
           return;
         }
@@ -537,20 +491,18 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.info(`[${pkg.name}] 배포 완료`);
       }
     } catch (err) {
-      logger.error(`[${pkg.name}] 배포 실패`, err);
-
       // 이미 배포된 패키지 목록 출력
       if (publishedPackages.length > 0) {
-        process.stderr.write(
-          "\n✖ 배포 중 오류가 발생했습니다.\n" +
+        consola.error(
+          "배포 중 오류가 발생했습니다.\n" +
             "이미 배포된 패키지:\n" +
             publishedPackages.map((n) => `  - ${n}`).join("\n") +
             "\n\n수동 복구가 필요할 수 있습니다.\n" +
-            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.\n",
+            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.",
         );
       }
 
-      process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
+      consola.error(`[${pkg.name}] 배포 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       return;
     }
@@ -576,7 +528,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
         } else {
           logger.debug(`실행: ${cmd} ${args.join(" ")}`);
-          await spawnAsync(cmd, args, { cwd });
+          await spawn(cmd, args, { cwd });
         }
       } catch (err) {
         // postPublish 실패 시 경고만 출력 (배포 롤백 불가)
