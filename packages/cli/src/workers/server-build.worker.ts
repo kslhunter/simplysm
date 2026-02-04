@@ -13,6 +13,8 @@ export interface ServerBuildWatchInfo {
   name: string;
   cwd: string;
   pkgDir: string;
+  /** 빌드 시 치환할 환경변수 */
+  env?: Record<string, string>;
 }
 
 /**
@@ -102,6 +104,14 @@ async function startWatch(info: ServerBuildWatchInfo): Promise<void> {
 
     const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
 
+    // define 옵션 생성: process.env.KEY를 상수로 치환
+    const define: Record<string, string> = {};
+    if (info.env != null) {
+      for (const [key, value] of Object.entries(info.env)) {
+        define[`process.env["${key}"]`] = JSON.stringify(value);
+      }
+    }
+
     let resolveFirstBuild!: () => void;
     const firstBuildPromise = new Promise<void>((resolve) => {
       resolveFirstBuild = resolve;
@@ -116,7 +126,9 @@ async function startWatch(info: ServerBuildWatchInfo): Promise<void> {
       sourcemap: true,
       platform: "node",
       target: "node20",
-      bundle: false,
+      bundle: true,
+      packages: "external",
+      define,
       tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
       plugins: [
         {
