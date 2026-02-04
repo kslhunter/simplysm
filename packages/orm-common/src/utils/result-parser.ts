@@ -411,7 +411,7 @@ function mergeJoinData(
         throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 존재합니다.`);
       }
     } else {
-      existingGroup[localKey] = objClone(newJoinData);
+      existingGroup[localKey] = newJoinData;
     }
   } else {
     // isSingle: false → 배열에 추가
