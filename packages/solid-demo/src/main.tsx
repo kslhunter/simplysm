@@ -25,6 +25,7 @@ render(
           <Route path="/home/navigation/topbar" component={lazy(() => import("./pages/navigation/./TopbarPage"))} />
           <Route path="/home/overlay/dropdown" component={lazy(() => import("./pages/overlay/./DropdownPage"))} />
           <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
+          <Route path="/home/service/client" component={lazy(() => import("./pages/service/ServiceClientPage"))} />
           <Route path="/*" component={NotFoundPage} />
         </Route>
       </Route>

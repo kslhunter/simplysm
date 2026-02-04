@@ -14,6 +14,7 @@ import {
   IconHome,
   IconLayoutList,
   IconLayoutSidebar,
+  IconPlug,
   IconSettings,
   IconUser,
   IconWindowMaximize,
@@ -53,6 +54,11 @@ const menuItems: SidebarMenuItem[] = [
     title: "Feedback",
     icon: IconBell,
     children: [{ title: "Notification", href: "/home/feedback/notification" }],
+  },
+  {
+    title: "Service",
+    icon: IconPlug,
+    children: [{ title: "ServiceClient", href: "/home/service/client" }],
   },
 ];
 
