@@ -1,7 +1,6 @@
 .tmp
 .coverage
 .playwright-mcp
-.worktrees
 
 .cache
 node_modules
