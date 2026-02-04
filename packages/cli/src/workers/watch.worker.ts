@@ -204,6 +204,12 @@ async function startViteWatch(
   const serverPort = typeof config.server === "number" ? config.server : 0;
   const useStrictPort = serverPort !== 0;
 
+  // process.env를 객체로 치환
+  const envDefine: Record<string, string> = {};
+  if (config.env != null) {
+    envDefine["process.env"] = JSON.stringify(config.env);
+  }
+
   viteServer = await createServer({
     root: pkgDir,
     base: `/${name}/`,
@@ -216,6 +222,7 @@ async function startViteWatch(
         plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
       },
     },
+    define: envDefine,
     esbuild: {
       tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
     },
