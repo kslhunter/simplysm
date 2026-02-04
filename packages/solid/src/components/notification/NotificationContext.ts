@@ -44,7 +44,7 @@ export const NotificationContext = createContext<NotificationContextValue>();
 export function useNotification(): NotificationContextValue {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotification must be used within NotificationProvider");
+    throw new Error("useNotification은 NotificationProvider 내부에서만 사용할 수 있습니다");
   }
   return context;
 }
