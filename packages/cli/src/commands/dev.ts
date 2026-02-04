@@ -490,7 +490,7 @@ export async function runDev(options: DevOptions): Promise<void> {
   }
 
   // Server Build 워커 시작
-  for (const { name } of serverPackages) {
+  for (const { name, config } of serverPackages) {
     const pkgDir = path.join(cwd, "packages", name);
     const serverBuild = serverBuildWorkers.get(name)!;
     serverBuild.worker
@@ -498,6 +498,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         name,
         cwd,
         pkgDir,
+        env: config.env,
       })
       .catch((err: unknown) => {
         results.set(`${name}:build`, {
