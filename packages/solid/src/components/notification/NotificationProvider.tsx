@@ -1,4 +1,4 @@
-import { type ParentComponent, createSignal, createMemo } from "solid-js";
+import { type ParentComponent, createSignal, createMemo, Show } from "solid-js";
 import {
   NotificationContext,
   type NotificationContextValue,
@@ -98,6 +98,17 @@ export const NotificationProvider: ParentComponent = (props) => {
 
   return (
     <NotificationContext.Provider value={contextValue}>
+      {/* 스크린 리더용 Live Region */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        class="sr-only"
+      >
+        <Show when={latestUnread()}>
+          {(item) => `알림: ${item().title} ${item().message ?? ""}`}
+        </Show>
+      </div>
       {props.children}
     </NotificationContext.Provider>
   );
