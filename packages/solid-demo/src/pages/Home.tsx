@@ -9,6 +9,7 @@ import {
   SidebarUser,
 } from "@simplysm/solid";
 import {
+  IconBell,
   IconFold,
   IconHome,
   IconLayoutList,
@@ -47,6 +48,11 @@ const menuItems: SidebarMenuItem[] = [
     title: "Overlay",
     icon: IconWindowMaximize,
     children: [{ title: "Dropdown", href: "/home/overlay/dropdown" }],
+  },
+  {
+    title: "Feedback",
+    icon: IconBell,
+    children: [{ title: "Notification", href: "/home/feedback/notification" }],
   },
 ];
 
