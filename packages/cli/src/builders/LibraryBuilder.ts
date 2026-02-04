@@ -1,6 +1,7 @@
 import path from "path";
-import type * as WatchWorkerModule from "../workers/watch.worker";
+import type * as LibraryWorkerModule from "../workers/library.worker";
 import type { BuildResult } from "../infra/ResultCollector";
+import type { SdBuildPackageConfig } from "../sd-config.types";
 import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
@@ -16,7 +17,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   constructor(options: ConstructorParameters<typeof BaseBuilder>[0]) {
     super(options);
-    this._workerPath = path.resolve(import.meta.dirname, "../workers/watch.worker.ts");
+    this._workerPath = path.resolve(import.meta.dirname, "../workers/library.worker.ts");
   }
 
   protected getBuilderType(): string {
@@ -25,7 +26,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   protected createWorkers(): void {
     for (const pkg of this.packages) {
-      this.workerManager.create<typeof WatchWorkerModule>(
+      this.workerManager.create<typeof LibraryWorkerModule>(
         `${pkg.name}:build`,
         this._workerPath,
       );
@@ -34,7 +35,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   protected registerEventHandlers(): void {
     for (const pkg of this.packages) {
-      const worker = this.workerManager.get<typeof WatchWorkerModule>(`${pkg.name}:build`)!;
+      const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
       const resultKey = `${pkg.name}:build`;
       const listrTitle = `${pkg.name} (${pkg.config.target})`;
 
@@ -89,7 +90,7 @@ export class LibraryBuilder extends BaseBuilder {
   }
 
   protected async buildPackage(pkg: PackageInfo): Promise<void> {
-    const worker = this.workerManager.get<typeof WatchWorkerModule>(`${pkg.name}:build`)!;
+    const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
     // 빌드 완료 Promise 생성
     const buildPromise = new Promise<void>((resolve) => {
@@ -101,9 +102,10 @@ export class LibraryBuilder extends BaseBuilder {
     });
 
     // 빌드 시작 (await 없이 - 이벤트로 완료 감지)
+    // LibraryBuilder는 library 패키지(node/browser/neutral)만 받으므로 캐스팅 안전
     void worker.startWatch({
       name: pkg.name,
-      config: pkg.config,
+      config: pkg.config as SdBuildPackageConfig,
       cwd: this.cwd,
       pkgDir: pkg.dir,
     });
@@ -112,12 +114,13 @@ export class LibraryBuilder extends BaseBuilder {
   }
 
   protected startWatchPackage(pkg: PackageInfo): void {
-    const worker = this.workerManager.get<typeof WatchWorkerModule>(`${pkg.name}:build`)!;
+    const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
 
+    // LibraryBuilder는 library 패키지(node/browser/neutral)만 받으므로 캐스팅 안전
     worker
       .startWatch({
         name: pkg.name,
-        config: pkg.config,
+        config: pkg.config as SdBuildPackageConfig,
         cwd: this.cwd,
         pkgDir: pkg.dir,
       })
@@ -140,18 +143,18 @@ export class LibraryBuilder extends BaseBuilder {
   override async shutdown(): Promise<void> {
     const shutdownTimeout = 3000;
 
-    // 각 Worker의 shutdown 메서드 호출 후 terminate
+    // 각 Worker의 stopWatch 메서드 호출 후 terminate
     await Promise.all(
       this.workerManager.ids.map(async (id) => {
-        const worker = this.workerManager.get<typeof WatchWorkerModule>(id);
+        const worker = this.workerManager.get<typeof LibraryWorkerModule>(id);
         if (worker != null) {
           try {
             await Promise.race([
-              worker.shutdown(),
+              worker.stopWatch(),
               new Promise<void>((resolve) => setTimeout(resolve, shutdownTimeout)),
             ]);
           } catch {
-            // shutdown 실패해도 계속 진행
+            // stopWatch 실패해도 계속 진행
           }
         }
       }),

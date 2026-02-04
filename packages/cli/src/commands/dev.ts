@@ -8,8 +8,8 @@ import type {
 } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
-import type * as WatchWorkerModule from "../workers/watch.worker";
-import type * as ServerBuildWorkerModule from "../workers/server-build.worker";
+import type * as ClientWorkerModule from "../workers/client.worker";
+import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import { Capacitor } from "../capacitor/capacitor";
 import { filterPackagesByTargets, type PackageResult } from "../utils/package-utils";
@@ -39,7 +39,7 @@ export interface DevOptions {
 interface ClientWorkerInfo {
   name: string;
   config: SdClientPackageConfig;
-  worker: WorkerProxy<typeof WatchWorkerModule>;
+  worker: WorkerProxy<typeof ClientWorkerModule>;
   isInitialBuild: boolean;
   buildResolver: (() => void) | undefined;
 }
@@ -111,8 +111,8 @@ export async function runDev(options: DevOptions): Promise<void> {
   }
 
   // Worker 경로
-  const watchWorkerPath = path.resolve(import.meta.dirname, "../workers/watch.worker.ts");
-  const serverBuildWorkerPath = path.resolve(import.meta.dirname, "../workers/server-build.worker.ts");
+  const clientWorkerPath = path.resolve(import.meta.dirname, "../workers/client.worker.ts");
+  const serverWorkerPath = path.resolve(import.meta.dirname, "../workers/server.worker.ts");
   const serverRuntimeWorkerPath = path.resolve(import.meta.dirname, "../workers/server-runtime.worker.ts");
 
   // 클라이언트가 단독 실행인 경우:
@@ -127,7 +127,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     .map(({ name, config }) => ({
       name,
       config,
-      worker: Worker.create<typeof WatchWorkerModule>(watchWorkerPath),
+      worker: Worker.create<typeof ClientWorkerModule>(clientWorkerPath),
       isInitialBuild: true,
       buildResolver: undefined,
     }));
@@ -138,7 +138,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     .map(({ name, config }) => ({
       name,
       config,
-      worker: Worker.create<typeof WatchWorkerModule>(watchWorkerPath),
+      worker: Worker.create<typeof ClientWorkerModule>(clientWorkerPath),
       isInitialBuild: true,
       buildResolver: undefined,
     }));
@@ -203,7 +203,7 @@ export async function runDev(options: DevOptions): Promise<void> {
   const serverBuildWorkers = new Map<
     string,
     {
-      worker: WorkerProxy<typeof ServerBuildWorkerModule>;
+      worker: WorkerProxy<typeof ServerWorkerModule>;
       buildPromise: Promise<void>;
       buildResolver: () => void;
       mainJsPath?: string;
@@ -215,7 +215,7 @@ export async function runDev(options: DevOptions): Promise<void> {
       resolver = resolve;
     });
     serverBuildWorkers.set(name, {
-      worker: Worker.create<typeof ServerBuildWorkerModule>(serverBuildWorkerPath),
+      worker: Worker.create<typeof ServerWorkerModule>(serverWorkerPath),
       buildPromise: promise,
       buildResolver: resolver,
     });
