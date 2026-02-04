@@ -427,7 +427,7 @@ function mergeJoinData(
       if (hashSet != null) {
         if (!hashSet.has(newHash)) {
           hashSet.add(newHash);
-          existingJoinData.push(objClone(newJoinData));
+          existingJoinData.push(newJoinData);
         }
       } else {
         // hashSet이 없으면 폴백 (기존 방식)
