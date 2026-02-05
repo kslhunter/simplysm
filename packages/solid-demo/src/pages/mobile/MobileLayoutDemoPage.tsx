@@ -42,7 +42,7 @@ export default function MobileLayoutDemoPage() {
               </div>
               <div class="flex flex-col">
                 <span class="font-semibold">홍길동</span>
-                <span class="text-sm text-gray-500">hong@example.com</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">hong@example.com</span>
               </div>
             </div>
           </SidebarUser>
@@ -62,8 +62,8 @@ export default function MobileLayoutDemoPage() {
             </TopbarUser>
           </Topbar>
           <div class="flex-1 overflow-auto p-4">
-            <p class="text-sm text-gray-600">햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.</p>
-            <p class="mt-4 text-sm text-gray-600">사이드바 외부를 클릭하면 사이드바가 닫힙니다.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.</p>
+            <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">사이드바 외부를 클릭하면 사이드바가 닫힙니다.</p>
           </div>
         </TopbarContainer>
       </SidebarContainer>

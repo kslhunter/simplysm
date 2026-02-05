@@ -9,7 +9,7 @@ const rootClass = clsx("border border-gray-300 dark:border-gray-700", "bg-gray-5
 
 const nestedClass = clsx("py-1", "rounded-none");
 
-const insetClass = clsx("bg-transparent", "border-transparent");
+const insetClass = clsx("bg-transparent dark:bg-transparent", "border-transparent dark:border-transparent");
 
 export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**

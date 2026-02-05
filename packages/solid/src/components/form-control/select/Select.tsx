@@ -278,7 +278,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     const current = getValue();
 
     if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-      return <span class="text-neutral-400">{local.placeholder ?? ""}</span>;
+      return <span class="text-neutral-400 dark:text-neutral-500">{local.placeholder ?? ""}</span>;
     }
 
     if (local.multiple && Array.isArray(current)) {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { createPropSignal } from "../../src/hooks/createPropSignal";
+import { createPropSignal } from "../../src/utils/createPropSignal";
 
 describe("createPropSignal hook", () => {
   describe("Controlled 모드 (onChange 제공)", () => {

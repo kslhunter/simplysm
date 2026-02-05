@@ -1,1 +1,2 @@
-solid 패키지 utils 폴더와 hooks폴더의 차이? 
+onValueChange -> onChange
+theme: 삭제 테마는 구현하지 말자

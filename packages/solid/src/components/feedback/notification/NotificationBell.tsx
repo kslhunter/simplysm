@@ -101,7 +101,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
               <button
                 type="button"
                 data-notification-clear
-                class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 onClick={handleClear}
               >
                 전체 삭제
@@ -112,7 +112,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
           <Show
             when={notification.items().length > 0}
             fallback={
-              <div class="py-8 text-center text-gray-500">알림이 없습니다</div>
+              <div class="py-8 text-center text-gray-500 dark:text-gray-400">알림이 없습니다</div>
             }
           >
             <div class="flex flex-col gap-2">

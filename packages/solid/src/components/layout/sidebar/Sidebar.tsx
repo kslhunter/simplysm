@@ -15,7 +15,7 @@ const baseClass = clsx(
   "flex",
   "flex-col",
   "bg-gray-100",
-  "dark:bg-gray-950",
+  "dark:bg-gray-900",
   "border-r",
   "border-gray-200",
   "dark:border-gray-800",

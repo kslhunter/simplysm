@@ -1,47 +1,50 @@
 @tailwind base;
 
-html {
-  font-size: 12px;
-  width: 100%;
-  height: 100%;
-}
+@layer base {
+  html {
+    font-size: 12px;
+    @apply bg-white text-gray-900;
+  }
 
-html,
-body,
-#root {
-  width: 100%;
-  height: 100%;
-}
+  html.dark {
+    @apply bg-gray-950 text-gray-100;
+  }
 
-/* 스크롤바 스타일 */
-::-webkit-scrollbar {
-  width: 0.5rem;
-  height: 0.5rem;
-}
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+  }
 
-::-webkit-scrollbar-track {
-  background-color: rgba(0, 0, 0, 0.1);
-}
+  /* 스크롤바 스타일 */
+  ::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
 
-::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-::-webkit-scrollbar-corner {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-/* 다크모드 */
-@media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-track {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(0, 0, 0, 0.2);
   }
 
   ::-webkit-scrollbar-corner {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* 다크모드 스크롤바 */
+  .dark ::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .dark ::-webkit-scrollbar-corner {
     background-color: rgba(255, 255, 255, 0.1);
   }
 }

@@ -50,10 +50,8 @@ export * from "./contexts/ServiceClientProvider";
 // directives
 export { ripple } from "./directives/ripple";
 
-// hooks
-export { createPropSignal } from "./hooks/createPropSignal";
-export { useRouterLink } from "./hooks/useRouterLink";
-
 // utils
+export { createPropSignal } from "./utils/createPropSignal";
 export { mergeStyles } from "./utils/mergeStyles";
 export { splitSlots } from "./utils/splitSlots";
+export { useRouterLink } from "./utils/useRouterLink";

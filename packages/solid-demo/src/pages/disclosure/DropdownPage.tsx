@@ -40,7 +40,7 @@ export default function DropdownPage() {
           {/* 기본 드롭다운 메뉴 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 드롭다운 메뉴</h2>
-            <p class="mb-4 text-sm text-gray-600">외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.</p>
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.</p>
             <div class="flex items-center gap-4">
               <Button
                 ref={basicButtonRef}
@@ -50,7 +50,7 @@ export default function DropdownPage() {
               >
                 메뉴 열기
               </Button>
-              {basicSelected() != null && <span class="text-sm text-gray-600">선택: {basicSelected()}</span>}
+              {basicSelected() != null && <span class="text-sm text-gray-600 dark:text-gray-400">선택: {basicSelected()}</span>}
             </div>
             <Dropdown triggerRef={() => basicButtonRef} open={basicOpen()} onOpenChange={setBasicOpen}>
               <ul class="py-1">
@@ -83,14 +83,14 @@ export default function DropdownPage() {
           {/* 컨텍스트 메뉴 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">컨텍스트 메뉴</h2>
-            <p class="mb-4 text-sm text-gray-600">아래 영역에서 우클릭하세요.</p>
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">아래 영역에서 우클릭하세요.</p>
             <div
               class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800"
               onContextMenu={handleContextMenu}
             >
               <span class="text-gray-500 dark:text-gray-400">우클릭 영역</span>
             </div>
-            {contextSelected() != null && <p class="mt-2 text-sm text-gray-600">선택: {contextSelected()}</p>}
+            {contextSelected() != null && <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">선택: {contextSelected()}</p>}
             <Dropdown position={contextPosition()} open={contextOpen()} onOpenChange={setContextOpen}>
               <ul class="py-1">
                 <For each={menuItems}>
@@ -122,7 +122,7 @@ export default function DropdownPage() {
           {/* 위치 자동 조정 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">위치 자동 조정</h2>
-            <p class="mb-4 text-sm text-gray-600">
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
               화면 하단에서 열면 위쪽으로 펼쳐집니다. 브라우저 창 크기를 줄여 테스트해 보세요.
             </p>
             <Button
@@ -164,7 +164,7 @@ export default function DropdownPage() {
           {/* 최대 높이 설정 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">최대 높이 설정</h2>
-            <p class="mb-4 text-sm text-gray-600">
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
               maxHeight prop으로 최대 높이를 설정하면 내용이 넘칠 때 스크롤됩니다.
             </p>
             <div class="flex items-center gap-4">
@@ -176,7 +176,7 @@ export default function DropdownPage() {
               >
                 긴 목록 열기
               </Button>
-              {maxHeightSelected() != null && <span class="text-sm text-gray-600">선택: {maxHeightSelected()}</span>}
+              {maxHeightSelected() != null && <span class="text-sm text-gray-600 dark:text-gray-400">선택: {maxHeightSelected()}</span>}
             </div>
             <Dropdown
               triggerRef={() => maxHeightButtonRef}

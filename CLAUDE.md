@@ -186,6 +186,10 @@ const User = Table("User")
 
 캐시 초기화: `.cache/` 삭제
 
+## Playwright MCP 출력 디렉토리
+
+Playwright MCP 도구로 스크린샷 등 파일을 저장할 때는 `.playwright-mcp/` 디렉토리를 사용한다.
+
 ## 커스텀 타입
 
 `@simplysm/core-common`에서 제공하는 불변 타입:

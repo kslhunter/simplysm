@@ -10,7 +10,7 @@ import {
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../hooks/createPropSignal";
+import { createPropSignal } from "../../utils/createPropSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
 
 export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
