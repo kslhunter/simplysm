@@ -7,6 +7,7 @@ export * from "./components/form-control/select/SelectItem";
 export * from "./components/form-control/text-field/TextField";
 export * from "./components/form-control/number-field/NumberField";
 export * from "./components/form-control/date-field/DateField";
+export * from "./components/form-control/datetime-field/DateTimeField";
 
 // layout
 export * from "./components/layout/FormGroup";
