@@ -5,6 +5,7 @@ export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/select/SelectItem";
 export * from "./components/form-control/text-field/TextField";
+export * from "./components/form-control/number-field/NumberField";
 
 // layout
 export * from "./components/layout/FormGroup";
