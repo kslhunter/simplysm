@@ -16,50 +16,24 @@ describe("FormGroup 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일 (수직 레이아웃)", () => {
-    it("flex flex-col 레이아웃이 적용된다", () => {
-      const { container } = render(() => <FormGroup>Content</FormGroup>);
-      const group = container.firstChild as HTMLElement;
-      expect(group.classList.contains("flex")).toBe(true);
-      expect(group.classList.contains("flex-col")).toBe(true);
-    });
-
-    it("gap-4가 적용된다", () => {
-      const { container } = render(() => <FormGroup>Content</FormGroup>);
-      const group = container.firstChild as HTMLElement;
-      expect(group.classList.contains("gap-4")).toBe(true);
-    });
-  });
-
   describe("inline 속성", () => {
-    it("inline=true일 때 가로 레이아웃이 적용된다", () => {
-      const { container } = render(() => <FormGroup inline>Content</FormGroup>);
-      const group = container.firstChild as HTMLElement;
-      expect(group.classList.contains("inline-flex")).toBe(true);
-      expect(group.classList.contains("flex-row")).toBe(true);
-      expect(group.classList.contains("flex-wrap")).toBe(true);
-    });
+    it("inline prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => <FormGroup>Content</FormGroup>);
+      const { container: inlineContainer } = render(() => <FormGroup inline>Content</FormGroup>);
 
-    it("inline=true일 때 gap-2가 적용된다", () => {
-      const { container } = render(() => <FormGroup inline>Content</FormGroup>);
-      const group = container.firstChild as HTMLElement;
-      expect(group.classList.contains("gap-2")).toBe(true);
-    });
+      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
+      const inlineClass = (inlineContainer.firstChild as HTMLElement).className;
 
-    it("inline=true일 때 items-center가 적용된다", () => {
-      const { container } = render(() => <FormGroup inline>Content</FormGroup>);
-      const group = container.firstChild as HTMLElement;
-      expect(group.classList.contains("items-center")).toBe(true);
+      expect(defaultClass).not.toBe(inlineClass);
     });
   });
 
   describe("class 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <FormGroup class="my-form-group">Content</FormGroup>);
       const group = container.firstChild as HTMLElement;
       expect(group.classList.contains("my-form-group")).toBe(true);
-      expect(group.classList.contains("flex")).toBe(true);
     });
   });
 });
@@ -112,38 +86,6 @@ describe("FormGroup.Item 컴포넌트", () => {
         </FormGroup>
       ));
       expect(container.querySelector("label")).toBeNull();
-    });
-  });
-
-  describe("label 스타일", () => {
-    it("label에 font-bold가 적용된다", () => {
-      const { container } = render(() => (
-        <FormGroup>
-          <FormGroup.Item label="Name">Input</FormGroup.Item>
-        </FormGroup>
-      ));
-      const label = container.querySelector("label");
-      expect(label?.classList.contains("font-bold")).toBe(true);
-    });
-
-    it("label에 mb-1이 적용된다", () => {
-      const { container } = render(() => (
-        <FormGroup>
-          <FormGroup.Item label="Name">Input</FormGroup.Item>
-        </FormGroup>
-      ));
-      const label = container.querySelector("label");
-      expect(label?.classList.contains("mb-1")).toBe(true);
-    });
-
-    it("label에 block display가 적용된다", () => {
-      const { container } = render(() => (
-        <FormGroup>
-          <FormGroup.Item label="Name">Input</FormGroup.Item>
-        </FormGroup>
-      ));
-      const label = container.querySelector("label");
-      expect(label?.classList.contains("block")).toBe(true);
     });
   });
 

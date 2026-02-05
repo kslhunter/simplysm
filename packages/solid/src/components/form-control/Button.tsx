@@ -6,13 +6,13 @@ import { ripple } from "../../directives/ripple";
 // Directive 사용 선언 (TypeScript용)
 void ripple;
 
-type ButtonTheme = "primary" | "info" | "success" | "warning" | "danger" | "gray";
+type ButtonTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
 type ButtonVariant = "solid" | "outline" | "ghost";
 type ButtonSize = "sm" | "lg";
 
 const baseClass = clsx(
-  "py-1",
-  "px-1.5",
+  "inline-flex items-center",
+  "px-2 py-1",
   "font-bold",
   "text-center",
   "cursor-pointer",
@@ -25,7 +25,7 @@ const baseClass = clsx(
 const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   primary: {
     solid: clsx(
-      "bg-primary-500 dark:bg-primary-500",
+      "bg-primary-500",
       "hover:bg-primary-600 dark:hover:bg-primary-400",
       "text-white",
       "border border-transparent",
@@ -43,23 +43,18 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
     ),
   },
   info: {
-    solid: clsx(
-      "bg-info-500 dark:bg-info-500",
-      "hover:bg-info-600 dark:hover:bg-info-400",
-      "text-white",
-      "border border-transparent",
-    ),
+    solid: clsx("bg-info-500", "hover:bg-info-600 dark:hover:bg-info-400", "text-white", "border border-transparent"),
     outline: clsx(
       "bg-transparent",
       "hover:bg-info-50 dark:hover:bg-info-800/30",
       "text-info-600 dark:text-info-400",
       "border border-info-300 dark:border-info-600",
     ),
-    ghost: clsx("bg-transparent", "hover:bg-info-50 dark:hover:bg-info-800/30", "text-info-600 dark:text-info-400"),
+    ghost: clsx`bg-transparent text-info-600 hover:bg-info-50 dark:text-info-400 dark:hover:bg-info-800/30`,
   },
   success: {
     solid: clsx(
-      "bg-success-500 dark:bg-success-500",
+      "bg-success-500",
       "hover:bg-success-600 dark:hover:bg-success-400",
       "text-white",
       "border border-transparent",
@@ -78,7 +73,7 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   },
   warning: {
     solid: clsx(
-      "bg-warning-500 dark:bg-warning-500",
+      "bg-warning-500",
       "hover:bg-warning-600 dark:hover:bg-warning-400",
       "text-white",
       "border border-transparent",
@@ -97,7 +92,7 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   },
   danger: {
     solid: clsx(
-      "bg-danger-500 dark:bg-danger-500",
+      "bg-danger-500",
       "hover:bg-danger-600 dark:hover:bg-danger-400",
       "text-white",
       "border border-transparent",
@@ -114,30 +109,26 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "text-danger-600 dark:text-danger-400",
     ),
   },
-  gray: {
+  base: {
     solid: clsx(
-      "bg-neutral-600 dark:bg-slate-600",
-      "hover:bg-neutral-700 dark:hover:bg-slate-500",
-      "text-white",
+      "bg-white dark:bg-slate-950",
+      "hover:bg-zinc-700 dark:hover:bg-zinc-500",
+      "text-zinc-900 dark:text-zinc-100",
       "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
-      "hover:bg-neutral-100 dark:hover:bg-slate-700",
-      "text-neutral-600 dark:text-slate-300",
-      "border border-neutral-300 dark:border-slate-600",
+      "hover:bg-zinc-100 dark:hover:bg-zinc-700",
+      "text-zinc-600 dark:text-zinc-300",
+      "border border-zinc-300 dark:border-zinc-600",
     ),
-    ghost: clsx(
-      "bg-transparent",
-      "hover:bg-neutral-100 dark:hover:bg-slate-700",
-      "text-neutral-600 dark:text-slate-300",
-    ),
+    ghost: clsx("bg-transparent", "hover:bg-zinc-100 dark:hover:bg-zinc-700", "text-zinc-600 dark:text-zinc-300"),
   },
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: clsx("py-0.5", "px-1.5"),
-  lg: clsx("py-1.5", "px-3"),
+  sm: clsx`px-1.5 py-0.5`,
+  lg: clsx`px-3 py-1.5`,
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -160,7 +151,7 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
   ]);
 
   const getClassName = () => {
-    const theme = local.theme ?? "gray";
+    const theme = local.theme ?? "base";
     const variant = local.variant ?? "outline";
 
     return twMerge(

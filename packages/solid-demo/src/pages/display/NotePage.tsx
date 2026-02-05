@@ -2,7 +2,7 @@ import { For } from "solid-js";
 import { Note, type NoteTheme, Topbar, TopbarContainer, Icon } from "@simplysm/solid";
 import { IconInfoCircle, IconCircleCheck, IconAlertTriangle, IconAlertCircle } from "@tabler/icons-solidjs";
 
-const themes: NoteTheme[] = ["primary", "info", "success", "warning", "danger", "gray"];
+const themes: NoteTheme[] = ["primary", "info", "success", "warning", "danger", "slate"];
 
 export default function NotePage() {
   return (
@@ -16,7 +16,7 @@ export default function NotePage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">테마</h2>
             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-              Note 컴포넌트는 6가지 테마를 지원합니다. 기본값은 gray입니다.
+              Note 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
             <div class="space-y-3">
               <For each={themes}>
@@ -32,7 +32,7 @@ export default function NotePage() {
           {/* Default (no theme) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 노트</h2>
-            <Note>theme을 지정하지 않으면 gray 테마가 적용됩니다.</Note>
+            <Note>theme을 지정하지 않으면 slate 테마가 적용됩니다.</Note>
           </section>
 
           {/* With Icons */}

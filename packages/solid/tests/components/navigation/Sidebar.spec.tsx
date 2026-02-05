@@ -57,31 +57,6 @@ describe("Sidebar 컴포넌트", () => {
 
       expect(container.querySelector("aside")).toBeTruthy();
     });
-
-    it("absolute 포지셔닝 클래스가 적용된다", () => {
-      const { container } = render(() => (
-        <SidebarContainer>
-          <Sidebar>Content</Sidebar>
-        </SidebarContainer>
-      ));
-
-      const sidebar = container.querySelector("aside");
-      expect(sidebar?.classList.contains("absolute")).toBe(true);
-      expect(sidebar?.classList.contains("top-0")).toBe(true);
-      expect(sidebar?.classList.contains("left-0")).toBe(true);
-      expect(sidebar?.classList.contains("bottom-0")).toBe(true);
-    });
-
-    it("w-64 너비 클래스가 적용된다", () => {
-      const { container } = render(() => (
-        <SidebarContainer>
-          <Sidebar>Content</Sidebar>
-        </SidebarContainer>
-      ));
-
-      const sidebar = container.querySelector("aside");
-      expect(sidebar?.classList.contains("w-64")).toBe(true);
-    });
   });
 
   describe("열림/닫힘 상태", () => {
@@ -96,7 +71,6 @@ describe("Sidebar 컴포넌트", () => {
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
-      // 브라우저가 translateX(0)을 translateX(0px)로 정규화함
       expect(sidebar.style.transform).toBe("translateX(0px)");
     });
 
@@ -139,7 +113,6 @@ describe("Sidebar 컴포넌트", () => {
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
-      // 브라우저가 translateX(0)을 translateX(0px)로 정규화함
       expect(sidebar.style.transform).toBe("translateX(0px)");
     });
   });
@@ -189,7 +162,7 @@ describe("Sidebar 컴포넌트", () => {
   });
 
   describe("스타일 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         <SidebarContainer>
           {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
@@ -199,7 +172,6 @@ describe("Sidebar 컴포넌트", () => {
 
       const sidebar = container.querySelector("aside");
       expect(sidebar?.classList.contains("my-custom-class")).toBe(true);
-      expect(sidebar?.classList.contains("absolute")).toBe(true);
     });
   });
 

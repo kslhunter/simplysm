@@ -1,7 +1,7 @@
 import { For } from "solid-js";
 import { Label, type LabelTheme, Topbar, TopbarContainer } from "@simplysm/solid";
 
-const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "gray"];
+const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "slate"];
 
 export default function LabelPage() {
   return (
@@ -15,7 +15,7 @@ export default function LabelPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">테마</h2>
             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-              Label 컴포넌트는 6가지 테마를 지원합니다. 기본값은 gray입니다.
+              Label 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
               <For each={themes}>
@@ -30,7 +30,7 @@ export default function LabelPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 라벨</h2>
             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-              theme을 지정하지 않으면 gray 테마가 적용됩니다.
+              theme을 지정하지 않으면 slate 테마가 적용됩니다.
             </p>
             <Label>기본 라벨</Label>
           </section>
@@ -58,7 +58,7 @@ export default function LabelPage() {
               <div class="flex items-center gap-2">
                 <span class="font-semibold">카테고리:</span>
                 <Label theme="primary">공지사항</Label>
-                <Label theme="gray">일반</Label>
+                <Label theme="slate">일반</Label>
               </div>
             </div>
           </section>

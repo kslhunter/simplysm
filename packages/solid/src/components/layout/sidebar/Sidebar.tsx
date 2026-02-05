@@ -14,17 +14,17 @@ const baseClass = clsx(
   "z-sidebar",
   "flex",
   "flex-col",
-  "bg-gray-100",
-  "dark:bg-slate-950",
+  "bg-zinc-100",
+  "dark:bg-slate-900",
   "border-r",
-  "border-gray-200",
+  "border-slate-200",
   "dark:border-slate-700",
   "transition-transform",
   "duration-300",
   "sm:duration-100",
 );
 
-const mobileOpenClass = clsx("shadow-xl");
+const mobileOpenClass = clsx`shadow-xl`;
 
 export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;

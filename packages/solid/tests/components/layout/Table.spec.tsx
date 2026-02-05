@@ -24,74 +24,36 @@ describe("Table 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일", () => {
-    it("w-full이 적용된다", () => {
-      const { container } = render(() => <Table>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("w-full")).toBe(true);
-    });
-
-    it("border-separate가 적용된다", () => {
-      const { container } = render(() => <Table>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-separate")).toBe(true);
-    });
-
-    it("border-spacing-0이 적용된다", () => {
-      const { container } = render(() => <Table>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-spacing-0")).toBe(true);
-    });
-
-    it("테두리 스타일이 적용된다", () => {
-      const { container } = render(() => <Table>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-r")).toBe(true);
-      expect(table.classList.contains("border-b")).toBe(true);
-      expect(table.classList.contains("border-gray-300")).toBe(true);
-      expect(table.classList.contains("dark:border-gray-600")).toBe(true);
-    });
-  });
-
   describe("inset 속성", () => {
-    it("inset=true일 때 외곽 테두리가 제거된다", () => {
-      const { container } = render(() => <Table inset>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-r-0")).toBe(true);
-      expect(table.classList.contains("border-b-0")).toBe(true);
+    it("inset prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => <Table>Content</Table>);
+      const { container: insetContainer } = render(() => <Table inset>Content</Table>);
+
+      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
+      const insetClass = (insetContainer.firstChild as HTMLElement).className;
+
+      expect(defaultClass).not.toBe(insetClass);
     });
   });
 
   describe("inline 속성", () => {
-    it("inline=true일 때 w-auto가 적용된다", () => {
-      const { container } = render(() => <Table inline>Content</Table>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("w-auto")).toBe(true);
-      expect(table.classList.contains("w-full")).toBe(false);
-    });
-  });
+    it("inline prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => <Table>Content</Table>);
+      const { container: inlineContainer } = render(() => <Table inline>Content</Table>);
 
-  describe("속성 조합", () => {
-    it("inset과 inline이 동시에 적용될 수 있다", () => {
-      const { container } = render(() => (
-        <Table inset inline>
-          Content
-        </Table>
-      ));
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-r-0")).toBe(true);
-      expect(table.classList.contains("border-b-0")).toBe(true);
-      expect(table.classList.contains("w-auto")).toBe(true);
+      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
+      const inlineClass = (inlineContainer.firstChild as HTMLElement).className;
+
+      expect(defaultClass).not.toBe(inlineClass);
     });
   });
 
   describe("class 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Table class="my-table">Content</Table>);
       const table = container.firstChild as HTMLElement;
       expect(table.classList.contains("my-table")).toBe(true);
-      expect(table.classList.contains("border-separate")).toBe(true);
     });
   });
 

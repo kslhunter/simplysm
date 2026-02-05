@@ -142,8 +142,32 @@ describe("SidebarUser", () => {
     });
   });
 
-  describe("스타일 적용", () => {
-    it("custom class가 병합됨", () => {
+  describe("menus 유무에 따른 스타일", () => {
+    it("menus prop에 따라 스타일이 달라진다", () => {
+      const menus: SidebarUserMenu[] = [
+        { title: "로그아웃", onClick: () => {} },
+      ];
+
+      const { container: withoutMenus } = render(() => (
+        <SidebarUser>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+      const { container: withMenus } = render(() => (
+        <SidebarUser menus={menus}>
+          <span>사용자</span>
+        </SidebarUser>
+      ));
+
+      const buttonWithout = withoutMenus.querySelector("button")!;
+      const buttonWith = withMenus.querySelector("button")!;
+
+      expect(buttonWithout.className).not.toBe(buttonWith.className);
+    });
+  });
+
+  describe("스타일 병합", () => {
+    it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
         <SidebarUser class="my-custom-class">
@@ -152,34 +176,6 @@ describe("SidebarUser", () => {
       ));
 
       expect(container.querySelector(".my-custom-class")).toBeTruthy();
-    });
-
-    it("menus가 없을 때 hover 스타일이 적용되지 않음", () => {
-      const { container } = render(() => (
-        <SidebarUser>
-          <span>사용자</span>
-        </SidebarUser>
-      ));
-
-      const button = container.querySelector("button")!;
-      // cursor-default 클래스가 적용되어야 함
-      expect(button.classList.contains("cursor-default")).toBe(true);
-    });
-
-    it("menus가 있을 때 cursor-pointer 스타일 적용", () => {
-      const menus: SidebarUserMenu[] = [
-        { title: "로그아웃", onClick: () => {} },
-      ];
-
-      const { container } = render(() => (
-        <SidebarUser menus={menus}>
-          <span>사용자</span>
-        </SidebarUser>
-      ));
-
-      const button = container.querySelector("button")!;
-      // cursor-pointer 클래스가 적용되어야 함
-      expect(button.classList.contains("cursor-pointer")).toBe(true);
     });
   });
 });

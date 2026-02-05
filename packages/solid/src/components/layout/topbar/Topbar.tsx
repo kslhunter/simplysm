@@ -17,9 +17,9 @@ const baseClass = clsx(
   "px-2",
   // 배경/테두리
   "bg-white",
-  "dark:bg-slate-900",
+  "dark:bg-slate-950",
   "border-b",
-  "border-gray-200",
+  "border-slate-200",
   "dark:border-slate-700",
   // 스크롤
   "overflow-x-auto",

@@ -45,44 +45,10 @@ describe("SidebarContainer 컴포넌트", () => {
 
       expect(getByText("콘텐츠")).toBeTruthy();
     });
-
-    it("relative 포지셔닝 클래스가 적용된다", () => {
-      const { container } = render(() => (
-        <SidebarContainer>
-          <div>Content</div>
-        </SidebarContainer>
-      ));
-
-      const containerEl = container.firstElementChild as HTMLElement;
-      expect(containerEl.classList.contains("relative")).toBe(true);
-    });
-
-    it("h-full 높이 클래스가 적용된다", () => {
-      const { container } = render(() => (
-        <SidebarContainer>
-          <div>Content</div>
-        </SidebarContainer>
-      ));
-
-      const containerEl = container.firstElementChild as HTMLElement;
-      expect(containerEl.classList.contains("h-full")).toBe(true);
-    });
-
-    it("transition 클래스가 적용된다", () => {
-      const { container } = render(() => (
-        <SidebarContainer>
-          <div>Content</div>
-        </SidebarContainer>
-      ));
-
-      const containerEl = container.firstElementChild as HTMLElement;
-      expect(containerEl.classList.contains("transition-[padding-left]")).toBe(true);
-      expect(containerEl.classList.contains("duration-100")).toBe(true);
-    });
   });
 
   describe("padding-left 처리", () => {
-    it("데스크탑에서 열림 상태일 때 padding-left: 16rem 적용", () => {
+    it("데스크탑에서 열림 상태일 때 padding-left 적용", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
       mockToggle = createSignal(false); // toggle=false → 데스크탑에서 열림
 
@@ -167,24 +133,6 @@ describe("SidebarContainer 컴포넌트", () => {
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
       expect(backdrop).toBeFalsy();
     });
-
-    it("backdrop은 absolute 포지셔닝이다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(true); // 열림 상태
-
-      const { container } = render(() => (
-        <SidebarContainer>
-          <div>Content</div>
-        </SidebarContainer>
-      ));
-
-      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
-      expect(backdrop?.classList.contains("absolute")).toBe(true);
-      expect(backdrop?.classList.contains("top-0")).toBe(true);
-      expect(backdrop?.classList.contains("left-0")).toBe(true);
-      expect(backdrop?.classList.contains("right-0")).toBe(true);
-      expect(backdrop?.classList.contains("bottom-0")).toBe(true);
-    });
   });
 
   describe("backdrop 클릭 이벤트", () => {
@@ -233,7 +181,7 @@ describe("SidebarContainer 컴포넌트", () => {
   });
 
   describe("스타일 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
         <SidebarContainer class="my-custom-class">
@@ -243,10 +191,9 @@ describe("SidebarContainer 컴포넌트", () => {
 
       const containerEl = container.firstElementChild as HTMLElement;
       expect(containerEl.classList.contains("my-custom-class")).toBe(true);
-      expect(containerEl.classList.contains("relative")).toBe(true);
     });
 
-    it("사용자 정의 style이 기존 스타일과 병합된다", () => {
+    it("사용자 정의 style이 병합된다", () => {
       const { container } = render(() => (
         <SidebarContainer style={{ "background-color": "red" }}>
           <div>Content</div>

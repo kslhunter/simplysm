@@ -15,16 +15,16 @@ const baseClass = clsx(
   "cursor-pointer",
   "rounded",
   "transition-colors",
-  "text-gray-500 dark:text-slate-400",
-  "hover:bg-gray-200 dark:hover:bg-slate-700",
+  "text-slate-500 dark:text-slate-400",
+  "hover:bg-slate-200 dark:hover:bg-slate-700",
   "focus:outline-none",
   "focus-visible:ring-2",
 );
 
 const sizeClasses = {
-  sm: clsx("p-1"),
-  default: clsx("p-1.5"),
-  lg: clsx("p-2"),
+  sm: clsx`p-1`,
+  default: clsx`p-1.5`,
+  lg: clsx`p-2`,
 };
 
 const iconSizes = {

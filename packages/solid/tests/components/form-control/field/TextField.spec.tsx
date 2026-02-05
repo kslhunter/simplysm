@@ -1,7 +1,7 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
-import { TextField } from "../../../../src/components/form-control/text-field/TextField";
+import { TextField } from "../../../../src/components/form-control/field/TextField";
 
 describe("TextField 컴포넌트", () => {
   describe("기본 렌더링", () => {
@@ -107,7 +107,7 @@ describe("TextField 컴포넌트", () => {
     it("disabled 스타일이 적용된다", () => {
       const { container } = render(() => <TextField disabled value="Text" />);
       const div = container.querySelector("div.sd-text-field") as HTMLElement;
-      expect(div.classList.contains("bg-neutral-100")).toBe(true);
+      expect(div.classList.contains("bg-zinc-100")).toBe(true);
     });
   });
 
@@ -131,7 +131,7 @@ describe("TextField 컴포넌트", () => {
     it("error=true일 때 에러 스타일이 적용된다", () => {
       const { container } = render(() => <TextField error />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
+      expect(wrapper.classList.contains("border-red-500")).toBe(true);
     });
   });
 
@@ -193,20 +193,20 @@ describe("TextField 컴포넌트", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("border")).toBe(true);
-      expect(wrapper.classList.contains("border-neutral-300")).toBe(true);
+      expect(wrapper.classList.contains("border-zinc-300")).toBe(true);
     });
 
     it("focus 시 border 색상이 변경된다", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("focus-within:border-primary-500")).toBe(true);
+      expect(wrapper.classList.contains("focus-within:border-blue-500")).toBe(true);
     });
 
     it("다크 모드 스타일이 적용된다", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-neutral-600")).toBe(true);
-      expect(wrapper.classList.contains("dark:bg-neutral-950")).toBe(true);
+      expect(wrapper.classList.contains("dark:border-zinc-700")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-zinc-900")).toBe(true);
     });
   });
 });

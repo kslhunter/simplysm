@@ -3,11 +3,11 @@
 @layer base {
   html {
     font-size: 12px;
-    @apply bg-white text-gray-900;
+    @apply bg-white text-zinc-900;
   }
 
   html.dark {
-    @apply bg-slate-900 text-slate-100;
+    @apply bg-slate-950 text-zinc-100;
   }
 
   html,

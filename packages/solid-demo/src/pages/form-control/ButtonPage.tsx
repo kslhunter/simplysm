@@ -1,7 +1,7 @@
 import { For } from "solid-js";
 import { Button, Topbar, TopbarContainer } from "@simplysm/solid";
 
-const themes = ["primary", "info", "success", "warning", "danger", "gray"] as const;
+const themes = ["primary", "info", "success", "warning", "danger", "base"] as const;
 const variants = ["solid", "outline", "ghost"] as const;
 
 export default function ButtonPage() {
@@ -78,7 +78,7 @@ export default function ButtonPage() {
 
           {/* Default (Gray Outline) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Default Button (gray outline)</h2>
+            <h2 class="mb-4 text-xl font-semibold">Default Button (base outline)</h2>
             <Button>Default Button</Button>
           </section>
         </div>

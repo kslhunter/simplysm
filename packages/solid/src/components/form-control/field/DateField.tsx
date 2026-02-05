@@ -1,39 +1,19 @@
 import { type Component, type JSX, Show, splitProps } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
+import {
+  type FieldSize,
+  fieldBaseClass,
+  fieldSizeClasses,
+  fieldErrorClass,
+  fieldInsetClass,
+  fieldDisabledClass,
+  fieldReadonlyClass,
+  fieldInputClass,
+} from "./styles";
 
 type DateFieldType = "year" | "month" | "date";
-type DateFieldSize = "sm" | "lg";
-
-// 기본 wrapper 스타일
-const baseClass = clsx(
-  "inline-flex items-center",
-  "border border-neutral-300 dark:border-neutral-600",
-  "rounded",
-  "bg-white dark:bg-transparent",
-  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
-  "px-2 py-1",
-);
-
-// 사이즈별 스타일
-const sizeClasses: Record<DateFieldSize, string> = {
-  sm: clsx("px-1.5 py-0.5"),
-  lg: clsx("px-3 py-2"),
-};
-
-// 에러 스타일
-const errorClass = clsx("border-danger-500 dark:border-danger-500");
-
-// inset 스타일
-const insetClass = clsx("rounded-none border-none bg-transparent");
-
-// disabled 스타일
-const disabledClass = clsx("bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500");
-
-// input 스타일
-const inputClass = clsx("min-w-0 flex-1", "bg-transparent", "outline-none");
 
 export interface DateFieldProps {
   /** 입력 값 */
@@ -64,7 +44,7 @@ export interface DateFieldProps {
   error?: boolean;
 
   /** 사이즈 */
-  size?: DateFieldSize;
+  size?: FieldSize;
 
   /** 테두리 없는 스타일 */
   inset?: boolean;
@@ -214,11 +194,12 @@ export const DateField: Component<DateFieldProps> = (props) => {
   // wrapper 클래스
   const getWrapperClass = () =>
     twMerge(
-      baseClass,
-      local.size && sizeClasses[local.size],
-      local.error && errorClass,
-      local.inset && insetClass,
-      (local.disabled || local.readonly) && disabledClass,
+      fieldBaseClass,
+      local.size && fieldSizeClasses[local.size],
+      local.error && fieldErrorClass,
+      local.inset && fieldInsetClass,
+      local.disabled && fieldDisabledClass,
+      local.readonly && fieldReadonlyClass,
       local.class,
     );
 
@@ -237,7 +218,7 @@ export const DateField: Component<DateFieldProps> = (props) => {
       <div class={getWrapperClass()} style={local.style}>
         <input
           type={getInputType(fieldType())}
-          class={inputClass}
+          class={fieldInputClass}
           value={displayValue()}
           title={local.title}
           min={formatMinMax(local.min, fieldType())}

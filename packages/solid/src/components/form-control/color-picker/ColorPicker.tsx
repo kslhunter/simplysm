@@ -1,0 +1,95 @@
+import { type Component, type JSX, splitProps } from "solid-js";
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+import { createPropSignal } from "../../../utils/createPropSignal";
+
+type ColorPickerSize = "sm" | "lg";
+
+// 기본 스타일
+const baseClass = clsx(
+  "size-[calc(1lh+0.5rem+2px)]",
+  "rounded",
+  "border border-black/10 dark:border-white/10",
+  "cursor-pointer",
+  // color input 기본 스타일 제거
+  "[&::-webkit-color-swatch-wrapper]:p-0",
+  "[&::-webkit-color-swatch]:border-none",
+  "[&::-webkit-color-swatch]:rounded-none",
+  "[&::-moz-color-swatch]:border-none",
+  "[&::-moz-color-swatch]:rounded-none",
+);
+
+// 사이즈별 스타일
+const sizeClasses: Record<ColorPickerSize, string> = {
+  sm: "size-[calc(1lh+0.25rem+2px)]",
+  lg: "size-[calc(1lh+1rem+2px)]",
+};
+
+// disabled 스타일 - 대각선 줄무늬로 표시
+const disabledClass = clsx(
+  "cursor-default",
+  "relative",
+  "before:absolute before:inset-0",
+  "before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
+);
+
+export interface ColorPickerProps {
+  /** 색상 값 (#RRGGBB 형식) */
+  value?: string;
+
+  /** 값 변경 콜백 */
+  onValueChange?: (value: string) => void;
+
+  /** 타이틀 (툴팁) */
+  title?: string;
+
+  /** 비활성화 */
+  disabled?: boolean;
+
+  /** 사이즈 */
+  size?: ColorPickerSize;
+
+  /** 커스텀 class */
+  class?: string;
+
+  /** 커스텀 style */
+  style?: JSX.CSSProperties;
+}
+
+/**
+ * ColorPicker 컴포넌트
+ *
+ * @example
+ * ```tsx
+ * <ColorPicker value={color()} onValueChange={setColor} />
+ * ```
+ */
+export const ColorPicker: Component<ColorPickerProps> = (props) => {
+  const [local, rest] = splitProps(props, ["value", "onValueChange", "title", "disabled", "size", "class", "style"]);
+
+  void rest;
+
+  const [value, setValue] = createPropSignal({
+    value: () => local.value ?? "#000000",
+    onChange: () => local.onValueChange,
+  });
+
+  const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
+    setValue(e.currentTarget.value);
+  };
+
+  const getClassName = () =>
+    twMerge(baseClass, local.size && sizeClasses[local.size], local.disabled && disabledClass, local.class);
+
+  return (
+    <input
+      type="color"
+      class={getClassName()}
+      style={local.style}
+      value={value()}
+      title={local.title}
+      disabled={local.disabled}
+      onInput={handleInput}
+    />
+  );
+};

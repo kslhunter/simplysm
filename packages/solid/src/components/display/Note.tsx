@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export type NoteTheme = "primary" | "info" | "success" | "warning" | "danger" | "gray";
+export type NoteTheme = "primary" | "info" | "success" | "warning" | "danger" | "slate";
 
 export interface NoteProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: NoteTheme;
@@ -20,14 +20,14 @@ const themeClasses: Record<NoteTheme, string> = {
   success: "bg-success-100 text-success-900 dark:bg-success-900/40 dark:text-success-100",
   warning: "bg-warning-100 text-warning-900 dark:bg-warning-900/40 dark:text-warning-100",
   danger: "bg-danger-100 text-danger-900 dark:bg-danger-900/40 dark:text-danger-100",
-  gray: "bg-gray-100 text-gray-900 dark:bg-slate-800 dark:text-slate-100",
+  slate: "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100",
 };
 
 export const Note: ParentComponent<NoteProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "theme"]);
 
   const getClassName = () => {
-    const theme = local.theme ?? "gray";
+    const theme = local.theme ?? "slate";
     return twMerge(baseClass, themeClasses[theme], local.class);
   };
 

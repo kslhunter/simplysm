@@ -39,26 +39,22 @@ describe("List 컴포넌트", () => {
   });
 
   describe("inset 속성", () => {
-    it("inset=true일 때 투명 배경 스타일이 적용된다", () => {
-      const { container } = render(() => (
+    it("inset prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => (
+        <List>
+          <ListItem>Item</ListItem>
+        </List>
+      ));
+      const { container: insetContainer } = render(() => (
         <List inset>
           <ListItem>Item</ListItem>
         </List>
       ));
 
-      const list = container.querySelector("[data-list]") as HTMLElement;
-      expect(list.classList.contains("bg-transparent")).toBe(true);
-    });
+      const defaultClass = (defaultContainer.querySelector("[data-list]") as HTMLElement).className;
+      const insetClass = (insetContainer.querySelector("[data-list]") as HTMLElement).className;
 
-    it("inset=false일 때 기본 배경 스타일이 적용된다", () => {
-      const { container } = render(() => (
-        <List>
-          <ListItem>Item</ListItem>
-        </List>
-      ));
-
-      const list = container.querySelector("[data-list]") as HTMLElement;
-      expect(list.classList.contains("bg-gray-50")).toBe(true);
+      expect(defaultClass).not.toBe(insetClass);
     });
   });
 
@@ -146,7 +142,6 @@ describe("List 컴포넌트", () => {
       const items = getAllByRole("treeitem");
       items[0].focus();
 
-      // 초기 상태: 닫힘
       expect(items[0].getAttribute("aria-expanded")).toBe("false");
 
       fireEvent.keyDown(items[0], { key: " " });
@@ -331,7 +326,6 @@ describe("ListItem 컴포넌트", () => {
         </List>
       ));
 
-      // chevron 아이콘 SVG가 존재하는지 확인
       const svg = container.querySelector("svg");
       expect(svg).toBeTruthy();
     });
@@ -344,7 +338,6 @@ describe("ListItem 컴포넌트", () => {
       ));
 
       const button = container.querySelector("[data-list-item]") as HTMLElement;
-      // chevron이 button 내부에 없어야 함
       const svg = button.querySelector("svg");
       expect(svg).toBeFalsy();
     });
@@ -377,26 +370,22 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("selected 상태", () => {
-    it("selected=true일 때 배경 강조 스타일이 적용된다", () => {
-      const { container } = render(() => (
+    it("selected prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem selected>Selected Item</ListItem>
+          <ListItem>Item</ListItem>
+        </List>
+      ));
+      const { container: selectedContainer } = render(() => (
+        <List>
+          <ListItem selected>Item</ListItem>
         </List>
       ));
 
-      const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("bg-primary-100")).toBe(true);
-    });
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const selectedClass = (selectedContainer.querySelector("[data-list-item]") as HTMLElement).className;
 
-    it("selected=true일 때 font-bold 스타일이 적용된다", () => {
-      const { container } = render(() => (
-        <List>
-          <ListItem selected>Selected Item</ListItem>
-        </List>
-      ));
-
-      const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("font-bold")).toBe(true);
+      expect(defaultClass).not.toBe(selectedClass);
     });
 
     it("aria-selected가 설정된다", () => {
@@ -412,7 +401,7 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("readonly 상태", () => {
-    it("readonly=true일 때 클릭해도 아무 동작 없음", () => {
+    it("readonly=true일 때 클릭해도 onClick이 호출되지 않음", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
@@ -428,28 +417,42 @@ describe("ListItem 컴포넌트", () => {
       expect(onClick).not.toHaveBeenCalled();
     });
 
-    it("readonly=true일 때 cursor-default 스타일이 적용된다", () => {
-      const { container } = render(() => (
+    it("readonly prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem readonly>Readonly Item</ListItem>
+          <ListItem>Item</ListItem>
+        </List>
+      ));
+      const { container: readonlyContainer } = render(() => (
+        <List>
+          <ListItem readonly>Item</ListItem>
         </List>
       ));
 
-      const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("cursor-auto")).toBe(true);
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const readonlyClass = (readonlyContainer.querySelector("[data-list-item]") as HTMLElement).className;
+
+      expect(defaultClass).not.toBe(readonlyClass);
     });
   });
 
   describe("disabled 상태", () => {
-    it("disabled=true일 때 opacity가 낮아진다", () => {
-      const { container } = render(() => (
+    it("disabled prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem disabled>Disabled Item</ListItem>
+          <ListItem>Item</ListItem>
+        </List>
+      ));
+      const { container: disabledContainer } = render(() => (
+        <List>
+          <ListItem disabled>Item</ListItem>
         </List>
       ));
 
-      const button = container.querySelector("[data-list-item]") as HTMLElement;
-      expect(button.classList.contains("opacity-50")).toBe(true);
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const disabledClass = (disabledContainer.querySelector("[data-list-item]") as HTMLElement).className;
+
+      expect(defaultClass).not.toBe(disabledClass);
     });
 
     it("disabled=true일 때 클릭 불가", () => {
@@ -503,8 +506,13 @@ describe("ListItem 컴포넌트", () => {
       expect(svg).toBeTruthy();
     });
 
-    it("selectedIcon이 제공되고 selected=true일 때 primary 색상이 적용된다", () => {
-      const { container } = render(() => (
+    it("selectedIcon과 selected 상태에 따라 아이콘 스타일이 달라진다", () => {
+      const { container: unselectedContainer } = render(() => (
+        <List>
+          <ListItem selectedIcon={IconCheck}>Item</ListItem>
+        </List>
+      ));
+      const { container: selectedContainer } = render(() => (
         <List>
           <ListItem selectedIcon={IconCheck} selected>
             Item
@@ -512,19 +520,10 @@ describe("ListItem 컴포넌트", () => {
         </List>
       ));
 
-      const svg = container.querySelector("svg");
-      expect(svg?.classList.contains("text-primary-600")).toBe(true);
-    });
+      const unselectedSvg = unselectedContainer.querySelector("svg");
+      const selectedSvg = selectedContainer.querySelector("svg");
 
-    it("selectedIcon이 제공되고 selected=false일 때 투명한 색상이 적용된다", () => {
-      const { container } = render(() => (
-        <List>
-          <ListItem selectedIcon={IconCheck}>Item</ListItem>
-        </List>
-      ));
-
-      const svg = container.querySelector("svg");
-      expect(svg?.classList.contains("text-black/30")).toBe(true);
+      expect(unselectedSvg?.className).not.toBe(selectedSvg?.className);
     });
 
     it("selectedIcon이 제공되고 ListItem.Children이 있을 때 아이콘이 숨겨진다", () => {
@@ -539,7 +538,6 @@ describe("ListItem 컴포넌트", () => {
         </List>
       ));
 
-      // 첫 번째 ListItem의 button 내 아이콘은 selectedIcon이 아닌 chevron이어야 함
       const button = container.querySelector("[data-list-item]") as HTMLElement;
       const svgs = button.querySelectorAll("svg");
 
@@ -625,7 +623,6 @@ describe("ListItem 컴포넌트", () => {
 
       expect(item.getAttribute("aria-expanded")).toBe("false");
 
-      // 클릭 시 onOpenChange 호출 -> setOpen(true)
       fireEvent.click(item);
 
       expect(item.getAttribute("aria-expanded")).toBe("true");

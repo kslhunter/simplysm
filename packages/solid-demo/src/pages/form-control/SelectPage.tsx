@@ -62,7 +62,7 @@ export default function SelectPage() {
           {/* 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <p class="mb-2 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">
               선택: {selected()?.name ?? "없음"}
             </p>
             <div class="max-w-xs">
@@ -86,7 +86,7 @@ export default function SelectPage() {
           {/* 다중 선택 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
-            <p class="mb-2 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">
               선택: {multiSelected().map((f) => f.name).join(", ") || "없음"}
             </p>
             <div class="max-w-xs">
@@ -134,7 +134,7 @@ export default function SelectPage() {
                 renderValue={(v: string) => <>{v}</>}
               >
                 <Select.Header>
-                  <div class="border-b border-neutral-200 p-2 text-sm font-semibold text-neutral-500 dark:border-neutral-700">
+                  <div class="border-b border-zinc-200 p-2 text-sm font-semibold text-zinc-500 dark:border-zinc-700">
                     검색 결과
                   </div>
                 </Select.Header>
@@ -148,7 +148,7 @@ export default function SelectPage() {
           {/* 계층 구조 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
-            <p class="mb-2 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">
               선택: {categorySelected()?.name ?? "없음"}
             </p>
             <div class="max-w-xs">
@@ -202,13 +202,13 @@ export default function SelectPage() {
             <h2 class="mb-4 text-xl font-semibold">상태</h2>
             <div class="flex max-w-xs flex-col gap-4">
               <div>
-                <p class="mb-1 text-sm text-gray-600 dark:text-gray-400">Disabled</p>
+                <p class="mb-1 text-sm text-slate-600 dark:text-slate-400">Disabled</p>
                 <Select disabled placeholder="비활성화됨" renderValue={(v: string) => <>{v}</>}>
                   <Select.Item value="A">옵션 A</Select.Item>
                 </Select>
               </div>
               <div>
-                <p class="mb-1 text-sm text-gray-600 dark:text-gray-400">Inset (테두리 없음)</p>
+                <p class="mb-1 text-sm text-slate-600 dark:text-slate-400">Inset (테두리 없음)</p>
                 <Select inset placeholder="인셋 스타일" renderValue={(v: string) => <>{v}</>}>
                   <Select.Item value="A">옵션 A</Select.Item>
                   <Select.Item value="B">옵션 B</Select.Item>

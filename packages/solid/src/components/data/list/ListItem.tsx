@@ -23,8 +23,8 @@ const headerBaseClass = clsx(
   "rounded-md",
   "transition-colors",
   "focus:outline-none",
-  "focus-visible:bg-gray-200 dark:focus-visible:bg-slate-700",
-  "hover:bg-gray-500/10 dark:hover:bg-slate-700/50",
+  "focus-visible:bg-slate-200 dark:focus-visible:bg-slate-700",
+  "hover:bg-slate-500/10 dark:hover:bg-slate-700/50",
 );
 
 const selectedClass = clsx(
@@ -35,13 +35,13 @@ const selectedClass = clsx(
   "dark:hover:bg-primary-900/50",
 );
 
-const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text");
+const readonlyClass = clsx`cursor-auto select-text hover:bg-transparent`;
 
-const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
+const disabledClass = clsx`pointer-events-none cursor-auto opacity-50`;
 
-const chevronClass = clsx("transition-transform", "duration-200", "motion-reduce:transition-none");
+const chevronClass = clsx`transition-transform duration-200 motion-reduce:transition-none`;
 
-const indentGuideClass = clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-slate-600");
+const indentGuideClass = clsx`ml-4 w-2 border-l border-slate-300 dark:border-slate-600`;
 
 /**
  * 중첩 리스트를 담는 서브 컴포넌트

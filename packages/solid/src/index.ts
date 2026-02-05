@@ -4,12 +4,13 @@ export * from "./components/form-control/ThemeToggle";
 export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/select/SelectItem";
-export * from "./components/form-control/text-field/TextField";
-export * from "./components/form-control/number-field/NumberField";
-export * from "./components/form-control/date-field/DateField";
-export * from "./components/form-control/datetime-field/DateTimeField";
-export * from "./components/form-control/time-field/TimeField";
-export * from "./components/form-control/color-field/ColorField";
+export * from "./components/form-control/field/TextField";
+export * from "./components/form-control/field/NumberField";
+export * from "./components/form-control/field/DateField";
+export * from "./components/form-control/field/DateTimeField";
+export * from "./components/form-control/field/TimeField";
+export * from "./components/form-control/field/styles";
+export * from "./components/form-control/color-picker/ColorPicker";
 
 // layout
 export * from "./components/layout/FormGroup";

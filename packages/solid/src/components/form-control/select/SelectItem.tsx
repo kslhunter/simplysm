@@ -28,20 +28,20 @@ const baseClass = clsx(
   "rounded-md",
   "transition-colors",
   "focus:outline-none",
-  "focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800",
-  "hover:bg-gray-500/10 dark:hover:bg-gray-800",
+  "focus-visible:bg-slate-200 dark:focus-visible:bg-slate-800",
+  "hover:bg-slate-500/10 dark:hover:bg-slate-800",
 );
 
-const selectedClass = clsx("bg-primary-100", "dark:bg-primary-900/20", "font-bold");
+const selectedClass = clsx`bg-primary-100 font-bold dark:bg-primary-900/20`;
 
-const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
+const disabledClass = clsx`pointer-events-none cursor-auto opacity-50`;
 
 /**
  * 중첩 아이템을 담는 서브 컴포넌트
  */
 const SelectItemChildren: ParentComponent = (props) => (
   <div class="flex" data-select-item-children>
-    <div class={clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-gray-700")} />
+    <div class={clsx`ml-4 w-2 border-l border-slate-300 dark:border-slate-700`} />
     <List inset class="flex-1">
       {props.children}
     </List>

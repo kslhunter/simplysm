@@ -2,42 +2,21 @@ import { type Component, type JSX, Show, splitProps, createSignal, createEffect 
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
+import {
+  type FieldSize,
+  fieldBaseClass,
+  fieldSizeClasses,
+  fieldErrorClass,
+  fieldInsetClass,
+  fieldDisabledClass,
+  fieldReadonlyClass,
+  fieldInputClass,
+} from "./styles";
 
-type NumberFieldSize = "sm" | "lg";
-
-// 기본 wrapper 스타일
-const baseClass = clsx(
-  "inline-flex items-center",
-  "border border-neutral-300 dark:border-neutral-600",
-  "rounded",
-  "bg-white dark:bg-transparent",
-  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
-  "px-2 py-1",
-);
-
-// 사이즈별 스타일
-const sizeClasses: Record<NumberFieldSize, string> = {
-  sm: clsx("px-1.5 py-0.5"),
-  lg: clsx("px-3 py-2"),
-};
-
-// 에러 스타일
-const errorClass = clsx("border-danger-500 dark:border-danger-500");
-
-// inset 스타일
-const insetClass = clsx("rounded-none border-none bg-transparent");
-
-// disabled 스타일
-const disabledClass = clsx("bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500");
-
-// input 스타일
-const inputClass = clsx(
-  "min-w-0 flex-1",
-  "bg-transparent",
-  "outline-none",
-  "placeholder:text-neutral-400 dark:placeholder:text-neutral-500",
+// NumberField 전용 input 스타일 (우측 정렬 + 스피너 숨김)
+const numberInputClass = clsx(
+  fieldInputClass,
   "text-right",
-  // 스피너 숨김
   "[&::-webkit-outer-spin-button]:appearance-none",
   "[&::-webkit-inner-spin-button]:appearance-none",
 );
@@ -80,7 +59,7 @@ export interface NumberFieldProps {
   error?: boolean;
 
   /** 사이즈 */
-  size?: NumberFieldSize;
+  size?: FieldSize;
 
   /** 테두리 없는 스타일 */
   inset?: boolean;
@@ -270,11 +249,12 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
   // wrapper 클래스
   const getWrapperClass = () =>
     twMerge(
-      baseClass,
-      local.size && sizeClasses[local.size],
-      local.error && errorClass,
-      local.inset && insetClass,
-      (local.disabled || local.readonly) && disabledClass,
+      fieldBaseClass,
+      local.size && fieldSizeClasses[local.size],
+      local.error && fieldErrorClass,
+      local.inset && fieldInsetClass,
+      local.disabled && fieldDisabledClass,
+      local.readonly && fieldReadonlyClass,
       local.class,
     );
 
@@ -298,7 +278,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
         <input
           type="text"
           inputmode="numeric"
-          class={inputClass}
+          class={numberInputClass}
           value={displayValue()}
           placeholder={local.placeholder}
           title={local.title}

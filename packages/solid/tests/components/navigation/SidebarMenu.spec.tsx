@@ -85,7 +85,6 @@ describe("SidebarMenu", () => {
       const { getByText } = renderWithRouter(menus);
 
       expect(getByText("설정")).toBeTruthy();
-      // 중첩 메뉴는 접혀있어서 바로 보이지 않을 수 있음
     });
 
     it("아이콘이 있는 메뉴를 렌더링", () => {
@@ -200,8 +199,8 @@ describe("SidebarMenu", () => {
     });
   });
 
-  describe("추가 class 적용", () => {
-    it("custom class가 병합됨", () => {
+  describe("스타일 병합", () => {
+    it("사용자 정의 class가 병합된다", () => {
       const menus: SidebarMenuItem[] = [{ title: "홈", href: "/" }];
 
       const { container } = render(() => (

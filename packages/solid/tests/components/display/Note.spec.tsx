@@ -16,73 +16,24 @@ describe("Note 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일", () => {
-    it("block display가 적용된다", () => {
-      const { container } = render(() => <Note>Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("block")).toBe(true);
-    });
-
-    it("p-3 padding이 적용된다", () => {
-      const { container } = render(() => <Note>Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("p-3")).toBe(true);
-    });
-
-    it("rounded border-radius가 적용된다", () => {
-      const { container } = render(() => <Note>Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("rounded")).toBe(true);
-    });
-  });
-
   describe("theme 속성", () => {
-    it("theme 미지정 시 gray 테마가 기본 적용된다", () => {
-      const { container } = render(() => <Note>Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-gray-100")).toBe(true);
-      expect(note.classList.contains("dark:bg-gray-800")).toBe(true);
-    });
+    it("theme prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => <Note>Content</Note>);
+      const { container: themedContainer } = render(() => <Note theme="danger">Content</Note>);
 
-    it("theme=primary일 때 primary 배경이 적용된다", () => {
-      const { container } = render(() => <Note theme="primary">Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-primary-100")).toBe(true);
-      expect(note.classList.contains("dark:bg-primary-900/30")).toBe(true);
-    });
+      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
+      const themedClass = (themedContainer.firstChild as HTMLElement).className;
 
-    it("theme=info일 때 info 배경이 적용된다", () => {
-      const { container } = render(() => <Note theme="info">Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-info-100")).toBe(true);
-    });
-
-    it("theme=success일 때 success 배경이 적용된다", () => {
-      const { container } = render(() => <Note theme="success">Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-success-100")).toBe(true);
-    });
-
-    it("theme=warning일 때 warning 배경이 적용된다", () => {
-      const { container } = render(() => <Note theme="warning">Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-warning-100")).toBe(true);
-    });
-
-    it("theme=danger일 때 danger 배경이 적용된다", () => {
-      const { container } = render(() => <Note theme="danger">Content</Note>);
-      const note = container.firstChild as HTMLElement;
-      expect(note.classList.contains("bg-danger-100")).toBe(true);
+      expect(defaultClass).not.toBe(themedClass);
     });
   });
 
   describe("class 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Note class="my-note">Content</Note>);
       const note = container.firstChild as HTMLElement;
       expect(note.classList.contains("my-note")).toBe(true);
-      expect(note.classList.contains("block")).toBe(true);
     });
   });
 

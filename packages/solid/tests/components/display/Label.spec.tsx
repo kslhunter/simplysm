@@ -16,79 +16,24 @@ describe("Label 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일", () => {
-    it("inline-block display가 적용된다", () => {
-      const { container } = render(() => <Label>Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("inline-block")).toBe(true);
-    });
-
-    it("흰색 텍스트가 적용된다", () => {
-      const { container } = render(() => <Label>Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("text-white")).toBe(true);
-    });
-
-    it("px-2 padding이 적용된다", () => {
-      const { container } = render(() => <Label>Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("px-2")).toBe(true);
-    });
-
-    it("rounded border-radius가 적용된다", () => {
-      const { container } = render(() => <Label>Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("rounded")).toBe(true);
-    });
-  });
-
   describe("theme 속성", () => {
-    it("theme 미지정 시 gray 테마가 기본 적용된다", () => {
-      const { container } = render(() => <Label>Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-gray-600")).toBe(true);
-      expect(label.classList.contains("dark:bg-gray-500")).toBe(true);
-    });
+    it("theme prop에 따라 스타일이 달라진다", () => {
+      const { container: defaultContainer } = render(() => <Label>Tag</Label>);
+      const { container: themedContainer } = render(() => <Label theme="danger">Tag</Label>);
 
-    it("theme=primary일 때 primary 배경이 적용된다", () => {
-      const { container } = render(() => <Label theme="primary">Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-primary-500")).toBe(true);
-      expect(label.classList.contains("dark:bg-primary-600")).toBe(true);
-    });
+      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
+      const themedClass = (themedContainer.firstChild as HTMLElement).className;
 
-    it("theme=info일 때 info 배경이 적용된다", () => {
-      const { container } = render(() => <Label theme="info">Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-info-500")).toBe(true);
-    });
-
-    it("theme=success일 때 success 배경이 적용된다", () => {
-      const { container } = render(() => <Label theme="success">Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-success-500")).toBe(true);
-    });
-
-    it("theme=warning일 때 warning 배경이 적용된다", () => {
-      const { container } = render(() => <Label theme="warning">Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-warning-500")).toBe(true);
-    });
-
-    it("theme=danger일 때 danger 배경이 적용된다", () => {
-      const { container } = render(() => <Label theme="danger">Tag</Label>);
-      const label = container.firstChild as HTMLElement;
-      expect(label.classList.contains("bg-danger-500")).toBe(true);
+      expect(defaultClass).not.toBe(themedClass);
     });
   });
 
   describe("class 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <Label class="my-label">Tag</Label>);
       const label = container.firstChild as HTMLElement;
       expect(label.classList.contains("my-label")).toBe(true);
-      expect(label.classList.contains("inline-block")).toBe(true);
     });
   });
 

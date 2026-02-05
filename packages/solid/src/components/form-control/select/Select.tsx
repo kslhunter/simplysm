@@ -25,16 +25,16 @@ void ripple;
 const triggerBaseClass = clsx(
   clsx`inline-flex items-center gap-2`,
   "min-w-40",
-  clsx`border border-neutral-300 dark:border-neutral-600`,
+  clsx`border border-zinc-300 dark:border-slate-600`,
   "rounded",
   clsx`bg-transparent`,
-  clsx`hover:bg-neutral-100 dark:hover:bg-neutral-800`,
+  clsx`hover:bg-zinc-100 dark:hover:bg-zinc-800`,
   "cursor-pointer",
   "focus:outline-none",
   "focus-within:border-primary-400 dark:focus-within:border-primary-400",
 );
 
-const triggerDisabledClass = clsx`cursor-default bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500`;
+const triggerDisabledClass = clsx`cursor-default bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500`;
 
 const triggerInsetClass = clsx`rounded-none border-none bg-transparent`;
 
@@ -59,9 +59,9 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "border-l border-neutral-300 px-2 dark:border-neutral-600",
+          "border-l border-zinc-300 px-2 dark:border-zinc-600",
           "font-bold text-primary-500",
-          "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+          "hover:bg-zinc-100 dark:hover:bg-zinc-800",
         ),
         local.class,
       )}
@@ -279,7 +279,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     const current = getValue();
 
     if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-      return <span class="text-neutral-400 dark:text-neutral-500">{local.placeholder ?? ""}</span>;
+      return <span class="text-zinc-400 dark:text-zinc-500">{local.placeholder ?? ""}</span>;
     }
 
     if (local.multiple && Array.isArray(current)) {
@@ -288,7 +288,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
           <For each={current}>
             {(v) => (
-              <span class="rounded bg-neutral-200 px-1 dark:bg-neutral-700">
+              <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">
                 {local.renderValue ? local.renderValue(v) : String(v)}
               </span>
             )}

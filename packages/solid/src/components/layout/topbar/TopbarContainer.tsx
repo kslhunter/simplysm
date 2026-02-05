@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
-const containerClass = clsx("flex", "flex-col", "h-full");
+const containerClass = clsx`flex h-full flex-col`;
 
 export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;

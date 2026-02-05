@@ -5,7 +5,7 @@ import {
   DateField,
   DateTimeField,
   TimeField,
-  ColorField,
+  ColorPicker,
   Topbar,
   TopbarContainer,
 } from "@simplysm/solid";
@@ -68,19 +68,19 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
                     <TextField disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Readonly</p>
+                    <p class="mb-1 text-sm text-zinc-500">Readonly</p>
                     <TextField readonly value="읽기 전용" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Error</p>
+                    <p class="mb-1 text-sm text-zinc-500">Error</p>
                     <TextField error placeholder="에러 상태" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Inset (테두리 없음)</p>
+                    <p class="mb-1 text-sm text-zinc-500">Inset (테두리 없음)</p>
                     <TextField inset placeholder="인셋 스타일" />
                   </div>
                 </div>
@@ -105,11 +105,11 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">천단위 콤마</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">useComma=true (기본값)</p>
+                    <p class="mb-1 text-sm text-zinc-500">useComma=true (기본값)</p>
                     <NumberField value={1234567} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">useComma=false</p>
+                    <p class="mb-1 text-sm text-zinc-500">useComma=false</p>
                     <NumberField value={1234567} useComma={false} />
                   </div>
                 </div>
@@ -128,15 +128,15 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
                     <NumberField disabled value={9999} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Readonly</p>
+                    <p class="mb-1 text-sm text-zinc-500">Readonly</p>
                     <NumberField readonly value={9999} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Error</p>
+                    <p class="mb-1 text-sm text-zinc-500">Error</p>
                     <NumberField error placeholder="에러 상태" />
                   </div>
                 </div>
@@ -153,15 +153,15 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">타입</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">date (기본값)</p>
+                    <p class="mb-1 text-sm text-zinc-500">date (기본값)</p>
                     <DateField value={new DateOnly(2024, 6, 15)} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">month</p>
+                    <p class="mb-1 text-sm text-zinc-500">month</p>
                     <DateField type="month" value={new DateOnly(2024, 6, 1)} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">year</p>
+                    <p class="mb-1 text-sm text-zinc-500">year</p>
                     <DateField type="year" value={new DateOnly(2024, 1, 1)} />
                   </div>
                 </div>
@@ -172,11 +172,11 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
                     <DateField disabled value={new DateOnly(2024, 1, 1)} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Readonly</p>
+                    <p class="mb-1 text-sm text-zinc-500">Readonly</p>
                     <DateField readonly value={new DateOnly(2024, 1, 1)} />
                   </div>
                 </div>
@@ -193,11 +193,11 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">타입</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">datetime (기본값)</p>
+                    <p class="mb-1 text-sm text-zinc-500">datetime (기본값)</p>
                     <DateTimeField value={new DateTime(2024, 6, 15, 14, 30)} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">datetime-sec (초 단위)</p>
+                    <p class="mb-1 text-sm text-zinc-500">datetime-sec (초 단위)</p>
                     <DateTimeField type="datetime-sec" value={new DateTime(2024, 6, 15, 14, 30, 45)} />
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
                     <DateTimeField disabled value={new DateTime(2024, 1, 1, 12, 0)} />
                   </div>
                 </div>
@@ -225,11 +225,11 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">타입</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">time (기본값)</p>
+                    <p class="mb-1 text-sm text-zinc-500">time (기본값)</p>
                     <TimeField value={new Time(14, 30)} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">time-sec (초 단위)</p>
+                    <p class="mb-1 text-sm text-zinc-500">time-sec (초 단위)</p>
                     <TimeField type="time-sec" value={new Time(14, 30, 45)} />
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
                     <TimeField disabled value={new Time(9, 0)} />
                   </div>
                 </div>
@@ -248,17 +248,17 @@ export default function FieldPage() {
             </div>
           </section>
 
-          {/* ColorField */}
+          {/* ColorPicker */}
           <section>
-            <h2 class="mb-6 text-2xl font-bold">ColorField</h2>
+            <h2 class="mb-6 text-2xl font-bold">ColorPicker</h2>
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
                 <div class="flex items-center gap-4">
-                  <ColorField />
-                  <ColorField value="#3b82f6" />
-                  <ColorField value="#ef4444" />
+                  <ColorPicker />
+                  <ColorPicker value="#3b82f6" />
+                  <ColorPicker value="#ef4444" />
                 </div>
               </div>
 
@@ -266,9 +266,9 @@ export default function FieldPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
                 <div class="flex items-center gap-4">
-                  <ColorField size="sm" value="#22c55e" />
-                  <ColorField value="#22c55e" />
-                  <ColorField size="lg" value="#22c55e" />
+                  <ColorPicker size="sm" value="#22c55e" />
+                  <ColorPicker value="#22c55e" />
+                  <ColorPicker size="lg" value="#22c55e" />
                 </div>
               </div>
 
@@ -277,12 +277,8 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
                 <div class="flex items-center gap-4">
                   <div>
-                    <p class="mb-1 text-sm text-neutral-500">Disabled</p>
-                    <ColorField disabled value="#8b5cf6" />
-                  </div>
-                  <div>
-                    <p class="mb-1 text-sm text-neutral-500">Readonly</p>
-                    <ColorField readonly value="#8b5cf6" />
+                    <p class="mb-1 text-sm text-zinc-500">Disabled</p>
+                    <ColorPicker disabled value="#8b5cf6" />
                   </div>
                 </div>
               </div>
@@ -307,8 +303,8 @@ export default function FieldPage() {
                     onValueChange={setControlledText}
                     placeholder="값을 입력하세요"
                   />
-                  <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                    현재 값: <code class="rounded bg-neutral-200 px-1 dark:bg-neutral-700">{controlledText() ?? "(없음)"}</code>
+                  <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                    현재 값: <code class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{controlledText() ?? "(없음)"}</code>
                   </p>
                   <button
                     class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
@@ -328,8 +324,8 @@ export default function FieldPage() {
                     onValueChange={setControlledNumber}
                     placeholder="숫자를 입력하세요"
                   />
-                  <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                    현재 값: <code class="rounded bg-neutral-200 px-1 dark:bg-neutral-700">{controlledNumber() ?? "(없음)"}</code>
+                  <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                    현재 값: <code class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{controlledNumber() ?? "(없음)"}</code>
                   </p>
                   <div class="flex gap-2">
                     <button
@@ -345,7 +341,7 @@ export default function FieldPage() {
                       -100
                     </button>
                     <button
-                      class="w-fit rounded bg-neutral-500 px-3 py-1 text-sm text-white hover:bg-neutral-600"
+                      class="w-fit rounded bg-zinc-500 px-3 py-1 text-sm text-white hover:bg-zinc-600"
                       onClick={() => setControlledNumber(undefined)}
                     >
                       초기화

@@ -14,8 +14,8 @@ const buttonClass = clsx(
   "relative",
   "p-2",
   "rounded-full",
-  "hover:bg-gray-100",
-  "dark:hover:bg-gray-800",
+  "hover:bg-slate-100",
+  "dark:hover:bg-slate-800",
   "transition-colors",
   "focus:outline-none",
   "focus-visible:ring-2",
@@ -101,7 +101,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
               <button
                 type="button"
                 data-notification-clear
-                class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
                 onClick={handleClear}
               >
                 전체 삭제
@@ -112,7 +112,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
           <Show
             when={notification.items().length > 0}
             fallback={
-              <div class="py-8 text-center text-gray-500 dark:text-gray-400">알림이 없습니다</div>
+              <div class="py-8 text-center text-slate-500 dark:text-slate-400">알림이 없습니다</div>
             }
           >
             <div class="flex flex-col gap-2">
@@ -126,11 +126,11 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                   >
                     <div class="font-medium">{item.title}</div>
                     <Show when={item.message}>
-                      <div class="text-sm text-gray-600 dark:text-gray-400">
+                      <div class="text-sm text-slate-600 dark:text-slate-400">
                         {item.message}
                       </div>
                     </Show>
-                    <div class="mt-1 text-xs text-gray-400">
+                    <div class="mt-1 text-xs text-slate-400">
                       {item.createdAt.toLocaleTimeString()}
                     </div>
                   </div>

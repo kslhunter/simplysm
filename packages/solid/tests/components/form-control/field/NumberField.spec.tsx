@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { NumberField } from "../../../../src/components/form-control/number-field/NumberField";
+import { NumberField } from "../../../../src/components/form-control/field/NumberField";
 
 describe("NumberField", () => {
   describe("기본 렌더링", () => {
@@ -180,7 +180,7 @@ describe("NumberField", () => {
       const { container } = render(() => <NumberField value={100} disabled />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("bg-neutral-100");
+      expect(wrapper.className).toContain("bg-zinc-100");
     });
   });
 
@@ -219,7 +219,7 @@ describe("NumberField", () => {
       const { container } = render(() => <NumberField error />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("border-danger-500");
+      expect(wrapper.className).toContain("border-red-500");
     });
   });
 

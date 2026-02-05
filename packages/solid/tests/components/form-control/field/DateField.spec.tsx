@@ -2,7 +2,7 @@ import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
-import { DateField } from "../../../../src/components/form-control/date-field/DateField";
+import { DateField } from "../../../../src/components/form-control/field/DateField";
 
 describe("DateField 컴포넌트", () => {
   describe("기본 렌더링", () => {
@@ -209,7 +209,7 @@ describe("DateField 컴포넌트", () => {
         <DateField disabled value={new DateOnly(2025, 3, 15)} />
       ));
       const div = container.querySelector("div.sd-date-field") as HTMLElement;
-      expect(div.classList.contains("bg-neutral-100")).toBe(true);
+      expect(div.classList.contains("bg-zinc-100")).toBe(true);
     });
   });
 
@@ -237,7 +237,7 @@ describe("DateField 컴포넌트", () => {
     it("error=true일 때 에러 스타일이 적용된다", () => {
       const { container } = render(() => <DateField error />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
+      expect(wrapper.classList.contains("border-red-500")).toBe(true);
     });
   });
 
@@ -268,13 +268,13 @@ describe("DateField 컴포넌트", () => {
     it("다크 모드 border 스타일이 적용된다", () => {
       const { container } = render(() => <DateField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-neutral-600")).toBe(true);
+      expect(wrapper.classList.contains("dark:border-zinc-700")).toBe(true);
     });
 
     it("다크 모드 background 스타일이 적용된다", () => {
       const { container } = render(() => <DateField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-neutral-950")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-zinc-900")).toBe(true);
     });
   });
 

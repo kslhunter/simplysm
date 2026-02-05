@@ -132,7 +132,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
       <Button
         ref={buttonRef}
         variant={isSelected() ? "solid" : "ghost"}
-        theme={isSelected() ? "primary" : "gray"}
+        theme={isSelected() ? "primary" : "base"}
         onClick={handleClick}
         class="flex items-center gap-1"
         aria-haspopup={hasChildren() ? "menu" : undefined}

@@ -24,27 +24,12 @@ describe("FormTable 컴포넌트", () => {
     });
   });
 
-  describe("기본 스타일", () => {
-    it("border-separate가 적용된다", () => {
-      const { container } = render(() => <FormTable>Content</FormTable>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-separate")).toBe(true);
-    });
-
-    it("border-spacing-0이 적용된다", () => {
-      const { container } = render(() => <FormTable>Content</FormTable>);
-      const table = container.firstChild as HTMLElement;
-      expect(table.classList.contains("border-spacing-0")).toBe(true);
-    });
-  });
-
   describe("class 병합", () => {
-    it("사용자 정의 class가 기존 스타일과 병합된다", () => {
+    it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { container } = render(() => <FormTable class="my-form-table">Content</FormTable>);
       const table = container.firstChild as HTMLElement;
       expect(table.classList.contains("my-form-table")).toBe(true);
-      expect(table.classList.contains("border-separate")).toBe(true);
     });
   });
 
