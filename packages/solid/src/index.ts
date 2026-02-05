@@ -4,6 +4,7 @@ export * from "./components/form-control/ThemeToggle";
 export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/select/SelectItem";
+export * from "./components/form-control/text-field/TextField";
 
 // layout
 export * from "./components/layout/FormGroup";
