@@ -16,15 +16,16 @@ const baseClass = clsx(
   "py-2",
   "text-white",
   "shadow-lg",
+  "dark:shadow-black/30",
   "rounded-lg",
   "max-w-sm",
 );
 
 const themeClasses: Record<string, string> = {
-  info: "bg-info-600",
-  success: "bg-success-600",
-  warning: "bg-warning-600",
-  danger: "bg-danger-600",
+  info: "bg-info-500 dark:bg-info-600",
+  success: "bg-success-500 dark:bg-success-600",
+  warning: "bg-warning-500 dark:bg-warning-600",
+  danger: "bg-danger-500 dark:bg-danger-600",
 };
 
 export const NotificationBanner: Component = () => {

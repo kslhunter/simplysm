@@ -7,7 +7,7 @@
   }
 
   html.dark {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-slate-900 text-slate-100;
   }
 
   html,
@@ -24,27 +24,46 @@
   }
 
   ::-webkit-scrollbar-track {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.08);
   }
 
   ::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
   }
 
   ::-webkit-scrollbar-corner {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.08);
   }
 
-  /* 다크모드 스크롤바 */
+  /* 다크모드 스크롤바 - slate 계열 블루 틴트 */
   .dark ::-webkit-scrollbar-track {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(148, 163, 184, 0.1);
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(148, 163, 184, 0.25);
+    border-radius: 0.25rem;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(148, 163, 184, 0.4);
   }
 
   .dark ::-webkit-scrollbar-corner {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(148, 163, 184, 0.1);
+  }
+
+  /* 텍스트 선택 영역 */
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+
+  .dark ::selection {
+    @apply bg-primary-800 text-primary-100;
   }
 }

@@ -397,7 +397,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
               "z-dropdown",
               "bg-white dark:bg-neutral-800",
               "border border-neutral-200 dark:border-neutral-700",
-              "shadow-lg",
+              "shadow-lg dark:shadow-black/30",
               "rounded-md",
               "overflow-y-auto",
               animationClass(),

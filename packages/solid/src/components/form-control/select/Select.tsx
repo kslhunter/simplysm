@@ -27,13 +27,14 @@ const triggerBaseClass = clsx(
   "min-w-40",
   clsx`border border-neutral-300 dark:border-neutral-600`,
   "rounded",
-  clsx`bg-white dark:bg-neutral-950`,
+  clsx`bg-transparent`,
+  clsx`hover:bg-neutral-100 dark:hover:bg-neutral-800`,
   "cursor-pointer",
   "focus:outline-none",
-  "focus-within:border-primary-500",
+  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
 );
 
-const triggerDisabledClass = clsx`cursor-default bg-neutral-200 text-neutral-400 dark:bg-neutral-800`;
+const triggerDisabledClass = clsx`cursor-default bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500`;
 
 const triggerInsetClass = clsx`rounded-none border-none bg-transparent`;
 

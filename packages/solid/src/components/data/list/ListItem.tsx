@@ -23,16 +23,16 @@ const headerBaseClass = clsx(
   "rounded-md",
   "transition-colors",
   "focus:outline-none",
-  "focus-visible:bg-gray-200 dark:focus-visible:bg-gray-800",
-  "hover:bg-gray-500/10 dark:hover:bg-gray-800",
+  "focus-visible:bg-gray-200 dark:focus-visible:bg-slate-700",
+  "hover:bg-gray-500/10 dark:hover:bg-slate-700/50",
 );
 
 const selectedClass = clsx(
   "bg-primary-100",
-  "dark:bg-primary-900/20",
+  "dark:bg-primary-900/30",
   "font-bold",
   "hover:bg-primary-200",
-  "dark:hover:bg-primary-900/40",
+  "dark:hover:bg-primary-900/50",
 );
 
 const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text");
@@ -41,7 +41,7 @@ const disabledClass = clsx("opacity-50", "pointer-events-none", "cursor-auto");
 
 const chevronClass = clsx("transition-transform", "duration-200", "motion-reduce:transition-none");
 
-const indentGuideClass = clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-gray-700");
+const indentGuideClass = clsx("w-2", "ml-4", "border-l", "border-gray-300", "dark:border-slate-600");
 
 /**
  * 중첩 리스트를 담는 서브 컴포넌트

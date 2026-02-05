@@ -25,7 +25,7 @@ const headerClass = clsx(
   "text-xs",
   "font-semibold",
   "text-gray-500",
-  "dark:text-gray-400",
+  "dark:text-slate-400",
   "uppercase",
   "tracking-wider",
 );

@@ -10,8 +10,8 @@ const baseClass = clsx(
   "inline-flex items-center",
   "border border-neutral-300 dark:border-neutral-600",
   "rounded",
-  "bg-white dark:bg-neutral-950",
-  "focus-within:border-primary-500",
+  "bg-white dark:bg-transparent",
+  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
   "px-2 py-1",
 );
 
@@ -28,7 +28,7 @@ const errorClass = clsx("border-danger-500 dark:border-danger-500");
 const insetClass = clsx("rounded-none border-none bg-transparent");
 
 // disabled 스타일
-const disabledClass = clsx("bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400");
+const disabledClass = clsx("bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500");
 
 // input 스타일
 const inputClass = clsx(

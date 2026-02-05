@@ -10,8 +10,8 @@ const baseClass = clsx(
   "inline-flex items-center justify-center",
   "border border-neutral-300 dark:border-neutral-600",
   "rounded",
-  "bg-white dark:bg-neutral-950",
-  "focus-within:border-primary-500",
+  "bg-white dark:bg-transparent",
+  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
   "overflow-hidden",
   "size-8",
 );

@@ -8,7 +8,7 @@ import { ListItem } from "../../data/list/ListItem";
 
 void ripple;
 
-const containerClass = clsx("flex", "flex-col", "bg-white dark:bg-gray-800", "m-2", "rounded", "overflow-hidden");
+const containerClass = clsx("flex", "flex-col", "bg-white dark:bg-slate-700/50", "m-2", "rounded", "overflow-hidden");
 
 const headerClass = clsx(
   "flex",
@@ -18,7 +18,7 @@ const headerClass = clsx(
   "cursor-pointer",
   "transition-colors",
   "hover:bg-gray-500/10",
-  "dark:hover:bg-gray-800",
+  "dark:hover:bg-slate-600/50",
 );
 
 const headerReadonlyClass = clsx("cursor-default", "hover:bg-transparent", "dark:hover:bg-transparent");

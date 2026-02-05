@@ -16,12 +16,12 @@ const baseClass = clsx(
 );
 
 const themeClasses: Record<LabelTheme, string> = {
-  primary: "bg-primary-500 dark:bg-primary-600",
-  info: "bg-info-500 dark:bg-info-600",
-  success: "bg-success-500 dark:bg-success-600",
-  warning: "bg-warning-500 dark:bg-warning-600",
-  danger: "bg-danger-500 dark:bg-danger-600",
-  gray: "bg-gray-600 dark:bg-gray-500",
+  primary: "bg-primary-500 dark:bg-primary-500",
+  info: "bg-info-500 dark:bg-info-500",
+  success: "bg-success-500 dark:bg-success-500",
+  warning: "bg-warning-500 dark:bg-warning-500",
+  danger: "bg-danger-500 dark:bg-danger-500",
+  gray: "bg-gray-600 dark:bg-slate-600",
 };
 
 export const Label: ParentComponent<LabelProps> = (props) => {
