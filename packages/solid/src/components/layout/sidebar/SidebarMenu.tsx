@@ -15,9 +15,9 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps } from "@tabler/icons-solidjs";
-import { Icon } from "../display/Icon";
-import { List } from "../data/List";
-import { ListItem } from "../data/ListItem";
+import { Icon } from "../../display/Icon";
+import { List } from "../../data/list/List";
+import { ListItem } from "../../data/list/ListItem";
 
 const headerClass = clsx(
   "px-4",

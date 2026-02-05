@@ -12,8 +12,8 @@ import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
-import { List } from "../../data/List";
-import { Collapse } from "../../disclosure/Collapse";
+import { List } from "../../data/list/List";
+import { Collapse } from "../../layout/Collapse";
 
 void ripple;
 

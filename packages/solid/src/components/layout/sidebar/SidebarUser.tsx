@@ -1,10 +1,10 @@
 import { createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ripple } from "../../directives/ripple";
-import { Collapse } from "../disclosure/Collapse";
-import { List } from "../data/List";
-import { ListItem } from "../data/ListItem";
+import { ripple } from "../../../directives/ripple";
+import { Collapse } from "../Collapse";
+import { List } from "../../data/list/List";
+import { ListItem } from "../../data/list/ListItem";
 
 void ripple;
 

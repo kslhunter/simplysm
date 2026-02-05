@@ -2,7 +2,7 @@ import { type ParentComponent, onCleanup } from "solid-js";
 import { ServiceClient, type ServiceConnectionConfig } from "@simplysm/service-client";
 import { ServiceClientContext, type ServiceClientContextValue } from "./ServiceClientContext";
 import { useConfig } from "./ConfigContext";
-import { useNotification } from "../components/notification/NotificationContext";
+import { useNotification } from "../components/feedback/notification/NotificationContext";
 
 export const ServiceClientProvider: ParentComponent = (props) => {
   const config = useConfig();

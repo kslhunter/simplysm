@@ -1,11 +1,11 @@
 import { children, createMemo, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
-import { Icon } from "../display/Icon";
+import { Icon } from "../../display/Icon";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ripple } from "../../directives/ripple";
-import { Collapse } from "../disclosure/Collapse";
-import { createPropSignal } from "../../hooks/createPropSignal";
+import { ripple } from "../../../directives/ripple";
+import { Collapse } from "../../layout/Collapse";
+import { createPropSignal } from "../../../hooks/createPropSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 

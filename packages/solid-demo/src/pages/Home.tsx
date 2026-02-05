@@ -4,13 +4,11 @@ import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, Sid
 import { env } from "@simplysm/core-common";
 import {
   IconBell,
-  IconFold,
   IconForms,
   IconHome,
   IconLayoutList,
   IconLayoutSidebar,
   IconPlug,
-  IconSettings,
   IconUser,
   IconWindowMaximize,
 } from "@tabler/icons-solidjs";
@@ -18,32 +16,26 @@ import {
 const menuItems: SidebarMenuItem[] = [
   { title: "메인", href: "/home", icon: IconHome },
   {
-    title: "Controls",
-    icon: IconSettings,
-    children: [{ title: "Button", href: "/home/controls/button" }],
+    title: "Form Control",
+    icon: IconForms,
+    children: [
+      { title: "Button", href: "/home/form-control/button" },
+      { title: "Select", href: "/home/form-control/select" },
+    ],
+  },
+  {
+    title: "Layout",
+    icon: IconLayoutSidebar,
+    children: [
+      { title: "Collapse", href: "/home/layout/collapse" },
+      { title: "Sidebar", href: "/home/layout/sidebar" },
+      { title: "Topbar", href: "/home/layout/topbar" },
+    ],
   },
   {
     title: "Data",
     icon: IconLayoutList,
     children: [{ title: "List", href: "/home/data/list" }],
-  },
-  {
-    title: "Disclosure",
-    icon: IconFold,
-    children: [{ title: "Collapse", href: "/home/disclosure/collapse" }],
-  },
-  {
-    title: "Form",
-    icon: IconForms,
-    children: [{ title: "Select", href: "/home/form/select" }],
-  },
-  {
-    title: "Navigation",
-    icon: IconLayoutSidebar,
-    children: [
-      { title: "Sidebar", href: "/home/navigation/sidebar" },
-      { title: "Topbar", href: "/home/navigation/topbar" },
-    ],
   },
   {
     title: "Overlay",

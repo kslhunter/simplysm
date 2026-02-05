@@ -1,10 +1,10 @@
 import { type JSX, type ParentComponent, splitProps, Show } from "solid-js";
 import { IconMenu2 } from "@tabler/icons-solidjs";
 import clsx from "clsx";
-import { Icon } from "../display/Icon";
+import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
-import { Button } from "../controls/Button";
-import { useSidebarContextOptional } from "./SidebarContext";
+import { Button } from "../../form-control/Button";
+import { useSidebarContextOptional } from "../sidebar/SidebarContext";
 
 const baseClass = clsx(
   // 레이아웃

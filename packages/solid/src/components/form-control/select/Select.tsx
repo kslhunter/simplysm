@@ -3,49 +3,41 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  For,
   type JSX,
   type ParentComponent,
   Show,
   splitProps,
-  For,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { Dropdown } from "../../overlay/Dropdown";
-import { List } from "../../data/List";
+import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 
 // 트리거 스타일
 const triggerBaseClass = clsx(
-  "inline-flex items-center gap-2",
+  clsx`inline-flex items-center gap-2`,
   "min-w-40",
-  "border border-neutral-300 dark:border-neutral-600",
-  "rounded-md",
-  "bg-neutral-50 dark:bg-neutral-900",
+  clsx`border border-neutral-300 dark:border-neutral-600`,
+  "rounded",
+  clsx`bg-white dark:bg-neutral-950`,
   "cursor-pointer",
   "focus:outline-none",
   "focus-within:border-primary-500",
 );
 
-const triggerDisabledClass = clsx(
-  "bg-neutral-200 dark:bg-neutral-800",
-  "cursor-default",
-  "text-neutral-400",
-);
+const triggerDisabledClass = clsx`cursor-default bg-neutral-200 text-neutral-400 dark:bg-neutral-800`;
 
-const triggerInsetClass = clsx(
-  "border-none",
-  "rounded-none",
-  "bg-transparent",
-);
+const triggerInsetClass = clsx`rounded-none border-none bg-transparent`;
 
 const sizeClasses = {
-  sm: "py-0.5 px-1.5 gap-1.5",
-  default: "py-1 px-2",
-  lg: "py-2 px-3 gap-3",
+  sm: clsx`gap-1.5 px-1.5 py-0.5`,
+  default: clsx`px-2 py-1`,
+  lg: clsx`gap-3 px-3 py-2`,
 };
 
 /**
@@ -84,9 +76,7 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
 /**
  * 드롭다운 상단 커스텀 영역 서브 컴포넌트
  */
-const SelectHeader: ParentComponent = (props) => (
-  <div data-select-header>{props.children}</div>
-);
+const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.children}</div>;
 
 /**
  * items prop 방식일 때 아이템 렌더링 템플릿
@@ -95,9 +85,7 @@ interface SelectItemTemplateProps<T> {
   children: (item: T, index: number, depth: number) => JSX.Element;
 }
 
-const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
-  <>{props.children}</>
-);
+const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => <>{props.children}</>;
 
 // Props 정의
 interface SelectBaseProps<T> {
@@ -272,11 +260,11 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     setOpen((v) => !v);
   };
 
-  // 트리거 키보드 처리
+  // 트리거 키보드 처리 (Enter/Space만 처리, ArrowUp/Down은 Dropdown이 처리)
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
     if (local.disabled) return;
 
-    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setOpen(true);
     }
@@ -361,27 +349,16 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             onClick={handleTriggerClick}
             onKeyDown={handleTriggerKeyDown}
           >
-            <div class="flex-1 whitespace-nowrap">
-              {renderSelectedValue()}
-            </div>
+            <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
             <div class="opacity-30 hover:opacity-100">
               <Icon icon={IconChevronDown} size="1rem" />
             </div>
           </div>
-          <Show when={slots().buttons.length > 0}>
-            {slots().buttons}
-          </Show>
+          <Show when={slots().buttons.length > 0}>{slots().buttons}</Show>
         </div>
 
-        <Dropdown
-          triggerRef={() => triggerRef}
-          open={open()}
-          onOpenChange={setOpen}
-          enableKeyboardNav
-        >
-          <Show when={slots().header}>
-            {slots().header}
-          </Show>
+        <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} enableKeyboardNav>
+          <Show when={slots().header}>{slots().header}</Show>
           <List inset role="listbox">
             {slots().items}
           </List>

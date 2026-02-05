@@ -18,13 +18,13 @@ render(
           <Route path="/" component={() => <Navigate href="/home" />} />
           <Route path="/home" component={MainPage} />
           <Route path="/home/main" component={MainPage} />
-          <Route path="/home/controls/button" component={lazy(() => import("./pages/controls/./ButtonPage"))} />
-          <Route path="/home/data/list" component={lazy(() => import("./pages/data/./ListPage"))} />
-          <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/./CollapsePage"))} />
-          <Route path="/home/form/select" component={lazy(() => import("./pages/form/SelectPage"))} />
-          <Route path="/home/navigation/sidebar" component={lazy(() => import("./pages/navigation/./SidebarPage"))} />
-          <Route path="/home/navigation/topbar" component={lazy(() => import("./pages/navigation/./TopbarPage"))} />
-          <Route path="/home/overlay/dropdown" component={lazy(() => import("./pages/overlay/./DropdownPage"))} />
+          <Route path="/home/form-control/button" component={lazy(() => import("./pages/form-control/ButtonPage"))} />
+          <Route path="/home/form-control/select" component={lazy(() => import("./pages/form-control/SelectPage"))} />
+          <Route path="/home/layout/collapse" component={lazy(() => import("./pages/layout/CollapsePage"))} />
+          <Route path="/home/layout/sidebar" component={lazy(() => import("./pages/layout/SidebarPage"))} />
+          <Route path="/home/layout/topbar" component={lazy(() => import("./pages/layout/TopbarPage"))} />
+          <Route path="/home/data/list" component={lazy(() => import("./pages/data/ListPage"))} />
+          <Route path="/home/overlay/dropdown" component={lazy(() => import("./pages/overlay/DropdownPage"))} />
           <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
           <Route path="/home/service/client" component={lazy(() => import("./pages/service/ServiceClientPage"))} />
           <Route path="/*" component={NotFoundPage} />

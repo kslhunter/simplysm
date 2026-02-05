@@ -1,12 +1,12 @@
 import { createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown } from "@tabler/icons-solidjs";
 import clsx from "clsx";
-import { Icon } from "../display/Icon";
+import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
-import { Button } from "../controls/Button";
-import { Dropdown } from "../overlay/Dropdown";
-import { List } from "../data/List";
-import { ListItem } from "../data/ListItem";
+import { Button } from "../../form-control/Button";
+import { Dropdown } from "../../overlay/Dropdown";
+import { List } from "../../data/list/List";
+import { ListItem } from "../../data/list/ListItem";
 
 export interface TopbarUserMenu {
   title: string;

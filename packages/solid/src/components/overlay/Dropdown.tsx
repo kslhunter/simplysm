@@ -263,69 +263,82 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
   });
 
-  // 키보드 네비게이션 (enableKeyboardNav=true일 때)
-  createEffect(() => {
-    if (!open() || !local.enableKeyboardNav) return;
+  // 키보드 네비게이션: 트리거용 핸들러
+  const handleTriggerKeyDown = (e: KeyboardEvent) => {
+    if (!local.enableKeyboardNav) return;
+
+    // 닫혀있을 때: ArrowUp/ArrowDown으로 열기
+    if (!open()) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+
+    // 열려있을 때: direction에 따른 처리
+    const popup = popupRef();
+    if (!popup) return;
+
+    const dir = direction();
+    const focusables = [
+      ...popup.querySelectorAll<HTMLElement>(
+        '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
+      ),
+    ];
+
+    if (dir === "down") {
+      if (e.key === "ArrowDown" && focusables.length > 0) {
+        e.preventDefault();
+        focusables[0]?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setOpen(false);
+      }
+    } else {
+      // direction === "up"
+      if (e.key === "ArrowUp" && focusables.length > 0) {
+        e.preventDefault();
+        focusables[focusables.length - 1]?.focus();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setOpen(false);
+      }
+    }
+  };
+
+  // 키보드 네비게이션: 팝업용 핸들러
+  const handlePopupKeyDown = (e: KeyboardEvent) => {
+    if (!local.enableKeyboardNav) return;
+
+    // List 등에서 이미 처리된 이벤트는 무시
+    if (e.defaultPrevented) return;
 
     const trigger = local.triggerRef?.();
     if (!trigger) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const popup = popupRef();
-      if (!popup) return;
+    const dir = direction();
 
-      const dir = direction();
-      const target = e.target as HTMLElement;
-      const isOnTrigger = trigger.contains(target);
-      const isInPopup = popup.contains(target);
+    // 팝업에서 ArrowUp/ArrowDown이 처리되지 않았다면 (첫/마지막 아이템)
+    // 트리거로 포커스 이동
+    if (dir === "down" && e.key === "ArrowUp") {
+      e.preventDefault();
+      trigger.focus();
+    } else if (dir === "up" && e.key === "ArrowDown") {
+      e.preventDefault();
+      trigger.focus();
+    }
+  };
 
-      // 팝업 내 focusable 요소들
-      const focusables = [
-        ...popup.querySelectorAll<HTMLElement>(
-          '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
-        ),
-      ];
-      const firstFocusable = focusables[0];
-      const lastFocusable = focusables[focusables.length - 1];
-      const isFirstFocused = document.activeElement === firstFocusable;
-      const isLastFocused = document.activeElement === lastFocusable;
+  // 트리거에 키보드 핸들러 등록
+  createEffect(() => {
+    if (!local.enableKeyboardNav) return;
 
-      if (dir === "down") {
-        if (e.key === "ArrowDown") {
-          if (isOnTrigger && focusables.length > 0) {
-            e.preventDefault();
-            firstFocusable.focus();
-          }
-        } else if (e.key === "ArrowUp") {
-          if (isInPopup && isFirstFocused) {
-            e.preventDefault();
-            trigger.focus();
-          } else if (isOnTrigger) {
-            e.preventDefault();
-            setOpen(false);
-          }
-        }
-      } else {
-        // direction === "up"
-        if (e.key === "ArrowUp") {
-          if (isOnTrigger && focusables.length > 0) {
-            e.preventDefault();
-            lastFocusable.focus();
-          }
-        } else if (e.key === "ArrowDown") {
-          if (isInPopup && isLastFocused) {
-            e.preventDefault();
-            trigger.focus();
-          } else if (isOnTrigger) {
-            e.preventDefault();
-            setOpen(false);
-          }
-        }
-      }
-    };
+    const trigger = local.triggerRef?.();
+    if (!trigger) return;
 
-    document.addEventListener("keydown", handleKeyDown);
-    onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
+    trigger.addEventListener("keydown", handleTriggerKeyDown);
+    onCleanup(() => trigger.removeEventListener("keydown", handleTriggerKeyDown));
   });
 
   // 스크롤 감지
@@ -393,6 +406,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
           )}
           style={mergeStyles(computedStyle(), local.style, { "max-height": `${maxHeight()}px` })}
           onTransitionEnd={handleTransitionEnd}
+          onKeyDown={handlePopupKeyDown}
         >
           {local.children}
         </div>
