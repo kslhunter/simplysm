@@ -21,6 +21,7 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "Button", href: "/home/form-control/button" },
       { title: "Select", href: "/home/form-control/select" },
+      { title: "Field", href: "/home/form-control/field" },
     ],
   },
   {

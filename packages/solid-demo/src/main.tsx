@@ -20,6 +20,7 @@ render(
           <Route path="/home/main" component={MainPage} />
           <Route path="/home/form-control/button" component={lazy(() => import("./pages/form-control/ButtonPage"))} />
           <Route path="/home/form-control/select" component={lazy(() => import("./pages/form-control/SelectPage"))} />
+          <Route path="/home/form-control/field" component={lazy(() => import("./pages/form-control/FieldPage"))} />
           <Route path="/home/layout/sidebar" component={lazy(() => import("./pages/layout/SidebarPage"))} />
           <Route path="/home/layout/topbar" component={lazy(() => import("./pages/layout/TopbarPage"))} />
           <Route path="/home/data/list" component={lazy(() => import("./pages/data/ListPage"))} />

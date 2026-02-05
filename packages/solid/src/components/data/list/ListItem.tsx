@@ -170,7 +170,7 @@ export const ListItem: ListItemComponent = (props) => {
     if (local.readonly || local.disabled) return;
 
     if (hasChildren()) {
-      setOpenState((v) => !v);
+      setOpenState((v: boolean) => !v);
     } else {
       local.onClick?.(e);
     }
