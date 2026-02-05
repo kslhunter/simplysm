@@ -7,6 +7,7 @@ const __dirname = new URL(".", import.meta.url).pathname
 // export const tailwindContent = [`${__dirname}**/*.tsx`];
 
 export default {
+  darkMode: "class",
   theme: {
     extend: {
       colors: {

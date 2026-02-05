@@ -1,6 +1,6 @@
 import { Show, Suspense } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
-import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser } from "@simplysm/solid";
+import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser, ThemeToggle } from "@simplysm/solid";
 import { env } from "@simplysm/core-common";
 import {
   IconBell,
@@ -60,8 +60,9 @@ export function Home(props: RouteSectionProps) {
   return (
     <SidebarContainer>
       <Sidebar>
-        <div class="p-2 px-4">
+        <div class="flex items-center justify-between p-2 px-4">
           <img src="logo-landscape.png" alt="SIMPLYSM" class="h-9 w-auto" />
+          <ThemeToggle size="sm" />
         </div>
         <SidebarUser
           menus={[

@@ -1,5 +1,6 @@
 // form-control
 export * from "./components/form-control/Button";
+export * from "./components/form-control/ThemeToggle";
 export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/select/SelectItem";
@@ -41,6 +42,7 @@ export * from "./components/feedback/notification/NotificationBell";
 
 // contexts
 export * from "./contexts/ConfigContext";
+export * from "./contexts/ThemeContext";
 export * from "./contexts/usePersisted";
 export * from "./contexts/ServiceClientContext";
 export * from "./contexts/ServiceClientProvider";
