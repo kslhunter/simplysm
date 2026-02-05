@@ -213,7 +213,7 @@ export default defineConfig([
   {
     files: ["**/tests/**/*.ts", "**/tests/**/*.tsx"],
     rules: {
-      "no-console": "error",
+      "no-console": "off",
       "import/no-extraneous-dependencies": "off",
       "@simplysm/ts-no-throw-not-implemented-error": "off",
     },

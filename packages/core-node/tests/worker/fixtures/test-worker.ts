@@ -19,7 +19,6 @@ const methods = {
   },
   noReturn: () => {},
   logMessage: (message: string) => {
-    // eslint-disable-next-line no-console
     console.log(message);
     return "logged";
   },
