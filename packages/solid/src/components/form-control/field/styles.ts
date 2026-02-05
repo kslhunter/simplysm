@@ -12,13 +12,13 @@ export const fieldBaseClass = clsx(
   "px-2 py-1",
   "rounded",
   "focus-within:border-blue-500",
-  "h-[calc(1lh+0.5rem+2px)]",
+  "h-field",
 );
 
 // 사이즈별 스타일
 export const fieldSizeClasses: Record<FieldSize, string> = {
-  sm: clsx`h-[calc(1lh+0.25rem+2px)] px-1.5 py-0.5`,
-  lg: clsx`h-[calc(1lh+1rem+2px)] px-3 py-2`,
+  sm: clsx`h-field-sm px-1.5 py-0.5`,
+  lg: clsx`h-field-lg px-3 py-2`,
 };
 
 // 에러 스타일

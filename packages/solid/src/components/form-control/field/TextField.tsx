@@ -137,8 +137,6 @@ export const TextField: Component<TextFieldProps> = (props) => {
     "style",
   ]);
 
-  void rest;
-
   // controlled/uncontrolled 패턴 지원
   const [value, setValue] = createPropSignal({
     value: () => local.value ?? "",
@@ -185,12 +183,12 @@ export const TextField: Component<TextFieldProps> = (props) => {
     <Show
       when={!isDisplayMode()}
       fallback={
-        <div class={twMerge(getWrapperClass(), "sd-text-field")} style={local.style} title={local.title}>
+        <div {...rest} class={twMerge(getWrapperClass(), "sd-text-field")} style={local.style} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
       }
     >
-      <div class={getWrapperClass()} style={local.style}>
+      <div {...rest} class={getWrapperClass()} style={local.style}>
         <input
           type={local.type ?? "text"}
           class={fieldInputClass}

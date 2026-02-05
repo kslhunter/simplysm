@@ -1,4 +1,8 @@
 import colors from "tailwindcss/colors";
+import defaultTheme from "tailwindcss/defaultTheme";
+
+const lh = defaultTheme.lineHeight.normal; // "1.5"
+const sp = defaultTheme.spacing;
 
 const __dirname = new URL(".", import.meta.url).pathname
   .replace(/^\/[^/]+\/@fs/, "") // Vite 가상 경로 제거
@@ -16,6 +20,16 @@ export default {
         success: colors.lime,
         warning: colors.amber,
         danger: colors.red,
+      },
+      height: {
+        field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
+        "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
+        "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
+      },
+      size: {
+        field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
+        "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
+        "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
       },
       zIndex: {
         "sidebar": "100",

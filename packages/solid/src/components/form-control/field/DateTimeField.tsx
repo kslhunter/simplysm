@@ -160,8 +160,6 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     "style",
   ]);
 
-  void rest;
-
   // 기본 타입은 datetime
   const fieldType = () => local.type ?? "datetime";
 
@@ -204,6 +202,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
       when={!isDisplayMode()}
       fallback={
         <div
+          {...rest}
           class={twMerge(getWrapperClass(), "sd-datetime-field")}
           style={local.style}
           title={local.title}
@@ -212,7 +211,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div class={getWrapperClass()} style={local.style}>
+      <div {...rest} class={getWrapperClass()} style={local.style}>
         <input
           type="datetime-local"
           class={fieldInputClass}

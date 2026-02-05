@@ -84,12 +84,25 @@ const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.
 
 /**
  * items prop 방식일 때 아이템 렌더링 템플릿
+ *
+ * 함수 참조를 저장하기 위해 전역 Map 사용
  */
 interface SelectItemTemplateProps<T> {
   children: (item: T, index: number, depth: number) => JSX.Element;
 }
 
-const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => <>{props.children}</>;
+// 템플릿 함수를 저장하는 전역 Map (WeakMap 사용하여 메모리 누수 방지)
+const templateFnMap = new WeakMap<HTMLElement, (item: unknown, index: number, depth: number) => JSX.Element>();
+
+const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
+  <span
+    ref={(el) => {
+      templateFnMap.set(el, props.children as (item: unknown, index: number, depth: number) => JSX.Element);
+    }}
+    data-select-item-template
+    style={{ display: "none" }}
+  />
+);
 
 // Props 정의
 interface SelectBaseProps<T> {
@@ -193,8 +206,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "renderValue",
   ]);
 
-  void rest;
-
   let triggerRef!: HTMLDivElement;
 
   const [open, setOpen] = createSignal(false);
@@ -274,32 +285,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     }
   };
 
-  // 선택된 값 표시
-  const renderSelectedValue = () => {
-    const current = getValue();
-
-    if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-      return <span class="text-zinc-400 dark:text-zinc-500">{local.placeholder ?? ""}</span>;
-    }
-
-    if (local.multiple && Array.isArray(current)) {
-      const direction = local.multiDisplayDirection ?? "horizontal";
-      return (
-        <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
-          <For each={current}>
-            {(v) => (
-              <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">
-                {local.renderValue ? local.renderValue(v) : String(v)}
-              </span>
-            )}
-          </For>
-        </div>
-      );
-    }
-
-    return local.renderValue ? local.renderValue(current as T) : String(current);
-  };
-
   // 트리거 클래스
   const getTriggerClassName = () =>
     twMerge(
@@ -313,40 +298,109 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
-    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectButton"] as const);
+    const [slots, items] = splitSlots(resolved, [
+      "selectHeader",
+      "selectButton",
+      "selectItemTemplate",
+    ] as const);
+
+    // itemTemplate 함수 추출
+    const getItemTemplate = (): ((item: T, index: number, depth: number) => JSX.Element) | undefined => {
+      const templateSlots = slots().selectItemTemplate;
+      if (templateSlots.length === 0) return undefined;
+      // WeakMap에서 함수 참조 가져오기
+      return templateFnMap.get(templateSlots[0]) as
+        | ((item: T, index: number, depth: number) => JSX.Element)
+        | undefined;
+    };
+
+    // items 재귀 렌더링
+    const renderItems = (itemList: T[], depth: number): JSX.Element => {
+      const itemTemplate = getItemTemplate();
+      return (
+        <For each={itemList}>
+          {(item, index) => (
+            <SelectItem value={item}>
+              {itemTemplate ? itemTemplate(item, index(), depth) : String(item)}
+              <Show when={local.getChildren?.(item, index(), depth)} keyed>
+                {(itemChildren) => (
+                  <Show when={itemChildren.length > 0}>
+                    <SelectItem.Children>{renderItems(itemChildren, depth + 1)}</SelectItem.Children>
+                  </Show>
+                )}
+              </Show>
+            </SelectItem>
+          )}
+        </For>
+      );
+    };
+
+    // 선택된 값 렌더링 (items 방식일 때 itemTemplate 재사용)
+    const renderValue = (value: T): JSX.Element => {
+      if (local.renderValue) {
+        return local.renderValue(value);
+      }
+      const itemTemplate = getItemTemplate();
+      if (itemTemplate) {
+        return itemTemplate(value, 0, 0);
+      }
+      return <>{String(value)}</>;
+    };
+
+    // 선택된 값 표시
+    const renderSelectedValue = (): JSX.Element => {
+      const current = getValue();
+
+      if (current === undefined || (Array.isArray(current) && current.length === 0)) {
+        return <span class="text-zinc-400 dark:text-zinc-500">{local.placeholder ?? ""}</span>;
+      }
+
+      if (local.multiple && Array.isArray(current)) {
+        const direction = local.multiDisplayDirection ?? "horizontal";
+        return (
+          <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
+            <For each={current}>
+              {(v) => <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{renderValue(v)}</span>}
+            </For>
+          </div>
+        );
+      }
+
+      return renderValue(current as T);
+    };
 
     return (
-      <>
-        <div class="inline-flex">
-          <div
-            ref={triggerRef}
-            use:ripple={!local.disabled}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={open()}
-            aria-disabled={local.disabled || undefined}
-            aria-required={local.required || undefined}
-            tabIndex={local.disabled ? -1 : 0}
-            class={getTriggerClassName()}
-            style={local.style}
-            onClick={handleTriggerClick}
-            onKeyDown={handleTriggerKeyDown}
-          >
-            <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
-            <div class="opacity-30 hover:opacity-100">
-              <Icon icon={IconChevronDown} size="1rem" />
-            </div>
+      <div {...rest} class="inline-flex">
+        <div
+          ref={triggerRef}
+          use:ripple={!local.disabled}
+          role="combobox"
+          aria-haspopup="listbox"
+          aria-expanded={open()}
+          aria-disabled={local.disabled || undefined}
+          aria-required={local.required || undefined}
+          tabIndex={local.disabled ? -1 : 0}
+          class={getTriggerClassName()}
+          style={local.style}
+          onClick={handleTriggerClick}
+          onKeyDown={handleTriggerKeyDown}
+        >
+          <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
+          <div class="opacity-30 hover:opacity-100">
+            <Icon icon={IconChevronDown} size="1rem" />
           </div>
-          <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>
         </div>
+        <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>
 
         <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} enableKeyboardNav>
           <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
           <List inset role="listbox">
-            {items()}
+            <Show when={local.items} fallback={items()}>
+              {renderItems(local.items!, 0)}
+            </Show>
           </List>
         </Dropdown>
-      </>
+      </div>
     );
   };
 

@@ -7,7 +7,7 @@ type ColorPickerSize = "sm" | "lg";
 
 // 기본 스타일
 const baseClass = clsx(
-  "size-[calc(1lh+0.5rem+2px)]",
+  "size-field",
   "rounded",
   "border border-black/10 dark:border-white/10",
   "cursor-pointer",
@@ -21,15 +21,16 @@ const baseClass = clsx(
 
 // 사이즈별 스타일
 const sizeClasses: Record<ColorPickerSize, string> = {
-  sm: "size-[calc(1lh+0.25rem+2px)]",
-  lg: "size-[calc(1lh+1rem+2px)]",
+  sm: "size-field-sm",
+  lg: "size-field-lg",
 };
 
 // disabled 스타일 - 대각선 줄무늬로 표시
+// eslint-disable-next-line tailwindcss/enforces-shorthand -- inset은 Chrome 87+에서만 지원
 const disabledClass = clsx(
   "cursor-default",
   "relative",
-  "before:absolute before:inset-0",
+  "before:absolute before:bottom-0 before:left-0 before:right-0 before:top-0",
   "before:bg-[linear-gradient(45deg,transparent_40%,rgba(0,0,0,0.4)_40%,rgba(0,0,0,0.4)_60%,transparent_60%)]",
 );
 
@@ -67,8 +68,6 @@ export interface ColorPickerProps {
 export const ColorPicker: Component<ColorPickerProps> = (props) => {
   const [local, rest] = splitProps(props, ["value", "onValueChange", "title", "disabled", "size", "class", "style"]);
 
-  void rest;
-
   const [value, setValue] = createPropSignal({
     value: () => local.value ?? "#000000",
     onChange: () => local.onValueChange,
@@ -83,6 +82,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   return (
     <input
+      {...rest}
       type="color"
       class={getClassName()}
       style={local.style}

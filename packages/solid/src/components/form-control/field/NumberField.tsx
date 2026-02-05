@@ -182,8 +182,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     "style",
   ]);
 
-  void rest;
-
   // 입력 중인 상태를 추적하기 위한 내부 문자열 상태
   const [inputStr, setInputStr] = createSignal<string>("");
   const [isEditing, setIsEditing] = createSignal(false);
@@ -266,6 +264,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
       when={!isDisplayMode()}
       fallback={
         <div
+          {...rest}
           class={twMerge(getWrapperClass(), "sd-number-field", "justify-end")}
           style={local.style}
           title={local.title}
@@ -274,7 +273,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
         </div>
       }
     >
-      <div class={getWrapperClass()} style={local.style}>
+      <div {...rest} class={getWrapperClass()} style={local.style}>
         <input
           type="text"
           inputmode="numeric"

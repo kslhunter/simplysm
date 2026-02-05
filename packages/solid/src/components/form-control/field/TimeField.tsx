@@ -116,8 +116,6 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     "style",
   ]);
 
-  void rest;
-
   // 기본 타입은 time
   const fieldType = () => local.type ?? "time";
 
@@ -168,7 +166,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div class={getWrapperClass()} style={local.style}>
+      <div {...rest} class={getWrapperClass()} style={local.style}>
         <input
           type="time"
           class={fieldInputClass}
