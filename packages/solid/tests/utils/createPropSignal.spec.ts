@@ -121,10 +121,10 @@ describe("createPropSignal hook", () => {
 
         expect(value()).toBe(false);
 
-        setValue((v) => !v);
+        setValue((v: boolean) => !v);
         expect(value()).toBe(true);
 
-        setValue((v) => !v);
+        setValue((v: boolean) => !v);
         expect(value()).toBe(false);
 
         dispose();

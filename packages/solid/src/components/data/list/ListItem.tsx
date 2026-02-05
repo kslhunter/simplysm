@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
-import { createPropSignal } from "../../../hooks/createPropSignal";
+import { createPropSignal } from "../../../utils/createPropSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 import { splitSlots } from "../../../utils/splitSlots";
@@ -170,7 +170,7 @@ export const ListItem: ListItemComponent = (props) => {
     if (local.readonly || local.disabled) return;
 
     if (hasChildren()) {
-      setOpenState((v) => !v);
+      setOpenState((v: boolean) => !v);
     } else {
       local.onClick?.(e);
     }
