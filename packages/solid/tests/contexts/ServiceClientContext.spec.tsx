@@ -3,7 +3,7 @@ import { createRoot } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import { useServiceClient, type ServiceClientContextValue } from "../../src/contexts/ServiceClientContext";
 import { ServiceClientProvider } from "../../src/contexts/ServiceClientProvider";
-import { NotificationProvider } from "../../src/components/notification/NotificationProvider";
+import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/contexts/ConfigContext";
 
 describe("ServiceClientContext", () => {

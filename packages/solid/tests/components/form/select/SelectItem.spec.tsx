@@ -1,7 +1,7 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { SelectItem } from "../../../../src/components/form/select/SelectItem";
-import { SelectContext, type SelectContextValue } from "../../../../src/components/form/select/SelectContext";
+import { SelectItem } from "../../../../src/components/form-control/select/SelectItem";
+import { SelectContext, type SelectContextValue } from "../../../../src/components/form-control/select/SelectContext";
 
 // 테스트용 Provider
 function TestProvider(props: {

@@ -1,8 +1,8 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { NotificationProvider } from "../../../src/components/notification/NotificationProvider";
-import { NotificationBanner } from "../../../src/components/notification/NotificationBanner";
-import { useNotification } from "../../../src/components/notification/NotificationContext";
+import { NotificationProvider } from "../../../src/components/feedback/notification/NotificationProvider";
+import { NotificationBanner } from "../../../src/components/feedback/notification/NotificationBanner";
+import { useNotification } from "../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationBanner", () => {
   it("알림이 없으면 배너가 표시되지 않는다", () => {

@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { Button } from "../../../src/components/controls/Button";
+import { Button } from "../../../src/components/form-control/Button";
 
 describe("Button 컴포넌트", () => {
   describe("기본 렌더링", () => {

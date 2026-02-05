@@ -2,8 +2,8 @@ import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { IconCheck } from "@tabler/icons-solidjs";
-import { List } from "../../../src/components/data/List";
-import { ListItem } from "../../../src/components/data/ListItem";
+import { List } from "../../../src/components/data/list/List";
+import { ListItem } from "../../../src/components/data/list/ListItem";
 
 describe("List 컴포넌트", () => {
   describe("기본 렌더링", () => {

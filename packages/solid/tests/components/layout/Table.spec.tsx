@@ -1,6 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import { Table } from "../../../src/components/layout/Table";
+import { Table } from "../../../src/components/data/Table";
 
 describe("Table 컴포넌트", () => {
   describe("기본 렌더링", () => {
