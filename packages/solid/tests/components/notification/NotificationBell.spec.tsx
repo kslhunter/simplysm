@@ -1,8 +1,8 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { NotificationProvider } from "../../../src/components/notification/NotificationProvider";
-import { NotificationBell } from "../../../src/components/notification/NotificationBell";
-import { useNotification } from "../../../src/components/notification/NotificationContext";
+import { NotificationProvider } from "../../../src/components/feedback/notification/NotificationProvider";
+import { NotificationBell } from "../../../src/components/feedback/notification/NotificationBell";
+import { useNotification } from "../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationBell", () => {
   beforeEach(() => {

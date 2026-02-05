@@ -1,7 +1,7 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
-import { Select } from "../../../../src/components/form/select/Select";
+import { Select } from "../../../../src/components/form-control/select/Select";
 
 describe("Select 컴포넌트", () => {
   describe("기본 렌더링", () => {

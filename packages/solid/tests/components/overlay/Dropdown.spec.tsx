@@ -1,7 +1,7 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSignal } from "solid-js";
-import { Dropdown } from "../../../src/components/overlay/Dropdown";
+import { Dropdown } from "../../../src/components/disclosure/Dropdown";
 
 describe("Dropdown 컴포넌트", () => {
   beforeEach(() => {

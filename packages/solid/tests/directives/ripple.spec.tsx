@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import { Button } from "../../src/components/controls/Button";
+import { Button } from "../../src/components/form-control/Button";
 
 describe("ripple directive", () => {
   it("버튼 클릭 시 ripple indicator가 생성된다", () => {
