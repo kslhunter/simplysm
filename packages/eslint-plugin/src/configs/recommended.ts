@@ -225,6 +225,12 @@ export default defineConfig([
       solid: solidPlugin as unknown as ESLint.Plugin,
       tailwindcss: tailwindcssPlugin as unknown as ESLint.Plugin,
     },
+    settings: {
+      tailwindcss: {
+        // 템플릿 리터럴 태그 지원: clsx`py-0.5 px-1.5` 형태 인식
+        tags: ["clsx"],
+      },
+    },
     rules: {
       // ─── 실수 방지 ───
       "solid/reactivity": ["error", { customReactiveFunctions: ["makePersisted"] }], // 반응성 손실 (가장 중요!)

@@ -17,6 +17,9 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
+import { ripple } from "../../../directives/ripple";
+
+void ripple;
 
 // 트리거 스타일
 const triggerBaseClass = clsx(
@@ -338,6 +341,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         <div class="inline-flex">
           <div
             ref={triggerRef}
+            use:ripple={!local.disabled}
             role="combobox"
             aria-haspopup="listbox"
             aria-expanded={open()}
