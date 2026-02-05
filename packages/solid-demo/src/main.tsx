@@ -21,11 +21,19 @@ render(
           <Route path="/home/form-control/button" component={lazy(() => import("./pages/form-control/ButtonPage"))} />
           <Route path="/home/form-control/select" component={lazy(() => import("./pages/form-control/SelectPage"))} />
           <Route path="/home/form-control/field" component={lazy(() => import("./pages/form-control/FieldPage"))} />
+          <Route path="/home/form-control/theme-toggle" component={lazy(() => import("./pages/form-control/ThemeTogglePage"))} />
           <Route path="/home/layout/sidebar" component={lazy(() => import("./pages/layout/SidebarPage"))} />
           <Route path="/home/layout/topbar" component={lazy(() => import("./pages/layout/TopbarPage"))} />
+          <Route path="/home/layout/form-group" component={lazy(() => import("./pages/layout/FormGroupPage"))} />
+          <Route path="/home/layout/form-table" component={lazy(() => import("./pages/layout/FormTablePage"))} />
           <Route path="/home/data/list" component={lazy(() => import("./pages/data/ListPage"))} />
+          <Route path="/home/data/table" component={lazy(() => import("./pages/data/TablePage"))} />
           <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/CollapsePage"))} />
           <Route path="/home/disclosure/dropdown" component={lazy(() => import("./pages/disclosure/DropdownPage"))} />
+          <Route path="/home/display/card" component={lazy(() => import("./pages/display/CardPage"))} />
+          <Route path="/home/display/icon" component={lazy(() => import("./pages/display/IconPage"))} />
+          <Route path="/home/display/label" component={lazy(() => import("./pages/display/LabelPage"))} />
+          <Route path="/home/display/note" component={lazy(() => import("./pages/display/NotePage"))} />
           <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
           <Route path="/home/service/client" component={lazy(() => import("./pages/service/ServiceClientPage"))} />
           <Route path="/*" component={NotFoundPage} />

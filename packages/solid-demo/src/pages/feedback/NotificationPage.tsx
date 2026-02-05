@@ -2,6 +2,7 @@ import { type Component } from "solid-js";
 import {
   NotificationProvider,
   NotificationBell,
+  NotificationBanner,
   useNotification,
   Button,
   Topbar,
@@ -100,6 +101,7 @@ const NotificationDemo: Component = () => {
 export default function NotificationPage() {
   return (
     <NotificationProvider>
+      <NotificationBanner />
       <TopbarContainer>
         <Topbar>
           <h1 class="m-0 flex-1 text-base">Notification</h1>

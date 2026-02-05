@@ -4,6 +4,7 @@ import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, Sid
 import { env } from "@simplysm/core-common";
 import {
   IconBell,
+  IconCards,
   IconForms,
   IconHome,
   IconLayoutList,
@@ -22,6 +23,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "Button", href: "/home/form-control/button" },
       { title: "Select", href: "/home/form-control/select" },
       { title: "Field", href: "/home/form-control/field" },
+      { title: "ThemeToggle", href: "/home/form-control/theme-toggle" },
     ],
   },
   {
@@ -30,12 +32,17 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "Sidebar", href: "/home/layout/sidebar" },
       { title: "Topbar", href: "/home/layout/topbar" },
+      { title: "FormGroup", href: "/home/layout/form-group" },
+      { title: "FormTable", href: "/home/layout/form-table" },
     ],
   },
   {
     title: "Data",
     icon: IconLayoutList,
-    children: [{ title: "List", href: "/home/data/list" }],
+    children: [
+      { title: "List", href: "/home/data/list" },
+      { title: "Table", href: "/home/data/table" },
+    ],
   },
   {
     title: "Disclosure",
@@ -43,6 +50,16 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "Collapse", href: "/home/disclosure/collapse" },
       { title: "Dropdown", href: "/home/disclosure/dropdown" },
+    ],
+  },
+  {
+    title: "Display",
+    icon: IconCards,
+    children: [
+      { title: "Card", href: "/home/display/card" },
+      { title: "Icon", href: "/home/display/icon" },
+      { title: "Label", href: "/home/display/label" },
+      { title: "Note", href: "/home/display/note" },
     ],
   },
   {
