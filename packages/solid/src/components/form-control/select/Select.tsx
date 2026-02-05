@@ -13,7 +13,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
-import { Dropdown } from "../../overlay/Dropdown";
+import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";

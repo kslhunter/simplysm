@@ -13,7 +13,7 @@ import { Icon } from "../../display/Icon";
 import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
 import { List } from "../../data/list/List";
-import { Collapse } from "../../layout/Collapse";
+import { Collapse } from "../../disclosure/Collapse";
 
 void ripple;
 

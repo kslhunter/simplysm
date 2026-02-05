@@ -2,7 +2,7 @@ import { createSignal, For, type JSX, type ParentComponent, Show, splitProps } f
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
-import { Collapse } from "../Collapse";
+import { Collapse } from "../../disclosure/Collapse";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
 

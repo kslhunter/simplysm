@@ -27,7 +27,6 @@ const menuItems: SidebarMenuItem[] = [
     title: "Layout",
     icon: IconLayoutSidebar,
     children: [
-      { title: "Collapse", href: "/home/layout/collapse" },
       { title: "Sidebar", href: "/home/layout/sidebar" },
       { title: "Topbar", href: "/home/layout/topbar" },
     ],
@@ -38,9 +37,12 @@ const menuItems: SidebarMenuItem[] = [
     children: [{ title: "List", href: "/home/data/list" }],
   },
   {
-    title: "Overlay",
+    title: "Disclosure",
     icon: IconWindowMaximize,
-    children: [{ title: "Dropdown", href: "/home/overlay/dropdown" }],
+    children: [
+      { title: "Collapse", href: "/home/disclosure/collapse" },
+      { title: "Dropdown", href: "/home/disclosure/dropdown" },
+    ],
   },
   {
     title: "Feedback",

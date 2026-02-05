@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
-import { Dropdown } from "../../overlay/Dropdown";
+import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
 

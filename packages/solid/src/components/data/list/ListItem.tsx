@@ -4,7 +4,7 @@ import { Icon } from "../../display/Icon";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
-import { Collapse } from "../../layout/Collapse";
+import { Collapse } from "../../disclosure/Collapse";
 import { createPropSignal } from "../../../hooks/createPropSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";

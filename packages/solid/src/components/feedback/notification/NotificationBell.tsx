@@ -2,7 +2,7 @@ import { type Component, createSignal, For, Show } from "solid-js";
 import { IconBell } from "@tabler/icons-solidjs";
 import clsx from "clsx";
 import { useNotification } from "./NotificationContext";
-import { Dropdown } from "../../overlay/Dropdown";
+import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
 import { NotificationBanner } from "./NotificationBanner";
 

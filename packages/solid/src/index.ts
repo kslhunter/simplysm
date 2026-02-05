@@ -5,7 +5,6 @@ export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/select/SelectItem";
 
 // layout
-export * from "./components/layout/Collapse";
 export * from "./components/layout/FormGroup";
 export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
@@ -30,8 +29,9 @@ export * from "./components/display/Icon";
 export * from "./components/display/Label";
 export * from "./components/display/Note";
 
-// overlay
-export * from "./components/overlay/Dropdown";
+// disclosure
+export * from "./components/disclosure/Collapse";
+export * from "./components/disclosure/Dropdown";
 
 // feedback
 export * from "./components/feedback/notification/NotificationContext";
