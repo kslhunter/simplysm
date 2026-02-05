@@ -124,6 +124,70 @@ const User = Table("User")
     - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 - **SSR 미지원**: 서버 사이드 렌더링은 고려하지 않음. `window`, `document` 등 브라우저 API 직접 사용 가능
 
+### Tailwind CSS
+
+**설정 (`packages/solid/tailwind.config.ts`):**
+- `darkMode: "class"` → `<html class="dark">`로 다크 모드 전환
+- Chrome 84 미지원으로 `aspectRatio` 플러그인 비활성화
+
+**커스텀 테마:**
+```typescript
+// 시맨틱 색상 (Tailwind colors 기반)
+colors: {
+  primary: colors.blue,
+  info: colors.cyan,
+  success: colors.lime,
+  warning: colors.amber,
+  danger: colors.red,
+}
+
+// 폼 필드 높이
+height/size: {
+  field: "...",      // 기본 (py-1 기준)
+  "field-sm": "...", // 작은 (py-0.5 기준)
+  "field-lg": "...", // 큰 (py-2 기준)
+}
+
+// z-index 계층
+zIndex: {
+  sidebar: "100",
+  "sidebar-backdrop": "99",
+  dropdown: "1000",
+}
+```
+
+**스타일 작성 패턴:**
+```typescript
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
+// 기본 클래스와 조건부 클래스 조합
+const baseClass = clsx("inline-flex items-center", "px-2 py-1");
+
+// 테마/변형별 클래스 객체로 정의
+const themeClasses = {
+  primary: {
+    solid: clsx("bg-primary-500", "hover:bg-primary-600", "dark:hover:bg-primary-400"),
+    outline: clsx("bg-transparent", "border border-primary-300"),
+  },
+};
+
+// twMerge로 클래스 충돌 해결
+const className = twMerge(baseClass, themeClasses.primary.solid, props.class);
+```
+
+**앱에서 preset으로 사용:**
+```typescript
+// solid-demo/tailwind.config.ts
+import simplysmPreset from "@simplysm/solid/tailwind.config";
+
+export default {
+  darkMode: "class",
+  presets: [simplysmPreset],
+  content: [..., ...simplysmPreset.content],
+};
+```
+
 ### SolidJS vs React 핵심 차이점
 
 **SolidJS와 React는 다르다! React에 대한 지식으로 SolidJS를 추측하지 말라**
