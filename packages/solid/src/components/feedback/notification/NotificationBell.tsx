@@ -101,7 +101,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
               <button
                 type="button"
                 data-notification-clear
-                class="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                class="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                 onClick={handleClear}
               >
                 전체 삭제
@@ -112,7 +112,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
           <Show
             when={notification.items().length > 0}
             fallback={
-              <div class="py-8 text-center text-slate-500 dark:text-slate-400">알림이 없습니다</div>
+              <div class="py-8 text-center text-zinc-500 dark:text-zinc-400">알림이 없습니다</div>
             }
           >
             <div class="flex flex-col gap-2">
@@ -126,11 +126,11 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                   >
                     <div class="font-medium">{item.title}</div>
                     <Show when={item.message}>
-                      <div class="text-sm text-slate-600 dark:text-slate-400">
+                      <div class="text-sm text-zinc-600 dark:text-zinc-400">
                         {item.message}
                       </div>
                     </Show>
-                    <div class="mt-1 text-xs text-slate-400">
+                    <div class="mt-1 text-xs text-zinc-400">
                       {item.createdAt.toLocaleTimeString()}
                     </div>
                   </div>

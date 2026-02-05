@@ -24,8 +24,8 @@ const headerClass = clsx(
   "py-2",
   "text-xs",
   "font-semibold",
-  "text-slate-500",
-  "dark:text-slate-400",
+  "text-zinc-500",
+  "dark:text-zinc-400",
   "uppercase",
   "tracking-wider",
 );

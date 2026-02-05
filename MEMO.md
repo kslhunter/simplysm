@@ -1,2 +1,1 @@
-onValueChange -> onChange
-theme: 삭제 테마는 구현하지 말자
+text는 무조건 zinc기반

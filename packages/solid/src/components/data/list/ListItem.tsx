@@ -9,39 +9,18 @@ import { createPropSignal } from "../../../utils/createPropSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 import { splitSlots } from "../../../utils/splitSlots";
+import {
+  listItemBaseClass,
+  listItemSelectedClass,
+  listItemDisabledClass,
+  listItemReadonlyClass,
+  listItemIndentGuideClass,
+  getListItemSelectedIconClass,
+} from "./ListItem.styles";
 
 void ripple;
 
-const headerBaseClass = clsx(
-  "flex",
-  "items-center",
-  "gap-2",
-  "py-1",
-  "px-1.5",
-  "m-px",
-  "cursor-pointer",
-  "rounded-md",
-  "transition-colors",
-  "focus:outline-none",
-  "focus-visible:bg-slate-200 dark:focus-visible:bg-slate-700",
-  "hover:bg-slate-500/10 dark:hover:bg-slate-700/50",
-);
-
-const selectedClass = clsx(
-  "bg-primary-100",
-  "dark:bg-primary-900/30",
-  "font-bold",
-  "hover:bg-primary-200",
-  "dark:hover:bg-primary-900/50",
-);
-
-const readonlyClass = clsx`cursor-auto select-text hover:bg-transparent`;
-
-const disabledClass = clsx`pointer-events-none cursor-auto opacity-50`;
-
 const chevronClass = clsx`transition-transform duration-200 motion-reduce:transition-none`;
-
-const indentGuideClass = clsx`ml-4 w-2 border-l border-slate-300 dark:border-slate-600`;
 
 /**
  * 중첩 리스트를 담는 서브 컴포넌트
@@ -63,7 +42,7 @@ const indentGuideClass = clsx`ml-4 w-2 border-l border-slate-300 dark:border-sla
  */
 const ListItemChildren: ParentComponent = (props) => (
   <div class="flex" data-list-item-children>
-    <div class={indentGuideClass} />
+    <div class={listItemIndentGuideClass} />
     <List inset class="flex-1">
       {props.children}
     </List>
@@ -178,17 +157,16 @@ export const ListItem: ListItemComponent = (props) => {
 
   const getHeaderClassName = () =>
     twMerge(
-      headerBaseClass,
-      local.selected && selectedClass,
-      local.readonly && readonlyClass,
-      local.disabled && disabledClass,
+      listItemBaseClass,
+      local.selected && listItemSelectedClass,
+      local.readonly && listItemReadonlyClass,
+      local.disabled && listItemDisabledClass,
       local.class,
     );
 
   const getChevronClassName = () => twMerge(chevronClass, openState() ? "rotate-0" : "rotate-90");
 
-  const getSelectedIconClassName = () =>
-    clsx(local.selected ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
+  const getSelectedIconClassName = () => getListItemSelectedIconClass(local.selected ?? false);
 
   return (
     <>

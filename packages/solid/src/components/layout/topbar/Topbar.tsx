@@ -19,8 +19,8 @@ const baseClass = clsx(
   "bg-white",
   "dark:bg-slate-950",
   "border-b",
-  "border-slate-200",
-  "dark:border-slate-700",
+  "border-zinc-200",
+  "dark:border-zinc-700",
   // 스크롤
   "overflow-x-auto",
   "overflow-y-hidden",

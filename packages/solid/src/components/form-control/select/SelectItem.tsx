@@ -5,7 +5,6 @@ import {
   Show,
   splitProps,
 } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -14,34 +13,22 @@ import { ripple } from "../../../directives/ripple";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import { splitSlots } from "../../../utils/splitSlots";
+import {
+  listItemBaseClass,
+  listItemSelectedClass,
+  listItemDisabledClass,
+  listItemIndentGuideClass,
+  getListItemSelectedIconClass,
+} from "../../data/list/ListItem.styles";
 
 void ripple;
-
-const baseClass = clsx(
-  "flex",
-  "items-center",
-  "gap-2",
-  "py-1",
-  "px-1.5",
-  "m-px",
-  "cursor-pointer",
-  "rounded-md",
-  "transition-colors",
-  "focus:outline-none",
-  "focus-visible:bg-slate-200 dark:focus-visible:bg-slate-800",
-  "hover:bg-slate-500/10 dark:hover:bg-slate-800",
-);
-
-const selectedClass = clsx`bg-primary-100 font-bold dark:bg-primary-900/20`;
-
-const disabledClass = clsx`pointer-events-none cursor-auto opacity-50`;
 
 /**
  * 중첩 아이템을 담는 서브 컴포넌트
  */
 const SelectItemChildren: ParentComponent = (props) => (
   <div class="flex" data-select-item-children>
-    <div class={clsx`ml-4 w-2 border-l border-slate-300 dark:border-slate-700`} />
+    <div class={listItemIndentGuideClass} />
     <List inset class="flex-1">
       {props.children}
     </List>
@@ -106,14 +93,13 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
 
   const getClassName = () =>
     twMerge(
-      baseClass,
-      isSelected() && selectedClass,
-      local.disabled && disabledClass,
+      listItemBaseClass,
+      isSelected() && listItemSelectedClass,
+      local.disabled && listItemDisabledClass,
       local.class,
     );
 
-  const getCheckIconClass = () =>
-    clsx(isSelected() ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
+  const getCheckIconClass = () => getListItemSelectedIconClass(isSelected());
 
   return (
     <>
