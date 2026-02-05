@@ -56,3 +56,4 @@ export { useRouterLink } from "./hooks/useRouterLink";
 
 // utils
 export { mergeStyles } from "./utils/mergeStyles";
+export { splitSlots } from "./utils/splitSlots";

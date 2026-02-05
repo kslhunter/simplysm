@@ -1,7 +1,6 @@
 import {
   children,
   createEffect,
-  createMemo,
   createSignal,
   For,
   type JSX,
@@ -18,6 +17,7 @@ import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
+import { splitSlots } from "../../../utils/splitSlots";
 
 void ripple;
 
@@ -312,29 +312,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
-
-    const slots = createMemo(() => {
-      const arr = resolved.toArray();
-      const items: (typeof arr)[number][] = [];
-      const buttons: (typeof arr)[number][] = [];
-      let header: (typeof arr)[number] | undefined;
-
-      for (const c of arr) {
-        if (c instanceof HTMLElement) {
-          if (c.dataset["selectHeader"] !== undefined) {
-            header = c;
-          } else if (c.dataset["selectButton"] !== undefined) {
-            buttons.push(c);
-          } else {
-            items.push(c);
-          }
-        } else {
-          items.push(c);
-        }
-      }
-
-      return { items, buttons, header };
-    });
+    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectButton"] as const);
 
     return (
       <>
@@ -358,13 +336,13 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
               <Icon icon={IconChevronDown} size="1rem" />
             </div>
           </div>
-          <Show when={slots().buttons.length > 0}>{slots().buttons}</Show>
+          <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>
         </div>
 
         <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} enableKeyboardNav>
-          <Show when={slots().header}>{slots().header}</Show>
+          <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
           <List inset role="listbox">
-            {slots().items}
+            {items()}
           </List>
         </Dropdown>
       </>

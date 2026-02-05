@@ -1,6 +1,5 @@
 import {
   children,
-  createMemo,
   type JSX,
   type ParentComponent,
   Show,
@@ -14,6 +13,7 @@ import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
+import { splitSlots } from "../../../utils/splitSlots";
 
 void ripple;
 
@@ -87,24 +87,9 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
   const context = useSelectContext<T>();
 
   const resolved = children(() => local.children);
+  const [slots, content] = splitSlots(resolved, ["selectItemChildren"] as const);
 
-  const slots = createMemo(() => {
-    const arr = resolved.toArray();
-    let childrenSlot: HTMLElement | undefined;
-    const content: (typeof arr)[number][] = [];
-
-    for (const c of arr) {
-      if (c instanceof HTMLElement && c.dataset["selectItemChildren"] !== undefined) {
-        childrenSlot = c;
-      } else {
-        content.push(c);
-      }
-    }
-
-    return { childrenSlot, content };
-  });
-
-  const hasChildren = () => slots().childrenSlot !== undefined;
+  const hasChildren = () => slots().selectItemChildren.length > 0;
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;
 
@@ -149,12 +134,12 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
           <Icon icon={IconCheck} class={getCheckIconClass()} />
         </Show>
         <span class="flex flex-1 flex-row items-center gap-1 text-left">
-          {slots().content}
+          {content()}
         </span>
       </button>
       <Show when={hasChildren()}>
         <Collapse open={true}>
-          {slots().childrenSlot}
+          {slots().selectItemChildren.single()}
         </Collapse>
       </Show>
     </>

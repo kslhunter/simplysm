@@ -1,4 +1,4 @@
-import { children, createMemo, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import { children, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import clsx from "clsx";
@@ -8,6 +8,7 @@ import { Collapse } from "../../disclosure/Collapse";
 import { createPropSignal } from "../../../hooks/createPropSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
+import { splitSlots } from "../../../utils/splitSlots";
 
 void ripple;
 
@@ -159,24 +160,9 @@ export const ListItem: ListItemComponent = (props) => {
   });
 
   const resolved = children(() => local.children);
+  const [slots, content] = splitSlots(resolved, ["listItemChildren"] as const);
 
-  const slots = createMemo(() => {
-    const arr = resolved.toArray();
-    let childrenSlot: HTMLElement | undefined;
-    const content: (typeof arr)[number][] = [];
-
-    for (const c of arr) {
-      if (c instanceof HTMLElement && c.dataset["listItemChildren"] !== undefined) {
-        childrenSlot = c;
-      } else {
-        content.push(c);
-      }
-    }
-
-    return { childrenSlot, content };
-  });
-
-  const hasChildren = () => slots().childrenSlot !== undefined;
+  const hasChildren = () => slots().listItemChildren.length > 0;
 
   const useRipple = () => !(local.readonly || local.disabled);
 
@@ -231,14 +217,14 @@ export const ListItem: ListItemComponent = (props) => {
         <Show when={local.selectedIcon && !hasChildren()}>
           <Icon icon={local.selectedIcon!} class={getSelectedIconClassName()} />
         </Show>
-        <span class="flex flex-1 flex-row items-center gap-1 text-left">{slots().content}</span>
+        <span class="flex flex-1 flex-row items-center gap-1 text-left">{content()}</span>
         <Show when={hasChildren()}>
           <Icon icon={IconChevronDown} size="1rem" class={getChevronClassName()} />
         </Show>
       </button>
       <Show when={hasChildren()}>
         <Collapse open={openState()} data-collapsed={!openState() || undefined}>
-          {slots().childrenSlot}
+          {slots().listItemChildren.single()}
         </Collapse>
       </Show>
     </>
