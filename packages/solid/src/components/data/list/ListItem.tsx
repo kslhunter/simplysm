@@ -26,7 +26,13 @@ const headerBaseClass = clsx(
   "hover:bg-gray-500/10 dark:hover:bg-gray-800",
 );
 
-const selectedClass = clsx("bg-primary-100", "dark:bg-primary-900/20", "font-bold");
+const selectedClass = clsx(
+  "bg-primary-100",
+  "dark:bg-primary-900/20",
+  "font-bold",
+  "hover:bg-primary-200",
+  "dark:hover:bg-primary-900/40",
+);
 
 const readonlyClass = clsx("cursor-auto", "hover:bg-transparent", "select-text");
 
