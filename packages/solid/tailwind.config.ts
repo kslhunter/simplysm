@@ -10,6 +10,12 @@ const __dirname = new URL(".", import.meta.url).pathname
 
 // export const tailwindContent = [`${__dirname}**/*.tsx`];
 
+const fieldSizes = {
+  field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
+  "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
+  "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
+};
+
 export default {
   darkMode: "class",
   theme: {
@@ -22,16 +28,8 @@ export default {
         danger: colors.red,
         base: colors.zinc,
       },
-      height: {
-        field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
-        "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
-        "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
-      },
-      size: {
-        field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
-        "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
-        "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
-      },
+      height: fieldSizes,
+      size: fieldSizes,
       zIndex: {
         "sidebar": "100",
         "sidebar-backdrop": "99",
