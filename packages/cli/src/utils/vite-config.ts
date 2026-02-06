@@ -1,9 +1,63 @@
+import fs from "fs";
+import { createRequire } from "module";
 import path from "path";
-import type { UserConfig as ViteUserConfig } from "vite";
+import type { Plugin, UserConfig as ViteUserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import solidPlugin from "vite-plugin-solid";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
+import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
+
+/**
+ * Tailwind config의 scope 패키지 의존성을 watch하는 Vite 플러그인.
+ *
+ * Tailwind CSS의 내장 의존성 추적은 상대 경로 import만 처리하므로,
+ * preset 등으로 참조하는 scope 패키지의 config 변경을 감지하지 못한다.
+ * 이 플러그인이 해당 파일들을 watch하고, 변경 시 Tailwind 캐시를 무효화한다.
+ */
+function sdTailwindConfigDepsPlugin(pkgDir: string): Plugin {
+  return {
+    name: "sd-tailwind-config-deps",
+    configureServer(server) {
+      const configPath = path.join(pkgDir, "tailwind.config.ts");
+      if (!fs.existsSync(configPath)) return;
+
+      // 현재 패키지의 scope + @simplysm 을 항상 포함
+      const pkgJsonPath = path.join(pkgDir, "package.json");
+      const pkgName = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")).name as string;
+      const pkgScope = pkgName.match(/^(@[^/]+)\//)?.[1];
+      const scopes = new Set(["@simplysm"]);
+      if (pkgScope != null) {
+        scopes.add(pkgScope);
+      }
+
+      const allDeps = getTailwindConfigDeps(configPath, [...scopes]);
+      const configAbsolute = path.resolve(configPath);
+      const externalDeps = allDeps.filter((d) => d !== configAbsolute);
+      if (externalDeps.length === 0) return;
+
+      for (const dep of externalDeps) {
+        server.watcher.add(dep);
+      }
+
+      server.watcher.on("change", (changed) => {
+        if (externalDeps.some((d) => path.normalize(d) === path.normalize(changed))) {
+          // jiti (Tailwind의 config 로더)가 사용하는 require 캐시를 정리하여
+          // config 재로드 시 변경된 파일이 새로 읽히도록 한다
+          const _require = createRequire(import.meta.url);
+          for (const dep of allDeps) {
+            delete _require.cache[dep];
+          }
+
+          // Tailwind 캐시 무효화: config의 mtime을 갱신하여 재로드 유도
+          const now = new Date();
+          fs.utimesSync(configPath, now, now);
+          server.ws.send({ type: "full-reload" });
+        }
+      });
+    },
+  };
+}
 
 /**
  * Vite 설정 생성 옵션
@@ -41,6 +95,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
     plugins: [
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
+      sdTailwindConfigDepsPlugin(pkgDir),
     ],
     css: {
       postcss: {
