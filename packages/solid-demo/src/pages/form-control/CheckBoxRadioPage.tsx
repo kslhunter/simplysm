@@ -22,7 +22,7 @@ export default function CheckBoxRadioPage() {
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <CheckBox>이용약관에 동의합니다</CheckBox>
                   <CheckBox>마케팅 수신에 동의합니다</CheckBox>
                   <CheckBox />
@@ -46,7 +46,7 @@ export default function CheckBoxRadioPage() {
               {/* 사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <CheckBox size="sm">Small</CheckBox>
                   <CheckBox>Default</CheckBox>
                   <CheckBox size="lg">Large</CheckBox>
@@ -56,7 +56,7 @@ export default function CheckBoxRadioPage() {
               {/* 상태 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled (unchecked)</p>
                     <CheckBox disabled>비활성화</CheckBox>
@@ -71,6 +71,15 @@ export default function CheckBoxRadioPage() {
                   </div>
                 </div>
               </div>
+
+              {/* 인라인 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">인라인</h3>
+                <p class="text-base-700 dark:text-base-300">
+                  텍스트 사이에 <CheckBox inline>동의</CheckBox> 체크박스를 넣을 수 있습니다.
+                  이렇게 <CheckBox inline value={true}>선택된</CheckBox> 상태로도 표시됩니다.
+                </p>
+              </div>
             </div>
           </section>
 
@@ -81,7 +90,7 @@ export default function CheckBoxRadioPage() {
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <Radio>옵션 A</Radio>
                   <Radio>옵션 B</Radio>
                   <Radio>옵션 C</Radio>
@@ -105,7 +114,7 @@ export default function CheckBoxRadioPage() {
               {/* 사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <Radio size="sm">Small</Radio>
                   <Radio>Default</Radio>
                   <Radio size="lg">Large</Radio>
@@ -115,7 +124,7 @@ export default function CheckBoxRadioPage() {
               {/* 상태 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">상태</h3>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
                     <Radio disabled>비활성화</Radio>
@@ -125,6 +134,15 @@ export default function CheckBoxRadioPage() {
                     <Radio disabled value={true}>비활성화 (선택됨)</Radio>
                   </div>
                 </div>
+              </div>
+
+              {/* 인라인 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">인라인</h3>
+                <p class="text-base-700 dark:text-base-300">
+                  텍스트 사이에 <Radio inline>옵션</Radio> 라디오를 넣을 수 있습니다.
+                  이렇게 <Radio inline value={true}>선택됨</Radio> 상태로도 표시됩니다.
+                </p>
               </div>
             </div>
           </section>
@@ -136,8 +154,8 @@ export default function CheckBoxRadioPage() {
               {/* CheckBox Controlled */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">CheckBox</h3>
-                <div class="flex max-w-md flex-col gap-3">
-                  <CheckBox value={controlledCheck()} onChange={setControlledCheck}>
+                <div class="flex flex-col items-start gap-3">
+                  <CheckBox value={controlledCheck()} onValueChange={setControlledCheck}>
                     동의합니다
                   </CheckBox>
                   <p class="text-sm text-base-600 dark:text-base-400">
@@ -155,7 +173,7 @@ export default function CheckBoxRadioPage() {
               {/* Radio Controlled (그룹) */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Radio (그룹)</h3>
-                <div class="flex max-w-md flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <Radio value={selectedRadio() === "A"} onChange={() => setSelectedRadio("A")}>
                     옵션 A
                   </Radio>
