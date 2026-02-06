@@ -132,6 +132,11 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     } else if (mounted()) {
       // 닫힘: 애니메이션 시작 (transitionend에서 마운트 해제)
       setAnimating(false);
+      // prefers-reduced-motion 등으로 transitionend가 발생하지 않는 경우를 위한 fallback
+      const fallbackTimer = setTimeout(() => {
+        if (!open()) setMounted(false);
+      }, 200);
+      onCleanup(() => clearTimeout(fallbackTimer));
     }
   });
 
