@@ -29,13 +29,13 @@ const badgeClass = clsx(
   "flex",
   "items-center",
   "justify-center",
-  "min-w-5",
+  "w-5",
   "h-5",
   "px-1",
   "text-xs",
   "font-bold",
   "text-white",
-  "bg-red-500",
+  "bg-danger-500",
   "rounded-full"
 );
 

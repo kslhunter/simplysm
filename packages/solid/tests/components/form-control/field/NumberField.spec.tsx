@@ -219,7 +219,7 @@ describe("NumberField", () => {
       const { container } = render(() => <NumberField error />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("border-red-500");
+      expect(wrapper.className).toContain("border-danger-500");
     });
   });
 

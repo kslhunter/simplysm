@@ -131,7 +131,7 @@ describe("TextField 컴포넌트", () => {
     it("error=true일 때 에러 스타일이 적용된다", () => {
       const { container } = render(() => <TextField error />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-red-500")).toBe(true);
+      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
     });
   });
 
@@ -199,7 +199,7 @@ describe("TextField 컴포넌트", () => {
     it("focus 시 border 색상이 변경된다", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("focus-within:border-blue-500")).toBe(true);
+      expect(wrapper.classList.contains("focus-within:border-primary-500")).toBe(true);
     });
 
     it("다크 모드 스타일이 적용된다", () => {

@@ -237,7 +237,7 @@ describe("DateField 컴포넌트", () => {
     it("error=true일 때 에러 스타일이 적용된다", () => {
       const { container } = render(() => <DateField error />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-red-500")).toBe(true);
+      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
     });
   });
 
