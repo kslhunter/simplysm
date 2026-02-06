@@ -583,10 +583,6 @@ export function objMerge3<
  * // { name: "Alice", age: 30 }
  */
 export function objOmit<T extends Record<string, unknown>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
-  return objOmitImpl(item, omitKeys);
-}
-
-function objOmitImpl<T extends Record<string, unknown>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(item)) {
     if (!omitKeys.includes(key as K)) {
@@ -607,10 +603,6 @@ function objOmitImpl<T extends Record<string, unknown>, K extends keyof T>(item:
  * // { name: "Alice", age: 30 }
  */
 export function objOmitByFilter<T extends Record<string, unknown>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
-  return objOmitByFilterImpl(item, omitKeyFn);
-}
-
-function objOmitByFilterImpl<T extends Record<string, unknown>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(item)) {
     if (!omitKeyFn(key)) {
@@ -631,10 +623,6 @@ function objOmitByFilterImpl<T extends Record<string, unknown>>(item: T, omitKey
  * // { name: "Alice", age: 30 }
  */
 export function objPick<T extends Record<string, unknown>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
-  return objPickImpl(item, keys);
-}
-
-function objPickImpl<T extends Record<string, unknown>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
   const result: Record<string, unknown> = {};
   for (const key of keys) {
     result[key as string] = item[key];
@@ -777,17 +765,12 @@ export function objDeleteChainValue(obj: unknown, chain: string): void {
  * @mutates 원본 객체를 직접 수정함
  */
 export function objClearUndefined<T extends object>(obj: T): T {
-  return objClearUndefinedImpl(obj);
-}
-
-function objClearUndefinedImpl<T extends object>(obj: T): T {
   const record = obj as Record<string, unknown>;
   for (const key of Object.keys(record)) {
     if (record[key] === undefined) {
       delete record[key];
     }
   }
-
   return obj;
 }
 
@@ -809,10 +792,10 @@ export function objClear<T extends Record<string, unknown>>(obj: T): Record<stri
  * @mutates 원본 배열/객체를 직접 수정함
  */
 export function objNullToUndefined<T>(obj: T): T | undefined {
-  return objNullToUndefinedImpl(obj);
+  return objNullToUndefinedImpl(obj, new WeakSet());
 }
 
-function objNullToUndefinedImpl<T>(obj: T): T | undefined {
+function objNullToUndefinedImpl<T>(obj: T, seen: WeakSet<object>): T | undefined {
   if (obj == null) {
     return undefined;
   }
@@ -828,16 +811,20 @@ function objNullToUndefinedImpl<T>(obj: T): T | undefined {
   }
 
   if (obj instanceof Array) {
+    if (seen.has(obj)) return obj;
+    seen.add(obj);
     for (let i = 0; i < obj.length; i++) {
-      obj[i] = objNullToUndefinedImpl(obj[i]);
+      obj[i] = objNullToUndefinedImpl(obj[i], seen);
     }
     return obj;
   }
 
   if (typeof obj === "object") {
+    if (seen.has(obj as object)) return obj;
+    seen.add(obj as object);
     const objRec = obj as Record<string, unknown>;
     for (const key of Object.keys(obj)) {
-      objRec[key] = objNullToUndefinedImpl(objRec[key]);
+      objRec[key] = objNullToUndefinedImpl(objRec[key], seen);
     }
 
     return obj;

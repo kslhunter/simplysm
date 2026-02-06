@@ -24,7 +24,7 @@ void ripple;
 // 트리거 스타일
 const triggerBaseClass = clsx(
   clsx`inline-flex items-center gap-2`,
-  "min-w-40",
+  "w-40",
   clsx`border border-base-300 dark:border-base-700`,
   "rounded",
   clsx`bg-transparent`,

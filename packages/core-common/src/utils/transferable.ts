@@ -24,7 +24,7 @@ type Transferable = ArrayBuffer;
  * - Array, Map, Set, 일반 객체
  *
  * @note 순환 참조가 있으면 transferableEncode 시 TypeError 발생 (경로 정보 포함)
- * @note 동일 객체가 여러 곳에서 참조되면 순환 참조로 처리되어 TypeError 발생
+ * @note 동일 객체가 여러 곳에서 참조되면 캐시된 인코딩 결과를 재사용합니다
  *
  * @example
  * // Worker로 데이터 전송
@@ -48,8 +48,9 @@ export function transferableEncode(obj: unknown): {
   transferList: Transferable[];
 } {
   const transferList: Transferable[] = [];
-  const seen = new Map<object, string>();
-  const result = encodeImpl(obj, transferList, [], seen);
+  const ancestors = new Set<object>();
+  const cache = new Map<object, unknown>();
+  const result = encodeImpl(obj, transferList, [], ancestors, cache);
   return { result, transferList };
 }
 
@@ -57,19 +58,28 @@ function encodeImpl(
   obj: unknown,
   transferList: Transferable[],
   path: (string | number)[],
-  seen: Map<object, string>,
+  ancestors: Set<object>,
+  cache: Map<object, unknown>,
 ): unknown {
   if (obj == null) return obj;
 
-  // 순환 참조 감지 (객체 타입만)
+  // 객체 타입 처리: 순환 감지 + 캐시
   if (typeof obj === "object") {
-    const currentPath = path.length > 0 ? path.join(".") : "root";
-    const existingPath = seen.get(obj);
-    if (existingPath !== undefined) {
-      throw new TypeError(`순환 참조가 감지되었습니다: ${currentPath} → ${existingPath}`);
+    // 순환 참조 감지 (현재 재귀 스택에 있는 객체)
+    if (ancestors.has(obj)) {
+      const currentPath = path.length > 0 ? path.join(".") : "root";
+      throw new TypeError(`순환 참조가 감지되었습니다: ${currentPath}`);
     }
-    seen.set(obj, currentPath);
+
+    // 캐시 히트 → 이전 인코딩 결과 재사용
+    const cached = cache.get(obj);
+    if (cached !== undefined) return cached;
+
+    // 재귀 스택에 추가
+    ancestors.add(obj);
   }
+
+  let result: unknown;
 
   // 1. Uint8Array
   if (obj instanceof Uint8Array) {
@@ -82,24 +92,33 @@ function encodeImpl(
     if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
       transferList.push(buffer);
     }
-    return obj;
+    result = obj;
   }
-
   // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
-  if (obj instanceof Date) return { __type__: "Date", data: obj.getTime() };
-  if (obj instanceof DateTime)
-    return { __type__: "DateTime", data: obj.tick };
-  if (obj instanceof DateOnly)
-    return { __type__: "DateOnly", data: obj.tick };
-  if (obj instanceof Time) return { __type__: "Time", data: obj.tick };
-  if (obj instanceof Uuid) return { __type__: "Uuid", data: obj.toString() };
-  if (obj instanceof RegExp) return { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
-  if (obj instanceof Error) {
+  else if (obj instanceof Date) {
+    result = { __type__: "Date", data: obj.getTime() };
+  }
+  else if (obj instanceof DateTime) {
+    result = { __type__: "DateTime", data: obj.tick };
+  }
+  else if (obj instanceof DateOnly) {
+    result = { __type__: "DateOnly", data: obj.tick };
+  }
+  else if (obj instanceof Time) {
+    result = { __type__: "Time", data: obj.tick };
+  }
+  else if (obj instanceof Uuid) {
+    result = { __type__: "Uuid", data: obj.toString() };
+  }
+  else if (obj instanceof RegExp) {
+    result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
+  }
+  else if (obj instanceof Error) {
     const errObj = obj as Error & {
       code?: unknown;
       detail?: unknown;
     };
-    return {
+    result = {
       __type__: "Error",
       data: {
         name: errObj.name,
@@ -107,55 +126,61 @@ function encodeImpl(
         stack: errObj.stack,
         ...(errObj.code !== undefined ? { code: errObj.code } : {}),
         ...(errObj.detail !== undefined
-          ? { detail: encodeImpl(errObj.detail, transferList, [...path, "detail"], seen) }
+          ? { detail: encodeImpl(errObj.detail, transferList, [...path, "detail"], ancestors, cache) }
           : {}),
         ...(errObj.cause !== undefined
-          ? { cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], seen) }
+          ? { cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache) }
           : {}),
       },
     };
   }
-
   // 3. 배열 재귀 순회
-  if (Array.isArray(obj)) {
-    return obj.map((item, idx) => encodeImpl(item, transferList, [...path, idx], seen));
+  else if (Array.isArray(obj)) {
+    result = obj.map((item, idx) => encodeImpl(item, transferList, [...path, idx], ancestors, cache));
   }
-
   // 4. Map 재귀 순회
-  if (obj instanceof Map) {
+  else if (obj instanceof Map) {
     let idx = 0;
-    return new Map(
+    result = new Map(
       Array.from(obj.entries()).map(([k, v]) => {
         const keyPath = [...path, `Map[${idx}].key`];
         const valuePath = [...path, `Map[${idx}].value`];
         idx++;
         return [
-          encodeImpl(k, transferList, keyPath, seen),
-          encodeImpl(v, transferList, valuePath, seen),
+          encodeImpl(k, transferList, keyPath, ancestors, cache),
+          encodeImpl(v, transferList, valuePath, ancestors, cache),
         ];
       }),
     );
   }
-
   // 5. Set 재귀 순회
-  if (obj instanceof Set) {
+  else if (obj instanceof Set) {
     let idx = 0;
-    return new Set(
-      Array.from(obj).map((v) => encodeImpl(v, transferList, [...path, `Set[${idx++}]`], seen)),
+    result = new Set(
+      Array.from(obj).map((v) => encodeImpl(v, transferList, [...path, `Set[${idx++}]`], ancestors, cache)),
     );
   }
-
   // 6. 일반 객체 재귀 순회
-  if (typeof obj === "object") {
-    const result: Record<string, unknown> = {};
+  else if (typeof obj === "object") {
+    const res: Record<string, unknown> = {};
     const record = obj as Record<string, unknown>;
     for (const key of Object.keys(record)) {
-      result[key] = encodeImpl(record[key], transferList, [...path, key], seen);
+      res[key] = encodeImpl(record[key], transferList, [...path, key], ancestors, cache);
     }
-    return result;
+    result = res;
+  }
+  // 7. 원시 타입
+  else {
+    return obj;
   }
 
-  return obj;
+  // 재귀 스택에서 제거 + 캐시 저장
+  if (typeof obj === "object") {
+    ancestors.delete(obj);
+    cache.set(obj, result);
+  }
+
+  return result;
 }
 
 //#endregion

@@ -14,7 +14,7 @@ export default function LabelPage() {
           {/* All Themes */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">테마</h2>
-            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               Label 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
@@ -29,7 +29,7 @@ export default function LabelPage() {
           {/* Default (no theme) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 라벨</h2>
-            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               theme을 지정하지 않으면 slate 테마가 적용됩니다.
             </p>
             <Label>기본 라벨</Label>
@@ -66,7 +66,7 @@ export default function LabelPage() {
           {/* In a List */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">목록에서 사용</h2>
-            <div class="divide-y divide-gray-200 rounded border border-gray-200 dark:divide-gray-700 dark:border-gray-700">
+            <div class="divide-y divide-base-200 rounded border border-base-200 dark:divide-base-700 dark:border-base-700">
               <div class="flex items-center justify-between p-3">
                 <span>사용자 등록 완료</span>
                 <Label theme="success">완료</Label>
@@ -89,7 +89,7 @@ export default function LabelPage() {
           {/* Custom Styling */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">커스텀 스타일링</h2>
-            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               class prop으로 추가 스타일을 적용할 수 있습니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">

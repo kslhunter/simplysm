@@ -407,7 +407,7 @@ describe("LazyGcMap", () => {
       expect(expired).toHaveLength(0);
     });
 
-    it("dispose 후 새 항목 추가가 정상 작동한다", async () => {
+    it("dispose 후 set은 무시된다", () => {
       const map = new LazyGcMap<string, number>({
         gcInterval: 100,
         expireTime: 200,
@@ -416,14 +416,11 @@ describe("LazyGcMap", () => {
       map.set("key1", 100);
       map.dispose();
 
-      // dispose 후 새 항목 추가
+      // dispose 후 set은 무시됨
       map.set("key2", 200);
-      expect(map.has("key2")).toBe(true);
-      expect(map.get("key2")).toBe(200);
-
-      // GC가 정상 작동하는지 확인
-      await vi.advanceTimersByTimeAsync(350);
       expect(map.has("key2")).toBe(false);
+      expect(map.get("key2")).toBeUndefined();
+      expect(map.size).toBe(0);
     });
 
     it("dispose는 여러 번 호출해도 안전하다", () => {
@@ -604,6 +601,90 @@ describe("LazyGcMap", () => {
         ["key1", 100],
         ["key2", 200],
       ]);
+    });
+  });
+
+  //#endregion
+
+  //#region dispose 후 안전성
+
+  describe("dispose 후 안전성", () => {
+    it("dispose 후 get은 undefined를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect(map.get("a")).toBeUndefined();
+    });
+
+    it("dispose 후 has는 false를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect(map.has("a")).toBe(false);
+    });
+
+    it("dispose 후 delete는 false를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect(map.delete("a")).toBe(false);
+    });
+
+    it("dispose 후 getOrCreate는 에러를 던진다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.dispose();
+      expect(() => map.getOrCreate("a", () => 1)).toThrow();
+    });
+
+    it("dispose 후 clear는 에러 없이 무시된다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.dispose();
+      expect(() => map.clear()).not.toThrow();
+    });
+
+    it("dispose 후 values는 빈 이터레이터를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect([...map.values()]).toEqual([]);
+    });
+
+    it("dispose 후 keys는 빈 이터레이터를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect([...map.keys()]).toEqual([]);
+    });
+
+    it("dispose 후 entries는 빈 이터레이터를 반환한다", () => {
+      const map = new LazyGcMap<string, number>({
+        gcInterval: 10000,
+        expireTime: 60000,
+      });
+      map.set("a", 1);
+      map.dispose();
+      expect([...map.entries()]).toEqual([]);
     });
   });
 

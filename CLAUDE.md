@@ -95,6 +95,7 @@ pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 ### 디렉토리 참조
 - `.cache/`: 빌드 캐시 (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). 초기화: `.cache/` 삭제
 - `.playwright-mcp/`: Playwright MCP 도구의 스크린샷 등 출력 디렉토리
+  - 스크린샷/스냅샷 저장 시 반드시 `.playwright-mcp/` 디렉토리에 저장할 것
 
 ## 아키텍처
 

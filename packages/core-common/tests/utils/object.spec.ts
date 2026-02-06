@@ -794,6 +794,23 @@ describe("object utils", () => {
 
       expect(result).toEqual([1, undefined, { a: undefined }]);
     });
+
+    it("순환 참조가 있는 객체를 안전하게 처리한다", () => {
+      const obj: Record<string, unknown> = { a: null };
+      obj.self = obj;
+      const result = objNullToUndefined(obj);
+      expect(result).toBeDefined();
+      expect((result as Record<string, unknown>).a).toBeUndefined();
+    });
+
+    it("순환 참조가 있는 배열을 안전하게 처리한다", () => {
+      const arr: unknown[] = [null, 1];
+      arr.push(arr);
+      const result = objNullToUndefined(arr);
+      expect(result).toBeDefined();
+      expect((result as unknown[])[0]).toBeUndefined();
+      expect((result as unknown[])[1]).toBe(1);
+    });
   });
 
   describe("objUnflatten()", () => {

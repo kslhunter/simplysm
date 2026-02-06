@@ -430,10 +430,12 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       let sameTarget: P | undefined;
       let sameKeyTarget: P | undefined;
 
+      // Set 기반 건너뛰기로 이미 매칭된 항목 스킵 (splice O(n) 제거)
       for (const targetItem of uncheckedTarget) {
-        if (sameTarget === undefined && objEqual(targetItem, sourceItem, excludeOpts)) {
+        if (!uncheckedTargetSet.has(targetItem)) continue;
+        if (objEqual(targetItem, sourceItem, excludeOpts)) {
           sameTarget = targetItem;
-          break; // 전체 일치를 찾으면 키 비교는 불필요
+          break;
         }
       }
 
@@ -448,18 +450,16 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
 
       if (sameTarget !== undefined) {
-        uncheckedTarget.remove(sameTarget);
         uncheckedTargetSet.delete(sameTarget);
       } else if (sameKeyTarget !== undefined) {
         result.push({ source: sourceItem, target: sameKeyTarget });
-        uncheckedTarget.remove(sameKeyTarget);
         uncheckedTargetSet.delete(sameKeyTarget);
       } else {
         result.push({ source: sourceItem, target: undefined });
       }
     }
 
-    for (const uncheckedTargetItem of uncheckedTarget) {
+    for (const uncheckedTargetItem of uncheckedTargetSet) {
       result.push({ source: undefined, target: uncheckedTargetItem });
     }
 

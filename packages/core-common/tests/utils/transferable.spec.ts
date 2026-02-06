@@ -299,6 +299,37 @@ describe("TransferableConvert", () => {
 
   //#endregion
 
+  //#region encode - DAG (공유 객체)
+
+  describe("encode() - DAG (공유 객체)", () => {
+    it("동일 객체를 여러 곳에서 참조해도 에러 없이 인코딩된다", () => {
+      const shared = { name: "shared" };
+      const data = { a: shared, b: shared };
+      const { result } = transferEncode(data);
+      const decoded = result as Record<string, Record<string, string>>;
+      expect(decoded.a.name).toBe("shared");
+      expect(decoded.b.name).toBe("shared");
+    });
+
+    it("동일 배열을 여러 곳에서 참조해도 에러 없이 인코딩된다", () => {
+      const sharedArr = [1, 2, 3];
+      const data = { x: sharedArr, y: sharedArr };
+      const { result } = transferEncode(data);
+      const decoded = result as Record<string, number[]>;
+      expect(decoded.x).toEqual([1, 2, 3]);
+      expect(decoded.y).toEqual([1, 2, 3]);
+    });
+
+    it("순환 참조는 여전히 TypeError를 던진다", () => {
+      const a: Record<string, unknown> = {};
+      const b: Record<string, unknown> = { a };
+      a.b = b;
+      expect(() => transferEncode(a)).toThrow(TypeError);
+    });
+  });
+
+  //#endregion
+
   //#region decode - 특수 타입
 
   describe("decode() - 특수 타입", () => {

@@ -28,7 +28,7 @@ const sampleMenuItems: SidebarMenuItem[] = [
 const SidebarToggleButton = () => {
   const { setToggle } = useSidebarContext();
   return (
-    <Button variant="ghost" onClick={() => setToggle((v) => !v)} class="p-2">
+    <Button variant="ghost" onClick={() => setToggle((v) => !v)}>
       <Icon icon={IconMenu2} class="size-6" />
     </Button>
   );

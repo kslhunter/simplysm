@@ -66,7 +66,7 @@ export default function FormTablePage() {
                 <tr>
                   <th>제목</th>
                   <td colspan="3">
-                    <TextField placeholder="제목을 입력하세요" class="w-full" />
+                    <TextField placeholder="제목을 입력하세요" />
                   </td>
                 </tr>
                 <tr>

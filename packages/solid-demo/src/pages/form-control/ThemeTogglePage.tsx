@@ -46,8 +46,8 @@ export default function ThemeTogglePage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">테마 모드</h2>
             <div class="space-y-4">
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
+              <Card>
+                <div class="flex items-center gap-3 p-4">
                   <div class="flex size-10 items-center justify-center rounded bg-warning-100 text-warning-600 dark:bg-warning-900/30">
                     ☀️
                   </div>
@@ -57,8 +57,8 @@ export default function ThemeTogglePage() {
                   </div>
                 </div>
               </Card>
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
+              <Card>
+                <div class="flex items-center gap-3 p-4">
                   <div class="flex size-10 items-center justify-center rounded bg-base-100 text-base-600 dark:bg-base-700">
                     💻
                   </div>
@@ -68,8 +68,8 @@ export default function ThemeTogglePage() {
                   </div>
                 </div>
               </Card>
-              <Card class="p-4">
-                <div class="flex items-center gap-3">
+              <Card>
+                <div class="flex items-center gap-3 p-4">
                   <div class="flex size-10 items-center justify-center rounded bg-info-100 text-info-600 dark:bg-info-900/30">
                     🌙
                   </div>
@@ -101,7 +101,7 @@ export default function ThemeTogglePage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               ThemeToggle은 주로 사이드바나 헤더에 배치됩니다.
             </p>
-            <Card class="overflow-hidden">
+            <Card>
               <div class="flex items-center justify-between border-b border-base-200 bg-base-50 px-4 py-3 dark:border-base-700 dark:bg-base-700/50">
                 <span class="font-semibold">My App</span>
                 <ThemeToggle size="sm" />

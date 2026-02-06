@@ -9,6 +9,7 @@ export * from "./components/form-control/field/NumberField";
 export * from "./components/form-control/field/DateField";
 export * from "./components/form-control/field/DateTimeField";
 export * from "./components/form-control/field/TimeField";
+export * from "./components/form-control/field/TextAreaField";
 export * from "./components/form-control/field/Field.styles";
 export * from "./components/form-control/checkbox/CheckBox";
 export * from "./components/form-control/checkbox/CheckBox.styles";

@@ -37,8 +37,7 @@ export default function ListPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Selectable List</h2>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">Selected: {selectedItem() ?? "None"}</p>
-            <div class="max-w-md">
-              <List>
+            <List>
                 <For each={["Apple", "Banana", "Cherry", "Date"]}>
                   {(item) => (
                     <ListItem
@@ -51,14 +50,12 @@ export default function ListPage() {
                   )}
                 </For>
               </List>
-            </div>
           </section>
 
           {/* List with Icons */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">List with Icons</h2>
-            <div class="max-w-md">
-              <List>
+            <List>
                 <ListItem onClick={() => alert("Settings clicked")}>
                   <Icon icon={IconSettings} class="mr-2" />
                   Settings
@@ -72,15 +69,13 @@ export default function ListPage() {
                   Messages
                 </ListItem>
               </List>
-            </div>
           </section>
 
           {/* Nested List (Tree View) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Nested List (Tree View)</h2>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">Use Arrow keys to navigate, Arrow Right/Left to expand/collapse</p>
-            <div class="max-w-md">
-              <List>
+            <List>
                 <ListItem open={treeOpen1()} onOpenChange={setTreeOpen1}>
                   <Icon icon={IconFolder} class="mr-2 text-yellow-500" />
                   Documents
@@ -120,34 +115,29 @@ export default function ListPage() {
                   </ListItem.Children>
                 </ListItem>
               </List>
-            </div>
           </section>
 
           {/* States */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">States</h2>
-            <div class="max-w-md">
-              <List>
+            <List>
                 <ListItem>Normal item</ListItem>
                 <ListItem selected>Selected item</ListItem>
                 <ListItem readonly>Readonly item</ListItem>
                 <ListItem disabled>Disabled item</ListItem>
               </List>
-            </div>
           </section>
 
           {/* Inset Style */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inset Style</h2>
-            <div>
-              <List inset>
+            <List inset>
                 <ListItem selectedIcon={IconStar} selected>
                   Starred item
                 </ListItem>
                 <ListItem selectedIcon={IconStar}>Regular item</ListItem>
                 <ListItem selectedIcon={IconHeart}>Another item</ListItem>
               </List>
-            </div>
           </section>
         </div>
       </div>

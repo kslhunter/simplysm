@@ -9,7 +9,7 @@ export const checkBoxBaseClass = clsx(
   "cursor-pointer",
   "px-2 py-1",
   "h-field",
-  "border border-base-300 dark:border-base-700",
+  "border border-transparent",
   "rounded",
   "focus:outline-none",
   "focus-visible:ring-2",
@@ -41,6 +41,9 @@ export const checkBoxSizeClasses: Record<CheckBoxSize, string> = {
 
 // inset 스타일
 export const checkBoxInsetClass = clsx`rounded-none border-none bg-transparent`;
+
+// inline 스타일
+export const checkBoxInlineClass = clsx("h-auto", "p-0", "gap-1");
 
 // disabled 스타일
 export const checkBoxDisabledClass = clsx`pointer-events-none cursor-default opacity-50`;

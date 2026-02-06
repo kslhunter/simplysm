@@ -71,11 +71,13 @@ export class LazyGcMap<K, V> {
 
   /** 키 존재 여부 확인 (접근 시간 갱신 안함) */
   has(key: K): boolean {
+    if (this._isDestroyed) return false;
     return this._map.has(key);
   }
 
   /** 값 조회 (접근 시간 갱신됨) */
   get(key: K): V | undefined {
+    if (this._isDestroyed) return undefined;
     const item = this._map.get(key);
     if (item == null) return undefined;
 
@@ -86,6 +88,7 @@ export class LazyGcMap<K, V> {
 
   /** 값 저장 (접근 시간 설정 및 GC 타이머 시작) */
   set(key: K, value: V): void {
+    if (this._isDestroyed) return;
     this._map.set(key, { value, lastAccess: Date.now() });
     // 데이터가 들어왔으므로 GC 타이머 가동
     this._startGc();
@@ -93,6 +96,7 @@ export class LazyGcMap<K, V> {
 
   /** 항목 삭제 (비었으면 GC 타이머 중지) */
   delete(key: K): boolean {
+    if (this._isDestroyed) return false;
     const result = this._map.delete(key);
     // 비었으면 타이머 중지
     if (this._map.size === 0) {
@@ -120,6 +124,7 @@ export class LazyGcMap<K, V> {
    * 모든 항목 삭제 (인스턴스는 계속 사용 가능)
    */
   clear(): void {
+    if (this._isDestroyed) return;
     this._map.clear();
     this._stopGc();
   }
@@ -131,6 +136,9 @@ export class LazyGcMap<K, V> {
    * @returns 기존 값 또는 새로 생성된 값
    */
   getOrCreate(key: K, factory: () => V): V {
+    if (this._isDestroyed) {
+      throw new Error("LazyGcMap이 이미 dispose되었습니다.");
+    }
     const item = this._map.get(key);
     if (item == null) {
       const value = factory();
@@ -144,6 +152,7 @@ export class LazyGcMap<K, V> {
 
   /** 값들만 순회 (Iterator) */
   *values(): IterableIterator<V> {
+    if (this._isDestroyed) return;
     for (const item of this._map.values()) {
       yield item.value;
     }
@@ -151,11 +160,13 @@ export class LazyGcMap<K, V> {
 
   /** 키들만 순회 (Iterator) */
   *keys(): IterableIterator<K> {
+    if (this._isDestroyed) return;
     yield* this._map.keys();
   }
 
   /** 엔트리 순회 (Iterator) */
   *entries(): IterableIterator<[K, V]> {
+    if (this._isDestroyed) return;
     for (const [key, item] of this._map.entries()) {
       yield [key, item.value];
     }
@@ -164,6 +175,7 @@ export class LazyGcMap<K, V> {
   //#region GC 로직
 
   private _startGc(): void {
+    if (this._isDestroyed) return;
     if (this._gcTimer != null) return;
 
     this._gcTimer = setInterval(() => {

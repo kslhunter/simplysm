@@ -59,7 +59,7 @@ export default function DropdownPage() {
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-zinc-700 dark:focus:bg-zinc-700"
+                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => {
                         setBasicSelected(item);
                         setBasicOpen(false);
@@ -85,7 +85,7 @@ export default function DropdownPage() {
             <h2 class="mb-4 text-xl font-semibold">컨텍스트 메뉴</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">아래 영역에서 우클릭하세요.</p>
             <div
-              class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-50 dark:border-zinc-600 dark:bg-zinc-800"
+              class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-50 dark:border-base-600 dark:bg-base-800"
               onContextMenu={handleContextMenu}
             >
               <span class="text-base-500 dark:text-base-400">우클릭 영역</span>
@@ -98,7 +98,7 @@ export default function DropdownPage() {
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-zinc-700 dark:focus:bg-zinc-700"
+                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => {
                         setContextSelected(item);
                         setContextOpen(false);
@@ -144,7 +144,7 @@ export default function DropdownPage() {
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-zinc-700 dark:focus:bg-zinc-700"
+                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => setAutoPositionOpen(false)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
@@ -190,7 +190,7 @@ export default function DropdownPage() {
                     <li
                       role="menuitem"
                       tabIndex={0}
-                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-zinc-700 dark:focus:bg-zinc-700"
+                      class="cursor-pointer px-4 py-2 outline-none hover:bg-base-100 focus:bg-base-100 dark:hover:bg-base-700 dark:focus:bg-base-700"
                       onClick={() => {
                         setMaxHeightSelected(item);
                         setMaxHeightOpen(false);

@@ -57,111 +57,101 @@ export default function SelectPage() {
           {/* 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <div class="max-w-xs">
-              <Select
-                placeholder="과일을 선택하세요"
-                renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
-              >
-                <For each={fruits}>
-                  {(fruit) => (
-                    <Select.Item value={fruit}>
-                      {fruit.emoji} {fruit.name}
-                    </Select.Item>
-                  )}
-                </For>
-              </Select>
-            </div>
+            <Select
+              placeholder="과일을 선택하세요"
+              renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
+            >
+              <For each={fruits}>
+                {(fruit) => (
+                  <Select.Item value={fruit}>
+                    {fruit.emoji} {fruit.name}
+                  </Select.Item>
+                )}
+              </For>
+            </Select>
           </section>
 
           {/* 다중 선택 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
-            <div class="max-w-xs">
-              <Select
-                multiple
-                placeholder="여러 개 선택 가능"
-                renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
-              >
-                <For each={fruits}>
-                  {(fruit) => (
-                    <Select.Item value={fruit}>
-                      {fruit.emoji} {fruit.name}
-                    </Select.Item>
-                  )}
-                </For>
-              </Select>
-            </div>
+            <Select
+              multiple
+              placeholder="여러 개 선택 가능"
+              renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
+            >
+              <For each={fruits}>
+                {(fruit) => (
+                  <Select.Item value={fruit}>
+                    {fruit.emoji} {fruit.name}
+                  </Select.Item>
+                )}
+              </For>
+            </Select>
           </section>
 
           {/* 추가 버튼 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Button)</h2>
-            <div class="max-w-xs">
-              <Select
-                placeholder="선택하세요"
-                renderValue={(v: string) => <>{v}</>}
-              >
-                <Select.Item value="옵션 1">옵션 1</Select.Item>
-                <Select.Item value="옵션 2">옵션 2</Select.Item>
-                <Select.Button onClick={() => alert("추가 버튼 클릭!")}>
-                  <IconPlus size={16} />
-                </Select.Button>
-              </Select>
-            </div>
+            <Select
+              placeholder="선택하세요"
+              renderValue={(v: string) => <>{v}</>}
+            >
+              <Select.Item value="옵션 1">옵션 1</Select.Item>
+              <Select.Item value="옵션 2">옵션 2</Select.Item>
+              <Select.Button onClick={() => alert("추가 버튼 클릭!")}>
+                <IconPlus size={16} />
+              </Select.Button>
+            </Select>
           </section>
 
           {/* 커스텀 헤더 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">커스텀 헤더 (Select.Header)</h2>
-            <div class="max-w-xs">
-              <Select
-                placeholder="선택하세요"
-                renderValue={(v: string) => <>{v}</>}
-              >
-                <Select.Header>
-                  <div class="border-b border-base-200 p-2 text-sm font-semibold text-base-500 dark:border-base-700">
-                    검색 결과
-                  </div>
-                </Select.Header>
-                <Select.Item value="결과 1">결과 1</Select.Item>
-                <Select.Item value="결과 2">결과 2</Select.Item>
-                <Select.Item value="결과 3">결과 3</Select.Item>
-              </Select>
-            </div>
+            <Select
+              placeholder="선택하세요"
+              renderValue={(v: string) => <>{v}</>}
+            >
+              <Select.Header>
+                <div class="border-b border-base-200 p-2 text-sm font-semibold text-base-500 dark:border-base-700">
+                  검색 결과
+                </div>
+              </Select.Header>
+              <Select.Item value="결과 1">결과 1</Select.Item>
+              <Select.Item value="결과 2">결과 2</Select.Item>
+              <Select.Item value="결과 3">결과 3</Select.Item>
+            </Select>
           </section>
 
           {/* 계층 구조 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
-            <div class="max-w-xs">
-              <Select
-                placeholder="카테고리 선택"
-                renderValue={(v: Category) => <>{v.name}</>}
-              >
-                <For each={categories}>
-                  {(category) => (
-                    <Select.Item value={category}>
-                      {category.name}
-                      {category.children && (
-                        <Select.Item.Children>
-                          <For each={category.children}>
-                            {(child) => (
-                              <Select.Item value={child}>{child.name}</Select.Item>
-                            )}
-                          </For>
-                        </Select.Item.Children>
-                      )}
-                    </Select.Item>
-                  )}
-                </For>
-              </Select>
-            </div>
+            <Select
+              placeholder="카테고리 선택"
+              renderValue={(v: Category) => <>{v.name}</>}
+            >
+              <For each={categories}>
+                {(category) => (
+                  <Select.Item value={category}>
+                    {category.name}
+                    {category.children && (
+                      <Select.Item.Children>
+                        <For each={category.children}>
+                          {(child) => (
+                            <Select.Item value={child}>{child.name}</Select.Item>
+                          )}
+                        </For>
+                      </Select.Item.Children>
+                    )}
+                  </Select.Item>
+                )}
+              </For>
+            </Select>
           </section>
 
           {/* 사이즈 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">사이즈</h2>
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-start gap-4">
               <Select size="sm" placeholder="Small" renderValue={(v: string) => <>{v}</>}>
                 <Select.Item value="A">옵션 A</Select.Item>
                 <Select.Item value="B">옵션 B</Select.Item>
@@ -180,7 +170,7 @@ export default function SelectPage() {
           {/* 상태 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">상태</h2>
-            <div class="flex max-w-xs flex-col gap-4">
+            <div class="flex flex-col items-start gap-4">
               <div>
                 <p class="mb-1 text-sm text-base-600 dark:text-base-400">Disabled</p>
                 <Select disabled placeholder="비활성화됨" renderValue={(v: string) => <>{v}</>}>
@@ -204,7 +194,7 @@ export default function SelectPage() {
               {/* 단일 선택 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">단일 선택</h3>
-                <div class="flex max-w-xs flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <Select
                     value={controlledSelected()}
                     onValueChange={setControlledSelected}
@@ -234,7 +224,7 @@ export default function SelectPage() {
               {/* 다중 선택 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">다중 선택</h3>
-                <div class="flex max-w-xs flex-col gap-3">
+                <div class="flex flex-col items-start gap-3">
                   <Select
                     multiple
                     value={controlledMultiSelected()}
