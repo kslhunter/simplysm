@@ -89,7 +89,7 @@ export const CheckBox: ParentComponent<CheckBoxProps> = (props) => {
       use:ripple={!local.disabled}
       role="checkbox"
       aria-checked={value()}
-      tabIndex={0}
+      tabIndex={local.disabled ? -1 : 0}
       class={getWrapperClass()}
       style={local.style}
       onClick={handleClick}
