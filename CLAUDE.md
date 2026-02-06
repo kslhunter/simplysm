@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 작업 흐름 규칙
+
+- **스킬(Skill) 완료 후 자동 진행 금지**: 사용자가 명시적으로 스킬을 호출한 경우, 스킬 실행이 완료되면 반드시 결과를 사용자에게 보고하고 **멈출 것**. 스킬 결과를 바탕으로 다음 단계를 추측하여 임의로 진행하지 않는다. 추가 작업이 필요한 경우 사용자의 명시적 지시를 기다린다.
+
 ## 프로젝트 개요
 
 **중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다.
