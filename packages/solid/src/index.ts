@@ -47,6 +47,7 @@ export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Modal";
 export * from "./components/disclosure/ModalContext";
+export * from "./components/disclosure/ModalProvider";
 
 // feedback
 export * from "./components/feedback/notification/NotificationContext";
