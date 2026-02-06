@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { Listr } from "listr2";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
@@ -13,7 +14,7 @@ import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import { Capacitor } from "../capacitor/capacitor";
-import { filterPackagesByTargets, type PackageResult } from "../utils/package-utils";
+import { filterPackagesByTargets, getWatchScopes, type PackageResult } from "../utils/package-utils";
 import { printErrors, printServers } from "../utils/output-utils";
 import { RebuildListrManager } from "../utils/listr-manager";
 import {
@@ -83,6 +84,11 @@ export async function runDev(options: DevOptions): Promise<void> {
   // VER, DEV 환경변수 준비
   const version = await getVersion(cwd);
   const baseEnv = { VER: version, DEV: "true" };
+
+  // watchScopes 생성 (루트 package.json에서 scope 추출)
+  const rootPkgJsonPath = path.join(cwd, "package.json");
+  const rootPkgName = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")).name as string;
+  const watchScopes = getWatchScopes(rootPkgName);
 
   // targets 필터링
   const allPackages = filterPackagesByTargets(sdConfig.packages, targets);
@@ -459,6 +465,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         config: clientConfig,
         cwd,
         pkgDir,
+        watchScopes,
       })
       .catch((err: unknown) => {
         completeTask({
@@ -487,6 +494,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         config: viteConfig,
         cwd,
         pkgDir,
+        watchScopes,
       })
       .catch((err: unknown) => {
         completeTask({

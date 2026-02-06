@@ -34,6 +34,8 @@ export interface ClientWatchInfo {
   config: SdClientPackageConfig;
   cwd: string;
   pkgDir: string;
+  /** watch 대상 scope 목록 */
+  watchScopes?: string[];
 }
 
 /**
@@ -186,6 +188,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
       env: info.config.env,
       mode: "dev",
       serverPort,
+      watchScopes: info.watchScopes,
     });
 
     // Vite dev server 시작

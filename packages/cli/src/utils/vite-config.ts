@@ -60,6 +60,45 @@ function sdTailwindConfigDepsPlugin(pkgDir: string): Plugin {
 }
 
 /**
+ * scope 패키지의 dist 디렉토리 변경을 감지하는 Vite 플러그인.
+ *
+ * Vite는 node_modules를 기본적으로 watch에서 제외하므로,
+ * scope 패키지의 dist 파일이 변경되어도 HMR/리빌드가 트리거되지 않는다.
+ * 이 플러그인은 scope 패키지의 dist 디렉토리를 watcher에 명시적으로 추가하고,
+ * optimizeDeps에서 제외하여 pre-bundled 캐시로 인한 변경 무시를 방지한다.
+ */
+function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
+  return {
+    name: "sd-scope-watch",
+    config() {
+      return {
+        optimizeDeps: {
+          exclude: scopes.flatMap((s) => {
+            // scope 패키지를 pre-bundling에서 제외하여 소스 코드로 취급
+            const scopeDir = path.join(pkgDir, "node_modules", s);
+            if (!fs.existsSync(scopeDir)) return [];
+            return fs.readdirSync(scopeDir).map((name) => `${s}/${name}`);
+          }),
+        },
+      };
+    },
+    configureServer(server) {
+      for (const scope of scopes) {
+        const scopeDir = path.join(pkgDir, "node_modules", scope);
+        if (!fs.existsSync(scopeDir)) continue;
+
+        for (const pkgName of fs.readdirSync(scopeDir)) {
+          const distDir = path.join(scopeDir, pkgName, "dist");
+          if (fs.existsSync(distDir)) {
+            server.watcher.add(distDir);
+          }
+        }
+      }
+    },
+  };
+}
+
+/**
  * Vite 설정 생성 옵션
  */
 export interface ViteConfigOptions {
@@ -71,6 +110,8 @@ export interface ViteConfigOptions {
   mode: "build" | "dev";
   /** dev 모드일 때 서버 포트 (0이면 자동 할당) */
   serverPort?: number;
+  /** watch 대상 scope 목록 (예: ["@myapp", "@simplysm"]) */
+  watchScopes?: string[];
 }
 
 /**
@@ -81,7 +122,7 @@ export interface ViteConfigOptions {
  * - dev 모드: dev server (define으로 env 치환, server 설정)
  */
 export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
-  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort } = options;
+  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, watchScopes } = options;
 
   // process.env 치환 (dev 모드에서만 사용, build 모드는 inline으로 처리됨)
   const envDefine: Record<string, string> = {};
@@ -96,6 +137,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
       sdTailwindConfigDepsPlugin(pkgDir),
+      ...(watchScopes != null && watchScopes.length > 0 ? [sdScopeWatchPlugin(pkgDir, watchScopes)] : []),
     ],
     css: {
       postcss: {

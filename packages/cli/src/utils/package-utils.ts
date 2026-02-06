@@ -1,6 +1,22 @@
 import type { SdPackageConfig } from "../sd-config.types";
 
 /**
+ * 패키지명에서 watch scope 목록을 생성한다.
+ * - 패키지명의 scope (예: "@myapp/root" → "@myapp")
+ * - @simplysm (항상 포함)
+ * @param packageName 루트 package.json의 name 필드
+ * @returns scope 배열 (중복 제거)
+ */
+export function getWatchScopes(packageName: string): string[] {
+  const scopes = new Set(["@simplysm"]);
+  const match = packageName.match(/^(@[^/]+)\//);
+  if (match != null) {
+    scopes.add(match[1]);
+  }
+  return [...scopes];
+}
+
+/**
  * 패키지 결과 상태
  */
 export interface PackageResult {
