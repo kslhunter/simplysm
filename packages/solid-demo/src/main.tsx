@@ -29,6 +29,7 @@ render(
           <Route path="/home/layout/form-table" component={lazy(() => import("./pages/layout/FormTablePage"))} />
           <Route path="/home/data/list" component={lazy(() => import("./pages/data/ListPage"))} />
           <Route path="/home/data/table" component={lazy(() => import("./pages/data/TablePage"))} />
+          <Route path="/home/data/pagination" component={lazy(() => import("./pages/data/PaginationPage"))} />
           <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/CollapsePage"))} />
           <Route path="/home/disclosure/dropdown" component={lazy(() => import("./pages/disclosure/DropdownPage"))} />
           <Route path="/home/display/card" component={lazy(() => import("./pages/display/CardPage"))} />

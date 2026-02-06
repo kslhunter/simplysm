@@ -43,6 +43,7 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "List", href: "/home/data/list" },
       { title: "Table", href: "/home/data/table" },
+      { title: "Pagination", href: "/home/data/pagination" },
     ],
   },
   {
