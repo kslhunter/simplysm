@@ -1,1 +1,1 @@
-text는 무조건 zinc기반
+dev, watch 할거없이 모든 변경감지는 `패키지 파일` + `내 scope 파일(@myapp)` + `외부 패키지더라도 @simplysm 패키지인거`
