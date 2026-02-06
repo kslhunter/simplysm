@@ -66,7 +66,7 @@ export const Topbar: ParentComponent<TopbarProps> = (props) => {
     <header {...rest} class={getClassName()}>
       <Show when={sidebarContext}>
         <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="사이드바 토글">
-          <Icon icon={IconMenu2} size="1.5rem" />
+          <Icon icon={IconMenu2} size="1.5em" />
         </Button>
       </Show>
       {local.children}

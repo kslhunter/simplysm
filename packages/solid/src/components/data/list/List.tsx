@@ -3,13 +3,13 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ListContext, useListContext } from "./ListContext";
 
-const baseClass = clsx`flex flex-col rounded-md`;
+const baseClass = clsx`inline-flex flex-col rounded-md`;
 
 const rootClass = clsx`border border-base-300 bg-base-50 p-px dark:border-base-700 dark:bg-base-900`;
 
 const nestedClass = clsx`rounded-none py-1`;
 
-const insetClass = clsx`border-transparent bg-transparent dark:border-transparent dark:bg-transparent`;
+const insetClass = clsx`w-full border-transparent bg-transparent dark:border-transparent dark:bg-transparent`;
 
 export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**

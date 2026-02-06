@@ -26,13 +26,11 @@ export default function ListPage() {
           {/* Basic List */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Basic List</h2>
-            <div class="max-w-md">
-              <List>
-                <ListItem>Item 1</ListItem>
-                <ListItem>Item 2</ListItem>
-                <ListItem>Item 3</ListItem>
-              </List>
-            </div>
+            <List>
+              <ListItem>Item 1</ListItem>
+              <ListItem>Item 2</ListItem>
+              <ListItem>Item 3</ListItem>
+            </List>
           </section>
 
           {/* Selectable List */}

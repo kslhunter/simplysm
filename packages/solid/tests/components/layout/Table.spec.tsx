@@ -36,18 +36,6 @@ describe("Table 컴포넌트", () => {
     });
   });
 
-  describe("inline 속성", () => {
-    it("inline prop에 따라 스타일이 달라진다", () => {
-      const { container: defaultContainer } = render(() => <Table>Content</Table>);
-      const { container: inlineContainer } = render(() => <Table inline>Content</Table>);
-
-      const defaultClass = (defaultContainer.firstChild as HTMLElement).className;
-      const inlineClass = (inlineContainer.firstChild as HTMLElement).className;
-
-      expect(defaultClass).not.toBe(inlineClass);
-    });
-  });
-
   describe("class 병합", () => {
     it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname

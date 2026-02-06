@@ -70,7 +70,7 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
           aria-haspopup="menu"
           aria-expanded={mobileMenuOpen()}
         >
-          <Icon icon={IconDotsVertical} size="1.25rem" />
+          <Icon icon={IconDotsVertical} size="1.25em" />
         </Button>
         <Dropdown triggerRef={() => mobileButtonRef} open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
           <List inset>
@@ -143,7 +143,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
         </Show>
         <span>{props.menu.title}</span>
         <Show when={hasChildren()}>
-          <Icon icon={IconChevronDown} size="1rem" class={clsx("transition-transform", open() && "rotate-180")} />
+          <Icon icon={IconChevronDown} size="1em" class={clsx("transition-transform", open() && "rotate-180")} />
         </Show>
       </Button>
       <Show when={hasChildren()}>

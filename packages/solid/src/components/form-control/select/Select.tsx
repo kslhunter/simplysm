@@ -391,7 +391,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         >
           <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
           <div class="opacity-30 hover:opacity-100">
-            <Icon icon={IconChevronDown} size="1rem" />
+            <Icon icon={IconChevronDown} size="1em" />
           </div>
         </div>
         <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>

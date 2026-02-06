@@ -1,1 +1,1 @@
-dev, watch 할거없이 모든 변경감지는 `패키지 파일` + `내 scope 파일(@myapp)` + `외부 패키지더라도 @simplysm 패키지인거`
+data-{{component}} 붙이기

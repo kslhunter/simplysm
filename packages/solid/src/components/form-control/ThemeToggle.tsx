@@ -28,9 +28,9 @@ const sizeClasses = {
 };
 
 const iconSizes = {
-  sm: "1rem",
-  default: "1.25rem",
-  lg: "1.5rem",
+  sm: "1em",
+  default: "1.25em",
+  lg: "1.5em",
 };
 
 const modeLabels: Record<ThemeMode, string> = {

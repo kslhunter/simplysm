@@ -39,6 +39,7 @@ pnpm vitest package/{{패키지명}} --run $ARGUMENTS
 ```
 
 `--run` 플래그로 watch 모드 없이 1회 실행합니다.
+패키지에 따라 vitest.config.ts내의 통합테스트가 필요할 수 있습니다.
 
 테스트 실패 시: 실패한 테스트와 관련 소스 파일을 Read하여 원인을 파악하고, Edit으로 수정한 뒤 다시 테스트 실행.
 

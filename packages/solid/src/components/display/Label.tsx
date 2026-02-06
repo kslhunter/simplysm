@@ -11,8 +11,8 @@ export interface LabelProps extends JSX.HTMLAttributes<HTMLSpanElement> {
 const baseClass = clsx(
   "inline-block",
   "text-white",
-  "px-2",
-  "rounded",
+  "px-1.5",
+  "rounded-md",
 );
 
 const themeClasses: Record<LabelTheme, string> = {

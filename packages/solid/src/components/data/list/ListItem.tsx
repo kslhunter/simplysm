@@ -197,7 +197,7 @@ export const ListItem: ListItemComponent = (props) => {
         </Show>
         <span class="flex flex-1 flex-row items-center gap-1 text-left">{content()}</span>
         <Show when={hasChildren()}>
-          <Icon icon={IconChevronDown} size="1rem" class={getChevronClassName()} />
+          <Icon icon={IconChevronDown} size="1em" class={getChevronClassName()} />
         </Show>
       </button>
       <Show when={hasChildren()}>

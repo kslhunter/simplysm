@@ -323,6 +323,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         colNames.map((colName) => {
           const val = record[colName];
           if (val instanceof Uuid) return val.toString();
+          // eslint-disable-next-line no-restricted-globals -- tedious 라이브러리가 Buffer를 요구함
           if (val instanceof Uint8Array) return Buffer.from(val);
           if (val instanceof DateTime) return val.date;
           if (val instanceof DateOnly) return val.date;

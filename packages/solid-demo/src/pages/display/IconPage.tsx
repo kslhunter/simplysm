@@ -75,24 +75,24 @@ export default function IconPage() {
             </p>
             <div class="flex items-end gap-4">
               <div class="flex flex-col items-center gap-1">
-                <Icon icon={IconStar} size="1rem" />
-                <span class="text-xs text-base-500">1rem</span>
+                <Icon icon={IconStar} size="1em" />
+                <span class="text-xs text-base-500">1em</span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <Icon icon={IconStar} size="1.25rem" />
-                <span class="text-xs text-base-500">1.25rem</span>
+                <Icon icon={IconStar} size="1.25em" />
+                <span class="text-xs text-base-500">1.25em</span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <Icon icon={IconStar} size="1.5rem" />
-                <span class="text-xs text-base-500">1.5rem</span>
+                <Icon icon={IconStar} size="1.5em" />
+                <span class="text-xs text-base-500">1.5em</span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <Icon icon={IconStar} size="2rem" />
-                <span class="text-xs text-base-500">2rem</span>
+                <Icon icon={IconStar} size="2em" />
+                <span class="text-xs text-base-500">2em</span>
               </div>
               <div class="flex flex-col items-center gap-1">
-                <Icon icon={IconStar} size="3rem" />
-                <span class="text-xs text-base-500">3rem</span>
+                <Icon icon={IconStar} size="3em" />
+                <span class="text-xs text-base-500">3em</span>
               </div>
             </div>
           </section>
@@ -104,11 +104,11 @@ export default function IconPage() {
               class prop으로 색상을 지정할 수 있습니다.
             </p>
             <div class="flex items-center gap-4">
-              <Icon icon={IconHeart} size="1.5rem" class="text-danger-500" />
-              <Icon icon={IconStar} size="1.5rem" class="text-warning-500" />
-              <Icon icon={IconCheck} size="1.5rem" class="text-success-500" />
-              <Icon icon={IconBell} size="1.5rem" class="text-info-500" />
-              <Icon icon={IconUser} size="1.5rem" class="text-primary-500" />
+              <Icon icon={IconHeart} size="1.5em" class="text-danger-500" />
+              <Icon icon={IconStar} size="1.5em" class="text-warning-500" />
+              <Icon icon={IconCheck} size="1.5em" class="text-success-500" />
+              <Icon icon={IconBell} size="1.5em" class="text-info-500" />
+              <Icon icon={IconUser} size="1.5em" class="text-primary-500" />
             </div>
           </section>
 
@@ -122,7 +122,7 @@ export default function IconPage() {
               <For each={icons}>
                 {(item) => (
                   <div class="flex flex-col items-center gap-1 rounded p-2 hover:bg-base-100 dark:hover:bg-base-700">
-                    <Icon icon={item.icon} size="1.5rem" />
+                    <Icon icon={item.icon} size="1.5em" />
                     <span class="text-xs text-base-500">{item.name}</span>
                   </div>
                 )}

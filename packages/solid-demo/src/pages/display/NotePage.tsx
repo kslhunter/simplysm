@@ -40,28 +40,28 @@ export default function NotePage() {
             <h2 class="mb-4 text-xl font-semibold">아이콘과 함께</h2>
             <div class="space-y-3">
               <Note theme="info" class="flex items-start gap-3">
-                <Icon icon={IconInfoCircle} size="1.25rem" class="mt-0.5 shrink-0" />
+                <Icon icon={IconInfoCircle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
                   <strong class="block">정보</strong>
                   이 기능은 최신 버전에서만 사용할 수 있습니다.
                 </div>
               </Note>
               <Note theme="success" class="flex items-start gap-3">
-                <Icon icon={IconCircleCheck} size="1.25rem" class="mt-0.5 shrink-0" />
+                <Icon icon={IconCircleCheck} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
                   <strong class="block">성공</strong>
                   변경사항이 성공적으로 저장되었습니다.
                 </div>
               </Note>
               <Note theme="warning" class="flex items-start gap-3">
-                <Icon icon={IconAlertTriangle} size="1.25rem" class="mt-0.5 shrink-0" />
+                <Icon icon={IconAlertTriangle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
                   <strong class="block">주의</strong>
                   이 작업은 되돌릴 수 없습니다. 진행하기 전에 확인해 주세요.
                 </div>
               </Note>
               <Note theme="danger" class="flex items-start gap-3">
-                <Icon icon={IconAlertCircle} size="1.25rem" class="mt-0.5 shrink-0" />
+                <Icon icon={IconAlertCircle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
                   <strong class="block">오류</strong>
                   요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.
