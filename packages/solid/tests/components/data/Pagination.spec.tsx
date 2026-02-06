@@ -43,6 +43,7 @@ describe("Pagination 컴포넌트", () => {
 
     it("custom class가 nav 요소에 전달된다", () => {
       const { container } = render(() => (
+        // eslint-disable-next-line tailwindcss/no-custom-classname
         <Pagination page={0} totalPages={5} class="my-custom" />
       ));
 
