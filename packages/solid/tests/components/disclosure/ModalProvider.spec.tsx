@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { Component } from "solid-js";
 import { ModalProvider } from "../../../src/components/disclosure/ModalProvider";
 import { useModal, type ModalContentProps } from "../../../src/components/disclosure/ModalContext";
