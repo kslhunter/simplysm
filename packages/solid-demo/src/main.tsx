@@ -32,6 +32,7 @@ render(
           <Route path="/home/data/pagination" component={lazy(() => import("./pages/data/PaginationPage"))} />
           <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/CollapsePage"))} />
           <Route path="/home/disclosure/dropdown" component={lazy(() => import("./pages/disclosure/DropdownPage"))} />
+          <Route path="/home/disclosure/modal" component={lazy(() => import("./pages/disclosure/ModalPage"))} />
           <Route path="/home/display/card" component={lazy(() => import("./pages/display/CardPage"))} />
           <Route path="/home/display/icon" component={lazy(() => import("./pages/display/IconPage"))} />
           <Route path="/home/display/label" component={lazy(() => import("./pages/display/LabelPage"))} />

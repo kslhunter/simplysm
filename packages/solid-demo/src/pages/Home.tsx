@@ -52,6 +52,7 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "Collapse", href: "/home/disclosure/collapse" },
       { title: "Dropdown", href: "/home/disclosure/dropdown" },
+      { title: "Modal", href: "/home/disclosure/modal" },
     ],
   },
   {
