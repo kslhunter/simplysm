@@ -112,14 +112,14 @@ const ServiceClientDemo: Component = () => {
               type="text"
               value={echoInput()}
               onInput={(e) => setEchoInput(e.currentTarget.value)}
-              class="flex-1 rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800"
+              class="flex-1 rounded border border-base-300 px-3 py-2 dark:border-base-600 dark:bg-base-800"
             />
             <Button theme="primary" variant="solid" onClick={handleEcho} disabled={!connected()}>
               Echo
             </Button>
           </div>
           <Show when={echoResult()}>
-            <pre class="mt-2 rounded bg-slate-100 p-3 text-sm dark:bg-slate-800">{echoResult()}</pre>
+            <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{echoResult()}</pre>
           </Show>
           <Show when={echoError()}>
             <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">{echoError()}</pre>
@@ -134,14 +134,14 @@ const ServiceClientDemo: Component = () => {
               value={jsonInput()}
               onInput={(e) => setJsonInput(e.currentTarget.value)}
               rows={3}
-              class="flex-1 rounded border border-slate-300 px-3 py-2 font-mono text-sm dark:border-slate-600 dark:bg-slate-800"
+              class="flex-1 rounded border border-base-300 px-3 py-2 font-mono text-sm dark:border-base-600 dark:bg-base-800"
             />
             <Button theme="primary" variant="solid" onClick={handleEchoJson} disabled={!connected()}>
               Echo JSON
             </Button>
           </div>
           <Show when={jsonResult()}>
-            <pre class="mt-2 rounded bg-slate-100 p-3 text-sm dark:bg-slate-800">{jsonResult()}</pre>
+            <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{jsonResult()}</pre>
           </Show>
           <Show when={jsonError()}>
             <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">{jsonError()}</pre>
@@ -161,7 +161,7 @@ const ServiceClientDemo: Component = () => {
               Ping
             </Button>
             <Show when={pingResult()}>
-              <pre class="mt-2 rounded bg-slate-100 p-3 text-sm dark:bg-slate-800">{pingResult()}</pre>
+              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{pingResult()}</pre>
             </Show>
           </div>
 
@@ -172,7 +172,7 @@ const ServiceClientDemo: Component = () => {
               Health Check
             </Button>
             <Show when={healthResult()}>
-              <pre class="mt-2 rounded bg-slate-100 p-3 text-sm dark:bg-slate-800">{healthResult()}</pre>
+              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{healthResult()}</pre>
             </Show>
           </div>
         </div>

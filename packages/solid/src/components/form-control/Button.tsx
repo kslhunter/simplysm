@@ -111,9 +111,9 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   },
   base: {
     solid: clsx(
-      "bg-white dark:bg-base-900",
-      "hover:bg-base-100 dark:hover:bg-base-700",
-      "text-base-900 dark:text-base-100",
+      "bg-base-500",
+      "hover:bg-base-600 dark:hover:bg-base-400",
+      "text-white",
       "border border-transparent",
     ),
     outline: clsx(

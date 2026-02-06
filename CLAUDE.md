@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
+**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다.
+- 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
+- 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
+
 Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포이다. pnpm 워크스페이스로 관리되며, SolidJS UI, ORM, 서비스 통신, Excel 처리 등의 패키지를 제공한다.
 
 ### 설계 철학
@@ -75,6 +79,16 @@ pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 - `tests/orm/`: ORM 통합 테스트 (Docker DB 필요)
 - `tests/service/`: 서비스 통합 테스트 (브라우저 테스트)
 
+### 커스텀 타입 (`core-common`)
+`@simplysm/core-common`에서 제공하는 불변 타입:
+- `DateTime`, `DateOnly`, `Time`: 날짜/시간 처리
+- `Uuid`: UUID v4
+- `LazyGcMap`: LRU 캐시 (자동 만료)
+
+### 디렉토리 참조
+- `.cache/`: 빌드 캐시 (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). 초기화: `.cache/` 삭제
+- `.playwright-mcp/`: Playwright MCP 도구의 스크린샷 등 출력 디렉토리
+
 ## 아키텍처
 
 ### 의존성 계층
@@ -114,21 +128,68 @@ const User = Table("User")
 - `ServiceClient`: WebSocket 클라이언트, RPC 호출
 - `ServiceProtocol`: 메시지 분할/병합 (3MB 초과 시 300KB 청크)
 
-**SolidJS 컴포넌트:**
-- **Compound Components 패턴**: 복합 컴포넌트는 부모-자식 관계를 명시적으로 표현하는 Compound Components 패턴을 사용
+## 코드 컨벤션
+
+### ESLint 규칙 (`@simplysm/eslint-plugin`)
+- ECMAScript private 필드(`#field`) 금지 → TypeScript `private` 사용
+- `@simplysm/*/src/` 경로 import 금지 (*.ts, *.tsx 파일만 해당)
+  → import 추가 전: 해당 패키지의 `index.ts`를 Read하여 export 확인
+- `no-console`, `eqeqeq`, `no-shadow` 적용
+- Node.js 내장 `Buffer` → `Uint8Array` 사용
+- async 함수에 await 필수
+
+### 함수 명명 규칙
+- 함수명 끝에 `Async` 접미사 사용 금지 → 비동기 함수가 기본
+- 동기/비동기 버전이 모두 존재할 때는 동기 함수에 `Sync` 접미사 사용
+  ```typescript
+  // 좋은 예
+  async function readFile() { ... }      // 비동기 (기본)
+  function readFileSync() { ... }        // 동기 버전
+
+  // 나쁜 예
+  async function readFileAsync() { ... } // Async 접미사 금지
+  ```
+
+### TypeScript 설정
+- `strict: true`, `verbatimModuleSyntax: true`
+- 경로 별칭: `@simplysm/*` → `packages/*/src/index.ts`
+- JSX: SolidJS (`jsxImportSource: "solid-js"`)
+
+### 프로토타입 확장
+`core-common`을 import하면 Array, Map, Set에 확장 메서드가 추가됨:
+- `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()` 등
+- `Map`: `getOrCreate()`, `update()`
+- `Set`: `adds()`, `toggle()`
+
+→ 확장 메서드 사용 전: `core-common/src/extensions/` 소스에서 실제 존재 여부 확인. 존재하지 않는 메서드를 추측하여 사용하지 말 것
+
+### SolidJS 규칙
+
+**SolidJS와 React는 다르다! React에 대한 지식으로 SolidJS를 추측하지 말라**
+- **컴포넌트 함수는 마운트 시 한 번만 실행됨** (React는 상태 변경마다 재실행)
+- **Fine-grained Reactivity**: 시그널이 변경되지 않으면 해당 expression 자체가 다시 평가되지 않음
+- **`createMemo`**: 비용이 비싼 계산을 여러 곳에서 사용할 때 필요
+  - 시그널 변경 시 같은 함수를 3곳에서 호출하면 3번 실행됨, `createMemo`는 1번 계산 + 캐시 반환
+  - 단순 조건 분기나 가벼운 연산은 일반 함수 `() => count() * 2`로도 충분
+- **Props 구조 분해 금지** → `{ label }` 대신 `props.label`로 접근 (반응성 유지)
+- **조건부: `<Show when={...}>`**, 리스트: **`<For each={...}>`** 사용
+- **Compound Components 패턴**: 복합 컴포넌트는 부모-자식 관계를 명시적으로 표현
+- **SSR 미지원**: `window`, `document` 등 브라우저 API 직접 사용 가능
 - 반응형: 520px 미만에서 모바일 UI
 - Chrome 84+ 타겟
   - TypeScript는 esbuild로 트랜스파일됨 → `?.`, `??` 등 최신 JS 문법 사용 가능
   - CSS는 트랜스파일 안됨 → Chrome 84 미지원 CSS 기능 사용 금지
     - 사용 가능: Flexbox gap
     - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
-- **SSR 미지원**: 서버 사이드 렌더링은 고려하지 않음. `window`, `document` 등 브라우저 API 직접 사용 가능
+
+→ 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
 
 ### Tailwind CSS
 
 **설정 (`packages/solid/tailwind.config.ts`):**
 - `darkMode: "class"` → `<html class="dark">`로 다크 모드 전환
 - Chrome 84 미지원으로 `aspectRatio` 플러그인 비활성화
+- 크기 단위는 `rem` 기본. 단, 주변 텍스트 크기에 비례해야 하는 경우(예: Icon)는 `em` 사용
 
 **커스텀 테마:**
 ```typescript
@@ -141,6 +202,7 @@ colors: {
   danger: colors.red,
   base: colors.zinc,       // 중립 회색 (배경, 테두리, 보조 텍스트 등)
 }
+// → zinc-* 직접 사용 금지 → base-* 사용
 
 // 폼 필드 높이
 height/size: {
@@ -203,48 +265,7 @@ export default {
 };
 ```
 
-### SolidJS vs React 핵심 차이점
-
-**SolidJS와 React는 다르다! React에 대한 지식으로 SolidJS를 추측하지 말라**
-- **컴포넌트 함수는 마운트 시 한 번만 실행됨** (React는 상태 변경마다 재실행)
-- **Fine-grained Reactivity**: 시그널이 변경되지 않으면 해당 expression 자체가 다시 평가되지 않음
-- **`createMemo`**: 비용이 비싼 계산을 여러 곳에서 사용할 때 필요
-  - 시그널 변경 시 같은 함수를 3곳에서 호출하면 3번 실행됨, `createMemo`는 1번 계산 + 캐시 반환
-  - 단순 조건 분기나 가벼운 연산은 일반 함수 `() => count() * 2`로도 충분
-- **Props 구조 분해 금지** → `{ label }` 대신 `props.label`로 접근 (반응성 유지)
-- **조건부: `<Show when={...}>`**, 리스트: **`<For each={...}>`** 사용
-
-## 코드 컨벤션
-
-### ESLint 규칙 (`@simplysm/eslint-plugin`)
-- ECMAScript private 필드(`#field`) 금지 → TypeScript `private` 사용
-- `@simplysm/*/src/` 경로 import 금지 (*.ts, *.tsx 파일만 해당)
-- `no-console`, `eqeqeq`, `no-shadow` 적용
-- Node.js 내장 `Buffer` → `Uint8Array` 사용
-- async 함수에 await 필수
-
-### 함수 명명 규칙
-- 함수명 끝에 `Async` 접미사 사용 금지 → 비동기 함수가 기본
-- 동기/비동기 버전이 모두 존재할 때는 동기 함수에 `Sync` 접미사 사용
-  ```typescript
-  // 좋은 예
-  async function readFile() { ... }      // 비동기 (기본)
-  function readFileSync() { ... }        // 동기 버전
-
-  // 나쁜 예
-  async function readFileAsync() { ... } // Async 접미사 금지
-  ```
-
-### TypeScript 설정
-- `strict: true`, `verbatimModuleSyntax: true`
-- 경로 별칭: `@simplysm/*` → `packages/*/src/index.ts`
-- JSX: SolidJS (`jsxImportSource: "solid-js"`)
-
-### 프로토타입 확장
-`core-common`을 import하면 Array, Map, Set에 확장 메서드가 추가됨:
-- `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()` 등
-- `Map`: `getOrCreate()`, `update()`
-- `Set`: `adds()`, `toggle()`
+→ 스타일 수정 전: 같은 컴포넌트의 기존 클래스 패턴을 Read하여 확인
 
 ## 테스트 환경 (vitest.config.ts)
 
@@ -256,66 +277,15 @@ export default {
 | orm | Node.js + Docker | `tests/orm/**/*.spec.ts` |
 | service | Playwright | `tests/service/**/*.spec.ts` |
 
-## 캐시 디렉토리
+## 코드 작성 전 필수 확인
 
-`.cache/` 디렉토리에 빌드 캐시 저장:
-- `eslint.cache`: ESLint 캐시
-- `typecheck-{env}.tsbuildinfo`: 타입체크 incremental 정보
-- `dts.tsbuildinfo`: .d.ts 생성 정보
-
-캐시 초기화: `.cache/` 삭제
-
-## Playwright MCP 출력 디렉토리
-
-Playwright MCP 도구로 스크린샷 등 파일을 저장할 때는 `.playwright-mcp/` 디렉토리를 사용한다.
-
-## 커스텀 타입
-
-`@simplysm/core-common`에서 제공하는 불변 타입:
-- `DateTime`, `DateOnly`, `Time`: 날짜/시간 처리
-- `Uuid`: UUID v4
-- `LazyGcMap`: LRU 캐시 (자동 만료)
-
-## 할루시네이션 방지 가이드라인
-
-### 불확실할 때의 행동
-- 확신이 없으면 "잘 모르겠습니다" 또는 "확인이 필요합니다"라고 답변할 것
-- 추측으로 코드를 작성하지 말고, 먼저 관련 파일을 읽어서 기존 패턴을 확인할 것
-- API나 라이브러리 사용법이 불확실하면 실제 코드나 문서를 먼저 확인할 것
-
-### 코드 작성 전 필수 확인
-- **새 파일 생성 전**: 유사한 기존 파일의 구조와 패턴을 먼저 확인
-- **함수/클래스 수정 전**: 해당 파일을 먼저 읽고 기존 코드 스타일 파악
-- **import 추가 전**: 패키지의 `index.ts`에서 실제로 export되는 항목 확인
-- **CLI 명령어 실행 전**: 이 문서의 "주요 명령어" 섹션 참조 (임의의 플래그 사용 금지)
-
-### 이 프로젝트에서 자주 발생하는 실수
-- `@simplysm/*/src/` 경로로 import 하지 말 것 → `@simplysm/*`만 사용 (*.ts, *.tsx 파일만 해당)
-- Node.js `Buffer` 사용 금지 → `Uint8Array` 사용
-- `#privateField` 사용 금지 → `private _privateField` 사용
-- React 패턴 사용 금지 → SolidJS 패턴 사용 (예: `useState` 대신 `createSignal`)
-- 존재하지 않는 확장 메서드 사용 금지 → `core-common`의 실제 확장 메서드만 사용
-- SolidJS 스타일에서 `em` 단위 사용 금지 → `rem` 단위로 통일
-- 함수명에 `Async` 접미사 사용 금지 → 동기 버전에만 `Sync` 접미사 사용
-- 비용이 비싼 계산을 여러 곳에서 사용할 때 `createMemo` 미사용 → 시그널 변경 시 중복 계산 발생
-- Tailwind에서 `zinc-*` 직접 사용 금지 → `base-*` 사용 (tailwind.config.ts에서 `base: colors.zinc`로 매핑됨)
+- 새 파일 생성 전: 유사한 기존 파일을 Glob/Read하여 구조와 패턴 확인
+- 함수/클래스 수정 전: 해당 파일을 Read하여 기존 코드 스타일 파악
+- API/메서드 사용 시 확신이 없으면: 소스코드에서 시그니처 확인
+- CLI 명령어 실행 전: 이 문서의 "주요 명령어" 섹션 참조 (임의의 플래그 사용 금지)
+- **확신도가 낮으면 코드를 작성하지 말고 사용자에게 질문할 것**
 
 ### 검증 절차
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증
 2. 새로운 패턴 도입 시 기존 코드베이스에서 유사 사례 검색
 3. 테스트 코드 작성 시 `vitest.config.ts`의 프로젝트 구성 확인
-
-### 외부 지식 제한
-- 이 프로젝트의 코드와 문서에서 확인된 정보만 사용
-- 일반적인 지식으로 추측하지 말고, 실제 구현을 확인
-- 버전별 API 차이가 있을 수 있으므로 코드베이스의 실제 사용 예시 우선
-
-## 언어 설정
-
-**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다.
-
-- 사용자와의 모든 대화, 설명, 안내는 한국어로 작성
-- 코드 주석이나 문서 작성 시에도 한국어 사용
-- 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
-- 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
-- BMAD 워크플로우 실행 시에도 한국어로 응답

@@ -105,18 +105,18 @@ export default function TopbarPage() {
           {/* 1. TopbarContainer 기본 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">TopbarContainer 기본</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다. SidebarContext 없이 단독 사용 시 토글 버튼이
               표시되지 않습니다.
             </p>
-            <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+            <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <TopbarContainer>
                 <Topbar>
                   <h1 class="m-0 text-base">페이지 제목</h1>
                 </Topbar>
                 <div class="flex-1 overflow-auto p-4">
-                  <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                    <p class="text-sm text-slate-600 dark:text-slate-400">메인 콘텐츠 영역</p>
+                  <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                    <p class="text-sm text-base-600 dark:text-base-400">메인 콘텐츠 영역</p>
                   </div>
                 </div>
               </TopbarContainer>
@@ -126,29 +126,29 @@ export default function TopbarPage() {
           {/* 2. 토글 버튼 자동 연동 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">토글 버튼 자동 연동</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               SidebarContext 없이 단독 사용 vs SidebarContainer 내부 사용 비교. SidebarContainer 내부에서 사용하면 토글
               버튼이 자동으로 표시됩니다.
             </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">단독 사용 (토글 버튼 없음)</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">단독 사용 (토글 버튼 없음)</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <TopbarContainer>
                     <Topbar>
                       <h1 class="m-0 text-base">토글 버튼 없음</h1>
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
-                      <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-400">SidebarContext 없음</p>
+                      <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                        <p class="text-sm text-base-600 dark:text-base-400">SidebarContext 없음</p>
                       </div>
                     </div>
                   </TopbarContainer>
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">SidebarContainer 내부 사용 (토글 버튼 있음)</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">SidebarContainer 내부 사용 (토글 버튼 있음)</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <SidebarContainer>
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
@@ -158,8 +158,8 @@ export default function TopbarPage() {
                         <h1 class="m-0 text-base">토글 버튼 자동 표시</h1>
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
-                        <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                          <p class="text-sm text-slate-600 dark:text-slate-400">SidebarContext 있음</p>
+                        <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                          <p class="text-sm text-base-600 dark:text-base-400">SidebarContext 있음</p>
                         </div>
                       </div>
                     </TopbarContainer>
@@ -172,35 +172,35 @@ export default function TopbarPage() {
           {/* 3. TopbarMenu 변형 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">TopbarMenu 변형</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               TopbarMenu는 드롭다운 메뉴를 제공합니다. 무제한 중첩을 지원합니다.
             </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">단순 메뉴 (2단계)</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">단순 메뉴 (2단계)</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <TopbarContainer>
                     <Topbar>
                       <TopbarMenu menus={simpleMenus} />
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
-                      <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-400">메뉴를 클릭해보세요</p>
+                      <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                        <p class="text-sm text-base-600 dark:text-base-400">메뉴를 클릭해보세요</p>
                       </div>
                     </div>
                   </TopbarContainer>
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">중첩 메뉴 (3단계 이상, 아이콘 포함)</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">중첩 메뉴 (3단계 이상, 아이콘 포함)</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <TopbarContainer>
                     <Topbar>
                       <TopbarMenu menus={nestedMenus} />
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
-                      <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-400">관리 → 시스템 → 고급 설정을 확인해보세요</p>
+                      <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                        <p class="text-sm text-base-600 dark:text-base-400">관리 → 시스템 → 고급 설정을 확인해보세요</p>
                       </div>
                     </div>
                   </TopbarContainer>
@@ -212,11 +212,11 @@ export default function TopbarPage() {
           {/* 4. TopbarUser 변형 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">TopbarUser 변형</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.</p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">기본 (이름만)</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (이름만)</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <TopbarContainer>
                     <Topbar>
                       <h1 class="m-0 text-base">제목</h1>
@@ -224,16 +224,16 @@ export default function TopbarPage() {
                       <TopbarUser>홍길동</TopbarUser>
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
-                      <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-400">메뉴 없이 이름만 표시</p>
+                      <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                        <p class="text-sm text-base-600 dark:text-base-400">메뉴 없이 이름만 표시</p>
                       </div>
                     </div>
                   </TopbarContainer>
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">메뉴 포함</p>
-                <div class="h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">메뉴 포함</p>
+                <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <TopbarContainer>
                     <Topbar>
                       <h1 class="m-0 text-base">제목</h1>
@@ -241,8 +241,8 @@ export default function TopbarPage() {
                       <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
-                      <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-400">클릭하면 프로필/로그아웃 메뉴 표시</p>
+                      <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                        <p class="text-sm text-base-600 dark:text-base-400">클릭하면 프로필/로그아웃 메뉴 표시</p>
                       </div>
                     </div>
                   </TopbarContainer>
@@ -254,13 +254,13 @@ export default function TopbarPage() {
           {/* 5. Sidebar + Topbar 통합 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Sidebar + Topbar 통합</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               SidebarContainer 내부에서 TopbarContainer를 사용하면 토글 버튼이 자동으로 연동됩니다.
             </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">사이드바 열림 (toggled=false)</p>
-                <div class="h-80 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">사이드바 열림 (toggled=false)</p>
+                <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <SidebarContainer>
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
@@ -276,7 +276,7 @@ export default function TopbarPage() {
                           </div>
                           <div class="flex flex-col">
                             <span class="font-semibold">홍길동</span>
-                            <span class="text-sm text-slate-500 dark:text-slate-400">hong@example.com</span>
+                            <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
                           </div>
                         </div>
                       </SidebarUser>
@@ -289,8 +289,8 @@ export default function TopbarPage() {
                         <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
-                        <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                          <p class="text-sm text-slate-600 dark:text-slate-400">토글 버튼을 클릭해보세요</p>
+                        <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                          <p class="text-sm text-base-600 dark:text-base-400">토글 버튼을 클릭해보세요</p>
                         </div>
                       </div>
                     </TopbarContainer>
@@ -298,8 +298,8 @@ export default function TopbarPage() {
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">사이드바 닫힘 (toggled=true)</p>
-                <div class="h-80 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">사이드바 닫힘 (toggled=true)</p>
+                <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <SidebarContainer>
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
@@ -312,8 +312,8 @@ export default function TopbarPage() {
                         <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
-                        <div class="rounded border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                          <p class="text-sm text-slate-600 dark:text-slate-400">토글 버튼을 클릭해보세요</p>
+                        <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+                          <p class="text-sm text-base-600 dark:text-base-400">토글 버튼을 클릭해보세요</p>
                         </div>
                       </div>
                     </TopbarContainer>
@@ -326,8 +326,8 @@ export default function TopbarPage() {
           {/* 6. 모바일 데모 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">모바일 데모</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
-            <div class="h-[500px] w-[375px] overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
+            <div class="h-[500px] w-[375px] overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <iframe
                 src="#/mobile-layout-demo"
                 style={{ width: "100%", height: "100%", border: "none" }}

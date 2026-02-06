@@ -94,7 +94,7 @@ export function Home(props: RouteSectionProps) {
             </div>
             <div class="flex flex-col">
               <span class="font-semibold">홍길동</span>
-              <span class="text-sm text-slate-500 dark:text-slate-400">hong@example.com</span>
+              <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
             </div>
           </div>
         </SidebarUser>

@@ -38,7 +38,7 @@ export default function ListPage() {
           {/* Selectable List */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Selectable List</h2>
-            <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">Selected: {selectedItem() ?? "None"}</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Selected: {selectedItem() ?? "None"}</p>
             <div class="max-w-md">
               <List>
                 <For each={["Apple", "Banana", "Cherry", "Date"]}>
@@ -80,7 +80,7 @@ export default function ListPage() {
           {/* Nested List (Tree View) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Nested List (Tree View)</h2>
-            <p class="mb-2 text-sm text-slate-600 dark:text-slate-400">Use Arrow keys to navigate, Arrow Right/Left to expand/collapse</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Use Arrow keys to navigate, Arrow Right/Left to expand/collapse</p>
             <div class="max-w-md">
               <List>
                 <ListItem open={treeOpen1()} onOpenChange={setTreeOpen1}>
@@ -88,11 +88,11 @@ export default function ListPage() {
                   Documents
                   <ListItem.Children>
                     <ListItem onClick={() => alert("Report.pdf")}>
-                      <Icon icon={IconFile} class="mr-2 text-slate-500 dark:text-slate-400" />
+                      <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Report.pdf
                     </ListItem>
                     <ListItem onClick={() => alert("Notes.txt")}>
-                      <Icon icon={IconFile} class="mr-2 text-slate-500 dark:text-slate-400" />
+                      <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Notes.txt
                     </ListItem>
                   </ListItem.Children>
@@ -102,7 +102,7 @@ export default function ListPage() {
                   Photos
                   <ListItem.Children>
                     <ListItem onClick={() => alert("Vacation.jpg")}>
-                      <Icon icon={IconFile} class="mr-2 text-slate-500 dark:text-slate-400" />
+                      <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Vacation.jpg
                     </ListItem>
                     <ListItem>
@@ -110,11 +110,11 @@ export default function ListPage() {
                       2024
                       <ListItem.Children>
                         <ListItem onClick={() => alert("January.jpg")}>
-                          <Icon icon={IconFile} class="mr-2 text-slate-500 dark:text-slate-400" />
+                          <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                           January.jpg
                         </ListItem>
                         <ListItem onClick={() => alert("February.jpg")}>
-                          <Icon icon={IconFile} class="mr-2 text-slate-500 dark:text-slate-400" />
+                          <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                           February.jpg
                         </ListItem>
                       </ListItem.Children>

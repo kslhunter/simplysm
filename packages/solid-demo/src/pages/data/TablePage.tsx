@@ -9,8 +9,8 @@ const sampleData = [
   { id: 5, name: "최지영", email: "choi@example.com", role: "사용자", status: "대기" },
 ];
 
-const thClass = "border-l border-t border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold dark:border-slate-600 dark:bg-slate-700";
-const tdClass = "border-l border-t border-slate-300 px-3 py-2 dark:border-slate-600";
+const thClass = "border-l border-t border-base-300 bg-base-100 px-3 py-2 text-left font-semibold dark:border-base-600 dark:bg-base-700";
+const tdClass = "border-l border-t border-base-300 px-3 py-2 dark:border-base-600";
 
 export default function TablePage() {
   return (
@@ -36,7 +36,7 @@ export default function TablePage() {
               <tbody>
                 <For each={sampleData}>
                   {(row) => (
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <tr class="hover:bg-base-50 dark:hover:bg-base-800/50">
                       <td class={tdClass}>{row.id}</td>
                       <td class={tdClass}>{row.name}</td>
                       <td class={tdClass}>{row.email}</td>
@@ -58,10 +58,10 @@ export default function TablePage() {
           {/* Inset Table */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inset 테이블</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inset prop을 사용하면 오른쪽/아래 테두리가 제거됩니다.
             </p>
-            <div class="rounded border border-slate-300 dark:border-slate-600">
+            <div class="rounded border border-base-300 dark:border-base-600">
               <Table inset>
                 <thead>
                   <tr>
@@ -90,7 +90,7 @@ export default function TablePage() {
           {/* Inline Table */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inline 테이블</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inline prop을 사용하면 테이블 너비가 내용에 맞춰집니다.
             </p>
             <Table inline>
@@ -116,7 +116,7 @@ export default function TablePage() {
           {/* Combined Props */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inset + Inline</h2>
-            <div class="inline-block rounded border border-slate-300 dark:border-slate-600">
+            <div class="inline-block rounded border border-base-300 dark:border-base-600">
               <Table inset inline>
                 <thead>
                   <tr>

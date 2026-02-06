@@ -1,8 +1,8 @@
 import { createSignal } from "solid-js";
 import { FormTable, TextField, NumberField, Select, Topbar, TopbarContainer } from "@simplysm/solid";
 
-const thClass = "border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold dark:border-slate-600 dark:bg-slate-700";
-const tdClass = "border border-slate-300 px-3 py-2 dark:border-slate-600";
+const thClass = "border border-base-300 bg-base-100 px-3 py-2 text-left font-semibold dark:border-base-600 dark:bg-base-700";
+const tdClass = "border border-base-300 px-3 py-2 dark:border-base-600";
 
 export default function FormTablePage() {
   const [name, setName] = createSignal("");
@@ -20,7 +20,7 @@ export default function FormTablePage() {
           {/* Basic FormTable */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 FormTable</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormTable은 라벨-값 형태의 폼을 테이블 레이아웃으로 구성할 때 사용합니다.
             </p>
             <FormTable class="max-w-lg">
@@ -66,7 +66,7 @@ export default function FormTablePage() {
           {/* With Colspan */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Colspan 사용</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               colspan을 사용하여 복잡한 레이아웃을 구성할 수 있습니다.
             </p>
             <FormTable class="w-full max-w-2xl">
@@ -98,7 +98,7 @@ export default function FormTablePage() {
                   <th class={thClass}>내용</th>
                   <td class={tdClass} colspan="3">
                     <textarea
-                      class="w-full rounded border border-slate-300 p-2 dark:border-slate-600 dark:bg-slate-800"
+                      class="w-full rounded border border-base-300 p-2 dark:border-base-600 dark:bg-base-800"
                       rows="4"
                       placeholder="내용을 입력하세요"
                     />
@@ -111,7 +111,7 @@ export default function FormTablePage() {
           {/* Read-only Info */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">읽기 전용 정보</h2>
-            <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               입력 필드 없이 정보만 표시할 때도 FormTable을 사용할 수 있습니다.
             </p>
             <FormTable class="max-w-md">

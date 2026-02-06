@@ -28,9 +28,9 @@ export default function CollapsePage() {
                 {collapseOpen() ? "Close" : "Open"} Content
               </Button>
               <Collapse id="basic-collapse" open={collapseOpen()}>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                <div class="rounded-lg border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                   <p>This is the collapsible content.</p>
-                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">The content smoothly animates when toggling.</p>
+                  <p class="mt-2 text-sm text-base-600 dark:text-base-400">The content smoothly animates when toggling.</p>
                 </div>
               </Collapse>
             </div>
@@ -50,7 +50,7 @@ export default function CollapsePage() {
                   Section 1 {multiOpen1() ? "▲" : "▼"}
                 </Button>
                 <Collapse id="multi-collapse-1" open={multiOpen1()}>
-                  <div class="rounded-b-lg border border-t-0 border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                  <div class="rounded-b-lg border border-t-0 border-base-200 bg-white p-4 dark:border-base-700 dark:bg-base-800">
                     <p>Content of Section 1</p>
                   </div>
                 </Collapse>
@@ -65,7 +65,7 @@ export default function CollapsePage() {
                   Section 2 {multiOpen2() ? "▲" : "▼"}
                 </Button>
                 <Collapse id="multi-collapse-2" open={multiOpen2()}>
-                  <div class="rounded-b-lg border border-t-0 border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                  <div class="rounded-b-lg border border-t-0 border-base-200 bg-white p-4 dark:border-base-700 dark:bg-base-800">
                     <p>Content of Section 2</p>
                   </div>
                 </Collapse>
