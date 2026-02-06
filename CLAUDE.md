@@ -44,7 +44,7 @@ pnpm watch
 pnpm watch solid              # 특정 패키지만 watch
 
 # Dev 모드 (client: Vite dev server, server: 빌드)
-pnpm dev                      # solid-demo: http://localhost:40081/solid-demo/ (주소 출력됨)
+pnpm dev                      # solid-demo: 주소 출력됨 포트가 달라질 수 있음
 
 # NPM 배포
 pnpm publish                  # 빌드 후 배포

@@ -1,6 +1,7 @@
 import proxy from "@fastify/http-proxy";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
+import net from "net";
 
 //#region Types
 
@@ -73,6 +74,33 @@ process.on("SIGINT", () => {
 });
 
 /**
+ * 포트가 사용 가능한지 확인
+ */
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", () => resolve(false));
+    server.once("listening", () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port, "0.0.0.0");
+  });
+}
+
+/**
+ * 시작 포트부터 사용 가능한 포트를 찾아 반환
+ */
+async function findAvailablePort(startPort: number, maxRetries = 20): Promise<number> {
+  for (let i = 0; i < maxRetries; i++) {
+    const port = startPort + i;
+    if (await isPortAvailable(port)) {
+      return port;
+    }
+  }
+  return startPort;
+}
+
+/**
  * Server Runtime 시작
  * main.js를 import하고, Vite proxy를 설정한 후 listen
  */
@@ -88,6 +116,14 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
 
     // 서버 인스턴스 저장 (cleanup용)
     serverInstance = server;
+
+    // 사용 가능한 포트 탐색 (포트 충돌 시 자동 증가)
+    const originalPort = server.options.port;
+    const availablePort = await findAvailablePort(originalPort);
+    if (availablePort !== originalPort) {
+      logger.info(`포트 ${originalPort} 사용 중 → ${availablePort}로 변경`);
+      server.options.port = availablePort;
+    }
 
     // Vite proxy 설정 (clientPorts가 있는 경우만)
     for (const [name, port] of Object.entries(info.clientPorts)) {
