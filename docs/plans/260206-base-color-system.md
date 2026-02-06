@@ -88,7 +88,7 @@ base: {
 ### Task 4: field/styles.ts의 zinc → base 치환
 
 **Files:**
-- Modify: `packages/solid/src/components/form-control/field/styles.ts`
+- Modify: `packages/solid/src/components/form-control/field/Field.styles.ts`
 
 **Step 1: 전체 zinc 치환**
 
@@ -352,7 +352,7 @@ const rootClass = clsx`border border-base-300 bg-base-50 p-px dark:border-base-7
 ### Task 18: ListItem.styles.ts의 zinc → base 치환
 
 **Files:**
-- Modify: `packages/solid/src/components/data/list/ListItem.styles.ts`
+- Modify: `packages/solid/src/components/data/list/ListItem.Field.styles.ts`
 
 **Step 1: baseClass 치환**
 

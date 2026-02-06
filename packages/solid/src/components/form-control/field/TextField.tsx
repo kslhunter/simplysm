@@ -10,7 +10,7 @@ import {
   fieldDisabledClass,
   fieldReadonlyClass,
   fieldInputClass,
-} from "./styles";
+} from "./Field.styles";
 
 type TextFieldType = "text" | "password" | "email";
 

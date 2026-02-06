@@ -9,7 +9,7 @@ export * from "./components/form-control/field/NumberField";
 export * from "./components/form-control/field/DateField";
 export * from "./components/form-control/field/DateTimeField";
 export * from "./components/form-control/field/TimeField";
-export * from "./components/form-control/field/styles";
+export * from "./components/form-control/field/Field.styles";
 export * from "./components/form-control/color-picker/ColorPicker";
 
 // layout

@@ -11,7 +11,7 @@ import {
   fieldDisabledClass,
   fieldReadonlyClass,
   fieldInputClass,
-} from "./styles";
+} from "./Field.styles";
 
 type DateFieldType = "year" | "month" | "date";
 

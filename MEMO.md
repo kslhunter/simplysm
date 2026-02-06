@@ -1,1 +1,1 @@
-data-{{component}} 붙이기
+Field.styles.ts 같이 폴더 국한 파일명 쓰지 말것 

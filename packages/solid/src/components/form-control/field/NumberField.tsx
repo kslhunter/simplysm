@@ -11,7 +11,7 @@ import {
   fieldDisabledClass,
   fieldReadonlyClass,
   fieldInputClass,
-} from "./styles";
+} from "./Field.styles";
 
 // NumberField 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
