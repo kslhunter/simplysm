@@ -160,16 +160,14 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
             <Show when={currType() === "bar" && local.busy}>
               <div class={barIndicatorClass}>
                 <div
-                  class="absolute left-0 top-0 h-1 w-full origin-left"
+                  class={clsx("absolute left-0 top-0 h-1 w-full origin-left", "bg-primary-500 dark:bg-primary-400")}
                   style={{
-                    "background-color": "var(--tw-color-primary-500, #3b82f6)",
                     animation: "sd-busy-bar-before 2s infinite ease-in",
                   }}
                 />
                 <div
-                  class="absolute left-0 top-0 h-1 w-full origin-left"
+                  class={clsx("absolute left-0 top-0 h-1 w-full origin-left", "bg-white dark:bg-base-800")}
                   style={{
-                    "background-color": "white",
                     animation: "sd-busy-bar-after 2s infinite ease-out",
                   }}
                 />
