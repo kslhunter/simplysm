@@ -45,6 +45,8 @@ export * from "./components/display/Note";
 // disclosure
 export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
+export * from "./components/disclosure/Modal";
+export * from "./components/disclosure/ModalContext";
 
 // feedback
 export * from "./components/feedback/notification/NotificationContext";
