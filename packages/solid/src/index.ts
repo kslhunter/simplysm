@@ -34,6 +34,7 @@ export * from "./components/data/Table";
 export * from "./components/data/list/List";
 export * from "./components/data/list/ListContext";
 export * from "./components/data/list/ListItem";
+export * from "./components/data/Pagination";
 
 // display
 export * from "./components/display/Card";
