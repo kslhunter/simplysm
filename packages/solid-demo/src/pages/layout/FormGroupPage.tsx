@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
-import { FormGroup, TextField, NumberField, Select, Button, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Button, FormGroup, Icon, NumberField, Select, TextField, Topbar, TopbarContainer } from "@simplysm/solid";
+import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {
   const [name, setName] = createSignal("");
@@ -42,6 +43,12 @@ export default function FormGroupPage() {
               inline prop을 사용하면 필드들이 수평으로 배치됩니다.
             </p>
             <FormGroup inline>
+              <FormGroup.Item>
+                <Button theme="primary" variant="solid" class="gap-1">
+                  <Icon icon={IconSearch} />
+                  조회
+                </Button>
+              </FormGroup.Item>
               <FormGroup.Item label="국가">
                 <Select
                   value={country()}
@@ -54,10 +61,8 @@ export default function FormGroupPage() {
                   <Select.Item value="jp">일본</Select.Item>
                 </Select>
               </FormGroup.Item>
-              <FormGroup.Item>
-                <Button theme="primary" variant="solid">
-                  검색
-                </Button>
+              <FormGroup.Item label="검색어">
+                <TextField placeholder="검색어를 입력하세요" />
               </FormGroup.Item>
             </FormGroup>
           </section>

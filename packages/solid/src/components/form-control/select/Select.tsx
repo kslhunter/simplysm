@@ -59,7 +59,8 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "border-l border-base-300 px-2 dark:border-base-700",
+          "border border-base-300 px-1.5 dark:border-base-700",
+          "rounded-r",
           "font-bold text-primary-500",
           "hover:bg-base-100 dark:hover:bg-base-700",
         ),
@@ -380,7 +381,10 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           aria-disabled={local.disabled || undefined}
           aria-required={local.required || undefined}
           tabIndex={local.disabled ? -1 : 0}
-          class={getTriggerClassName()}
+          class={twMerge(
+            getTriggerClassName(),
+            slots().selectButton.length > 0 && "rounded-r-none border-r-0",
+          )}
           style={local.style}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
