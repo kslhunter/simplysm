@@ -10,6 +10,7 @@ import {
   themeCheckedClasses,
   checkBoxSizeClasses,
   checkBoxInsetClass,
+  checkBoxInlineClass,
   checkBoxDisabledClass,
 } from "./CheckBox.styles";
 
@@ -18,11 +19,12 @@ void ripple;
 
 export interface RadioProps {
   value?: boolean;
-  onChange?: (value: boolean) => void;
+  onValueChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckBoxSize;
   theme?: CheckBoxTheme;
   inset?: boolean;
+  inline?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -31,11 +33,12 @@ export interface RadioProps {
 export const Radio: ParentComponent<RadioProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
-    "onChange",
+    "onValueChange",
     "disabled",
     "size",
     "theme",
     "inset",
+    "inline",
     "class",
     "style",
     "children",
@@ -43,7 +46,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
 
   const [value, setValue] = createPropSignal({
     value: () => local.value ?? false,
-    onChange: () => local.onChange,
+    onChange: () => local.onValueChange,
   });
 
   const handleClick = () => {
@@ -63,6 +66,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
       checkBoxBaseClass,
       local.size && checkBoxSizeClasses[local.size],
       local.inset && checkBoxInsetClass,
+      local.inline && checkBoxInlineClass,
       local.disabled && checkBoxDisabledClass,
       local.class,
     );

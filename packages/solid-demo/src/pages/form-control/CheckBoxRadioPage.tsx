@@ -174,13 +174,13 @@ export default function CheckBoxRadioPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Radio (그룹)</h3>
                 <div class="flex flex-col items-start gap-3">
-                  <Radio value={selectedRadio() === "A"} onChange={() => setSelectedRadio("A")}>
+                  <Radio value={selectedRadio() === "A"} onValueChange={() => setSelectedRadio("A")}>
                     옵션 A
                   </Radio>
-                  <Radio value={selectedRadio() === "B"} onChange={() => setSelectedRadio("B")}>
+                  <Radio value={selectedRadio() === "B"} onValueChange={() => setSelectedRadio("B")}>
                     옵션 B
                   </Radio>
-                  <Radio value={selectedRadio() === "C"} onChange={() => setSelectedRadio("C")}>
+                  <Radio value={selectedRadio() === "C"} onValueChange={() => setSelectedRadio("C")}>
                     옵션 C
                   </Radio>
                   <p class="text-sm text-base-600 dark:text-base-400">

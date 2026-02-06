@@ -63,9 +63,9 @@ describe("Radio 컴포넌트", () => {
       expect(getByRole("radio").getAttribute("aria-checked")).toBe("true");
     });
 
-    it("onChange가 클릭 시 호출된다", () => {
+    it("onValueChange가 클릭 시 호출된다", () => {
       const handleChange = vi.fn();
-      const { getByRole } = render(() => <Radio value={false} onChange={handleChange} />);
+      const { getByRole } = render(() => <Radio value={false} onValueChange={handleChange} />);
 
       fireEvent.click(getByRole("radio"));
       expect(handleChange).toHaveBeenCalledWith(true);
@@ -73,7 +73,7 @@ describe("Radio 컴포넌트", () => {
 
     it("외부 상태 변경 시 업데이트된다", () => {
       const [value, setValue] = createSignal(false);
-      const { getByRole } = render(() => <Radio value={value()} onChange={setValue} />);
+      const { getByRole } = render(() => <Radio value={value()} onValueChange={setValue} />);
 
       expect(getByRole("radio").getAttribute("aria-checked")).toBe("false");
 
