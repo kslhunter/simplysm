@@ -1,5 +1,5 @@
 ---
-description: 코드 리뷰 보고서 생성 (수정 없이 분석만)
+description: 코드 리뷰 보고서 생성 (수정 없이 분석만) 하는 Orchestrator
 ---
 
 ## 사용법
