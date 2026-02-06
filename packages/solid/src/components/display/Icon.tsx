@@ -9,5 +9,5 @@ export interface IconProps extends Omit<TablerIconProps, "size"> {
 
 export const Icon: Component<IconProps> = (props) => {
   const [local, rest] = splitProps(props, ["icon", "size"]);
-  return <Dynamic component={local.icon} size={local.size ?? "1.25em"} {...rest} />;
+  return <Dynamic component={local.icon} data-icon size={local.size ?? "1.25em"} {...rest} />;
 };

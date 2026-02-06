@@ -82,7 +82,7 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
   const getContainerClassName = () => twMerge(containerClass, local.class);
 
   return (
-    <div {...rest} class={getContainerClassName()}>
+    <div {...rest} data-sidebar-user class={getContainerClassName()}>
       <button
         type="button"
         use:ripple={hasMenus()}

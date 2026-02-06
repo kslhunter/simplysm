@@ -63,7 +63,7 @@ export const Topbar: ParentComponent<TopbarProps> = (props) => {
   const getClassName = () => twMerge(baseClass, local.class);
 
   return (
-    <header {...rest} class={getClassName()}>
+    <header {...rest} data-topbar class={getClassName()}>
       <Show when={sidebarContext}>
         <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="사이드바 토글">
           <Icon icon={IconMenu2} size="1.5em" />

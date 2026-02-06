@@ -56,7 +56,7 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <>
       {/* 데스크탑 메뉴 (640px 이상에서만 표시) */}
-      <nav {...rest} class={twMerge("hidden sm:flex flex-row gap-1 items-center", local.class)}>
+      <nav {...rest} data-topbar-menu class={twMerge("hidden sm:flex flex-row gap-1 items-center", local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 

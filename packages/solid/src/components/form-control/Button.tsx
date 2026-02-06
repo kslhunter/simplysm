@@ -167,6 +167,7 @@ export const Button: ParentComponent<ButtonProps> = (props) => {
   return (
     <button
       {...rest}
+      data-button
       use:ripple={!local.disabled}
       type={local.type ?? "button"}
       class={getClassName()}

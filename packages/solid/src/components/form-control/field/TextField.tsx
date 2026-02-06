@@ -183,12 +183,12 @@ export const TextField: Component<TextFieldProps> = (props) => {
     <Show
       when={!isDisplayMode()}
       fallback={
-        <div {...rest} class={twMerge(getWrapperClass(), "sd-text-field")} style={local.style} title={local.title}>
+        <div {...rest} data-text-field class={twMerge(getWrapperClass(), "sd-text-field")} style={local.style} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
       }
     >
-      <div {...rest} class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-text-field class={getWrapperClass()} style={local.style}>
         <input
           type={local.type ?? "text"}
           class={fieldInputClass}

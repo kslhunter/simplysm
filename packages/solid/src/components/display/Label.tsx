@@ -33,7 +33,7 @@ export const Label: ParentComponent<LabelProps> = (props) => {
   };
 
   return (
-    <span class={getClassName()} {...rest}>
+    <span data-label class={getClassName()} {...rest}>
       {local.children}
     </span>
   );

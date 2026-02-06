@@ -83,6 +83,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
   return (
     <input
       {...rest}
+      data-color-picker
       type="color"
       class={getClassName()}
       style={local.style}

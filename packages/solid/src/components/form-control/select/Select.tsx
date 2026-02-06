@@ -371,7 +371,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     };
 
     return (
-      <div {...rest} class="inline-flex">
+      <div {...rest} data-select class="inline-flex">
         <div
           ref={triggerRef}
           use:ripple={!local.disabled}

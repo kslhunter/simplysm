@@ -22,7 +22,7 @@ export const FormTable: ParentComponent<FormTableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   return (
-    <table class={twMerge(baseClass, local.class)} {...rest}>
+    <table data-form-table class={twMerge(baseClass, local.class)} {...rest}>
       {local.children}
     </table>
   );

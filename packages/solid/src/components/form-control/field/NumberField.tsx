@@ -265,6 +265,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
       fallback={
         <div
           {...rest}
+          data-number-field
           class={twMerge(getWrapperClass(), "sd-number-field", "justify-end")}
           style={local.style}
           title={local.title}
@@ -273,7 +274,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
         </div>
       }
     >
-      <div {...rest} class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-number-field class={getWrapperClass()} style={local.style}>
         <input
           type="text"
           inputmode="numeric"

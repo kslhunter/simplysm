@@ -158,6 +158,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
       when={!isDisplayMode()}
       fallback={
         <div
+          data-time-field
           class={twMerge(getWrapperClass(), "sd-time-field")}
           style={local.style}
           title={local.title}
@@ -166,7 +167,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div {...rest} class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-time-field class={getWrapperClass()} style={local.style}>
         <input
           type="time"
           class={fieldInputClass}

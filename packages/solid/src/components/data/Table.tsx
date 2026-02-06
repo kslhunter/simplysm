@@ -41,7 +41,7 @@ export const Table: ParentComponent<TableProps> = (props) => {
     );
 
   return (
-    <table class={getClassName()} {...rest}>
+    <table data-table class={getClassName()} {...rest}>
       {local.children}
     </table>
   );

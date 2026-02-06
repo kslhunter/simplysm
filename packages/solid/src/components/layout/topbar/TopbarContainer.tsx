@@ -33,7 +33,7 @@ export const TopbarContainer: ParentComponent<TopbarContainerProps> = (props) =>
   const getClassName = () => twMerge(containerClass, local.class);
 
   return (
-    <div {...rest} class={getClassName()}>
+    <div {...rest} data-topbar-container class={getClassName()}>
       {local.children}
     </div>
   );

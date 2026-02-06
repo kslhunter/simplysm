@@ -208,12 +208,12 @@ export const DateField: Component<DateFieldProps> = (props) => {
     <Show
       when={!isDisplayMode()}
       fallback={
-        <div class={twMerge(getWrapperClass(), "sd-date-field")} style={local.style} title={local.title}>
+        <div data-date-field class={twMerge(getWrapperClass(), "sd-date-field")} style={local.style} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
       }
     >
-      <div {...rest} class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-date-field class={getWrapperClass()} style={local.style}>
         <input
           type={getInputType(fieldType())}
           class={fieldInputClass}

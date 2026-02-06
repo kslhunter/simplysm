@@ -94,6 +94,7 @@ export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) 
     <SidebarContext.Provider value={{ toggle, setToggle }}>
       <div
         {...rest}
+        data-sidebar-container
         class={getClassName()}
         style={mergeStyles(local.style, { "padding-left": getPaddingLeft() })}
       >

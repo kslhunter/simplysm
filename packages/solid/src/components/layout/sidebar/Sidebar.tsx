@@ -75,6 +75,7 @@ export const Sidebar: ParentComponent<SidebarProps> = (props) => {
   return (
     <aside
       {...rest}
+      data-sidebar
       class={getClassName()}
       style={mergeStyles(local.style, { transform: getTransform() })}
       aria-hidden={!isOpen()}

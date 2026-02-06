@@ -32,7 +32,7 @@ export const Note: ParentComponent<NoteProps> = (props) => {
   };
 
   return (
-    <div class={getClassName()} {...rest}>
+    <div data-note class={getClassName()} {...rest}>
       {local.children}
     </div>
   );

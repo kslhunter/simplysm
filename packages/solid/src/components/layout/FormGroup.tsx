@@ -48,7 +48,7 @@ const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
 
   return (
     <FormGroupContext.Provider value={{ get inline() { return local.inline ?? false; } }}>
-      <div class={getClassName()} {...rest}>
+      <div data-form-group class={getClassName()} {...rest}>
         {local.children}
       </div>
     </FormGroupContext.Provider>

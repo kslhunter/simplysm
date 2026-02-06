@@ -112,7 +112,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
 
   return (
     <MenuContext.Provider value={{ initialOpenItems }}>
-      <div {...rest} class={getClassName()}>
+      <div {...rest} data-sidebar-menu class={getClassName()}>
         <div class={headerClass}>MENU</div>
         <List inset>
           <For each={local.menus}>{(menu) => <MenuItem menu={menu} />}</For>

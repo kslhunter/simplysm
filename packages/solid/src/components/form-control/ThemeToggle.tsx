@@ -74,6 +74,7 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
   return (
     <button
       {...rest}
+      data-theme-toggle
       use:ripple
       type="button"
       class={getClassName()}

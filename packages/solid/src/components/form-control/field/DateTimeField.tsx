@@ -203,6 +203,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
       fallback={
         <div
           {...rest}
+          data-datetime-field
           class={twMerge(getWrapperClass(), "sd-datetime-field")}
           style={local.style}
           title={local.title}
@@ -211,7 +212,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div {...rest} class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-datetime-field class={getWrapperClass()} style={local.style}>
         <input
           type="datetime-local"
           class={fieldInputClass}

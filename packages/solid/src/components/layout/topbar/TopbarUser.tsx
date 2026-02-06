@@ -65,7 +65,7 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
   const getClassName = () => twMerge("flex items-center", local.class);
 
   return (
-    <div {...rest} class={getClassName()}>
+    <div {...rest} data-topbar-user class={getClassName()}>
       <Button
         ref={buttonRef}
         variant="ghost"

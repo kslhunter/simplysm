@@ -18,7 +18,7 @@ export const Card: ParentComponent<CardProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   return (
-    <div class={twMerge(baseClass, local.class)} {...rest}>
+    <div data-card class={twMerge(baseClass, local.class)} {...rest}>
       {local.children}
     </div>
   );
