@@ -34,6 +34,8 @@ export default {
         "sidebar": "100",
         "sidebar-backdrop": "99",
         "dropdown": "1000",
+        "modal-backdrop": "1999",
+        "modal": "2000",
       },
       animation: {
         "card-in": "card-in 0.3s ease-out forwards",
