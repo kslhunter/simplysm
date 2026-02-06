@@ -68,7 +68,10 @@ const menuItems: SidebarMenuItem[] = [
   {
     title: "Feedback",
     icon: IconBell,
-    children: [{ title: "Notification", href: "/home/feedback/notification" }],
+    children: [
+      { title: "Notification", href: "/home/feedback/notification" },
+      { title: "Busy", href: "/home/feedback/busy" },
+    ],
   },
   {
     title: "Service",

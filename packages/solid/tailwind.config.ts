@@ -33,6 +33,7 @@ export default {
       zIndex: {
         "sidebar": "100",
         "sidebar-backdrop": "99",
+        "busy": "500",
         "dropdown": "1000",
         "modal-backdrop": "1999",
         "modal": "2000",

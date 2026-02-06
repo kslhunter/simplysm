@@ -38,6 +38,7 @@ render(
           <Route path="/home/display/label" component={lazy(() => import("./pages/display/LabelPage"))} />
           <Route path="/home/display/note" component={lazy(() => import("./pages/display/NotePage"))} />
           <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
+          <Route path="/home/feedback/busy" component={lazy(() => import("./pages/feedback/BusyPage"))} />
           <Route path="/home/service/client" component={lazy(() => import("./pages/service/ServiceClientPage"))} />
           <Route path="/*" component={NotFoundPage} />
         </Route>
