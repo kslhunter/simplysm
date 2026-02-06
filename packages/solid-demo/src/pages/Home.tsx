@@ -24,6 +24,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "Select", href: "/home/form-control/select" },
       { title: "Field", href: "/home/form-control/field" },
       { title: "ThemeToggle", href: "/home/form-control/theme-toggle" },
+      { title: "CheckBox & Radio", href: "/home/form-control/checkbox-radio" },
     ],
   },
   {
