@@ -176,6 +176,20 @@ const themeClasses = {
 const className = twMerge(baseClass, themeClasses.primary.solid, props.class);
 ```
 
+**`clsx` 템플릿 필수 사용 규칙:**
+- 여러 Tailwind 클래스를 나열할 때 반드시 `clsx()`로 묶어야 한다
+- 의미 단위(레이아웃, 색상, 간격, dark 모드 등)별로 문자열을 분리하여 가독성을 높인다
+```typescript
+// 좋은 예: clsx로 의미 단위별 분리
+const cls = clsx(
+  "bg-primary-100 text-primary-900",
+  "dark:bg-primary-900/40 dark:text-primary-100",
+);
+
+// 나쁜 예: 긴 클래스를 하나의 문자열에 모두 나열
+const cls = "bg-primary-100 text-primary-900 dark:bg-primary-900/40 dark:text-primary-100";
+```
+
 **앱에서 preset으로 사용:**
 ```typescript
 // solid-demo/tailwind.config.ts

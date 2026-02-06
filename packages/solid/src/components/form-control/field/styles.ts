@@ -38,5 +38,5 @@ export const fieldInputClass = clsx(
   "min-w-0 flex-1",
   "bg-transparent",
   "outline-none",
-  "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
+  "placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
 );

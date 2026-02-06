@@ -25,10 +25,10 @@ void ripple;
 const triggerBaseClass = clsx(
   clsx`inline-flex items-center gap-2`,
   "min-w-40",
-  clsx`border border-zinc-300 dark:border-slate-700`,
+  clsx`border border-zinc-300 dark:border-zinc-700`,
   "rounded",
   clsx`bg-transparent`,
-  clsx`hover:bg-zinc-100 dark:hover:bg-slate-800`,
+  clsx`hover:bg-zinc-100 dark:hover:bg-zinc-700`,
   "cursor-pointer",
   "focus:outline-none",
   "focus-within:border-primary-400 dark:focus-within:border-primary-400",
@@ -59,9 +59,9 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "border-l border-zinc-300 px-2 dark:border-slate-700",
+          "border-l border-zinc-300 px-2 dark:border-zinc-700",
           "font-bold text-primary-500",
-          "hover:bg-zinc-100 dark:hover:bg-slate-800",
+          "hover:bg-zinc-100 dark:hover:bg-zinc-700",
         ),
         local.class,
       )}
@@ -360,7 +360,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
             <For each={current}>
-              {(v) => <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{renderValue(v)}</span>}
+              {(v) => <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-600">{renderValue(v)}</span>}
             </For>
           </div>
         );

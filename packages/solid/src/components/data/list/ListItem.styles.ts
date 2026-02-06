@@ -12,8 +12,8 @@ export const listItemBaseClass = clsx(
   "rounded-md",
   "transition-colors",
   "focus:outline-none",
-  "focus-visible:bg-zinc-200 dark:focus-visible:bg-slate-700",
-  "hover:bg-zinc-500/10 dark:hover:bg-slate-700",
+  "focus-visible:bg-zinc-200 dark:focus-visible:bg-zinc-700",
+  "hover:bg-zinc-500/10 dark:hover:bg-zinc-700",
 );
 
 // 선택된 상태
@@ -32,7 +32,7 @@ export const listItemDisabledClass = clsx`pointer-events-none cursor-auto opacit
 export const listItemReadonlyClass = clsx`cursor-auto select-text hover:bg-transparent`;
 
 // 들여쓰기 가이드 (중첩 아이템용)
-export const listItemIndentGuideClass = clsx`ml-4 w-2 border-l border-zinc-300 dark:border-slate-700`;
+export const listItemIndentGuideClass = clsx`ml-4 w-2 border-l border-zinc-300 dark:border-zinc-700`;
 
 // 선택 아이콘 색상
 export const getListItemSelectedIconClass = (selected: boolean) =>

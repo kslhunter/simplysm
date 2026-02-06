@@ -1,7 +1,7 @@
 import { For } from "solid-js";
 import { Label, type LabelTheme, Topbar, TopbarContainer } from "@simplysm/solid";
 
-const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "slate"];
+const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
 export default function LabelPage() {
   return (
@@ -58,7 +58,7 @@ export default function LabelPage() {
               <div class="flex items-center gap-2">
                 <span class="font-semibold">카테고리:</span>
                 <Label theme="primary">공지사항</Label>
-                <Label theme="slate">일반</Label>
+                <Label theme="base">일반</Label>
               </div>
             </div>
           </section>

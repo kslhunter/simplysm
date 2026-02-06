@@ -6,7 +6,7 @@ export interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 
 const baseClass = clsx(
   "block",
-  "bg-white dark:bg-slate-800",
+  "bg-white dark:bg-zinc-800",
   "rounded-lg",
   "shadow-md focus-within:shadow-lg hover:shadow-lg",
   "dark:shadow-black/20 dark:focus-within:shadow-black/30 dark:hover:shadow-black/30",

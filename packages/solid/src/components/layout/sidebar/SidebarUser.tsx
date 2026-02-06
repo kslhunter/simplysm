@@ -8,7 +8,7 @@ import { ListItem } from "../../data/list/ListItem";
 
 void ripple;
 
-const containerClass = clsx`m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-slate-700/50`;
+const containerClass = clsx`m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-zinc-800`;
 
 const headerClass = clsx(
   "flex",
@@ -17,8 +17,8 @@ const headerClass = clsx(
   "text-left",
   "cursor-pointer",
   "transition-colors",
-  "hover:bg-slate-500/10",
-  "dark:hover:bg-slate-600/50",
+  "hover:bg-zinc-100",
+  "dark:hover:bg-zinc-700",
 );
 
 const headerReadonlyClass = clsx`cursor-default hover:bg-transparent dark:hover:bg-transparent`;
@@ -77,7 +77,7 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-slate-50");
+  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-zinc-50");
 
   const getContainerClassName = () => twMerge(containerClass, local.class);
 

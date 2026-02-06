@@ -11,7 +11,7 @@ const baseClass = clsx(
   "w-full",
   "border-separate",
   "border-spacing-0",
-  "border-b border-r border-slate-300 dark:border-slate-600",
+  "border-b border-r border-zinc-300 dark:border-zinc-700",
 );
 
 const insetClass = clsx`border-b-0 border-r-0`;

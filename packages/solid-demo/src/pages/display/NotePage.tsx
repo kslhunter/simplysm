@@ -2,7 +2,7 @@ import { For } from "solid-js";
 import { Note, type NoteTheme, Topbar, TopbarContainer, Icon } from "@simplysm/solid";
 import { IconInfoCircle, IconCircleCheck, IconAlertTriangle, IconAlertCircle } from "@tabler/icons-solidjs";
 
-const themes: NoteTheme[] = ["primary", "info", "success", "warning", "danger", "slate"];
+const themes: NoteTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
 export default function NotePage() {
   return (

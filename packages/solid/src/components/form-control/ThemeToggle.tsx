@@ -16,7 +16,7 @@ const baseClass = clsx(
   "rounded",
   "transition-colors",
   "text-zinc-500 dark:text-zinc-400",
-  "hover:bg-slate-200 dark:hover:bg-slate-700",
+  "hover:bg-zinc-200 dark:hover:bg-zinc-700",
   "focus:outline-none",
   "focus-visible:ring-2",
 );

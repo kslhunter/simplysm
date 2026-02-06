@@ -111,18 +111,18 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   },
   base: {
     solid: clsx(
-      "bg-white dark:bg-slate-950",
-      "hover:bg-zinc-100 dark:hover:bg-slate-800",
+      "bg-white dark:bg-zinc-900",
+      "hover:bg-zinc-100 dark:hover:bg-zinc-700",
       "text-zinc-900 dark:text-zinc-100",
       "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
-      "hover:bg-zinc-100 dark:hover:bg-slate-700",
+      "hover:bg-zinc-100 dark:hover:bg-zinc-700",
       "text-zinc-600 dark:text-zinc-300",
-      "border border-zinc-300 dark:border-slate-700",
+      "border border-zinc-300 dark:border-zinc-700",
     ),
-    ghost: clsx("bg-transparent", "hover:bg-zinc-100 dark:hover:bg-slate-700", "text-zinc-600 dark:text-zinc-300"),
+    ghost: clsx("bg-transparent", "hover:bg-zinc-100 dark:hover:bg-zinc-700", "text-zinc-600 dark:text-zinc-300"),
   },
 };
 
