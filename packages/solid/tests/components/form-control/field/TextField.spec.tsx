@@ -107,7 +107,7 @@ describe("TextField 컴포넌트", () => {
     it("disabled 스타일이 적용된다", () => {
       const { container } = render(() => <TextField disabled value="Text" />);
       const div = container.querySelector("div.sd-text-field") as HTMLElement;
-      expect(div.classList.contains("bg-zinc-100")).toBe(true);
+      expect(div.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
@@ -193,7 +193,7 @@ describe("TextField 컴포넌트", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("border")).toBe(true);
-      expect(wrapper.classList.contains("border-zinc-300")).toBe(true);
+      expect(wrapper.classList.contains("border-base-300")).toBe(true);
     });
 
     it("focus 시 border 색상이 변경된다", () => {
@@ -205,8 +205,8 @@ describe("TextField 컴포넌트", () => {
     it("다크 모드 스타일이 적용된다", () => {
       const { container } = render(() => <TextField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-zinc-700")).toBe(true);
-      expect(wrapper.classList.contains("dark:bg-zinc-900")).toBe(true);
+      expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-base-900")).toBe(true);
     });
   });
 });

@@ -1,5 +1,4 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git commit:*), Bash(git log:*)
 description: git add . 후 커밋 생성
 ---
 

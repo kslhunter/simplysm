@@ -12,7 +12,7 @@ export interface FormGroupItemProps extends JSX.HTMLAttributes<HTMLDivElement> {
 
 const FormGroupContext = createContext<{ inline: boolean }>({ inline: false });
 
-const baseClass = clsx`flex flex-col gap-4`;
+const baseClass = clsx`inline-flex flex-col gap-2`;
 const inlineClass = clsx`inline-flex flex-row flex-wrap items-center gap-2`;
 
 const itemInlineClass = clsx`flex flex-row items-center`;
@@ -47,7 +47,7 @@ const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
   const getClassName = () => twMerge(local.inline ? inlineClass : baseClass, local.class);
 
   return (
-    <FormGroupContext.Provider value={{ inline: local.inline ?? false }}>
+    <FormGroupContext.Provider value={{ get inline() { return local.inline ?? false; } }}>
       <div class={getClassName()} {...rest}>
         {local.children}
       </div>

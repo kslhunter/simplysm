@@ -1,5 +1,4 @@
 ---
-allowed-tools: Bash(pnpm typecheck*), Bash(pnpm lint*), Bash(pnpm vitest*), Read, Edit, Write, Glob, Grep
 description: 타입체크, 린트, 테스트를 통해 코드 검증
 argument-hint: [path]
 ---

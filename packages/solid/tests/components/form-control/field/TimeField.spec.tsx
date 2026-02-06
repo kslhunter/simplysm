@@ -153,7 +153,7 @@ describe("TimeField 컴포넌트", () => {
         <TimeField disabled value={new Time(10, 30, 0)} />
       ));
       const div = container.querySelector("div.sd-time-field") as HTMLElement;
-      expect(div.classList.contains("bg-zinc-100")).toBe(true);
+      expect(div.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
@@ -212,13 +212,13 @@ describe("TimeField 컴포넌트", () => {
     it("다크 모드 border 스타일이 적용된다", () => {
       const { container } = render(() => <TimeField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-zinc-700")).toBe(true);
+      expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
     });
 
     it("다크 모드 background 스타일이 적용된다", () => {
       const { container } = render(() => <TimeField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-zinc-900")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-base-900")).toBe(true);
     });
   });
 

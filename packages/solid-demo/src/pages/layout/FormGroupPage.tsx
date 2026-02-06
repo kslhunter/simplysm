@@ -3,10 +3,9 @@ import { Button, FormGroup, Icon, NumberField, Select, TextField, Topbar, Topbar
 import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {
-  const [name, setName] = createSignal("");
-  const [email, setEmail] = createSignal("");
-  const [age, setAge] = createSignal<number>();
-  const [country, setCountry] = createSignal<string>();
+  // Controlled 예제용 시그널
+  const [controlledName, setControlledName] = createSignal("");
+  const [controlledEmail, setControlledEmail] = createSignal("");
 
   return (
     <TopbarContainer>
@@ -24,13 +23,13 @@ export default function FormGroupPage() {
             <div class="max-w-md">
               <FormGroup>
                 <FormGroup.Item label="이름">
-                  <TextField value={name()} onValueChange={setName} placeholder="이름을 입력하세요" />
+                  <TextField placeholder="이름을 입력하세요" />
                 </FormGroup.Item>
                 <FormGroup.Item label="이메일">
-                  <TextField value={email()} onValueChange={setEmail} placeholder="이메일을 입력하세요" />
+                  <TextField placeholder="이메일을 입력하세요" />
                 </FormGroup.Item>
                 <FormGroup.Item label="나이">
-                  <NumberField value={age()} onValueChange={setAge} placeholder="나이를 입력하세요" />
+                  <NumberField placeholder="나이를 입력하세요" />
                 </FormGroup.Item>
               </FormGroup>
             </div>
@@ -51,10 +50,8 @@ export default function FormGroupPage() {
               </FormGroup.Item>
               <FormGroup.Item label="국가">
                 <Select
-                  value={country()}
-                  onValueChange={setCountry}
                   placeholder="선택하세요"
-                  renderValue={(v) => <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>}
+                  renderValue={(v: string) => <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>}
                 >
                   <Select.Item value="kr">한국</Select.Item>
                   <Select.Item value="us">미국</Select.Item>
@@ -142,6 +139,54 @@ export default function FormGroupPage() {
                   <p class="mt-1 text-sm text-base-500">선택적으로 입력할 수 있습니다.</p>
                 </FormGroup.Item>
               </FormGroup>
+            </div>
+          </section>
+
+          {/* Controlled */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <div class="max-w-md space-y-4">
+              <FormGroup>
+                <FormGroup.Item label="이름">
+                  <TextField
+                    value={controlledName()}
+                    onValueChange={setControlledName}
+                    placeholder="이름을 입력하세요"
+                  />
+                </FormGroup.Item>
+                <FormGroup.Item label="이메일">
+                  <TextField
+                    value={controlledEmail()}
+                    onValueChange={setControlledEmail}
+                    placeholder="이메일을 입력하세요"
+                  />
+                </FormGroup.Item>
+              </FormGroup>
+              <p class="text-sm text-base-600 dark:text-base-400">
+                이름: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledName() || "(없음)"}</code>
+                {" / "}
+                이메일: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledEmail() || "(없음)"}</code>
+              </p>
+              <div class="flex gap-2">
+                <button
+                  class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
+                  onClick={() => {
+                    setControlledName("홍길동");
+                    setControlledEmail("hong@example.com");
+                  }}
+                >
+                  값 채우기
+                </button>
+                <button
+                  class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
+                  onClick={() => {
+                    setControlledName("");
+                    setControlledEmail("");
+                  }}
+                >
+                  초기화
+                </button>
+              </div>
             </div>
           </section>
         </div>

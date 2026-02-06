@@ -1,5 +1,4 @@
 ---
-allowed-tools: Read, Glob, Grep, Task
 description: 코드 리뷰 보고서 생성 (수정 없이 분석만)
 ---
 

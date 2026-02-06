@@ -191,7 +191,7 @@ describe("DateTimeField 컴포넌트", () => {
         <DateTimeField disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
       const div = container.querySelector("div.sd-datetime-field") as HTMLElement;
-      expect(div.classList.contains("bg-zinc-100")).toBe(true);
+      expect(div.classList.contains("bg-base-100")).toBe(true);
     });
   });
 
@@ -250,13 +250,13 @@ describe("DateTimeField 컴포넌트", () => {
     it("다크 모드 border 스타일이 적용된다", () => {
       const { container } = render(() => <DateTimeField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:border-zinc-700")).toBe(true);
+      expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
     });
 
     it("다크 모드 background 스타일이 적용된다", () => {
       const { container } = render(() => <DateTimeField />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-zinc-900")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-base-900")).toBe(true);
     });
   });
 

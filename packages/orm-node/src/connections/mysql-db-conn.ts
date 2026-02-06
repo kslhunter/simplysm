@@ -196,9 +196,22 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       // 파일 쓰기
       await fs.promises.writeFile(tmpFile, csvContent, "utf8");
 
+      // UUID/binary 컬럼은 임시 변수로 읽고 SET 절에서 UNHEX() 변환
+      const binaryColNames = colNames.filter((c) => {
+        const dt = columnMetas[c].dataType.type;
+        return dt === "uuid" || dt === "binary";
+      });
+      const normalCols = colNames.map((c) => {
+        if (binaryColNames.includes(c)) return `@_${c}`;
+        return `\`${c}\``;
+      });
+      const setClauses = binaryColNames.map((c) => `\`${c}\` = UNHEX(@_${c})`);
+
       // LOAD DATA LOCAL INFILE 실행
-      const wrappedCols = colNames.map((c) => `\`${c}\``).join(", ");
-      const query = `LOAD DATA LOCAL INFILE ? INTO TABLE ${tableName} FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' (${wrappedCols})`;
+      let query = `LOAD DATA LOCAL INFILE ? INTO TABLE ${tableName} FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' (${normalCols.join(", ")})`;
+      if (setClauses.length > 0) {
+        query += ` SET ${setClauses.join(", ")}`;
+      }
 
       await conn.query({ sql: query, timeout: this._timeout, values: [tmpFile] });
     } finally {

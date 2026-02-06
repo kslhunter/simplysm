@@ -318,8 +318,18 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
       }
 
-      // 레코드를 row 배열로 변환 (컬럼 순서 유지)
-      const rows = records.map((record) => colNames.map((colName) => record[colName]));
+      // 레코드를 row 배열로 변환 (컬럼 순서 유지, 값 변환 포함)
+      const rows = records.map((record) =>
+        colNames.map((colName) => {
+          const val = record[colName];
+          if (val instanceof Uuid) return val.toString();
+          if (val instanceof Uint8Array) return Buffer.from(val);
+          if (val instanceof DateTime) return val.date;
+          if (val instanceof DateOnly) return val.date;
+          if (val instanceof Time) return val.toFormatString("HH:mm:ss");
+          return val;
+        }),
+      );
 
       this._conn!.execBulkLoad(bulkLoad, rows);
     });

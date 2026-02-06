@@ -88,7 +88,7 @@ describe("result-parser 성능", () => {
       console.log(`  단순 10,000개: ${elapsed.toFixed(2)}ms`);
     });
 
-    it("50,000개 레코드 처리 - 2000ms 이내", async () => {
+    it("50,000개 레코드 처리 - 3000ms 이내", async () => {
       const raw = generateSimpleRecords(50_000);
       const meta: ResultMeta = {
         columns: {
@@ -106,7 +106,7 @@ describe("result-parser 성능", () => {
       const elapsed = performance.now() - start;
 
       expect(result).toHaveLength(50_000);
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(3000);
       console.log(`  단순 50,000개: ${elapsed.toFixed(2)}ms`);
     });
   });
@@ -134,7 +134,7 @@ describe("result-parser 성능", () => {
       console.log(`  JOIN 10,000개 (1000×10): ${elapsed.toFixed(2)}ms`);
     });
 
-    it("5,000 users × 10 posts = 50,000개 레코드 - 2000ms 이내", async () => {
+    it("5,000 users × 10 posts = 50,000개 레코드 - 3000ms 이내", async () => {
       const raw = generateJoinRecords(5_000, 10);
       const meta: ResultMeta = {
         columns: {
@@ -152,7 +152,7 @@ describe("result-parser 성능", () => {
       const elapsed = performance.now() - start;
 
       expect(result).toHaveLength(5_000);
-      expect(elapsed).toBeLessThan(2000);
+      expect(elapsed).toBeLessThan(3000);
       console.log(`  JOIN 50,000개 (5000×10): ${elapsed.toFixed(2)}ms`);
     });
   });

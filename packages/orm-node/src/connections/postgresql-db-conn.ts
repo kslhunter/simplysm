@@ -218,7 +218,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
         return (value as Uuid).toString();
 
       case "binary":
-        return "\\\\x" + bytesToHex(value as Uint8Array); // PostgreSQL bytea hex 형식
+        return '"\\x' + bytesToHex(value as Uint8Array) + '"'; // PostgreSQL bytea hex 형식 (CSV 쌍따옴표로 감쌈)
 
       default:
         throw new SdError(`지원하지 않는 DataType: ${JSON.stringify(dataType)}`);

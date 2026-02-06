@@ -17,7 +17,7 @@ const baseClass = clsx(
   "text-center",
   "cursor-pointer",
   "transition-colors",
-  "rounded-md",
+  "rounded",
   "focus:outline-none",
   "focus-visible:ring-2",
 );

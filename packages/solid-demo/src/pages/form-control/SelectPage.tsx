@@ -43,14 +43,9 @@ const categories: Category[] = [
 ];
 
 export default function SelectPage() {
-  // 기본 단일 선택
-  const [selected, setSelected] = createSignal<Fruit | undefined>();
-
-  // 다중 선택
-  const [multiSelected, setMultiSelected] = createSignal<Fruit[]>([]);
-
-  // 계층 구조
-  const [categorySelected, setCategorySelected] = createSignal<Category | undefined>();
+  // Controlled 예제용 시그널
+  const [controlledSelected, setControlledSelected] = createSignal<Fruit | undefined>();
+  const [controlledMultiSelected, setControlledMultiSelected] = createSignal<Fruit[]>([]);
 
   return (
     <TopbarContainer>
@@ -62,15 +57,10 @@ export default function SelectPage() {
           {/* 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
-              선택: {selected()?.name ?? "없음"}
-            </p>
             <div class="max-w-xs">
               <Select
-                value={selected()}
-                onValueChange={setSelected}
                 placeholder="과일을 선택하세요"
-                renderValue={(v) => <>{v.emoji} {v.name}</>}
+                renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
               >
                 <For each={fruits}>
                   {(fruit) => (
@@ -86,16 +76,11 @@ export default function SelectPage() {
           {/* 다중 선택 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
-              선택: {multiSelected().map((f) => f.name).join(", ") || "없음"}
-            </p>
             <div class="max-w-xs">
               <Select
                 multiple
-                value={multiSelected()}
-                onValueChange={(v) => setMultiSelected(v as Fruit[])}
                 placeholder="여러 개 선택 가능"
-                renderValue={(v) => <>{v.emoji} {v.name}</>}
+                renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
               >
                 <For each={fruits}>
                   {(fruit) => (
@@ -134,7 +119,7 @@ export default function SelectPage() {
                 renderValue={(v: string) => <>{v}</>}
               >
                 <Select.Header>
-                  <div class="border-b border-zinc-200 p-2 text-sm font-semibold text-zinc-500 dark:border-zinc-700">
+                  <div class="border-b border-base-200 p-2 text-sm font-semibold text-base-500 dark:border-base-700">
                     검색 결과
                   </div>
                 </Select.Header>
@@ -148,15 +133,10 @@ export default function SelectPage() {
           {/* 계층 구조 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
-              선택: {categorySelected()?.name ?? "없음"}
-            </p>
             <div class="max-w-xs">
               <Select
-                value={categorySelected()}
-                onValueChange={setCategorySelected}
                 placeholder="카테고리 선택"
-                renderValue={(v) => <>{v.name}</>}
+                renderValue={(v: Category) => <>{v.name}</>}
               >
                 <For each={categories}>
                   {(category) => (
@@ -213,6 +193,81 @@ export default function SelectPage() {
                   <Select.Item value="A">옵션 A</Select.Item>
                   <Select.Item value="B">옵션 B</Select.Item>
                 </Select>
+              </div>
+            </div>
+          </section>
+
+          {/* Controlled */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <div class="space-y-6">
+              {/* 단일 선택 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">단일 선택</h3>
+                <div class="flex max-w-xs flex-col gap-3">
+                  <Select
+                    value={controlledSelected()}
+                    onValueChange={setControlledSelected}
+                    placeholder="과일을 선택하세요"
+                    renderValue={(v) => <>{v.emoji} {v.name}</>}
+                  >
+                    <For each={fruits}>
+                      {(fruit) => (
+                        <Select.Item value={fruit}>
+                          {fruit.emoji} {fruit.name}
+                        </Select.Item>
+                      )}
+                    </For>
+                  </Select>
+                  <p class="text-sm text-base-600 dark:text-base-400">
+                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSelected()?.name ?? "(없음)"}</code>
+                  </p>
+                  <button
+                    class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
+                    onClick={() => setControlledSelected(fruits[2])}
+                  >
+                    포도 선택
+                  </button>
+                </div>
+              </div>
+
+              {/* 다중 선택 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">다중 선택</h3>
+                <div class="flex max-w-xs flex-col gap-3">
+                  <Select
+                    multiple
+                    value={controlledMultiSelected()}
+                    onValueChange={(v) => setControlledMultiSelected(v as Fruit[])}
+                    placeholder="여러 개 선택 가능"
+                    renderValue={(v) => <>{v.emoji} {v.name}</>}
+                  >
+                    <For each={fruits}>
+                      {(fruit) => (
+                        <Select.Item value={fruit}>
+                          {fruit.emoji} {fruit.name}
+                        </Select.Item>
+                      )}
+                    </For>
+                  </Select>
+                  <p class="text-sm text-base-600 dark:text-base-400">
+                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledMultiSelected().map((f) => f.name).join(", ") || "(없음)"}</code>
+                  </p>
+                  <div class="flex gap-2">
+                    <button
+                      class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
+                      onClick={() => setControlledMultiSelected([fruits[0], fruits[1]])}
+                    >
+                      사과+바나나
+                    </button>
+                    <button
+                      class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
+                      onClick={() => setControlledMultiSelected([])}
+                    >
+                      초기화
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

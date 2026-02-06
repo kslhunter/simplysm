@@ -5,8 +5,17 @@ import { twMerge } from "tailwind-merge";
 export interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 
 const baseClass = clsx(
-  "border-separate",
-  "border-spacing-0",
+  "border-separate border-spacing-0 border-0",
+  // 모든 셀: 수직 중앙, 오른쪽/아래 패딩
+  "[&_th]:align-middle [&_td]:align-middle",
+  "[&_th]:pr-1.5 [&_td]:pr-1.5",
+  "[&_th]:pb-1 [&_td]:pb-1",
+  // 행의 마지막 셀: 오른쪽 패딩 제거
+  "[&_tr>*:last-child]:pr-0",
+  // 마지막 행 셀: 아래 패딩 제거
+  "[&_tr:last-child>*]:pb-0",
+  // th: 오른쪽 정렬, 콘텐츠 너비, 줄바꿈 방지
+  "[&_th]:text-right [&_th]:w-0 [&_th]:whitespace-nowrap [&_th]:pl-1",
 );
 
 export const FormTable: ParentComponent<FormTableProps> = (props) => {

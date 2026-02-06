@@ -285,26 +285,21 @@ export default function FieldPage() {
             </div>
           </section>
 
-          {/* Controlled 예제 */}
-          <section class="rounded-lg border border-primary-200 bg-primary-50 p-6 dark:border-primary-800 dark:bg-primary-950">
-            <h2 class="mb-6 text-2xl font-bold text-primary-700 dark:text-primary-300">
-              Controlled 예제
-            </h2>
-            <p class="mb-6 text-sm text-primary-600 dark:text-primary-400">
-              value와 onValueChange를 함께 사용하면 외부 상태로 값을 제어할 수 있습니다.
-            </p>
+          {/* Controlled */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">Controlled</h2>
             <div class="space-y-6">
               {/* TextField Controlled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">TextField (Controlled)</h3>
+                <h3 class="mb-3 text-lg font-semibold">TextField</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <TextField
                     value={controlledText()}
                     onValueChange={setControlledText}
                     placeholder="값을 입력하세요"
                   />
-                  <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                    현재 값: <code class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{controlledText() ?? "(없음)"}</code>
+                  <p class="text-sm text-base-600 dark:text-base-400">
+                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledText() ?? "(없음)"}</code>
                   </p>
                   <button
                     class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
@@ -317,15 +312,15 @@ export default function FieldPage() {
 
               {/* NumberField Controlled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">NumberField (Controlled)</h3>
+                <h3 class="mb-3 text-lg font-semibold">NumberField</h3>
                 <div class="flex max-w-md flex-col gap-3">
                   <NumberField
                     value={controlledNumber()}
                     onValueChange={setControlledNumber}
                     placeholder="숫자를 입력하세요"
                   />
-                  <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                    현재 값: <code class="rounded bg-zinc-200 px-1 dark:bg-zinc-700">{controlledNumber() ?? "(없음)"}</code>
+                  <p class="text-sm text-base-600 dark:text-base-400">
+                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledNumber() ?? "(없음)"}</code>
                   </p>
                   <div class="flex gap-2">
                     <button
@@ -341,7 +336,7 @@ export default function FieldPage() {
                       -100
                     </button>
                     <button
-                      class="w-fit rounded bg-zinc-500 px-3 py-1 text-sm text-white hover:bg-zinc-600"
+                      class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
                       onClick={() => setControlledNumber(undefined)}
                     >
                       초기화

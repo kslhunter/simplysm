@@ -180,7 +180,7 @@ describe("NumberField", () => {
       const { container } = render(() => <NumberField value={100} disabled />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("bg-zinc-100");
+      expect(wrapper.className).toContain("bg-base-100");
     });
   });
 
