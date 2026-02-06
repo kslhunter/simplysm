@@ -21,7 +21,7 @@ const themeClasses: Record<LabelTheme, string> = {
   success: "bg-success-500 dark:bg-success-500",
   warning: "bg-warning-500 dark:bg-warning-500",
   danger: "bg-danger-500 dark:bg-danger-500",
-  base: "bg-zinc-600 dark:bg-zinc-600",
+  base: "bg-base-600 dark:bg-base-600",
 };
 
 export const Label: ParentComponent<LabelProps> = (props) => {

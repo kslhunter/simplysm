@@ -5,7 +5,7 @@ import { ListContext, useListContext } from "./ListContext";
 
 const baseClass = clsx`flex flex-col rounded-md`;
 
-const rootClass = clsx`border border-zinc-300 bg-zinc-50 p-px dark:border-zinc-700 dark:bg-zinc-900`;
+const rootClass = clsx`border border-base-300 bg-base-50 p-px dark:border-base-700 dark:bg-base-900`;
 
 const nestedClass = clsx`rounded-none py-1`;
 

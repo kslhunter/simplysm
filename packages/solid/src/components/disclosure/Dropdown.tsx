@@ -395,8 +395,8 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
             clsx(
               "fixed", // 기본 position: fixed로 설정하여 offsetWidth 측정 정확하게
               "z-dropdown",
-              "bg-white dark:bg-zinc-800",
-              "border border-zinc-200 dark:border-zinc-700",
+              "bg-white dark:bg-base-800",
+              "border border-base-200 dark:border-base-700",
               "shadow-lg dark:shadow-black/30",
               "rounded-md",
               "overflow-y-auto",

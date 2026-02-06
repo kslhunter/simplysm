@@ -25,16 +25,16 @@ void ripple;
 const triggerBaseClass = clsx(
   clsx`inline-flex items-center gap-2`,
   "min-w-40",
-  clsx`border border-zinc-300 dark:border-zinc-700`,
+  clsx`border border-base-300 dark:border-base-700`,
   "rounded",
   clsx`bg-transparent`,
-  clsx`hover:bg-zinc-100 dark:hover:bg-zinc-700`,
+  clsx`hover:bg-base-100 dark:hover:bg-base-700`,
   "cursor-pointer",
   "focus:outline-none",
   "focus-within:border-primary-400 dark:focus-within:border-primary-400",
 );
 
-const triggerDisabledClass = clsx`cursor-default bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500`;
+const triggerDisabledClass = clsx`cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500`;
 
 const triggerInsetClass = clsx`rounded-none border-none bg-transparent`;
 
@@ -59,9 +59,9 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "border-l border-zinc-300 px-2 dark:border-zinc-700",
+          "border-l border-base-300 px-2 dark:border-base-700",
           "font-bold text-primary-500",
-          "hover:bg-zinc-100 dark:hover:bg-zinc-700",
+          "hover:bg-base-100 dark:hover:bg-base-700",
         ),
         local.class,
       )}
@@ -352,7 +352,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       const current = getValue();
 
       if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-        return <span class="text-zinc-400 dark:text-zinc-500">{local.placeholder ?? ""}</span>;
+        return <span class="text-base-400 dark:text-base-500">{local.placeholder ?? ""}</span>;
       }
 
       if (local.multiple && Array.isArray(current)) {
@@ -360,7 +360,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
             <For each={current}>
-              {(v) => <span class="rounded bg-zinc-200 px-1 dark:bg-zinc-600">{renderValue(v)}</span>}
+              {(v) => <span class="rounded bg-base-200 px-1 dark:bg-base-600">{renderValue(v)}</span>}
             </For>
           </div>
         );

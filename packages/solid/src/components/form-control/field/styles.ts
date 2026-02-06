@@ -5,10 +5,10 @@ export type FieldSize = "sm" | "lg";
 // 기본 wrapper 스타일
 export const fieldBaseClass = clsx(
   "inline-flex items-center",
-  "bg-white dark:bg-zinc-900",
-  "text-zinc-900 dark:text-zinc-100",
+  "bg-white dark:bg-base-900",
+  "text-base-900 dark:text-base-100",
   "border",
-  "border-zinc-300 dark:border-zinc-700",
+  "border-base-300 dark:border-base-700",
   "px-2 py-1",
   "rounded",
   "focus-within:border-blue-500",
@@ -28,15 +28,15 @@ export const fieldErrorClass = clsx`border-red-500`;
 export const fieldInsetClass = clsx`rounded-none border-none bg-transparent p-0`;
 
 // disabled 스타일
-export const fieldDisabledClass = clsx`bg-zinc-100 text-zinc-500 dark:bg-zinc-800`;
+export const fieldDisabledClass = clsx`bg-base-100 text-base-500 dark:bg-base-800`;
 
 // readonly 스타일 (일반 텍스트처럼 보이도록)
-export const fieldReadonlyClass = clsx`bg-zinc-100 dark:bg-zinc-800`;
+export const fieldReadonlyClass = clsx`bg-base-100 dark:bg-base-800`;
 
 // input 스타일
 export const fieldInputClass = clsx(
   "min-w-0 flex-1",
   "bg-transparent",
   "outline-none",
-  "placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+  "placeholder:text-base-400 dark:placeholder:text-base-500",
 );

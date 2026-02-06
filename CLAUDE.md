@@ -139,6 +139,7 @@ colors: {
   success: colors.lime,
   warning: colors.amber,
   danger: colors.red,
+  base: colors.zinc,       // 중립 회색 (배경, 테두리, 보조 텍스트 등)
 }
 
 // 폼 필드 높이
@@ -297,6 +298,7 @@ Playwright MCP 도구로 스크린샷 등 파일을 저장할 때는 `.playwrigh
 - SolidJS 스타일에서 `em` 단위 사용 금지 → `rem` 단위로 통일
 - 함수명에 `Async` 접미사 사용 금지 → 동기 버전에만 `Sync` 접미사 사용
 - 비용이 비싼 계산을 여러 곳에서 사용할 때 `createMemo` 미사용 → 시그널 변경 시 중복 계산 발생
+- Tailwind에서 `zinc-*` 직접 사용 금지 → `base-*` 사용 (tailwind.config.ts에서 `base: colors.zinc`로 매핑됨)
 
 ### 검증 절차
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증

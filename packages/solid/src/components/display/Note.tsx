@@ -20,7 +20,7 @@ const themeClasses: Record<NoteTheme, string> = {
   success: clsx("bg-success-100 text-success-900", "dark:bg-success-900/40 dark:text-success-100"),
   warning: clsx("bg-warning-100 text-warning-900", "dark:bg-warning-900/40 dark:text-warning-100"),
   danger: clsx("bg-danger-100 text-danger-900", "dark:bg-danger-900/40 dark:text-danger-100"),
-  base: clsx("bg-zinc-100 text-zinc-900", "dark:bg-zinc-800 dark:text-zinc-100"),
+  base: clsx("bg-base-100 text-base-900", "dark:bg-base-800 dark:text-base-100"),
 };
 
 export const Note: ParentComponent<NoteProps> = (props) => {

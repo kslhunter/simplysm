@@ -20,6 +20,7 @@ export default {
         success: colors.emerald,
         warning: colors.amber,
         danger: colors.red,
+        base: colors.zinc,
       },
       height: {
         field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
