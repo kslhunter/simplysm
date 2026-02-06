@@ -46,7 +46,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
           type={type()}
           message={message()}
           progressPercent={progress()}
-          class="fixed overflow-hidden"
+          class="fixed left-0 top-0 h-screen w-screen overflow-hidden"
           style={{ "pointer-events": busyCount() > 0 ? "auto" : "none" }}
         />
       </Portal>

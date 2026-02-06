@@ -31,13 +31,14 @@ const baseClass = clsx(
 const screenBaseClass = clsx(
   "absolute bottom-0 left-0 right-0 top-0",
   "z-busy",
+  "bg-white/70 dark:bg-base-900/70",
   "transition-opacity duration-150",
 );
 
 const spinnerClass = clsx(
   "size-8",
-  "border-[6px] border-white border-b-primary-500",
-  "dark:border-base-800 dark:border-b-primary-400",
+  "border-[6px] border-base-200 border-b-primary-500",
+  "dark:border-base-700 dark:border-b-primary-400",
   "rounded-full",
   "animate-spin",
   "shadow-md",
@@ -47,7 +48,7 @@ const spinnerClass = clsx(
 const messageClass = clsx(
   "w-full",
   "text-center font-bold",
-  "text-white dark:text-base-200",
+  "text-base-700 dark:text-base-200",
 );
 
 const progressTrackClass = clsx(
