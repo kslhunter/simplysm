@@ -16,8 +16,8 @@ export default {
     extend: {
       colors: {
         primary: colors.blue,
-        info: colors.cyan,
-        success: colors.emerald,
+        info: colors.sky,
+        success: colors.green,
         warning: colors.amber,
         danger: colors.red,
         base: colors.zinc,

@@ -35,9 +35,12 @@ pnpm typecheck packages/core-common
 pnpm build
 pnpm build solid              # 특정 패키지만 빌드
 
-# Watch 모드 (빌드 + .d.ts 생성, client 타겟은 Vite dev server)
+# Watch 모드 (라이브러리 빌드 + .d.ts 생성, 변경 감지)
 pnpm watch
-pnpm watch solid solid-demo   # solid-demo: http://localhost:40080
+pnpm watch solid              # 특정 패키지만 watch
+
+# Dev 모드 (client: Vite dev server, server: 빌드)
+pnpm dev                      # solid-demo: http://localhost:40081/solid-demo/ (주소 출력됨)
 
 # NPM 배포
 pnpm publish                  # 빌드 후 배포
@@ -58,22 +61,22 @@ pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 ## 패키지 구조
 
 ### 라이브러리 패키지 (`packages/`)
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| `core-common` | neutral | 공통 유틸리티, 타입, 에러 클래스 |
-| `core-browser` | browser | 브라우저 전용 확장 |
-| `core-node` | node | Node.js 유틸리티 (파일시스템, 워커) |
-| `cli` | node | 빌드/린트/타입체크 CLI 도구 |
-| `eslint-plugin` | node | ESLint 커스텀 규칙 |
-| `orm-common` | neutral | ORM 쿼리 빌더, 스키마 정의 |
-| `orm-node` | node | DB 커넥션 (MySQL, MSSQL, PostgreSQL) |
-| `service-common` | neutral | 서비스 프로토콜, 타입 정의 |
-| `service-client` | neutral | WebSocket 클라이언트 |
-| `service-server` | node | Fastify 기반 HTTP/WebSocket 서버 |
-| `solid` | browser | SolidJS UI 컴포넌트 |
-| `solid-demo` | client | SolidJS 데모 앱 (http://localhost:40080) |
-| `excel` | neutral | Excel(.xlsx) 읽기/쓰기 |
-| `storage` | node | FTP/SFTP 클라이언트 |
+| 패키지 | 타겟 | 설명                                    |
+|--------|------|---------------------------------------|
+| `core-common` | neutral | 공통 유틸리티, 타입, 에러 클래스                   |
+| `core-browser` | browser | 브라우저 전용 확장                            |
+| `core-node` | node | Node.js 유틸리티 (파일시스템, 워커)              |
+| `cli` | node | 빌드/린트/타입체크 CLI 도구                     |
+| `eslint-plugin` | node | ESLint 커스텀 규칙                         |
+| `orm-common` | neutral | ORM 쿼리 빌더, 스키마 정의                     |
+| `orm-node` | node | DB 커넥션 (MySQL, MSSQL, PostgreSQL)     |
+| `service-common` | neutral | 서비스 프로토콜, 타입 정의                       |
+| `service-client` | neutral | WebSocket 클라이언트                       |
+| `service-server` | node | Fastify 기반 HTTP/WebSocket 서버          |
+| `solid` | browser | SolidJS UI 컴포넌트                       |
+| `solid-demo` | client | SolidJS 데모 앱 (http://localhost:40081) |
+| `excel` | neutral | Excel(.xlsx) 읽기/쓰기                    |
+| `storage` | node | FTP/SFTP 클라이언트                        |
 
 ### 통합 테스트 (`tests/`)
 - `tests/orm/`: ORM 통합 테스트 (Docker DB 필요)
@@ -196,8 +199,8 @@ const User = Table("User")
 // 시맨틱 색상 (Tailwind colors 기반)
 colors: {
   primary: colors.blue,
-  info: colors.cyan,
-  success: colors.lime,
+  info: colors.sky,
+  success: colors.green,
   warning: colors.amber,
   danger: colors.red,
   base: colors.zinc,       // 중립 회색 (배경, 테두리, 보조 텍스트 등)
