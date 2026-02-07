@@ -84,7 +84,7 @@ export interface SheetItemKeydownParam<T> {
 }
 
 export interface SheetConfig {
-  columnRecord?: Record<string, SheetConfigColumn>;
+  columnRecord?: Partial<Record<string, SheetConfigColumn>>;
 }
 
 export interface SheetConfigColumn {

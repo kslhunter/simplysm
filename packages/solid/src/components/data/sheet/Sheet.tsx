@@ -61,8 +61,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   );
 
   // #region Config (usePersisted)
+  const persistedKey = `sheet.${local.key}`; // eslint-disable-line solid/reactivity -- key는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨
   const [config, setConfig] = usePersisted<SheetConfig>(
-    `sheet.${local.key}`,
+    persistedKey,
     { columnRecord: {} },
   );
 
@@ -72,7 +73,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     const record = config().columnRecord ?? {};
     return cols.map((col) => {
       const saved = record[col.key];
-      if (!saved) return col;
+      if (saved == null) return col;
       return {
         ...col,
         width: saved.width ?? col.width,
