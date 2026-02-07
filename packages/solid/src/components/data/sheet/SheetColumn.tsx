@@ -6,7 +6,7 @@ export function isSheetColumnDef(value: unknown): value is SheetColumnDef<unknow
   return (
     value != null &&
     typeof value === "object" &&
-    (value as Record<string, unknown>).__type === "sheet-column"
+    (value as Record<string, unknown>)["__type"] === "sheet-column"
   );
 }
 

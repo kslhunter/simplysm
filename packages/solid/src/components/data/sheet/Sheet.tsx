@@ -34,7 +34,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region Column Collection
   const resolved = children(() => local.children);
   const columnDefs = createMemo(() =>
-    (resolved.toArray().filter(isSheetColumnDef) as SheetColumnDef<T>[])
+    (resolved.toArray().filter(isSheetColumnDef) as unknown as SheetColumnDef<T>[])
       .filter((col) => !col.hidden),
   );
 
