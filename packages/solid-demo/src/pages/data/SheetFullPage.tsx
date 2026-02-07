@@ -1,0 +1,121 @@
+import { Sheet, Topbar, TopbarContainer } from "@simplysm/solid";
+
+interface Employee {
+  id: number;
+  name: string;
+  department: string;
+  team: string;
+  position: string;
+  email: string;
+  phone: string;
+  joinDate: string;
+  salary: number;
+  bonus: number;
+  status: string;
+}
+
+const lastNames = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "서", "신", "권", "황", "안", "송", "류", "홍"];
+const firstNames = ["민준", "서윤", "도윤", "서연", "하준", "지우", "시우", "하은", "예준", "지아", "주원", "수아", "지호", "다은", "건우", "채원", "현우", "지윤", "우진", "은서"];
+const departments = ["개발", "개발", "개발", "마케팅", "마케팅", "영업", "영업", "인사", "재무", "디자인"];
+const teams = ["프론트엔드", "백엔드", "인프라", "디지털마케팅", "브랜드", "국내영업", "해외영업", "채용", "회계", "UI/UX"];
+const positions = ["사원", "사원", "사원", "주임", "대리", "과장", "차장", "부장"];
+const statuses = ["재직", "재직", "재직", "재직", "재직", "재직", "재직", "휴직", "출장"];
+
+function generateEmployees(count: number): Employee[] {
+  const result: Employee[] = [];
+  for (let i = 0; i < count; i++) {
+    const lastName = lastNames[i % lastNames.length];
+    const firstName = firstNames[(i * 7 + 3) % firstNames.length];
+    const deptIdx = i % departments.length;
+    const year = 2015 + (i % 10);
+    const month = String((i % 12) + 1).padStart(2, "0");
+    const day = String((i % 28) + 1).padStart(2, "0");
+    result.push({
+      id: i + 1,
+      name: `${lastName}${firstName}`,
+      department: departments[deptIdx],
+      team: teams[deptIdx],
+      position: positions[i % positions.length],
+      email: `user${i + 1}@example.com`,
+      phone: `010-${String(1000 + (i * 37) % 9000).padStart(4, "0")}-${String(1000 + (i * 53) % 9000).padStart(4, "0")}`,
+      joinDate: `${year}-${month}-${day}`,
+      salary: 3000 + Math.floor((i * 17) % 5000),
+      bonus: 100 + Math.floor((i * 13) % 900),
+      status: statuses[i % statuses.length],
+    });
+  }
+  return result;
+}
+
+const employees = generateEmployees(200);
+
+export default function SheetFullPage() {
+  const totalSalary = () => employees.reduce((sum, e) => sum + e.salary, 0);
+  const totalBonus = () => employees.reduce((sum, e) => sum + e.bonus, 0);
+
+  return (
+    <TopbarContainer>
+      <Topbar>
+        <h1 class="m-0 text-base">Sheet (Full)</h1>
+        <span class="ml-2 text-sm text-base-500 dark:text-base-400">
+          {employees.length}건
+        </span>
+      </Topbar>
+      <div class="flex-1 overflow-hidden p-2">
+        <Sheet items={employees} key="full" class="h-full" inset>
+          <Sheet.Column<Employee> key="id" header="No." width="60px">
+            {(ctx) => <div class="px-2 py-1 text-right text-base-500">{ctx.item.id}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} width="100px">
+            {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} width="90px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.department}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]} width="120px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.team}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]} width="80px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.position}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]} width="180px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} width="150px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.phone}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="joinDate" header="입사일" width="110px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.joinDate}</div>}
+          </Sheet.Column>
+          <Sheet.Column<Employee>
+            key="salary"
+            header={["급여정보", "기본급"]}
+            width="120px"
+            summary={() => (
+              <span class="font-bold">{totalSalary().toLocaleString()}만</span>
+            )}
+          >
+            {(ctx) => (
+              <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}만</div>
+            )}
+          </Sheet.Column>
+          <Sheet.Column<Employee>
+            key="bonus"
+            header={["급여정보", "상여금"]}
+            width="120px"
+            summary={() => (
+              <span class="font-bold">{totalBonus().toLocaleString()}만</span>
+            )}
+          >
+            {(ctx) => (
+              <div class="px-2 py-1 text-right">{ctx.item.bonus.toLocaleString()}만</div>
+            )}
+          </Sheet.Column>
+          <Sheet.Column<Employee> key="status" header="상태" width="80px">
+            {(ctx) => <div class="px-2 py-1">{ctx.item.status}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </div>
+    </TopbarContainer>
+  );
+}
