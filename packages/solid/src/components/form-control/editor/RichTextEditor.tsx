@@ -1,5 +1,6 @@
 import { type Component, type JSX, Show, createEffect, on, onCleanup, splitProps } from "solid-js";
 import clsx from "clsx";
+import "./editor.css";
 import { twMerge } from "tailwind-merge";
 import { createTiptapEditor } from "solid-tiptap";
 import StarterKit from "@tiptap/starter-kit";
