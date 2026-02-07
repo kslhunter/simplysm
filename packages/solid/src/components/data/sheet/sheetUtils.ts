@@ -1,4 +1,5 @@
-import type { HeaderDef, SheetColumnDef } from "./types";
+import type { HeaderDef, SheetColumnDef, SortingDef } from "./types";
+import { objGetChainValue } from "@simplysm/core-common";
 
 export function normalizeHeader(header?: string | string[]): string[] {
   if (header == null) return [""];
@@ -86,4 +87,15 @@ function isSameGroup(padded: string[][], colA: number, colB: number, startRow: n
     if (padded[colA][r] !== padded[colB][r]) return false;
   }
   return true;
+}
+
+export function applySorting<T>(items: T[], sorts: SortingDef[]): T[] {
+  if (sorts.length === 0) return items;
+
+  let result = [...items];
+  for (const sort of [...sorts].reverse()) {
+    const selector = (item: T) => objGetChainValue(item, sort.key) as string | number | undefined;
+    result = sort.desc ? result.orderByDesc(selector) : result.orderBy(selector);
+  }
+  return result;
 }

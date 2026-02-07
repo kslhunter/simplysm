@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@solidjs/testing-library";
 import { Sheet } from "../../src/components/data/sheet/Sheet";
+import { applySorting } from "../../src/components/data/sheet/sheetUtils";
 
 interface TestItem {
   name: string;
@@ -127,5 +128,56 @@ describe("Sheet", () => {
     const ths = container.querySelectorAll("thead th");
     expect(ths.length).toBe(1);
     expect(ths[0].textContent).toContain("이름");
+  });
+});
+
+describe("applySorting", () => {
+  interface Item {
+    name: string;
+    age: number;
+  }
+
+  const items: Item[] = [
+    { name: "다", age: 30 },
+    { name: "가", age: 25 },
+    { name: "나", age: 28 },
+  ];
+
+  it("빈 sorts면 원본 순서 유지", () => {
+    const result = applySorting(items, []);
+    expect(result.map((i) => i.name)).toEqual(["다", "가", "나"]);
+  });
+
+  it("단일 오름차순 정렬", () => {
+    const result = applySorting(items, [{ key: "name", desc: false }]);
+    expect(result.map((i) => i.name)).toEqual(["가", "나", "다"]);
+  });
+
+  it("단일 내림차순 정렬", () => {
+    const result = applySorting(items, [{ key: "age", desc: true }]);
+    expect(result.map((i) => i.age)).toEqual([30, 28, 25]);
+  });
+
+  it("다중 정렬: 첫 번째 키 우선, 동일 값은 두 번째 키로", () => {
+    const data: Item[] = [
+      { name: "가", age: 30 },
+      { name: "나", age: 25 },
+      { name: "가", age: 20 },
+    ];
+    const result = applySorting(data, [
+      { key: "name", desc: false },
+      { key: "age", desc: false },
+    ]);
+    expect(result).toEqual([
+      { name: "가", age: 20 },
+      { name: "가", age: 30 },
+      { name: "나", age: 25 },
+    ]);
+  });
+
+  it("원본 배열을 변경하지 않는다", () => {
+    const original = [...items];
+    applySorting(items, [{ key: "name", desc: false }]);
+    expect(items).toEqual(original);
   });
 });
