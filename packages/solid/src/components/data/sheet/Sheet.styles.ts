@@ -8,7 +8,7 @@ export const sheetContainerClass = clsx(
 
 export const tableClass = clsx(
   "border-separate border-spacing-0",
-  "table-fixed",
+  "w-max",
 );
 
 export const thClass = clsx(

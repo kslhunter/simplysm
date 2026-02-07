@@ -77,34 +77,33 @@ export default function SheetFullPage() {
           currentPage={page()}
           onCurrentPageChange={setPage}
         >
-          <Sheet.Column<Employee> key="id" header="No." width="60px" fixed>
+          <Sheet.Column<Employee> key="id" header="No." fixed>
             {(ctx) => <div class="px-2 py-1 text-right text-base-500">{ctx.item.id}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} width="100px" fixed>
+          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} fixed>
             {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} width="90px" fixed>
+          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} fixed>
             {(ctx) => <div class="px-2 py-1">{ctx.item.department}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]} width="120px">
+          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]}>
             {(ctx) => <div class="px-2 py-1">{ctx.item.team}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]} width="80px">
+          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]}>
             {(ctx) => <div class="px-2 py-1">{ctx.item.position}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]} width="180px">
+          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]}>
             {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} width="150px">
+          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]}>
             {(ctx) => <div class="px-2 py-1">{ctx.item.phone}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="joinDate" header="입사일" width="110px">
+          <Sheet.Column<Employee> key="joinDate" header="입사일">
             {(ctx) => <div class="px-2 py-1">{ctx.item.joinDate}</div>}
           </Sheet.Column>
           <Sheet.Column<Employee>
             key="salary"
             header={["급여정보", "기본급"]}
-            width="120px"
             summary={() => (
               <span class="font-bold">{totalSalary().toLocaleString()}만</span>
             )}
@@ -116,7 +115,6 @@ export default function SheetFullPage() {
           <Sheet.Column<Employee>
             key="bonus"
             header={["급여정보", "상여금"]}
-            width="120px"
             summary={() => (
               <span class="font-bold">{totalBonus().toLocaleString()}만</span>
             )}
@@ -125,7 +123,7 @@ export default function SheetFullPage() {
               <div class="px-2 py-1 text-right">{ctx.item.bonus.toLocaleString()}만</div>
             )}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="status" header="상태" width="80px">
+          <Sheet.Column<Employee> key="status" header="상태">
             {(ctx) => <div class="px-2 py-1">{ctx.item.status}</div>}
           </Sheet.Column>
         </Sheet>
