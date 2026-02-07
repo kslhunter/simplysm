@@ -15,6 +15,7 @@ export * from "./components/form-control/checkbox/CheckBox";
 export * from "./components/form-control/checkbox/CheckBox.styles";
 export * from "./components/form-control/checkbox/Radio";
 export * from "./components/form-control/color-picker/ColorPicker";
+export * from "./components/form-control/date-range-picker/DateRangePicker";
 export * from "./components/form-control/editor/RichTextEditor";
 
 // layout
