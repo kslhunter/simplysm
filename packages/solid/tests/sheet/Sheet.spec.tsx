@@ -264,6 +264,63 @@ describe("Sheet", () => {
     const pagination = container.querySelector("[data-pagination]");
     expect(pagination).toBeFalsy();
   });
+
+  it("고정 컬럼: fixed 컬럼의 td에 sticky 클래스가 적용된다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet items={testData} key="test-fixed">
+          <Sheet.Column<TestItem> key="name" header="이름" fixed width="100px">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </Sheet.Column>
+          <Sheet.Column<TestItem> key="age" header="나이">
+            {(ctx) => <div>{ctx.item.age}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const tds = container.querySelectorAll("tbody tr:first-child td");
+    expect(tds[0].classList.contains("sticky")).toBe(true);
+    expect(tds[1].classList.contains("sticky")).toBe(false);
+  });
+
+  it("고정 컬럼: 마지막 고정 컬럼에 경계 테두리 클래스가 적용된다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet items={testData} key="test-fixed-border">
+          <Sheet.Column<TestItem> key="name" header="이름" fixed width="100px">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </Sheet.Column>
+          <Sheet.Column<TestItem> key="age" header="나이">
+            {(ctx) => <div>{ctx.item.age}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const tds = container.querySelectorAll("tbody tr:first-child td");
+    // fixedLastClass에 포함된 클래스 확인
+    expect(tds[0].classList.contains("border-r-2")).toBe(true);
+  });
+
+  it("리사이저: disableResizing이 아닌 컬럼에 리사이저 핸들이 있다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet items={testData} key="test-resizer">
+          <Sheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </Sheet.Column>
+          <Sheet.Column<TestItem> key="age" header="나이" disableResizing>
+            {(ctx) => <div>{ctx.item.age}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const resizers = container.querySelectorAll(".cursor-ew-resize");
+    // 첫 번째 컬럼에만 리사이저가 있어야 함
+    expect(resizers.length).toBe(1);
+  });
 });
 
 describe("applySorting", () => {
