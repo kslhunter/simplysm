@@ -1,4 +1,5 @@
-import { Sheet, Topbar, TopbarContainer } from "@simplysm/solid";
+import { createSignal } from "solid-js";
+import { Sheet, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
 
 interface Employee {
   id: number;
@@ -52,6 +53,8 @@ const employees = generateEmployees(200);
 export default function SheetFullPage() {
   const totalSalary = () => employees.reduce((sum, e) => sum + e.salary, 0);
   const totalBonus = () => employees.reduce((sum, e) => sum + e.bonus, 0);
+  const [sorts, setSorts] = createSignal<SortingDef[]>([]);
+  const [page, setPage] = createSignal(0);
 
   return (
     <TopbarContainer>
@@ -62,7 +65,18 @@ export default function SheetFullPage() {
         </span>
       </Topbar>
       <div class="flex-1 overflow-hidden p-2">
-        <Sheet items={employees} key="full" class="h-full" inset>
+        <Sheet
+          items={employees}
+          key="full"
+          class="h-full"
+          inset
+          sorts={sorts()}
+          onSortsChange={setSorts}
+          useAutoSort
+          itemsPerPage={20}
+          currentPage={page()}
+          onCurrentPageChange={setPage}
+        >
           <Sheet.Column<Employee> key="id" header="No." width="60px">
             {(ctx) => <div class="px-2 py-1 text-right text-base-500">{ctx.item.id}</div>}
           </Sheet.Column>
