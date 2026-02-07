@@ -212,6 +212,55 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     });
   }
 
+  // #region Resizing
+  const [resizeIndicatorStyle, setResizeIndicatorStyle] = createSignal<JSX.CSSProperties>({
+    display: "none",
+  });
+
+  function onResizerMousedown(event: MouseEvent, colKey: string): void {
+    event.preventDefault();
+    const th = (event.target as HTMLElement).closest("th")!;
+    const container = th.closest("[data-sheet]")!.querySelector("[data-sheet-scroll]") as HTMLElement;
+    const startX = event.clientX;
+    const startWidth = th.offsetWidth;
+
+    // 리사이즈 인디케이터 표시
+    const containerRect = container.getBoundingClientRect();
+    setResizeIndicatorStyle({
+      display: "block",
+      left: `${th.getBoundingClientRect().right - containerRect.left + container.scrollLeft}px`,
+      top: "0",
+      height: `${container.scrollHeight}px`,
+    });
+
+    const onMouseMove = (e: MouseEvent) => {
+      const delta = e.clientX - startX;
+      const newWidth = Math.max(30, startWidth + delta);
+      setResizeIndicatorStyle({
+        display: "block",
+        left: `${th.getBoundingClientRect().left - containerRect.left + container.scrollLeft + newWidth}px`,
+        top: "0",
+        height: `${container.scrollHeight}px`,
+      });
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      const delta = e.clientX - startX;
+      const newWidth = Math.max(30, startWidth + delta);
+      saveColumnWidth(colKey, `${newWidth}px`);
+      setResizeIndicatorStyle({ display: "none" });
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }
+
+  function onResizerDoubleClick(colKey: string): void {
+    saveColumnWidth(colKey, undefined);
+  }
+
   // #region Expanding (스텁 — Plan 4에서 구현)
   const flatItems = createMemo((): FlatItem<T>[] => {
     return pagedItems().map((item, i) => ({
@@ -239,7 +288,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           />
         </div>
       </Show>
-      <div class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
+      <div data-sheet-scroll class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
       <table class={tableClass}>
         <colgroup>
           <For each={effectiveColumns()}>
@@ -346,6 +395,13 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                                 }}
                               </Show>
                             </div>
+                            <Show when={c().isLastRow && c().colIndex != null && !effectiveColumns()[c().colIndex!].disableResizing}>
+                              <div
+                                class={resizerClass}
+                                onMouseDown={(e) => onResizerMousedown(e, effectiveColumns()[c().colIndex!].key)}
+                                onDblClick={() => onResizerDoubleClick(effectiveColumns()[c().colIndex!].key)}
+                              />
+                            </Show>
                           </th>
                         );
                       }}
@@ -405,6 +461,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           </For>
         </tbody>
       </table>
+      <div class={resizeIndicatorClass} style={resizeIndicatorStyle()} />
       </div>
     </div>
   );
