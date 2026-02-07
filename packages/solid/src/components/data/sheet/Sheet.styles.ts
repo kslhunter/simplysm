@@ -14,8 +14,8 @@ export const tableClass = clsx(
 export const thClass = clsx(
   "relative",
   "bg-base-100 dark:bg-base-700",
-  "border-r border-b border-base-300 dark:border-base-600",
-  "whitespace-nowrap overflow-hidden",
+  "border-b border-r border-base-300 dark:border-base-600",
+  "overflow-hidden whitespace-nowrap",
   "p-0",
   "text-left font-semibold",
   "align-middle",
@@ -27,8 +27,8 @@ export const thContentClass = clsx(
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-800",
-  "border-r border-b border-base-200 dark:border-base-700",
-  "whitespace-nowrap overflow-hidden",
+  "border-b border-r border-base-200 dark:border-base-700",
+  "overflow-hidden whitespace-nowrap",
   "p-0",
   "align-top",
 );

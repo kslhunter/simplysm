@@ -78,7 +78,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       <table class={tableClass}>
         <colgroup>
           <For each={columnDefs()}>
-            {(col) => <col style={col.width ? { width: col.width } : undefined} />}
+            {(col) => <col style={col.width != null ? { width: col.width } : undefined} />}
           </For>
         </colgroup>
         <thead>

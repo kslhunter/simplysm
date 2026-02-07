@@ -10,6 +10,7 @@ export function isSheetColumnDef(value: unknown): value is SheetColumnDef<unknow
   );
 }
 
+/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
 export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
   return {
     __type: "sheet-column",
@@ -28,3 +29,4 @@ export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
     disableResizing: props.disableResizing ?? false,
   } as unknown as JSX.Element;
 }
+/* eslint-enable solid/reactivity */
