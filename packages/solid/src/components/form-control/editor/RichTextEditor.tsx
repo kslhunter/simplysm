@@ -1,4 +1,4 @@
-import { type Component, type JSX, createEffect, on, onCleanup, splitProps } from "solid-js";
+import { type Component, type JSX, Show, createEffect, on, onCleanup, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createTiptapEditor } from "solid-tiptap";
@@ -15,6 +15,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import type { FieldSize } from "../field/Field.styles";
+import { EditorToolbar } from "./EditorToolbar";
 
 export interface RichTextEditorProps {
   /** HTML 문자열 값 */
@@ -174,7 +175,13 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
       class={getWrapperClass()}
       style={local.style}
     >
-      {/* 툴바는 Task 3에서 추가 예정 */}
+      <Show when={editor()}>
+        {(instance) => (
+          <Show when={!local.disabled && !local.readonly}>
+            <EditorToolbar editor={instance()} />
+          </Show>
+        )}
+      </Show>
       <div ref={editorRef} class={getContentClass()} />
     </div>
   );
