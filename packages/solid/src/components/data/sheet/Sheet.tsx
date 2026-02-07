@@ -7,6 +7,7 @@ import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
 import { applySorting, buildHeaderTable } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Icon } from "../../display/Icon";
+import { Pagination } from "../Pagination";
 import {
   defaultContainerClass,
   insetContainerClass,
@@ -18,6 +19,7 @@ import {
   tdClass,
   thClass,
   thContentClass,
+  toolbarClass,
 } from "./Sheet.styles";
 
 interface SheetComponent {
@@ -36,6 +38,11 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "sorts",
     "onSortsChange",
     "useAutoSort",
+    "currentPage",
+    "onCurrentPageChange",
+    "totalPageCount",
+    "itemsPerPage",
+    "displayPageCount",
     "class",
     "children",
   ]);
@@ -95,9 +102,27 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return applySorting(local.items ?? [], sorts());
   });
 
-  // #region Paging (스텁 — Plan 2에서 구현)
+  // #region Paging
+  const [currentPage, setCurrentPage] = createPropSignal({
+    value: () => local.currentPage ?? 0,
+    onChange: () => local.onCurrentPageChange,
+  });
+
+  const effectivePageCount = createMemo(() => {
+    const ipp = local.itemsPerPage;
+    if (ipp != null && ipp !== 0 && (local.items ?? []).length > 0) {
+      return Math.ceil((local.items ?? []).length / ipp);
+    }
+    return local.totalPageCount ?? 0;
+  });
+
   const pagedItems = createMemo(() => {
-    return sortedItems();
+    const ipp = local.itemsPerPage;
+    if (ipp == null || ipp === 0) return sortedItems();
+    if ((local.items ?? []).length <= 0) return sortedItems();
+
+    const page = currentPage();
+    return sortedItems().slice(page * ipp, (page + 1) * ipp);
   });
 
   // #region Expanding (스텁 — Plan 4에서 구현)
@@ -113,16 +138,21 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region Display
   const displayItems = createMemo(() => flatItems());
 
-  // #region Styles
-  const getContainerClassName = () =>
-    twMerge(
-      sheetContainerClass,
-      local.inset ? insetContainerClass : defaultContainerClass,
-      local.class,
-    );
-
   return (
-    <div data-sheet={local.key} class={getContainerClassName()}>
+    <div data-sheet={local.key} class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}>
+      <Show when={!local.hideConfigBar && effectivePageCount() > 1}>
+        <div class={toolbarClass}>
+          <Pagination
+            class="flex-1"
+            page={currentPage()}
+            onPageChange={setCurrentPage}
+            totalPages={effectivePageCount()}
+            displayPages={local.displayPageCount}
+            size="sm"
+          />
+        </div>
+      </Show>
+      <div class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
       <table class={tableClass}>
         <colgroup>
           <For each={columnDefs()}>
@@ -228,6 +258,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           </For>
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
