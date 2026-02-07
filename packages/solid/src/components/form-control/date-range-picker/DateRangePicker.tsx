@@ -99,12 +99,12 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   });
 
   const [from, setFrom] = createPropSignal({
-    value: () => local.from as DateOnly | undefined,
+    value: () => local.from,
     onChange: () => local.onFromChange,
   });
 
   const [to, setTo] = createPropSignal({
-    value: () => local.to as DateOnly | undefined,
+    value: () => local.to,
     onChange: () => local.onToChange,
   });
 
@@ -138,7 +138,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       setTo(newFrom ? getLastDayOfMonth(newFrom) : (undefined as DateOnly | undefined));
     } else if (type === "일") {
       setTo(newFrom);
-    } else if (type === "범위") {
+    } else {
       const currentTo = to();
       if (newFrom && currentTo && newFrom.tick > currentTo.tick) {
         setTo(newFrom);
