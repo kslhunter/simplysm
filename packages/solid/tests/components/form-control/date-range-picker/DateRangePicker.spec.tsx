@@ -76,9 +76,8 @@ describe("DateRangePicker 컴포넌트", () => {
     it("from 변경 시 onToChange도 같은 값으로 호출된다", () => {
       const onFromChange = vi.fn();
       const onToChange = vi.fn();
-      const newFrom = new DateOnly(2025, 6, 15);
 
-      render(() => (
+      const { container } = render(() => (
         <DateRangePicker
           periodType="일"
           from={new DateOnly(2025, 1, 1)}
@@ -88,33 +87,16 @@ describe("DateRangePicker 컴포넌트", () => {
         />
       ));
 
-      // from을 변경하면 to도 동일한 값으로 변경되어야 함
-      // 컴포넌트 내부에서 onFromChange를 호출하는 시점에 onToChange도 호출
-      onFromChange(newFrom);
-
-      // 내부 로직: "일" 모드에서 from 변경 시 to = from
-      // 이 테스트는 컴포넌트의 자동 계산 로직을 검증
-      // 실제로는 input을 통해 from 값을 변경해야 함
-      const { container } = render(() => (
-        <DateRangePicker
-          periodType="일"
-          from={newFrom}
-          onFromChange={onFromChange}
-          onToChange={onToChange}
-        />
-      ));
-
       const wrapper = container.querySelector("[data-date-range-picker]");
       const input = wrapper?.querySelector("input[type='date']") as HTMLInputElement;
 
       // input에 새 값을 입력하여 from 변경 트리거
-      if (input) {
-        input.value = "2025-06-15";
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      }
+      input.value = "2025-06-15";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
 
       // "일" 모드에서는 from 변경 시 to도 같은 값으로 설정됨
-      expect(onToChange).toHaveBeenCalledWith(newFrom);
+      const expectedDate = new DateOnly(2025, 6, 15);
+      expect(onToChange).toHaveBeenCalledWith(expectedDate);
     });
   });
 
