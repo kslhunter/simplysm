@@ -2,15 +2,20 @@ import { children, createMemo, For, type JSX, Show, splitProps } from "solid-js"
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
-import type { FlatItem, SheetColumnDef, SheetProps, SortingDef } from "./types";
+import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
 import { applySorting, buildHeaderTable } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Icon } from "../../display/Icon";
 import { Pagination } from "../Pagination";
+import { usePersisted } from "../../../contexts/usePersisted";
 import {
   defaultContainerClass,
+  fixedClass,
+  fixedLastClass,
   insetContainerClass,
+  resizerClass,
+  resizeIndicatorClass,
   sheetContainerClass,
   sortableThClass,
   sortIconClass,
@@ -54,9 +59,36 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       .filter((col) => !col.hidden),
   );
 
+  // #region Config (usePersisted)
+  const [config, setConfig] = usePersisted<SheetConfig>(
+    `sheet.${local.key}`,
+    { columnRecord: {} },
+  );
+
+  // 설정이 적용된 최종 컬럼 — config의 width 오버라이드 적용
+  const effectiveColumns = createMemo(() => {
+    const cols = columnDefs();
+    const record = config().columnRecord ?? {};
+    return cols.map((col) => {
+      const saved = record[col.key];
+      if (!saved) return col;
+      return {
+        ...col,
+        width: saved.width ?? col.width,
+      };
+    });
+  });
+
+  function saveColumnWidth(colKey: string, width: string | undefined): void {
+    const prev = config();
+    const record = { ...prev.columnRecord };
+    record[colKey] = { ...record[colKey], width };
+    setConfig({ ...prev, columnRecord: record });
+  }
+
   // #region Header
-  const headerTable = createMemo(() => buildHeaderTable(columnDefs()));
-  const hasSummary = createMemo(() => columnDefs().some((col) => col.summary != null));
+  const headerTable = createMemo(() => buildHeaderTable(effectiveColumns()));
+  const hasSummary = createMemo(() => effectiveColumns().some((col) => col.summary != null));
 
   // #region Sorting
   const [sorts, setSorts] = createPropSignal({
@@ -155,7 +187,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       <div class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
       <table class={tableClass}>
         <colgroup>
-          <For each={columnDefs()}>
+          <For each={effectiveColumns()}>
             {(col) => <col style={col.width != null ? { width: col.width } : undefined} />}
           </For>
         </colgroup>
@@ -168,9 +200,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                     <Show when={cell}>
                       {(c) => {
                         const isSortable = () =>
-                          c().isLastRow && c().colIndex != null && !columnDefs()[c().colIndex!].disableSorting;
+                          c().isLastRow && c().colIndex != null && !effectiveColumns()[c().colIndex!].disableSorting;
                         const colKey = () =>
-                          c().colIndex != null ? columnDefs()[c().colIndex!].key : undefined;
+                          c().colIndex != null ? effectiveColumns()[c().colIndex!].key : undefined;
 
                         return (
                           <th
@@ -178,7 +210,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                             colspan={c().colspan > 1 ? c().colspan : undefined}
                             rowspan={c().rowspan > 1 ? c().rowspan : undefined}
                             title={c().isLastRow && c().colIndex != null
-                              ? (columnDefs()[c().colIndex!].tooltip ?? c().text)
+                              ? (effectiveColumns()[c().colIndex!].tooltip ?? c().text)
                               : c().text}
                             onClick={(e) => {
                               if (!isSortable()) return;
@@ -225,7 +257,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           </For>
           <Show when={hasSummary()}>
             <tr>
-              <For each={columnDefs()}>
+              <For each={effectiveColumns()}>
                 {(col) => (
                   <th class={twMerge(thClass, summaryThClass)}>
                     <div class={thContentClass}>
@@ -241,7 +273,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <For each={displayItems()}>
             {(flat) => (
               <tr>
-                <For each={columnDefs()}>
+                <For each={effectiveColumns()}>
                   {(col) => (
                     <td class={tdClass}>
                       {col.cell({
