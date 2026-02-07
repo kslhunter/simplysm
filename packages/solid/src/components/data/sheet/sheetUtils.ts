@@ -35,7 +35,8 @@ export function buildHeaderTable<T>(columns: SheetColumnDef<T>[]): (HeaderDef | 
       if (occupied[r][c]) continue;
 
       const text = padded[c][r];
-      const isLastRow = r === maxDepth - 1 || padded[c][r] !== padded[c][r + 1];
+      // 원본 header 길이 기반으로 판별: 현재 행이 원본 header의 마지막 레벨 이상이면 leaf
+      const isLastRow = r >= columns[c].header.length - 1;
 
       // colspan: 같은 행에서 같은 텍스트 + 같은 상위 그룹
       let colspan = 1;
