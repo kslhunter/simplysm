@@ -4,7 +4,6 @@ import "./editor.css";
 import { twMerge } from "tailwind-merge";
 import { createTiptapEditor } from "solid-tiptap";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -104,7 +103,6 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     element: editorRef,
     extensions: [
       StarterKit,
-      Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
