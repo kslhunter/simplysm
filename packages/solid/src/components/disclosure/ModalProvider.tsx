@@ -1,4 +1,5 @@
 import {
+  type Accessor,
   type Component,
   type ParentComponent,
   createSignal,
@@ -13,7 +14,9 @@ interface ModalEntry {
   content: Component<ModalContentProps<unknown>>;
   options: ModalShowOptions;
   resolve: (result: unknown) => void;
-  open: boolean;
+  open: Accessor<boolean>;
+  setOpen: (value: boolean) => void;
+  pendingResult?: unknown;
 }
 
 let nextId = 0;
@@ -40,22 +43,34 @@ export const ModalProvider: ParentComponent = (props) => {
   ): Promise<T | undefined> => {
     return new Promise<T | undefined>((resolve) => {
       const id = String(nextId++);
+      const [open, setOpen] = createSignal(true);
       const entry: ModalEntry = {
         id,
         content: content as Component<ModalContentProps<unknown>>,
         options,
         resolve: resolve as (result: unknown) => void,
-        open: true,
+        open,
+        setOpen,
       };
       setEntries((prev) => [...prev, entry]);
     });
   };
 
-  const closeEntry = (id: string, result?: unknown) => {
+  // 닫기 애니메이션 시작 (open을 false로 변경)
+  const requestClose = (id: string, result?: unknown) => {
+    const entry = entries().find((e) => e.id === id);
+    if (entry) {
+      entry.pendingResult = result;
+      entry.setOpen(false);
+    }
+  };
+
+  // 애니메이션 완료 후 실제 제거
+  const removeEntry = (id: string) => {
     setEntries((prev) => {
       const entry = prev.find((e) => e.id === id);
       if (entry) {
-        entry.resolve(result);
+        entry.resolve(entry.pendingResult);
       }
       return prev.filter((e) => e.id !== id);
     });
@@ -71,12 +86,13 @@ export const ModalProvider: ParentComponent = (props) => {
       <For each={entries()}>
         {(entry) => (
           <Modal
-            open={entry.open}
+            open={entry.open()}
             onOpenChange={(open) => {
               if (!open) {
-                closeEntry(entry.id);
+                requestClose(entry.id);
               }
             }}
+            onCloseComplete={() => removeEntry(entry.id)}
             title={entry.options.title}
             hideHeader={entry.options.hideHeader}
             hideCloseButton={entry.options.hideCloseButton}
@@ -96,7 +112,7 @@ export const ModalProvider: ParentComponent = (props) => {
           >
             <Dynamic
               component={entry.content}
-              close={(result?: unknown) => closeEntry(entry.id, result)}
+              close={(result?: unknown) => requestClose(entry.id, result)}
             />
           </Modal>
         )}

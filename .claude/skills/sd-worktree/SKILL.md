@@ -35,6 +35,17 @@ cd .worktrees/<name>   # worktree로 이동
   1. **brainstorming** (`/brainstorming`)
   2. **writing-plans** (`/writing-plans`)
 
+### rebase — 메인 브랜치 위로 rebase
+
+```bash
+# worktree 안에서 실행 가능
+node .claude/skills/sd-worktree/sd-worktree.mjs rebase [name]
+```
+
+- 메인 브랜치의 최신 커밋 위로 worktree 브랜치를 rebase
+- uncommitted 변경이 있으면 에러 → 먼저 commit 또는 stash 필요
+- merge 전에 히스토리를 깔끔하게 정리하고 싶을 때 사용
+
 ### merge — 메인 브랜치에 머지
 
 ```bash
@@ -63,6 +74,7 @@ node .claude/skills/sd-worktree/sd-worktree.mjs clean <name>
 (메인: 13.x)  → /sd-worktree add modal-migration
               → cd .worktrees/modal-migration
 (worktree)    → ... 작업 ...
+(worktree)    → /sd-worktree rebase          # (선택) 메인 최신 커밋 위로 rebase
 (worktree)    → /sd-worktree merge
 (worktree)    → cd <프로젝트 루트>
 (메인: 13.x)  → /sd-worktree clean modal-migration

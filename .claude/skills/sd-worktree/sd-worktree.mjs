@@ -73,6 +73,31 @@ switch (cmd) {
     break;
   }
 
+  case "rebase": {
+    const name = args[0] ?? detectWorktreeName();
+    if (!name) {
+      console.error("Usage: sd-worktree.mjs rebase [name]  (or run inside .worktrees/<name>)");
+      process.exit(1);
+    }
+    const worktreePath_r = resolve(mainWorktree, ".worktrees", name);
+    if (!existsSync(worktreePath_r)) {
+      console.error(`Error: worktree '${name}' does not exist.`);
+      process.exit(1);
+    }
+    // uncommitted 변경 확인
+    const statusR = getOutput(`git -C "${worktreePath_r}" status --porcelain`);
+    if (statusR) {
+      console.error(`Error: worktree '${name}' has uncommitted changes:\n${statusR}`);
+      console.error("Commit or stash changes before rebasing.");
+      process.exit(1);
+    }
+    const branchR = getMainBranch();
+    console.log(`Rebasing '${name}' onto '${branchR}'...`);
+    run(`git rebase "${branchR}"`, { cwd: worktreePath_r });
+    console.log(`\nRebased '${name}' onto '${branchR}'.`);
+    break;
+  }
+
   case "clean": {
     const name = args[0] ?? detectWorktreeName();
     if (!name) {
@@ -98,6 +123,6 @@ switch (cmd) {
   }
 
   default:
-    console.error("Usage: sd-worktree.mjs <add|merge|clean> [name]");
+    console.error("Usage: sd-worktree.mjs <add|merge|rebase|clean> [name]");
     process.exit(1);
 }

@@ -4,6 +4,7 @@ import {
   createSignal,
   createEffect,
   onCleanup,
+  untrack,
   Show,
   splitProps,
   For,
@@ -55,6 +56,8 @@ export interface ModalProps {
   headerAction?: JSX.Element;
   /** 닫기 전 확인 함수 */
   canDeactivate?: () => boolean;
+  /** 닫기 애니메이션 완료 후 콜백 */
+  onCloseComplete?: () => void;
   /** 추가 CSS 클래스 */
   class?: string;
   /** 자식 요소 */
@@ -142,6 +145,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     "headerStyle",
     "headerAction",
     "canDeactivate",
+    "onCloseComplete",
     "class",
     "children",
   ]);
@@ -157,6 +161,16 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   // 애니메이션 상태
   const [animating, setAnimating] = createSignal(false);
 
+  // onCloseComplete 중복 호출 방지
+  let closeCompleteEmitted = false;
+
+  const emitCloseComplete = () => {
+    if (closeCompleteEmitted) return;
+    closeCompleteEmitted = true;
+    setMounted(false);
+    local.onCloseComplete?.();
+  };
+
   // dialog ref
   let dialogRef: HTMLDivElement | undefined;
 
@@ -167,6 +181,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   createEffect(() => {
     if (open()) {
       // 열림: DOM에 마운트 후 애니메이션 시작
+      closeCompleteEmitted = false;
       setMounted(true);
       // 다음 프레임에 애니메이션 시작 (double rAF)
       let rafId1: number;
@@ -181,13 +196,15 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
         cancelAnimationFrame(rafId2);
       });
     } else if (mounted()) {
-      // 닫힘: 애니메이션 시작 (transitionend에서 마운트 해제)
-      setAnimating(false);
-      // prefers-reduced-motion 등으로 transitionend가 발생하지 않는 경우를 위한 fallback
-      const fallbackTimer = setTimeout(() => {
-        if (!open()) setMounted(false);
-      }, 200);
-      onCleanup(() => clearTimeout(fallbackTimer));
+      // untrack: animating()을 읽되 이 effect의 dependency로 등록하지 않음
+      // (setAnimating(false) 호출 시 effect 재실행 방지)
+      if (untrack(animating)) {
+        // 정상 닫기: transitionend에서 마운트 해제
+        setAnimating(false);
+      } else {
+        // 열기 애니메이션 시작 전에 닫기 요청된 경우: 즉시 마운트 해제
+        emitCloseComplete();
+      }
     }
   });
 
@@ -227,7 +244,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   const handleTransitionEnd = (e: TransitionEvent) => {
     if (e.propertyName !== "opacity") return;
     if (!open()) {
-      setMounted(false);
+      emitCloseComplete();
     }
   };
 
@@ -424,6 +441,10 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
       "absolute bottom-0 left-0 right-0 top-0",
       "bg-black/30",
       "dark:bg-black/50",
+      "transition-opacity",
+      "duration-200",
+      "ease-out",
+      animating() ? "opacity-100" : "opacity-0",
     );
 
   // dialog 클래스
