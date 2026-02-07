@@ -1,4 +1,5 @@
-import { children, createMemo, For, type JSX, Show, splitProps } from "solid-js";
+import { children, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
@@ -157,6 +158,60 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return sortedItems().slice(page * ipp, (page + 1) * ipp);
   });
 
+  // #region ColumnFixing
+  // 각 컬럼 셀의 ref → 너비 측정용
+  const columnRefs = new Map<number, HTMLElement>();
+
+  // 각 컬럼의 측정된 너비
+  const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
+
+  // 고정 컬럼의 left 위치 계산
+  const fixedLeftMap = createMemo(() => {
+    const map = new Map<number, number>();
+    const cols = effectiveColumns();
+    const widths = columnWidths();
+    let left = 0;
+    for (let c = 0; c < cols.length; c++) {
+      if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
+      map.set(c, left);
+      left += widths.get(c) ?? 0;
+    }
+    return map;
+  });
+
+  // 마지막 고정 컬럼 인덱스
+  const lastFixedIndex = createMemo(() => {
+    const cols = effectiveColumns();
+    let last = -1;
+    for (let c = 0; c < cols.length; c++) {
+      if (cols[c].fixed) last = c;
+      else break;
+    }
+    return last;
+  });
+
+  function getFixedStyle(colIndex: number): string | undefined {
+    const leftVal = fixedLeftMap().get(colIndex);
+    if (leftVal == null) return undefined;
+    return `left: ${leftVal}px`;
+  }
+
+  function isLastFixed(colIndex: number): boolean {
+    return colIndex === lastFixedIndex();
+  }
+
+  // 고정 컬럼 셀에 ResizeObserver 등록
+  function registerColumnRef(colIndex: number, el: HTMLElement): void {
+    columnRefs.set(colIndex, el);
+    createResizeObserver(el, (rect) => {
+      setColumnWidths((prev) => {
+        const next = new Map(prev);
+        next.set(colIndex, rect.width);
+        return next;
+      });
+    });
+  }
+
   // #region Expanding (스텁 — Plan 4에서 구현)
   const flatItems = createMemo((): FlatItem<T>[] => {
     return pagedItems().map((item, i) => ({
@@ -196,7 +251,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
             {(row) => (
               <tr>
                 <For each={row}>
-                  {(cell) => (
+                  {(cell, cellColIndex) => (
                     <Show when={cell}>
                       {(c) => {
                         const isSortable = () =>
@@ -204,14 +259,59 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                         const colKey = () =>
                           c().colIndex != null ? effectiveColumns()[c().colIndex!].key : undefined;
 
+                        // 그룹 헤더의 고정 여부: colspan 범위 내 모든 컬럼이 fixed인지
+                        const isGroupFixed = (): boolean => {
+                          if (c().isLastRow) return false;
+                          const start = cellColIndex();
+                          const span = c().colspan;
+                          const cols = effectiveColumns();
+                          for (let i = start; i < start + span && i < cols.length; i++) {
+                            if (!cols[i].fixed) return false;
+                          }
+                          return true;
+                        };
+
+                        // 셀의 고정 여부 (마지막 행이면 colIndex 기반, 그 외 그룹 기반)
+                        const isCellFixed = () =>
+                          (c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].fixed)
+                          || isGroupFixed();
+
+                        // 셀의 마지막 고정 여부
+                        const isCellLastFixed = () => {
+                          if (c().isLastRow && c().colIndex != null) return isLastFixed(c().colIndex!);
+                          if (isGroupFixed()) {
+                            const lastCol = cellColIndex() + c().colspan - 1;
+                            return isLastFixed(lastCol);
+                          }
+                          return false;
+                        };
+
+                        // 고정 셀의 left style
+                        const cellFixedStyle = () => {
+                          if (c().isLastRow && c().colIndex != null) return getFixedStyle(c().colIndex!);
+                          if (isGroupFixed()) return getFixedStyle(cellColIndex());
+                          return undefined;
+                        };
+
                         return (
                           <th
-                            class={twMerge(thClass, isSortable() ? sortableThClass : undefined)}
+                            class={twMerge(
+                              thClass,
+                              isSortable() ? sortableThClass : undefined,
+                              isCellFixed() ? clsx(fixedClass, "z-[4]") : undefined,
+                              isCellLastFixed() ? fixedLastClass : undefined,
+                            )}
                             colspan={c().colspan > 1 ? c().colspan : undefined}
                             rowspan={c().rowspan > 1 ? c().rowspan : undefined}
+                            style={cellFixedStyle()}
                             title={c().isLastRow && c().colIndex != null
                               ? (effectiveColumns()[c().colIndex!].tooltip ?? c().text)
                               : c().text}
+                            ref={(el: HTMLElement) => {
+                              if (c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].fixed) {
+                                registerColumnRef(c().colIndex!, el);
+                              }
+                            }}
                             onClick={(e) => {
                               if (!isSortable()) return;
                               const key = colKey();
@@ -258,8 +358,16 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <Show when={hasSummary()}>
             <tr>
               <For each={effectiveColumns()}>
-                {(col) => (
-                  <th class={twMerge(thClass, summaryThClass)}>
+                {(col, colIndex) => (
+                  <th
+                    class={twMerge(
+                      thClass,
+                      summaryThClass,
+                      col.fixed ? clsx(fixedClass, "z-[4]") : undefined,
+                      isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                    )}
+                    style={getFixedStyle(colIndex())}
+                  >
                     <div class={thContentClass}>
                       {col.summary?.()}
                     </div>
@@ -274,8 +382,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
             {(flat) => (
               <tr>
                 <For each={effectiveColumns()}>
-                  {(col) => (
-                    <td class={tdClass}>
+                  {(col, colIndex) => (
+                    <td
+                      class={twMerge(
+                        tdClass,
+                        col.fixed ? clsx(fixedClass, "z-[2]") : undefined,
+                        isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                      )}
+                      style={getFixedStyle(colIndex())}
+                    >
                       {col.cell({
                         item: flat.item,
                         index: flat.index,
