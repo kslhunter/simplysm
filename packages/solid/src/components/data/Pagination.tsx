@@ -17,10 +17,12 @@ export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
 
 const baseClass = clsx("inline-flex items-center");
 
+const btnClass = "font-normal";
+
 const gapClasses: Record<PaginationSize | "default", string> = {
-  default: "gap-1",
-  sm: "gap-0.5",
-  lg: "gap-1.5",
+  default: "gap-0.5",
+  sm: "gap-0",
+  lg: "gap-1",
 };
 
 export const Pagination: Component<PaginationProps> = (props) => {
@@ -54,6 +56,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
   return (
     <nav {...rest} data-pagination class={getClassName()}>
       <Button
+        class={btnClass}
         theme="base"
         variant="ghost"
         size={local.size}
@@ -63,6 +66,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         <Icon icon={IconChevronsLeft} size="1em" />
       </Button>
       <Button
+        class={btnClass}
         theme="base"
         variant="ghost"
         size={local.size}
@@ -74,8 +78,9 @@ export const Pagination: Component<PaginationProps> = (props) => {
       <For each={pages()}>
         {(p) => (
           <Button
-            theme="base"
-            variant={p === local.page ? "outline" : "ghost"}
+            class={btnClass}
+            theme={p === local.page ? "primary" : "base"}
+            variant={p === local.page ? "solid" : "ghost"}
             size={local.size}
             onClick={() => local.onPageChange?.(p)}
           >
@@ -84,6 +89,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         )}
       </For>
       <Button
+        class={btnClass}
         theme="base"
         variant="ghost"
         size={local.size}
@@ -93,6 +99,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         <Icon icon={IconChevronRight} size="1em" />
       </Button>
       <Button
+        class={btnClass}
         theme="base"
         variant="ghost"
         size={local.size}

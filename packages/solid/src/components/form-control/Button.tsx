@@ -20,6 +20,7 @@ const baseClass = clsx(
   "rounded",
   "focus:outline-none",
   "focus-visible:ring-2",
+  "border border-transparent"
 );
 
 const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
@@ -28,13 +29,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "bg-primary-500",
       "hover:bg-primary-600 dark:hover:bg-primary-400",
       "text-white",
-      "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
       "hover:bg-primary-50 dark:hover:bg-primary-800/30",
       "text-primary-600 dark:text-primary-400",
-      "border border-primary-300 dark:border-primary-600",
+      "border-primary-300 dark:border-primary-600",
     ),
     ghost: clsx(
       "bg-transparent",
@@ -43,12 +43,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
     ),
   },
   info: {
-    solid: clsx("bg-info-500", "hover:bg-info-600 dark:hover:bg-info-400", "text-white", "border border-transparent"),
+    solid: clsx("bg-info-500", "hover:bg-info-600 dark:hover:bg-info-400", "text-white"),
     outline: clsx(
       "bg-transparent",
       "hover:bg-info-50 dark:hover:bg-info-800/30",
       "text-info-600 dark:text-info-400",
-      "border border-info-300 dark:border-info-600",
+      "border-info-300 dark:border-info-600",
     ),
     ghost: clsx`bg-transparent text-info-600 hover:bg-info-50 dark:text-info-400 dark:hover:bg-info-800/30`,
   },
@@ -57,13 +57,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "bg-success-500",
       "hover:bg-success-600 dark:hover:bg-success-400",
       "text-white",
-      "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
       "hover:bg-success-100 dark:hover:bg-success-800/30",
       "text-success-600 dark:text-success-400",
-      "border border-success-300 dark:border-success-600",
+      "border-success-300 dark:border-success-600",
     ),
     ghost: clsx(
       "bg-transparent",
@@ -76,13 +75,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "bg-warning-500",
       "hover:bg-warning-600 dark:hover:bg-warning-400",
       "text-white",
-      "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
       "hover:bg-warning-100 dark:hover:bg-warning-800/30",
       "text-warning-600 dark:text-warning-400",
-      "border border-warning-300 dark:border-warning-600",
+      "border-warning-300 dark:border-warning-600",
     ),
     ghost: clsx(
       "bg-transparent",
@@ -95,13 +93,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "bg-danger-500",
       "hover:bg-danger-600 dark:hover:bg-danger-400",
       "text-white",
-      "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
       "hover:bg-danger-50 dark:hover:bg-danger-800/30",
       "text-danger-600 dark:text-danger-400",
-      "border border-danger-300 dark:border-danger-600",
+      "border-danger-300 dark:border-danger-600",
     ),
     ghost: clsx(
       "bg-transparent",
@@ -114,13 +111,12 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "bg-base-500",
       "hover:bg-base-600 dark:hover:bg-base-400",
       "text-white",
-      "border border-transparent",
     ),
     outline: clsx(
       "bg-transparent",
       "hover:bg-base-100 dark:hover:bg-base-700",
       "text-base-600 dark:text-base-300",
-      "border border-base-300 dark:border-base-700",
+      "border-base-300 dark:border-base-700",
     ),
     ghost: clsx("bg-transparent", "hover:bg-base-100 dark:hover:bg-base-700", "text-base-600 dark:text-base-300"),
   },
