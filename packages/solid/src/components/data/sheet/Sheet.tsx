@@ -1,12 +1,18 @@
 import { children, createMemo, For, type JSX, Show, splitProps } from "solid-js";
+import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { FlatItem, SheetColumnDef, SheetProps } from "./types";
+import { IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import type { FlatItem, SheetColumnDef, SheetProps, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
-import { buildHeaderTable } from "./sheetUtils";
+import { applySorting, buildHeaderTable } from "./sheetUtils";
+import { createPropSignal } from "../../../utils/createPropSignal";
+import { Icon } from "../../display/Icon";
 import {
   defaultContainerClass,
   insetContainerClass,
   sheetContainerClass,
+  sortableThClass,
+  sortIconClass,
   summaryThClass,
   tableClass,
   tdClass,
@@ -27,6 +33,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "hideConfigBar",
     "inset",
     "contentStyle",
+    "sorts",
+    "onSortsChange",
+    "useAutoSort",
     "class",
     "children",
   ]);
@@ -42,9 +51,48 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   const headerTable = createMemo(() => buildHeaderTable(columnDefs()));
   const hasSummary = createMemo(() => columnDefs().some((col) => col.summary != null));
 
-  // #region Sorting (스텁 — Plan 2에서 구현)
+  // #region Sorting
+  const [sorts, setSorts] = createPropSignal({
+    value: () => local.sorts ?? [],
+    onChange: () => local.onSortsChange,
+  });
+
+  function toggleSort(key: string, multiple: boolean): void {
+    const current = sorts();
+    const existing = current.find((s) => s.key === key);
+
+    if (existing) {
+      if (!existing.desc) {
+        // asc → desc
+        const updated = current.map((s) =>
+          s.key === key ? { ...s, desc: true } : s,
+        );
+        setSorts(multiple ? updated : [{ key, desc: true }]);
+      } else {
+        // desc → 제거
+        const updated = current.filter((s) => s.key !== key);
+        setSorts(multiple ? updated : []);
+      }
+    } else {
+      // 없음 → asc 추가
+      const newSort: SortingDef = { key, desc: false };
+      setSorts(multiple ? [...current, newSort] : [newSort]);
+    }
+  }
+
+  function getSortDef(key: string): SortingDef | undefined {
+    return sorts().find((s) => s.key === key);
+  }
+
+  function getSortIndex(key: string): number | undefined {
+    if (sorts().length <= 1) return undefined;
+    const idx = sorts().findIndex((s) => s.key === key);
+    return idx >= 0 ? idx + 1 : undefined;
+  }
+
   const sortedItems = createMemo(() => {
-    return local.items ?? [];
+    if (!local.useAutoSort) return local.items ?? [];
+    return applySorting(local.items ?? [], sorts());
   });
 
   // #region Paging (스텁 — Plan 2에서 구현)
@@ -88,17 +136,57 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                 <For each={row}>
                   {(cell) => (
                     <Show when={cell}>
-                      {(c) => (
-                        <th
-                          class={thClass}
-                          colspan={c().colspan > 1 ? c().colspan : undefined}
-                          rowspan={c().rowspan > 1 ? c().rowspan : undefined}
-                        >
-                          <div class={thContentClass}>
-                            {c().headerContent?.() ?? c().text}
-                          </div>
-                        </th>
-                      )}
+                      {(c) => {
+                        const isSortable = () =>
+                          c().isLastRow && c().colIndex != null && !columnDefs()[c().colIndex!].disableSorting;
+                        const colKey = () =>
+                          c().colIndex != null ? columnDefs()[c().colIndex!].key : undefined;
+
+                        return (
+                          <th
+                            class={twMerge(thClass, isSortable() ? sortableThClass : undefined)}
+                            colspan={c().colspan > 1 ? c().colspan : undefined}
+                            rowspan={c().rowspan > 1 ? c().rowspan : undefined}
+                            title={c().isLastRow && c().colIndex != null
+                              ? (columnDefs()[c().colIndex!].tooltip ?? c().text)
+                              : c().text}
+                            onClick={(e) => {
+                              if (!isSortable()) return;
+                              const key = colKey();
+                              if (key == null) return;
+                              toggleSort(key, e.shiftKey || e.ctrlKey);
+                            }}
+                          >
+                            <div class={clsx("flex items-center", thContentClass)}>
+                              <div class="flex-1">
+                                {c().headerContent?.() ?? c().text}
+                              </div>
+                              <Show when={isSortable() && colKey()}>
+                                {(key) => {
+                                  const sortDef = () => getSortDef(key());
+                                  const sortIndex = () => getSortIndex(key());
+                                  return (
+                                    <div class={sortIconClass}>
+                                      <Show when={sortDef()?.desc === false}>
+                                        <Icon icon={IconSortAscending} size="1em" />
+                                      </Show>
+                                      <Show when={sortDef()?.desc === true}>
+                                        <Icon icon={IconSortDescending} size="1em" />
+                                      </Show>
+                                      <Show when={sortDef() == null}>
+                                        <Icon icon={IconArrowsSort} size="1em" class="opacity-30" />
+                                      </Show>
+                                      <Show when={sortIndex()}>
+                                        {(idx) => <sub>{idx()}</sub>}
+                                      </Show>
+                                    </div>
+                                  );
+                                }}
+                              </Show>
+                            </div>
+                          </th>
+                        );
+                      }}
                     </Show>
                   )}
                 </For>
