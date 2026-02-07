@@ -46,3 +46,23 @@ export const defaultContainerClass = clsx(
   "border border-base-300 dark:border-base-600",
   "rounded",
 );
+
+// 정렬 가능 헤더 — 클릭 가능 표시
+export const sortableThClass = clsx(
+  "cursor-pointer",
+  "hover:underline",
+);
+
+// 정렬 아이콘 영역
+export const sortIconClass = clsx(
+  "px-1 py-0.5",
+  "bg-base-100 dark:bg-base-700",
+);
+
+// 상단 툴바 (설정 버튼 + 페이지네이션)
+export const toolbarClass = clsx(
+  "flex items-center gap-2",
+  "px-2 py-1",
+  "bg-base-50 dark:bg-base-800",
+  "border-b border-base-300 dark:border-base-600",
+);
