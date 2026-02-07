@@ -157,13 +157,14 @@ export default function SheetPage() {
               </Sheet.Column>
             </Sheet>
           </section>
+
           {/* 고정 컬럼 + 리사이징 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">고정 컬럼 + 리사이징</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로 초기화.
             </p>
-            <div style={{ width: "500px" }}>
+            <div>
               <Sheet items={users} key="fixed-resize">
                 <Sheet.Column<User> key="name" header="이름" width="120px" fixed>
                   {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
