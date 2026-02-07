@@ -77,13 +77,13 @@ export default function SheetFullPage() {
           currentPage={page()}
           onCurrentPageChange={setPage}
         >
-          <Sheet.Column<Employee> key="id" header="No." width="60px">
+          <Sheet.Column<Employee> key="id" header="No." width="60px" fixed>
             {(ctx) => <div class="px-2 py-1 text-right text-base-500">{ctx.item.id}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} width="100px">
+          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} width="100px" fixed>
             {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} width="90px">
+          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} width="90px" fixed>
             {(ctx) => <div class="px-2 py-1">{ctx.item.department}</div>}
           </Sheet.Column>
           <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]} width="120px">
