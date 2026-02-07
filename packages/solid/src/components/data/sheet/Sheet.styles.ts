@@ -66,3 +66,28 @@ export const toolbarClass = clsx(
   "bg-base-50 dark:bg-base-800",
   "border-b border-base-300 dark:border-base-600",
 );
+
+// 고정 컬럼 기본 (sticky)
+export const fixedClass = "sticky";
+
+// 고정/비고정 경계 시각 효과 — 고정 컬럼의 마지막 셀에 적용
+export const fixedLastClass = clsx(
+  "border-r-2 border-r-base-400",
+  "dark:border-r-base-500",
+);
+
+// 리사이저 핸들 (헤더 셀 우측 드래그 영역)
+export const resizerClass = clsx(
+  "absolute inset-y-0 right-0",
+  "w-1",
+  "cursor-ew-resize",
+  "hover:bg-primary-300 dark:hover:bg-primary-600",
+);
+
+// 드래그 중 세로 점선 인디케이터
+export const resizeIndicatorClass = clsx(
+  "absolute inset-y-0",
+  "w-0 border-l-2 border-dashed border-primary-500",
+  "pointer-events-none",
+  "z-[7]",
+);
