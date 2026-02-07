@@ -44,6 +44,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "List", href: "/home/data/list" },
       { title: "Table", href: "/home/data/table" },
       { title: "Pagination", href: "/home/data/pagination" },
+      { title: "Sheet", href: "/home/data/sheet" },
     ],
   },
   {
