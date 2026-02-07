@@ -1,4 +1,4 @@
-import { type Component, type JSX, Show, createEffect, on, onCleanup, splitProps } from "solid-js";
+import { type Component, type JSX, Show, createEffect, on, onCleanup, splitProps, untrack } from "solid-js";
 import clsx from "clsx";
 import "./editor.css";
 import { twMerge } from "tailwind-merge";
@@ -95,6 +95,9 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     onChange: () => local.onValueChange,
   });
 
+  // 에디터 내부 업데이트(onUpdate)와 외부 value 변경을 구분하기 위한 플래그
+  let isInternalUpdate = false;
+
   let editorRef!: HTMLDivElement;
 
   const editor = createTiptapEditor(() => ({
@@ -121,11 +124,16 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
         allowBase64: true,
       }),
     ],
-    content: value(),
-    editable: !local.disabled && !local.readonly,
+    // untrack: value/editable 변경 시 에디터 재생성 방지 (createEffect에서 동기화)
+    content: untrack(() => value()),
+    editable: untrack(() => !local.disabled && !local.readonly),
     onUpdate({ editor: e }) {
       const html = e.getHTML();
+      isInternalUpdate = true;
       setValue(html === "<p></p>" ? "" : html);
+      queueMicrotask(() => {
+        isInternalUpdate = false;
+      });
     },
   }));
 
@@ -137,13 +145,20 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     }
   });
 
-  // 외부에서 value가 변경될 때 에디터 콘텐츠 동기화
+  // 외부에서 value가 변경될 때만 에디터 콘텐츠 동기화
   createEffect(
     on(
       () => value(),
       (newValue) => {
+        // 에디터 내부 업데이트로 인한 value 변경은 무시
+        if (isInternalUpdate) return;
+
         const e = editor();
-        if (e && e.getHTML() !== newValue && newValue !== (e.getHTML() === "<p></p>" ? "" : e.getHTML())) {
+        if (!e) return;
+
+        const editorHtml = e.getHTML();
+        const normalizedEditor = editorHtml === "<p></p>" ? "" : editorHtml;
+        if (normalizedEditor !== newValue) {
           e.commands.setContent(newValue || "", { emitUpdate: false });
         }
       },
