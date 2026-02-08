@@ -1,4 +1,5 @@
 import { type Component, type JSX, Show, splitProps } from "solid-js";
+import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateTime } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -179,32 +180,62 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     setValue(parsed);
   };
 
-  // wrapper 클래스
-  const getWrapperClass = () =>
+  // wrapper 클래스 (includeCustomClass: inset 모드에서는 커스텀 class를 외부 div에 적용)
+  const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
-      local.inset && fieldInsetClass,
       local.disabled && fieldDisabledClass,
       local.readonly && fieldReadonlyClass,
-      local.class,
+      local.inset && fieldInsetClass,
+      includeCustomClass && local.class,
     );
 
-  // disabled/readonly일 때 div로 표시
-  const isDisplayMode = () => local.disabled || local.readonly;
+  // 편집 가능 여부
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // step 속성 (datetime-sec일 때 1)
   const getStep = () => (fieldType() === "datetime-sec" ? "1" : undefined);
 
+  // inset 모드: dual-element overlay 패턴
+  if (local.inset) {
+    return (
+      <div {...rest} data-datetime-field class={clsx("relative", local.class)} style={local.style}>
+        <div
+          data-datetime-field-content
+          class={getWrapperClass(false)}
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
+          title={local.title}
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+        <Show when={isEditable()}>
+          <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+            <input
+              type="datetime-local"
+              class={fieldInputClass}
+              value={displayValue()}
+              title={local.title}
+              min={formatMinMax(local.min, fieldType())}
+              max={formatMinMax(local.max, fieldType())}
+              step={getStep()}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      </div>
+    );
+  }
+
   return (
     <Show
-      when={!isDisplayMode()}
+      when={isEditable()}
       fallback={
         <div
           {...rest}
           data-datetime-field
-          class={twMerge(getWrapperClass(), "sd-datetime-field")}
+          class={twMerge(getWrapperClass(true), "sd-datetime-field")}
           style={local.style}
           title={local.title}
         >
@@ -212,7 +243,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div {...rest} data-datetime-field class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
         <input
           type="datetime-local"
           class={fieldInputClass}
