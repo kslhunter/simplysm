@@ -16,10 +16,51 @@ const users: User[] = [
   { name: "최지영", age: 22, email: "choi@example.com", salary: 3800 },
 ];
 
+interface Category {
+  name: string;
+  count: number;
+  children?: Category[];
+}
+
+const categories: Category[] = [
+  {
+    name: "전자제품",
+    count: 150,
+    children: [
+      {
+        name: "컴퓨터",
+        count: 80,
+        children: [
+          { name: "노트북", count: 45 },
+          { name: "데스크톱", count: 35 },
+        ],
+      },
+      {
+        name: "모바일",
+        count: 70,
+        children: [
+          { name: "스마트폰", count: 50 },
+          { name: "태블릿", count: 20 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "의류",
+    count: 200,
+    children: [
+      { name: "상의", count: 120 },
+      { name: "하의", count: 80 },
+    ],
+  },
+  { name: "식품", count: 300 },
+];
+
 export default function SheetPage() {
   const totalSalary = () => users.reduce((sum, u) => sum + u.salary, 0);
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
   const [page, setPage] = createSignal(0);
+  const [expanded, setExpanded] = createSignal<Category[]>([]);
 
   return (
     <TopbarContainer>
@@ -151,6 +192,32 @@ export default function SheetPage() {
                 {(ctx) => (
                   <div class="px-2 py-1 text-right">
                     {ctx.item.salary.toLocaleString()}원
+                  </div>
+                )}
+              </Sheet.Column>
+            </Sheet>
+          </section>
+
+          {/* 트리 확장 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">트리 확장</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              getChildrenFn으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를 표현합니다.
+            </p>
+            <Sheet
+              items={categories}
+              key="tree"
+              getChildrenFn={(item) => item.children}
+              expandedItems={expanded()}
+              onExpandedItemsChange={setExpanded}
+            >
+              <Sheet.Column<Category> key="name" header="카테고리">
+                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              </Sheet.Column>
+              <Sheet.Column<Category> key="count" header="상품 수">
+                {(ctx) => (
+                  <div class="px-2 py-1 text-right">
+                    {ctx.item.count.toLocaleString()}개
                   </div>
                 )}
               </Sheet.Column>

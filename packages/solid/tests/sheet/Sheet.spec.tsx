@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@solidjs/testing-library";
 import { Sheet } from "../../src/components/data/sheet/Sheet";
-import { applySorting } from "../../src/components/data/sheet/sheetUtils";
+import { applySorting, collectAllExpandable, flattenTree } from "../../src/components/data/sheet/sheetUtils";
 import type { SortingDef } from "../../src/components/data/sheet/types";
 import { ConfigContext } from "../../src/contexts/ConfigContext";
 import type { JSX } from "solid-js";
@@ -371,5 +371,218 @@ describe("applySorting", () => {
     const original = [...items];
     applySorting(items, [{ key: "name", desc: false }]);
     expect(items).toEqual(original);
+  });
+});
+
+describe("flattenTree", () => {
+  interface TreeNode {
+    id: string;
+    children?: TreeNode[];
+  }
+
+  const getChildren = (item: TreeNode) => item.children;
+
+  const tree: TreeNode[] = [
+    {
+      id: "a",
+      children: [
+        { id: "a1" },
+        { id: "a2", children: [{ id: "a2x" }] },
+      ],
+    },
+    { id: "b" },
+  ];
+
+  it("getChildrenFn이 없으면 flat 리스트를 반환한다", () => {
+    const result = flattenTree(tree, []);
+    expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
+    expect(result.every((r) => r.depth === 0)).toBe(true);
+    expect(result.every((r) => !r.hasChildren)).toBe(true);
+  });
+
+  it("모두 접힌 상태면 루트만 반환한다", () => {
+    const result = flattenTree(tree, [], getChildren);
+    expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
+    expect(result[0].hasChildren).toBe(true);
+    expect(result[1].hasChildren).toBe(false);
+  });
+
+  it("루트 확장 시 1단계 자식이 포함된다", () => {
+    const result = flattenTree(tree, [tree[0]], getChildren);
+    expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "b"]);
+    expect(result[1].depth).toBe(1);
+    expect(result[1].parent).toBe(tree[0]);
+    expect(result[2].hasChildren).toBe(true);
+  });
+
+  it("중첩 확장 시 2단계 자식까지 포함된다", () => {
+    const a2 = tree[0].children![1];
+    const result = flattenTree(tree, [tree[0], a2], getChildren);
+    expect(result.map((r) => r.item.id)).toEqual(["a", "a1", "a2", "a2x", "b"]);
+    expect(result[3].depth).toBe(2);
+    expect(result[3].parent).toBe(a2);
+  });
+
+  it("접힌 노드의 자식은 포함되지 않는다", () => {
+    // a2만 확장하고 a는 접힘 → a2 자체가 보이지 않으므로 a2의 자식도 안 보임
+    const a2 = tree[0].children![1];
+    const result = flattenTree(tree, [a2], getChildren);
+    expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
+  });
+
+  it("빈 배열이면 빈 결과를 반환한다", () => {
+    const result = flattenTree([], [], getChildren);
+    expect(result).toEqual([]);
+  });
+
+  it("index는 순서대로 증가한다", () => {
+    const result = flattenTree(tree, [tree[0]], getChildren);
+    expect(result.map((r) => r.index)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+describe("collectAllExpandable", () => {
+  interface TreeNode {
+    id: string;
+    children?: TreeNode[];
+  }
+
+  const getChildren = (item: TreeNode) => item.children;
+
+  it("자식이 있는 모든 노드를 재귀적으로 수집한다", () => {
+    const tree: TreeNode[] = [
+      {
+        id: "a",
+        children: [
+          { id: "a1" },
+          { id: "a2", children: [{ id: "a2x" }] },
+        ],
+      },
+      { id: "b" },
+    ];
+    const result = collectAllExpandable(tree, getChildren);
+    expect(result.map((r) => r.id)).toEqual(["a", "a2"]);
+  });
+
+  it("자식이 없는 트리면 빈 배열을 반환한다", () => {
+    const tree: TreeNode[] = [{ id: "a" }, { id: "b" }];
+    const result = collectAllExpandable(tree, getChildren);
+    expect(result).toEqual([]);
+  });
+});
+
+describe("Sheet 트리 확장", () => {
+  interface TreeItem {
+    name: string;
+    children?: TreeItem[];
+  }
+
+  const treeData: TreeItem[] = [
+    {
+      name: "폴더A",
+      children: [
+        { name: "파일A1" },
+        { name: "파일A2" },
+      ],
+    },
+    { name: "폴더B" },
+  ];
+
+  it("getChildrenFn 설정 시 확장 기능 컬럼이 렌더링된다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet
+          items={treeData}
+          key="test-tree"
+          getChildrenFn={(item) => item.children}
+        >
+          <Sheet.Column<TreeItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    // colgroup에 확장 컬럼 col이 추가됨
+    const cols = container.querySelectorAll("colgroup col");
+    expect(cols.length).toBe(2); // 확장 컬럼 + name 컬럼
+
+    // 헤더에 확장 토글 버튼이 존재
+    const expandBtn = container.querySelector("thead button");
+    expect(expandBtn).toBeTruthy();
+  });
+
+  it("접힌 상태에서는 루트 항목만 표시된다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet
+          items={treeData}
+          key="test-tree-collapsed"
+          getChildrenFn={(item) => item.children}
+          expandedItems={[]}
+        >
+          <Sheet.Column<TreeItem> key="name" header="이름">
+            {(ctx) => <div class="name">{ctx.item.name}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const rows = container.querySelectorAll("tbody tr");
+    expect(rows.length).toBe(2);
+
+    const names = container.querySelectorAll("tbody .name");
+    expect(Array.from(names).map((n) => n.textContent)).toEqual(["폴더A", "폴더B"]);
+  });
+
+  it("확장된 항목의 자식이 표시된다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet
+          items={treeData}
+          key="test-tree-expanded"
+          getChildrenFn={(item) => item.children}
+          expandedItems={[treeData[0]]}
+        >
+          <Sheet.Column<TreeItem> key="name" header="이름">
+            {(ctx) => <div class="name">{ctx.item.name}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const rows = container.querySelectorAll("tbody tr");
+    expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B
+
+    const names = container.querySelectorAll("tbody .name");
+    expect(Array.from(names).map((n) => n.textContent)).toEqual([
+      "폴더A", "파일A1", "파일A2", "폴더B",
+    ]);
+  });
+
+  it("자식이 없는 항목은 확장 아이콘이 숨겨진다", () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <Sheet
+          items={treeData}
+          key="test-tree-no-children"
+          getChildrenFn={(item) => item.children}
+          expandedItems={[]}
+        >
+          <Sheet.Column<TreeItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </Sheet.Column>
+        </Sheet>
+      </TestWrapper>
+    ));
+
+    const tbodyRows = container.querySelectorAll("tbody tr");
+    // 폴더B(인덱스 1)에는 자식이 없으므로 확장 버튼이 없어야 함
+    const secondRowBtns = tbodyRows[1].querySelectorAll("button");
+    expect(secondRowBtns.length).toBe(0);
+
+    // 폴더A(인덱스 0)에는 자식이 있으므로 확장 버튼이 있어야 함
+    const firstRowBtns = tbodyRows[0].querySelectorAll("button");
+    expect(firstRowBtns.length).toBe(1);
   });
 });

@@ -91,3 +91,40 @@ export const resizeIndicatorClass = clsx(
   "pointer-events-none",
   "z-[7]",
 );
+
+// 기능 컬럼 기본 (확장/선택 컬럼 공통)
+export const featureThClass = clsx(
+  "bg-base-100 dark:bg-base-700",
+  "border-b border-r border-base-300 dark:border-base-600",
+  "p-0",
+  "align-middle"
+);
+
+export const featureTdClass = clsx(
+  "bg-base-50 dark:bg-base-800",
+  "border-b border-r border-base-200 dark:border-base-700",
+  "p-0",
+  "align-middle",
+  "h-px",
+);
+
+// 확장 컬럼 깊이 가이드 — 래퍼 (토글 아이콘과 같은 너비, 세로선 중앙 정렬)
+export const expandIndentGuideClass = clsx(
+  "w-3 self-stretch mr-0.5",
+  "flex justify-end",
+);
+
+// 확장 컬럼 깊이 가이드 — 세로선
+export const expandIndentGuideLineClass = clsx(
+  "w-0 self-stretch",
+  "border-r border-base-300 dark:border-base-600",
+);
+
+// 확장 토글 버튼
+export const expandToggleClass = clsx(
+  "flex items-center justify-center",
+  "size-6",
+  "cursor-pointer",
+  "rounded",
+  "hover:bg-base-200 dark:hover:bg-base-600",
+);

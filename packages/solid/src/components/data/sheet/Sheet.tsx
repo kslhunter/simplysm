@@ -2,16 +2,21 @@ import { children, createMemo, createSignal, For, type JSX, Show, splitProps } f
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import { IconArrowsSort, IconChevronDown, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
-import { applySorting, buildHeaderTable } from "./sheetUtils";
+import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Icon } from "../../display/Icon";
 import { Pagination } from "../Pagination";
 import { usePersisted } from "../../../contexts/usePersisted";
 import {
   defaultContainerClass,
+  expandIndentGuideClass,
+  expandIndentGuideLineClass,
+  expandToggleClass,
+  featureTdClass,
+  featureThClass,
   fixedClass,
   fixedLastClass,
   insetContainerClass,
@@ -49,6 +54,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "totalPageCount",
     "itemsPerPage",
     "displayPageCount",
+    "expandedItems",
+    "onExpandedItemsChange",
+    "getChildrenFn",
     "class",
     "children",
   ]);
@@ -159,6 +167,18 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return sortedItems().slice(page * ipp, (page + 1) * ipp);
   });
 
+  // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
+  const hasExpandFeature = () => local.getChildrenFn != null;
+
+  // 확장 컬럼의 고정 너비 추적
+  const [expandColWidth, setExpandColWidth] = createSignal(0);
+
+  function registerExpandColRef(el: HTMLElement): void {
+    createResizeObserver(el, () => {
+      setExpandColWidth(el.offsetWidth);
+    });
+  }
+
   // #region ColumnFixing
   // 각 컬럼 셀의 ref → 너비 측정용
   const columnRefs = new Map<number, HTMLElement>();
@@ -166,12 +186,19 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // 각 컬럼의 측정된 너비
   const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
 
+  // 기능 컬럼(확장 등)의 총 너비 — 고정 컬럼 left 오프셋에 사용
+  const featureColTotalWidth = createMemo(() => {
+    let w = 0;
+    if (hasExpandFeature()) w += expandColWidth();
+    return w;
+  });
+
   // 고정 컬럼의 left 위치 계산
   const fixedLeftMap = createMemo(() => {
     const map = new Map<number, number>();
     const cols = effectiveColumns();
     const widths = columnWidths();
-    let left = 0;
+    let left = featureColTotalWidth();
     for (let c = 0; c < cols.length; c++) {
       if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
       map.set(c, left);
@@ -294,18 +321,52 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return heights.reduce((sum, h) => sum + h, 0);
   });
 
-  // #region Expanding (스텁 — Plan 4에서 구현)
+  // #region Expanding
+  const [expandedItems, setExpandedItems] = createPropSignal({
+    value: () => local.expandedItems ?? [],
+    onChange: () => local.onExpandedItemsChange,
+  });
+
+  function toggleExpand(item: T): void {
+    const current = expandedItems();
+    if (current.includes(item)) {
+      setExpandedItems(current.filter((i) => i !== item));
+    } else {
+      setExpandedItems([...current, item]);
+    }
+  }
+
+  function toggleExpandAll(): void {
+    if (!local.getChildrenFn) return;
+    const allExpandable = collectAllExpandable(pagedItems(), local.getChildrenFn);
+    const isAllExpanded = allExpandable.every((item) => expandedItems().includes(item));
+    setExpandedItems(isAllExpanded ? [] : allExpandable);
+  }
+
   const flatItems = createMemo((): FlatItem<T>[] => {
-    return pagedItems().map((item, i) => ({
-      item,
-      index: i,
-      depth: 0,
-      hasChildren: false,
-    }));
+    return flattenTree(pagedItems(), expandedItems(), local.getChildrenFn);
   });
 
   // #region Display
   const displayItems = createMemo(() => flatItems());
+
+  // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없을 때)
+  const isExpandColLastFixed = () =>
+    hasExpandFeature() && lastFixedIndex() < 0;
+
+  // 전체 헤더 행 수 + 합계 행 수 (기능 컬럼의 rowspan에 사용)
+  const featureHeaderRowspan = createMemo(() => {
+    const headerRows = headerTable().length;
+    const summaryRow = hasSummary() ? 1 : 0;
+    return headerRows + summaryRow;
+  });
+
+  // 전체 확장 상태인지
+  const isAllExpanded = createMemo(() => {
+    if (!local.getChildrenFn) return false;
+    const allExpandable = collectAllExpandable(pagedItems(), local.getChildrenFn);
+    return allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item));
+  });
 
   return (
     <div data-sheet={local.key} class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}>
@@ -324,6 +385,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       <div data-sheet-scroll class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
       <table class={tableClass}>
         <colgroup>
+          <Show when={hasExpandFeature()}>
+            <col />
+          </Show>
           <For each={effectiveColumns()}>
             {(col) => <col style={col.width != null ? { width: col.width } : undefined} />}
           </For>
@@ -332,6 +396,38 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <For each={headerTable()}>
             {(row, rowIndex) => (
               <tr ref={(el: HTMLElement) => registerHeaderRow(rowIndex(), el)}>
+                {/* 확장 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */}
+                <Show when={hasExpandFeature() && rowIndex() === 0}>
+                  <th
+                    class={twMerge(
+                      featureThClass,
+                      fixedClass,
+                      "z-[5]",
+                      isExpandColLastFixed() ? fixedLastClass : undefined,
+                    )}
+                    rowspan={featureHeaderRowspan()}
+                    style={{ top: "0", left: "0" }}
+                    ref={registerExpandColRef}
+                  >
+                    <div class="flex items-center px-1">
+                      <button
+                        type="button"
+                        class={expandToggleClass}
+                        onClick={toggleExpandAll}
+                        title={isAllExpanded() ? "전체 접기" : "전체 펼치기"}
+                      >
+                        <Icon
+                          icon={IconChevronDown}
+                          size="1em"
+                          class={clsx(
+                            "transition-transform",
+                            isAllExpanded() ? "rotate-0" : "-rotate-90",
+                          )}
+                        />
+                      </button>
+                    </div>
+                  </th>
+                </Show>
                 <For each={row}>
                   {(cell, cellColIndex) => (
                     <Show when={cell}>
@@ -457,6 +553,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           </For>
           <Show when={hasSummary()}>
             <tr>
+              {/* 확장 기능 컬럼의 합계 셀은 rowspan으로 이미 덮여있으므로 제외 */}
               <For each={effectiveColumns()}>
                 {(col, colIndex) => {
                   const summaryStyle = (): string | undefined => {
@@ -492,6 +589,47 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <For each={displayItems()}>
             {(flat) => (
               <tr>
+                {/* 확장 기능 컬럼 바디 셀 */}
+                <Show when={hasExpandFeature()}>
+                  <td
+                    class={twMerge(
+                      featureTdClass,
+                      fixedClass,
+                      "z-[2]",
+                      isExpandColLastFixed() ? fixedLastClass : undefined,
+                    )}
+                    style={{ left: "0" }}
+                  >
+                    <div class="flex h-full items-center px-1">
+                      <For each={Array.from({ length: flat.depth })}>
+                        {() => (
+                          <div class={expandIndentGuideClass}>
+                            <div class={expandIndentGuideLineClass} />
+                          </div>
+                        )}
+                      </For>
+                      <Show
+                        when={flat.hasChildren}
+                        fallback={<div class="size-6" />}
+                      >
+                        <button
+                          type="button"
+                          class={expandToggleClass}
+                          onClick={() => toggleExpand(flat.item)}
+                        >
+                          <Icon
+                            icon={IconChevronDown}
+                            size="1em"
+                            class={clsx(
+                              "transition-transform",
+                              expandedItems().includes(flat.item) ? "rotate-0" : "-rotate-90",
+                            )}
+                          />
+                        </button>
+                      </Show>
+                    </div>
+                  </td>
+                </Show>
                 <For each={effectiveColumns()}>
                   {(col, colIndex) => (
                     <td

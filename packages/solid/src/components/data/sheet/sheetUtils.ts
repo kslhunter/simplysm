@@ -1,4 +1,4 @@
-import type { HeaderDef, SheetColumnDef, SortingDef } from "./types";
+import type { FlatItem, HeaderDef, SheetColumnDef, SortingDef } from "./types";
 import { objGetChainValue } from "@simplysm/core-common";
 
 export function normalizeHeader(header?: string | string[]): string[] {
@@ -89,6 +89,62 @@ function isSameGroup(padded: string[][], colA: number, colB: number, startRow: n
     if (padded[colA][r] !== padded[colB][r]) return false;
   }
   return true;
+}
+
+export function flattenTree<T>(
+  items: T[],
+  expandedItems: T[],
+  getChildrenFn?: (item: T, index: number) => T[] | undefined,
+): FlatItem<T>[] {
+  if (!getChildrenFn) {
+    return items.map((item, i) => ({
+      item,
+      index: i,
+      depth: 0,
+      hasChildren: false,
+    }));
+  }
+
+  const result: FlatItem<T>[] = [];
+  let index = 0;
+
+  function walk(list: T[], depth: number, parent?: T): void {
+    for (const item of list) {
+      const children = getChildrenFn!(item, index);
+      const hasChildren = children != null && children.length > 0;
+      result.push({ item, index, depth, hasChildren, parent });
+      index++;
+
+      if (hasChildren && expandedItems.includes(item)) {
+        walk(children, depth + 1, item);
+      }
+    }
+  }
+
+  walk(items, 0);
+  return result;
+}
+
+export function collectAllExpandable<T>(
+  items: T[],
+  getChildrenFn: (item: T, index: number) => T[] | undefined,
+): T[] {
+  const result: T[] = [];
+  let index = 0;
+
+  function walk(list: T[]): void {
+    for (const item of list) {
+      const children = getChildrenFn(item, index);
+      index++;
+      if (children != null && children.length > 0) {
+        result.push(item);
+        walk(children);
+      }
+    }
+  }
+
+  walk(items);
+  return result;
 }
 
 export function applySorting<T>(items: T[], sorts: SortingDef[]): T[] {
