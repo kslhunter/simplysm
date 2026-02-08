@@ -211,8 +211,11 @@ describe("NumberField", () => {
     it("inset 스타일이 적용된다", () => {
       const { container } = render(() => <NumberField inset />);
 
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("border-none");
+      // inset일 때 outer div가 relative이고, 내부 content div에 border-none이 적용됨
+      const outer = container.firstChild as HTMLElement;
+      expect(outer.classList.contains("relative")).toBe(true);
+      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
+      expect(contentDiv.className).toContain("border-none");
     });
 
     it("error 상태에서 에러 스타일이 적용된다", () => {
@@ -220,6 +223,46 @@ describe("NumberField", () => {
 
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.className).toContain("border-danger-500");
+    });
+  });
+
+  describe("inset dual-element", () => {
+    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+      const { container } = render(() => <NumberField inset readonly value={1234} />);
+      const outer = container.firstChild as HTMLElement;
+      expect(outer.classList.contains("relative")).toBe(true);
+
+      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.textContent).toBe("1,234");
+
+      expect(outer.querySelector("input")).toBeFalsy();
+    });
+
+    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+      const { container } = render(() => <NumberField inset value={1234} />);
+      const outer = container.firstChild as HTMLElement;
+
+      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.style.visibility).toBe("hidden");
+
+      const input = outer.querySelector("input") as HTMLInputElement;
+      expect(input).toBeTruthy();
+    });
+
+    it("inset + readonly에서 우측 정렬이 적용된다", () => {
+      const { container } = render(() => <NumberField inset readonly value={100} />);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
+      expect(contentDiv.classList.contains("justify-end")).toBe(true);
+    });
+
+    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+      const { container } = render(() => <NumberField inset readonly />);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
+      expect(contentDiv.textContent).toBe("\u00A0");
     });
   });
 
