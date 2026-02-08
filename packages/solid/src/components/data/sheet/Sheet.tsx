@@ -352,6 +352,21 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return flattenTree(pagedItems(), expandedItems(), local.getChildrenFn);
   });
 
+  // #region CellAgent
+  let containerRef: HTMLDivElement | undefined;
+
+  const [focusedAddr, setFocusedAddr] = createSignal<{ r: number; c: number } | null>(null);
+  const [editCellAddr, setEditCellAddr] = createSignal<{ r: number; c: number } | null>(null);
+
+  function getIsCellEditMode(r: number, c: number): boolean {
+    const addr = editCellAddr();
+    return addr != null && addr.r === r && addr.c === c;
+  }
+
+  function getCell(r: number, c: number): HTMLTableCellElement | null {
+    return containerRef?.querySelector(`td[data-r="${r}"][data-c="${c}"]`) ?? null;
+  }
+
   // #region Display
   const displayItems = createMemo(() => flatItems());
 
@@ -387,7 +402,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           />
         </div>
       </Show>
-      <div data-sheet-scroll class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
+      <div data-sheet-scroll ref={containerRef} class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
       <table class={tableClass}>
         <colgroup>
           <Show when={hasExpandFeature()}>
