@@ -1104,7 +1104,7 @@ Playwright MCP로 데모 페이지를 열어 수동 검증:
 Plan 1 (기반)
   ├→ Plan 2 (정렬+페이징)
   ├→ Plan 3 (고정+리사이징)
-  └→ Plan 4 (트리) → Plan 5 (선택) → Plan 6 (셀 편집+포커스) → Plan 7 (복사+설정)
+  └→ Plan 4 (트리) → Plan 5 (셀 편집+포커스) → Plan 6 (선택) → Plan 7 (복사+설정)
 ```
 
 Plan 2, 3은 Plan 1 이후 순서 무관하게 진행 가능합니다.
@@ -1146,24 +1146,27 @@ Plan 2, 3은 Plan 1 이후 순서 무관하게 진행 가능합니다.
 - **데모**: 트리 구조 데이터 펼침/접기
 - **수동 검증**: 깊이 인디케이터, 아이콘 회전, 전체 확장/접기
 
-### Plan 5: 행 선택 + 선택 기능 컬럼
-
-- `Sheet.tsx` — `#region Selection`, `#region AutoSelect`, 선택 기능 컬럼 UI
-- 단일/다중 선택, Shift+Click 범위 선택, 전체 선택 체크박스
-- 선택 행 인디케이터 (overlay)
-- `getItemSelectableFn` (비활성 + tooltip)
-- **데모**: 단일/다중 선택 + autoSelect 예제
-- **수동 검증**: 체크박스, Shift+범위 선택, 인디케이터
-
-### Plan 6: 셀 편집 + 포커스 인디케이터
+### Plan 5: 셀 편집 + 포커스 인디케이터
 
 - `findFirstFocusableChild` 구현 (`core-browser`)
 - `Sheet.tsx` — `#region CellAgent`, `#region FocusIndicator`, `#region AutoScroll`
+- `focusedAddr` signal — 현재 포커스된 셀 좌표 (Plan 6 범위 선택에서도 사용)
 - Excel 스타일 키보드 네비게이션 (Arrow, Enter, Tab, F2, Escape)
 - 포커스 인디케이터 (행 + 셀, 고정 컬럼 대응, opacity 조절)
 - `focusMode` ("row" / "cell")
 - **데모**: 셀 편집 모드 예제
 - **수동 검증**: 키보드 네비게이션, 편집 진입/해제, 인디케이터 스크롤 추적
+
+### Plan 6: 행 선택 + 선택 기능 컬럼
+
+- `Sheet.tsx` — `#region Selection`, `#region AutoSelect`, 선택 기능 컬럼 UI
+- 단일/다중 선택, Shift+Click 범위 선택 (`focusedAddr` 활용), 전체 선택 체크박스
+- `autoSelect="click"` + `autoSelect="focus"` (`focusedAddr` 활용)
+- 선택 행 인디케이터 (overlay div)
+- CheckBox는 표시용 (`pointer-events-none`), 감싸는 요소에서 onClick으로 shiftKey 감지
+- `getItemSelectableFn` (비활성 + tooltip)
+- **데모**: 단일/다중 선택 + autoSelect + 선택 불가 예제
+- **수동 검증**: 체크박스, Shift+범위 선택, 인디케이터
 
 ### Plan 7: 복사/붙여넣기 + 설정 모달
 
