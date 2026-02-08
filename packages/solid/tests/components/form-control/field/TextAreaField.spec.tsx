@@ -126,6 +126,38 @@ describe("TextAreaField 컴포넌트", () => {
       expect(wrapper.classList.contains("border-none")).toBe(true);
       expect(wrapper.classList.contains("bg-transparent")).toBe(true);
     });
+
+    it("inset + readonly일 때 content div가 보이고 textarea가 없다", () => {
+      const { container } = render(() => <TextAreaField inset readonly value="Hello" />);
+      const outer = container.firstChild as HTMLElement;
+      expect(outer.classList.contains("relative")).toBe(true);
+
+      const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.textContent).toContain("Hello");
+
+      expect(outer.querySelector("textarea")).toBeFalsy();
+    });
+
+    it("inset + editable일 때 content div(hidden)와 textarea가 모두 존재한다", () => {
+      const { container } = render(() => <TextAreaField inset value="Hello" />);
+      const outer = container.firstChild as HTMLElement;
+
+      const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.style.visibility).toBe("hidden");
+
+      const textarea = outer.querySelector("textarea") as HTMLTextAreaElement;
+      expect(textarea).toBeTruthy();
+      expect(textarea.value).toBe("Hello");
+    });
+
+    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+      const { container } = render(() => <TextAreaField inset readonly />);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-textarea-field-content]") as HTMLElement;
+      expect(contentDiv.textContent).toContain("\u00A0");
+    });
   });
 
   describe("class 병합", () => {
