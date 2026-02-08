@@ -190,8 +190,8 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
   // 표시 값
   const displayValue = () => formatValue(value(), fieldType());
 
-  // 입력 핸들러
-  const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
+  // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
+  const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     const newValue = e.currentTarget.value;
     const parsed = parseValue(newValue, fieldType());
     setValue(parsed);
@@ -244,7 +244,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
               min={formatMinMax(local.min, fieldType())}
               max={formatMinMax(local.max, fieldType())}
               step={getStep()}
-              onInput={handleInput}
+              onChange={handleChange}
             />
           </div>
         </Show>
@@ -276,7 +276,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
           max={formatMinMax(local.max, fieldType())}
           step={getStep()}
           style={local.style}
-          onInput={handleInput}
+          onChange={handleChange}
         />
       </Show>
     </Show>
