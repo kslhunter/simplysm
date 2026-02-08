@@ -409,7 +409,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         const focusable = td.querySelector<HTMLElement>(
           'input:not(:disabled), button:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
         );
-        focusable?.focus();
+        if (focusable) {
+          focusable.focus();
+        } else {
+          // 편집 가능한 요소가 없으면 편집 모드 해제
+          setEditCellAddr(null);
+        }
       }
     });
   }
@@ -529,11 +534,13 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     if (!td || !tr) return;
 
     // 행 인디케이터
+    const tableEl = container.querySelector("table");
+    const indicatorWidth = Math.min(container.clientWidth, tableEl?.offsetWidth ?? container.clientWidth);
     setFocusRowStyle({
       display: "block",
       top: `${tr.offsetTop}px`,
       left: `${container.scrollLeft}px`,
-      width: `${container.clientWidth}px`,
+      width: `${indicatorWidth}px`,
       height: `${tr.offsetHeight}px`,
     });
 
@@ -697,6 +704,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                           if (c().isLastRow && c().colIndex != null) {
                             const left = getFixedStyle(c().colIndex!);
                             if (left != null) parts.push(left);
+                            // max-width: 명시적 너비가 있으면 적용 (컬럼이 내용물보다 작아질 수 있도록)
+                            const col = effectiveColumns()[c().colIndex!];
+                            if (col.width != null) parts.push(`max-width: ${col.width}`);
                           } else if (isGroupFixed()) {
                             const left = getFixedStyle(cellColIndex());
                             if (left != null) parts.push(left);
@@ -863,10 +873,17 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                         tdClass,
                         col.fixed ? clsx(fixedClass, "z-[2]") : undefined,
                         isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                        col.class,
                         local.getItemCellClassFn?.(flat.item, col.key),
                       )}
-                      style={[getFixedStyle(colIndex()), local.getItemCellStyleFn?.(flat.item, col.key)].filter(Boolean).join("; ") || undefined}
-                      onDblClick={() => enterEditMode(flatIndex(), colIndex())}
+                      style={[getFixedStyle(colIndex()), col.width != null ? `max-width: ${col.width}` : undefined, local.getItemCellStyleFn?.(flat.item, col.key)].filter(Boolean).join("; ") || undefined}
+                      onDblClick={() => { if (local.focusMode === "cell") enterEditMode(flatIndex(), colIndex()); }}
+                      onMouseDown={(e) => {
+                        if (local.focusMode === "cell" && !getIsCellEditMode(flatIndex(), colIndex()) && e.target !== e.currentTarget) {
+                          e.preventDefault();
+                          (e.currentTarget as HTMLElement).focus();
+                        }
+                      }}
                     >
                       {col.cell({
                         item: flat.item,

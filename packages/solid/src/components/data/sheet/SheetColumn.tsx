@@ -21,6 +21,7 @@ export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
     summary: props.summary,
     tooltip: props.tooltip,
     cell: props.children,
+    class: props.class,
     fixed: props.fixed ?? false,
     hidden: props.hidden ?? false,
     collapse: props.collapse ?? false,

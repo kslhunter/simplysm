@@ -60,6 +60,7 @@ export interface SheetColumnProps<T> {
   hidden?: boolean;
   collapse?: boolean;
   width?: string;
+  class?: string;
   disableSorting?: boolean;
   disableResizing?: boolean;
   children: (ctx: SheetCellContext<T>) => JSX.Element;
@@ -106,6 +107,7 @@ export interface SheetColumnDef<T> {
   hidden: boolean;
   collapse: boolean;
   width?: string;
+  class?: string;
   disableSorting: boolean;
   disableResizing: boolean;
   cell: (ctx: SheetCellContext<T>) => JSX.Element;

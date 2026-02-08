@@ -25,7 +25,7 @@ export const fieldSizeClasses: Record<FieldSize, string> = {
 export const fieldErrorClass = clsx`border-danger-500`;
 
 // inset 스타일
-export const fieldInsetClass = clsx`rounded-none border-none bg-transparent p-0`;
+export const fieldInsetClass = clsx`rounded-none border-none bg-transparent`;
 
 // disabled 스타일
 export const fieldDisabledClass = clsx`bg-base-100 text-base-500 dark:bg-base-800`;

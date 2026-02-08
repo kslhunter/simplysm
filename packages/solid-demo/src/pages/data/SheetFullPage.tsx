@@ -77,54 +77,52 @@ export default function SheetFullPage() {
           currentPage={page()}
           onCurrentPageChange={setPage}
         >
-          <Sheet.Column<Employee> key="id" header="No." fixed>
-            {(ctx) => <div class="px-2 py-1 text-right text-base-500">{ctx.item.id}</div>}
+          <Sheet.Column<Employee> key="id" header="No." class="px-2 py-1 text-right text-base-500" fixed>
+            {(ctx) => ctx.item.id}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} fixed>
-            {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
+          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} class="px-2 py-1 font-medium" fixed>
+            {(ctx) => ctx.item.name}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} fixed>
-            {(ctx) => <div class="px-2 py-1">{ctx.item.department}</div>}
+          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} class="px-2 py-1" fixed>
+            {(ctx) => ctx.item.department}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]}>
-            {(ctx) => <div class="px-2 py-1">{ctx.item.team}</div>}
+          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]} class="px-2 py-1">
+            {(ctx) => ctx.item.team}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]}>
-            {(ctx) => <div class="px-2 py-1">{ctx.item.position}</div>}
+          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]} class="px-2 py-1">
+            {(ctx) => ctx.item.position}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]}>
-            {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+            {(ctx) => ctx.item.email}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]}>
-            {(ctx) => <div class="px-2 py-1">{ctx.item.phone}</div>}
+          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} class="px-2 py-1">
+            {(ctx) => ctx.item.phone}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="joinDate" header="입사일">
-            {(ctx) => <div class="px-2 py-1">{ctx.item.joinDate}</div>}
+          <Sheet.Column<Employee> key="joinDate" header="입사일" class="px-2 py-1">
+            {(ctx) => ctx.item.joinDate}
           </Sheet.Column>
           <Sheet.Column<Employee>
             key="salary"
             header={["급여정보", "기본급"]}
+            class="px-2 py-1 text-right"
             summary={() => (
               <span class="font-bold">{totalSalary().toLocaleString()}만</span>
             )}
           >
-            {(ctx) => (
-              <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}만</div>
-            )}
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}만</>}
           </Sheet.Column>
           <Sheet.Column<Employee>
             key="bonus"
             header={["급여정보", "상여금"]}
+            class="px-2 py-1 text-right"
             summary={() => (
               <span class="font-bold">{totalBonus().toLocaleString()}만</span>
             )}
           >
-            {(ctx) => (
-              <div class="px-2 py-1 text-right">{ctx.item.bonus.toLocaleString()}만</div>
-            )}
+            {(ctx) => <>{ctx.item.bonus.toLocaleString()}만</>}
           </Sheet.Column>
-          <Sheet.Column<Employee> key="status" header="상태">
-            {(ctx) => <div class="px-2 py-1">{ctx.item.status}</div>}
+          <Sheet.Column<Employee> key="status" header="상태" class="px-2 py-1">
+            {(ctx) => ctx.item.status}
           </Sheet.Column>
         </Sheet>
       </div>

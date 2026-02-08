@@ -17,6 +17,10 @@
     height: 100%;
   }
 
+  *:focus {
+    outline: none;
+  }
+
   /* 스크롤바 스타일 */
   ::-webkit-scrollbar {
     width: 0.5rem;

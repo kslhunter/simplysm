@@ -170,9 +170,9 @@ export const TextField: Component<TextFieldProps> = (props) => {
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
-      local.inset && fieldInsetClass,
       local.disabled && fieldDisabledClass,
       local.readonly && fieldReadonlyClass,
+      local.inset && fieldInsetClass,
       local.class,
     );
 

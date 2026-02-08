@@ -28,7 +28,7 @@ export const thContentClass = clsx(
 export const tdClass = clsx(
   "bg-white dark:bg-base-800",
   "border-b border-r border-base-200 dark:border-base-700",
-  "overflow-hidden whitespace-nowrap",
+  "truncate",
   "p-0",
   "align-top",
 );

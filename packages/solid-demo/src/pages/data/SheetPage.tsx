@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import { Sheet, TextField, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
 
 interface User {
@@ -85,14 +85,14 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 테이블</h2>
             <Sheet items={users} key="basic">
-              <Sheet.Column<User> key="name" header="이름">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -104,21 +104,17 @@ export default function SheetPage() {
               header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
             </p>
             <Sheet items={users} key="multi-header">
-              <Sheet.Column<User> key="name" header={["기본정보", "이름"]}>
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header={["기본정보", "나이"]}>
-                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              <Sheet.Column<User> key="age" header={["기본정보", "나이"]} class="px-2 py-1">
+                {(ctx) => ctx.item.age}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header={["연락처", "이메일"]}>
-                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              <Sheet.Column<User> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+                {(ctx) => ctx.item.email}
               </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -130,21 +126,18 @@ export default function SheetPage() {
               summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에 고정됩니다.
             </p>
             <Sheet items={users} key="summary">
-              <Sheet.Column<User> key="name" header="이름">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
               <Sheet.Column<User>
                 key="salary"
                 header="급여"
+                class="px-2 py-1 text-right"
                 summary={() => (
                   <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>
                 )}
               >
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -162,21 +155,17 @@ export default function SheetPage() {
               onSortsChange={setSorts}
               useAutoSort
             >
-              <Sheet.Column<User> key="name" header="이름">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
               </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" disableSorting>
-                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" disableSorting>
+                {(ctx) => ctx.item.email}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -194,18 +183,14 @@ export default function SheetPage() {
               currentPage={page()}
               onCurrentPageChange={setPage}
             >
-              <Sheet.Column<User> key="name" header="이름">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
               </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -223,15 +208,11 @@ export default function SheetPage() {
               expandedItems={expanded()}
               onExpandedItemsChange={setExpanded}
             >
-              <Sheet.Column<Category> key="name" header="카테고리">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<Category> key="name" header="카테고리" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<Category> key="count" header="상품 수">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.count.toLocaleString()}개
-                  </div>
-                )}
+              <Sheet.Column<Category> key="count" header="상품 수" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.count.toLocaleString()}개</>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -244,21 +225,17 @@ export default function SheetPage() {
             </p>
             <div>
               <Sheet items={users} key="fixed-resize">
-                <Sheet.Column<User> key="name" header="이름" fixed>
-                  {(ctx) => <div class="px-2 py-1 font-medium">{ctx.item.name}</div>}
+                <Sheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
+                  {(ctx) => ctx.item.name}
                 </Sheet.Column>
-                <Sheet.Column<User> key="age" header="나이" fixed>
-                  {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+                <Sheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
+                  {(ctx) => ctx.item.age}
                 </Sheet.Column>
-                <Sheet.Column<User> key="email" header="이메일" >
-                  {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+                <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                  {(ctx) => ctx.item.email}
                 </Sheet.Column>
-                <Sheet.Column<User> key="salary" header="급여">
-                  {(ctx) => (
-                    <div class="px-2 py-1 text-right">
-                      {ctx.item.salary.toLocaleString()}원
-                    </div>
-                  )}
+                <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                  {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
                 </Sheet.Column>
               </Sheet>
             </div>
@@ -273,35 +250,29 @@ export default function SheetPage() {
             <Sheet items={editUsers()} key="cell-edit" focusMode="cell">
               <Sheet.Column<User> key="name" header="이름">
                 {(ctx) => (
-                  <Show when={ctx.edit} fallback={<div class="px-2 py-1">{ctx.item.name}</div>}>
-                    <TextField
-                      value={ctx.item.name}
-                      onValueChange={(v) => updateEditUser(ctx.index, "name", v)}
-                      inset
-                    />
-                  </Show>
+                  <TextField
+                    value={ctx.item.name}
+                    onValueChange={(v) => updateEditUser(ctx.index, "name", v)}
+                    readonly={!ctx.edit}
+                    inset
+                  />
                 )}
               </Sheet.Column>
               <Sheet.Column<User> key="age" header="나이">
                 {(ctx) => (
-                  <Show when={ctx.edit} fallback={<div class="px-2 py-1">{ctx.item.age}</div>}>
-                    <TextField
-                      value={String(ctx.item.age)}
-                      onValueChange={(v) => updateEditUser(ctx.index, "age", Number(v))}
-                      inset
-                    />
-                  </Show>
+                  <TextField
+                    value={String(ctx.item.age)}
+                    onValueChange={(v) => updateEditUser(ctx.index, "age", Number(v))}
+                    readonly={!ctx.edit}
+                    inset
+                  />
                 )}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
               </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -313,14 +284,14 @@ export default function SheetPage() {
               focusMode="row"일 때 셀 인디케이터 대신 행 인디케이터만 표시됩니다.
             </p>
             <Sheet items={users} key="row-focus" focusMode="row">
-              <Sheet.Column<User> key="name" header="이름">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일">
-                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
               </Sheet.Column>
             </Sheet>
           </section>
