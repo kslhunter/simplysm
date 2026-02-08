@@ -14,6 +14,9 @@ const fieldSizes = {
   field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
   "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
   "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
+  "field-inset": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]})`,
+  "field-inset-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]})`,
+  "field-inset-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]})`,
 };
 
 export default {

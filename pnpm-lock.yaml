@@ -437,6 +437,9 @@ importers:
 
   packages/solid:
     dependencies:
+      '@simplysm/core-browser':
+        specifier: workspace:*
+        version: link:../core-browser
       '@simplysm/core-common':
         specifier: workspace:*
         version: link:../core-common

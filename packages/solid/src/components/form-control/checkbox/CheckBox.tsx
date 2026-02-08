@@ -12,6 +12,7 @@ import {
   themeCheckedClasses,
   checkBoxSizeClasses,
   checkBoxInsetClass,
+  checkBoxInsetSizeHeightClasses,
   checkBoxInlineClass,
   checkBoxDisabledClass,
 } from "./CheckBox.styles";
@@ -68,6 +69,7 @@ export const CheckBox: ParentComponent<CheckBoxProps> = (props) => {
       checkBoxBaseClass,
       local.size && checkBoxSizeClasses[local.size],
       local.inset && checkBoxInsetClass,
+      local.inset && local.size && checkBoxInsetSizeHeightClasses[local.size],
       local.inline && checkBoxInlineClass,
       local.disabled && checkBoxDisabledClass,
       local.class,

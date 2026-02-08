@@ -1,5 +1,4 @@
 import { type Component, type JSX, Show, splitProps } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -9,8 +8,9 @@ import {
   fieldSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
+  fieldInsetHeightClass,
+  fieldInsetSizeHeightClasses,
   fieldDisabledClass,
-  fieldReadonlyClass,
   fieldInputClass,
 } from "./Field.styles";
 
@@ -38,9 +38,6 @@ export interface DateFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
-  /** 읽기 전용 */
-  readonly?: boolean;
-
   /** 에러 상태 */
   error?: boolean;
 
@@ -58,7 +55,7 @@ export interface DateFieldProps {
 }
 
 /**
- * DateOnly 값을 타입에 맞는 문자열로 변환
+ * DateOnly 값을 input value용 문자열로 변환 (ISO 형식)
  */
 function formatValue(value: DateOnly | undefined, type: DateFieldType): string {
   if (value == null) return "";
@@ -70,6 +67,23 @@ function formatValue(value: DateOnly | undefined, type: DateFieldType): string {
       return value.toFormatString("yyyy-MM");
     case "date":
       return value.toFormatString("yyyy-MM-dd");
+  }
+}
+
+/**
+ * DateOnly 값을 locale에 맞는 표시용 문자열로 변환
+ */
+function formatLocaleValue(value: DateOnly | undefined, type: DateFieldType): string {
+  if (value == null) return "";
+
+  const date = new Date(value.year, value.month - 1, value.day);
+  switch (type) {
+    case "year":
+      return date.toLocaleDateString(undefined, { year: "numeric" });
+    case "month":
+      return date.toLocaleDateString(undefined, { year: "numeric", month: "2-digit" });
+    case "date":
+      return date.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
   }
 }
 
@@ -163,7 +177,6 @@ export const DateField: Component<DateFieldProps> = (props) => {
     "max",
     "title",
     "disabled",
-    "readonly",
     "error",
     "size",
     "inset",
@@ -197,13 +210,14 @@ export const DateField: Component<DateFieldProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.readonly && fieldReadonlyClass,
-      local.inset && fieldInsetClass,
+      local.inset && (fieldInsetClass + " block"),
+      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
+
       includeCustomClass && local.class,
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled;
 
   return (
     <Show
@@ -232,31 +246,34 @@ export const DateField: Component<DateFieldProps> = (props) => {
         </Show>
       }
     >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div {...rest} data-date-field class={clsx("relative", local.class)} style={local.style}>
-        <div
-          data-date-field-content
-          class={getWrapperClass(false)}
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
-        </div>
-
-        <Show when={isEditable()}>
-          <div class={twMerge(getWrapperClass(false), clsx("absolute left-0 top-0 size-full"))}>
-            <input
-              type={getInputType(fieldType())}
-              class={fieldInputClass}
-              value={displayValue()}
-              title={local.title}
-              min={formatMinMax(local.min, fieldType())}
-              max={formatMinMax(local.max, fieldType())}
-              onInput={handleInput}
-            />
+      {/* inset 모드: 너비 고정이므로 input만 렌더링 */}
+      <Show
+        when={isEditable()}
+        fallback={
+          <div
+            {...rest}
+            data-date-field
+            class={twMerge(getWrapperClass(false), local.class)}
+            style={local.style}
+            title={local.title}
+          >
+            {formatLocaleValue(value(), fieldType()) || "\u00A0"}
           </div>
-        </Show>
-      </div>
+        }
+      >
+        <input
+          {...rest}
+          data-date-field
+          type={getInputType(fieldType())}
+          class={twMerge(getWrapperClass(false), local.class)}
+          value={displayValue()}
+          title={local.title}
+          min={formatMinMax(local.min, fieldType())}
+          max={formatMinMax(local.max, fieldType())}
+          style={local.style}
+          onInput={handleInput}
+        />
+      </Show>
     </Show>
   );
 };

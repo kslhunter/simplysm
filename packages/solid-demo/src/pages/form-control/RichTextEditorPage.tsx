@@ -38,10 +38,6 @@ export default function RichTextEditorPage() {
                 <RichTextEditor value={html()} disabled />
               </div>
 
-              <div>
-                <h3 class="mb-3 text-lg font-semibold">Readonly</h3>
-                <RichTextEditor value={html()} readonly />
-              </div>
 
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Error</h3>

@@ -1,5 +1,4 @@
 import { type Component, type JSX, Show, splitProps } from "solid-js";
-import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -9,8 +8,9 @@ import {
   fieldSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
+  fieldInsetHeightClass,
+  fieldInsetSizeHeightClasses,
   fieldDisabledClass,
-  fieldReadonlyClass,
   fieldInputClass,
 } from "./Field.styles";
 
@@ -32,9 +32,6 @@ export interface TimeFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
-  /** 읽기 전용 */
-  readonly?: boolean;
-
   /** 에러 상태 */
   error?: boolean;
 
@@ -52,7 +49,7 @@ export interface TimeFieldProps {
 }
 
 /**
- * Time 값을 타입에 맞는 문자열로 변환
+ * Time 값을 input value용 문자열로 변환
  */
 function formatValue(value: Time | undefined, type: TimeFieldType): string {
   if (value == null) return "";
@@ -62,6 +59,21 @@ function formatValue(value: Time | undefined, type: TimeFieldType): string {
       return value.toFormatString("HH:mm");
     case "time-sec":
       return value.toFormatString("HH:mm:ss");
+  }
+}
+
+/**
+ * Time 값을 locale에 맞는 표시용 문자열로 변환
+ */
+function formatLocaleValue(value: Time | undefined, type: TimeFieldType): string {
+  if (value == null) return "";
+
+  const date = new Date(2000, 0, 1, value.hour, value.minute, value.second);
+  switch (type) {
+    case "time":
+      return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    case "time-sec":
+      return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
 }
 
@@ -109,7 +121,6 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     "type",
     "title",
     "disabled",
-    "readonly",
     "error",
     "size",
     "inset",
@@ -143,13 +154,14 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.readonly && fieldReadonlyClass,
-      local.inset && fieldInsetClass,
+      local.inset && (fieldInsetClass + " block"),
+      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
+
       includeCustomClass && local.class,
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled;
 
   // step 속성 (time-sec일 때 1)
   const getStep = () => (fieldType() === "time-sec" ? "1" : undefined);
@@ -186,29 +198,33 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         </Show>
       }
     >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div {...rest} data-time-field class={clsx("relative", local.class)} style={local.style}>
-        <div
-          data-time-field-content
-          class={getWrapperClass(false)}
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
-        </div>
-        <Show when={isEditable()}>
-          <div class={twMerge(getWrapperClass(false), clsx("absolute left-0 top-0 size-full"))}>
-            <input
-              type="time"
-              class={fieldInputClass}
-              value={displayValue()}
-              title={local.title}
-              step={getStep()}
-              onInput={handleInput}
-            />
+      {/* inset 모드: 너비 고정이므로 input만 렌더링 */}
+      <Show
+        when={isEditable()}
+        fallback={
+          <div
+            {...rest}
+            data-time-field
+            class={twMerge(getWrapperClass(false), local.class)}
+            style={local.style}
+            title={local.title}
+          >
+            {formatLocaleValue(value(), fieldType()) || "\u00A0"}
           </div>
-        </Show>
-      </div>
+        }
+      >
+        <input
+          {...rest}
+          data-time-field
+          type="time"
+          class={twMerge(getWrapperClass(false), local.class)}
+          value={displayValue()}
+          title={local.title}
+          step={getStep()}
+          style={local.style}
+          onInput={handleInput}
+        />
+      </Show>
     </Show>
   );
 };

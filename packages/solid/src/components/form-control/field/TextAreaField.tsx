@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import {
@@ -8,8 +8,8 @@ import {
   textAreaSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
+
   fieldDisabledClass,
-  fieldReadonlyClass,
 } from "./Field.styles";
 
 export interface TextAreaFieldProps {
@@ -27,9 +27,6 @@ export interface TextAreaFieldProps {
 
   /** 비활성화 */
   disabled?: boolean;
-
-  /** 읽기 전용 */
-  readonly?: boolean;
 
   /** 에러 상태 */
   error?: boolean;
@@ -55,7 +52,6 @@ const textareaBaseClass = clsx(
   "size-full",
   "resize-none overflow-hidden",
   "bg-transparent",
-  "outline-none",
   "px-2 py-1",
   "placeholder:text-base-400 dark:placeholder:text-base-500",
 );
@@ -80,7 +76,6 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     "placeholder",
     "title",
     "disabled",
-    "readonly",
     "error",
     "size",
     "inset",
@@ -94,13 +89,78 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     onChange: () => local.onValueChange,
   });
 
+  // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
+  const [composingValue, setComposingValue] = createSignal<string | null>(null);
+  let compositionFlushTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function flushComposition(): void {
+    if (compositionFlushTimer != null) {
+      clearTimeout(compositionFlushTimer);
+      compositionFlushTimer = undefined;
+    }
+    const pending = composingValue();
+    if (pending != null) {
+      setComposingValue(null);
+      setValue(pending);
+    }
+  }
+
+  // content div용 표시 값 (composingValue 포함 — 셀 너비/높이 결정)
+  const displayValue = () => composingValue() ?? value();
+
+  const handleCompositionStart = () => {
+    if (compositionFlushTimer != null) {
+      clearTimeout(compositionFlushTimer);
+      compositionFlushTimer = undefined;
+    }
+  };
+
   const handleInput: JSX.InputEventHandler<HTMLTextAreaElement, InputEvent> = (e) => {
-    setValue(e.currentTarget.value);
+    const val = e.currentTarget.value;
+    if (e.isComposing || compositionFlushTimer != null) {
+      setComposingValue(val);
+      return;
+    }
+    setComposingValue(null);
+    setValue(val);
+  };
+
+  const handleCompositionEnd: JSX.EventHandler<HTMLTextAreaElement, CompositionEvent> = (e) => {
+    const el = e.currentTarget;
+    setComposingValue(el.value);
+    compositionFlushTimer = setTimeout(() => {
+      compositionFlushTimer = undefined;
+      setComposingValue(null);
+      setValue(el.value);
+    }, 0);
+  };
+
+  onCleanup(() => flushComposition());
+
+  const handleKeyDown: JSX.EventHandler<HTMLTextAreaElement, KeyboardEvent> = (e) => {
+    if (e.key === "Enter" && e.altKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const el = e.currentTarget;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const before = el.value.substring(0, start);
+      const after = el.value.substring(end);
+      const newVal = before + "\n" + after;
+
+      el.value = newVal;
+      el.selectionStart = start + 1;
+      el.selectionEnd = start + 1;
+
+      // input 이벤트를 수동 발행하여 값 동기화
+      el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+    }
   };
 
   const contentForHeight = () => {
     const rows = local.minRows ?? 1;
-    const val = value();
+    const val = displayValue();
     const content = (val !== "" && val.split("\n").length >= rows)
       ? val
       : "\n".repeat(rows - 1) + "\u00A0";
@@ -115,8 +175,8 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
       local.size && textAreaSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.readonly && fieldReadonlyClass,
       local.inset && fieldInsetClass,
+
       includeCustomClass && local.class,
     );
 
@@ -128,7 +188,14 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled;
+
+  // disabled 전환 시 미커밋 조합 값 flush
+  createEffect(() => {
+    if (!isEditable()) {
+      flushComposition();
+    }
+  });
 
   return (
     <Show
@@ -145,7 +212,9 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
               style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
               title={local.title}
             >
-              {value() || "\u00A0"}
+              {value() || (local.placeholder
+                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                : "\u00A0")}
             </div>
           }
         >
@@ -171,7 +240,10 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
               value={value()}
               placeholder={local.placeholder}
               title={local.title}
+              onKeyDown={handleKeyDown}
               onInput={handleInput}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
             />
           </div>
         </Show>
@@ -185,26 +257,18 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
         style={local.style}
       >
         <div
-          data-textarea-field-content
           style={{
+            visibility: "hidden",
             "white-space": "pre-wrap",
             "word-break": "break-all",
-            position: "relative",
-            ...(isEditable() ? { visibility: "hidden" as const } : {}),
           }}
-          title={local.title}
         >
-          <div
-            data-hidden-content
-            style={{
-              visibility: "hidden",
-              "white-space": "pre-wrap",
-              "word-break": "break-all",
-            }}
-          >
-            {contentForHeight()}
-          </div>
-          <Show when={!isEditable()}>
+          {contentForHeight()}
+        </div>
+
+        <Show
+          when={isEditable()}
+          fallback={
             <div
               style={{
                 position: "absolute",
@@ -215,35 +279,27 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
                 "white-space": "pre-wrap",
                 "word-break": "break-all",
               }}
-            >
-              {value() || "\u00A0"}
-            </div>
-          </Show>
-        </div>
-
-        <Show when={isEditable()}>
-          <div
-            class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}
-            style={{ position: "relative" }}
-          >
-            <div
-              data-hidden-content
-              style={{
-                visibility: "hidden",
-                "white-space": "pre-wrap",
-                "word-break": "break-all",
-              }}
-            >
-              {contentForHeight()}
-            </div>
-            <textarea
-              class={getTextareaClass()}
-              value={value()}
-              placeholder={local.placeholder}
               title={local.title}
-              onInput={handleInput}
-            />
-          </div>
+            >
+              {value() || (local.placeholder
+                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                : "\u00A0")}
+            </div>
+          }
+        >
+          <textarea
+            class={twMerge(
+              textareaBaseClass,
+              local.size && textAreaSizeClasses[local.size],
+            )}
+            value={value()}
+            placeholder={local.placeholder}
+            title={local.title}
+            onKeyDown={handleKeyDown}
+            onInput={handleInput}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+          />
         </Show>
       </div>
     </Show>

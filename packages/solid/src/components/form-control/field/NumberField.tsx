@@ -8,8 +8,9 @@ import {
   fieldSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
+  fieldInsetHeightClass,
+  fieldInsetSizeHeightClasses,
   fieldDisabledClass,
-  fieldReadonlyClass,
   fieldInputClass,
 } from "./Field.styles";
 
@@ -51,9 +52,6 @@ export interface NumberFieldProps {
 
   /** 비활성화 */
   disabled?: boolean;
-
-  /** 읽기 전용 */
-  readonly?: boolean;
 
   /** 에러 상태 */
   error?: boolean;
@@ -174,7 +172,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     "placeholder",
     "title",
     "disabled",
-    "readonly",
     "error",
     "size",
     "inset",
@@ -234,6 +231,8 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     const val = value();
     if (val != null) {
       setInputStr(String(val));
+    } else {
+      setInputStr("");
     }
   };
 
@@ -251,12 +250,13 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.readonly && fieldReadonlyClass,
       local.inset && fieldInsetClass,
+      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
+
       includeCustomClass && local.class,
     );
 
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled;
 
   return (
     <Show
@@ -273,7 +273,9 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               style={local.style}
               title={local.title}
             >
-              {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
+              {formatNumber(value(), local.useComma ?? true, local.minDigits) || (local.placeholder
+                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                : "\u00A0")}
             </div>
           }
         >
@@ -304,7 +306,9 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
           style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
         >
-          {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
+          {formatNumber(value(), local.useComma ?? true, local.minDigits) || (local.placeholder
+            ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+            : "\u00A0")}
         </div>
 
         <Show when={isEditable()}>

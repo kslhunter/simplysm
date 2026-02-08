@@ -129,16 +129,3 @@ export const expandToggleClass = clsx(
   "hover:bg-base-200 dark:hover:bg-base-600",
 );
 
-// 포커스 인디케이터 — 행 하이라이트
-export const focusRowIndicatorClass = clsx(
-  "pointer-events-none absolute",
-  "bg-base-500/10",
-  "z-[6]",
-);
-
-// 포커스 인디케이터 — 셀 테두리
-export const focusCellIndicatorClass = clsx(
-  "pointer-events-none absolute",
-  "border-2 border-primary-500",
-  "z-[6]",
-);

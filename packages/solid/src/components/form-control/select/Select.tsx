@@ -1,13 +1,4 @@
-import {
-  children,
-  createEffect,
-  createSignal,
-  For,
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+import { children, createEffect, createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
@@ -36,7 +27,12 @@ const triggerBaseClass = clsx(
 
 const triggerDisabledClass = clsx`cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500`;
 
-const triggerInsetClass = clsx`rounded-none border-none bg-transparent`;
+const triggerInsetClass = clsx(
+  clsx`w-full rounded-none border-none bg-transparent`,
+  "focus:[outline-style:solid]",
+  clsx`focus:outline-1 focus:-outline-offset-1`,
+  clsx`focus:outline-primary-400 dark:focus:outline-primary-400`,
+);
 
 const sizeClasses = {
   sm: clsx`gap-1.5 px-1.5 py-0.5`,
@@ -299,11 +295,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
-    const [slots, items] = splitSlots(resolved, [
-      "selectHeader",
-      "selectButton",
-      "selectItemTemplate",
-    ] as const);
+    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectButton", "selectItemTemplate"] as const);
 
     // itemTemplate 함수 추출
     const getItemTemplate = (): ((item: T, index: number, depth: number) => JSX.Element) | undefined => {
@@ -371,7 +363,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     };
 
     return (
-      <div {...rest} data-select class="inline-flex">
+      <div {...rest} data-select class={local.inset ? "flex" : "inline-flex"}>
         <div
           ref={triggerRef}
           use:ripple={!local.disabled}
@@ -381,10 +373,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           aria-disabled={local.disabled || undefined}
           aria-required={local.required || undefined}
           tabIndex={local.disabled ? -1 : 0}
-          class={twMerge(
-            getTriggerClassName(),
-            slots().selectButton.length > 0 && "rounded-r-none border-r-0",
-          )}
+          class={twMerge(getTriggerClassName(), slots().selectButton.length > 0 && "rounded-r-none border-r-0")}
           style={local.style}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}

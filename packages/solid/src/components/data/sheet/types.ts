@@ -10,7 +10,6 @@ export interface SheetProps<T> {
   hideConfigBar?: boolean;
   inset?: boolean;
   contentStyle?: JSX.CSSProperties | string;
-  focusMode?: "row" | "cell";
 
   // 정렬
   sorts?: SortingDef[];
@@ -40,10 +39,6 @@ export interface SheetProps<T> {
   getItemCellClassFn?: (item: T, colKey: string) => string | undefined;
   getItemCellStyleFn?: (item: T, colKey: string) => string | undefined;
 
-  // 이벤트
-  onItemKeydown?: (param: SheetItemKeydownParam<T>) => void;
-  onCellKeydown?: (param: SheetItemKeydownParam<T>) => void;
-
   // 기타
   class?: string;
   children: JSX.Element;
@@ -70,18 +65,11 @@ export interface SheetCellContext<T> {
   item: T;
   index: number;
   depth: number;
-  edit: boolean;
 }
 
 export interface SortingDef {
   key: string;
   desc: boolean;
-}
-
-export interface SheetItemKeydownParam<T> {
-  item: T;
-  key?: string;
-  event: KeyboardEvent;
 }
 
 export interface SheetConfig {

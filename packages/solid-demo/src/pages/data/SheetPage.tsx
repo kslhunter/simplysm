@@ -1,11 +1,36 @@
 import { createSignal } from "solid-js";
-import { Sheet, TextField, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
+import { createMutable } from "solid-js/store";
+import { DateOnly, DateTime, Time } from "@simplysm/core-common";
+import {
+  CheckBox,
+  DateField,
+  DateTimeField,
+  NumberField,
+  Radio,
+  Select,
+  Sheet,
+  type SortingDef,
+  TextAreaField,
+  TextField,
+  TimeField,
+  Topbar,
+  TopbarContainer,
+} from "@simplysm/solid";
+
+const departments = ["영업", "개발", "인사", "마케팅"];
 
 interface User {
-  name: string;
-  age: number;
+  name?: string;
+  age?: number;
   email: string;
   salary: number;
+  birthDate?: DateOnly;
+  startTime?: Time;
+  createdAt?: DateTime;
+  memo?: string;
+  department?: string;
+  active?: boolean;
+  vip?: boolean;
 }
 
 const users: User[] = [
@@ -62,17 +87,73 @@ export default function SheetPage() {
   const [page, setPage] = createSignal(0);
   const [expanded, setExpanded] = createSignal<Category[]>([]);
 
-  const [editUsers, setEditUsers] = createSignal<User[]>([
-    { name: "홍길동", age: 30, email: "hong@example.com", salary: 5000 },
-    { name: "김철수", age: 25, email: "kim@example.com", salary: 4200 },
-    { name: "이영희", age: 28, email: "lee@example.com", salary: 4800 },
-    { name: "박민수", age: 35, email: "park@example.com", salary: 5500 },
-    { name: "최지영", age: 22, email: "choi@example.com", salary: 3800 },
+  const editUsers = createMutable<User[]>([
+    {
+      name: "홍길동",
+      age: 30,
+      email: "hong@example.com",
+      salary: 5000,
+      birthDate: new DateOnly(1994, 5, 15),
+      startTime: new Time(9, 0, 0),
+      createdAt: new DateTime(2024, 1, 15, 10, 30),
+      memo: "팀장",
+      department: "개발",
+      active: true,
+      vip: false,
+    },
+    {
+      name: "김철수",
+      age: 25,
+      email: "kim@example.com",
+      salary: 4200,
+      birthDate: new DateOnly(1999, 3, 20),
+      startTime: new Time(10, 0, 0),
+      createdAt: new DateTime(2024, 3, 1, 9, 0),
+      memo: "신입",
+      department: "영업",
+      active: true,
+      vip: false,
+    },
+    {
+      name: "이영희",
+      age: 28,
+      email: "lee@example.com",
+      salary: 4800,
+      birthDate: new DateOnly(1996, 8, 10),
+      startTime: new Time(9, 30, 0),
+      createdAt: new DateTime(2024, 2, 10, 14, 15),
+      memo: "대리",
+      department: "인사",
+      active: false,
+      vip: true,
+    },
+    {
+      name: "박민수",
+      age: 35,
+      email: "park@example.com",
+      salary: 5500,
+      birthDate: new DateOnly(1989, 12, 1),
+      startTime: new Time(8, 30, 0),
+      createdAt: new DateTime(2023, 6, 5, 11, 0),
+      memo: "과장\n경력 10년",
+      department: "마케팅",
+      active: true,
+      vip: true,
+    },
+    {
+      name: "최지영",
+      age: 22,
+      email: "choi@example.com",
+      salary: 3800,
+      birthDate: new DateOnly(2002, 1, 25),
+      startTime: new Time(10, 30, 0),
+      createdAt: new DateTime(2025, 1, 2, 8, 45),
+      memo: "인턴",
+      department: "개발",
+      active: true,
+      vip: false,
+    },
   ]);
-
-  function updateEditUser(index: number, field: keyof User, value: string | number): void {
-    setEditUsers((prev) => prev.map((u, i) => i === index ? { ...u, [field]: value } : u));
-  }
 
   return (
     <TopbarContainer>
@@ -133,9 +214,7 @@ export default function SheetPage() {
                 key="salary"
                 header="급여"
                 class="px-2 py-1 text-right"
-                summary={() => (
-                  <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>
-                )}
+                summary={() => <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>}
               >
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
@@ -148,13 +227,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. useAutoSort로 자동 정렬 적용.
             </p>
-            <Sheet
-              items={users}
-              key="sorting"
-              sorts={sorts()}
-              onSortsChange={setSorts}
-              useAutoSort
-            >
+            <Sheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} useAutoSort>
               <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </Sheet.Column>
@@ -176,13 +249,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
             </p>
-            <Sheet
-              items={users}
-              key="paging"
-              itemsPerPage={2}
-              currentPage={page()}
-              onCurrentPageChange={setPage}
-            >
+            <Sheet items={users} key="paging" itemsPerPage={2} currentPage={page()} onCurrentPageChange={setPage}>
               <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </Sheet.Column>
@@ -241,57 +308,113 @@ export default function SheetPage() {
             </div>
           </section>
 
-          {/* 셀 편집 */}
+          {/* 인라인 편집 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">셀 편집</h2>
+            <h2 class="mb-4 text-xl font-semibold">인라인 편집</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              셀을 클릭하여 포커스 후, F2 또는 더블클릭으로 편집 모드 진입. Arrow/Enter/Tab으로 네비게이션. Escape로 편집 해제.
+              inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
             </p>
-            <Sheet items={editUsers()} key="cell-edit" focusMode="cell">
+            <Sheet items={editUsers} key="cell-edit">
               <Sheet.Column<User> key="name" header="이름">
                 {(ctx) => (
                   <TextField
                     value={ctx.item.name}
-                    onValueChange={(v) => updateEditUser(ctx.index, "name", v)}
-                    readonly={!ctx.edit}
+                    onValueChange={(v) => {
+                      ctx.item.name = v;
+                    }}
                     inset
                   />
                 )}
               </Sheet.Column>
               <Sheet.Column<User> key="age" header="나이">
                 {(ctx) => (
-                  <TextField
-                    value={String(ctx.item.age)}
-                    onValueChange={(v) => updateEditUser(ctx.index, "age", Number(v))}
-                    readonly={!ctx.edit}
+                  <NumberField
+                    value={ctx.item.age}
+                    onValueChange={(v) => {
+                      ctx.item.age = v;
+                    }}
                     inset
                   />
                 )}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
+              <Sheet.Column<User> key="birthDate" header="생년월일">
+                {(ctx) => (
+                  <DateField
+                    value={ctx.item.birthDate}
+                    onValueChange={(v) => {
+                      ctx.item.birthDate = v;
+                    }}
+                    inset
+                  />
+                )}
               </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+              <Sheet.Column<User> key="startTime" header="출근시간">
+                {(ctx) => (
+                  <TimeField
+                    value={ctx.item.startTime}
+                    onValueChange={(v) => {
+                      ctx.item.startTime = v;
+                    }}
+                    inset
+                  />
+                )}
               </Sheet.Column>
-            </Sheet>
-          </section>
-
-          {/* 행 포커스 모드 */}
-          <section>
-            <h2 class="mb-4 text-xl font-semibold">행 포커스 모드</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              focusMode="row"일 때 셀 인디케이터 대신 행 인디케이터만 표시됩니다.
-            </p>
-            <Sheet items={users} key="row-focus" focusMode="row">
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
+              <Sheet.Column<User> key="createdAt" header="생성일시">
+                {(ctx) => (
+                  <DateTimeField
+                    value={ctx.item.createdAt}
+                    onValueChange={(v) => {
+                      ctx.item.createdAt = v;
+                    }}
+                    inset
+                  />
+                )}
               </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
+              <Sheet.Column<User> key="memo" header="메모">
+                {(ctx) => (
+                  <TextAreaField
+                    value={ctx.item.memo}
+                    onValueChange={(v) => {
+                      ctx.item.memo = v;
+                    }}
+                    inset
+                  />
+                )}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
+              <Sheet.Column<User> key="department" header="부서">
+                {(ctx) => (
+                  <Select
+                    value={ctx.item.department}
+                    onValueChange={(v) => {
+                      ctx.item.department = v as string;
+                    }}
+                    items={departments}
+                    renderValue={(v) => <>{v}</>}
+                    inset
+                  />
+                )}
+              </Sheet.Column>
+              <Sheet.Column<User> key="active" header="활성">
+                {(ctx) => (
+                  <CheckBox
+                    value={ctx.item.active}
+                    onValueChange={(v) => {
+                      ctx.item.active = v;
+                    }}
+                    inset
+                  />
+                )}
+              </Sheet.Column>
+              <Sheet.Column<User> key="vip" header="VIP">
+                {(ctx) => (
+                  <Radio
+                    value={ctx.item.vip}
+                    onValueChange={(v) => {
+                      ctx.item.vip = v;
+                    }}
+                    inset
+                  />
+                )}
               </Sheet.Column>
             </Sheet>
           </section>

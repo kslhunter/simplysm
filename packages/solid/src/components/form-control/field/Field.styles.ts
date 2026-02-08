@@ -25,13 +25,22 @@ export const fieldSizeClasses: Record<FieldSize, string> = {
 export const fieldErrorClass = clsx`border-danger-500`;
 
 // inset 스타일
-export const fieldInsetClass = clsx`rounded-none border-none bg-transparent`;
+export const fieldInsetClass = clsx(
+  clsx`w-full rounded-none border-none bg-primary-50 dark:bg-primary-950`,
+  "focus:[outline-style:solid]",
+  clsx`focus:outline-1 focus:-outline-offset-1`,
+  clsx`focus:outline-primary-400 dark:focus:outline-primary-400`,
+);
+
+// inset 높이 (border 2px 제외)
+export const fieldInsetHeightClass = "h-field-inset";
+export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
+  sm: "h-field-inset-sm",
+  lg: "h-field-inset-lg",
+};
 
 // disabled 스타일
 export const fieldDisabledClass = clsx`bg-base-100 text-base-500 dark:bg-base-800`;
-
-// readonly 스타일 (일반 텍스트처럼 보이도록)
-export const fieldReadonlyClass = clsx`bg-base-100 dark:bg-base-800`;
 
 // textarea wrapper 스타일 (h-field 제거)
 export const textAreaBaseClass = clsx(

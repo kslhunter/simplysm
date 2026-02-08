@@ -70,10 +70,6 @@ export default function FieldPage() {
                     <TextField disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Readonly</p>
-                    <TextField readonly value="읽기 전용" />
-                  </div>
-                  <div>
                     <p class="mb-1 text-sm text-base-500">Error</p>
                     <TextField error placeholder="에러 상태" />
                   </div>
@@ -134,10 +130,6 @@ export default function FieldPage() {
                     <TextAreaField disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Readonly</p>
-                    <TextAreaField readonly value="읽기 전용" />
-                  </div>
-                  <div>
                     <p class="mb-1 text-sm text-base-500">Error</p>
                     <TextAreaField error placeholder="에러 상태" />
                   </div>
@@ -190,10 +182,6 @@ export default function FieldPage() {
                     <NumberField disabled value={9999} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Readonly</p>
-                    <NumberField readonly value={9999} />
-                  </div>
-                  <div>
                     <p class="mb-1 text-sm text-base-500">Error</p>
                     <NumberField error placeholder="에러 상태" />
                   </div>
@@ -232,10 +220,6 @@ export default function FieldPage() {
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
                     <DateField disabled value={new DateOnly(2024, 1, 1)} />
-                  </div>
-                  <div>
-                    <p class="mb-1 text-sm text-base-500">Readonly</p>
-                    <DateField readonly value={new DateOnly(2024, 1, 1)} />
                   </div>
                 </div>
               </div>

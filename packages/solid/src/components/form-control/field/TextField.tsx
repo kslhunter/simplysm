@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import {
@@ -8,8 +8,9 @@ import {
   fieldSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
+  fieldInsetHeightClass,
+  fieldInsetSizeHeightClasses,
   fieldDisabledClass,
-  fieldReadonlyClass,
   fieldInputClass,
 } from "./Field.styles";
 
@@ -36,9 +37,6 @@ export interface TextFieldProps {
 
   /** 비활성화 */
   disabled?: boolean;
-
-  /** 읽기 전용 */
-  readonly?: boolean;
 
   /** 에러 상태 */
   error?: boolean;
@@ -129,7 +127,6 @@ export const TextField: Component<TextFieldProps> = (props) => {
     "title",
     "autocomplete",
     "disabled",
-    "readonly",
     "error",
     "size",
     "inset",
@@ -144,8 +141,33 @@ export const TextField: Component<TextFieldProps> = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  // 포맷이 적용된 표시 값
-  const displayValue = () => {
+  // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
+  // composingValue: 조합 중 content div 표시용 값 (null이면 비조합 상태)
+  const [composingValue, setComposingValue] = createSignal<string | null>(null);
+  let compositionFlushTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function extractValue(el: HTMLInputElement): string {
+    let val = el.value;
+    if (local.format != null && local.format !== "") {
+      val = removeFormat(val, local.format);
+    }
+    return val;
+  }
+
+  function flushComposition(): void {
+    if (compositionFlushTimer != null) {
+      clearTimeout(compositionFlushTimer);
+      compositionFlushTimer = undefined;
+    }
+    const pending = composingValue();
+    if (pending != null) {
+      setComposingValue(null);
+      setValue(pending);
+    }
+  }
+
+  // input 요소용 값 (composingValue 미포함 — IME 조합 방해 방지)
+  const inputValue = () => {
     const val = value();
     if (local.format != null && local.format !== "") {
       return applyFormat(val, local.format);
@@ -153,17 +175,47 @@ export const TextField: Component<TextFieldProps> = (props) => {
     return val;
   };
 
-  // 입력 핸들러
-  const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
-    let newValue = e.currentTarget.value;
-
-    if (local.format != null && local.format !== "") {
-      // 포맷 문자 제거하여 원본 값 추출
-      newValue = removeFormat(newValue, local.format);
+  // content div용 표시 값 (composingValue 포함 — 셀 너비 결정)
+  const displayValue = () => {
+    const composing = composingValue();
+    if (composing != null) {
+      if (local.format != null && local.format !== "") {
+        return applyFormat(composing, local.format);
+      }
+      return composing;
     }
-
-    setValue(newValue);
+    return inputValue();
   };
+
+  const handleCompositionStart = () => {
+    if (compositionFlushTimer != null) {
+      clearTimeout(compositionFlushTimer);
+      compositionFlushTimer = undefined;
+    }
+  };
+
+  const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
+    const val = extractValue(e.currentTarget);
+    if (e.isComposing || compositionFlushTimer != null) {
+      // 조합 중이거나 compositionEnd 직후의 input → content div만 갱신, 커밋 안 함
+      setComposingValue(val);
+      return;
+    }
+    setComposingValue(null);
+    setValue(val);
+  };
+
+  const handleCompositionEnd: JSX.EventHandler<HTMLInputElement, CompositionEvent> = (e) => {
+    const inputEl = e.currentTarget;
+    setComposingValue(extractValue(inputEl));
+    compositionFlushTimer = setTimeout(() => {
+      compositionFlushTimer = undefined;
+      setComposingValue(null);
+      setValue(extractValue(inputEl));
+    }, 0);
+  };
+
+  onCleanup(() => flushComposition());
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
@@ -172,13 +224,21 @@ export const TextField: Component<TextFieldProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.readonly && fieldReadonlyClass,
       local.inset && fieldInsetClass,
+      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
+
       includeCustomClass && local.class,
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled && !local.readonly;
+  const isEditable = () => !local.disabled;
+
+  // disabled 전환 시 미커밋 조합 값 flush
+  createEffect(() => {
+    if (!isEditable()) {
+      flushComposition();
+    }
+  });
 
   return (
     <Show
@@ -189,7 +249,9 @@ export const TextField: Component<TextFieldProps> = (props) => {
           when={isEditable()}
           fallback={
             <div {...rest} data-text-field class={twMerge(getWrapperClass(true), "sd-text-field")} style={local.style} title={local.title}>
-              {displayValue() || "\u00A0"}
+              {displayValue() || (local.placeholder
+                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                : "\u00A0")}
             </div>
           }
         >
@@ -197,11 +259,13 @@ export const TextField: Component<TextFieldProps> = (props) => {
             <input
               type={local.type ?? "text"}
               class={fieldInputClass}
-              value={displayValue()}
+              value={inputValue()}
               placeholder={local.placeholder}
               title={local.title}
               autocomplete={local.autocomplete}
               onInput={handleInput}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
             />
           </div>
         </Show>
@@ -218,7 +282,9 @@ export const TextField: Component<TextFieldProps> = (props) => {
           data-text-field-content
           style={{ visibility: isEditable() ? "hidden" : undefined }}
         >
-          {displayValue() || "\u00A0"}
+          {displayValue() || (local.placeholder
+            ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+            : "\u00A0")}
         </div>
 
         <Show when={isEditable()}>
@@ -229,11 +295,13 @@ export const TextField: Component<TextFieldProps> = (props) => {
               "absolute left-0 top-0 size-full",
               "px-2 py-1",
             )}
-            value={displayValue()}
+            value={inputValue()}
             placeholder={local.placeholder}
             title={local.title}
             autocomplete={local.autocomplete}
             onInput={handleInput}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
           />
         </Show>
       </div>

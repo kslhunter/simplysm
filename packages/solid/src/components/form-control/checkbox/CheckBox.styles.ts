@@ -40,7 +40,18 @@ export const checkBoxSizeClasses: Record<CheckBoxSize, string> = {
 };
 
 // inset 스타일
-export const checkBoxInsetClass = clsx`rounded-none border-none bg-transparent`;
+export const checkBoxInsetClass = clsx(
+  clsx`h-field-inset w-full justify-center rounded-none border-none bg-transparent`,
+  "focus:[outline-style:solid]",
+  clsx`focus:outline-1 focus:-outline-offset-1`,
+  clsx`focus:outline-primary-400 dark:focus:outline-primary-400`,
+);
+
+// inset 사이즈별 높이 (border 2px 제외)
+export const checkBoxInsetSizeHeightClasses: Record<CheckBoxSize, string> = {
+  sm: "h-field-inset-sm",
+  lg: "h-field-inset-lg",
+};
 
 // inline 스타일
 export const checkBoxInlineClass = clsx("h-auto", "p-0", "gap-1");

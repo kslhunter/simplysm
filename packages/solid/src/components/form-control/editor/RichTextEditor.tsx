@@ -27,9 +27,6 @@ export interface RichTextEditorProps {
   /** 비활성화 */
   disabled?: boolean;
 
-  /** 읽기 전용 */
-  readonly?: boolean;
-
   /** 에러 상태 */
   error?: boolean;
 
@@ -82,7 +79,6 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     "value",
     "onValueChange",
     "disabled",
-    "readonly",
     "error",
     "size",
     "class",
@@ -124,7 +120,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     ],
     // untrack: value/editable 변경 시 에디터 재생성 방지 (createEffect에서 동기화)
     content: untrack(() => value()),
-    editable: untrack(() => !local.disabled && !local.readonly),
+    editable: untrack(() => !local.disabled),
     onUpdate({ editor: e }) {
       const html = e.getHTML();
       isInternalUpdate = true;
@@ -135,11 +131,11 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     },
   }));
 
-  // disabled/readonly 변경 시 에디터 editable 상태 동기화
+  // disabled 변경 시 에디터 editable 상태 동기화
   createEffect(() => {
     const e = editor();
     if (e) {
-      e.setEditable(!local.disabled && !local.readonly);
+      e.setEditable(!local.disabled);
     }
   });
 
@@ -191,7 +187,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     >
       <Show when={editor()}>
         {(instance) => (
-          <Show when={!local.disabled && !local.readonly}>
+          <Show when={!local.disabled}>
             <EditorToolbar editor={instance()} />
           </Show>
         )}
