@@ -39,13 +39,15 @@ export function buildHeaderTable<T>(columns: SheetColumnDef<T>[]): (HeaderDef | 
       // 원본 header 길이 기반으로 판별: 현재 행이 원본 header의 마지막 레벨 이상이면 leaf
       const isLastRow = r >= columns[c].header.length - 1;
 
-      // colspan: 같은 행에서 같은 텍스트 + 같은 상위 그룹
+      // colspan: 같은 행에서 같은 텍스트 + 같은 상위 그룹 + 고정 경계를 넘지 않음
       let colspan = 1;
       if (!isLastRow) {
+        const startFixed = columns[c].fixed;
         while (
           c + colspan < columns.length &&
           !occupied[r][c + colspan] &&
           padded[c + colspan][r] === text &&
+          columns[c + colspan].fixed === startFixed &&
           isSameGroup(padded, c, c + colspan, 0, r)
         ) {
           colspan++;

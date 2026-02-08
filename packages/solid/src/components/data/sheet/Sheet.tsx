@@ -204,10 +204,10 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // 고정 컬럼 셀에 ResizeObserver 등록
   function registerColumnRef(colIndex: number, el: HTMLElement): void {
     columnRefs.set(colIndex, el);
-    createResizeObserver(el, (rect) => {
+    createResizeObserver(el, () => {
       setColumnWidths((prev) => {
         const next = new Map(prev);
-        next.set(colIndex, rect.width);
+        next.set(colIndex, el.offsetWidth);
         return next;
       });
     });
@@ -262,6 +262,38 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     saveColumnWidth(colKey, undefined);
   }
 
+  // #region HeaderSticky
+  // 각 헤더 행의 높이를 추적하여 누적 top 값 계산
+  const [headerRowHeights, setHeaderRowHeights] = createSignal<number[]>([]);
+
+  function registerHeaderRow(rowIndex: number, el: HTMLElement): void {
+    createResizeObserver(el, (rect) => {
+      setHeaderRowHeights((prev) => {
+        const next = [...prev];
+        next[rowIndex] = rect.height;
+        return next;
+      });
+    });
+  }
+
+  // 각 헤더 행의 누적 top 값
+  const headerRowTops = createMemo(() => {
+    const heights = headerRowHeights();
+    const tops: number[] = [];
+    let acc = 0;
+    for (let i = 0; i < heights.length; i++) {
+      tops.push(acc);
+      acc += heights[i] ?? 0;
+    }
+    return tops;
+  });
+
+  // 합계 행의 top 값 (모든 헤더 행 높이 합)
+  const summaryRowTop = createMemo(() => {
+    const heights = headerRowHeights();
+    return heights.reduce((sum, h) => sum + h, 0);
+  });
+
   // #region Expanding (스텁 — Plan 4에서 구현)
   const flatItems = createMemo((): FlatItem<T>[] => {
     return pagedItems().map((item, i) => ({
@@ -298,8 +330,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         </colgroup>
         <thead>
           <For each={headerTable()}>
-            {(row) => (
-              <tr>
+            {(row, rowIndex) => (
+              <tr ref={(el: HTMLElement) => registerHeaderRow(rowIndex(), el)}>
                 <For each={row}>
                   {(cell, cellColIndex) => (
                     <Show when={cell}>
@@ -321,7 +353,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                           return true;
                         };
 
-                        // 셀의 고정 여부 (마지막 행이면 colIndex 기반, 그 외 그룹 기반)
+                        // 셀의 고정 컬럼 여부 (마지막 행이면 colIndex 기반, 그 외 그룹 기반)
                         const isCellFixed = () =>
                           (c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].fixed)
                           || isGroupFixed();
@@ -336,24 +368,35 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                           return false;
                         };
 
-                        // 고정 셀의 left style
-                        const cellFixedStyle = () => {
-                          if (c().isLastRow && c().colIndex != null) return getFixedStyle(c().colIndex!);
-                          if (isGroupFixed()) return getFixedStyle(cellColIndex());
-                          return undefined;
+                        // 고정 셀의 left + top 인라인 style
+                        const cellStyle = (): string | undefined => {
+                          const parts: string[] = [];
+                          // top: 모든 th에 적용 (헤더 상단 고정)
+                          const top = headerRowTops()[rowIndex()];
+                          parts.push(`top: ${top}px`);
+                          // left: 고정 컬럼에만 적용
+                          if (c().isLastRow && c().colIndex != null) {
+                            const left = getFixedStyle(c().colIndex!);
+                            if (left != null) parts.push(left);
+                          } else if (isGroupFixed()) {
+                            const left = getFixedStyle(cellColIndex());
+                            if (left != null) parts.push(left);
+                          }
+                          return parts.length > 0 ? parts.join("; ") : undefined;
                         };
 
                         return (
                           <th
                             class={twMerge(
                               thClass,
+                              fixedClass,
                               isSortable() ? sortableThClass : undefined,
-                              isCellFixed() ? clsx(fixedClass, "z-[4]") : undefined,
+                              isCellFixed() ? "z-[5]" : "z-[3]",
                               isCellLastFixed() ? fixedLastClass : undefined,
                             )}
                             colspan={c().colspan > 1 ? c().colspan : undefined}
                             rowspan={c().rowspan > 1 ? c().rowspan : undefined}
-                            style={cellFixedStyle()}
+                            style={cellStyle()}
                             title={c().isLastRow && c().colIndex != null
                               ? (effectiveColumns()[c().colIndex!].tooltip ?? c().text)
                               : c().text}
@@ -415,21 +458,32 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <Show when={hasSummary()}>
             <tr>
               <For each={effectiveColumns()}>
-                {(col, colIndex) => (
-                  <th
-                    class={twMerge(
-                      thClass,
-                      summaryThClass,
-                      col.fixed ? clsx(fixedClass, "z-[4]") : undefined,
-                      isLastFixed(colIndex()) ? fixedLastClass : undefined,
-                    )}
-                    style={getFixedStyle(colIndex())}
-                  >
-                    <div class={thContentClass}>
-                      {col.summary?.()}
-                    </div>
-                  </th>
-                )}
+                {(col, colIndex) => {
+                  const summaryStyle = (): string | undefined => {
+                    const parts: string[] = [];
+                    parts.push(`top: ${summaryRowTop()}px`);
+                    const left = getFixedStyle(colIndex());
+                    if (left != null) parts.push(left);
+                    return parts.join("; ");
+                  };
+
+                  return (
+                    <th
+                      class={twMerge(
+                        thClass,
+                        summaryThClass,
+                        fixedClass,
+                        col.fixed ? "z-[5]" : "z-[3]",
+                        isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                      )}
+                      style={summaryStyle()}
+                    >
+                      <div class={thContentClass}>
+                        {col.summary?.()}
+                      </div>
+                    </th>
+                  );
+                }}
               </For>
             </tr>
           </Show>
