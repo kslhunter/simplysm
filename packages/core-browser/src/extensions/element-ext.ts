@@ -120,6 +120,18 @@ Element.prototype.findFocusableParent = function (): HTMLElement | undefined {
   return undefined;
 };
 
+Element.prototype.findFirstFocusableChild = function (): HTMLElement | undefined {
+  const walker = document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT);
+  let node = walker.nextNode();
+  while (node !== null) {
+    if (node instanceof HTMLElement && isFocusable(node)) {
+      return node;
+    }
+    node = walker.nextNode();
+  }
+  return undefined;
+};
+
 Element.prototype.isOffsetElement = function (): boolean {
   return ["relative", "absolute", "fixed", "sticky"].includes(getComputedStyle(this).position);
 };
