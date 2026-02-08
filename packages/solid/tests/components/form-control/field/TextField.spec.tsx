@@ -177,6 +177,54 @@ describe("TextField 컴포넌트", () => {
       expect(wrapper.classList.contains("border-none")).toBe(true);
       expect(wrapper.classList.contains("bg-transparent")).toBe(true);
     });
+
+    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+      const { container } = render(() => <TextField inset readonly value="Hello" />);
+      const outer = container.firstChild as HTMLElement;
+      expect(outer.classList.contains("relative")).toBe(true);
+
+      const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.textContent).toBe("Hello");
+
+      const input = outer.querySelector("input");
+      expect(input).toBeFalsy();
+    });
+
+    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+      const { container } = render(() => <TextField inset value="Hello" />);
+      const outer = container.firstChild as HTMLElement;
+
+      const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.style.visibility).toBe("hidden");
+
+      const input = outer.querySelector("input") as HTMLInputElement;
+      expect(input).toBeTruthy();
+      expect(input.value).toBe("Hello");
+    });
+
+    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+      const { container } = render(() => <TextField inset readonly />);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
+      expect(contentDiv.textContent).toBe("\u00A0");
+    });
+
+    it("inset + readonly ↔ editable 전환 시 content div가 항상 DOM에 존재한다", () => {
+      const [readonly, setReadonly] = createSignal(true);
+      const { container } = render(() => <TextField inset readonly={readonly()} value="Test" />);
+      const outer = container.firstChild as HTMLElement;
+
+      let contentDiv = outer.querySelector("[data-text-field-content]");
+      expect(contentDiv).toBeTruthy();
+      expect(outer.querySelector("input")).toBeFalsy();
+
+      setReadonly(false);
+      contentDiv = outer.querySelector("[data-text-field-content]");
+      expect(contentDiv).toBeTruthy();
+      expect(outer.querySelector("input")).toBeTruthy();
+    });
   });
 
   describe("class 병합", () => {

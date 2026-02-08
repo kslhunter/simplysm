@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -164,8 +165,8 @@ export const TextField: Component<TextFieldProps> = (props) => {
     setValue(newValue);
   };
 
-  // wrapper 클래스
-  const getWrapperClass = () =>
+  // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
+  const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
@@ -173,22 +174,60 @@ export const TextField: Component<TextFieldProps> = (props) => {
       local.disabled && fieldDisabledClass,
       local.readonly && fieldReadonlyClass,
       local.inset && fieldInsetClass,
-      local.class,
+      includeCustomClass && local.class,
     );
 
-  // disabled/readonly일 때 div로 표시
-  const isDisplayMode = () => local.disabled || local.readonly;
+  // 편집 가능 여부
+  const isEditable = () => !local.disabled && !local.readonly;
 
+  // inset 모드: dual-element overlay 패턴
+  if (local.inset) {
+    return (
+      <div
+        {...rest}
+        data-text-field
+        class={twMerge(getWrapperClass(false), "relative", local.class)}
+        style={local.style}
+      >
+        {/* content div: 항상 DOM에 존재하여 셀 크기 유지 */}
+        <div
+          data-text-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+
+        {/* input: 편집 가능할 때만 overlay로 표시 */}
+        <Show when={isEditable()}>
+          <input
+            type={local.type ?? "text"}
+            class={clsx(
+              fieldInputClass,
+              "absolute left-0 top-0 size-full",
+              "px-2 py-1",
+            )}
+            value={displayValue()}
+            placeholder={local.placeholder}
+            title={local.title}
+            autocomplete={local.autocomplete}
+            onInput={handleInput}
+          />
+        </Show>
+      </div>
+    );
+  }
+
+  // standalone 모드: 기존 Show 패턴 유지
   return (
     <Show
-      when={!isDisplayMode()}
+      when={isEditable()}
       fallback={
-        <div {...rest} data-text-field class={twMerge(getWrapperClass(), "sd-text-field")} style={local.style} title={local.title}>
+        <div {...rest} data-text-field class={twMerge(getWrapperClass(true), "sd-text-field")} style={local.style} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
       }
     >
-      <div {...rest} data-text-field class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
         <input
           type={local.type ?? "text"}
           class={fieldInputClass}
