@@ -140,6 +140,5 @@ export const focusRowIndicatorClass = clsx(
 export const focusCellIndicatorClass = clsx(
   "pointer-events-none absolute",
   "border-2 border-primary-500",
-  "rounded",
   "z-[6]",
 );

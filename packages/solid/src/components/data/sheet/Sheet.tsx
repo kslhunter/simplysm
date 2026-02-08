@@ -554,10 +554,10 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
     setFocusCellStyle({
       display: "block",
-      top: `${td.offsetTop}px`,
-      left: `${td.offsetLeft}px`,
-      width: `${td.offsetWidth}px`,
-      height: `${td.offsetHeight}px`,
+      top: `${td.offsetTop - 1}px`,
+      left: `${td.offsetLeft - 1}px`,
+      width: `${td.offsetWidth + 1}px`,
+      height: `${td.offsetHeight + 1}px`,
     });
   }
 
