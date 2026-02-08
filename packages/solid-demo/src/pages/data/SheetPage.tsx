@@ -1,5 +1,5 @@
-import { createSignal } from "solid-js";
-import { Sheet, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
+import { createSignal, Show } from "solid-js";
+import { Sheet, TextField, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
 
 interface User {
   name: string;
@@ -61,6 +61,18 @@ export default function SheetPage() {
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
   const [page, setPage] = createSignal(0);
   const [expanded, setExpanded] = createSignal<Category[]>([]);
+
+  const [editUsers, setEditUsers] = createSignal<User[]>([
+    { name: "홍길동", age: 30, email: "hong@example.com", salary: 5000 },
+    { name: "김철수", age: 25, email: "kim@example.com", salary: 4200 },
+    { name: "이영희", age: 28, email: "lee@example.com", salary: 4800 },
+    { name: "박민수", age: 35, email: "park@example.com", salary: 5500 },
+    { name: "최지영", age: 22, email: "choi@example.com", salary: 3800 },
+  ]);
+
+  function updateEditUser(index: number, field: keyof User, value: string | number): void {
+    setEditUsers((prev) => prev.map((u, i) => i === index ? { ...u, [field]: value } : u));
+  }
 
   return (
     <TopbarContainer>
@@ -250,6 +262,67 @@ export default function SheetPage() {
                 </Sheet.Column>
               </Sheet>
             </div>
+          </section>
+
+          {/* 셀 편집 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">셀 편집</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              셀을 클릭하여 포커스 후, F2 또는 더블클릭으로 편집 모드 진입. Arrow/Enter/Tab으로 네비게이션. Escape로 편집 해제.
+            </p>
+            <Sheet items={editUsers()} key="cell-edit" focusMode="cell">
+              <Sheet.Column<User> key="name" header="이름">
+                {(ctx) => (
+                  <Show when={ctx.edit} fallback={<div class="px-2 py-1">{ctx.item.name}</div>}>
+                    <TextField
+                      value={ctx.item.name}
+                      onValueChange={(v) => updateEditUser(ctx.index, "name", v)}
+                      inset
+                    />
+                  </Show>
+                )}
+              </Sheet.Column>
+              <Sheet.Column<User> key="age" header="나이">
+                {(ctx) => (
+                  <Show when={ctx.edit} fallback={<div class="px-2 py-1">{ctx.item.age}</div>}>
+                    <TextField
+                      value={String(ctx.item.age)}
+                      onValueChange={(v) => updateEditUser(ctx.index, "age", Number(v))}
+                      inset
+                    />
+                  </Show>
+                )}
+              </Sheet.Column>
+              <Sheet.Column<User> key="email" header="이메일">
+                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              </Sheet.Column>
+              <Sheet.Column<User> key="salary" header="급여">
+                {(ctx) => (
+                  <div class="px-2 py-1 text-right">
+                    {ctx.item.salary.toLocaleString()}원
+                  </div>
+                )}
+              </Sheet.Column>
+            </Sheet>
+          </section>
+
+          {/* 행 포커스 모드 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">행 포커스 모드</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              focusMode="row"일 때 셀 인디케이터 대신 행 인디케이터만 표시됩니다.
+            </p>
+            <Sheet items={users} key="row-focus" focusMode="row">
+              <Sheet.Column<User> key="name" header="이름">
+                {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
+              </Sheet.Column>
+              <Sheet.Column<User> key="age" header="나이">
+                {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
+              </Sheet.Column>
+              <Sheet.Column<User> key="email" header="이메일">
+                {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
+              </Sheet.Column>
+            </Sheet>
           </section>
         </div>
       </div>
