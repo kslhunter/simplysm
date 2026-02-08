@@ -198,9 +198,41 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
   // step 속성 (datetime-sec일 때 1)
   const getStep = () => (fieldType() === "datetime-sec" ? "1" : undefined);
 
-  // inset 모드: dual-element overlay 패턴
-  if (local.inset) {
-    return (
+  return (
+    <Show
+      when={local.inset}
+      fallback={
+        // standalone 모드
+        <Show
+          when={isEditable()}
+          fallback={
+            <div
+              {...rest}
+              data-datetime-field
+              class={twMerge(getWrapperClass(true), "sd-datetime-field")}
+              style={local.style}
+              title={local.title}
+            >
+              {displayValue() || "\u00A0"}
+            </div>
+          }
+        >
+          <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
+            <input
+              type="datetime-local"
+              class={fieldInputClass}
+              value={displayValue()}
+              title={local.title}
+              min={formatMinMax(local.min, fieldType())}
+              max={formatMinMax(local.max, fieldType())}
+              step={getStep()}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      }
+    >
+      {/* inset 모드: dual-element overlay 패턴 */}
       <div {...rest} data-datetime-field class={clsx("relative", local.class)} style={local.style}>
         <div
           data-datetime-field-content
@@ -224,36 +256,6 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
             />
           </div>
         </Show>
-      </div>
-    );
-  }
-
-  return (
-    <Show
-      when={isEditable()}
-      fallback={
-        <div
-          {...rest}
-          data-datetime-field
-          class={twMerge(getWrapperClass(true), "sd-datetime-field")}
-          style={local.style}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
-        </div>
-      }
-    >
-      <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
-        <input
-          type="datetime-local"
-          class={fieldInputClass}
-          value={displayValue()}
-          title={local.title}
-          min={formatMinMax(local.min, fieldType())}
-          max={formatMinMax(local.max, fieldType())}
-          step={getStep()}
-          onInput={handleInput}
-        />
       </div>
     </Show>
   );

@@ -205,9 +205,34 @@ export const DateField: Component<DateFieldProps> = (props) => {
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // inset 모드: dual-element overlay 패턴
-  if (local.inset) {
-    return (
+  return (
+    <Show
+      when={local.inset}
+      fallback={
+        // standalone 모드: 기존 Show 패턴 유지
+        <Show
+          when={isEditable()}
+          fallback={
+            <div {...rest} data-date-field class={twMerge(getWrapperClass(true), "sd-date-field")} style={local.style} title={local.title}>
+              {displayValue() || "\u00A0"}
+            </div>
+          }
+        >
+          <div {...rest} data-date-field class={getWrapperClass(true)} style={local.style}>
+            <input
+              type={getInputType(fieldType())}
+              class={fieldInputClass}
+              value={displayValue()}
+              title={local.title}
+              min={formatMinMax(local.min, fieldType())}
+              max={formatMinMax(local.max, fieldType())}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      }
+    >
+      {/* inset 모드: dual-element overlay 패턴 */}
       <div {...rest} data-date-field class={clsx("relative", local.class)} style={local.style}>
         <div
           data-date-field-content
@@ -231,30 +256,6 @@ export const DateField: Component<DateFieldProps> = (props) => {
             />
           </div>
         </Show>
-      </div>
-    );
-  }
-
-  // standalone 모드: 기존 Show 패턴 유지
-  return (
-    <Show
-      when={isEditable()}
-      fallback={
-        <div {...rest} data-date-field class={twMerge(getWrapperClass(true), "sd-date-field")} style={local.style} title={local.title}>
-          {displayValue() || "\u00A0"}
-        </div>
-      }
-    >
-      <div {...rest} data-date-field class={getWrapperClass(true)} style={local.style}>
-        <input
-          type={getInputType(fieldType())}
-          class={fieldInputClass}
-          value={displayValue()}
-          title={local.title}
-          min={formatMinMax(local.min, fieldType())}
-          max={formatMinMax(local.max, fieldType())}
-          onInput={handleInput}
-        />
       </div>
     </Show>
   );

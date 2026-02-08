@@ -258,11 +258,46 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
 
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // inset 모드: dual-element overlay 패턴
-  if (local.inset) {
-    return (
+  return (
+    <Show
+      when={local.inset}
+      fallback={
+        // standalone 모드: 기존 Show 패턴 유지
+        <Show
+          when={isEditable()}
+          fallback={
+            <div
+              {...rest}
+              data-number-field
+              class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
+              style={local.style}
+              title={local.title}
+            >
+              {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
+            </div>
+          }
+        >
+          <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
+            <input
+              type="text"
+              inputmode="numeric"
+              class={numberInputClass}
+              value={displayValue()}
+              placeholder={local.placeholder}
+              title={local.title}
+              min={local.min}
+              max={local.max}
+              step={local.step}
+              onInput={handleInput}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </div>
+        </Show>
+      }
+    >
+      {/* inset 모드: dual-element overlay 패턴 */}
       <div {...rest} data-number-field class={clsx("relative", local.class)} style={local.style}>
-        {/* content div — 항상 존재, 셀 크기 잡아줌 */}
         <div
           data-number-field-content
           class={twMerge(getWrapperClass(false), "justify-end")}
@@ -272,7 +307,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
           {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
         </div>
 
-        {/* input — 편집 가능할 때만 */}
         <Show when={isEditable()}>
           <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
             <input
@@ -291,41 +325,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
             />
           </div>
         </Show>
-      </div>
-    );
-  }
-
-  // standalone 모드: 기존 Show 패턴 유지
-  return (
-    <Show
-      when={isEditable()}
-      fallback={
-        <div
-          {...rest}
-          data-number-field
-          class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
-          style={local.style}
-          title={local.title}
-        >
-          {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
-        </div>
-      }
-    >
-      <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
-        <input
-          type="text"
-          inputmode="numeric"
-          class={numberInputClass}
-          value={displayValue()}
-          placeholder={local.placeholder}
-          title={local.title}
-          min={local.min}
-          max={local.max}
-          step={local.step}
-          onInput={handleInput}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-        />
       </div>
     </Show>
   );

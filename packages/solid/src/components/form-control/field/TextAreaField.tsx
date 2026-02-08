@@ -130,16 +130,60 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
 
-  // inset 모드: dual-element overlay 패턴
-  if (local.inset) {
-    return (
+  return (
+    <Show
+      when={local.inset}
+      fallback={
+        // standalone 모드: 기존 Show 패턴 유지
+        <Show
+          when={isEditable()}
+          fallback={
+            <div
+              {...rest}
+              data-textarea-field
+              class={getWrapperClass(true)}
+              style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
+              title={local.title}
+            >
+              {value() || "\u00A0"}
+            </div>
+          }
+        >
+          <div
+            {...rest}
+            data-textarea-field
+            class={getWrapperClass(true)}
+            style={{ position: "relative", ...local.style }}
+          >
+            <div
+              data-hidden-content
+              style={{
+                visibility: "hidden",
+                "white-space": "pre-wrap",
+                "word-break": "break-all",
+              }}
+            >
+              {contentForHeight()}
+            </div>
+
+            <textarea
+              class={getTextareaClass()}
+              value={value()}
+              placeholder={local.placeholder}
+              title={local.title}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      }
+    >
+      {/* inset 모드: dual-element overlay 패턴 */}
       <div
         {...rest}
         data-textarea-field
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        {/* content div: 항상 DOM에 존재하여 셀 크기 유지 */}
         <div
           data-textarea-field-content
           style={{
@@ -150,7 +194,6 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           }}
           title={local.title}
         >
-          {/* hidden height calculator — 항상 존재 */}
           <div
             data-hidden-content
             style={{
@@ -161,7 +204,6 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           >
             {contentForHeight()}
           </div>
-          {/* readonly/disabled일 때 실제 텍스트 표시 */}
           <Show when={!isEditable()}>
             <div
               style={{
@@ -179,7 +221,6 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           </Show>
         </div>
 
-        {/* textarea overlay — 편집 가능할 때만 */}
         <Show when={isEditable()}>
           <div
             class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}
@@ -204,50 +245,6 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
             />
           </div>
         </Show>
-      </div>
-    );
-  }
-
-  // standalone 모드: 기존 Show 패턴 유지
-  return (
-    <Show
-      when={isEditable()}
-      fallback={
-        <div
-          {...rest}
-          data-textarea-field
-          class={getWrapperClass(true)}
-          style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
-          title={local.title}
-        >
-          {value() || "\u00A0"}
-        </div>
-      }
-    >
-      <div
-        {...rest}
-        data-textarea-field
-        class={getWrapperClass(true)}
-        style={{ position: "relative", ...local.style }}
-      >
-        <div
-          data-hidden-content
-          style={{
-            visibility: "hidden",
-            "white-space": "pre-wrap",
-            "word-break": "break-all",
-          }}
-        >
-          {contentForHeight()}
-        </div>
-
-        <textarea
-          class={getTextareaClass()}
-          value={value()}
-          placeholder={local.placeholder}
-          title={local.title}
-          onInput={handleInput}
-        />
       </div>
     </Show>
   );

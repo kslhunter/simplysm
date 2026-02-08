@@ -154,9 +154,39 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
   // step 속성 (time-sec일 때 1)
   const getStep = () => (fieldType() === "time-sec" ? "1" : undefined);
 
-  // inset 모드: dual-element overlay 패턴
-  if (local.inset) {
-    return (
+  return (
+    <Show
+      when={local.inset}
+      fallback={
+        // standalone 모드
+        <Show
+          when={isEditable()}
+          fallback={
+            <div
+              {...rest}
+              data-time-field
+              class={twMerge(getWrapperClass(true), "sd-time-field")}
+              style={local.style}
+              title={local.title}
+            >
+              {displayValue() || "\u00A0"}
+            </div>
+          }
+        >
+          <div {...rest} data-time-field class={getWrapperClass(true)} style={local.style}>
+            <input
+              type="time"
+              class={fieldInputClass}
+              value={displayValue()}
+              title={local.title}
+              step={getStep()}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      }
+    >
+      {/* inset 모드: dual-element overlay 패턴 */}
       <div {...rest} data-time-field class={clsx("relative", local.class)} style={local.style}>
         <div
           data-time-field-content
@@ -178,34 +208,6 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
             />
           </div>
         </Show>
-      </div>
-    );
-  }
-
-  return (
-    <Show
-      when={isEditable()}
-      fallback={
-        <div
-          {...rest}
-          data-time-field
-          class={twMerge(getWrapperClass(true), "sd-time-field")}
-          style={local.style}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
-        </div>
-      }
-    >
-      <div {...rest} data-time-field class={getWrapperClass(true)} style={local.style}>
-        <input
-          type="time"
-          class={fieldInputClass}
-          value={displayValue()}
-          title={local.title}
-          step={getStep()}
-          onInput={handleInput}
-        />
       </div>
     </Show>
   );
