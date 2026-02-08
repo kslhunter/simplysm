@@ -202,9 +202,44 @@ describe("TimeField 컴포넌트", () => {
   describe("inset 스타일", () => {
     it("inset=true일 때 테두리가 없고 배경이 투명하다", () => {
       const { container } = render(() => <TimeField inset />);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-none")).toBe(true);
-      expect(wrapper.classList.contains("bg-transparent")).toBe(true);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
+      expect(contentDiv.classList.contains("border-none")).toBe(true);
+      expect(contentDiv.classList.contains("bg-transparent")).toBe(true);
+    });
+
+    it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
+      const { container } = render(() => (
+        <TimeField inset readonly value={new Time(14, 30, 0)} />
+      ));
+      const outer = container.firstChild as HTMLElement;
+      expect(outer.classList.contains("relative")).toBe(true);
+
+      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.textContent).toBe("14:30");
+
+      expect(outer.querySelector("input")).toBeFalsy();
+    });
+
+    it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
+      const { container } = render(() => (
+        <TimeField inset value={new Time(14, 30, 0)} />
+      ));
+      const outer = container.firstChild as HTMLElement;
+
+      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
+      expect(contentDiv).toBeTruthy();
+      expect(contentDiv.style.visibility).toBe("hidden");
+
+      expect(outer.querySelector("input")).toBeTruthy();
+    });
+
+    it("inset + 빈 값일 때 content div에 NBSP가 표시된다", () => {
+      const { container } = render(() => <TimeField inset readonly />);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
+      expect(contentDiv.textContent).toBe("\u00A0");
     });
   });
 

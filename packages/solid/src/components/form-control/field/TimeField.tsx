@@ -1,4 +1,5 @@
 import { type Component, type JSX, Show, splitProps } from "solid-js";
+import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -136,31 +137,59 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
   };
 
   // wrapper 클래스
-  const getWrapperClass = () =>
+  const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
-      local.inset && fieldInsetClass,
       local.disabled && fieldDisabledClass,
       local.readonly && fieldReadonlyClass,
-      local.class,
+      local.inset && fieldInsetClass,
+      includeCustomClass && local.class,
     );
 
-  // disabled/readonly일 때 div로 표시
-  const isDisplayMode = () => local.disabled || local.readonly;
+  // 편집 가능 여부
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // step 속성 (time-sec일 때 1)
   const getStep = () => (fieldType() === "time-sec" ? "1" : undefined);
 
+  // inset 모드: dual-element overlay 패턴
+  if (local.inset) {
+    return (
+      <div {...rest} data-time-field class={clsx("relative", local.class)} style={local.style}>
+        <div
+          data-time-field-content
+          class={getWrapperClass(false)}
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
+          title={local.title}
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+        <Show when={isEditable()}>
+          <div class={twMerge(getWrapperClass(false), clsx("absolute left-0 top-0 size-full"))}>
+            <input
+              type="time"
+              class={fieldInputClass}
+              value={displayValue()}
+              title={local.title}
+              step={getStep()}
+              onInput={handleInput}
+            />
+          </div>
+        </Show>
+      </div>
+    );
+  }
+
   return (
     <Show
-      when={!isDisplayMode()}
+      when={isEditable()}
       fallback={
         <div
           {...rest}
           data-time-field
-          class={twMerge(getWrapperClass(), "sd-time-field")}
+          class={twMerge(getWrapperClass(true), "sd-time-field")}
           style={local.style}
           title={local.title}
         >
@@ -168,7 +197,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         </div>
       }
     >
-      <div {...rest} data-time-field class={getWrapperClass()} style={local.style}>
+      <div {...rest} data-time-field class={getWrapperClass(true)} style={local.style}>
         <input
           type="time"
           class={fieldInputClass}
