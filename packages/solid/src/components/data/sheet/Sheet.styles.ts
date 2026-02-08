@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 export const sheetContainerClass = clsx(
   "relative",
-  "bg-white dark:bg-base-800",
+  "bg-white dark:bg-base-950",
   "overflow-auto",
 );
 
@@ -13,8 +13,8 @@ export const tableClass = clsx(
 
 export const thClass = clsx(
   "relative",
-  "bg-base-100 dark:bg-base-700",
-  "border-b border-r border-base-300 dark:border-base-600",
+  "bg-base-100 dark:bg-base-900",
+  "border-b border-r border-base-300 dark:border-base-800",
   "overflow-hidden whitespace-nowrap",
   "p-0",
   "text-left font-semibold",
@@ -26,8 +26,8 @@ export const thContentClass = clsx(
 );
 
 export const tdClass = clsx(
-  "bg-white dark:bg-base-800",
-  "border-b border-r border-base-200 dark:border-base-700",
+  "bg-white dark:bg-base-950",
+  "border-b border-r border-base-200 dark:border-base-800",
   "truncate",
   "p-0",
   "align-top",
@@ -43,7 +43,7 @@ export const insetContainerClass = clsx(
 );
 
 export const defaultContainerClass = clsx(
-  "border border-base-300 dark:border-base-600",
+  "border border-base-300 dark:border-base-700",
   "rounded",
 );
 
@@ -56,15 +56,15 @@ export const sortableThClass = clsx(
 // 정렬 아이콘 영역
 export const sortIconClass = clsx(
   "px-1 py-0.5",
-  "bg-base-100 dark:bg-base-700",
+  "bg-base-100 dark:bg-base-900",
 );
 
 // 상단 툴바 (설정 버튼 + 페이지네이션)
 export const toolbarClass = clsx(
   "flex items-center gap-2",
   "px-2 py-1",
-  "bg-base-50 dark:bg-base-800",
-  "border-b border-base-300 dark:border-base-600",
+  "bg-base-50 dark:bg-base-900",
+  "border-b border-base-300 dark:border-base-700",
 );
 
 // 고정 컬럼 기본 (sticky)
@@ -72,8 +72,8 @@ export const fixedClass = "sticky";
 
 // 고정/비고정 경계 시각 효과 — 고정 컬럼의 마지막 셀에 적용
 export const fixedLastClass = clsx(
-  "border-r-2 border-r-base-400",
-  "dark:border-r-base-500",
+  "border-r-2 border-r-base-300",
+  "dark:border-r-base-700",
 );
 
 // 리사이저 핸들 (헤더 셀 우측 드래그 영역)
@@ -94,15 +94,15 @@ export const resizeIndicatorClass = clsx(
 
 // 기능 컬럼 기본 (확장/선택 컬럼 공통)
 export const featureThClass = clsx(
-  "bg-base-100 dark:bg-base-700",
-  "border-b border-r border-base-300 dark:border-base-600",
+  "bg-base-100 dark:bg-base-800",
+  "border-b border-r border-base-300 dark:border-base-700",
   "p-0",
   "align-middle"
 );
 
 export const featureTdClass = clsx(
-  "bg-base-50 dark:bg-base-800",
-  "border-b border-r border-base-200 dark:border-base-700",
+  "bg-base-50 dark:bg-base-900",
+  "border-b border-r border-base-200 dark:border-base-800",
   "p-0",
   "align-middle",
   "h-px",
@@ -117,7 +117,7 @@ export const expandIndentGuideClass = clsx(
 // 확장 컬럼 깊이 가이드 — 세로선
 export const expandIndentGuideLineClass = clsx(
   "w-0 self-stretch",
-  "border-r border-base-300 dark:border-base-600",
+  "border-r border-base-300 dark:border-base-700",
 );
 
 // 확장 토글 버튼

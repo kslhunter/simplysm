@@ -11,6 +11,7 @@ import { createPropSignal } from "../../../utils/createPropSignal";
 import { Icon } from "../../display/Icon";
 import { Pagination } from "../Pagination";
 import { usePersisted } from "../../../contexts/usePersisted";
+import "./Sheet.css";
 import {
   defaultContainerClass,
   expandIndentGuideClass,

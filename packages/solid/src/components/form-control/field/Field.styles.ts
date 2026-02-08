@@ -26,10 +26,10 @@ export const fieldErrorClass = clsx`border-danger-500`;
 
 // inset 스타일
 export const fieldInsetClass = clsx(
-  clsx`w-full rounded-none border-none bg-primary-50 dark:bg-primary-950`,
-  "focus:[outline-style:solid]",
-  clsx`focus:outline-1 focus:-outline-offset-1`,
-  clsx`focus:outline-primary-400 dark:focus:outline-primary-400`,
+  clsx`w-full rounded-none border-none bg-primary-50 dark:bg-primary-950/30`,
+  "focus-within:[outline-style:solid]",
+  clsx`focus-within:outline-1 focus-within:-outline-offset-1`,
+  clsx`focus-within:outline-primary-400 dark:focus-within:outline-primary-400`,
 );
 
 // inset 높이 (border 2px 제외)

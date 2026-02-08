@@ -16,7 +16,7 @@ const baseClass = clsx(
   "[&_th]:border-l [&_th]:border-t [&_th]:border-base-300 [&_th]:dark:border-base-600",
   "[&_th]:px-2 [&_th]:py-1",
   "[&_th]:bg-base-100 [&_th]:text-left [&_th]:font-semibold",
-  "[&_th]:dark:bg-base-700",
+  "[&_th]:dark:bg-base-800",
   // td
   "[&_td]:border-l [&_td]:border-t [&_td]:border-base-300 [&_td]:dark:border-base-600",
   "[&_td]:px-2 [&_td]:py-1",

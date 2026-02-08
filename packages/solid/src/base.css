@@ -70,24 +70,9 @@
   .dark ::selection {
     @apply bg-primary-800 text-primary-100;
   }
-}
 
-@keyframes sd-busy-bar-before {
-  0% {
-    transform: scaleX(0);
-  }
-  60%,
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes sd-busy-bar-after {
-  0%,
-  50% {
-    transform: scaleX(0);
-  }
-  100% {
-    transform: scaleX(1);
+  /* 다크모드 날짜/시간 입력 아이콘 */
+  .dark ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
   }
 }

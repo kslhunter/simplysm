@@ -1,6 +1,7 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import "./Card.css";
 
 export interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 

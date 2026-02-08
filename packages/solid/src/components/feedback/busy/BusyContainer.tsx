@@ -11,6 +11,7 @@ import {
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { BusyContext, type BusyType } from "./BusyContext";
+import "./BusyContainer.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   busy?: boolean;

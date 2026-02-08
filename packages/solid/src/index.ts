@@ -67,6 +67,7 @@ export * from "./components/feedback/busy/BusyContainer";
 
 // contexts
 export * from "./contexts/ConfigContext";
+export * from "./contexts/InitializeProvider";
 export * from "./contexts/ThemeContext";
 export * from "./contexts/usePersisted";
 export * from "./contexts/ServiceClientContext";
