@@ -355,7 +355,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region CellAgent
   let containerRef: HTMLDivElement | undefined;
 
-  const [focusedAddr, setFocusedAddr] = createSignal<{ r: number; c: number } | null>(null);
+  const [_focusedAddr, setFocusedAddr] = createSignal<{ r: number; c: number } | null>(null);
   const [editCellAddr, setEditCellAddr] = createSignal<{ r: number; c: number } | null>(null);
 
   function getIsCellEditMode(r: number, c: number): boolean {
@@ -365,6 +365,141 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   function getCell(r: number, c: number): HTMLTableCellElement | null {
     return containerRef?.querySelector(`td[data-r="${r}"][data-c="${c}"]`) ?? null;
+  }
+
+  function onFocusCapture(e: FocusEvent): void {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    const td = target.closest("td[data-r]");
+    if (!(td instanceof HTMLElement)) return;
+    const r = Number(td.dataset["r"]);
+    const c = Number(td.dataset["c"]);
+    setFocusedAddr({ r, c });
+  }
+
+  function onBlurCapture(e: FocusEvent): void {
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    const container = containerRef!;
+
+    if (!relatedTarget || !container.contains(relatedTarget)) {
+      setFocusedAddr(null);
+      setEditCellAddr(null);
+      return;
+    }
+
+    const editAddr = editCellAddr();
+    if (editAddr) {
+      const editTd = getCell(editAddr.r, editAddr.c);
+      if (editTd && !editTd.contains(relatedTarget)) {
+        setEditCellAddr(null);
+      }
+    }
+  }
+
+  function enterEditMode(r: number, c: number): void {
+    setEditCellAddr({ r, c });
+    requestAnimationFrame(() => {
+      const td = getCell(r, c);
+      if (td) {
+        const focusable = td.querySelector<HTMLElement>(
+          'input:not(:disabled), button:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        );
+        focusable?.focus();
+      }
+    });
+  }
+
+  function exitEditMode(): void {
+    const addr = editCellAddr();
+    setEditCellAddr(null);
+    if (addr) {
+      const td = getCell(addr.r, addr.c);
+      td?.focus();
+    }
+  }
+
+  function getScrollOffset(): { top: number; left: number } {
+    const totalHeaderHeight = headerRowHeights().reduce((sum, h) => sum + h, 0);
+    const fixedCount = fixedLeftMap().size;
+    const widths = columnWidths();
+    let totalFixedWidth = featureColTotalWidth();
+    for (let i = 0; i < fixedCount; i++) {
+      totalFixedWidth += widths.get(i) ?? 0;
+    }
+    return { top: totalHeaderHeight, left: totalFixedWidth };
+  }
+
+  function scrollCellIntoView(container: HTMLDivElement, td: HTMLTableCellElement): void {
+    const offset = getScrollOffset();
+    if (td.offsetTop - container.scrollTop < offset.top) {
+      container.scrollTop = td.offsetTop - offset.top;
+    }
+    if (td.offsetLeft - container.scrollLeft < offset.left) {
+      container.scrollLeft = td.offsetLeft - offset.left;
+    }
+  }
+
+  function moveFocus(r: number, c: number, dr: number, dc: number): void {
+    const newR = Math.max(0, Math.min(r + dr, displayItems().length - 1));
+    const newC = Math.max(0, Math.min(c + dc, effectiveColumns().length - 1));
+    const td = getCell(newR, newC);
+    if (td) {
+      scrollCellIntoView(containerRef!, td);
+      td.focus();
+    }
+  }
+
+  function moveFocusWithEdit(r: number, c: number, dr: number, dc: number): void {
+    setEditCellAddr(null);
+    const newR = Math.max(0, Math.min(r + dr, displayItems().length - 1));
+    const newC = Math.max(0, Math.min(c + dc, effectiveColumns().length - 1));
+    enterEditMode(newR, newC);
+  }
+
+  function onKeyDown(e: KeyboardEvent): void {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    const td = target.closest("td[data-r]");
+    if (!(td instanceof HTMLElement)) return;
+
+    const r = Number(td.dataset["r"]);
+    const c = Number(td.dataset["c"]);
+    const isEditing = editCellAddr() != null;
+
+    if (!isEditing) {
+      switch (e.key) {
+        case "ArrowUp": moveFocus(r, c, -1, 0); e.preventDefault(); break;
+        case "ArrowDown": moveFocus(r, c, 1, 0); e.preventDefault(); break;
+        case "ArrowLeft": moveFocus(r, c, 0, -1); e.preventDefault(); break;
+        case "ArrowRight": moveFocus(r, c, 0, 1); e.preventDefault(); break;
+        case "Enter":
+          if (e.shiftKey) { moveFocus(r, c, -1, 0); }
+          else { moveFocus(r, c, 1, 0); }
+          e.preventDefault(); break;
+        case "Tab":
+          if (e.shiftKey) { moveFocus(r, c, 0, -1); }
+          else { moveFocus(r, c, 0, 1); }
+          e.preventDefault(); break;
+        case "F2":
+          enterEditMode(r, c); e.preventDefault(); break;
+      }
+    } else {
+      switch (e.key) {
+        case "Escape":
+          exitEditMode(); e.preventDefault(); break;
+        case "Enter":
+          if (e.shiftKey) { moveFocusWithEdit(r, c, -1, 0); }
+          else { moveFocusWithEdit(r, c, 1, 0); }
+          e.preventDefault(); break;
+        case "Tab":
+          if (e.shiftKey) { moveFocusWithEdit(r, c, 0, -1); }
+          else { moveFocusWithEdit(r, c, 0, 1); }
+          e.preventDefault(); break;
+      }
+    }
+
+    local.onCellKeydown?.({ item: displayItems()[r].item, key: effectiveColumns()[c].key, event: e });
+    local.onItemKeydown?.({ item: displayItems()[r].item, event: e });
   }
 
   // #region Display
@@ -402,7 +537,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           />
         </div>
       </Show>
-      <div data-sheet-scroll ref={containerRef} class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
+      <div
+        data-sheet-scroll
+        ref={containerRef}
+        class={twMerge(sheetContainerClass, "flex-1 min-h-0")}
+        style={local.contentStyle}
+        onFocusIn={onFocusCapture}
+        onFocusOut={onBlurCapture}
+        onKeyDown={onKeyDown}
+      >
       <table class={tableClass}>
         <colgroup>
           <Show when={hasExpandFeature()}>
@@ -607,7 +750,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         </thead>
         <tbody>
           <For each={displayItems()}>
-            {(flat) => (
+            {(flat, flatIndex) => (
               <tr>
                 {/* 확장 기능 컬럼 바디 셀 */}
                 <Show when={hasExpandFeature()}>
@@ -653,18 +796,23 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                 <For each={effectiveColumns()}>
                   {(col, colIndex) => (
                     <td
+                      tabindex="-1"
+                      data-r={flatIndex()}
+                      data-c={colIndex()}
                       class={twMerge(
                         tdClass,
                         col.fixed ? clsx(fixedClass, "z-[2]") : undefined,
                         isLastFixed(colIndex()) ? fixedLastClass : undefined,
+                        local.getItemCellClassFn?.(flat.item, col.key),
                       )}
-                      style={getFixedStyle(colIndex())}
+                      style={[getFixedStyle(colIndex()), local.getItemCellStyleFn?.(flat.item, col.key)].filter(Boolean).join("; ") || undefined}
+                      onDblClick={() => enterEditMode(flatIndex(), colIndex())}
                     >
                       {col.cell({
                         item: flat.item,
                         index: flat.index,
                         depth: flat.depth,
-                        edit: false,
+                        edit: getIsCellEditMode(flatIndex(), colIndex()),
                       })}
                     </td>
                   )}
