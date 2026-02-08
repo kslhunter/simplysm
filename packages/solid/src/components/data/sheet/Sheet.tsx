@@ -57,6 +57,11 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "expandedItems",
     "onExpandedItemsChange",
     "getChildrenFn",
+    "getItemCellClassFn",
+    "getItemCellStyleFn",
+    "focusMode",
+    "onItemKeydown",
+    "onCellKeydown",
     "class",
     "children",
   ]);
