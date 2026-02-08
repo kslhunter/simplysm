@@ -31,6 +31,8 @@ import {
   thClass,
   thContentClass,
   toolbarClass,
+  focusRowIndicatorClass,
+  focusCellIndicatorClass,
 } from "./Sheet.styles";
 
 interface SheetComponent {
@@ -355,7 +357,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region CellAgent
   let containerRef: HTMLDivElement | undefined;
 
-  const [_focusedAddr, setFocusedAddr] = createSignal<{ r: number; c: number } | null>(null);
+  const [focusedAddr, setFocusedAddr] = createSignal<{ r: number; c: number } | null>(null);
   const [editCellAddr, setEditCellAddr] = createSignal<{ r: number; c: number } | null>(null);
 
   function getIsCellEditMode(r: number, c: number): boolean {
@@ -375,6 +377,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     const r = Number(td.dataset["r"]);
     const c = Number(td.dataset["c"]);
     setFocusedAddr({ r, c });
+    redrawFocusIndicator();
   }
 
   function onBlurCapture(e: FocusEvent): void {
@@ -384,6 +387,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     if (!relatedTarget || !container.contains(relatedTarget)) {
       setFocusedAddr(null);
       setEditCellAddr(null);
+      redrawFocusIndicator();
       return;
     }
 
@@ -394,6 +398,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         setEditCellAddr(null);
       }
     }
+    redrawFocusIndicator();
   }
 
   function enterEditMode(r: number, c: number): void {
@@ -502,6 +507,60 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     local.onItemKeydown?.({ item: displayItems()[r].item, event: e });
   }
 
+  // #region FocusIndicator
+  const [focusRowStyle, setFocusRowStyle] = createSignal<JSX.CSSProperties>({
+    display: "none",
+  });
+  const [focusCellStyle, setFocusCellStyle] = createSignal<JSX.CSSProperties>({
+    display: "none",
+  });
+
+  function redrawFocusIndicator(): void {
+    const addr = focusedAddr();
+    if (!addr) {
+      setFocusRowStyle({ display: "none" });
+      setFocusCellStyle({ display: "none" });
+      return;
+    }
+
+    const td = getCell(addr.r, addr.c);
+    const tr = td?.parentElement;
+    const container = containerRef!;
+    if (!td || !tr) return;
+
+    // 행 인디케이터
+    setFocusRowStyle({
+      display: "block",
+      top: `${tr.offsetTop}px`,
+      left: `${container.scrollLeft}px`,
+      width: `${container.clientWidth}px`,
+      height: `${tr.offsetHeight}px`,
+    });
+
+    // 셀 인디케이터 (편집 중이거나 focusMode="row"이면 숨김)
+    const isEditing = editCellAddr() != null;
+    const isRowMode = local.focusMode === "row";
+    if (isEditing || isRowMode) {
+      setFocusCellStyle({ display: "none" });
+      return;
+    }
+
+    setFocusCellStyle({
+      display: "block",
+      top: `${td.offsetTop}px`,
+      left: `${td.offsetLeft}px`,
+      width: `${td.offsetWidth}px`,
+      height: `${td.offsetHeight}px`,
+    });
+  }
+
+  function setContainerRef(el: HTMLDivElement): void {
+    containerRef = el;
+    createResizeObserver(el, () => {
+      redrawFocusIndicator();
+    });
+  }
+
   // #region Display
   const displayItems = createMemo(() => flatItems());
 
@@ -539,12 +598,13 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       </Show>
       <div
         data-sheet-scroll
-        ref={containerRef}
+        ref={setContainerRef}
         class={twMerge(sheetContainerClass, "flex-1 min-h-0")}
         style={local.contentStyle}
         onFocusIn={onFocusCapture}
         onFocusOut={onBlurCapture}
         onKeyDown={onKeyDown}
+        onScroll={() => requestAnimationFrame(() => redrawFocusIndicator())}
       >
       <table class={tableClass}>
         <colgroup>
@@ -822,6 +882,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           </For>
         </tbody>
       </table>
+      <div class={focusRowIndicatorClass} style={focusRowStyle()} />
+      <div class={focusCellIndicatorClass} style={focusCellStyle()} />
       <div class={resizeIndicatorClass} style={resizeIndicatorStyle()} />
       </div>
     </div>

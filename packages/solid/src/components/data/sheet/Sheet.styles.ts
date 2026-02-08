@@ -110,7 +110,7 @@ export const featureTdClass = clsx(
 
 // 확장 컬럼 깊이 가이드 — 래퍼 (토글 아이콘과 같은 너비, 세로선 중앙 정렬)
 export const expandIndentGuideClass = clsx(
-  "w-3 self-stretch mr-0.5",
+  "mr-0.5 w-3 self-stretch",
   "flex justify-end",
 );
 
@@ -127,4 +127,19 @@ export const expandToggleClass = clsx(
   "cursor-pointer",
   "rounded",
   "hover:bg-base-200 dark:hover:bg-base-600",
+);
+
+// 포커스 인디케이터 — 행 하이라이트
+export const focusRowIndicatorClass = clsx(
+  "pointer-events-none absolute",
+  "bg-base-500/10",
+  "z-[6]",
+);
+
+// 포커스 인디케이터 — 셀 테두리
+export const focusCellIndicatorClass = clsx(
+  "pointer-events-none absolute",
+  "border-2 border-primary-500",
+  "rounded",
+  "z-[6]",
 );
