@@ -507,6 +507,9 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
               dialogRef = el;
             }}
             data-modal-dialog
+            role="dialog"
+            aria-modal={local.float ? undefined : true}
+            aria-label={local.title}
             tabIndex={0}
             class={twMerge(dialogBaseClass(), local.class)}
             style={dialogStyle()}

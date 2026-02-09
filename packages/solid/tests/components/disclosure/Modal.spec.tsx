@@ -153,6 +153,38 @@ describe("Modal 컴포넌트", () => {
     });
   });
 
+  describe("접근성", () => {
+    it("role=dialog와 aria-modal 속성이 설정된다", async () => {
+      render(() => (
+        <Modal open={true} title="접근성 테스트">
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        expect(dialog).not.toBeNull();
+        expect(dialog.getAttribute("role")).toBe("dialog");
+        expect(dialog.getAttribute("aria-modal")).toBe("true");
+        expect(dialog.getAttribute("aria-label")).toBe("접근성 테스트");
+      });
+    });
+
+    it("float 모드에서는 aria-modal이 설정되지 않는다", async () => {
+      render(() => (
+        <Modal open={true} title="플로팅 모달" float>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        expect(dialog).not.toBeNull();
+        expect(dialog.getAttribute("role")).toBe("dialog");
+        expect(dialog.hasAttribute("aria-modal")).toBe(false);
+        expect(dialog.getAttribute("aria-label")).toBe("플로팅 모달");
+      });
+    });
+  });
+
   describe("float 모드", () => {
     it("float=true일 때 백드롭이 없다", async () => {
       render(() => (
