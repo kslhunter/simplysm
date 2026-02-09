@@ -8,6 +8,7 @@ import {
   TimeField,
   ColorPicker,
   Topbar,
+  Button,
 } from "@simplysm/solid";
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
@@ -342,12 +343,9 @@ export default function FieldPage() {
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledText() ?? "(없음)"}</code>
                   </p>
-                  <button
-                    class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                    onClick={() => setControlledText("새로운 값!")}
-                  >
+                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledText("새로운 값!")}>
                     값 변경
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -364,24 +362,15 @@ export default function FieldPage() {
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledNumber() ?? "(없음)"}</code>
                   </p>
                   <div class="flex gap-2">
-                    <button
-                      class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                      onClick={() => setControlledNumber((v) => (v ?? 0) + 100)}
-                    >
+                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledNumber((v) => (v ?? 0) + 100)}>
                       +100
-                    </button>
-                    <button
-                      class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                      onClick={() => setControlledNumber((v) => (v ?? 0) - 100)}
-                    >
+                    </Button>
+                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledNumber((v) => (v ?? 0) - 100)}>
                       -100
-                    </button>
-                    <button
-                      class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
-                      onClick={() => setControlledNumber(undefined)}
-                    >
+                    </Button>
+                    <Button variant="solid" size="sm" onClick={() => setControlledNumber(undefined)}>
                       초기화
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -399,12 +388,9 @@ export default function FieldPage() {
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledTextArea() ?? "(없음)"}</code>
                   </p>
-                  <button
-                    class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                    onClick={() => setControlledTextArea("프로그래밍으로\n값을 변경했습니다")}
-                  >
+                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledTextArea("프로그래밍으로\n값을 변경했습니다")}>
                     값 변경
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { CheckBox, Radio, Topbar } from "@simplysm/solid";
+import { CheckBox, Radio, Topbar, Button } from "@simplysm/solid";
 import type { CheckBoxTheme } from "@simplysm/solid";
 
 const themes: CheckBoxTheme[] = ["primary", "info", "success", "warning", "danger"];
@@ -161,12 +161,9 @@ export default function CheckBoxRadioPage() {
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{String(controlledCheck())}</code>
                   </p>
-                  <button
-                    class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                    onClick={() => setControlledCheck((v) => !v)}
-                  >
+                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledCheck((v) => !v)}>
                     토글
-                  </button>
+                  </Button>
                 </div>
               </div>
 

@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { Select, Topbar } from "@simplysm/solid";
+import { Select, Topbar, Button } from "@simplysm/solid";
 import { IconPlus } from "@tabler/icons-solidjs";
 
 interface Fruit {
@@ -212,12 +212,9 @@ export default function SelectPage() {
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSelected()?.name ?? "(없음)"}</code>
                   </p>
-                  <button
-                    class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                    onClick={() => setControlledSelected(fruits[2])}
-                  >
+                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledSelected(fruits[2])}>
                     포도 선택
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -244,18 +241,12 @@ export default function SelectPage() {
                     현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledMultiSelected().map((f) => f.name).join(", ") || "(없음)"}</code>
                   </p>
                   <div class="flex gap-2">
-                    <button
-                      class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
-                      onClick={() => setControlledMultiSelected([fruits[0], fruits[1]])}
-                    >
+                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledMultiSelected([fruits[0], fruits[1]])}>
                       사과+바나나
-                    </button>
-                    <button
-                      class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
-                      onClick={() => setControlledMultiSelected([])}
-                    >
+                    </Button>
+                    <Button variant="solid" size="sm" onClick={() => setControlledMultiSelected([])}>
                       초기화
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
