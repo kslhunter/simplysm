@@ -62,6 +62,13 @@ const menuItems: SidebarMenuItem[] = [
     ],
   },
   {
+    title: "Navigation",
+    icon: IconLayoutSidebar,
+    children: [
+      { title: "Tab", href: "/home/navigation/tab" },
+    ],
+  },
+  {
     title: "Display",
     icon: IconCards,
     children: [
