@@ -2,9 +2,9 @@ import { children, createMemo, createSignal, For, type JSX, Show, splitProps } f
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconArrowsSort, IconChevronDown, IconChevronRight, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import { IconArrowsSort, IconChevronDown, IconChevronRight, IconGripVertical, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
-import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } from "./types";
+import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SheetReorderEvent, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -23,6 +23,8 @@ import {
   fixedClass,
   fixedLastClass,
   insetContainerClass,
+  reorderHandleClass,
+  reorderIndicatorClass,
   resizerClass,
   resizeIndicatorClass,
   selectSingleClass,
@@ -70,6 +72,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "getItemSelectableFn",
     "getItemCellClassFn",
     "getItemCellStyleFn",
+    "onItemsReorder",
     "class",
     "children",
   ]);
@@ -196,6 +199,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
   const hasExpandFeature = () => local.getChildrenFn != null;
   const hasSelectFeature = () => local.selectMode != null;
+  const hasReorderFeature = () => local.onItemsReorder != null;
 
   // 확장 컬럼의 고정 너비 추적
   const [expandColWidth, setExpandColWidth] = createSignal(0);
@@ -215,6 +219,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     });
   }
 
+  // 드래그 컬럼의 고정 너비 추적
+  const [reorderColWidth, setReorderColWidth] = createSignal(0);
+
+  function registerReorderColRef(el: HTMLElement): void {
+    createResizeObserver(el, () => {
+      setReorderColWidth(el.offsetWidth);
+    });
+  }
+
   // #region ColumnFixing
   // 각 컬럼 셀의 ref → 너비 측정용
   const columnRefs = new Map<number, HTMLElement>();
@@ -227,6 +240,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     let w = 0;
     if (hasExpandFeature()) w += expandColWidth();
     if (hasSelectFeature()) w += selectColWidth();
+    if (hasReorderFeature()) w += reorderColWidth();
     return w;
   });
 
@@ -462,6 +476,134 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     }
   }
 
+  // #region Reorder
+  const [dragState, setDragState] = createSignal<{
+    draggingItem: T;
+    targetItem: T | null;
+    position: "before" | "after" | "inside" | null;
+  } | null>(null);
+
+  function isDescendant(parent: T, child: T): boolean {
+    if (!local.getChildrenFn) return false;
+    const childItems = local.getChildrenFn(parent, 0);
+    if (!childItems) return false;
+    for (const c of childItems) {
+      if (c === child) return true;
+      if (isDescendant(c, child)) return true;
+    }
+    return false;
+  }
+
+  function onReorderMouseDown(e: MouseEvent, item: T): void {
+    e.preventDefault();
+
+    const tableEl = (e.target as HTMLElement).closest("table")!;
+    const tbody = tableEl.querySelector("tbody")!;
+    const rows = Array.from(tbody.rows);
+
+    setDragState({ draggingItem: item, targetItem: null, position: null });
+
+    const onMouseMove = (ev: MouseEvent) => {
+      let foundTarget: T | null = null;
+      let foundPosition: "before" | "after" | "inside" | null = null;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rect = row.getBoundingClientRect();
+        if (ev.clientY < rect.top || ev.clientY > rect.bottom) continue;
+
+        if (i >= displayItems().length) break;
+        const flat = displayItems()[i];
+        if (flat.item === item) break;
+
+        // 자기 자신의 하위 항목으로는 드롭 불가
+        if (isDescendant(item, flat.item)) break;
+
+        const relY = ev.clientY - rect.top;
+        const third = rect.height / 3;
+
+        if (relY < third) {
+          foundPosition = "before";
+        } else if (relY > third * 2) {
+          foundPosition = "after";
+        } else {
+          foundPosition = local.getChildrenFn ? "inside" : (relY < rect.height / 2 ? "before" : "after");
+        }
+        foundTarget = flat.item;
+        break;
+      }
+
+      setDragState({ draggingItem: item, targetItem: foundTarget, position: foundPosition });
+
+      // 인디케이터 DOM 업데이트
+      for (let i = 0; i < rows.length; i++) {
+        rows[i].removeAttribute("data-dragging");
+        rows[i].removeAttribute("data-drag-over");
+
+        if (i < displayItems().length) {
+          const flat = displayItems()[i];
+          if (flat.item === item) {
+            rows[i].setAttribute("data-dragging", "");
+          }
+          if (flat.item === foundTarget && foundPosition === "inside") {
+            rows[i].setAttribute("data-drag-over", "inside");
+          }
+        }
+      }
+
+      // before/after 인디케이터
+      const indicatorEl = tableEl.closest("[data-sheet-scroll]")?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+      if (indicatorEl) {
+        if (foundTarget != null && foundPosition != null && foundPosition !== "inside") {
+          const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
+          if (targetIdx >= 0) {
+            const targetRow = rows[targetIdx];
+            const containerRect = tableEl.closest("[data-sheet-scroll]")!.getBoundingClientRect();
+            const rowRect = targetRow.getBoundingClientRect();
+            const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
+
+            const top = foundPosition === "before"
+              ? rowRect.top - containerRect.top + scrollEl.scrollTop
+              : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
+
+            indicatorEl.style.display = "block";
+            indicatorEl.style.top = `${top}px`;
+          }
+        } else {
+          indicatorEl.style.display = "none";
+        }
+      }
+    };
+
+    const onMouseUp = () => {
+      const state = dragState();
+      if (state?.targetItem != null && state.position != null) {
+        local.onItemsReorder?.({
+          item: state.draggingItem,
+          targetItem: state.targetItem,
+          position: state.position,
+        } as SheetReorderEvent<T>);
+      }
+
+      // 클린업
+      for (const row of rows) {
+        row.removeAttribute("data-dragging");
+        row.removeAttribute("data-drag-over");
+      }
+      const indicatorEl = tableEl.closest("[data-sheet-scroll]")?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+      if (indicatorEl) {
+        indicatorEl.style.display = "none";
+      }
+
+      setDragState(null);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }
+
   // #region Keyboard Navigation (Enter/Shift+Enter로 행 이동)
   function onTableKeyDown(e: KeyboardEvent): void {
     if (e.key !== "Enter" || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -500,11 +642,14 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
   const isExpandColLastFixed = () =>
-    hasExpandFeature() && !hasSelectFeature() && lastFixedIndex() < 0;
+    hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
   // 선택 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
   const isSelectColLastFixed = () =>
-    hasSelectFeature() && lastFixedIndex() < 0;
+    hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
+
+  const isReorderColLastFixed = () =>
+    hasReorderFeature() && lastFixedIndex() < 0;
 
   // 전체 헤더 행 수 + 합계 행 수 (기능 컬럼의 rowspan에 사용)
   const featureHeaderRowspan = createMemo(() => {
@@ -553,6 +698,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
             <col />
           </Show>
           <Show when={hasSelectFeature()}>
+            <col />
+          </Show>
+          <Show when={hasReorderFeature()}>
             <col />
           </Show>
           <For each={effectiveColumns()}>
@@ -628,6 +776,28 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                       </div>
                     </Show>
                   </th>
+                </Show>
+                {/* 드래그 재정렬 기능 컬럼 헤더 — 첫 번째 행에만 표시 */}
+                <Show when={hasReorderFeature() && rowIndex() === 0}>
+                  <th
+                    class={twMerge(
+                      featureThClass,
+                      fixedClass,
+                      "z-[5]",
+                      isReorderColLastFixed() ? fixedLastClass : undefined,
+                    )}
+                    rowspan={featureHeaderRowspan()}
+                    style={{
+                      top: "0",
+                      left: (() => {
+                        let left = 0;
+                        if (hasExpandFeature()) left += expandColWidth();
+                        if (hasSelectFeature()) left += selectColWidth();
+                        return `${left}px`;
+                      })(),
+                    }}
+                    ref={registerReorderColRef}
+                  />
                 </Show>
                 <For each={row}>
                   {(cell, cellColIndex) => (
@@ -914,6 +1084,34 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                     );
                   })()}
                 </Show>
+                {/* 드래그 재정렬 기능 컬럼 바디 셀 */}
+                <Show when={hasReorderFeature()}>
+                  <td
+                    class={twMerge(
+                      featureTdClass,
+                      fixedClass,
+                      "z-[2]",
+                      isReorderColLastFixed() ? fixedLastClass : undefined,
+                    )}
+                    style={{
+                      left: (() => {
+                        let left = 0;
+                        if (hasExpandFeature()) left += expandColWidth();
+                        if (hasSelectFeature()) left += selectColWidth();
+                        return `${left}px`;
+                      })(),
+                    }}
+                  >
+                    <div
+                      class="flex h-full items-center justify-center px-1"
+                      onMouseDown={(e) => onReorderMouseDown(e, flat.item)}
+                    >
+                      <div class={reorderHandleClass}>
+                        <Icon icon={IconGripVertical} size="1em" />
+                      </div>
+                    </div>
+                  </td>
+                </Show>
                 <For each={effectiveColumns()}>
                   {(col, colIndex) => (
                     <td
@@ -940,6 +1138,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         </tbody>
       </table>
       <div class={resizeIndicatorClass} style={resizeIndicatorStyle()} />
+      <div data-reorder-indicator class={reorderIndicatorClass} style={{ display: "none" }} />
       </div>
     </div>
   );
