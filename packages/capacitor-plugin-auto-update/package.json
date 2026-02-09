@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-auto-update",
-  "version": "12.16.24",
+  "version": "12.16.26",
   "description": "심플리즘 패키지 - Capacitor Plugin Auto Update",
   "author": "김석래",
   "repository": {
@@ -18,18 +18,18 @@
     }
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "12.16.24",
-    "@simplysm/sd-service-client": "12.16.24",
-    "@simplysm/sd-service-common": "12.16.24",
+    "@simplysm/sd-core-common": "12.16.26",
+    "@simplysm/sd-service-client": "12.16.26",
+    "@simplysm/sd-service-common": "12.16.26",
     "semver": "^7.7.3"
   },
   "devDependencies": {
     "@capacitor/core": "^7.4.4",
-    "@simplysm/capacitor-plugin-file-system": "12.16.24",
+    "@simplysm/capacitor-plugin-file-system": "12.16.26",
     "@types/semver": "^7.7.1"
   },
   "peerDependencies": {
     "@capacitor/core": "^7.0.0",
-    "@simplysm/capacitor-plugin-file-system": "12.16.24"
+    "@simplysm/capacitor-plugin-file-system": "12.16.26"
   }
 }
