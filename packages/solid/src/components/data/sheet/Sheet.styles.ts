@@ -149,3 +149,28 @@ export const selectSingleUnselectedClass = clsx(
   "dark:text-base-600",
 );
 
+// 드래그 핸들 기능 컬럼
+export const reorderHandleClass = clsx(
+  "flex items-center justify-center",
+  "size-6",
+  "cursor-grab",
+  "text-base-400 dark:text-base-500",
+  "hover:text-base-600 dark:hover:text-base-400",
+);
+
+// 드래그 인디케이터 (before/after 수평선)
+export const reorderIndicatorClass = clsx(
+  "absolute inset-x-0",
+  "h-0 border-t-2 border-primary-500",
+  "pointer-events-none",
+  "z-[7]",
+);
+
+// 설정 버튼
+export const configButtonClass = clsx(
+  "flex items-center justify-center",
+  "size-6 rounded",
+  "text-base-500 dark:text-base-400",
+  "hover:bg-base-200 dark:hover:bg-base-700",
+  "cursor-pointer",
+);

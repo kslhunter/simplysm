@@ -14,3 +14,13 @@
 .dark [data-sheet] tbody tr[data-selected] > td {
   box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0.06);
 }
+
+/* 드래그 중인 행 */
+[data-sheet] tbody tr[data-dragging] > td {
+  opacity: 0.5;
+}
+
+/* inside 드롭 대상 행 */
+[data-sheet] tbody tr[data-drag-over="inside"] > td {
+  box-shadow: inset 0 0 0 9999px rgba(59, 130, 246, 0.1);
+}
