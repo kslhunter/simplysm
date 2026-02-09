@@ -107,7 +107,7 @@ const CheckBoxGroupInner: ParentComponent<CheckBoxGroupProps<unknown>> = (props)
     <CheckBoxGroupContext.Provider value={contextValue}>
       <div
         {...rest}
-        class={twMerge("inline-flex flex-row", local.class)}
+        class={twMerge("inline-flex", local.class)}
         style={local.style}
       >
         {local.children}

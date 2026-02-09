@@ -8,6 +8,7 @@ export type CheckBoxSize = ComponentSize;
 // wrapper 기본 스타일
 export const checkBoxBaseClass = clsx(
   "inline-flex items-center gap-2",
+  "whitespace-nowrap",
   "cursor-pointer",
   "px-2 py-1",
   "h-field",
