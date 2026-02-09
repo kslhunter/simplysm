@@ -389,6 +389,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   }
 
   function toggleSelect(item: T): void {
+    if (getItemSelectable(item) !== true) return;
     const isSelected = selectedItems().includes(item);
     setLastClickAction(isSelected ? "deselect" : "select");
 
@@ -888,9 +889,10 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                             <CheckBox
                               value={isSelected()}
                               disabled={selectable() !== true}
+                              inset
                               class={twMerge(
                                 "pointer-events-none",
-                                lastClickedRow() === rowIndex() ? "ring-2 ring-primary-300 dark:ring-primary-600 rounded" : undefined,
+                                lastClickedRow() === rowIndex() ? "[&>div]:ring-2 [&>div]:ring-primary-200 dark:[&>div]:ring-primary-700" : undefined,
                               )}
                             />
                           </div>
