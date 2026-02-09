@@ -38,7 +38,6 @@ export * from "./components/data/list/ListContext";
 export * from "./components/data/list/ListItem";
 export * from "./components/data/Pagination";
 export * from "./components/data/sheet/Sheet";
-export * from "./components/data/sheet/SheetColumn";
 export * from "./components/data/sheet/types";
 
 // display

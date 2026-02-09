@@ -2,13 +2,14 @@ import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { Select } from "../../../../src/components/form-control/select/Select";
+import { SelectItem } from "../../../../src/components/form-control/select/SelectItem";
 
 describe("Select 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("트리거가 렌더링된다", () => {
       const { getByRole } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -18,7 +19,7 @@ describe("Select 컴포넌트", () => {
     it("placeholder가 표시된다", () => {
       const { getByText } = render(() => (
         <Select placeholder="선택하세요" renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -30,7 +31,7 @@ describe("Select 컴포넌트", () => {
     it("트리거 클릭 시 드롭다운이 열린다", async () => {
       const { getByRole } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -49,7 +50,7 @@ describe("Select 컴포넌트", () => {
       const [value, setValue] = createSignal<string | undefined>();
       const { getByRole } = render(() => (
         <Select value={value()} onValueChange={setValue} renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -74,7 +75,7 @@ describe("Select 컴포넌트", () => {
       const handleChange = vi.fn();
       const { getByRole } = render(() => (
         <Select onValueChange={handleChange} renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -94,8 +95,8 @@ describe("Select 컴포넌트", () => {
 
       const { getByRole } = render(() => (
         <Select value={value()} onValueChange={setValue} renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-          <Select.Item value="banana">바나나</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
+          <SelectItem value="banana">바나나</SelectItem>
         </Select>
       ));
 
@@ -108,8 +109,8 @@ describe("Select 컴포넌트", () => {
       const [value, setValue] = createSignal<string[]>([]);
       const { getByRole } = render(() => (
         <Select multiple value={value()} onValueChange={(v) => setValue(v as string[])} renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
-          <Select.Item value="banana">바나나</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
+          <SelectItem value="banana">바나나</SelectItem>
         </Select>
       ));
 
@@ -130,7 +131,7 @@ describe("Select 컴포넌트", () => {
     it("다중 선택 모드에서 아이템 선택해도 드롭다운이 닫히지 않는다", async () => {
       const { getByRole } = render(() => (
         <Select multiple renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -153,7 +154,7 @@ describe("Select 컴포넌트", () => {
       const handleClick = vi.fn();
       const { getByText } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
           <Select.Button onClick={handleClick}>+</Select.Button>
         </Select>
       ));
@@ -169,7 +170,7 @@ describe("Select 컴포넌트", () => {
           <Select.Header>
             <div data-testid="header">헤더 영역</div>
           </Select.Header>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -188,7 +189,7 @@ describe("Select 컴포넌트", () => {
     it("disabled일 때 트리거 클릭이 동작하지 않는다", () => {
       const { getByRole } = render(() => (
         <Select disabled renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -200,7 +201,7 @@ describe("Select 컴포넌트", () => {
     it("disabled일 때 aria-disabled가 설정된다", () => {
       const { getByRole } = render(() => (
         <Select disabled renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -212,7 +213,7 @@ describe("Select 컴포넌트", () => {
     it("role=combobox가 설정된다", () => {
       const { getByRole } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 
@@ -222,7 +223,7 @@ describe("Select 컴포넌트", () => {
     it("열림 시 aria-expanded=true", async () => {
       const { getByRole } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
-          <Select.Item value="apple">사과</Select.Item>
+          <SelectItem value="apple">사과</SelectItem>
         </Select>
       ));
 

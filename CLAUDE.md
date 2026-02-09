@@ -190,6 +190,18 @@ const User = Table("User")
     - 사용 가능: Flexbox gap
     - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 
+**컴파운드 컴포넌트 네이밍 규칙:**
+
+| 성격 | 패턴 | 설명 | 예시 |
+|------|------|------|------|
+| 반복 아이템 | `ParentChild` (separate export) | 부모 안에서 반복 렌더링되는 독립 UI 요소 | `ListItem`, `SelectItem` |
+| 구조 정의 / 템플릿 | `Parent.Child` (dot notation) | 부모의 구조를 선언적으로 설정, 부모 없이 의미 없음 | `Sheet.Column`, `Select.ItemTemplate` |
+| 슬롯 | `Parent.Slot` (dot notation) | 부모의 특정 영역에 콘텐츠 배치 | `Select.Header`, `Select.Button`, `ListItem.Children` |
+| 레이아웃 파트 | `PrefixPart` (separate export) | 동등한 수준의 레이아웃 구성 파트 | `SidebarContainer`, `SidebarMenu`, `TopbarUser` |
+
+- 반복 아이템은 `index.ts`에서 별도 export, dot notation alias 금지
+- 구조 정의/슬롯은 `index.ts`에서 별도 export 금지, `Parent.Child`로만 접근
+
 → 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
 
 ### Tailwind CSS

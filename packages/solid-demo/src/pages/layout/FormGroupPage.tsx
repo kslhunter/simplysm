@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Button, FormGroup, Icon, NumberField, Select, TextField, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Button, FormGroup, Icon, NumberField, Select, SelectItem, TextField, Topbar, TopbarContainer } from "@simplysm/solid";
 import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {
@@ -51,9 +51,9 @@ export default function FormGroupPage() {
                   placeholder="선택하세요"
                   renderValue={(v: string) => <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>}
                 >
-                  <Select.Item value="kr">한국</Select.Item>
-                  <Select.Item value="us">미국</Select.Item>
-                  <Select.Item value="jp">일본</Select.Item>
+                  <SelectItem value="kr">한국</SelectItem>
+                  <SelectItem value="us">미국</SelectItem>
+                  <SelectItem value="jp">일본</SelectItem>
                 </Select>
               </FormGroup.Item>
               <FormGroup.Item label="검색어">
