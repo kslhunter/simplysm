@@ -81,7 +81,8 @@ function getOAuthToken() {
  * @returns {Promise<{
  *   seven_day?: {utilization?: number, resets_at?: string},  // 7일 사용량
  *   daily?: {utilization?: number, resets_at?: string},       // 일일 사용량
- *   five_hour?: {utilization?: number, resets_at?: string}    // 5시간 사용량
+ *   five_hour?: {utilization?: number, resets_at?: string},   // 5시간 사용량
+ *   extra_usage?: {is_enabled?: boolean, monthly_limit?: number | null, used_credits?: number}  // extra usage
  * } | undefined>}
  */
 async function fetchUsage(token) {
@@ -222,6 +223,7 @@ async function main() {
   let dailyResetTime = "";
   let weekPercent = "?";
   let weekResetDay = "";
+  let extraUsage = "";
 
   if (token != null) {
     const usageResponse = await fetchUsage(token);
@@ -232,6 +234,11 @@ async function main() {
       dailyResetTime = formatTimeRemaining(dailyData?.resets_at);
       weekPercent = formatPercent(usageResponse.seven_day?.utilization);
       weekResetDay = formatTimeRemaining(usageResponse.seven_day?.resets_at);
+
+      // extra usage
+      if (usageResponse.extra_usage?.is_enabled && usageResponse.extra_usage.used_credits != null) {
+        extraUsage = `$${(usageResponse.extra_usage.used_credits / 100).toFixed(2)}`;
+      }
     }
   }
 
@@ -248,7 +255,8 @@ async function main() {
   const ctxBar = formatProgressBar(contextPercent);
   const dailyBar = dailyPercent !== "?" ? formatProgressBar(Number(dailyPercent)) : "□□□□□";
   const weekBar = weekPercent !== "?" ? formatProgressBar(Number(weekPercent)) : "□□□□□";
-  console.log(`${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%`);
+  const extraPart = extraUsage !== "" ? ` ─ ${extraUsage}` : "";
+  console.log(`${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%${extraPart}`);
 }
 
 void main();
