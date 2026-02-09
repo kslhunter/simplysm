@@ -178,11 +178,12 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
     );
     setPresets(updated);
 
-    notification.info("프리셋 덮어쓰기", `"${presetName}" 프리셋이 현재 상태로 업데이트되었습니다.`, {
+    const notiId = notification.info("프리셋 덮어쓰기", `"${presetName}" 프리셋이 현재 상태로 업데이트되었습니다.`, {
       action: {
         label: "실행 취소",
         onClick: () => {
           setPresets(snapshot);
+          notification.remove(notiId);
         },
       },
     });
@@ -195,11 +196,12 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
     const updated = snapshot.filter((_, i) => i !== index);
     setPresets(updated);
 
-    notification.info("프리셋 삭제", `"${presetName}" 프리셋이 삭제되었습니다.`, {
+    const notiId = notification.info("프리셋 삭제", `"${presetName}" 프리셋이 삭제되었습니다.`, {
       action: {
         label: "실행 취소",
         onClick: () => {
           setPresets(snapshot);
+          notification.remove(notiId);
         },
       },
     });
