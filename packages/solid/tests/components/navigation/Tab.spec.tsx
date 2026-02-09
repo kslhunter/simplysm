@@ -190,8 +190,8 @@ describe("Tab 컴포넌트", () => {
 
   describe("class 병합", () => {
     it("Tab에 사용자 정의 class가 병합된다", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => (
+        // eslint-disable-next-line tailwindcss/no-custom-classname
         <Tab class="my-tab-class">
           <Tab.Item value="a">A</Tab.Item>
         </Tab>
@@ -200,9 +200,9 @@ describe("Tab 컴포넌트", () => {
     });
 
     it("Tab.Item에 사용자 정의 class가 병합된다", () => {
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => (
         <Tab>
+          {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
           <Tab.Item value="a" class="my-item-class">A</Tab.Item>
         </Tab>
       ));
