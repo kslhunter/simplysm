@@ -12,6 +12,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../utils/createPropSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
+import { borderSubtle } from "../../styles/tokens.styles";
 
 export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   /**
@@ -401,7 +402,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
               "fixed", // 기본 position: fixed로 설정하여 offsetWidth 측정 정확하게
               "z-dropdown",
               "bg-white dark:bg-base-800",
-              "border border-base-200 dark:border-base-700",
+              "border", borderSubtle,
               "shadow-lg dark:shadow-black/30",
               "rounded-md",
               "overflow-y-auto",

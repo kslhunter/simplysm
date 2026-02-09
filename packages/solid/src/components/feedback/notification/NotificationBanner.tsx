@@ -2,6 +2,7 @@ import { type Component, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { useNotification } from "./NotificationContext";
+import { themeTokens } from "../../../styles/tokens.styles";
 
 const baseClass = clsx(
   "fixed",
@@ -22,10 +23,10 @@ const baseClass = clsx(
 );
 
 const themeClasses: Record<string, string> = {
-  info: "bg-info-500 dark:bg-info-600",
-  success: "bg-success-500 dark:bg-success-600",
-  warning: "bg-warning-500 dark:bg-warning-600",
-  danger: "bg-danger-500 dark:bg-danger-600",
+  info: themeTokens.info.solid,
+  success: themeTokens.success.solid,
+  warning: themeTokens.warning.solid,
+  danger: themeTokens.danger.solid,
 };
 
 export const NotificationBanner: Component = () => {

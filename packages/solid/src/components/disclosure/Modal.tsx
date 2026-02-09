@@ -16,6 +16,7 @@ import { IconX } from "@tabler/icons-solidjs";
 import { createPropSignal } from "../../utils/createPropSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
 import { Icon } from "../display/Icon";
+import { borderSubtle } from "../../styles/tokens.styles";
 
 export interface ModalProps {
   /** 모달 열림 상태 */
@@ -463,7 +464,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
       "w-fit min-w-[200px]",
       "bg-white dark:bg-base-800",
       local.float
-        ? clsx("shadow-md dark:shadow-black/30", "border border-base-200 dark:border-base-700")
+        ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle)
         : "shadow-2xl dark:shadow-black/40",
       local.fill ? "rounded-none border-none" : "rounded-lg",
       "overflow-hidden",
@@ -479,7 +480,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
       "flex items-center",
       "select-none",
       "border-b",
-      "border-base-200 dark:border-base-700",
+      borderSubtle,
     );
 
   return (
