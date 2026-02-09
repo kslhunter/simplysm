@@ -45,6 +45,7 @@ export * from "./components/data/calendar/Calendar";
 // display
 export * from "./components/display/Barcode";
 export * from "./components/display/Card";
+export * from "./components/display/Echarts";
 export * from "./components/display/Icon";
 export * from "./components/display/Label";
 export * from "./components/display/Note";
