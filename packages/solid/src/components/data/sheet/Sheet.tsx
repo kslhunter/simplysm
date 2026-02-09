@@ -525,7 +525,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         class={twMerge(sheetContainerClass, "flex-1 min-h-0")}
         style={local.contentStyle}
       >
-      <table class={tableClass} onKeyDown={onTableKeyDown}>
+      <table
+        class={tableClass}
+        onKeyDown={onTableKeyDown}
+        onMouseDown={(e) => {
+          if (e.shiftKey && hasSelectFeature()) {
+            e.preventDefault();
+          }
+        }}
+      >
         <colgroup>
           <Show when={hasExpandFeature()}>
             <col />
