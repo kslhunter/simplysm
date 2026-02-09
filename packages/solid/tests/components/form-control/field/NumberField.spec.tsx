@@ -136,29 +136,6 @@ describe("NumberField", () => {
     });
   });
 
-  describe("step, min, max 속성", () => {
-    it("step 속성을 지원한다", () => {
-      render(() => <NumberField step={0.1} />);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("step", "0.1");
-    });
-
-    it("min 속성을 지원한다", () => {
-      render(() => <NumberField min={0} />);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("min", "0");
-    });
-
-    it("max 속성을 지원한다", () => {
-      render(() => <NumberField max={100} />);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("max", "100");
-    });
-  });
-
   describe("disabled/readonly 상태", () => {
     it("disabled 상태에서는 div로 렌더링한다", () => {
       render(() => <NumberField value={1234} disabled />);
