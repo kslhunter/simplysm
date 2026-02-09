@@ -225,10 +225,10 @@ export default function SelectPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">다중 선택</h3>
                 <div class="flex flex-col items-start gap-3">
-                  <Select
+                  <Select<Fruit>
                     multiple
                     value={controlledMultiSelected()}
-                    onValueChange={(v) => setControlledMultiSelected(v as Fruit[])}
+                    onValueChange={(v) => setControlledMultiSelected(v)}
                     placeholder="여러 개 선택 가능"
                     renderValue={(v) => <>{v.emoji} {v.name}</>}
                   >
