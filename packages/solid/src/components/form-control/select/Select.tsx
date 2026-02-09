@@ -9,6 +9,8 @@ import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../utils/splitSlots";
+import { borderDefault, type ComponentSize, paddingLg, paddingSm, textMuted } from "../../../styles/tokens.styles";
+import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
 
 void ripple;
 
@@ -16,7 +18,7 @@ void ripple;
 const triggerBaseClass = clsx(
   "inline-flex items-center gap-2",
   "w-40",
-  "border border-base-300 dark:border-base-700",
+  "border", borderDefault,
   "rounded",
   "bg-transparent",
   "hover:bg-base-100 dark:hover:bg-base-700",
@@ -28,16 +30,14 @@ const triggerBaseClass = clsx(
 const triggerDisabledClass = clsx("cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500");
 
 const triggerInsetClass = clsx(
-  "w-full rounded-none border-none bg-transparent",
-  "focus:[outline-style:solid]",
-  "focus:outline-1 focus:-outline-offset-1",
-  "focus:outline-primary-400 dark:focus:outline-primary-400",
+  insetBase,
+  "bg-transparent",
+  insetFocusOutlineSelf,
 );
 
-const sizeClasses = {
-  sm: clsx("gap-1.5 px-1.5 py-0.5"),
-  default: clsx("px-2 py-1"),
-  lg: clsx("gap-3 px-3 py-2"),
+const sizeClasses: Record<ComponentSize, string> = {
+  sm: clsx("gap-1.5", paddingSm),
+  lg: clsx("gap-3", paddingLg),
 };
 
 /**
@@ -55,7 +55,7 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
       data-select-button
       class={twMerge(
         clsx(
-          "border border-base-300 px-1.5 dark:border-base-700",
+          "border", borderDefault, "px-1.5",
           "rounded-r",
           "font-bold text-primary-500",
           "hover:bg-base-100 dark:hover:bg-base-700",
@@ -115,7 +115,7 @@ interface SelectCommonProps {
   placeholder?: string;
 
   /** 트리거 크기 */
-  size?: "sm" | "lg";
+  size?: ComponentSize;
 
   /** 테두리 없는 스타일 */
   inset?: boolean;
@@ -315,7 +315,8 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   const getTriggerClassName = () =>
     twMerge(
       triggerBaseClass,
-      sizeClasses[local.size ?? "default"],
+      "px-2 py-1",
+      local.size && sizeClasses[local.size],
       local.disabled && triggerDisabledClass,
       local.inset && triggerInsetClass,
       local.class,
@@ -374,7 +375,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       const current = getValue();
 
       if (current === undefined || (Array.isArray(current) && current.length === 0)) {
-        return <span class="text-base-400 dark:text-base-500">{local.placeholder ?? ""}</span>;
+        return <span class={textMuted}>{local.placeholder ?? ""}</span>;
       }
 
       if (local.multiple && Array.isArray(current)) {

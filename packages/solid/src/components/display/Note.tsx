@@ -1,8 +1,9 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import { type SemanticTheme } from "../../styles/tokens.styles";
 
-export type NoteTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
+export type NoteTheme = SemanticTheme;
 
 export interface NoteProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: NoteTheme;
