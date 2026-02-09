@@ -129,3 +129,23 @@ export const expandToggleClass = clsx(
   "hover:bg-base-200 dark:hover:bg-base-600",
 );
 
+// 선택 컬럼 — single 모드 아이콘 래퍼
+export const selectSingleClass = clsx(
+  "flex items-center justify-center",
+  "size-6",
+  "cursor-pointer",
+  "rounded",
+);
+
+// single 모드 — 선택됨
+export const selectSingleSelectedClass = clsx(
+  "text-primary-500",
+  "dark:text-primary-400",
+);
+
+// single 모드 — 미선택
+export const selectSingleUnselectedClass = clsx(
+  "text-base-300",
+  "dark:text-base-600",
+);
+
