@@ -27,7 +27,7 @@ export interface SheetProps<T> {
   selectMode?: "single" | "multi";
   selectedItems?: T[];
   onSelectedItemsChange?: (items: T[]) => void;
-  autoSelect?: "click" | "focus";
+  autoSelect?: "click";
   getItemSelectableFn?: (item: T) => boolean | string;
 
   // 트리 확장
