@@ -85,6 +85,9 @@ export default function SheetPage() {
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
   const [page, setPage] = createSignal(0);
   const [expanded, setExpanded] = createSignal<Category[]>([]);
+  const [multiSelected, setMultiSelected] = createSignal<User[]>([]);
+  const [singleSelected, setSingleSelected] = createSignal<User[]>([]);
+  const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
 
   const editUsers = createMutable<User[]>([
     {
@@ -416,6 +419,92 @@ export default function SheetPage() {
                 )}
               </Sheet.Column>
             </Sheet>
+          </section>
+
+          {/* 다중 선택 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              selectMode="multi"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
+            </p>
+            <Sheet
+              items={users}
+              key="select-multi"
+              selectMode="multi"
+              selectedItems={multiSelected()}
+              onSelectedItemsChange={setMultiSelected}
+            >
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
+              </Sheet.Column>
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
+              </Sheet.Column>
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
+              </Sheet.Column>
+            </Sheet>
+            <p class="mt-2 text-sm text-base-500">
+              선택된 항목: {multiSelected().map((u) => u.name).join(", ") || "(없음)"}
+            </p>
+          </section>
+
+          {/* 단일 선택 + autoSelect */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">단일 선택 + autoSelect</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시 자동 선택.
+            </p>
+            <Sheet
+              items={users}
+              key="select-single"
+              selectMode="single"
+              selectedItems={singleSelected()}
+              onSelectedItemsChange={setSingleSelected}
+              autoSelect="click"
+            >
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
+              </Sheet.Column>
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
+              </Sheet.Column>
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+              </Sheet.Column>
+            </Sheet>
+            <p class="mt-2 text-sm text-base-500">
+              선택된 항목: {singleSelected().map((u) => u.name).join(", ") || "(없음)"}
+            </p>
+          </section>
+
+          {/* 선택 불가 항목 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">선택 불가 항목</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              getItemSelectableFn으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로 표시됩니다.
+            </p>
+            <Sheet
+              items={users}
+              key="select-disabled"
+              selectMode="multi"
+              selectedItems={disabledSelected()}
+              onSelectedItemsChange={setDisabledSelected}
+              getItemSelectableFn={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
+            >
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
+              </Sheet.Column>
+              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+              </Sheet.Column>
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
+              </Sheet.Column>
+            </Sheet>
+            <p class="mt-2 text-sm text-base-500">
+              선택된 항목: {disabledSelected().map((u) => u.name).join(", ") || "(없음)"}
+            </p>
           </section>
         </div>
       </div>
