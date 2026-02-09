@@ -26,6 +26,7 @@ render(
           <Route path="/home/form-control/checkbox-radio-group" component={lazy(() => import("./pages/form-control/CheckBoxRadioGroupPage"))} />
           <Route path="/home/form-control/date-range-picker" component={lazy(() => import("./pages/form-control/DateRangePickerPage"))} />
           <Route path="/home/form-control/rich-text-editor" component={lazy(() => import("./pages/form-control/RichTextEditorPage"))} />
+          <Route path="/home/form-control/state-preset" component={lazy(() => import("./pages/form-control/StatePresetPage"))} />
           <Route path="/home/layout/sidebar" component={lazy(() => import("./pages/layout/SidebarPage"))} />
           <Route path="/home/layout/topbar" component={lazy(() => import("./pages/layout/TopbarPage"))} />
           <Route path="/home/layout/form-group" component={lazy(() => import("./pages/layout/FormGroupPage"))} />
