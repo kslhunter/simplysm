@@ -28,6 +28,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "CheckBoxGroup & RadioGroup", href: "/home/form-control/checkbox-radio-group" },
       { title: "DateRangePicker", href: "/home/form-control/date-range-picker" },
       { title: "RichTextEditor", href: "/home/form-control/rich-text-editor" },
+      { title: "StatePreset", href: "/home/form-control/state-preset" },
     ],
   },
   {
