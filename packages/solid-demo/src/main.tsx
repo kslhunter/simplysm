@@ -38,6 +38,7 @@ render(
           <Route path="/home/data/sheet" component={lazy(() => import("./pages/data/SheetPage"))} />
           <Route path="/home/data/sheet-full" component={lazy(() => import("./pages/data/SheetFullPage"))} />
           <Route path="/home/data/kanban" component={lazy(() => import("./pages/data/KanbanPage"))} />
+          <Route path="/home/data/calendar" component={lazy(() => import("./pages/data/CalendarPage"))} />
           <Route path="/home/disclosure/collapse" component={lazy(() => import("./pages/disclosure/CollapsePage"))} />
           <Route path="/home/disclosure/dropdown" component={lazy(() => import("./pages/disclosure/DropdownPage"))} />
           <Route path="/home/disclosure/modal" component={lazy(() => import("./pages/disclosure/ModalPage"))} />
