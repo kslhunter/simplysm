@@ -17,19 +17,19 @@ export const fieldBaseClass = clsx(
 
 // 사이즈별 스타일
 export const fieldSizeClasses: Record<FieldSize, string> = {
-  sm: clsx`h-field-sm px-1.5 py-0.5`,
-  lg: clsx`h-field-lg px-3 py-2`,
+  sm: clsx("h-field-sm px-1.5 py-0.5"),
+  lg: clsx("h-field-lg px-3 py-2"),
 };
 
 // 에러 스타일
-export const fieldErrorClass = clsx`border-danger-500`;
+export const fieldErrorClass = clsx("border-danger-500");
 
 // inset 스타일
 export const fieldInsetClass = clsx(
-  clsx`w-full rounded-none border-none bg-primary-50 dark:bg-primary-950/30`,
+  "w-full rounded-none border-none bg-primary-50 dark:bg-primary-950/30",
   "focus-within:[outline-style:solid]",
-  clsx`focus-within:outline-1 focus-within:-outline-offset-1`,
-  clsx`focus-within:outline-primary-400 dark:focus-within:outline-primary-400`,
+  "focus-within:outline-1 focus-within:-outline-offset-1",
+  "focus-within:outline-primary-400 dark:focus-within:outline-primary-400",
 );
 
 // inset 높이 (border 2px 제외)
@@ -40,7 +40,7 @@ export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
 };
 
 // disabled 스타일
-export const fieldDisabledClass = clsx`bg-base-100 text-base-500 dark:bg-base-800`;
+export const fieldDisabledClass = clsx("bg-base-100 text-base-500 dark:bg-base-800");
 
 // textarea wrapper 스타일 (h-field 제거)
 export const textAreaBaseClass = clsx(
@@ -56,8 +56,8 @@ export const textAreaBaseClass = clsx(
 
 // textarea 사이즈별 스타일 (h-field-* 제거)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
-  sm: clsx`px-1.5 py-0.5`,
-  lg: clsx`px-3 py-2`,
+  sm: clsx("px-1.5 py-0.5"),
+  lg: clsx("px-3 py-2"),
 };
 
 // input 스타일

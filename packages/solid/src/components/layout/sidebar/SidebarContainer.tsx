@@ -18,7 +18,7 @@ const backdropClass = clsx(
   "sm:hidden",
 );
 
-const containerClass = clsx`relative h-full transition-[padding-left] duration-100`;
+const containerClass = clsx("relative h-full transition-[padding-left] duration-100");
 
 export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;

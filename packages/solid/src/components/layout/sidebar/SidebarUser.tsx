@@ -8,7 +8,7 @@ import { ListItem } from "../../data/list/ListItem";
 
 void ripple;
 
-const containerClass = clsx`m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-800`;
+const containerClass = clsx("m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-800");
 
 const headerClass = clsx(
   "flex",
@@ -21,7 +21,7 @@ const headerClass = clsx(
   "dark:hover:bg-base-700",
 );
 
-const headerReadonlyClass = clsx`cursor-default hover:bg-transparent dark:hover:bg-transparent`;
+const headerReadonlyClass = clsx("cursor-default hover:bg-transparent dark:hover:bg-transparent");
 
 export interface SidebarUserMenu {
   title: string;

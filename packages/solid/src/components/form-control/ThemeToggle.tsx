@@ -22,8 +22,8 @@ const baseClass = clsx(
 );
 
 const sizeClasses: Record<"sm" | "lg", string> = {
-  sm: clsx`p-1`,
-  lg: clsx`p-2`,
+  sm: clsx("p-1"),
+  lg: clsx("p-2"),
 };
 
 const iconSizes: Record<"sm" | "lg", string> = {

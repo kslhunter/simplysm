@@ -17,7 +17,7 @@ export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
 
 const baseClass = clsx("inline-flex items-center");
 
-const btnClass = clsx`border-none font-normal`;
+const btnClass = clsx("border-none font-normal");
 
 const gapClasses: Record<PaginationSize | "default", string> = {
   default: "gap-1",
