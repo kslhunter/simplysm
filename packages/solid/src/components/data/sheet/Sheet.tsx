@@ -51,8 +51,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "sorts",
     "onSortsChange",
     "useAutoSort",
-    "currentPage",
-    "onCurrentPageChange",
+    "page",
+    "onPageChange",
     "totalPageCount",
     "itemsPerPage",
     "displayPageCount",
@@ -150,8 +150,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   // #region Paging
   const [currentPage, setCurrentPage] = createPropSignal({
-    value: () => local.currentPage ?? 0,
-    onChange: () => local.onCurrentPageChange,
+    value: () => local.page ?? 0,
+    onChange: () => local.onPageChange,
   });
 
   const effectivePageCount = createMemo(() => {

@@ -17,8 +17,8 @@ export interface SheetProps<T> {
   useAutoSort?: boolean;
 
   // 페이지네이션
-  currentPage?: number;
-  onCurrentPageChange?: (page: number) => void;
+  page?: number;
+  onPageChange?: (page: number) => void;
   totalPageCount?: number;
   itemsPerPage?: number;
   displayPageCount?: number;

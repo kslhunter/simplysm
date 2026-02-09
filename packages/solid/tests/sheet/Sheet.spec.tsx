@@ -223,7 +223,7 @@ describe("Sheet", () => {
   it("페이지네이션: itemsPerPage로 데이터가 잘린다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <Sheet items={testData} key="test-paging" itemsPerPage={2} currentPage={0}>
+        <Sheet items={testData} key="test-paging" itemsPerPage={2} page={0}>
           <Sheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </Sheet.Column>
@@ -238,7 +238,7 @@ describe("Sheet", () => {
   it("페이지네이션: 2페이지 이상일 때 Pagination이 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <Sheet items={testData} key="test-paging-nav" itemsPerPage={2} currentPage={0}>
+        <Sheet items={testData} key="test-paging-nav" itemsPerPage={2} page={0}>
           <Sheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </Sheet.Column>
@@ -253,7 +253,7 @@ describe("Sheet", () => {
   it("페이지네이션: 1페이지면 Pagination이 표시되지 않는다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <Sheet items={testData} key="test-no-paging" itemsPerPage={10} currentPage={0}>
+        <Sheet items={testData} key="test-no-paging" itemsPerPage={10} page={0}>
           <Sheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </Sheet.Column>

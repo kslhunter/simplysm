@@ -249,7 +249,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
             </p>
-            <Sheet items={users} key="paging" itemsPerPage={2} currentPage={page()} onCurrentPageChange={setPage}>
+            <Sheet items={users} key="paging" itemsPerPage={2} page={page()} onPageChange={setPage}>
               <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </Sheet.Column>

@@ -74,8 +74,8 @@ export default function SheetFullPage() {
           onSortsChange={setSorts}
           useAutoSort
           itemsPerPage={20}
-          currentPage={page()}
-          onCurrentPageChange={setPage}
+          page={page()}
+          onPageChange={setPage}
         >
           <Sheet.Column<Employee> key="id" header="No." class="px-2 py-1 text-right text-base-500" fixed>
             {(ctx) => ctx.item.id}
