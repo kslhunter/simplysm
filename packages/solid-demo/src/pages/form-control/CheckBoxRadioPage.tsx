@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { CheckBox, Radio, Topbar } from "@simplysm/solid";
+import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/solid";
 import type { CheckBoxTheme } from "@simplysm/solid";
 
 const themes: CheckBoxTheme[] = ["primary", "info", "success", "warning", "danger"];
@@ -7,6 +7,8 @@ const themes: CheckBoxTheme[] = ["primary", "info", "success", "warning", "dange
 export default function CheckBoxRadioPage() {
   const [controlledCheck, setControlledCheck] = createSignal(false);
   const [selectedRadio, setSelectedRadio] = createSignal<string>("A");
+  const [selectedFruits, setSelectedFruits] = createSignal<string[]>(["apple"]);
+  const [selectedOption, setSelectedOption] = createSignal<string>("A");
 
   return (
     <Topbar.Container>
@@ -143,6 +145,124 @@ export default function CheckBoxRadioPage() {
                   텍스트 사이에 <Radio inline>옵션</Radio> 라디오를 넣을 수 있습니다.
                   이렇게 <Radio inline value={true}>선택됨</Radio> 상태로도 표시됩니다.
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* CheckBoxGroup */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">CheckBoxGroup</h2>
+            <div class="space-y-6">
+              {/* 기본 사용 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <CheckBoxGroup
+                  value={selectedFruits()}
+                  onValueChange={setSelectedFruits}
+                  class="flex-col gap-1"
+                >
+                  <CheckBoxGroup.Item value="apple">사과</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="banana">바나나</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="cherry">체리</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+                <p class="mt-2 text-sm text-base-600 dark:text-base-400">
+                  선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(selectedFruits())}</code>
+                </p>
+              </div>
+
+              {/* disabled 아이템 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
+                <CheckBoxGroup class="flex-col gap-1">
+                  <CheckBoxGroup.Item value="a">활성</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="b" disabled>비활성</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+              </div>
+
+              {/* 전체 disabled */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
+                <CheckBoxGroup disabled value={["a"]} class="flex-col gap-1">
+                  <CheckBoxGroup.Item value="a">옵션 A</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="b">옵션 B</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+              </div>
+
+              {/* 테마/사이즈 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
+                <CheckBoxGroup theme="success" size="sm" value={["x"]} class="gap-3">
+                  <CheckBoxGroup.Item value="x">Small Success A</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="y">Small Success B</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+              </div>
+
+              {/* inset */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Inset</h3>
+                <CheckBoxGroup inset value={["a"]} class="flex-col">
+                  <CheckBoxGroup.Item value="a">Inset A</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="b">Inset B</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+              </div>
+            </div>
+          </section>
+
+          {/* RadioGroup */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">RadioGroup</h2>
+            <div class="space-y-6">
+              {/* 기본 사용 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <RadioGroup
+                  value={selectedOption()}
+                  onValueChange={setSelectedOption}
+                  class="flex-col gap-1"
+                >
+                  <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
+                  <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
+                  <RadioGroup.Item value="C">옵션 C</RadioGroup.Item>
+                </RadioGroup>
+                <p class="mt-2 text-sm text-base-600 dark:text-base-400">
+                  선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedOption()}</code>
+                </p>
+              </div>
+
+              {/* disabled 아이템 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
+                <RadioGroup class="flex-col gap-1">
+                  <RadioGroup.Item value="a">활성</RadioGroup.Item>
+                  <RadioGroup.Item value="b" disabled>비활성</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+
+              {/* 전체 disabled */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
+                <RadioGroup disabled value="a" class="flex-col gap-1">
+                  <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
+                  <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+
+              {/* 테마/사이즈 */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
+                <RadioGroup theme="danger" size="lg" value="x" class="gap-3">
+                  <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
+                  <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+
+              {/* inset */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Inset</h3>
+                <RadioGroup inset value="a" class="flex-col">
+                  <RadioGroup.Item value="a">Inset A</RadioGroup.Item>
+                  <RadioGroup.Item value="b">Inset B</RadioGroup.Item>
+                </RadioGroup>
               </div>
             </div>
           </section>
