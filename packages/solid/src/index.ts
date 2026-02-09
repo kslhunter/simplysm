@@ -40,6 +40,7 @@ export * from "./components/data/list/ListContext";
 export * from "./components/data/Pagination";
 export * from "./components/data/sheet/Sheet";
 export * from "./components/data/sheet/types";
+export * from "./components/data/calendar/Calendar";
 
 // display
 export * from "./components/display/Barcode";
