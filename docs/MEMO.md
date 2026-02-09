@@ -1,0 +1,1 @@
+modal의 closeOnEscape와 closeOnBackdrop의 기본값을 Root에 추가하는 ModalProvider에서 설정할 수 있게.
