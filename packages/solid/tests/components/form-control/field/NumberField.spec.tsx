@@ -32,7 +32,7 @@ describe("NumberField", () => {
       render(() => <NumberField value={12345} />);
 
       const input = screen.getByRole("textbox");
-      // useComma가 기본적으로 true이므로 콤마가 포함됨
+      // comma가 기본적으로 true이므로 콤마가 포함됨
       expect(input).toHaveValue("12,345");
     });
 
@@ -100,21 +100,21 @@ describe("NumberField", () => {
   });
 
   describe("표시 형식", () => {
-    it("useComma가 true일 때 천단위 콤마를 표시한다", () => {
-      render(() => <NumberField value={1234567} useComma={true} />);
+    it("comma가 true일 때 천단위 콤마를 표시한다", () => {
+      render(() => <NumberField value={1234567} comma={true} />);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("1,234,567");
     });
 
-    it("useComma가 false일 때 콤마 없이 표시한다", () => {
-      render(() => <NumberField value={1234567} useComma={false} />);
+    it("comma가 false일 때 콤마 없이 표시한다", () => {
+      render(() => <NumberField value={1234567} comma={false} />);
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveValue("1234567");
     });
 
-    it("useComma 기본값은 true이다", () => {
+    it("comma 기본값은 true이다", () => {
       render(() => <NumberField value={1234567} />);
 
       const input = screen.getByRole("textbox");

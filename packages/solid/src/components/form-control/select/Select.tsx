@@ -385,7 +385,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         </div>
         <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>
 
-        <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} enableKeyboardNav>
+        <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
           <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
           <List inset role="listbox">
             <Show when={local.items} fallback={items()}>

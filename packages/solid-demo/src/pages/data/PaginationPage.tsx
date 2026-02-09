@@ -19,7 +19,7 @@ export default function PaginationPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본</h2>
             <p class="mb-2 text-sm text-base-500">page: {page1()}</p>
-            <Pagination page={page1()} onPageChange={setPage1} totalPages={20} />
+            <Pagination page={page1()} onPageChange={setPage1} totalPageCount={20} />
           </section>
 
           <section>
@@ -27,28 +27,28 @@ export default function PaginationPage() {
             <div class="space-y-4">
               <div>
                 <p class="mb-2 text-sm text-base-500">sm (page: {pageSm()})</p>
-                <Pagination page={pageSm()} onPageChange={setPageSm} totalPages={20} size="sm" />
+                <Pagination page={pageSm()} onPageChange={setPageSm} totalPageCount={20} size="sm" />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">기본 (page: {pageMd()})</p>
-                <Pagination page={pageMd()} onPageChange={setPageMd} totalPages={20} />
+                <Pagination page={pageMd()} onPageChange={setPageMd} totalPageCount={20} />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">lg (page: {pageLg()})</p>
-                <Pagination page={pageLg()} onPageChange={setPageLg} totalPages={20} size="lg" />
+                <Pagination page={pageLg()} onPageChange={setPageLg} totalPageCount={20} size="lg" />
               </div>
             </div>
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">displayPages 커스텀 (5개씩)</h2>
+            <h2 class="mb-4 text-xl font-semibold">displayPageCount 커스텀 (5개씩)</h2>
             <p class="mb-2 text-sm text-base-500">page: {pageCustom()}</p>
-            <Pagination page={pageCustom()} onPageChange={setPageCustom} totalPages={25} displayPages={5} />
+            <Pagination page={pageCustom()} onPageChange={setPageCustom} totalPageCount={25} displayPageCount={5} />
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Disabled (totalPages=0)</h2>
-            <Pagination page={pageDisabled()} onPageChange={setPageDisabled} totalPages={0} />
+            <h2 class="mb-4 text-xl font-semibold">Disabled (totalPageCount=0)</h2>
+            <Pagination page={pageDisabled()} onPageChange={setPageDisabled} totalPageCount={0} />
           </section>
         </div>
       </div>

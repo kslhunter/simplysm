@@ -26,8 +26,8 @@ export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
     hidden: props.hidden ?? false,
     collapse: props.collapse ?? false,
     width: props.width,
-    disableSorting: props.disableSorting ?? false,
-    disableResizing: props.disableResizing ?? false,
+    sortable: props.sortable ?? true,
+    resizable: props.resizable ?? true,
   } as unknown as JSX.Element;
 }
 /* eslint-enable solid/reactivity */

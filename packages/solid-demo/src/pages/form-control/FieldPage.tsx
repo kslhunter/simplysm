@@ -156,12 +156,12 @@ export default function FieldPage() {
                 <h3 class="mb-3 text-lg font-semibold">천단위 콤마</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
-                    <p class="mb-1 text-sm text-base-500">useComma=true (기본값)</p>
+                    <p class="mb-1 text-sm text-base-500">comma=true (기본값)</p>
                     <NumberField value={1234567} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">useComma=false</p>
-                    <NumberField value={1234567} useComma={false} />
+                    <p class="mb-1 text-sm text-base-500">comma=false</p>
+                    <NumberField value={1234567} comma={false} />
                   </div>
                 </div>
               </div>
@@ -203,11 +203,11 @@ export default function FieldPage() {
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">month</p>
-                    <DateField type="month" value={new DateOnly(2024, 6, 1)} />
+                    <DateField unit="month" value={new DateOnly(2024, 6, 1)} />
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">year</p>
-                    <DateField type="year" value={new DateOnly(2024, 1, 1)} />
+                    <DateField unit="year" value={new DateOnly(2024, 1, 1)} />
                   </div>
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function FieldPage() {
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">datetime-sec (초 단위)</p>
-                    <DateTimeField type="datetime-sec" value={new DateTime(2024, 6, 15, 14, 30, 45)} />
+                    <DateTimeField unit="second" value={new DateTime(2024, 6, 15, 14, 30, 45)} />
                   </div>
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function FieldPage() {
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">time-sec (초 단위)</p>
-                    <TimeField type="time-sec" value={new Time(14, 30, 45)} />
+                    <TimeField unit="second" value={new Time(14, 30, 45)} />
                   </div>
                 </div>
               </div>

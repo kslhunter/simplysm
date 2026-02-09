@@ -95,9 +95,9 @@ export const ModalProvider: ParentComponent = (props) => {
             onCloseComplete={() => removeEntry(entry.id)}
             title={entry.options.title}
             hideHeader={entry.options.hideHeader}
-            hideCloseButton={entry.options.hideCloseButton}
-            useCloseByBackdrop={entry.options.useCloseByBackdrop}
-            useCloseByEscapeKey={entry.options.useCloseByEscapeKey}
+            closable={entry.options.closable}
+            closeOnBackdrop={entry.options.closeOnBackdrop}
+            closeOnEscape={entry.options.closeOnEscape}
             resizable={entry.options.resizable}
             movable={entry.options.movable}
             float={entry.options.float}

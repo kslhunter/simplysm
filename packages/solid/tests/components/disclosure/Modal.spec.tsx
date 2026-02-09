@@ -67,9 +67,9 @@ describe("Modal 컴포넌트", () => {
       expect(header).toBeNull();
     });
 
-    it("hideCloseButton=true일 때 닫기 버튼이 없다", async () => {
+    it("closable={false}일 때 닫기 버튼이 없다", async () => {
       render(() => (
-        <Modal open={true} title="테스트" hideCloseButton>
+        <Modal open={true} title="테스트" closable={false}>
           <div>내용</div>
         </Modal>
       ));
@@ -96,10 +96,10 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("useCloseByBackdrop=true일 때 백드롭 클릭으로 닫힌다", async () => {
+    it("closeOnBackdrop=true일 때 백드롭 클릭으로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Modal open={true} title="테스트" useCloseByBackdrop onOpenChange={handleOpenChange}>
+        <Modal open={true} title="테스트" closeOnBackdrop onOpenChange={handleOpenChange}>
           <div>내용</div>
         </Modal>
       ));
@@ -110,7 +110,7 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("useCloseByBackdrop=false일 때 백드롭 클릭으로 닫히지 않는다", async () => {
+    it("closeOnBackdrop 미설정 시 백드롭 클릭으로 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
         <Modal open={true} title="테스트" onOpenChange={handleOpenChange}>
@@ -124,10 +124,10 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
-    it("useCloseByEscapeKey=true일 때 Escape로 닫힌다", async () => {
+    it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Modal open={true} title="테스트" useCloseByEscapeKey onOpenChange={handleOpenChange}>
+        <Modal open={true} title="테스트" closeOnEscape onOpenChange={handleOpenChange}>
           <div>내용</div>
         </Modal>
       ));

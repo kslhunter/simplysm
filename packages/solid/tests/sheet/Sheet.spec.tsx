@@ -177,7 +177,7 @@ describe("Sheet", () => {
     expect(capturedSorts).toEqual([{ key: "name", desc: false }]);
   });
 
-  it("정렬: disableSorting 컬럼은 클릭해도 정렬되지 않는다", () => {
+  it("정렬: sortable={false} 컬럼은 클릭해도 정렬되지 않는다", () => {
     let capturedSorts: SortingDef[] = [];
     const { container } = render(() => (
       <TestWrapper>
@@ -187,7 +187,7 @@ describe("Sheet", () => {
           sorts={[]}
           onSortsChange={(s) => { capturedSorts = s; }}
         >
-          <Sheet.Column<TestItem> key="name" header="이름" disableSorting>
+          <Sheet.Column<TestItem> key="name" header="이름" sortable={false}>
             {(ctx) => <div>{ctx.item.name}</div>}
           </Sheet.Column>
         </Sheet>
@@ -199,14 +199,14 @@ describe("Sheet", () => {
     expect(capturedSorts).toEqual([]);
   });
 
-  it("자동정렬: useAutoSort가 true면 데이터가 정렬된다", () => {
+  it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
     const { container } = render(() => (
       <TestWrapper>
         <Sheet
           items={testData}
           key="test-auto-sort"
           sorts={[{ key: "name", desc: false }]}
-          useAutoSort
+          autoSort
         >
           <Sheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div class="name">{ctx.item.name}</div>}
@@ -303,14 +303,14 @@ describe("Sheet", () => {
     expect(tds[0].classList.contains("border-r-2")).toBe(true);
   });
 
-  it("리사이저: disableResizing이 아닌 컬럼에 리사이저 핸들이 있다", () => {
+  it("리사이저: resizable 컬럼에 리사이저 핸들이 있다", () => {
     const { container } = render(() => (
       <TestWrapper>
         <Sheet items={testData} key="test-resizer">
           <Sheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </Sheet.Column>
-          <Sheet.Column<TestItem> key="age" header="나이" disableResizing>
+          <Sheet.Column<TestItem> key="age" header="나이" resizable={false}>
             {(ctx) => <div>{ctx.item.age}</div>}
           </Sheet.Column>
         </Sheet>
@@ -393,7 +393,7 @@ describe("flattenTree", () => {
     { id: "b" },
   ];
 
-  it("getChildrenFn이 없으면 flat 리스트를 반환한다", () => {
+  it("getChildren이 없으면 flat 리스트를 반환한다", () => {
     const result = flattenTree(tree, []);
     expect(result.map((r) => r.item.id)).toEqual(["a", "b"]);
     expect(result.every((r) => r.depth === 0)).toBe(true);
@@ -488,13 +488,13 @@ describe("Sheet 트리 확장", () => {
     { name: "폴더B" },
   ];
 
-  it("getChildrenFn 설정 시 확장 기능 컬럼이 렌더링된다", () => {
+  it("getChildren 설정 시 확장 기능 컬럼이 렌더링된다", () => {
     const { container } = render(() => (
       <TestWrapper>
         <Sheet
           items={treeData}
           key="test-tree"
-          getChildrenFn={(item) => item.children}
+          getChildren={(item) => item.children}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -518,7 +518,7 @@ describe("Sheet 트리 확장", () => {
         <Sheet
           items={treeData}
           key="test-tree-collapsed"
-          getChildrenFn={(item) => item.children}
+          getChildren={(item) => item.children}
           expandedItems={[]}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">
@@ -541,7 +541,7 @@ describe("Sheet 트리 확장", () => {
         <Sheet
           items={treeData}
           key="test-tree-expanded"
-          getChildrenFn={(item) => item.children}
+          getChildren={(item) => item.children}
           expandedItems={[treeData[0]]}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">
@@ -566,7 +566,7 @@ describe("Sheet 트리 확장", () => {
         <Sheet
           items={treeData}
           key="test-tree-no-children"
-          getChildrenFn={(item) => item.children}
+          getChildren={(item) => item.children}
           expandedItems={[]}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">

@@ -5,7 +5,7 @@ import { DateOnly } from "@simplysm/core-common";
 
 export default function DateRangePickerPage() {
   // Controlled 예제용 시그널
-  const [periodType, setPeriodType] = createSignal<DateRangePeriodType>("범위");
+  const [periodType, setPeriodType] = createSignal<DateRangePeriodType>("range");
   const [from, setFrom] = createSignal<DateOnly | undefined>(new DateOnly(2025, 3, 1));
   const [to, setTo] = createSignal<DateOnly | undefined>(new DateOnly(2025, 3, 31));
 
@@ -27,7 +27,7 @@ export default function DateRangePickerPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">초기값 설정</h3>
                 <DateRangePicker
-                  periodType="범위"
+                  periodType="range"
                   from={new DateOnly(2025, 1, 1)}
                   to={new DateOnly(2025, 12, 31)}
                 />
@@ -41,16 +41,16 @@ export default function DateRangePickerPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">일</h3>
-                <DateRangePicker periodType="일" from={new DateOnly(2025, 3, 15)} />
+                <DateRangePicker periodType="day" from={new DateOnly(2025, 3, 15)} />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">월</h3>
-                <DateRangePicker periodType="월" from={new DateOnly(2025, 3, 1)} />
+                <DateRangePicker periodType="month" from={new DateOnly(2025, 3, 1)} />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">범위</h3>
                 <DateRangePicker
-                  periodType="범위"
+                  periodType="range"
                   from={new DateOnly(2025, 3, 1)}
                   to={new DateOnly(2025, 3, 31)}
                 />
@@ -66,7 +66,7 @@ export default function DateRangePickerPage() {
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
                 <DateRangePicker
                   disabled
-                  periodType="범위"
+                  periodType="range"
                   from={new DateOnly(2025, 1, 1)}
                   to={new DateOnly(2025, 12, 31)}
                 />

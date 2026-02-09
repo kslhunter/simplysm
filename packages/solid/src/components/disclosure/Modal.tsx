@@ -26,12 +26,12 @@ export interface ModalProps {
   title: string;
   /** 헤더 숨김 */
   hideHeader?: boolean;
-  /** 닫기 버튼 숨김 */
-  hideCloseButton?: boolean;
+  /** 닫기 버튼 표시 (기본: true) */
+  closable?: boolean;
   /** 백드롭 클릭으로 닫기 */
-  useCloseByBackdrop?: boolean;
+  closeOnBackdrop?: boolean;
   /** Escape 키로 닫기 */
-  useCloseByEscapeKey?: boolean;
+  closeOnEscape?: boolean;
   /** 리사이즈 가능 여부 (기본: false) */
   resizable?: boolean;
   /** 드래그 이동 가능 여부 (기본: true) */
@@ -130,9 +130,9 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     "onOpenChange",
     "title",
     "hideHeader",
-    "hideCloseButton",
-    "useCloseByBackdrop",
-    "useCloseByEscapeKey",
+    "closable",
+    "closeOnBackdrop",
+    "closeOnEscape",
     "resizable",
     "movable",
     "float",
@@ -211,7 +211,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   // Escape 키 감지
   createEffect(() => {
     if (!open()) return;
-    if (!local.useCloseByEscapeKey) return;
+    if (!local.closeOnEscape) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -231,7 +231,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
 
   // 백드롭 클릭 핸들러
   const handleBackdropClick = () => {
-    if (!local.useCloseByBackdrop) return;
+    if (!local.closeOnBackdrop) return;
     tryClose();
   };
 
@@ -268,6 +268,8 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     // movable 기본값은 true
     if (local.movable === false) return;
     if (!dialogRef || !wrapperRef) return;
+    // 닫기 버튼 등 인터랙티브 요소에서 시작된 이벤트는 드래그로 처리하지 않음
+    if ((event.target as HTMLElement).closest("button")) return;
 
     const target = event.currentTarget as HTMLElement;
     target.setPointerCapture(event.pointerId);
@@ -533,7 +535,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
                   {local.title}
                 </h5>
                 {local.headerAction}
-                <Show when={!local.hideCloseButton}>
+                <Show when={local.closable ?? true}>
                   <button
                     data-modal-close
                     type="button"

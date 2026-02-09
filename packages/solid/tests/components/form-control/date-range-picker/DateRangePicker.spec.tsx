@@ -18,7 +18,7 @@ describe("DateRangePicker 컴포넌트", () => {
       expect(inputs?.length).toBeGreaterThan(0);
     });
 
-    it("기본 periodType은 '범위'이다", () => {
+    it("기본 periodType은 'range'이다", () => {
       const { container } = render(() => <DateRangePicker />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -28,9 +28,9 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("'범위' 모드 렌더링", () => {
+  describe("'range' 모드 렌더링", () => {
     it("DateField 2개와 '~' 구분자가 렌더링된다", () => {
-      const { container } = render(() => <DateRangePicker periodType="범위" />);
+      const { container } = render(() => <DateRangePicker periodType="range" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
       const inputs = wrapper?.querySelectorAll("input[type='date']");
@@ -41,9 +41,9 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("'일' 모드 렌더링", () => {
+  describe("'day' 모드 렌더링", () => {
     it("DateField 1개(type=date)가 렌더링되고 '~'가 없다", () => {
-      const { container } = render(() => <DateRangePicker periodType="일" />);
+      const { container } = render(() => <DateRangePicker periodType="day" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
       const dateInputs = wrapper?.querySelectorAll("input[type='date']");
@@ -55,9 +55,9 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("'월' 모드 렌더링", () => {
+  describe("'month' 모드 렌더링", () => {
     it("DateField 1개(type=month)가 렌더링되고 '~'가 없다", () => {
-      const { container } = render(() => <DateRangePicker periodType="월" />);
+      const { container } = render(() => <DateRangePicker periodType="month" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
       const monthInputs = wrapper?.querySelectorAll("input[type='month']");
@@ -72,14 +72,14 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("from 변경 - '일' 모드", () => {
+  describe("from 변경 - 'day' 모드", () => {
     it("from 변경 시 onToChange도 같은 값으로 호출된다", () => {
       const onFromChange = vi.fn();
       const onToChange = vi.fn();
 
       const { container } = render(() => (
         <DateRangePicker
-          periodType="일"
+          periodType="day"
           from={new DateOnly(2025, 1, 1)}
           onFromChange={onFromChange}
           to={new DateOnly(2025, 1, 1)}
@@ -94,13 +94,13 @@ describe("DateRangePicker 컴포넌트", () => {
       input.value = "2025-06-15";
       input.dispatchEvent(new Event("input", { bubbles: true }));
 
-      // "일" 모드에서는 from 변경 시 to도 같은 값으로 설정됨
+      // "day" 모드에서는 from 변경 시 to도 같은 값으로 설정됨
       const expectedDate = new DateOnly(2025, 6, 15);
       expect(onToChange).toHaveBeenCalledWith(expectedDate);
     });
   });
 
-  describe("from 변경 - '범위' 모드", () => {
+  describe("from 변경 - 'range' 모드", () => {
     it("from > to이면 onToChange(from)이 호출된다", () => {
       const onFromChange = vi.fn();
       const onToChange = vi.fn();
@@ -109,7 +109,7 @@ describe("DateRangePicker 컴포넌트", () => {
 
       const { container } = render(() => (
         <DateRangePicker
-          periodType="범위"
+          periodType="range"
           from={new DateOnly(2025, 1, 1)}
           onFromChange={onFromChange}
           to={originalTo}

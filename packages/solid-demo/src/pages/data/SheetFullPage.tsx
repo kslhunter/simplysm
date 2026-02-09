@@ -72,7 +72,7 @@ export default function SheetFullPage() {
           inset
           sorts={sorts()}
           onSortsChange={setSorts}
-          useAutoSort
+          autoSort
           itemsPerPage={20}
           page={page()}
           onPageChange={setPage}

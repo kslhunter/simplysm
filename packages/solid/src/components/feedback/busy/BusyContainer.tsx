@@ -10,12 +10,12 @@ import {
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { BusyContext, type BusyType } from "./BusyContext";
+import { BusyContext, type BusyVariant } from "./BusyContext";
 import "./BusyContainer.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   busy?: boolean;
-  type?: BusyType;
+  variant?: BusyVariant;
   message?: string;
   progressPercent?: number;
   children?: JSX.Element;
@@ -73,11 +73,11 @@ const barIndicatorClass = clsx(
 
 export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "busy", "type", "message", "progressPercent", "class", "children",
+    "busy", "variant", "message", "progressPercent", "class", "children",
   ]);
 
   const busyCtx = useContext(BusyContext);
-  const currType = (): BusyType => local.type ?? busyCtx?.type() ?? "spinner";
+  const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
 
   // 애니메이션 상태 (Dropdown 패턴)
   const [mounted, setMounted] = createSignal(false);
@@ -138,7 +138,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
 
   // spinner: 슬라이드 다운 애니메이션
   const rectClass = () => {
-    if (currType() !== "spinner") return "";
+    if (currVariant() !== "spinner") return "";
     return clsx(
       "transition-transform duration-100",
       animating()
@@ -156,10 +156,10 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
       <Show when={mounted()}>
         <div class={screenClass()} onTransitionEnd={handleTransitionEnd}>
           <div class={rectClass()}>
-            <Show when={currType() === "spinner"}>
+            <Show when={currVariant() === "spinner"}>
               <div class={spinnerClass} />
             </Show>
-            <Show when={currType() === "bar" && local.busy}>
+            <Show when={currVariant() === "bar" && local.busy}>
               <div class={barIndicatorClass}>
                 <div
                   class={clsx("absolute left-0 top-0 h-1 w-full origin-left", "bg-primary-500 dark:bg-primary-400")}

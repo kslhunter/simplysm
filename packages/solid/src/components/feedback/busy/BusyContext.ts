@@ -1,9 +1,9 @@
 import { createContext, useContext, type Accessor } from "solid-js";
 
-export type BusyType = "spinner" | "bar";
+export type BusyVariant = "spinner" | "bar";
 
 export interface BusyContextValue {
-  type: Accessor<BusyType>;
+  variant: Accessor<BusyVariant>;
   show: (message?: string) => void;
   hide: () => void;
   setProgress: (percent: number | undefined) => void;

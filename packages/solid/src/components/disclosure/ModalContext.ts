@@ -3,9 +3,9 @@ import { createContext, useContext, type Component, type JSX } from "solid-js";
 export interface ModalShowOptions {
   title: string;
   hideHeader?: boolean;
-  hideCloseButton?: boolean;
-  useCloseByBackdrop?: boolean;
-  useCloseByEscapeKey?: boolean;
+  closable?: boolean;
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
   resizable?: boolean;
   movable?: boolean;
   float?: boolean;

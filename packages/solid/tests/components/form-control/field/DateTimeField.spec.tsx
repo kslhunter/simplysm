@@ -6,58 +6,58 @@ import { DateTimeField } from "../../../../src/components/form-control/field/Dat
 
 describe("DateTimeField 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("type=datetime일 때 input type=datetime-local이 렌더링된다", () => {
-      const { container } = render(() => <DateTimeField type="datetime" />);
+    it("unit=minute일 때 input type=datetime-local이 렌더링된다", () => {
+      const { container } = render(() => <DateTimeField unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("datetime-local");
     });
 
-    it("type=datetime-sec일 때 input type=datetime-local이 렌더링된다", () => {
-      const { container } = render(() => <DateTimeField type="datetime-sec" />);
+    it("unit=second일 때 input type=datetime-local이 렌더링된다", () => {
+      const { container } = render(() => <DateTimeField unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("datetime-local");
     });
 
-    it("기본 type은 datetime이다", () => {
+    it("기본 unit은 minute이다", () => {
       const { container } = render(() => <DateTimeField />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("datetime-local");
     });
 
-    it("type=datetime-sec일 때 step=1이 설정된다", () => {
-      const { container } = render(() => <DateTimeField type="datetime-sec" />);
+    it("unit=second일 때 step=1이 설정된다", () => {
+      const { container } = render(() => <DateTimeField unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("1");
     });
 
-    it("type=datetime일 때 step이 설정되지 않는다", () => {
-      const { container } = render(() => <DateTimeField type="datetime" />);
+    it("unit=minute일 때 step이 설정되지 않는다", () => {
+      const { container } = render(() => <DateTimeField unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("");
     });
   });
 
   describe("값 변환", () => {
-    it("DateTime 값이 datetime 타입에서 yyyy-MM-ddTHH:mm 형식으로 표시된다", () => {
+    it("DateTime 값이 minute 단위에서 yyyy-MM-ddTHH:mm 형식으로 표시된다", () => {
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
-      const { container } = render(() => <DateTimeField type="datetime" value={dateTime} />);
+      const { container } = render(() => <DateTimeField unit="minute" value={dateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15T10:30");
     });
 
-    it("DateTime 값이 datetime-sec 타입에서 yyyy-MM-ddTHH:mm:ss 형식으로 표시된다", () => {
+    it("DateTime 값이 second 단위에서 yyyy-MM-ddTHH:mm:ss 형식으로 표시된다", () => {
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
-      const { container } = render(() => <DateTimeField type="datetime-sec" value={dateTime} />);
+      const { container } = render(() => <DateTimeField unit="second" value={dateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15T10:30:45");
     });
 
-    it("datetime 타입 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
+    it("minute 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
-        <DateTimeField type="datetime" onValueChange={handleChange} />
+        <DateTimeField unit="minute" onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -73,10 +73,10 @@ describe("DateTimeField 컴포넌트", () => {
       expect(result.second).toBe(0);
     });
 
-    it("datetime-sec 타입 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
+    it("second 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
-        <DateTimeField type="datetime-sec" onValueChange={handleChange} />
+        <DateTimeField unit="second" onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -96,7 +96,7 @@ describe("DateTimeField 컴포넌트", () => {
       const handleChange = vi.fn();
       const dateTime = new DateTime(2025, 3, 15, 10, 30, 45);
       const { container } = render(() => (
-        <DateTimeField type="datetime" value={dateTime} onValueChange={handleChange} />
+        <DateTimeField unit="minute" value={dateTime} onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -107,30 +107,30 @@ describe("DateTimeField 컴포넌트", () => {
   });
 
   describe("min/max 속성", () => {
-    it("min 속성이 datetime 타입에서 문자열로 변환된다", () => {
+    it("min 속성이 minute 단위에서 문자열로 변환된다", () => {
       const minDateTime = new DateTime(2025, 1, 1, 0, 0, 0);
-      const { container } = render(() => <DateTimeField type="datetime" min={minDateTime} />);
+      const { container } = render(() => <DateTimeField unit="minute" min={minDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01T00:00");
     });
 
-    it("max 속성이 datetime 타입에서 문자열로 변환된다", () => {
+    it("max 속성이 minute 단위에서 문자열로 변환된다", () => {
       const maxDateTime = new DateTime(2025, 12, 31, 23, 59, 0);
-      const { container } = render(() => <DateTimeField type="datetime" max={maxDateTime} />);
+      const { container } = render(() => <DateTimeField unit="minute" max={maxDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12-31T23:59");
     });
 
-    it("min 속성이 datetime-sec 타입에서 초 단위까지 포함된다", () => {
+    it("min 속성이 second 단위에서 초 단위까지 포함된다", () => {
       const minDateTime = new DateTime(2025, 1, 1, 0, 0, 30);
-      const { container } = render(() => <DateTimeField type="datetime-sec" min={minDateTime} />);
+      const { container } = render(() => <DateTimeField unit="second" min={minDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01T00:00:30");
     });
 
-    it("max 속성이 datetime-sec 타입에서 초 단위까지 포함된다", () => {
+    it("max 속성이 second 단위에서 초 단위까지 포함된다", () => {
       const maxDateTime = new DateTime(2025, 12, 31, 23, 59, 59);
-      const { container } = render(() => <DateTimeField type="datetime-sec" max={maxDateTime} />);
+      const { container } = render(() => <DateTimeField unit="second" max={maxDateTime} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12-31T23:59:59");
     });
@@ -142,7 +142,7 @@ describe("DateTimeField 컴포넌트", () => {
         new DateTime(2025, 1, 1, 10, 0, 0),
       );
       const { container } = render(() => (
-        <DateTimeField type="datetime" value={value()} onValueChange={setValue} />
+        <DateTimeField unit="minute" value={value()} onValueChange={setValue} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -156,7 +156,7 @@ describe("DateTimeField 컴포넌트", () => {
   describe("uncontrolled 패턴", () => {
     it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
       const { container } = render(() => (
-        <DateTimeField type="datetime" value={new DateTime(2025, 1, 1, 10, 0, 0)} />
+        <DateTimeField unit="minute" value={new DateTime(2025, 1, 1, 10, 0, 0)} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -181,7 +181,7 @@ describe("DateTimeField 컴포넌트", () => {
 
     it("disabled 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <DateTimeField type="datetime" disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
+        <DateTimeField unit="minute" disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
       expect(getByText("2025-03-15T10:30")).toBeTruthy();
     });
@@ -209,7 +209,7 @@ describe("DateTimeField 컴포넌트", () => {
 
     it("readonly 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <DateTimeField type="datetime" readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />
+        <DateTimeField unit="minute" readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />
       ));
       expect(getByText("2025-03-15T10:30")).toBeTruthy();
     });

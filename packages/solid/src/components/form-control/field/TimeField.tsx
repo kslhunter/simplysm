@@ -14,7 +14,7 @@ import {
   fieldInputClass,
 } from "./Field.styles";
 
-type TimeFieldType = "time" | "time-sec";
+type TimeFieldUnit = "minute" | "second";
 
 export interface TimeFieldProps {
   /** 입력 값 */
@@ -23,8 +23,8 @@ export interface TimeFieldProps {
   /** 값 변경 콜백 */
   onValueChange?: (value: Time | undefined) => void;
 
-  /** 시간 타입 */
-  type?: TimeFieldType;
+  /** 시간 단위 */
+  unit?: TimeFieldUnit;
 
   /** 타이틀 (툴팁) */
   title?: string;
@@ -51,13 +51,13 @@ export interface TimeFieldProps {
 /**
  * Time 값을 input value용 문자열로 변환
  */
-function formatValue(value: Time | undefined, type: TimeFieldType): string {
+function formatValue(value: Time | undefined, unit: TimeFieldUnit): string {
   if (value == null) return "";
 
-  switch (type) {
-    case "time":
+  switch (unit) {
+    case "minute":
       return value.toFormatString("HH:mm");
-    case "time-sec":
+    case "second":
       return value.toFormatString("HH:mm:ss");
   }
 }
@@ -65,14 +65,14 @@ function formatValue(value: Time | undefined, type: TimeFieldType): string {
 /**
  * Time 값을 locale에 맞는 표시용 문자열로 변환
  */
-function formatLocaleValue(value: Time | undefined, type: TimeFieldType): string {
+function formatLocaleValue(value: Time | undefined, unit: TimeFieldUnit): string {
   if (value == null) return "";
 
   const date = new Date(2000, 0, 1, value.hour, value.minute, value.second);
-  switch (type) {
-    case "time":
+  switch (unit) {
+    case "minute":
       return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-    case "time-sec":
+    case "second":
       return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
 }
@@ -80,17 +80,17 @@ function formatLocaleValue(value: Time | undefined, type: TimeFieldType): string
 /**
  * 입력 문자열을 Time으로 변환
  */
-function parseValue(str: string, type: TimeFieldType): Time | undefined {
+function parseValue(str: string, unit: TimeFieldUnit): Time | undefined {
   if (str === "") return undefined;
 
-  switch (type) {
-    case "time": {
+  switch (unit) {
+    case "minute": {
       // HH:mm 형식
       const match = /^(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
       return new Time(Number(match[1]), Number(match[2]), 0);
     }
-    case "time-sec": {
+    case "second": {
       // HH:mm:ss 형식
       const match = /^(\d{2}):(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
@@ -102,23 +102,23 @@ function parseValue(str: string, type: TimeFieldType): Time | undefined {
 /**
  * TimeField 컴포넌트
  *
- * 시간 입력 필드. time, time-sec 타입을 지원한다.
+ * 시간 입력 필드. minute, second 단위를 지원한다.
  * 내부적으로 string ↔ Time 타입 변환을 처리한다.
  *
  * @example
  * ```tsx
  * // 시간 입력 (분 단위)
- * <TimeField type="time" value={time()} onValueChange={setTime} />
+ * <TimeField unit="minute" value={time()} onValueChange={setTime} />
  *
  * // 시간 입력 (초 단위)
- * <TimeField type="time-sec" value={time()} onValueChange={setTime} />
+ * <TimeField unit="second" value={time()} onValueChange={setTime} />
  * ```
  */
 export const TimeField: Component<TimeFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
-    "type",
+    "unit",
     "title",
     "disabled",
     "error",
@@ -128,8 +128,8 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     "style",
   ]);
 
-  // 기본 타입은 time
-  const fieldType = () => local.type ?? "time";
+  // 기본 단위는 minute
+  const fieldType = () => local.unit ?? "minute";
 
   // controlled/uncontrolled 패턴 지원
   const [value, setValue] = createPropSignal({
@@ -163,8 +163,8 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
   // 편집 가능 여부
   const isEditable = () => !local.disabled;
 
-  // step 속성 (time-sec일 때 1)
-  const getStep = () => (fieldType() === "time-sec" ? "1" : undefined);
+  // step 속성 (second일 때 1)
+  const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
   return (
     <Show

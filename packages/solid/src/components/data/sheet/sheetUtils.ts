@@ -94,9 +94,9 @@ function isSameGroup(padded: string[][], colA: number, colB: number, startRow: n
 export function flattenTree<T>(
   items: T[],
   expandedItems: T[],
-  getChildrenFn?: (item: T, index: number) => T[] | undefined,
+  getChildren?: (item: T, index: number) => T[] | undefined,
 ): FlatItem<T>[] {
-  if (!getChildrenFn) {
+  if (!getChildren) {
     return items.map((item, i) => ({
       item,
       index: i,
@@ -110,7 +110,7 @@ export function flattenTree<T>(
 
   function walk(list: T[], depth: number, parent?: T): void {
     for (const item of list) {
-      const children = getChildrenFn!(item, index);
+      const children = getChildren!(item, index);
       const hasChildren = children != null && children.length > 0;
       result.push({ item, index, depth, hasChildren, parent });
       index++;
@@ -127,14 +127,14 @@ export function flattenTree<T>(
 
 export function collectAllExpandable<T>(
   items: T[],
-  getChildrenFn: (item: T, index: number) => T[] | undefined,
+  getChildren: (item: T, index: number) => T[] | undefined,
 ): T[] {
   const result: T[] = [];
   let index = 0;
 
   function walk(list: T[]): void {
     for (const item of list) {
-      const children = getChildrenFn(item, index);
+      const children = getChildren(item, index);
       index++;
       if (children != null && children.length > 0) {
         result.push(item);

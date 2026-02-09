@@ -10,19 +10,19 @@ type PaginationSize = "sm" | "lg";
 export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
   page: number;
   onPageChange?: (page: number) => void;
-  totalPages: number;
-  displayPages?: number;
+  totalPageCount: number;
+  displayPageCount?: number;
   size?: PaginationSize;
 }
 
 const baseClass = clsx("inline-flex items-center");
 
-const btnClass = "font-normal";
+const btnClass = clsx`border-none font-normal`;
 
 const gapClasses: Record<PaginationSize | "default", string> = {
-  default: "gap-0.5",
-  sm: "gap-0",
-  lg: "gap-1",
+  default: "gap-1",
+  sm: "gap-0.5",
+  lg: "gap-1.5",
 };
 
 export const Pagination: Component<PaginationProps> = (props) => {
@@ -30,16 +30,16 @@ export const Pagination: Component<PaginationProps> = (props) => {
     "class",
     "page",
     "onPageChange",
-    "totalPages",
-    "displayPages",
+    "totalPageCount",
+    "displayPageCount",
     "size",
   ]);
 
-  const visibleCount = () => local.displayPages ?? 10;
+  const visibleCount = () => local.displayPageCount ?? 10;
 
   const pages = () => {
     const from = Math.floor(local.page / visibleCount()) * visibleCount();
-    const to = Math.min(from + visibleCount(), local.totalPages);
+    const to = Math.min(from + visibleCount(), local.totalPageCount);
     const result: number[] = [];
     for (let i = from; i < to; i++) {
       result.push(i);
@@ -48,7 +48,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
   };
 
   const hasPrev = () => (pages()[0] ?? 0) > 0;
-  const hasNext = () => (pages()[pages().length - 1] ?? 0) < local.totalPages - 1;
+  const hasNext = () => (pages()[pages().length - 1] ?? 0) < local.totalPageCount - 1;
 
   const getClassName = () =>
     twMerge(baseClass, gapClasses[local.size ?? "default"], local.class);
@@ -104,7 +104,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         variant="ghost"
         size={local.size}
         disabled={!hasNext()}
-        onClick={() => local.onPageChange?.(local.totalPages - 1)}
+        onClick={() => local.onPageChange?.(local.totalPageCount - 1)}
       >
         <Icon icon={IconChevronsRight} size="1em" />
       </Button>

@@ -8,7 +8,7 @@ import { DateField } from "../field/DateField";
 import { Select } from "../select/Select";
 import { SelectItem } from "../select/SelectItem";
 
-export type DateRangePeriodType = "일" | "월" | "범위";
+export type DateRangePeriodType = "day" | "month" | "range";
 
 const baseClass = clsx("inline-flex items-center", "gap-1");
 
@@ -62,7 +62,7 @@ function getLastDayOfMonth(date: DateOnly): DateOnly {
  *
  * @example
  * ```tsx
- * const [periodType, setPeriodType] = createSignal<DateRangePeriodType>("범위");
+ * const [periodType, setPeriodType] = createSignal<DateRangePeriodType>("range");
  * const [from, setFrom] = createSignal<DateOnly>();
  * const [to, setTo] = createSignal<DateOnly>();
  *
@@ -94,7 +94,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
 
   // controlled/uncontrolled 패턴
   const [periodType, setPeriodType] = createPropSignal({
-    value: () => local.periodType ?? ("범위" as DateRangePeriodType),
+    value: () => local.periodType ?? ("range" as DateRangePeriodType),
     onChange: () => local.onPeriodTypeChange,
   });
 
@@ -115,7 +115,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
 
     const currentFrom = from();
 
-    if (type === "월") {
+    if (type === "month") {
       if (currentFrom) {
         const adjusted = currentFrom.setDay(1);
         setFrom(adjusted);
@@ -123,7 +123,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       } else {
         setTo(undefined as DateOnly | undefined);
       }
-    } else if (type === "일") {
+    } else if (type === "day") {
       setTo(currentFrom);
     }
   };
@@ -134,9 +134,9 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
 
     const type = periodType();
 
-    if (type === "월") {
+    if (type === "month") {
       setTo(newFrom ? getLastDayOfMonth(newFrom) : (undefined as DateOnly | undefined));
-    } else if (type === "일") {
+    } else if (type === "day") {
       setTo(newFrom);
     } else {
       const currentTo = to();
@@ -164,22 +164,22 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       <Select
         value={periodType()}
         onValueChange={handlePeriodTypeChange}
-        renderValue={(v: DateRangePeriodType) => <>{v}</>}
+        renderValue={(v: DateRangePeriodType) => <>{({ day: "일", month: "월", range: "범위" })[v]}</>}
         required
         disabled={local.disabled}
         size={local.size}
         inset
       >
-        <SelectItem value={"일" as DateRangePeriodType}>일</SelectItem>
-        <SelectItem value={"월" as DateRangePeriodType}>월</SelectItem>
-        <SelectItem value={"범위" as DateRangePeriodType}>범위</SelectItem>
+        <SelectItem value={"day" as DateRangePeriodType}>일</SelectItem>
+        <SelectItem value={"month" as DateRangePeriodType}>월</SelectItem>
+        <SelectItem value={"range" as DateRangePeriodType}>범위</SelectItem>
       </Select>
 
       <Show
-        when={periodType() === "범위"}
+        when={periodType() === "range"}
         fallback={
           <DateField
-            type={periodType() === "월" ? "month" : "date"}
+            unit={periodType() === "month" ? "month" : "date"}
             value={from()}
             onValueChange={handleFromChange}
             disabled={local.disabled}
@@ -188,7 +188,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         }
       >
         <DateField
-          type="date"
+          unit="date"
           value={from()}
           onValueChange={handleFromChange}
           disabled={local.disabled}
@@ -196,7 +196,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         />
         <span class="text-base-400">~</span>
         <DateField
-          type="date"
+          unit="date"
           value={to()}
           onValueChange={handleToChange}
           min={from()}

@@ -14,13 +14,15 @@ const baseClass = clsx(
   "inline-flex items-center",
   "px-2 py-1",
   "font-bold",
+  "justify-center",
   "text-center",
   "cursor-pointer",
   "transition-colors",
   "rounded",
   "focus:outline-none",
   "focus-visible:ring-2",
-  "border border-transparent"
+  "border border-transparent",
+  "min-w-8"
 );
 
 const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
@@ -118,13 +120,13 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "text-base-600 dark:text-base-300",
       "border-base-300 dark:border-base-700",
     ),
-    ghost: clsx("bg-transparent", "hover:bg-base-100 dark:hover:bg-base-700", "text-base-600 dark:text-base-300"),
+    ghost: clsx("bg-transparent", "hover:bg-base-200 dark:hover:bg-base-700", "text-base-600 dark:text-base-300"),
   },
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: clsx`px-1.5 py-0.5`,
-  lg: clsx`px-3 py-1.5`,
+  sm: clsx`min-w-6 px-1 py-0`,
+  lg: clsx`min-w-9 px-3 py-1.5`,
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

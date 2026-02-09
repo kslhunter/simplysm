@@ -60,7 +60,7 @@ const BusyDemo: Component = () => {
         <Button theme="base" variant="outline" onClick={handleLocalBusy}>
           로컬 Spinner 2초
         </Button>
-        <BusyContainer busy={localBusy()} type="spinner" message="로딩 중..." class="mt-4 h-40 rounded border border-base-200 dark:border-base-700">
+        <BusyContainer busy={localBusy()} variant="spinner" message="로딩 중..." class="mt-4 h-40 rounded border border-base-200 dark:border-base-700">
           <div class="flex h-full items-center justify-center text-base-500">
             콘텐츠 영역
           </div>
@@ -76,7 +76,7 @@ const BusyDemo: Component = () => {
         <Button theme="base" variant="outline" onClick={handleBarBusy}>
           로컬 Bar 2초
         </Button>
-        <BusyContainer busy={barBusy()} type="bar" class="mt-4 h-40 rounded border border-base-200 dark:border-base-700">
+        <BusyContainer busy={barBusy()} variant="bar" class="mt-4 h-40 rounded border border-base-200 dark:border-base-700">
           <div class="flex h-full items-center justify-center text-base-500">
             콘텐츠 영역
           </div>
@@ -94,7 +94,7 @@ const BusyDemo: Component = () => {
         </Button>
         <BusyContainer
           busy={progressBusy()}
-          type="spinner"
+          variant="spinner"
           message={`${progressPercent()}% 완료`}
           progressPercent={progressPercent()}
           class="mt-4 h-40 rounded border border-base-200 dark:border-base-700"
@@ -110,7 +110,7 @@ const BusyDemo: Component = () => {
 
 export default function BusyPage() {
   return (
-    <BusyProvider type="spinner">
+    <BusyProvider variant="spinner">
       <BusyDemo />
     </BusyProvider>
   );

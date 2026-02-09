@@ -228,9 +228,9 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">정렬</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. useAutoSort로 자동 정렬 적용.
+              헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
             </p>
-            <Sheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} useAutoSort>
+            <Sheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
               <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </Sheet.Column>
@@ -240,7 +240,7 @@ export default function SheetPage() {
               <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" disableSorting>
+              <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" sortable={false}>
                 {(ctx) => ctx.item.email}
               </Sheet.Column>
             </Sheet>
@@ -269,12 +269,12 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">트리 확장</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              getChildrenFn으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를 표현합니다.
+              getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를 표현합니다.
             </p>
             <Sheet
               items={categories}
               key="tree"
-              getChildrenFn={(item) => item.children}
+              getChildren={(item) => item.children}
               expandedItems={expanded()}
               onExpandedItemsChange={setExpanded}
             >
@@ -426,12 +426,12 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              selectMode="multi"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
+              selectMode="multiple"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
             </p>
             <Sheet
               items={users}
               key="select-multi"
-              selectMode="multi"
+              selectMode="multiple"
               selectedItems={multiSelected()}
               onSelectedItemsChange={setMultiSelected}
             >
@@ -483,15 +483,15 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">선택 불가 항목</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              getItemSelectableFn으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로 표시됩니다.
+              isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로 표시됩니다.
             </p>
             <Sheet
               items={users}
               key="select-disabled"
-              selectMode="multi"
+              selectMode="multiple"
               selectedItems={disabledSelected()}
               onSelectedItemsChange={setDisabledSelected}
-              getItemSelectableFn={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
+              isItemSelectable={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
             >
               <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}

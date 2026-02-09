@@ -43,8 +43,8 @@ export default function ModalPage() {
   const handleProgrammaticOpen = async () => {
     const result = await modal.show(SampleModalContent, {
       title: "프로그래매틱 모달",
-      useCloseByBackdrop: true,
-      useCloseByEscapeKey: true,
+      closeOnBackdrop: true,
+      closeOnEscape: true,
     });
     setProgrammaticResult(result);
   };
@@ -97,7 +97,7 @@ export default function ModalPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">닫기 옵션</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              useCloseByBackdrop과 useCloseByEscapeKey를 활성화하여, 백드롭 클릭이나 Escape 키로 모달을 닫을 수 있습니다.
+              closeOnBackdrop과 closeOnEscape를 활성화하여, 백드롭 클릭이나 Escape 키로 모달을 닫을 수 있습니다.
             </p>
             <Button theme="info" variant="solid" onClick={() => setCloseOptionOpen(true)}>
               닫기 옵션 모달 열기
@@ -106,8 +106,8 @@ export default function ModalPage() {
               open={closeOptionOpen()}
               onOpenChange={setCloseOptionOpen}
               title="닫기 옵션"
-              useCloseByBackdrop
-              useCloseByEscapeKey
+              closeOnBackdrop
+              closeOnEscape
             >
               <div class="p-4">
                 <p class="text-sm">백드롭을 클릭하거나 Escape 키를 눌러 닫을 수 있습니다.</p>
@@ -154,7 +154,7 @@ export default function ModalPage() {
               onOpenChange={setFillOpen}
               title="Fill 모달"
               fill
-              useCloseByEscapeKey
+              closeOnEscape
             >
               <div class="flex flex-1 flex-col items-center justify-center p-4">
                 <p class="text-lg font-semibold">전체 화면 모달</p>
@@ -184,7 +184,7 @@ export default function ModalPage() {
               heightPx={300}
               minWidthPx={250}
               minHeightPx={200}
-              useCloseByEscapeKey
+              closeOnEscape
             >
               <div class="p-4">
                 <p class="text-sm">모달의 가장자리를 드래그하여 크기를 조절할 수 있습니다.</p>

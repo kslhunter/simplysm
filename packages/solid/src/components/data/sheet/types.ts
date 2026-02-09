@@ -3,10 +3,8 @@ import type { JSX } from "solid-js";
 export interface SheetProps<T> {
   // 데이터
   items?: T[];
-  trackByFn?: (item: T, index: number) => unknown;
-
   // 설정
-  key: string;
+  key?: string;
   hideConfigBar?: boolean;
   inset?: boolean;
   contentStyle?: JSX.CSSProperties | string;
@@ -14,7 +12,7 @@ export interface SheetProps<T> {
   // 정렬
   sorts?: SortingDef[];
   onSortsChange?: (sorts: SortingDef[]) => void;
-  useAutoSort?: boolean;
+  autoSort?: boolean;
 
   // 페이지네이션
   page?: number;
@@ -24,20 +22,20 @@ export interface SheetProps<T> {
   displayPageCount?: number;
 
   // 선택
-  selectMode?: "single" | "multi";
+  selectMode?: "single" | "multiple";
   selectedItems?: T[];
   onSelectedItemsChange?: (items: T[]) => void;
   autoSelect?: "click";
-  getItemSelectableFn?: (item: T) => boolean | string;
+  isItemSelectable?: (item: T) => boolean | string;
 
   // 트리 확장
   expandedItems?: T[];
   onExpandedItemsChange?: (items: T[]) => void;
-  getChildrenFn?: (item: T, index: number) => T[] | undefined;
+  getChildren?: (item: T, index: number) => T[] | undefined;
 
   // 셀 스타일
-  getItemCellClassFn?: (item: T, colKey: string) => string | undefined;
-  getItemCellStyleFn?: (item: T, colKey: string) => string | undefined;
+  cellClass?: (item: T, colKey: string) => string | undefined;
+  cellStyle?: (item: T, colKey: string) => string | undefined;
 
   // 재정렬
   onItemsReorder?: (event: SheetReorderEvent<T>) => void;
@@ -59,8 +57,8 @@ export interface SheetColumnProps<T> {
   collapse?: boolean;
   width?: string;
   class?: string;
-  disableSorting?: boolean;
-  disableResizing?: boolean;
+  sortable?: boolean;
+  resizable?: boolean;
   children: (ctx: SheetCellContext<T>) => JSX.Element;
 }
 
@@ -99,8 +97,8 @@ export interface SheetColumnDef<T> {
   collapse: boolean;
   width?: string;
   class?: string;
-  disableSorting: boolean;
-  disableResizing: boolean;
+  sortable: boolean;
+  resizable: boolean;
   cell: (ctx: SheetCellContext<T>) => JSX.Element;
 }
 

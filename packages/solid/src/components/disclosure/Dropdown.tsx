@@ -54,7 +54,7 @@ export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
    * - 마지막 아이템에서 ArrowDown → 트리거 포커스
    * - 트리거에서 ArrowDown → 닫기
    */
-  enableKeyboardNav?: boolean;
+  keyboardNav?: boolean;
 
   /**
    * children
@@ -86,7 +86,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     "open",
     "onOpenChange",
     "maxHeight",
-    "enableKeyboardNav",
+    "keyboardNav",
     "class",
     "style",
     "children",
@@ -270,7 +270,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
   // 키보드 네비게이션: 트리거용 핸들러
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
-    if (!local.enableKeyboardNav) return;
+    if (!local.keyboardNav) return;
 
     // 닫혀있을 때: ArrowUp/ArrowDown으로 열기
     if (!open()) {
@@ -314,7 +314,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
   // 키보드 네비게이션: 팝업용 핸들러
   const handlePopupKeyDown = (e: KeyboardEvent) => {
-    if (!local.enableKeyboardNav) return;
+    if (!local.keyboardNav) return;
 
     // List 등에서 이미 처리된 이벤트는 무시
     if (e.defaultPrevented) return;
@@ -337,7 +337,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
   // 트리거에 키보드 핸들러 등록
   createEffect(() => {
-    if (!local.enableKeyboardNav) return;
+    if (!local.keyboardNav) return;
 
     const trigger = local.triggerRef?.();
     if (!trigger) return;

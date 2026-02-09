@@ -1,4 +1,5 @@
-import { type Component, createSignal } from "solid-js";
+import { type Component } from "solid-js";
+import { createStore, reconcile } from "solid-js/store";
 import type { ModalContentProps } from "../../disclosure/ModalContext";
 import type { SheetConfig, SheetConfigColumn, SheetConfigColumnInfo, SheetReorderEvent } from "./types";
 import { Sheet } from "./Sheet";
@@ -40,10 +41,10 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
     });
   /* eslint-enable solid/reactivity */
 
-  const [editItems, setEditItems] = createSignal<EditColumnItem[]>(initialItems);
+  const [editItems, setEditItems] = createStore<EditColumnItem[]>(initialItems);
 
   function handleReorder(event: SheetReorderEvent<EditColumnItem>): void {
-    const items = [...editItems()];
+    const items = [...editItems];
     const fromIndex = items.findIndex((i) => i.key === event.item.key);
     if (fromIndex < 0) return;
 
@@ -53,23 +54,21 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
 
     if (event.position === "after") toIndex++;
     items.splice(toIndex, 0, moved);
-    setEditItems(items);
+    setEditItems(reconcile(items));
   }
 
-  function updateItem(key: string, field: keyof EditColumnItem, value: unknown): void {
-    setEditItems((prev) =>
-      prev.map((item) =>
-        item.key === key ? { ...item, [field]: value } : item,
-      ),
-    );
+  function updateItem(key: string, field: keyof EditColumnItem, value: EditColumnItem[keyof EditColumnItem]): void {
+    const index = editItems.findIndex((item) => item.key === key);
+    if (index >= 0) {
+      setEditItems(index, { [field]: value } as Partial<EditColumnItem>);
+    }
   }
 
   function handleOk(): void {
     const columnRecord: Record<string, SheetConfigColumn> = {};
-    const items = editItems();
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    for (let i = 0; i < editItems.length; i++) {
+      const item = editItems[i];
       const info = props.columnInfos.find((c) => c.key === item.key)!;
 
       const entry: SheetConfigColumn = {};
@@ -94,51 +93,44 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
 
   return (
     <div class="flex flex-col gap-2 p-2">
-      <Sheet
-        items={editItems()}
-        key="__sheet-config-modal__"
-        hideConfigBar
-        onItemsReorder={handleReorder}
-      >
-        <Sheet.Column<EditColumnItem> key="header" header="컬럼" class="px-2 py-1">
-          {(ctx) => ctx.item.headerText}
-        </Sheet.Column>
-        <Sheet.Column<EditColumnItem> key="fixed" header="고정" width="60px">
-          {(ctx) => (
-            <div class="flex items-center justify-center">
-              <CheckBox
-                value={ctx.item.fixed}
-                onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)}
+      <div class="rounded border border-base-200">
+        <Sheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
+          <Sheet.Column<EditColumnItem> key="header" header="컬럼" class="px-2 py-1" sortable={false}>
+            {(ctx) => ctx.item.headerText}
+          </Sheet.Column>
+          <Sheet.Column<EditColumnItem> key="fixed" header="고정" sortable={false}>
+            {(ctx) => (
+              <CheckBox inset value={ctx.item.fixed} onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)} />
+            )}
+          </Sheet.Column>
+          <Sheet.Column<EditColumnItem> key="hidden" header="숨김" sortable={false}>
+            {(ctx) => (
+              <CheckBox inset value={ctx.item.hidden} onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)} />
+            )}
+          </Sheet.Column>
+          <Sheet.Column<EditColumnItem> key="width" header="너비" sortable={false}>
+            {(ctx) => (
+              <TextField
+                value={ctx.item.width}
+                onValueChange={(v) => updateItem(ctx.item.key, "width", v)}
+                inset
+                placeholder="auto"
               />
-            </div>
-          )}
-        </Sheet.Column>
-        <Sheet.Column<EditColumnItem> key="hidden" header="숨김" width="60px">
-          {(ctx) => (
-            <div class="flex items-center justify-center">
-              <CheckBox
-                value={ctx.item.hidden}
-                onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)}
-              />
-            </div>
-          )}
-        </Sheet.Column>
-        <Sheet.Column<EditColumnItem> key="width" header="너비" width="100px">
-          {(ctx) => (
-            <TextField
-              value={ctx.item.width}
-              onValueChange={(v) => updateItem(ctx.item.key, "width", v)}
-              inset
-              placeholder="auto"
-            />
-          )}
-        </Sheet.Column>
-      </Sheet>
+            )}
+          </Sheet.Column>
+        </Sheet>
+      </div>
 
-      <div class="flex justify-end gap-2">
-        <Button onClick={handleReset} theme="warning">초기화</Button>
-        <Button onClick={() => props.close(undefined)}>취소</Button>
-        <Button onClick={handleOk} theme="primary">확인</Button>
+      <div class="flex justify-between gap-2">
+        <Button onClick={handleReset} theme="warning" variant="solid">
+          초기화
+        </Button>
+        <div class="flex gap-2">
+          <Button onClick={() => props.close(undefined)}>취소</Button>
+          <Button onClick={handleOk} theme="primary" variant="solid">
+            확인
+          </Button>
+        </div>
       </div>
     </div>
   );

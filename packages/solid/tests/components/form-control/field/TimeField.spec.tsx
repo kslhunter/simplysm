@@ -6,58 +6,58 @@ import { TimeField } from "../../../../src/components/form-control/field/TimeFie
 
 describe("TimeField 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("type=time일 때 input type=time이 렌더링된다", () => {
-      const { container } = render(() => <TimeField type="time" />);
+    it("unit=minute일 때 input type=time이 렌더링된다", () => {
+      const { container } = render(() => <TimeField unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("time");
     });
 
-    it("type=time-sec일 때 input type=time이 렌더링된다", () => {
-      const { container } = render(() => <TimeField type="time-sec" />);
+    it("unit=second일 때 input type=time이 렌더링된다", () => {
+      const { container } = render(() => <TimeField unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("time");
     });
 
-    it("기본 type은 time이다", () => {
+    it("기본 unit은 minute이다", () => {
       const { container } = render(() => <TimeField />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("time");
     });
 
-    it("type=time-sec일 때 step=1이 설정된다", () => {
-      const { container } = render(() => <TimeField type="time-sec" />);
+    it("unit=second일 때 step=1이 설정된다", () => {
+      const { container } = render(() => <TimeField unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("1");
     });
 
-    it("type=time일 때 step이 설정되지 않는다", () => {
-      const { container } = render(() => <TimeField type="time" />);
+    it("unit=minute일 때 step이 설정되지 않는다", () => {
+      const { container } = render(() => <TimeField unit="minute" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.step).toBe("");
     });
   });
 
   describe("값 변환", () => {
-    it("Time 값이 time 타입에서 HH:mm 형식으로 표시된다", () => {
+    it("Time 값이 minute 단위에서 HH:mm 형식으로 표시된다", () => {
       const time = new Time(10, 30, 45);
-      const { container } = render(() => <TimeField type="time" value={time} />);
+      const { container } = render(() => <TimeField unit="minute" value={time} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("10:30");
     });
 
-    it("Time 값이 time-sec 타입에서 HH:mm:ss 형식으로 표시된다", () => {
+    it("Time 값이 second 단위에서 HH:mm:ss 형식으로 표시된다", () => {
       const time = new Time(10, 30, 45);
-      const { container } = render(() => <TimeField type="time-sec" value={time} />);
+      const { container } = render(() => <TimeField unit="second" value={time} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("10:30:45");
     });
 
-    it("time 타입 입력 시 Time으로 변환되어 onValueChange로 전달된다", () => {
+    it("minute 단위 입력 시 Time으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
-        <TimeField type="time" onValueChange={handleChange} />
+        <TimeField unit="minute" onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -70,10 +70,10 @@ describe("TimeField 컴포넌트", () => {
       expect(result.second).toBe(0);
     });
 
-    it("time-sec 타입 입력 시 Time으로 변환되어 onValueChange로 전달된다", () => {
+    it("second 단위 입력 시 Time으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
       const { container } = render(() => (
-        <TimeField type="time-sec" onValueChange={handleChange} />
+        <TimeField unit="second" onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -90,7 +90,7 @@ describe("TimeField 컴포넌트", () => {
       const handleChange = vi.fn();
       const time = new Time(10, 30, 45);
       const { container } = render(() => (
-        <TimeField type="time" value={time} onValueChange={handleChange} />
+        <TimeField unit="minute" value={time} onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -104,7 +104,7 @@ describe("TimeField 컴포넌트", () => {
     it("외부 상태 변경 시 input 값이 업데이트된다", () => {
       const [value, setValue] = createSignal<Time | undefined>(new Time(10, 0, 0));
       const { container } = render(() => (
-        <TimeField type="time" value={value()} onValueChange={setValue} />
+        <TimeField unit="minute" value={value()} onValueChange={setValue} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -118,7 +118,7 @@ describe("TimeField 컴포넌트", () => {
   describe("uncontrolled 패턴", () => {
     it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
       const { container } = render(() => (
-        <TimeField type="time" value={new Time(10, 0, 0)} />
+        <TimeField unit="minute" value={new Time(10, 0, 0)} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -143,7 +143,7 @@ describe("TimeField 컴포넌트", () => {
 
     it("disabled 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <TimeField type="time" disabled value={new Time(10, 30, 0)} />
+        <TimeField unit="minute" disabled value={new Time(10, 30, 0)} />
       ));
       expect(getByText("10:30")).toBeTruthy();
     });
@@ -171,7 +171,7 @@ describe("TimeField 컴포넌트", () => {
 
     it("readonly 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <TimeField type="time" readonly value={new Time(10, 30, 0)} />
+        <TimeField unit="minute" readonly value={new Time(10, 30, 0)} />
       ));
       expect(getByText("10:30")).toBeTruthy();
     });

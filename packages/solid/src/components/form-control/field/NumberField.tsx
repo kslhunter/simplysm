@@ -30,7 +30,7 @@ export interface NumberFieldProps {
   onValueChange?: (value: number | undefined) => void;
 
   /** 천단위 콤마 표시 (기본값: true) */
-  useComma?: boolean;
+  comma?: boolean;
 
   /** 최소 소수점 자릿수 */
   minDigits?: number;
@@ -154,7 +154,7 @@ function isValidNumberInput(str: string): boolean {
  * <NumberField value={num()} onValueChange={setNum} />
  *
  * // 천단위 콤마 없이
- * <NumberField value={num()} useComma={false} />
+ * <NumberField value={num()} comma={false} />
  *
  * // 최소 소수점 자릿수 지정
  * <NumberField value={price()} minDigits={2} />
@@ -164,7 +164,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
-    "useComma",
+    "comma",
     "minDigits",
     "min",
     "max",
@@ -193,7 +193,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
   createEffect(() => {
     const val = value();
     if (!isEditing()) {
-      setInputStr(formatNumber(val, local.useComma ?? true, local.minDigits));
+      setInputStr(formatNumber(val, local.comma ?? true, local.minDigits));
     }
   });
 
@@ -202,7 +202,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     if (isEditing()) {
       return inputStr();
     }
-    return formatNumber(value(), local.useComma ?? true, local.minDigits);
+    return formatNumber(value(), local.comma ?? true, local.minDigits);
   };
 
   // 입력 핸들러
@@ -240,7 +240,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
   const handleBlur: JSX.FocusEventHandler<HTMLInputElement, FocusEvent> = () => {
     setIsEditing(false);
     // blur 시 포맷팅 적용
-    setInputStr(formatNumber(value(), local.useComma ?? true, local.minDigits));
+    setInputStr(formatNumber(value(), local.comma ?? true, local.minDigits));
   };
 
   // wrapper 클래스 (inset 분기에서는 local.class 제외)
@@ -273,7 +273,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               style={local.style}
               title={local.title}
             >
-              {formatNumber(value(), local.useComma ?? true, local.minDigits) || (local.placeholder
+              {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder
                 ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
                 : "\u00A0")}
             </div>
@@ -306,7 +306,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
           style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
         >
-          {formatNumber(value(), local.useComma ?? true, local.minDigits) || (local.placeholder
+          {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder
             ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
             : "\u00A0")}
         </div>

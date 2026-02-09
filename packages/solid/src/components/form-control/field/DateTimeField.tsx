@@ -14,7 +14,7 @@ import {
   fieldInputClass,
 } from "./Field.styles";
 
-type DateTimeFieldType = "datetime" | "datetime-sec";
+type DateTimeFieldUnit = "minute" | "second";
 
 export interface DateTimeFieldProps {
   /** 입력 값 */
@@ -23,8 +23,8 @@ export interface DateTimeFieldProps {
   /** 값 변경 콜백 */
   onValueChange?: (value: DateTime | undefined) => void;
 
-  /** 날짜시간 타입 */
-  type?: DateTimeFieldType;
+  /** 날짜시간 단위 */
+  unit?: DateTimeFieldUnit;
 
   /** 최소 날짜시간 */
   min?: DateTime;
@@ -57,13 +57,13 @@ export interface DateTimeFieldProps {
 /**
  * DateTime 값을 input value용 문자열로 변환 (ISO 형식)
  */
-function formatValue(value: DateTime | undefined, type: DateTimeFieldType): string {
+function formatValue(value: DateTime | undefined, unit: DateTimeFieldUnit): string {
   if (value == null) return "";
 
-  switch (type) {
-    case "datetime":
+  switch (unit) {
+    case "minute":
       return value.toFormatString("yyyy-MM-ddTHH:mm");
-    case "datetime-sec":
+    case "second":
       return value.toFormatString("yyyy-MM-ddTHH:mm:ss");
   }
 }
@@ -71,17 +71,17 @@ function formatValue(value: DateTime | undefined, type: DateTimeFieldType): stri
 /**
  * DateTime 값을 locale에 맞는 표시용 문자열로 변환
  */
-function formatLocaleValue(value: DateTime | undefined, type: DateTimeFieldType): string {
+function formatLocaleValue(value: DateTime | undefined, unit: DateTimeFieldUnit): string {
   if (value == null) return "";
 
   const date = new Date(value.year, value.month - 1, value.day, value.hour, value.minute, value.second);
-  switch (type) {
-    case "datetime":
+  switch (unit) {
+    case "minute":
       return date.toLocaleString(undefined, {
         year: "numeric", month: "2-digit", day: "2-digit",
         hour: "2-digit", minute: "2-digit",
       });
-    case "datetime-sec":
+    case "second":
       return date.toLocaleString(undefined, {
         year: "numeric", month: "2-digit", day: "2-digit",
         hour: "2-digit", minute: "2-digit", second: "2-digit",
@@ -92,11 +92,11 @@ function formatLocaleValue(value: DateTime | undefined, type: DateTimeFieldType)
 /**
  * 입력 문자열을 DateTime으로 변환
  */
-function parseValue(str: string, type: DateTimeFieldType): DateTime | undefined {
+function parseValue(str: string, unit: DateTimeFieldUnit): DateTime | undefined {
   if (str === "") return undefined;
 
-  switch (type) {
-    case "datetime": {
+  switch (unit) {
+    case "minute": {
       // yyyy-MM-ddTHH:mm 형식
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
@@ -109,7 +109,7 @@ function parseValue(str: string, type: DateTimeFieldType): DateTime | undefined 
         0,
       );
     }
-    case "datetime-sec": {
+    case "second": {
       // yyyy-MM-ddTHH:mm:ss 형식
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
@@ -128,13 +128,13 @@ function parseValue(str: string, type: DateTimeFieldType): DateTime | undefined 
 /**
  * min/max 속성을 타입에 맞는 문자열로 변환
  */
-function formatMinMax(value: DateTime | undefined, type: DateTimeFieldType): string | undefined {
+function formatMinMax(value: DateTime | undefined, unit: DateTimeFieldUnit): string | undefined {
   if (value == null) return undefined;
 
-  switch (type) {
-    case "datetime":
+  switch (unit) {
+    case "minute":
       return value.toFormatString("yyyy-MM-ddTHH:mm");
-    case "datetime-sec":
+    case "second":
       return value.toFormatString("yyyy-MM-ddTHH:mm:ss");
   }
 }
@@ -142,20 +142,20 @@ function formatMinMax(value: DateTime | undefined, type: DateTimeFieldType): str
 /**
  * DateTimeField 컴포넌트
  *
- * 날짜시간 입력 필드. datetime, datetime-sec 타입을 지원한다.
+ * 날짜시간 입력 필드. minute, second 단위를 지원한다.
  * 내부적으로 string ↔ DateTime 타입 변환을 처리한다.
  *
  * @example
  * ```tsx
  * // 날짜시간 입력 (분 단위)
- * <DateTimeField type="datetime" value={dateTime()} onValueChange={setDateTime} />
+ * <DateTimeField unit="minute" value={dateTime()} onValueChange={setDateTime} />
  *
  * // 날짜시간 입력 (초 단위)
- * <DateTimeField type="datetime-sec" value={dateTime()} onValueChange={setDateTime} />
+ * <DateTimeField unit="second" value={dateTime()} onValueChange={setDateTime} />
  *
  * // min/max 제한
  * <DateTimeField
- *   type="datetime"
+ *   unit="minute"
  *   value={dateTime()}
  *   min={new DateTime(2025, 1, 1, 0, 0, 0)}
  *   max={new DateTime(2025, 12, 31, 23, 59, 0)}
@@ -166,7 +166,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
-    "type",
+    "unit",
     "min",
     "max",
     "title",
@@ -178,8 +178,8 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     "style",
   ]);
 
-  // 기본 타입은 datetime
-  const fieldType = () => local.type ?? "datetime";
+  // 기본 단위는 minute
+  const fieldType = () => local.unit ?? "minute";
 
   // controlled/uncontrolled 패턴 지원
   const [value, setValue] = createPropSignal({
@@ -213,8 +213,8 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
   // 편집 가능 여부
   const isEditable = () => !local.disabled;
 
-  // step 속성 (datetime-sec일 때 1)
-  const getStep = () => (fieldType() === "datetime-sec" ? "1" : undefined);
+  // step 속성 (second일 때 1)
+  const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
   return (
     <Show

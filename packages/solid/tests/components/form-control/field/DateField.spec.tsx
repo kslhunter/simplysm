@@ -6,28 +6,28 @@ import { DateField } from "../../../../src/components/form-control/field/DateFie
 
 describe("DateField 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("type=year일 때 input type=number가 렌더링된다", () => {
-      const { container } = render(() => <DateField type="year" />);
+    it("unit=year일 때 input type=number가 렌더링된다", () => {
+      const { container } = render(() => <DateField unit="year" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("number");
     });
 
-    it("type=month일 때 input type=month가 렌더링된다", () => {
-      const { container } = render(() => <DateField type="month" />);
+    it("unit=month일 때 input unit=month가 렌더링된다", () => {
+      const { container } = render(() => <DateField unit="month" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("month");
     });
 
-    it("type=date일 때 input type=date가 렌더링된다", () => {
-      const { container } = render(() => <DateField type="date" />);
+    it("unit=date일 때 input unit=date가 렌더링된다", () => {
+      const { container } = render(() => <DateField unit="date" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input).toBeTruthy();
       expect(input.type).toBe("date");
     });
 
-    it("기본 type은 date이다", () => {
+    it("기본 unit은 date이다", () => {
       const { container } = render(() => <DateField />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.type).toBe("date");
@@ -37,28 +37,28 @@ describe("DateField 컴포넌트", () => {
   describe("값 변환", () => {
     it("DateOnly 값이 year 타입에서 yyyy 형식으로 표시된다", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
-      const { container } = render(() => <DateField type="year" value={dateOnly} />);
+      const { container } = render(() => <DateField unit="year" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025");
     });
 
     it("DateOnly 값이 month 타입에서 yyyy-MM 형식으로 표시된다", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
-      const { container } = render(() => <DateField type="month" value={dateOnly} />);
+      const { container } = render(() => <DateField unit="month" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03");
     });
 
     it("DateOnly 값이 date 타입에서 yyyy-MM-dd 형식으로 표시된다", () => {
       const dateOnly = new DateOnly(2025, 3, 15);
-      const { container } = render(() => <DateField type="date" value={dateOnly} />);
+      const { container } = render(() => <DateField unit="date" value={dateOnly} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.value).toBe("2025-03-15");
     });
 
     it("year 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <DateField type="year" onValueChange={handleChange} />);
+      const { container } = render(() => <DateField unit="year" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.input(input, { target: { value: "2025" } });
@@ -72,7 +72,7 @@ describe("DateField 컴포넌트", () => {
 
     it("month 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <DateField type="month" onValueChange={handleChange} />);
+      const { container } = render(() => <DateField unit="month" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.input(input, { target: { value: "2025-03" } });
@@ -86,7 +86,7 @@ describe("DateField 컴포넌트", () => {
 
     it("date 타입 입력 시 DateOnly로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <DateField type="date" onValueChange={handleChange} />);
+      const { container } = render(() => <DateField unit="date" onValueChange={handleChange} />);
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.input(input, { target: { value: "2025-03-15" } });
@@ -102,7 +102,7 @@ describe("DateField 컴포넌트", () => {
       const handleChange = vi.fn();
       const dateOnly = new DateOnly(2025, 3, 15);
       const { container } = render(() => (
-        <DateField type="date" value={dateOnly} onValueChange={handleChange} />
+        <DateField unit="date" value={dateOnly} onValueChange={handleChange} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -115,42 +115,42 @@ describe("DateField 컴포넌트", () => {
   describe("min/max 속성", () => {
     it("min 속성이 date 타입에서 문자열로 변환된다", () => {
       const minDate = new DateOnly(2025, 1, 1);
-      const { container } = render(() => <DateField type="date" min={minDate} />);
+      const { container } = render(() => <DateField unit="date" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01-01");
     });
 
     it("max 속성이 date 타입에서 문자열로 변환된다", () => {
       const maxDate = new DateOnly(2025, 12, 31);
-      const { container } = render(() => <DateField type="date" max={maxDate} />);
+      const { container } = render(() => <DateField unit="date" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12-31");
     });
 
     it("min 속성이 month 타입에서 yyyy-MM 형식으로 변환된다", () => {
       const minDate = new DateOnly(2025, 1, 15);
-      const { container } = render(() => <DateField type="month" min={minDate} />);
+      const { container } = render(() => <DateField unit="month" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2025-01");
     });
 
     it("max 속성이 month 타입에서 yyyy-MM 형식으로 변환된다", () => {
       const maxDate = new DateOnly(2025, 12, 15);
-      const { container } = render(() => <DateField type="month" max={maxDate} />);
+      const { container } = render(() => <DateField unit="month" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2025-12");
     });
 
     it("min 속성이 year 타입에서 숫자로 변환된다", () => {
       const minDate = new DateOnly(2020, 1, 1);
-      const { container } = render(() => <DateField type="year" min={minDate} />);
+      const { container } = render(() => <DateField unit="year" min={minDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.min).toBe("2020");
     });
 
     it("max 속성이 year 타입에서 숫자로 변환된다", () => {
       const maxDate = new DateOnly(2030, 12, 31);
-      const { container } = render(() => <DateField type="year" max={maxDate} />);
+      const { container } = render(() => <DateField unit="year" max={maxDate} />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.max).toBe("2030");
     });
@@ -160,7 +160,7 @@ describe("DateField 컴포넌트", () => {
     it("외부 상태 변경 시 input 값이 업데이트된다", () => {
       const [value, setValue] = createSignal<DateOnly | undefined>(new DateOnly(2025, 1, 1));
       const { container } = render(() => (
-        <DateField type="date" value={value()} onValueChange={setValue} />
+        <DateField unit="date" value={value()} onValueChange={setValue} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -174,7 +174,7 @@ describe("DateField 컴포넌트", () => {
   describe("uncontrolled 패턴", () => {
     it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
       const { container } = render(() => (
-        <DateField type="date" value={new DateOnly(2025, 1, 1)} />
+        <DateField unit="date" value={new DateOnly(2025, 1, 1)} />
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
@@ -199,7 +199,7 @@ describe("DateField 컴포넌트", () => {
 
     it("disabled 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <DateField type="date" disabled value={new DateOnly(2025, 3, 15)} />
+        <DateField unit="date" disabled value={new DateOnly(2025, 3, 15)} />
       ));
       expect(getByText("2025-03-15")).toBeTruthy();
     });
@@ -227,7 +227,7 @@ describe("DateField 컴포넌트", () => {
 
     it("readonly 상태에서 value가 표시된다", () => {
       const { getByText } = render(() => (
-        <DateField type="date" readonly value={new DateOnly(2025, 3, 15)} />
+        <DateField unit="date" readonly value={new DateOnly(2025, 3, 15)} />
       ));
       expect(getByText("2025-03-15")).toBeTruthy();
     });

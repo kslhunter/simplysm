@@ -42,6 +42,13 @@ export const insetContainerClass = clsx(
   "rounded-none",
 );
 
+export const insetTableClass = clsx(
+  "w-full",
+  "[&_th:last-child]:border-r-0",
+  "[&_td:last-child]:border-r-0",
+  "[&_tbody>tr:last-child>td]:border-b-0",
+);
+
 export const defaultContainerClass = clsx(
   "border border-base-300 dark:border-base-700",
   "rounded",

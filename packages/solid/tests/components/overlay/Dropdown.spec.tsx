@@ -341,7 +341,7 @@ describe("Dropdown 컴포넌트", () => {
       render(() => (
         <>
           <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
-          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} enableKeyboardNav>
+          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} keyboardNav>
             <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
             <div data-testid="second-item" tabIndex={0}>두 번째 아이템</div>
           </Dropdown>
@@ -372,7 +372,7 @@ describe("Dropdown 컴포넌트", () => {
       render(() => (
         <>
           <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
-          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} enableKeyboardNav>
+          <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange} keyboardNav>
             <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
           </Dropdown>
         </>

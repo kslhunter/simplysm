@@ -14,7 +14,7 @@ import {
   fieldInputClass,
 } from "./Field.styles";
 
-type DateFieldType = "year" | "month" | "date";
+type DateFieldUnit = "year" | "month" | "date";
 
 export interface DateFieldProps {
   /** 입력 값 */
@@ -23,8 +23,8 @@ export interface DateFieldProps {
   /** 값 변경 콜백 */
   onValueChange?: (value: DateOnly | undefined) => void;
 
-  /** 날짜 타입 */
-  type?: DateFieldType;
+  /** 날짜 단위 */
+  unit?: DateFieldUnit;
 
   /** 최소 날짜 */
   min?: DateOnly;
@@ -57,7 +57,7 @@ export interface DateFieldProps {
 /**
  * DateOnly 값을 input value용 문자열로 변환 (ISO 형식)
  */
-function formatValue(value: DateOnly | undefined, type: DateFieldType): string {
+function formatValue(value: DateOnly | undefined, type: DateFieldUnit): string {
   if (value == null) return "";
 
   switch (type) {
@@ -73,7 +73,7 @@ function formatValue(value: DateOnly | undefined, type: DateFieldType): string {
 /**
  * DateOnly 값을 locale에 맞는 표시용 문자열로 변환
  */
-function formatLocaleValue(value: DateOnly | undefined, type: DateFieldType): string {
+function formatLocaleValue(value: DateOnly | undefined, type: DateFieldUnit): string {
   if (value == null) return "";
 
   const date = new Date(value.year, value.month - 1, value.day);
@@ -90,7 +90,7 @@ function formatLocaleValue(value: DateOnly | undefined, type: DateFieldType): st
 /**
  * 입력 문자열을 DateOnly로 변환
  */
-function parseValue(str: string, type: DateFieldType): DateOnly | undefined {
+function parseValue(str: string, type: DateFieldUnit): DateOnly | undefined {
   if (str === "") return undefined;
 
   switch (type) {
@@ -115,7 +115,7 @@ function parseValue(str: string, type: DateFieldType): DateOnly | undefined {
 /**
  * HTML input의 type 속성 결정
  */
-function getInputType(type: DateFieldType): string {
+function getInputType(type: DateFieldUnit): string {
   switch (type) {
     case "year":
       return "number";
@@ -129,7 +129,7 @@ function getInputType(type: DateFieldType): string {
 /**
  * min/max 속성을 타입에 맞는 문자열로 변환
  */
-function formatMinMax(value: DateOnly | undefined, type: DateFieldType): string | undefined {
+function formatMinMax(value: DateOnly | undefined, type: DateFieldUnit): string | undefined {
   if (value == null) return undefined;
 
   switch (type) {
@@ -145,23 +145,23 @@ function formatMinMax(value: DateOnly | undefined, type: DateFieldType): string 
 /**
  * DateField 컴포넌트
  *
- * 날짜 입력 필드. year, month, date 타입을 지원한다.
+ * 날짜 입력 필드. year, month, date 단위를 지원한다.
  * 내부적으로 string ↔ DateOnly 타입 변환을 처리한다.
  *
  * @example
  * ```tsx
  * // 날짜 입력
- * <DateField type="date" value={date()} onValueChange={setDate} />
+ * <DateField unit="date" value={date()} onValueChange={setDate} />
  *
  * // 연도만 입력
- * <DateField type="year" value={yearDate()} onValueChange={setYearDate} />
+ * <DateField unit="year" value={yearDate()} onValueChange={setYearDate} />
  *
  * // 연월 입력
- * <DateField type="month" value={monthDate()} onValueChange={setMonthDate} />
+ * <DateField unit="month" value={monthDate()} onValueChange={setMonthDate} />
  *
  * // min/max 제한
  * <DateField
- *   type="date"
+ *   unit="date"
  *   value={date()}
  *   min={new DateOnly(2025, 1, 1)}
  *   max={new DateOnly(2025, 12, 31)}
@@ -172,7 +172,7 @@ export const DateField: Component<DateFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
-    "type",
+    "unit",
     "min",
     "max",
     "title",
@@ -184,8 +184,8 @@ export const DateField: Component<DateFieldProps> = (props) => {
     "style",
   ]);
 
-  // 기본 타입은 date
-  const fieldType = () => local.type ?? "date";
+  // 기본 단위는 date
+  const fieldType = () => local.unit ?? "date";
 
   // controlled/uncontrolled 패턴 지원
   const [value, setValue] = createPropSignal({

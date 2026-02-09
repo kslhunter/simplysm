@@ -21,15 +21,13 @@ const baseClass = clsx(
   "focus-visible:ring-2",
 );
 
-const sizeClasses = {
+const sizeClasses: Record<"sm" | "lg", string> = {
   sm: clsx`p-1`,
-  default: clsx`p-1.5`,
   lg: clsx`p-2`,
 };
 
-const iconSizes = {
+const iconSizes: Record<"sm" | "lg", string> = {
   sm: "1em",
-  default: "1.25em",
   lg: "1.5em",
 };
 
@@ -41,7 +39,7 @@ const modeLabels: Record<ThemeMode, string> = {
 
 export interface ThemeToggleProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   /** 버튼 크기 */
-  size?: "sm" | "default" | "lg";
+  size?: "sm" | "lg";
 }
 
 /**
@@ -67,9 +65,10 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
 
   const { mode, cycleMode } = useTheme();
 
-  const getClassName = () => twMerge(baseClass, sizeClasses[local.size ?? "default"], local.class);
+  const getClassName = () =>
+    twMerge(baseClass, "p-1.5", local.size && sizeClasses[local.size], local.class);
 
-  const iconSize = () => iconSizes[local.size ?? "default"];
+  const iconSize = () => (local.size ? iconSizes[local.size] : "1.25em");
 
   return (
     <button

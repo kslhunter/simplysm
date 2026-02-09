@@ -1,10 +1,10 @@
 import { type ParentComponent, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
-import { BusyContext, type BusyContextValue, type BusyType } from "./BusyContext";
+import { BusyContext, type BusyContextValue, type BusyVariant } from "./BusyContext";
 import { BusyContainer } from "./BusyContainer";
 
 export interface BusyProviderProps {
-  type?: BusyType;
+  variant?: BusyVariant;
 }
 
 export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
@@ -12,7 +12,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
   const [message, setMessage] = createSignal<string | undefined>();
   const [progress, setProgress] = createSignal<number | undefined>();
 
-  const type = (): BusyType => props.type ?? "spinner";
+  const variant = (): BusyVariant => props.variant ?? "spinner";
 
   const show = (msg?: string): void => {
     setBusyCount((c) => c + 1);
@@ -31,7 +31,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
   };
 
   const contextValue: BusyContextValue = {
-    type,
+    variant,
     show,
     hide,
     setProgress: (percent: number | undefined) => setProgress(percent),
@@ -43,7 +43,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
       <Portal>
         <BusyContainer
           busy={busyCount() > 0}
-          type={type()}
+          variant={variant()}
           message={message()}
           progressPercent={progress()}
           class="fixed left-0 top-0 h-screen w-screen overflow-hidden"
