@@ -888,7 +888,10 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                             <CheckBox
                               value={isSelected()}
                               disabled={selectable() !== true}
-                              class="pointer-events-none"
+                              class={twMerge(
+                                "pointer-events-none",
+                                lastClickedRow() === rowIndex() ? "ring-2 ring-primary-300 dark:ring-primary-600 rounded" : undefined,
+                              )}
                             />
                           </div>
                         </Show>
