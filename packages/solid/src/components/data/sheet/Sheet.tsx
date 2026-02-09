@@ -2,9 +2,9 @@ import { children, createMemo, createSignal, For, type JSX, Show, splitProps } f
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconArrowsSort, IconChevronDown, IconChevronRight, IconGripVertical, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import { IconArrowsSort, IconChevronDown, IconChevronRight, IconGripVertical, IconSettings, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
-import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SheetReorderEvent, SortingDef } from "./types";
+import type { FlatItem, SheetColumnDef, SheetConfig, SheetConfigColumnInfo, SheetProps, SheetReorderEvent, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -12,8 +12,10 @@ import { Icon } from "../../display/Icon";
 import { CheckBox } from "../../form-control/checkbox/CheckBox";
 import { Pagination } from "../Pagination";
 import { usePersisted } from "../../../contexts/usePersisted";
+import { useModal } from "../../disclosure/ModalContext";
 import "./Sheet.css";
 import {
+  configButtonClass,
   defaultContainerClass,
   expandIndentGuideClass,
   expandIndentGuideLineClass,
@@ -77,6 +79,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "children",
   ]);
 
+  const modal = useModal();
+
   // #region Column Collection
   const resolved = children(() => local.children);
   const columnDefs = createMemo(() =>
@@ -123,6 +127,41 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     const record = { ...prev.columnRecord };
     record[colKey] = { ...record[colKey], width };
     setConfig({ ...prev, columnRecord: record });
+  }
+
+  async function openConfigModal(): Promise<void> {
+    const { SheetConfigModal } = await import("./SheetConfigModal");
+
+    const allCols = resolved.toArray().filter(isSheetColumnDef) as unknown as SheetColumnDef<T>[];
+
+    const columnInfos: SheetConfigColumnInfo[] = allCols
+      .filter((col) => !col.collapse)
+      .map((col) => ({
+        key: col.key,
+        header: col.header,
+        fixed: col.fixed,
+        hidden: col.hidden,
+        collapse: col.collapse,
+        width: col.width,
+      }));
+
+    const currentConfig = config();
+
+    const result = await modal.show<SheetConfig>(
+      (modalProps) => {
+        const mod = SheetConfigModal;
+        return mod({ ...modalProps, columnInfos, currentConfig });
+      },
+      {
+        title: "시트 설정",
+        useCloseByBackdrop: true,
+        useCloseByEscapeKey: true,
+      },
+    );
+
+    if (result) {
+      setConfig(result);
+    }
   }
 
   // #region Header
@@ -296,9 +335,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     display: "none",
   });
 
-  function onResizerMousedown(event: MouseEvent, colKey: string): void {
+  function onResizerPointerdown(event: PointerEvent, colKey: string): void {
     event.preventDefault();
-    const th = (event.target as HTMLElement).closest("th")!;
+    const target = event.target as HTMLElement;
+    target.setPointerCapture(event.pointerId);
+
+    const th = target.closest("th")!;
     const container = th.closest("[data-sheet]")!.querySelector("[data-sheet-scroll]") as HTMLElement;
     const startX = event.clientX;
     const startWidth = th.offsetWidth;
@@ -312,7 +354,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       height: `${container.scrollHeight}px`,
     });
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
       const delta = e.clientX - startX;
       const newWidth = Math.max(30, startWidth + delta);
       setResizeIndicatorStyle({
@@ -323,7 +365,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       });
     };
 
-    const onMouseUp = (e: MouseEvent) => {
+    const onPointerUp = (e: PointerEvent) => {
       const delta = e.clientX - startX;
       // 실제 드래그가 발생한 경우에만 너비 저장 (더블클릭 시 DOM 재생성으로 dblclick 유실 방지)
       if (delta !== 0) {
@@ -331,12 +373,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         saveColumnWidth(colKey, `${newWidth}px`);
       }
       setResizeIndicatorStyle({ display: "none" });
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      target.removeEventListener("pointermove", onPointerMove);
+      target.removeEventListener("pointerup", onPointerUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    target.addEventListener("pointermove", onPointerMove);
+    target.addEventListener("pointerup", onPointerUp);
   }
 
   function onResizerDoubleClick(colKey: string): void {
@@ -667,16 +709,21 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   return (
     <div data-sheet={local.key} class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}>
-      <Show when={!local.hideConfigBar && effectivePageCount() > 1}>
+      <Show when={!local.hideConfigBar}>
         <div class={toolbarClass}>
-          <Pagination
-            class="flex-1"
-            page={currentPage()}
-            onPageChange={setCurrentPage}
-            totalPages={effectivePageCount()}
-            displayPages={local.displayPageCount}
-            size="sm"
-          />
+          <Show when={effectivePageCount() > 1}>
+            <Pagination
+              page={currentPage()}
+              onPageChange={setCurrentPage}
+              totalPages={effectivePageCount()}
+              displayPages={local.displayPageCount}
+              size="sm"
+            />
+          </Show>
+          <div class="flex-1" />
+          <button class={configButtonClass} onClick={openConfigModal} title="시트 설정" type="button">
+            <Icon icon={IconSettings} size="1em" />
+          </button>
         </div>
       </Show>
       <div
@@ -687,7 +734,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       <table
         class={tableClass}
         onKeyDown={onTableKeyDown}
-        onMouseDown={(e) => {
+        onPointerDown={(e) => {
           if (e.shiftKey && hasSelectFeature()) {
             e.preventDefault();
           }
@@ -913,7 +960,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                               <div
                                 class={resizerClass}
                                 onClick={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => onResizerMousedown(e, effectiveColumns()[c().colIndex!].key)}
+                                onPointerDown={(e) => onResizerPointerdown(e, effectiveColumns()[c().colIndex!].key)}
                                 onDblClick={(e) => {
                                   e.stopPropagation();
                                   onResizerDoubleClick(effectiveColumns()[c().colIndex!].key);
