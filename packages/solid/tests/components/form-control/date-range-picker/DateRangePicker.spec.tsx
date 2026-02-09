@@ -92,7 +92,7 @@ describe("DateRangePicker 컴포넌트", () => {
 
       // input에 새 값을 입력하여 from 변경 트리거
       input.value = "2025-06-15";
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
 
       // "day" 모드에서는 from 변경 시 to도 같은 값으로 설정됨
       const expectedDate = new DateOnly(2025, 6, 15);
@@ -122,10 +122,9 @@ describe("DateRangePicker 컴포넌트", () => {
       const fromInput = inputs?.[0] as HTMLInputElement;
 
       // from input에 to보다 큰 날짜 입력
-      if (fromInput) {
-        fromInput.value = "2025-06-15";
-        fromInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
+      expect(fromInput).toBeDefined();
+      fromInput.value = "2025-06-15";
+      fromInput.dispatchEvent(new Event("change", { bubbles: true }));
 
       // from > to이므로 to도 from 값으로 변경되어야 함
       expect(onToChange).toHaveBeenCalledWith(newFrom);

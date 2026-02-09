@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
@@ -32,6 +33,9 @@ export interface TimeFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -62,20 +66,6 @@ function formatValue(value: Time | undefined, unit: TimeFieldUnit): string {
   }
 }
 
-/**
- * Time 값을 locale에 맞는 표시용 문자열로 변환
- */
-function formatLocaleValue(value: Time | undefined, unit: TimeFieldUnit): string {
-  if (value == null) return "";
-
-  const date = new Date(2000, 0, 1, value.hour, value.minute, value.second);
-  switch (unit) {
-    case "minute":
-      return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-    case "second":
-      return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  }
-}
 
 /**
  * 입력 문자열을 Time으로 변환
@@ -121,6 +111,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     "unit",
     "title",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -161,7 +152,7 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // step 속성 (second일 때 1)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
@@ -198,33 +189,36 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         </Show>
       }
     >
-      {/* inset 모드: 너비 고정이므로 input만 렌더링 */}
-      <Show
-        when={isEditable()}
-        fallback={
-          <div
-            {...rest}
-            data-time-field
-            class={twMerge(getWrapperClass(false), local.class)}
-            style={local.style}
-            title={local.title}
-          >
-            {formatLocaleValue(value(), fieldType()) || "\u00A0"}
-          </div>
-        }
+      {/* inset 모드: dual-element overlay 패턴 */}
+      <div
+        {...rest}
+        data-time-field
+        class={twMerge(getWrapperClass(false), "relative", local.class)}
+        style={local.style}
       >
-        <input
-          {...rest}
-          data-time-field
-          type="time"
-          class={twMerge(getWrapperClass(false), local.class)}
-          value={displayValue()}
+        <div
+          data-time-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
-          step={getStep()}
-          style={local.style}
-          onChange={handleChange}
-        />
-      </Show>
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+
+        <Show when={isEditable()}>
+          <input
+            type="time"
+            class={clsx(
+              fieldInputClass,
+              "absolute left-0 top-0 size-full",
+              "px-2 py-1",
+            )}
+            value={displayValue()}
+            title={local.title}
+            step={getStep()}
+            onChange={handleChange}
+          />
+        </Show>
+      </div>
     </Show>
   );
 };

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateTime } from "@simplysm/core-common";
@@ -38,6 +39,9 @@ export interface DateTimeFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -68,26 +72,6 @@ function formatValue(value: DateTime | undefined, unit: DateTimeFieldUnit): stri
   }
 }
 
-/**
- * DateTime 값을 locale에 맞는 표시용 문자열로 변환
- */
-function formatLocaleValue(value: DateTime | undefined, unit: DateTimeFieldUnit): string {
-  if (value == null) return "";
-
-  const date = new Date(value.year, value.month - 1, value.day, value.hour, value.minute, value.second);
-  switch (unit) {
-    case "minute":
-      return date.toLocaleString(undefined, {
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit",
-      });
-    case "second":
-      return date.toLocaleString(undefined, {
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit",
-      });
-  }
-}
 
 /**
  * 입력 문자열을 DateTime으로 변환
@@ -171,6 +155,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     "max",
     "title",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -211,7 +196,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // step 속성 (second일 때 1)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
@@ -250,35 +235,38 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         </Show>
       }
     >
-      {/* inset 모드: 너비 고정이므로 input만 렌더링 */}
-      <Show
-        when={isEditable()}
-        fallback={
-          <div
-            {...rest}
-            data-datetime-field
-            class={twMerge(getWrapperClass(false), local.class)}
-            style={local.style}
-            title={local.title}
-          >
-            {formatLocaleValue(value(), fieldType()) || "\u00A0"}
-          </div>
-        }
+      {/* inset 모드: dual-element overlay 패턴 */}
+      <div
+        {...rest}
+        data-datetime-field
+        class={twMerge(getWrapperClass(false), "relative", local.class)}
+        style={local.style}
       >
-        <input
-          {...rest}
-          data-datetime-field
-          type="datetime-local"
-          class={twMerge(getWrapperClass(false), local.class)}
-          value={displayValue()}
+        <div
+          data-datetime-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
-          min={formatMinMax(local.min, fieldType())}
-          max={formatMinMax(local.max, fieldType())}
-          step={getStep()}
-          style={local.style}
-          onChange={handleChange}
-        />
-      </Show>
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+
+        <Show when={isEditable()}>
+          <input
+            type="datetime-local"
+            class={clsx(
+              fieldInputClass,
+              "absolute left-0 top-0 size-full",
+              "px-2 py-1",
+            )}
+            value={displayValue()}
+            title={local.title}
+            min={formatMinMax(local.min, fieldType())}
+            max={formatMinMax(local.max, fieldType())}
+            step={getStep()}
+            onChange={handleChange}
+          />
+        </Show>
+      </div>
     </Show>
   );
 };

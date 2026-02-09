@@ -53,6 +53,9 @@ export interface NumberFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -172,6 +175,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     "placeholder",
     "title",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -256,7 +260,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
       includeCustomClass && local.class,
     );
 
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   return (
     <Show
@@ -273,7 +277,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               style={local.style}
               title={local.title}
             >
-              {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder
+              {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
                 ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
                 : "\u00A0")}
             </div>
@@ -306,7 +310,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
           style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
         >
-          {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder
+          {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
             ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
             : "\u00A0")}
         </div>

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
@@ -38,6 +39,9 @@ export interface DateFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -70,22 +74,6 @@ function formatValue(value: DateOnly | undefined, type: DateFieldUnit): string {
   }
 }
 
-/**
- * DateOnly 값을 locale에 맞는 표시용 문자열로 변환
- */
-function formatLocaleValue(value: DateOnly | undefined, type: DateFieldUnit): string {
-  if (value == null) return "";
-
-  const date = new Date(value.year, value.month - 1, value.day);
-  switch (type) {
-    case "year":
-      return date.toLocaleDateString(undefined, { year: "numeric" });
-    case "month":
-      return date.toLocaleDateString(undefined, { year: "numeric", month: "2-digit" });
-    case "date":
-      return date.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
-  }
-}
 
 /**
  * 입력 문자열을 DateOnly로 변환
@@ -177,6 +165,7 @@ export const DateField: Component<DateFieldProps> = (props) => {
     "max",
     "title",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -217,7 +206,7 @@ export const DateField: Component<DateFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   return (
     <Show
@@ -246,34 +235,37 @@ export const DateField: Component<DateFieldProps> = (props) => {
         </Show>
       }
     >
-      {/* inset 모드: 너비 고정이므로 input만 렌더링 */}
-      <Show
-        when={isEditable()}
-        fallback={
-          <div
-            {...rest}
-            data-date-field
-            class={twMerge(getWrapperClass(false), local.class)}
-            style={local.style}
-            title={local.title}
-          >
-            {formatLocaleValue(value(), fieldType()) || "\u00A0"}
-          </div>
-        }
+      {/* inset 모드: dual-element overlay 패턴 */}
+      <div
+        {...rest}
+        data-date-field
+        class={twMerge(getWrapperClass(false), "relative", local.class)}
+        style={local.style}
       >
-        <input
-          {...rest}
-          data-date-field
-          type={getInputType(fieldType())}
-          class={twMerge(getWrapperClass(false), local.class)}
-          value={displayValue()}
+        <div
+          data-date-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
-          min={formatMinMax(local.min, fieldType())}
-          max={formatMinMax(local.max, fieldType())}
-          style={local.style}
-          onChange={handleChange}
-        />
-      </Show>
+        >
+          {displayValue() || "\u00A0"}
+        </div>
+
+        <Show when={isEditable()}>
+          <input
+            type={getInputType(fieldType())}
+            class={clsx(
+              fieldInputClass,
+              "absolute left-0 top-0 size-full",
+              "px-2 py-1",
+            )}
+            value={displayValue()}
+            title={local.title}
+            min={formatMinMax(local.min, fieldType())}
+            max={formatMinMax(local.max, fieldType())}
+            onChange={handleChange}
+          />
+        </Show>
+      </div>
     </Show>
   );
 };

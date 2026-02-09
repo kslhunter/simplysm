@@ -209,13 +209,13 @@ describe("Sheet", () => {
           autoSort
         >
           <Sheet.Column<TestItem> key="name" header="이름">
-            {(ctx) => <div class="name">{ctx.item.name}</div>}
+            {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </Sheet.Column>
         </Sheet>
       </TestWrapper>
     ));
 
-    const cells = container.querySelectorAll("tbody .name");
+    const cells = container.querySelectorAll("tbody [data-testid='name']");
     const names = Array.from(cells).map((c) => c.textContent);
     expect(names).toEqual(["김철수", "이영희", "홍길동"]);
   });
@@ -522,7 +522,7 @@ describe("Sheet 트리 확장", () => {
           expandedItems={[]}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">
-            {(ctx) => <div class="name">{ctx.item.name}</div>}
+            {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </Sheet.Column>
         </Sheet>
       </TestWrapper>
@@ -531,7 +531,7 @@ describe("Sheet 트리 확장", () => {
     const rows = container.querySelectorAll("tbody tr");
     expect(rows.length).toBe(2);
 
-    const names = container.querySelectorAll("tbody .name");
+    const names = container.querySelectorAll("tbody [data-testid='name']");
     expect(Array.from(names).map((n) => n.textContent)).toEqual(["폴더A", "폴더B"]);
   });
 
@@ -545,7 +545,7 @@ describe("Sheet 트리 확장", () => {
           expandedItems={[treeData[0]]}
         >
           <Sheet.Column<TreeItem> key="name" header="이름">
-            {(ctx) => <div class="name">{ctx.item.name}</div>}
+            {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </Sheet.Column>
         </Sheet>
       </TestWrapper>
@@ -554,7 +554,7 @@ describe("Sheet 트리 확장", () => {
     const rows = container.querySelectorAll("tbody tr");
     expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B
 
-    const names = container.querySelectorAll("tbody .name");
+    const names = container.querySelectorAll("tbody [data-testid='name']");
     expect(Array.from(names).map((n) => n.textContent)).toEqual([
       "폴더A", "파일A1", "파일A2", "폴더B",
     ]);

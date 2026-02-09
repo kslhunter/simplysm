@@ -38,6 +38,9 @@ export interface TextFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -127,6 +130,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
     "title",
     "autocomplete",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -231,7 +235,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
@@ -249,7 +253,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
           when={isEditable()}
           fallback={
             <div {...rest} data-text-field class={twMerge(getWrapperClass(true), "sd-text-field")} style={local.style} title={local.title}>
-              {displayValue() || (local.placeholder
+              {displayValue() || (local.placeholder != null && local.placeholder !== ""
                 ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
                 : "\u00A0")}
             </div>
@@ -282,7 +286,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
           data-text-field-content
           style={{ visibility: isEditable() ? "hidden" : undefined }}
         >
-          {displayValue() || (local.placeholder
+          {displayValue() || (local.placeholder != null && local.placeholder !== ""
             ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
             : "\u00A0")}
         </div>

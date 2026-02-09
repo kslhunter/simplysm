@@ -104,10 +104,11 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   );
 
   // #region Config (usePersisted)
-  // eslint-disable-next-line solid/reactivity -- key는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨
-  const [config, setConfig] = local.key
+  /* eslint-disable solid/reactivity -- key는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
+  const [config, setConfig] = local.key != null && local.key !== ""
     ? usePersisted<SheetConfig>(`sheet.${local.key}`, { columnRecord: {} })
     : createSignal<SheetConfig>({ columnRecord: {} });
+  /* eslint-enable solid/reactivity */
 
   // 설정이 적용된 최종 컬럼 — config의 hidden/fixed/width/displayOrder 오버라이드 적용
   const effectiveColumns = createMemo(() => {

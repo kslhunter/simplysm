@@ -171,11 +171,11 @@ describe("TextField 컴포넌트", () => {
   });
 
   describe("inset 스타일", () => {
-    it("inset=true일 때 테두리가 없고 배경이 투명하다", () => {
+    it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
       const { container } = render(() => <TextField inset />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("border-none")).toBe(true);
-      expect(wrapper.classList.contains("bg-transparent")).toBe(true);
+      expect(wrapper.classList.contains("bg-primary-50")).toBe(true);
     });
 
     it("inset + readonly일 때 content div가 보이고 input이 없다", () => {

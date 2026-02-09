@@ -61,7 +61,7 @@ describe("DateTimeField 컴포넌트", () => {
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
-      fireEvent.input(input, { target: { value: "2025-03-15T10:30" } });
+      fireEvent.change(input, { target: { value: "2025-03-15T10:30" } });
 
       expect(handleChange).toHaveBeenCalledTimes(1);
       const result = handleChange.mock.calls[0][0] as DateTime;
@@ -80,7 +80,7 @@ describe("DateTimeField 컴포넌트", () => {
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
-      fireEvent.input(input, { target: { value: "2025-03-15T10:30:45" } });
+      fireEvent.change(input, { target: { value: "2025-03-15T10:30:45" } });
 
       expect(handleChange).toHaveBeenCalledTimes(1);
       const result = handleChange.mock.calls[0][0] as DateTime;
@@ -100,7 +100,7 @@ describe("DateTimeField 컴포넌트", () => {
       ));
       const input = container.querySelector("input") as HTMLInputElement;
 
-      fireEvent.input(input, { target: { value: "" } });
+      fireEvent.change(input, { target: { value: "" } });
 
       expect(handleChange).toHaveBeenCalledWith(undefined);
     });
@@ -162,7 +162,7 @@ describe("DateTimeField 컴포넌트", () => {
 
       expect(input.value).toBe("2025-01-01T10:00");
 
-      fireEvent.input(input, { target: { value: "2025-06-15T14:30" } });
+      fireEvent.change(input, { target: { value: "2025-06-15T14:30" } });
       expect(input.value).toBe("2025-06-15T14:30");
     });
   });
@@ -238,12 +238,11 @@ describe("DateTimeField 컴포넌트", () => {
   });
 
   describe("inset 스타일", () => {
-    it("inset=true일 때 테두리가 없고 배경이 투명하다", () => {
+    it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
       const { container } = render(() => <DateTimeField inset />);
       const outer = container.firstChild as HTMLElement;
-      const contentDiv = outer.querySelector("[data-datetime-field-content]") as HTMLElement;
-      expect(contentDiv.classList.contains("border-none")).toBe(true);
-      expect(contentDiv.classList.contains("bg-transparent")).toBe(true);
+      expect(outer.classList.contains("border-none")).toBe(true);
+      expect(outer.classList.contains("bg-primary-50")).toBe(true);
     });
 
     it("inset + readonly일 때 content div가 보이고 input이 없다", () => {

@@ -28,6 +28,9 @@ export interface TextAreaFieldProps {
   /** 비활성화 */
   disabled?: boolean;
 
+  /** 읽기 전용 */
+  readonly?: boolean;
+
   /** 에러 상태 */
   error?: boolean;
 
@@ -76,6 +79,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     "placeholder",
     "title",
     "disabled",
+    "readonly",
     "error",
     "size",
     "inset",
@@ -188,7 +192,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     );
 
   // 편집 가능 여부
-  const isEditable = () => !local.disabled;
+  const isEditable = () => !local.disabled && !local.readonly;
 
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
@@ -212,7 +216,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
               style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
               title={local.title}
             >
-              {value() || (local.placeholder
+              {value() || (local.placeholder != null && local.placeholder !== ""
                 ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
                 : "\u00A0")}
             </div>
@@ -257,36 +261,22 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
         style={local.style}
       >
         <div
+          data-textarea-field-content
           style={{
-            visibility: "hidden",
+            visibility: isEditable() ? "hidden" : undefined,
             "white-space": "pre-wrap",
             "word-break": "break-all",
           }}
+          title={local.title}
         >
-          {contentForHeight()}
+          {isEditable()
+            ? contentForHeight()
+            : (value() || (local.placeholder != null && local.placeholder !== ""
+              ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+              : "\u00A0"))}
         </div>
 
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              style={{
-                position: "absolute",
-                left: "0",
-                top: "0",
-                width: "100%",
-                height: "100%",
-                "white-space": "pre-wrap",
-                "word-break": "break-all",
-              }}
-              title={local.title}
-            >
-              {value() || (local.placeholder
-                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
-                : "\u00A0")}
-            </div>
-          }
-        >
+        <Show when={isEditable()}>
           <textarea
             class={twMerge(
               textareaBaseClass,

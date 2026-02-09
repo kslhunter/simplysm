@@ -5,7 +5,7 @@ description: 코드 리뷰 보고서 생성 (수정 없이 분석만) 하는 Orc
 ## 사용법
 
 - `/sd-review` — 현재 브랜치의 변경사항 전체 리뷰
-- `/sd-review packages/solid` — 특정 경로만 리뷰
+- `/sd-review packages/solid` — 특정 경로의 모든 소스코드 리뷰
 
 인자(`$ARGUMENTS`)가 있으면 해당 경로를 대상으로 리뷰합니다.
 
