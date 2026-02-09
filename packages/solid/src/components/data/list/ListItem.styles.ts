@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { borderDefault } from "../../../styles/tokens.styles";
 
 // 기본 아이템 스타일
 export const listItemBaseClass = clsx(
@@ -32,7 +33,7 @@ export const listItemDisabledClass = clsx("pointer-events-none cursor-auto opaci
 export const listItemReadonlyClass = clsx("cursor-auto select-text hover:bg-transparent");
 
 // 들여쓰기 가이드 (중첩 아이템용)
-export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l border-base-300 dark:border-base-700");
+export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l", borderDefault);
 
 // 선택 아이콘 색상
 export const getListItemSelectedIconClass = (selected: boolean) =>

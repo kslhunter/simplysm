@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { borderDefault, borderSubtle } from "../../../styles/tokens.styles";
 
 export const sheetContainerClass = clsx(
   "relative",
@@ -27,7 +28,7 @@ export const thContentClass = clsx(
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-950",
-  "border-b border-r border-base-200 dark:border-base-800",
+  "border-b border-r", borderSubtle,
   "truncate",
   "p-0",
   "align-top",
@@ -50,7 +51,7 @@ export const insetTableClass = clsx(
 );
 
 export const defaultContainerClass = clsx(
-  "border border-base-300 dark:border-base-700",
+  "border", borderDefault,
   "rounded",
 );
 
@@ -71,7 +72,7 @@ export const toolbarClass = clsx(
   "flex items-center gap-2",
   "px-2 py-1",
   "bg-base-50 dark:bg-base-900",
-  "border-b border-base-300 dark:border-base-700",
+  "border-b", borderDefault,
 );
 
 // 고정 컬럼 기본 (sticky)
@@ -103,14 +104,14 @@ export const resizeIndicatorClass = clsx(
 // 기능 컬럼 기본 (확장/선택 컬럼 공통)
 export const featureThClass = clsx(
   "bg-base-100 dark:bg-base-800",
-  "border-b border-r border-base-300 dark:border-base-700",
+  "border-b border-r", borderDefault,
   "p-0",
-  "align-middle"
+  "align-middle",
 );
 
 export const featureTdClass = clsx(
   "bg-base-50 dark:bg-base-900",
-  "border-b border-r border-base-200 dark:border-base-800",
+  "border-b border-r", borderSubtle,
   "p-0",
   "align-middle",
   "h-px",
@@ -125,7 +126,7 @@ export const expandIndentGuideClass = clsx(
 // 확장 컬럼 깊이 가이드 — 세로선
 export const expandIndentGuideLineClass = clsx(
   "w-0 self-stretch",
-  "border-r border-base-300 dark:border-base-700",
+  "border-r", borderDefault,
 );
 
 // 확장 토글 버튼
