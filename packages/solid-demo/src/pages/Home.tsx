@@ -52,6 +52,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "Sheet", href: "/home/data/sheet" },
       { title: "Sheet (Full)", href: "/home/data/sheet-full" },
       { title: "Kanban", href: "/home/data/kanban" },
+      { title: "Calendar", href: "/home/data/calendar" },
     ],
   },
   {
