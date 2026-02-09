@@ -56,7 +56,7 @@ export const checkBoxInsetSizeHeightClasses: Record<CheckBoxSize, string> = {
 };
 
 // inline 스타일
-export const checkBoxInlineClass = clsx("h-auto", "p-0", "gap-1");
+export const checkBoxInlineClass = clsx("!h-auto", "!p-0", "gap-1");
 
 // disabled 스타일
 export const checkBoxDisabledClass = disabledOpacity;
