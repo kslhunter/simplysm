@@ -88,18 +88,31 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     { columnRecord: {} },
   );
 
-  // 설정이 적용된 최종 컬럼 — config의 width 오버라이드 적용
+  // 설정이 적용된 최종 컬럼 — config의 hidden/fixed/width/displayOrder 오버라이드 적용
   const effectiveColumns = createMemo(() => {
-    const cols = columnDefs();
+    const cols = columnDefs(); // 이미 col.hidden (코드 설정) 필터링됨
     const record = config().columnRecord ?? {};
-    return cols.map((col) => {
-      const saved = record[col.key];
-      if (saved == null) return col;
-      return {
-        ...col,
-        width: saved.width ?? col.width,
-      };
-    });
+
+    return cols
+      .filter((col) => {
+        // config에서 hidden으로 설정된 컬럼 제외
+        const saved = record[col.key];
+        return !(saved?.hidden);
+      })
+      .map((col) => {
+        const saved = record[col.key];
+        if (saved == null) return col;
+        return {
+          ...col,
+          fixed: saved.fixed ?? col.fixed,
+          width: saved.width ?? col.width,
+        };
+      })
+      .sort((a, b) => {
+        const orderA = record[a.key]?.displayOrder ?? Infinity;
+        const orderB = record[b.key]?.displayOrder ?? Infinity;
+        return orderA - orderB;
+      });
   });
 
   function saveColumnWidth(colKey: string, width: string | undefined): void {
