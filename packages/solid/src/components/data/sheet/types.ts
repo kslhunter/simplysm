@@ -39,6 +39,9 @@ export interface SheetProps<T> {
   getItemCellClassFn?: (item: T, colKey: string) => string | undefined;
   getItemCellStyleFn?: (item: T, colKey: string) => string | undefined;
 
+  // 재정렬
+  onItemsReorder?: (event: SheetReorderEvent<T>) => void;
+
   // 기타
   class?: string;
   children: JSX.Element;
@@ -119,4 +122,24 @@ export interface FlatItem<T> {
   depth: number;
   hasChildren: boolean;
   parent?: T;
+}
+
+// 드래그 앤 드롭 위치
+export type SheetDragPosition = "before" | "after" | "inside";
+
+// 재정렬 이벤트
+export interface SheetReorderEvent<T> {
+  item: T;
+  targetItem: T;
+  position: SheetDragPosition;
+}
+
+// 설정 모달에 전달할 컬럼 정보
+export interface SheetConfigColumnInfo {
+  key: string;
+  header: string[];
+  fixed: boolean;
+  hidden: boolean;
+  collapse: boolean;
+  width?: string;
 }
