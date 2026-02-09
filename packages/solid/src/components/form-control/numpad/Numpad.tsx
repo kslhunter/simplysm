@@ -171,6 +171,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
           variant="solid"
           size={buttonSize()}
           inset
+          disabled={local.required && value() == null}
           onClick={handleEnter}
         >
           ENT
