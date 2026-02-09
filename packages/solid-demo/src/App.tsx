@@ -1,10 +1,12 @@
 import type { RouteSectionProps } from "@solidjs/router";
-import { InitializeProvider, ThemeProvider } from "@simplysm/solid";
+import { InitializeProvider, ModalProvider, ThemeProvider } from "@simplysm/solid";
 
 export function App(props: RouteSectionProps) {
   return (
     <InitializeProvider config={{ clientName: "solid-demo" }}>
-      <ThemeProvider>{props.children}</ThemeProvider>
+      <ThemeProvider>
+        <ModalProvider>{props.children}</ModalProvider>
+      </ThemeProvider>
     </InitializeProvider>
   );
 }

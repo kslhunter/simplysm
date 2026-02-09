@@ -2,7 +2,6 @@ import { createSignal, type Component } from "solid-js";
 import {
   Button,
   Modal,
-  ModalProvider,
   useModal,
   Topbar,
   type ModalContentProps,
@@ -21,14 +20,6 @@ const SampleModalContent: Component<ModalContentProps<string>> = (props) => (
 );
 
 export default function ModalPage() {
-  return (
-    <ModalProvider>
-      <ModalPageContent />
-    </ModalProvider>
-  );
-}
-
-function ModalPageContent() {
   const modal = useModal();
 
   // 기본 모달

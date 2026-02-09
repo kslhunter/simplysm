@@ -1,4 +1,4 @@
-import { children, createMemo, createSignal, For, type JSX, Show, splitProps, useContext } from "solid-js";
+import { children, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -12,7 +12,7 @@ import { Icon } from "../../display/Icon";
 import { CheckBox } from "../../form-control/checkbox/CheckBox";
 import { Pagination } from "../Pagination";
 import { usePersisted } from "../../../contexts/usePersisted";
-import { ModalContext } from "../../disclosure/ModalContext";
+import { useModal } from "../../disclosure/ModalContext";
 import "./Sheet.css";
 import {
   configButtonClass,
@@ -79,7 +79,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "children",
   ]);
 
-  const modal = useContext(ModalContext);
+  const modal = useModal();
 
   // #region Column Collection
   const resolved = children(() => local.children);
@@ -130,8 +130,6 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   }
 
   async function openConfigModal(): Promise<void> {
-    if (!modal) return;
-
     const { SheetConfigModal } = await import("./SheetConfigModal");
 
     const allCols = resolved.toArray().filter(isSheetColumnDef) as unknown as SheetColumnDef<T>[];
@@ -711,7 +709,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   return (
     <div data-sheet={local.key} class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}>
-      <Show when={!local.hideConfigBar && (modal != null || effectivePageCount() > 1)}>
+      <Show when={!local.hideConfigBar}>
         <div class={toolbarClass}>
           <Show when={effectivePageCount() > 1}>
             <Pagination
@@ -723,11 +721,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
             />
           </Show>
           <div class="flex-1" />
-          <Show when={modal != null}>
-            <button class={configButtonClass} onClick={openConfigModal} title="시트 설정" type="button">
-              <Icon icon={IconSettings} size="1em" />
-            </button>
-          </Show>
+          <button class={configButtonClass} onClick={openConfigModal} title="시트 설정" type="button">
+            <Icon icon={IconSettings} size="1em" />
+          </button>
         </div>
       </Show>
       <div

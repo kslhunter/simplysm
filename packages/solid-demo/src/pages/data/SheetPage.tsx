@@ -5,7 +5,6 @@ import {
   CheckBox,
   DateField,
   DateTimeField,
-  ModalProvider,
   NumberField,
   Radio,
   Select,
@@ -160,7 +159,6 @@ export default function SheetPage() {
   ]);
 
   return (
-    <ModalProvider>
     <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Sheet</h1>
@@ -548,6 +546,5 @@ export default function SheetPage() {
         </div>
       </div>
     </Topbar.Container>
-    </ModalProvider>
   );
 }
