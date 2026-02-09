@@ -47,6 +47,7 @@ export * from "./components/display/Card";
 export * from "./components/display/Icon";
 export * from "./components/display/Label";
 export * from "./components/display/Note";
+export * from "./components/display/Progress";
 
 // disclosure
 export * from "./components/disclosure/Collapse";
