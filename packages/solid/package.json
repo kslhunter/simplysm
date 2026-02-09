@@ -33,6 +33,7 @@
     "@tiptap/extension-text-style": "^3.19.0",
     "@tiptap/pm": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
+    "bwip-js": "^4.8.0",
     "clsx": "^2.1.1",
     "solid-js": "^1.9.11",
     "solid-tiptap": "^0.8.0",
