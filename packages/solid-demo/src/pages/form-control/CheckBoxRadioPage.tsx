@@ -159,7 +159,7 @@ export default function CheckBoxRadioPage() {
                 <CheckBoxGroup
                   value={selectedFruits()}
                   onValueChange={setSelectedFruits}
-                  class="gap-3"
+
                 >
                   <CheckBoxGroup.Item value="apple">사과</CheckBoxGroup.Item>
                   <CheckBoxGroup.Item value="banana">바나나</CheckBoxGroup.Item>
@@ -173,7 +173,7 @@ export default function CheckBoxRadioPage() {
               {/* disabled 아이템 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
-                <CheckBoxGroup class="gap-3">
+                <CheckBoxGroup>
                   <CheckBoxGroup.Item value="a">활성</CheckBoxGroup.Item>
                   <CheckBoxGroup.Item value="b" disabled>비활성</CheckBoxGroup.Item>
                 </CheckBoxGroup>
@@ -182,7 +182,7 @@ export default function CheckBoxRadioPage() {
               {/* 전체 disabled */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
-                <CheckBoxGroup disabled value={["a"]} class="gap-3">
+                <CheckBoxGroup disabled value={["a"]}>
                   <CheckBoxGroup.Item value="a">옵션 A</CheckBoxGroup.Item>
                   <CheckBoxGroup.Item value="b">옵션 B</CheckBoxGroup.Item>
                 </CheckBoxGroup>
@@ -191,7 +191,7 @@ export default function CheckBoxRadioPage() {
               {/* 테마/사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <CheckBoxGroup theme="success" size="sm" value={["x"]} class="gap-3">
+                <CheckBoxGroup theme="success" size="sm" value={["x"]}>
                   <CheckBoxGroup.Item value="x">Small Success A</CheckBoxGroup.Item>
                   <CheckBoxGroup.Item value="y">Small Success B</CheckBoxGroup.Item>
                 </CheckBoxGroup>
@@ -200,7 +200,7 @@ export default function CheckBoxRadioPage() {
               {/* inset */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Inset</h3>
-                <CheckBoxGroup inset value={["a"]} class="gap-3">
+                <CheckBoxGroup inset value={["a"]}>
                   <CheckBoxGroup.Item value="a">Inset A</CheckBoxGroup.Item>
                   <CheckBoxGroup.Item value="b">Inset B</CheckBoxGroup.Item>
                 </CheckBoxGroup>
@@ -218,7 +218,7 @@ export default function CheckBoxRadioPage() {
                 <RadioGroup
                   value={selectedOption()}
                   onValueChange={setSelectedOption}
-                  class="gap-3"
+
                 >
                   <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
                   <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
@@ -232,7 +232,7 @@ export default function CheckBoxRadioPage() {
               {/* disabled 아이템 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
-                <RadioGroup class="gap-3">
+                <RadioGroup>
                   <RadioGroup.Item value="a">활성</RadioGroup.Item>
                   <RadioGroup.Item value="b" disabled>비활성</RadioGroup.Item>
                 </RadioGroup>
@@ -241,7 +241,7 @@ export default function CheckBoxRadioPage() {
               {/* 전체 disabled */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
-                <RadioGroup disabled value="a" class="gap-3">
+                <RadioGroup disabled value="a">
                   <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
                   <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
                 </RadioGroup>
@@ -250,7 +250,7 @@ export default function CheckBoxRadioPage() {
               {/* 테마/사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <RadioGroup theme="danger" size="lg" value="x" class="gap-3">
+                <RadioGroup theme="danger" size="lg" value="x">
                   <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
                   <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
                 </RadioGroup>
@@ -259,7 +259,7 @@ export default function CheckBoxRadioPage() {
               {/* inset */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Inset</h3>
-                <RadioGroup inset value="a" class="gap-3">
+                <RadioGroup inset value="a">
                   <RadioGroup.Item value="a">Inset A</RadioGroup.Item>
                   <RadioGroup.Item value="b">Inset B</RadioGroup.Item>
                 </RadioGroup>
