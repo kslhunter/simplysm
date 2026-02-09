@@ -1,4 +1,4 @@
-import { type Component, type JSX, createSignal, createEffect, splitProps, Show } from "solid-js";
+import { type Component, type JSX, createSignal, createEffect, Show } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
@@ -58,37 +58,29 @@ function valueToInputStr(value: number | undefined): string {
 }
 
 export const Numpad: Component<NumpadProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "value",
-    "onValueChange",
-    "placeholder",
-    "required",
-    "inputDisabled",
-    "useEnterButton",
-    "useMinusButton",
-    "onEnterButtonClick",
-    "size",
-    "class",
-    "style",
-  ]);
-
   // controlled/uncontrolled 패턴
   const [value, setValue] = createPropSignal({
-    value: () => local.value,
-    onChange: () => local.onValueChange,
+    value: () => props.value,
+    onChange: () => props.onValueChange,
   });
 
   // 내부 입력 문자열 상태
   const [inputStr, setInputStr] = createSignal<string>("");
+  // 버튼 입력 중에는 외부 value → inputStr 동기화를 방지
+  let isButtonInput = false;
 
-  // 외부 값 변경 시 inputStr 동기화
+  // 외부 값 변경 시 inputStr 동기화 (버튼 입력 중이 아닐 때만)
   createEffect(() => {
     const val = value();
-    setInputStr(valueToInputStr(val));
+    if (!isButtonInput) {
+      setInputStr(valueToInputStr(val));
+    }
+    isButtonInput = false;
   });
 
   // inputStr을 파싱하여 value로 반영
   const applyInputStr = (str: string) => {
+    isButtonInput = true;
     setInputStr(str);
     setValue(parseInputStr(str));
   };
@@ -107,8 +99,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
 
   // C (클리어) 버튼
   const handleClear = () => {
-    setInputStr("");
-    setValue(undefined);
+    applyInputStr("");
   };
 
   // BS (백스페이스) 버튼
@@ -130,7 +121,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
 
   // ENT 버튼
   const handleEnter = () => {
-    local.onEnterButtonClick?.();
+    props.onEnterButtonClick?.();
   };
 
   // NumberField 값 변경 핸들러
@@ -139,39 +130,38 @@ export const Numpad: Component<NumpadProps> = (props) => {
     setInputStr(valueToInputStr(val));
   };
 
-  const buttonSize = () => local.size ?? "lg";
+  const buttonSize = () => props.size ?? "lg";
 
   return (
     <div
-      {...rest}
       data-numpad
-      class={twMerge(baseClass, local.class)}
-      style={local.style}
+      class={twMerge(baseClass, props.class)}
+      style={props.style}
     >
       {/* Row 1: NumberField + optional ENT */}
       <div
         class={clsx(
           "flex",
-          local.useEnterButton ? "col-span-2" : "col-span-3",
+          props.useEnterButton ? "col-span-2" : "col-span-3",
         )}
       >
         <NumberField
           value={value()}
           onValueChange={handleFieldValueChange}
-          placeholder={local.placeholder}
-          readonly={local.inputDisabled}
+          placeholder={props.placeholder}
+          readonly={props.inputDisabled}
           inset
           class="w-full"
           comma={false}
         />
       </div>
-      <Show when={local.useEnterButton}>
+      <Show when={props.useEnterButton}>
         <Button
           theme="primary"
           variant="solid"
           size={buttonSize()}
           inset
-          disabled={local.required && value() == null}
+          disabled={props.required && value() == null}
           onClick={handleEnter}
         >
           ENT
@@ -179,7 +169,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
       </Show>
 
       {/* Row 2: optional Minus + C + BS */}
-      <Show when={local.useMinusButton}>
+      <Show when={props.useMinusButton}>
         <Button size={buttonSize()} inset onClick={handleMinus}>
           -
         </Button>
@@ -189,7 +179,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
         inset
         onClick={handleClear}
         class={clsx(
-          local.useMinusButton ? "col-span-1" : "col-span-2",
+          props.useMinusButton ? "col-span-1" : "col-span-2",
           "text-danger-500",
         )}
       >
