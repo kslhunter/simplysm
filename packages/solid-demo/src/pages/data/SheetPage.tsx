@@ -88,6 +88,7 @@ export default function SheetPage() {
   const [multiSelected, setMultiSelected] = createSignal<User[]>([]);
   const [singleSelected, setSingleSelected] = createSignal<User[]>([]);
   const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
+  const [reorderItems, setReorderItems] = createSignal([...users]);
 
   const editUsers = createMutable<User[]>([
     {
@@ -505,6 +506,42 @@ export default function SheetPage() {
             <p class="mt-2 text-sm text-base-500">
               선택된 항목: {disabledSelected().map((u) => u.name).join(", ") || "(없음)"}
             </p>
+          </section>
+
+          {/* 드래그 재정렬 */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">드래그 재정렬</h2>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다.
+              핸들을 잡고 드래그하여 행 순서를 변경할 수 있습니다.
+            </p>
+            <Sheet
+              items={reorderItems()}
+              key="reorder"
+              onItemsReorder={(event) => {
+                const items = [...reorderItems()];
+                const fromIndex = items.indexOf(event.item);
+                if (fromIndex < 0) return;
+
+                const [moved] = items.splice(fromIndex, 1);
+                let toIndex = items.indexOf(event.targetItem);
+                if (toIndex < 0) return;
+
+                if (event.position === "after") toIndex++;
+                items.splice(toIndex, 0, moved);
+                setReorderItems(items);
+              }}
+            >
+              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+                {(ctx) => ctx.item.name}
+              </Sheet.Column>
+              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+                {(ctx) => ctx.item.age}
+              </Sheet.Column>
+              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                {(ctx) => ctx.item.email}
+              </Sheet.Column>
+            </Sheet>
           </section>
         </div>
       </div>
