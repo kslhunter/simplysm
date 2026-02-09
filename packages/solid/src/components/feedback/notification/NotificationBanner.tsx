@@ -1,7 +1,9 @@
 import { type Component, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
+import { IconX } from "@tabler/icons-solidjs";
 import { useNotification } from "./NotificationContext";
+import { Icon } from "../../display/Icon";
 import { themeTokens } from "../../../styles/tokens.styles";
 
 const baseClass = clsx(
@@ -73,9 +75,7 @@ export const NotificationBanner: Component = () => {
                 class="rounded p-1 hover:bg-white/20"
                 onClick={handleDismiss}
               >
-                <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon icon={IconX} size="1.25em" />
               </button>
             </div>
           </div>
