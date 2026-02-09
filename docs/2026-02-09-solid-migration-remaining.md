@@ -16,7 +16,7 @@
 | 7 | **Barcode** | 바코드 렌더링 | [ ] |
 | 8 | **Calendar** | 캘린더 (고도화 필요) | [ ] |
 | 9 | **Progress** | 프로그레스 바 | [ ] |
-| 10 | **ECharts 래퍼** | option 반영 + ResizeObserver + cleanup. 얇은 래퍼 | [ ] |
+| 10 | **ECharts 래퍼** | option 반영 + ResizeObserver + cleanup. 얇은 래퍼 | [x] |
 
 ## 2단계: 비-컴포넌트 기능
 
