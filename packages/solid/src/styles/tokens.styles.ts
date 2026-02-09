@@ -1,0 +1,73 @@
+// ── 테두리 ──
+export const borderDefault = "border-base-300 dark:border-base-700";
+export const borderSubtle = "border-base-200 dark:border-base-800";
+
+// ── 표면 배경 ──
+export const bgSurface = "bg-white dark:bg-base-900";
+
+// ── 텍스트 ──
+export const textDefault = "text-base-900 dark:text-base-100";
+export const textMuted = "text-base-400 dark:text-base-500";
+export const textPlaceholder = "placeholder:text-base-400 dark:placeholder:text-base-500";
+
+// ── disabled ──
+export const disabledOpacity = "cursor-default opacity-50 pointer-events-none";
+
+// ── 사이즈 ──
+export type ComponentSize = "sm" | "lg";
+export const paddingSm = "px-1.5 py-0.5";
+export const paddingLg = "px-3 py-2";
+
+// ── 테마 ──
+export type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
+
+export const themeTokens: Record<SemanticTheme, {
+  solid: string;
+  solidHover: string;
+  text: string;
+  hoverBg: string;
+  border: string;
+}> = {
+  primary: {
+    solid: "bg-primary-500 text-white",
+    solidHover: "hover:bg-primary-600 dark:hover:bg-primary-400",
+    text: "text-primary-600 dark:text-primary-400",
+    hoverBg: "hover:bg-primary-100 dark:hover:bg-primary-800/30",
+    border: "border-primary-300 dark:border-primary-600",
+  },
+  info: {
+    solid: "bg-info-500 text-white",
+    solidHover: "hover:bg-info-600 dark:hover:bg-info-400",
+    text: "text-info-600 dark:text-info-400",
+    hoverBg: "hover:bg-info-100 dark:hover:bg-info-800/30",
+    border: "border-info-300 dark:border-info-600",
+  },
+  success: {
+    solid: "bg-success-500 text-white",
+    solidHover: "hover:bg-success-600 dark:hover:bg-success-400",
+    text: "text-success-600 dark:text-success-400",
+    hoverBg: "hover:bg-success-100 dark:hover:bg-success-800/30",
+    border: "border-success-300 dark:border-success-600",
+  },
+  warning: {
+    solid: "bg-warning-500 text-white",
+    solidHover: "hover:bg-warning-600 dark:hover:bg-warning-400",
+    text: "text-warning-600 dark:text-warning-400",
+    hoverBg: "hover:bg-warning-100 dark:hover:bg-warning-800/30",
+    border: "border-warning-300 dark:border-warning-600",
+  },
+  danger: {
+    solid: "bg-danger-500 text-white",
+    solidHover: "hover:bg-danger-600 dark:hover:bg-danger-400",
+    text: "text-danger-600 dark:text-danger-400",
+    hoverBg: "hover:bg-danger-100 dark:hover:bg-danger-800/30",
+    border: "border-danger-300 dark:border-danger-600",
+  },
+  base: {
+    solid: "bg-base-500 text-white",
+    solidHover: "hover:bg-base-600 dark:hover:bg-base-400",
+    text: "text-base-600 dark:text-base-300",
+    hoverBg: "hover:bg-base-100 dark:hover:bg-base-800/30",
+    border: "border-base-300 dark:border-base-700",
+  },
+};
