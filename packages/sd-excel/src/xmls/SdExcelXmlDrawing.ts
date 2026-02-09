@@ -35,7 +35,7 @@ export class SdExcelXmlDrawing implements ISdExcelXml {
     this.data.wsDr.twoCellAnchor = this.data.wsDr.twoCellAnchor ?? [];
 
     const anchors = this.data.wsDr.twoCellAnchor;
-    const picId = anchors.length + 1;
+    const picId = (this.data.wsDr.oneCellAnchor?.length ?? 0) + anchors.length + 1;
     const name = `Picture ${picId}`;
 
     this.data.wsDr.twoCellAnchor.push({
@@ -82,6 +82,50 @@ export class SdExcelXmlDrawing implements ISdExcelXml {
           ],
         },
       ],
+      clientData: [{}],
+    });
+  }
+
+  addOneCellPicture(opts: {
+    r: number;
+    c: number;
+    width: number;
+    height: number;
+    left?: number;
+    top?: number;
+    blipRelId: string;
+  }): void {
+    this.data.wsDr.oneCellAnchor = this.data.wsDr.oneCellAnchor ?? [];
+    const anchors = this.data.wsDr.oneCellAnchor;
+    const picId = (this.data.wsDr.twoCellAnchor?.length ?? 0) + anchors.length + 1;
+    const name = `Picture ${picId}`;
+
+    anchors.push({
+      from: [{
+        col: [opts.c.toString()],
+        colOff: [((opts.left ?? 0) * 9525).toString()],
+        row: [opts.r.toString()],
+        rowOff: [((opts.top ?? 0) * 9525).toString()],
+      }],
+      ext: [{
+        $: {
+          cx: (opts.width * 9525).toString(),
+          cy: (opts.height * 9525).toString(),
+        },
+      }],
+      pic: [{
+        nvPicPr: [{
+          cNvPr: [{ $: { id: picId.toString(), name } }],
+          cNvPicPr: [{ "a:picLocks": [{ $: { noChangeAspect: "1" } }] }],
+        }],
+        blipFill: [{
+          "a:blip": [{ $: { "r:embed": opts.blipRelId } }],
+          "a:stretch": [{ "a:fillRect": [] }],
+        }],
+        spPr: [{
+          "a:prstGeom": [{ $: { prst: "rect" }, "a:avLst": [] }],
+        }],
+      }],
       clientData: [{}],
     });
   }

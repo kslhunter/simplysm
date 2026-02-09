@@ -169,15 +169,28 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     mergeCells[0].$.count = mergeCells[0].mergeCell.length.toString();
 
     // 시작셀외 모든셀 삭제
-
     for (let r = startAddr.r; r <= endAddr.r; r++) {
       for (let c = startAddr.c; c <= endAddr.c; c++) {
         const currentAddr = { r, c };
         if (currentAddr.r !== startAddr.r || currentAddr.c !== startAddr.c) {
-          this.deleteCell(currentAddr);
+          this.clearCellValue(currentAddr);  // 값만 삭제, style 보존
         }
       }
     }
+  }
+
+  clearCellValue(addr: { r: number; c: number }): void {
+    const rowInfo = this._dataMap.get(addr.r);
+    if (!rowInfo) return;
+
+    const cellData = rowInfo.cellMap.get(addr.c);
+    if (!cellData) return;
+
+    delete cellData.v;    // 값 삭제
+    delete cellData.f;    // 수식 삭제
+    delete cellData.is;   // 인라인 문자열 삭제
+    delete cellData.$.t;  // 타입 삭제
+    // cellData.$.s (styleId)는 보존 → border 유지
   }
 
   getMergeCells(): { s: { r: number; c: number }; e: { r: number; c: number } }[] {
@@ -317,6 +330,48 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     ];
 
     if (point.r != null) {
+    }
+  }
+
+  insertEmptyRow(row: number): void {
+    // 1. _dataMap에서 row 이상의 키를 내림차순으로 순회하며 키를 +1
+    const keysToShift = [...this._dataMap.keys()]
+      .filter(r => r >= row)
+      .sort((a, b) => b - a);
+
+    for (const r of keysToShift) {
+      const rowInfo = this._dataMap.get(r)!;
+      this._dataMap.delete(r);
+
+      // 행 주소 변경
+      rowInfo.data.$.r = SdExcelUtils.stringifyRowAddr(r + 1);
+
+      // 셀 주소 변경
+      if (rowInfo.data.c) {
+        for (const cellData of rowInfo.data.c) {
+          const colAddr = SdExcelUtils.parseColAddrCode(cellData.$.r);
+          cellData.$.r = SdExcelUtils.stringifyAddr({ r: r + 1, c: colAddr });
+        }
+      }
+
+      // cellMap 키도 업데이트 (열 번호는 변경 없으므로 그대로)
+      this._dataMap.set(r + 1, rowInfo);
+    }
+
+    // 2. merge cell 범위 조정
+    if (this.data.worksheet.mergeCells?.[0]?.mergeCell) {
+      for (const mergeCell of this.data.worksheet.mergeCells[0].mergeCell) {
+        const range = SdExcelUtils.parseRangeAddrCode(mergeCell.$.ref);
+        const newStart = {
+          r: range.s.r + (range.s.r >= row ? 1 : 0),
+          c: range.s.c,
+        };
+        const newEnd = {
+          r: range.e.r + (range.e.r >= row ? 1 : 0),
+          c: range.e.c,
+        };
+        mergeCell.$.ref = SdExcelUtils.stringifyRangeAddr({ s: newStart, e: newEnd });
+      }
     }
   }
 
