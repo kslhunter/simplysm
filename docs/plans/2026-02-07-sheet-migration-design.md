@@ -27,7 +27,6 @@ Angular `sd-sheet` 데이터 그리드 컴포넌트를 SolidJS로 마이그레�
 - 키보드 네비게이션 (Enter/Shift+Enter 행 이동)
 - 행 호버 시각 효과 (CSS box-shadow)
 - 설정 모달 (컬럼 순서/너비/고정/숨김 저장)
-- 복사/붙여넣기 (Ctrl+C/V)
 
 ## 1. 컴포넌트 구조 및 API
 
@@ -163,7 +162,7 @@ interface SheetProps<T> {
   selectMode?: "single" | "multi";
   selectedItems?: T[];
   onSelectedItemsChange?: (items: T[]) => void;
-  autoSelect?: "click" | "focus";
+  autoSelect?: "click";
   getItemSelectableFn?: (item: T) => boolean | string;
 
   // 트리 확장
@@ -786,7 +785,6 @@ function rangeSelect(targetRow: number): void {
 // #region AutoSelect
 
 // autoSelect="click": 행 클릭 시 자동 선택
-// autoSelect="focus": 셀 내 요소에 포커스 시 자동 선택 (onFocusCapture로 감지)
 
 function selectItem(item: T): void {
   if (getItemSelectable(item) !== true) return;
@@ -1063,7 +1061,6 @@ Playwright MCP로 데모 페이지를 열어 수동 검증:
 5. 고정 컬럼이 스크롤 시 sticky 유지 + 경계 테두리
 6. 설정 모달에서 컬럼 순서/너비/고정/숨김 변경 후 저장/복원
 7. 기능 컬럼 (선택 체크박스, 확장 아이콘, Shift+Click 범위 선택)
-8. 복사/붙여넣기 (Ctrl+C/V)
 
 ## 18. 구현 계획 (Plan 분할)
 
@@ -1076,7 +1073,7 @@ Playwright MCP로 데모 페이지를 열어 수동 검증:
 Plan 1 (기반) ✅
   ├→ Plan 2 (정렬+페이징) ✅
   ├→ Plan 3 (고정+리사이징) ✅
-  └→ Plan 4 (트리) ✅ → Plan 5 (키보드+호버) ✅ → Plan 6 (선택) → Plan 7 (복사+설정)
+  └→ Plan 4 (트리) ✅ → Plan 5 (키보드+호버) ✅ → Plan 6 (선택) → Plan 7 (설정)
 ```
 
 ### Plan 1: 기반 구조 + 기본 테이블 렌더링 ✅
@@ -1126,18 +1123,17 @@ Plan 1 (기반) ✅
 - `Sheet.tsx` — `#region Selection`, `#region AutoSelect`, 선택 기능 컬럼 UI
 - 선택 기능 컬럼의 너비를 `featureColTotalWidth`에 추가
 - 단일/다중 선택, Shift+Click 범위 선택 (`lastClickedRow` signal 활용), 전체 선택 체크박스
-- `autoSelect="click"` + `autoSelect="focus"` (onFocusCapture로 셀 내 요소 포커스 감지)
+- `autoSelect="click"` (행 클릭 시 자동 선택)
 - 선택 행 시각 효과 (CSS box-shadow 또는 클래스 기반)
 - CheckBox는 표시용 (`pointer-events-none`), 감싸는 요소에서 onClick으로 shiftKey 감지
 - `getItemSelectableFn` (비활성 + tooltip)
-- **데모**: 단일/다중 선택 + autoSelect + 선택 불가 예제
+- **데모**: 단일/다중 선택 + autoSelect="click" + 선택 불가 예제
 - **수동 검증**: 체크박스, Shift+범위 선택, 선택 행 시각 효과
 
-### Plan 7: 복사/붙여넣기 + 설정 모달
+### Plan 7: 설정 모달
 
-- `Sheet.tsx` — 복사/붙여넣기 (Ctrl+C/V, `copyElement`/`pasteToElement` 활용)
 - `SheetConfigModal` — 컬럼 순서/너비/고정/숨김 편집 UI (Sheet.tsx 내 정의)
 - `effectiveColumns` 확장: width뿐 아니라 fixed, displayOrder, hidden도 config에서 적용
 - 설정 바 (`key` prop + `hideConfigBar`) — 설정 버튼 추가
 - **데모**: 설정 모달 예제
-- **수동 검증**: 복사/붙여넣기, 설정 변경 후 저장/복원, 리셋
+- **수동 검증**: 설정 변경 후 저장/복원, 리셋
