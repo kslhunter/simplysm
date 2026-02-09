@@ -264,10 +264,13 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   };
 
   // 드래그 이동
-  const handleHeaderMouseDown = (event: MouseEvent) => {
+  const handleHeaderPointerDown = (event: PointerEvent) => {
     // movable 기본값은 true
     if (local.movable === false) return;
     if (!dialogRef || !wrapperRef) return;
+
+    const target = event.currentTarget as HTMLElement;
+    target.setPointerCapture(event.pointerId);
 
     const dialogEl = dialogRef;
     const wrapperEl = wrapperRef;
@@ -277,7 +280,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    const doDrag = (e: MouseEvent): void => {
+    const doDrag = (e: PointerEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
@@ -303,22 +306,25 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
       }
     };
 
-    const stopDrag = (e: MouseEvent): void => {
+    const stopDrag = (e: PointerEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
-      document.documentElement.removeEventListener("mousemove", doDrag, false);
-      document.documentElement.removeEventListener("mouseup", stopDrag, false);
+      target.removeEventListener("pointermove", doDrag);
+      target.removeEventListener("pointerup", stopDrag);
     };
 
-    document.documentElement.addEventListener("mousemove", doDrag, false);
-    document.documentElement.addEventListener("mouseup", stopDrag, false);
+    target.addEventListener("pointermove", doDrag);
+    target.addEventListener("pointerup", stopDrag);
   };
 
   // 리사이즈
-  const handleResizeBarMouseDown = (event: MouseEvent, direction: ResizeDirection) => {
+  const handleResizeBarPointerDown = (event: PointerEvent, direction: ResizeDirection) => {
     if (!local.resizable) return;
     if (!dialogRef) return;
+
+    const target = event.currentTarget as HTMLElement;
+    target.setPointerCapture(event.pointerId);
 
     const dialogEl = dialogRef;
 
@@ -329,7 +335,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    const doDrag = (e: MouseEvent): void => {
+    const doDrag = (e: PointerEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
@@ -360,16 +366,16 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
       }
     };
 
-    const stopDrag = (e: MouseEvent): void => {
+    const stopDrag = (e: PointerEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
-      document.documentElement.removeEventListener("mousemove", doDrag, false);
-      document.documentElement.removeEventListener("mouseup", stopDrag, false);
+      target.removeEventListener("pointermove", doDrag);
+      target.removeEventListener("pointerup", stopDrag);
     };
 
-    document.documentElement.addEventListener("mousemove", doDrag, false);
-    document.documentElement.addEventListener("mouseup", stopDrag, false);
+    target.addEventListener("pointermove", doDrag);
+    target.addEventListener("pointerup", stopDrag);
   };
 
   // dialog 인라인 스타일 계산
@@ -509,13 +515,13 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
             <Show when={!local.hideHeader}>
               <div
                 data-modal-header
-                class={headerClass()}
+                class={clsx(headerClass(), "touch-none")}
                 style={
                   typeof local.headerStyle === "string"
                     ? mergeStyles(local.headerStyle)
                     : local.headerStyle
                 }
-                onMouseDown={handleHeaderMouseDown}
+                onPointerDown={handleHeaderPointerDown}
               >
                 <h5
                   class={clsx(
@@ -560,10 +566,11 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
                     data-resize-bar={direction}
                     class={clsx(
                       "absolute",
+                      "touch-none",
                       resizePositionMap[direction],
                       resizeCursorMap[direction],
                     )}
-                    onMouseDown={(e) => handleResizeBarMouseDown(e, direction)}
+                    onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
                   />
                 )}
               </For>

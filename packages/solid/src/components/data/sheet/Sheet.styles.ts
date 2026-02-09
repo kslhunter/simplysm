@@ -81,6 +81,7 @@ export const resizerClass = clsx(
   "absolute inset-y-0 right-0",
   "w-1",
   "cursor-ew-resize",
+  "touch-none",
   "hover:bg-primary-300 dark:hover:bg-primary-600",
 );
 
