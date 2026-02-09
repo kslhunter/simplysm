@@ -25,6 +25,8 @@ export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
 export * from "./components/layout/sidebar/SidebarContext";
 export * from "./components/layout/topbar/Topbar";
+export * from "./components/layout/kanban/Kanban";
+export * from "./components/layout/kanban/KanbanContext";
 
 // data
 export * from "./components/data/Table";
