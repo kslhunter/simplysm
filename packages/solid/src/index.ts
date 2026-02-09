@@ -18,6 +18,7 @@ export * from "./components/form-control/checkbox/RadioGroup";
 export * from "./components/form-control/color-picker/ColorPicker";
 export * from "./components/form-control/date-range-picker/DateRangePicker";
 export * from "./components/form-control/editor/RichTextEditor";
+export * from "./components/form-control/numpad/Numpad";
 export * from "./components/form-control/state-preset/StatePreset";
 
 // navigation
