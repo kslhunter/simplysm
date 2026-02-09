@@ -124,6 +124,20 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
+    it("기본적으로 Escape 키로 닫힌다", async () => {
+      const handleOpenChange = vi.fn();
+      render(() => (
+        <Modal open={true} title="테스트" onOpenChange={handleOpenChange}>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        expect(document.querySelector("[data-modal]")).not.toBeNull();
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(handleOpenChange).toHaveBeenCalledWith(false);
+    });
+
     it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
@@ -136,6 +150,20 @@ describe("Modal 컴포넌트", () => {
       });
       fireEvent.keyDown(document, { key: "Escape" });
       expect(handleOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("closeOnEscape=false일 때 Escape로 닫히지 않는다", async () => {
+      const handleOpenChange = vi.fn();
+      render(() => (
+        <Modal open={true} title="테스트" closeOnEscape={false} onOpenChange={handleOpenChange}>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        expect(document.querySelector("[data-modal]")).not.toBeNull();
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
     it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
