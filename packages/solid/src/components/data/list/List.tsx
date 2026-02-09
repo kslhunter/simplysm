@@ -2,6 +2,7 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ListContext, useListContext } from "./ListContext";
+import { ListItem } from "./ListItem";
 
 const baseClass = clsx`inline-flex flex-col rounded-md`;
 
@@ -31,16 +32,20 @@ export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
  * @example
  * ```tsx
  * <List>
- *   <ListItem>Item 1</ListItem>
- *   <ListItem>Item 2</ListItem>
+ *   <List.Item>Item 1</List.Item>
+ *   <List.Item>Item 2</List.Item>
  * </List>
  *
  * <List inset>
- *   <ListItem>Inset style item</ListItem>
+ *   <List.Item>Inset style item</List.Item>
  * </List>
  * ```
  */
-export const List: ParentComponent<ListProps> = (props) => {
+interface ListComponent extends ParentComponent<ListProps> {
+  Item: typeof ListItem;
+}
+
+const ListBase: ParentComponent<ListProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inset"]);
 
   let listRef!: HTMLDivElement;
@@ -174,3 +179,6 @@ export const List: ParentComponent<ListProps> = (props) => {
     </ListContext.Provider>
   );
 };
+
+export const List = ListBase as ListComponent;
+List.Item = ListItem;

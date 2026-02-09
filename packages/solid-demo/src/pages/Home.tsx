@@ -1,6 +1,6 @@
 import { Show, Suspense } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
-import { Icon, Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser, ThemeToggle } from "@simplysm/solid";
+import { Icon, Sidebar, type SidebarMenuItem, ThemeToggle } from "@simplysm/solid";
 import { env } from "@simplysm/core-common";
 import {
   IconBell,
@@ -86,13 +86,13 @@ const menuItems: SidebarMenuItem[] = [
 
 export function Home(props: RouteSectionProps) {
   return (
-    <SidebarContainer>
+    <Sidebar.Container>
       <Sidebar>
         <div class="flex items-center justify-between p-2 px-4">
           <img src="logo-landscape.png" alt="SIMPLYSM" class="h-9 w-auto" />
           <ThemeToggle size="sm" />
         </div>
-        <SidebarUser
+        <Sidebar.User
           menus={[
             { title: "설정", onClick: () => alert("설정") },
             { title: "로그아웃", onClick: () => alert("로그아웃") },
@@ -107,8 +107,8 @@ export function Home(props: RouteSectionProps) {
               <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
             </div>
           </div>
-        </SidebarUser>
-        <SidebarMenu menus={menuItems} />
+        </Sidebar.User>
+        <Sidebar.Menu menus={menuItems} />
         <Show when={env.VER}>
           <div class="pointer-events-none absolute bottom-0 left-0 px-2 py-1 text-sm text-black/30 dark:text-white/30">
             v{env.VER}
@@ -119,6 +119,6 @@ export function Home(props: RouteSectionProps) {
       <main class="h-full overflow-auto">
         <Suspense fallback={<div>로딩 중...</div>}>{props.children}</Suspense>
       </main>
-    </SidebarContainer>
+    </Sidebar.Container>
   );
 }

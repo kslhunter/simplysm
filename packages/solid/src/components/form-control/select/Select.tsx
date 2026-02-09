@@ -158,6 +158,7 @@ export type SelectProps<T = unknown> = SelectWithItemsProps<T> | SelectWithChild
 
 interface SelectComponent {
   <T = unknown>(props: SelectProps<T>): JSX.Element;
+  Item: typeof SelectItem;
   Button: typeof SelectButton;
   Header: typeof SelectHeader;
   ItemTemplate: typeof SelectItemTemplate;
@@ -170,8 +171,8 @@ interface SelectComponent {
  * ```tsx
  * // children 방식
  * <Select value={selected()} onValueChange={setSelected} renderValue={(v) => v.name}>
- *   <SelectItem value={item1}>{item1.name}</SelectItem>
- *   <SelectItem value={item2}>{item2.name}</SelectItem>
+ *   <Select.Item value={item1}>{item1.name}</Select.Item>
+ *   <Select.Item value={item2}>{item2.name}</Select.Item>
  * </Select>
  *
  * // items prop 방식
@@ -403,6 +404,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   );
 };
 
+Select.Item = SelectItem;
 Select.Button = SelectButton;
 Select.Header = SelectHeader;
 Select.ItemTemplate = SelectItemTemplate;

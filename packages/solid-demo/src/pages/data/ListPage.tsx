@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { Icon, List, ListItem, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Icon, List, Topbar } from "@simplysm/solid";
 import {
   IconCheck,
   IconFile,
@@ -17,7 +17,7 @@ export default function ListPage() {
   const [treeOpen2, setTreeOpen2] = createSignal(true);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">List</h1>
       </Topbar>
@@ -27,9 +27,9 @@ export default function ListPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Basic List</h2>
             <List>
-              <ListItem>Item 1</ListItem>
-              <ListItem>Item 2</ListItem>
-              <ListItem>Item 3</ListItem>
+              <List.Item>Item 1</List.Item>
+              <List.Item>Item 2</List.Item>
+              <List.Item>Item 3</List.Item>
             </List>
           </section>
 
@@ -40,13 +40,13 @@ export default function ListPage() {
             <List>
                 <For each={["Apple", "Banana", "Cherry", "Date"]}>
                   {(item) => (
-                    <ListItem
+                    <List.Item
                       selected={selectedItem() === item}
                       selectedIcon={IconCheck}
                       onClick={() => setSelectedItem(item)}
                     >
                       {item}
-                    </ListItem>
+                    </List.Item>
                   )}
                 </For>
               </List>
@@ -56,18 +56,18 @@ export default function ListPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">List with Icons</h2>
             <List>
-                <ListItem onClick={() => alert("Settings clicked")}>
+                <List.Item onClick={() => alert("Settings clicked")}>
                   <Icon icon={IconSettings} class="mr-2" />
                   Settings
-                </ListItem>
-                <ListItem onClick={() => alert("Profile clicked")}>
+                </List.Item>
+                <List.Item onClick={() => alert("Profile clicked")}>
                   <Icon icon={IconUser} class="mr-2" />
                   Profile
-                </ListItem>
-                <ListItem onClick={() => alert("Messages clicked")}>
+                </List.Item>
+                <List.Item onClick={() => alert("Messages clicked")}>
                   <Icon icon={IconMail} class="mr-2" />
                   Messages
-                </ListItem>
+                </List.Item>
               </List>
           </section>
 
@@ -76,44 +76,44 @@ export default function ListPage() {
             <h2 class="mb-4 text-xl font-semibold">Nested List (Tree View)</h2>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">Use Arrow keys to navigate, Arrow Right/Left to expand/collapse</p>
             <List>
-                <ListItem open={treeOpen1()} onOpenChange={setTreeOpen1}>
+                <List.Item open={treeOpen1()} onOpenChange={setTreeOpen1}>
                   <Icon icon={IconFolder} class="mr-2 text-yellow-500" />
                   Documents
-                  <ListItem.Children>
-                    <ListItem onClick={() => alert("Report.pdf")}>
+                  <List.Item.Children>
+                    <List.Item onClick={() => alert("Report.pdf")}>
                       <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Report.pdf
-                    </ListItem>
-                    <ListItem onClick={() => alert("Notes.txt")}>
+                    </List.Item>
+                    <List.Item onClick={() => alert("Notes.txt")}>
                       <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Notes.txt
-                    </ListItem>
-                  </ListItem.Children>
-                </ListItem>
-                <ListItem open={treeOpen2()} onOpenChange={setTreeOpen2}>
+                    </List.Item>
+                  </List.Item.Children>
+                </List.Item>
+                <List.Item open={treeOpen2()} onOpenChange={setTreeOpen2}>
                   <Icon icon={IconFolder} class="mr-2 text-yellow-500" />
                   Photos
-                  <ListItem.Children>
-                    <ListItem onClick={() => alert("Vacation.jpg")}>
+                  <List.Item.Children>
+                    <List.Item onClick={() => alert("Vacation.jpg")}>
                       <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                       Vacation.jpg
-                    </ListItem>
-                    <ListItem>
+                    </List.Item>
+                    <List.Item>
                       <Icon icon={IconFolder} class="mr-2 text-yellow-500" />
                       2024
-                      <ListItem.Children>
-                        <ListItem onClick={() => alert("January.jpg")}>
+                      <List.Item.Children>
+                        <List.Item onClick={() => alert("January.jpg")}>
                           <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                           January.jpg
-                        </ListItem>
-                        <ListItem onClick={() => alert("February.jpg")}>
+                        </List.Item>
+                        <List.Item onClick={() => alert("February.jpg")}>
                           <Icon icon={IconFile} class="mr-2 text-base-500 dark:text-base-400" />
                           February.jpg
-                        </ListItem>
-                      </ListItem.Children>
-                    </ListItem>
-                  </ListItem.Children>
-                </ListItem>
+                        </List.Item>
+                      </List.Item.Children>
+                    </List.Item>
+                  </List.Item.Children>
+                </List.Item>
               </List>
           </section>
 
@@ -121,10 +121,10 @@ export default function ListPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">States</h2>
             <List>
-                <ListItem>Normal item</ListItem>
-                <ListItem selected>Selected item</ListItem>
-                <ListItem readonly>Readonly item</ListItem>
-                <ListItem disabled>Disabled item</ListItem>
+                <List.Item>Normal item</List.Item>
+                <List.Item selected>Selected item</List.Item>
+                <List.Item readonly>Readonly item</List.Item>
+                <List.Item disabled>Disabled item</List.Item>
               </List>
           </section>
 
@@ -132,15 +132,15 @@ export default function ListPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inset Style</h2>
             <List inset>
-                <ListItem selectedIcon={IconStar} selected>
+                <List.Item selectedIcon={IconStar} selected>
                   Starred item
-                </ListItem>
-                <ListItem selectedIcon={IconStar}>Regular item</ListItem>
-                <ListItem selectedIcon={IconHeart}>Another item</ListItem>
+                </List.Item>
+                <List.Item selectedIcon={IconStar}>Regular item</List.Item>
+                <List.Item selectedIcon={IconHeart}>Another item</List.Item>
               </List>
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

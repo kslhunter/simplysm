@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { CheckBox, Radio, Topbar, TopbarContainer } from "@simplysm/solid";
+import { CheckBox, Radio, Topbar } from "@simplysm/solid";
 import type { CheckBoxTheme } from "@simplysm/solid";
 
 const themes: CheckBoxTheme[] = ["primary", "info", "success", "warning", "danger"];
@@ -9,7 +9,7 @@ export default function CheckBoxRadioPage() {
   const [selectedRadio, setSelectedRadio] = createSignal<string>("A");
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">CheckBox & Radio</h1>
       </Topbar>
@@ -192,6 +192,6 @@ export default function CheckBoxRadioPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

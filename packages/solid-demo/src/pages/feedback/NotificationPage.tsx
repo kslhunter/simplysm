@@ -6,7 +6,6 @@ import {
   useNotification,
   Button,
   Topbar,
-  TopbarContainer,
 } from "@simplysm/solid";
 
 const NotificationDemo: Component = () => {
@@ -102,7 +101,7 @@ export default function NotificationPage() {
   return (
     <NotificationProvider>
       <NotificationBanner />
-      <TopbarContainer>
+      <Topbar.Container>
         <Topbar>
           <h1 class="m-0 flex-1 text-base">Notification</h1>
           <NotificationBell />
@@ -110,7 +109,7 @@ export default function NotificationPage() {
         <div class="flex-1 overflow-auto p-6">
           <NotificationDemo />
         </div>
-      </TopbarContainer>
+      </Topbar.Container>
     </NotificationProvider>
   );
 }

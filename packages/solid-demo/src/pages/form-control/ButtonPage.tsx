@@ -1,12 +1,12 @@
 import { For } from "solid-js";
-import { Button, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Button, Topbar } from "@simplysm/solid";
 
 const themes = ["primary", "info", "success", "warning", "danger", "base"] as const;
 const variants = ["solid", "outline", "ghost"] as const;
 
 export default function ButtonPage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Button</h1>
       </Topbar>
@@ -83,6 +83,6 @@ export default function ButtonPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

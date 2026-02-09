@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Pagination, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Pagination, Topbar } from "@simplysm/solid";
 
 export default function PaginationPage() {
   const [page1, setPage1] = createSignal(0);
@@ -10,7 +10,7 @@ export default function PaginationPage() {
   const [pageDisabled, setPageDisabled] = createSignal(0);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Pagination</h1>
       </Topbar>
@@ -52,6 +52,6 @@ export default function PaginationPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

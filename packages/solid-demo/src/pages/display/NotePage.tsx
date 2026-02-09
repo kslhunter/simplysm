@@ -1,12 +1,12 @@
 import { For } from "solid-js";
-import { Note, type NoteTheme, Topbar, TopbarContainer, Icon } from "@simplysm/solid";
+import { Note, type NoteTheme, Topbar, Icon } from "@simplysm/solid";
 import { IconInfoCircle, IconCircleCheck, IconAlertTriangle, IconAlertCircle } from "@tabler/icons-solidjs";
 
 const themes: NoteTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
 export default function NotePage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Note</h1>
       </Topbar>
@@ -111,6 +111,6 @@ export default function NotePage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

@@ -1,5 +1,13 @@
 import { createSignal } from "solid-js";
-import { Button, FormGroup, Icon, NumberField, Select, SelectItem, TextField, Topbar, TopbarContainer } from "@simplysm/solid";
+import {
+  Button,
+  FormGroup,
+  Icon,
+  NumberField,
+  Select,
+  TextField,
+  Topbar,
+} from "@simplysm/solid";
 import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {
@@ -8,7 +16,7 @@ export default function FormGroupPage() {
   const [controlledEmail, setControlledEmail] = createSignal("");
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">FormGroup</h1>
       </Topbar>
@@ -51,9 +59,9 @@ export default function FormGroupPage() {
                   placeholder="선택하세요"
                   renderValue={(v: string) => <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>}
                 >
-                  <SelectItem value="kr">한국</SelectItem>
-                  <SelectItem value="us">미국</SelectItem>
-                  <SelectItem value="jp">일본</SelectItem>
+                  <Select.Item value="kr">한국</Select.Item>
+                  <Select.Item value="us">미국</Select.Item>
+                  <Select.Item value="jp">일본</Select.Item>
                 </Select>
               </FormGroup.Item>
               <FormGroup.Item label="검색어">
@@ -90,30 +98,30 @@ export default function FormGroupPage() {
               FormGroup을 중첩하여 복잡한 폼 레이아웃을 구성할 수 있습니다.
             </p>
             <FormGroup>
-                <FormGroup.Item label="기본 정보">
-                  <FormGroup inline>
-                    <FormGroup.Item>
-                      <TextField placeholder="성" />
-                    </FormGroup.Item>
-                    <FormGroup.Item>
-                      <TextField placeholder="이름" />
-                    </FormGroup.Item>
-                  </FormGroup>
-                </FormGroup.Item>
-                <FormGroup.Item label="연락처">
-                  <TextField placeholder="전화번호" />
-                </FormGroup.Item>
-                <FormGroup.Item label="주소">
-                  <FormGroup>
-                    <FormGroup.Item>
-                      <TextField placeholder="우편번호" />
-                    </FormGroup.Item>
-                    <FormGroup.Item>
-                      <TextField placeholder="상세주소" />
-                    </FormGroup.Item>
-                  </FormGroup>
-                </FormGroup.Item>
-              </FormGroup>
+              <FormGroup.Item label="기본 정보">
+                <FormGroup inline>
+                  <FormGroup.Item>
+                    <TextField placeholder="성" />
+                  </FormGroup.Item>
+                  <FormGroup.Item>
+                    <TextField placeholder="이름" />
+                  </FormGroup.Item>
+                </FormGroup>
+              </FormGroup.Item>
+              <FormGroup.Item label="연락처">
+                <TextField placeholder="전화번호" />
+              </FormGroup.Item>
+              <FormGroup.Item label="주소">
+                <FormGroup>
+                  <FormGroup.Item>
+                    <TextField placeholder="우편번호" />
+                  </FormGroup.Item>
+                  <FormGroup.Item>
+                    <TextField placeholder="상세주소" />
+                  </FormGroup.Item>
+                </FormGroup>
+              </FormGroup.Item>
+            </FormGroup>
           </section>
 
           {/* With Validation Message */}
@@ -123,15 +131,15 @@ export default function FormGroupPage() {
               FormGroup.Item 내에서 검증 메시지를 표시할 수 있습니다.
             </p>
             <FormGroup>
-                <FormGroup.Item label="필수 입력">
-                  <TextField placeholder="필수 항목입니다" />
-                  <p class="mt-1 text-sm text-danger-500">이 필드는 필수입니다.</p>
-                </FormGroup.Item>
-                <FormGroup.Item label="선택 입력">
-                  <TextField placeholder="선택 항목입니다" />
-                  <p class="mt-1 text-sm text-base-500">선택적으로 입력할 수 있습니다.</p>
-                </FormGroup.Item>
-              </FormGroup>
+              <FormGroup.Item label="필수 입력">
+                <TextField placeholder="필수 항목입니다" />
+                <p class="mt-1 text-sm text-danger-500">이 필드는 필수입니다.</p>
+              </FormGroup.Item>
+              <FormGroup.Item label="선택 입력">
+                <TextField placeholder="선택 항목입니다" />
+                <p class="mt-1 text-sm text-base-500">선택적으로 입력할 수 있습니다.</p>
+              </FormGroup.Item>
+            </FormGroup>
           </section>
 
           {/* Controlled */}
@@ -183,6 +191,6 @@ export default function FormGroupPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

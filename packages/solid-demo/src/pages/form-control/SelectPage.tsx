@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { Select, SelectItem, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Select, Topbar } from "@simplysm/solid";
 import { IconPlus } from "@tabler/icons-solidjs";
 
 interface Fruit {
@@ -48,7 +48,7 @@ export default function SelectPage() {
   const [controlledMultiSelected, setControlledMultiSelected] = createSignal<Fruit[]>([]);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Select</h1>
       </Topbar>
@@ -63,9 +63,9 @@ export default function SelectPage() {
             >
               <For each={fruits}>
                 {(fruit) => (
-                  <SelectItem value={fruit}>
+                  <Select.Item value={fruit}>
                     {fruit.emoji} {fruit.name}
-                  </SelectItem>
+                  </Select.Item>
                 )}
               </For>
             </Select>
@@ -81,9 +81,9 @@ export default function SelectPage() {
             >
               <For each={fruits}>
                 {(fruit) => (
-                  <SelectItem value={fruit}>
+                  <Select.Item value={fruit}>
                     {fruit.emoji} {fruit.name}
-                  </SelectItem>
+                  </Select.Item>
                 )}
               </For>
             </Select>
@@ -96,8 +96,8 @@ export default function SelectPage() {
               placeholder="선택하세요"
               renderValue={(v: string) => <>{v}</>}
             >
-              <SelectItem value="옵션 1">옵션 1</SelectItem>
-              <SelectItem value="옵션 2">옵션 2</SelectItem>
+              <Select.Item value="옵션 1">옵션 1</Select.Item>
+              <Select.Item value="옵션 2">옵션 2</Select.Item>
               <Select.Button onClick={() => alert("추가 버튼 클릭!")}>
                 <IconPlus size={16} />
               </Select.Button>
@@ -116,9 +116,9 @@ export default function SelectPage() {
                   검색 결과
                 </div>
               </Select.Header>
-              <SelectItem value="결과 1">결과 1</SelectItem>
-              <SelectItem value="결과 2">결과 2</SelectItem>
-              <SelectItem value="결과 3">결과 3</SelectItem>
+              <Select.Item value="결과 1">결과 1</Select.Item>
+              <Select.Item value="결과 2">결과 2</Select.Item>
+              <Select.Item value="결과 3">결과 3</Select.Item>
             </Select>
           </section>
 
@@ -131,18 +131,18 @@ export default function SelectPage() {
             >
               <For each={categories}>
                 {(category) => (
-                  <SelectItem value={category}>
+                  <Select.Item value={category}>
                     {category.name}
                     {category.children && (
-                      <SelectItem.Children>
+                      <Select.Item.Children>
                         <For each={category.children}>
                           {(child) => (
-                            <SelectItem value={child}>{child.name}</SelectItem>
+                            <Select.Item value={child}>{child.name}</Select.Item>
                           )}
                         </For>
-                      </SelectItem.Children>
+                      </Select.Item.Children>
                     )}
-                  </SelectItem>
+                  </Select.Item>
                 )}
               </For>
             </Select>
@@ -153,16 +153,16 @@ export default function SelectPage() {
             <h2 class="mb-4 text-xl font-semibold">사이즈</h2>
             <div class="flex flex-col items-start gap-4">
               <Select size="sm" placeholder="Small" renderValue={(v: string) => <>{v}</>}>
-                <SelectItem value="A">옵션 A</SelectItem>
-                <SelectItem value="B">옵션 B</SelectItem>
+                <Select.Item value="A">옵션 A</Select.Item>
+                <Select.Item value="B">옵션 B</Select.Item>
               </Select>
               <Select placeholder="Default" renderValue={(v: string) => <>{v}</>}>
-                <SelectItem value="A">옵션 A</SelectItem>
-                <SelectItem value="B">옵션 B</SelectItem>
+                <Select.Item value="A">옵션 A</Select.Item>
+                <Select.Item value="B">옵션 B</Select.Item>
               </Select>
               <Select size="lg" placeholder="Large" renderValue={(v: string) => <>{v}</>}>
-                <SelectItem value="A">옵션 A</SelectItem>
-                <SelectItem value="B">옵션 B</SelectItem>
+                <Select.Item value="A">옵션 A</Select.Item>
+                <Select.Item value="B">옵션 B</Select.Item>
               </Select>
             </div>
           </section>
@@ -174,14 +174,14 @@ export default function SelectPage() {
               <div>
                 <p class="mb-1 text-sm text-base-600 dark:text-base-400">Disabled</p>
                 <Select disabled placeholder="비활성화됨" renderValue={(v: string) => <>{v}</>}>
-                  <SelectItem value="A">옵션 A</SelectItem>
+                  <Select.Item value="A">옵션 A</Select.Item>
                 </Select>
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-600 dark:text-base-400">Inset (테두리 없음)</p>
                 <Select inset placeholder="인셋 스타일" renderValue={(v: string) => <>{v}</>}>
-                  <SelectItem value="A">옵션 A</SelectItem>
-                  <SelectItem value="B">옵션 B</SelectItem>
+                  <Select.Item value="A">옵션 A</Select.Item>
+                  <Select.Item value="B">옵션 B</Select.Item>
                 </Select>
               </div>
             </div>
@@ -203,9 +203,9 @@ export default function SelectPage() {
                   >
                     <For each={fruits}>
                       {(fruit) => (
-                        <SelectItem value={fruit}>
+                        <Select.Item value={fruit}>
                           {fruit.emoji} {fruit.name}
-                        </SelectItem>
+                        </Select.Item>
                       )}
                     </For>
                   </Select>
@@ -234,9 +234,9 @@ export default function SelectPage() {
                   >
                     <For each={fruits}>
                       {(fruit) => (
-                        <SelectItem value={fruit}>
+                        <Select.Item value={fruit}>
                           {fruit.emoji} {fruit.name}
-                        </SelectItem>
+                        </Select.Item>
                       )}
                     </For>
                   </Select>
@@ -263,6 +263,6 @@ export default function SelectPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

@@ -1,8 +1,8 @@
-import { Card, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Card, Topbar } from "@simplysm/solid";
 
 export default function CardPage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Card</h1>
       </Topbar>
@@ -82,6 +82,6 @@ export default function CardPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import { Icon, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Icon, Topbar } from "@simplysm/solid";
 import {
   IconHome,
   IconUser,
@@ -48,7 +48,7 @@ const icons = [
 
 export default function IconPage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Icon</h1>
       </Topbar>
@@ -150,6 +150,6 @@ export default function IconPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

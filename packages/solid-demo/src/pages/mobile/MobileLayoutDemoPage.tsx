@@ -1,12 +1,7 @@
 import {
   Icon,
   Sidebar,
-  SidebarContainer,
-  SidebarMenu,
-  SidebarUser,
   Topbar,
-  TopbarContainer,
-  TopbarUser,
   type SidebarMenuItem,
 } from "@simplysm/solid";
 import { IconFolder, IconHome, IconSettings, IconUser } from "@tabler/icons-solidjs";
@@ -27,10 +22,10 @@ const sampleMenus: SidebarMenuItem[] = [
 export default function MobileLayoutDemoPage() {
   return (
     <div class="h-full bg-white dark:bg-base-900">
-      <SidebarContainer>
+      <Sidebar.Container>
         <Sidebar>
           <div class="p-2 px-4 font-bold">LOGO</div>
-          <SidebarUser
+          <Sidebar.User
             menus={[
               { title: "프로필", onClick: () => alert("프로필") },
               { title: "로그아웃", onClick: () => alert("로그아웃") },
@@ -45,28 +40,28 @@ export default function MobileLayoutDemoPage() {
                 <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
               </div>
             </div>
-          </SidebarUser>
-          <SidebarMenu menus={sampleMenus} />
+          </Sidebar.User>
+          <Sidebar.Menu menus={sampleMenus} />
         </Sidebar>
-        <TopbarContainer>
+        <Topbar.Container>
           <Topbar>
             <h1 class="m-0 text-base font-bold">모바일 데모</h1>
             <div class="flex-1" />
-            <TopbarUser
+            <Topbar.User
               menus={[
                 { title: "프로필", onClick: () => alert("프로필") },
                 { title: "로그아웃", onClick: () => alert("로그아웃") },
               ]}
             >
               홍길동
-            </TopbarUser>
+            </Topbar.User>
           </Topbar>
           <div class="flex-1 overflow-auto p-4">
             <p class="text-sm text-base-600 dark:text-base-400">햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.</p>
             <p class="mt-4 text-sm text-base-600 dark:text-base-400">사이드바 외부를 클릭하면 사이드바가 닫힙니다.</p>
           </div>
-        </TopbarContainer>
-      </SidebarContainer>
+        </Topbar.Container>
+      </Sidebar.Container>
     </div>
   );
 }

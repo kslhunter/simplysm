@@ -1,8 +1,8 @@
-import { ThemeToggle, Topbar, TopbarContainer, Card, Note } from "@simplysm/solid";
+import { ThemeToggle, Topbar, Card, Note } from "@simplysm/solid";
 
 export default function ThemeTogglePage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">ThemeToggle</h1>
       </Topbar>
@@ -113,6 +113,6 @@ export default function ThemeTogglePage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

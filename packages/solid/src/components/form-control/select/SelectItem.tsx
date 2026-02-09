@@ -52,15 +52,15 @@ interface SelectItemComponent<T = unknown> extends ParentComponent<SelectItemPro
  *
  * @example
  * ```tsx
- * <SelectItem value={item}>{item.name}</SelectItem>
+ * <Select.Item value={item}>{item.name}</Select.Item>
  *
  * // 중첩 아이템
- * <SelectItem value={parent}>
+ * <Select.Item value={parent}>
  *   {parent.name}
- *   <SelectItem.Children>
- *     <SelectItem value={child}>{child.name}</SelectItem>
- *   </SelectItem.Children>
- * </SelectItem>
+ *   <Select.Item.Children>
+ *     <Select.Item value={child}>{child.name}</Select.Item>
+ *   </Select.Item.Children>
+ * </Select.Item>
  * ```
  */
 export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & { children?: JSX.Element }) => {

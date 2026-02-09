@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { Button, Dropdown, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Button, Dropdown, Topbar } from "@simplysm/solid";
 
 const menuItems = ["복사", "붙여넣기", "잘라내기", "삭제"];
 const longMenuItems = Array.from({ length: 20 }, (_, i) => `항목 ${i + 1}`);
@@ -31,7 +31,7 @@ export default function DropdownPage() {
   };
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Dropdown</h1>
       </Topbar>
@@ -212,6 +212,6 @@ export default function DropdownPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

@@ -7,7 +7,6 @@ import {
   useServiceClient,
   Button,
   Topbar,
-  TopbarContainer,
   Label,
 } from "@simplysm/solid";
 
@@ -185,7 +184,7 @@ export default function ServiceClientPage() {
   return (
     <NotificationProvider>
       <ServiceClientProvider>
-        <TopbarContainer>
+        <Topbar.Container>
           <Topbar>
             <h1 class="m-0 flex-1 text-base">ServiceClient</h1>
             <NotificationBell />
@@ -193,7 +192,7 @@ export default function ServiceClientPage() {
           <div class="flex-1 overflow-auto p-6">
             <ServiceClientDemo />
           </div>
-        </TopbarContainer>
+        </Topbar.Container>
       </ServiceClientProvider>
     </NotificationProvider>
   );

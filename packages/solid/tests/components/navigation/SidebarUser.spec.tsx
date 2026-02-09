@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
-import { SidebarUser, type SidebarUserMenu } from "../../../src";
+import { Sidebar, type SidebarUserMenu } from "../../../src";
 
 describe("SidebarUser", () => {
   beforeEach(() => {
@@ -18,9 +18,9 @@ describe("SidebarUser", () => {
   describe("렌더링", () => {
     it("children을 렌더링", () => {
       const { getByText } = render(() => (
-        <SidebarUser>
+        <Sidebar.User>
           <span>사용자 이름</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       expect(getByText("사용자 이름")).toBeTruthy();
@@ -28,9 +28,9 @@ describe("SidebarUser", () => {
 
     it("menus가 없을 때 버튼에 aria-expanded 없음", () => {
       const { container } = render(() => (
-        <SidebarUser>
+        <Sidebar.User>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const button = container.querySelector("button");
@@ -43,9 +43,9 @@ describe("SidebarUser", () => {
       ];
 
       const { container } = render(() => (
-        <SidebarUser menus={menus}>
+        <Sidebar.User menus={menus}>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const button = container.querySelector("button");
@@ -56,9 +56,9 @@ describe("SidebarUser", () => {
   describe("클릭 동작", () => {
     it("menus가 없을 때 클릭해도 드롭다운이 열리지 않음", () => {
       const { container } = render(() => (
-        <SidebarUser>
+        <Sidebar.User>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const button = container.querySelector("button")!;
@@ -74,9 +74,9 @@ describe("SidebarUser", () => {
       ];
 
       const { container } = render(() => (
-        <SidebarUser menus={menus}>
+        <Sidebar.User menus={menus}>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const button = container.querySelector("button")!;
@@ -102,9 +102,9 @@ describe("SidebarUser", () => {
       ];
 
       const { container, getByText } = render(() => (
-        <SidebarUser menus={menus}>
+        <Sidebar.User menus={menus}>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       // 드롭다운 열기
@@ -123,9 +123,9 @@ describe("SidebarUser", () => {
       ];
 
       const { container, getByText } = render(() => (
-        <SidebarUser menus={menus}>
+        <Sidebar.User menus={menus}>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const button = container.querySelector("button")!;
@@ -149,14 +149,14 @@ describe("SidebarUser", () => {
       ];
 
       const { container: withoutMenus } = render(() => (
-        <SidebarUser>
+        <Sidebar.User>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
       const { container: withMenus } = render(() => (
-        <SidebarUser menus={menus}>
+        <Sidebar.User menus={menus}>
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       const buttonWithout = withoutMenus.querySelector("button")!;
@@ -170,9 +170,9 @@ describe("SidebarUser", () => {
     it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
-        <SidebarUser class="my-custom-class">
+        <Sidebar.User class="my-custom-class">
           <span>사용자</span>
-        </SidebarUser>
+        </Sidebar.User>
       ));
 
       expect(container.querySelector(".my-custom-class")).toBeTruthy();

@@ -14,7 +14,6 @@ import {
   TextField,
   TimeField,
   Topbar,
-  TopbarContainer,
 } from "@simplysm/solid";
 
 const departments = ["영업", "개발", "인사", "마케팅"];
@@ -156,7 +155,7 @@ export default function SheetPage() {
   ]);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Sheet</h1>
       </Topbar>
@@ -420,6 +419,6 @@ export default function SheetPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

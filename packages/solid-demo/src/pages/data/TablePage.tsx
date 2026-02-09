@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import { Table, Topbar, TopbarContainer, Label } from "@simplysm/solid";
+import { Table, Topbar, Label } from "@simplysm/solid";
 
 const sampleData = [
   { id: 1, name: "홍길동", email: "hong@example.com", role: "관리자", status: "활성" },
@@ -11,7 +11,7 @@ const sampleData = [
 
 export default function TablePage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Table</h1>
       </Topbar>
@@ -107,6 +107,6 @@ export default function TablePage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

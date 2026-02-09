@@ -5,6 +5,13 @@ import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
 import { useSidebarContextOptional } from "../sidebar/SidebarContext";
+import { TopbarContainer } from "./TopbarContainer";
+import { TopbarMenu } from "./TopbarMenu";
+import { TopbarUser } from "./TopbarUser";
+
+export type { TopbarContainerProps } from "./TopbarContainer";
+export type { TopbarMenuItem, TopbarMenuProps } from "./TopbarMenu";
+export type { TopbarUserMenu, TopbarUserProps } from "./TopbarUser";
 
 const baseClass = clsx(
   // 레이아웃
@@ -44,13 +51,19 @@ export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
  * ```tsx
  * <Topbar>
  *   <h1 class="text-lg font-bold">앱 이름</h1>
- *   <TopbarMenu menus={menuItems} />
+ *   <Topbar.Menu menus={menuItems} />
  *   <div class="flex-1" />
- *   <TopbarUser menus={userMenus}>사용자</TopbarUser>
+ *   <Topbar.User menus={userMenus}>사용자</Topbar.User>
  * </Topbar>
  * ```
  */
-export const Topbar: ParentComponent<TopbarProps> = (props) => {
+interface TopbarComponent extends ParentComponent<TopbarProps> {
+  Container: typeof TopbarContainer;
+  Menu: typeof TopbarMenu;
+  User: typeof TopbarUser;
+}
+
+const TopbarBase: ParentComponent<TopbarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   // SidebarContext 선택적 사용 (Context 없으면 토글 버튼 미표시)
@@ -73,3 +86,8 @@ export const Topbar: ParentComponent<TopbarProps> = (props) => {
     </header>
   );
 };
+
+export const Topbar = TopbarBase as TopbarComponent;
+Topbar.Container = TopbarContainer;
+Topbar.Menu = TopbarMenu;
+Topbar.User = TopbarUser;

@@ -1,11 +1,11 @@
 import { For } from "solid-js";
-import { Label, type LabelTheme, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Label, type LabelTheme, Topbar } from "@simplysm/solid";
 
 const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
 export default function LabelPage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Label</h1>
       </Topbar>
@@ -100,6 +100,6 @@ export default function LabelPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

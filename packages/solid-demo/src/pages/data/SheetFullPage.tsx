@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Sheet, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
+import { Sheet, Topbar, type SortingDef } from "@simplysm/solid";
 
 interface Employee {
   id: number;
@@ -57,7 +57,7 @@ export default function SheetFullPage() {
   const [page, setPage] = createSignal(0);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Sheet (Full)</h1>
         <span class="ml-2 text-sm text-base-500 dark:text-base-400">
@@ -126,6 +126,6 @@ export default function SheetFullPage() {
           </Sheet.Column>
         </Sheet>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

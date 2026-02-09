@@ -23,7 +23,7 @@ vi.mock("../../../src/contexts/usePersisted", () => ({
   },
 }));
 
-import { SidebarContainer, Sidebar, useSidebarContext } from "../../../src";
+import { Sidebar, useSidebarContext } from "../../../src";
 
 describe("Sidebar 컴포넌트", () => {
   beforeEach(() => {
@@ -38,11 +38,11 @@ describe("Sidebar 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("children이 사이드바 내부에 표시된다", () => {
       const { getByText } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>
             <span>사이드바 콘텐츠</span>
           </Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       expect(getByText("사이드바 콘텐츠")).toBeTruthy();
@@ -50,9 +50,9 @@ describe("Sidebar 컴포넌트", () => {
 
     it("aside 요소로 렌더링된다", () => {
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       expect(container.querySelector("aside")).toBeTruthy();
@@ -65,9 +65,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
@@ -79,9 +79,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(true);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
@@ -93,9 +93,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
@@ -107,9 +107,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(true);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside") as HTMLElement;
@@ -123,9 +123,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside");
@@ -137,9 +137,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside");
@@ -151,9 +151,9 @@ describe("Sidebar 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside");
@@ -164,10 +164,10 @@ describe("Sidebar 컴포넌트", () => {
   describe("스타일 병합", () => {
     it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
           <Sidebar class="my-custom-class">Content</Sidebar>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const sidebar = container.querySelector("aside");

@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { DateRangePicker, Topbar, TopbarContainer } from "@simplysm/solid";
+import { DateRangePicker, Topbar } from "@simplysm/solid";
 import type { DateRangePeriodType } from "@simplysm/solid";
 import { DateOnly } from "@simplysm/core-common";
 
@@ -10,7 +10,7 @@ export default function DateRangePickerPage() {
   const [to, setTo] = createSignal<DateOnly | undefined>(new DateOnly(2025, 3, 31));
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">DateRangePicker</h1>
       </Topbar>
@@ -125,6 +125,6 @@ export default function DateRangePickerPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { Router } from "@solidjs/router";
-import { SidebarMenu, type SidebarMenuItem } from "../../../src";
+import { Sidebar, type SidebarMenuItem } from "../../../src";
 
 // Mock pathname signal
 import { createSignal } from "solid-js";
@@ -43,7 +43,7 @@ describe("SidebarMenu", () => {
         {[
           {
             path: "*",
-            component: () => <SidebarMenu menus={menus} />,
+            component: () => <Sidebar.Menu menus={menus} />,
           },
         ]}
       </Router>
@@ -209,7 +209,7 @@ describe("SidebarMenu", () => {
             {
               path: "*",
               // eslint-disable-next-line tailwindcss/no-custom-classname
-              component: () => <SidebarMenu menus={menus} class="my-custom-class" />,
+              component: () => <Sidebar.Menu menus={menus} class="my-custom-class" />,
             },
           ]}
         </Router>

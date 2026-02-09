@@ -4,6 +4,13 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
 import { mergeStyles } from "../../../utils/mergeStyles";
+import { SidebarContainer } from "./SidebarContainer";
+import { SidebarMenu } from "./SidebarMenu";
+import { SidebarUser } from "./SidebarUser";
+
+export type { SidebarContainerProps } from "./SidebarContainer";
+export type { SidebarMenuItem, SidebarMenuProps } from "./SidebarMenu";
+export type { SidebarUserMenu, SidebarUserProps } from "./SidebarUser";
 
 const baseClass = clsx(
   "absolute",
@@ -41,14 +48,20 @@ export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
  * @example
  * ```tsx
  * <Sidebar>
- *   <SidebarUser menus={userMenus}>
+ *   <Sidebar.User menus={userMenus}>
  *     <span>사용자</span>
- *   </SidebarUser>
- *   <SidebarMenu menus={menuItems} />
+ *   </Sidebar.User>
+ *   <Sidebar.Menu menus={menuItems} />
  * </Sidebar>
  * ```
  */
-export const Sidebar: ParentComponent<SidebarProps> = (props) => {
+interface SidebarComponent extends ParentComponent<SidebarProps> {
+  Container: typeof SidebarContainer;
+  Menu: typeof SidebarMenu;
+  User: typeof SidebarUser;
+}
+
+const SidebarBase: ParentComponent<SidebarProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
 
   const { toggle } = useSidebarContext();
@@ -85,3 +98,8 @@ export const Sidebar: ParentComponent<SidebarProps> = (props) => {
     </aside>
   );
 };
+
+export const Sidebar = SidebarBase as SidebarComponent;
+Sidebar.Container = SidebarContainer;
+Sidebar.Menu = SidebarMenu;
+Sidebar.User = SidebarUser;

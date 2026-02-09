@@ -23,7 +23,7 @@ vi.mock("../../../src/contexts/usePersisted", () => ({
   },
 }));
 
-import { SidebarContainer, Sidebar } from "../../../src";
+import { Sidebar } from "../../../src";
 
 describe("SidebarContainer 컴포넌트", () => {
   beforeEach(() => {
@@ -38,9 +38,9 @@ describe("SidebarContainer 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("children이 컨테이너 내부에 표시된다", () => {
       const { getByText } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <span>콘텐츠</span>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       expect(getByText("콘텐츠")).toBeTruthy();
@@ -53,9 +53,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(false); // toggle=false → 데스크탑에서 열림
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -67,9 +67,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(true); // toggle=true → 데스크탑에서 닫힘
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -81,9 +81,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(false);
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -97,9 +97,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(true); // toggle=true → 모바일에서 열림
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
@@ -111,9 +111,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(false); // toggle=false → 모바일에서 닫힘
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
@@ -125,9 +125,9 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(false); // 열림 상태
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
@@ -141,10 +141,10 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(true); // 열림 상태
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const backdrop = container.querySelector(
@@ -163,10 +163,10 @@ describe("SidebarContainer 컴포넌트", () => {
       mockToggle = createSignal(true); // 열림 상태
 
       const { container } = render(() => (
-        <SidebarContainer>
+        <Sidebar.Container>
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const backdrop = container.querySelector(
@@ -184,9 +184,9 @@ describe("SidebarContainer 컴포넌트", () => {
     it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
-        <SidebarContainer class="my-custom-class">
+        <Sidebar.Container class="my-custom-class">
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;
@@ -195,9 +195,9 @@ describe("SidebarContainer 컴포넌트", () => {
 
     it("사용자 정의 style이 병합된다", () => {
       const { container } = render(() => (
-        <SidebarContainer style={{ "background-color": "red" }}>
+        <Sidebar.Container style={{ "background-color": "red" }}>
           <div>Content</div>
-        </SidebarContainer>
+        </Sidebar.Container>
       ));
 
       const containerEl = container.firstElementChild as HTMLElement;

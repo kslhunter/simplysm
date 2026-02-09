@@ -3,14 +3,13 @@ import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { List } from "../../../src/components/data/list/List";
-import { ListItem } from "../../../src/components/data/list/ListItem";
 
 describe("List 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("children이 List 내부에 표시된다", () => {
       const { getByText } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
+          <List.Item>Item 1</List.Item>
         </List>
       ));
 
@@ -20,7 +19,7 @@ describe("List 컴포넌트", () => {
     it("role=tree 속성이 적용된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
 
@@ -30,7 +29,7 @@ describe("List 컴포넌트", () => {
     it("data-list 속성이 적용된다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
 
@@ -42,12 +41,12 @@ describe("List 컴포넌트", () => {
     it("inset prop에 따라 스타일이 달라진다", () => {
       const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
       const { container: insetContainer } = render(() => (
         <List inset>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
 
@@ -62,9 +61,9 @@ describe("List 컴포넌트", () => {
     it("ArrowDown 키로 다음 항목으로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
+          <List.Item>Item 1</List.Item>
+          <List.Item>Item 2</List.Item>
+          <List.Item>Item 3</List.Item>
         </List>
       ));
 
@@ -79,9 +78,9 @@ describe("List 컴포넌트", () => {
     it("ArrowUp 키로 이전 항목으로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
+          <List.Item>Item 1</List.Item>
+          <List.Item>Item 2</List.Item>
+          <List.Item>Item 3</List.Item>
         </List>
       ));
 
@@ -96,9 +95,9 @@ describe("List 컴포넌트", () => {
     it("Home 키로 첫 번째 항목으로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
+          <List.Item>Item 1</List.Item>
+          <List.Item>Item 2</List.Item>
+          <List.Item>Item 3</List.Item>
         </List>
       ));
 
@@ -113,9 +112,9 @@ describe("List 컴포넌트", () => {
     it("End 키로 마지막 항목으로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
+          <List.Item>Item 1</List.Item>
+          <List.Item>Item 2</List.Item>
+          <List.Item>Item 3</List.Item>
         </List>
       ));
 
@@ -130,12 +129,12 @@ describe("List 컴포넌트", () => {
     it("Space 키로 항목 토글", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>
+          <List.Item>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -152,12 +151,12 @@ describe("List 컴포넌트", () => {
     it("Enter 키로 항목 토글", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>
+          <List.Item>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -172,12 +171,12 @@ describe("List 컴포넌트", () => {
     it("ArrowRight 키로 닫힌 항목 열기", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>
+          <List.Item>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -194,12 +193,12 @@ describe("List 컴포넌트", () => {
     it("ArrowRight 키로 열린 항목에서 첫 자식으로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem open>
+          <List.Item open>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -214,12 +213,12 @@ describe("List 컴포넌트", () => {
     it("ArrowLeft 키로 열린 항목 닫기", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem open>
+          <List.Item open>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -236,12 +235,12 @@ describe("List 컴포넌트", () => {
     it("ArrowLeft 키로 닫힌 항목에서 부모로 포커스 이동", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem open>
+          <List.Item open>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -255,12 +254,12 @@ describe("List 컴포넌트", () => {
   });
 });
 
-describe("ListItem 컴포넌트", () => {
+describe("List.Item 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("children이 ListItem 내부에 표시된다", () => {
+    it("children이 List.Item 내부에 표시된다", () => {
       const { getByText } = render(() => (
         <List>
-          <ListItem>Test Item</ListItem>
+          <List.Item>Test Item</List.Item>
         </List>
       ));
 
@@ -270,7 +269,7 @@ describe("ListItem 컴포넌트", () => {
     it("role=treeitem 속성이 적용된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
 
@@ -280,7 +279,7 @@ describe("ListItem 컴포넌트", () => {
     it("data-list-item 속성이 적용된다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
 
@@ -289,15 +288,15 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("중첩 리스트", () => {
-    it("ListItem.Children이 있을 때 클릭 시 collapse 토글", () => {
+    it("List.Item.Children이 있을 때 클릭 시 collapse 토글", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem>
+          <List.Item>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -314,15 +313,15 @@ describe("ListItem 컴포넌트", () => {
       expect(item.getAttribute("aria-expanded")).toBe("false");
     });
 
-    it("ListItem.Children이 있을 때 chevron 아이콘이 표시된다", () => {
+    it("List.Item.Children이 있을 때 chevron 아이콘이 표시된다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem>
+          <List.Item>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -330,10 +329,10 @@ describe("ListItem 컴포넌트", () => {
       expect(svg).toBeTruthy();
     });
 
-    it("ListItem.Children이 없을 때 chevron 아이콘이 숨겨진다", () => {
+    it("List.Item.Children이 없을 때 chevron 아이콘이 숨겨진다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem>Simple Item</ListItem>
+          <List.Item>Simple Item</List.Item>
         </List>
       ));
 
@@ -342,10 +341,10 @@ describe("ListItem 컴포넌트", () => {
       expect(svg).toBeFalsy();
     });
 
-    it("aria-expanded가 없으면 ListItem.Children이 없는 것으로 간주", () => {
+    it("aria-expanded가 없으면 List.Item.Children이 없는 것으로 간주", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem>Simple Item</ListItem>
+          <List.Item>Simple Item</List.Item>
         </List>
       ));
 
@@ -353,15 +352,15 @@ describe("ListItem 컴포넌트", () => {
       expect(item.hasAttribute("aria-expanded")).toBe(false);
     });
 
-    it("ListItem.Children 내부에 role=group이 적용된다", () => {
+    it("List.Item.Children 내부에 role=group이 적용된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem open>
+          <List.Item open>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -373,12 +372,12 @@ describe("ListItem 컴포넌트", () => {
     it("selected prop에 따라 스타일이 달라진다", () => {
       const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
       const { container: selectedContainer } = render(() => (
         <List>
-          <ListItem selected>Item</ListItem>
+          <List.Item selected>Item</List.Item>
         </List>
       ));
 
@@ -391,7 +390,7 @@ describe("ListItem 컴포넌트", () => {
     it("aria-selected가 설정된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem selected>Selected Item</ListItem>
+          <List.Item selected>Selected Item</List.Item>
         </List>
       ));
 
@@ -405,9 +404,9 @@ describe("ListItem 컴포넌트", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
-          <ListItem readonly onClick={onClick}>
+          <List.Item readonly onClick={onClick}>
             Readonly Item
-          </ListItem>
+          </List.Item>
         </List>
       ));
 
@@ -420,12 +419,12 @@ describe("ListItem 컴포넌트", () => {
     it("readonly prop에 따라 스타일이 달라진다", () => {
       const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
       const { container: readonlyContainer } = render(() => (
         <List>
-          <ListItem readonly>Item</ListItem>
+          <List.Item readonly>Item</List.Item>
         </List>
       ));
 
@@ -440,12 +439,12 @@ describe("ListItem 컴포넌트", () => {
     it("disabled prop에 따라 스타일이 달라진다", () => {
       const { container: defaultContainer } = render(() => (
         <List>
-          <ListItem>Item</ListItem>
+          <List.Item>Item</List.Item>
         </List>
       ));
       const { container: disabledContainer } = render(() => (
         <List>
-          <ListItem disabled>Item</ListItem>
+          <List.Item disabled>Item</List.Item>
         </List>
       ));
 
@@ -459,9 +458,9 @@ describe("ListItem 컴포넌트", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
-          <ListItem disabled onClick={onClick}>
+          <List.Item disabled onClick={onClick}>
             Disabled Item
-          </ListItem>
+          </List.Item>
         </List>
       ));
 
@@ -474,7 +473,7 @@ describe("ListItem 컴포넌트", () => {
     it("disabled=true일 때 tabindex=-1이 적용된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem disabled>Disabled Item</ListItem>
+          <List.Item disabled>Disabled Item</List.Item>
         </List>
       ));
 
@@ -485,7 +484,7 @@ describe("ListItem 컴포넌트", () => {
     it("aria-disabled가 설정된다", () => {
       const { getByRole } = render(() => (
         <List>
-          <ListItem disabled>Disabled Item</ListItem>
+          <List.Item disabled>Disabled Item</List.Item>
         </List>
       ));
 
@@ -495,10 +494,10 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("selectedIcon", () => {
-    it("selectedIcon이 제공되고 ListItem.Children이 없을 때 아이콘이 표시된다", () => {
+    it("selectedIcon이 제공되고 List.Item.Children이 없을 때 아이콘이 표시된다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem selectedIcon={IconCheck}>Item</ListItem>
+          <List.Item selectedIcon={IconCheck}>Item</List.Item>
         </List>
       ));
 
@@ -509,14 +508,14 @@ describe("ListItem 컴포넌트", () => {
     it("selectedIcon과 selected 상태에 따라 아이콘 스타일이 달라진다", () => {
       const { container: unselectedContainer } = render(() => (
         <List>
-          <ListItem selectedIcon={IconCheck}>Item</ListItem>
+          <List.Item selectedIcon={IconCheck}>Item</List.Item>
         </List>
       ));
       const { container: selectedContainer } = render(() => (
         <List>
-          <ListItem selectedIcon={IconCheck} selected>
+          <List.Item selectedIcon={IconCheck} selected>
             Item
-          </ListItem>
+          </List.Item>
         </List>
       ));
 
@@ -526,15 +525,15 @@ describe("ListItem 컴포넌트", () => {
       expect(unselectedSvg?.className).not.toBe(selectedSvg?.className);
     });
 
-    it("selectedIcon이 제공되고 ListItem.Children이 있을 때 아이콘이 숨겨진다", () => {
+    it("selectedIcon이 제공되고 List.Item.Children이 있을 때 아이콘이 숨겨진다", () => {
       const { container } = render(() => (
         <List>
-          <ListItem selectedIcon={IconCheck}>
+          <List.Item selectedIcon={IconCheck}>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -547,11 +546,11 @@ describe("ListItem 컴포넌트", () => {
   });
 
   describe("onClick", () => {
-    it("ListItem.Children이 없고 onClick이 제공될 때 클릭 시 호출된다", () => {
+    it("List.Item.Children이 없고 onClick이 제공될 때 클릭 시 호출된다", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
-          <ListItem onClick={onClick}>Clickable Item</ListItem>
+          <List.Item onClick={onClick}>Clickable Item</List.Item>
         </List>
       ));
 
@@ -561,16 +560,16 @@ describe("ListItem 컴포넌트", () => {
       expect(onClick).toHaveBeenCalledTimes(1);
     });
 
-    it("ListItem.Children이 있을 때는 onClick 대신 collapse 토글이 발생한다", () => {
+    it("List.Item.Children이 있을 때는 onClick 대신 collapse 토글이 발생한다", () => {
       const onClick = vi.fn();
       const { getByRole } = render(() => (
         <List>
-          <ListItem onClick={onClick}>
+          <List.Item onClick={onClick}>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -588,12 +587,12 @@ describe("ListItem 컴포넌트", () => {
 
       const { getByRole } = render(() => (
         <List>
-          <ListItem open={false} onOpenChange={onOpenChange}>
+          <List.Item open={false} onOpenChange={onOpenChange}>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -610,12 +609,12 @@ describe("ListItem 컴포넌트", () => {
 
       const { getByRole } = render(() => (
         <List>
-          <ListItem open={open()} onOpenChange={setOpen}>
+          <List.Item open={open()} onOpenChange={setOpen}>
             Folder
-            <ListItem.Children>
-              <ListItem>File</ListItem>
-            </ListItem.Children>
-          </ListItem>
+            <List.Item.Children>
+              <List.Item>File</List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -633,17 +632,17 @@ describe("ListItem 컴포넌트", () => {
     it("aria-level이 중첩 수준에 따라 설정된다", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem open>
+          <List.Item open>
             Level 1
-            <ListItem.Children>
-              <ListItem open>
+            <List.Item.Children>
+              <List.Item open>
                 Level 2
-                <ListItem.Children>
-                  <ListItem>Level 3</ListItem>
-                </ListItem.Children>
-              </ListItem>
-            </ListItem.Children>
-          </ListItem>
+                <List.Item.Children>
+                  <List.Item>Level 3</List.Item>
+                </List.Item.Children>
+              </List.Item>
+            </List.Item.Children>
+          </List.Item>
         </List>
       ));
 
@@ -659,9 +658,9 @@ describe("ListItem 컴포넌트", () => {
     it("포커스 시 현재 항목만 tabindex=0이 된다", () => {
       const { getAllByRole } = render(() => (
         <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
+          <List.Item>Item 1</List.Item>
+          <List.Item>Item 2</List.Item>
+          <List.Item>Item 3</List.Item>
         </List>
       ));
 

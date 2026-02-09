@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Button, Collapse, Topbar, TopbarContainer } from "@simplysm/solid";
+import { Button, Collapse, Topbar } from "@simplysm/solid";
 
 export default function CollapsePage() {
   const [collapseOpen, setCollapseOpen] = createSignal(false);
@@ -8,7 +8,7 @@ export default function CollapsePage() {
   const [initiallyOpen, setInitiallyOpen] = createSignal(true);
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Collapse</h1>
       </Topbar>
@@ -95,6 +95,6 @@ export default function CollapsePage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

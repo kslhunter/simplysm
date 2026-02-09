@@ -5,7 +5,6 @@ import {
   ModalProvider,
   useModal,
   Topbar,
-  TopbarContainer,
   type ModalContentProps,
 } from "@simplysm/solid";
 
@@ -60,7 +59,7 @@ function ModalPageContent() {
   };
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Modal</h1>
       </Topbar>
@@ -206,6 +205,6 @@ function ModalPageContent() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

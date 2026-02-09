@@ -31,13 +31,13 @@ const chevronClass = clsx`transition-transform duration-200 motion-reduce:transi
  *
  * @example
  * ```tsx
- * <ListItem>
+ * <List.Item>
  *   Folder
- *   <ListItem.Children>
- *     <ListItem>File 1</ListItem>
- *     <ListItem>File 2</ListItem>
- *   </ListItem.Children>
- * </ListItem>
+ *   <List.Item.Children>
+ *     <List.Item>File 1</List.Item>
+ *     <List.Item>File 2</List.Item>
+ *   </List.Item.Children>
+ * </List.Item>
  * ```
  */
 const ListItemChildren: ParentComponent = (props) => (
@@ -95,21 +95,21 @@ export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonE
  * @example
  * ```tsx
  * // 기본 사용
- * <ListItem>Simple item</ListItem>
+ * <List.Item>Simple item</List.Item>
  *
  * // 선택 상태
- * <ListItem selected>Selected item</ListItem>
+ * <List.Item selected>Selected item</List.Item>
  *
  * // 선택 아이콘
- * <ListItem selectedIcon={IconCheck} selected>Icon selection</ListItem>
+ * <List.Item selectedIcon={IconCheck} selected>Icon selection</List.Item>
  *
  * // 중첩 리스트 (아코디언)
- * <ListItem>
+ * <List.Item>
  *   Folder
- *   <ListItem.Children>
- *     <ListItem>File</ListItem>
- *   </ListItem.Children>
- * </ListItem>
+ *   <List.Item.Children>
+ *     <List.Item>File</List.Item>
+ *   </List.Item.Children>
+ * </List.Item>
  * ```
  */
 interface ListItemComponent extends ParentComponent<ListItemProps> {

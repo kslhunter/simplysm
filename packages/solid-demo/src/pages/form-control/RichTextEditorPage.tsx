@@ -1,11 +1,11 @@
 import { createSignal } from "solid-js";
-import { RichTextEditor, Topbar, TopbarContainer } from "@simplysm/solid";
+import { RichTextEditor, Topbar } from "@simplysm/solid";
 
 export default function RichTextEditorPage() {
   const [html, setHtml] = createSignal("<p>여기에 내용을 입력하세요...</p>");
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">RichTextEditor</h1>
       </Topbar>
@@ -68,6 +68,6 @@ export default function RichTextEditorPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

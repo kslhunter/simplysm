@@ -8,7 +8,6 @@ import {
   TimeField,
   ColorPicker,
   Topbar,
-  TopbarContainer,
 } from "@simplysm/solid";
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
@@ -19,7 +18,7 @@ export default function FieldPage() {
   const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>("여러 줄의\n텍스트를\n입력할 수 있습니다");
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Field Components</h1>
       </Topbar>
@@ -412,6 +411,6 @@ export default function FieldPage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

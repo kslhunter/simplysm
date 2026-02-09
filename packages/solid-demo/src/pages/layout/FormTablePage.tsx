@@ -1,12 +1,12 @@
 import { createSignal } from "solid-js";
-import { FormTable, TextField, NumberField, Select, SelectItem, Topbar, TopbarContainer } from "@simplysm/solid";
+import { FormTable, TextField, NumberField, Select, Topbar } from "@simplysm/solid";
 
 export default function FormTablePage() {
   const [controlledName, setControlledName] = createSignal("");
   const [controlledSalary, setControlledSalary] = createSignal<number>();
 
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">FormTable</h1>
       </Topbar>
@@ -33,9 +33,9 @@ export default function FormTablePage() {
                       placeholder="부서 선택"
                       renderValue={(v: string) => <>{v === "dev" ? "개발팀" : v === "design" ? "디자인팀" : "마케팅팀"}</>}
                     >
-                      <SelectItem value="dev">개발팀</SelectItem>
-                      <SelectItem value="design">디자인팀</SelectItem>
-                      <SelectItem value="marketing">마케팅팀</SelectItem>
+                      <Select.Item value="dev">개발팀</Select.Item>
+                      <Select.Item value="design">디자인팀</Select.Item>
+                      <Select.Item value="marketing">마케팅팀</Select.Item>
                     </Select>
                   </td>
                 </tr>
@@ -76,8 +76,8 @@ export default function FormTablePage() {
                       placeholder="선택"
                       renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}
                     >
-                      <SelectItem value="notice">공지사항</SelectItem>
-                      <SelectItem value="news">뉴스</SelectItem>
+                      <Select.Item value="notice">공지사항</Select.Item>
+                      <Select.Item value="news">뉴스</Select.Item>
                     </Select>
                   </td>
                   <th>작성자</th>
@@ -180,6 +180,6 @@ export default function FormTablePage() {
           </section>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

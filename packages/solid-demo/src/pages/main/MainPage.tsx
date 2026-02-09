@@ -1,8 +1,8 @@
-import { Topbar, TopbarContainer } from "@simplysm/solid";
+import { Topbar } from "@simplysm/solid";
 
 export function MainPage() {
   return (
-    <TopbarContainer>
+    <Topbar.Container>
       <Topbar>
         <h1 class="m-0 text-base">Main</h1>
       </Topbar>
@@ -12,6 +12,6 @@ export function MainPage() {
           <p class="text-base-600 dark:text-base-400">왼쪽 사이드바 메뉴에서 각 컴포넌트의 데모를 확인할 수 있습니다.</p>
         </div>
       </div>
-    </TopbarContainer>
+    </Topbar.Container>
   );
 }

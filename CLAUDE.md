@@ -192,15 +192,13 @@ const User = Table("User")
 
 **컴파운드 컴포넌트 네이밍 규칙:**
 
-| 성격 | 패턴 | 설명 | 예시 |
-|------|------|------|------|
-| 반복 아이템 | `ParentChild` (separate export) | 부모 안에서 반복 렌더링되는 독립 UI 요소 | `ListItem`, `SelectItem` |
-| 구조 정의 / 템플릿 | `Parent.Child` (dot notation) | 부모의 구조를 선언적으로 설정, 부모 없이 의미 없음 | `Sheet.Column`, `Select.ItemTemplate` |
-| 슬롯 | `Parent.Slot` (dot notation) | 부모의 특정 영역에 콘텐츠 배치 | `Select.Header`, `Select.Button`, `ListItem.Children` |
-| 레이아웃 파트 | `PrefixPart` (separate export) | 동등한 수준의 레이아웃 구성 파트 | `SidebarContainer`, `SidebarMenu`, `TopbarUser` |
+모든 서브 컴포넌트는 dot notation(`Parent.Child`)으로만 접근한다.
 
-- 반복 아이템은 `index.ts`에서 별도 export, dot notation alias 금지
-- 구조 정의/슬롯은 `index.ts`에서 별도 export 금지, `Parent.Child`로만 접근
+- 부모 컴포넌트에 `interface ParentComponent { Child: typeof ChildComponent }` 인터페이스 정의
+- `Parent.Child = ChildComponent;` 할당
+- `index.ts`에서 서브 컴포넌트의 별도 export 금지 (부모만 export)
+- 사용 시 부모만 import: `import { Select } from "@simplysm/solid"`
+- 예시: `Select.Item`, `Select.Button`, `List.Item`, `Sheet.Column`, `Sidebar.Container`, `Topbar.Menu`
 
 → 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
 
