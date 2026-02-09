@@ -80,6 +80,7 @@ const menuItems: SidebarMenuItem[] = [
       { title: "Label", href: "/home/display/label" },
       { title: "Note", href: "/home/display/note" },
       { title: "Barcode", href: "/home/display/barcode" },
+      { title: "Progress", href: "/home/display/progress" },
     ],
   },
   {
