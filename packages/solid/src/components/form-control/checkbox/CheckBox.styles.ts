@@ -1,7 +1,9 @@
 import clsx from "clsx";
+import { bgSurface, borderDefault, type ComponentSize, disabledOpacity, paddingLg, paddingSm } from "../../../styles/tokens.styles";
+import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
 
 export type CheckBoxTheme = "primary" | "info" | "success" | "warning" | "danger";
-export type CheckBoxSize = "sm" | "lg";
+export type CheckBoxSize = ComponentSize;
 
 // wrapper 기본 스타일
 export const checkBoxBaseClass = clsx(
@@ -19,8 +21,8 @@ export const checkBoxBaseClass = clsx(
 export const indicatorBaseClass = clsx(
   "flex shrink-0 items-center justify-center",
   "size-4",
-  "border border-base-400 dark:border-base-500",
-  "bg-white dark:bg-base-900",
+  "border", borderDefault,
+  bgSurface,
   "transition-colors",
 );
 
@@ -35,16 +37,15 @@ export const themeCheckedClasses: Record<CheckBoxTheme, string> = {
 
 // 사이즈별 스타일
 export const checkBoxSizeClasses: Record<CheckBoxSize, string> = {
-  sm: clsx("h-field-sm px-1.5 py-0.5"),
-  lg: clsx("h-field-lg px-3 py-2"),
+  sm: clsx("h-field-sm", paddingSm),
+  lg: clsx("h-field-lg", paddingLg),
 };
 
 // inset 스타일
 export const checkBoxInsetClass = clsx(
-  "h-field-inset w-full justify-center rounded-none border-none bg-transparent",
-  "focus:[outline-style:solid]",
-  "focus:outline-1 focus:-outline-offset-1",
-  "focus:outline-primary-400 dark:focus:outline-primary-400",
+  "h-field-inset justify-center bg-transparent",
+  insetBase,
+  insetFocusOutlineSelf,
 );
 
 // inset 사이즈별 높이 (border 2px 제외)
@@ -57,4 +58,4 @@ export const checkBoxInsetSizeHeightClasses: Record<CheckBoxSize, string> = {
 export const checkBoxInlineClass = clsx("h-auto", "p-0", "gap-1");
 
 // disabled 스타일
-export const checkBoxDisabledClass = clsx("pointer-events-none cursor-default opacity-50");
+export const checkBoxDisabledClass = disabledOpacity;
