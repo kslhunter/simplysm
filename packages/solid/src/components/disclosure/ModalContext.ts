@@ -1,4 +1,11 @@
-import { createContext, useContext, type Component, type JSX } from "solid-js";
+import { createContext, useContext, type Accessor, type Component, type JSX } from "solid-js";
+
+export interface ModalDefaults {
+  closeOnEscape?: boolean;
+  closeOnBackdrop?: boolean;
+}
+
+export const ModalDefaultsContext = createContext<Accessor<ModalDefaults>>();
 
 export interface ModalShowOptions {
   title: string;

@@ -4,9 +4,17 @@ import {
   type ParentComponent,
   createSignal,
   For,
+  splitProps,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { ModalContext, type ModalContentProps, type ModalContextValue, type ModalShowOptions } from "./ModalContext";
+import {
+  ModalContext,
+  ModalDefaultsContext,
+  type ModalContentProps,
+  type ModalContextValue,
+  type ModalDefaults,
+  type ModalShowOptions,
+} from "./ModalContext";
 import { Modal } from "./Modal";
 
 interface ModalEntry {
@@ -34,7 +42,17 @@ let nextId = 0;
  * </ModalProvider>
  * ```
  */
-export const ModalProvider: ParentComponent = (props) => {
+export interface ModalProviderProps extends ModalDefaults {
+}
+
+export const ModalProvider: ParentComponent<ModalProviderProps> = (props) => {
+  const [local, _rest] = splitProps(props, ["closeOnEscape", "closeOnBackdrop", "children"]);
+
+  const defaults = () => ({
+    closeOnEscape: local.closeOnEscape,
+    closeOnBackdrop: local.closeOnBackdrop,
+  });
+
   const [entries, setEntries] = createSignal<ModalEntry[]>([]);
 
   const show = <T,>(
@@ -81,42 +99,44 @@ export const ModalProvider: ParentComponent = (props) => {
   };
 
   return (
-    <ModalContext.Provider value={contextValue}>
-      {props.children}
-      <For each={entries()}>
-        {(entry) => (
-          <Modal
-            open={entry.open()}
-            onOpenChange={(open) => {
-              if (!open) {
-                requestClose(entry.id);
-              }
-            }}
-            onCloseComplete={() => removeEntry(entry.id)}
-            title={entry.options.title}
-            hideHeader={entry.options.hideHeader}
-            closable={entry.options.closable}
-            closeOnBackdrop={entry.options.closeOnBackdrop}
-            closeOnEscape={entry.options.closeOnEscape}
-            resizable={entry.options.resizable}
-            movable={entry.options.movable}
-            float={entry.options.float}
-            fill={entry.options.fill}
-            widthPx={entry.options.widthPx}
-            heightPx={entry.options.heightPx}
-            minWidthPx={entry.options.minWidthPx}
-            minHeightPx={entry.options.minHeightPx}
-            position={entry.options.position}
-            headerStyle={entry.options.headerStyle}
-            canDeactivate={entry.options.canDeactivate}
-          >
-            <Dynamic
-              component={entry.content}
-              close={(result?: unknown) => requestClose(entry.id, result)}
-            />
-          </Modal>
-        )}
-      </For>
-    </ModalContext.Provider>
+    <ModalDefaultsContext.Provider value={defaults}>
+      <ModalContext.Provider value={contextValue}>
+        {local.children}
+        <For each={entries()}>
+          {(entry) => (
+            <Modal
+              open={entry.open()}
+              onOpenChange={(open) => {
+                if (!open) {
+                  requestClose(entry.id);
+                }
+              }}
+              onCloseComplete={() => removeEntry(entry.id)}
+              title={entry.options.title}
+              hideHeader={entry.options.hideHeader}
+              closable={entry.options.closable}
+              closeOnBackdrop={entry.options.closeOnBackdrop}
+              closeOnEscape={entry.options.closeOnEscape}
+              resizable={entry.options.resizable}
+              movable={entry.options.movable}
+              float={entry.options.float}
+              fill={entry.options.fill}
+              widthPx={entry.options.widthPx}
+              heightPx={entry.options.heightPx}
+              minWidthPx={entry.options.minWidthPx}
+              minHeightPx={entry.options.minHeightPx}
+              position={entry.options.position}
+              headerStyle={entry.options.headerStyle}
+              canDeactivate={entry.options.canDeactivate}
+            >
+              <Dynamic
+                component={entry.content}
+                close={(result?: unknown) => requestClose(entry.id, result)}
+              />
+            </Modal>
+          )}
+        </For>
+      </ModalContext.Provider>
+    </ModalDefaultsContext.Provider>
   );
 };

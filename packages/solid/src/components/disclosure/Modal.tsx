@@ -8,6 +8,7 @@ import {
   Show,
   splitProps,
   For,
+  useContext,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
@@ -17,6 +18,7 @@ import { createPropSignal } from "../../utils/createPropSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
+import { ModalDefaultsContext } from "./ModalContext";
 
 export interface ModalProps {
   /** 모달 열림 상태 */
@@ -125,7 +127,8 @@ const resizePositionMap: Record<ResizeDirection, string> = {
  * ```
  */
 export const Modal: ParentComponent<ModalProps> = (props) => {
-   
+  const modalDefaults = useContext(ModalDefaultsContext);
+
   const [local, _rest] = splitProps(props, [
     "open",
     "onOpenChange",
@@ -209,10 +212,13 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
     }
   });
 
+  const closeOnEscape = () => local.closeOnEscape ?? modalDefaults?.().closeOnEscape ?? true;
+  const closeOnBackdrop = () => local.closeOnBackdrop ?? modalDefaults?.().closeOnBackdrop ?? false;
+
   // Escape 키 감지
   createEffect(() => {
     if (!open()) return;
-    if (local.closeOnEscape === false) return;
+    if (!closeOnEscape()) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -232,7 +238,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
 
   // 백드롭 클릭 핸들러
   const handleBackdropClick = () => {
-    if (!local.closeOnBackdrop) return;
+    if (!closeOnBackdrop()) return;
     tryClose();
   };
 
