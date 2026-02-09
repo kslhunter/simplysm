@@ -532,6 +532,9 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
           <Show when={hasExpandFeature()}>
             <col />
           </Show>
+          <Show when={hasSelectFeature()}>
+            <col />
+          </Show>
           <For each={effectiveColumns()}>
             {(col) => <col style={col.width != null ? { width: col.width } : undefined} />}
           </For>
@@ -570,6 +573,40 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                         />
                       </button>
                     </div>
+                  </th>
+                </Show>
+                {/* 선택 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */}
+                <Show when={hasSelectFeature() && rowIndex() === 0}>
+                  <th
+                    class={twMerge(
+                      featureThClass,
+                      fixedClass,
+                      "z-[5]",
+                      isSelectColLastFixed() ? fixedLastClass : undefined,
+                    )}
+                    rowspan={featureHeaderRowspan()}
+                    style={{
+                      top: "0",
+                      left: hasExpandFeature() ? `${expandColWidth()}px` : "0",
+                    }}
+                    ref={registerSelectColRef}
+                  >
+                    <Show when={local.selectMode === "multi"}>
+                      <div
+                        class="flex cursor-pointer items-center justify-center px-1 py-0.5"
+                        onClick={() => toggleSelectAll()}
+                      >
+                        <CheckBox
+                          value={(() => {
+                            const selectableItems = displayItems()
+                              .map((flat) => flat.item)
+                              .filter((item) => getItemSelectable(item) === true);
+                            return selectableItems.length > 0 && selectableItems.every((item) => selectedItems().includes(item));
+                          })()}
+                          class="pointer-events-none"
+                        />
+                      </div>
+                    </Show>
                   </th>
                 </Show>
                 <For each={row}>
@@ -739,7 +776,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
         <tbody>
           <For each={displayItems()}>
             {(flat) => (
-              <tr>
+              <tr
+                data-selected={selectedItems().includes(flat.item) ? "" : undefined}
+                onClick={() => {
+                  if (local.autoSelect === "click") {
+                    selectItem(flat.item);
+                  }
+                }}
+                class={local.autoSelect === "click" ? "cursor-pointer" : undefined}
+              >
                 {/* 확장 기능 컬럼 바디 셀 */}
                 <Show when={hasExpandFeature()}>
                   <td
@@ -780,6 +825,70 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                       </Show>
                     </div>
                   </td>
+                </Show>
+                {/* 선택 기능 컬럼 바디 셀 */}
+                <Show when={hasSelectFeature()}>
+                  {(() => {
+                    const selectable = () => getItemSelectable(flat.item);
+                    const isSelected = () => selectedItems().includes(flat.item);
+                    const rowIndex = () => displayItems().indexOf(flat);
+
+                    return (
+                      <td
+                        class={twMerge(
+                          featureTdClass,
+                          fixedClass,
+                          "z-[2]",
+                          isSelectColLastFixed() ? fixedLastClass : undefined,
+                        )}
+                        style={{
+                          left: hasExpandFeature() ? `${expandColWidth()}px` : "0",
+                        }}
+                      >
+                        <Show
+                          when={local.selectMode === "multi"}
+                          fallback={
+                            /* single 모드 */
+                            <Show when={selectable() === true}>
+                              <div
+                                class="flex h-full cursor-pointer items-center justify-center px-1"
+                                onClick={() => toggleSelect(flat.item)}
+                              >
+                                <div
+                                  class={twMerge(
+                                    selectSingleClass,
+                                    isSelected() ? selectSingleSelectedClass : selectSingleUnselectedClass,
+                                  )}
+                                >
+                                  <Icon icon={IconChevronRight} size="1em" />
+                                </div>
+                              </div>
+                            </Show>
+                          }
+                        >
+                          {/* multi 모드 */}
+                          <div
+                            class="flex h-full cursor-pointer items-center justify-center px-1"
+                            onClick={(e) => {
+                              if (e.shiftKey) {
+                                rangeSelect(rowIndex());
+                              } else {
+                                toggleSelect(flat.item);
+                              }
+                              setLastClickedRow(rowIndex());
+                            }}
+                            title={typeof selectable() === "string" ? (selectable() as string) : undefined}
+                          >
+                            <CheckBox
+                              value={isSelected()}
+                              disabled={selectable() !== true}
+                              class="pointer-events-none"
+                            />
+                          </div>
+                        </Show>
+                      </td>
+                    );
+                  })()}
                 </Show>
                 <For each={effectiveColumns()}>
                   {(col, colIndex) => (
