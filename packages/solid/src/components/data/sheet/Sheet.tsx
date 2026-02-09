@@ -2,13 +2,14 @@ import { children, createMemo, createSignal, For, type JSX, Show, splitProps } f
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconArrowsSort, IconChevronDown, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import { IconArrowsSort, IconChevronDown, IconChevronRight, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 import "@simplysm/core-browser";
 import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } from "./types";
 import { SheetColumn, isSheetColumnDef } from "./SheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Icon } from "../../display/Icon";
+import { CheckBox } from "../../form-control/checkbox/CheckBox";
 import { Pagination } from "../Pagination";
 import { usePersisted } from "../../../contexts/usePersisted";
 import "./Sheet.css";
@@ -24,6 +25,9 @@ import {
   insetContainerClass,
   resizerClass,
   resizeIndicatorClass,
+  selectSingleClass,
+  selectSingleSelectedClass,
+  selectSingleUnselectedClass,
   sheetContainerClass,
   sortableThClass,
   sortIconClass,
@@ -59,6 +63,11 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     "expandedItems",
     "onExpandedItemsChange",
     "getChildrenFn",
+    "selectMode",
+    "selectedItems",
+    "onSelectedItemsChange",
+    "autoSelect",
+    "getItemSelectableFn",
     "getItemCellClassFn",
     "getItemCellStyleFn",
     "class",
@@ -173,6 +182,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
   const hasExpandFeature = () => local.getChildrenFn != null;
+  const hasSelectFeature = () => local.selectMode != null;
 
   // 확장 컬럼의 고정 너비 추적
   const [expandColWidth, setExpandColWidth] = createSignal(0);
@@ -180,6 +190,15 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   function registerExpandColRef(el: HTMLElement): void {
     createResizeObserver(el, () => {
       setExpandColWidth(el.offsetWidth);
+    });
+  }
+
+  // 선택 컬럼의 고정 너비 추적
+  const [selectColWidth, setSelectColWidth] = createSignal(0);
+
+  function registerSelectColRef(el: HTMLElement): void {
+    createResizeObserver(el, () => {
+      setSelectColWidth(el.offsetWidth);
     });
   }
 
@@ -194,6 +213,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   const featureColTotalWidth = createMemo(() => {
     let w = 0;
     if (hasExpandFeature()) w += expandColWidth();
+    if (hasSelectFeature()) w += selectColWidth();
     return w;
   });
 
@@ -354,6 +374,82 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return flattenTree(pagedItems(), expandedItems(), local.getChildrenFn);
   });
 
+  // #region Selection
+  const [selectedItems, setSelectedItems] = createPropSignal({
+    value: () => local.selectedItems ?? [],
+    onChange: () => local.onSelectedItemsChange,
+  });
+
+  const [lastClickedRow, setLastClickedRow] = createSignal<number | null>(null);
+
+  function getItemSelectable(item: T): boolean | string {
+    if (!local.getItemSelectableFn) return true;
+    return local.getItemSelectableFn(item);
+  }
+
+  function toggleSelect(item: T): void {
+    if (local.selectMode === "single") {
+      const isSelected = selectedItems().includes(item);
+      setSelectedItems(isSelected ? [] : [item]);
+    } else {
+      const isSelected = selectedItems().includes(item);
+      setSelectedItems(
+        isSelected
+          ? selectedItems().filter((i) => i !== item)
+          : [...selectedItems(), item],
+      );
+    }
+  }
+
+  function toggleSelectAll(): void {
+    const selectableItems = displayItems()
+      .map((flat) => flat.item)
+      .filter((item) => getItemSelectable(item) === true);
+    const isAllSelected = selectableItems.every((item) => selectedItems().includes(item));
+    setSelectedItems(isAllSelected ? [] : selectableItems);
+  }
+
+  function rangeSelect(targetRow: number): void {
+    const lastRow = lastClickedRow();
+    if (lastRow == null) return;
+
+    const start = Math.min(lastRow, targetRow);
+    const end = Math.max(lastRow, targetRow);
+
+    // 기준 행(마지막 클릭 행)의 선택 상태를 따름
+    const baseItem = displayItems()[lastRow]?.item;
+    const shouldSelect = baseItem != null && !selectedItems().includes(baseItem);
+
+    const rangeItems = displayItems()
+      .slice(start, end + 1)
+      .map((flat) => flat.item)
+      .filter((item) => getItemSelectable(item) === true);
+
+    if (shouldSelect) {
+      const newItems = [...selectedItems()];
+      for (const item of rangeItems) {
+        if (!newItems.includes(item)) newItems.push(item);
+      }
+      setSelectedItems(newItems);
+    } else {
+      setSelectedItems(
+        selectedItems().filter((item) => !rangeItems.includes(item)),
+      );
+    }
+  }
+
+  // #region AutoSelect
+  function selectItem(item: T): void {
+    if (getItemSelectable(item) !== true) return;
+    if (local.selectMode === "single") {
+      setSelectedItems([item]);
+    } else {
+      if (!selectedItems().includes(item)) {
+        setSelectedItems([...selectedItems(), item]);
+      }
+    }
+  }
+
   // #region Keyboard Navigation (Enter/Shift+Enter로 행 이동)
   function onTableKeyDown(e: KeyboardEvent): void {
     if (e.key !== "Enter" || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -390,9 +486,13 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region Display
   const displayItems = createMemo(() => flatItems());
 
-  // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없을 때)
+  // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
   const isExpandColLastFixed = () =>
-    hasExpandFeature() && lastFixedIndex() < 0;
+    hasExpandFeature() && !hasSelectFeature() && lastFixedIndex() < 0;
+
+  // 선택 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
+  const isSelectColLastFixed = () =>
+    hasSelectFeature() && lastFixedIndex() < 0;
 
   // 전체 헤더 행 수 + 합계 행 수 (기능 컬럼의 rowspan에 사용)
   const featureHeaderRowspan = createMemo(() => {
