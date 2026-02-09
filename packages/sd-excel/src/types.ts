@@ -192,6 +192,31 @@ export interface ISdExcelXmlDrawingData {
       }[];
       clientData?: any[]; // clientData는 보통 빈 객체
     }[];
+    oneCellAnchor?: {
+      from?: {
+        col: string[];
+        colOff?: string[];
+        row: string[];
+        rowOff?: string[];
+      }[];
+      ext?: {
+        $: { cx: string; cy: string };
+      }[];
+      pic?: {
+        nvPicPr?: {
+          cNvPr?: { $: { id: string; name: string } }[];
+          cNvPicPr?: Array<{ "a:picLocks"?: Array<{ $: { noChangeAspect?: string } }> }>;
+        }[];
+        blipFill?: {
+          "a:blip"?: Array<{ $: { "r:embed": string } }>;
+          "a:stretch"?: Array<{ "a:fillRect": any[] }>;
+        }[];
+        spPr?: {
+          "a:prstGeom"?: Array<{ "$": { prst: string }; "a:avLst": any[] }>;
+        }[];
+      }[];
+      clientData?: any[];
+    }[];
   };
 }
 
