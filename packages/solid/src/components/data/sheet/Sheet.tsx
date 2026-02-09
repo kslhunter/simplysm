@@ -536,16 +536,18 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     return false;
   }
 
-  function onReorderMouseDown(e: MouseEvent, item: T): void {
+  function onReorderPointerDown(e: PointerEvent, item: T): void {
     e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
 
-    const tableEl = (e.target as HTMLElement).closest("table")!;
+    const tableEl = target.closest("table")!;
     const tbody = tableEl.querySelector("tbody")!;
     const rows = Array.from(tbody.rows);
 
     setDragState({ draggingItem: item, targetItem: null, position: null });
 
-    const onMouseMove = (ev: MouseEvent) => {
+    const onPointerMove = (ev: PointerEvent) => {
       let foundTarget: T | null = null;
       let foundPosition: "before" | "after" | "inside" | null = null;
 
@@ -617,7 +619,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       }
     };
 
-    const onMouseUp = () => {
+    const onPointerUp = () => {
       const state = dragState();
       if (state?.targetItem != null && state.position != null) {
         local.onItemsReorder?.({
@@ -638,12 +640,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
       }
 
       setDragState(null);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      target.removeEventListener("pointermove", onPointerMove);
+      target.removeEventListener("pointerup", onPointerUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    target.addEventListener("pointermove", onPointerMove);
+    target.addEventListener("pointerup", onPointerUp);
   }
 
   // #region Keyboard Navigation (Enter/Shift+Enter로 행 이동)
@@ -1150,8 +1152,8 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                     }}
                   >
                     <div
-                      class="flex h-full items-center justify-center px-1"
-                      onMouseDown={(e) => onReorderMouseDown(e, flat.item)}
+                      class="flex h-full items-center justify-center px-1 touch-none"
+                      onPointerDown={(e) => onReorderPointerDown(e, flat.item)}
                     >
                       <div class={reorderHandleClass}>
                         <Icon icon={IconGripVertical} size="1em" />
