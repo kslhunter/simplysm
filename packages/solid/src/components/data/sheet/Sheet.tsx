@@ -381,6 +381,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   });
 
   const [lastClickedRow, setLastClickedRow] = createSignal<number | null>(null);
+  const [lastClickAction, setLastClickAction] = createSignal<"select" | "deselect">("select");
 
   function getItemSelectable(item: T): boolean | string {
     if (!local.getItemSelectableFn) return true;
@@ -388,11 +389,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   }
 
   function toggleSelect(item: T): void {
+    const isSelected = selectedItems().includes(item);
+    setLastClickAction(isSelected ? "deselect" : "select");
+
     if (local.selectMode === "single") {
-      const isSelected = selectedItems().includes(item);
       setSelectedItems(isSelected ? [] : [item]);
     } else {
-      const isSelected = selectedItems().includes(item);
       setSelectedItems(
         isSelected
           ? selectedItems().filter((i) => i !== item)
@@ -416,16 +418,12 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
     const start = Math.min(lastRow, targetRow);
     const end = Math.max(lastRow, targetRow);
 
-    // 기준 행(마지막 클릭 행)의 선택 상태를 따름
-    const baseItem = displayItems()[lastRow]?.item;
-    const shouldSelect = baseItem != null && !selectedItems().includes(baseItem);
-
     const rangeItems = displayItems()
       .slice(start, end + 1)
       .map((flat) => flat.item)
       .filter((item) => getItemSelectable(item) === true);
 
-    if (shouldSelect) {
+    if (lastClickAction() === "select") {
       const newItems = [...selectedItems()];
       for (const item of rangeItems) {
         if (!newItems.includes(item)) newItems.push(item);
