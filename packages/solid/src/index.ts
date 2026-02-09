@@ -42,6 +42,7 @@ export * from "./components/data/sheet/Sheet";
 export * from "./components/data/sheet/types";
 
 // display
+export * from "./components/display/Barcode";
 export * from "./components/display/Card";
 export * from "./components/display/Icon";
 export * from "./components/display/Label";
