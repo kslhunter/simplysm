@@ -6,6 +6,7 @@ import {
   ServiceClientProvider,
   useServiceClient,
   Button,
+  TextField,
   Topbar,
   Label,
 } from "@simplysm/solid";
@@ -107,11 +108,10 @@ const ServiceClientDemo: Component = () => {
         <div class="mb-6">
           <h3 class="mb-2 font-medium">echo(message)</h3>
           <div class="flex gap-2">
-            <input
-              type="text"
+            <TextField
               value={echoInput()}
-              onInput={(e) => setEchoInput(e.currentTarget.value)}
-              class="flex-1 rounded border border-base-300 px-3 py-2 dark:border-base-600 dark:bg-base-800"
+              onValueChange={setEchoInput}
+              class="flex-1"
             />
             <Button theme="primary" variant="solid" onClick={handleEcho} disabled={!connected()}>
               Echo

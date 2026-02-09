@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { FormTable, TextField, NumberField, Select, Topbar } from "@simplysm/solid";
+import { Button, FormTable, TextField, NumberField, Select, Topbar } from "@simplysm/solid";
 
 export default function FormTablePage() {
   const [controlledName, setControlledName] = createSignal("");
@@ -157,24 +157,27 @@ export default function FormTablePage() {
                 급여: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSalary() ?? "(없음)"}</code>
               </p>
               <div class="flex gap-2">
-                <button
-                  class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
+                <Button
+                  theme="primary"
+                  variant="solid"
+                  size="sm"
                   onClick={() => {
                     setControlledName("홍길동");
                     setControlledSalary(5000000);
                   }}
                 >
                   값 채우기
-                </button>
-                <button
-                  class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
+                </Button>
+                <Button
+                  variant="solid"
+                  size="sm"
                   onClick={() => {
                     setControlledName("");
                     setControlledSalary(undefined);
                   }}
                 >
                   초기화
-                </button>
+                </Button>
               </div>
             </div>
           </section>

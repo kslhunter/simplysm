@@ -168,24 +168,27 @@ export default function FormGroupPage() {
                 이메일: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledEmail() || "(없음)"}</code>
               </p>
               <div class="flex gap-2">
-                <button
-                  class="w-fit rounded bg-primary-500 px-3 py-1 text-sm text-white hover:bg-primary-600"
+                <Button
+                  theme="primary"
+                  variant="solid"
+                  size="sm"
                   onClick={() => {
                     setControlledName("홍길동");
                     setControlledEmail("hong@example.com");
                   }}
                 >
                   값 채우기
-                </button>
-                <button
-                  class="w-fit rounded bg-base-500 px-3 py-1 text-sm text-white hover:bg-base-600"
+                </Button>
+                <Button
+                  variant="solid"
+                  size="sm"
                   onClick={() => {
                     setControlledName("");
                     setControlledEmail("");
                   }}
                 >
                   초기화
-                </button>
+                </Button>
               </div>
             </div>
           </section>
