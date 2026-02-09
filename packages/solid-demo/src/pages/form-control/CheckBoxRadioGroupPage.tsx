@@ -59,6 +59,15 @@ export default function CheckBoxRadioGroupPage() {
                 </CheckBoxGroup>
               </div>
 
+              {/* inline */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Inline</h3>
+                <CheckBoxGroup inline value={["a"]}>
+                  <CheckBoxGroup.Item value="a">Inline A</CheckBoxGroup.Item>
+                  <CheckBoxGroup.Item value="b">Inline B</CheckBoxGroup.Item>
+                </CheckBoxGroup>
+              </div>
+
               {/* inset */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Inset</h3>
@@ -114,6 +123,15 @@ export default function CheckBoxRadioGroupPage() {
                 <RadioGroup theme="danger" size="lg" value="x">
                   <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
                   <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+
+              {/* inline */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Inline</h3>
+                <RadioGroup inline value="a">
+                  <RadioGroup.Item value="a">Inline A</RadioGroup.Item>
+                  <RadioGroup.Item value="b">Inline B</RadioGroup.Item>
                 </RadioGroup>
               </div>
 
