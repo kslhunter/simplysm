@@ -124,6 +124,20 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).not.toHaveBeenCalled();
     });
 
+    it("기본적으로 Escape 키로 닫힌다", async () => {
+      const handleOpenChange = vi.fn();
+      render(() => (
+        <Modal open={true} title="테스트" onOpenChange={handleOpenChange}>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        expect(document.querySelector("[data-modal]")).not.toBeNull();
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(handleOpenChange).toHaveBeenCalledWith(false);
+    });
+
     it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
@@ -138,6 +152,20 @@ describe("Modal 컴포넌트", () => {
       expect(handleOpenChange).toHaveBeenCalledWith(false);
     });
 
+    it("closeOnEscape=false일 때 Escape로 닫히지 않는다", async () => {
+      const handleOpenChange = vi.fn();
+      render(() => (
+        <Modal open={true} title="테스트" closeOnEscape={false} onOpenChange={handleOpenChange}>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        expect(document.querySelector("[data-modal]")).not.toBeNull();
+      });
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(handleOpenChange).not.toHaveBeenCalled();
+    });
+
     it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
@@ -150,6 +178,38 @@ describe("Modal 컴포넌트", () => {
       });
       fireEvent.click(document.querySelector("[data-modal-close]")!);
       expect(handleOpenChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("접근성", () => {
+    it("role=dialog와 aria-modal 속성이 설정된다", async () => {
+      render(() => (
+        <Modal open={true} title="접근성 테스트">
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        expect(dialog).not.toBeNull();
+        expect(dialog.getAttribute("role")).toBe("dialog");
+        expect(dialog.getAttribute("aria-modal")).toBe("true");
+        expect(dialog.getAttribute("aria-label")).toBe("접근성 테스트");
+      });
+    });
+
+    it("float 모드에서는 aria-modal이 설정되지 않는다", async () => {
+      render(() => (
+        <Modal open={true} title="플로팅 모달" float>
+          <div>내용</div>
+        </Modal>
+      ));
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        expect(dialog).not.toBeNull();
+        expect(dialog.getAttribute("role")).toBe("dialog");
+        expect(dialog.hasAttribute("aria-modal")).toBe(false);
+        expect(dialog.getAttribute("aria-label")).toBe("플로팅 모달");
+      });
     });
   });
 

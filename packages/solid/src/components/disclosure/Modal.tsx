@@ -30,7 +30,7 @@ export interface ModalProps {
   closable?: boolean;
   /** 백드롭 클릭으로 닫기 */
   closeOnBackdrop?: boolean;
-  /** Escape 키로 닫기 */
+  /** Escape 키로 닫기 (기본값: true) */
   closeOnEscape?: boolean;
   /** 리사이즈 가능 여부 (기본: false) */
   resizable?: boolean;
@@ -211,7 +211,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
   // Escape 키 감지
   createEffect(() => {
     if (!open()) return;
-    if (!local.closeOnEscape) return;
+    if (local.closeOnEscape === false) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -507,6 +507,9 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
               dialogRef = el;
             }}
             data-modal-dialog
+            role="dialog"
+            aria-modal={local.float ? undefined : true}
+            aria-label={local.title}
             tabIndex={0}
             class={twMerge(dialogBaseClass(), local.class)}
             style={dialogStyle()}

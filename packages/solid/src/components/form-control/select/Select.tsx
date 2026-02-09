@@ -14,30 +14,30 @@ void ripple;
 
 // 트리거 스타일
 const triggerBaseClass = clsx(
-  clsx`inline-flex items-center gap-2`,
+  "inline-flex items-center gap-2",
   "w-40",
-  clsx`border border-base-300 dark:border-base-700`,
+  "border border-base-300 dark:border-base-700",
   "rounded",
-  clsx`bg-transparent`,
-  clsx`hover:bg-base-100 dark:hover:bg-base-700`,
+  "bg-transparent",
+  "hover:bg-base-100 dark:hover:bg-base-700",
   "cursor-pointer",
   "focus:outline-none",
   "focus-within:border-primary-400 dark:focus-within:border-primary-400",
 );
 
-const triggerDisabledClass = clsx`cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500`;
+const triggerDisabledClass = clsx("cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500");
 
 const triggerInsetClass = clsx(
-  clsx`w-full rounded-none border-none bg-transparent`,
+  "w-full rounded-none border-none bg-transparent",
   "focus:[outline-style:solid]",
-  clsx`focus:outline-1 focus:-outline-offset-1`,
-  clsx`focus:outline-primary-400 dark:focus:outline-primary-400`,
+  "focus:outline-1 focus:-outline-offset-1",
+  "focus:outline-primary-400 dark:focus:outline-primary-400",
 );
 
 const sizeClasses = {
-  sm: clsx`gap-1.5 px-1.5 py-0.5`,
-  default: clsx`px-2 py-1`,
-  lg: clsx`gap-3 px-3 py-2`,
+  sm: clsx("gap-1.5 px-1.5 py-0.5"),
+  default: clsx("px-2 py-1"),
+  lg: clsx("gap-3 px-3 py-2"),
 };
 
 /**
@@ -102,16 +102,9 @@ const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
 );
 
 // Props 정의
-interface SelectBaseProps<T> {
-  /** 현재 선택된 값 */
-  value?: T | T[];
 
-  /** 값 변경 콜백 */
-  onValueChange?: (value: T | T[]) => void;
-
-  /** 다중 선택 모드 */
-  multiple?: boolean;
-
+// 공통 Props (value, onValueChange, multiple 제외)
+interface SelectCommonProps {
   /** 비활성화 */
   disabled?: boolean;
 
@@ -127,12 +120,6 @@ interface SelectBaseProps<T> {
   /** 테두리 없는 스타일 */
   inset?: boolean;
 
-  /** 다중 선택 시 표시 방향 */
-  multiDisplayDirection?: "horizontal" | "vertical";
-
-  /** 전체 선택 버튼 숨기기 */
-  hideSelectAll?: boolean;
-
   /** 커스텀 class */
   class?: string;
 
@@ -140,21 +127,63 @@ interface SelectBaseProps<T> {
   style?: JSX.CSSProperties;
 }
 
-interface SelectWithItemsProps<T> extends SelectBaseProps<T> {
+// 단일 선택 Props
+interface SelectSingleBaseProps<T> extends SelectCommonProps {
+  /** 다중 선택 모드 */
+  multiple?: false;
+
+  /** 현재 선택된 값 */
+  value?: T;
+
+  /** 값 변경 콜백 */
+  onValueChange?: (value: T) => void;
+
+  /** 다중 선택 시 표시 방향 (단일 선택에서는 사용 안 함) */
+  multiDisplayDirection?: never;
+
+  /** 전체 선택 버튼 숨기기 (단일 선택에서는 사용 안 함) */
+  hideSelectAll?: never;
+}
+
+// 다중 선택 Props
+interface SelectMultipleBaseProps<T> extends SelectCommonProps {
+  /** 다중 선택 모드 */
+  multiple: true;
+
+  /** 현재 선택된 값 */
+  value?: T[];
+
+  /** 값 변경 콜백 */
+  onValueChange?: (value: T[]) => void;
+
+  /** 다중 선택 시 표시 방향 */
+  multiDisplayDirection?: "horizontal" | "vertical";
+
+  /** 전체 선택 버튼 숨기기 */
+  hideSelectAll?: boolean;
+}
+
+// items 방식
+interface SelectWithItemsPropsBase<T> {
   items: T[];
   getChildren?: (item: T, index: number, depth: number) => T[] | undefined;
   renderValue?: (value: T) => JSX.Element;
   children?: JSX.Element;
 }
 
-interface SelectWithChildrenProps<T> extends SelectBaseProps<T> {
+// children 방식
+interface SelectWithChildrenPropsBase<T> {
   items?: never;
   getChildren?: never;
   renderValue: (value: T) => JSX.Element;
   children: JSX.Element;
 }
 
-export type SelectProps<T = unknown> = SelectWithItemsProps<T> | SelectWithChildrenProps<T>;
+export type SelectProps<T = unknown> =
+  | (SelectSingleBaseProps<T> & SelectWithItemsPropsBase<T>)
+  | (SelectSingleBaseProps<T> & SelectWithChildrenPropsBase<T>)
+  | (SelectMultipleBaseProps<T> & SelectWithItemsPropsBase<T>)
+  | (SelectMultipleBaseProps<T> & SelectWithChildrenPropsBase<T>);
 
 interface SelectComponent {
   <T = unknown>(props: SelectProps<T>): JSX.Element;
@@ -221,7 +250,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   const getValue = () => (isControlled() ? local.value : internalValue());
   const setInternalValue = (newValue: ValueType) => {
     if (isControlled()) {
-      local.onValueChange?.(newValue as T | T[]);
+      (local.onValueChange as ((v: T | T[]) => void) | undefined)?.(newValue as T | T[]);
     } else {
       setInternalValueRaw(() => newValue);
     }

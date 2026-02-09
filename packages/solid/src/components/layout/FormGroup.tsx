@@ -12,10 +12,10 @@ export interface FormGroupItemProps extends JSX.HTMLAttributes<HTMLDivElement> {
 
 const FormGroupContext = createContext<{ inline: boolean }>({ inline: false });
 
-const baseClass = clsx`inline-flex flex-col gap-2`;
-const inlineClass = clsx`inline-flex flex-row flex-wrap items-center gap-2`;
+const baseClass = clsx("inline-flex flex-col gap-2");
+const inlineClass = clsx("inline-flex flex-row flex-wrap items-center gap-2");
 
-const itemInlineClass = clsx`flex flex-row items-center`;
+const itemInlineClass = clsx("flex flex-row items-center");
 
 const FormGroupItem: ParentComponent<FormGroupItemProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "label"]);

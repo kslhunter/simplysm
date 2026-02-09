@@ -35,15 +35,6 @@ export interface NumberFieldProps {
   /** 최소 소수점 자릿수 */
   minDigits?: number;
 
-  /** 최소값 */
-  min?: number;
-
-  /** 최대값 */
-  max?: number;
-
-  /** 증감 단위 */
-  step?: number;
-
   /** 플레이스홀더 */
   placeholder?: string;
 
@@ -169,9 +160,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     "onValueChange",
     "comma",
     "minDigits",
-    "min",
-    "max",
-    "step",
     "placeholder",
     "title",
     "disabled",
@@ -291,9 +279,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               value={displayValue()}
               placeholder={local.placeholder}
               title={local.title}
-              min={local.min}
-              max={local.max}
-              step={local.step}
               onInput={handleInput}
               onFocus={handleFocus}
               onBlur={handleBlur}
@@ -324,9 +309,6 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               value={displayValue()}
               placeholder={local.placeholder}
               title={local.title}
-              min={local.min}
-              max={local.max}
-              step={local.step}
               onInput={handleInput}
               onFocus={handleFocus}
               onBlur={handleBlur}

@@ -26,13 +26,13 @@ export const listItemSelectedClass = clsx(
 );
 
 // 비활성화 상태
-export const listItemDisabledClass = clsx`pointer-events-none cursor-auto opacity-50`;
+export const listItemDisabledClass = clsx("pointer-events-none cursor-auto opacity-50");
 
 // 읽기 전용 상태
-export const listItemReadonlyClass = clsx`cursor-auto select-text hover:bg-transparent`;
+export const listItemReadonlyClass = clsx("cursor-auto select-text hover:bg-transparent");
 
 // 들여쓰기 가이드 (중첩 아이템용)
-export const listItemIndentGuideClass = clsx`ml-4 w-2 border-l border-base-300 dark:border-base-700`;
+export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l border-base-300 dark:border-base-700");
 
 // 선택 아이콘 색상
 export const getListItemSelectedIconClass = (selected: boolean) =>

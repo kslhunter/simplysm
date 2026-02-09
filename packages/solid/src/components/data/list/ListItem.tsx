@@ -20,7 +20,7 @@ import {
 
 void ripple;
 
-const chevronClass = clsx`transition-transform duration-200 motion-reduce:transition-none`;
+const chevronClass = clsx("transition-transform duration-200 motion-reduce:transition-none");
 
 /**
  * 중첩 리스트를 담는 서브 컴포넌트

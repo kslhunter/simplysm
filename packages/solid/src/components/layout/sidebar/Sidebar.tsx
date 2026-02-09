@@ -31,7 +31,7 @@ const baseClass = clsx(
   "sm:duration-100",
 );
 
-const mobileOpenClass = clsx`shadow-xl`;
+const mobileOpenClass = clsx("shadow-xl");
 
 export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
   children: JSX.Element;

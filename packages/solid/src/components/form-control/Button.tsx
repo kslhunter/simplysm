@@ -52,7 +52,7 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
       "text-info-600 dark:text-info-400",
       "border-info-300 dark:border-info-600",
     ),
-    ghost: clsx`bg-transparent text-info-600 hover:bg-info-50 dark:text-info-400 dark:hover:bg-info-800/30`,
+    ghost: clsx("bg-transparent text-info-600 hover:bg-info-50 dark:text-info-400 dark:hover:bg-info-800/30"),
   },
   success: {
     solid: clsx(
@@ -125,8 +125,8 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: clsx`min-w-6 px-1 py-0`,
-  lg: clsx`min-w-9 px-3 py-1.5`,
+  sm: clsx("min-w-6 px-1 py-0"),
+  lg: clsx("min-w-9 px-3 py-1.5"),
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

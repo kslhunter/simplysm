@@ -146,6 +146,20 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
+  describe("periodLabels", () => {
+    it("periodLabels로 라벨을 커스터마이즈할 수 있다", () => {
+      const { container } = render(() => (
+        <DateRangePicker periodLabels={{ day: "Day", month: "Month", range: "Range" }} />
+      ));
+
+      const wrapper = container.querySelector("[data-date-range-picker]");
+      const select = wrapper?.querySelector("[data-select]");
+
+      // 기본 periodType은 "range"이므로 renderValue에 "Range"가 표시되어야 함
+      expect(select?.textContent).toContain("Range");
+    });
+  });
+
   describe("class 병합", () => {
     it("커스텀 class가 wrapper에 적용된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
