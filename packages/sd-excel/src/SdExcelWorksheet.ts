@@ -72,14 +72,20 @@ export class SdExcelWorksheet {
     wsData.copyCell(srcAddr, targetAddr);
   }
 
+  async insertEmptyRowAsync(row: number): Promise<void> {
+    const wsData = await this._getWsDataAsync();
+    wsData.insertEmptyRow(row);
+  }
+
   async insertCopyRowAsync(srcR: number, targetR: number) {
-    const range = await this.getRangeAsync();
+    // 1. 빈 행 삽입 (행 번호만 shift - 가벼운 작업)
+    await this.insertEmptyRowAsync(targetR);
 
-    for (let r = range.e.r; r >= targetR; r--) {
-      await this.copyRowAsync(r, r + 1);
-    }
+    // 2. srcR이 targetR 이상이면 +1 보정 (insertEmptyRow로 밀렸으므로)
+    const adjustedSrcR = srcR >= targetR ? srcR + 1 : srcR;
 
-    await this.copyRowAsync(srcR, targetR);
+    // 3. 소스 행 1개만 clone하여 targetR에 복사
+    await this.copyRowAsync(adjustedSrcR, targetR);
   }
 
   async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
@@ -195,7 +201,7 @@ export class SdExcelWorksheet {
     const mimeType = mime.getType(opts.ext);
     if (mimeType == null) throw new Error(`${opts.ext}의 mime 타입 확인 불가`);
 
-    // 1. media 파일명 결정 및 저장: xl/media/imageN.ext
+    // 1. Media 저장
     let mediaIndex = 1;
     while (await this._zipCache.existsAsync(`xl/media/image${mediaIndex}.${opts.ext}`)) {
       mediaIndex++;
@@ -203,61 +209,137 @@ export class SdExcelWorksheet {
     const mediaPath = `xl/media/image${mediaIndex}.${opts.ext}`;
     this._zipCache.set(mediaPath, opts.buffer);
 
-    // 2. [Content_Types].xml 갱신 (media)
-    let typeXml = (await this._zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
+    // 2. [Content_Types] - media
+    const typeXml = (await this._zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
     typeXml.add(`/xl/media/image${mediaIndex}.${opts.ext}`, mimeType);
 
-    // 3. drawing index 결정
-    let drawingIndex = 1;
-    while (await this._zipCache.existsAsync(`xl/drawings/drawing${drawingIndex}.xml`)) {
-      drawingIndex++;
-    }
-    const drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
+    // 3. Drawing 준비 (공통 헬퍼)
+    const { drawing, drawingRels } = await this._ensureDrawingAsync();
 
-    // 4. drawing rels 준비 및 rId 생성 (워크북 레벨에서 rId 생성)
-    const drawingRels = new SdExcelXmlRelationShip();
-    const mediaFileName = mediaPath.slice(3); // "media/imageN.ext"
-    const drawingTarget = `../${mediaFileName}`; // "../media/imageN.ext"
+    // 4. Drawing Rels에 media 관계 추가
     const relNum = drawingRels.addAndGetId(
-      drawingTarget,
+      `../media/image${mediaIndex}.${opts.ext}`,
       "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
     );
-    this._zipCache.set(`xl/drawings/_rels/drawing${drawingIndex}.xml.rels`, drawingRels);
 
-    // 5. SdExcelXmlDrawing 생성 — 모든 drawing XML 작성 책임은 이 클래스에 위임
-    const blipRelId = `rId${relNum}`;
-    const drawing = new SdExcelXmlDrawing();
+    // 5. twoCellAnchor로 picture 추가
     drawing.addPicture({
       from: opts.from,
       to: opts.to ?? { r: opts.from.r + 1, c: opts.from.c + 1 },
-      blipRelId: blipRelId,
+      blipRelId: `rId${relNum}`,
     });
-    this._zipCache.set(drawingPath, drawing);
+  }
 
-    // 7. [Content_Types].xml에 drawing 타입 추가
-    typeXml.add("/" + drawingPath, "application/vnd.openxmlformats-officedocument.drawing+xml");
+  async addDrawingAsync(opts: {
+    buffer: Buffer;
+    ext: string;
+    r: number;
+    c: number;
+    width: number;
+    height: number;
+    left?: number;
+    top?: number;
+  }): Promise<void> {
+    const mimeType = mime.getType(opts.ext);
+    if (mimeType == null) throw new Error(`${opts.ext}의 mime 타입 확인 불가`);
 
-    // 8. worksheet의 rels에 drawing 추가 및 rId 획득
-    const sheetRelsPath = `xl/worksheets/_rels/${this._targetFileName}.rels`;
-    let sheetRels = (await this._zipCache.getAsync(sheetRelsPath)) as
-      | SdExcelXmlRelationShip
-      | undefined;
-    sheetRels = sheetRels ?? new SdExcelXmlRelationShip();
-    const sheetRelNum = sheetRels.addAndGetId(
-      `../drawings/drawing${drawingIndex}.xml`,
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+    // 1. Media 저장
+    let mediaIndex = 1;
+    while (await this._zipCache.existsAsync(`xl/media/image${mediaIndex}.${opts.ext}`)) {
+      mediaIndex++;
+    }
+    const mediaPath = `xl/media/image${mediaIndex}.${opts.ext}`;
+    this._zipCache.set(mediaPath, opts.buffer);
+
+    // 2. [Content_Types] - media
+    const typeXml = (await this._zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
+    typeXml.add(`/xl/media/image${mediaIndex}.${opts.ext}`, mimeType);
+
+    // 3. Drawing 준비 (공통 헬퍼)
+    const { drawing, drawingRels } = await this._ensureDrawingAsync();
+
+    // 4. Drawing Rels에 media 관계 추가
+    const relNum = drawingRels.addAndGetId(
+      `../media/image${mediaIndex}.${opts.ext}`,
+      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
     );
-    const drawingRelIdOnWorksheet = `rId${sheetRelNum}`;
+
+    // 5. oneCellAnchor로 picture 추가
+    drawing.addOneCellPicture({
+      r: opts.r,
+      c: opts.c,
+      width: opts.width,
+      height: opts.height,
+      left: opts.left,
+      top: opts.top,
+      blipRelId: `rId${relNum}`,
+    });
+  }
+
+  private async _ensureDrawingAsync(): Promise<{
+    drawingPath: string;
+    drawing: SdExcelXmlDrawing;
+    drawingRels: SdExcelXmlRelationShip;
+    drawingIndex: number;
+  }> {
+    // 1. Sheet Rels에서 기존 drawing 관계 검색
+    const sheetRelsPath = `xl/worksheets/_rels/${this._targetFileName}.rels`;
+    let sheetRels = (await this._zipCache.getAsync(sheetRelsPath)) as SdExcelXmlRelationShip | undefined;
+    sheetRels = sheetRels ?? new SdExcelXmlRelationShip();
+
+    const existingDrawingRel = sheetRels.data.Relationships.Relationship
+      ?.single((rel: any) => /drawing[0-9]/.test(rel.$.Target));
+
+    let drawingIndex: number;
+    let wsRelId: number;
+
+    if (existingDrawingRel != null) {
+      // 기존 drawing 재사용
+      wsRelId = Number(existingDrawingRel.$.Id.replace(/rId/, ""));
+      const match = /drawing(\d+)/.exec(existingDrawingRel.$.Target);
+      drawingIndex = match ? Number(match[1]) : 1;
+    } else {
+      // 새 drawing 생성
+      drawingIndex = 1;
+      while (await this._zipCache.existsAsync(`xl/drawings/drawing${drawingIndex}.xml`)) {
+        drawingIndex++;
+      }
+      wsRelId = sheetRels.addAndGetId(
+        `../drawings/drawing${drawingIndex}.xml`,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+      );
+    }
     this._zipCache.set(sheetRelsPath, sheetRels);
 
-    // 9. worksheet XML에 <drawing r:id="..."/> 추가 (worksheet XML 책임: SdExcelXmlWorksheet)
-    const wsXml = await this._getWsDataAsync(); // SdExcelXmlWorksheet 인스턴스
+    // 2. Drawing + Drawing Rels 가져오거나 생성
+    const drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
+    const drawingRelsPath = `xl/drawings/_rels/drawing${drawingIndex}.xml.rels`;
+
+    let drawing = (await this._zipCache.getAsync(drawingPath)) as SdExcelXmlDrawing | undefined;
+    drawing = drawing ?? new SdExcelXmlDrawing();
+    this._zipCache.set(drawingPath, drawing);
+
+    let drawingRels = (await this._zipCache.getAsync(drawingRelsPath)) as SdExcelXmlRelationShip | undefined;
+    drawingRels = drawingRels ?? new SdExcelXmlRelationShip();
+    this._zipCache.set(drawingRelsPath, drawingRels);
+
+    // 3. [Content_Types] - drawing 타입 등록 (중복 체크)
+    const typeXml = (await this._zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
+    typeXml.add(`/xl/drawings/drawing${drawingIndex}.xml`, "application/vnd.openxmlformats-officedocument.drawing+xml");
+
+    // 4. Worksheet XML - drawing 참조 (중복 체크)
+    const wsXml = await this._getWsDataAsync();
     wsXml.data.worksheet.$["xmlns:r"] =
       wsXml.data.worksheet.$["xmlns:r"] ??
       "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     wsXml.data.worksheet.drawing = wsXml.data.worksheet.drawing ?? [];
-    wsXml.data.worksheet.drawing.push({ $: { "r:id": drawingRelIdOnWorksheet } });
+    const drawingRelIdStr = `rId${wsRelId}`;
+    if (!wsXml.data.worksheet.drawing.some((item: any) => item.$["r:id"] === drawingRelIdStr)) {
+      wsXml.data.worksheet.drawing.push({ $: { "r:id": drawingRelIdStr } });
+    }
     this._zipCache.set(`xl/worksheets/${this._targetFileName}`, wsXml);
+
+    return { drawingPath, drawing, drawingRels, drawingIndex };
   }
 
   /*async getRecordsAsync<T extends Record<string, any>>(def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): Promise<{ [P in keyof T]: UnwrappedType<T[P]> }[]> {

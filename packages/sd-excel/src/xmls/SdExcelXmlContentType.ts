@@ -41,12 +41,14 @@ export class SdExcelXmlContentType implements ISdExcelXml {
   }
 
   add(partName: string, contentType: string): this {
-    this.data.Types.Override.push({
-      "$": {
-        "PartName": partName,
-        "ContentType": contentType,
-      },
-    });
+    if (!this.data.Types.Override.some((item: any) => item.$.PartName === partName)) {
+      this.data.Types.Override.push({
+        "$": {
+          "PartName": partName,
+          "ContentType": contentType,
+        },
+      });
+    }
 
     return this;
   }
