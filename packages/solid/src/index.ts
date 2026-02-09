@@ -19,6 +19,9 @@ export * from "./components/form-control/color-picker/ColorPicker";
 export * from "./components/form-control/date-range-picker/DateRangePicker";
 export * from "./components/form-control/editor/RichTextEditor";
 
+// navigation
+export * from "./components/navigation/Tab";
+
 // layout
 export * from "./components/layout/FormGroup";
 export * from "./components/layout/FormTable";
