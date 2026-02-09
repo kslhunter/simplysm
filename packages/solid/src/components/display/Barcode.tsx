@@ -134,10 +134,21 @@ export const Barcode: Component<BarcodeProps> = (props) => {
     }
 
     try {
-      containerRef.innerHTML = bwipjs.toSVG({
+      const svg = bwipjs.toSVG({
         bcid: local.type,
         text: value,
       });
+      containerRef.innerHTML = svg;
+
+      const svgEl = containerRef.querySelector("svg");
+      if (svgEl) {
+        const viewBox = svgEl.getAttribute("viewBox");
+        if (viewBox != null) {
+          const parts = viewBox.split(" ");
+          svgEl.setAttribute("width", parts[2]);
+          svgEl.setAttribute("height", parts[3]);
+        }
+      }
     } catch {
       containerRef.innerHTML = "";
     }
