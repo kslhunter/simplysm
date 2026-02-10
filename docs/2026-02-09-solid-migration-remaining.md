@@ -13,9 +13,9 @@
 | 4 | **StatePreset** | 필터/정렬 등 상태 저장/불러오기 | [x] |
 | 5 | **Numpad** | 숫자 입력 패드 | [x] |
 | 6 | **Kanban** | 칸반 보드 (Board + Lane) | [ ] |
-| 7 | **Barcode** | 바코드 렌더링 | [ ] |
-| 8 | **Calendar** | 캘린더 (고도화 필요) | [ ] |
-| 9 | **Progress** | 프로그레스 바 | [ ] |
+| 7 | **Barcode** | 바코드 렌더링 | [x] |
+| 8 | **Calendar** | 캘린더 (고도화 필요) | [x] |
+| 9 | **Progress** | 프로그레스 바 | [x] |
 | 10 | **ECharts 래퍼** | option 반영 + ResizeObserver + cleanup. 얇은 래퍼 | [x] |
 
 ## 2단계: 비-컴포넌트 기능
