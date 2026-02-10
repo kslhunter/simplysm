@@ -1,20 +1,10 @@
-import {
-  type JSX,
-  type ParentComponent,
-  createSignal,
-  createEffect,
-  onCleanup,
-  untrack,
-  Show,
-  splitProps,
-  For,
-  useContext,
-} from "solid-js";
+import { type JSX, type ParentComponent, createEffect, onCleanup, Show, splitProps, For, useContext } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../utils/createControllableSignal";
+import { createMountTransition } from "../../utils/createMountTransition";
 import { mergeStyles } from "../../utils/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
@@ -153,11 +143,8 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     onChange: () => local.onOpenChange,
   });
 
-  // DOM 마운트 여부 (애니메이션용)
-  const [mounted, setMounted] = createSignal(false);
-
-  // 애니메이션 상태
-  const [animating, setAnimating] = createSignal(false);
+  // 애니메이션 상태 (mount transition)
+  const { mounted, animating, unmount } = createMountTransition(open);
 
   // onCloseComplete 중복 호출 방지
   let closeCompleteEmitted = false;
@@ -165,46 +152,22 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   const emitCloseComplete = () => {
     if (closeCompleteEmitted) return;
     closeCompleteEmitted = true;
-    setMounted(false);
+    unmount();
     local.onCloseComplete?.();
   };
+
+  // open 변경 시 closeCompleteEmitted 초기화
+  createEffect(() => {
+    if (open()) {
+      closeCompleteEmitted = false;
+    }
+  });
 
   // dialog ref
   let dialogRef: HTMLDivElement | undefined;
 
   // wrapper ref
   let wrapperRef: HTMLDivElement | undefined;
-
-  // open 변경 시 처리 (Dropdown 패턴)
-  createEffect(() => {
-    if (open()) {
-      // 열림: DOM에 마운트 후 애니메이션 시작
-      closeCompleteEmitted = false;
-      setMounted(true);
-      // 다음 프레임에 애니메이션 시작 (double rAF)
-      let rafId1: number;
-      let rafId2: number;
-      rafId1 = requestAnimationFrame(() => {
-        rafId2 = requestAnimationFrame(() => {
-          setAnimating(true);
-        });
-      });
-      onCleanup(() => {
-        cancelAnimationFrame(rafId1);
-        cancelAnimationFrame(rafId2);
-      });
-    } else if (mounted()) {
-      // untrack: animating()을 읽되 이 effect의 dependency로 등록하지 않음
-      // (setAnimating(false) 호출 시 effect 재실행 방지)
-      if (untrack(animating)) {
-        // 정상 닫기: transitionend에서 마운트 해제
-        setAnimating(false);
-      } else {
-        // 열기 애니메이션 시작 전에 닫기 요청된 경우: 즉시 마운트 해제
-        emitCloseComplete();
-      }
-    }
-  });
 
   const closeOnEscape = () => local.closeOnEscape ?? dialogDefaults?.().closeOnEscape ?? true;
   const closeOnBackdrop = () => local.closeOnBackdrop ?? dialogDefaults?.().closeOnBackdrop ?? false;

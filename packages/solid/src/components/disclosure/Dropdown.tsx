@@ -1,4 +1,5 @@
 import { type JSX, type ParentComponent, createSignal, createEffect, onCleanup, Show, splitProps } from "solid-js";
+import { createMountTransition } from "../../utils/createMountTransition";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -93,45 +94,14 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
   // 팝업 ref
   const [popupRef, setPopupRef] = createSignal<HTMLDivElement>();
 
-  // DOM에 표시 여부 (애니메이션용)
-  const [mounted, setMounted] = createSignal(false);
-
-  // 애니메이션 상태
-  const [animating, setAnimating] = createSignal(false);
+  // 애니메이션 상태 (mount transition)
+  const { mounted, animating, unmount } = createMountTransition(open);
 
   // 계산된 위치
   const [computedStyle, setComputedStyle] = createSignal<JSX.CSSProperties>({});
 
   // 방향 (위/아래)
   const [direction, setDirection] = createSignal<"down" | "up">("down");
-
-  // open 변경 시 처리
-  createEffect(() => {
-    if (open()) {
-      // 열림: DOM에 마운트 후 애니메이션 시작
-      setMounted(true);
-      // 다음 프레임에 애니메이션 시작 (double rAF로 브라우저 렌더링 대기)
-      let rafId1: number;
-      let rafId2: number;
-      rafId1 = requestAnimationFrame(() => {
-        rafId2 = requestAnimationFrame(() => {
-          setAnimating(true);
-        });
-      });
-      onCleanup(() => {
-        cancelAnimationFrame(rafId1);
-        cancelAnimationFrame(rafId2);
-      });
-    } else if (mounted()) {
-      // 닫힘: 애니메이션 시작 (transitionend에서 마운트 해제)
-      setAnimating(false);
-      // prefers-reduced-motion 등으로 transitionend가 발생하지 않는 경우를 위한 fallback
-      const fallbackTimer = setTimeout(() => {
-        if (!open()) setMounted(false);
-      }, 200);
-      onCleanup(() => clearTimeout(fallbackTimer));
-    }
-  });
 
   // 위치 계산
   createEffect(() => {
@@ -358,7 +328,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
     if (!open()) {
       // 닫힘 애니메이션 완료 → DOM에서 제거
-      setMounted(false);
+      unmount();
     }
   };
 

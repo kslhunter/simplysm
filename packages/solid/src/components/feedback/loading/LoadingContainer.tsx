@@ -1,16 +1,8 @@
-import {
-  type ParentComponent,
-  type JSX,
-  splitProps,
-  createSignal,
-  createEffect,
-  onCleanup,
-  Show,
-  useContext,
-} from "solid-js";
+import { type ParentComponent, type JSX, splitProps, createEffect, onCleanup, Show, useContext } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LoadingContext, type LoadingVariant } from "./LoadingContext";
+import { createMountTransition } from "../../../utils/createMountTransition";
 import "./LoadingContainer.css";
 
 export interface LoadingContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
@@ -21,12 +13,7 @@ export interface LoadingContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivEl
   children?: JSX.Element;
 }
 
-const baseClass = clsx(
-  "relative",
-  "size-full",
-  "min-h-[70px] min-w-[70px]",
-  "overflow-auto",
-);
+const baseClass = clsx("relative", "size-full", "min-h-[70px] min-w-[70px]", "overflow-auto");
 
 // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset은 Chrome 87+에서만 지원
 const screenBaseClass = clsx(
@@ -46,17 +33,9 @@ const spinnerClass = clsx(
   "mx-auto mt-5",
 );
 
-const messageClass = clsx(
-  "w-full",
-  "text-center font-bold",
-  "text-base-700 dark:text-base-200",
-);
+const messageClass = clsx("w-full", "text-center font-bold", "text-base-700 dark:text-base-200");
 
-const progressTrackClass = clsx(
-  "absolute left-0 top-0",
-  "h-1 w-full",
-  "bg-white dark:bg-base-800",
-);
+const progressTrackClass = clsx("absolute left-0 top-0", "h-1 w-full", "bg-white dark:bg-base-800");
 
 const progressBarClass = clsx(
   "h-1 w-full",
@@ -65,51 +44,21 @@ const progressBarClass = clsx(
   "origin-left",
 );
 
-const barIndicatorClass = clsx(
-  "absolute left-0 top-0",
-  "h-1 w-full",
-  "bg-white dark:bg-base-800",
-);
+const barIndicatorClass = clsx("absolute left-0 top-0", "h-1 w-full", "bg-white dark:bg-base-800");
 
 export const LoadingContainer: ParentComponent<LoadingContainerProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "busy", "variant", "message", "progressPercent", "class", "children",
-  ]);
+  const [local, rest] = splitProps(props, ["busy", "variant", "message", "progressPercent", "class", "children"]);
 
   const loadingCtx = useContext(LoadingContext);
   const currVariant = (): LoadingVariant => local.variant ?? loadingCtx?.variant() ?? "spinner";
 
-  // 애니메이션 상태 (Dropdown 패턴)
-  const [mounted, setMounted] = createSignal(false);
-  const [animating, setAnimating] = createSignal(false);
-
-  createEffect(() => {
-    if (local.busy) {
-      setMounted(true);
-      let rafId1: number;
-      let rafId2: number;
-      rafId1 = requestAnimationFrame(() => {
-        rafId2 = requestAnimationFrame(() => {
-          setAnimating(true);
-        });
-      });
-      onCleanup(() => {
-        cancelAnimationFrame(rafId1);
-        cancelAnimationFrame(rafId2);
-      });
-    } else if (mounted()) {
-      setAnimating(false);
-      const fallbackTimer = setTimeout(() => {
-        if (!local.busy) setMounted(false);
-      }, 200);
-      onCleanup(() => clearTimeout(fallbackTimer));
-    }
-  });
+  // 애니메이션 상태 (mount transition)
+  const { mounted, animating, unmount } = createMountTransition(() => !!local.busy);
 
   const handleTransitionEnd = (e: TransitionEvent) => {
     if (e.propertyName !== "opacity") return;
     if (!local.busy) {
-      setMounted(false);
+      unmount();
     }
   };
 
@@ -129,30 +78,19 @@ export const LoadingContainer: ParentComponent<LoadingContainerProps> = (props) 
   });
 
   const screenClass = () =>
-    clsx(
-      screenBaseClass,
-      animating()
-        ? "pointer-events-auto opacity-100"
-        : "pointer-events-none opacity-0",
-    );
+    clsx(screenBaseClass, animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0");
 
   // spinner: 슬라이드 다운 애니메이션
   const rectClass = () => {
     if (currVariant() !== "spinner") return "";
     return clsx(
       "transition-transform duration-100",
-      animating()
-        ? "translate-y-0 ease-out"
-        : "-translate-y-full ease-in",
+      animating() ? "translate-y-0 ease-out" : "-translate-y-full ease-in",
     );
   };
 
   return (
-    <div
-      ref={containerRef}
-      class={twMerge(baseClass, local.class)}
-      {...rest}
-    >
+    <div ref={containerRef} class={twMerge(baseClass, local.class)} {...rest}>
       <Show when={mounted()}>
         <div class={screenClass()} onTransitionEnd={handleTransitionEnd}>
           <div class={rectClass()}>
@@ -183,10 +121,7 @@ export const LoadingContainer: ParentComponent<LoadingContainerProps> = (props) 
           </div>
           <Show when={local.progressPercent != null}>
             <div class={progressTrackClass}>
-              <div
-                class={progressBarClass}
-                style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }}
-              />
+              <div class={progressBarClass} style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }} />
             </div>
           </Show>
         </div>
