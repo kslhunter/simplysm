@@ -17,6 +17,7 @@ import {
   KanbanContext,
   KanbanLaneContext,
   useKanbanContext,
+  useKanbanLaneContext,
   type KanbanCardRef,
   type KanbanContextValue,
   type KanbanDropInfo,
@@ -38,8 +39,9 @@ const KanbanLaneTools: ParentComponent = (props) => (
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
-export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "draggable"> {
   value?: unknown;
+  draggable?: boolean;
   contentClass?: string;
   children?: JSX.Element;
 }
@@ -53,13 +55,75 @@ const cardContentClass = clsx(
 );
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
-  const [local, rest] = splitProps(props, ["children", "class", "value", "contentClass"]);
+  const [local, rest] = splitProps(props, [
+    "children",
+    "class",
+    "value",
+    "draggable",
+    "contentClass",
+  ]);
+
+  const boardCtx = useKanbanContext();
+  const laneCtx = useKanbanLaneContext();
+
+  let hostRef!: HTMLDivElement;
+
+  const isDraggable = () => local.draggable !== false;
+
+  const isDragSource = () => {
+    const dc = boardCtx.dragCard();
+    return dc != null && dc.value != null && dc.value === local.value;
+  };
+
+  const handleDragStart = (e: DragEvent) => {
+    if (!isDraggable()) {
+      e.preventDefault();
+      return;
+    }
+    const heightOnDrag = hostRef.offsetHeight;
+    boardCtx.setDragCard({
+      value: local.value,
+      laneValue: laneCtx.value(),
+      heightOnDrag,
+    });
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = hostRef.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const position = e.clientY < midY ? "before" : "after";
+
+    const current = laneCtx.dropTarget();
+    if (current?.element === hostRef && current?.position === position) {
+      return;
+    }
+
+    laneCtx.setDropTarget({ element: hostRef, value: local.value, position });
+  };
+
+  const handleDrop = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const current = laneCtx.dropTarget();
+    boardCtx.onDropTo(laneCtx.value(), local.value, current?.position ?? "before");
+  };
 
   return (
     <div
       {...rest}
+      ref={hostRef}
       data-kanban-card
-      class={twMerge(cardHostClass, local.class)}
+      draggable={isDraggable()}
+      class={twMerge(cardHostClass, isDragSource() && "hidden", local.class)}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       <Card class={twMerge(cardContentClass, local.contentClass)}>
         {local.children}
