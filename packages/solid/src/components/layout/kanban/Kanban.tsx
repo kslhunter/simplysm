@@ -1,6 +1,9 @@
 import {
   children,
+  createSignal,
   type JSX,
+  onCleanup,
+  onMount,
   type ParentComponent,
   Show,
   splitProps,
@@ -12,7 +15,9 @@ import { splitSlots } from "../../../utils/splitSlots";
 import {
   KanbanContext,
   KanbanLaneContext,
+  type KanbanCardRef,
   type KanbanContextValue,
+  type KanbanDropInfo,
   type KanbanLaneContextValue,
 } from "./KanbanContext";
 
@@ -70,7 +75,7 @@ export interface KanbanLaneProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 const laneBaseClass = clsx(
   "flex flex-col",
   "w-72 min-w-72",
-  "bg-base-50 dark:bg-base-900",
+  "bg-base-100 dark:bg-base-900",
   "rounded-lg",
   "overflow-hidden",
 );
@@ -80,7 +85,6 @@ const laneHeaderBaseClass = clsx(
   "px-3 py-2",
   "font-semibold",
   "text-base-700 dark:text-base-200",
-  "border-b border-base-200 dark:border-base-700",
   "select-none",
 );
 
@@ -140,7 +144,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
 // ─── Kanban (Board) ──────────────────────────────────────────────
 
-export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "onDrop"> {
+  onDrop?: (info: KanbanDropInfo) => void;
   children?: JSX.Element;
 }
 
@@ -162,9 +167,42 @@ const KanbanBase = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
     "children",
     "class",
+    "onDrop",
   ]);
 
-  const contextValue: KanbanContextValue = {};
+  const [dragCard, setDragCard] = createSignal<KanbanCardRef>();
+
+  const onDropTo = (
+    targetLaneValue: unknown | undefined,
+    targetCardValue: unknown | undefined,
+    position: "before" | "after" | undefined,
+  ) => {
+    const source = dragCard();
+    if (!source) return;
+
+    local.onDrop?.({
+      sourceValue: source.value,
+      targetLaneValue,
+      targetCardValue,
+      position,
+    });
+
+    setDragCard(undefined);
+  };
+
+  onMount(() => {
+    const handleDragEnd = () => {
+      setDragCard(undefined);
+    };
+    document.addEventListener("dragend", handleDragEnd);
+    onCleanup(() => document.removeEventListener("dragend", handleDragEnd));
+  });
+
+  const contextValue: KanbanContextValue = {
+    dragCard,
+    setDragCard,
+    onDropTo,
+  };
 
   return (
     <KanbanContext.Provider value={contextValue}>
