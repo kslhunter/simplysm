@@ -32,7 +32,7 @@ public class FileSystemPlugin extends Plugin {
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
     @PluginMethod
-    public void checkPermission(PluginCall call) {
+    public void hasPermission(PluginCall call) {
         boolean granted;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             granted = Environment.isExternalStorageManager();
