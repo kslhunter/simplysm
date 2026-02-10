@@ -1,9 +1,32 @@
-import { createContext, useContext, type Accessor } from "solid-js";
+import { createContext, useContext, type Accessor, type Setter } from "solid-js";
+
+// ── 타입 ──────────────────────────────────────────────────────
+
+export interface KanbanCardRef<L = unknown, T = unknown> {
+  value: T | undefined;
+  laneValue: L | undefined;
+  heightOnDrag: number;
+}
+
+export interface KanbanDropInfo<L = unknown, T = unknown> {
+  sourceValue?: T;
+  targetLaneValue?: L;
+  targetCardValue?: T;
+  position?: "before" | "after";
+}
+
+export interface KanbanDropTarget<T = unknown> {
+  element: HTMLElement;
+  value: T | undefined;
+  position: "before" | "after";
+}
 
 // ── Board Context ──────────────────────────────────────────────
-// Phase 1에서는 빈 Context. Phase 2+에서 DnD/선택 등을 추가한다.
 
-export interface KanbanContextValue {
+export interface KanbanContextValue<L = unknown, T = unknown> {
+  dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
+  setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
+  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -18,8 +41,10 @@ export function useKanbanContext(): KanbanContextValue {
 
 // ── Lane Context ───────────────────────────────────────────────
 
-export interface KanbanLaneContextValue<L = unknown> {
+export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   value: Accessor<L | undefined>;
+  dropTarget: Accessor<KanbanDropTarget<T> | undefined>;
+  setDropTarget: (target: KanbanDropTarget<T> | undefined) => void;
 }
 
 export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
