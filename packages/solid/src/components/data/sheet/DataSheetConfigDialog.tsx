@@ -1,7 +1,7 @@
 import { type Component } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import clsx from "clsx";
-import type { DialogContentProps } from "../../disclosure/DialogContext";
+import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import type { DataSheetConfig, DataSheetConfigColumn, DataSheetConfigColumnInfo, DataSheetReorderEvent } from "./types";
 import { DataSheet } from "./DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
@@ -22,12 +22,14 @@ interface EditColumnItem {
   width: string;
 }
 
-export interface DataSheetConfigDialogProps extends DialogContentProps<DataSheetConfig> {
+export interface DataSheetConfigDialogProps {
   columnInfos: DataSheetConfigColumnInfo[];
   currentConfig: DataSheetConfig;
 }
 
 export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (props) => {
+  const dialog = useDialogInstance<DataSheetConfig>();
+
   /* eslint-disable solid/reactivity -- 모달 props는 마운트 시 한 번만 사용되는 정적 값 */
   const initialItems: EditColumnItem[] = props.columnInfos
     .filter((info) => !info.collapse)
@@ -90,12 +92,12 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
       }
     }
 
-    props.close({ columnRecord });
+    dialog?.close({ columnRecord });
   }
 
   function handleReset(): void {
     if (!confirm("모든 시트 설정을 초기화하시겠습니까?")) return;
-    props.close({ columnRecord: {} });
+    dialog?.close({ columnRecord: {} });
   }
 
   return (
@@ -133,7 +135,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
           초기화
         </Button>
         <div class={footerActionsClass}>
-          <Button onClick={() => props.close(undefined)}>취소</Button>
+          <Button onClick={() => dialog?.close(undefined)}>취소</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
             확인
           </Button>
