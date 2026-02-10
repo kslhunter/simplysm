@@ -14,6 +14,7 @@ import { twMerge } from "tailwind-merge";
 import { IconEye, IconEyeOff } from "@tabler/icons-solidjs";
 import { Card } from "../../display/Card";
 import { Icon } from "../../display/Icon";
+import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { splitSlots } from "../../../utils/splitSlots";
 import "./Kanban.css";
@@ -310,38 +311,40 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     });
 
     return (
-      <div
-        {...rest}
-        data-kanban-lane
-        class={twMerge(laneBaseClass, isDragOverLane() && laneDragOverClass, local.class)}
-        onDragEnter={handleLaneDragEnter}
-        onDragLeave={handleLaneDragLeave}
-        onDragOver={handleLaneDragOver}
-        onDrop={handleLaneDrop}
-      >
-        <Show when={hasHeader()}>
-          <div class={laneHeaderBaseClass}>
-            <Show when={local.collapsible}>
-              <button
-                type="button"
-                class={collapseButtonClass}
-                onClick={() => setCollapsed((prev) => !prev)}
-              >
-                <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
-              </button>
-            </Show>
-            <div class="flex-1">{slots().kanbanLaneTitle}</div>
-            <Show when={slots().kanbanLaneTools.length > 0}>
-              <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
-            </Show>
-          </div>
-        </Show>
-        <Show when={!collapsed()}>
-          <div ref={bodyRef} class={laneBodyBaseClass}>
-            {content()}
-          </div>
-        </Show>
-      </div>
+      <BusyContainer busy={local.busy} variant="bar">
+        <div
+          {...rest}
+          data-kanban-lane
+          class={twMerge(laneBaseClass, isDragOverLane() && laneDragOverClass, local.class)}
+          onDragEnter={handleLaneDragEnter}
+          onDragLeave={handleLaneDragLeave}
+          onDragOver={handleLaneDragOver}
+          onDrop={handleLaneDrop}
+        >
+          <Show when={hasHeader()}>
+            <div class={laneHeaderBaseClass}>
+              <Show when={local.collapsible}>
+                <button
+                  type="button"
+                  class={collapseButtonClass}
+                  onClick={() => setCollapsed((prev) => !prev)}
+                >
+                  <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
+                </button>
+              </Show>
+              <div class="flex-1">{slots().kanbanLaneTitle}</div>
+              <Show when={slots().kanbanLaneTools.length > 0}>
+                <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
+              </Show>
+            </div>
+          </Show>
+          <Show when={!collapsed()}>
+            <div ref={bodyRef} class={laneBodyBaseClass}>
+              {content()}
+            </div>
+          </Show>
+        </div>
+      </BusyContainer>
     );
   };
 
