@@ -389,7 +389,7 @@ export default function SheetPage() {
                   <Select
                     value={ctx.item.department}
                     onValueChange={(v) => {
-                      ctx.item.department = v as string;
+                      ctx.item.department = v;
                     }}
                     items={departments}
                     renderValue={(v) => <>{v}</>}

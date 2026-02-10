@@ -136,11 +136,17 @@ describe("usePersisted", () => {
   it("비동기 저장소 사용 시 loading이 true로 시작한다", () => {
     const store = new Map<string, string>();
     const asyncStorage = {
-      getItem: async (key: string) => store.get(key) ?? null,
-      setItem: async (key: string, value: string) => {
+      async getItem(key: string) {
+        const result = store.get(key) ?? null;
+        await Promise.resolve();
+        return result;
+      },
+      async setItem(key: string, value: string) {
+        await Promise.resolve();
         store.set(key, value);
       },
-      removeItem: async (key: string) => {
+      async removeItem(key: string) {
+        await Promise.resolve();
         store.delete(key);
       },
     };

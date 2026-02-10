@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다.
+**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일은 영문 작성)
 - 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
 - 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
 
@@ -242,6 +242,15 @@ orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않
 - 예시: `Select.Item`, `Select.Action`, `List.Item`, `DataSheet.Column`, `Sidebar.Container`, `Topbar.Menu`, `Tabs.Tab`
 
 → 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
+
+**구현 단순화 규칙:**
+- Provider/Context 패턴보다 단순 시그널/스토어를 우선 사용
+- 불필요한 추상화 계층 도입 금지 — 기존 코드베이스의 동일 패턴을 먼저 확인
+
+### 데모 페이지 규칙
+- raw HTML 요소(`<button>`, `<input>`, `<select>`, `<textarea>`) 직접 사용 금지 → `@simplysm/solid` 라이브러리 컴포넌트 사용
+- 과도한 커스텀 인라인 스타일 금지
+- 새 데모 페이지 작성 전 기존 데모 파일의 패턴을 Read하여 확인
 
 ### Tailwind CSS
 

@@ -9,7 +9,7 @@ import {
   TextInput,
   Textarea,
   Topbar,
-  Label,
+  Tag,
 } from "@simplysm/solid";
 
 const ServiceClientDemo: Component = () => {
@@ -96,7 +96,7 @@ const ServiceClientDemo: Component = () => {
       {/* 연결 상태 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">연결 상태</h2>
-        <Label theme={connected() ? "success" : "danger"}>{connected() ? "연결됨 (port: 40081)" : "연결 안됨"}</Label>
+        <Tag theme={connected() ? "success" : "danger"}>{connected() ? "연결됨 (port: 40081)" : "연결 안됨"}</Tag>
       </section>
 
       {/* EchoService */}

@@ -1,6 +1,6 @@
 ---
 name: sd-review
-description: Use when performing a comprehensive code review of a package or path - leader analyzes code directly and dispatches to specialized reviewer agents
+description: Use when performing a comprehensive code review of a package or path - uses sd-explore for code analysis in a forked context, then dispatches to specialized reviewer agents
 ---
 
 # sd-review
@@ -9,7 +9,7 @@ description: Use when performing a comprehensive code review of a package or pat
 
 Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Team-based workflow: the leader reads and analyzes the code directly, then sends the analysis to reviewer agents. Reviewers identify issues from their specialized perspectives and report back. The leader verifies reported issues against the actual code and writes the final report.
+Analyzes code via the `sd-explore` skill, then runs 3 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
 
 ## Usage
 
@@ -23,42 +23,45 @@ Team-based workflow: the leader reads and analyzes the code directly, then sends
 
 **Important: the review scope is ALL source files under the target path.** Do not use git status or git diff to limit to changed files. Analyze every source file in the target path.
 
-## Team Composition
+## Reviewer Agents
 
-Create a team with TeamCreate, then spawn the following 3 teammates via the Task tool:
+Run 3 subagents in parallel via the Task tool:
 
-| Name | Agent Type | Role |
-|------|-----------|------|
-| **code-reviewer** | `feature-dev:code-reviewer` | Bugs, security, logic errors, convention issues |
-| **simplifier** | `code-simplifier:code-simplifier` | Complexity, duplication, readability issues |
-| **dx-reviewer** | `sd-api-reviewer` | DX/usability, naming, type hints |
-
-The leader performs code analysis directly (replaces the former explorer role).
+| Agent Type | Role |
+|-----------|------|
+| `feature-dev:code-reviewer` | Bugs, security, logic errors, convention issues |
+| `code-simplifier:code-simplifier` | Complexity, duplication, readability issues |
+| `sd-api-reviewer` | DX/usability, naming, type hints |
 
 ## Workflow
 
-### Step 1: Leader Analyzes Code
+### Step 1: Code Analysis via sd-explore
 
-The leader uses Glob, Grep, Read, etc. to directly analyze the target path:
+Invoke the `sd-explore` skill via the Skill tool to analyze the target path:
 
-- **Feature Discovery**: entry points (APIs, UI components, CLI commands), core files, module boundaries
-- **Code Flow Tracing**: call chains, data transformation paths, state changes and side effects
-- **Architecture Analysis**: abstraction layers, design patterns, interfaces between components, dependency graph
-- **Implementation Details**: error handling patterns, public API surface, performance considerations
+```
+Skill: sd-explore
+Args: <target-path>
+```
 
-**No code modifications — analysis only.**
+This runs in a **separate context**, so it does not consume the main context window. The analysis covers:
+
+- Feature Discovery: entry points, core files, module boundaries
+- Code Flow Tracing: call chains, data transformations, state changes
+- Architecture Analysis: abstraction layers, design patterns, dependency graph
+- Implementation Details: error handling, public API surface, performance
 
 ### Step 2: Dispatch Analysis to Reviewers
 
-The leader sends the analysis results to each of the 3 reviewers via SendMessage, with the following instructions:
+Run 3 subagents **in parallel** via the Task tool. Include the sd-explore analysis results in each subagent's prompt:
 
-- **code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. For each finding, include **file:line** and **evidence**.
-- **simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. For each finding, include **file:line** and **evidence**. **No code modifications.**
-- **dx-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. For each finding, include **file:line** and **evidence**.
+- **feature-dev:code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
+- **code-simplifier:code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
+- **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
 
-### Step 3: Leader Verifies Issues
+### Step 3: Verify Issues
 
-After collecting findings from all 3 reviewers, the leader verifies each issue by checking the actual code:
+After collecting results from all 3 subagents, verify each issue against the actual code:
 
 - **Valid**: the issue is real → include in the report
 - **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
@@ -67,13 +70,13 @@ After collecting findings from all 3 reviewers, the leader verifies each issue b
 
 ### Step 4: Final Report
 
-The leader compiles **verified findings** into a comprehensive report.
+Compile only **verified findings** into a comprehensive report.
 
 ### Report Structure
 
 | Section | Priority | Source |
 |---------|----------|--------|
-| **Architecture Summary** | — | Leader's analysis |
+| **Architecture Summary** | — | sd-explore analysis |
 | **Critical Issues** | P0 | Bugs, security vulnerabilities |
 | **Quality Issues** | P1 | Logic errors, missing error handling, performance |
 | **DX/Usability Issues** | P2 | API intuitiveness, naming, type hints |
@@ -83,10 +86,6 @@ The leader compiles **verified findings** into a comprehensive report.
 Each issue includes **file:line**, **description**, and **suggestion**.
 
 Optionally include an **Invalid Findings Summary** appendix showing which findings were filtered out and why.
-
-### Step 5: Team Shutdown
-
-After the report is written, send shutdown_request to all teammates and clean up with TeamDelete.
 
 ## Completion Criteria
 

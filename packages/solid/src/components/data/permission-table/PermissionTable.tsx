@@ -219,22 +219,6 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
 
   const currentValue = createMemo(() => local.value ?? {});
 
-  // depth 맵 (cellClass에서 사용)
-  const depthMap = createMemo(() => {
-    const map = new Map<PermissionItem, number>();
-
-    function walk(items: PermissionItem[], depth: number) {
-      for (const item of items) {
-        map.set(item, depth);
-        const children = getChildren(item);
-        if (children) walk(children, depth + 1);
-      }
-    }
-
-    walk(visibleItems(), 0);
-    return map;
-  });
-
   // 확장 상태 — 기본적으로 모두 펼침
   const getAllExpandable = () => collectExpandable(visibleItems(), getChildren);
 
@@ -284,13 +268,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
         </DataSheet.Column>
         <For each={allPerms()}>
           {(perm) => (
-            <DataSheet.Column
-              key={`perm-${perm}`}
-              header={perm}
-              sortable={false}
-              resizable={false}
-              cellStyle={(item) => ({ "background-color": `rgba(0,0,0,${depthMap().get(item) * 0.2})` })}
-            >
+            <DataSheet.Column key={`perm-${perm}`} header={perm} sortable={false} resizable={false}>
               {(ctx) => {
                 const item = ctx.item as PermissionItem;
                 return (
