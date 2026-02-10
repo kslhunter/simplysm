@@ -93,6 +93,7 @@ export { ripple } from "./directives/ripple";
 
 // print
 export * from "./components/print/Print";
+export * from "./components/print/PrintInstanceContext";
 export * from "./contexts/usePrint";
 
 // utils
