@@ -3,6 +3,8 @@ export * from "./components/form-control/Button";
 export * from "./components/form-control/ThemeToggle";
 export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
+export * from "./components/form-control/combobox/Combobox";
+export * from "./components/form-control/combobox/ComboboxContext";
 export * from "./components/form-control/field/TextInput";
 export * from "./components/form-control/field/NumberInput";
 export * from "./components/form-control/field/DatePicker";
