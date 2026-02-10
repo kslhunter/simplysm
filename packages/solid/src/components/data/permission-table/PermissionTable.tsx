@@ -53,21 +53,23 @@ export function filterByModules<TModule>(
 ): PermissionItem<TModule>[] {
   if (!modules || modules.length === 0) return items;
 
-  return items
-    .map((item) => {
-      // 이 아이템에 modules가 있는데 교차가 없으면 제외
-      if (item.modules && !item.modules.some((m) => modules.includes(m))) {
-        return undefined;
-      }
-      // children도 재귀 필터
-      const children = item.children ? filterByModules(item.children, modules) : undefined;
-      // children이 있었는데 전부 필터링되면 이 그룹도 제외
-      if (item.children && (!children || children.length === 0) && !item.perms) {
-        return undefined;
-      }
-      return { ...item, children };
-    })
-    .filter((item): item is PermissionItem<TModule> => item !== undefined);
+  const result: PermissionItem<TModule>[] = [];
+
+  for (const item of items) {
+    // 이 아이템에 modules가 있는데 교차가 없으면 제외
+    if (item.modules && !item.modules.some((m) => modules.includes(m))) {
+      continue;
+    }
+    // children도 재귀 필터
+    const children = item.children ? filterByModules(item.children, modules) : undefined;
+    // children이 있었는데 전부 필터링되면 이 그룹도 제외
+    if (item.children && (!children || children.length === 0) && !item.perms) {
+      continue;
+    }
+    result.push({ ...item, children });
+  }
+
+  return result;
 }
 
 /** 체크 변경 시 cascading 처리 */

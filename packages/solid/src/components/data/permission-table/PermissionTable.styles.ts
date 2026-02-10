@@ -46,7 +46,7 @@ export const tdTitleClass = clsx(
 
 // 권한 셀 (td)
 export const tdPermClass = clsx(
-  "px-1 py-1",
+  "p-1",
   "text-center",
 );
 
