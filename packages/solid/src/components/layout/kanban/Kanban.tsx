@@ -1,5 +1,6 @@
 import {
   children,
+  createEffect,
   createSignal,
   type JSX,
   onCleanup,
@@ -15,9 +16,11 @@ import { splitSlots } from "../../../utils/splitSlots";
 import {
   KanbanContext,
   KanbanLaneContext,
+  useKanbanContext,
   type KanbanCardRef,
   type KanbanContextValue,
   type KanbanDropInfo,
+  type KanbanDropTarget,
   type KanbanLaneContextValue,
 } from "./KanbanContext";
 
@@ -95,6 +98,11 @@ const laneBodyBaseClass = clsx(
   "overflow-y-auto",
 );
 
+const placeholderBaseClass = clsx(
+  "rounded-lg",
+  "bg-black/10 dark:bg-white/10",
+);
+
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "children",
@@ -102,8 +110,48 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     "value",
   ]);
 
+  const boardCtx = useKanbanContext();
+  const [dropTarget, setDropTarget] = createSignal<KanbanDropTarget>();
+
+  // dragCard가 리셋되면 dropTarget도 초기화
+  createEffect(() => {
+    if (!boardCtx.dragCard()) {
+      dragEnterCount = 0;
+      setDropTarget(undefined);
+    }
+  });
+
+  // Lane 이탈 감지: dragenter/dragleave 카운터
+  let dragEnterCount = 0;
+
+  const handleLaneDragEnter = () => {
+    dragEnterCount++;
+  };
+
+  const handleLaneDragLeave = () => {
+    dragEnterCount--;
+    if (dragEnterCount === 0) {
+      setDropTarget(undefined);
+    }
+  };
+
+  // 빈 영역 dragover (카드가 없거나 카드 아래 영역)
+  const handleLaneDragOver = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+  };
+
+  // 빈 영역 drop
+  const handleLaneDrop = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+    boardCtx.onDropTo(local.value, undefined, undefined);
+  };
+
   const laneContextValue: KanbanLaneContextValue = {
     value: () => local.value,
+    dropTarget,
+    setDropTarget,
   };
 
   // Provider 안에서 children을 resolve해야 splitSlots가 올바르게 동작
@@ -114,11 +162,55 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     const hasHeader = () =>
       slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
 
+    // placeholder div (Lane이 소유, DOM 직접 제어)
+    let bodyRef!: HTMLDivElement;
+    const placeholderEl = document.createElement("div");
+    placeholderEl.className = placeholderBaseClass;
+
+    createEffect(() => {
+      const target = dropTarget();
+      const dc = boardCtx.dragCard();
+
+      if (!target || !dc) {
+        if (placeholderEl.parentNode) {
+          placeholderEl.remove();
+        }
+        return;
+      }
+
+      // placeholder 높이 설정
+      placeholderEl.style.height = `${dc.heightOnDrag}px`;
+
+      // 삽입 위치 계산
+      const referenceNode = target.position === "before"
+        ? target.element
+        : target.element.nextElementSibling;
+
+      // 이미 올바른 위치면 DOM 조작 생략
+      if (placeholderEl.parentNode === bodyRef
+          && placeholderEl.nextSibling === referenceNode) {
+        return;
+      }
+
+      bodyRef.insertBefore(placeholderEl, referenceNode);
+    });
+
+    // placeholder cleanup
+    onCleanup(() => {
+      if (placeholderEl.parentNode) {
+        placeholderEl.remove();
+      }
+    });
+
     return (
       <div
         {...rest}
         data-kanban-lane
         class={twMerge(laneBaseClass, local.class)}
+        onDragEnter={handleLaneDragEnter}
+        onDragLeave={handleLaneDragLeave}
+        onDragOver={handleLaneDragOver}
+        onDrop={handleLaneDrop}
       >
         <Show when={hasHeader()}>
           <div class={laneHeaderBaseClass}>
@@ -128,7 +220,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
             </Show>
           </div>
         </Show>
-        <div class={laneBodyBaseClass}>
+        <div ref={bodyRef} class={laneBodyBaseClass}>
           {content()}
         </div>
       </div>
