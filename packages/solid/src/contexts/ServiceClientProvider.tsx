@@ -12,9 +12,9 @@ export const ServiceClientProvider: ParentComponent = (props) => {
   const reqProgressMap = new Map<string, string>();
   const resProgressMap = new Map<string, string>();
 
-  onCleanup(async () => {
+  onCleanup(() => {
     for (const client of clientMap.values()) {
-      await client.close();
+      void client.close();
     }
     clientMap.clear();
   });
@@ -55,10 +55,14 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       if (state.completedSize === state.totalSize) {
         const id = reqProgressMap.get(state.uuid);
         if (id != null) {
-          notification.update(id, {
-            title: "요청 전송 완료",
-            message: "100%",
-          }, { renotify: true });
+          notification.update(
+            id,
+            {
+              title: "요청 전송 완료",
+              message: "100%",
+            },
+            { renotify: true },
+          );
           reqProgressMap.delete(state.uuid);
         }
       }
@@ -79,10 +83,14 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       if (state.completedSize === state.totalSize) {
         const id = resProgressMap.get(state.uuid);
         if (id != null) {
-          notification.update(id, {
-            title: "응답 전송 완료",
-            message: "100%",
-          }, { renotify: true });
+          notification.update(
+            id,
+            {
+              title: "응답 전송 완료",
+              message: "100%",
+            },
+            { renotify: true },
+          );
           resProgressMap.delete(state.uuid);
         }
       }
@@ -120,9 +128,5 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     isConnected,
   };
 
-  return (
-    <ServiceClientContext.Provider value={contextValue}>
-      {props.children}
-    </ServiceClientContext.Provider>
-  );
+  return <ServiceClientContext.Provider value={contextValue}>{props.children}</ServiceClientContext.Provider>;
 };
