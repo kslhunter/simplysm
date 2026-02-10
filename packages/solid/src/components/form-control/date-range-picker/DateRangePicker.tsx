@@ -6,7 +6,6 @@ import { createControllableSignal } from "../../../utils/createControllableSigna
 import { type FieldSize } from "../field/Field.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
-import { SelectItem } from "../select/SelectItem";
 
 export type DateRangePeriodType = "day" | "month" | "range";
 
@@ -177,9 +176,9 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
         size={local.size}
         inset
       >
-        <SelectItem value={"day" as DateRangePeriodType}>{labels().day}</SelectItem>
-        <SelectItem value={"month" as DateRangePeriodType}>{labels().month}</SelectItem>
-        <SelectItem value={"range" as DateRangePeriodType}>{labels().range}</SelectItem>
+        <Select.Item value={"day" as DateRangePeriodType}>{labels().day}</Select.Item>
+        <Select.Item value={"month" as DateRangePeriodType}>{labels().month}</Select.Item>
+        <Select.Item value={"range" as DateRangePeriodType}>{labels().range}</Select.Item>
       </Select>
 
       <Show
