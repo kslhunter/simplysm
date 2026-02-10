@@ -33,7 +33,12 @@ export abstract class Broadcast {
     filters: string[],
     callback: (result: IBroadcastResult) => void,
   ): Promise<() => Promise<void>> {
-    const { id } = await BroadcastPlugin.subscribe({ filters }, callback);
+    const { id } = await BroadcastPlugin.subscribe({ filters }, (result) => {
+      // Filter out the initial resolve that only contains { id }
+      if (result.action != null) {
+        callback(result);
+      }
+    });
     return async () => {
       await BroadcastPlugin.unsubscribe({ id });
     };

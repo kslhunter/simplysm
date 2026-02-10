@@ -20,8 +20,8 @@ export abstract class FileSystem {
   /**
    * 권한 확인
    */
-  static async checkPermission(): Promise<boolean> {
-    const result = await FileSystemPlugin.checkPermission();
+  static async hasPermission(): Promise<boolean> {
+    const result = await FileSystemPlugin.hasPermission();
     return result.granted;
   }
 
@@ -112,7 +112,7 @@ export abstract class FileSystem {
   /**
    * 디렉토리 생성 (재귀)
    */
-  static async mkdirs(targetPath: string): Promise<void> {
+  static async mkdir(targetPath: string): Promise<void> {
     await FileSystemPlugin.mkdir({ path: targetPath });
   }
 

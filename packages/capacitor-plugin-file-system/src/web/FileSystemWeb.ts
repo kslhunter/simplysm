@@ -8,7 +8,7 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
   private readonly _textEncoder = new TextEncoder();
   private readonly _textDecoder = new TextDecoder();
 
-  async checkPermission(): Promise<{ granted: boolean }> {
+  async hasPermission(): Promise<{ granted: boolean }> {
     return Promise.resolve({ granted: true });
   }
 

@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbStoragePlugin } from "../IUsbStoragePlugin";
+import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbFileInfo, IUsbStoragePlugin } from "../IUsbStoragePlugin";
 import { VirtualUsbStorage } from "./VirtualUsbStorage";
 import { bytesToBase64 } from "@simplysm/core-common";
 
@@ -27,7 +27,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
     return Promise.resolve({ granted: true });
   }
 
-  async readdir(options: IUsbDeviceFilter & { path: string }): Promise<{ files: string[] }> {
+  async readdir(options: IUsbDeviceFilter & { path: string }): Promise<{ files: IUsbFileInfo[] }> {
     const deviceKey = `${options.vendorId}:${options.productId}`;
     const devices = await this._storage.getDevices();
     const deviceExists = devices.some((d) => d.key === deviceKey);

@@ -11,7 +11,7 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
     _callback: (result: IBroadcastResult) => void,
   ): Promise<{ id: string }> {
     BroadcastWeb._warn();
-    return Promise.resolve({ id: "web-stub" });
+    return { id: "web-stub" };
   }
 
   async unsubscribe(_options: { id: string }): Promise<void> {
@@ -24,10 +24,9 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
 
   async send(_options: { action: string; extras?: Record<string, unknown> }): Promise<void> {
     BroadcastWeb._warn();
-    await Promise.resolve();
   }
 
   async getLaunchIntent(): Promise<IBroadcastResult> {
-    return Promise.resolve({});
+    return {};
   }
 }

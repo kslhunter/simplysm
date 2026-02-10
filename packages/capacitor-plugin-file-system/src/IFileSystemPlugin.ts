@@ -13,7 +13,7 @@ export interface IFileInfo {
 }
 
 export interface IFileSystemPlugin {
-  checkPermission(): Promise<{ granted: boolean }>;
+  hasPermission(): Promise<{ granted: boolean }>;
   requestPermission(): Promise<void>;
   readdir(options: { path: string }): Promise<{ files: IFileInfo[] }>;
   getStoragePath(options: { type: TStorage }): Promise<{ path: string }>;

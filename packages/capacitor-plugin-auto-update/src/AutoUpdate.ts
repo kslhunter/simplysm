@@ -7,27 +7,30 @@ import semver from "semver";
 import { ApkInstaller } from "./ApkInstaller";
 
 export abstract class AutoUpdate {
+  private static readonly _BUTTON_CSS = `
+    all: unset;
+    color: blue;
+    width: 100%;
+    padding: 10px;
+    line-height: 1.5em;
+    font-size: 20px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    border-top: 1px solid lightgrey;
+  `;
+
+  private static readonly _BUTTON_ACTIVE_CSS = `
+    background: lightgrey;
+  `;
+
   private static _throwAboutReinstall(code: number, targetHref?: string) {
     const downloadHtml =
       targetHref != null
         ? html`
             <style>
-              ._button {
-                all: unset;
-                color: blue;
-                width: 100%;
-                padding: 10px;
-                line-height: 1.5em;
-                font-size: 20px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                border-top: 1px solid lightgrey;
-              }
-
-              ._button:active {
-                background: lightgrey;
-              }
+              ._button { ${this._BUTTON_CSS} }
+              ._button:active { ${this._BUTTON_ACTIVE_CSS} }
             </style>
             <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">
               다운로드
@@ -60,22 +63,8 @@ export abstract class AutoUpdate {
       log(html`
         설치권한이 설정되어야합니다.
         <style>
-          button {
-            all: unset;
-            color: blue;
-            width: 100%;
-            padding: 10px;
-            line-height: 1.5em;
-            font-size: 20px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            border-top: 1px solid lightgrey;
-          }
-
-          button:active {
-            background: lightgrey;
-          }
+          button { ${this._BUTTON_CSS} }
+          button:active { ${this._BUTTON_ACTIVE_CSS} }
         </style>
         <button onclick="location.reload()">재시도</button>
       `);
@@ -95,22 +84,8 @@ export abstract class AutoUpdate {
     log(html`
       최신버전을 설치한 후 재시작하세요.
       <style>
-        button {
-          all: unset;
-          color: blue;
-          width: 100%;
-          padding: 10px;
-          line-height: 1.5em;
-          font-size: 20px;
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          border-top: 1px solid lightgrey;
-        }
-
-        button:active {
-          background: lightgrey;
-        }
+        button { ${this._BUTTON_CSS} }
+        button:active { ${this._BUTTON_ACTIVE_CSS} }
       </style>
       <button onclick="location.reload()">재시도</button>
     `);
@@ -150,8 +125,13 @@ export abstract class AutoUpdate {
       // 현재 앱 버전 가져오기
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이면 반환
-      if (currentVersionInfo.versionName === serverVersionInfo.version) {
+      // 최신버전이거나 서버 버전이 낮으면 반환
+      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(serverVersionInfo.version)) {
+        // eslint-disable-next-line no-console
+        console.log("Invalid semver version, skipping update check");
+        return;
+      }
+      if (!semver.gt(serverVersionInfo.version, currentVersionInfo.versionName)) {
         return;
       }
 
@@ -214,8 +194,13 @@ export abstract class AutoUpdate {
       // 현재 앱 버전 가져오기
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이면 반환
-      if (currentVersionInfo.versionName === latestVersion) {
+      // 최신버전이거나 외부 저장소 버전이 낮으면 반환
+      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(latestVersion)) {
+        // eslint-disable-next-line no-console
+        console.log("Invalid semver version, skipping update check");
+        return;
+      }
+      if (!semver.gt(latestVersion, currentVersionInfo.versionName)) {
         return;
       }
 
