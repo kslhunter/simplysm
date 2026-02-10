@@ -8,4 +8,4 @@ getWrapperClass 이 반복되는거 같은데 Field.styles.ts로 빼는게 나�
 
 cli에 Capacitor처럼 electron도 지원. legacy의 electron부분과 신규 cli의 capacitor 참조
 
-solid, solid-demo 폴더구조 리팩토링
+solid, solid-demo 폴더구조 리팩토링ㅇㅇ
