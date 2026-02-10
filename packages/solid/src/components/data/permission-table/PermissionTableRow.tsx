@@ -15,9 +15,9 @@ import {
 export interface PermissionTableRowProps<TModule = string> {
   item: PermissionItem<TModule>;
   depth: number;
-  allPerms: string[];
-  value: Record<string, boolean>;
-  collapsedSet: Set<string>;
+  allPerms: () => string[];
+  value: () => Record<string, boolean>;
+  collapsedSet: () => Set<string>;
   disabled?: boolean;
   onToggleCollapse: (key: string) => void;
   onPermChange: (item: PermissionItem<TModule>, perm: string, checked: boolean) => void;
@@ -29,7 +29,7 @@ function isGroupPermChecked<TModule>(
   perm: string,
   value: Record<string, boolean>,
 ): boolean {
-  if (item.perms && item.href) {
+  if (item.perms && item.href != null && item.href !== "") {
     return value[item.href + "/" + perm] ?? false;
   }
   if (item.children) {
@@ -58,7 +58,7 @@ function isPermDisabled<TModule>(
   perm: string,
   value: Record<string, boolean>,
 ): boolean {
-  if (!item.perms || !item.href) return false;
+  if (!item.perms || item.href == null || item.href === "") return false;
   const basePerm = item.perms[0];
   if (perm === basePerm) return false;
   return !(value[item.href + "/" + basePerm] ?? false);
@@ -66,7 +66,7 @@ function isPermDisabled<TModule>(
 
 export const PermissionTableRow: Component<PermissionTableRowProps> = (props) => {
   const hasChildren = () => (props.item.children?.length ?? 0) > 0;
-  const isCollapsed = () => props.collapsedSet.has(itemKey(props.item));
+  const isCollapsed = () => props.collapsedSet().has(itemKey(props.item));
 
   const depthClass = () => getDepthClass(props.depth);
 
@@ -83,6 +83,7 @@ export const PermissionTableRow: Component<PermissionTableRowProps> = (props) =>
             fallback={<span>{props.item.title}</span>}
           >
             <button
+              type="button"
               class={collapseButtonClass}
               onClick={() => props.onToggleCollapse(itemKey(props.item))}
             >
@@ -98,16 +99,16 @@ export const PermissionTableRow: Component<PermissionTableRowProps> = (props) =>
         </td>
 
         {/* 권한 셀들 */}
-        <For each={props.allPerms}>
+        <For each={props.allPerms()}>
           {(perm) => (
             <td class={tdPermClass}>
               <Show when={hasPermInTree(props.item, perm)}>
                 <CheckBox
-                  value={isGroupPermChecked(props.item, perm, props.value)}
+                  value={isGroupPermChecked(props.item, perm, props.value())}
                   onValueChange={(checked) => props.onPermChange(props.item, perm, checked)}
                   disabled={
                     props.disabled ||
-                    isPermDisabled(props.item, perm, props.value)
+                    isPermDisabled(props.item, perm, props.value())
                   }
                   inset
                   inline

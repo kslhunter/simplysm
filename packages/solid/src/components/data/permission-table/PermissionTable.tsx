@@ -80,10 +80,17 @@ export function changePermCheck<TModule>(
   const result = { ...value };
 
   const apply = (target: PermissionItem<TModule>) => {
-    if (target.perms && target.href) {
+    if (target.perms && target.href != null && target.href !== "") {
       const permIndex = target.perms.indexOf(perm);
+
       if (permIndex >= 0) {
-        result[target.href + "/" + perm] = checked;
+        // 기본 권한이 아닌 perm 체크 시, 기본 권한이 꺼져있으면 이 아이템만 건너뜀
+        const basePerm = target.perms[0];
+        const baseOff = permIndex > 0 && checked && !result[target.href + "/" + basePerm];
+
+        if (!baseOff) {
+          result[target.href + "/" + perm] = checked;
+        }
       }
 
       // 기본 권한(perms[0]) 해제 시 나머지도 해제
@@ -92,17 +99,9 @@ export function changePermCheck<TModule>(
           result[target.href + "/" + target.perms[i]] = false;
         }
       }
-
-      // 기본 권한이 아닌 perm을 체크하려는데 기본 권한이 꺼져있으면 무시
-      if (permIndex > 0 && checked) {
-        const basePerm = target.perms[0];
-        if (!result[target.href + "/" + basePerm]) {
-          return; // 기본 권한 없으면 하위 권한 체크 불가
-        }
-      }
     }
 
-    // cascading down
+    // cascading down — 항상 실행됨
     if (target.children) {
       for (const child of target.children) {
         apply(child);
@@ -117,7 +116,7 @@ export function changePermCheck<TModule>(
 // --- 컴포넌트 ---
 
 export const PermissionTable: Component<PermissionTableProps> = (props) => {
-  const [local] = splitProps(props, [
+  const [local, rest] = splitProps(props, [
     "items", "value", "onValueChange", "modules", "disabled", "class", "style",
   ]);
 
@@ -127,7 +126,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
 
   const allPerms = createMemo(() => collectAllPerms(filteredItems()));
 
-  const getValue = () => local.value ?? {};
+  const currentValue = createMemo(() => local.value ?? {});
 
   const [collapsedSet, setCollapsedSet] = createSignal(new Set<string>());
 
@@ -144,14 +143,14 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
   };
 
   const handlePermChange = (item: PermissionItem, perm: string, checked: boolean) => {
-    const newValue = changePermCheck(getValue(), item, perm, checked);
+    const newValue = changePermCheck(currentValue(), item, perm, checked);
     local.onValueChange?.(newValue);
   };
 
   const getClassName = () => twMerge(tableBaseClass, local.class);
 
   return (
-    <table class={getClassName()} style={local.style} data-permission-table>
+    <table class={getClassName()} style={local.style} {...rest} data-permission-table>
       <thead>
         <tr>
           <th class={thClass}>권한 항목</th>
@@ -166,9 +165,9 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
             <PermissionTableRow
               item={item}
               depth={0}
-              allPerms={allPerms()}
-              value={getValue()}
-              collapsedSet={collapsedSet()}
+              allPerms={allPerms}
+              value={currentValue}
+              collapsedSet={collapsedSet}
               disabled={local.disabled}
               onToggleCollapse={handleToggleCollapse}
               onPermChange={handlePermChange}
