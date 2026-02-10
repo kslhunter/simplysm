@@ -1,9 +1,10 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { createSignal } from "solid-js";
+import { onMount } from "solid-js";
 import { LoadingProvider } from "../../src/components/feedback/loading/LoadingProvider";
 import { usePrint } from "../../src/contexts/usePrint";
 import { Print } from "../../src/components/print/Print";
+import { usePrintInstance } from "../../src/components/print/PrintInstanceContext";
 
 // window.print 모킹
 vi.stubGlobal("print", vi.fn());
@@ -46,7 +47,7 @@ describe("usePrint", () => {
       expect(window.print).toHaveBeenCalled();
     });
 
-    it("Print ready 대기 후 인쇄한다", async () => {
+    it("usePrintInstance().ready() 대기 후 인쇄한다", async () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;
 
       render(() => (
@@ -59,12 +60,15 @@ describe("usePrint", () => {
         </LoadingProvider>
       ));
 
-      await printFn!(() => {
-        const [ready, setReady] = createSignal(false);
-        setTimeout(() => setReady(true), 50);
-        return <Print ready={ready()}>내용</Print>;
-      });
+      function AsyncContent() {
+        const print = usePrintInstance();
+        onMount(() => {
+          setTimeout(() => print?.ready(), 50);
+        });
+        return <div>내용</div>;
+      }
 
+      await printFn!(() => <AsyncContent />);
       expect(window.print).toHaveBeenCalled();
     });
   });
