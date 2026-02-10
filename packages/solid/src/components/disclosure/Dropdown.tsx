@@ -321,6 +321,18 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     onCleanup(() => document.removeEventListener("scroll", handleScroll, { capture: true }));
   });
 
+  // resize 감지 (뷰포트 크기 변경 시 닫기)
+  createEffect(() => {
+    if (!open()) return;
+
+    const handleResize = () => {
+      setOpen(false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    onCleanup(() => window.removeEventListener("resize", handleResize));
+  });
+
   // transitionend 이벤트 처리
   const handleTransitionEnd = (e: TransitionEvent) => {
     // opacity 전환 완료 시에만 처리
