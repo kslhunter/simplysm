@@ -13,6 +13,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Card } from "../../display/Card";
 import { splitSlots } from "../../../utils/splitSlots";
+import "./Kanban.css";
 import {
   KanbanContext,
   KanbanLaneContext,
@@ -48,10 +49,12 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 
 const cardHostClass = clsx(
   "relative block",
+  "transition-opacity duration-200",
 );
 
 const cardContentClass = clsx(
   "select-none whitespace-normal",
+  "animate-none transition-none",
 );
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
@@ -80,11 +83,15 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       e.preventDefault();
       return;
     }
+    e.dataTransfer?.setData("text/plain", "");
     const heightOnDrag = hostRef.offsetHeight;
-    boardCtx.setDragCard({
-      value: local.value,
-      laneValue: laneCtx.value(),
-      heightOnDrag,
+    // 브라우저가 드래그 고스트 이미지를 캡처한 뒤 숨기기 위해 한 프레임 지연
+    requestAnimationFrame(() => {
+      boardCtx.setDragCard({
+        value: local.value,
+        laneValue: laneCtx.value(),
+        heightOnDrag,
+      });
     });
   };
 
@@ -120,7 +127,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       ref={hostRef}
       data-kanban-card
       draggable={isDraggable()}
-      class={twMerge(cardHostClass, isDragSource() && "hidden", local.class)}
+      class={twMerge(cardHostClass, isDraggable() && "cursor-grab", isDragSource() && "opacity-30", local.class)}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -136,6 +143,10 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
 
 export interface KanbanLaneProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: unknown;
+  busy?: boolean;
+  collapsible?: boolean;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   children?: JSX.Element;
 }
 
@@ -145,6 +156,11 @@ const laneBaseClass = clsx(
   "bg-base-100 dark:bg-base-900",
   "rounded-lg",
   "overflow-hidden",
+  "transition-[background-color,box-shadow] duration-200"
+);
+
+const laneDragOverClass = clsx(
+  "bg-primary-50 dark:bg-primary-950"
 );
 
 const laneHeaderBaseClass = clsx(
@@ -164,7 +180,9 @@ const laneBodyBaseClass = clsx(
 
 const placeholderBaseClass = clsx(
   "rounded-lg",
-  "bg-black/10 dark:bg-white/10",
+  "bg-primary-100/60 dark:bg-primary-900/30",
+  "origin-top",
+  "animate-[kanban-ph-in_200ms_ease-out]",
 );
 
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
@@ -172,29 +190,36 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     "children",
     "class",
     "value",
+    "busy",
+    "collapsible",
+    "collapsed",
+    "onCollapsedChange",
   ]);
 
   const boardCtx = useKanbanContext();
   const [dropTarget, setDropTarget] = createSignal<KanbanDropTarget>();
+  const [dragEnterCount, setDragEnterCount] = createSignal(0);
 
-  // dragCard가 리셋되면 dropTarget도 초기화
+  // 드래그 오버 상태: 카운터 > 0 && 드래그 중
+  const isDragOverLane = () => dragEnterCount() > 0 && boardCtx.dragCard() != null;
+
+  // dragCard가 리셋되면 dropTarget, 카운터도 초기화
   createEffect(() => {
     if (!boardCtx.dragCard()) {
-      dragEnterCount = 0;
+      setDragEnterCount(0);
       setDropTarget(undefined);
     }
   });
 
   // Lane 이탈 감지: dragenter/dragleave 카운터
-  let dragEnterCount = 0;
-
   const handleLaneDragEnter = () => {
-    dragEnterCount++;
+    setDragEnterCount((c) => c + 1);
   };
 
   const handleLaneDragLeave = () => {
-    dragEnterCount--;
-    if (dragEnterCount === 0) {
+    const next = dragEnterCount() - 1;
+    setDragEnterCount(next);
+    if (next === 0) {
       setDropTarget(undefined);
     }
   };
@@ -270,7 +295,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       <div
         {...rest}
         data-kanban-lane
-        class={twMerge(laneBaseClass, local.class)}
+        class={twMerge(laneBaseClass, isDragOverLane() && laneDragOverClass, local.class)}
         onDragEnter={handleLaneDragEnter}
         onDragLeave={handleLaneDragLeave}
         onDragOver={handleLaneDragOver}
