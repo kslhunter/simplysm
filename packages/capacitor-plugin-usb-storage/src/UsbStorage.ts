@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbStoragePlugin } from "./IUsbStoragePlugin";
+import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbFileInfo, IUsbStoragePlugin } from "./IUsbStoragePlugin";
 import type { Bytes } from "@simplysm/core-common";
 import { bytesFromBase64 } from "@simplysm/core-common";
 
@@ -49,9 +49,9 @@ export abstract class UsbStorage {
    * USB 저장장치의 디렉토리 내용을 읽어옴
    * @param filter 대상 USB 장치의 vendorId와 productId
    * @param dirPath 읽어올 디렉토리 경로
-   * @returns 디렉토리 내 파일/폴더 이름 배열
+   * @returns 디렉토리 내 파일/폴더 정보 배열
    */
-  static async readdir(filter: IUsbDeviceFilter, dirPath: string): Promise<string[]> {
+  static async readdir(filter: IUsbDeviceFilter, dirPath: string): Promise<IUsbFileInfo[]> {
     const result = await UsbStoragePlugin.readdir({ ...filter, path: dirPath });
     return result.files;
   }

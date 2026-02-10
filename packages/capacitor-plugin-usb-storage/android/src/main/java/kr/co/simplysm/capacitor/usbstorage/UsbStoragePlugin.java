@@ -178,7 +178,10 @@ public class UsbStoragePlugin extends Plugin {
 
                 JSArray result = new JSArray();
                 for (UsbFile file : files) {
-                    result.put(file.getName());
+                    JSObject info = new JSObject();
+                    info.put("name", file.getName());
+                    info.put("isDirectory", file.isDirectory());
+                    result.put(info);
                 }
 
                 JSObject ret = new JSObject();

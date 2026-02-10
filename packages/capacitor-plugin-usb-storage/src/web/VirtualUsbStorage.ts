@@ -113,16 +113,16 @@ export class VirtualUsbStorage {
     });
   }
 
-  async listChildren(deviceKey: string, dirPath: string): Promise<string[]> {
+  async listChildren(deviceKey: string, dirPath: string): Promise<{ name: string; isDirectory: boolean }[]> {
     const prefix = `${deviceKey}:${dirPath === "/" ? "/" : dirPath + "/"}`;
     return this._withStore(this._FILES_STORE, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
         const req = store.openCursor();
-        const names = new Set<string>();
+        const map = new Map<string, boolean>();
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
-            resolve(Array.from(names));
+            resolve(Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })));
             return;
           }
           const key = String(cursor.key);
@@ -131,7 +131,11 @@ export class VirtualUsbStorage {
             if (rest) {
               const segments = rest.split("/").filter(Boolean);
               if (segments.length > 0) {
-                names.add(segments[0]);
+                const firstName = segments[0];
+                if (!map.has(firstName)) {
+                  const isDir = segments.length > 1 || (cursor.value as VirtualEntry).kind === "dir";
+                  map.set(firstName, isDir);
+                }
               }
             }
           }
