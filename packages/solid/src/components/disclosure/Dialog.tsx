@@ -113,7 +113,7 @@ const resizePositionMap: Record<ResizeDirection, string> = {
 export const Dialog: ParentComponent<DialogProps> = (props) => {
   const dialogDefaults = useContext(DialogDefaultsContext);
 
-  const [local, _rest] = splitProps(props, [
+  const [local] = splitProps(props, [
     "open",
     "onOpenChange",
     "title",
