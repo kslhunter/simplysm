@@ -9,37 +9,20 @@ import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../utils/splitSlots";
-import { borderDefault, type ComponentSize, paddingLg, paddingSm, textMuted } from "../../../styles/tokens.styles";
-import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
+import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import {
+  triggerBaseClass,
+  triggerDisabledClass,
+  triggerInsetClass,
+  triggerSizeClasses,
+  chevronWrapperClass,
+} from "../DropdownTrigger.styles";
 
 void ripple;
 
-// 트리거 스타일
-const triggerBaseClass = clsx(
-  "inline-flex items-center gap-2",
-  "w-40",
-  "border",
-  borderDefault,
-  "rounded",
-  "bg-transparent",
-  "hover:bg-base-100 dark:hover:bg-base-700",
-  "cursor-pointer",
-  "focus:outline-none",
-  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
-);
-
-const triggerDisabledClass = clsx("cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500");
-
-const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOutlineSelf);
-
-const sizeClasses: Record<ComponentSize, string> = {
-  sm: clsx("gap-1.5", paddingSm),
-  lg: clsx("gap-3", paddingLg),
-};
-
+// Select 전용 스타일
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
-const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
 
 /**
  * Select 우측 액션 서브 컴포넌트
@@ -319,7 +302,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     twMerge(
       triggerBaseClass,
       "px-2 py-1",
-      local.size && sizeClasses[local.size],
+      local.size && triggerSizeClasses[local.size],
       local.disabled && triggerDisabledClass,
       local.inset && triggerInsetClass,
       local.class,

@@ -10,36 +10,19 @@ import { ComboboxContext, type ComboboxContextValue } from "./ComboboxContext";
 import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../utils/splitSlots";
-import { borderDefault, type ComponentSize, paddingLg, paddingSm, textMuted } from "../../../styles/tokens.styles";
-import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
+import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import {
+  triggerBaseClass,
+  triggerDisabledClass,
+  triggerInsetClass,
+  triggerSizeClasses,
+  chevronWrapperClass,
+} from "../DropdownTrigger.styles";
 
 void ripple;
 
-// 트리거 스타일 (Select 참고)
-const triggerBaseClass = clsx(
-  "inline-flex items-center gap-2",
-  "w-40",
-  "border",
-  borderDefault,
-  "rounded",
-  "bg-transparent",
-  "hover:bg-base-100 dark:hover:bg-base-700",
-  "cursor-pointer",
-  "focus:outline-none",
-  "focus-within:border-primary-400 dark:focus-within:border-primary-400",
-);
-
-const triggerDisabledClass = clsx("cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500");
-
-const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOutlineSelf);
-
-const sizeClasses: Record<ComponentSize, string> = {
-  sm: clsx("gap-1.5", paddingSm),
-  lg: clsx("gap-3", paddingLg),
-};
-
+// Combobox 전용 스타일
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden");
-const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
 const inputClass = clsx(
   "min-w-0 flex-1",
   "bg-transparent outline-none",
@@ -301,7 +284,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     twMerge(
       triggerBaseClass,
       "px-2 py-1",
-      local.size && sizeClasses[local.size],
+      local.size && triggerSizeClasses[local.size],
       local.disabled && triggerDisabledClass,
       local.inset && triggerInsetClass,
       local.class,
