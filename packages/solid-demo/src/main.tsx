@@ -53,6 +53,7 @@ render(
           <Route path="/home/feedback/notification" component={lazy(() => import("./pages/feedback/NotificationPage"))} />
           <Route path="/home/feedback/busy" component={lazy(() => import("./pages/feedback/BusyPage"))} />
           <Route path="/home/service/client" component={lazy(() => import("./pages/service/ServiceClientPage"))} />
+          <Route path="/home/service/shared-data" component={lazy(() => import("./pages/service/SharedDataPage"))} />
           <Route path="/*" component={NotFoundPage} />
         </Route>
       </Route>
