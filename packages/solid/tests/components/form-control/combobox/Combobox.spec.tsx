@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Combobox } from "../../../../src/components/form-control/combobox/Combobox";
 
 describe("Combobox 컴포넌트", () => {
-  const mockLoadItems = vi.fn(async () => []);
+  const mockLoadItems = vi.fn(() => Promise.resolve([]));
 
   beforeEach(() => {
     mockLoadItems.mockClear();
@@ -26,6 +26,63 @@ describe("Combobox 컴포넌트", () => {
     it("disabled일 때 aria-disabled가 설정된다", () => {
       const { getByRole } = render(() => <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />);
       expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
+    });
+  });
+
+  describe("드롭다운 열기/닫기", () => {
+    it("입력 시 드롭다운이 열린다", async () => {
+      const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
+      const { container } = render(() => (
+        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "사" } });
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+    });
+
+    it("아이템 선택 시 드롭다운이 닫힌다", async () => {
+      const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
+      const { container, getByRole } = render(() => (
+        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "사" } });
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-combobox-item]")).not.toBeNull();
+      });
+
+      const item = document.querySelector("[data-combobox-item]") as HTMLElement;
+      fireEvent.click(item);
+
+      await waitFor(() => {
+        expect(getByRole("combobox").getAttribute("aria-expanded")).toBe("false");
+      });
+    });
+
+    it("Escape 키로 드롭다운이 닫힌다", async () => {
+      const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
+      const { container, getByRole } = render(() => (
+        <Combobox loadItems={loadItems} renderValue={(v: { name: string }) => <>{v.name}</>} />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "사" } });
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      fireEvent.keyDown(getByRole("combobox"), { key: "Escape" });
+
+      await waitFor(() => {
+        expect(getByRole("combobox").getAttribute("aria-expanded")).toBe("false");
+      });
     });
   });
 });
