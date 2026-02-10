@@ -1,10 +1,4 @@
-import {
-  children,
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+import { children, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -36,7 +30,10 @@ const SelectItemChildren: ParentComponent = (props) => (
   </div>
 );
 
-export interface SelectItemProps<T = unknown> extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onClick"> {
+export interface SelectItemProps<T = unknown> extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "value" | "onClick"
+> {
   /** 아이템의 값 */
   value: T;
 
@@ -65,12 +62,7 @@ interface SelectItemComponent<T = unknown> extends ParentComponent<SelectItemPro
  * ```
  */
 export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & { children?: JSX.Element }) => {
-  const [local, rest] = splitProps(props, [
-    "children",
-    "class",
-    "value",
-    "disabled",
-  ]);
+  const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
 
   const context = useSelectContext<T>();
 
@@ -120,14 +112,10 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
         <Show when={context.multiple() && !hasChildren()}>
           <Icon icon={IconCheck} class={getCheckIconClass()} />
         </Show>
-        <span class={listItemContentClass}>
-          {content()}
-        </span>
+        <span class={listItemContentClass}>{content()}</span>
       </button>
       <Show when={hasChildren()}>
-        <Collapse open={true}>
-          {slots().selectItemChildren.single()}
-        </Collapse>
+        <Collapse open={true}>{slots().selectItemChildren.single()}</Collapse>
       </Show>
     </>
   );

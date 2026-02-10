@@ -33,12 +33,7 @@ const insetClass = clsx(
 export const Table: ParentComponent<TableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inset"]);
 
-  const getClassName = () =>
-    twMerge(
-      baseClass,
-      local.inset && insetClass,
-      local.class,
-    );
+  const getClassName = () => twMerge(baseClass, local.inset && insetClass, local.class);
 
   return (
     <table data-table class={getClassName()} {...rest}>

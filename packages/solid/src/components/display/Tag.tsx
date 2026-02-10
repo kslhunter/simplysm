@@ -9,12 +9,7 @@ export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   theme?: TagTheme;
 }
 
-const baseClass = clsx(
-  "inline-block",
-  "text-white",
-  "px-1.5",
-  "rounded-md",
-);
+const baseClass = clsx("inline-block", "text-white", "px-1.5", "rounded-md");
 
 const themeClasses: Record<TagTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.solid]),

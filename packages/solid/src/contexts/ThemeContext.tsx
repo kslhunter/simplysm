@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  type ParentComponent,
-  createMemo,
-  createEffect,
-  onCleanup,
-} from "solid-js";
+import { createContext, useContext, type ParentComponent, createMemo, createEffect, onCleanup } from "solid-js";
 import { createMediaQuery } from "@solid-primitives/media";
 import { usePersisted } from "./usePersisted";
 
@@ -60,7 +53,9 @@ const ThemeContext = createContext<ThemeContextValue>();
 export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다");
+    throw new Error(
+      "useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다. ThemeProvider는 InitializeProvider 아래에 위치해야 합니다",
+    );
   }
   return context;
 }
@@ -100,8 +95,7 @@ export const ThemeProvider: ParentComponent = (props) => {
   // 다음 모드로 순환
   const cycleMode = () => {
     const current = mode();
-    const next: ThemeMode =
-      current === "light" ? "system" : current === "system" ? "dark" : "light";
+    const next: ThemeMode = current === "light" ? "system" : current === "system" ? "dark" : "light";
     setMode(next);
   };
 

@@ -103,8 +103,12 @@ describe("usePrint", () => {
 
       const result = await pdfFn!(() => (
         <Print>
-          <Print.Page><div style={{ height: "100px" }}>페이지 1</div></Print.Page>
-          <Print.Page><div style={{ height: "100px" }}>페이지 2</div></Print.Page>
+          <Print.Page>
+            <div style={{ height: "100px" }}>페이지 1</div>
+          </Print.Page>
+          <Print.Page>
+            <div style={{ height: "100px" }}>페이지 2</div>
+          </Print.Page>
         </Print>
       ));
 

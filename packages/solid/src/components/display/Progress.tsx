@@ -27,11 +27,7 @@ const sizeClasses: Record<"default" | ProgressSize, string> = {
   lg: "py-2 px-3",
 };
 
-const insetClass = clsx(
-  "rounded-none",
-  "border-0",
-  "bg-transparent",
-);
+const insetClass = clsx("rounded-none", "border-0", "bg-transparent");
 
 const barThemeClasses: Record<ProgressTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.solid]),
@@ -42,22 +38,12 @@ export const Progress: ParentComponent<ProgressProps> = (props) => {
 
   const getClassName = () => {
     const size = local.size ?? "default";
-    return twMerge(
-      baseClass,
-      sizeClasses[size],
-      local.inset ? insetClass : undefined,
-      local.class,
-    );
+    return twMerge(baseClass, sizeClasses[size], local.inset ? insetClass : undefined, local.class);
   };
 
   const getBarClassName = () => {
     const theme = local.theme ?? "primary";
-    return clsx(
-      "absolute left-0 top-0 h-full",
-      "z-[1]",
-      "transition-all",
-      barThemeClasses[theme],
-    );
+    return clsx("absolute left-0 top-0 h-full", "z-[1]", "transition-all", barThemeClasses[theme]);
   };
 
   const getPercentText = () => (local.value * 100).toFixed(2) + "%";

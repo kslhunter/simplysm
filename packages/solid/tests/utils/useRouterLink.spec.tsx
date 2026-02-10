@@ -117,11 +117,7 @@ describe("useRouterLink", () => {
 
       fireEvent.click(getByTestId("test-button"), { shiftKey: true });
 
-      expect(mockWindowOpen).toHaveBeenCalledWith(
-        "/dashboard",
-        "",
-        "width=800,height=800",
-      );
+      expect(mockWindowOpen).toHaveBeenCalledWith("/dashboard", "", "width=800,height=800");
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
@@ -133,11 +129,7 @@ describe("useRouterLink", () => {
 
       fireEvent.click(getByTestId("test-button"), { shiftKey: true });
 
-      expect(mockWindowOpen).toHaveBeenCalledWith(
-        "/dashboard",
-        "",
-        "width=1024,height=768",
-      );
+      expect(mockWindowOpen).toHaveBeenCalledWith("/dashboard", "", "width=1024,height=768");
     });
   });
 

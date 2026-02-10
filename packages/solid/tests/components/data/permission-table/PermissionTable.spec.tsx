@@ -56,9 +56,7 @@ describe("collectAllPerms", () => {
             title: "자식",
             href: "/child",
             perms: ["view"],
-            children: [
-              { title: "손자", href: "/child/grandchild", perms: ["view", "delete"] },
-            ],
+            children: [{ title: "손자", href: "/child/grandchild", perms: ["view", "delete"] }],
           },
         ],
       },
@@ -229,9 +227,7 @@ describe("PermissionTable 컴포넌트", () => {
 
       const checkboxes = getAllByRole("checkbox");
       // "시스템"의 "use" 체크박스가 체크되어 있어야 함
-      const checkedBox = checkboxes.find(
-        (cb) => cb.getAttribute("aria-checked") === "true",
-      );
+      const checkedBox = checkboxes.find((cb) => cb.getAttribute("aria-checked") === "true");
       expect(checkedBox).toBeTruthy();
     });
   });
@@ -247,9 +243,7 @@ describe("PermissionTable 컴포넌트", () => {
     });
 
     it("접기 버튼 클릭 시 자식이 DOM에서 제거된다", () => {
-      const { getByText, queryByText } = render(() => (
-        <PermissionTable items={sampleItems} />
-      ));
+      const { getByText, queryByText } = render(() => <PermissionTable items={sampleItems} />);
 
       // 초기: 자식 표시 (기본적으로 모두 펼침)
       expect(getByText("권한 설정")).toBeTruthy();

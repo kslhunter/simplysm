@@ -154,12 +154,5 @@ export const Barcode: Component<BarcodeProps> = (props) => {
     }
   });
 
-  return (
-    <div
-      data-barcode
-      ref={containerRef}
-      class={twMerge(baseClass, local.class)}
-      {...rest}
-    />
-  );
+  return <div data-barcode ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
 };

@@ -41,12 +41,5 @@ export const Echarts: Component<EchartsProps> = (props) => {
     chart.resize();
   });
 
-  return (
-    <div
-      data-echarts
-      ref={containerRef}
-      class={twMerge(baseClass, local.class)}
-      {...rest}
-    />
-  );
+  return <div data-echarts ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
 };

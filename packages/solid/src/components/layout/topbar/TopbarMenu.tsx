@@ -189,11 +189,7 @@ const TopbarMenuDropdownItem: Component<TopbarMenuDropdownItemProps> = (props) =
   };
 
   return (
-    <ListItem
-      selected={isSelected()}
-      readonly={props.menu.href === undefined && hasChildren()}
-      onClick={handleClick}
-    >
+    <ListItem selected={isSelected()} readonly={props.menu.href === undefined && hasChildren()} onClick={handleClick}>
       <Show when={props.menu.icon}>
         <Icon icon={props.menu.icon!} />
       </Show>

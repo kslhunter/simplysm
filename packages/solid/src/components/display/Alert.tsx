@@ -9,15 +9,12 @@ export interface AlertProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: AlertTheme;
 }
 
-const baseClass = clsx(
-  "block",
-  "p-3",
-  "rounded",
-);
+const baseClass = clsx("block", "p-3", "rounded");
 
-const themeClasses = Object.fromEntries(
-  Object.entries(themeTokens).map(([theme, t]) => [theme, t.light]),
-) as Record<AlertTheme, string>;
+const themeClasses = Object.fromEntries(Object.entries(themeTokens).map(([theme, t]) => [theme, t.light])) as Record<
+  AlertTheme,
+  string
+>;
 
 export const Alert: ParentComponent<AlertProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "theme"]);

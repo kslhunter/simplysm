@@ -125,10 +125,7 @@ export function flattenTree<T>(
   return result;
 }
 
-export function collectAllExpandable<T>(
-  items: T[],
-  getChildren: (item: T, index: number) => T[] | undefined,
-): T[] {
+export function collectAllExpandable<T>(items: T[], getChildren: (item: T, index: number) => T[] | undefined): T[] {
   const result: T[] = [];
   let index = 0;
 

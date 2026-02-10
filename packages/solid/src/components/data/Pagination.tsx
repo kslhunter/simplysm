@@ -50,8 +50,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
   const hasPrev = () => (pages()[0] ?? 0) > 0;
   const hasNext = () => (pages()[pages().length - 1] ?? 0) < local.totalPageCount - 1;
 
-  const getClassName = () =>
-    twMerge(baseClass, gapClasses[local.size ?? "default"], local.class);
+  const getClassName = () => twMerge(baseClass, gapClasses[local.size ?? "default"], local.class);
 
   return (
     <nav {...rest} data-pagination class={getClassName()}>

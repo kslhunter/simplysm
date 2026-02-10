@@ -65,8 +65,7 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
 
   const { mode, cycleMode } = useTheme();
 
-  const getClassName = () =>
-    twMerge(baseClass, "p-1.5", local.size && sizeClasses[local.size], local.class);
+  const getClassName = () => twMerge(baseClass, "p-1.5", local.size && sizeClasses[local.size], local.class);
 
   const iconSize = () => (local.size ? iconSizes[local.size] : "1.25em");
 

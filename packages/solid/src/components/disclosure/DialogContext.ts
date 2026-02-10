@@ -31,16 +31,13 @@ export interface DialogContentProps<T = undefined> {
 }
 
 export interface DialogContextValue {
-  show<T = undefined>(
-    content: Component<DialogContentProps<T>>,
-    options: DialogShowOptions,
-  ): Promise<T | undefined>;
+  show<T = undefined>(content: Component<DialogContentProps<T>>, options: DialogShowOptions): Promise<T | undefined>;
 }
 
 export const DialogContext = createContext<DialogContextValue>();
 
 export function useDialog(): DialogContextValue {
   const ctx = useContext(DialogContext);
-  if (!ctx) throw new Error("useDialog must be used within a DialogProvider");
+  if (!ctx) throw new Error("useDialog는 DialogProvider 내부에서만 사용할 수 있습니다");
   return ctx;
 }

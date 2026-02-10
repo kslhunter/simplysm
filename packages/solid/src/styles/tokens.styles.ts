@@ -21,14 +21,17 @@ export const paddingLg = "px-3 py-2";
 // ── 테마 ──
 export type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
 
-export const themeTokens: Record<SemanticTheme, {
-  solid: string;
-  solidHover: string;
-  light: string;
-  text: string;
-  hoverBg: string;
-  border: string;
-}> = {
+export const themeTokens: Record<
+  SemanticTheme,
+  {
+    solid: string;
+    solidHover: string;
+    light: string;
+    text: string;
+    hoverBg: string;
+    border: string;
+  }
+> = {
   primary: {
     solid: "bg-primary-500 text-white",
     solidHover: "hover:bg-primary-600 dark:hover:bg-primary-400",

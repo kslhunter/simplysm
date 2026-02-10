@@ -36,11 +36,7 @@ export const listItemReadonlyClass = clsx("cursor-auto select-text hover:bg-tran
 export const listItemIndentGuideClass = clsx("ml-4 w-2 border-l", borderDefault);
 
 // 아이템 콘텐츠 영역
-export const listItemContentClass = clsx(
-  "flex flex-1 flex-row",
-  "items-center gap-1",
-  "text-left",
-);
+export const listItemContentClass = clsx("flex flex-1 flex-row", "items-center gap-1", "text-left");
 
 // 선택 아이콘 색상
 export const getListItemSelectedIconClass = (selected: boolean) =>

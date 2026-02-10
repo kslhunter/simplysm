@@ -23,12 +23,7 @@ export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
 }
 
-const transitionClass = clsx(
-  "transition-[margin-top]",
-  "duration-200",
-  "ease-out",
-  "motion-reduce:transition-none",
-);
+const transitionClass = clsx("transition-[margin-top]", "duration-200", "ease-out", "motion-reduce:transition-none");
 
 export const Collapse: ParentComponent<CollapseProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style", "open"]);
@@ -67,7 +62,7 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
         style={{
           "margin-top": marginTop(),
           // 닫힌 상태에서 포커스 가능 요소 접근 차단 및 FOUC 방지
-          visibility: !isOpen() ? "hidden" : undefined,
+          "visibility": !isOpen() ? "hidden" : undefined,
         }}
       >
         {local.children}

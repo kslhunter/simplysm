@@ -38,9 +38,7 @@ describe("SidebarUser", () => {
     });
 
     it("menus가 있을 때 버튼에 aria-expanded=false", () => {
-      const menus: SidebarUserMenu[] = [
-        { title: "로그아웃", onClick: () => {} },
-      ];
+      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
       const { container } = render(() => (
         <Sidebar.User menus={menus}>
@@ -69,9 +67,7 @@ describe("SidebarUser", () => {
     });
 
     it("menus가 있을 때 클릭으로 드롭다운 토글", () => {
-      const menus: SidebarUserMenu[] = [
-        { title: "로그아웃", onClick: () => {} },
-      ];
+      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
       const { container } = render(() => (
         <Sidebar.User menus={menus}>
@@ -97,9 +93,7 @@ describe("SidebarUser", () => {
   describe("메뉴 아이템 클릭", () => {
     it("메뉴 아이템 클릭 시 onClick 호출", () => {
       const onLogout = vi.fn();
-      const menus: SidebarUserMenu[] = [
-        { title: "로그아웃", onClick: onLogout },
-      ];
+      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: onLogout }];
 
       const { container, getByText } = render(() => (
         <Sidebar.User menus={menus}>
@@ -118,9 +112,7 @@ describe("SidebarUser", () => {
     });
 
     it("메뉴 아이템 클릭 시 드롭다운 닫힘", () => {
-      const menus: SidebarUserMenu[] = [
-        { title: "프로필", onClick: () => {} },
-      ];
+      const menus: SidebarUserMenu[] = [{ title: "프로필", onClick: () => {} }];
 
       const { container, getByText } = render(() => (
         <Sidebar.User menus={menus}>
@@ -144,9 +136,7 @@ describe("SidebarUser", () => {
 
   describe("menus 유무에 따른 스타일", () => {
     it("menus prop에 따라 스타일이 달라진다", () => {
-      const menus: SidebarUserMenu[] = [
-        { title: "로그아웃", onClick: () => {} },
-      ];
+      const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
       const { container: withoutMenus } = render(() => (
         <Sidebar.User>

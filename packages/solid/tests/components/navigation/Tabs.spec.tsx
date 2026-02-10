@@ -69,7 +69,9 @@ describe("Tabs 컴포넌트", () => {
       const { getAllByRole } = render(() => (
         <Tabs onValueChange={handleChange}>
           <Tabs.Tab value="a">A</Tabs.Tab>
-          <Tabs.Tab value="b" disabled>B</Tabs.Tab>
+          <Tabs.Tab value="b" disabled>
+            B
+          </Tabs.Tab>
         </Tabs>
       ));
 
@@ -169,7 +171,9 @@ describe("Tabs 컴포넌트", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
-          <Tabs.Tab value="b" disabled>B</Tabs.Tab>
+          <Tabs.Tab value="b" disabled>
+            B
+          </Tabs.Tab>
         </Tabs>
       ));
 
@@ -180,7 +184,9 @@ describe("Tabs 컴포넌트", () => {
       const { getAllByRole } = render(() => (
         <Tabs>
           <Tabs.Tab value="a">A</Tabs.Tab>
-          <Tabs.Tab value="b" disabled>B</Tabs.Tab>
+          <Tabs.Tab value="b" disabled>
+            B
+          </Tabs.Tab>
         </Tabs>
       ));
 
@@ -203,7 +209,9 @@ describe("Tabs 컴포넌트", () => {
       const { getByRole } = render(() => (
         <Tabs>
           {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-          <Tabs.Tab value="a" class="my-item-class">A</Tabs.Tab>
+          <Tabs.Tab value="a" class="my-item-class">
+            A
+          </Tabs.Tab>
         </Tabs>
       ));
       expect(getByRole("tab").classList.contains("my-item-class")).toBe(true);

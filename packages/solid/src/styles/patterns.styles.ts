@@ -22,15 +22,11 @@ export const insetBase = "w-full rounded-none border-none";
 export const fieldSurface = clsx(
   bgSurface,
   textDefault,
-  "border", borderDefault,
+  "border",
+  borderDefault,
   "rounded",
   "focus-within:border-primary-500",
 );
 
 // ── 입력 요소 공통 ──
-export const inputBase = clsx(
-  "min-w-0 flex-1",
-  "bg-transparent",
-  "outline-none",
-  textPlaceholder,
-);
+export const inputBase = clsx("min-w-0 flex-1", "bg-transparent", "outline-none", textPlaceholder);

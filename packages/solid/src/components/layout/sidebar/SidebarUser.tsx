@@ -77,7 +77,8 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-base-50");
+  const getHeaderClassName = () =>
+    twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-base-50");
 
   const getContainerClassName = () => twMerge(containerClass, local.class);
 

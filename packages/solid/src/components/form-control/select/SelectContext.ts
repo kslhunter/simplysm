@@ -19,7 +19,7 @@ export const SelectContext = createContext<SelectContextValue>();
 export function useSelectContext<T = unknown>(): SelectContextValue<T> {
   const context = useContext(SelectContext);
   if (!context) {
-    throw new Error("useSelectContext must be used within a Select component");
+    throw new Error("useSelectContext는 Select 컴포넌트 내부에서만 사용할 수 있습니다");
   }
   return context as SelectContextValue<T>;
 }

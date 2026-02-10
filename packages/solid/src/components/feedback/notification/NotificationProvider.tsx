@@ -27,7 +27,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     theme: NotificationTheme,
     title: string,
     message?: string,
-    options?: NotificationOptions
+    options?: NotificationOptions,
   ): string => {
     const id = crypto.randomUUID();
     const newItem: NotificationItem = {
@@ -71,7 +71,7 @@ export const NotificationProvider: ParentComponent = (props) => {
   const update = (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: NotificationUpdateOptions
+    options?: NotificationUpdateOptions,
   ): void => {
     setItems((prev) =>
       prev.map((item) => {
@@ -87,7 +87,7 @@ export const NotificationProvider: ParentComponent = (props) => {
         }
 
         return updated;
-      })
+      }),
     );
   };
 
@@ -96,9 +96,7 @@ export const NotificationProvider: ParentComponent = (props) => {
   };
 
   const markAsRead = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, read: true } : item))
-    );
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
   };
 
   const markAllAsRead = () => {
@@ -136,15 +134,8 @@ export const NotificationProvider: ParentComponent = (props) => {
   return (
     <NotificationContext.Provider value={contextValue}>
       {/* 스크린 리더용 Live Region */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        class="sr-only"
-      >
-        <Show when={latestUnread()}>
-          {(item) => `알림: ${item().title} ${item().message ?? ""}`}
-        </Show>
+      <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+        <Show when={latestUnread()}>{(item) => `알림: ${item().title} ${item().message ?? ""}`}</Show>
       </div>
       {props.children}
     </NotificationContext.Provider>

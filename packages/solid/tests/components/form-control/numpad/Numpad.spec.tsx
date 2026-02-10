@@ -32,17 +32,13 @@ describe("Numpad", () => {
 
     it("C 버튼이 text-danger-500 클래스로 렌더링된다", () => {
       render(() => <Numpad />);
-      const cButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-danger-500"),
-      );
+      const cButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-danger-500"));
       expect(cButton).toBeTruthy();
     });
 
     it("BS 버튼이 text-warning-500 클래스로 렌더링된다", () => {
       render(() => <Numpad />);
-      const bsButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-warning-500"),
-      );
+      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"));
       expect(bsButton).toBeTruthy();
     });
 
@@ -54,9 +50,7 @@ describe("Numpad", () => {
     it("- 버튼은 기본적으로 렌더링되지 않는다", () => {
       render(() => <Numpad />);
       // useMinusButton이 없으면 "-" 텍스트를 가진 버튼이 없어야 한다
-      const minusButton = screen.getAllByRole("button").find((btn) =>
-        btn.textContent === "-",
-      );
+      const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeFalsy();
     });
   });
@@ -118,9 +112,7 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("6"));
 
       // C 버튼 클릭
-      const cButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-danger-500"),
-      )!;
+      const cButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-danger-500"))!;
       fireEvent.click(cButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(undefined);
@@ -136,9 +128,7 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("3"));
 
       // BS 버튼 클릭
-      const bsButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-warning-500"),
-      )!;
+      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"))!;
       fireEvent.click(bsButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(12);
@@ -152,9 +142,7 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("1"));
 
       // BS 버튼 클릭
-      const bsButton = screen.getAllByRole("button").find((btn) =>
-        btn.className.includes("text-warning-500"),
-      )!;
+      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"))!;
       fireEvent.click(bsButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(undefined);
@@ -194,9 +182,7 @@ describe("Numpad", () => {
     it("useMinusButton=true일 때 - 버튼이 렌더링된다", () => {
       render(() => <Numpad useMinusButton />);
 
-      const minusButton = screen.getAllByRole("button").find((btn) =>
-        btn.textContent === "-",
-      );
+      const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-");
       expect(minusButton).toBeTruthy();
     });
 
@@ -208,9 +194,7 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("5"));
 
       // - 버튼 클릭
-      const minusButton = screen.getAllByRole("button").find((btn) =>
-        btn.textContent === "-",
-      )!;
+      const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
       fireEvent.click(minusButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(-5);
@@ -221,9 +205,7 @@ describe("Numpad", () => {
       render(() => <Numpad useMinusButton value={-5} onValueChange={handleChange} />);
 
       // - 버튼 클릭
-      const minusButton = screen.getAllByRole("button").find((btn) =>
-        btn.textContent === "-",
-      )!;
+      const minusButton = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
       fireEvent.click(minusButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(5);

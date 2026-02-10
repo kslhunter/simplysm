@@ -26,7 +26,11 @@ export interface KanbanDropTarget<T = unknown> {
 export interface KanbanContextValue<L = unknown, T = unknown> {
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
-  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+  onDropTo: (
+    targetLaneValue: L | undefined,
+    targetCardValue: T | undefined,
+    position: "before" | "after" | undefined,
+  ) => void;
 
   // Selection (Phase 4)
   selectedValues: Accessor<T[]>;
@@ -39,7 +43,7 @@ export const KanbanContext = createContext<KanbanContextValue>();
 export function useKanbanContext(): KanbanContextValue {
   const context = useContext(KanbanContext);
   if (!context) {
-    throw new Error("useKanbanContext must be used within Kanban");
+    throw new Error("useKanbanContext는 Kanban 내부에서만 사용할 수 있습니다");
   }
   return context;
 }
@@ -61,7 +65,7 @@ export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
 export function useKanbanLaneContext(): KanbanLaneContextValue {
   const context = useContext(KanbanLaneContext);
   if (!context) {
-    throw new Error("useKanbanLaneContext must be used within Kanban.Lane");
+    throw new Error("useKanbanLaneContext는 Kanban.Lane 내부에서만 사용할 수 있습니다");
   }
   return context;
 }

@@ -19,7 +19,7 @@ const buttonClass = clsx(
   "transition-colors",
   "focus:outline-none",
   "focus-visible:ring-2",
-  "focus-visible:ring-primary-500"
+  "focus-visible:ring-primary-500",
 );
 
 const badgeClass = clsx(
@@ -36,7 +36,7 @@ const badgeClass = clsx(
   "font-bold",
   "text-white",
   "bg-danger-500",
-  "rounded-full"
+  "rounded-full",
 );
 
 const themeStyles: Record<string, string> = {
@@ -99,47 +99,27 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         </Show>
       </button>
 
-      <Dropdown
-        triggerRef={() => buttonRef}
-        open={open()}
-        onOpenChange={handleOpenChange}
-        maxHeight={400}
-        class="w-80"
-      >
+      <Dropdown triggerRef={() => buttonRef} open={open()} onOpenChange={handleOpenChange} maxHeight={400} class="w-80">
         <div class="p-2">
           <div class={dropdownHeaderClass}>
             <span class="font-semibold">알림</span>
             <Show when={notification.items().length > 0}>
-              <button
-                type="button"
-                data-notification-clear
-                class={clearButtonClass}
-                onClick={handleClear}
-              >
+              <button type="button" data-notification-clear class={clearButtonClass} onClick={handleClear}>
                 전체 삭제
               </button>
             </Show>
           </div>
 
-          <Show
-            when={notification.items().length > 0}
-            fallback={
-              <div class={emptyClass}>알림이 없습니다</div>
-            }
-          >
+          <Show when={notification.items().length > 0} fallback={<div class={emptyClass}>알림이 없습니다</div>}>
             <div class={listClass}>
               <For each={[...notification.items()].reverse()}>
                 {(item) => (
                   <div class={clsx(itemBaseClass, themeStyles[item.theme])}>
                     <div class="font-medium">{item.title}</div>
                     <Show when={item.message}>
-                      <div class={itemMessageClass}>
-                        {item.message}
-                      </div>
+                      <div class={itemMessageClass}>{item.message}</div>
                     </Show>
-                    <div class={itemTimeClass}>
-                      {item.createdAt.toLocaleTimeString()}
-                    </div>
+                    <div class={itemTimeClass}>{item.createdAt.toLocaleTimeString()}</div>
                   </div>
                 )}
               </For>

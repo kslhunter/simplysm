@@ -183,7 +183,7 @@ describe("Sidebar 컴포넌트", () => {
       };
 
       expect(() => render(() => <TestComponent />)).toThrow(
-        "useSidebarContext must be used within SidebarContainer",
+        "useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다",
       );
     });
   });

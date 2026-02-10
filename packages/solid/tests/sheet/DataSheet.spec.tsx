@@ -7,11 +7,7 @@ import { ConfigContext } from "../../src/contexts/ConfigContext";
 import type { JSX } from "solid-js";
 
 function TestWrapper(props: { children: JSX.Element }) {
-  return (
-    <ConfigContext.Provider value={{ clientName: "test" }}>
-      {props.children}
-    </ConfigContext.Provider>
-  );
+  return <ConfigContext.Provider value={{ clientName: "test" }}>{props.children}</ConfigContext.Provider>;
 }
 
 interface TestItem {
@@ -94,11 +90,7 @@ describe("DataSheet", () => {
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
-          <DataSheet.Column<TestItem>
-            key="age"
-            header="나이"
-            summary={() => <span>합계: 83</span>}
-          >
+          <DataSheet.Column<TestItem> key="age" header="나이" summary={() => <span>합계: 83</span>}>
             {(ctx) => <div>{ctx.item.age}</div>}
           </DataSheet.Column>
         </DataSheet>
@@ -159,7 +151,9 @@ describe("DataSheet", () => {
           items={testData}
           key="test-sort"
           sorts={[]}
-          onSortsChange={(s) => { capturedSorts = s; }}
+          onSortsChange={(s) => {
+            capturedSorts = s;
+          }}
         >
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -185,7 +179,9 @@ describe("DataSheet", () => {
           items={testData}
           key="test-no-sort"
           sorts={[]}
-          onSortsChange={(s) => { capturedSorts = s; }}
+          onSortsChange={(s) => {
+            capturedSorts = s;
+          }}
         >
           <DataSheet.Column<TestItem> key="name" header="이름" sortable={false}>
             {(ctx) => <div>{ctx.item.name}</div>}
@@ -202,12 +198,7 @@ describe("DataSheet", () => {
   it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet
-          items={testData}
-          key="test-auto-sort"
-          sorts={[{ key: "name", desc: false }]}
-          autoSort
-        >
+        <DataSheet items={testData} key="test-auto-sort" sorts={[{ key: "name", desc: false }]} autoSort>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -385,10 +376,7 @@ describe("flattenTree", () => {
   const tree: TreeNode[] = [
     {
       id: "a",
-      children: [
-        { id: "a1" },
-        { id: "a2", children: [{ id: "a2x" }] },
-      ],
+      children: [{ id: "a1" }, { id: "a2", children: [{ id: "a2x" }] }],
     },
     { id: "b" },
   ];
@@ -453,10 +441,7 @@ describe("collectAllExpandable", () => {
     const tree: TreeNode[] = [
       {
         id: "a",
-        children: [
-          { id: "a1" },
-          { id: "a2", children: [{ id: "a2x" }] },
-        ],
+        children: [{ id: "a1" }, { id: "a2", children: [{ id: "a2x" }] }],
       },
       { id: "b" },
     ];
@@ -480,10 +465,7 @@ describe("DataSheet 트리 확장", () => {
   const treeData: TreeItem[] = [
     {
       name: "폴더A",
-      children: [
-        { name: "파일A1" },
-        { name: "파일A2" },
-      ],
+      children: [{ name: "파일A1" }, { name: "파일A2" }],
     },
     { name: "폴더B" },
   ];
@@ -491,11 +473,7 @@ describe("DataSheet 트리 확장", () => {
   it("getChildren 설정 시 확장 기능 컬럼이 렌더링된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet
-          items={treeData}
-          key="test-tree"
-          getChildren={(item) => item.children}
-        >
+        <DataSheet items={treeData} key="test-tree" getChildren={(item) => item.children}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -515,12 +493,7 @@ describe("DataSheet 트리 확장", () => {
   it("접힌 상태에서는 루트 항목만 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet
-          items={treeData}
-          key="test-tree-collapsed"
-          getChildren={(item) => item.children}
-          expandedItems={[]}
-        >
+        <DataSheet items={treeData} key="test-tree-collapsed" getChildren={(item) => item.children} expandedItems={[]}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -555,9 +528,7 @@ describe("DataSheet 트리 확장", () => {
     expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B
 
     const names = container.querySelectorAll("tbody [data-testid='name']");
-    expect(Array.from(names).map((n) => n.textContent)).toEqual([
-      "폴더A", "파일A1", "파일A2", "폴더B",
-    ]);
+    expect(Array.from(names).map((n) => n.textContent)).toEqual(["폴더A", "파일A1", "파일A2", "폴더B"]);
   });
 
   it("자식이 없는 항목은 확장 아이콘이 숨겨진다", () => {

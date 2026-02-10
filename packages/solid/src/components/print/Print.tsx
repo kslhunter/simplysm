@@ -19,10 +19,7 @@ interface PrintComponent {
 
 const PrintInner = (props: PrintProps) => {
   return (
-    <div
-      data-print-root
-      attr:data-print-ready={props.ready !== false ? "" : undefined}
-    >
+    <div data-print-root attr:data-print-ready={props.ready !== false ? "" : undefined}>
       {props.children}
     </div>
   );

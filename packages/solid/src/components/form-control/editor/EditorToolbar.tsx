@@ -48,16 +48,10 @@ const toolbarBtnClass = clsx(
 );
 
 // 툴바 버튼 활성 스타일
-const toolbarBtnActiveClass = clsx(
-  "bg-primary-100 text-primary-700",
-  "dark:bg-primary-900/40 dark:text-primary-300",
-);
+const toolbarBtnActiveClass = clsx("bg-primary-100 text-primary-700", "dark:bg-primary-900/40 dark:text-primary-300");
 
 // 구분선 스타일
-const separatorClass = clsx(
-  "mx-1 h-5 w-px",
-  "bg-base-300 dark:bg-base-700",
-);
+const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
 
 // 색상 선택 label 스타일
 const colorLabelClass = clsx(
@@ -69,16 +63,10 @@ const colorLabelClass = clsx(
 );
 
 // 색상 input 숨기기 스타일
-const colorInputClass = clsx(
-  "absolute opacity-0",
-  "size-0",
-);
+const colorInputClass = clsx("absolute opacity-0", "size-0");
 
 // 색상 indicator 스타일
-const colorIndicatorClass = clsx(
-  "absolute inset-x-1 bottom-0.5",
-  "h-0.5 rounded-full",
-);
+const colorIndicatorClass = clsx("absolute inset-x-1 bottom-0.5", "h-0.5 rounded-full");
 
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
@@ -119,8 +107,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
     (editor) => (editor.getAttributes("highlight")["color"] as string | undefined) ?? "#ffff00",
   );
 
-  const btnClass = (active: () => boolean) =>
-    twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
+  const btnClass = (active: () => boolean) => twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
 
   // 이미지 삽입 핸들러
   const handleImageInsert = () => {
@@ -206,10 +193,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 5. 텍스트 색상 + 배경색 (input[type=color] 사용) */}
       <label class={colorLabelClass} title="텍스트 색상">
         <span class={clsx("text-sm font-bold")}>A</span>
-        <div
-          class={colorIndicatorClass}
-          style={{ "background-color": currentColor() }}
-        />
+        <div class={colorIndicatorClass} style={{ "background-color": currentColor() }} />
         <input
           type="color"
           class={colorInputClass}
@@ -218,19 +202,14 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         />
       </label>
       <label class={colorLabelClass} title="배경색">
-        <span
-          class={clsx("rounded px-0.5 text-sm font-bold")}
-          style={{ "background-color": currentHighlight() }}
-        >
+        <span class={clsx("rounded px-0.5 text-sm font-bold")} style={{ "background-color": currentHighlight() }}>
           A
         </span>
         <input
           type="color"
           class={colorInputClass}
           value={currentHighlight()}
-          onInput={(ev) =>
-            props.editor.chain().focus().toggleHighlight({ color: ev.currentTarget.value }).run()
-          }
+          onInput={(ev) => props.editor.chain().focus().toggleHighlight({ color: ev.currentTarget.value }).run()}
         />
       </label>
 
@@ -342,20 +321,13 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         type="button"
         class={toolbarBtnClass}
         title="테이블 삽입"
-        onClick={() =>
-          props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-        }
+        onClick={() => props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
       >
         <Icon icon={IconTablePlus} size="1em" />
       </button>
 
       {/* 16. 이미지 삽입 */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
-        title="이미지 삽입"
-        onClick={handleImageInsert}
-      >
+      <button type="button" class={toolbarBtnClass} title="이미지 삽입" onClick={handleImageInsert}>
         <Icon icon={IconPhoto} size="1em" />
       </button>
 

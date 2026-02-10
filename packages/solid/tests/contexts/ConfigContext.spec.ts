@@ -30,11 +30,7 @@ describe("ConfigContext", () => {
     });
 
     it("다양한 clientName을 지원한다", () => {
-      const configs = [
-        { clientName: "app1" },
-        { clientName: "my-app" },
-        { clientName: "APP_NAME" },
-      ];
+      const configs = [{ clientName: "app1" }, { clientName: "my-app" }, { clientName: "APP_NAME" }];
 
       for (const config of configs) {
         expect(config.clientName).toBeDefined();

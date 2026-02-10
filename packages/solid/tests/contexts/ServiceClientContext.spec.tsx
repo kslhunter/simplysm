@@ -11,7 +11,7 @@ describe("ServiceClientContext", () => {
     it("Provider 없이 사용하면 에러가 발생한다", () => {
       createRoot((dispose) => {
         expect(() => useServiceClient()).toThrow(
-          "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다"
+          "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다",
         );
         dispose();
       });
@@ -59,9 +59,7 @@ describe("ServiceClientProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    expect(() => serviceClient!.get("unknown")).toThrow(
-      "연결하지 않은 클라이언트 키입니다. unknown"
-    );
+    expect(() => serviceClient!.get("unknown")).toThrow("연결하지 않은 클라이언트 키입니다. unknown");
   });
 
   it("연결하지 않은 키로 isConnected 호출 시 false를 반환한다", () => {

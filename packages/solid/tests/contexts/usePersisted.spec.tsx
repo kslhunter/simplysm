@@ -105,8 +105,12 @@ describe("usePersisted", () => {
     const store = new Map<string, string>();
     const customStorage = {
       getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => { store.set(key, value); },
-      removeItem: (key: string) => { store.delete(key); },
+      setItem: (key: string, value: string) => {
+        store.set(key, value);
+      },
+      removeItem: (key: string) => {
+        store.delete(key);
+      },
     };
 
     let capturedValue: string | undefined;
@@ -133,8 +137,12 @@ describe("usePersisted", () => {
     const store = new Map<string, string>();
     const asyncStorage = {
       getItem: async (key: string) => store.get(key) ?? null,
-      setItem: async (key: string, value: string) => { store.set(key, value); },
-      removeItem: async (key: string) => { store.delete(key); },
+      setItem: async (key: string, value: string) => {
+        store.set(key, value);
+      },
+      removeItem: async (key: string) => {
+        store.delete(key);
+      },
     };
 
     let capturedLoading: boolean | undefined;

@@ -4,15 +4,8 @@ import { SelectItem } from "../../../../src/components/form-control/select/Selec
 import { SelectContext, type SelectContextValue } from "../../../../src/components/form-control/select/SelectContext";
 
 // 테스트용 Provider
-function TestProvider(props: {
-  children: unknown;
-  value: SelectContextValue;
-}) {
-  return (
-    <SelectContext.Provider value={props.value}>
-      {props.children}
-    </SelectContext.Provider>
-  );
+function TestProvider(props: { children: unknown; value: SelectContextValue }) {
+  return <SelectContext.Provider value={props.value}>{props.children}</SelectContext.Provider>;
 }
 
 describe("SelectItem 컴포넌트", () => {
@@ -143,7 +136,9 @@ describe("SelectItem 컴포넌트", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple" disabled>사과</SelectItem>
+          <SelectItem value="apple" disabled>
+            사과
+          </SelectItem>
         </TestProvider>
       ));
 

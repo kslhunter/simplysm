@@ -26,9 +26,7 @@ const FormGroupItem: ParentComponent<FormGroupItemProps> = (props) => {
   return (
     <div class={getClassName()} data-form-group-item {...rest}>
       <Show when={local.label}>
-        <label
-          class={ctx.inline ? clsx("whitespace-nowrap font-bold", "pr-2") : "mb-1 block font-bold"}
-        >
+        <label class={ctx.inline ? clsx("whitespace-nowrap font-bold", "pr-2") : "mb-1 block font-bold"}>
           {local.label}
         </label>
       </Show>
@@ -47,7 +45,13 @@ const FormGroupBase: ParentComponent<FormGroupProps> = (props) => {
   const getClassName = () => twMerge(local.inline ? inlineClass : baseClass, local.class);
 
   return (
-    <FormGroupContext.Provider value={{ get inline() { return local.inline ?? false; } }}>
+    <FormGroupContext.Provider
+      value={{
+        get inline() {
+          return local.inline ?? false;
+        },
+      }}
+    >
       <div data-form-group class={getClassName()} {...rest}>
         {local.children}
       </div>

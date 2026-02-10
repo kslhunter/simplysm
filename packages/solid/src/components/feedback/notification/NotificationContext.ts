@@ -41,7 +41,7 @@ export interface NotificationContextValue {
   update: (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: NotificationUpdateOptions
+    options?: NotificationUpdateOptions,
   ) => void;
 
   // 알림 삭제

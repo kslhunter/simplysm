@@ -16,16 +16,13 @@ describe("mergeStyles", () => {
     });
 
     it("여러 속성을 가진 object 병합", () => {
-      const result = mergeStyles(
-        { color: "red", "font-size": "14px" },
-        { background: "blue", padding: "10px" },
-      );
+      const result = mergeStyles({ "color": "red", "font-size": "14px" }, { background: "blue", padding: "10px" });
 
       expect(result).toEqual({
-        color: "red",
+        "color": "red",
         "font-size": "14px",
-        background: "blue",
-        padding: "10px",
+        "background": "blue",
+        "padding": "10px",
       });
     });
   });
@@ -104,13 +101,7 @@ describe("mergeStyles", () => {
     });
 
     it("여러 undefined가 있어도 정상 동작", () => {
-      const result = mergeStyles(
-        undefined,
-        { color: "red" },
-        undefined,
-        "background: blue;",
-        undefined,
-      );
+      const result = mergeStyles(undefined, { color: "red" }, undefined, "background: blue;", undefined);
 
       expect(result).toEqual({ color: "red", background: "blue" });
     });
@@ -138,21 +129,13 @@ describe("mergeStyles", () => {
 
   describe("값 덮어쓰기 (나중 값 우선)", () => {
     it("여러 스타일에서 동일 속성이 있으면 마지막 값 적용", () => {
-      const result = mergeStyles(
-        { color: "red" },
-        { color: "green" },
-        { color: "blue" },
-      );
+      const result = mergeStyles({ color: "red" }, { color: "green" }, { color: "blue" });
 
       expect(result).toEqual({ color: "blue" });
     });
 
     it("string과 object 혼합 시에도 순서대로 덮어쓰기", () => {
-      const result = mergeStyles(
-        "color: red;",
-        { color: "green" },
-        "color: blue;",
-      );
+      const result = mergeStyles("color: red;", { color: "green" }, "color: blue;");
 
       expect(result).toEqual({ color: "blue" });
     });

@@ -23,12 +23,12 @@ export type SharedDataValue<T extends Record<string, unknown>> = {
 
 export const SharedDataContext = createContext<SharedDataValue<Record<string, unknown>>>();
 
-export function useSharedData<
-  T extends Record<string, unknown> = Record<string, unknown>,
->(): SharedDataValue<T> {
+export function useSharedData<T extends Record<string, unknown> = Record<string, unknown>>(): SharedDataValue<T> {
   const context = useContext(SharedDataContext);
   if (!context) {
-    throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다");
+    throw new Error(
+      "useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다. SharedDataProvider는 ServiceClientProvider 아래에 위치해야 합니다",
+    );
   }
   return context as unknown as SharedDataValue<T>;
 }

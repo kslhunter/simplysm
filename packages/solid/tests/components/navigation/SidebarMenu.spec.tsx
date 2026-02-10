@@ -14,7 +14,11 @@ vi.mock("@solidjs/router", async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-    useLocation: () => ({ get pathname() { return mockPathname(); } }),
+    useLocation: () => ({
+      get pathname() {
+        return mockPathname();
+      },
+    }),
   };
 });
 
@@ -88,13 +92,9 @@ describe("SidebarMenu", () => {
     });
 
     it("아이콘이 있는 메뉴를 렌더링", () => {
-      const MockIcon = (props: { class?: string }) => (
-        <svg data-testid="mock-icon" class={props.class} />
-      );
+      const MockIcon = (props: { class?: string }) => <svg data-testid="mock-icon" class={props.class} />;
 
-      const menus: SidebarMenuItem[] = [
-        { title: "대시보드", href: "/dashboard", icon: MockIcon },
-      ];
+      const menus: SidebarMenuItem[] = [{ title: "대시보드", href: "/dashboard", icon: MockIcon }];
 
       const { container } = renderWithRouter(menus);
 
@@ -104,9 +104,7 @@ describe("SidebarMenu", () => {
 
   describe("링크 동작", () => {
     it("내부 링크 클릭 시 SPA 라우팅", () => {
-      const menus: SidebarMenuItem[] = [
-        { title: "대시보드", href: "/dashboard" },
-      ];
+      const menus: SidebarMenuItem[] = [{ title: "대시보드", href: "/dashboard" }];
 
       const { getByText } = renderWithRouter(menus);
 
@@ -116,9 +114,7 @@ describe("SidebarMenu", () => {
     });
 
     it("외부 링크 클릭 시 새 탭에서 열기", () => {
-      const menus: SidebarMenuItem[] = [
-        { title: "외부 링크", href: "https://example.com" },
-      ];
+      const menus: SidebarMenuItem[] = [{ title: "외부 링크", href: "https://example.com" }];
 
       const { getByText } = renderWithRouter(menus);
 
@@ -133,9 +129,7 @@ describe("SidebarMenu", () => {
       const menus: SidebarMenuItem[] = [
         {
           title: "설정",
-          children: [
-            { title: "프로필", href: "/settings/profile" },
-          ],
+          children: [{ title: "프로필", href: "/settings/profile" }],
         },
       ];
 
@@ -179,9 +173,7 @@ describe("SidebarMenu", () => {
         { title: "대시보드", href: "/dashboard" },
         {
           title: "설정",
-          children: [
-            { title: "프로필", href: "/settings/profile" },
-          ],
+          children: [{ title: "프로필", href: "/settings/profile" }],
         },
       ];
 

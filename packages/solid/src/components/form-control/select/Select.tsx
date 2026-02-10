@@ -18,7 +18,8 @@ void ripple;
 const triggerBaseClass = clsx(
   "inline-flex items-center gap-2",
   "w-40",
-  "border", borderDefault,
+  "border",
+  borderDefault,
   "rounded",
   "bg-transparent",
   "hover:bg-base-100 dark:hover:bg-base-700",
@@ -29,11 +30,7 @@ const triggerBaseClass = clsx(
 
 const triggerDisabledClass = clsx("cursor-default bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500");
 
-const triggerInsetClass = clsx(
-  insetBase,
-  "bg-transparent",
-  insetFocusOutlineSelf,
-);
+const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOutlineSelf);
 
 const sizeClasses: Record<ComponentSize, string> = {
   sm: clsx("gap-1.5", paddingSm),
@@ -59,7 +56,9 @@ const SelectAction: ParentComponent<SelectActionProps> = (props) => {
       data-select-action
       class={twMerge(
         clsx(
-          "border", borderDefault, "px-1.5",
+          "border",
+          borderDefault,
+          "px-1.5",
           "rounded-r",
           "font-bold text-primary-500",
           "hover:bg-base-100 dark:hover:bg-base-700",
@@ -386,9 +385,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         const direction = local.multiDisplayDirection ?? "horizontal";
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
-            <For each={current}>
-              {(v) => <span class={multiTagClass}>{renderValue(v)}</span>}
-            </For>
+            <For each={current}>{(v) => <span class={multiTagClass}>{renderValue(v)}</span>}</For>
           </div>
         );
       }

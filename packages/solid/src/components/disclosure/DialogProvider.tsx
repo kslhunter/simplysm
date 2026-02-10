@@ -1,11 +1,4 @@
-import {
-  type Accessor,
-  type Component,
-  type ParentComponent,
-  createSignal,
-  For,
-  splitProps,
-} from "solid-js";
+import { type Accessor, type Component, type ParentComponent, createSignal, For, splitProps } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
   DialogContext,
@@ -42,8 +35,7 @@ let nextId = 0;
  * </DialogProvider>
  * ```
  */
-export interface DialogProviderProps extends DialogDefaults {
-}
+export interface DialogProviderProps extends DialogDefaults {}
 
 export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
   const [local, _rest] = splitProps(props, ["closeOnEscape", "closeOnBackdrop", "children"]);
@@ -55,10 +47,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
 
-  const show = <T,>(
-    content: Component<DialogContentProps<T>>,
-    options: DialogShowOptions,
-  ): Promise<T | undefined> => {
+  const show = <T,>(content: Component<DialogContentProps<T>>, options: DialogShowOptions): Promise<T | undefined> => {
     return new Promise<T | undefined>((resolve) => {
       const id = String(nextId++);
       const [open, setOpen] = createSignal(true);
@@ -129,10 +118,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
               headerStyle={entry.options.headerStyle}
               canDeactivate={entry.options.canDeactivate}
             >
-              <Dynamic
-                component={entry.content}
-                close={(result?: unknown) => requestClose(entry.id, result)}
-              />
+              <Dynamic component={entry.content} close={(result?: unknown) => requestClose(entry.id, result)} />
             </Dialog>
           )}
         </For>

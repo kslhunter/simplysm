@@ -8,8 +8,12 @@ import { useDialog, type DialogContentProps } from "../../../src/components/disc
 const TestContent: Component<DialogContentProps<string>> = (props) => (
   <div>
     <span data-testid="modal-content">다이얼로그 내용</span>
-    <button data-testid="close-btn" onClick={() => props.close("result")}>닫기</button>
-    <button data-testid="close-no-result" onClick={() => props.close()}>취소</button>
+    <button data-testid="close-btn" onClick={() => props.close("result")}>
+      닫기
+    </button>
+    <button data-testid="close-no-result" onClick={() => props.close()}>
+      취소
+    </button>
   </div>
 );
 
@@ -23,7 +27,9 @@ function TestApp() {
   };
 
   return (
-    <button data-testid="open-btn" onClick={openDialog}>다이얼로그 열기</button>
+    <button data-testid="open-btn" onClick={openDialog}>
+      다이얼로그 열기
+    </button>
   );
 }
 

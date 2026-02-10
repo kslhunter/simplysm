@@ -11,7 +11,7 @@ const __dirname = new URL(".", import.meta.url).pathname
 // export const tailwindContent = [`${__dirname}**/*.tsx`];
 
 const fieldSizes = {
-  field: `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
+  "field": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
   "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
   "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
   "field-inset": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]})`,

@@ -147,9 +147,7 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      const backdrop = container.querySelector(
-        '[role="button"][aria-label="사이드바 닫기"]',
-      ) as HTMLElement;
+      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]') as HTMLElement;
       expect(backdrop).toBeTruthy();
 
       fireEvent.click(backdrop);
@@ -169,9 +167,7 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
-      const backdrop = container.querySelector(
-        '[role="button"][aria-label="사이드바 닫기"]',
-      ) as HTMLElement;
+      const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]') as HTMLElement;
       expect(backdrop).toBeTruthy();
 
       fireEvent.keyDown(backdrop, { key: "Escape" });
