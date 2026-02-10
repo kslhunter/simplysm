@@ -25,8 +25,8 @@ describe("createMountTransition", () => {
   });
 
   it("open=true로 변경 시 mounted=true", async () => {
-    const dispose = await new Promise<() => void>((resolveDispose) => {
-      createRoot(async (dispose) => {
+    const outerDispose = await new Promise<() => void>((resolveDispose) => {
+      void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(false);
         const { mounted } = createMountTransition(open);
 
@@ -37,12 +37,12 @@ describe("createMountTransition", () => {
         resolveDispose(dispose);
       });
     });
-    dispose();
+    outerDispose();
   });
 
   it("open=false로 변경 시 animating=false, fallback 타이머 후 mounted=false", async () => {
-    const dispose = await new Promise<() => void>((resolveDispose) => {
-      createRoot(async (dispose) => {
+    const outerDispose = await new Promise<() => void>((resolveDispose) => {
+      void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(true);
         const { mounted, animating } = createMountTransition(open);
 
@@ -60,12 +60,12 @@ describe("createMountTransition", () => {
         resolveDispose(dispose);
       });
     });
-    dispose();
+    outerDispose();
   });
 
   it("unmount()로 즉시 마운트 해제", async () => {
-    const dispose = await new Promise<() => void>((resolveDispose) => {
-      createRoot(async (dispose) => {
+    const outerDispose = await new Promise<() => void>((resolveDispose) => {
+      void createRoot(async (dispose) => {
         const [open, setOpen] = createSignal(true);
         const { mounted, unmount } = createMountTransition(open);
 
@@ -81,6 +81,6 @@ describe("createMountTransition", () => {
         resolveDispose(dispose);
       });
     });
-    dispose();
+    outerDispose();
   });
 });

@@ -1,4 +1,4 @@
-import { type Accessor, createSignal, onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 
 /**
  * IME 조합 처리 훅
@@ -56,7 +56,7 @@ export function createIMEHandler(setValue: (value: string) => void) {
   onCleanup(() => flushComposition());
 
   return {
-    composingValue: composingValue as Accessor<string | null>,
+    composingValue,
     handleCompositionStart,
     handleInput,
     handleCompositionEnd,

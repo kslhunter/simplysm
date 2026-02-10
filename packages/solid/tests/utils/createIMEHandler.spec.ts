@@ -28,7 +28,7 @@ describe("createIMEHandler", () => {
   it("조합 중 handleInput 호출 시 composingValue만 업데이트", () => {
     const setValue = vi.fn();
 
-    createRoot((dispose) => {
+    void createRoot((dispose) => {
       const ime = createIMEHandler(setValue);
 
       ime.handleCompositionStart();
@@ -43,7 +43,7 @@ describe("createIMEHandler", () => {
   it("compositionEnd 후 setTimeout(0)에서 setValue 호출", () => {
     const setValue = vi.fn();
 
-    createRoot((dispose) => {
+    void createRoot((dispose) => {
       const ime = createIMEHandler(setValue);
 
       ime.handleCompositionStart();
@@ -64,7 +64,7 @@ describe("createIMEHandler", () => {
   it("flushComposition으로 미커밋 값 즉시 커밋", () => {
     const setValue = vi.fn();
 
-    createRoot((dispose) => {
+    void createRoot((dispose) => {
       const ime = createIMEHandler(setValue);
 
       ime.handleCompositionStart();
