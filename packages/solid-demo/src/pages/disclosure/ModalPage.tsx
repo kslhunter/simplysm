@@ -1,17 +1,20 @@
-import { createSignal, type Component } from "solid-js";
-import { Button, Dialog, useDialog, Topbar, type DialogContentProps } from "@simplysm/solid";
+import { createSignal } from "solid-js";
+import { Button, Dialog, useDialog, useDialogInstance, Topbar } from "@simplysm/solid";
 
-const SampleDialogContent: Component<DialogContentProps<string>> = (props) => (
-  <div class="space-y-4 p-4">
-    <p class="text-sm">이것은 프로그래매틱으로 열린 다이얼로그입니다.</p>
-    <div class="flex gap-2">
-      <Button theme="primary" variant="solid" onClick={() => props.close("확인")}>
-        확인
-      </Button>
-      <Button onClick={() => props.close()}>취소</Button>
+function SampleDialogContent() {
+  const dialog = useDialogInstance<string>();
+  return (
+    <div class="space-y-4 p-4">
+      <p class="text-sm">이것은 프로그래매틱으로 열린 다이얼로그입니다.</p>
+      <div class="flex gap-2">
+        <Button theme="primary" variant="solid" onClick={() => dialog?.close("확인")}>
+          확인
+        </Button>
+        <Button onClick={() => dialog?.close()}>취소</Button>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default function ModalPage() {
   const dialog = useDialog();
@@ -35,7 +38,7 @@ export default function ModalPage() {
   const [resizableOpen, setResizableOpen] = createSignal(false);
 
   const handleProgrammaticOpen = async () => {
-    const result = await dialog.show(SampleDialogContent, {
+    const result = await dialog.show<string>(() => <SampleDialogContent />, {
       title: "프로그래매틱 다이얼로그",
       closeOnBackdrop: true,
       closeOnEscape: true,
