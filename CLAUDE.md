@@ -136,6 +136,47 @@ const User = Table("User")
 - `ServiceClient`: WebSocket 클라이언트, RPC 호출
 - `ServiceProtocol`: 메시지 분할/병합 (3MB 초과 시 300KB 청크)
 
+## ORM 보안 가이드
+
+### SQL 인젝션 방지
+
+orm-common은 문자열 이스케이프 방식으로 SQL을 생성합니다.
+다음 규칙을 준수하세요:
+
+#### ✓ 안전한 사용
+- 애플리케이션 코드에서 값 검증 후 ORM 사용
+- 타입이 보장된 값 (number, boolean, DateTime 등)
+- 신뢰할 수 있는 내부 데이터
+
+#### ✗ 위험한 사용
+- 사용자 입력을 검증 없이 WHERE 조건에 직접 사용
+- 외부 API 응답을 검증 없이 사용
+- 파일 업로드 내용을 검증 없이 사용
+
+#### 권장 패턴
+```typescript
+// 나쁜 예: 사용자 입력 직접 사용
+const userInput = req.query.name; // "'; DROP TABLE users; --"
+await db.user().where((u) => [expr.eq(u.name, userInput)]).result();
+
+// 좋은 예: 검증 후 사용
+const userName = validateUserName(req.query.name); // 검증 실패 시 예외
+await db.user().where((u) => [expr.eq(u.name, userName)]).result();
+
+// 더 좋은 예: 타입 강제
+const userId = Number(req.query.id); // NaN 체크 필수
+if (Number.isNaN(userId)) throw new Error("Invalid ID");
+await db.user().where((u) => [expr.eq(u.id, userId)]).result();
+```
+
+#### 기술적 제약
+
+orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않습니다.
+대신 강화된 문자열 이스케이프를 사용합니다:
+- MySQL: 백슬래시, 따옴표, NULL 바이트, 제어 문자 이스케이프
+- utf8mb4 charset 강제로 멀티바이트 공격 방어
+- **애플리케이션 레벨 입력 검증 필수**
+
 ## 코드 컨벤션
 
 ### ESLint 규칙 (`@simplysm/eslint-plugin`)
