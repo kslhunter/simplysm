@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { children, createRoot } from "solid-js";
-import { splitSlots } from "../../src/utils/splitSlots";
+import { splitSlots } from "../../src/helpers/splitSlots";
 
 describe("splitSlots", () => {
   describe("기본 동작", () => {

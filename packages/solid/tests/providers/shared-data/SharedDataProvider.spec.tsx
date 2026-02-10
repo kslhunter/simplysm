@@ -9,7 +9,7 @@ import {
   type ServiceClientContextValue,
   NotificationContext,
   type NotificationContextValue,
-} from "../src";
+} from "../../../src";
 
 interface TestData {
   user: { id: number; name: string };

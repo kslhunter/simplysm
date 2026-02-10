@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import { useServiceClient, type ServiceClientContextValue } from "../../src/contexts/ServiceClientContext";
-import { ServiceClientProvider } from "../../src/contexts/ServiceClientProvider";
+import { useServiceClient, type ServiceClientContextValue } from "../../src/providers/ServiceClientContext";
+import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider";
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
-import { ConfigContext } from "../../src/contexts/ConfigContext";
+import { ConfigContext } from "../../src/providers/ConfigContext";
 
 describe("ServiceClientContext", () => {
   describe("useServiceClient", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
-import { Sidebar, type SidebarUserMenu } from "../../../src";
+import { Sidebar, type SidebarUserMenu } from "../../../../src";
 
 describe("SidebarUser", () => {
   beforeEach(() => {

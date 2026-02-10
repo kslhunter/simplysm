@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Kanban } from "../../../../src/components/layout/kanban/Kanban";
+import { Kanban } from "../../../../src/components/data/kanban/Kanban";
 
 describe("Kanban 선택 시스템", () => {
   function renderKanban(options?: {

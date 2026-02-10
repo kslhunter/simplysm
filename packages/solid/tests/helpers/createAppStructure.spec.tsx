@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createRoot, createSignal } from "solid-js";
 import type { Component } from "solid-js";
-import { createAppStructure, type AppStructureItem } from "../../src/utils/createAppStructure";
+import { createAppStructure, type AppStructureItem } from "../../src/helpers/createAppStructure";
 
 // 테스트용 더미 컴포넌트
 const DummyA: Component = () => null;

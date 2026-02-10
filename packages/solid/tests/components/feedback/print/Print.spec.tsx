@@ -1,6 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import { Print } from "../../src/components/print/Print";
+import { Print } from "../../../../src/components/feedback/print/Print";
 
 describe("Print 컴포넌트", () => {
   describe("기본 렌더링", () => {

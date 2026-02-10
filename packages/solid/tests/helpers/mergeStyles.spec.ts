@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mergeStyles } from "../../src/utils/mergeStyles";
+import { mergeStyles } from "../../src/helpers/mergeStyles";
 
 describe("mergeStyles", () => {
   describe("object 스타일 병합", () => {

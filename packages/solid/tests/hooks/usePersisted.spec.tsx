@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
-import { ConfigContext } from "../../src/contexts/ConfigContext";
-import { usePersisted } from "../../src/contexts/usePersisted";
+import { ConfigContext } from "../../src/providers/ConfigContext";
+import { usePersisted } from "../../src/hooks/usePersisted";
 
 describe("usePersisted", () => {
   beforeEach(() => {

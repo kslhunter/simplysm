@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { createControllableSignal } from "../../src/utils/createControllableSignal";
+import { createControllableSignal } from "../../src/hooks/createControllableSignal";
 
 describe("createControllableSignal hook", () => {
   describe("Controlled 모드 (onChange 제공)", () => {

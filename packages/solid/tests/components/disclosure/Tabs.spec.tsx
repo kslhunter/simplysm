@@ -1,7 +1,7 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { createSignal } from "solid-js";
-import { Tabs } from "../../../src/components/navigation/Tabs";
+import { Tabs } from "../../../src/components/disclosure/Tabs";
 
 describe("Tabs 컴포넌트", () => {
   describe("기본 렌더링", () => {

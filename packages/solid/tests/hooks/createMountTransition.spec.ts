@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoot, createSignal } from "solid-js";
-import { createMountTransition } from "../../src/utils/createMountTransition";
+import { createMountTransition } from "../../src/hooks/createMountTransition";
 
 // SolidJS의 createEffect는 마이크로태스크로 스케줄링되므로
 // effect가 실행될 때까지 기다리는 헬퍼 함수

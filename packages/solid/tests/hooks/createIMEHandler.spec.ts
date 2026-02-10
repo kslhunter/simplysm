@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoot } from "solid-js";
-import { createIMEHandler } from "../../src/utils/createIMEHandler";
+import { createIMEHandler } from "../../src/hooks/createIMEHandler";
 
 describe("createIMEHandler", () => {
   beforeEach(() => {

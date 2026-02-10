@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@solidjs/testing-library";
-import { DataSheet } from "../../src/components/data/sheet/DataSheet";
-import { applySorting, collectAllExpandable, flattenTree } from "../../src/components/data/sheet/sheetUtils";
-import type { SortingDef } from "../../src/components/data/sheet/types";
-import { ConfigContext } from "../../src/contexts/ConfigContext";
+import { DataSheet } from "../../../../src/components/data/sheet/DataSheet";
+import { applySorting, collectAllExpandable, flattenTree } from "../../../../src/components/data/sheet/sheetUtils";
+import type { SortingDef } from "../../../../src/components/data/sheet/types";
+import { ConfigContext } from "../../../../src/contexts/ConfigContext";
 import type { JSX } from "solid-js";
 
 function TestWrapper(props: { children: JSX.Element }) {

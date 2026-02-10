@@ -1,7 +1,7 @@
 import { render, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import { NotificationProvider } from "../../../src/components/feedback/notification/NotificationProvider";
-import { useNotification } from "../../../src/components/feedback/notification/NotificationContext";
+import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("Notification Live Region", () => {
   it("Provider에 role=status인 live region이 있다", () => {

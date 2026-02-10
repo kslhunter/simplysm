@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { Router } from "@solidjs/router";
-import { Sidebar, type SidebarMenuItem } from "../../../src";
+import { Sidebar, type SidebarMenuItem } from "../../../../src";
 
 // Mock pathname signal
 import { createSignal } from "solid-js";

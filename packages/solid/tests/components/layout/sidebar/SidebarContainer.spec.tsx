@@ -17,13 +17,13 @@ vi.mock("@solidjs/router", () => ({
 
 // usePersisted mock - 테스트에서 상태를 제어할 수 있도록
 let mockToggle: ReturnType<typeof createSignal<boolean>>;
-vi.mock("../../../src/contexts/usePersisted", () => ({
+vi.mock("../../../../src/contexts/usePersisted", () => ({
   usePersisted: () => {
     return mockToggle;
   },
 }));
 
-import { Sidebar } from "../../../src";
+import { Sidebar } from "../../../../src";
 
 describe("SidebarContainer 컴포넌트", () => {
   beforeEach(() => {

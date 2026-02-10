@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
 import { render, waitFor } from "@solidjs/testing-library";
-import { NotificationProvider } from "../../../src/components/feedback/notification/NotificationProvider";
+import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import {
   useNotification,
   type NotificationContextValue,
-} from "../../../src/components/feedback/notification/NotificationContext";
+} from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationContext", () => {
   describe("useNotification", () => {

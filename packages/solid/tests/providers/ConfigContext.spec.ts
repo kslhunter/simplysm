@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
-import { useConfig } from "../../src/contexts/ConfigContext";
+import { useConfig } from "../../src/providers/ConfigContext";
 
 describe("ConfigContext", () => {
   describe("useConfig", () => {

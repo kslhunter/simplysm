@@ -2,9 +2,9 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { onMount } from "solid-js";
 import { LoadingProvider } from "../../src/components/feedback/loading/LoadingProvider";
-import { usePrint } from "../../src/contexts/usePrint";
-import { Print } from "../../src/components/print/Print";
-import { usePrintInstance } from "../../src/components/print/PrintInstanceContext";
+import { usePrint } from "../../src/hooks/usePrint";
+import { Print } from "../../src/components/feedback/print/Print";
+import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
 
 // window.print 모킹
 vi.stubGlobal("print", vi.fn());
