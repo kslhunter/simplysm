@@ -8,12 +8,14 @@ import {
 } from "./SharedDataContext";
 import { SharedDataChangeEvent } from "./SharedDataChangeEvent";
 import { useServiceClient } from "../ServiceClientContext";
+import { useNotification } from "../../components/feedback/notification/NotificationContext";
 
 export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   definitions: { [K in keyof T]: SharedDataDefinition<T[K]> };
   children: JSX.Element;
 }): JSX.Element {
   const serviceClient = useServiceClient();
+  const notification = useNotification();
 
   const [loadingCount, setLoadingCount] = createSignal(0);
   const loading: Accessor<boolean> = () => loadingCount() > 0;
@@ -21,11 +23,9 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   const signalMap = new Map<string, ReturnType<typeof createSignal<unknown[]>>>();
   const memoMap = new Map<string, Accessor<Map<string | number, unknown>>>();
   const listenerKeyMap = new Map<string, string>();
+  const versionMap = new Map<string, number>();
 
-  function ordering<TT>(
-    data: TT[],
-    orderByList: [(item: TT) => unknown, "asc" | "desc"][],
-  ): TT[] {
+  function ordering<TT>(data: TT[], orderByList: [(item: TT) => unknown, "asc" | "desc"][]): TT[] {
     let result = [...data];
     for (const orderBy of [...orderByList].reverse()) {
       const selector = (item: TT) => orderBy[0](item) as string | number | undefined;
@@ -43,6 +43,10 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
     def: SharedDataDefinition<unknown>,
     changeKeys?: Array<string | number>,
   ): Promise<void> {
+    // CR-1: version counter로 동시 호출 시 데이터 역전 방지
+    const currentVersion = (versionMap.get(name) ?? 0) + 1;
+    versionMap.set(name, currentVersion);
+
     setLoadingCount((c) => c + 1);
     try {
       const signal = signalMap.get(name);
@@ -51,17 +55,24 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
       const [, setItems] = signal;
       const resData = await def.fetch(changeKeys);
 
+      // CR-1: 오래된 응답은 무시
+      if (versionMap.get(name) !== currentVersion) return;
+
       if (!changeKeys) {
         setItems(ordering(resData, def.orderBy));
       } else {
         setItems((prev) => {
-          const filtered = prev.filter(
-            (item) => !changeKeys.includes(def.getKey(item as never)),
-          );
+          const filtered = prev.filter((item) => !changeKeys.includes(def.getKey(item as never)));
           filtered.push(...resData);
           return ordering(filtered, def.orderBy);
         });
       }
+    } catch (err) {
+      // CR-2: fetch 실패 시 사용자에게 알림
+      notification.danger(
+        "공유 데이터 로드 실패",
+        err instanceof Error ? err.message : `'${name}' 데이터를 불러오는 중 오류가 발생했습니다.`,
+      );
     } finally {
       setLoadingCount((c) => c - 1);
     }
@@ -75,10 +86,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   const accessors: Record<string, SharedDataAccessor<unknown>> = {};
 
   // eslint-disable-next-line solid/reactivity -- definitions는 초기 설정용으로 마운트 시 1회만 읽음
-  for (const [name, def] of Object.entries(props.definitions) as [
-    string,
-    SharedDataDefinition<unknown>,
-  ][]) {
+  for (const [name, def] of Object.entries(props.definitions) as [string, SharedDataDefinition<unknown>][]) {
     const [items, setItems] = createSignal<unknown[]>([]);
     // eslint-disable-next-line solid/reactivity -- signal 참조를 Map에 저장하는 것은 반응성 접근이 아님
     signalMap.set(name, [items, setItems]);
@@ -137,9 +145,5 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
     loading,
   } as SharedDataValue<Record<string, unknown>>;
 
-  return (
-    <SharedDataContext.Provider value={contextValue}>
-      {props.children}
-    </SharedDataContext.Provider>
-  );
+  return <SharedDataContext.Provider value={contextValue}>{props.children}</SharedDataContext.Provider>;
 }

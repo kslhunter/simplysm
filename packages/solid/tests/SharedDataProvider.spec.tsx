@@ -7,6 +7,8 @@ import {
   type SharedDataDefinition,
   ServiceClientContext,
   type ServiceClientContextValue,
+  NotificationContext,
+  type NotificationContextValue,
 } from "../src";
 
 interface TestData {
@@ -35,6 +37,24 @@ function createMockServiceClient() {
   };
 
   return { mockClient, serviceClientValue, listeners };
+}
+
+function createMockNotification(): NotificationContextValue {
+  return {
+    items: () => [],
+    unreadCount: () => 0,
+    latestUnread: () => undefined,
+    info: vi.fn(() => ""),
+    success: vi.fn(() => ""),
+    warning: vi.fn(() => ""),
+    danger: vi.fn(() => ""),
+    update: vi.fn(),
+    remove: vi.fn(),
+    markAsRead: vi.fn(),
+    markAllAsRead: vi.fn(),
+    dismissBanner: vi.fn(),
+    clear: vi.fn(),
+  };
 }
 
 function TestConsumer(props: { onData?: (shared: ReturnType<typeof useSharedData<TestData>>) => void }) {
@@ -67,11 +87,13 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ServiceClientContext.Provider value={serviceClientValue}>
-        <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer />
-        </SharedDataProvider>
-      </ServiceClientContext.Provider>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider<TestData> definitions={definitions}>
+            <TestConsumer />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -100,11 +122,17 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ServiceClientContext.Provider value={serviceClientValue}>
-        <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer onData={(s) => { sharedRef = s; }} />
-        </SharedDataProvider>
-      </ServiceClientContext.Provider>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider<TestData> definitions={definitions}>
+            <TestConsumer
+              onData={(s) => {
+                sharedRef = s;
+              }}
+            />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -138,11 +166,17 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ServiceClientContext.Provider value={serviceClientValue}>
-        <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer onData={(s) => { sharedRef = s; }} />
-        </SharedDataProvider>
-      </ServiceClientContext.Provider>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider<TestData> definitions={definitions}>
+            <TestConsumer
+              onData={(s) => {
+                sharedRef = s;
+              }}
+            />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -173,11 +207,13 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ServiceClientContext.Provider value={serviceClientValue}>
-        <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer />
-        </SharedDataProvider>
-      </ServiceClientContext.Provider>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider<TestData> definitions={definitions}>
+            <TestConsumer />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     // 로딩 중
