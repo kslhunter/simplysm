@@ -31,6 +31,7 @@ export const appStructure = createAppStructure({
           children: [
             { code: "button", title: "Button", component: lazy(() => import("./pages/form-control/ButtonPage")) },
             { code: "select", title: "Select", component: lazy(() => import("./pages/form-control/SelectPage")) },
+            { code: "combobox", title: "Combobox", component: lazy(() => import("./pages/form-control/ComboboxPage")) },
             { code: "field", title: "Field", component: lazy(() => import("./pages/form-control/FieldPage")) },
             {
               code: "theme-toggle",

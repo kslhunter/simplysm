@@ -233,10 +233,10 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
   // 검색 실행
   const performSearch = (searchQuery: string) => {
-    setLoading(true);
     // loadItems 함수 참조를 캡처하여 사용
     const loadItemsFn = local.loadItems;
     debounceQueue.run(async () => {
+      setLoading(true);
       try {
         const result = await loadItemsFn(searchQuery);
         setItems(result);
@@ -330,6 +330,12 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       if (open() || currentValue === undefined) {
         return (
           <input
+            ref={(el) => {
+              // 드롭다운이 열릴 때 input에 포커스
+              if (open()) {
+                requestAnimationFrame(() => el.focus());
+              }
+            }}
             type="text"
             class={inputClass}
             value={query()}
