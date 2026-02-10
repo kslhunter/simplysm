@@ -2,7 +2,7 @@ import { type Component, type JSX, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { type FieldSize } from "../field/Field.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
@@ -105,17 +105,17 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   });
 
   // controlled/uncontrolled 패턴
-  const [periodType, setPeriodType] = createPropSignal({
+  const [periodType, setPeriodType] = createControllableSignal({
     value: () => local.periodType ?? ("range" as DateRangePeriodType),
     onChange: () => local.onPeriodTypeChange,
   });
 
-  const [from, setFrom] = createPropSignal({
+  const [from, setFrom] = createControllableSignal({
     value: () => local.from,
     onChange: () => local.onFromChange,
   });
 
-  const [to, setTo] = createPropSignal({
+  const [to, setTo] = createControllableSignal({
     value: () => local.to,
     onChange: () => local.onToChange,
   });
@@ -167,12 +167,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   const getWrapperClass = () => twMerge(baseClass, local.class);
 
   return (
-    <div
-      {...rest}
-      data-date-range-picker
-      class={getWrapperClass()}
-      style={local.style}
-    >
+    <div {...rest} data-date-range-picker class={getWrapperClass()} style={local.style}>
       <Select
         value={periodType()}
         onValueChange={handlePeriodTypeChange}

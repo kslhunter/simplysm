@@ -14,7 +14,7 @@ import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
-import { createPropSignal } from "../../utils/createPropSignal";
+import { createControllableSignal } from "../../utils/createControllableSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
@@ -67,15 +67,7 @@ export interface DialogProps {
   children: JSX.Element;
 }
 
-type ResizeDirection =
-  | "left"
-  | "right"
-  | "top"
-  | "bottom"
-  | "top-left"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-right";
+type ResizeDirection = "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 const RESIZE_DIRECTIONS: ResizeDirection[] = [
   "left",
@@ -156,7 +148,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     "children",
   ]);
 
-  const [open, setOpen] = createPropSignal({
+  const [open, setOpen] = createControllableSignal({
     value: () => local.open ?? false,
     onChange: () => local.onOpenChange,
   });
@@ -428,11 +420,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
 
   // 애니메이션 클래스
   const animationClass = () => {
-    const base = clsx(
-      "transition-[opacity,transform]",
-      "duration-200",
-      "ease-out",
-    );
+    const base = clsx("transition-[opacity,transform]", "duration-200", "ease-out");
     if (animating()) {
       return clsx(base, "translate-y-0 opacity-100");
     } else {
@@ -471,9 +459,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
       "mx-auto",
       "w-fit min-w-[200px]",
       "bg-white dark:bg-base-800",
-      local.float
-        ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle)
-        : "shadow-2xl dark:shadow-black/40",
+      local.float ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle) : "shadow-2xl dark:shadow-black/40",
       local.fill ? "rounded-none border-none" : "rounded-lg",
       "overflow-hidden",
       "flex flex-col",
@@ -483,13 +469,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     );
 
   // 헤더 클래스
-  const headerClass = () =>
-    clsx(
-      "flex items-center",
-      "select-none",
-      "border-b",
-      borderSubtle,
-    );
+  const headerClass = () => clsx("flex items-center", "select-none", "border-b", borderSubtle);
 
   return (
     <Show when={mounted()}>
@@ -503,11 +483,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
         >
           {/* 백드롭 */}
           <Show when={!local.float}>
-            <div
-              data-modal-backdrop
-              class={backdropClass()}
-              onClick={handleBackdropClick}
-            />
+            <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />
           </Show>
 
           {/* 다이얼로그 */}
@@ -530,22 +506,10 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
               <div
                 data-modal-header
                 class={clsx(headerClass(), "touch-none")}
-                style={
-                  typeof local.headerStyle === "string"
-                    ? mergeStyles(local.headerStyle)
-                    : local.headerStyle
-                }
+                style={typeof local.headerStyle === "string" ? mergeStyles(local.headerStyle) : local.headerStyle}
                 onPointerDown={handleHeaderPointerDown}
               >
-                <h5
-                  class={clsx(
-                    "flex-1",
-                    "px-4 py-2",
-                    "text-sm font-semibold",
-                  )}
-                >
-                  {local.title}
-                </h5>
+                <h5 class={clsx("flex-1", "px-4 py-2", "text-sm font-semibold")}>{local.title}</h5>
                 {local.headerAction}
                 <Show when={local.closable ?? true}>
                   <button
@@ -578,12 +542,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
                 {(direction) => (
                   <div
                     data-resize-bar={direction}
-                    class={clsx(
-                      "absolute",
-                      "touch-none",
-                      resizePositionMap[direction],
-                      resizeCursorMap[direction],
-                    )}
+                    class={clsx("absolute", "touch-none", resizePositionMap[direction], resizeCursorMap[direction])}
                     onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
                   />
                 )}

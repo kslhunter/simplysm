@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -73,7 +73,6 @@ function formatValue(value: DateOnly | undefined, type: DatePickerUnit): string 
       return value.toFormatString("yyyy-MM-dd");
   }
 }
-
 
 /**
  * 입력 문자열을 DateOnly로 변환
@@ -177,7 +176,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
   const fieldType = () => local.unit ?? "date";
 
   // controlled/uncontrolled 패턴 지원
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
@@ -199,7 +198,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.inset && (fieldInsetClass + " block"),
+      local.inset && fieldInsetClass + " block",
       local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
 
       includeCustomClass && local.class,
@@ -216,7 +215,13 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
         <Show
           when={isEditable()}
           fallback={
-            <div {...rest} data-date-field class={twMerge(getWrapperClass(true), "sd-date-field")} style={local.style} title={local.title}>
+            <div
+              {...rest}
+              data-date-field
+              class={twMerge(getWrapperClass(true), "sd-date-field")}
+              style={local.style}
+              title={local.title}
+            >
               {displayValue() || "\u00A0"}
             </div>
           }
@@ -242,22 +247,14 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        <div
-          data-date-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
+        <div data-date-field-content style={{ visibility: isEditable() ? "hidden" : undefined }} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
 
         <Show when={isEditable()}>
           <input
             type={getInputType(fieldType())}
-            class={clsx(
-              fieldInputClass,
-              "absolute left-0 top-0 size-full",
-              "px-2 py-1",
-            )}
+            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
             value={displayValue()}
             title={local.title}
             min={formatMinMax(local.min, fieldType())}

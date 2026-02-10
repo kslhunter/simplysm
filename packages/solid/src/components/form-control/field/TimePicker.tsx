@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -66,7 +66,6 @@ function formatValue(value: Time | undefined, unit: TimePickerUnit): string {
   }
 }
 
-
 /**
  * 입력 문자열을 Time으로 변환
  */
@@ -123,7 +122,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
   const fieldType = () => local.unit ?? "minute";
 
   // controlled/uncontrolled 패턴 지원
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
@@ -145,7 +144,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.inset && (fieldInsetClass + " block"),
+      local.inset && fieldInsetClass + " block",
       local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
 
       includeCustomClass && local.class,
@@ -196,22 +195,14 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        <div
-          data-time-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
+        <div data-time-field-content style={{ visibility: isEditable() ? "hidden" : undefined }} title={local.title}>
           {displayValue() || "\u00A0"}
         </div>
 
         <Show when={isEditable()}>
           <input
             type="time"
-            class={clsx(
-              fieldInputClass,
-              "absolute left-0 top-0 size-full",
-              "px-2 py-1",
-            )}
+            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
             value={displayValue()}
             title={local.title}
             step={getStep()}

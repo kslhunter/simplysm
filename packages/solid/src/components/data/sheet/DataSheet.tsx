@@ -23,7 +23,7 @@ import type {
 } from "./types";
 import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
@@ -105,14 +105,17 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   // #region Column Collection
   const resolved = children(() => local.children);
   const columnDefs = createMemo(() =>
-    (resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[]).filter((col) => !col.hidden),
+    (resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[]).filter(
+      (col) => !col.hidden,
+    ),
   );
 
   // #region Config (usePersisted)
   /* eslint-disable solid/reactivity -- key는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
-  const [config, setConfig] = local.key != null && local.key !== ""
-    ? usePersisted<DataSheetConfig>(`sheet.${local.key}`, { columnRecord: {} })
-    : createSignal<DataSheetConfig>({ columnRecord: {} });
+  const [config, setConfig] =
+    local.key != null && local.key !== ""
+      ? usePersisted<DataSheetConfig>(`sheet.${local.key}`, { columnRecord: {} })
+      : createSignal<DataSheetConfig>({ columnRecord: {} });
   /* eslint-enable solid/reactivity */
 
   // 설정이 적용된 최종 컬럼 — config의 hidden/fixed/width/displayOrder 오버라이드 적용
@@ -191,7 +194,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   const hasSummary = createMemo(() => effectiveColumns().some((col) => col.summary != null));
 
   // #region Sorting
-  const [sorts, setSorts] = createPropSignal({
+  const [sorts, setSorts] = createControllableSignal({
     value: () => local.sorts ?? [],
     onChange: () => local.onSortsChange,
   });
@@ -233,7 +236,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   });
 
   // #region Paging
-  const [currentPage, setCurrentPage] = createPropSignal({
+  const [currentPage, setCurrentPage] = createControllableSignal({
     value: () => local.page ?? 0,
     onChange: () => local.onPageChange,
   });
@@ -438,7 +441,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   });
 
   // #region Expanding
-  const [expandedItems, setExpandedItems] = createPropSignal({
+  const [expandedItems, setExpandedItems] = createControllableSignal({
     value: () => local.expandedItems ?? [],
     onChange: () => local.onExpandedItemsChange,
   });
@@ -464,7 +467,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   });
 
   // #region Selection
-  const [selectedItems, setSelectedItems] = createPropSignal({
+  const [selectedItems, setSelectedItems] = createControllableSignal({
     value: () => local.selectedItems ?? [],
     onChange: () => local.onSelectedItemsChange,
   });
@@ -824,10 +827,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       ref={registerSelectColRef}
                     >
                       <Show when={local.selectMode === "multiple"}>
-                        <div
-                          class={featureCellClickableClass}
-                          onClick={() => toggleSelectAll()}
-                        >
+                        <div class={featureCellClickableClass} onClick={() => toggleSelectAll()}>
                           <Checkbox
                             value={(() => {
                               const selectableItems = displayItems()
@@ -1101,10 +1101,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                             fallback={
                               /* single 모드 */
                               <Show when={selectable() === true}>
-                                <div
-                                  class={featureCellBodyClickableClass}
-                                  onClick={() => toggleSelect(flat.item)}
-                                >
+                                <div class={featureCellBodyClickableClass} onClick={() => toggleSelect(flat.item)}>
                                   <div
                                     class={twMerge(
                                       selectSingleClass,
@@ -1165,10 +1162,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                         })(),
                       }}
                     >
-                      <div
-                        class={reorderCellWrapperClass}
-                        onPointerDown={(e) => onReorderPointerDown(e, flat.item)}
-                      >
+                      <div class={reorderCellWrapperClass} onPointerDown={(e) => onReorderPointerDown(e, flat.item)}>
                         <div class={reorderHandleClass}>
                           <Icon icon={IconGripVertical} size="1em" />
                         </div>

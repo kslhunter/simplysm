@@ -2,7 +2,7 @@ import { createMemo, For, type JSX, splitProps } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 
 export interface CalendarProps<T> extends Omit<JSX.HTMLAttributes<HTMLTableElement>, "children"> {
   items: T[];
@@ -32,10 +32,7 @@ const baseClass = clsx(
   "[&_td]:p-1 [&_td]:align-top",
 );
 
-const notCurrentClass = clsx(
-  "[&.not-current]:bg-base-50",
-  "[&.not-current]:dark:bg-base-900",
-);
+const notCurrentClass = clsx("[&.not-current]:bg-base-50", "[&.not-current]:dark:bg-base-900");
 
 const dayClass = clsx("mb-1 text-sm text-base-500", "dark:text-base-400");
 
@@ -58,7 +55,7 @@ function CalendarBase<T>(props: CalendarProps<T>) {
   const weekStartDay = () => local.weekStartDay ?? 0;
   const minDaysInFirstWeek = () => local.minDaysInFirstWeek ?? 1;
 
-  const [yearMonth] = createPropSignal({
+  const [yearMonth] = createControllableSignal({
     value: () => local.yearMonth ?? new DateOnly().setDay(1),
     onChange: () => local.onYearMonthChange,
   });
@@ -110,9 +107,7 @@ function CalendarBase<T>(props: CalendarProps<T>) {
     <table data-calendar class={getClassName()} {...rest}>
       <thead>
         <tr>
-          <For each={weekHeaders()}>
-            {(header) => <th>{header}</th>}
-          </For>
+          <For each={weekHeaders()}>{(header) => <th>{header}</th>}</For>
         </tr>
       </thead>
       <tbody>
@@ -121,19 +116,14 @@ function CalendarBase<T>(props: CalendarProps<T>) {
             <tr>
               <For each={row}>
                 {(cell) => (
-                  <td
-                    class={twMerge(
-                      notCurrentClass,
-                      cell.date.month !== yearMonth().month && "not-current",
-                    )}
-                  >
-                    <div class={cell.date.month !== yearMonth().month ? twMerge(dayClass, notCurrentDayClass) : dayClass}>
+                  <td class={twMerge(notCurrentClass, cell.date.month !== yearMonth().month && "not-current")}>
+                    <div
+                      class={cell.date.month !== yearMonth().month ? twMerge(dayClass, notCurrentDayClass) : dayClass}
+                    >
                       {cell.date.day}
                     </div>
                     <div class={contentClass}>
-                      <For each={cell.items}>
-                        {(entry) => local.renderItem(entry.item, entry.index)}
-                      </For>
+                      <For each={cell.items}>{(entry) => local.renderItem(entry.item, entry.index)}</For>
                     </div>
                   </td>
                 )}

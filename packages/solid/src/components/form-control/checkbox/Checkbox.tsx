@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
 import { Icon } from "../../display/Icon";
 import {
@@ -47,7 +47,7 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
     "children",
   ]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? false,
     onChange: () => local.onValueChange,
   });
@@ -78,11 +78,7 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
   const getIndicatorClass = () => {
     const theme = local.theme ?? "primary";
 
-    return twMerge(
-      indicatorBaseClass,
-      "rounded-sm",
-      value() && themeCheckedClasses[theme],
-    );
+    return twMerge(indicatorBaseClass, "rounded-sm", value() && themeCheckedClasses[theme]);
   };
 
   return (

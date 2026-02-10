@@ -1,7 +1,7 @@
 import { type Component, type JSX, Show, splitProps, createSignal, createEffect } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -177,7 +177,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
 
   // controlled/uncontrolled 패턴 지원
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
@@ -266,9 +266,12 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
               style={local.style}
               title={local.title}
             >
-              {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
-                ? <span class={textMuted}>{local.placeholder}</span>
-                : "\u00A0")}
+              {formatNumber(value(), local.comma ?? true, local.minDigits) ||
+                (local.placeholder != null && local.placeholder !== "" ? (
+                  <span class={textMuted}>{local.placeholder}</span>
+                ) : (
+                  "\u00A0"
+                ))}
             </div>
           }
         >
@@ -296,9 +299,12 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
           style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
         >
-          {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
-            ? <span class={textMuted}>{local.placeholder}</span>
-            : "\u00A0")}
+          {formatNumber(value(), local.comma ?? true, local.minDigits) ||
+            (local.placeholder != null && local.placeholder !== "" ? (
+              <span class={textMuted}>{local.placeholder}</span>
+            ) : (
+              "\u00A0"
+            ))}
         </div>
 
         <Show when={isEditable()}>

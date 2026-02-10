@@ -1,6 +1,6 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
 import clsx from "clsx";
 import {
@@ -48,7 +48,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     "children",
   ]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? false,
     onChange: () => local.onValueChange,
   });
@@ -79,11 +79,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
   const getIndicatorClass = () => {
     const theme = local.theme ?? "primary";
 
-    return twMerge(
-      indicatorBaseClass,
-      "rounded-full",
-      value() && themeCheckedClasses[theme],
-    );
+    return twMerge(indicatorBaseClass, "rounded-full", value() && themeCheckedClasses[theme]);
   };
 
   return (

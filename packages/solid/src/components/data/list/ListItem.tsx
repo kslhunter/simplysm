@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 import { splitSlots } from "../../../utils/splitSlots";
@@ -134,7 +134,7 @@ export const ListItem: ListItemComponent = (props) => {
   const listContext = useListContext();
   const level = listContext.level;
 
-  const [openState, setOpenState] = createPropSignal({
+  const [openState, setOpenState] = createControllableSignal({
     value: () => local.open ?? false,
     onChange: () => local.onOpenChange,
   });

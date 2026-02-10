@@ -13,7 +13,7 @@ import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import type { FieldSize } from "../field/Field.styles";
 import { EditorToolbar } from "./EditorToolbar";
 
@@ -54,10 +54,7 @@ const editorWrapperClass = clsx(
 const editorErrorClass = clsx("border-danger-500");
 
 // 에디터 disabled 스타일
-const editorDisabledClass = clsx(
-  "bg-base-100 dark:bg-base-800",
-  "text-base-500",
-);
+const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
 
 // 에디터 콘텐츠 영역 스타일
 const editorContentClass = clsx(
@@ -75,17 +72,9 @@ const editorContentSizeClasses: Record<FieldSize, string> = {
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "value",
-    "onValueChange",
-    "disabled",
-    "error",
-    "size",
-    "class",
-    "style",
-  ]);
+  const [local, rest] = splitProps(props, ["value", "onValueChange", "disabled", "error", "size", "class", "style"]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
     onChange: () => local.onValueChange,
   });
@@ -165,26 +154,12 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
   });
 
   const getWrapperClass = () =>
-    twMerge(
-      editorWrapperClass,
-      local.error && editorErrorClass,
-      local.disabled && editorDisabledClass,
-      local.class,
-    );
+    twMerge(editorWrapperClass, local.error && editorErrorClass, local.disabled && editorDisabledClass, local.class);
 
-  const getContentClass = () =>
-    twMerge(
-      editorContentClass,
-      local.size && editorContentSizeClasses[local.size],
-    );
+  const getContentClass = () => twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
 
   return (
-    <div
-      {...rest}
-      data-rich-text-editor
-      class={getWrapperClass()}
-      style={local.style}
-    >
+    <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>
       <Show when={editor()}>
         {(instance) => (
           <Show when={!local.disabled}>

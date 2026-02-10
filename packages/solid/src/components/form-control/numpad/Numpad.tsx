@@ -1,7 +1,7 @@
 import { type Component, type JSX, createSignal, createEffect, Show } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { Button } from "../Button";
 import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
@@ -33,11 +33,7 @@ export interface NumpadProps {
   style?: JSX.CSSProperties;
 }
 
-const baseClass = clsx(
-  "grid grid-cols-3",
-  "gap-0.5",
-  "w-auto",
-);
+const baseClass = clsx("grid grid-cols-3", "gap-0.5", "w-auto");
 
 /**
  * inputStr을 파싱하여 숫자로 변환한다.
@@ -59,7 +55,7 @@ function valueToInputStr(value: number | undefined): string {
 
 export const Numpad: Component<NumpadProps> = (props) => {
   // controlled/uncontrolled 패턴
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => props.value,
     onChange: () => props.onValueChange,
   });
@@ -133,18 +129,9 @@ export const Numpad: Component<NumpadProps> = (props) => {
   const buttonSize = () => props.size ?? "lg";
 
   return (
-    <div
-      data-numpad
-      class={twMerge(baseClass, props.class)}
-      style={props.style}
-    >
+    <div data-numpad class={twMerge(baseClass, props.class)} style={props.style}>
       {/* Row 1: NumberInput + optional ENT */}
-      <div
-        class={clsx(
-          "flex",
-          props.useEnterButton ? "col-span-2" : "col-span-3",
-        )}
-      >
+      <div class={clsx("flex", props.useEnterButton ? "col-span-2" : "col-span-3")}>
         <NumberInput
           value={value()}
           onValueChange={handleFieldValueChange}
@@ -178,40 +165,54 @@ export const Numpad: Component<NumpadProps> = (props) => {
         size={buttonSize()}
         inset
         onClick={handleClear}
-        class={clsx(
-          props.useMinusButton ? "col-span-1" : "col-span-2",
-          "text-danger-500",
-        )}
+        class={clsx(props.useMinusButton ? "col-span-1" : "col-span-2", "text-danger-500")}
       >
         <Icon icon={IconEraser} />
       </Button>
-      <Button
-        size={buttonSize()}
-        inset
-        onClick={handleBackspace}
-        class="text-warning-500"
-      >
+      <Button size={buttonSize()} inset onClick={handleBackspace} class="text-warning-500">
         <Icon icon={IconArrowLeft} />
       </Button>
 
       {/* Row 3: 7 8 9 */}
-      <Button size={buttonSize()} inset onClick={() => handleDigit("7")}>7</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("8")}>8</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("9")}>9</Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("7")}>
+        7
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("8")}>
+        8
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("9")}>
+        9
+      </Button>
 
       {/* Row 4: 4 5 6 */}
-      <Button size={buttonSize()} inset onClick={() => handleDigit("4")}>4</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("5")}>5</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("6")}>6</Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("4")}>
+        4
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("5")}>
+        5
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("6")}>
+        6
+      </Button>
 
       {/* Row 5: 1 2 3 */}
-      <Button size={buttonSize()} inset onClick={() => handleDigit("1")}>1</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("2")}>2</Button>
-      <Button size={buttonSize()} inset onClick={() => handleDigit("3")}>3</Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("1")}>
+        1
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("2")}>
+        2
+      </Button>
+      <Button size={buttonSize()} inset onClick={() => handleDigit("3")}>
+        3
+      </Button>
 
       {/* Row 6: 0 (colspan 2) + . */}
-      <Button size={buttonSize()} inset class="col-span-2" onClick={() => handleDigit("0")}>0</Button>
-      <Button size={buttonSize()} inset onClick={handleDot}>.</Button>
+      <Button size={buttonSize()} inset class="col-span-2" onClick={() => handleDigit("0")}>
+        0
+      </Button>
+      <Button size={buttonSize()} inset onClick={handleDot}>
+        .
+      </Button>
     </div>
   );
 };

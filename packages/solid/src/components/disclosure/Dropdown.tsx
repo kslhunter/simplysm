@@ -1,16 +1,8 @@
-import {
-  type JSX,
-  type ParentComponent,
-  createSignal,
-  createEffect,
-  onCleanup,
-  Show,
-  splitProps,
-} from "solid-js";
+import { type JSX, type ParentComponent, createSignal, createEffect, onCleanup, Show, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../utils/createPropSignal";
+import { createControllableSignal } from "../../utils/createControllableSignal";
 import { mergeStyles } from "../../utils/mergeStyles";
 import { borderSubtle } from "../../styles/tokens.styles";
 
@@ -93,7 +85,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     "children",
   ]);
 
-  const [open, setOpen] = createPropSignal({
+  const [open, setOpen] = createControllableSignal({
     value: () => local.open ?? false,
     onChange: () => local.onOpenChange,
   });
@@ -186,10 +178,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
       setDirection(openDown ? "down" : "up");
 
       // 좌/우 조정 - 뷰포트 기준
-      const adjustedLeft = Math.min(
-        local.position.x,
-        viewportWidth - (popup.offsetWidth || 200),
-      );
+      const adjustedLeft = Math.min(local.position.x, viewportWidth - (popup.offsetWidth || 200));
       style.left = `${Math.max(0, adjustedLeft)}px`;
 
       if (openDown) {
@@ -288,9 +277,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
     const dir = direction();
     const focusables = [
-      ...popup.querySelectorAll<HTMLElement>(
-        '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
-      ),
+      ...popup.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, [data-list-item]'),
     ];
 
     if (dir === "down") {
@@ -402,7 +389,8 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
               "fixed", // 기본 position: fixed로 설정하여 offsetWidth 측정 정확하게
               "z-dropdown",
               "bg-white dark:bg-base-800",
-              "border", borderSubtle,
+              "border",
+              borderSubtle,
               "shadow-lg dark:shadow-black/30",
               "rounded-md",
               "overflow-y-auto",

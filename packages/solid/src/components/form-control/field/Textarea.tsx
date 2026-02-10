@@ -1,14 +1,13 @@
 import clsx from "clsx";
 import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   textAreaBaseClass as fieldTextAreaBaseClass,
   textAreaSizeClasses,
   fieldErrorClass,
   fieldInsetClass,
-
   fieldDisabledClass,
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
@@ -60,7 +59,6 @@ const textareaBaseClass = clsx(
   "placeholder:text-base-400 dark:placeholder:text-base-500",
 );
 
-
 /**
  * Textarea 컴포넌트
  *
@@ -89,7 +87,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     "style",
   ]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
     onChange: () => local.onValueChange,
   });
@@ -166,9 +164,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
   const contentForHeight = () => {
     const rows = local.minRows ?? 1;
     const val = displayValue();
-    const content = (val !== "" && val.split("\n").length >= rows)
-      ? val
-      : "\n".repeat(rows - 1) + "\u00A0";
+    const content = val !== "" && val.split("\n").length >= rows ? val : "\n".repeat(rows - 1) + "\u00A0";
     // 마지막이 줄바꿈이면 빈 줄 높이 확보를 위해 공백 추가
     return content.endsWith("\n") ? content + "\u00A0" : content;
   };
@@ -186,11 +182,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
     );
 
   const getTextareaClass = () =>
-    twMerge(
-      textareaBaseClass,
-      local.size && textAreaSizeClasses[local.size],
-      local.inset && "p-0",
-    );
+    twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size], local.inset && "p-0");
 
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
@@ -217,9 +209,12 @@ export const Textarea: Component<TextareaProps> = (props) => {
               style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
               title={local.title}
             >
-              {value() || (local.placeholder != null && local.placeholder !== ""
-                ? <span class={textMuted}>{local.placeholder}</span>
-                : "\u00A0")}
+              {value() ||
+                (local.placeholder != null && local.placeholder !== "" ? (
+                  <span class={textMuted}>{local.placeholder}</span>
+                ) : (
+                  "\u00A0"
+                ))}
             </div>
           }
         >
@@ -232,7 +227,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
             <div
               data-hidden-content
               style={{
-                visibility: "hidden",
+                "visibility": "hidden",
                 "white-space": "pre-wrap",
                 "word-break": "break-all",
               }}
@@ -264,7 +259,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
         <div
           data-textarea-field-content
           style={{
-            visibility: isEditable() ? "hidden" : undefined,
+            "visibility": isEditable() ? "hidden" : undefined,
             "white-space": "pre-wrap",
             "word-break": "break-all",
           }}
@@ -272,17 +267,17 @@ export const Textarea: Component<TextareaProps> = (props) => {
         >
           {isEditable()
             ? contentForHeight()
-            : (value() || (local.placeholder != null && local.placeholder !== ""
-              ? <span class={textMuted}>{local.placeholder}</span>
-              : "\u00A0"))}
+            : value() ||
+              (local.placeholder != null && local.placeholder !== "" ? (
+                <span class={textMuted}>{local.placeholder}</span>
+              ) : (
+                "\u00A0"
+              ))}
         </div>
 
         <Show when={isEditable()}>
           <textarea
-            class={twMerge(
-              textareaBaseClass,
-              local.size && textAreaSizeClasses[local.size],
-            )}
+            class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
             value={value()}
             placeholder={local.placeholder}
             title={local.title}

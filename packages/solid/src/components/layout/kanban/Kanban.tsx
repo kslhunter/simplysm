@@ -17,7 +17,7 @@ import { Card } from "../../display/Card";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { LoadingContainer } from "../../feedback/loading/LoadingContainer";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { splitSlots } from "../../../utils/splitSlots";
 import "./Kanban.css";
 import {
@@ -34,15 +34,11 @@ import {
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-const KanbanLaneTitle: ParentComponent = (props) => (
-  <div data-kanban-lane-title>{props.children}</div>
-);
+const KanbanLaneTitle: ParentComponent = (props) => <div data-kanban-lane-title>{props.children}</div>;
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-const KanbanLaneTools: ParentComponent = (props) => (
-  <div data-kanban-lane-tools>{props.children}</div>
-);
+const KanbanLaneTools: ParentComponent = (props) => <div data-kanban-lane-tools>{props.children}</div>;
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
@@ -54,33 +50,16 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
   children?: JSX.Element;
 }
 
-const cardHostClass = clsx(
-  "relative block",
-  "transition-opacity duration-200",
-);
+const cardHostClass = clsx("relative block", "transition-opacity duration-200");
 
-const cardContentClass = clsx(
-  "select-none whitespace-normal",
-  "animate-none",
-  "transition-shadow duration-200",
-);
+const cardContentClass = clsx("select-none whitespace-normal", "animate-none", "transition-shadow duration-200");
 
-const cardSelectedClass = clsx(
-  "ring-2 ring-primary-500/50",
-  "shadow-md dark:shadow-black/30",
-);
+const cardSelectedClass = clsx("ring-2 ring-primary-500/50", "shadow-md dark:shadow-black/30");
 
 const LONG_PRESS_MS = 500;
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "children",
-    "class",
-    "value",
-    "draggable",
-    "selectable",
-    "contentClass",
-  ]);
+  const [local, rest] = splitProps(props, ["children", "class", "value", "draggable", "selectable", "contentClass"]);
 
   const boardCtx = useKanbanContext();
   const laneCtx = useKanbanLaneContext();
@@ -195,8 +174,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     clearTimeout(longPressTimer);
   });
 
-  const isSelected = () =>
-    local.value != null && boardCtx.selectedValues().includes(local.value);
+  const isSelected = () => local.value != null && boardCtx.selectedValues().includes(local.value);
 
   return (
     <div
@@ -237,12 +215,10 @@ const laneBaseClass = clsx(
   "bg-base-100 dark:bg-base-900",
   "rounded-lg",
   "overflow-hidden",
-  "transition-[background-color,box-shadow] duration-200"
+  "transition-[background-color,box-shadow] duration-200",
 );
 
-const laneDragOverClass = clsx(
-  "bg-primary-50 dark:bg-primary-950"
-);
+const laneDragOverClass = clsx("bg-primary-50 dark:bg-primary-950");
 
 const laneHeaderBaseClass = clsx(
   "flex items-center gap-2",
@@ -264,12 +240,7 @@ const collapseButtonClass = clsx(
 
 const laneToolsClass = clsx("flex items-center", "gap-1");
 
-const laneBodyBaseClass = clsx(
-  "flex-1",
-  "flex flex-col gap-2",
-  "p-2",
-  "overflow-y-auto",
-);
+const laneBodyBaseClass = clsx("flex-1", "flex flex-col gap-2", "p-2", "overflow-y-auto");
 
 const placeholderBaseClass = clsx(
   "rounded-lg",
@@ -289,16 +260,16 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     "onCollapsedChange",
   ]);
 
-  const [collapsed, setCollapsed] = createPropSignal({
+  const [collapsed, setCollapsed] = createControllableSignal({
     value: () => local.collapsed ?? false,
     onChange: () => local.onCollapsedChange,
   });
 
   const boardCtx = useKanbanContext();
 
-  const [registeredCards, setRegisteredCards] = createSignal<
-    Map<string, { value: unknown; selectable: boolean }>
-  >(new Map());
+  const [registeredCards, setRegisteredCards] = createSignal<Map<string, { value: unknown; selectable: boolean }>>(
+    new Map(),
+  );
 
   const registerCard = (id: string, info: { value: unknown; selectable: boolean }) => {
     setRegisteredCards((prev) => new Map(prev).set(id, info));
@@ -400,7 +371,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     const [slots, content] = splitSlots(resolved, ["kanbanLaneTitle", "kanbanLaneTools"] as const);
 
     const hasHeader = () =>
-      local.collapsible || hasSelectableCards() || slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
+      local.collapsible ||
+      hasSelectableCards() ||
+      slots().kanbanLaneTitle.length > 0 ||
+      slots().kanbanLaneTools.length > 0;
 
     // placeholder div (Lane이 소유, DOM 직접 제어)
     let bodyRef: HTMLDivElement | undefined;
@@ -422,13 +396,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       placeholderEl.style.height = `${dc.heightOnDrag}px`;
 
       // 삽입 위치 계산
-      const referenceNode = target.position === "before"
-        ? target.element
-        : target.element.nextElementSibling;
+      const referenceNode = target.position === "before" ? target.element : target.element.nextElementSibling;
 
       // 이미 올바른 위치면 DOM 조작 생략
-      if (placeholderEl.parentNode === bodyRef
-          && placeholderEl.nextSibling === referenceNode) {
+      if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
         return;
       }
 
@@ -456,21 +427,12 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
           <Show when={hasHeader()}>
             <div class={laneHeaderBaseClass}>
               <Show when={local.collapsible}>
-                <button
-                  type="button"
-                  class={collapseButtonClass}
-                  onClick={() => setCollapsed((prev) => !prev)}
-                >
+                <button type="button" class={collapseButtonClass} onClick={() => setCollapsed((prev) => !prev)}>
                   <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
                 </button>
               </Show>
               <Show when={hasSelectableCards()}>
-                <Checkbox
-                  value={isAllSelected()}
-                  onValueChange={handleSelectAll}
-                  inline
-                  theme="primary"
-                />
+                <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline theme="primary" />
               </Show>
               <div class="flex-1">{slots().kanbanLaneTitle}</div>
               <Show when={slots().kanbanLaneTools.length > 0}>
@@ -504,11 +466,7 @@ export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
   children?: JSX.Element;
 }
 
-const boardBaseClass = clsx(
-  "inline-flex flex-nowrap",
-  "h-full",
-  "gap-4",
-);
+const boardBaseClass = clsx("inline-flex flex-nowrap", "h-full", "gap-4");
 
 interface KanbanComponent {
   (props: KanbanProps): JSX.Element;
@@ -519,17 +477,11 @@ interface KanbanComponent {
 }
 
 const KanbanBase = (props: KanbanProps) => {
-  const [local, rest] = splitProps(props, [
-    "children",
-    "class",
-    "onDrop",
-    "selectedValues",
-    "onSelectedValuesChange",
-  ]);
+  const [local, rest] = splitProps(props, ["children", "class", "onDrop", "selectedValues", "onSelectedValuesChange"]);
 
   const [dragCard, setDragCard] = createSignal<KanbanCardRef>();
 
-  const [selectedValues, setSelectedValues] = createPropSignal({
+  const [selectedValues, setSelectedValues] = createControllableSignal({
     value: () => local.selectedValues ?? ([] as unknown[]),
     onChange: () => local.onSelectedValuesChange,
   });
@@ -581,11 +533,7 @@ const KanbanBase = (props: KanbanProps) => {
 
   return (
     <KanbanContext.Provider value={contextValue}>
-      <div
-        {...rest}
-        data-kanban
-        class={twMerge(boardBaseClass, local.class)}
-      >
+      <div {...rest} data-kanban class={twMerge(boardBaseClass, local.class)}>
         {local.children}
       </div>
     </KanbanContext.Provider>

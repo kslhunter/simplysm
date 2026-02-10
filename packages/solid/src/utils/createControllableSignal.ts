@@ -5,7 +5,7 @@ import { createSignal, createEffect } from "solid-js";
  * 함수 타입이 전달되면 never로 변환되어 컴파일 타임 에러 발생
  *
  * @remarks
- * 함수를 저장해야 할 경우 객체로 감싸기: `createPropSignal<{ fn: () => void }>(...)`
+ * 함수를 저장해야 할 경우 객체로 감싸기: `createControllableSignal<{ fn: () => void }>(...)`
  */
 type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
 
@@ -20,13 +20,13 @@ type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
  * @example
  * ```tsx
  * // Controlled 모드 (onOpenChange 제공)
- * const [open, setOpen] = createPropSignal({
+ * const [open, setOpen] = createControllableSignal({
  *   value: () => props.open ?? false,
  *   onChange: () => props.onOpenChange,
  * });
  *
  * // Uncontrolled 모드 (onOpenChange 미제공)
- * const [open, setOpen] = createPropSignal({
+ * const [open, setOpen] = createControllableSignal({
  *   value: () => props.open ?? false,
  *   onChange: () => undefined,
  * });
@@ -35,7 +35,7 @@ type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
  * setOpen(prev => !prev);
  * ```
  */
-export function createPropSignal<T>(options: {
+export function createControllableSignal<T>(options: {
   value: () => T & NotFunction<T>;
   onChange: () => ((value: T) => void) | undefined;
 }) {

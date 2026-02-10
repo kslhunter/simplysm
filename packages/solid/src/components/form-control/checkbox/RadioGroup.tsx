@@ -1,6 +1,6 @@
 import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { Radio } from "./Radio";
 import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
 
@@ -79,7 +79,7 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
     "children",
   ]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
@@ -100,11 +100,7 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
 
   return (
     <RadioGroupContext.Provider value={contextValue}>
-      <div
-        {...rest}
-        class={twMerge("inline-flex", local.class)}
-        style={local.style}
-      >
+      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
         {local.children}
       </div>
     </RadioGroupContext.Provider>

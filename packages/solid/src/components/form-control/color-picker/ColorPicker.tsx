@@ -1,7 +1,7 @@
 import { type Component, type JSX, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 
 type ColorPickerSize = "sm" | "lg";
 
@@ -68,7 +68,7 @@ export interface ColorPickerProps {
 export const ColorPicker: Component<ColorPickerProps> = (props) => {
   const [local, rest] = splitProps(props, ["value", "onValueChange", "title", "disabled", "size", "class", "style"]);
 
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "#000000",
     onChange: () => local.onValueChange,
   });

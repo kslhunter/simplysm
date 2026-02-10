@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateTime } from "@simplysm/core-common";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -72,7 +72,6 @@ function formatValue(value: DateTime | undefined, unit: DateTimePickerUnit): str
   }
 }
 
-
 /**
  * 입력 문자열을 DateTime으로 변환
  */
@@ -84,14 +83,7 @@ function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined
       // yyyy-MM-ddTHH:mm 형식
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
-      return new DateTime(
-        Number(match[1]),
-        Number(match[2]),
-        Number(match[3]),
-        Number(match[4]),
-        Number(match[5]),
-        0,
-      );
+      return new DateTime(Number(match[1]), Number(match[2]), Number(match[3]), Number(match[4]), Number(match[5]), 0);
     }
     case "second": {
       // yyyy-MM-ddTHH:mm:ss 형식
@@ -167,7 +159,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
   const fieldType = () => local.unit ?? "minute";
 
   // controlled/uncontrolled 패턴 지원
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
@@ -189,7 +181,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
       local.size && fieldSizeClasses[local.size],
       local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
-      local.inset && (fieldInsetClass + " block"),
+      local.inset && fieldInsetClass + " block",
       local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
 
       includeCustomClass && local.class,
@@ -253,11 +245,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
         <Show when={isEditable()}>
           <input
             type="datetime-local"
-            class={clsx(
-              fieldInputClass,
-              "absolute left-0 top-0 size-full",
-              "px-2 py-1",
-            )}
+            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
             value={displayValue()}
             title={local.title}
             min={formatMinMax(local.min, fieldType())}

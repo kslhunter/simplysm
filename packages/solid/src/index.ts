@@ -89,7 +89,7 @@ export * from "./components/print/Print";
 export * from "./contexts/usePrint";
 
 // utils
-export { createPropSignal } from "./utils/createPropSignal";
+export { createControllableSignal } from "./utils/createControllableSignal";
 export { useRouterLink } from "./utils/useRouterLink";
 export { mergeStyles } from "./utils/mergeStyles";
 export { splitSlots } from "./utils/splitSlots";

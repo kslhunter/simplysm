@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
-import { createPropSignal } from "../../src/utils/createPropSignal";
+import { createControllableSignal } from "../../src/utils/createControllableSignal";
 
-describe("createPropSignal hook", () => {
+describe("createControllableSignal hook", () => {
   describe("Controlled 모드 (onChange 제공)", () => {
     it("onChange가 제공될 때 setValue 호출 시 onChange가 호출된다", () => {
       const onChange = vi.fn();
 
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => false,
           onChange: () => onChange,
         });
@@ -27,7 +27,7 @@ describe("createPropSignal hook", () => {
       let externalValue = false;
 
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => externalValue,
           onChange: () => onChange,
         });
@@ -52,7 +52,7 @@ describe("createPropSignal hook", () => {
   describe("Uncontrolled 모드 (onChange 미제공)", () => {
     it("onChange가 없을 때 setValue 호출 시 내부 상태가 변경된다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => false,
           onChange: () => undefined,
         });
@@ -68,7 +68,7 @@ describe("createPropSignal hook", () => {
 
     it("onChange가 없을 때 초기값으로 value()가 설정된다", () => {
       createRoot((dispose) => {
-        const [value] = createPropSignal({
+        const [value] = createControllableSignal({
           value: () => "initial",
           onChange: () => undefined,
         });
@@ -82,7 +82,7 @@ describe("createPropSignal hook", () => {
   describe("함수형 setter", () => {
     it("함수를 전달할 때 이전 값을 인자로 받아 새 값을 계산한다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => 5,
           onChange: () => undefined,
         });
@@ -100,7 +100,7 @@ describe("createPropSignal hook", () => {
       const onChange = vi.fn();
 
       createRoot((dispose) => {
-        const [, setValue] = createPropSignal({
+        const [, setValue] = createControllableSignal({
           value: () => 10,
           onChange: () => onChange,
         });
@@ -114,7 +114,7 @@ describe("createPropSignal hook", () => {
 
     it("토글 패턴이 올바르게 동작한다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => false,
           onChange: () => undefined,
         });
@@ -135,7 +135,7 @@ describe("createPropSignal hook", () => {
   describe("다양한 타입 지원", () => {
     it("숫자 타입을 지원한다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => 0,
           onChange: () => undefined,
         });
@@ -148,7 +148,7 @@ describe("createPropSignal hook", () => {
 
     it("문자열 타입을 지원한다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => "hello",
           onChange: () => undefined,
         });
@@ -161,7 +161,7 @@ describe("createPropSignal hook", () => {
 
     it("객체 타입을 지원한다", () => {
       createRoot((dispose) => {
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => ({ count: 0 }),
           onChange: () => undefined,
         });
@@ -177,7 +177,7 @@ describe("createPropSignal hook", () => {
         const fn1 = () => "first";
         const fn2 = () => "second";
 
-        const [value, setValue] = createPropSignal({
+        const [value, setValue] = createControllableSignal({
           value: () => ({ fn: fn1 }),
           onChange: () => undefined,
         });

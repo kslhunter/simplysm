@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createPropSignal } from "../../../utils/createPropSignal";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -141,7 +141,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
   ]);
 
   // controlled/uncontrolled 패턴 지원
-  const [value, setValue] = createPropSignal({
+  const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
     onChange: () => local.onValueChange,
   });
@@ -253,10 +253,19 @@ export const TextInput: Component<TextInputProps> = (props) => {
         <Show
           when={isEditable()}
           fallback={
-            <div {...rest} data-text-field class={twMerge(getWrapperClass(true), "sd-text-field")} style={local.style} title={local.title}>
-              {displayValue() || (local.placeholder != null && local.placeholder !== ""
-                ? <span class={textMuted}>{local.placeholder}</span>
-                : "\u00A0")}
+            <div
+              {...rest}
+              data-text-field
+              class={twMerge(getWrapperClass(true), "sd-text-field")}
+              style={local.style}
+              title={local.title}
+            >
+              {displayValue() ||
+                (local.placeholder != null && local.placeholder !== "" ? (
+                  <span class={textMuted}>{local.placeholder}</span>
+                ) : (
+                  "\u00A0"
+                ))}
             </div>
           }
         >
@@ -283,23 +292,19 @@ export const TextInput: Component<TextInputProps> = (props) => {
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        <div
-          data-text-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-        >
-          {displayValue() || (local.placeholder != null && local.placeholder !== ""
-            ? <span class={textMuted}>{local.placeholder}</span>
-            : "\u00A0")}
+        <div data-text-field-content style={{ visibility: isEditable() ? "hidden" : undefined }}>
+          {displayValue() ||
+            (local.placeholder != null && local.placeholder !== "" ? (
+              <span class={textMuted}>{local.placeholder}</span>
+            ) : (
+              "\u00A0"
+            ))}
         </div>
 
         <Show when={isEditable()}>
           <input
             type={local.type ?? "text"}
-            class={clsx(
-              fieldInputClass,
-              "absolute left-0 top-0 size-full",
-              "px-2 py-1",
-            )}
+            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
             value={inputValue()}
             placeholder={local.placeholder}
             title={local.title}

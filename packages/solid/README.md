@@ -360,12 +360,12 @@ const [value, setValue] = usePersisted("key", defaultValue);
 
 localStorage 기반 영속 시그널.
 
-### createPropSignal
+### createControllableSignal
 
 ```tsx
-import { createPropSignal } from "@simplysm/solid";
+import { createControllableSignal } from "@simplysm/solid";
 
-const [value, setValue] = createPropSignal({
+const [value, setValue] = createControllableSignal({
   value: () => props.value,
   onChange: () => props.onValueChange,
 });
