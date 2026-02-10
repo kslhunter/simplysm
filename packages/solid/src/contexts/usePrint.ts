@@ -82,7 +82,7 @@ async function renderAndWait(factory: () => JSX.Element): Promise<{ container: H
   document.body.appendChild(container);
 
   let resolveReady: (() => void) | undefined;
-  let readyCalled = false;
+  const state = { readyCalled: false };
 
   const readyPromise = new Promise<void>((resolve) => {
     resolveReady = resolve;
@@ -90,7 +90,7 @@ async function renderAndWait(factory: () => JSX.Element): Promise<{ container: H
 
   const instance: PrintInstance = {
     ready: () => {
-      readyCalled = true;
+      state.readyCalled = true;
       resolveReady?.();
     },
   };
@@ -107,25 +107,18 @@ async function renderAndWait(factory: () => JSX.Element): Promise<{ container: H
   );
 
   // SolidJS 컴포넌트는 동기적으로 마운트됨.
-  // 동기적으로 ready()가 호출되었으면 이미 readyCalled=true.
+  // 동기적으로 ready()가 호출되었으면 이미 state.readyCalled=true.
   // 비동기 ready (onMount 내 async 등)를 위해 rAF 대기 후 확인.
   await Promise.resolve();
 
-  if (!readyCalled) {
+  if (!state.readyCalled) {
     await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        if (readyCalled) {
-          resolve();
-        } else {
-          // ready()가 아직 호출되지 않음 → 자동 ready로 간주
-          resolve();
-        }
-      });
+      requestAnimationFrame(() => resolve());
     });
+  }
 
-    if (readyCalled) {
-      await readyPromise;
-    }
+  if (state.readyCalled) {
+    await readyPromise;
   }
 
   await waitForImages(container);

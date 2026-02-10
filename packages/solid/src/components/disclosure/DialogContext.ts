@@ -1,4 +1,4 @@
-import { createContext, useContext, type JSX } from "solid-js";
+import { createContext, useContext, type Accessor, type JSX } from "solid-js";
 
 export interface DialogDefaults {
   closeOnEscape?: boolean;
