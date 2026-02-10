@@ -2,6 +2,7 @@ import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { ripple } from "../../../directives/ripple";
+import clsx from "clsx";
 import {
   type CheckBoxTheme,
   type CheckBoxSize,
@@ -14,6 +15,8 @@ import {
   checkBoxInlineClass,
   checkBoxDisabledClass,
 } from "./CheckBox.styles";
+
+const radioDotClass = clsx("size-2", "rounded-full", "bg-current");
 
 // Directive 사용 선언 (TypeScript용)
 void ripple;
@@ -97,7 +100,7 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     >
       <div class={getIndicatorClass()}>
         <Show when={value()}>
-          <div class="size-2 rounded-full bg-current" />
+          <div class={radioDotClass} />
         </Show>
       </div>
       <Show when={local.children}>

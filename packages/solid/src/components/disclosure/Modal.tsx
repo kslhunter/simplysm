@@ -99,6 +99,8 @@ const resizeCursorMap: Record<ResizeDirection, string> = {
   "bottom-right": "cursor-nwse-resize",
 };
 
+const modalContentClass = clsx("flex-1", "overflow-auto");
+
 const resizePositionMap: Record<ResizeDirection, string> = {
   "left": clsx("left-0 top-0", "h-full w-1.5"),
   "right": clsx("right-0 top-0", "h-full w-1.5"),
@@ -566,7 +568,7 @@ export const Modal: ParentComponent<ModalProps> = (props) => {
             </Show>
 
             {/* 콘텐츠 */}
-            <div data-modal-content class="flex-1 overflow-auto">
+            <div data-modal-content class={modalContentClass}>
               {local.children}
             </div>
 

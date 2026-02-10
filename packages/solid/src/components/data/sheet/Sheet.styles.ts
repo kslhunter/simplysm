@@ -175,6 +175,36 @@ export const reorderIndicatorClass = clsx(
   "z-[7]",
 );
 
+// 기능 컬럼 헤더 내부 래퍼 (확장/선택 등)
+export const featureCellWrapperClass = clsx(
+  "flex items-center",
+  "px-1",
+);
+
+// 기능 컬럼 바디 내부 래퍼 (확장/선택/재정렬 등 — 전체 높이)
+export const featureCellBodyWrapperClass = clsx(
+  "flex h-full items-center",
+  "px-1",
+);
+
+// 기능 컬럼 헤더 클릭 가능 래퍼 (전체 선택 등)
+export const featureCellClickableClass = clsx(
+  "flex cursor-pointer items-center justify-center",
+  "px-1",
+);
+
+// 기능 컬럼 바디 클릭 가능 래퍼 (선택/재정렬 등 — 전체 높이)
+export const featureCellBodyClickableClass = clsx(
+  "flex h-full cursor-pointer items-center justify-center",
+  "px-1",
+);
+
+// 재정렬 핸들 래퍼 (touch-none 추가)
+export const reorderCellWrapperClass = clsx(
+  "flex h-full touch-none items-center justify-center",
+  "px-1",
+);
+
 // 설정 버튼
 export const configButtonClass = clsx(
   "flex items-center justify-center",

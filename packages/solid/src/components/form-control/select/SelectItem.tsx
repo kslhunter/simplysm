@@ -18,6 +18,7 @@ import {
   listItemSelectedClass,
   listItemDisabledClass,
   listItemIndentGuideClass,
+  listItemContentClass,
   getListItemSelectedIconClass,
 } from "../../data/list/ListItem.styles";
 
@@ -119,7 +120,7 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
         <Show when={context.multiple() && !hasChildren()}>
           <Icon icon={IconCheck} class={getCheckIconClass()} />
         </Show>
-        <span class="flex flex-1 flex-row items-center gap-1 text-left">
+        <span class={listItemContentClass}>
           {content()}
         </span>
       </button>

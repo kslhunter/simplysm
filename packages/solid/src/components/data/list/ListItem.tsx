@@ -15,6 +15,7 @@ import {
   listItemDisabledClass,
   listItemReadonlyClass,
   listItemIndentGuideClass,
+  listItemContentClass,
   getListItemSelectedIconClass,
 } from "./ListItem.styles";
 
@@ -195,7 +196,7 @@ export const ListItem: ListItemComponent = (props) => {
         <Show when={local.selectedIcon && !hasChildren()}>
           <Icon icon={local.selectedIcon!} class={getSelectedIconClassName()} />
         </Show>
-        <span class="flex flex-1 flex-row items-center gap-1 text-left">{content()}</span>
+        <span class={listItemContentClass}>{content()}</span>
         <Show when={hasChildren()}>
           <Icon icon={IconChevronDown} size="1em" class={getChevronClassName()} />
         </Show>

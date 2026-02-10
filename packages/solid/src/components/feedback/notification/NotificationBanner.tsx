@@ -31,6 +31,18 @@ const themeClasses: Record<string, string> = {
   danger: themeTokens.danger.solid,
 };
 
+const contentClass = clsx("flex flex-col", "gap-0.5");
+const messageClass = clsx("text-sm", "opacity-90");
+const actionsClass = clsx("flex items-center", "gap-2");
+const actionButtonClass = clsx(
+  "rounded",
+  "bg-white/20",
+  "px-3 py-1",
+  "text-sm",
+  "hover:bg-white/30",
+);
+const dismissButtonClass = clsx("rounded", "p-1", "hover:bg-white/20");
+
 export const NotificationBanner: Component = () => {
   const notification = useNotification();
 
@@ -53,17 +65,17 @@ export const NotificationBanner: Component = () => {
             role="alert"
             class={clsx(baseClass, themeClasses[item().theme])}
           >
-            <div class="flex flex-col gap-0.5">
+            <div class={contentClass}>
               <span class="font-semibold">{item().title}</span>
               <Show when={item().message}>
-                <span class="text-sm opacity-90">{item().message}</span>
+                <span class={messageClass}>{item().message}</span>
               </Show>
             </div>
-            <div class="flex items-center gap-2">
+            <div class={actionsClass}>
               <Show when={item().action}>
                 <button
                   type="button"
-                  class="rounded bg-white/20 px-3 py-1 text-sm hover:bg-white/30"
+                  class={actionButtonClass}
                   onClick={handleAction}
                 >
                   {item().action!.label}
@@ -72,7 +84,7 @@ export const NotificationBanner: Component = () => {
               <button
                 type="button"
                 aria-label="알림 닫기"
-                class="rounded p-1 hover:bg-white/20"
+                class={dismissButtonClass}
                 onClick={handleDismiss}
               >
                 <Icon icon={IconX} size="1.25em" />

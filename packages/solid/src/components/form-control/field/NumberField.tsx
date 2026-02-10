@@ -13,6 +13,7 @@ import {
   fieldDisabledClass,
   fieldInputClass,
 } from "./Field.styles";
+import { textMuted } from "../../../styles/tokens.styles";
 
 // NumberField 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
@@ -266,7 +267,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
               title={local.title}
             >
               {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
-                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                ? <span class={textMuted}>{local.placeholder}</span>
                 : "\u00A0")}
             </div>
           }
@@ -296,7 +297,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
           title={local.title}
         >
           {formatNumber(value(), local.comma ?? true, local.minDigits) || (local.placeholder != null && local.placeholder !== ""
-            ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+            ? <span class={textMuted}>{local.placeholder}</span>
             : "\u00A0")}
         </div>
 

@@ -11,6 +11,7 @@ import {
 
   fieldDisabledClass,
 } from "./Field.styles";
+import { textMuted } from "../../../styles/tokens.styles";
 
 export interface TextAreaFieldProps {
   /** 입력 값 */
@@ -217,7 +218,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
               title={local.title}
             >
               {value() || (local.placeholder != null && local.placeholder !== ""
-                ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+                ? <span class={textMuted}>{local.placeholder}</span>
                 : "\u00A0")}
             </div>
           }
@@ -272,7 +273,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           {isEditable()
             ? contentForHeight()
             : (value() || (local.placeholder != null && local.placeholder !== ""
-              ? <span class="text-base-400 dark:text-base-500">{local.placeholder}</span>
+              ? <span class={textMuted}>{local.placeholder}</span>
               : "\u00A0"))}
         </div>
 

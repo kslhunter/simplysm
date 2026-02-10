@@ -9,6 +9,10 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
 
+const desktopNavBaseClass = clsx("hidden sm:flex", "flex-row gap-1", "items-center");
+const mobileWrapperClass = clsx("flex sm:hidden");
+const menuButtonContentClass = clsx("flex items-center", "gap-1");
+
 export interface TopbarMenuItem {
   title: string;
   href?: string;
@@ -56,12 +60,12 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <>
       {/* 데스크탑 메뉴 (640px 이상에서만 표시) */}
-      <nav {...rest} data-topbar-menu class={twMerge("hidden sm:flex flex-row gap-1 items-center", local.class)}>
+      <nav {...rest} data-topbar-menu class={twMerge(desktopNavBaseClass, local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 
       {/* 모바일 햄버거 (640px 미만에서만 표시) */}
-      <div class="flex sm:hidden">
+      <div class={mobileWrapperClass}>
         <Button
           ref={mobileButtonRef}
           variant="ghost"
@@ -134,7 +138,7 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
         variant={isSelected() ? "solid" : "ghost"}
         theme={isSelected() ? "primary" : "base"}
         onClick={handleClick}
-        class="flex items-center gap-1"
+        class={menuButtonContentClass}
         aria-haspopup={hasChildren() ? "menu" : undefined}
         aria-expanded={hasChildren() ? open() : undefined}
       >

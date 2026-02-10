@@ -36,12 +36,17 @@ import {
   expandIndentGuideClass,
   expandIndentGuideLineClass,
   expandToggleClass,
+  featureCellBodyClickableClass,
+  featureCellBodyWrapperClass,
+  featureCellClickableClass,
+  featureCellWrapperClass,
   featureTdClass,
   featureThClass,
   fixedClass,
   fixedLastClass,
   insetContainerClass,
   insetTableClass,
+  reorderCellWrapperClass,
   reorderHandleClass,
   reorderIndicatorClass,
   resizeIndicatorClass,
@@ -786,7 +791,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                       style={{ top: "0", left: "0" }}
                       ref={registerExpandColRef}
                     >
-                      <div class="flex items-center px-1">
+                      <div class={featureCellWrapperClass}>
                         <button
                           type="button"
                           class={expandToggleClass}
@@ -820,7 +825,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                     >
                       <Show when={local.selectMode === "multiple"}>
                         <div
-                          class="flex cursor-pointer items-center justify-center px-1"
+                          class={featureCellClickableClass}
                           onClick={() => toggleSelectAll()}
                         >
                           <CheckBox
@@ -1049,7 +1054,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                       )}
                       style={{ left: "0" }}
                     >
-                      <div class="flex h-full items-center px-1">
+                      <div class={featureCellBodyWrapperClass}>
                         <For each={Array.from({ length: flat.depth })}>
                           {() => (
                             <div class={expandIndentGuideClass}>
@@ -1097,7 +1102,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                               /* single 모드 */
                               <Show when={selectable() === true}>
                                 <div
-                                  class="flex h-full cursor-pointer items-center justify-center px-1"
+                                  class={featureCellBodyClickableClass}
                                   onClick={() => toggleSelect(flat.item)}
                                 >
                                   <div
@@ -1114,7 +1119,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                           >
                             {/* multi 모드 */}
                             <div
-                              class="flex h-full cursor-pointer items-center justify-center px-1"
+                              class={featureCellBodyClickableClass}
                               onClick={(e) => {
                                 if (e.shiftKey) {
                                   rangeSelect(rowIndex());
@@ -1161,7 +1166,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                       }}
                     >
                       <div
-                        class="flex h-full touch-none items-center justify-center px-1"
+                        class={reorderCellWrapperClass}
                         onPointerDown={(e) => onReorderPointerDown(e, flat.item)}
                       >
                         <div class={reorderHandleClass}>

@@ -28,12 +28,12 @@
 
 ## 3단계: Features (1~2단계 완료 후)
 
-| # | 항목 | 구현 방식 | 상태 |
-|---|------|----------|------|
-| 14 | **SharedDataProvider** | 서버 데이터 캐싱/이벤트/필터링 | [ ] |
-| 15 | **AppStructureProvider** | 메뉴 트리/권한/모듈 관리 | [ ] |
-| 16 | **PermissionTable** | SharedDataProvider 기반 | [ ] |
-| 17 | **SharedData 관련 컨트롤** | SharedDataProvider 기반 (SelectButton, SelectList 등) | [ ] |
+| # | 항목 | 구현 방식 | 상태  |
+|---|------|----------|-----|
+| 14 | **SharedDataProvider** | 서버 데이터 캐싱/이벤트/필터링 | [x] |
+| 15 | **AppStructureProvider** | 메뉴 트리/권한/모듈 관리 | [x] |
+| 16 | **PermissionTable** | SharedDataProvider 기반 | [x] |
+| 17 | **SharedData 관련 컨트롤** | SharedDataProvider 기반 (SelectButton, SelectList 등) | [x] |
 
 ## 만들지 않는 것
 

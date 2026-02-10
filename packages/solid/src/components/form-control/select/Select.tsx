@@ -40,6 +40,10 @@ const sizeClasses: Record<ComponentSize, string> = {
   lg: clsx("gap-3", paddingLg),
 };
 
+const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
+const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
+const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
+
 /**
  * Select 우측 버튼 서브 컴포넌트
  */
@@ -383,7 +387,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         return (
           <div class={clsx("flex gap-1", direction === "vertical" ? "flex-col" : "flex-wrap")}>
             <For each={current}>
-              {(v) => <span class="rounded bg-base-200 px-1 dark:bg-base-600">{renderValue(v)}</span>}
+              {(v) => <span class={multiTagClass}>{renderValue(v)}</span>}
             </For>
           </div>
         );
@@ -408,8 +412,8 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
         >
-          <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
-          <div class="opacity-30 hover:opacity-100">
+          <div class={selectedValueClass}>{renderSelectedValue()}</div>
+          <div class={chevronWrapperClass}>
             <Icon icon={IconChevronDown} size="1em" />
           </div>
         </div>

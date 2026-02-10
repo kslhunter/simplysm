@@ -262,6 +262,8 @@ const collapseButtonClass = clsx(
   "cursor-pointer",
 );
 
+const laneToolsClass = clsx("flex items-center", "gap-1");
+
 const laneBodyBaseClass = clsx(
   "flex-1",
   "flex flex-col gap-2",
@@ -472,7 +474,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
               </Show>
               <div class="flex-1">{slots().kanbanLaneTitle}</div>
               <Show when={slots().kanbanLaneTools.length > 0}>
-                <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
+                <div class={laneToolsClass}>{slots().kanbanLaneTools}</div>
               </Show>
             </div>
           </Show>

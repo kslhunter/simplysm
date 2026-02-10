@@ -1,11 +1,18 @@
 import { type Component } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
+import clsx from "clsx";
 import type { ModalContentProps } from "../../disclosure/ModalContext";
 import type { SheetConfig, SheetConfigColumn, SheetConfigColumnInfo, SheetReorderEvent } from "./types";
 import { Sheet } from "./Sheet";
 import { CheckBox } from "../../form-control/checkbox/CheckBox";
 import { TextField } from "../../form-control/field/TextField";
 import { Button } from "../../form-control/Button";
+import { borderSubtle } from "../../../styles/tokens.styles";
+
+const containerClass = clsx("flex flex-col", "gap-2", "p-2");
+const sheetWrapperClass = clsx("rounded border", borderSubtle);
+const footerClass = clsx("flex justify-between", "gap-2");
+const footerActionsClass = clsx("flex gap-2");
 
 interface EditColumnItem {
   key: string;
@@ -92,8 +99,8 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
   }
 
   return (
-    <div class="flex flex-col gap-2 p-2">
-      <div class="rounded border border-base-200">
+    <div class={containerClass}>
+      <div class={sheetWrapperClass}>
         <Sheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
           <Sheet.Column<EditColumnItem> key="header" header="컬럼" class="px-2 py-1" sortable={false}>
             {(ctx) => ctx.item.headerText}
@@ -121,11 +128,11 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
         </Sheet>
       </div>
 
-      <div class="flex justify-between gap-2">
+      <div class={footerClass}>
         <Button onClick={handleReset} theme="warning" variant="solid">
           초기화
         </Button>
-        <div class="flex gap-2">
+        <div class={footerActionsClass}>
           <Button onClick={() => props.close(undefined)}>취소</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
             확인

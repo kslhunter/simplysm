@@ -1,7 +1,10 @@
 import { type ParentComponent, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
+import clsx from "clsx";
 import { BusyContext, type BusyContextValue, type BusyVariant } from "./BusyContext";
 import { BusyContainer } from "./BusyContainer";
+
+const overlayClass = clsx("fixed left-0 top-0", "h-screen w-screen", "overflow-hidden");
 
 export interface BusyProviderProps {
   variant?: BusyVariant;
@@ -46,7 +49,7 @@ export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
           variant={variant()}
           message={message()}
           progressPercent={progress()}
-          class="fixed left-0 top-0 h-screen w-screen overflow-hidden"
+          class={overlayClass}
           style={{ "pointer-events": busyCount() > 0 ? "auto" : "none" }}
         />
       </Portal>

@@ -8,6 +8,9 @@ import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
 
+const wrapperBaseClass = clsx("flex items-center");
+const buttonContentClass = clsx("flex items-center", "gap-1");
+
 export interface TopbarUserMenu {
   title: string;
   onClick: () => void;
@@ -62,7 +65,7 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getClassName = () => twMerge("flex items-center", local.class);
+  const getClassName = () => twMerge(wrapperBaseClass, local.class);
 
   return (
     <div {...rest} data-topbar-user class={getClassName()}>
@@ -70,7 +73,7 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
         ref={buttonRef}
         variant="ghost"
         onClick={handleClick}
-        class="flex items-center gap-1"
+        class={buttonContentClass}
         aria-haspopup={hasMenus() ? "menu" : undefined}
         aria-expanded={hasMenus() ? open() : undefined}
       >

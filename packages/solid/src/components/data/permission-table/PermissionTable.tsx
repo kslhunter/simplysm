@@ -1,8 +1,14 @@
 import type { JSX } from "solid-js";
 import { type Component, createEffect, createMemo, createSignal, For, on, Show, splitProps } from "solid-js";
+import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Sheet } from "../sheet/Sheet";
 import { CheckBox } from "../../form-control/checkbox/CheckBox";
+import { borderDefault } from "../../../styles/tokens.styles";
+
+const titleCellClass = clsx("flex items-stretch", "px-2");
+const indentGuideWrapperClass = clsx("mr-1 flex w-3", "justify-center");
+const indentGuideLineClass = clsx("w-0 self-stretch", "border-r", borderDefault);
 
 // --- 타입 ---
 
@@ -263,11 +269,11 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
           {(ctx) => {
             const item = ctx.item as PermissionItem;
             return (
-              <div class="flex items-stretch px-2">
+              <div class={titleCellClass}>
                 <For each={Array.from({ length: ctx.depth })}>
                   {() => (
-                    <div class="mr-1 flex w-3 justify-center">
-                      <div class="w-0 self-stretch border-r border-base-300 dark:border-base-700" />
+                    <div class={indentGuideWrapperClass}>
+                      <div class={indentGuideLineClass} />
                     </div>
                   )}
                 </For>
