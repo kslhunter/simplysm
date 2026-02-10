@@ -1,33 +1,36 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import type { Component } from "solid-js";
 import { DialogProvider } from "../../../src/components/disclosure/DialogProvider";
-import { useDialog, type DialogContentProps } from "../../../src/components/disclosure/DialogContext";
+import { useDialog } from "../../../src/components/disclosure/DialogContext";
+import { useDialogInstance } from "../../../src/components/disclosure/DialogInstanceContext";
 
 // 테스트용 다이얼로그 콘텐츠 컴포넌트
-const TestContent: Component<DialogContentProps<string>> = (props) => (
-  <div>
-    <span data-testid="modal-content">다이얼로그 내용</span>
-    <button data-testid="close-btn" onClick={() => props.close("result")}>
-      닫기
-    </button>
-    <button data-testid="close-no-result" onClick={() => props.close()}>
-      취소
-    </button>
-  </div>
-);
+function TestContent() {
+  const dialog = useDialogInstance<string>();
+  return (
+    <div>
+      <span data-testid="modal-content">다이얼로그 내용</span>
+      <button data-testid="close-btn" onClick={() => dialog?.close("result")}>
+        닫기
+      </button>
+      <button data-testid="close-no-result" onClick={() => dialog?.close()}>
+        취소
+      </button>
+    </div>
+  );
+}
 
 // useDialog를 호출하는 테스트용 컴포넌트
 function TestApp() {
   const dialog = useDialog();
 
-  const openDialog = async () => {
-    const result = await dialog.show(TestContent, { title: "테스트 다이얼로그" });
-    document.body.setAttribute("data-modal-result", String(result ?? "undefined"));
-  };
-
   return (
-    <button data-testid="open-btn" onClick={openDialog}>
+    <button
+      data-testid="open-btn"
+      onClick={() => {
+        dialog.show<string>(() => <TestContent />, { title: "테스트 다이얼로그" });
+      }}
+    >
       다이얼로그 열기
     </button>
   );
@@ -48,7 +51,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("close(result) 호출 시 Promise가 result로 resolve된다", async () => {
+  it("useDialogInstance로 close를 호출하면 다이얼로그가 닫힌다", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -63,12 +66,13 @@ describe("DialogProvider", () => {
 
     fireEvent.click(document.querySelector('[data-testid="close-btn"]')!);
 
+    // 닫힘 애니메이션 fallback timer(200ms) 후 다이얼로그 콘텐츠가 제거됨
     await waitFor(() => {
-      expect(document.body.getAttribute("data-modal-result")).toBe("result");
+      expect(document.querySelector('[data-testid="modal-content"]')).toBeNull();
     });
   });
 
-  it("close() 호출 시 Promise가 undefined로 resolve된다", async () => {
+  it("close() 호출 시 다이얼로그가 닫힌다", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -84,7 +88,7 @@ describe("DialogProvider", () => {
     fireEvent.click(document.querySelector('[data-testid="close-no-result"]')!);
 
     await waitFor(() => {
-      expect(document.body.getAttribute("data-modal-result")).toBe("undefined");
+      expect(document.querySelector('[data-testid="modal-content"]')).toBeNull();
     });
   });
 
