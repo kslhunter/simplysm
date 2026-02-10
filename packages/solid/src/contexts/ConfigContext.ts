@@ -1,13 +1,31 @@
 import { createContext, useContext } from "solid-js";
 
 /**
+ * 커스텀 저장소 어댑터 인터페이스
+ *
+ * @remarks
+ * - 동기 저장소: `localStorage`, `sessionStorage` 등 그대로 전달 가능
+ * - 비동기 저장소: `getItem`이 `Promise`를 반환하는 구현체 전달
+ */
+export interface StorageAdapter {
+  getItem(key: string): string | null | Promise<string | null>;
+  setItem(key: string, value: string): void | Promise<unknown>;
+  removeItem(key: string): void | Promise<void>;
+}
+
+/**
  * 앱 전역 설정
  */
 export interface AppConfig {
   /**
-   * 클라이언트 식별자 (localStorage key prefix로 사용)
+   * 클라이언트 식별자 (저장소 key prefix로 사용)
    */
   clientName: string;
+
+  /**
+   * 커스텀 저장소 (기본값: localStorage)
+   */
+  storage?: StorageAdapter;
 }
 
 /**

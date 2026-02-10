@@ -24,7 +24,7 @@
 |---|------|----------|------|
 | 11 | **printElement(el)** | `window.print()` 기반 helper 함수 | [ ] |
 | 12 | **exportPdf(el, filename)** | html-to-image → jsPDF helper 함수 | [ ] |
-| 13 | **usePersisted 저장방식 확장** | ConfigProvider에 storage 전략 주입, 없으면 localStorage 폴백 | [ ] |
+| 13 | **usePersisted 저장방식 확장** | ConfigProvider에 storage 전략 주입, 없으면 localStorage 폴백 | [x] |
 
 ## 3단계: Features (1~2단계 완료 후)
 
