@@ -100,4 +100,78 @@ describe("usePersisted", () => {
       "useConfig는 ConfigContext.Provider 내부에서만 사용할 수 있습니다",
     );
   });
+
+  it("커스텀 동기 저장소를 사용할 수 있다", () => {
+    const store = new Map<string, string>();
+    const customStorage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, value); },
+      removeItem: (key: string) => { store.delete(key); },
+    };
+
+    let capturedValue: string | undefined;
+
+    function TestComponent() {
+      const [value, setValue] = usePersisted("theme", "light");
+      capturedValue = value();
+      setValue("dark");
+      return <div />;
+    }
+
+    render(() => (
+      <ConfigContext.Provider value={{ clientName: "app", storage: customStorage }}>
+        <TestComponent />
+      </ConfigContext.Provider>
+    ));
+
+    expect(capturedValue).toBe("light");
+    expect(store.get("app.theme")).toBe(JSON.stringify("dark"));
+    expect(localStorage.getItem("app.theme")).toBeNull();
+  });
+
+  it("비동기 저장소 사용 시 loading이 true로 시작한다", () => {
+    const store = new Map<string, string>();
+    const asyncStorage = {
+      getItem: async (key: string) => store.get(key) ?? null,
+      setItem: async (key: string, value: string) => { store.set(key, value); },
+      removeItem: async (key: string) => { store.delete(key); },
+    };
+
+    let capturedLoading: boolean | undefined;
+    let capturedValue: string | undefined;
+
+    function TestComponent() {
+      const [value, , loading] = usePersisted("theme", "light");
+      capturedLoading = loading();
+      capturedValue = value();
+      return <div />;
+    }
+
+    render(() => (
+      <ConfigContext.Provider value={{ clientName: "app", storage: asyncStorage }}>
+        <TestComponent />
+      </ConfigContext.Provider>
+    ));
+
+    expect(capturedLoading).toBe(true);
+    expect(capturedValue).toBe("light");
+  });
+
+  it("동기 저장소 사용 시 loading이 항상 false이다", () => {
+    let capturedLoading: boolean | undefined;
+
+    function TestComponent() {
+      const [, , loading] = usePersisted("theme", "light");
+      capturedLoading = loading();
+      return <div />;
+    }
+
+    render(() => (
+      <ConfigContext.Provider value={{ clientName: "app" }}>
+        <TestComponent />
+      </ConfigContext.Provider>
+    ));
+
+    expect(capturedLoading).toBe(false);
+  });
 });
