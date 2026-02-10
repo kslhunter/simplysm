@@ -1,37 +1,37 @@
 import { createContext, useContext, type Accessor, type Setter } from "solid-js";
 
-/**
- * 칸반 카드 드롭 정보
- *
- * @typeParam L - Lane 값 타입
- * @typeParam T - Card 값 타입
- */
-export interface KanbanDropInfo<L, T> {
-  /** 드래그된 카드의 값 */
-  sourceCardValue: T;
-  /** 드롭 대상 Lane의 값 */
-  targetLaneValue: L;
-  /** 드롭 대상 카드의 값 (카드 위에 드롭한 경우) */
-  targetCardValue: T | undefined;
+// ── 타입 ──────────────────────────────────────────────────────
+
+export interface KanbanCardRef<L = unknown, T = unknown> {
+  value: T | undefined;
+  laneValue: L | undefined;
+  heightOnDrag: number;
 }
 
-/**
- * 칸반 보드 Context 값
- *
- * @typeParam L - Lane 값 타입
- * @typeParam T - Card 값 타입
- */
+export interface KanbanDropInfo<L = unknown, T = unknown> {
+  sourceValue?: T;
+  targetLaneValue?: L;
+  targetCardValue?: T;
+  position?: "before" | "after";
+}
+
+export interface KanbanDropTarget<T = unknown> {
+  element: HTMLElement;
+  value: T | undefined;
+  position: "before" | "after";
+}
+
+// ── Board Context ──────────────────────────────────────────────
+
 export interface KanbanContextValue<L = unknown, T = unknown> {
-  /** 현재 드래그 중인 카드의 값 */
-  dragValue: Accessor<T | undefined>;
-  /** 드래그 중인 카드의 값 설정 */
-  setDragValue: Setter<T | undefined>;
-  /** 선택된 카드 값 목록 */
+  dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
+  setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
+  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+
+  // Selection (Phase 4)
   selectedValues: Accessor<T[]>;
-  /** 카드 선택 토글 */
+  setSelectedValues: (updater: T[] | ((prev: T[]) => T[])) => void;
   toggleSelection: (value: T) => void;
-  /** 드롭 처리 */
-  onDropTo: (targetLaneValue: L, targetCardValue?: T) => void;
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -44,14 +44,16 @@ export function useKanbanContext(): KanbanContextValue {
   return context;
 }
 
-/**
- * 칸반 Lane Context 값
- *
- * @typeParam L - Lane 값 타입
- */
-export interface KanbanLaneContextValue<L = unknown> {
-  /** Lane의 값 */
+// ── Lane Context ───────────────────────────────────────────────
+
+export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   value: Accessor<L | undefined>;
+  dropTarget: Accessor<KanbanDropTarget<T> | undefined>;
+  setDropTarget: (target: KanbanDropTarget<T> | undefined) => void;
+
+  // Card registration (Phase 4)
+  registerCard: (id: string, info: { value: T | undefined; selectable: boolean }) => void;
+  unregisterCard: (id: string) => void;
 }
 
 export const KanbanLaneContext = createContext<KanbanLaneContextValue>();

@@ -1,155 +1,221 @@
 import {
   children,
+  createEffect,
+  createMemo,
   createSignal,
   type JSX,
   onCleanup,
+  onMount,
   type ParentComponent,
   Show,
   splitProps,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconChevronRight } from "@tabler/icons-solidjs";
+import { IconEye, IconEyeOff } from "@tabler/icons-solidjs";
+import { Card } from "../../display/Card";
+import { CheckBox } from "../../form-control/checkbox/CheckBox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
-import { splitSlots } from "../../../utils/splitSlots";
 import { createPropSignal } from "../../../utils/createPropSignal";
+import { splitSlots } from "../../../utils/splitSlots";
+import "./Kanban.css";
 import {
   KanbanContext,
   KanbanLaneContext,
   useKanbanContext,
   useKanbanLaneContext,
+  type KanbanCardRef,
   type KanbanContextValue,
   type KanbanDropInfo,
+  type KanbanDropTarget,
   type KanbanLaneContextValue,
 } from "./KanbanContext";
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-/**
- * Lane 헤더의 제목 슬롯 컴포넌트
- */
 const KanbanLaneTitle: ParentComponent = (props) => (
   <div data-kanban-lane-title>{props.children}</div>
 );
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-/**
- * Lane 헤더의 도구 슬롯 컴포넌트
- */
 const KanbanLaneTools: ParentComponent = (props) => (
   <div data-kanban-lane-tools>{props.children}</div>
 );
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
-export interface KanbanCardProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  /** 카드의 고유 값 */
+export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "draggable"> {
   value?: unknown;
-  /** 드래그 가능 여부 */
   draggable?: boolean;
+  selectable?: boolean;
+  contentClass?: string;
+  children?: JSX.Element;
 }
 
-const cardBaseClass = clsx(
-  "rounded-lg",
-  "bg-white dark:bg-base-800",
-  "shadow-sm hover:shadow-md",
-  "dark:shadow-black/20",
-  "transition-all duration-200",
-  "cursor-default",
+const cardHostClass = clsx(
+  "relative block",
+  "transition-opacity duration-200",
 );
 
-const cardDraggableClass = clsx("cursor-grab active:cursor-grabbing");
+const cardContentClass = clsx(
+  "select-none whitespace-normal",
+  "animate-none",
+  "transition-shadow duration-200",
+);
 
-const cardSelectedClass = clsx("ring-2 ring-primary-500 dark:ring-primary-400");
+const cardSelectedClass = clsx(
+  "ring-2 ring-primary-500/50",
+  "shadow-md dark:shadow-black/30",
+);
 
-const cardDraggingClass = clsx("opacity-50");
-
-const cardDragOverClass = clsx("border-t-2 border-primary-500 dark:border-primary-400");
+const LONG_PRESS_MS = 500;
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
-  const [local, rest] = splitProps(props, ["children", "class", "value", "draggable"]);
+  const [local, rest] = splitProps(props, [
+    "children",
+    "class",
+    "value",
+    "draggable",
+    "selectable",
+    "contentClass",
+  ]);
 
-  const ctx = useKanbanContext();
+  const boardCtx = useKanbanContext();
   const laneCtx = useKanbanLaneContext();
 
-  const [dragOvered, setDragOvered] = createSignal(false);
+  let hostRef!: HTMLDivElement;
 
-  const isSelected = () =>
-    local.value != null && ctx.selectedValues().includes(local.value);
+  const cardId = crypto.randomUUID();
 
-  const isDragging = () =>
-    local.value != null && ctx.dragValue() === local.value;
+  createEffect(() => {
+    laneCtx.registerCard(cardId, {
+      value: local.value,
+      selectable: local.selectable ?? false,
+    });
+  });
+
+  onCleanup(() => {
+    laneCtx.unregisterCard(cardId);
+  });
+
+  const isDraggable = () => local.draggable !== false;
+
+  const isDragSource = () => {
+    const dc = boardCtx.dragCard();
+    return dc != null && dc.value != null && dc.value === local.value;
+  };
 
   const handleDragStart = (e: DragEvent) => {
-    if (!local.draggable) return;
-    if (local.value == null) return;
-
-    // 드래그 데이터 설정 (Firefox 호환)
+    if (!isDraggable()) {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer?.setData("text/plain", "");
-
-    const val = local.value;
-    ctx.setDragValue(() => val);
+    const heightOnDrag = hostRef.offsetHeight;
+    // 브라우저가 드래그 고스트 이미지를 캡처한 뒤 숨기기 위해 한 프레임 지연
+    requestAnimationFrame(() => {
+      boardCtx.setDragCard({
+        value: local.value,
+        laneValue: laneCtx.value(),
+        heightOnDrag,
+      });
+    });
   };
 
   const handleDragOver = (e: DragEvent) => {
-    if (ctx.dragValue() == null) return;
-
+    if (!boardCtx.dragCard()) return;
     e.preventDefault();
     e.stopPropagation();
-    setDragOvered(true);
-  };
 
-  const handleDragLeave = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOvered(false);
+    const rect = hostRef.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const position = e.clientY < midY ? "before" : "after";
+
+    const current = laneCtx.dropTarget();
+    if (current?.element === hostRef && current.position === position) {
+      return;
+    }
+
+    laneCtx.setDropTarget({ element: hostRef, value: local.value, position });
   };
 
   const handleDrop = (e: DragEvent) => {
-    if (ctx.dragValue() == null) return;
-
-    setDragOvered(false);
+    if (!boardCtx.dragCard()) return;
     e.preventDefault();
     e.stopPropagation();
 
-    ctx.onDropTo(laneCtx.value(), local.value);
+    const current = laneCtx.dropTarget();
+    boardCtx.onDropTo(laneCtx.value(), local.value, current?.position ?? "before");
   };
 
+  // Shift+Click 다중 선택 토글
   const handleClick = (e: MouseEvent) => {
-    if (e.shiftKey) {
-      if (local.value == null) return;
-
+    if (longPressed) {
       e.preventDefault();
       e.stopPropagation();
-      ctx.toggleSelection(local.value);
+      longPressed = false;
+      return;
     }
+    if (!e.shiftKey) return;
+    if (!local.selectable) return;
+    if (local.value == null) return;
+    e.preventDefault();
+    e.stopPropagation();
+    boardCtx.toggleSelection(local.value);
   };
 
-  const getClassName = () =>
-    twMerge(
-      cardBaseClass,
-      local.draggable && cardDraggableClass,
-      isSelected() && cardSelectedClass,
-      isDragging() && cardDraggingClass,
-      dragOvered() && cardDragOverClass,
-      local.class,
-    );
+  // Long press → 해당 카드만 단독 선택 (다른 선택 모두 해제)
+  let longPressTimer: ReturnType<typeof setTimeout> | undefined;
+  let longPressed = false;
+
+  const handlePointerDown = () => {
+    if (!local.selectable) return;
+    if (local.value == null) return;
+
+    longPressed = false;
+    longPressTimer = setTimeout(() => {
+      longPressed = true;
+      boardCtx.setSelectedValues([local.value!]);
+    }, LONG_PRESS_MS);
+  };
+
+  const handlePointerUp = () => {
+    clearTimeout(longPressTimer);
+    longPressTimer = undefined;
+  };
+
+  const handlePointerCancel = () => {
+    clearTimeout(longPressTimer);
+    longPressTimer = undefined;
+  };
+
+  onCleanup(() => {
+    clearTimeout(longPressTimer);
+  });
+
+  const isSelected = () =>
+    local.value != null && boardCtx.selectedValues().includes(local.value);
 
   return (
     <div
       {...rest}
+      ref={hostRef}
       data-kanban-card
-      class={getClassName()}
-      draggable={local.draggable}
+      draggable={isDraggable()}
+      class={twMerge(cardHostClass, isDraggable() && "cursor-grab", isDragSource() && "opacity-30", local.class)}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
-      {local.children}
+      <Card class={twMerge(cardContentClass, isSelected() && cardSelectedClass, local.contentClass)}>
+        {local.children}
+      </Card>
     </div>
   );
 };
@@ -157,37 +223,43 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
 // ─── KanbanLane ──────────────────────────────────────────────────
 
 export interface KanbanLaneProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-  /** Lane의 고유 값 */
   value?: unknown;
-  /** 로딩 중 표시 */
   busy?: boolean;
-  /** 접기/펼치기 가능 여부 */
   collapsible?: boolean;
-  /** 접힘 상태 (controlled) */
   collapsed?: boolean;
-  /** 접힘 상태 변경 콜백 */
   onCollapsedChange?: (collapsed: boolean) => void;
-  /** 자식 요소 */
   children?: JSX.Element;
 }
 
 const laneBaseClass = clsx(
   "flex flex-col",
   "w-72 min-w-72",
-  "bg-base-50 dark:bg-base-900",
+  "bg-base-100 dark:bg-base-900",
   "rounded-lg",
   "overflow-hidden",
+  "transition-[background-color,box-shadow] duration-200"
 );
 
-const laneCollapsedClass = clsx("w-12 min-w-12");
+const laneDragOverClass = clsx(
+  "bg-primary-50 dark:bg-primary-950"
+);
 
 const laneHeaderBaseClass = clsx(
   "flex items-center gap-2",
   "px-3 py-2",
   "font-semibold",
   "text-base-700 dark:text-base-200",
-  "border-b border-base-200 dark:border-base-700",
   "select-none",
+);
+
+const collapseButtonClass = clsx(
+  "flex items-center justify-center",
+  "size-6 rounded",
+  "text-base-500",
+  "hover:bg-base-200 hover:text-primary-500",
+  "dark:hover:bg-base-800",
+  "transition-colors duration-150",
+  "cursor-pointer",
 );
 
 const laneBodyBaseClass = clsx(
@@ -197,22 +269,11 @@ const laneBodyBaseClass = clsx(
   "overflow-y-auto",
 );
 
-const laneDragOverClass = clsx(
-  "outline-dashed outline-2 outline-primary-400 dark:outline-primary-500",
-  "-outline-offset-2",
-);
-
-const laneCollapsedBodyClass = clsx(
-  "flex-1",
-  "flex items-center justify-center",
-);
-
-const laneCollapsedTitleClass = clsx(
-  "font-semibold",
-  "text-base-700 dark:text-base-200",
-  "whitespace-nowrap",
-  "select-none",
-  "cursor-pointer",
+const placeholderBaseClass = clsx(
+  "rounded-lg",
+  "bg-primary-100/60 dark:bg-primary-900/30",
+  "origin-top",
+  "animate-[kanban-ph-in_200ms_ease-out]",
 );
 
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
@@ -226,110 +287,202 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     "onCollapsedChange",
   ]);
 
-  const ctx = useKanbanContext();
-
   const [collapsed, setCollapsed] = createPropSignal({
     value: () => local.collapsed ?? false,
     onChange: () => local.onCollapsedChange,
   });
 
-  const [dragOvered, setDragOvered] = createSignal(false);
+  const boardCtx = useKanbanContext();
+
+  const [registeredCards, setRegisteredCards] = createSignal<
+    Map<string, { value: unknown; selectable: boolean }>
+  >(new Map());
+
+  const registerCard = (id: string, info: { value: unknown; selectable: boolean }) => {
+    setRegisteredCards((prev) => new Map(prev).set(id, info));
+  };
+
+  const unregisterCard = (id: string) => {
+    setRegisteredCards((prev) => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const selectableCards = createMemo(() =>
+    [...registeredCards().values()].filter((c) => c.selectable && c.value != null),
+  );
+
+  const hasSelectableCards = () => selectableCards().length > 0;
+
+  const isAllSelected = () => {
+    const cards = selectableCards();
+    if (cards.length === 0) return false;
+    return cards.every((c) => boardCtx.selectedValues().includes(c.value));
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    const laneCardValues = selectableCards().map((c) => c.value!);
+    boardCtx.setSelectedValues((prev: unknown[]) => {
+      if (checked) {
+        const toAdd = laneCardValues.filter((v) => !prev.includes(v));
+        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+      } else {
+        const toRemove = new Set<unknown>(laneCardValues);
+        const next = prev.filter((v: unknown) => !toRemove.has(v));
+        return next.length === prev.length ? prev : next;
+      }
+    });
+  };
+
+  const [dropTarget, setDropTarget] = createSignal<KanbanDropTarget>();
+  const [dragEnterCount, setDragEnterCount] = createSignal(0);
+
+  // 드래그 오버 상태: 카운터 > 0 && 드래그 중
+  const isDragOverLane = () => dragEnterCount() > 0 && boardCtx.dragCard() != null;
+
+  // dragCard가 리셋되면 dropTarget, 카운터도 초기화
+  createEffect(() => {
+    if (!boardCtx.dragCard()) {
+      setDragEnterCount(0);
+      setDropTarget(undefined);
+    }
+  });
+
+  // Lane 이탈 감지: dragenter/dragleave 카운터
+  const handleLaneDragEnter = () => {
+    setDragEnterCount((c) => c + 1);
+  };
+
+  const handleLaneDragLeave = () => {
+    const next = dragEnterCount() - 1;
+    setDragEnterCount(next);
+    if (next === 0) {
+      setDropTarget(undefined);
+    }
+  };
+
+  // 빈 영역 dragover (카드가 없거나 카드 아래 영역)
+  const handleLaneDragOver = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+  };
+
+  // 빈 영역 또는 placeholder drop
+  const handleLaneDrop = (e: DragEvent) => {
+    if (!boardCtx.dragCard()) return;
+    e.preventDefault();
+
+    const current = dropTarget();
+    if (current) {
+      // placeholder나 카드 사이 gap에 drop된 경우 — dropTarget 위치 사용
+      boardCtx.onDropTo(local.value, current.value, current.position);
+    } else {
+      // 빈 레인에 drop된 경우 — 끝에 추가
+      boardCtx.onDropTo(local.value, undefined, undefined);
+    }
+  };
 
   const laneContextValue: KanbanLaneContextValue = {
     value: () => local.value,
+    dropTarget,
+    setDropTarget,
+    registerCard,
+    unregisterCard,
   };
 
-  const handleDragOver = (e: DragEvent) => {
-    if (ctx.dragValue() == null) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOvered(true);
-  };
-
-  const handleDragLeave = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOvered(false);
-  };
-
-  const handleDrop = (e: DragEvent) => {
-    if (ctx.dragValue() == null) return;
-
-    setDragOvered(false);
-    e.preventDefault();
-    e.stopPropagation();
-    ctx.onDropTo(local.value, undefined);
-  };
-
-  const handleToggleCollapse = () => {
-    if (!local.collapsible) return;
-    setCollapsed((prev) => !prev);
-  };
-
-  // 내부 컴포넌트: Provider 안에서 children을 resolve
+  // Provider 안에서 children을 resolve해야 splitSlots가 올바르게 동작
   const LaneInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
     const [slots, content] = splitSlots(resolved, ["kanbanLaneTitle", "kanbanLaneTools"] as const);
 
-    return (
-      <Show
-        when={!collapsed()}
-        fallback={
-          <div
-            {...rest}
-            data-kanban-lane
-            class={twMerge(laneBaseClass, laneCollapsedClass, dragOvered() && laneDragOverClass, local.class)}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <div class={laneCollapsedBodyClass} onClick={handleToggleCollapse}>
-              <span
-                class={laneCollapsedTitleClass}
-                style={{ "writing-mode": "vertical-rl" }}
-              >
-                {slots().kanbanLaneTitle}
-              </span>
-            </div>
-          </div>
+    const hasHeader = () =>
+      local.collapsible || hasSelectableCards() || slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
+
+    // placeholder div (Lane이 소유, DOM 직접 제어)
+    let bodyRef: HTMLDivElement | undefined;
+    const placeholderEl = document.createElement("div");
+    placeholderEl.className = placeholderBaseClass;
+
+    createEffect(() => {
+      const target = dropTarget();
+      const dc = boardCtx.dragCard();
+
+      if (!target || !dc || !bodyRef) {
+        if (placeholderEl.parentNode) {
+          placeholderEl.remove();
         }
-      >
+        return;
+      }
+
+      // placeholder 높이 설정
+      placeholderEl.style.height = `${dc.heightOnDrag}px`;
+
+      // 삽입 위치 계산
+      const referenceNode = target.position === "before"
+        ? target.element
+        : target.element.nextElementSibling;
+
+      // 이미 올바른 위치면 DOM 조작 생략
+      if (placeholderEl.parentNode === bodyRef
+          && placeholderEl.nextSibling === referenceNode) {
+        return;
+      }
+
+      bodyRef.insertBefore(placeholderEl, referenceNode);
+    });
+
+    // placeholder cleanup
+    onCleanup(() => {
+      if (placeholderEl.parentNode) {
+        placeholderEl.remove();
+      }
+    });
+
+    return (
+      <BusyContainer busy={local.busy} variant="bar">
         <div
           {...rest}
           data-kanban-lane
-          class={twMerge(laneBaseClass, dragOvered() && laneDragOverClass, local.class)}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          class={twMerge(laneBaseClass, isDragOverLane() && laneDragOverClass, local.class)}
+          onDragEnter={handleLaneDragEnter}
+          onDragLeave={handleLaneDragLeave}
+          onDragOver={handleLaneDragOver}
+          onDrop={handleLaneDrop}
         >
-          <div class={laneHeaderBaseClass}>
-            <Show when={local.collapsible}>
-              <button
-                type="button"
-                class={clsx(
-                  "flex items-center justify-center",
-                  "rounded p-0.5",
-                  "hover:bg-base-200 dark:hover:bg-base-700",
-                  "transition-colors",
-                )}
-                onClick={handleToggleCollapse}
-              >
-                <Icon icon={IconChevronRight} size="1em" />
-              </button>
-            </Show>
-            <div class="flex-1">{slots().kanbanLaneTitle}</div>
-            <Show when={slots().kanbanLaneTools.length > 0}>
-              <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
-            </Show>
-          </div>
-          <BusyContainer busy={local.busy}>
-            <div class={laneBodyBaseClass}>
+          <Show when={hasHeader()}>
+            <div class={laneHeaderBaseClass}>
+              <Show when={local.collapsible}>
+                <button
+                  type="button"
+                  class={collapseButtonClass}
+                  onClick={() => setCollapsed((prev) => !prev)}
+                >
+                  <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
+                </button>
+              </Show>
+              <Show when={hasSelectableCards()}>
+                <CheckBox
+                  value={isAllSelected()}
+                  onValueChange={handleSelectAll}
+                  inline
+                  theme="primary"
+                />
+              </Show>
+              <div class="flex-1">{slots().kanbanLaneTitle}</div>
+              <Show when={slots().kanbanLaneTools.length > 0}>
+                <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
+              </Show>
+            </div>
+          </Show>
+          <Show when={!collapsed()}>
+            <div ref={bodyRef} class={laneBodyBaseClass}>
               {content()}
             </div>
-          </BusyContainer>
+          </Show>
         </div>
-      </Show>
+      </BusyContainer>
     );
   };
 
@@ -342,15 +495,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
 // ─── Kanban (Board) ──────────────────────────────────────────────
 
-export interface KanbanProps<L = unknown, T = unknown>
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-  /** 선택된 카드 값 목록 */
-  value?: T[];
-  /** 선택된 카드 값 변경 콜백 */
-  onValueChange?: (value: T[]) => void;
-  /** 카드 드롭 이벤트 콜백 */
-  onCardDrop?: (info: KanbanDropInfo<L, T>) => void;
-  /** 자식 요소 */
+export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "onDrop"> {
+  onDrop?: (info: KanbanDropInfo) => void;
+  selectedValues?: unknown[];
+  onSelectedValuesChange?: (values: unknown[]) => void;
   children?: JSX.Element;
 }
 
@@ -361,31 +509,30 @@ const boardBaseClass = clsx(
 );
 
 interface KanbanComponent {
-  <L = unknown, T = unknown>(props: KanbanProps<L, T>): JSX.Element;
+  (props: KanbanProps): JSX.Element;
   Lane: typeof KanbanLane;
   Card: typeof KanbanCard;
   LaneTitle: typeof KanbanLaneTitle;
   LaneTools: typeof KanbanLaneTools;
 }
 
-const KanbanBase = <L, T>(props: KanbanProps<L, T>) => {
+const KanbanBase = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
     "children",
     "class",
-    "value",
-    "onValueChange",
-    "onCardDrop",
+    "onDrop",
+    "selectedValues",
+    "onSelectedValuesChange",
   ]);
 
-  const [dragValue, setDragValue] = createSignal<T | undefined>(undefined);
+  const [dragCard, setDragCard] = createSignal<KanbanCardRef>();
 
-  // 선택된 값 관리 (controlled/uncontrolled)
-  const [selectedValues, setSelectedValues] = createPropSignal<T[]>({
-    value: () => local.value ?? [],
-    onChange: () => local.onValueChange,
+  const [selectedValues, setSelectedValues] = createPropSignal({
+    value: () => local.selectedValues ?? ([] as unknown[]),
+    onChange: () => local.onSelectedValuesChange,
   });
 
-  const toggleSelection = (value: T) => {
+  const toggleSelection = (value: unknown) => {
     setSelectedValues((prev) => {
       const idx = prev.indexOf(value);
       if (idx >= 0) {
@@ -395,36 +542,40 @@ const KanbanBase = <L, T>(props: KanbanProps<L, T>) => {
     });
   };
 
-  const onDropTo = (targetLaneValue: L, targetCardValue?: T) => {
-    const sourceValue = dragValue();
-    if (sourceValue == null) return;
+  const onDropTo = (
+    targetLaneValue: unknown | undefined,
+    targetCardValue: unknown | undefined,
+    position: "before" | "after" | undefined,
+  ) => {
+    const source = dragCard();
+    if (!source) return;
 
-    local.onCardDrop?.({
-      sourceCardValue: sourceValue,
+    local.onDrop?.({
+      sourceValue: source.value,
       targetLaneValue,
       targetCardValue,
+      position,
     });
 
-    setDragValue(() => undefined);
+    setDragCard(undefined);
   };
 
-  // document dragend 리스너: 드래그가 취소된 경우 상태 초기화
-  const handleDocumentDragEnd = () => {
-    setDragValue(() => undefined);
-  };
-
-  document.addEventListener("dragend", handleDocumentDragEnd);
-  onCleanup(() => {
-    document.removeEventListener("dragend", handleDocumentDragEnd);
+  onMount(() => {
+    const handleDragEnd = () => {
+      setDragCard(undefined);
+    };
+    document.addEventListener("dragend", handleDragEnd);
+    onCleanup(() => document.removeEventListener("dragend", handleDragEnd));
   });
 
-  const contextValue = {
-    dragValue,
-    setDragValue,
-    selectedValues,
-    toggleSelection,
+  const contextValue: KanbanContextValue = {
+    dragCard,
+    setDragCard,
     onDropTo,
-  } as KanbanContextValue;
+    selectedValues,
+    setSelectedValues,
+    toggleSelection,
+  };
 
   return (
     <KanbanContext.Provider value={contextValue}>

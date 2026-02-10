@@ -9,7 +9,7 @@ const baseClass = clsx(
   "block",
   "bg-white dark:bg-base-800",
   "rounded-lg",
-  "shadow-md focus-within:shadow-lg hover:shadow-lg",
+  "shadow focus-within:shadow-md hover:shadow-md",
   "dark:shadow-black/20 dark:focus-within:shadow-black/30 dark:hover:shadow-black/30",
   "transition-shadow duration-300",
   "animate-card-in",
