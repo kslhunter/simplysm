@@ -140,4 +140,42 @@ describe("Combobox 컴포넌트", () => {
       vi.useRealTimers();
     });
   });
+
+  describe("allowCustomValue", () => {
+    it("allowCustomValue가 true일 때 Enter로 커스텀 값 입력 가능", () => {
+      const handleChange = vi.fn();
+      const loadItems = vi.fn(() => Promise.resolve([]));
+
+      const { container, getByRole } = render(() => (
+        <Combobox loadItems={loadItems} onValueChange={handleChange} allowCustomValue renderValue={(v) => <>{v}</>} />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "새로운 값" } });
+      fireEvent.keyDown(getByRole("combobox"), { key: "Enter" });
+
+      expect(handleChange).toHaveBeenCalledWith("새로운 값");
+    });
+
+    it("parseCustomValue로 커스텀 값을 변환할 수 있다", () => {
+      const handleChange = vi.fn();
+      const loadItems = vi.fn(() => Promise.resolve([]));
+
+      const { container, getByRole } = render(() => (
+        <Combobox
+          loadItems={loadItems}
+          onValueChange={handleChange}
+          allowCustomValue
+          parseCustomValue={(text) => ({ name: text, custom: true })}
+          renderValue={(v: { name: string }) => <>{v.name}</>}
+        />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "테스트" } });
+      fireEvent.keyDown(getByRole("combobox"), { key: "Enter" });
+
+      expect(handleChange).toHaveBeenCalledWith({ name: "테스트", custom: true });
+    });
+  });
 });

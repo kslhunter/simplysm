@@ -291,10 +291,8 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       setOpen(false);
     } else if (e.key === "Enter" && local.allowCustomValue && query().trim() !== "") {
       e.preventDefault();
-      if (local.parseCustomValue) {
-        const customValue = local.parseCustomValue(query());
-        selectValue(customValue);
-      }
+      const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as T);
+      selectValue(customValue);
     }
   };
 
