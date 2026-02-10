@@ -28,7 +28,7 @@ function TestApp() {
     <button
       data-testid="open-btn"
       onClick={() => {
-        dialog.show<string>(() => <TestContent />, { title: "테스트 다이얼로그" });
+        void dialog.show<string>(() => <TestContent />, { title: "테스트 다이얼로그" });
       }}
     >
       다이얼로그 열기

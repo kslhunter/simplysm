@@ -6,12 +6,9 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
     // eslint-disable-next-line no-console
     console.warn("[Broadcast] 웹 환경에서는 Broadcast를 지원하지 않습니다.");
 
-  async subscribe(
-    _options: { filters: string[] },
-    _callback: (result: IBroadcastResult) => void,
-  ): Promise<{ id: string }> {
+  subscribe(_options: { filters: string[] }, _callback: (result: IBroadcastResult) => void): Promise<{ id: string }> {
     BroadcastWeb._warn();
-    return { id: "web-stub" };
+    return Promise.resolve({ id: "web-stub" });
   }
 
   async unsubscribe(_options: { id: string }): Promise<void> {
@@ -22,11 +19,12 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
     // 웹 환경에서는 no-op
   }
 
-  async send(_options: { action: string; extras?: Record<string, unknown> }): Promise<void> {
+  send(_options: { action: string; extras?: Record<string, unknown> }): Promise<void> {
     BroadcastWeb._warn();
+    return Promise.resolve();
   }
 
-  async getLaunchIntent(): Promise<IBroadcastResult> {
-    return {};
+  getLaunchIntent(): Promise<IBroadcastResult> {
+    return Promise.resolve({});
   }
 }

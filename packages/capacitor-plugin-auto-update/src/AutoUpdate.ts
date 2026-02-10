@@ -126,7 +126,7 @@ export abstract class AutoUpdate {
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
       // 최신버전이거나 서버 버전이 낮으면 반환
-      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(serverVersionInfo.version)) {
+      if (semver.valid(currentVersionInfo.versionName) === null || semver.valid(serverVersionInfo.version) === null) {
         // eslint-disable-next-line no-console
         console.log("Invalid semver version, skipping update check");
         return;
@@ -195,7 +195,7 @@ export abstract class AutoUpdate {
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
       // 최신버전이거나 외부 저장소 버전이 낮으면 반환
-      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(latestVersion)) {
+      if (semver.valid(currentVersionInfo.versionName) === null || semver.valid(latestVersion) === null) {
         // eslint-disable-next-line no-console
         console.log("Invalid semver version, skipping update check");
         return;
