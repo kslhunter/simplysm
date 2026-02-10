@@ -1,8 +1,19 @@
-import { For } from "solid-js";
-import { Button, Icon, Kanban, Topbar } from "@simplysm/solid";
+import { createSignal, For } from "solid-js";
+import { Button, Icon, Kanban, type KanbanDropInfo, Topbar } from "@simplysm/solid";
 import { IconPlus } from "@tabler/icons-solidjs";
 
-const sampleLanes = [
+interface CardData {
+  id: number;
+  title: string;
+}
+
+interface LaneData {
+  id: string;
+  title: string;
+  cards: CardData[];
+}
+
+const initialLanes: LaneData[] = [
   {
     id: "todo",
     title: "할 일",
@@ -31,6 +42,54 @@ const sampleLanes = [
 ];
 
 export default function KanbanPage() {
+  const [lanes, setLanes] = createSignal<LaneData[]>(initialLanes);
+
+  const handleDrop = (info: KanbanDropInfo) => {
+    const sourceValue = info.sourceValue as number;
+    const targetLaneValue = info.targetLaneValue as string;
+    const targetCardValue = info.targetCardValue as number | undefined;
+
+    setLanes((prev) => {
+      // 소스 카드 찾기 및 제거
+      let sourceCard: CardData | undefined;
+      const withoutSource = prev.map((lane) => ({
+        ...lane,
+        cards: lane.cards.filter((card) => {
+          if (card.id === sourceValue) {
+            sourceCard = card;
+            return false;
+          }
+          return true;
+        }),
+      }));
+
+      if (!sourceCard) return prev;
+
+      // 대상 레인에 삽입
+      return withoutSource.map((lane) => {
+        if (lane.id !== targetLaneValue) return lane;
+
+        const newCards = [...lane.cards];
+
+        if (targetCardValue == null) {
+          // 빈 영역 드롭 → 맨 끝에 추가
+          newCards.push(sourceCard!);
+        } else {
+          // 특정 카드 앞/뒤에 삽입
+          const targetIdx = newCards.findIndex((c) => c.id === targetCardValue);
+          if (targetIdx < 0) {
+            newCards.push(sourceCard!);
+          } else {
+            const insertIdx = info.position === "after" ? targetIdx + 1 : targetIdx;
+            newCards.splice(insertIdx, 0, sourceCard!);
+          }
+        }
+
+        return { ...lane, cards: newCards };
+      });
+    });
+  };
+
   return (
     <Topbar.Container>
       <Topbar>
@@ -39,21 +98,23 @@ export default function KanbanPage() {
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본</h2>
+            <h2 class="mb-4 text-xl font-semibold">DnD</h2>
             <div class="h-[500px]">
-              <Kanban>
-                <For each={sampleLanes}>
+              <Kanban onDrop={handleDrop}>
+                <For each={lanes()}>
                   {(lane) => (
                     <Kanban.Lane value={lane.id}>
-                      <Kanban.LaneTitle>{lane.title}</Kanban.LaneTitle>
+                      <Kanban.LaneTitle>
+                        {lane.title} ({lane.cards.length})
+                      </Kanban.LaneTitle>
                       <Kanban.LaneTools>
-                        <Button size="sm" theme="primary" inset>
+                        <Button size="sm" theme="primary" variant="ghost" class="size-8">
                           <Icon icon={IconPlus} />
                         </Button>
                       </Kanban.LaneTools>
                       <For each={lane.cards}>
                         {(card) => (
-                          <Kanban.Card value={card.id} contentClass="p-3">
+                          <Kanban.Card value={card.id} contentClass="p-2">
                             {card.title}
                           </Kanban.Card>
                         )}
@@ -66,17 +127,20 @@ export default function KanbanPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">빈 Lane</h2>
+            <h2 class="mb-4 text-xl font-semibold">draggable 제어</h2>
             <div class="h-[300px]">
-              <Kanban>
+              <Kanban onDrop={handleDrop}>
+                <Kanban.Lane value="mixed">
+                  <Kanban.LaneTitle>드래그 혼합</Kanban.LaneTitle>
+                  <Kanban.Card value={100} contentClass="p-2">
+                    드래그 가능 (기본)
+                  </Kanban.Card>
+                  <Kanban.Card value={101} draggable={false} contentClass="p-2">
+                    드래그 불가
+                  </Kanban.Card>
+                </Kanban.Lane>
                 <Kanban.Lane value="empty">
                   <Kanban.LaneTitle>빈 레인</Kanban.LaneTitle>
-                </Kanban.Lane>
-                <Kanban.Lane value="with-cards">
-                  <Kanban.LaneTitle>카드 있음</Kanban.LaneTitle>
-                  <Kanban.Card value={1} contentClass="p-3">
-                    카드 1
-                  </Kanban.Card>
                 </Kanban.Lane>
               </Kanban>
             </div>
