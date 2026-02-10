@@ -3,7 +3,7 @@ import { render } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { useLoading } from "../components/feedback/loading/LoadingContext";
-import { PrintInstanceContext, type PrintInstance } from "../components/print/PrintInstanceContext";
+import { PrintInstanceContext, type PrintInstance } from "../components/feedback/print/PrintInstanceContext";
 
 // --- Types ---
 

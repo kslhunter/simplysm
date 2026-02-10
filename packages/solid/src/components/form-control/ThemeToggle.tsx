@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconSun, IconMoon, IconDeviceDesktop } from "@tabler/icons-solidjs";
 import { useTheme, type ThemeMode } from "../../providers/ThemeContext";
-import { Icon } from "./Icon";
+import { Icon } from "../display/Icon";
 import { ripple } from "../../directives/ripple";
 
 void ripple;
