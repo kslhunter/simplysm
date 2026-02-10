@@ -61,8 +61,16 @@ const cardHostClass = clsx(
 
 const cardContentClass = clsx(
   "select-none whitespace-normal",
-  "animate-none transition-none",
+  "animate-none",
+  "transition-shadow duration-200",
 );
+
+const cardSelectedClass = clsx(
+  "ring-2 ring-primary-500/50",
+  "shadow-md dark:shadow-black/30",
+);
+
+const LONG_PRESS_MS = 500;
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -142,7 +150,14 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     boardCtx.onDropTo(laneCtx.value(), local.value, current?.position ?? "before");
   };
 
+  // Shift+Click 다중 선택 토글
   const handleClick = (e: MouseEvent) => {
+    if (longPressed) {
+      e.preventDefault();
+      e.stopPropagation();
+      longPressed = false;
+      return;
+    }
     if (!e.shiftKey) return;
     if (!local.selectable) return;
     if (local.value == null) return;
@@ -150,6 +165,35 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     e.stopPropagation();
     boardCtx.toggleSelection(local.value);
   };
+
+  // Long press → 해당 카드만 단독 선택 (다른 선택 모두 해제)
+  let longPressTimer: ReturnType<typeof setTimeout> | undefined;
+  let longPressed = false;
+
+  const handlePointerDown = () => {
+    if (!local.selectable) return;
+    if (local.value == null) return;
+
+    longPressed = false;
+    longPressTimer = setTimeout(() => {
+      longPressed = true;
+      boardCtx.setSelectedValues([local.value!]);
+    }, LONG_PRESS_MS);
+  };
+
+  const handlePointerUp = () => {
+    clearTimeout(longPressTimer);
+    longPressTimer = undefined;
+  };
+
+  const handlePointerCancel = () => {
+    clearTimeout(longPressTimer);
+    longPressTimer = undefined;
+  };
+
+  onCleanup(() => {
+    clearTimeout(longPressTimer);
+  });
 
   const isSelected = () =>
     local.value != null && boardCtx.selectedValues().includes(local.value);
@@ -164,9 +208,12 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
-      <Card class={twMerge(cardContentClass, isSelected() && "ring-2 ring-primary-500", local.contentClass)}>
+      <Card class={twMerge(cardContentClass, isSelected() && cardSelectedClass, local.contentClass)}>
         {local.children}
       </Card>
     </div>

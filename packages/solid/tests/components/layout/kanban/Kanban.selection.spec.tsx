@@ -1,5 +1,5 @@
 import { render, fireEvent } from "@solidjs/testing-library";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Kanban } from "../../../../src/components/layout/kanban/Kanban";
 
 describe("Kanban 선택 시스템", () => {
@@ -83,11 +83,12 @@ describe("Kanban 선택 시스템", () => {
   });
 
   describe("선택 시각 피드백", () => {
-    it("선택된 카드에 ring 클래스가 적용된다", () => {
+    it("선택된 카드에 ring + shadow 클래스가 적용된다", () => {
       const { getByText } = renderKanban({ selectedValues: [1] });
       const card1Content = getByText("Card 1").closest("[data-card]") as HTMLElement;
       expect(card1Content.classList.contains("ring-2")).toBe(true);
-      expect(card1Content.classList.contains("ring-primary-500")).toBe(true);
+      expect(card1Content.className).toContain("ring-primary-500/50");
+      expect(card1Content.classList.contains("shadow-md")).toBe(true);
     });
 
     it("선택되지 않은 카드에는 ring 클래스가 없다", () => {
@@ -140,6 +141,59 @@ describe("Kanban 선택 시스템", () => {
       const firstLane = container.querySelector("[data-kanban-lane]") as HTMLElement;
       const checkbox = firstLane.querySelector("[role='checkbox']") as HTMLElement;
       expect(checkbox.getAttribute("aria-checked")).toBe("false");
+    });
+  });
+
+  describe("Long press 단독 선택", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("500ms 이상 누르면 해당 카드만 단독 선택된다", () => {
+      const handleChange = vi.fn();
+      const { getByText } = renderKanban({
+        selectedValues: [2, 4],
+        onSelectedValuesChange: handleChange,
+      });
+
+      const card1 = getByText("Card 1").closest("[data-kanban-card]") as HTMLElement;
+      fireEvent.pointerDown(card1);
+      vi.advanceTimersByTime(500);
+
+      expect(handleChange).toHaveBeenCalledWith([1]);
+    });
+
+    it("500ms 미만으로 누르면 선택이 변경되지 않는다", () => {
+      const handleChange = vi.fn();
+      const { getByText } = renderKanban({
+        selectedValues: [],
+        onSelectedValuesChange: handleChange,
+      });
+
+      const card1 = getByText("Card 1").closest("[data-kanban-card]") as HTMLElement;
+      fireEvent.pointerDown(card1);
+      vi.advanceTimersByTime(400);
+      fireEvent.pointerUp(card1);
+
+      expect(handleChange).not.toHaveBeenCalled();
+    });
+
+    it("selectable=false인 카드는 long press해도 선택되지 않는다", () => {
+      const handleChange = vi.fn();
+      const { getByText } = renderKanban({
+        selectedValues: [],
+        onSelectedValuesChange: handleChange,
+      });
+
+      const card3 = getByText("Card 3 (not selectable)").closest("[data-kanban-card]") as HTMLElement;
+      fireEvent.pointerDown(card3);
+      vi.advanceTimersByTime(500);
+
+      expect(handleChange).not.toHaveBeenCalled();
     });
   });
 
