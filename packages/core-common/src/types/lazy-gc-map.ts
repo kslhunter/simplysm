@@ -48,13 +48,13 @@ export class LazyGcMap<K, V> {
 
   /**
    * @param _options 설정 옵션
-   * @param _options.gcInterval GC 주기 (밀리초). 예: 10000 (10초)
+   * @param _options.gcInterval GC 주기 (밀리초). 기본값: expireTime의 1/10 (최소 1000ms)
    * @param _options.expireTime 만료 시간 (밀리초). 마지막 접근 후 이 시간이 지나면 삭제됨. 예: 60000 (60초)
    * @param _options.onExpire 만료 시 호출되는 콜백. 비동기 함수도 가능하며, 에러 발생 시 로깅 후 계속 진행됨
    */
   constructor(
     private readonly _options: {
-      gcInterval: number;
+      gcInterval?: number;
       expireTime: number;
       onExpire?: (key: K, value: V) => void | Promise<void>;
     },
@@ -176,9 +176,10 @@ export class LazyGcMap<K, V> {
     if (this._isDestroyed) return;
     if (this._gcTimer != null) return;
 
+    const interval = this._options.gcInterval ?? Math.max(this._options.expireTime / 10, 1000);
     this._gcTimer = setInterval(() => {
       void this._runGc();
-    }, this._options.gcInterval);
+    }, interval);
   }
 
   private async _runGc(): Promise<void> {

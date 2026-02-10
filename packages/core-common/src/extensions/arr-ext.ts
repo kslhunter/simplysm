@@ -395,7 +395,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     const uncheckedTarget = [...target];
     const uncheckedTargetSet = new Set(uncheckedTarget);
     const hasKeys = options?.keys !== undefined && options.keys.length > 0;
-    const excludeOpts = { excludes: options?.excludes };
+    const excludeOpts = { topLevelExcludes: options?.excludes };
 
     // keys 옵션이 있는 경우 target을 keys 기준으로 Map에 미리 인덱싱하여 O(n×m) → O(n+m) 개선
     // 키 값이 같은 target이 여러 개 있을 수 있으므로 배열로 저장
@@ -487,8 +487,8 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
       if (
         objEqual(orgItem, item, {
-          excludes: options?.excludes,
-          includes: options?.includes,
+          topLevelExcludes: options?.excludes,
+          topLevelIncludes: options?.includes,
         })
       ) {
         if (includeSame) {

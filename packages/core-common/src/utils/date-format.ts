@@ -35,6 +35,22 @@ export function normalizeMonth(year: number, month: number, day: number): DtNorm
   return { year: normalizedYear, month: normalizedMonth, day: normalizedDay };
 }
 
+/**
+ * 12시간제를 24시간제로 변환
+ * - 오전 12시 = 0시, 오후 12시 = 12시
+ * - 오전 1-11시 = 1-11시, 오후 1-11시 = 13-23시
+ *
+ * @param rawHour 12시간제 시 (1-12)
+ * @param isPM 오후 여부
+ * @returns 24시간제 시 (0-23)
+ */
+export function convert12To24(rawHour: number, isPM: boolean): number {
+  if (rawHour === 12) {
+    return isPM ? 12 : 0;
+  }
+  return isPM ? rawHour + 12 : rawHour;
+}
+
 //#region 정규식 캐싱 (모듈 로드 시 1회만 생성)
 
 /**
@@ -110,17 +126,17 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
  *
  * @example
  * ```typescript
- * formatDateTime("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
+ * formatDate("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
  * // "2024-03-15"
  *
- * formatDateTime("yyyy년 M월 d일 (ddd)", { year: 2024, month: 3, day: 15 });
+ * formatDate("yyyy년 M월 d일 (ddd)", { year: 2024, month: 3, day: 15 });
  * // "2024년 3월 15일 (금)"
  *
- * formatDateTime("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
+ * formatDate("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
  * // "오후 2:30:45"
  * ```
  */
-export function format(
+export function formatDate(
   formatString: string,
   args: {
     year?: number;

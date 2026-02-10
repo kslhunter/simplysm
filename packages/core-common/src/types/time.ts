@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { format } from "../utils/date-format";
+import { convert12To24, formatDate } from "../utils/date-format";
 
 /**
  * 시간 클래스 (날짜제외: HH:mm:ss.fff, 불변)
@@ -71,15 +71,7 @@ export class Time {
     if (match1 != null) {
       const rawHour = Number(match1[2]);
       const isPM = match1[1] === "오후";
-      // 12시간제 → 24시간제 변환
-      // 오전 12시 = 0시, 오후 12시 = 12시
-      // 오전 1-11시 = 1-11시, 오후 1-11시 = 13-23시
-      let hour: number;
-      if (rawHour === 12) {
-        hour = isPM ? 12 : 0;
-      } else {
-        hour = isPM ? rawHour + 12 : rawHour;
-      }
+      const hour = convert12To24(rawHour, isPM);
       return new Time(hour, Number(match1[3]), Number(match1[4]), Number(match1[6] ? match1[6].padEnd(3, "0") : "0"));
     }
 
@@ -202,7 +194,7 @@ export class Time {
    * @see dtFormat 지원 포맷 문자열 참조
    */
   toFormatString(formatStr: string): string {
-    return format(formatStr, {
+    return formatDate(formatStr, {
       hour: this.hour,
       minute: this.minute,
       second: this.second,

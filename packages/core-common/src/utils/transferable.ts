@@ -81,98 +81,104 @@ function encodeImpl(
 
   let result: unknown;
 
-  // 1. Uint8Array
-  if (obj instanceof Uint8Array) {
-    // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
-    // ArrayBuffer만 transferList에 추가
-    const isSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
-    const buffer = obj.buffer as ArrayBuffer;
-    if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
-      transferList.push(buffer);
+  try {
+    // 1. Uint8Array
+    if (obj instanceof Uint8Array) {
+      // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
+      // ArrayBuffer만 transferList에 추가
+      const isSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
+      const buffer = obj.buffer as ArrayBuffer;
+      if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
+        transferList.push(buffer);
+      }
+      result = obj;
     }
-    result = obj;
-  }
-  // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
-  else if (obj instanceof Date) {
-    result = { __type__: "Date", data: obj.getTime() };
-  } else if (obj instanceof DateTime) {
-    result = { __type__: "DateTime", data: obj.tick };
-  } else if (obj instanceof DateOnly) {
-    result = { __type__: "DateOnly", data: obj.tick };
-  } else if (obj instanceof Time) {
-    result = { __type__: "Time", data: obj.tick };
-  } else if (obj instanceof Uuid) {
-    result = { __type__: "Uuid", data: obj.toString() };
-  } else if (obj instanceof RegExp) {
-    result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
-  } else if (obj instanceof Error) {
-    const errObj = obj as Error & {
-      code?: unknown;
-      detail?: unknown;
-    };
-    result = {
-      __type__: "Error",
-      data: {
-        name: errObj.name,
-        message: errObj.message,
-        stack: errObj.stack,
-        ...(errObj.code !== undefined ? { code: errObj.code } : {}),
-        ...(errObj.detail !== undefined
-          ? { detail: encodeImpl(errObj.detail, transferList, [...path, "detail"], ancestors, cache) }
-          : {}),
-        ...(errObj.cause !== undefined
-          ? { cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache) }
-          : {}),
-      },
-    };
-  }
-  // 3. 배열 재귀 순회
-  else if (Array.isArray(obj)) {
-    result = obj.map((item, idx) => encodeImpl(item, transferList, [...path, idx], ancestors, cache));
-  }
-  // 4. Map 재귀 순회
-  else if (obj instanceof Map) {
-    let idx = 0;
-    result = new Map(
-      Array.from(obj.entries()).map(([k, v]) => {
-        const keyPath = [...path, `Map[${idx}].key`];
-        const valuePath = [...path, `Map[${idx}].value`];
-        idx++;
-        return [
-          encodeImpl(k, transferList, keyPath, ancestors, cache),
-          encodeImpl(v, transferList, valuePath, ancestors, cache),
-        ];
-      }),
-    );
-  }
-  // 5. Set 재귀 순회
-  else if (obj instanceof Set) {
-    let idx = 0;
-    result = new Set(
-      Array.from(obj).map((v) => encodeImpl(v, transferList, [...path, `Set[${idx++}]`], ancestors, cache)),
-    );
-  }
-  // 6. 일반 객체 재귀 순회
-  else if (typeof obj === "object") {
-    const res: Record<string, unknown> = {};
-    const record = obj as Record<string, unknown>;
-    for (const key of Object.keys(record)) {
-      res[key] = encodeImpl(record[key], transferList, [...path, key], ancestors, cache);
+    // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
+    else if (obj instanceof Date) {
+      result = { __type__: "Date", data: obj.getTime() };
+    } else if (obj instanceof DateTime) {
+      result = { __type__: "DateTime", data: obj.tick };
+    } else if (obj instanceof DateOnly) {
+      result = { __type__: "DateOnly", data: obj.tick };
+    } else if (obj instanceof Time) {
+      result = { __type__: "Time", data: obj.tick };
+    } else if (obj instanceof Uuid) {
+      result = { __type__: "Uuid", data: obj.toString() };
+    } else if (obj instanceof RegExp) {
+      result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
+    } else if (obj instanceof Error) {
+      const errObj = obj as Error & {
+        code?: unknown;
+        detail?: unknown;
+      };
+      result = {
+        __type__: "Error",
+        data: {
+          name: errObj.name,
+          message: errObj.message,
+          stack: errObj.stack,
+          ...(errObj.code !== undefined ? { code: errObj.code } : {}),
+          ...(errObj.detail !== undefined
+            ? { detail: encodeImpl(errObj.detail, transferList, [...path, "detail"], ancestors, cache) }
+            : {}),
+          ...(errObj.cause !== undefined
+            ? { cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache) }
+            : {}),
+        },
+      };
     }
-    result = res;
-  }
-  // 7. 원시 타입
-  else {
-    return obj;
-  }
+    // 3. 배열 재귀 순회
+    else if (Array.isArray(obj)) {
+      result = obj.map((item, idx) => encodeImpl(item, transferList, [...path, idx], ancestors, cache));
+    }
+    // 4. Map 재귀 순회
+    else if (obj instanceof Map) {
+      let idx = 0;
+      result = new Map(
+        Array.from(obj.entries()).map(([k, v]) => {
+          const keyPath = [...path, `Map[${idx}].key`];
+          const valuePath = [...path, `Map[${idx}].value`];
+          idx++;
+          return [
+            encodeImpl(k, transferList, keyPath, ancestors, cache),
+            encodeImpl(v, transferList, valuePath, ancestors, cache),
+          ];
+        }),
+      );
+    }
+    // 5. Set 재귀 순회
+    else if (obj instanceof Set) {
+      let idx = 0;
+      result = new Set(
+        Array.from(obj).map((v) => encodeImpl(v, transferList, [...path, `Set[${idx++}]`], ancestors, cache)),
+      );
+    }
+    // 6. 일반 객체 재귀 순회
+    else if (typeof obj === "object") {
+      const res: Record<string, unknown> = {};
+      const record = obj as Record<string, unknown>;
+      for (const key of Object.keys(record)) {
+        res[key] = encodeImpl(record[key], transferList, [...path, key], ancestors, cache);
+      }
+      result = res;
+    }
+    // 7. 원시 타입
+    else {
+      return obj;
+    }
 
-  // 재귀 스택에서 제거 + 캐시 저장
-  if (typeof obj === "object") {
-    ancestors.delete(obj);
-    cache.set(obj, result);
-  }
+    // 캐시 저장 (성공 시에만)
+    if (typeof obj === "object") {
+      cache.set(obj, result);
+    }
 
-  return result;
+    return result;
+  } finally {
+    // 재귀 스택에서 제거 (예외 시에도 반드시 실행)
+    if (typeof obj === "object") {
+      ancestors.delete(obj);
+    }
+  }
 }
 
 //#endregion

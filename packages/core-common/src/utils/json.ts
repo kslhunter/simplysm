@@ -26,7 +26,7 @@ interface TypedObject {
  * @param options 직렬화 옵션
  * @param options.space JSON 들여쓰기 (숫자: 공백 수, 문자열: 들여쓰기 문자열)
  * @param options.replacer 커스텀 replacer 함수. 기본 타입 변환 전에 호출됨
- * @param options.hideBytes true 시 Uint8Array 내용을 "__hidden__"으로 대체 (로깅용). 이 옵션으로 직렬화한 결과는 jsonParse()로 원본 Uint8Array를 복원할 수 없음
+ * @param options.redactBytes true 시 Uint8Array 내용을 "__hidden__"으로 대체 (로깅용). 이 옵션으로 직렬화한 결과는 jsonParse()로 원본 Uint8Array를 복원할 수 없음
  *
  * @remarks
  * - 순환 참조가 있는 객체는 TypeError를 던짐
@@ -38,7 +38,7 @@ export function jsonStringify(
   options?: {
     space?: string | number;
     replacer?: (key: string | undefined, value: unknown) => unknown;
-    hideBytes?: boolean;
+    redactBytes?: boolean;
   },
 ): string {
   // 순환 참조 감지를 위한 WeakSet
@@ -102,7 +102,7 @@ export function jsonStringify(
       };
     }
     if (currValue instanceof Uint8Array) {
-      if (options?.hideBytes === true) {
+      if (options?.redactBytes === true) {
         return { __type__: "Uint8Array", data: "__hidden__" };
       }
       return { __type__: "Uint8Array", data: bytesToHex(currValue) };
@@ -209,7 +209,7 @@ export function jsonParse<T = unknown>(json: string): T {
             }
             if (typed.__type__ === "Uint8Array" && typeof typed.data === "string") {
               if (typed.data === "__hidden__") {
-                throw new SdError("hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다");
+                throw new SdError("redactBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다");
               }
               return bytesFromHex(typed.data);
             }

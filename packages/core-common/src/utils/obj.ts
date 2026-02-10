@@ -134,9 +134,9 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
 /** objEqual 옵션 타입 */
 export interface EqualOptions {
   /** 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용) */
-  includes?: string[];
+  topLevelIncludes?: string[];
   /** 비교에서 제외할 키 목록 (최상위 레벨에만 적용) */
-  excludes?: string[];
+  topLevelExcludes?: string[];
   /** 배열 순서 무시 여부. true 시 O(n²) 복잡도 */
   ignoreArrayIndex?: boolean;
   /** 얕은 비교 여부. true 시 1단계만 비교 (참조 비교) */
@@ -149,14 +149,14 @@ export interface EqualOptions {
  * @param source 비교 대상 1
  * @param target 비교 대상 2
  * @param options 비교 옵션
- * @param options.includes 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용)
- *   @example `{ includes: ["id", "name"] }` - id, name 키만 비교
- * @param options.excludes 비교에서 제외할 키 목록 (최상위 레벨에만 적용)
- *   @example `{ excludes: ["updatedAt"] }` - updatedAt 키를 제외하고 비교
+ * @param options.topLevelIncludes 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용)
+ *   @example `{ topLevelIncludes: ["id", "name"] }` - id, name 키만 비교
+ * @param options.topLevelExcludes 비교에서 제외할 키 목록 (최상위 레벨에만 적용)
+ *   @example `{ topLevelExcludes: ["updatedAt"] }` - updatedAt 키를 제외하고 비교
  * @param options.ignoreArrayIndex 배열 순서 무시 여부. true 시 O(n²) 복잡도
  * @param options.onlyOneDepth 얕은 비교 여부. true 시 1단계만 비교 (참조 비교)
  *
- * @note includes/excludes 옵션은 object 속성 키에만 적용됨.
+ * @note topLevelIncludes/topLevelExcludes 옵션은 object 속성 키에만 적용됨.
  *       Map의 모든 키는 항상 비교에 포함됨.
  * @note 성능 고려사항:
  * - 기본 배열 비교: O(n) 시간 복잡도
@@ -228,7 +228,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
         return false;
       });
     } else {
-      // 재귀 호출 시 includes/excludes 옵션은 최상위 레벨에만 적용되므로 제외
+      // 재귀 호출 시 topLevelIncludes/topLevelExcludes 옵션은 최상위 레벨에만 적용되므로 제외
       const recursiveOptions = { ignoreArrayIndex: options.ignoreArrayIndex, onlyOneDepth: options.onlyOneDepth };
       return source.every((sourceItem) => {
         const idx = target.findIndex((t, i) => !matchedIndices.has(i) && objEqual(t, sourceItem, recursiveOptions));
@@ -247,7 +247,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
         }
       }
     } else {
-      // 재귀 호출 시 includes/excludes 옵션은 최상위 레벨에만 적용되므로 제외
+      // 재귀 호출 시 topLevelIncludes/topLevelExcludes 옵션은 최상위 레벨에만 적용되므로 제외
       for (let i = 0; i < source.length; i++) {
         if (
           !objEqual(source[i], target[i], {
@@ -270,7 +270,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
  * @note 대량 데이터의 경우 onlyOneDepth: true 옵션 사용 권장 (참조 비교로 O(n)으로 개선)
  */
 function objEqualMap(source: Map<unknown, unknown>, target: Map<unknown, unknown>, options?: EqualOptions): boolean {
-  // Map 비교 시 includes/excludes 옵션은 무시됨 (object 속성 키에만 적용)
+  // Map 비교 시 topLevelIncludes/topLevelExcludes 옵션은 무시됨 (object 속성 키에만 적용)
   const sourceKeys = Array.from(source.keys()).filter((key) => source.get(key) != null);
   const targetKeys = Array.from(target.keys()).filter((key) => target.get(key) != null);
 
@@ -336,14 +336,14 @@ function objEqualObject(
 ): boolean {
   const sourceKeys = Object.keys(source).filter(
     (key) =>
-      (options?.includes === undefined || options.includes.includes(key)) &&
-      !options?.excludes?.includes(key) &&
+      (options?.topLevelIncludes === undefined || options.topLevelIncludes.includes(key)) &&
+      !options?.topLevelExcludes?.includes(key) &&
       source[key] != null,
   );
   const targetKeys = Object.keys(target).filter(
     (key) =>
-      (options?.includes === undefined || options.includes.includes(key)) &&
-      !options?.excludes?.includes(key) &&
+      (options?.topLevelIncludes === undefined || options.topLevelIncludes.includes(key)) &&
+      !options?.topLevelExcludes?.includes(key) &&
       target[key] != null,
   );
 
@@ -502,7 +502,7 @@ export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T &
 
 /** merge3 옵션 타입 */
 export interface ObjMerge3KeyOptions {
-  /** 비교할 하위 키 목록 (equal의 includes와 동일) */
+  /** 비교할 하위 키 목록 (equal의 topLevelIncludes와 동일) */
   keys?: string[];
   /** 비교에서 제외할 하위 키 목록 */
   excludes?: string[];
@@ -523,7 +523,7 @@ export interface ObjMerge3KeyOptions {
  * @param origin 기준 버전 (공통 조상)
  * @param target 변경된 버전 2
  * @param optionsObj 키별 비교 옵션. 각 키에 대해 equal() 비교 옵션을 개별 지정
- *   - `keys`: 비교할 하위 키 목록 (equal의 includes와 동일)
+ *   - `keys`: 비교할 하위 키 목록 (equal의 topLevelIncludes와 동일)
  *   - `excludes`: 비교에서 제외할 하위 키 목록
  *   - `ignoreArrayIndex`: 배열 순서 무시 여부
  * @returns conflict: 충돌 발생 여부, result: 병합 결과
@@ -596,6 +596,7 @@ export function objOmit<T extends Record<string, unknown>, K extends keyof T>(it
 
 /**
  * 조건에 맞는 키들을 제외
+ * @internal
  * @param item 원본 객체
  * @param omitKeyFn 키를 받아 제외 여부를 반환하는 함수 (true면 제외)
  * @returns 조건에 맞는 키가 제외된 새 객체
@@ -679,6 +680,7 @@ export function objGetChainValue(obj: unknown, chain: string, optional?: true): 
 
 /**
  * depth만큼 같은 키로 내려가기
+ * @internal
  * @param obj 대상 객체
  * @param key 내려갈 키
  * @param depth 내려갈 깊이 (1 이상)
@@ -763,6 +765,7 @@ export function objDeleteChainValue(obj: unknown, chain: string): void {
 
 /**
  * 객체에서 undefined 값을 가진 키 삭제
+ * @internal
  *
  * @mutates 원본 객체를 직접 수정함
  */
@@ -778,6 +781,7 @@ export function objClearUndefined<T extends object>(obj: T): T {
 
 /**
  * 객체의 모든 키 삭제
+ * @internal
  *
  * @mutates 원본 객체를 직접 수정함
  */
@@ -790,6 +794,7 @@ export function objClear<T extends Record<string, unknown>>(obj: T): Record<stri
 
 /**
  * null을 undefined로 변환 (재귀적)
+ * @internal
  *
  * @mutates 원본 배열/객체를 직접 수정함
  */
@@ -837,6 +842,7 @@ function objNullToUndefinedImpl<T>(obj: T, seen: WeakSet<object>): T | undefined
 
 /**
  * flat된 객체를 nested 객체로 변환
+ * @internal
  * @example objUnflatten({ "a.b.c": 1 }) => { a: { b: { c: 1 } } }
  */
 export function objUnflatten(flatObj: Record<string, unknown>): Record<string, unknown> {

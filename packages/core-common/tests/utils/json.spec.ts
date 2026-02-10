@@ -107,9 +107,9 @@ describe("JsonConvert", () => {
       expect(parsed.data.cause.data.message).toBe("원인 에러");
     });
 
-    it("hideBytes 옵션으로 Uint8Array를 숨긴다", () => {
+    it("redactBytes 옵션으로 Uint8Array를 숨긴다", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = stringify(obj, { hideBytes: true });
+      const json = stringify(obj, { redactBytes: true });
       const parsed = JSON.parse(json);
 
       expect(parsed.data.data).toBe("__hidden__");
@@ -431,13 +431,13 @@ describe("JsonConvert", () => {
       expect(result.bytes).toBeInstanceOf(Uint8Array);
     });
 
-    it("hideBytes로 직렬화된 데이터는 parse 시 에러가 발생한다", () => {
+    it("redactBytes로 직렬화된 데이터는 parse 시 에러가 발생한다", () => {
       const obj = { data: new TextEncoder().encode("hello") };
-      const json = stringify(obj, { hideBytes: true });
+      const json = stringify(obj, { redactBytes: true });
 
-      // "__hidden__"은 hideBytes 옵션으로 직렬화된 데이터이므로 parse 시 에러 발생
+      // "__hidden__"은 redactBytes 옵션으로 직렬화된 데이터이므로 parse 시 에러 발생
       expect(() => parse<typeof obj>(json)).toThrow(
-        "hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
+        "redactBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
       );
     });
 

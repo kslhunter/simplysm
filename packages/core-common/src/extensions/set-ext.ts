@@ -35,15 +35,20 @@ declare global {
   }
 }
 
-((prototype) => {
-  prototype.adds = function <T>(this: Set<T>, ...values: T[]): Set<T> {
+Object.defineProperty(Set.prototype, "adds", {
+  value: function <T>(this: Set<T>, ...values: T[]): Set<T> {
     for (const val of values) {
       this.add(val);
     }
     return this;
-  };
+  },
+  enumerable: false,
+  writable: true,
+  configurable: true,
+});
 
-  prototype.toggle = function <T>(this: Set<T>, value: T, addOrDel?: "add" | "del"): Set<T> {
+Object.defineProperty(Set.prototype, "toggle", {
+  value: function <T>(this: Set<T>, value: T, addOrDel?: "add" | "del"): Set<T> {
     if (addOrDel === "add") {
       this.add(value);
     } else if (addOrDel === "del") {
@@ -54,7 +59,10 @@ declare global {
       this.add(value);
     }
     return this;
-  };
-})(Set.prototype);
+  },
+  enumerable: false,
+  writable: true,
+  configurable: true,
+});
 
 export {};

@@ -1,5 +1,5 @@
 import { ArgumentError } from "../errors/argument-error";
-import { format, normalizeMonth } from "../utils/date-format";
+import { formatDate, normalizeMonth } from "../utils/date-format";
 
 /**
  * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
@@ -314,7 +314,7 @@ export class DateOnly {
    * @see dtFormat 지원 포맷 문자열 참조
    */
   toFormatString(formatStr: string): string {
-    return format(formatStr, {
+    return formatDate(formatStr, {
       year: this.year,
       month: this.month,
       day: this.day,

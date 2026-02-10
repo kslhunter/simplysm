@@ -266,19 +266,19 @@ describe("object utils", () => {
       expect(objEqual(set1, set3)).toBe(false);
     });
 
-    it("includes 옵션으로 특정 키만 비교한다", () => {
+    it("topLevelIncludes 옵션으로 특정 키만 비교한다", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
-      expect(objEqual(obj1, obj2, { includes: ["a"] })).toBe(true);
-      expect(objEqual(obj1, obj2, { includes: ["a", "b"] })).toBe(false);
+      expect(objEqual(obj1, obj2, { topLevelIncludes: ["a"] })).toBe(true);
+      expect(objEqual(obj1, obj2, { topLevelIncludes: ["a", "b"] })).toBe(false);
     });
 
-    it("excludes 옵션으로 특정 키를 제외한다", () => {
+    it("topLevelExcludes 옵션으로 특정 키를 제외한다", () => {
       const obj1 = { a: 1, b: 2, c: 3 };
       const obj2 = { a: 1, b: 99, c: 99 };
 
-      expect(objEqual(obj1, obj2, { excludes: ["b", "c"] })).toBe(true);
+      expect(objEqual(obj1, obj2, { topLevelExcludes: ["b", "c"] })).toBe(true);
     });
 
     it("ignoreArrayIndex 옵션으로 배열 순서를 무시한다", () => {
