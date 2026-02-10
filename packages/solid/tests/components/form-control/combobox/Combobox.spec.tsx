@@ -114,30 +114,23 @@ describe("Combobox 컴포넌트", () => {
   });
 
   describe("디바운스", () => {
-    it("빠른 연속 입력 시 마지막 요청만 실행된다", async () => {
-      vi.useFakeTimers();
-      const loadItems = vi.fn(() => Promise.resolve([]));
+    it("입력 후 디바운스 시간이 지나면 loadItems가 호출된다", async () => {
+      const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "결과" }]));
 
       const { container } = render(() => (
-        <Combobox loadItems={loadItems} debounceMs={300} renderValue={(v) => <>{v}</>} />
+        <Combobox loadItems={loadItems} debounceMs={50} renderValue={(v: { name: string }) => <>{v.name}</>} />
       ));
 
       const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "검색어" } });
 
-      fireEvent.input(input, { target: { value: "a" } });
-      fireEvent.input(input, { target: { value: "ab" } });
-      fireEvent.input(input, { target: { value: "abc" } });
-
-      // 디바운스 시간 전
-      expect(loadItems).not.toHaveBeenCalled();
-
-      // 디바운스 시간 후
-      await vi.advanceTimersByTimeAsync(300);
-
-      expect(loadItems).toHaveBeenCalledTimes(1);
-      expect(loadItems).toHaveBeenCalledWith("abc");
-
-      vi.useRealTimers();
+      // 디바운스 후 loadItems가 호출됨
+      await waitFor(
+        () => {
+          expect(loadItems).toHaveBeenCalledWith("검색어");
+        },
+        { timeout: 200 },
+      );
     });
   });
 

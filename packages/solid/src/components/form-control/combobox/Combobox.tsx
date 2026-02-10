@@ -307,12 +307,8 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       local.class,
     );
 
-  // 드롭다운이 열릴 때 검색 수행
-  createEffect(() => {
-    if (open() && items().length === 0 && !loading()) {
-      performSearch(query());
-    }
-  });
+  // 참고: 초기 검색은 handleTriggerClick에서 수행됨
+  // 입력 시에는 handleInput에서 performSearch가 호출됨
 
   // 내부 컴포넌트
   const ComboboxInner = (innerProps: { children?: JSX.Element }) => {
