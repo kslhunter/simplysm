@@ -27,6 +27,11 @@ export interface KanbanContextValue<L = unknown, T = unknown> {
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
   onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+
+  // Selection (Phase 4)
+  selectedValues: Accessor<T[]>;
+  setSelectedValues: (updater: T[] | ((prev: T[]) => T[])) => void;
+  toggleSelection: (value: T) => void;
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -45,6 +50,10 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   value: Accessor<L | undefined>;
   dropTarget: Accessor<KanbanDropTarget<T> | undefined>;
   setDropTarget: (target: KanbanDropTarget<T> | undefined) => void;
+
+  // Card registration (Phase 4)
+  registerCard: (id: string, info: { value: T | undefined; selectable: boolean }) => void;
+  unregisterCard: (id: string) => void;
 }
 
 export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
