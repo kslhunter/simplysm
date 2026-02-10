@@ -64,6 +64,7 @@ export const appStructure = createAppStructure({
             { code: "sheet-full", title: "Sheet (Full)", component: lazy(() => import("./pages/data/SheetFullPage")) },
             { code: "kanban", title: "Kanban", component: lazy(() => import("./pages/data/KanbanPage")) },
             { code: "calendar", title: "Calendar", component: lazy(() => import("./pages/data/CalendarPage")) },
+            { code: "permission-table", title: "PermissionTable", component: lazy(() => import("./pages/data/PermissionTablePage")) },
           ],
         },
         {
