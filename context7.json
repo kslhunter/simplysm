@@ -1,0 +1,7 @@
+{
+  "projectTitle": "simplysm",
+  "description": "TypeScript 풀스택 프레임워크 모노레포 - SolidJS UI, ORM, 서비스 통신, Excel 처리 등",
+  "folders": ["packages"],
+  "excludeFolders": ["node_modules", "solid-demo", "solid-demo-server"],
+  "excludeFiles": ["pnpm-lock.yaml"]
+}
