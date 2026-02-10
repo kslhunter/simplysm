@@ -8,21 +8,13 @@ function PrintPage(props: ParentProps) {
 
 // --- Print ---
 
-interface PrintProps extends ParentProps {
-  ready?: boolean;
-}
-
 interface PrintComponent {
-  (props: PrintProps): JSX.Element;
+  (props: ParentProps): JSX.Element;
   Page: typeof PrintPage;
 }
 
-const PrintInner = (props: PrintProps) => {
-  return (
-    <div data-print-root attr:data-print-ready={props.ready !== false ? "" : undefined}>
-      {props.children}
-    </div>
-  );
+const PrintInner = (props: ParentProps) => {
+  return <>{props.children}</>;
 };
 
 export const Print = PrintInner as unknown as PrintComponent;
