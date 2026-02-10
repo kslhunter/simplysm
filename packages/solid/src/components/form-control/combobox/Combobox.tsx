@@ -1,4 +1,4 @@
-import { children, createEffect, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
+import { children, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
@@ -9,6 +9,7 @@ import { List } from "../../data/list/List";
 import { ComboboxContext, type ComboboxContextValue } from "./ComboboxContext";
 import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
+import { createControllableSignal } from "../../../utils/createControllableSignal";
 import { splitSlots } from "../../../utils/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import {
@@ -163,23 +164,10 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   const [loading, setLoading] = createSignal(false);
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
-  const [internalValue, setInternalValueRaw] = createSignal<T | undefined>(undefined);
-
-  // props 변경 시 내부 상태 동기화
-  createEffect(() => {
-    const propValue = local.value;
-    setInternalValueRaw(() => propValue);
-  });
-
-  const isControlled = () => local.onValueChange !== undefined;
-  const getValue = () => (isControlled() ? local.value : internalValue());
-  const setInternalValue = (newValue: T) => {
-    if (isControlled()) {
-      local.onValueChange?.(newValue);
-    } else {
-      setInternalValueRaw(() => newValue);
-    }
-  };
+  const [getValue, setInternalValue] = createControllableSignal<T | undefined>({
+    value: () => local.value,
+    onChange: () => local.onValueChange,
+  } as Parameters<typeof createControllableSignal<T | undefined>>[0]);
 
   // 디바운스 큐 (마운트 시 한 번만 생성, debounceMs는 초기값만 사용)
   // eslint-disable-next-line solid/reactivity -- 디바운스 큐는 마운트 시점의 debounceMs로 한 번만 생성
