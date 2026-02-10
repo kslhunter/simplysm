@@ -20,18 +20,18 @@
 
 ## 2단계: 비-컴포넌트 기능
 
-| # | 항목 | 구현 방식 | 상태 |
-|---|------|----------|------|
-| 11 | **printElement(el)** | `window.print()` 기반 helper 함수 | [ ] |
-| 12 | **exportPdf(el, filename)** | html-to-image → jsPDF helper 함수 | [ ] |
+| # | 항목 | 구현 방식 | 상태  |
+|---|------|----------|-----|
+| 11 | **printElement(el)** | `window.print()` 기반 helper 함수 | [x] |
+| 12 | **exportPdf(el, filename)** | html-to-image → jsPDF helper 함수 | [x] |
 | 13 | **usePersisted 저장방식 확장** | ConfigProvider에 storage 전략 주입, 없으면 localStorage 폴백 | [x] |
 
 ## 3단계: Features (1~2단계 완료 후)
 
 | # | 항목 | 구현 방식 | 상태 |
 |---|------|----------|------|
-| 14 | **SharedDataProvider** | Context + createStore, 서버 데이터 캐싱/이벤트/필터링 | [ ] |
-| 15 | **AppStructureProvider** | Context + createStore + createMemo로 메뉴 트리/권한/모듈 관리 | [ ] |
+| 14 | **SharedDataProvider** | 서버 데이터 캐싱/이벤트/필터링 | [ ] |
+| 15 | **AppStructureProvider** | 메뉴 트리/권한/모듈 관리 | [ ] |
 | 16 | **PermissionTable** | SharedDataProvider 기반 | [ ] |
 | 17 | **SharedData 관련 컨트롤** | SharedDataProvider 기반 (SelectButton, SelectList 등) | [ ] |
 

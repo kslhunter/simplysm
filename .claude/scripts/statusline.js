@@ -55,7 +55,8 @@ function readStdin() {
 /** @returns {string | undefined} */
 function getOAuthToken() {
   try {
-    const credentialsPath = path.join(os.homedir(), ".claude", ".credentials.json");
+    const configDir = process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude");
+    const credentialsPath = path.join(configDir, ".credentials.json");
     if (!fs.existsSync(credentialsPath)) {
       return undefined;
     }
