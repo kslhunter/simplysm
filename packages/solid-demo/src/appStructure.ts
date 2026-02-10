@@ -34,11 +34,6 @@ export const appStructure = createAppStructure({
             { code: "combobox", title: "Combobox", component: lazy(() => import("./pages/form-control/ComboboxPage")) },
             { code: "field", title: "Field", component: lazy(() => import("./pages/form-control/FieldPage")) },
             {
-              code: "theme-toggle",
-              title: "ThemeToggle",
-              component: lazy(() => import("./pages/form-control/ThemeTogglePage")),
-            },
-            {
               code: "checkbox-radio",
               title: "Checkbox & Radio",
               component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")),
@@ -63,6 +58,11 @@ export const appStructure = createAppStructure({
               code: "state-preset",
               title: "StatePreset",
               component: lazy(() => import("./pages/form-control/StatePresetPage")),
+            },
+            {
+              code: "theme-toggle",
+              title: "ThemeToggle",
+              component: lazy(() => import("./pages/form-control/ThemeTogglePage")),
             },
           ],
         },
@@ -107,14 +107,9 @@ export const appStructure = createAppStructure({
           children: [
             { code: "collapse", title: "Collapse", component: lazy(() => import("./pages/disclosure/CollapsePage")) },
             { code: "dropdown", title: "Dropdown", component: lazy(() => import("./pages/disclosure/DropdownPage")) },
-            { code: "modal", title: "Dialog", component: lazy(() => import("./pages/disclosure/ModalPage")) },
+            { code: "modal", title: "Dialog", component: lazy(() => import("./pages/disclosure/DialogPage")) },
+            { code: "tab", title: "Tabs", component: lazy(() => import("./pages/disclosure/TabPage")) },
           ],
-        },
-        {
-          code: "navigation",
-          title: "Navigation",
-          icon: IconLayoutSidebar,
-          children: [{ code: "tab", title: "Tabs", component: lazy(() => import("./pages/navigation/TabPage")) }],
         },
         {
           code: "display",
@@ -123,11 +118,10 @@ export const appStructure = createAppStructure({
           children: [
             { code: "card", title: "Card", component: lazy(() => import("./pages/display/CardPage")) },
             { code: "icon", title: "Icon", component: lazy(() => import("./pages/display/IconPage")) },
-            { code: "label", title: "Tag", component: lazy(() => import("./pages/display/LabelPage")) },
-            { code: "note", title: "Alert", component: lazy(() => import("./pages/display/NotePage")) },
+            { code: "label", title: "Tag", component: lazy(() => import("./pages/display/TagPage")) },
+            { code: "note", title: "Alert", component: lazy(() => import("./pages/display/AlertPage")) },
             { code: "barcode", title: "Barcode", component: lazy(() => import("./pages/display/BarcodePage")) },
             { code: "echarts", title: "Echarts", component: lazy(() => import("./pages/display/EchartsPage")) },
-            { code: "progress", title: "Progress", component: lazy(() => import("./pages/display/ProgressPage")) },
           ],
         },
         {
@@ -140,7 +134,8 @@ export const appStructure = createAppStructure({
               title: "Notification",
               component: lazy(() => import("./pages/feedback/NotificationPage")),
             },
-            { code: "busy", title: "Loading", component: lazy(() => import("./pages/feedback/BusyPage")) },
+            { code: "busy", title: "Loading", component: lazy(() => import("./pages/feedback/LoadingPage")) },
+            { code: "progress", title: "Progress", component: lazy(() => import("./pages/feedback/ProgressPage")) },
             { code: "print", title: "Print", component: lazy(() => import("./pages/feedback/PrintPage")) },
           ],
         },

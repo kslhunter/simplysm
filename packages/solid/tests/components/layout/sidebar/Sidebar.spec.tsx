@@ -17,7 +17,7 @@ vi.mock("@solidjs/router", () => ({
 
 // usePersisted mock - 테스트에서 상태를 제어할 수 있도록
 let mockToggle: ReturnType<typeof createSignal<boolean>>;
-vi.mock("../../../../src/contexts/usePersisted", () => ({
+vi.mock("../../../../src/hooks/usePersisted", () => ({
   usePersisted: () => {
     return mockToggle;
   },
