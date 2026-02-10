@@ -95,7 +95,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
       return "NULL";
     }
     if (typeof value === "string") {
-      return `'${value.replace(/'/g, "''")}'`;
+      return `'${this.escapeString(value)}'`;
     }
     if (typeof value === "number") {
       return String(value);
