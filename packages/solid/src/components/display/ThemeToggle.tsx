@@ -2,8 +2,8 @@ import { type Component, type JSX, splitProps, Switch, Match } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconSun, IconMoon, IconDeviceDesktop } from "@tabler/icons-solidjs";
-import { useTheme, type ThemeMode } from "../../contexts/ThemeContext";
-import { Icon } from "../display/Icon";
+import { useTheme, type ThemeMode } from "../../providers/ThemeContext";
+import { Icon } from "./Icon";
 import { ripple } from "../../directives/ripple";
 
 void ripple;

@@ -1,6 +1,5 @@
 // form-control
 export * from "./components/form-control/Button";
-export * from "./components/form-control/ThemeToggle";
 export * from "./components/form-control/select/Select";
 export * from "./components/form-control/select/SelectContext";
 export * from "./components/form-control/combobox/Combobox";
@@ -55,6 +54,7 @@ export * from "./components/display/Icon";
 export * from "./components/display/Tag";
 export * from "./components/display/Alert";
 export * from "./components/display/Progress";
+export * from "./components/display/ThemeToggle";
 
 // disclosure
 export * from "./components/disclosure/Collapse";
@@ -75,16 +75,18 @@ export * from "./components/feedback/loading/LoadingContext";
 export * from "./components/feedback/loading/LoadingProvider";
 export * from "./components/feedback/loading/LoadingContainer";
 
-// contexts
-export * from "./contexts/ConfigContext";
-export * from "./contexts/InitializeProvider";
-export * from "./contexts/ThemeContext";
-export * from "./contexts/usePersisted";
-export * from "./contexts/ServiceClientContext";
-export * from "./contexts/ServiceClientProvider";
-export * from "./contexts/shared-data/SharedDataContext";
-export * from "./contexts/shared-data/SharedDataProvider";
-export * from "./contexts/shared-data/SharedDataChangeEvent";
+// providers
+export * from "./providers/ConfigContext";
+export * from "./providers/InitializeProvider";
+export * from "./providers/ThemeContext";
+export * from "./providers/ServiceClientContext";
+export * from "./providers/ServiceClientProvider";
+export * from "./providers/shared-data/SharedDataContext";
+export * from "./providers/shared-data/SharedDataProvider";
+export * from "./providers/shared-data/SharedDataChangeEvent";
+
+// hooks
+export * from "./hooks/usePersisted";
 
 // styles
 export * from "./styles/tokens.styles";
@@ -96,18 +98,18 @@ export { ripple } from "./directives/ripple";
 // print
 export * from "./components/print/Print";
 export * from "./components/print/PrintInstanceContext";
-export * from "./contexts/usePrint";
+export * from "./components/print/usePrint";
 
-// utils
-export { createControllableSignal } from "./utils/createControllableSignal";
-export { createIMEHandler } from "./utils/createIMEHandler";
-export { createMountTransition } from "./utils/createMountTransition";
-export { useRouterLink } from "./utils/useRouterLink";
-export { mergeStyles } from "./utils/mergeStyles";
-export { splitSlots } from "./utils/splitSlots";
+// hooks (continued)
+export { createControllableSignal } from "./hooks/createControllableSignal";
+export { createIMEHandler } from "./hooks/createIMEHandler";
+export { createMountTransition } from "./hooks/createMountTransition";
+export { useRouterLink } from "./hooks/useRouterLink";
 
-// app-structure
-export { createAppStructure } from "./utils/createAppStructure";
+// helpers
+export { mergeStyles } from "./helpers/mergeStyles";
+export { splitSlots } from "./helpers/splitSlots";
+export { createAppStructure } from "./helpers/createAppStructure";
 export type {
   AppStructureItem,
   AppStructureGroupItem,
@@ -116,4 +118,4 @@ export type {
   AppRoute,
   AppFlatMenu,
   AppStructure,
-} from "./utils/createAppStructure";
+} from "./helpers/createAppStructure";

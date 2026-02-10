@@ -2,7 +2,7 @@ import { type Component, type JSX, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type FieldSize } from "../field/Field.styles";
 import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";

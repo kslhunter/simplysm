@@ -1,7 +1,7 @@
 import { createSignal, type Accessor, type Setter } from "solid-js";
 import { makePersisted, type AsyncStorage, type SyncStorage } from "@solid-primitives/storage";
 import { jsonStringify, jsonParse } from "@simplysm/core-common";
-import { useConfig } from "./ConfigContext";
+import { useConfig } from "../providers/ConfigContext";
 
 /**
  * clientName prefix가 적용된 영속 저장소 훅

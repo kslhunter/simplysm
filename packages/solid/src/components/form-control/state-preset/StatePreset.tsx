@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 import clsx from "clsx";
 import { IconDeviceFloppy, IconStar, IconX } from "@tabler/icons-solidjs";
 import { objClone, objEqual } from "@simplysm/core-common";
-import { usePersisted } from "../../../contexts/usePersisted";
+import { usePersisted } from "../../../hooks/usePersisted";
 import { useNotification } from "../../feedback/notification/NotificationContext";
 import { Icon } from "../../display/Icon";
 import { textPlaceholder } from "../../../styles/tokens.styles";

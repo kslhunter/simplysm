@@ -3,7 +3,7 @@ import { createMediaQuery } from "@solid-primitives/media";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
-import { mergeStyles } from "../../../utils/mergeStyles";
+import { mergeStyles } from "../../../helpers/mergeStyles";
 import { SidebarContainer } from "./SidebarContainer";
 import { SidebarMenu } from "./SidebarMenu";
 import { SidebarUser } from "./SidebarUser";

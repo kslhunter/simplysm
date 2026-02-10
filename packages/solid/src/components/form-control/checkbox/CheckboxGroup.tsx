@@ -1,6 +1,6 @@
 import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Checkbox } from "./Checkbox";
 import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
 

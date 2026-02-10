@@ -1,6 +1,6 @@
 import type { ParentComponent } from "solid-js";
 import { type AppConfig, ConfigContext } from "./ConfigContext";
-import { useClipboardValueCopy } from "./useClipboardValueCopy";
+import { useClipboardValueCopy } from "../hooks/useClipboardValueCopy";
 
 /**
  * @simplysm/solid 초기화 Provider

@@ -8,7 +8,7 @@ import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
-import { splitSlots } from "../../../utils/splitSlots";
+import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import {
   triggerBaseClass,

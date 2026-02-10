@@ -1,10 +1,10 @@
 import { type JSX, type ParentComponent, createSignal, createEffect, onCleanup, Show, splitProps } from "solid-js";
-import { createMountTransition } from "../../utils/createMountTransition";
+import { createMountTransition } from "../../hooks/createMountTransition";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../utils/createControllableSignal";
-import { mergeStyles } from "../../utils/mergeStyles";
+import { createControllableSignal } from "../../hooks/createControllableSignal";
+import { mergeStyles } from "../../helpers/mergeStyles";
 import { borderSubtle } from "../../styles/tokens.styles";
 
 export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {

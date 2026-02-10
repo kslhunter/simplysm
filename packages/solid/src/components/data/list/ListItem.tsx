@@ -5,10 +5,10 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
-import { splitSlots } from "../../../utils/splitSlots";
+import { splitSlots } from "../../../helpers/splitSlots";
 import {
   listItemBaseClass,
   listItemSelectedClass,

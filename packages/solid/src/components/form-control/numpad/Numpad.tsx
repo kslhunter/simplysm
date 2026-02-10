@@ -1,7 +1,7 @@
 import { type Component, type JSX, createSignal, createEffect, Show } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Button } from "../Button";
 import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";

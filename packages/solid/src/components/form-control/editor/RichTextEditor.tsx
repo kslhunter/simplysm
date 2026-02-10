@@ -13,7 +13,7 @@ import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
 import Image from "@tiptap/extension-image";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import type { FieldSize } from "../field/Field.styles";
 import { EditorToolbar } from "./EditorToolbar";
 

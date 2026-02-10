@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
-import { createIMEHandler } from "../../../utils/createIMEHandler";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
   type FieldSize,
   fieldBaseClass,

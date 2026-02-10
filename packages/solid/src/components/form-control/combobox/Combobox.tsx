@@ -9,8 +9,8 @@ import { List } from "../../data/list/List";
 import { ComboboxContext, type ComboboxContextValue } from "./ComboboxContext";
 import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
-import { splitSlots } from "../../../utils/splitSlots";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { splitSlots } from "../../../helpers/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import {
   triggerBaseClass,

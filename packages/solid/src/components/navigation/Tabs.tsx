@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../utils/createControllableSignal";
+import { createControllableSignal } from "../../hooks/createControllableSignal";
 
 // --- Context ---
 

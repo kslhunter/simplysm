@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import {
   type FieldSize,
   fieldBaseClass,

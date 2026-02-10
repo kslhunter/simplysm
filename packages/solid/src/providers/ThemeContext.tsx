@@ -1,6 +1,6 @@
 import { createContext, useContext, type ParentComponent, createMemo, createEffect, onCleanup } from "solid-js";
 import { createMediaQuery } from "@solid-primitives/media";
-import { usePersisted } from "./usePersisted";
+import { usePersisted } from "../hooks/usePersisted";
 
 /**
  * 테마 모드

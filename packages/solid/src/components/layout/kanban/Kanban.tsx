@@ -17,8 +17,8 @@ import { Card } from "../../display/Card";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { LoadingContainer } from "../../feedback/loading/LoadingContainer";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
-import { splitSlots } from "../../../utils/splitSlots";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { splitSlots } from "../../../helpers/splitSlots";
 import "./Kanban.css";
 import {
   KanbanContext,

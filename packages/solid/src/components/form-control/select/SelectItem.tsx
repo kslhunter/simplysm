@@ -6,7 +6,7 @@ import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
-import { splitSlots } from "../../../utils/splitSlots";
+import { splitSlots } from "../../../helpers/splitSlots";
 import {
   listItemBaseClass,
   listItemSelectedClass,

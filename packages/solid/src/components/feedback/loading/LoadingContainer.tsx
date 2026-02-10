@@ -2,7 +2,7 @@ import { type ParentComponent, type JSX, splitProps, createEffect, onCleanup, Sh
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LoadingContext, type LoadingVariant } from "./LoadingContext";
-import { createMountTransition } from "../../../utils/createMountTransition";
+import { createMountTransition } from "../../../hooks/createMountTransition";
 import "./LoadingContainer.css";
 
 export interface LoadingContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {

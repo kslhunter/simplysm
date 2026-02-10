@@ -4,8 +4,8 @@ import { createMediaQuery } from "@solid-primitives/media";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { SidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
-import { usePersisted } from "../../../contexts/usePersisted";
-import { mergeStyles } from "../../../utils/mergeStyles";
+import { usePersisted } from "../../../hooks/usePersisted";
+import { mergeStyles } from "../../../helpers/mergeStyles";
 
 const backdropClass = clsx(
   "absolute",

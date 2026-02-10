@@ -2,7 +2,7 @@ import { createMemo, For, type JSX, splitProps } from "solid-js";
 import { DateOnly } from "@simplysm/core-common";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 
 export interface CalendarProps<T> extends Omit<JSX.HTMLAttributes<HTMLTableElement>, "children"> {
   items: T[];

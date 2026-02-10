@@ -2,7 +2,7 @@ import { type JSX, type ParentComponent, splitProps, createSignal, onMount, onCl
 import { createElementSize } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { mergeStyles } from "../../utils/mergeStyles";
+import { mergeStyles } from "../../helpers/mergeStyles";
 
 export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /**
