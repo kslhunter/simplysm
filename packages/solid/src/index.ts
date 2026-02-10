@@ -80,6 +80,10 @@ export * from "./contexts/ServiceClientProvider";
 // directives
 export { ripple } from "./directives/ripple";
 
+// print
+export * from "./components/print/Print";
+export * from "./contexts/usePrint";
+
 // utils
 export { createPropSignal } from "./utils/createPropSignal";
 export { useRouterLink } from "./utils/useRouterLink";

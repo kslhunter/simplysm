@@ -90,6 +90,7 @@ const menuItems: SidebarMenuItem[] = [
     children: [
       { title: "Notification", href: "/home/feedback/notification" },
       { title: "Busy", href: "/home/feedback/busy" },
+      { title: "Print", href: "/home/feedback/print" },
     ],
   },
   {
