@@ -85,4 +85,59 @@ describe("Combobox 컴포넌트", () => {
       });
     });
   });
+
+  describe("값 선택", () => {
+    it("아이템 선택 시 onValueChange가 호출된다", async () => {
+      const handleChange = vi.fn();
+      const loadItems = vi.fn(() => Promise.resolve([{ id: 1, name: "사과" }]));
+
+      const { container } = render(() => (
+        <Combobox
+          loadItems={loadItems}
+          onValueChange={handleChange}
+          renderValue={(v: { name: string }) => <>{v.name}</>}
+        />
+      ));
+
+      const input = container.querySelector("input")!;
+      fireEvent.input(input, { target: { value: "사" } });
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-combobox-item]")).not.toBeNull();
+      });
+
+      const item = document.querySelector("[data-combobox-item]") as HTMLElement;
+      fireEvent.click(item);
+
+      expect(handleChange).toHaveBeenCalledWith({ id: 1, name: "사과" });
+    });
+  });
+
+  describe("디바운스", () => {
+    it("빠른 연속 입력 시 마지막 요청만 실행된다", async () => {
+      vi.useFakeTimers();
+      const loadItems = vi.fn(() => Promise.resolve([]));
+
+      const { container } = render(() => (
+        <Combobox loadItems={loadItems} debounceMs={300} renderValue={(v) => <>{v}</>} />
+      ));
+
+      const input = container.querySelector("input")!;
+
+      fireEvent.input(input, { target: { value: "a" } });
+      fireEvent.input(input, { target: { value: "ab" } });
+      fireEvent.input(input, { target: { value: "abc" } });
+
+      // 디바운스 시간 전
+      expect(loadItems).not.toHaveBeenCalled();
+
+      // 디바운스 시간 후
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(loadItems).toHaveBeenCalledTimes(1);
+      expect(loadItems).toHaveBeenCalledWith("abc");
+
+      vi.useRealTimers();
+    });
+  });
 });
