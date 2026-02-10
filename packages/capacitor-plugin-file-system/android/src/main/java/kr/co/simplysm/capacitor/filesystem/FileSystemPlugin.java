@@ -11,6 +11,7 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
@@ -28,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 public class FileSystemPlugin extends Plugin {
 
     private static final String TAG = "FileSystemPlugin";
+    private static final int PERMISSION_REQUEST_CODE = 1001;
 
     @PluginMethod
     public void checkPermission(PluginCall call) {
@@ -51,6 +53,20 @@ public class FileSystemPlugin extends Plugin {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.setData(Uri.parse("package:" + getContext().getPackageName()));
                 getActivity().startActivity(intent);
+            }
+        } else {
+            boolean readGranted = ContextCompat.checkSelfPermission(getContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            boolean writeGranted = ContextCompat.checkSelfPermission(getContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+            if (!readGranted || !writeGranted) {
+                ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    },
+                    PERMISSION_REQUEST_CODE);
             }
         }
         call.resolve();
