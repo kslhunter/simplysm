@@ -11,7 +11,10 @@ import {
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import { IconEye, IconEyeOff } from "@tabler/icons-solidjs";
 import { Card } from "../../display/Card";
+import { Icon } from "../../display/Icon";
+import { createPropSignal } from "../../../utils/createPropSignal";
 import { splitSlots } from "../../../utils/splitSlots";
 import "./Kanban.css";
 import {
@@ -171,6 +174,16 @@ const laneHeaderBaseClass = clsx(
   "select-none",
 );
 
+const collapseButtonClass = clsx(
+  "flex items-center justify-center",
+  "size-6 rounded",
+  "text-base-500",
+  "hover:text-primary-500 hover:bg-base-200",
+  "dark:hover:bg-base-800",
+  "transition-colors duration-150",
+  "cursor-pointer",
+);
+
 const laneBodyBaseClass = clsx(
   "flex-1",
   "flex flex-col gap-2",
@@ -195,6 +208,11 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     "collapsed",
     "onCollapsedChange",
   ]);
+
+  const [collapsed, setCollapsed] = createPropSignal({
+    value: () => local.collapsed ?? false,
+    onChange: () => local.onCollapsedChange,
+  });
 
   const boardCtx = useKanbanContext();
   const [dropTarget, setDropTarget] = createSignal<KanbanDropTarget>();
@@ -249,10 +267,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     const [slots, content] = splitSlots(resolved, ["kanbanLaneTitle", "kanbanLaneTools"] as const);
 
     const hasHeader = () =>
-      slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
+      local.collapsible || slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
 
     // placeholder div (Lane이 소유, DOM 직접 제어)
-    let bodyRef!: HTMLDivElement;
+    let bodyRef: HTMLDivElement | undefined;
     const placeholderEl = document.createElement("div");
     placeholderEl.className = placeholderBaseClass;
 
@@ -260,7 +278,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       const target = dropTarget();
       const dc = boardCtx.dragCard();
 
-      if (!target || !dc) {
+      if (!target || !dc || !bodyRef) {
         if (placeholderEl.parentNode) {
           placeholderEl.remove();
         }
@@ -303,15 +321,26 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       >
         <Show when={hasHeader()}>
           <div class={laneHeaderBaseClass}>
+            <Show when={local.collapsible}>
+              <button
+                type="button"
+                class={collapseButtonClass}
+                onClick={() => setCollapsed((prev) => !prev)}
+              >
+                <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
+              </button>
+            </Show>
             <div class="flex-1">{slots().kanbanLaneTitle}</div>
             <Show when={slots().kanbanLaneTools.length > 0}>
               <div class="flex items-center gap-1">{slots().kanbanLaneTools}</div>
             </Show>
           </div>
         </Show>
-        <div ref={bodyRef} class={laneBodyBaseClass}>
-          {content()}
-        </div>
+        <Show when={!collapsed()}>
+          <div ref={bodyRef} class={laneBodyBaseClass}>
+            {content()}
+          </div>
+        </Show>
       </div>
     );
   };
