@@ -96,7 +96,7 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
             <Dialog
               open={entry.open()}
               onOpenChange={(open) => {
-                if (!open) {
+                if (!open && entry.pendingResult === undefined) {
                   requestClose(entry.id);
                 }
               }}
