@@ -1,94 +1,93 @@
 ---
 name: sd-review
-description: Use when performing a comprehensive code review of a package or path - uses a team of specialized agents with a code explorer as the single source of truth for fact-checking all findings
+description: Use when performing a comprehensive code review of a package or path - leader analyzes code directly and dispatches to specialized reviewer agents
 ---
 
 # sd-review
 
 ## Overview
 
-패키지 또는 지정 경로의 코드를 다각도로 리뷰하여 종합 보고서를 생성한다. **코드 수정 없이 분석만 수행한다.**
+Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Team 기반으로 동작한다. Explorer가 코드를 읽고 분석 결과를 공유하면, Reviewer들이 그 분석을 기반으로 이슈를 발견하고, Explorer에게 검증을 요청한다. Reviewer들은 코드를 직접 읽지 않는다.
+Team-based workflow: the leader reads and analyzes the code directly, then sends the analysis to reviewer agents. Reviewers identify issues from their specialized perspectives and report back. The leader verifies reported issues against the actual code and writes the final report.
 
-## 사용법
+## Usage
 
-- `/sd-review packages/solid` — 특정 경로의 소스코드 리뷰
-- `/sd-review` — 인자 없으면 사용자에게 대상 경로를 질문
+- `/sd-review packages/solid` — review source code at the given path
+- `/sd-review` — if no argument, ask the user for the target path
 
-## 대상 결정
+## Target Selection
 
-1. `$ARGUMENTS`에 경로가 있으면 해당 경로
-2. 없으면 사용자에게 대상 경로를 질문
+1. If `$ARGUMENTS` contains a path, use that path
+2. Otherwise, ask the user for the target path
 
-**중요: 리뷰 범위는 대상 경로의 전체 소스코드다.** git status나 git diff로 변경된 파일만 골라서 리뷰하지 않는다. 대상 경로 내 모든 소스 파일을 분석한다.
+**Important: the review scope is ALL source files under the target path.** Do not use git status or git diff to limit to changed files. Analyze every source file in the target path.
 
-## 팀 구성
+## Team Composition
 
-TeamCreate로 팀을 생성하고, 다음 4명의 teammate를 Task tool로 spawn한다:
+Create a team with TeamCreate, then spawn the following 3 teammates via the Task tool:
 
-| 이름 | Agent 타입 | 역할 |
+| Name | Agent Type | Role |
 |------|-----------|------|
-| **explorer** | `feature-dev:code-explorer` | 코드 분석, 질문 응답, 팩트체크 (코드를 읽는 유일한 agent) |
-| **code-reviewer** | `feature-dev:code-reviewer` | 버그, 보안, 로직 오류, 컨벤션 리뷰 |
-| **simplifier** | `code-simplifier:code-simplifier` | 복잡성, 중복, 가독성 리뷰 |
-| **dx-reviewer** | `sd-api-reviewer` | DX/사용성, 네이밍, 타입 힌트 리뷰 |
+| **code-reviewer** | `feature-dev:code-reviewer` | Bugs, security, logic errors, convention issues |
+| **simplifier** | `code-simplifier:code-simplifier` | Complexity, duplication, readability issues |
+| **dx-reviewer** | `sd-api-reviewer` | DX/usability, naming, type hints |
 
-## 워크플로우
+The leader performs code analysis directly (replaces the former explorer role).
 
-### Step 1: Explorer가 코드 분석
+## Workflow
 
-리더가 explorer에게 대상 경로의 코드 분석을 요청한다:
-- 모듈 구조, 의존성 관계, 아키텍처 레이어
-- 주요 실행 흐름, 데이터 변환 경로
-- 에러 처리 패턴, public API surface
-- **코드 수정 금지, 분석 결과만 반환**
+### Step 1: Leader Analyzes Code
 
-Explorer의 분석이 완료되면 리더가 결과를 수신한다.
+The leader uses Glob, Grep, Read, etc. to directly analyze the target path:
 
-### Step 2: Reviewer들에게 분석 결과 전달
+- **Feature Discovery**: entry points (APIs, UI components, CLI commands), core files, module boundaries
+- **Code Flow Tracing**: call chains, data transformation paths, state changes and side effects
+- **Architecture Analysis**: abstraction layers, design patterns, interfaces between components, dependency graph
+- **Implementation Details**: error handling patterns, public API surface, performance considerations
 
-리더가 Explorer의 분석 결과를 3명의 reviewer에게 각각 SendMessage로 전달한다. 각 reviewer에게 다음을 지시한다:
+**No code modifications — analysis only.**
 
-- **code-reviewer**: 분석 결과를 기반으로 버그, 보안 취약점, 로직 오류, 컨벤션 이슈를 찾아라. 코드를 직접 읽지 말고, 확인이 필요하면 explorer에게 질문하라.
-- **simplifier**: 분석 결과를 기반으로 불필요한 복잡성, 코드 중복, 가독성 이슈를 찾아라. 코드를 직접 읽지 말고, 확인이 필요하면 explorer에게 질문하라. **코드 수정 금지.**
-- **dx-reviewer**: 분석 결과를 기반으로 API 직관성, 네이밍 일관성, 타입 힌트, 에러 메시지, 설정 복잡도를 리뷰하라. 코드를 직접 읽지 말고, 확인이 필요하면 explorer에게 질문하라.
+### Step 2: Dispatch Analysis to Reviewers
 
-### Step 3: Reviewer ↔ Explorer 대화
+The leader sends the analysis results to each of the 3 reviewers via SendMessage, with the following instructions:
 
-각 reviewer가 이슈를 발견하면 explorer에게 SendMessage로 검증을 요청한다:
-- Reviewer: "X 파일에서 Y 이슈가 있는 것 같다"
-- Explorer: 해당 코드를 직접 Read/Grep하여 확인 후 판정
-  - **유효**: 실제로 문제 있음
-  - **무효 — 이미 구현됨**: 다른 위치에서 이미 처리됨 (근거 제시)
-  - **무효 — 의도된 패턴**: 설계상 의도된 구조
-  - **무효 — 오인**: 코드를 잘못 해석한 지적
+- **code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. For each finding, include **file:line** and **evidence**.
+- **simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. For each finding, include **file:line** and **evidence**. **No code modifications.**
+- **dx-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. For each finding, include **file:line** and **evidence**.
 
-Reviewer는 검증된 findings만 최종 보고로 리더에게 전달한다.
+### Step 3: Leader Verifies Issues
 
-### Step 4: 종합 보고서
+After collecting findings from all 3 reviewers, the leader verifies each issue by checking the actual code:
 
-리더가 3명의 reviewer로부터 **검증 완료된 findings**를 수집하여 종합 보고서를 작성한다.
+- **Valid**: the issue is real → include in the report
+- **Invalid — already handled**: handled elsewhere in the codebase (provide evidence)
+- **Invalid — intentional pattern**: by-design architectural decision
+- **Invalid — misread**: the reviewer misinterpreted the code
 
-### 보고서 구조
+### Step 4: Final Report
 
-| 섹션 | 우선순위 | 출처 |
-|------|---------|------|
-| **아키텍처 요약** | — | Explorer 분석 결과 |
-| **심각도 높은 이슈** | P0 | 버그, 보안 취약점 |
-| **품질 이슈** | P1 | 로직 오류, 에러 처리 누락, 성능 |
-| **DX/사용성 이슈** | P2 | API 직관성, 네이밍, 타입 힌트 |
-| **단순화 기회** | P3 | 복잡성 제거, 중복 코드, 추상화 |
-| **컨벤션 이슈** | P4 | 프로젝트 컨벤션 불일치 |
+The leader compiles **verified findings** into a comprehensive report.
 
-각 이슈에는 **파일:라인**, **설명**, **제안**을 포함한다.
+### Report Structure
 
-선택적으로 **무효 판정 요약**도 부록으로 포함하여 어떤 지적이 걸러졌는지 투명하게 보여준다.
+| Section | Priority | Source |
+|---------|----------|--------|
+| **Architecture Summary** | — | Leader's analysis |
+| **Critical Issues** | P0 | Bugs, security vulnerabilities |
+| **Quality Issues** | P1 | Logic errors, missing error handling, performance |
+| **DX/Usability Issues** | P2 | API intuitiveness, naming, type hints |
+| **Simplification Opportunities** | P3 | Complexity removal, duplicate code, abstractions |
+| **Convention Issues** | P4 | Project convention mismatches |
 
-### Step 5: 팀 종료
+Each issue includes **file:line**, **description**, and **suggestion**.
 
-보고서 작성 후 모든 teammate에게 shutdown_request를 보내고 TeamDelete로 정리한다.
+Optionally include an **Invalid Findings Summary** appendix showing which findings were filtered out and why.
 
-## 완료 조건
+### Step 5: Team Shutdown
 
-종합 보고서를 사용자에게 제시하면 완료. 코드 수정은 하지 않는다.
+After the report is written, send shutdown_request to all teammates and clean up with TeamDelete.
+
+## Completion Criteria
+
+Present the comprehensive report to the user. No code modifications.

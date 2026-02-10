@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 const ApkInstallerPlugin = registerPlugin("ApkInstaller", {
   web: async () => {
-    const { ApkInstallerWeb } = await import("./web/ApkInstallerWeb");
+    const { ApkInstallerWeb } = await import("./web/ApkInstallerWeb.d.ts");
     return new ApkInstallerWeb();
   },
 });

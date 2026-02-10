@@ -1,7 +1,7 @@
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 import { html, NetUtils, Wait } from "@simplysm/sd-core-common";
 import semver from "semver";
-import { ApkInstaller } from "./ApkInstaller";
+import { ApkInstaller } from "./ApkInstaller.d.ts";
 import path from "path";
 export class AutoUpdate {
   static _throwAboutReinstall(code, targetHref) {

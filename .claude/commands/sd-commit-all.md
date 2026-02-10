@@ -1,5 +1,5 @@
 ---
-description: git add . 후 커밋 생성
+description: Stage all changes with git add . then create a commit
 ---
 
 ## Step 1: Stage all changes

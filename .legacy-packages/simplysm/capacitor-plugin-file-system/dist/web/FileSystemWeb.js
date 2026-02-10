@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import { VirtualFileSystem } from "./VirtualFileSystem";
+import { VirtualFileSystem } from "./VirtualFileSystem.d.ts";
 import path from "path";
 export class FileSystemWeb extends WebPlugin {
   _fs = new VirtualFileSystem("capacitor_web_virtual_fs");

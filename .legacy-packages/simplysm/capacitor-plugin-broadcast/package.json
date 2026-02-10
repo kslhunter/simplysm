@@ -1,16 +1,16 @@
 {
-  "name": "@simplysm/capacitor-plugin-file-system",
+  "name": "@simplysm/capacitor-plugin-broadcast",
   "version": "12.16.18",
-  "description": "심플리즘 패키지 - Capacitor File System Plugin",
+  "description": "심플리즘 패키지 - Capacitor Broadcast Plugin",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/capacitor-plugin-file-system"
+    "directory": "packages/capacitor-plugin-broadcast"
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "capacitor": {
     "android": {

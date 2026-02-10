@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 const UsbStoragePlugin = registerPlugin("UsbStorage", {
   web: async () => {
-    const { UsbStorageWeb } = await import("./web/UsbStorageWeb");
+    const { UsbStorageWeb } = await import("./web/UsbStorageWeb.d.ts");
     return new UsbStorageWeb();
   },
 });

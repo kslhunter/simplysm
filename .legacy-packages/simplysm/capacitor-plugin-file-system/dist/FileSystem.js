@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 const FileSystemPlugin = registerPlugin("FileSystem", {
   web: async () => {
-    const { FileSystemWeb } = await import("./web/FileSystemWeb");
+    const { FileSystemWeb } = await import("./web/FileSystemWeb.d.ts");
     return new FileSystemWeb();
   },
 });

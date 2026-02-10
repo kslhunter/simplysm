@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 const BroadcastPlugin = registerPlugin("Broadcast", {
   web: async () => {
-    const { BroadcastWeb } = await import("./web/BroadcastWeb");
+    const { BroadcastWeb } = await import("./web/BroadcastWeb.d.ts");
     return new BroadcastWeb();
   },
 });
