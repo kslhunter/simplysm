@@ -43,6 +43,7 @@ const initialLanes: LaneData[] = [
 
 export default function KanbanPage() {
   const [lanes, setLanes] = createSignal<LaneData[]>(initialLanes);
+  const [selected, setSelected] = createSignal<number[]>([]);
 
   const handleDrop = (info: KanbanDropInfo) => {
     const sourceValue = info.sourceValue as number;
@@ -178,6 +179,45 @@ export default function KanbanPage() {
                     접어도 로딩 바가 보임
                   </Kanban.Card>
                 </Kanban.Lane>
+              </Kanban>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">선택</h2>
+            <p class="mb-2 text-sm text-base-500">
+              Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
+            </p>
+            <div class="mb-2 text-sm">
+              선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}
+            </div>
+            <div class="h-[500px]">
+              <Kanban
+                selectedValues={selected()}
+                onSelectedValuesChange={setSelected}
+                onDrop={handleDrop}
+              >
+                <For each={lanes()}>
+                  {(lane) => (
+                    <Kanban.Lane value={lane.id}>
+                      <Kanban.LaneTitle>
+                        {lane.title} ({lane.cards.length})
+                      </Kanban.LaneTitle>
+                      <Kanban.LaneTools>
+                        <Button size="sm" theme="primary" variant="ghost" class="size-8">
+                          <Icon icon={IconPlus} />
+                        </Button>
+                      </Kanban.LaneTools>
+                      <For each={lane.cards}>
+                        {(card) => (
+                          <Kanban.Card value={card.id} selectable draggable contentClass="p-2">
+                            {card.title}
+                          </Kanban.Card>
+                        )}
+                      </For>
+                    </Kanban.Lane>
+                  )}
+                </For>
               </Kanban>
             </div>
           </section>
