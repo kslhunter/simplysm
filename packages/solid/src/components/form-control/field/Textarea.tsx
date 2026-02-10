@@ -1,7 +1,8 @@
 import clsx from "clsx";
-import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
+import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createIMEHandler } from "../../../utils/createIMEHandler";
 import {
   type FieldSize,
   textAreaBaseClass as fieldTextAreaBaseClass,
@@ -93,52 +94,20 @@ export const Textarea: Component<TextareaProps> = (props) => {
   });
 
   // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
-  const [composingValue, setComposingValue] = createSignal<string | null>(null);
-  let compositionFlushTimer: ReturnType<typeof setTimeout> | undefined;
-
-  function flushComposition(): void {
-    if (compositionFlushTimer != null) {
-      clearTimeout(compositionFlushTimer);
-      compositionFlushTimer = undefined;
-    }
-    const pending = composingValue();
-    if (pending != null) {
-      setComposingValue(null);
-      setValue(pending);
-    }
-  }
+  const ime = createIMEHandler((v) => setValue(v));
 
   // content div용 표시 값 (composingValue 포함 — 셀 너비/높이 결정)
-  const displayValue = () => composingValue() ?? value();
+  const displayValue = () => ime.composingValue() ?? value();
 
-  const handleCompositionStart = () => {
-    if (compositionFlushTimer != null) {
-      clearTimeout(compositionFlushTimer);
-      compositionFlushTimer = undefined;
-    }
-  };
+  const handleCompositionStart = () => ime.handleCompositionStart();
 
   const handleInput: JSX.InputEventHandler<HTMLTextAreaElement, InputEvent> = (e) => {
-    const val = e.currentTarget.value;
-    if (e.isComposing || compositionFlushTimer != null) {
-      setComposingValue(val);
-      return;
-    }
-    setComposingValue(null);
-    setValue(val);
+    ime.handleInput(e.currentTarget.value, e.isComposing);
   };
 
   const handleCompositionEnd: JSX.EventHandler<HTMLTextAreaElement, CompositionEvent> = (e) => {
-    const el = e.currentTarget;
-    setComposingValue(el.value);
-    compositionFlushTimer = setTimeout(() => {
-      compositionFlushTimer = undefined;
-      setComposingValue(null);
-      setValue(el.value);
-    }, 0);
+    ime.handleCompositionEnd(e.currentTarget.value);
   };
-
-  onCleanup(() => flushComposition());
 
   const handleKeyDown: JSX.EventHandler<HTMLTextAreaElement, KeyboardEvent> = (e) => {
     if (e.key === "Enter" && e.altKey) {
@@ -190,7 +159,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
     if (!isEditable()) {
-      flushComposition();
+      ime.flushComposition();
     }
   });
 

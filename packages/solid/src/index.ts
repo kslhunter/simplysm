@@ -90,6 +90,7 @@ export * from "./contexts/usePrint";
 
 // utils
 export { createControllableSignal } from "./utils/createControllableSignal";
+export { createIMEHandler } from "./utils/createIMEHandler";
 export { createMountTransition } from "./utils/createMountTransition";
 export { useRouterLink } from "./utils/useRouterLink";
 export { mergeStyles } from "./utils/mergeStyles";

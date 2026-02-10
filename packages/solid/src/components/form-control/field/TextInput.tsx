@@ -1,7 +1,8 @@
 import clsx from "clsx";
-import { type Component, createEffect, createSignal, type JSX, onCleanup, Show, splitProps } from "solid-js";
+import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../utils/createControllableSignal";
+import { createIMEHandler } from "../../../utils/createIMEHandler";
 import {
   type FieldSize,
   fieldBaseClass,
@@ -147,9 +148,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
   });
 
   // IME 조합 중 onValueChange를 지연하여 DOM 재생성(한글 조합 끊김) 방지
-  // composingValue: 조합 중 content div 표시용 값 (null이면 비조합 상태)
-  const [composingValue, setComposingValue] = createSignal<string | null>(null);
-  let compositionFlushTimer: ReturnType<typeof setTimeout> | undefined;
+  const ime = createIMEHandler((v) => setValue(v));
 
   function extractValue(el: HTMLInputElement): string {
     let val = el.value;
@@ -157,18 +156,6 @@ export const TextInput: Component<TextInputProps> = (props) => {
       val = removeFormat(val, local.format);
     }
     return val;
-  }
-
-  function flushComposition(): void {
-    if (compositionFlushTimer != null) {
-      clearTimeout(compositionFlushTimer);
-      compositionFlushTimer = undefined;
-    }
-    const pending = composingValue();
-    if (pending != null) {
-      setComposingValue(null);
-      setValue(pending);
-    }
   }
 
   // input 요소용 값 (composingValue 미포함 — IME 조합 방해 방지)
@@ -182,7 +169,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
 
   // content div용 표시 값 (composingValue 포함 — 셀 너비 결정)
   const displayValue = () => {
-    const composing = composingValue();
+    const composing = ime.composingValue();
     if (composing != null) {
       if (local.format != null && local.format !== "") {
         return applyFormat(composing, local.format);
@@ -192,35 +179,15 @@ export const TextInput: Component<TextInputProps> = (props) => {
     return inputValue();
   };
 
-  const handleCompositionStart = () => {
-    if (compositionFlushTimer != null) {
-      clearTimeout(compositionFlushTimer);
-      compositionFlushTimer = undefined;
-    }
-  };
+  const handleCompositionStart = () => ime.handleCompositionStart();
 
   const handleInput: JSX.InputEventHandler<HTMLInputElement, InputEvent> = (e) => {
-    const val = extractValue(e.currentTarget);
-    if (e.isComposing || compositionFlushTimer != null) {
-      // 조합 중이거나 compositionEnd 직후의 input → content div만 갱신, 커밋 안 함
-      setComposingValue(val);
-      return;
-    }
-    setComposingValue(null);
-    setValue(val);
+    ime.handleInput(extractValue(e.currentTarget), e.isComposing);
   };
 
   const handleCompositionEnd: JSX.EventHandler<HTMLInputElement, CompositionEvent> = (e) => {
-    const inputEl = e.currentTarget;
-    setComposingValue(extractValue(inputEl));
-    compositionFlushTimer = setTimeout(() => {
-      compositionFlushTimer = undefined;
-      setComposingValue(null);
-      setValue(extractValue(inputEl));
-    }, 0);
+    ime.handleCompositionEnd(extractValue(e.currentTarget));
   };
-
-  onCleanup(() => flushComposition());
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
@@ -241,7 +208,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
     if (!isEditable()) {
-      flushComposition();
+      ime.flushComposition();
     }
   });
 
