@@ -145,6 +145,42 @@ export default function KanbanPage() {
               </Kanban>
             </div>
           </section>
+
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">접기/펼치기 + Busy</h2>
+            <div class="h-[400px]">
+              <Kanban onDrop={handleDrop}>
+                <Kanban.Lane value="collapsible-lane" collapsible>
+                  <Kanban.LaneTitle>접을 수 있는 레인</Kanban.LaneTitle>
+                  <Kanban.LaneTools>
+                    <Button size="sm" theme="primary" variant="ghost" class="size-8">
+                      <Icon icon={IconPlus} />
+                    </Button>
+                  </Kanban.LaneTools>
+                  <Kanban.Card value={200} contentClass="p-2">
+                    카드 A
+                  </Kanban.Card>
+                  <Kanban.Card value={201} contentClass="p-2">
+                    카드 B
+                  </Kanban.Card>
+                </Kanban.Lane>
+
+                <Kanban.Lane value="busy-lane" busy>
+                  <Kanban.LaneTitle>Busy 레인</Kanban.LaneTitle>
+                  <Kanban.Card value={210} contentClass="p-2">
+                    로딩 중...
+                  </Kanban.Card>
+                </Kanban.Lane>
+
+                <Kanban.Lane value="both-lane" collapsible busy>
+                  <Kanban.LaneTitle>접기 + Busy</Kanban.LaneTitle>
+                  <Kanban.Card value={220} contentClass="p-2">
+                    접어도 로딩 바가 보임
+                  </Kanban.Card>
+                </Kanban.Lane>
+              </Kanban>
+            </div>
+          </section>
         </div>
       </div>
     </Topbar.Container>
