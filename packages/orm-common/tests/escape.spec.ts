@@ -64,3 +64,37 @@ describe("MysqlExprRenderer.escapeString", () => {
 
   //#endregion
 });
+
+describe("MysqlExprRenderer.escapeValue", () => {
+  const renderer = new MysqlExprRenderer();
+
+  it("문자열을 escapeString()으로 이스케이프하고 따옴표로 감싸야 함", () => {
+    const result = renderer.escapeValue("O'Reilly");
+    expect(result).toBe("'O''Reilly'");
+  });
+
+  it("백슬래시가 포함된 문자열을 올바르게 이스케이프해야 함", () => {
+    const result = renderer.escapeValue("C:\\path");
+    expect(result).toBe("'C:\\\\path'");
+  });
+
+  it("SQL 인젝션 시도를 방어해야 함", () => {
+    const result = renderer.escapeValue("'; DROP TABLE users; --");
+    expect(result).toBe("'''; DROP TABLE users; --'");
+  });
+
+  it("NULL을 'NULL' 문자열로 반환해야 함", () => {
+    const result = renderer.escapeValue(null);
+    expect(result).toBe("NULL");
+  });
+
+  it("숫자를 문자열로 변환해야 함", () => {
+    const result = renderer.escapeValue(123);
+    expect(result).toBe("123");
+  });
+
+  it("불리언을 TRUE/FALSE로 변환해야 함", () => {
+    expect(renderer.escapeValue(true)).toBe("TRUE");
+    expect(renderer.escapeValue(false)).toBe("FALSE");
+  });
+});
