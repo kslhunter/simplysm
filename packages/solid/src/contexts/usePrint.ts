@@ -228,10 +228,7 @@ export function usePrint(): UsePrintReturn {
         // container 자체는 off-screen 스타일(position/left)을 가지므로
         // html-to-image가 클론 시 동일 스타일을 복제하여 빈 캔버스가 생길 수 있음.
         // 따라서 실제 콘텐츠 요소를 target으로 사용.
-        const target =
-          container.querySelector<HTMLElement>("[data-print-root]") ??
-          (container.firstElementChild as HTMLElement | null) ??
-          container;
+        const target = (container.firstElementChild as HTMLElement | null) ?? container;
         target.style.width = pageWidth + "pt";
 
         const canvas = await htmlToImage.toCanvas(target, {
