@@ -1,37 +1,9 @@
-import { createContext, useContext, type Accessor, type Setter } from "solid-js";
+import { createContext, useContext, type Accessor } from "solid-js";
 
-/**
- * 칸반 카드 드롭 정보
- *
- * @typeParam L - Lane 값 타입
- * @typeParam T - Card 값 타입
- */
-export interface KanbanDropInfo<L, T> {
-  /** 드래그된 카드의 값 */
-  sourceCardValue: T;
-  /** 드롭 대상 Lane의 값 */
-  targetLaneValue: L;
-  /** 드롭 대상 카드의 값 (카드 위에 드롭한 경우) */
-  targetCardValue: T | undefined;
-}
+// ── Board Context ──────────────────────────────────────────────
+// Phase 1에서는 빈 Context. Phase 2+에서 DnD/선택 등을 추가한다.
 
-/**
- * 칸반 보드 Context 값
- *
- * @typeParam L - Lane 값 타입
- * @typeParam T - Card 값 타입
- */
-export interface KanbanContextValue<L = unknown, T = unknown> {
-  /** 현재 드래그 중인 카드의 값 */
-  dragValue: Accessor<T | undefined>;
-  /** 드래그 중인 카드의 값 설정 */
-  setDragValue: Setter<T | undefined>;
-  /** 선택된 카드 값 목록 */
-  selectedValues: Accessor<T[]>;
-  /** 카드 선택 토글 */
-  toggleSelection: (value: T) => void;
-  /** 드롭 처리 */
-  onDropTo: (targetLaneValue: L, targetCardValue?: T) => void;
+export interface KanbanContextValue {
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -44,13 +16,9 @@ export function useKanbanContext(): KanbanContextValue {
   return context;
 }
 
-/**
- * 칸반 Lane Context 값
- *
- * @typeParam L - Lane 값 타입
- */
+// ── Lane Context ───────────────────────────────────────────────
+
 export interface KanbanLaneContextValue<L = unknown> {
-  /** Lane의 값 */
   value: Accessor<L | undefined>;
 }
 
