@@ -42,8 +42,7 @@ export default function NotePage() {
               <Alert theme="info">
                 <Icon icon={IconInfoCircle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
-                  <strong class="block">정보</strong>
-                  이 기능은 최신 버전에서만 사용할 수 있습니다.
+                  <strong class="block">정보</strong>이 기능은 최신 버전에서만 사용할 수 있습니다.
                 </div>
               </Alert>
               <Alert theme="success">
@@ -56,8 +55,7 @@ export default function NotePage() {
               <Alert theme="warning">
                 <Icon icon={IconAlertTriangle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
-                  <strong class="block">주의</strong>
-                  이 작업은 되돌릴 수 없습니다. 진행하기 전에 확인해 주세요.
+                  <strong class="block">주의</strong>이 작업은 되돌릴 수 없습니다. 진행하기 전에 확인해 주세요.
                 </div>
               </Alert>
               <Alert theme="danger">

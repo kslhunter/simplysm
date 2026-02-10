@@ -106,9 +106,7 @@ export class ExcelWorkbook {
     );
 
     // Workbook Rels
-    const wbRelXml = (await this.zipCache.get(
-      "xl/_rels/workbook.xml.rels",
-    )) as ExcelXmlRelationship;
+    const wbRelXml = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
     wbRelXml.insert(
       newWsRelId,
       `worksheets/sheet${newWsRelId}.xml`,
@@ -129,9 +127,7 @@ export class ExcelWorkbook {
     this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     const wsId =
-      typeof nameOrIndex === "string"
-        ? wbData.getWsRelIdByName(nameOrIndex)
-        : wbData.getWsRelIdByIndex(nameOrIndex);
+      typeof nameOrIndex === "string" ? wbData.getWsRelIdByName(nameOrIndex) : wbData.getWsRelIdByIndex(nameOrIndex);
 
     if (wsId === undefined) {
       if (typeof nameOrIndex === "string") {
@@ -145,9 +141,7 @@ export class ExcelWorkbook {
       return this._wsMap.get(wsId)!;
     }
 
-    const relData = (await this.zipCache.get(
-      "xl/_rels/workbook.xml.rels",
-    )) as ExcelXmlRelationship;
+    const relData = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
     const targetFilePath = relData.getTargetByRelId(wsId);
     if (targetFilePath == null) {
       throw new Error(`시트 관계 정보를 찾을 수 없습니다: rId${wsId}`);

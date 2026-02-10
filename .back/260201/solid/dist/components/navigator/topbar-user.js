@@ -10,22 +10,39 @@ import { ListItem } from "../data/list-item";
 const TopbarUser = (props) => {
   const [local, rest] = splitProps(props, ["menus", "children", "class"]);
   const [open, setOpen] = createSignal(false);
-  return /* @__PURE__ */ React.createElement("div", { ...rest, class: [topbarUser, local.class].filterExists().join(" ") }, /* @__PURE__ */ React.createElement(Dropdown, { open: open(), onOpenChange: setOpen }, /* @__PURE__ */ React.createElement(Button, { link: true }, local.children), /* @__PURE__ */ React.createElement(TopbarUserPopup, { menus: local.menus })));
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    { ...rest, class: [topbarUser, local.class].filterExists().join(" ") },
+    /* @__PURE__ */ React.createElement(
+      Dropdown,
+      { open: open(), onOpenChange: setOpen },
+      /* @__PURE__ */ React.createElement(Button, { link: true }, local.children),
+      /* @__PURE__ */ React.createElement(TopbarUserPopup, { menus: local.menus }),
+    ),
+  );
 };
 const TopbarUserPopup = (props) => {
   const dropdown = useDropdown();
-  return /* @__PURE__ */ React.createElement(DropdownPopup, null, /* @__PURE__ */ React.createElement(List, null, /* @__PURE__ */ React.createElement(For, { each: props.menus }, (menu) => /* @__PURE__ */ React.createElement(
-    ListItem,
-    {
-      onClick: () => {
-        menu.onClick();
-        dropdown == null ? void 0 : dropdown.close();
-      }
-    },
-    menu.title
-  ))));
+  return /* @__PURE__ */ React.createElement(
+    DropdownPopup,
+    null,
+    /* @__PURE__ */ React.createElement(
+      List,
+      null,
+      /* @__PURE__ */ React.createElement(For, { each: props.menus }, (menu) =>
+        /* @__PURE__ */ React.createElement(
+          ListItem,
+          {
+            onClick: () => {
+              menu.onClick();
+              dropdown == null ? void 0 : dropdown.close();
+            },
+          },
+          menu.title,
+        ),
+      ),
+    ),
+  );
 };
-export {
-  TopbarUser
-};
+export { TopbarUser };
 //# sourceMappingURL=topbar-user.js.map

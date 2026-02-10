@@ -249,10 +249,12 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
     } else {
       // 재귀 호출 시 includes/excludes 옵션은 최상위 레벨에만 적용되므로 제외
       for (let i = 0; i < source.length; i++) {
-        if (!objEqual(source[i], target[i], {
-          ignoreArrayIndex: options?.ignoreArrayIndex,
-          onlyOneDepth: options?.onlyOneDepth,
-        })) {
+        if (
+          !objEqual(source[i], target[i], {
+            ignoreArrayIndex: options?.ignoreArrayIndex,
+            onlyOneDepth: options?.onlyOneDepth,
+          })
+        ) {
           return false;
         }
       }

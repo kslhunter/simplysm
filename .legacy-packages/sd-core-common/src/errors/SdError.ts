@@ -6,18 +6,16 @@ export class SdError extends Error {
 
   constructor(innerError: unknown, ...messages: string[]);
   constructor(...messages: string[]);
-  constructor(arg1?: unknown, ...messages: string[])
+  constructor(arg1?: unknown, ...messages: string[]);
   constructor(arg1?: unknown, ...messages: string[]) {
-    const arg1Message = arg1 instanceof Error
-      ? arg1.message
-      : typeof arg1 === "string"
-        ? arg1
-        : arg1 != null
-          ? String(arg1)
-          : undefined;
+    const arg1Message =
+      arg1 instanceof Error ? arg1.message : typeof arg1 === "string" ? arg1 : arg1 != null ? String(arg1) : undefined;
 
     super(
-      [arg1Message, ...messages].filter((m) => m != null).reverse().join(" => "),
+      [arg1Message, ...messages]
+        .filter((m) => m != null)
+        .reverse()
+        .join(" => "),
     );
 
     Object.setPrototypeOf(this, new.target.prototype);

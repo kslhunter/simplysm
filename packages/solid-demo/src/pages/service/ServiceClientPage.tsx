@@ -96,9 +96,7 @@ const ServiceClientDemo: Component = () => {
       {/* 연결 상태 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">연결 상태</h2>
-        <Label theme={connected() ? "success" : "danger"}>
-          {connected() ? "연결됨 (port: 40081)" : "연결 안됨"}
-        </Label>
+        <Label theme={connected() ? "success" : "danger"}>{connected() ? "연결됨 (port: 40081)" : "연결 안됨"}</Label>
       </section>
 
       {/* EchoService */}
@@ -109,11 +107,7 @@ const ServiceClientDemo: Component = () => {
         <div class="mb-6">
           <h3 class="mb-2 font-medium">echo(message)</h3>
           <div class="flex gap-2">
-            <TextInput
-              value={echoInput()}
-              onValueChange={setEchoInput}
-              class="flex-1"
-            />
+            <TextInput value={echoInput()} onValueChange={setEchoInput} class="flex-1" />
             <Button theme="primary" variant="solid" onClick={handleEcho} disabled={!connected()}>
               Echo
             </Button>

@@ -71,11 +71,7 @@ describe("ServiceProtocol", () => {
       const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
       headerBytes.set(uuidBytes, 0);
 
-      const headerView = new DataView(
-        headerBytes.buffer,
-        headerBytes.byteOffset,
-        headerBytes.byteLength,
-      );
+      const headerView = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
       headerView.setBigUint64(16, BigInt(101 * 1024 * 1024), false); // 101MB
       headerView.setUint32(24, 0, false);
 

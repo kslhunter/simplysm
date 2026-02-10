@@ -56,7 +56,7 @@ describe("ExcelWorksheet.addImage integration", () => {
     const types = await (ws as any)._zipCache.get("[Content_Types].xml");
     expect(types).toBeDefined();
     // types는 ExcelXmlContentType 인스턴스일 가능성이 높음
-    const overrides = (types).data?.Types?.Override ?? [];
+    const overrides = types.data?.Types?.Override ?? [];
     expect(overrides.some((o: any) => o.$.PartName === "/xl/media/image1.png")).toBeTruthy();
     expect(overrides.some((o: any) => o.$.PartName === "/xl/drawings/drawing1.xml")).toBeTruthy();
 

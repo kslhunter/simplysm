@@ -15,19 +15,12 @@ const ListItem = (props) => {
   var _a, _b;
   const [local, styleProps, rest] = splitProps(
     props,
-    [
-      ...listItemContent.variants(),
-      "open",
-      "onOpenChange",
-      "selectedIcon",
-      "icon",
-      "children"
-    ],
-    ["class", "style"]
+    [...listItemContent.variants(), "open", "onOpenChange", "selectedIcon", "icon", "children"],
+    ["class", "style"],
   );
   const [internalOpen, setInternalOpen] = createSignal(local.open ?? false);
   const isControlled = () => local.onOpenChange !== void 0;
-  const open = () => isControlled() ? local.open ?? false : internalOpen();
+  const open = () => (isControlled() ? (local.open ?? false) : internalOpen());
   const setOpen = (value) => {
     var _a2;
     if (isControlled()) {
@@ -55,56 +48,79 @@ const ListItem = (props) => {
   const hasChildren = () => parsed().hasChildren;
   const useRipple = () => !local.disabled && !(local.layout === "flat" && hasChildren());
   const selectedIconStyle = createMemo(() => ({
-    color: local.selected ? `rgb(${themeVars.control.primary.base})` : `rgba(${themeVars.text.base}, ${tokenVars.overlay.base})`
+    color: local.selected
+      ? `rgb(${themeVars.control.primary.base})`
+      : `rgba(${themeVars.text.base}, ${tokenVars.overlay.base})`,
   }));
   const onContentClick = () => {
     if (local.disabled) return;
     setOpen(!open());
   };
-  return /* @__PURE__ */ React.createElement("div", { class: listItem, ...rest }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(
     "div",
-    {
-      "use:ripple": useRipple(),
-      class: listItemContent({
-        ...objPick(local, listItemContent.variants()),
-        hasChildren: hasChildren(),
-        hasSelectedIcon: !!local.selectedIcon
-      }),
-      "data-list-item": true,
-      role: "treeitem",
-      "aria-expanded": hasChildren() ? open() : void 0,
-      "aria-disabled": local.disabled || void 0,
-      tabIndex: 0,
-      onClick: onContentClick,
-      onFocus: (e) => {
-        const treeRoot = e.currentTarget.closest("[role='tree']");
-        treeRoot == null ? void 0 : treeRoot.querySelectorAll("[data-list-item]").forEach((el) => {
-          el.tabIndex = -1;
-        });
-        e.currentTarget.tabIndex = 0;
-      }
-    },
-    /* @__PURE__ */ React.createElement(Show, { when: local.selectedIcon && !hasChildren() }, (_a = local.selectedIcon) == null ? void 0 : _a.call(local, { style: selectedIconStyle() })),
-    /* @__PURE__ */ React.createElement(Show, { when: local.icon }, (_b = local.icon) == null ? void 0 : _b.call(local, {})),
+    { class: listItem, ...rest },
     /* @__PURE__ */ React.createElement(
       "div",
       {
-        class: [atoms({ display: "flex", alignItems: "center" }), styleProps.class].filterExists().join(" "),
-        style: combineStyle(styleProps.style, { flex: 1 })
+        "use:ripple": useRipple(),
+        "class": listItemContent({
+          ...objPick(local, listItemContent.variants()),
+          hasChildren: hasChildren(),
+          hasSelectedIcon: !!local.selectedIcon,
+        }),
+        "data-list-item": true,
+        "role": "treeitem",
+        "aria-expanded": hasChildren() ? open() : void 0,
+        "aria-disabled": local.disabled || void 0,
+        "tabIndex": 0,
+        "onClick": onContentClick,
+        "onFocus": (e) => {
+          const treeRoot = e.currentTarget.closest("[role='tree']");
+          treeRoot == null
+            ? void 0
+            : treeRoot.querySelectorAll("[data-list-item]").forEach((el) => {
+                el.tabIndex = -1;
+              });
+          e.currentTarget.tabIndex = 0;
+        },
       },
-      content()
+      /* @__PURE__ */ React.createElement(
+        Show,
+        { when: local.selectedIcon && !hasChildren() },
+        (_a = local.selectedIcon) == null ? void 0 : _a.call(local, { style: selectedIconStyle() }),
+      ),
+      /* @__PURE__ */ React.createElement(
+        Show,
+        { when: local.icon },
+        (_b = local.icon) == null ? void 0 : _b.call(local, {}),
+      ),
+      /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          class: [atoms({ display: "flex", alignItems: "center" }), styleProps.class].filterExists().join(" "),
+          style: combineStyle(styleProps.style, { flex: 1 }),
+        },
+        content(),
+      ),
+      /* @__PURE__ */ React.createElement(
+        Show,
+        { when: hasChildren() && local.layout !== "flat" },
+        /* @__PURE__ */ React.createElement(CollapseIcon, { icon: IconChevronLeft, open: open(), openRotate: -90 }),
+      ),
     ),
-    /* @__PURE__ */ React.createElement(Show, { when: hasChildren() && local.layout !== "flat" }, /* @__PURE__ */ React.createElement(CollapseIcon, { icon: IconChevronLeft, open: open(), openRotate: -90 }))
-  ), /* @__PURE__ */ React.createElement(Show, { when: hasChildren() }, /* @__PURE__ */ React.createElement(
-    Collapse,
-    {
-      open: local.layout === "flat" || open(),
-      class: atoms({ py: "xs" })
-    },
-    nestedList()
-  )));
+    /* @__PURE__ */ React.createElement(
+      Show,
+      { when: hasChildren() },
+      /* @__PURE__ */ React.createElement(
+        Collapse,
+        {
+          open: local.layout === "flat" || open(),
+          class: atoms({ py: "xs" }),
+        },
+        nestedList(),
+      ),
+    ),
+  );
 };
-export {
-  ListItem
-};
+export { ListItem };
 //# sourceMappingURL=list-item.js.map

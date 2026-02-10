@@ -64,7 +64,7 @@ export class Time {
     } catch {
       throw new ArgumentError(
         `시간 형식을 파싱할 수 없습니다. 지원 형식: 'HH:mm:ss', 'HH:mm:ss.fff', '오전/오후 HH:mm:ss'`,
-        { input: str }
+        { input: str },
       );
     }
   }

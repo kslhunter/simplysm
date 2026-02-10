@@ -13,12 +13,10 @@ window.onload = () => {
 
   if (process.env["NODE_ENV"] === "production") {
     script.src = "cordova.js";
-  }
-  else {
+  } else {
     if (navigator.userAgent.toLowerCase().indexOf("android") !== -1) {
       script.src = "cordova-android/cordova.js";
-    }
-    else {
+    } else {
       script.src = "cordova-browser/cordova.js";
     }
   }

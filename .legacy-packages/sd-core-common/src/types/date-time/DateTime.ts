@@ -28,15 +28,7 @@ export class DateTime {
     if (arg1 === undefined) {
       this.date = new Date();
     } else if (arg2 !== undefined && arg3 !== undefined) {
-      this.date = new Date(
-        arg1 as number,
-        arg2 - 1,
-        arg3,
-        arg4 ?? 0,
-        arg5 ?? 0,
-        arg6 ?? 0,
-        arg7 ?? 0,
-      );
+      this.date = new Date(arg1 as number, arg2 - 1, arg3, arg4 ?? 0, arg5 ?? 0, arg6 ?? 0, arg7 ?? 0);
     } else if (arg1 instanceof Date) {
       this.date = arg1;
     } else {
@@ -50,8 +42,7 @@ export class DateTime {
       return new DateTime(parsedTick);
     }
 
-    const match1 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/.exec(str);
+    const match1 = /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/.exec(str);
     if (match1 != null) {
       return new DateTime(
         Number(match1[1]),
@@ -75,10 +66,7 @@ export class DateTime {
       );
     }
 
-    const match3 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/.exec(
-        str,
-      );
+    const match3 = /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/.exec(str);
     if (match3 != null) {
       return new DateTime(
         Number(match3[1]),
@@ -93,7 +81,7 @@ export class DateTime {
 
     throw new ArgumentError(
       `날짜시간 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd HH:mm:ss', 'yyyyMMddHHmmss', 'yyyy-MM-dd 오전/오후 HH:mm:ss', ISO 8601`,
-      { input: str }
+      { input: str },
     );
   }
 

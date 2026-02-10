@@ -59,7 +59,6 @@ describe("Errors", () => {
       const errorFromNull = new SdError(null, "null cause");
       expect(errorFromNull.message).toContain("null cause");
     });
-
   });
 
   //#endregion

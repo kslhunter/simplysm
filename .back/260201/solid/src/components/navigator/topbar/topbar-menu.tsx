@@ -98,13 +98,7 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   return (
     <nav {...rest} class={[topbarMenu, local.class].filter(Boolean).join(" ")}>
       <For each={local.menus}>
-        {(menu) => (
-          <TopbarMenuDropdown
-            menu={menu}
-            isSelected={isSelected}
-            onMenuClick={handleMenuClick}
-          />
-        )}
+        {(menu) => <TopbarMenuDropdown menu={menu} isSelected={isSelected} onMenuClick={handleMenuClick} />}
       </For>
     </nav>
   );

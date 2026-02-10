@@ -5,7 +5,7 @@ import {
   fieldBaseVariants,
   fieldContainer,
   fieldContent,
-  fieldInput
+  fieldInput,
 } from "./field-base.css";
 const numberField = recipe({
   base: {
@@ -16,21 +16,21 @@ const numberField = recipe({
       ...fieldBaseSelectors,
       "&::-webkit-outer-spin-button": {
         WebkitAppearance: "none",
-        margin: 0
+        margin: 0,
       },
       "&::-webkit-inner-spin-button": {
         WebkitAppearance: "none",
-        margin: 0
-      }
-    }
+        margin: 0,
+      },
+    },
   },
   variants: fieldBaseVariants,
-  defaultVariants: {}
+  defaultVariants: {},
 });
 export {
   numberField,
   fieldContainer as numberFieldContainer,
   fieldContent as numberFieldContent,
-  fieldInput as numberFieldInput
+  fieldInput as numberFieldInput,
 };
 //# sourceMappingURL=number-field.css.js.map

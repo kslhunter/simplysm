@@ -21,9 +21,9 @@ import { SdError } from "./sd-error";
  * }
  */
 export declare class NotImplementedError extends SdError {
-    /**
-     * @param message 추가 설명 메시지
-     */
-    constructor(message?: string);
+  /**
+   * @param message 추가 설명 메시지
+   */
+  constructor(message?: string);
 }
 //# sourceMappingURL=not-implemented-error.d.ts.map

@@ -10,7 +10,10 @@ describe("SELECT - ORDER BY", () => {
 
   describe("ASC (기본값)", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => item.id).getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => item.id)
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -29,7 +32,10 @@ describe("SELECT - ORDER BY", () => {
 
   describe("ASC (명시적)", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => item.id, "ASC").getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => item.id, "ASC")
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -48,7 +54,10 @@ describe("SELECT - ORDER BY", () => {
 
   describe("DESC", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => item.id, "DESC").getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => item.id, "DESC")
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -71,7 +80,8 @@ describe("SELECT - ORDER BY", () => {
 
   describe("다중 정렬", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .orderBy((item) => item.name, "ASC")
       .orderBy((item) => item.id, "DESC")
       .getSelectQueryDef();
@@ -100,7 +110,10 @@ describe("SELECT - ORDER BY", () => {
 
   describe("표현식으로 정렬", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => expr.length(item.name), "DESC").getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => expr.length(item.name), "DESC")
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -123,7 +136,8 @@ describe("SELECT - ORDER BY", () => {
 
   describe("SELECT + ORDER BY 조합", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({ id: item.id, name: item.name }))
       .orderBy((item) => item.name, "ASC")
       .getSelectQueryDef();
@@ -149,7 +163,8 @@ describe("SELECT - ORDER BY", () => {
 
   describe("ORDER BY + LIMIT 조합", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .orderBy((item) => item.id, "DESC")
       .limit(0, 10)
       .getSelectQueryDef();

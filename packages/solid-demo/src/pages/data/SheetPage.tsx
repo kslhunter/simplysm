@@ -446,7 +446,10 @@ export default function SheetPage() {
               </DataSheet.Column>
             </DataSheet>
             <p class="mt-2 text-sm text-base-500">
-              선택된 항목: {multiSelected().map((u) => u.name).join(", ") || "(없음)"}
+              선택된 항목:{" "}
+              {multiSelected()
+                .map((u) => u.name)
+                .join(", ") || "(없음)"}
             </p>
           </section>
 
@@ -475,7 +478,10 @@ export default function SheetPage() {
               </DataSheet.Column>
             </DataSheet>
             <p class="mt-2 text-sm text-base-500">
-              선택된 항목: {singleSelected().map((u) => u.name).join(", ") || "(없음)"}
+              선택된 항목:{" "}
+              {singleSelected()
+                .map((u) => u.name)
+                .join(", ") || "(없음)"}
             </p>
           </section>
 
@@ -504,7 +510,10 @@ export default function SheetPage() {
               </DataSheet.Column>
             </DataSheet>
             <p class="mt-2 text-sm text-base-500">
-              선택된 항목: {disabledSelected().map((u) => u.name).join(", ") || "(없음)"}
+              선택된 항목:{" "}
+              {disabledSelected()
+                .map((u) => u.name)
+                .join(", ") || "(없음)"}
             </p>
           </section>
 
@@ -512,8 +521,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">드래그 재정렬</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다.
-              핸들을 잡고 드래그하여 행 순서를 변경할 수 있습니다.
+              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여 행 순서를 변경할 수
+              있습니다.
             </p>
             <DataSheet
               items={reorderItems()}

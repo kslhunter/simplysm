@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdKanbanBoardControl } from "./sd-kanban-board.control";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
 import { injectElementRef } from "../../../core/utils/injections/injectElementRef";
@@ -111,12 +104,8 @@ import { SdCardDirective } from "../sd-card.directive";
   ],
 })
 export class SdKanbanControl<L, T> {
-  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(
-    forwardRef(() => SdKanbanBoardControl),
-  );
-  private readonly _laneControl = inject<SdKanbanLaneControl<L, T>>(
-    forwardRef(() => SdKanbanLaneControl),
-  );
+  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
+  private readonly _laneControl = inject<SdKanbanLaneControl<L, T>>(forwardRef(() => SdKanbanLaneControl));
   private readonly _elRef = injectElementRef();
 
   value = input<T>();
@@ -126,9 +115,7 @@ export class SdKanbanControl<L, T> {
   selectable = input(false, { transform: transformBoolean });
   draggable = input(false, { transform: transformBoolean });
 
-  selected = $computed(
-    () => this.value() != null && this._boardControl.selectedValues().includes(this.value()!),
-  );
+  selected = $computed(() => this.value() != null && this._boardControl.selectedValues().includes(this.value()!));
   dragKanban = $computed(() => this._boardControl.dragKanban());
 
   contentClass = input<string>();

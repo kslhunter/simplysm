@@ -21,11 +21,7 @@ describe("DbTransactionError", () => {
 
     it("DEADLOCK 에러 생성", () => {
       const originalError = { errno: 1213, message: "Deadlock found" };
-      const error = new DbTransactionError(
-        DbErrorCode.DEADLOCK,
-        "데드락이 발생했습니다",
-        originalError,
-      );
+      const error = new DbTransactionError(DbErrorCode.DEADLOCK, "데드락이 발생했습니다", originalError);
 
       expect(error.code).toBe(DbErrorCode.DEADLOCK);
       expect(error.message).toBe("데드락이 발생했습니다");
@@ -33,20 +29,14 @@ describe("DbTransactionError", () => {
     });
 
     it("LOCK_TIMEOUT 에러 생성", () => {
-      const error = new DbTransactionError(
-        DbErrorCode.LOCK_TIMEOUT,
-        "락 타임아웃",
-      );
+      const error = new DbTransactionError(DbErrorCode.LOCK_TIMEOUT, "락 타임아웃");
 
       expect(error.code).toBe(DbErrorCode.LOCK_TIMEOUT);
       expect(error.originalError).toBeUndefined();
     });
 
     it("TRANSACTION_ALREADY_STARTED 에러 생성", () => {
-      const error = new DbTransactionError(
-        DbErrorCode.TRANSACTION_ALREADY_STARTED,
-        "이미 트랜잭션이 시작되었습니다",
-      );
+      const error = new DbTransactionError(DbErrorCode.TRANSACTION_ALREADY_STARTED, "이미 트랜잭션이 시작되었습니다");
 
       expect(error.code).toBe(DbErrorCode.TRANSACTION_ALREADY_STARTED);
     });
@@ -54,24 +44,15 @@ describe("DbTransactionError", () => {
 
   describe("에러 코드 판별", () => {
     it("instanceof로 DbTransactionError 판별 가능", () => {
-      const error = new DbTransactionError(
-        DbErrorCode.NO_ACTIVE_TRANSACTION,
-        "test",
-      );
+      const error = new DbTransactionError(DbErrorCode.NO_ACTIVE_TRANSACTION, "test");
 
       expect(error instanceof DbTransactionError).toBe(true);
       expect(error instanceof Error).toBe(true);
     });
 
     it("code로 에러 종류 구분 가능", () => {
-      const noTxError = new DbTransactionError(
-        DbErrorCode.NO_ACTIVE_TRANSACTION,
-        "test",
-      );
-      const deadlockError = new DbTransactionError(
-        DbErrorCode.DEADLOCK,
-        "test",
-      );
+      const noTxError = new DbTransactionError(DbErrorCode.NO_ACTIVE_TRANSACTION, "test");
+      const deadlockError = new DbTransactionError(DbErrorCode.DEADLOCK, "test");
 
       expect(noTxError.code).not.toBe(deadlockError.code);
       expect(noTxError.code === DbErrorCode.NO_ACTIVE_TRANSACTION).toBe(true);

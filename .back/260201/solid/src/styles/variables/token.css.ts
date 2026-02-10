@@ -21,7 +21,7 @@ export const tokenVars = createGlobalTheme(":root", {
       tight: "1.25",
       normal: "1.5",
       relaxed: "1.75",
-    }
+    },
   },
   spacing: {
     auto: "auto",
@@ -54,7 +54,7 @@ export const tokenVars = createGlobalTheme(":root", {
   },
   duration: {
     base: "200ms",
-    slow: "300ms"
+    slow: "300ms",
   },
   overlay: {
     muted: "0.5",

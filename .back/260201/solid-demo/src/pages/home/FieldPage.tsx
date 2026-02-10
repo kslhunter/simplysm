@@ -546,9 +546,7 @@ export default function FieldPage() {
 
         <section>
           <h3>Textarea + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>
-            내용이 10자 미만이면 에러 상태가 표시됩니다.
-          </p>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>내용이 10자 미만이면 에러 상태가 표시됩니다.</p>
           <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
             <ValidationTextarea />
           </div>
@@ -556,9 +554,7 @@ export default function FieldPage() {
 
         <section>
           <h3>Checkbox + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>
-            체크하지 않으면 에러 상태가 표시됩니다.
-          </p>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>체크하지 않으면 에러 상태가 표시됩니다.</p>
           <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
             <ValidationCheckbox />
           </div>
@@ -566,9 +562,7 @@ export default function FieldPage() {
 
         <section>
           <h3>Switch + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>
-            활성화하지 않으면 에러 상태가 표시됩니다.
-          </p>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>활성화하지 않으면 에러 상태가 표시됩니다.</p>
           <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
             <ValidationSwitch />
           </div>
@@ -595,9 +589,7 @@ function ValidationTextField() {
       <div use:invalid={() => errorMessage()}>
         <TextField value={name()} onChange={setName} placeholder="이름" />
       </div>
-      <span class={atoms({ fontSize: "sm" })}>
-        상태: {name() != null && name() !== "" ? "✅ Valid" : "❌ Invalid"}
-      </span>
+      <span class={atoms({ fontSize: "sm" })}>상태: {name() != null && name() !== "" ? "✅ Valid" : "❌ Invalid"}</span>
     </div>
   );
 }
@@ -634,9 +626,7 @@ function ValidationCheckbox() {
           이용약관에 동의합니다 (필수)
         </Checkbox>
       </div>
-      <span class={atoms({ fontSize: "sm" })}>
-        상태: {agreed() ? "✅ Valid" : "❌ Invalid"}
-      </span>
+      <span class={atoms({ fontSize: "sm" })}>상태: {agreed() ? "✅ Valid" : "❌ Invalid"}</span>
     </div>
   );
 }
@@ -652,9 +642,7 @@ function ValidationSwitch() {
           알림 수신 동의 (필수)
         </Switch>
       </div>
-      <span class={atoms({ fontSize: "sm" })}>
-        상태: {enabled() ? "✅ Valid" : "❌ Invalid"}
-      </span>
+      <span class={atoms({ fontSize: "sm" })}>상태: {enabled() ? "✅ Valid" : "❌ Invalid"}</span>
     </div>
   );
 }
@@ -685,7 +673,11 @@ function ValidationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} class={atoms({ display: "flex", flexDirection: "column", gap: "base" })} style={{ "max-width": "400px" }}>
+    <form
+      onSubmit={handleSubmit}
+      class={atoms({ display: "flex", flexDirection: "column", gap: "base" })}
+      style={{ "max-width": "400px" }}
+    >
       <div use:invalid={() => nameError()}>
         <TextField value={name()} onChange={setName} placeholder="이름 (필수)" />
       </div>
@@ -701,7 +693,9 @@ function ValidationForm() {
         제출
       </Button>
       {submitted() && (
-        <p class={atoms({ color: "success" })}>✅ 제출 성공! 이름: {name()}, 이메일: {email()}</p>
+        <p class={atoms({ color: "success" })}>
+          ✅ 제출 성공! 이름: {name()}, 이메일: {email()}
+        </p>
       )}
     </form>
   );

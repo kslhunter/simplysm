@@ -2,9 +2,9 @@
  * 월 설정 시 연도/월/일 정규화 결과
  */
 export interface DtNormalizedMonth {
-    year: number;
-    month: number;
-    day: number;
+  year: number;
+  month: number;
+  day: number;
 }
 /**
  * 월 설정 시 연도/월/일을 정규화
@@ -67,7 +67,9 @@ export declare function normalizeMonth(year: number, month: number, day: number)
  * // "오후 2:30:45"
  * ```
  */
-export declare function format(formatString: string, args: {
+export declare function format(
+  formatString: string,
+  args: {
     year?: number;
     month?: number;
     day?: number;
@@ -76,5 +78,6 @@ export declare function format(formatString: string, args: {
     second?: number;
     millisecond?: number;
     timezoneOffsetMinutes?: number;
-}): string;
+  },
+): string;
 //# sourceMappingURL=date-format.d.ts.map

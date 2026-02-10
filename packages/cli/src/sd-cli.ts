@@ -234,7 +234,7 @@ export function createCliParser(argv: string[]): Argv {
             default: [],
           })
           .options({
-            build: {
+            "build": {
               type: "boolean",
               describe: "빌드 실행 (--no-build로 스킵)",
               default: true,
@@ -244,7 +244,7 @@ export function createCliParser(argv: string[]): Argv {
               describe: "실제 배포 없이 시뮬레이션",
               default: false,
             },
-            options: {
+            "options": {
               type: "string",
               array: true,
               alias: "o",

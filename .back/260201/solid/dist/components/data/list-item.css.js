@@ -11,45 +11,45 @@ const listItemContent = recipe({
     padding: `${vars.spacing.sm} ${vars.spacing.lg}`,
     cursor: "pointer",
     margin: "1px 2px",
-    borderRadius: vars.radius.base
+    borderRadius: vars.radius.base,
   },
   variants: {
     layout: {
       accordion: {
         selectors: {
           "&:hover, &:focus-visible": {
-            background: `rgba(${vars.surface.inverted}, ${vars.overlay.light})`
-          }
-        }
+            background: `rgba(${vars.surface.inverted}, ${vars.overlay.light})`,
+          },
+        },
       },
-      flat: {}
+      flat: {},
     },
     selected: {
       true: {
         background: `rgba(${vars.control.primary.base}, ${vars.overlay.base})`,
         color: `rgb(${vars.control.primary.base})`,
-        fontWeight: "bold"
-      }
+        fontWeight: "bold",
+      },
     },
     disabled: {
       true: {
         cursor: "default",
         pointerEvents: "none",
-        opacity: vars.overlay.muted
-      }
+        opacity: vars.overlay.muted,
+      },
     },
     hasSelectedIcon: {
-      true: {}
+      true: {},
     },
     hasChildren: {
-      true: {}
-    }
+      true: {},
+    },
   },
   compoundVariants: [
     {
       variants: {
         layout: "flat",
-        hasChildren: true
+        hasChildren: true,
       },
       style: {
         cursor: "default",
@@ -58,29 +58,26 @@ const listItemContent = recipe({
         color: `rgba(${vars.text.base}, ${vars.overlay.muted})`,
         background: "transparent",
         paddingTop: vars.spacing.lg,
-        paddingBottom: vars.spacing.none
-      }
+        paddingBottom: vars.spacing.none,
+      },
     },
     {
       variants: {
         hasSelectedIcon: true,
-        selected: true
+        selected: true,
       },
       style: {
         selectors: {
           "&:hover, &:focus-visible": {
-            background: `rgba(${vars.surface.inverted}, ${vars.overlay.light})`
-          }
-        }
-      }
-    }
+            background: `rgba(${vars.surface.inverted}, ${vars.overlay.light})`,
+          },
+        },
+      },
+    },
   ],
   defaultVariants: {
-    layout: "accordion"
-  }
+    layout: "accordion",
+  },
 });
-export {
-  listItem,
-  listItemContent
-};
+export { listItem, listItemContent };
 //# sourceMappingURL=list-item.css.js.map

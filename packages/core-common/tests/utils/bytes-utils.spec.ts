@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { ArgumentError, bytesConcat as concat, bytesToHex as toHex, bytesFromHex as fromHex, bytesToBase64 as toBase64, bytesFromBase64 as fromBase64 } from "@simplysm/core-common";
+import {
+  ArgumentError,
+  bytesConcat as concat,
+  bytesToHex as toHex,
+  bytesFromHex as fromHex,
+  bytesToBase64 as toBase64,
+  bytesFromBase64 as fromBase64,
+} from "@simplysm/core-common";
 
 describe("BytesUtils", () => {
   //#region concat

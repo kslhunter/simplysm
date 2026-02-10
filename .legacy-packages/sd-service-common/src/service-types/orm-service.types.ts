@@ -27,11 +27,7 @@ export interface ISdOrmService {
 
   executeParametrized(connId: number, query: string, params?: any[]): Promise<any[][]>;
 
-  executeDefs(
-    connId: number,
-    defs: TQueryDef[],
-    options?: (IQueryResultParseOption | undefined)[],
-  ): Promise<any[][]>;
+  executeDefs(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]>;
 
   bulkInsert(
     connId: number,
@@ -48,7 +44,4 @@ export interface ISdOrmService {
   ): Promise<void>;
 }
 
-export type TDbConnOptions = { configName?: string; config?: Record<string, any> } & Record<
-  string,
-  any
->;
+export type TDbConnOptions = { configName?: string; config?: Record<string, any> } & Record<string, any>;

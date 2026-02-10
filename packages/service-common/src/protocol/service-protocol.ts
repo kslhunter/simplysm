@@ -13,7 +13,6 @@ import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
  * - 최대 메시지: 100MB
  */
 export class ServiceProtocol {
-
   // -------------------------------------------------------------------
   // Encoding
   // -------------------------------------------------------------------
@@ -22,10 +21,7 @@ export class ServiceProtocol {
    * 메시지 인코딩 (필요 시 자동 분할)
    */
   encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number } {
-    const msgJson = jsonStringify([
-      message.name,
-      ...("body" in message ? [message.body] : []),
-    ]);
+    const msgJson = jsonStringify([message.name, ...("body" in message ? [message.body] : [])]);
     const msgBytes = new TextEncoder().encode(msgJson);
 
     const totalSize = msgBytes.length;

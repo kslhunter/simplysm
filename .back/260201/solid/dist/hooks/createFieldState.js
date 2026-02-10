@@ -2,7 +2,7 @@ import { createSignal } from "solid-js";
 function createFieldState(options) {
   const [internalValue, setInternalValue] = createSignal(options.value());
   const isControlled = () => options.onChange() !== void 0;
-  const currentValue = () => isControlled() ? options.value() : internalValue();
+  const currentValue = () => (isControlled() ? options.value() : internalValue());
   const setValue = (value) => {
     var _a;
     if (isControlled()) {
@@ -14,10 +14,8 @@ function createFieldState(options) {
   return {
     currentValue,
     setValue,
-    isControlled
+    isControlled,
   };
 }
-export {
-  createFieldState
-};
+export { createFieldState };
 //# sourceMappingURL=createFieldState.js.map

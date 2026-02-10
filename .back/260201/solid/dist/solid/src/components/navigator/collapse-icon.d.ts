@@ -8,8 +8,8 @@ import "@simplysm/core-common";
  * @property openRotate - 열림 상태일 때 회전 각도 (기본값: 90)
  */
 export interface CollapseIconProps extends Omit<JSX.HTMLAttributes<HTMLSpanElement>, "children">, CollapseIconStyles {
-    icon: Component;
-    openRotate?: number;
+  icon: Component;
+  openRotate?: number;
 }
 /**
  * 열림/닫힘 상태에 따라 아이콘을 회전시키는 컴포넌트

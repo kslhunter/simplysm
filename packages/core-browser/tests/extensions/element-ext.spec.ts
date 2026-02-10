@@ -247,10 +247,7 @@ describe("Element prototype extensions", () => {
   });
 
   describe("copyElement", () => {
-    function createMockClipboardEvent(
-      target: Element,
-      data?: string,
-    ): ClipboardEvent {
+    function createMockClipboardEvent(target: Element, data?: string): ClipboardEvent {
       const clipboardData = {
         setData: vi.fn(),
         getData: vi.fn().mockReturnValue(data ?? ""),
@@ -334,10 +331,7 @@ describe("Element prototype extensions", () => {
   });
 
   describe("pasteToElement", () => {
-    function createMockClipboardEvent(
-      target: Element,
-      data?: string,
-    ): ClipboardEvent {
+    function createMockClipboardEvent(target: Element, data?: string): ClipboardEvent {
       const clipboardData = {
         setData: vi.fn(),
         getData: vi.fn().mockReturnValue(data ?? ""),

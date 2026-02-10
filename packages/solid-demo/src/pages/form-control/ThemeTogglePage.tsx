@@ -23,9 +23,7 @@ export default function ThemeTogglePage() {
           {/* Sizes */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">크기</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              size prop으로 버튼 크기를 조절할 수 있습니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">size prop으로 버튼 크기를 조절할 수 있습니다.</p>
             <div class="flex items-center gap-6">
               <div class="flex flex-col items-center gap-2">
                 <ThemeToggle size="sm" />
@@ -89,9 +87,7 @@ export default function ThemeTogglePage() {
               <p class="mb-2">
                 <strong>ThemeProvider 필요:</strong> ThemeToggle은 ThemeProvider 컨텍스트 내에서 사용해야 합니다.
               </p>
-              <p>
-                테마 설정은 localStorage에 저장되어 페이지를 새로고침해도 유지됩니다.
-              </p>
+              <p>테마 설정은 localStorage에 저장되어 페이지를 새로고침해도 유지됩니다.</p>
             </Alert>
           </section>
 

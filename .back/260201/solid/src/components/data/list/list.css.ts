@@ -17,7 +17,7 @@ export const list = recipe({
       true: {
         background: "transparent",
         border: "none",
-        borderRadius: `0`
+        borderRadius: `0`,
       },
     },
   },
@@ -26,7 +26,7 @@ export const list = recipe({
 // 중첩된 List
 globalStyle(`${list.classNames.base} ${list.classNames.base}`, {
   border: "none",
-  background: "transparent"
+  background: "transparent",
 });
 
 // inset List 내부의 List

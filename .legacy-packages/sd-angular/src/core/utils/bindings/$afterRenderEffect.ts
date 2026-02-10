@@ -1,15 +1,7 @@
-import type {
-  EffectCleanupRegisterFn,
-  EffectRef,
-  Signal} from "@angular/core";
-import {
-  afterRenderEffect,
-  untracked,
-} from "@angular/core";
+import type { EffectCleanupRegisterFn, EffectRef, Signal } from "@angular/core";
+import { afterRenderEffect, untracked } from "@angular/core";
 
-export function $afterRenderEffect(
-  fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>,
-): never;
+export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => Promise<void>): never;
 export function $afterRenderEffect(fn: (onCleanup: EffectCleanupRegisterFn) => void): EffectRef;
 export function $afterRenderEffect(
   signals: Signal<any>[],

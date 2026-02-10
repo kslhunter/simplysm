@@ -1,7 +1,7 @@
 Combobox
 
-AppStructure/SidebarMenu 보고 더 좋은 방식이 없을지..
-결국은 하나의 Object로 앱의 구조를 설정한 다음 이걸로 메뉴, 권한을 한번에 설정하고 싶은거임.. (가능하면 Route도 한번에 하면 좋고..)
-
-
 sidebar 메인메뉴를 lg로
+
+@floating-ui/dom 도입 검토
+
+getWrapperClass 이 반복되는거 같은데 Field.styles.ts로 빼는게 나으려나? 지금처럼 그냥 두는게 나으려나..?

@@ -22,9 +22,10 @@ const List = (props) => {
     if (!isOpen) {
       current.click();
     } else {
-      const nestedItem = (_a = current.parentElement) == null ? void 0 : _a.querySelector(
-        ":scope > [data-collapsed] [data-list-item], :scope > * > [data-list-item]"
-      );
+      const nestedItem =
+        (_a = current.parentElement) == null
+          ? void 0
+          : _a.querySelector(":scope > [data-collapsed] [data-list-item], :scope > * > [data-list-item]");
       nestedItem == null ? void 0 : nestedItem.focus();
     }
   };
@@ -35,7 +36,10 @@ const List = (props) => {
     if (hasChildren && isOpen) {
       current.click();
     } else {
-      const parentItem = (_b = (_a = current.parentElement) == null ? void 0 : _a.parentElement) == null ? void 0 : _b.closest("[data-list-item]");
+      const parentItem =
+        (_b = (_a = current.parentElement) == null ? void 0 : _a.parentElement) == null
+          ? void 0
+          : _b.closest("[data-list-item]");
       parentItem == null ? void 0 : parentItem.focus();
     }
   };
@@ -100,12 +104,10 @@ const List = (props) => {
       role: "tree",
       onKeyDown: handleKeyDown,
       ...rest,
-      class: [list(objPick(local, list.variants())), local.class].filterExists().join(" ")
+      class: [list(objPick(local, list.variants())), local.class].filterExists().join(" "),
     },
-    local.children
+    local.children,
   );
 };
-export {
-  List
-};
+export { List };
 //# sourceMappingURL=list.js.map

@@ -52,11 +52,7 @@ describe("SdWorker", () => {
     it("다중 요청 동시 처리", async () => {
       worker = Worker.create<typeof TestWorkerModule>(workerPath);
 
-      const [result1, result2, result3] = await Promise.all([
-        worker.add(1, 2),
-        worker.add(3, 4),
-        worker.add(5, 6),
-      ]);
+      const [result1, result2, result3] = await Promise.all([worker.add(1, 2), worker.add(3, 4), worker.add(5, 6)]);
 
       expect(result1).toBe(3);
       expect(result2).toBe(7);

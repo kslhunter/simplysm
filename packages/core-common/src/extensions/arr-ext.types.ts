@@ -83,10 +83,7 @@ export interface ReadonlyArrayExt<T> {
 
   toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
-  toMap<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (item: T, index: number) => V,
-  ): Map<K, V>;
+  toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
 
   toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
@@ -108,10 +105,7 @@ export interface ReadonlyArrayExt<T> {
     valueSelector: (item: T, index: number) => V,
   ): Map<K, Set<V>>;
 
-  toMapValues<K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (items: T[]) => V,
-  ): Map<K, V>;
+  toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
 
   toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -167,9 +161,7 @@ export interface ReadonlyArrayExt<T> {
 
   orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-  orderByDesc(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
+  orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
   /**
    * 두 배열 비교 (INSERT/DELETE/UPDATE)
@@ -177,10 +169,7 @@ export interface ReadonlyArrayExt<T> {
    * @param options keys: 키 비교용, excludes: 비교 제외 속성
    * @note target에 중복 키가 있으면 첫 번째 매칭만 사용됨
    */
-  diffs<P>(
-    target: P[],
-    options?: { keys?: string[]; excludes?: string[] },
-  ): ArrayDiffsResult<T, P>[];
+  diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): ArrayDiffsResult<T, P>[];
 
   oneWayDiffs<K extends keyof T>(
     orgItems: T[] | Map<T[K], T>,
@@ -223,19 +212,13 @@ export interface MutableArrayExt<T> {
    * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
    * @mutates
    */
-  distinctThis(
-    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
-  ): T[];
+  distinctThis(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[];
 
   /** 원본 배열 오름차순 정렬 @mutates */
-  orderByThis(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
+  orderByThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
   /** 원본 배열 내림차순 정렬 @mutates */
-  orderByDescThis(
-    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
-  ): T[];
+  orderByDescThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
   /** 원본 배열에 항목 삽입 @mutates */
   insert(index: number, ...items: T[]): this;

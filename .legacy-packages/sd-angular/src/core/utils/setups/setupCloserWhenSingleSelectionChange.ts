@@ -17,10 +17,7 @@ export function setupCloserWhenSingleSelectionChange<TKey, TItem>(bindings: {
   });
 
   $effect([bindings.selectedItemKeys], () => {
-    if (
-      bindings.selectMode() === "single" &&
-      orgFirstSelectedItemKey() !== bindings.selectedItemKeys().first()
-    ) {
+    if (bindings.selectMode() === "single" && orgFirstSelectedItemKey() !== bindings.selectedItemKeys().first()) {
       bindings.close.emit({
         selectedItemKeys: bindings.selectedItemKeys(),
         selectedItems: bindings.selectedItems(),

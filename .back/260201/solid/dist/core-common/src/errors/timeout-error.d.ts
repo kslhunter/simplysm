@@ -22,10 +22,10 @@ import { SdError } from "./sd-error";
  * }
  */
 export declare class TimeoutError extends SdError {
-    /**
-     * @param count 시도 횟수
-     * @param message 추가 메시지
-     */
-    constructor(count?: number, message?: string);
+  /**
+   * @param count 시도 횟수
+   * @param message 추가 메시지
+   */
+  constructor(count?: number, message?: string);
 }
 //# sourceMappingURL=timeout-error.d.ts.map

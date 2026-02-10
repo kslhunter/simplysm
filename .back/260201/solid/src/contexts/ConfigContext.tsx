@@ -22,9 +22,7 @@ const ConfigContext = createContext<ConfigContextValue>();
  */
 export const ConfigProvider: ParentComponent<{ staticClientName: string }> = (props) => {
   return (
-    <ConfigContext.Provider value={{ clientName: props.staticClientName }}>
-      {props.children}
-    </ConfigContext.Provider>
+    <ConfigContext.Provider value={{ clientName: props.staticClientName }}>{props.children}</ConfigContext.Provider>
   );
 };
 
@@ -44,8 +42,8 @@ export function useConfig() {
   if (!ctx) {
     throw new Error(
       "[useConfig] ConfigProvider 내부에서 사용해야 합니다.\n" +
-      "ConfigProvider는 앱의 루트에 배치되어야 합니다.\n" +
-      "예: <ConfigProvider staticClientName=\"my-app\">...</ConfigProvider>",
+        "ConfigProvider는 앱의 루트에 배치되어야 합니다.\n" +
+        '예: <ConfigProvider staticClientName="my-app">...</ConfigProvider>',
     );
   }
   return ctx;

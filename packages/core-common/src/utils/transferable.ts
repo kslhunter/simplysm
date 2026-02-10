@@ -85,9 +85,7 @@ function encodeImpl(
   if (obj instanceof Uint8Array) {
     // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
     // ArrayBuffer만 transferList에 추가
-    const isSharedArrayBuffer =
-      typeof SharedArrayBuffer !== "undefined" &&
-      obj.buffer instanceof SharedArrayBuffer;
+    const isSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
     const buffer = obj.buffer as ArrayBuffer;
     if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
       transferList.push(buffer);
@@ -97,23 +95,17 @@ function encodeImpl(
   // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
   else if (obj instanceof Date) {
     result = { __type__: "Date", data: obj.getTime() };
-  }
-  else if (obj instanceof DateTime) {
+  } else if (obj instanceof DateTime) {
     result = { __type__: "DateTime", data: obj.tick };
-  }
-  else if (obj instanceof DateOnly) {
+  } else if (obj instanceof DateOnly) {
     result = { __type__: "DateOnly", data: obj.tick };
-  }
-  else if (obj instanceof Time) {
+  } else if (obj instanceof Time) {
     result = { __type__: "Time", data: obj.tick };
-  }
-  else if (obj instanceof Uuid) {
+  } else if (obj instanceof Uuid) {
     result = { __type__: "Uuid", data: obj.toString() };
-  }
-  else if (obj instanceof RegExp) {
+  } else if (obj instanceof RegExp) {
     result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
-  }
-  else if (obj instanceof Error) {
+  } else if (obj instanceof Error) {
     const errObj = obj as Error & {
       code?: unknown;
       detail?: unknown;
@@ -199,16 +191,11 @@ export function transferableDecode(obj: unknown): unknown {
     const typed = obj as { __type__: string; data: unknown };
     const data = typed.data;
 
-    if (typed.__type__ === "Date" && typeof data === "number")
-      return new Date(data);
-    if (typed.__type__ === "DateTime" && typeof data === "number")
-      return new DateTime(data);
-    if (typed.__type__ === "DateOnly" && typeof data === "number")
-      return new DateOnly(data);
-    if (typed.__type__ === "Time" && typeof data === "number")
-      return new Time(data);
-    if (typed.__type__ === "Uuid" && typeof data === "string")
-      return new Uuid(data);
+    if (typed.__type__ === "Date" && typeof data === "number") return new Date(data);
+    if (typed.__type__ === "DateTime" && typeof data === "number") return new DateTime(data);
+    if (typed.__type__ === "DateOnly" && typeof data === "number") return new DateOnly(data);
+    if (typed.__type__ === "Time" && typeof data === "number") return new Time(data);
+    if (typed.__type__ === "Uuid" && typeof data === "string") return new Uuid(data);
     if (typed.__type__ === "RegExp" && typeof data === "object" && data !== null) {
       const regexData = data as { source: string; flags: string };
       return new RegExp(regexData.source, regexData.flags);
@@ -231,10 +218,8 @@ export function transferableDecode(obj: unknown): unknown {
       err.stack = errorData.stack;
 
       if (errorData.code !== undefined) err.code = errorData.code;
-      if (errorData.cause !== undefined)
-        (err as Error).cause = transferableDecode(errorData.cause);
-      if (errorData.detail !== undefined)
-        err.detail = transferableDecode(errorData.detail);
+      if (errorData.cause !== undefined) (err as Error).cause = transferableDecode(errorData.cause);
+      if (errorData.detail !== undefined) err.detail = transferableDecode(errorData.detail);
       return err;
     }
   }

@@ -32,13 +32,37 @@ export const appStructure = createAppStructure({
             { code: "button", title: "Button", component: lazy(() => import("./pages/form-control/ButtonPage")) },
             { code: "select", title: "Select", component: lazy(() => import("./pages/form-control/SelectPage")) },
             { code: "field", title: "Field", component: lazy(() => import("./pages/form-control/FieldPage")) },
-            { code: "theme-toggle", title: "ThemeToggle", component: lazy(() => import("./pages/form-control/ThemeTogglePage")) },
-            { code: "checkbox-radio", title: "Checkbox & Radio", component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")) },
-            { code: "checkbox-radio-group", title: "CheckboxGroup & RadioGroup", component: lazy(() => import("./pages/form-control/CheckBoxRadioGroupPage")) },
-            { code: "date-range-picker", title: "DateRangePicker", component: lazy(() => import("./pages/form-control/DateRangePickerPage")) },
-            { code: "rich-text-editor", title: "RichTextEditor", component: lazy(() => import("./pages/form-control/RichTextEditorPage")) },
+            {
+              code: "theme-toggle",
+              title: "ThemeToggle",
+              component: lazy(() => import("./pages/form-control/ThemeTogglePage")),
+            },
+            {
+              code: "checkbox-radio",
+              title: "Checkbox & Radio",
+              component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")),
+            },
+            {
+              code: "checkbox-radio-group",
+              title: "CheckboxGroup & RadioGroup",
+              component: lazy(() => import("./pages/form-control/CheckBoxRadioGroupPage")),
+            },
+            {
+              code: "date-range-picker",
+              title: "DateRangePicker",
+              component: lazy(() => import("./pages/form-control/DateRangePickerPage")),
+            },
+            {
+              code: "rich-text-editor",
+              title: "RichTextEditor",
+              component: lazy(() => import("./pages/form-control/RichTextEditorPage")),
+            },
             { code: "numpad", title: "Numpad", component: lazy(() => import("./pages/form-control/NumpadPage")) },
-            { code: "state-preset", title: "StatePreset", component: lazy(() => import("./pages/form-control/StatePresetPage")) },
+            {
+              code: "state-preset",
+              title: "StatePreset",
+              component: lazy(() => import("./pages/form-control/StatePresetPage")),
+            },
           ],
         },
         {
@@ -61,10 +85,18 @@ export const appStructure = createAppStructure({
             { code: "table", title: "Table", component: lazy(() => import("./pages/data/TablePage")) },
             { code: "pagination", title: "Pagination", component: lazy(() => import("./pages/data/PaginationPage")) },
             { code: "sheet", title: "DataSheet", component: lazy(() => import("./pages/data/SheetPage")) },
-            { code: "sheet-full", title: "DataSheet (Full)", component: lazy(() => import("./pages/data/SheetFullPage")) },
+            {
+              code: "sheet-full",
+              title: "DataSheet (Full)",
+              component: lazy(() => import("./pages/data/SheetFullPage")),
+            },
             { code: "kanban", title: "Kanban", component: lazy(() => import("./pages/data/KanbanPage")) },
             { code: "calendar", title: "Calendar", component: lazy(() => import("./pages/data/CalendarPage")) },
-            { code: "permission-table", title: "PermissionTable", component: lazy(() => import("./pages/data/PermissionTablePage")) },
+            {
+              code: "permission-table",
+              title: "PermissionTable",
+              component: lazy(() => import("./pages/data/PermissionTablePage")),
+            },
           ],
         },
         {
@@ -81,9 +113,7 @@ export const appStructure = createAppStructure({
           code: "navigation",
           title: "Navigation",
           icon: IconLayoutSidebar,
-          children: [
-            { code: "tab", title: "Tabs", component: lazy(() => import("./pages/navigation/TabPage")) },
-          ],
+          children: [{ code: "tab", title: "Tabs", component: lazy(() => import("./pages/navigation/TabPage")) }],
         },
         {
           code: "display",
@@ -104,7 +134,11 @@ export const appStructure = createAppStructure({
           title: "Feedback",
           icon: IconBell,
           children: [
-            { code: "notification", title: "Notification", component: lazy(() => import("./pages/feedback/NotificationPage")) },
+            {
+              code: "notification",
+              title: "Notification",
+              component: lazy(() => import("./pages/feedback/NotificationPage")),
+            },
             { code: "busy", title: "Loading", component: lazy(() => import("./pages/feedback/BusyPage")) },
             { code: "print", title: "Print", component: lazy(() => import("./pages/feedback/PrintPage")) },
           ],
@@ -114,8 +148,16 @@ export const appStructure = createAppStructure({
           title: "Service",
           icon: IconPlug,
           children: [
-            { code: "client", title: "ServiceClient", component: lazy(() => import("./pages/service/ServiceClientPage")) },
-            { code: "shared-data", title: "SharedData", component: lazy(() => import("./pages/service/SharedDataPage")) },
+            {
+              code: "client",
+              title: "ServiceClient",
+              component: lazy(() => import("./pages/service/ServiceClientPage")),
+            },
+            {
+              code: "shared-data",
+              title: "SharedData",
+              component: lazy(() => import("./pages/service/SharedDataPage")),
+            },
           ],
         },
       ],

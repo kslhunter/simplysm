@@ -4,8 +4,7 @@ import { type CollapseStyles } from "./collapse.css";
  * Collapse 컴포넌트의 props
  * @property open - 열림 상태
  */
-export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement>, CollapseStyles {
-}
+export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement>, CollapseStyles {}
 /**
  * 높이 애니메이션으로 콘텐츠를 펼치거나 접는 컴포넌트
  *

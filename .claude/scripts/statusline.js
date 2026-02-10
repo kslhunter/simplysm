@@ -93,7 +93,7 @@ async function fetchUsage(token) {
 
     const response = await fetch("https://api.anthropic.com/api/oauth/usage", {
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`,
         "anthropic-beta": "oauth-2025-04-20",
       },
       signal: controller.signal,
@@ -257,7 +257,9 @@ async function main() {
   const dailyBar = dailyPercent !== "?" ? formatProgressBar(Number(dailyPercent)) : "□□□□□";
   const weekBar = weekPercent !== "?" ? formatProgressBar(Number(weekPercent)) : "□□□□□";
   const extraPart = extraUsage !== "" ? ` ─ ${extraUsage}` : "";
-  console.log(`${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%${extraPart}`);
+  console.log(
+    `${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%${extraPart}`,
+  );
 }
 
 void main();

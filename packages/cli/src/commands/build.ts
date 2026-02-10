@@ -4,12 +4,7 @@ import { Listr, type ListrTask } from "listr2";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { consola, LogLevels } from "consola";
-import type {
-  SdConfig,
-  SdBuildPackageConfig,
-  SdClientPackageConfig,
-  SdServerPackageConfig,
-} from "../sd-config.types";
+import type { SdConfig, SdBuildPackageConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
 import type { TypecheckEnv } from "../utils/tsconfig";
@@ -102,9 +97,7 @@ function classifyPackages(
  * dist 폴더 삭제
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
-  await Promise.all(
-    packageNames.map((name) => fsRm(path.join(cwd, "packages", name, "dist"))),
-  );
+  await Promise.all(packageNames.map((name) => fsRm(path.join(cwd, "packages", name, "dist"))));
 }
 
 //#endregion
@@ -226,8 +219,10 @@ export async function runBuild(options: BuildOptions): Promise<void> {
               title: `${name} (${config.target})`,
               task: async () => {
                 // JS 빌드와 DTS 생성을 병렬 실행
-                const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> = Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
-                const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
+                const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> =
+                  Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
+                const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
+                  Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
                 try {
                   const [buildResult, dtsResult] = await Promise.all([
@@ -273,8 +268,10 @@ export async function runBuild(options: BuildOptions): Promise<void> {
               title: `${name} (client)`,
               task: async () => {
                 // Vite 빌드와 타입체크를 병렬 실행
-                const clientWorker: WorkerProxy<typeof ClientWorkerModule> = Worker.create<typeof ClientWorkerModule>(clientWorkerPath);
-                const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
+                const clientWorker: WorkerProxy<typeof ClientWorkerModule> =
+                  Worker.create<typeof ClientWorkerModule>(clientWorkerPath);
+                const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
+                  Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
                 try {
                   const clientConfig: SdClientPackageConfig = {

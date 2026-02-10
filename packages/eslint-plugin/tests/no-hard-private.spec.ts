@@ -124,10 +124,7 @@ describe("no-hard-private 규칙", () => {
                 }
               }
             `,
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -150,10 +147,7 @@ describe("no-hard-private 규칙", () => {
                 getValue = () => this._value;
               }
             `,
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -228,10 +222,7 @@ class MyClass {
   }
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -400,10 +391,7 @@ class MyClass {
   }
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -533,10 +521,7 @@ class MyClass {
   }
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -774,10 +759,7 @@ class MyClass {
   }
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -907,10 +889,7 @@ class Child extends Parent {
   private _childField = 2;
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });
@@ -973,10 +952,7 @@ class MyClass {
   }
 }
             `.trim(),
-            errors: [
-              { messageId: "preferSoftPrivate" },
-              { messageId: "preferSoftPrivate" },
-            ],
+            errors: [{ messageId: "preferSoftPrivate" }, { messageId: "preferSoftPrivate" }],
           },
         ],
       });

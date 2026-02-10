@@ -1,10 +1,4 @@
-import type {
-  Dialect,
-  IsolationLevel,
-  QueryDef,
-  ColumnMeta,
-  ResultMeta,
-} from "@simplysm/orm-common";
+import type { Dialect, IsolationLevel, QueryDef, ColumnMeta, ResultMeta } from "@simplysm/orm-common";
 
 /**
  * ORM 서비스 인터페이스
@@ -31,11 +25,7 @@ export interface OrmService {
 
   executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]>;
 
-  executeDefs(
-    connId: number,
-    defs: QueryDef[],
-    options?: (ResultMeta | undefined)[],
-  ): Promise<unknown[][]>;
+  executeDefs(connId: number, defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<unknown[][]>;
 
   bulkInsert(
     connId: number,

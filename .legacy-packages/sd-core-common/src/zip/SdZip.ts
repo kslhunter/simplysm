@@ -1,12 +1,5 @@
-import type {
-  FileEntry} from "@zip.js/zip.js";
-import {
-  BlobReader,
-  Uint8ArrayReader,
-  Uint8ArrayWriter,
-  ZipReader,
-  ZipWriter,
-} from "@zip.js/zip.js";
+import type { FileEntry } from "@zip.js/zip.js";
+import { BlobReader, Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
 
 export class SdZip {
   private readonly _reader?: ZipReader<Blob | Buffer>;

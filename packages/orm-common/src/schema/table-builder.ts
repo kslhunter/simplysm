@@ -6,11 +6,7 @@ import {
   type InferUpdateColumns,
 } from "./factory/column-builder";
 import { createIndexFactory, type IndexBuilder } from "./factory/index-builder";
-import {
-  createRelationFactory,
-  type InferDeepRelations,
-  type RelationBuilderRecord,
-} from "./factory/relation-builder";
+import { createRelationFactory, type InferDeepRelations, type RelationBuilderRecord } from "./factory/relation-builder";
 
 // ============================================
 // TableBuilder
@@ -48,10 +44,7 @@ import {
  * @see {@link Table} 팩토리 함수
  * @see {@link queryable} Queryable 생성
  */
-export class TableBuilder<
-  TColumns extends ColumnBuilderRecord,
-  TRelations extends RelationBuilderRecord,
-> {
+export class TableBuilder<TColumns extends ColumnBuilderRecord, TRelations extends RelationBuilderRecord> {
   /** 컬럼 정의 (타입 추론용) */
   readonly $columns!: TColumns;
   /** 관계 정의 (타입 추론용) */
@@ -213,11 +206,7 @@ export class TableBuilder<
    *   ]);
    * ```
    */
-  indexes(
-    fn: (
-      i: ReturnType<typeof createIndexFactory<keyof TColumns & string>>,
-    ) => IndexBuilder<string[]>[],
-  ) {
+  indexes(fn: (i: ReturnType<typeof createIndexFactory<keyof TColumns & string>>) => IndexBuilder<string[]>[]) {
     return new TableBuilder({
       ...this.meta,
       indexes: fn(createIndexFactory<keyof TColumns & string>()),

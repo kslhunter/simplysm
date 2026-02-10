@@ -1,13 +1,7 @@
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
-import type {
-  IDbConn,
-  IQueryColumnDef,
-  ISOLATION_LEVEL,
-  ISqliteDbConnConf} from "@simplysm/sd-orm-common";
-import {
-  QueryHelper,
-} from "@simplysm/sd-orm-common";
+import type { IDbConn, IQueryColumnDef, ISOLATION_LEVEL, ISqliteDbConnConf } from "@simplysm/sd-orm-common";
+import { QueryHelper } from "@simplysm/sd-orm-common";
 import { SdLogger } from "@simplysm/sd-core-node";
 import type sqlite3Type from "sqlite3";
 
@@ -169,9 +163,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
             this._startTimeout();
 
             if (err) {
-              reject(
-                new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"),
-              );
+              reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"));
               return;
             }
 
@@ -213,11 +205,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     return results;
   }
 
-  async bulkInsertAsync(
-    tableName: string,
-    columnDefs: IQueryColumnDef[],
-    records: Record<string, any>[],
-  ) {
+  async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
     const qh = new QueryHelper("sqlite");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -234,11 +222,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-  async bulkUpsertAsync(
-    tableName: string,
-    columnDefs: IQueryColumnDef[],
-    records: Record<string, any>[],
-  ) {
+  async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
     const qh = new QueryHelper("mysql");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -254,9 +238,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs
-      .filter((item) => !item.autoIncrement)
-      .map((item) => item.name)) {
+    for (const colName of columnDefs.filter((item) => !item.autoIncrement).map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }
     q = q.slice(0, -2) + ";";

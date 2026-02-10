@@ -13,11 +13,14 @@
  * - 객체의 toJSON 메서드가 있으면 호출하여 결과를 사용함 (Date, DateTime 등 커스텀 타입 제외)
  * - 전역 프로토타입을 수정하지 않아 Worker 환경에서도 안전함
  */
-export declare function jsonStringify(obj: unknown, options?: {
+export declare function jsonStringify(
+  obj: unknown,
+  options?: {
     space?: string | number;
     replacer?: (key: string | undefined, value: unknown) => unknown;
     hideBytes?: boolean;
-}): string;
+  },
+): string;
 /**
  * JSON 문자열을 객체로 역직렬화
  * DateTime, DateOnly, Time, Uuid, Set, Map, Error, Uint8Array 등 커스텀 타입 복원

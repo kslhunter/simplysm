@@ -10,11 +10,11 @@ import { type ListItemContentStyles } from "./list-item.css";
  * @property icon - 항목 앞에 표시할 아이콘 컴포넌트
  */
 export interface ListItemProps extends JSX.HTMLAttributes<HTMLDivElement>, ListItemContentStyles {
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    selectedIcon?: Component<IconProps>;
-    icon?: Component<IconProps>;
-    children?: JSX.Element;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  selectedIcon?: Component<IconProps>;
+  icon?: Component<IconProps>;
+  children?: JSX.Element;
 }
 /**
  * 리스트 아이템 컴포넌트

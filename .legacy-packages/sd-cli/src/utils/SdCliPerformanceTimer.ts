@@ -2,8 +2,7 @@ export class SdCliPerformanceTimer {
   private readonly _startingMap = new Map<string, { time: number; cpu: NodeJS.CpuUsage }>();
   private readonly _resultMap = new Map<string, { time: number; cpu: number }>();
 
-  constructor(private readonly _name: string) {
-  }
+  constructor(private readonly _name: string) {}
 
   start(name: string) {
     this._startingMap.set(name, {
@@ -43,7 +42,7 @@ export class SdCliPerformanceTimer {
 
     const res = fn();
     if (res instanceof Promise) {
-      return res.then(realRes => finish(realRes, startTime)) as R;
+      return res.then((realRes) => finish(realRes, startTime)) as R;
     }
 
     return finish(res, startTime);
@@ -53,10 +52,8 @@ export class SdCliPerformanceTimer {
     return `${this._name} 성능 보고서
 ------------------------------------
 ${Array.from(this._resultMap.entries())
-      .map(([key, val]) =>
-        `${key}: ${val.time.toLocaleString()}ms (${val.cpu.toLocaleString()}ms CPU)`,
-      )
-      .join("\n")}
+  .map(([key, val]) => `${key}: ${val.time.toLocaleString()}ms (${val.cpu.toLocaleString()}ms CPU)`)
+  .join("\n")}
 ------------------------------------`;
   }
 }

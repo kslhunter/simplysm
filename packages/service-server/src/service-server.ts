@@ -34,11 +34,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   private readonly _serviceExecutor = new ServiceExecutor(this);
   private readonly _jwt = new JwtManager<TAuthInfo>(this);
 
-  private readonly _httpRequestHandler = new HttpRequestHandler(
-    this,
-    this._serviceExecutor,
-    this._jwt,
-  );
+  private readonly _httpRequestHandler = new HttpRequestHandler(this, this._serviceExecutor, this._jwt);
   private readonly _staticFileHandler = new StaticFileHandler(this);
   private readonly _uploadHandler = new UploadHandler(this, this._jwt);
 
@@ -105,20 +101,16 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     });
 
     // JSON 파서
-    this.fastify.addContentTypeParser(
-      "application/json",
-      { parseAs: "string" },
-      (req, body, done) => {
-        try {
-          const json = jsonParse(body as string);
-          done(null, json);
-        } catch (err: unknown) {
-          const error = err as Error & { statusCode?: number };
-          error.statusCode = 400;
-          done(error, undefined);
-        }
-      },
-    );
+    this.fastify.addContentTypeParser("application/json", { parseAs: "string" }, (req, body, done) => {
+      try {
+        const json = jsonParse(body as string);
+        done(null, json);
+      } catch (err: unknown) {
+        const error = err as Error & { statusCode?: number };
+        error.statusCode = 400;
+        done(error, undefined);
+      }
+    });
 
     // JSON 생성기
     this.fastify.setSerializerCompiler(() => (data) => jsonStringify(data));

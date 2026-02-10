@@ -22,16 +22,16 @@ export class NumberUtils {
     return result;
   }
 
-  static isNullOrEmpty(val: number | null | undefined): val is (0 | undefined | null) {
+  static isNullOrEmpty(val: number | null | undefined): val is 0 | undefined | null {
     return val == null || val === 0;
   }
 
-  static format(val: number, digit?: { max?: number, min?: number }): string;
-  static format(val: number | undefined, digit?: { max?: number, min?: number }): string | undefined;
-  static format(val: number | undefined, digit?: { max?: number, min?: number }): string | undefined {
+  static format(val: number, digit?: { max?: number; min?: number }): string;
+  static format(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined;
+  static format(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined {
     return val?.toLocaleString(undefined, {
       maximumFractionDigits: digit?.max,
-      minimumFractionDigits: digit?.min
+      minimumFractionDigits: digit?.min,
     });
   }
 }

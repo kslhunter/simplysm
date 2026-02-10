@@ -6,7 +6,7 @@ import {
   fieldBaseVariants,
   fieldContainer,
   fieldContent,
-  fieldInput
+  fieldInput,
 } from "./field-base.css";
 const colorField = recipe({
   base: {
@@ -15,17 +15,17 @@ const colorField = recipe({
     selectors: {
       ...fieldBaseSelectors,
       "&::-webkit-color-swatch-wrapper": {
-        padding: 0
+        padding: 0,
       },
       "&::-webkit-color-swatch": {
         border: "none",
-        borderRadius: tokenVars.radius.sm
+        borderRadius: tokenVars.radius.sm,
       },
       "&::-moz-color-swatch": {
         border: "none",
-        borderRadius: tokenVars.radius.sm
-      }
-    }
+        borderRadius: tokenVars.radius.sm,
+      },
+    },
   },
   variants: {
     ...fieldBaseVariants,
@@ -33,16 +33,16 @@ const colorField = recipe({
       true: {
         display: "inline-block",
         width: "auto",
-        minWidth: "3rem"
-      }
-    }
+        minWidth: "3rem",
+      },
+    },
   },
-  defaultVariants: {}
+  defaultVariants: {},
 });
 export {
   colorField,
   fieldContainer as colorFieldContainer,
   fieldContent as colorFieldContent,
-  fieldInput as colorFieldInput
+  fieldInput as colorFieldInput,
 };
 //# sourceMappingURL=color-field.css.js.map

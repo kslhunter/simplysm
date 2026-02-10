@@ -100,9 +100,7 @@ export default function IconPage() {
           {/* Colors */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">색상</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              class prop으로 색상을 지정할 수 있습니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">class prop으로 색상을 지정할 수 있습니다.</p>
             <div class="flex items-center gap-4">
               <Icon icon={IconHeart} size="1.5em" class="text-danger-500" />
               <Icon icon={IconStar} size="1.5em" class="text-warning-500" />

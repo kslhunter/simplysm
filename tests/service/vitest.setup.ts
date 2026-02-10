@@ -1,5 +1,3 @@
- 
-
 import { ServiceServer } from "@simplysm/service-server";
 import { TestService, type TestAuthInfo } from "./src/test-service";
 import fs from "fs";

@@ -43,11 +43,7 @@ declare global {
     return this;
   };
 
-  prototype.toggle = function <T>(
-    this: Set<T>,
-    value: T,
-    addOrDel?: "add" | "del",
-  ): Set<T> {
+  prototype.toggle = function <T>(this: Set<T>, value: T, addOrDel?: "add" | "del"): Set<T> {
     if (addOrDel === "add") {
       this.add(value);
     } else if (addOrDel === "del") {

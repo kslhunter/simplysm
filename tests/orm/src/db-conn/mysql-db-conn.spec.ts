@@ -67,20 +67,14 @@ describe("MysqlDbConn", () => {
     });
 
     it("파라미터화된 쿼리", async () => {
-      const results = await conn.executeParametrized(
-        `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ?`,
-        ["test"],
-      );
+      const results = await conn.executeParametrized(`SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ?`, ["test"]);
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
     it("파라미터화된 쿼리 - 숫자 타입", async () => {
-      const results = await conn.executeParametrized(
-        `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE value = ?`,
-        [123],
-      );
+      const results = await conn.executeParametrized(`SELECT * FROM \`TestDb\`.\`TestTable\` WHERE value = ?`, [123]);
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ value: 123 });
@@ -100,9 +94,7 @@ describe("MysqlDbConn", () => {
   describe("연결 오류 처리", () => {
     it("미연결 상태에서 쿼리 실행 시 에러", async () => {
       const disconnectedConn = new MysqlDbConn(mysql2, mysqlConfig);
-      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
-        "'Connection'이 연결되어있지 않습니다",
-      );
+      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow("'Connection'이 연결되어있지 않습니다");
     });
 
     it("잘못된 쿼리 실행 시 에러", async () => {
@@ -144,9 +136,7 @@ describe("MysqlDbConn", () => {
       await conn.commitTransaction();
       expect(conn.isOnTransaction).toBe(false);
 
-      const results = await conn.execute([
-        `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'commit-test'`,
-      ]);
+      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'commit-test'`]);
       expect(results[0]).toHaveLength(1);
     });
 
@@ -157,9 +147,7 @@ describe("MysqlDbConn", () => {
       await conn.rollbackTransaction();
       expect(conn.isOnTransaction).toBe(false);
 
-      const results = await conn.execute([
-        `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'rollback-test'`,
-      ]);
+      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'rollback-test'`]);
       expect(results[0]).toHaveLength(0);
     });
   });
@@ -401,7 +389,9 @@ describe("MysqlDbConn", () => {
 
       await conn.bulkInsert("`TestDb`.`UuidBinaryTable`", columnMetas, records);
 
-      const results = await conn.execute([`SELECT *, HEX(uuid_val) as uuid_hex, HEX(binary_val) as binary_hex FROM \`TestDb\`.\`UuidBinaryTable\` ORDER BY id`]);
+      const results = await conn.execute([
+        `SELECT *, HEX(uuid_val) as uuid_hex, HEX(binary_val) as binary_hex FROM \`TestDb\`.\`UuidBinaryTable\` ORDER BY id`,
+      ]);
 
       expect(results[0]).toHaveLength(2);
       // MySQL은 UUID를 BINARY(16)으로 저장하므로 HEX 변환 결과와 비교

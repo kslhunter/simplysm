@@ -1,10 +1,4 @@
-import type {
-  DataRecord,
-  DbContextExecutor,
-  IsolationLevel,
-  Migration,
-  ResultMeta,
-} from "./types/db";
+import type { DataRecord, DbContextExecutor, IsolationLevel, Migration, ResultMeta } from "./types/db";
 import { DbErrorCode, DbTransactionError } from "./errors/db-transaction-error";
 import {
   DDL_TYPES,
@@ -393,14 +387,8 @@ export abstract class DbContext {
    * const results = await db.executeDefs([selectDef]);
    * ```
    */
-  executeDefs<T = DataRecord>(
-    defs: QueryDef[],
-    resultMetas?: (ResultMeta | undefined)[],
-  ): Promise<T[][]> {
-    if (
-      this.status === "transact" &&
-      defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))
-    ) {
+  executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]> {
+    if (this.status === "transact" && defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))) {
       throw new Error("TRANSACTION 상태에서는 DDL을 실행할 수 없습니다.");
     }
 
@@ -563,10 +551,7 @@ export abstract class DbContext {
       if (relations == null) continue;
 
       for (const [relName, relDef] of Object.entries(relations)) {
-        if (
-          !(relDef instanceof ForeignKeyTargetBuilder) &&
-          !(relDef instanceof RelationKeyTargetBuilder)
-        ) {
+        if (!(relDef instanceof ForeignKeyTargetBuilder) && !(relDef instanceof RelationKeyTargetBuilder)) {
           continue;
         }
 
@@ -587,16 +572,8 @@ export abstract class DbContext {
   /**
    * DbContext의 모든 Builder 수집 (Table/View/Procedure)
    */
-  private _getBuilders(): (
-    | TableBuilder<any, any>
-    | ViewBuilder<any, any, any>
-    | ProcedureBuilder<any, any>
-  )[] {
-    const builders: (
-      | TableBuilder<any, any>
-      | ViewBuilder<any, any, any>
-      | ProcedureBuilder<any, any>
-    )[] = [];
+  private _getBuilders(): (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
+    const builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] = [];
 
     for (const key of Object.keys(this)) {
       const value = this[key as keyof this];
@@ -604,11 +581,7 @@ export abstract class DbContext {
       // Queryable → Builder 추출
       if (value instanceof Queryable) {
         const from = value.meta.from;
-        if (
-          from instanceof TableBuilder ||
-          from instanceof ViewBuilder ||
-          from instanceof ProcedureBuilder
-        ) {
+        if (from instanceof TableBuilder || from instanceof ViewBuilder || from instanceof ProcedureBuilder) {
           builders.push(from);
         }
       }
@@ -816,17 +789,21 @@ export abstract class DbContext {
         schema: procedure.meta.schema ?? this.schema,
         name: procedure.meta.name,
       },
-      params: params ? Object.entries(params).map(([key, col]) => ({
-        name: key,
-        dataType: col.meta.dataType,
-        nullable: col.meta.nullable,
-        default: col.meta.default,
-      })) : undefined,
-      returns: returns ? Object.entries(returns).map(([key, col]) => ({
-        name: key,
-        dataType: col.meta.dataType,
-        nullable: col.meta.nullable,
-      })) : undefined,
+      params: params
+        ? Object.entries(params).map(([key, col]) => ({
+            name: key,
+            dataType: col.meta.dataType,
+            nullable: col.meta.nullable,
+            default: col.meta.default,
+          }))
+        : undefined,
+      returns: returns
+        ? Object.entries(returns).map(([key, col]) => ({
+            name: key,
+            dataType: col.meta.dataType,
+            nullable: col.meta.nullable,
+          }))
+        : undefined,
       query: procedure.meta.query,
     };
   }
@@ -871,11 +848,7 @@ export abstract class DbContext {
    * );
    * ```
    */
-  async addColumn(
-    table: QueryDefObjectName,
-    columnName: string,
-    column: ColumnBuilder<any, any>,
-  ): Promise<void> {
+  async addColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void> {
     await this.executeDefs([this.getAddColumnQueryDef(table, columnName, column)]);
   }
 
@@ -913,11 +886,7 @@ export abstract class DbContext {
    * );
    * ```
    */
-  async modifyColumn(
-    table: QueryDefObjectName,
-    columnName: string,
-    column: ColumnBuilder<any, any>,
-  ): Promise<void> {
+  async modifyColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void> {
     await this.executeDefs([this.getModifyColumnQueryDef(table, columnName, column)]);
   }
 
@@ -937,11 +906,7 @@ export abstract class DbContext {
    * );
    * ```
    */
-  async renameColumn(
-    table: QueryDefObjectName,
-    column: string,
-    newName: string,
-  ): Promise<void> {
+  async renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void> {
     await this.executeDefs([this.getRenameColumnQueryDef(table, column, newName)]);
   }
 
@@ -989,11 +954,7 @@ export abstract class DbContext {
   }
 
   /** RENAME COLUMN QueryDef 생성 */
-  getRenameColumnQueryDef(
-    table: QueryDefObjectName,
-    column: string,
-    newName: string,
-  ): RenameColumnQueryDef {
+  getRenameColumnQueryDef(table: QueryDefObjectName, column: string, newName: string): RenameColumnQueryDef {
     return { type: "renameColumn", table, column, newName };
   }
 
@@ -1071,10 +1032,7 @@ export abstract class DbContext {
    * );
    * ```
    */
-  async addIdx(
-    table: QueryDefObjectName,
-    indexBuilder: IndexBuilder<string[]>,
-  ): Promise<void> {
+  async addIdx(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void> {
     await this.executeDefs([this.getAddIdxQueryDef(table, indexBuilder)]);
   }
 
@@ -1284,9 +1242,7 @@ export abstract class DbContext {
    * @param tableOrView - 테이블 또는 뷰 빌더
    * @returns QueryDef에서 사용할 객체 이름 정보
    */
-  getQueryDefObjectName(
-    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
-  ): QueryDefObjectName {
+  getQueryDefObjectName(tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>): QueryDefObjectName {
     return objClearUndefined({
       database: tableOrView.meta.database ?? this.database,
       schema: tableOrView.meta.schema ?? this.schema,

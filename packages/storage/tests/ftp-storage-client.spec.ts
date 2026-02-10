@@ -68,9 +68,7 @@ describe("FtpStorageClient", () => {
       const secureClient = new FtpStorageClient(true);
       await secureClient.connect({ host: "ftp.example.com" });
 
-      expect(mockAccess).toHaveBeenCalledWith(
-        expect.objectContaining({ secure: true }),
-      );
+      expect(mockAccess).toHaveBeenCalledWith(expect.objectContaining({ secure: true }));
     });
 
     it("이미 연결된 상태에서 connect 호출 시 에러", async () => {
@@ -89,21 +87,15 @@ describe("FtpStorageClient", () => {
 
   describe("연결 전 메서드 호출", () => {
     it("연결 전 mkdir 호출 시 에러", async () => {
-      await expect(client.mkdir("/test")).rejects.toThrow(
-        "FTP 서버에 연결되어있지 않습니다.",
-      );
+      await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
 
     it("연결 전 rename 호출 시 에러", async () => {
-      await expect(client.rename("/from", "/to")).rejects.toThrow(
-        "FTP 서버에 연결되어있지 않습니다.",
-      );
+      await expect(client.rename("/from", "/to")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
 
     it("연결 전 readdir 호출 시 에러", async () => {
-      await expect(client.readdir("/")).rejects.toThrow(
-        "FTP 서버에 연결되어있지 않습니다.",
-      );
+      await expect(client.readdir("/")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
   });
 
@@ -216,10 +208,7 @@ describe("FtpStorageClient", () => {
       await client.connect({ host: "test" });
       await client.put("/local/file.txt", "/remote/file.txt");
 
-      expect(mockUploadFrom).toHaveBeenCalledWith(
-        "/local/file.txt",
-        "/remote/file.txt",
-      );
+      expect(mockUploadFrom).toHaveBeenCalledWith("/local/file.txt", "/remote/file.txt");
     });
 
     it("Uint8Array에서 업로드해야 함", async () => {
@@ -256,9 +245,7 @@ describe("FtpStorageClient", () => {
       await client.connect({ host: "test" });
       await client.close();
 
-      await expect(client.mkdir("/test")).rejects.toThrow(
-        "FTP 서버에 연결되어있지 않습니다.",
-      );
+      await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
 
     it("close 후 재연결이 가능해야 함", async () => {

@@ -32,10 +32,7 @@ import type { ViewBuilder } from "../view-builder";
  * @see {@link ForeignKeyTargetBuilder} 역참조 빌더
  * @see {@link RelationKeyBuilder} DB FK 없는 관계
  */
-export class ForeignKeyBuilder<
-  TOwner extends TableBuilder<any, any>,
-  TTargetFn extends () => TableBuilder<any, any>,
-> {
+export class ForeignKeyBuilder<TOwner extends TableBuilder<any, any>, TTargetFn extends () => TableBuilder<any, any>> {
   /**
    * @param meta - FK 메타데이터
    * @param meta.ownerFn - 소유 테이블 팩토리
@@ -91,10 +88,7 @@ export class ForeignKeyBuilder<
  *
  * @see {@link ForeignKeyBuilder} FK 빌더
  */
-export class ForeignKeyTargetBuilder<
-  TTargetTableFn extends () => TableBuilder<any, any>,
-  TIsSingle extends boolean,
-> {
+export class ForeignKeyTargetBuilder<TTargetTableFn extends () => TableBuilder<any, any>, TIsSingle extends boolean> {
   /**
    * @param meta - FK 역참조 메타데이터
    * @param meta.targetTableFn - 참조하는 테이블 팩토리
@@ -300,9 +294,7 @@ type RelationRkFactory<
     targetFn: TTargetFn,
   ): RelationKeyBuilder<TOwner, TTargetFn>;
   /** 1:N 논리적 역참조 정의 */
-  relationKeyTarget<
-    TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
-  >(
+  relationKeyTarget<TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>>(
     targetTableFn: TTargetTableFn,
     relationName: string,
   ): RelationKeyTargetBuilder<TTargetTableFn, false>;
@@ -447,7 +439,5 @@ export type ExtractRelationTargetResult<T> = T extends
  * ```
  */
 export type InferDeepRelations<TRelations extends RelationBuilderRecord> = {
-  [K in keyof TRelations]?:
-    | ExtractRelationTarget<TRelations[K]>
-    | ExtractRelationTargetResult<TRelations[K]>;
+  [K in keyof TRelations]?: ExtractRelationTarget<TRelations[K]> | ExtractRelationTargetResult<TRelations[K]>;
 };

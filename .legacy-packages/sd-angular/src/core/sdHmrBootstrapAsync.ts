@@ -1,12 +1,6 @@
 /* eslint-disable no-console */
-import type {
-  ApplicationConfig,
-  ApplicationRef,
-  Type} from "@angular/core";
-import {
-  destroyPlatform,
-  ɵresetCompiledComponents,
-} from "@angular/core";
+import type { ApplicationConfig, ApplicationRef, Type } from "@angular/core";
+import { destroyPlatform, ɵresetCompiledComponents } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 
 export async function sdHmrBootstrapAsync(

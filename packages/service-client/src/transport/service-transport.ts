@@ -1,10 +1,6 @@
 import type { Bytes } from "@simplysm/core-common";
 import { EventEmitter, Uuid } from "@simplysm/core-common";
-import type {
-  ServiceErrorMessage,
-  ServiceResponseMessage,
-  ServiceClientMessage,
-} from "@simplysm/service-common";
+import type { ServiceErrorMessage, ServiceResponseMessage, ServiceClientMessage } from "@simplysm/service-common";
 import { ClientProtocolWrapper } from "../protocol/client-protocol-wrapper";
 import type { ServiceProgress } from "../types/progress.types";
 import type { SocketProvider } from "./socket-provider";

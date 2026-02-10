@@ -1,5 +1,5 @@
-import type { Type} from "@simplysm/sd-core-common";
-import {ObjectUtils} from "@simplysm/sd-core-common";
+import type { Type } from "@simplysm/sd-core-common";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 import type {
   IColumnDef,
   IForeignKeyDef,
@@ -7,7 +7,7 @@ import type {
   IIndexDef,
   IReferenceKeyDef,
   IReferenceKeyTargetDef,
-  ITableDef
+  ITableDef,
 } from "../types";
 
 export class DbDefUtils {
@@ -19,16 +19,19 @@ export class DbDefUtils {
       throw new Error(`'${tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }
 
-    return tableDef ?? {
-      name: "",
-      description: "",
-      columns: [],
-      foreignKeys: [],
-      foreignKeyTargets: [],
-      indexes: [],
-      referenceKeys: [],
-      referenceKeyTargets: []
-    } as ITableDef;
+    return (
+      tableDef ??
+      ({
+        name: "",
+        description: "",
+        columns: [],
+        foreignKeys: [],
+        foreignKeyTargets: [],
+        indexes: [],
+        referenceKeys: [],
+        referenceKeyTargets: [],
+      } as ITableDef)
+    );
   }
 
   static setTableDef(tableType: Type<any>, tableDef: ITableDef): void {
@@ -43,19 +46,19 @@ export class DbDefUtils {
 
   static addColumnDef(tableType: Type<any>, def: IColumnDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.columns = tableDef.columns.merge([def], {keys: ["propertyKey"]});
+    tableDef.columns = tableDef.columns.merge([def], { keys: ["propertyKey"] });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 
   static addForeignKeyDef(tableType: Type<any>, def: IForeignKeyDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.foreignKeys = tableDef.foreignKeys.merge([def], {keys: ["propertyKey"]});
+    tableDef.foreignKeys = tableDef.foreignKeys.merge([def], { keys: ["propertyKey"] });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 
   static addForeignKeyTargetDef(tableType: Type<any>, def: IForeignKeyTargetDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.foreignKeyTargets = tableDef.foreignKeyTargets.merge([def], {keys: ["propertyKey"]});
+    tableDef.foreignKeyTargets = tableDef.foreignKeyTargets.merge([def], { keys: ["propertyKey"] });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 
@@ -64,23 +67,22 @@ export class DbDefUtils {
     const prevIndexDef = tableDef.indexes.single((item) => item.name === def.name);
     if (!prevIndexDef) {
       tableDef.indexes.push(def);
-    }
-    else {
-      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, {keys: ["columnPropertyKey"]});
-      tableDef.indexes = tableDef.indexes.merge([prevIndexDef], {keys: ["name"]});
+    } else {
+      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, { keys: ["columnPropertyKey"] });
+      tableDef.indexes = tableDef.indexes.merge([prevIndexDef], { keys: ["name"] });
     }
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 
   static addReferenceKeyDef(tableType: Type<any>, def: IReferenceKeyDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.referenceKeys = tableDef.referenceKeys.merge([def], {keys: ["propertyKey"]});
+    tableDef.referenceKeys = tableDef.referenceKeys.merge([def], { keys: ["propertyKey"] });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 
   static addReferenceKeyTargetDef(tableType: Type<any>, def: IReferenceKeyTargetDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], {keys: ["propertyKey"]});
+    tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], { keys: ["propertyKey"] });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 }

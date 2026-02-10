@@ -9,7 +9,8 @@ import * as expected from "./window.expected";
 describe("SELECT - Window Functions", () => {
   describe("ROW_NUMBER: 부서별 급여 순위", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         name: e.name,
@@ -47,7 +48,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("RANK: 전체 점수 순위 (동점 시 건너뜀)", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         name: e.name,
@@ -82,7 +84,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("DENSE_RANK: 전체 점수 순위 (동점 시 연속)", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         denseRank: expr.denseRank({ orderBy: [[e.id, "DESC"]] }),
@@ -115,7 +118,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("NTILE: 4분위로 나누기", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         quartile: expr.ntile(4, { orderBy: [[e.id, "DESC"]] }),
@@ -148,15 +152,12 @@ describe("SELECT - Window Functions", () => {
 
   describe("LAG: 이전 행 값 조회", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         name: e.name,
-        prevId: expr.lag(
-          e.id,
-          { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] },
-          { offset: 1 },
-        ),
+        prevId: expr.lag(e.id, { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }, { offset: 1 }),
       }))
       .getSelectQueryDef();
 
@@ -192,7 +193,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("LEAD: 다음 행 값 조회", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         nextId: expr.lead(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1 }),
@@ -229,7 +231,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("LAG with default: 이전 행이 없을 때 기본값", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         prevId: expr.lag(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1, default: 0 }),
@@ -267,7 +270,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("LEAD with default: 다음 행이 없을 때 기본값", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         nextId: expr.lead(e.id, { orderBy: [[e.id, "ASC"]] }, { offset: 1, default: -1 }),
@@ -305,7 +309,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("SUM OVER: 누적 합계", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         runningTotal: expr.sumOver(e.id, {
@@ -345,7 +350,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("AVG OVER: 이동 평균", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         avgId: expr.avgOver(e.id, { partitionBy: [e.departmentId] }),
@@ -381,7 +387,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("COUNT OVER: 파티션 내 개수", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         deptCount: expr.countOver({ partitionBy: [e.departmentId] }),
@@ -414,7 +421,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("FIRST_VALUE / LAST_VALUE", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         firstInDept: expr.firstValue(e.name, {
@@ -469,17 +477,14 @@ describe("SELECT - Window Functions", () => {
 
   describe("여러 윈도우 함수 조합", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         name: e.name,
         rowNum: expr.rowNumber({ partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }),
         rank: expr.rank({ partitionBy: [e.departmentId], orderBy: [[e.id, "DESC"]] }),
-        prevName: expr.lag(
-          e.name,
-          { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] },
-          { offset: 1 },
-        ),
+        prevName: expr.lag(e.name, { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }, { offset: 1 }),
       }))
       .getSelectQueryDef();
 
@@ -531,7 +536,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("MIN OVER: 부서별 최소 ID", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         minId: expr.minOver(e.id, { partitionBy: [e.departmentId] }),
@@ -567,7 +573,8 @@ describe("SELECT - Window Functions", () => {
 
   describe("MAX OVER: 부서별 최대 ID", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         maxId: expr.maxOver(e.id, { partitionBy: [e.departmentId] }),

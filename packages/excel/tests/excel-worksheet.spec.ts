@@ -297,7 +297,7 @@ describe("ExcelWorksheet", () => {
       await wb2.getWorksheet("Test");
 
       // XML 구조에서 cols 데이터 확인
-      const wsData = (await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml"));
+      const wsData = await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml");
       const cols = wsData.data.worksheet.cols?.[0]?.col ?? [];
 
       // 열 A (인덱스 0, 1-based=1)의 너비 확인

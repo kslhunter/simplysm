@@ -18,30 +18,30 @@
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";
 interface SerialQueueEvents {
-    error: SdError;
+  error: SdError;
 }
 export declare class SerialQueue extends EventEmitter<SerialQueueEvents> {
-    private readonly _gap;
-    private static readonly _logger;
-    private readonly _queue;
-    private _isQueueRunning;
-    /**
-     * @param _gap 각 작업 사이의 간격 (ms)
-     */
-    constructor(_gap?: number);
-    /**
-     * 대기 중인 큐 비우기 (현재 실행 중인 작업은 완료됨)
-     */
-    dispose(): void;
-    /**
-     * using 문 지원
-     */
-    [Symbol.dispose](): void;
-    /**
-     * 함수를 큐에 추가하고 실행
-     */
-    run(fn: () => void | Promise<void>): void;
-    private _processAsync;
+  private readonly _gap;
+  private static readonly _logger;
+  private readonly _queue;
+  private _isQueueRunning;
+  /**
+   * @param _gap 각 작업 사이의 간격 (ms)
+   */
+  constructor(_gap?: number);
+  /**
+   * 대기 중인 큐 비우기 (현재 실행 중인 작업은 완료됨)
+   */
+  dispose(): void;
+  /**
+   * using 문 지원
+   */
+  [Symbol.dispose](): void;
+  /**
+   * 함수를 큐에 추가하고 실행
+   */
+  run(fn: () => void | Promise<void>): void;
+  private _processAsync;
 }
 export {};
 //# sourceMappingURL=serial-queue.d.ts.map

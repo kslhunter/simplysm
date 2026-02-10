@@ -35,10 +35,7 @@ describe("loadIgnorePatterns", () => {
     });
 
     mockJitiImportFn.mockResolvedValue({
-      default: [
-        { ignores: ["node_modules/**", "dist/**"] },
-        { files: ["**/*.ts"], rules: {} },
-      ],
+      default: [{ ignores: ["node_modules/**", "dist/**"] }, { files: ["**/*.ts"], rules: {} }],
     });
 
     const patterns = await loadIgnorePatterns(cwd);
@@ -55,10 +52,7 @@ describe("loadIgnorePatterns", () => {
     });
 
     mockJitiImportFn.mockResolvedValue({
-      default: [
-        { ignores: ["global/**"] },
-        { files: ["**/*.ts"], ignores: ["local/**"], rules: {} },
-      ],
+      default: [{ ignores: ["global/**"] }, { files: ["**/*.ts"], ignores: ["local/**"], rules: {} }],
     });
 
     const patterns = await loadIgnorePatterns(cwd);
@@ -100,10 +94,7 @@ describe("loadIgnorePatterns", () => {
     });
 
     mockJitiImportFn.mockResolvedValue({
-      default: [
-        { ignores: ["node_modules/**"] },
-        { ignores: ["dist/**", ".cache/**"] },
-      ],
+      default: [{ ignores: ["node_modules/**"] }, { ignores: ["dist/**", ".cache/**"] }],
     });
 
     const patterns = await loadIgnorePatterns(cwd);
@@ -119,9 +110,7 @@ describe("loadIgnorePatterns", () => {
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.js"));
     });
 
-    mockJitiImportFn.mockResolvedValue([
-      { ignores: ["build/**"] },
-    ]);
+    mockJitiImportFn.mockResolvedValue([{ ignores: ["build/**"] }]);
 
     const patterns = await loadIgnorePatterns(cwd);
 
@@ -140,9 +129,7 @@ describe("loadIgnorePatterns", () => {
       config: [{ ignores: ["test/**"] }],
     });
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow(
-      "ESLint 설정 파일이 올바른 형식이 아닙니다",
-    );
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint 설정 파일이 올바른 형식이 아닙니다");
   });
 
   it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {
@@ -161,9 +148,7 @@ describe("loadIgnorePatterns", () => {
     const patterns = await loadIgnorePatterns(cwd);
 
     expect(patterns).toEqual(["mts-ignore/**"]);
-    expect(mockJitiImportFn).toHaveBeenCalledWith(
-      expect.stringContaining("eslint.config.mts"),
-    );
+    expect(mockJitiImportFn).toHaveBeenCalledWith(expect.stringContaining("eslint.config.mts"));
   });
 
   it("빈 배열 export 시 빈 패턴 배열 반환", async () => {

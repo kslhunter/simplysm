@@ -20,18 +20,14 @@ export interface WorkerModule {
  * 동기 메서드 타입도 `Promise<Awaited<R>>`로 변환한다.
  */
 export type PromisifyMethods<T> = {
-  [K in keyof T]: T[K] extends (...args: infer P) => infer R
-    ? (...args: P) => Promise<Awaited<R>>
-    : never;
+  [K in keyof T]: T[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never;
 };
 
 /**
  * SdWorker.create()가 반환하는 Proxy 타입.
  * Promisified 메서드들 + on() + terminate() 제공.
  */
-export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
-  TModule["default"]["__methods"]
-> & {
+export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<TModule["default"]["__methods"]> & {
   /**
    * 워커 이벤트 리스너 등록.
    */

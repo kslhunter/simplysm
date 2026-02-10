@@ -109,7 +109,6 @@ function isEmptyObject(obj: Record<string, unknown>): boolean {
   return Object.keys(obj).length === 0;
 }
 
-
 // ============================================
 // Main Function
 // ============================================
@@ -244,10 +243,7 @@ async function parseJoinedRecords<T>(
  *
  * JSON.stringify보다 빠른 커스텀 직렬화
  */
-function serializeGroupKey(
-  groupKey: Record<string, unknown>,
-  cachedKeyOrder?: string[],
-): string {
+function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
   return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
 }
@@ -379,10 +375,7 @@ function groupRecordsRecursively(
 /**
  * 레코드에서 JOIN 키를 제외한 그룹 키 추출
  */
-function extractGroupKey(
-  record: Record<string, unknown>,
-  joinKeys: string[],
-): Record<string, unknown> {
+function extractGroupKey(record: Record<string, unknown>, joinKeys: string[]): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     // JOIN 키가 아닌 것만 포함
@@ -440,9 +433,7 @@ function mergeJoinData(
         }
       } else {
         // hashSet이 없으면 폴백 (기존 방식)
-        const isDuplicate = existingJoinData.some(
-          (item) => objEqual(item as Record<string, unknown>, newJoinData),
-        );
+        const isDuplicate = existingJoinData.some((item) => objEqual(item as Record<string, unknown>, newJoinData));
         if (!isDuplicate) {
           existingJoinData.push(newJoinData);
         }

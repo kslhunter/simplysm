@@ -3,13 +3,11 @@ import { booleanTransitionCss } from "../../styles/mixins/boolean-transition.css
 const collapse = recipe({
   base: {
     overflow: "hidden",
-    transitionProperty: "height"
+    transitionProperty: "height",
   },
   variants: {
-    open: booleanTransitionCss
-  }
+    open: booleanTransitionCss,
+  },
 });
-export {
-  collapse
-};
+export { collapse };
 //# sourceMappingURL=collapse.css.js.map

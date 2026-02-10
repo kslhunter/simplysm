@@ -52,7 +52,7 @@ export default function Home(props: ParentProps) {
         <SidebarMenu layout={"accordion"} menus={menus} />
       </Sidebar>
 
-      <div style={{ flex: 1, overflow: "hidden", height: "100%", display: "flex", "flex-direction": "column" }}>
+      <div style={{ "flex": 1, "overflow": "hidden", "height": "100%", "display": "flex", "flex-direction": "column" }}>
         <Suspense fallback={<div class={atoms({ p: "xxl" })}>로딩 중...</div>}>{props.children}</Suspense>
       </div>
     </SidebarContainer>

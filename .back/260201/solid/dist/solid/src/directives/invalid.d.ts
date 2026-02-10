@@ -1,13 +1,13 @@
 declare module "solid-js" {
-    namespace JSX {
-        interface Directives {
-            /**
-             * 유효성 검증 directive
-             * @param accessor 에러 메시지를 반환하는 함수. 빈 문자열이면 valid 상태
-             */
-            invalid: () => string;
-        }
+  namespace JSX {
+    interface Directives {
+      /**
+       * 유효성 검증 directive
+       * @param accessor 에러 메시지를 반환하는 함수. 빈 문자열이면 valid 상태
+       */
+      invalid: () => string;
     }
+  }
 }
 /**
  * 유효성 검증 directive

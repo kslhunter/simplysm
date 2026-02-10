@@ -4,6 +4,6 @@ export {
   fieldBase as timeField,
   fieldContainer as timeFieldContainer,
   fieldContent as timeFieldContent,
-  fieldInput as timeFieldInput
+  fieldInput as timeFieldInput,
 };
 //# sourceMappingURL=time-field.css.js.map

@@ -1,5 +1,5 @@
 import type { WebSocket } from "ws";
-import type { Type} from "@simplysm/sd-core-common";
+import type { Type } from "@simplysm/sd-core-common";
 import { Uuid } from "@simplysm/sd-core-common";
 import type { SdServiceEventListenerBase, TSdServiceClientMessage } from "@simplysm/sd-service-common";
 import { SdLogger } from "@simplysm/sd-core-node";
@@ -18,12 +18,7 @@ export class SdWebSocketHandler {
     private readonly _jwt: SdServiceJwtManager,
   ) {}
 
-  addSocket(
-    socket: WebSocket,
-    clientId: string,
-    clientName: string,
-    connReq: FastifyRequest
-  ) {
+  addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest) {
     try {
       const serviceSocket = new SdServiceSocket(socket, clientId, clientName, connReq);
 
@@ -32,8 +27,7 @@ export class SdWebSocketHandler {
       if (prevServiceSocket) {
         prevServiceSocket.close();
 
-        const connectionDateTimeText =
-          prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+        const connectionDateTimeText = prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
         this._logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
@@ -141,9 +135,7 @@ export class SdWebSocketHandler {
       } else if (message.name === "evt:gets") {
         const { name } = message.body;
 
-        const infos = Array.from(this._socketMap.values()).mapMany((subSock) =>
-          subSock.getEventListners(name),
-        );
+        const infos = Array.from(this._socketMap.values()).mapMany((subSock) => subSock.getEventListners(name));
 
         return await serviceSocket.sendAsync(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
@@ -187,9 +179,7 @@ export class SdWebSocketHandler {
       }
     } catch (err) {
       const error =
-        err instanceof Error
-          ? err
-          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+        err instanceof Error ? err : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
       return await serviceSocket.sendAsync(uuid, {
         name: "error",

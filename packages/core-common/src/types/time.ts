@@ -36,11 +36,7 @@ export class Time {
         Time.MS_PER_DAY;
     } else if (arg2 !== undefined) {
       let tick =
-        ((arg4 ?? 0) +
-          (arg3 ?? 0) * 1000 +
-          arg2 * 60 * 1000 +
-          (arg1 as number) * 60 * 60 * 1000) %
-        Time.MS_PER_DAY;
+        ((arg4 ?? 0) + (arg3 ?? 0) * 1000 + arg2 * 60 * 1000 + (arg1 as number) * 60 * 60 * 1000) % Time.MS_PER_DAY;
       if (tick < 0) tick += Time.MS_PER_DAY;
       this._tick = tick;
     } else if (arg1 instanceof Date) {
@@ -84,12 +80,7 @@ export class Time {
       } else {
         hour = isPM ? rawHour + 12 : rawHour;
       }
-      return new Time(
-        hour,
-        Number(match1[3]),
-        Number(match1[4]),
-        Number(match1[6] ? match1[6].padEnd(3, "0") : "0"),
-      );
+      return new Time(hour, Number(match1[3]), Number(match1[4]), Number(match1[6] ? match1[6].padEnd(3, "0") : "0"));
     }
 
     const match2 = /([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);

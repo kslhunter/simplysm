@@ -30,14 +30,7 @@ export abstract class CordovaFileSystem {
 
   // 저장소 경로 얻기
   static async getStoragePathAsync(
-    type:
-      | "external"
-      | "externalFiles"
-      | "externalCache"
-      | "externalMedia"
-      | "appData"
-      | "appFiles"
-      | "appCache",
+    type: "external" | "externalFiles" | "externalCache" | "externalMedia" | "appData" | "appFiles" | "appCache",
   ): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       cordova.exec(resolve, reject, "CordovaFileSystem", "getStoragePath", [type]);
@@ -68,10 +61,7 @@ export abstract class CordovaFileSystem {
 
   private static async _writeFileBufferAsync(filePath: string, data: Buffer): Promise<void> {
     await new Promise<string>((resolve, reject) => {
-      cordova.exec(resolve, reject, "CordovaFileSystem", "writeFileBase64", [
-        filePath,
-        data.toString("base64"),
-      ]);
+      cordova.exec(resolve, reject, "CordovaFileSystem", "writeFileBase64", [filePath, data.toString("base64")]);
     });
   }
 

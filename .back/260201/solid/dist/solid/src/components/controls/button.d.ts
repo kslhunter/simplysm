@@ -9,8 +9,7 @@ import "@simplysm/core-common";
  * @property inset - true일 경우 테이블 셀 등에서 사용하기 위한 인셋 스타일 적용
  * @property disabled - 비활성화 상태
  */
-export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement>, ButtonStyles {
-}
+export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement>, ButtonStyles {}
 /**
  * 다양한 테마와 크기를 지원하는 버튼 컴포넌트
  *

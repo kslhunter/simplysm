@@ -12,7 +12,8 @@ import * as expected from "./join.expected";
 describe("SELECT - JOIN", () => {
   describe("기본", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .getSelectQueryDef();
 
@@ -62,7 +63,8 @@ describe("SELECT - JOIN", () => {
 
   describe("joinSingle", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .joinSingle("user", (q, c) => q.from(User).where((item) => [expr.eq(item.id, c.userId)]))
       .getSelectQueryDef();
 
@@ -112,7 +114,8 @@ describe("SELECT - JOIN", () => {
 
   it("select 후 join", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({ id: item.id, name: item.name }))
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .getSelectQueryDef();
@@ -151,7 +154,8 @@ describe("SELECT - JOIN", () => {
 
   it("다중 join", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .join("company", (q, c) => q.from(Company).where((item) => [expr.eq(item.id, c.companyId)]))
       .getSelectQueryDef();
@@ -211,13 +215,12 @@ describe("SELECT - JOIN", () => {
 
   it("다단계 join(Single)", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .joinSingle("user", (q, c) =>
         q
           .from(User)
-          .joinSingle("company", (q2, c2) =>
-            q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]),
-          )
+          .joinSingle("company", (q2, c2) => q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]))
           .where((item) => [expr.eq(item.id, c.userId)]),
       )
       .getSelectQueryDef();
@@ -291,7 +294,8 @@ describe("SELECT - JOIN", () => {
 
   it("join + where 조합", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .where((item) => [expr.eq(item.isActive, true)])
       .getSelectQueryDef();
@@ -344,7 +348,10 @@ describe("SELECT - JOIN", () => {
 describe("SELECT - INCLUDE", () => {
   it("FK (N:1)", () => {
     const db = new TestDbContext();
-    const def = db.post().include((item) => item.user).getSelectQueryDef();
+    const def = db
+      .post()
+      .include((item) => item.user)
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -385,7 +392,10 @@ describe("SELECT - INCLUDE", () => {
 
   it("FKT (1:N)", () => {
     const db = new TestDbContext();
-    const def = db.user().include((item) => item.posts).getSelectQueryDef();
+    const def = db
+      .user()
+      .include((item) => item.posts)
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -426,7 +436,10 @@ describe("SELECT - INCLUDE", () => {
 
   it("다단계 include (FK -> FK)", () => {
     const db = new TestDbContext();
-    const def = db.post().include((item) => item.user.company).getSelectQueryDef();
+    const def = db
+      .post()
+      .include((item) => item.user.company)
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -483,7 +496,8 @@ describe("SELECT - INCLUDE", () => {
 
   it("다중 include", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .include((item) => item.user)
       .include((item) => item.user.company)
       .getSelectQueryDef();
@@ -544,7 +558,8 @@ describe("SELECT - INCLUDE", () => {
 
   it("include + select 조합", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .include((item) => item.user)
       .select((item) => ({
         title: item.title,
@@ -580,7 +595,8 @@ describe("SELECT - INCLUDE", () => {
 
   it("include + where 조합", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .include((item) => item.user)
       .where((item) => [expr.eq(item.user!.isActive, true)])
       .getSelectQueryDef();
@@ -632,7 +648,10 @@ describe("SELECT - INCLUDE", () => {
   describe("3 depth include (FK -> FKT -> FK)", () => {
     // Post → user(FK) → posts(FKT) → user(FK)
     const db = new TestDbContext();
-    const def = db.post().include((item) => item.user.posts.user).getSelectQueryDef();
+    const def = db
+      .post()
+      .include((item) => item.user.posts.user)
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

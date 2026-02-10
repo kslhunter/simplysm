@@ -187,12 +187,7 @@ describe("TransferableConvert", () => {
 
   describe("encode() - 컬렉션", () => {
     it("배열을 재귀적으로 인코딩한다", () => {
-      const arr = [
-        new DateTime(2025, 1, 6),
-        Uuid.new(),
-        "string",
-        123,
-      ] as const;
+      const arr = [new DateTime(2025, 1, 6), Uuid.new(), "string", 123] as const;
       const { result } = transferEncode(arr);
 
       expect(Array.isArray(result)).toBe(true);
@@ -517,12 +512,7 @@ describe("TransferableConvert", () => {
     it("배열을 재귀적으로 디코딩한다", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const uuidStr = Uuid.new().toString();
-      const encoded = [
-        { __type__: "DateTime", data: tick },
-        { __type__: "Uuid", data: uuidStr },
-        "string",
-        123,
-      ];
+      const encoded = [{ __type__: "DateTime", data: tick }, { __type__: "Uuid", data: uuidStr }, "string", 123];
       const decoded = transferDecode(encoded);
 
       expect(Array.isArray(decoded)).toBe(true);
@@ -549,10 +539,7 @@ describe("TransferableConvert", () => {
 
     it("Set을 재귀적으로 디코딩한다", () => {
       const tick = new DateTime(2025, 1, 6).tick;
-      const encoded = new Set([
-        { __type__: "DateTime", data: tick },
-        "string",
-      ]);
+      const encoded = new Set([{ __type__: "DateTime", data: tick }, "string"]);
       const decoded = transferDecode(encoded);
 
       expect(decoded instanceof Set).toBe(true);
@@ -596,11 +583,7 @@ describe("TransferableConvert", () => {
   describe("decode() - 원본 보존", () => {
     it("원본 배열이 변경되지 않는다", () => {
       const tick = new DateTime(2025, 1, 6).tick;
-      const original = [
-        { __type__: "DateTime", data: tick },
-        "string",
-        123,
-      ];
+      const original = [{ __type__: "DateTime", data: tick }, "string", 123];
       const originalCopy = JSON.stringify(original);
 
       transferDecode(original);
@@ -644,9 +627,7 @@ describe("TransferableConvert", () => {
 
     it("decode 결과는 새 인스턴스다 (원본과 다름)", () => {
       const tick = new DateTime(2025, 1, 6).tick;
-      const original = [
-        { __type__: "DateTime", data: tick },
-      ];
+      const original = [{ __type__: "DateTime", data: tick }];
 
       const decoded = transferDecode(original);
 

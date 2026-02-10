@@ -140,9 +140,7 @@ describe("ExcelUtils", () => {
       const tick = date.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
       // 12시 = 0.5일 추가
-      const baseNum = ExcelUtils.convertTimeTickToNumber(
-        new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime(),
-      );
+      const baseNum = ExcelUtils.convertTimeTickToNumber(new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime());
       expect(excelNum - baseNum).toBeCloseTo(0.5, 1);
     });
 
@@ -181,17 +179,11 @@ describe("ExcelUtils", () => {
     });
 
     it("날짜+시간 패턴을 DateTime으로 인식한다", () => {
-      expect(ExcelUtils.convertNumFmtCodeToName("yyyy-mm-dd hh:mm:ss")).toBe(
-        "DateTime",
-      );
+      expect(ExcelUtils.convertNumFmtCodeToName("yyyy-mm-dd hh:mm:ss")).toBe("DateTime");
       // "yy/mm/dd h:mm"는 날짜만 감지됨 (h:mm에서 hh가 아니고 ss도 없으므로)
-      expect(ExcelUtils.convertNumFmtCodeToName("yy/mm/dd h:mm")).toBe(
-        "DateOnly",
-      );
+      expect(ExcelUtils.convertNumFmtCodeToName("yy/mm/dd h:mm")).toBe("DateOnly");
       // 명확한 DateTime 패턴
-      expect(ExcelUtils.convertNumFmtCodeToName("yyyy/mm/dd hh:mm:ss")).toBe(
-        "DateTime",
-      );
+      expect(ExcelUtils.convertNumFmtCodeToName("yyyy/mm/dd hh:mm:ss")).toBe("DateTime");
     });
 
     it("숫자 패턴을 number로 인식한다", () => {

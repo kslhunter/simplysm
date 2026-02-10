@@ -28,10 +28,7 @@ export class ProtocolWrapper {
   /**
    * 메시지 인코딩 (자동 분기 처리)
    */
-  async encode(
-    uuid: string,
-    message: ServiceMessage,
-  ): Promise<{ chunks: Bytes[]; totalSize: number }> {
+  async encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }> {
     if (this._shouldUseWorkerForEncode(message)) {
       return ProtocolWrapper.worker.encode(uuid, message);
     } else {

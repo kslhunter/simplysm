@@ -75,10 +75,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const alias = this.expr.wrap(join.as);
     const from = this.renderFrom(join.from);
-    const where =
-      join.where != null && join.where.length > 0
-        ? ` ON ${this.expr.renderWhere(join.where)}`
-        : " ON TRUE";
+    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON TRUE";
 
     // LATERAL JOIN 필요 여부 감지
     if (this.needsLateral(join)) {
@@ -255,9 +252,12 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // INSERT INTO SELECT에서 columns 추출
     const selectDef = def.recordsSelectQuery;
-    const colList = selectDef.select != null
-      ? Object.keys(selectDef.select).map((c) => this.expr.wrap(c)).join(", ")
-      : "*";
+    const colList =
+      selectDef.select != null
+        ? Object.keys(selectDef.select)
+            .map((c) => this.expr.wrap(c))
+            .join(", ")
+        : "*";
 
     // OUTPUT 불필요: 단순 INSERT INTO SELECT
     if (def.output == null) {
@@ -287,9 +287,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // recordsSelectQuery에서 PK 컬럼만 추출한 SELECT 생성
     const pkSelectDef: SelectQueryDef = {
       ...def.recordsSelectQuery,
-      select: Object.fromEntries(
-        def.output.pkColNames.map((pk) => [pk, def.recordsSelectQuery.select![pk]]),
-      ),
+      select: Object.fromEntries(def.output.pkColNames.map((pk) => [pk, def.recordsSelectQuery.select![pk]])),
     };
     const pkSelectSql = this.select(pkSelectDef).sql;
 
@@ -340,7 +338,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const tempTableName = this.expr.wrap("SD_TEMP_" + Uuid.new().toString().replace(/-/g, ""));
 
     // UPDATE 대상 PK를 임시 테이블에 저장 (UPDATE 후 WHERE 조건이 달라질 수 있으므로)
-    const pkSelectCols = def.output.pkColNames.map((pk) => `${alias}.${this.expr.wrap(pk)} AS ${this.expr.wrap(pk)}`).join(", ");
+    const pkSelectCols = def.output.pkColNames
+      .map((pk) => `${alias}.${this.expr.wrap(pk)} AS ${this.expr.wrap(pk)}`)
+      .join(", ");
     let createTempSql = `CREATE TEMPORARY TABLE ${tempTableName} AS SELECT ${pkSelectCols} FROM ${table} AS ${alias}`;
     createTempSql += this.renderJoins(def.joins);
     createTempSql += this.renderWhere(def.where);
@@ -599,7 +599,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected renameColumn(def: RenameColumnQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
     // MySQL 8.0+: RENAME COLUMN 지원
-    return { sql: `ALTER TABLE ${table} RENAME COLUMN ${this.expr.wrap(def.column)} TO ${this.expr.wrap(def.newName)}` };
+    return {
+      sql: `ALTER TABLE ${table} RENAME COLUMN ${this.expr.wrap(def.column)} TO ${this.expr.wrap(def.newName)}`,
+    };
   }
 
   //#endregion
@@ -624,7 +626,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const targetCols = fk.targetPkColumns.map((c) => this.expr.wrap(c)).join(", ");
 
     // MySQL은 FK 추가 시 자동으로 인덱스 생성하므로 별도 IDX 불필요
-    return { sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(fk.name)} FOREIGN KEY (${fkCols}) REFERENCES ${targetTable} (${targetCols})` };
+    return {
+      sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(fk.name)} FOREIGN KEY (${fkCols}) REFERENCES ${targetTable} (${targetCols})`,
+    };
   }
 
   protected dropFk(def: DropFkQueryDef): QueryBuildResult {
@@ -661,13 +665,16 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     const proc = this.tableName(def.procedure);
 
     // params 처리
-    const paramList = def.params?.map(p => {
-      let sql = `IN ${this.expr.wrap(p.name)} ${this.expr.renderDataType(p.dataType)}`;
-      if (p.default !== undefined) {
-        sql += ` DEFAULT ${this.expr.escapeValue(p.default)}`;
-      }
-      return sql;
-    }).join(", ") ?? "";
+    const paramList =
+      def.params
+        ?.map((p) => {
+          let sql = `IN ${this.expr.wrap(p.name)} ${this.expr.renderDataType(p.dataType)}`;
+          if (p.default !== undefined) {
+            sql += ` DEFAULT ${this.expr.escapeValue(p.default)}`;
+          }
+          return sql;
+        })
+        .join(", ") ?? "";
 
     let sql = `CREATE PROCEDURE ${proc}(${paramList})\n`;
     sql += `BEGIN\n`;
@@ -708,7 +715,8 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     }
 
     const dbName = this.expr.escapeString(def.database);
-    return { sql: `
+    return {
+      sql: `
 SET FOREIGN_KEY_CHECKS = 0;
 SET @tables = NULL;
 SELECT GROUP_CONCAT(table_name) INTO @tables FROM information_schema.tables WHERE table_schema = '${dbName}';
@@ -716,7 +724,8 @@ SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ',
 PREPARE stmt FROM @drop_stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-SET FOREIGN_KEY_CHECKS = 1` };
+SET FOREIGN_KEY_CHECKS = 1`,
+    };
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {

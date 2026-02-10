@@ -11,7 +11,10 @@ import * as expected from "./filter.expected";
 describe("SELECT - WHERE - 비교 연산", () => {
   describe("eq (equal)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.eq(item.id, 1)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.eq(item.id, 1)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -36,7 +39,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
   describe("not eq (not equal)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.not(expr.eq(item.id, 1))]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.eq(item.id, 1))])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -64,7 +70,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
   describe("gt (greater than)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.gt(item.age, 20)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.gt(item.age, 20)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -89,7 +98,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
   describe("gte (greater than or equal)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.gte(item.age, 20)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.gte(item.age, 20)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -114,7 +126,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
   describe("lt (less than)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.lt(item.age, 30)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.lt(item.age, 30)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -139,7 +154,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 
   describe("lte (less than or equal)", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.lte(item.age, 30)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.lte(item.age, 30)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -170,7 +188,10 @@ describe("SELECT - WHERE - 비교 연산", () => {
 describe("SELECT - WHERE - NULL 체크", () => {
   describe("null", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.null(item.email)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.null(item.email)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -194,7 +215,10 @@ describe("SELECT - WHERE - NULL 체크", () => {
 
   describe("not null", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.not(expr.null(item.email))]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.null(item.email))])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -227,7 +251,10 @@ describe("SELECT - WHERE - NULL 체크", () => {
 describe("SELECT - WHERE - IN", () => {
   describe("in", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.in(item.id, [1, 2, 3])]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.in(item.id, [1, 2, 3])])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -256,7 +283,10 @@ describe("SELECT - WHERE - IN", () => {
 
   describe("not in", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.not(expr.in(item.id, [1, 2]))]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.in(item.id, [1, 2]))])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -293,7 +323,10 @@ describe("SELECT - WHERE - IN", () => {
 describe("SELECT - WHERE - LIKE", () => {
   describe("like", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.like(item.name, "%홍%")]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.like(item.name, "%홍%")])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -318,7 +351,8 @@ describe("SELECT - WHERE - LIKE", () => {
 
   describe("not like", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.not(expr.like(item.name, "%테스트%"))])
       .getSelectQueryDef();
 
@@ -354,7 +388,8 @@ describe("SELECT - WHERE - LIKE", () => {
 describe("SELECT - WHERE - 논리 연산", () => {
   describe("다중 조건 (AND)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.eq(item.isActive, true), expr.gt(item.age, 20)])
       .getSelectQueryDef();
 
@@ -386,7 +421,8 @@ describe("SELECT - WHERE - 논리 연산", () => {
 
   describe("or 조건", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.or([expr.eq(item.age, 20), expr.eq(item.age, 30)])])
       .getSelectQueryDef();
 
@@ -423,7 +459,8 @@ describe("SELECT - WHERE - 논리 연산", () => {
 
   describe("and 조건 (명시적)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.and([expr.gt(item.age, 20), expr.lt(item.age, 30)])])
       .getSelectQueryDef();
 
@@ -460,7 +497,8 @@ describe("SELECT - WHERE - 논리 연산", () => {
 
   it("연속 where (AND 결합)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.eq(item.isActive, true)])
       .where((item) => [expr.gt(item.age, 20)])
       .getSelectQueryDef();
@@ -492,7 +530,10 @@ describe("SELECT - WHERE - 논리 연산", () => {
 describe("SELECT - WHERE - BETWEEN", () => {
   describe("between", () => {
     const db = new TestDbContext();
-    const def = db.user().where((item) => [expr.between(item.age, 20, 30)]).getSelectQueryDef();
+    const def = db
+      .user()
+      .where((item) => [expr.between(item.age, 20, 30)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -524,12 +565,9 @@ describe("SELECT - WHERE - BETWEEN", () => {
 describe("SELECT - WHERE - EXISTS / IN subquery", () => {
   describe("exists", () => {
     const db = new TestDbContext();
-    const def = db.user()
-      .where((item) => [
-        expr.exists(
-          db.post().where((p) => [expr.eq(p.userId, item.id)]),
-        ),
-      ])
+    const def = db
+      .user()
+      .where((item) => [expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)]))])
       .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -565,14 +603,9 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
 
   it("not exists - QueryDef 검증", () => {
     const db = new TestDbContext();
-    const def = db.user()
-      .where((item) => [
-        expr.not(
-          expr.exists(
-            db.post().where((p) => [expr.eq(p.userId, item.id)]),
-          ),
-        ),
-      ])
+    const def = db
+      .user()
+      .where((item) => [expr.not(expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)])))])
       .getSelectQueryDef();
 
     expect(def).toEqual({
@@ -604,7 +637,8 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
 
   describe("inQuery (IN subquery)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [
         expr.inQuery(
           item.id,
@@ -649,7 +683,10 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
 describe("SELECT - SEARCH", () => {
   it("단일 검색어 - 단일 컬럼", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "사과").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "사과")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -680,7 +717,10 @@ describe("SELECT - SEARCH", () => {
 
   it("다중 검색어 (OR)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "사과 바나나").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "사과 바나나")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -729,7 +769,10 @@ describe("SELECT - SEARCH", () => {
 
   it("구문 검색 (따옴표)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], '"맛있는 과일"').getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], '"맛있는 과일"')
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -760,7 +803,10 @@ describe("SELECT - SEARCH", () => {
 
   it("와일드카드 (*)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "test*").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "test*")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -791,7 +837,10 @@ describe("SELECT - SEARCH", () => {
 
   it("이스케이프 (\\*)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "app\\*").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "app\\*")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -822,7 +871,10 @@ describe("SELECT - SEARCH", () => {
 
   it("다중 컬럼 검색 (OR)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title, item.content], "사과").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title, item.content], "사과")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -861,7 +913,10 @@ describe("SELECT - SEARCH", () => {
 
   it("제외 검색 (-)", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "사과 -바나나").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "사과 -바나나")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",
@@ -908,7 +963,8 @@ describe("SELECT - SEARCH", () => {
 
   it("복합 검색 (포함, 제외, 구문)", () => {
     const db = new TestDbContext();
-    const def = db.post()
+    const def = db
+      .post()
       .search((item) => [item.title, item.content], '사과 "맛있는 과일" -바나나')
       .getSelectQueryDef();
 
@@ -994,7 +1050,10 @@ describe("SELECT - SEARCH", () => {
 
   it("빈 검색어", () => {
     const db = new TestDbContext();
-    const def = db.post().search((item) => [item.title], "   ").getSelectQueryDef();
+    const def = db
+      .post()
+      .search((item) => [item.title], "   ")
+      .getSelectQueryDef();
 
     expect(def).toEqual({
       type: "select",

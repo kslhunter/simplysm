@@ -15,7 +15,7 @@ const findTriggerByAriaHaspopup = () => document.querySelector('[aria-haspopup="
 /**
  * 테스트용 controlled Dropdown 래퍼
  */
-const TestDropdown: ParentComponent<{ disabled?: boolean; "data-testid"?: string }> = (props) => {
+const TestDropdown: ParentComponent<{ "disabled"?: boolean; "data-testid"?: string }> = (props) => {
   const [open, setOpen] = createSignal(false);
   return (
     <Dropdown open={open()} onOpenChange={setOpen} disabled={props.disabled}>

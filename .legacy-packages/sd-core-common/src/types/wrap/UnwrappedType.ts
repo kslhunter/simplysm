@@ -4,6 +4,6 @@ export type UnwrappedType<T> = T extends String
     ? number
     : T extends BigInt
       ? bigint
-    : T extends Boolean
-      ? boolean
-      : T;
+      : T extends Boolean
+        ? boolean
+        : T;

@@ -4,8 +4,8 @@ import { type JSX, type ParentComponent } from "solid-js";
  * TopbarUser 메뉴 아이템 타입
  */
 export interface TopbarUserMenuItem {
-    title: string;
-    onClick: () => void;
+  title: string;
+  onClick: () => void;
 }
 /**
  * TopbarUser 컴포넌트의 props
@@ -14,8 +14,8 @@ export interface TopbarUserMenuItem {
  * @property children - 트리거 버튼에 표시할 내용 (사용자 이름 등)
  */
 export interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-    menus: TopbarUserMenuItem[];
-    children?: JSX.Element;
+  menus: TopbarUserMenuItem[];
+  children?: JSX.Element;
 }
 /**
  * 탑바 사용자 메뉴 컴포넌트

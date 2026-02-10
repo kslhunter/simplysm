@@ -1,11 +1,4 @@
-import {
-  Icon,
-  Sidebar,
-  Topbar,
-  type SidebarMenuItem,
-  type TopbarMenuItem,
-  type TopbarUserMenu,
-} from "@simplysm/solid";
+import { Icon, Sidebar, Topbar, type SidebarMenuItem, type TopbarMenuItem, type TopbarUserMenu } from "@simplysm/solid";
 import {
   IconDatabase,
   IconFolder,
@@ -20,17 +13,11 @@ import {
 const simpleMenus: TopbarMenuItem[] = [
   {
     title: "관리",
-    children: [
-      { title: "사용자 관리" },
-      { title: "권한 설정" },
-    ],
+    children: [{ title: "사용자 관리" }, { title: "권한 설정" }],
   },
   {
     title: "도움말",
-    children: [
-      { title: "가이드" },
-      { title: "정보" },
-    ],
+    children: [{ title: "가이드" }, { title: "정보" }],
   },
 ];
 
@@ -49,10 +36,7 @@ const nestedMenus: TopbarMenuItem[] = [
           { title: "데이터베이스", icon: IconDatabase },
           {
             title: "고급 설정",
-            children: [
-              { title: "캐시" },
-              { title: "로그" },
-            ],
+            children: [{ title: "캐시" }, { title: "로그" }],
           },
         ],
       },
@@ -61,10 +45,7 @@ const nestedMenus: TopbarMenuItem[] = [
   {
     title: "문서",
     icon: IconFolder,
-    children: [
-      { title: "시작하기" },
-      { title: "API 참조" },
-    ],
+    children: [{ title: "시작하기" }, { title: "API 참조" }],
   },
 ];
 

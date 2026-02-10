@@ -142,10 +142,7 @@ describe("ExcelWrapper", () => {
     it("DateOnly 타입을 읽고 쓸 수 있다", async () => {
       const wrapper = new ExcelWrapper(dateSchema, dateDisplayMap);
 
-      const records = [
-        { title: "Event 1", date: new DateOnly(2024, 6, 15) },
-        { title: "Event 2" },
-      ];
+      const records = [{ title: "Event 1", date: new DateOnly(2024, 6, 15) }, { title: "Event 2" }];
 
       const wb = await wrapper.write("Events", records);
       const buffer = await wb.getBytes();
@@ -155,9 +152,9 @@ describe("ExcelWrapper", () => {
 
       expect(readRecords[0].title).toBe("Event 1");
       expect(readRecords[0].date).toBeInstanceOf(DateOnly);
-      expect((readRecords[0].date!).year).toBe(2024);
-      expect((readRecords[0].date!).month).toBe(6);
-      expect((readRecords[0].date!).day).toBe(15);
+      expect(readRecords[0].date!.year).toBe(2024);
+      expect(readRecords[0].date!.month).toBe(6);
+      expect(readRecords[0].date!.day).toBe(15);
       expect(readRecords[1].date).toBeUndefined();
     });
 
@@ -183,11 +180,11 @@ describe("ExcelWrapper", () => {
       const readRecords = await wrapper.read(buffer, "Events");
 
       expect(readRecords[0].datetime).toBeInstanceOf(DateTime);
-      expect((readRecords[0].datetime!).year).toBe(2024);
-      expect((readRecords[0].datetime!).month).toBe(6);
-      expect((readRecords[0].datetime!).day).toBe(15);
-      expect((readRecords[0].datetime!).hour).toBe(14);
-      expect((readRecords[0].datetime!).minute).toBe(30);
+      expect(readRecords[0].datetime!.year).toBe(2024);
+      expect(readRecords[0].datetime!.month).toBe(6);
+      expect(readRecords[0].datetime!.day).toBe(15);
+      expect(readRecords[0].datetime!.hour).toBe(14);
+      expect(readRecords[0].datetime!.minute).toBe(30);
     });
 
     it("Time 타입을 읽고 쓸 수 있다", async () => {
@@ -212,8 +209,8 @@ describe("ExcelWrapper", () => {
       const readRecords = await wrapper.read(buffer, "Events");
 
       expect(readRecords[0].time).toBeInstanceOf(Time);
-      expect((readRecords[0].time!).hour).toBe(9);
-      expect((readRecords[0].time!).minute).toBe(30);
+      expect(readRecords[0].time!.hour).toBe(9);
+      expect(readRecords[0].time!.minute).toBe(30);
     });
   });
 
@@ -226,9 +223,7 @@ describe("ExcelWrapper", () => {
       const buffer = await wb.getBytes();
       await wb.close();
 
-      await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(
-        "엑셀파일에서 데이터를 찾을 수 없습니다",
-      );
+      await expect(wrapper.read(buffer, "Empty")).rejects.toThrow("엑셀파일에서 데이터를 찾을 수 없습니다");
     });
 
     it("존재하지 않는 워크시트 이름으로 읽으면 에러 발생", async () => {

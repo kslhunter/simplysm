@@ -8,10 +8,10 @@ import { type JSX, type ParentComponent } from "solid-js";
  * @property disabled - 비활성화 상태
  */
 export interface DropdownProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    disabled?: boolean;
-    children: JSX.Element;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  disabled?: boolean;
+  children: JSX.Element;
 }
 /**
  * 드롭다운 메뉴를 제공하는 컴포넌트

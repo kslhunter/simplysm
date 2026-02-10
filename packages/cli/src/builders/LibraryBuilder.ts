@@ -26,10 +26,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   protected createWorkers(): void {
     for (const pkg of this.packages) {
-      this.workerManager.create<typeof LibraryWorkerModule>(
-        `${pkg.name}:build`,
-        this._workerPath,
-      );
+      this.workerManager.create<typeof LibraryWorkerModule>(`${pkg.name}:build`, this._workerPath);
     }
   }
 

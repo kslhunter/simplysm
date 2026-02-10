@@ -166,9 +166,7 @@ describe("Queryable 에러 케이스", () => {
       const db = new TestDbContext();
 
       expect(() => {
-        db.user().join("posts", (j, u) =>
-          j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])),
-        );
+        db.user().join("posts", (j, u) => j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])));
       }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
     });
   });

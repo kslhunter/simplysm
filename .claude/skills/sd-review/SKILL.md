@@ -21,6 +21,8 @@ Team 기반으로 동작한다. Explorer가 코드를 읽고 분석 결과를 �
 1. `$ARGUMENTS`에 경로가 있으면 해당 경로
 2. 없으면 사용자에게 대상 경로를 질문
 
+**중요: 리뷰 범위는 대상 경로의 전체 소스코드다.** git status나 git diff로 변경된 파일만 골라서 리뷰하지 않는다. 대상 경로 내 모든 소스 파일을 분석한다.
+
 ## 팀 구성
 
 TeamCreate로 팀을 생성하고, 다음 4명의 teammate를 Task tool로 spawn한다:

@@ -10,14 +10,14 @@ const anchorStyles = recipe({
     transition: `color ${tokenVars.duration.base} linear`,
     selectors: {
       "&:hover, &:focus-visible": {
-        textDecoration: "underline"
+        textDecoration: "underline",
       },
       "&[data-disabled='true']": {
         opacity: tokenVars.overlay.muted,
         pointerEvents: "none",
-        cursor: "default"
-      }
-    }
+        cursor: "default",
+      },
+    },
   },
   variants: {
     theme: objFromEntries(
@@ -27,18 +27,16 @@ const anchorStyles = recipe({
           color: `rgb(${color.base})`,
           selectors: {
             "&:hover, &:focus-visible": {
-              color: `rgb(${color.hover})`
-            }
-          }
-        }
-      ])
-    )
+              color: `rgb(${color.hover})`,
+            },
+          },
+        },
+      ]),
+    ),
   },
   defaultVariants: {
-    theme: "primary"
-  }
+    theme: "primary",
+  },
 });
-export {
-  anchorStyles
-};
+export { anchorStyles };
 //# sourceMappingURL=anchor.css.js.map

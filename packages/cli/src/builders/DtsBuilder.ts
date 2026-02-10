@@ -35,10 +35,7 @@ export class DtsBuilder extends BaseBuilder {
 
   protected createWorkers(): void {
     for (const pkg of this.packages) {
-      this.workerManager.create<typeof DtsWorkerModule>(
-        `${pkg.name}:dts`,
-        this._workerPath,
-      );
+      this.workerManager.create<typeof DtsWorkerModule>(`${pkg.name}:dts`, this._workerPath);
     }
   }
 

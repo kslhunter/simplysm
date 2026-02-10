@@ -46,9 +46,9 @@ export const layoutMobileIframeContainer = style({
  * 데모 그리드 레이아웃 (2열)
  */
 export const layoutDemoGrid = style({
-  display: "grid",
-  gridTemplateColumns: "repeat(2, 1fr)",
-  gap: tokenVars.spacing.xl,
+  "display": "grid",
+  "gridTemplateColumns": "repeat(2, 1fr)",
+  "gap": tokenVars.spacing.xl,
   "@media": {
     "(max-width: 900px)": {
       gridTemplateColumns: "1fr",

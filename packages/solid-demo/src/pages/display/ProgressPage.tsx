@@ -18,9 +18,7 @@ export default function ProgressPage() {
               Progress 컴포넌트는 6가지 테마를 지원합니다. 기본값은 primary입니다.
             </p>
             <div class="space-y-2">
-              <For each={themes}>
-                {(theme) => <Progress theme={theme} value={0.75} />}
-              </For>
+              <For each={themes}>{(theme) => <Progress theme={theme} value={0.75} />}</For>
             </div>
           </section>
 
@@ -52,8 +50,12 @@ export default function ProgressPage() {
               children을 전달하면 백분율 대신 커스텀 텍스트를 표시합니다.
             </p>
             <div class="space-y-2">
-              <Progress value={0.3} theme="info">3/10 완료</Progress>
-              <Progress value={0.75} theme="success">다운로드 중...</Progress>
+              <Progress value={0.3} theme="info">
+                3/10 완료
+              </Progress>
+              <Progress value={0.75} theme="success">
+                다운로드 중...
+              </Progress>
             </div>
           </section>
 

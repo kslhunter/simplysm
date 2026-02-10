@@ -17,11 +17,11 @@
  * // 결과 메시지: "처리 불가 => 잘못된 상태"
  */
 export declare class SdError extends Error {
-    cause?: Error;
-    /** 원인 에러를 감싸서 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지 => 원인 메시지) */
-    constructor(cause: Error, ...messages: string[]);
-    /** 메시지만으로 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지) */
-    constructor(...messages: string[]);
-    constructor(arg1?: unknown, ...messages: string[]);
+  cause?: Error;
+  /** 원인 에러를 감싸서 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지 => 원인 메시지) */
+  constructor(cause: Error, ...messages: string[]);
+  /** 메시지만으로 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지) */
+  constructor(...messages: string[]);
+  constructor(arg1?: unknown, ...messages: string[]);
 }
 //# sourceMappingURL=sd-error.d.ts.map

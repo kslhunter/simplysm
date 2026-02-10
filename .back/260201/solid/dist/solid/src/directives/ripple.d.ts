@@ -2,22 +2,22 @@
  * ripple 디렉티브 옵션
  */
 export interface RippleOptions {
-    /**
-     * ripple 효과 활성화 여부 (기본값: true)
-     */
-    enabled?: boolean;
-    /**
-     * 이벤트 전파를 중단할지 여부 (기본값: false)
-     * true로 설정하면 부모 요소의 ripple 효과를 방지할 수 있다
-     */
-    stopPropagation?: boolean;
+  /**
+   * ripple 효과 활성화 여부 (기본값: true)
+   */
+  enabled?: boolean;
+  /**
+   * 이벤트 전파를 중단할지 여부 (기본값: false)
+   * true로 설정하면 부모 요소의 ripple 효과를 방지할 수 있다
+   */
+  stopPropagation?: boolean;
 }
 declare module "solid-js" {
-    namespace JSX {
-        interface Directives {
-            ripple: boolean | RippleOptions;
-        }
+  namespace JSX {
+    interface Directives {
+      ripple: boolean | RippleOptions;
     }
+  }
 }
 /**
  * Material Design 스타일의 ripple 효과를 적용하는 디렉티브

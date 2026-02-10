@@ -1,7 +1,7 @@
 import { type ParentComponent } from "solid-js";
 declare const themeClassMap: {
-    readonly light: string;
-    readonly dark: string;
+  readonly light: string;
+  readonly dark: string;
 };
 type ThemeKey = keyof typeof themeClassMap;
 /**
@@ -40,8 +40,8 @@ export declare const ThemeProvider: ParentComponent;
  * ```
  */
 export declare function useTheme(): {
-    theme: () => ThemeKey;
-    setTheme: (t: ThemeKey) => void;
+  theme: () => ThemeKey;
+  setTheme: (t: ThemeKey) => void;
 };
 export {};
 //# sourceMappingURL=ThemeContext.d.ts.map

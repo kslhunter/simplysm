@@ -364,7 +364,12 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
     const db = new TestDbContext();
     const def = db
       .user()
-      .where((u) => [expr.inQuery(u.id, db.post().select((p) => ({ userId: p.userId })))])
+      .where((u) => [
+        expr.inQuery(
+          u.id,
+          db.post().select((p) => ({ userId: p.userId })),
+        ),
+      ])
       .getSelectQueryDef();
 
     it("QueryDef 검증", () => {

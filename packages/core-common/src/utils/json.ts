@@ -54,13 +54,9 @@ export function jsonStringify(
    * @param key 현재 값의 키 (루트는 undefined)
    * @param value 변환할 값
    */
-  const convertSpecialTypes = (
-    key: string | undefined,
-    value: unknown,
-  ): unknown => {
+  const convertSpecialTypes = (key: string | undefined, value: unknown): unknown => {
     // 커스텀 replacer 적용
-    const currValue =
-      options?.replacer !== undefined ? options.replacer(key, value) : value;
+    const currValue = options?.replacer !== undefined ? options.replacer(key, value) : value;
 
     if (currValue instanceof Date) {
       return { __type__: "Date", data: currValue.toISOString() };
@@ -80,9 +76,7 @@ export function jsonStringify(
     if (currValue instanceof Set) {
       return {
         __type__: "Set",
-        data: Array.from(currValue).map((item, i) =>
-          convertSpecialTypes(String(i), item),
-        ),
+        data: Array.from(currValue).map((item, i) => convertSpecialTypes(String(i), item)),
       };
     }
     if (currValue instanceof Map) {
@@ -103,9 +97,7 @@ export function jsonStringify(
           stack: currValue.stack,
           ...("code" in currValue ? { code: currValue.code } : {}),
           ...("detail" in currValue ? { detail: currValue.detail } : {}),
-          ...("cause" in currValue
-            ? { cause: convertSpecialTypes("cause", currValue.cause) }
-            : {}),
+          ...("cause" in currValue ? { cause: convertSpecialTypes("cause", currValue.cause) } : {}),
         },
       };
     }
@@ -123,9 +115,7 @@ export function jsonStringify(
         throw new TypeError("Converting circular structure to JSON");
       }
       seen.add(currValue);
-      const result = currValue.map((item, i) =>
-        convertSpecialTypes(String(i), item),
-      );
+      const result = currValue.map((item, i) => convertSpecialTypes(String(i), item));
       seen.delete(currValue);
       return result;
     }
@@ -139,13 +129,8 @@ export function jsonStringify(
       seen.add(currValue);
 
       // toJSON 메서드가 있으면 호출 (Date, DateTime 등 커스텀 타입은 이미 위에서 처리됨)
-      if (
-        "toJSON" in currValue &&
-        typeof (currValue as { toJSON: unknown }).toJSON === "function"
-      ) {
-        const toJsonResult = (
-          currValue as { toJSON: (key?: string) => unknown }
-        ).toJSON(key);
+      if ("toJSON" in currValue && typeof (currValue as { toJSON: unknown }).toJSON === "function") {
+        const toJsonResult = (currValue as { toJSON: (key?: string) => unknown }).toJSON(key);
         seen.delete(currValue);
         return convertSpecialTypes(key, toJsonResult);
       }
@@ -198,16 +183,10 @@ export function jsonParse<T = unknown>(json: string): T {
             if (typed.__type__ === "Date" && typeof typed.data === "string") {
               return new Date(Date.parse(typed.data));
             }
-            if (
-              typed.__type__ === "DateTime" &&
-              typeof typed.data === "string"
-            ) {
+            if (typed.__type__ === "DateTime" && typeof typed.data === "string") {
               return DateTime.parse(typed.data);
             }
-            if (
-              typed.__type__ === "DateOnly" &&
-              typeof typed.data === "string"
-            ) {
+            if (typed.__type__ === "DateOnly" && typeof typed.data === "string") {
               return DateOnly.parse(typed.data);
             }
             if (typed.__type__ === "Time" && typeof typed.data === "string") {
@@ -222,23 +201,15 @@ export function jsonParse<T = unknown>(json: string): T {
             if (typed.__type__ === "Map" && Array.isArray(typed.data)) {
               return new Map(typed.data as [unknown, unknown][]);
             }
-            if (
-              typed.__type__ === "Error" &&
-              typeof typed.data === "object"
-            ) {
+            if (typed.__type__ === "Error" && typeof typed.data === "object") {
               const errorData = typed.data as Record<string, unknown>;
               const error = new Error(errorData["message"] as string);
               Object.assign(error, errorData);
               return error;
             }
-            if (
-              typed.__type__ === "Uint8Array" &&
-              typeof typed.data === "string"
-            ) {
+            if (typed.__type__ === "Uint8Array" && typeof typed.data === "string") {
               if (typed.data === "__hidden__") {
-                throw new SdError(
-                  "hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
-                );
+                throw new SdError("hideBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다");
               }
               return bytesFromHex(typed.data);
             }

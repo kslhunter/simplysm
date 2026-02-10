@@ -1,9 +1,5 @@
-import type {
-  ISdServiceMessageDecodeResult,
-  TSdServiceMessage} from "@simplysm/sd-service-common";
-import {
-  SdServiceProtocol
-} from "@simplysm/sd-service-common";
+import type { ISdServiceMessageDecodeResult, TSdServiceMessage } from "@simplysm/sd-service-common";
+import { SdServiceProtocol } from "@simplysm/sd-service-common";
 import { LazyGcMap, TransferableConvert, Uuid } from "@simplysm/sd-core-common";
 
 export class SdServiceClientProtocolWrapper {
@@ -31,12 +27,9 @@ export class SdServiceClientProtocolWrapper {
   private static get worker() {
     if (!this._worker) {
       // Vite/Esbuild/Webpack 등 모던 번들러는 이 문법을 통해 Worker를 별도 파일로 분리/로드함
-      this._worker = new Worker(
-        new URL(import.meta.resolve("../workers/client-protocol.worker"), import.meta.url),
-        {
-          type: "module",
-        },
-      );
+      this._worker = new Worker(new URL(import.meta.resolve("../workers/client-protocol.worker"), import.meta.url), {
+        type: "module",
+      });
 
       this._worker.onmessage = (event) => {
         const { id, type, result, error } = event.data;
@@ -59,11 +52,7 @@ export class SdServiceClientProtocolWrapper {
   /**
    * Worker에 작업 위임 및 결과 대기
    */
-  private async _runWorkerAsync(
-    type: "encode" | "decode",
-    data: any,
-    transfer: Transferable[] = [],
-  ): Promise<any> {
+  private async _runWorkerAsync(type: "encode" | "decode", data: any, transfer: Transferable[] = []): Promise<any> {
     return await new Promise((resolve, reject) => {
       const id = Uuid.new().toString();
 
@@ -72,10 +61,7 @@ export class SdServiceClientProtocolWrapper {
     });
   }
 
-  async encodeAsync(
-    uuid: string,
-    message: TSdServiceMessage,
-  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
+  async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<{ chunks: Buffer[]; totalSize: number }> {
     // 1. 휴리스틱 체크
     if (this._shouldUseWorkerForEncode(message)) {
       // [Worker]

@@ -1,11 +1,6 @@
 import { Show, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import {
-  dateField,
-  dateFieldContainer,
-  dateFieldContent,
-  dateFieldInput
-} from "./date-field.css";
+import { dateField, dateFieldContainer, dateFieldContent, dateFieldInput } from "./date-field.css";
 import { objPick, DateOnly } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const DateField = (props) => {
@@ -17,11 +12,11 @@ const DateField = (props) => {
     "type",
     "min",
     "max",
-    "placeholder"
+    "placeholder",
   ]);
   const fieldState = createFieldState({
     value: () => local.value,
-    onChange: () => local.onChange
+    onChange: () => local.onChange,
   });
   const inputType = () => {
     switch (local.type) {
@@ -93,7 +88,14 @@ const DateField = (props) => {
           const parts = input.value.split("-").map(Number);
           const year = parts[0];
           const month = parts[1];
-          if (year != null && month != null && !Number.isNaN(year) && !Number.isNaN(month) && month >= 1 && month <= 12) {
+          if (
+            year != null &&
+            month != null &&
+            !Number.isNaN(year) &&
+            !Number.isNaN(month) &&
+            month >= 1 &&
+            month <= 12
+          ) {
             newValue = new DateOnly(year, month, 1);
           }
           break;
@@ -112,43 +114,43 @@ const DateField = (props) => {
       if (newValue !== void 0) {
         fieldState.setValue(newValue);
       }
-    } catch {
-    }
+    } catch {}
   };
   const inputProps = () => ({
-    type: inputType(),
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    placeholder: local.placeholder,
+    "type": inputType(),
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? "true" : void 0,
-    "aria-readonly": rest.readOnly ? "true" : void 0
+    "aria-readonly": rest.readOnly ? "true" : void 0,
   });
   return /* @__PURE__ */ React.createElement(
     Show,
     {
       when: local.inline,
-      fallback: /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          ...rest,
-          ...inputProps(),
-          class: [dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" ")
-        }
-      )
-    },
-    /* @__PURE__ */ React.createElement("div", { class: dateFieldContainer }, /* @__PURE__ */ React.createElement("div", { class: dateFieldContent }, displayValue() !== "" ? displayValue() : local.placeholder ?? "\xA0"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
+      fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateFieldInput, dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" ")
-      }
-    ))
+        class: [dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" "),
+      }),
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      { class: dateFieldContainer },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        { class: dateFieldContent },
+        displayValue() !== "" ? displayValue() : (local.placeholder ?? "\xA0"),
+      ),
+      /* @__PURE__ */ React.createElement("input", {
+        ...rest,
+        ...inputProps(),
+        class: [dateFieldInput, dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" "),
+      }),
+    ),
   );
 };
-export {
-  DateField
-};
+export { DateField };
 //# sourceMappingURL=date-field.js.map

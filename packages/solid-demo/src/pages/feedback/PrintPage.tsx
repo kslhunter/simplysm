@@ -12,10 +12,10 @@ const PrintDemo: Component = () => {
       await toPrinter(() => (
         <Print>
           <Print.Page>
-            <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+            <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
               <h1>인쇄 테스트</h1>
               <p>이 페이지는 toPrinter 테스트입니다.</p>
-              <table style={{ "border-collapse": "collapse", width: "100%" }}>
+              <table style={{ "border-collapse": "collapse", "width": "100%" }}>
                 <thead>
                   <tr>
                     <th style={{ border: "1px solid #ccc", padding: "8px" }}>이름</th>
@@ -50,10 +50,10 @@ const PrintDemo: Component = () => {
     setStatus("PDF 생성 중...");
     try {
       const buf = await toPdf(() => (
-        <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+        <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
           <h1>단일 페이지 PDF</h1>
           <p>Print 컴포넌트 없이 단순 콘텐츠를 PDF로 변환합니다.</p>
-          <div style={{ "margin-top": "20px", padding: "20px", background: "#f0f8ff", "border-radius": "8px" }}>
+          <div style={{ "margin-top": "20px", "padding": "20px", "background": "#f0f8ff", "border-radius": "8px" }}>
             <p>자동 분할 테스트: Print.Page 없이 A4 높이 기준으로 자동 슬라이스됩니다.</p>
           </div>
         </div>
@@ -72,29 +72,59 @@ const PrintDemo: Component = () => {
         () => (
           <Print>
             <Print.Page>
-              <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
                 <h1>페이지 1</h1>
                 <p>첫 번째 페이지입니다.</p>
-                <div style={{ "margin-top": "20px", height: "200px", background: "#e8f5e9", "border-radius": "8px", display: "flex", "align-items": "center", "justify-content": "center" }}>
-                  <span style={{ "font-size": "24px", color: "#2e7d32" }}>Page 1 Content</span>
+                <div
+                  style={{
+                    "margin-top": "20px",
+                    "height": "200px",
+                    "background": "#e8f5e9",
+                    "border-radius": "8px",
+                    "display": "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                  }}
+                >
+                  <span style={{ "font-size": "24px", "color": "#2e7d32" }}>Page 1 Content</span>
                 </div>
               </div>
             </Print.Page>
             <Print.Page>
-              <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
                 <h1>페이지 2</h1>
                 <p>두 번째 페이지입니다.</p>
-                <div style={{ "margin-top": "20px", height: "200px", background: "#fff3e0", "border-radius": "8px", display: "flex", "align-items": "center", "justify-content": "center" }}>
-                  <span style={{ "font-size": "24px", color: "#e65100" }}>Page 2 Content</span>
+                <div
+                  style={{
+                    "margin-top": "20px",
+                    "height": "200px",
+                    "background": "#fff3e0",
+                    "border-radius": "8px",
+                    "display": "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                  }}
+                >
+                  <span style={{ "font-size": "24px", "color": "#e65100" }}>Page 2 Content</span>
                 </div>
               </div>
             </Print.Page>
             <Print.Page>
-              <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
                 <h1>페이지 3</h1>
                 <p>세 번째 페이지입니다.</p>
-                <div style={{ "margin-top": "20px", height: "200px", background: "#e3f2fd", "border-radius": "8px", display: "flex", "align-items": "center", "justify-content": "center" }}>
-                  <span style={{ "font-size": "24px", color: "#1565c0" }}>Page 3 Content</span>
+                <div
+                  style={{
+                    "margin-top": "20px",
+                    "height": "200px",
+                    "background": "#e3f2fd",
+                    "border-radius": "8px",
+                    "display": "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                  }}
+                >
+                  <span style={{ "font-size": "24px", "color": "#1565c0" }}>Page 3 Content</span>
                 </div>
               </div>
             </Print.Page>
@@ -116,14 +146,34 @@ const PrintDemo: Component = () => {
         () => (
           <Print>
             <Print.Page>
-              <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
                 <h1>가로 방향 (Landscape)</h1>
                 <p>A4 가로 방향 PDF 테스트입니다.</p>
-                <div style={{ display: "flex", gap: "20px", "margin-top": "20px" }}>
-                  <div style={{ flex: "1", height: "150px", background: "#f3e5f5", "border-radius": "8px", display: "flex", "align-items": "center", "justify-content": "center" }}>
+                <div style={{ "display": "flex", "gap": "20px", "margin-top": "20px" }}>
+                  <div
+                    style={{
+                      "flex": "1",
+                      "height": "150px",
+                      "background": "#f3e5f5",
+                      "border-radius": "8px",
+                      "display": "flex",
+                      "align-items": "center",
+                      "justify-content": "center",
+                    }}
+                  >
                     왼쪽 영역
                   </div>
-                  <div style={{ flex: "1", height: "150px", background: "#fce4ec", "border-radius": "8px", display: "flex", "align-items": "center", "justify-content": "center" }}>
+                  <div
+                    style={{
+                      "flex": "1",
+                      "height": "150px",
+                      "background": "#fce4ec",
+                      "border-radius": "8px",
+                      "display": "flex",
+                      "align-items": "center",
+                      "justify-content": "center",
+                    }}
+                  >
                     오른쪽 영역
                   </div>
                 </div>
@@ -151,10 +201,12 @@ const PrintDemo: Component = () => {
         return (
           <Print ready={ready()}>
             <Print.Page>
-              <div style={{ padding: "40px", "font-family": "sans-serif" }}>
+              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
                 <h1>비동기 데이터 PDF</h1>
                 <p>1초 대기 후 ready=true로 변경되어 PDF가 생성됩니다.</p>
-                <div style={{ "margin-top": "20px", padding: "20px", background: "#e8eaf6", "border-radius": "8px" }}>
+                <div
+                  style={{ "margin-top": "20px", "padding": "20px", "background": "#e8eaf6", "border-radius": "8px" }}
+                >
                   <p>이 콘텐츠는 데이터 로딩 완료 후 렌더링된 것을 시뮬레이션합니다.</p>
                 </div>
               </div>
@@ -196,9 +248,7 @@ const PrintDemo: Component = () => {
       {/* toPdf - 다중 페이지 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">toPdf - 다중 페이지</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          Print.Page로 명시적으로 3페이지를 분할합니다.
-        </p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">Print.Page로 명시적으로 3페이지를 분할합니다.</p>
         <Button theme="primary" variant="outline" onClick={handlePdfMultiPage}>
           PDF 다운로드 (3페이지)
         </Button>

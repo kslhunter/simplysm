@@ -42,7 +42,7 @@ export class FileClient {
       method: "POST",
       headers: {
         "x-sd-client-name": this._clientName,
-        Authorization: `Bearer ${authToken}`,
+        "Authorization": `Bearer ${authToken}`,
       },
       body: formData,
     });

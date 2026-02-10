@@ -79,9 +79,8 @@ describe("ExcelCell", () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("Test");
 
-       
       await expect(ws.cell(0, 0).setVal({} as any)).rejects.toThrow("지원되지 않는 타입");
-       
+
       await expect(ws.cell(0, 1).setVal([] as any)).rejects.toThrow("지원되지 않는 타입");
     });
   });
@@ -349,9 +348,7 @@ describe("ExcelCell", () => {
       const ws = await wb.createWorksheet("Test");
 
       await ws.cell(0, 0).setVal("Test");
-      await expect(
-        ws.cell(0, 0).setStyle({ background: "invalid" }),
-      ).rejects.toThrow();
+      await expect(ws.cell(0, 0).setStyle({ background: "invalid" })).rejects.toThrow();
     });
 
     it("설정한 스타일이 라운드트립 후에도 유지된다", async () => {
@@ -382,7 +379,7 @@ describe("ExcelCell", () => {
       expect(styleId).toBeDefined();
 
       // XML 레벨에서 스타일 데이터 확인
-      const styleData = (await (wb2 as any).zipCache.get("xl/styles.xml"));
+      const styleData = await (wb2 as any).zipCache.get("xl/styles.xml");
       const styleIdNum = parseInt(styleId!, 10);
       const xf = styleData.data.styleSheet.cellXfs[0].xf[styleIdNum];
 

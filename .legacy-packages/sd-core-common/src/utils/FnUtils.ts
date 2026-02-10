@@ -1,21 +1,19 @@
 export class FnUtils {
   static parse(fn: (...args: any[]) => any): { params: string[]; returnContent: string } {
-    let matches: RegExpMatchArray | null
-      = (/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/)
-      .exec(fn.toString());
+    let matches: RegExpMatchArray | null =
+      /function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/.exec(fn.toString());
 
     if (matches == null) {
-      matches = (/^\(?([^)]*)\)?(\s?)=>(\s?)(.*)$/).exec(fn.toString());
+      matches = /^\(?([^)]*)\)?(\s?)=>(\s?)(.*)$/.exec(fn.toString());
       if (matches?.[4] === undefined) {
         throw new Error("Function 파싱 실패: " + fn.toString() + "\n");
       }
 
       if (matches[4].startsWith("{")) {
-        const newMatch = (/(?!return)(.|\r|\n)*return\s((.|\r|\n)*);/).exec(matches[4]);
+        const newMatch = /(?!return)(.|\r|\n)*return\s((.|\r|\n)*);/.exec(matches[4]);
         if (newMatch?.[2] !== undefined) {
           matches[4] = newMatch[2];
-        }
-        else {
+        } else {
           throw new Error("Function 파싱 실패: " + fn.toString() + "\n");
         }
       }
@@ -29,7 +27,7 @@ export class FnUtils {
 
     return {
       params,
-      returnContent
+      returnContent,
     };
   }
 }

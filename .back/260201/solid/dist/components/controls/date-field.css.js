@@ -4,6 +4,6 @@ export {
   fieldBase as dateField,
   fieldContainer as dateFieldContainer,
   fieldContent as dateFieldContent,
-  fieldInput as dateFieldInput
+  fieldInput as dateFieldInput,
 };
 //# sourceMappingURL=date-field.css.js.map

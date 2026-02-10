@@ -14,11 +14,7 @@ describe("DDL - Column Builder", () => {
     const column = c.int();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "age",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "age", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -45,11 +41,7 @@ describe("DDL - Column Builder", () => {
     const column = c.bigint();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "id",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -107,11 +99,7 @@ describe("DDL - Column Builder", () => {
     const column = c.double();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "Product" },
-      "price",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "Product" }, "price", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -169,11 +157,7 @@ describe("DDL - Column Builder", () => {
     const column = c.varchar(100);
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "name",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -200,11 +184,7 @@ describe("DDL - Column Builder", () => {
     const column = c.char(10);
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "code",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "code", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -231,11 +211,7 @@ describe("DDL - Column Builder", () => {
     const column = c.text();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "Post" },
-      "content",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "content", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -262,11 +238,7 @@ describe("DDL - Column Builder", () => {
     const column = c.binary();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "File" },
-      "data",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "File" }, "data", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -293,11 +265,7 @@ describe("DDL - Column Builder", () => {
     const column = c.boolean();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "isActive",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "isActive", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -417,11 +385,7 @@ describe("DDL - Column Builder", () => {
     const column = c.uuid();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "uuid",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "uuid", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -452,11 +416,7 @@ describe("DDL - Column Builder", () => {
     const column = c.varchar(100).nullable();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "nickname",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "nickname", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -483,11 +443,7 @@ describe("DDL - Column Builder", () => {
     const column = c.int().default(0);
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "score",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -514,11 +470,7 @@ describe("DDL - Column Builder", () => {
     const column = c.bigint().autoIncrement();
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "id",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -545,11 +497,7 @@ describe("DDL - Column Builder", () => {
     const column = c.varchar(100).description("사용자 이름");
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "name",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -576,11 +524,7 @@ describe("DDL - Column Builder", () => {
     const column = c.varchar(50).nullable().default("Unknown");
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "status",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "status", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -607,11 +551,7 @@ describe("DDL - Column Builder", () => {
     const column = c.bigint().autoIncrement().description("Primary Key");
 
     const db = new TestDbContext();
-    const def = db.getAddColumnQueryDef(
-      { database: "TestDb", schema: "TestSchema", name: "User" },
-      "id",
-      column,
-    );
+    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

@@ -62,9 +62,7 @@ export default function TablePage() {
                       <td>{row.email}</td>
                       <td>{row.role}</td>
                       <td>
-                        <Tag
-                          theme={row.status === "활성" ? "success" : row.status === "비활성" ? "danger" : "warning"}
-                        >
+                        <Tag theme={row.status === "활성" ? "success" : row.status === "비활성" ? "danger" : "warning"}>
                           {row.status}
                         </Tag>
                       </td>
@@ -78,30 +76,28 @@ export default function TablePage() {
           {/* Inset */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Inset 테이블</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              inset prop을 사용하면 외곽 테두리가 제거됩니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">inset prop을 사용하면 외곽 테두리가 제거됩니다.</p>
 
             <Table inset class="w-full">
               <thead>
-              <tr>
-                <th>항목</th>
-                <th>값</th>
-              </tr>
+                <tr>
+                  <th>항목</th>
+                  <th>값</th>
+                </tr>
               </thead>
               <tbody>
-              <tr>
-                <td>서버</td>
-                <td>production-01</td>
-              </tr>
-              <tr>
-                <td>상태</td>
-                <td>정상</td>
-              </tr>
-              <tr>
-                <td>업타임</td>
-                <td>99.9%</td>
-              </tr>
+                <tr>
+                  <td>서버</td>
+                  <td>production-01</td>
+                </tr>
+                <tr>
+                  <td>상태</td>
+                  <td>정상</td>
+                </tr>
+                <tr>
+                  <td>업타임</td>
+                  <td>99.9%</td>
+                </tr>
               </tbody>
             </Table>
           </section>

@@ -19,16 +19,14 @@ export default function CheckboxRadioGroupPage() {
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-                <CheckboxGroup
-                  value={selectedFruits()}
-                  onValueChange={setSelectedFruits}
-                >
+                <CheckboxGroup value={selectedFruits()} onValueChange={setSelectedFruits}>
                   <CheckboxGroup.Item value="apple">사과</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="banana">바나나</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="cherry">체리</CheckboxGroup.Item>
                 </CheckboxGroup>
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(selectedFruits())}</code>
+                  선택:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(selectedFruits())}</code>
                 </p>
               </div>
 
@@ -37,7 +35,9 @@ export default function CheckboxRadioGroupPage() {
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
                 <CheckboxGroup>
                   <CheckboxGroup.Item value="a">활성</CheckboxGroup.Item>
-                  <CheckboxGroup.Item value="b" disabled>비활성</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b" disabled>
+                    비활성
+                  </CheckboxGroup.Item>
                 </CheckboxGroup>
               </div>
 
@@ -86,10 +86,7 @@ export default function CheckboxRadioGroupPage() {
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-                <RadioGroup
-                  value={selectedOption()}
-                  onValueChange={setSelectedOption}
-                >
+                <RadioGroup value={selectedOption()} onValueChange={setSelectedOption}>
                   <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
                   <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
                   <RadioGroup.Item value="C">옵션 C</RadioGroup.Item>
@@ -104,7 +101,9 @@ export default function CheckboxRadioGroupPage() {
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
                 <RadioGroup>
                   <RadioGroup.Item value="a">활성</RadioGroup.Item>
-                  <RadioGroup.Item value="b" disabled>비활성</RadioGroup.Item>
+                  <RadioGroup.Item value="b" disabled>
+                    비활성
+                  </RadioGroup.Item>
                 </RadioGroup>
               </div>
 

@@ -1,12 +1,17 @@
 import { createConsola } from "consola";
-import { DateOnly, DateTime, jsonStringify, SdError, EventEmitter, strIsNullOrEmpty, Time, Uuid, waitUntil } from "@simplysm/core-common";
-import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
-  DB_CONN_DEFAULT_TIMEOUT,
-  DB_CONN_ERRORS,
-  type DbConn,
-  type MssqlDbConnConfig,
-} from "../types/db-conn";
+  DateOnly,
+  DateTime,
+  jsonStringify,
+  SdError,
+  EventEmitter,
+  strIsNullOrEmpty,
+  Time,
+  Uuid,
+  waitUntil,
+} from "@simplysm/core-common";
+import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
+import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type MssqlDbConnConfig } from "../types/db-conn";
 import type tediousType from "tedious";
 import type { DataType as TediousDataType } from "tedious/lib/data-type";
 
@@ -136,9 +141,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           resolve();
         },
         "",
-        this._tedious.ISOLATION_LEVEL[
-          isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED"
-        ],
+        this._tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED"],
       );
     });
   }

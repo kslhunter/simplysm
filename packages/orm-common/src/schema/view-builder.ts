@@ -1,11 +1,7 @@
 import type { DbContext } from "../db-context";
 import type { Queryable } from "../exec/queryable";
 import type { DataRecord } from "../types/db";
-import {
-  createRelationFactory,
-  type InferDeepRelations,
-  type RelationBuilderRecord,
-} from "./factory/relation-builder";
+import { createRelationFactory, type InferDeepRelations, type RelationBuilderRecord } from "./factory/relation-builder";
 
 // ============================================
 // ViewBuilder

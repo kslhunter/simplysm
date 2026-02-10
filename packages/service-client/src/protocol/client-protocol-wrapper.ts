@@ -43,12 +43,9 @@ export class ClientProtocolWrapper {
     if (!this._worker) {
       // Vite/Esbuild/Webpack 등 모던 번들러는 이 문법을 통해 Worker를 별도 파일로 분리/로드함
       // 주의: import.meta.resolve 대신 상대경로 사용 (Vite 호환)
-      this._worker = new Worker(
-        new URL("../workers/client-protocol.worker.ts", import.meta.url),
-        {
-          type: "module",
-        },
-      );
+      this._worker = new Worker(new URL("../workers/client-protocol.worker.ts", import.meta.url), {
+        type: "module",
+      });
 
       this._worker.onmessage = (event: MessageEvent) => {
         const { id, type, result, error } = event.data as {
@@ -78,11 +75,7 @@ export class ClientProtocolWrapper {
    * Worker에 작업 위임 및 결과 대기
    * 주의: workerAvailable이 true일 때만 호출해야 함
    */
-  private async _runWorker(
-    type: "encode" | "decode",
-    data: unknown,
-    transfer: Transferable[] = [],
-  ): Promise<unknown> {
+  private async _runWorker(type: "encode" | "decode", data: unknown, transfer: Transferable[] = []): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const id = Uuid.new().toString();
 
@@ -92,10 +85,7 @@ export class ClientProtocolWrapper {
     });
   }
 
-  async encode(
-    uuid: string,
-    message: ServiceMessage,
-  ): Promise<{ chunks: Bytes[]; totalSize: number }> {
+  async encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }> {
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!ClientProtocolWrapper.workerAvailable || !this._shouldUseWorkerForEncode(message)) {
       return this._protocol.encode(uuid, message);

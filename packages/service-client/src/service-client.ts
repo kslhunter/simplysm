@@ -15,8 +15,8 @@ const logger = createConsola().withTag("service-client:ServiceClient");
 interface ServiceClientEvents {
   "request-progress": ServiceProgressState;
   "response-progress": ServiceProgressState;
-  state: "connected" | "closed" | "reconnecting";
-  reload: Set<string>;
+  "state": "connected" | "closed" | "reconnecting";
+  "reload": Set<string>;
 }
 
 export class ServiceClient extends EventEmitter<ServiceClientEvents> {
@@ -58,7 +58,6 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
       // 재연결 시 이벤트 리스너 자동 복구
       if (state === "connected") {
-
         try {
           if (this._authToken != null) {
             await this.auth(this._authToken); // 재인증
@@ -95,12 +94,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     await this._socket.close();
   }
 
-  async send(
-    serviceName: string,
-    methodName: string,
-    params: unknown[],
-    progress?: ServiceProgress,
-  ): Promise<unknown> {
+  async send(serviceName: string, methodName: string, params: unknown[], progress?: ServiceProgress): Promise<unknown> {
     return this._transport.send(
       {
         name: `${serviceName}.${methodName}`,
@@ -147,9 +141,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
   async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
-      throw new Error(
-        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.",
-      );
+      throw new Error("인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.");
     }
     return this._fileClient.upload(files, this._authToken);
   }
@@ -161,7 +153,5 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
 // T의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
 export type RemoteService<T> = {
-  [K in keyof T]: T[K] extends (...args: infer P) => infer R
-    ? (...args: P) => Promise<Awaited<R>>
-    : never; // 함수가 아닌 프로퍼티는 안씀
+  [K in keyof T]: T[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never; // 함수가 아닌 프로퍼티는 안씀
 };

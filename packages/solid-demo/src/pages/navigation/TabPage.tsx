@@ -44,7 +44,9 @@ export default function TabPage() {
             <h2 class="mb-6 text-2xl font-bold">Disabled</h2>
             <Tabs value="a">
               <Tabs.Tab value="a">활성</Tabs.Tab>
-              <Tabs.Tab value="b" disabled>비활성</Tabs.Tab>
+              <Tabs.Tab value="b" disabled>
+                비활성
+              </Tabs.Tab>
               <Tabs.Tab value="c">활성</Tabs.Tab>
             </Tabs>
           </section>

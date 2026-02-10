@@ -130,7 +130,9 @@ const MenuItemRenderer: Component<MenuItemRendererProps> = (props) => {
     <ListItem
       layout={props.layout}
       selected={location.pathname === props.menu.path}
-      style={{ "text-indent": `${props.parentLayout === "accordion" && props.depth !== 0 ? (props.depth + 1) * 0.5 : 0}rem` }}
+      style={{
+        "text-indent": `${props.parentLayout === "accordion" && props.depth !== 0 ? (props.depth + 1) * 0.5 : 0}rem`,
+      }}
       class={atoms({ gap: "xs" })}
       onClick={(event) => props.onMenuClick(props.menu, event)}
     >

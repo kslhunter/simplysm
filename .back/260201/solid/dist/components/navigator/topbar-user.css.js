@@ -1,9 +1,7 @@
 import { style } from "@vanilla-extract/css";
 const topbarUser = style({
   display: "flex",
-  alignItems: "center"
+  alignItems: "center",
 });
-export {
-  topbarUser
-};
+export { topbarUser };
 //# sourceMappingURL=topbar-user.css.js.map

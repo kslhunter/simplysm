@@ -417,7 +417,10 @@ describe("DDL - Primary Key", () => {
 
   describe("getAddPkQueryDef - composite key", () => {
     const db = new TestDbContext();
-    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "UserRole" }, ["userId", "roleId"]);
+    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "UserRole" }, [
+      "userId",
+      "roleId",
+    ]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

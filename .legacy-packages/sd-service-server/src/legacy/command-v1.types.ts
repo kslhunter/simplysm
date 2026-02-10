@@ -1,4 +1,3 @@
-
 /** @deprecated */
 export interface ISdServiceMethodCommandInfo {
   serviceName: string;
@@ -22,8 +21,7 @@ export const SD_SERVICE_SPECIAL_COMMANDS = {
 } as const;
 
 /** @deprecated */
-export type TSdServiceSpecialCommand =
-  (typeof SD_SERVICE_SPECIAL_COMMANDS)[keyof typeof SD_SERVICE_SPECIAL_COMMANDS];
+export type TSdServiceSpecialCommand = (typeof SD_SERVICE_SPECIAL_COMMANDS)[keyof typeof SD_SERVICE_SPECIAL_COMMANDS];
 
 // "Service.method" 형태의 일반 호출용 커맨드
 /** @deprecated */

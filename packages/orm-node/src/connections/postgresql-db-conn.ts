@@ -1,13 +1,17 @@
 import { Readable } from "stream";
 import { createConsola } from "consola";
-import { bytesToHex, DateOnly, DateTime, SdError, EventEmitter, strIsNullOrEmpty, Time, Uuid } from "@simplysm/core-common";
-import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import {
-  DB_CONN_DEFAULT_TIMEOUT,
-  DB_CONN_ERRORS,
-  type DbConn,
-  type PostgresqlDbConnConfig,
-} from "../types/db-conn";
+  bytesToHex,
+  DateOnly,
+  DateTime,
+  SdError,
+  EventEmitter,
+  strIsNullOrEmpty,
+  Time,
+  Uuid,
+} from "@simplysm/core-common";
+import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
+import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type PostgresqlDbConnConfig } from "../types/db-conn";
 import type { Client } from "pg";
 import type { CopyStreamQuery } from "pg-copy-streams";
 
@@ -82,10 +86,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     this._assertConnected();
 
-    const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(
-      /_/g,
-      " ",
-    );
+    const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(/_/g, " ");
 
     await this._client!.query("BEGIN");
     await this._client!.query(`SET TRANSACTION ISOLATION LEVEL ${level}`);
@@ -152,9 +153,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     // CSV 데이터 생성
     const csvLines: string[] = [];
     for (const record of records) {
-      const row = colNames.map((colName) =>
-        this._escapeForCsv(record[colName], columnMetas[colName].dataType),
-      );
+      const row = colNames.map((colName) => this._escapeForCsv(record[colName], columnMetas[colName].dataType));
       csvLines.push(row.join(","));
     }
     const csvContent = csvLines.join("\n") + "\n";

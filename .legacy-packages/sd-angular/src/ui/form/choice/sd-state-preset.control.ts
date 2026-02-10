@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
 import { ObjectUtils } from "@simplysm/sd-core-common";
 import { SdSystemConfigProvider } from "../../../core/providers/app/sd-system-config.provider";
 import { SdToastProvider } from "../../overlay/toast/sd-toast.provider";
@@ -108,9 +101,7 @@ export class SdStatePresetControl {
 
   constructor() {
     $effect([this.key], async () => {
-      this.presets.set(
-        (await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? [],
-      );
+      this.presets.set((await this._sdSystemConfig.getAsync(`sd-state-preset.${this.key()}`)) ?? []);
     });
   }
 

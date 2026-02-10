@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdTabControl } from "./sd-tab.control";
 import { $computed } from "../../../core/utils/bindings/$computed";
 
@@ -17,7 +10,7 @@ import { $computed } from "../../../core/utils/bindings/$computed";
   imports: [],
   host: {
     "[attr.data-sd-selected]": "isSelected()",
-    "(click)": "onClick()"
+    "(click)": "onClick()",
   },
   template: `
     <ng-content></ng-content>

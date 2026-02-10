@@ -27,7 +27,8 @@ describe("SELECT - 기본", () => {
 
   describe("컬럼 선택", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         id: item.id,
         name: item.name,
@@ -54,7 +55,8 @@ describe("SELECT - 기본", () => {
 
   describe("표현식 사용 (concat)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         email: expr.concat(item.email, "@test.com"),
       }))
@@ -85,7 +87,8 @@ describe("SELECT - 기본", () => {
 
   describe("집계 함수", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         cnt: expr.count(item.id),
         total: expr.sum(item.age),
@@ -118,7 +121,8 @@ describe("SELECT - 기본", () => {
 
   describe("ifNull (2개 인자)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         email: expr.ifNull(item.email, "없음"),
       }))
@@ -149,7 +153,8 @@ describe("SELECT - 기본", () => {
 
   describe("ifNull (3개 인자, COALESCE)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         contact: expr.ifNull(item.email, item.name, "없음"),
       }))
@@ -181,7 +186,8 @@ describe("SELECT - 기본", () => {
 
   describe("nullIf", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: expr.nullIf(item.name, "N/A"),
       }))
@@ -210,7 +216,8 @@ describe("SELECT - 기본", () => {
 
   describe("substring", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         shortName: expr.substring(item.name, 1, 3),
       }))
@@ -240,7 +247,8 @@ describe("SELECT - 기본", () => {
 
   describe("substring (length 생략)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         suffix: expr.substring(item.name, 3),
       }))
@@ -269,7 +277,8 @@ describe("SELECT - 기본", () => {
 
   describe("indexOf", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         atPos: expr.indexOf(item.email, "@"),
       }))
@@ -298,7 +307,8 @@ describe("SELECT - 기본", () => {
 
   describe("least", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         minAge: expr.least(item.age, 50),
       }))
@@ -329,7 +339,8 @@ describe("SELECT - 기본", () => {
 
   describe("greatest", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         maxAge: expr.greatest(item.age, 18),
       }))
@@ -441,7 +452,11 @@ describe("SELECT - 제한", () => {
 
   describe("LIMIT", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => item.id).limit(0, 10).getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => item.id)
+      .limit(0, 10)
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -461,7 +476,11 @@ describe("SELECT - 제한", () => {
 
   describe("LIMIT - offset 포함", () => {
     const db = new TestDbContext();
-    const def = db.user().orderBy((item) => item.id).limit(20, 10).getSelectQueryDef();
+    const def = db
+      .user()
+      .orderBy((item) => item.id)
+      .limit(20, 10)
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

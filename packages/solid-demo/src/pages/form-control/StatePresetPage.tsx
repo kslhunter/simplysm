@@ -27,11 +27,7 @@ export default function StatePresetPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">필터 상태 저장/복원</h3>
-                <StatePreset<FilterState>
-                  presetKey="demo-filter"
-                  value={filter()}
-                  onValueChange={setFilter}
-                />
+                <StatePreset<FilterState> presetKey="demo-filter" value={filter()} onValueChange={setFilter} />
                 <div class="mt-4 space-y-2">
                   <div class="flex items-center gap-2">
                     <label class="text-sm font-medium">검색:</label>
@@ -45,9 +41,7 @@ export default function StatePresetPage() {
                     <Select<string>
                       value={filter().category}
                       onValueChange={(v) => setFilter((prev) => ({ ...prev, category: v }))}
-                      renderValue={(v) => (
-                        <>{{ all: "전체", food: "음식", drink: "음료" }[v]}</>
-                      )}
+                      renderValue={(v) => <>{{ all: "전체", food: "음식", drink: "음료" }[v]}</>}
                     >
                       <Select.Item value="all">전체</Select.Item>
                       <Select.Item value="food">음식</Select.Item>
@@ -59,9 +53,7 @@ export default function StatePresetPage() {
                     <Select<string>
                       value={filter().sortBy}
                       onValueChange={(v) => setFilter((prev) => ({ ...prev, sortBy: v }))}
-                      renderValue={(v) => (
-                        <>{{ name: "이름", price: "가격", date: "날짜" }[v]}</>
-                      )}
+                      renderValue={(v) => <>{{ name: "이름", price: "가격", date: "날짜" }[v]}</>}
                     >
                       <Select.Item value="name">이름</Select.Item>
                       <Select.Item value="price">가격</Select.Item>
@@ -91,11 +83,7 @@ export default function StatePresetPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 (md)</h3>
-                <StatePreset<FilterState>
-                  presetKey="demo-filter-md"
-                  value={filter()}
-                  onValueChange={setFilter}
-                />
+                <StatePreset<FilterState> presetKey="demo-filter-md" value={filter()} onValueChange={setFilter} />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">lg</h3>

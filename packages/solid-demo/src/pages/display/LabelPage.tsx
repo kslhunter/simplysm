@@ -18,11 +18,7 @@ export default function LabelPage() {
               Tag 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <For each={themes}>
-                {(theme) => (
-                  <Tag theme={theme}>{theme}</Tag>
-                )}
-              </For>
+              <For each={themes}>{(theme) => <Tag theme={theme}>{theme}</Tag>}</For>
             </div>
           </section>
 
@@ -93,9 +89,15 @@ export default function LabelPage() {
               class prop으로 추가 스타일을 적용할 수 있습니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <Tag theme="primary" class="text-lg">큰 태그</Tag>
-              <Tag theme="success" class="rounded-full px-3">둥근 태그</Tag>
-              <Tag theme="info" class="font-bold">굵은 태그</Tag>
+              <Tag theme="primary" class="text-lg">
+                큰 태그
+              </Tag>
+              <Tag theme="success" class="rounded-full px-3">
+                둥근 태그
+              </Tag>
+              <Tag theme="info" class="font-bold">
+                굵은 태그
+              </Tag>
             </div>
           </section>
         </div>

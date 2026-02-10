@@ -1,9 +1,6 @@
 export class Uuid {
   // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)
-  private static readonly _hexTable: string[] = Array.from(
-    { length: 256 },
-    (_, i) => i.toString(16).padStart(2, "0")
-  );
+  private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 
   static new(): Uuid {
     if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
@@ -16,11 +13,26 @@ export class Uuid {
       // lookup table 사용 - 함수 호출 없이 직접 인덱싱
       const h = Uuid._hexTable;
       return new Uuid(
-        h[bytes[0]] + h[bytes[1]] + h[bytes[2]] + h[bytes[3]] + "-" +
-        h[bytes[4]] + h[bytes[5]] + "-" +
-        h[bytes[6]] + h[bytes[7]] + "-" +
-        h[bytes[8]] + h[bytes[9]] + "-" +
-        h[bytes[10]] + h[bytes[11]] + h[bytes[12]] + h[bytes[13]] + h[bytes[14]] + h[bytes[15]]
+        h[bytes[0]] +
+          h[bytes[1]] +
+          h[bytes[2]] +
+          h[bytes[3]] +
+          "-" +
+          h[bytes[4]] +
+          h[bytes[5]] +
+          "-" +
+          h[bytes[6]] +
+          h[bytes[7]] +
+          "-" +
+          h[bytes[8]] +
+          h[bytes[9]] +
+          "-" +
+          h[bytes[10]] +
+          h[bytes[11]] +
+          h[bytes[12]] +
+          h[bytes[13]] +
+          h[bytes[14]] +
+          h[bytes[15]],
       );
     }
 
@@ -30,7 +42,7 @@ export class Uuid {
         const r = (Math.random() * 16) | 0;
         const v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
-      })
+      }),
     );
   }
 

@@ -2,13 +2,14 @@ import type { Signal, WritableSignal } from "@angular/core";
 import { $computed } from "../bindings/$computed";
 
 export class SdExpandingManager<T> {
-  constructor(private readonly _options: {
-    items: Signal<T[]>;
-    expandedItems: WritableSignal<T[]>;
-    getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
-    sort: (items: T[]) => T[];
-  }) {
-  }
+  constructor(
+    private readonly _options: {
+      items: Signal<T[]>;
+      expandedItems: WritableSignal<T[]>;
+      getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
+      sort: (items: T[]) => T[];
+    },
+  ) {}
 
   private readonly _itemDefs = $computed(() => {
     let rootItems: ISdExpandItemDef<T>[] = this._options.items().map((item) => ({
@@ -49,24 +50,26 @@ export class SdExpandingManager<T> {
     return result;
   });
 
-  flattedItems = $computed(() => this._itemDefs().map(item => item.item));
+  flattedItems = $computed(() => this._itemDefs().map((item) => item.item));
 
   private readonly _expandableItems = $computed(() =>
-    this._itemDefs().filter((itemDef) => itemDef.hasChildren).map((itemDef) => itemDef.item),
+    this._itemDefs()
+      .filter((itemDef) => itemDef.hasChildren)
+      .map((itemDef) => itemDef.item),
   );
 
   hasExpandable = $computed(() => this._expandableItems().length > 0);
 
-  isAllExpanded = $computed(() =>
-    this._expandableItems().length <= this._options.expandedItems().length &&
-    this._expandableItems().every((item) => this._options.expandedItems().includes(item)),
+  isAllExpanded = $computed(
+    () =>
+      this._expandableItems().length <= this._options.expandedItems().length &&
+      this._expandableItems().every((item) => this._options.expandedItems().includes(item)),
   );
 
   toggleAll() {
     if (this.isAllExpanded()) {
       this._options.expandedItems.set([]);
-    }
-    else {
+    } else {
       const expandedItems = this._itemDefs()
         .filter((item) => item.hasChildren)
         .map((item) => item.item);
@@ -79,8 +82,7 @@ export class SdExpandingManager<T> {
       const r = [...v];
       if (r.includes(item)) {
         r.remove(item);
-      }
-      else {
+      } else {
         r.push(item);
       }
       return r;
@@ -100,7 +102,7 @@ export class SdExpandingManager<T> {
   }
 
   getDef(item: T) {
-    return this._itemDefs().single(item1 => item1.item === item)!;
+    return this._itemDefs().single((item1) => item1.item === item)!;
   }
 }
 

@@ -8,9 +8,9 @@ import { type RecipeVariants } from "@vanilla-extract/recipes";
  * 주의: paddingLeft는 SidebarContainer 컴포넌트에서 inline style로 처리됨
  */
 export declare const sidebarContainer: import("@vanilla-extract/recipes").RuntimeFn<{
-    [x: string]: {
-        [x: string]: string | import("@vanilla-extract/css").ComplexStyleRule;
-    };
+  [x: string]: {
+    [x: string]: string | import("@vanilla-extract/css").ComplexStyleRule;
+  };
 }>;
 export type SidebarContainerStyles = NonNullable<RecipeVariants<typeof sidebarContainer>>;
 /**
@@ -20,16 +20,16 @@ export type SidebarContainerStyles = NonNullable<RecipeVariants<typeof sidebarCo
  * toggled=true일 때 모바일에서 사이드바가 표시되므로 백드롭도 표시
  */
 export declare const sidebarBackdrop: import("@vanilla-extract/recipes").RuntimeFn<{
-    toggled: {
-        true: {
-            "@media": {
-                "(max-width: 520px)": {
-                    opacity: `var(--${string})`;
-                    pointerEvents: "auto";
-                };
-            };
+  toggled: {
+    true: {
+      "@media": {
+        "(max-width: 520px)": {
+          opacity: `var(--${string})`;
+          pointerEvents: "auto";
         };
-        false: {};
+      };
     };
+    false: {};
+  };
 }>;
 //# sourceMappingURL=sidebar-container.css.d.ts.map

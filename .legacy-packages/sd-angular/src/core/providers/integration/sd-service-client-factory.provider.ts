@@ -23,10 +23,7 @@ export class SdServiceClientFactoryProvider {
     });
   }
 
-  async connectAsync(
-    key: string,
-    options: Partial<ISdServiceConnectionConfig> = {},
-  ): Promise<void> {
+  async connectAsync(key: string, options: Partial<ISdServiceConnectionConfig> = {}): Promise<void> {
     if (this._clientMap.has(key)) {
       if (!this._clientMap.get(key)!.connected) {
         throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
@@ -54,9 +51,7 @@ export class SdServiceClientFactoryProvider {
       if (Array.from(changedFileSet).every((item) => item.endsWith(".css"))) {
         for (const changedFile of changedFileSet) {
           const href = "./" + changedFile.replace(/[\\/]/g, "/");
-          const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as
-            | HTMLLinkElement
-            | undefined;
+          const oldStyle = document.querySelector(`link[data-sd-style="${href}"]`) as HTMLLinkElement | undefined;
           if (oldStyle) {
             oldStyle.href = `${href}?t=${Date.now()}`;
           }

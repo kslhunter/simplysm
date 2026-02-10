@@ -1,12 +1,6 @@
 import type { DbContext } from "../../DbContext";
-import type {
-  Type,
-  UnwrappedType} from "@simplysm/sd-core-common";
-import {
-  FnUtils,
-  NeverEntryError,
-  ObjectUtils
-} from "@simplysm/sd-core-common";
+import type { Type, UnwrappedType } from "@simplysm/sd-core-common";
+import { FnUtils, NeverEntryError, ObjectUtils } from "@simplysm/sd-core-common";
 import type {
   IDeleteQueryDef,
   IInsertIfNotExistsQueryDef,
@@ -56,13 +50,7 @@ export class Queryable<D extends DbContext, T> {
 
   constructor(db: D, tableType: Type<T>, as?: string);
 
-  constructor(
-    db: D,
-    tableType: Type<T> | undefined,
-    as: string | undefined,
-    entity: TEntity<T>,
-    defs: IQueryableDef,
-  );
+  constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
 
   constructor(
     readonly db: D,
@@ -234,9 +222,7 @@ export class Queryable<D extends DbContext, T> {
     return this as any;
   }
 
-  where(
-    predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[],
-  ): Queryable<D, T> {
+  where(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
     const result = new Queryable(this.db, this);
     const where = this.db.qh.and(predicate(this._entity));
     result._def.where = result._def.where ? this.db.qh.and([result._def.where, where]) : where;
@@ -255,10 +241,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  orderBy(
-    arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string,
-    desc?: boolean,
-  ): Queryable<D, T> {
+  orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string, desc?: boolean): Queryable<D, T> {
     let result = new Queryable(this.db, this);
 
     let selectedColumn;
@@ -431,9 +414,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  having(
-    predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[],
-  ): Queryable<D, T> {
+  having(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
     const result = new Queryable(this.db, this);
     const having = this.db.qh.and(predicate(this._entity));
     result._def.having = result._def.having ? this.db.qh.and([result._def.having, having]) : having;
@@ -518,9 +499,7 @@ export class Queryable<D extends DbContext, T> {
     return this._include(tableChainedName);
   }
 
-  include(
-    arg: (entity: TIncludeEntity<T>) => TIncludeEntity<any> | TIncludeEntity<any>[],
-  ): Queryable<D, T> {
+  include(arg: (entity: TIncludeEntity<T>) => TIncludeEntity<any> | TIncludeEntity<any>[]): Queryable<D, T> {
     const parsed = FnUtils.parse(arg);
     const itemParamName = parsed.params[0];
     const tableChainedName = parsed.returnContent
@@ -538,8 +517,7 @@ export class Queryable<D extends DbContext, T> {
     let result: Queryable<D, T> = new Queryable(this.db, this);
 
     // WHERE
-    const whereFnName: "having" | "where" =
-      result._def.groupBy && result._def.groupBy.length > 0 ? "having" : "where";
+    const whereFnName: "having" | "where" = result._def.groupBy && result._def.groupBy.length > 0 ? "having" : "where";
 
     result = result[whereFnName]((item) => {
       const fieldOrArr: TQueryBuilderValue[] = [];
@@ -547,19 +525,9 @@ export class Queryable<D extends DbContext, T> {
       for (const field of fields) {
         if (searchText.startsWith("==") || searchText.startsWith("<>")) {
           if (searchText.startsWith("<>")) {
-            fieldOrArr.push(
-              this.db.qh.notRegexp(
-                this.db.qh.toLowerCase(field),
-                searchText.substring(2).toLowerCase(),
-              ),
-            );
+            fieldOrArr.push(this.db.qh.notRegexp(this.db.qh.toLowerCase(field), searchText.substring(2).toLowerCase()));
           } else {
-            fieldOrArr.push(
-              this.db.qh.regexp(
-                this.db.qh.toLowerCase(field),
-                searchText.substring(2).toLowerCase(),
-              ),
-            );
+            fieldOrArr.push(this.db.qh.regexp(this.db.qh.toLowerCase(field), searchText.substring(2).toLowerCase()));
           }
           /*const searchStr = searchText
             .substring(2)
@@ -584,13 +552,9 @@ export class Queryable<D extends DbContext, T> {
           const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.startsWith("<>")) {
-              splitSearchTextWhereArr.push(
-                this.db.qh.notIncludes(this.db.qh.toLowerCase(field), text.toLowerCase()),
-              );
+              splitSearchTextWhereArr.push(this.db.qh.notIncludes(this.db.qh.toLowerCase(field), text.toLowerCase()));
             } else {
-              splitSearchTextWhereArr.push(
-                this.db.qh.includes(this.db.qh.toLowerCase(field), text.toLowerCase()),
-              );
+              splitSearchTextWhereArr.push(this.db.qh.includes(this.db.qh.toLowerCase(field), text.toLowerCase()));
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
@@ -734,10 +698,7 @@ export class Queryable<D extends DbContext, T> {
     // SELECT 필드 구성
     result.select = {};
 
-    const addSelectValue = (
-      key: string,
-      value: QueryUnit<any> | TEntity<any> | TEntity<any>[],
-    ): void => {
+    const addSelectValue = (key: string, value: QueryUnit<any> | TEntity<any> | TEntity<any>[]): void => {
       if (SdOrmUtils.canConvertToQueryValue(value)) {
         if (typeof result.select === "undefined") throw new NeverEntryError();
         result.select[`${this.db.qb.wrap(key)}`] = this.db.qh.getQueryValue(value);
@@ -800,10 +761,7 @@ export class Queryable<D extends DbContext, T> {
     return ObjectUtils.clearUndefined(result);
   }
 
-  getInsertQueryDef(
-    obj: TInsertObject<T>,
-    outputColumns: (keyof T)[] | undefined,
-  ): IInsertQueryDef {
+  getInsertQueryDef(obj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("INSERT 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -857,10 +815,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  getUpdateQueryDef(
-    obj: TUpdateObject<T>,
-    outputColumns: (keyof T)[] | undefined,
-  ): IUpdateQueryDef {
+  getUpdateQueryDef(obj: TUpdateObject<T>, outputColumns: (keyof T)[] | undefined): IUpdateQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("UPDATE 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -1178,10 +1133,7 @@ export class Queryable<D extends DbContext, T> {
     // }
     // DbContext.selectCache.set(cacheKey, undefined);
 
-    const results = await this.db.executeDefsAsync(
-      [{ type: "select", ...def }],
-      [this._getParseOption(undefined)],
-    );
+    const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption(undefined)]);
 
     // const timeout = setTimeout(() => {
     //   DbContext.selectCache.delete(cacheKey);
@@ -1345,9 +1297,7 @@ export class Queryable<D extends DbContext, T> {
     this._insertPrepare(true, records);
   }
 
-  async updateAsync(
-    recordFwd: (entity: TEntity<T>) => TUpdateObject<T> | Promise<TUpdateObject<T>>,
-  ): Promise<void>;
+  async updateAsync(recordFwd: (entity: TEntity<T>) => TUpdateObject<T> | Promise<TUpdateObject<T>>): Promise<void>;
 
   async updateAsync<OK extends keyof T>(
     recordFwd: (entity: TEntity<T>) => TUpdateObject<T> | Promise<TUpdateObject<T>>,
@@ -1380,9 +1330,7 @@ export class Queryable<D extends DbContext, T> {
 
   async deleteAsync<OK extends keyof T>(outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>;
 
-  async deleteAsync<OK extends keyof T>(
-    outputColumns?: OK[],
-  ): Promise<{ [K in OK]: T[K] }[] | void> {
+  async deleteAsync<OK extends keyof T>(outputColumns?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
     const { defs, dataIndex } = this._getDeleteDefs(outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
@@ -1449,8 +1397,7 @@ export class Queryable<D extends DbContext, T> {
     updateObjOrFwd: U | ((entity: TEntity<T>) => U),
     insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>),
   ): void {
-    const updateRecord =
-      typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
+    const updateRecord = typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
     const insertRecord = (
       insertObjOrFwd
         ? typeof insertObjOrFwd === "function"
@@ -1506,9 +1453,7 @@ export class Queryable<D extends DbContext, T> {
         tableDef.foreignKeyTargets.single((item) => item.propertyKey === fkName) ??
         tableDef.referenceKeyTargets.single((item) => item.propertyKey === fkName);
       if (!fkDef && !fktDef) {
-        throw new Error(
-          `'${tableDef.name}.${as}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`,
-        );
+        throw new Error(`'${tableDef.name}.${as}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`);
       }
 
       // FK
@@ -1545,10 +1490,7 @@ export class Queryable<D extends DbContext, T> {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[columnPropertyKey]),
-                    this.db.qh.equal(
-                      item[fkTargetTableDef.columns[i].propertyKey],
-                      lastEn[columnPropertyKey],
-                    ),
+                    this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[columnPropertyKey]),
                   ],
                 );
               }
@@ -1564,12 +1506,8 @@ export class Queryable<D extends DbContext, T> {
         const fktSourceType = fktDef.sourceTypeFwd();
         const fktSourceTableDef = DbDefUtils.getTableDef(fktSourceType);
         const fktSourceFkDef =
-          fktSourceTableDef.foreignKeys.single(
-            (item) => item.propertyKey === fktDef.sourceKeyPropertyKey,
-          ) ??
-          fktSourceTableDef.referenceKeys.single(
-            (item) => item.propertyKey === fktDef.sourceKeyPropertyKey,
-          );
+          fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey) ??
+          fktSourceTableDef.referenceKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey);
         if (!fktSourceFkDef) {
           throw new Error(
             `'${fktSourceTableDef.name}.${fktDef.sourceKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`,
@@ -1605,10 +1543,7 @@ export class Queryable<D extends DbContext, T> {
                 whereQuery.push(
                   ...[
                     this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
-                    this.db.qh.equal(
-                      item[columnPropertyKey],
-                      lastEn[tableDef.columns[i].propertyKey],
-                    ),
+                    this.db.qh.equal(item[columnPropertyKey], lastEn[tableDef.columns[i].propertyKey]),
                   ],
                 );
               }
@@ -1642,18 +1577,10 @@ export class Queryable<D extends DbContext, T> {
         );
       } else if (entityValue instanceof Array) {
         result[key] = [
-          this._getParentEntity(
-            entityValue[0],
-            rootAs,
-            (parentAs !== undefined ? parentAs + "." : "") + key,
-          ),
+          this._getParentEntity(entityValue[0], rootAs, (parentAs !== undefined ? parentAs + "." : "") + key),
         ] as any;
       } else {
-        result[key] = this._getParentEntity(
-          entityValue,
-          rootAs,
-          (parentAs !== undefined ? parentAs + "." : "") + key,
-        );
+        result[key] = this._getParentEntity(entityValue, rootAs, (parentAs !== undefined ? parentAs + "." : "") + key);
       }
     }
     return result;
@@ -1706,12 +1633,8 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    const pkColNames = this.tableDef.columns
-      .filter((item) => item.primaryKey !== undefined)
-      .map((item) => item.name);
-    const aiColNames = this.tableDef.columns
-      .filter((item) => !!item.autoIncrement)
-      .map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => !!item.autoIncrement).map((item) => item.name);
 
     const dataIndexes: number[] = [];
     const defs: TQueryDef[] = [];
@@ -1777,9 +1700,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
-      const hasSomeAIColVal = records.some((record) =>
-        Object.keys(record).some((item) => aiColNames.includes(item)),
-      );
+      const hasSomeAIColVal = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
       if (hasSomeAIColVal) {
         defs.insert(0, {
           type: "configIdentityInsert" as const,
@@ -1973,24 +1894,14 @@ async insertIfNotExistsAsync<OK extends keyof T>(records: TInsertObject<T>[], ou
     }
     // DbContext.selectCache.clear();
 
-    const pkColNames = this.tableDef.columns
-      .filter((item) => item.primaryKey !== undefined)
-      .map((item) => item.name);
-    const aiColNames = this.tableDef.columns
-      .filter((item) => !!item.autoIncrement)
-      .map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => !!item.autoIncrement).map((item) => item.name);
 
     // let dataIndex: number;
     const defs: TQueryDef[] = [];
 
     const aiKeyName = pkColNames.single((item) => aiColNames.includes(item));
-    const queryDef = this.getUpsertQueryDef(
-      updateRecord,
-      insertRecord,
-      outputColumns,
-      aiKeyName,
-      pkColNames,
-    );
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns, aiKeyName, pkColNames);
     defs.push({
       type: "upsert" as const,
       ...queryDef,
@@ -2073,10 +1984,7 @@ async insertIfNotExistsAsync<OK extends keyof T>(records: TInsertObject<T>[], ou
         if (columns && !(columns as string[]).includes(fullKey)) continue;
 
         try {
-          if (
-            typeof entity[key] !== "undefined" &&
-            SdOrmUtils.canConvertToQueryValue(entity[key])
-          ) {
+          if (typeof entity[key] !== "undefined" && SdOrmUtils.canConvertToQueryValue(entity[key])) {
             result.columns![fullKey] = {
               dataType: SdOrmUtils.getQueryValueType(entity[key])!.name,
             };

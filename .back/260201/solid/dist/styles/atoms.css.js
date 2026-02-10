@@ -38,8 +38,8 @@ const layoutProperties = defineProperties({
     fontWeight: ["normal", "bold"],
     color: {
       ...objMap(themeVars.text, (key, val) => [key, `rgb(${val})`]),
-      ...objMap(themeVars.control, (key, val) => [key, `rgb(${val.base})`])
-    }
+      ...objMap(themeVars.control, (key, val) => [key, `rgb(${val.base})`]),
+    },
   },
   shorthands: {
     // Padding shorthands
@@ -57,11 +57,9 @@ const layoutProperties = defineProperties({
     mb: ["marginBottom"],
     ml: ["marginLeft"],
     mx: ["marginLeft", "marginRight"],
-    my: ["marginTop", "marginBottom"]
-  }
+    my: ["marginTop", "marginBottom"],
+  },
 });
 const atoms = createSprinkles(layoutProperties);
-export {
-  atoms
-};
+export { atoms };
 //# sourceMappingURL=atoms.css.js.map

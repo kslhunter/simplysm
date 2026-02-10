@@ -88,11 +88,7 @@ export default createRule({
 
         let msg = "미구현";
         const firstArg = node.arguments.at(0);
-        if (
-          firstArg?.type === AST_NODE_TYPES.Literal &&
-          typeof firstArg.value === "string" &&
-          firstArg.value !== ""
-        ) {
+        if (firstArg?.type === AST_NODE_TYPES.Literal && typeof firstArg.value === "string" && firstArg.value !== "") {
           msg = firstArg.value;
         }
 

@@ -1,6 +1,6 @@
 import { type ParentComponent } from "solid-js";
 interface ConfigContextValue {
-    clientName: string;
+  clientName: string;
 }
 /**
  * 애플리케이션 전역 설정을 제공하는 Provider
@@ -17,7 +17,7 @@ interface ConfigContextValue {
  * ```
  */
 export declare const ConfigProvider: ParentComponent<{
-    staticClientName: string;
+  staticClientName: string;
 }>;
 /**
  * ConfigProvider에서 제공하는 설정값에 접근하는 훅

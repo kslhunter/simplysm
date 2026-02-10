@@ -129,10 +129,7 @@ describe("DDL - Procedure Builder", () => {
   });
 
   describe("body 지정 + 기본 DDL 생성", () => {
-    const proc = Procedure("TestProc")
-      .database("TestDb")
-      .schema("TestSchema")
-      .body("SELECT 1 AS result");
+    const proc = Procedure("TestProc").database("TestDb").schema("TestSchema").body("SELECT 1 AS result");
 
     const db = new TestDbContext();
     const def = db.getCreateProcQueryDef(proc);

@@ -1,11 +1,6 @@
 import { Show, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import {
-  dateTimeField,
-  dateTimeFieldContainer,
-  dateTimeFieldContent,
-  dateTimeFieldInput
-} from "./datetime-field.css";
+import { dateTimeField, dateTimeFieldContainer, dateTimeFieldContent, dateTimeFieldInput } from "./datetime-field.css";
 import { objPick, DateTime } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const DateTimeField = (props) => {
@@ -17,13 +12,13 @@ const DateTimeField = (props) => {
     "type",
     "min",
     "max",
-    "placeholder"
+    "placeholder",
   ]);
   const fieldState = createFieldState({
     value: () => local.value,
-    onChange: () => local.onChange
+    onChange: () => local.onChange,
   });
-  const step = () => local.type === "datetime-sec" ? "1" : void 0;
+  const step = () => (local.type === "datetime-sec" ? "1" : void 0);
   const inputValue = () => {
     const value = fieldState.currentValue();
     if (value === void 0) return "";
@@ -73,49 +68,73 @@ const DateTimeField = (props) => {
         const hour = timeParts[0];
         const minute = timeParts[1];
         const second = timeParts[2] ?? 0;
-        if (year !== void 0 && month !== void 0 && day !== void 0 && hour !== void 0 && minute !== void 0 && !Number.isNaN(year) && !Number.isNaN(month) && !Number.isNaN(day) && !Number.isNaN(hour) && !Number.isNaN(minute) && !Number.isNaN(second) && month >= 1 && month <= 12 && day >= 1 && day <= 31 && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59) {
+        if (
+          year !== void 0 &&
+          month !== void 0 &&
+          day !== void 0 &&
+          hour !== void 0 &&
+          minute !== void 0 &&
+          !Number.isNaN(year) &&
+          !Number.isNaN(month) &&
+          !Number.isNaN(day) &&
+          !Number.isNaN(hour) &&
+          !Number.isNaN(minute) &&
+          !Number.isNaN(second) &&
+          month >= 1 &&
+          month <= 12 &&
+          day >= 1 &&
+          day <= 31 &&
+          hour >= 0 &&
+          hour <= 23 &&
+          minute >= 0 &&
+          minute <= 59 &&
+          second >= 0 &&
+          second <= 59
+        ) {
           const newValue = new DateTime(year, month, day, hour, minute, second);
           fieldState.setValue(newValue);
         }
       }
-    } catch {
-    }
+    } catch {}
   };
   const inputProps = () => ({
-    type: "datetime-local",
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    step: step(),
-    placeholder: local.placeholder,
+    "type": "datetime-local",
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "step": step(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? "true" : void 0,
-    "aria-readonly": rest.readOnly ? "true" : void 0
+    "aria-readonly": rest.readOnly ? "true" : void 0,
   });
   return /* @__PURE__ */ React.createElement(
     Show,
     {
       when: local.inline,
-      fallback: /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          ...rest,
-          ...inputProps(),
-          class: [dateTimeField(objPick(local, dateTimeField.variants())), local.class].filterExists().join(" ")
-        }
-      )
-    },
-    /* @__PURE__ */ React.createElement("div", { class: dateTimeFieldContainer }, /* @__PURE__ */ React.createElement("div", { class: dateTimeFieldContent }, displayValue() !== "" ? displayValue() : local.placeholder ?? "\xA0"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
+      fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateTimeFieldInput, dateTimeField(objPick(local, dateTimeField.variants())), local.class].filterExists().join(" ")
-      }
-    ))
+        class: [dateTimeField(objPick(local, dateTimeField.variants())), local.class].filterExists().join(" "),
+      }),
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      { class: dateTimeFieldContainer },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        { class: dateTimeFieldContent },
+        displayValue() !== "" ? displayValue() : (local.placeholder ?? "\xA0"),
+      ),
+      /* @__PURE__ */ React.createElement("input", {
+        ...rest,
+        ...inputProps(),
+        class: [dateTimeFieldInput, dateTimeField(objPick(local, dateTimeField.variants())), local.class]
+          .filterExists()
+          .join(" "),
+      }),
+    ),
   );
 };
-export {
-  DateTimeField
-};
+export { DateTimeField };
 //# sourceMappingURL=datetime-field.js.map

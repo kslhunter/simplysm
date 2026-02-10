@@ -11,9 +11,20 @@ const Topbar = (props) => {
   const handleToggleClick = () => {
     sidebarCtx == null ? void 0 : sidebarCtx.toggle();
   };
-  return /* @__PURE__ */ React.createElement("header", { ...rest, class: [topbar, local.class].filterExists().join(" ") }, /* @__PURE__ */ React.createElement(Show, { when: showToggle() }, /* @__PURE__ */ React.createElement(Button, { link: true, size: "sm", onClick: handleToggleClick }, /* @__PURE__ */ React.createElement(IconMenu2, { size: 20 }))), local.children);
+  return /* @__PURE__ */ React.createElement(
+    "header",
+    { ...rest, class: [topbar, local.class].filterExists().join(" ") },
+    /* @__PURE__ */ React.createElement(
+      Show,
+      { when: showToggle() },
+      /* @__PURE__ */ React.createElement(
+        Button,
+        { link: true, size: "sm", onClick: handleToggleClick },
+        /* @__PURE__ */ React.createElement(IconMenu2, { size: 20 }),
+      ),
+    ),
+    local.children,
+  );
 };
-export {
-  Topbar
-};
+export { Topbar };
 //# sourceMappingURL=topbar.js.map

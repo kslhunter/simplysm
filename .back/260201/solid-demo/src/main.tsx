@@ -18,7 +18,9 @@ const FieldPage = lazy(() => import("./pages/home/FieldPage"));
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
-  throw new Error("[solid-demo] #root 요소를 찾을 수 없습니다. index.html에 <div id=\"root\"></div>가 있는지 확인하세요.");
+  throw new Error(
+    '[solid-demo] #root 요소를 찾을 수 없습니다. index.html에 <div id="root"></div>가 있는지 확인하세요.',
+  );
 }
 
 render(

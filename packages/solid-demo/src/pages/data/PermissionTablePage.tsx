@@ -41,11 +41,7 @@ export default function PermissionTablePage() {
           {/* 기본 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 PermissionTable</h2>
-            <PermissionTable
-              items={demoItems}
-              value={value()}
-              onValueChange={setValue}
-            />
+            <PermissionTable items={demoItems} value={value()} onValueChange={setValue} />
           </section>
 
           {/* modules 필터 적용 */}
@@ -54,22 +50,13 @@ export default function PermissionTablePage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               modules={`["admin"]`}을 전달하면 해당 모듈에 속한 항목만 표시됩니다.
             </p>
-            <PermissionTable
-              items={demoItems}
-              value={value()}
-              onValueChange={setValue}
-              modules={["admin"]}
-            />
+            <PermissionTable items={demoItems} value={value()} onValueChange={setValue} modules={["admin"]} />
           </section>
 
           {/* disabled */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">비활성 상태</h2>
-            <PermissionTable
-              items={demoItems}
-              value={value()}
-              disabled
-            />
+            <PermissionTable items={demoItems} value={value()} disabled />
           </section>
 
           {/* 현재 값 */}

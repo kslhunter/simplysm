@@ -10,32 +10,32 @@ import { type RecipeVariants } from "@vanilla-extract/recipes";
  * 주의: width는 Sidebar 컴포넌트에서 inline style로 처리됨 (Context에서 가져옴)
  */
 export declare const sidebar: import("@vanilla-extract/recipes").RuntimeFn<{
-    toggled: {
-        false: {
-            "@media": {
-                "not all and (max-width: 520px)": {
-                    transition: `transform var(--${string}) ease-out`;
-                };
-                "(max-width: 520px)": {
-                    transform: "translateX(-100%)";
-                    transition: `transform var(--${string}) ease-in`;
-                };
-            };
+  toggled: {
+    false: {
+      "@media": {
+        "not all and (max-width: 520px)": {
+          transition: `transform var(--${string}) ease-out`;
         };
-        true: {
-            "@media": {
-                "not all and (max-width: 520px)": {
-                    transform: "translateX(-100%)";
-                    transition: `transform var(--${string}) ease-in`;
-                };
-                "(max-width: 520px)": {
-                    transform: "none";
-                    transition: `transform var(--${string}) ease-out`;
-                    boxShadow: `var(--${string})`;
-                };
-            };
+        "(max-width: 520px)": {
+          transform: "translateX(-100%)";
+          transition: `transform var(--${string}) ease-in`;
         };
+      };
     };
+    true: {
+      "@media": {
+        "not all and (max-width: 520px)": {
+          transform: "translateX(-100%)";
+          transition: `transform var(--${string}) ease-in`;
+        };
+        "(max-width: 520px)": {
+          transform: "none";
+          transition: `transform var(--${string}) ease-out`;
+          boxShadow: `var(--${string})`;
+        };
+      };
+    };
+  };
 }>;
 export type SidebarStyles = NonNullable<RecipeVariants<typeof sidebar>>;
 //# sourceMappingURL=sidebar.css.d.ts.map

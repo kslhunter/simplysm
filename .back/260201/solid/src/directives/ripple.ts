@@ -71,7 +71,8 @@ export const ripple = (el: HTMLElement, value?: () => boolean | RippleOptions) =
     const options = value?.();
 
     // boolean 또는 RippleOptions 처리
-    const enabled = options === undefined || options === true || (typeof options === "object" && options.enabled !== false);
+    const enabled =
+      options === undefined || options === true || (typeof options === "object" && options.enabled !== false);
     const shouldStopPropagation = typeof options === "object" && options.stopPropagation === true;
 
     if (!enabled) return;

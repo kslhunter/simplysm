@@ -57,10 +57,7 @@ export class SdNgBundlerContext {
     this._debug(`Build completed`);
 
     this._debug(`Converting results...`);
-    const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
-      esbuildResult,
-      this._pkgPath,
-    );
+    const results = SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(esbuildResult, this._pkgPath);
 
     const initialFiles = new Map<string, InitialFileRecord>();
 
@@ -130,9 +127,9 @@ export class SdNgBundlerContext {
 
   private _debug(...msg: any[]): void {
     this._logger.debug(
-      `[${path.basename(this._pkgPath)}] (${Object.keys(
-        this._esbuildOptions.entryPoints as Record<string, any>,
-      ).join(", ")})`,
+      `[${path.basename(this._pkgPath)}] (${Object.keys(this._esbuildOptions.entryPoints as Record<string, any>).join(
+        ", ",
+      )})`,
       ...msg,
     );
   }

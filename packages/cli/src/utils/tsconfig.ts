@@ -18,9 +18,7 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
     return [];
   }
 
-  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(
-    packageJsonPath,
-  );
+  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(packageJsonPath);
   const devDeps = packageJson.devDependencies ?? {};
 
   return Object.keys(devDeps)

@@ -27,11 +27,13 @@ export function pgsql(strings: TemplateStringsArray, ...values: any[]) {
 }
 
 function _combine(strings: TemplateStringsArray, ...values: any[]) {
-  return _trim(strings.reduce((result, str, i) => {
-    // strings[i]는 이미 이스케이프가 처리된 문자열입니다. (예: \` -> `)
-    const value = values[i] !== undefined ? String(values[i]) : "";
-    return result + str + value;
-  }, ""));
+  return _trim(
+    strings.reduce((result, str, i) => {
+      // strings[i]는 이미 이스케이프가 처리된 문자열입니다. (예: \` -> `)
+      const value = values[i] !== undefined ? String(values[i]) : "";
+      return result + str + value;
+    }, ""),
+  );
 }
 
 function _trim(full: string) {

@@ -10,29 +10,29 @@ export class ExcelXmlContentType implements ExcelXml {
   constructor(data?: ExcelXmlContentTypeData) {
     if (data == null) {
       this.data = {
-        "Types": {
-          "$": {
-            "xmlns": "http://schemas.openxmlformats.org/package/2006/content-types",
+        Types: {
+          $: {
+            xmlns: "http://schemas.openxmlformats.org/package/2006/content-types",
           },
-          "Default": [
+          Default: [
             {
-              "$": {
-                "Extension": "rels",
-                "ContentType": "application/vnd.openxmlformats-package.relationships+xml",
+              $: {
+                Extension: "rels",
+                ContentType: "application/vnd.openxmlformats-package.relationships+xml",
               },
             },
             {
-              "$": {
-                "Extension": "xml",
-                "ContentType": "application/xml",
+              $: {
+                Extension: "xml",
+                ContentType: "application/xml",
               },
             },
           ],
-          "Override": [
+          Override: [
             {
-              "$": {
-                "PartName": "/xl/workbook.xml",
-                "ContentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+              $: {
+                PartName: "/xl/workbook.xml",
+                ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
               },
             },
           ],
@@ -51,9 +51,9 @@ export class ExcelXmlContentType implements ExcelXml {
     }
 
     this.data.Types.Override.push({
-      "$": {
-        "PartName": partName,
-        "ContentType": contentType,
+      $: {
+        PartName: partName,
+        ContentType: contentType,
       },
     });
 

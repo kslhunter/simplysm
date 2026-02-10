@@ -65,9 +65,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
         providers: [{ provide: SdActivatedModalProvider, useValue: this._activatedModalProvider }],
       }),
       bindings: [
-        ...Object.keys(inputs).map((inputKey) =>
-          inputBinding(inputKey, () => inputs[inputKey]),
-        ),
+        ...Object.keys(inputs).map((inputKey) => inputBinding(inputKey, () => inputs[inputKey])),
         outputBinding("close", (val) => this._onComponentClose(val)),
       ],
     });
@@ -125,9 +123,7 @@ export class SdModalInstance<T extends ISdModal<any>> {
           if (options?.noFirstControlFocusing) {
             this._modalRef.instance.dialogElRef().nativeElement.focus();
           } else {
-            (
-              compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
-            ).focus();
+            (compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement).focus();
           }
         });
       }, 100);

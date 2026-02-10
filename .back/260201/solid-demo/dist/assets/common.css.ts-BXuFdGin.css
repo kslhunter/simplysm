@@ -1,1 +1,8 @@
-._186k25m0{border-collapse:collapse}._186k25m0 td,._186k25m0 th{border:1px solid rgb(var(--gw5zaz14));padding:0}
+._186k25m0 {
+  border-collapse: collapse;
+}
+._186k25m0 td,
+._186k25m0 th {
+  border: 1px solid rgb(var(--gw5zaz14));
+  padding: 0;
+}

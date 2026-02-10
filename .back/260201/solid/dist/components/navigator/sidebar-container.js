@@ -20,23 +20,28 @@ const SidebarContainer = (props) => {
     toggled,
     setToggled,
     toggle,
-    width
+    width,
   };
   const handleBackdropClick = () => {
     setToggled(false);
   };
-  return /* @__PURE__ */ React.createElement(SidebarContext.Provider, { value: contextValue }, /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      ...rest,
-      class: [sidebarContainer(), local.class].filterExists().join(" "),
-      style: combineStyle(local.style, { "padding-left": !toggled() ? width() : "0" })
-    },
-    /* @__PURE__ */ React.createElement("div", { class: sidebarBackdrop({ toggled: toggled() }), onClick: handleBackdropClick }),
-    local.children
-  ));
+  return /* @__PURE__ */ React.createElement(
+    SidebarContext.Provider,
+    { value: contextValue },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ...rest,
+        class: [sidebarContainer(), local.class].filterExists().join(" "),
+        style: combineStyle(local.style, { "padding-left": !toggled() ? width() : "0" }),
+      },
+      /* @__PURE__ */ React.createElement("div", {
+        class: sidebarBackdrop({ toggled: toggled() }),
+        onClick: handleBackdropClick,
+      }),
+      local.children,
+    ),
+  );
 };
-export {
-  SidebarContainer
-};
+export { SidebarContainer };
 //# sourceMappingURL=sidebar-container.js.map

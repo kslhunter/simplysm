@@ -13,9 +13,9 @@ import { type JSX, type ParentComponent } from "solid-js";
  * @property width - 사이드바 너비 (기본값: "16rem")
  */
 export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
-    toggled?: boolean;
-    onToggledChange?: (toggled: boolean) => void;
-    width?: string;
+  toggled?: boolean;
+  onToggledChange?: (toggled: boolean) => void;
+  width?: string;
 }
 export declare const SidebarContainer: ParentComponent<SidebarContainerProps>;
 //# sourceMappingURL=sidebar-container.d.ts.map

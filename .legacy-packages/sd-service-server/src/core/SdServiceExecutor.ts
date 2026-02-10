@@ -18,9 +18,7 @@ export class SdServiceExecutor {
     http?: { clientName: string; authTokenPayload?: IAuthTokenPayload };
   }): Promise<any> {
     // 서비스 클래스 찾기
-    const ServiceClass = this._server.options.services.single(
-      (item) => item.name === def.serviceName,
-    );
+    const ServiceClass = this._server.options.services.single((item) => item.name === def.serviceName);
 
     if (!ServiceClass) {
       throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);

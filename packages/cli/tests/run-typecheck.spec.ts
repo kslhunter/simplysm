@@ -59,9 +59,7 @@ vi.mock("@simplysm/core-node", () => {
       if (targets.length === 0) return files;
       return files.filter((file) => {
         const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some(
-          (target) => relativePath === target || isChildPath(relativePath, target),
-        );
+        return targets.some((target) => relativePath === target || isChildPath(relativePath, target));
       });
     }),
     Worker: {
@@ -167,9 +165,7 @@ describe("runTypecheck", () => {
     vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
       options: {},
       fileNames: [],
-      errors: [
-        { category: ts.DiagnosticCategory.Error, messageText: "Parse error" },
-      ],
+      errors: [{ category: ts.DiagnosticCategory.Error, messageText: "Parse error" }],
     } as unknown as ts.ParsedCommandLine);
 
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
@@ -326,7 +322,14 @@ describe("runTypecheck", () => {
       buildDts: vi.fn(() =>
         Promise.resolve({
           success: false,
-          diagnostics: [{ category: 1, code: 2322, messageText: "Type error", fileName: "/project/packages/core-common/src/index.ts" }],
+          diagnostics: [
+            {
+              category: 1,
+              code: 2322,
+              messageText: "Type error",
+              fileName: "/project/packages/core-common/src/index.ts",
+            },
+          ],
           errorCount: 1,
           warningCount: 0,
         }),

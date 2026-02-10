@@ -129,7 +129,9 @@ describe("ListItem", () => {
     it("selectedIcon이 렌더링된다", () => {
       render(() => (
         <List>
-          <ListItem selectedIcon={IconCheck} selected>체크된 항목</ListItem>
+          <ListItem selectedIcon={IconCheck} selected>
+            체크된 항목
+          </ListItem>
         </List>
       ));
 

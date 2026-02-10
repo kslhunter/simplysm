@@ -59,7 +59,11 @@ export default function SelectPage() {
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
             <Select
               placeholder="과일을 선택하세요"
-              renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
+              renderValue={(v: Fruit) => (
+                <>
+                  {v.emoji} {v.name}
+                </>
+              )}
             >
               <For each={fruits}>
                 {(fruit) => (
@@ -77,7 +81,11 @@ export default function SelectPage() {
             <Select
               multiple
               placeholder="여러 개 선택 가능"
-              renderValue={(v: Fruit) => <>{v.emoji} {v.name}</>}
+              renderValue={(v: Fruit) => (
+                <>
+                  {v.emoji} {v.name}
+                </>
+              )}
             >
               <For each={fruits}>
                 {(fruit) => (
@@ -92,10 +100,7 @@ export default function SelectPage() {
           {/* 추가 버튼 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Action)</h2>
-            <Select
-              placeholder="선택하세요"
-              renderValue={(v: string) => <>{v}</>}
-            >
+            <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
               <Select.Item value="옵션 1">옵션 1</Select.Item>
               <Select.Item value="옵션 2">옵션 2</Select.Item>
               <Select.Action onClick={() => alert("추가 버튼 클릭!")}>
@@ -107,10 +112,7 @@ export default function SelectPage() {
           {/* 커스텀 헤더 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">커스텀 헤더 (Select.Header)</h2>
-            <Select
-              placeholder="선택하세요"
-              renderValue={(v: string) => <>{v}</>}
-            >
+            <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
               <Select.Header>
                 <div class="border-b border-base-200 p-2 text-sm font-semibold text-base-500 dark:border-base-700">
                   검색 결과
@@ -125,10 +127,7 @@ export default function SelectPage() {
           {/* 계층 구조 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
-            <Select
-              placeholder="카테고리 선택"
-              renderValue={(v: Category) => <>{v.name}</>}
-            >
+            <Select placeholder="카테고리 선택" renderValue={(v: Category) => <>{v.name}</>}>
               <For each={categories}>
                 {(category) => (
                   <Select.Item value={category}>
@@ -136,9 +135,7 @@ export default function SelectPage() {
                     {category.children && (
                       <Select.Item.Children>
                         <For each={category.children}>
-                          {(child) => (
-                            <Select.Item value={child}>{child.name}</Select.Item>
-                          )}
+                          {(child) => <Select.Item value={child}>{child.name}</Select.Item>}
                         </For>
                       </Select.Item.Children>
                     )}
@@ -199,7 +196,11 @@ export default function SelectPage() {
                     value={controlledSelected()}
                     onValueChange={setControlledSelected}
                     placeholder="과일을 선택하세요"
-                    renderValue={(v) => <>{v.emoji} {v.name}</>}
+                    renderValue={(v) => (
+                      <>
+                        {v.emoji} {v.name}
+                      </>
+                    )}
                   >
                     <For each={fruits}>
                       {(fruit) => (
@@ -210,7 +211,10 @@ export default function SelectPage() {
                     </For>
                   </Select>
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSelected()?.name ?? "(없음)"}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {controlledSelected()?.name ?? "(없음)"}
+                    </code>
                   </p>
                   <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledSelected(fruits[2])}>
                     포도 선택
@@ -227,7 +231,11 @@ export default function SelectPage() {
                     value={controlledMultiSelected()}
                     onValueChange={(v) => setControlledMultiSelected(v)}
                     placeholder="여러 개 선택 가능"
-                    renderValue={(v) => <>{v.emoji} {v.name}</>}
+                    renderValue={(v) => (
+                      <>
+                        {v.emoji} {v.name}
+                      </>
+                    )}
                   >
                     <For each={fruits}>
                       {(fruit) => (
@@ -238,10 +246,20 @@ export default function SelectPage() {
                     </For>
                   </Select>
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledMultiSelected().map((f) => f.name).join(", ") || "(없음)"}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {controlledMultiSelected()
+                        .map((f) => f.name)
+                        .join(", ") || "(없음)"}
+                    </code>
                   </p>
                   <div class="flex gap-2">
-                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledMultiSelected([fruits[0], fruits[1]])}>
+                    <Button
+                      theme="primary"
+                      variant="solid"
+                      size="sm"
+                      onClick={() => setControlledMultiSelected([fruits[0], fruits[1]])}
+                    >
                       사과+바나나
                     </Button>
                     <Button variant="solid" size="sm" onClick={() => setControlledMultiSelected([])}>

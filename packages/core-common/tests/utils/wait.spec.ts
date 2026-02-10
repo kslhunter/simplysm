@@ -64,10 +64,14 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await until(() => {
-          count++;
-          return false;
-        }, 10, 5);
+        await until(
+          () => {
+            count++;
+            return false;
+          },
+          10,
+          5,
+        );
       }).rejects.toThrow(TimeoutError);
 
       expect(count).toBe(5);
@@ -77,10 +81,14 @@ describe("Wait", () => {
       let count = 0;
 
       // 무제한 대기지만 조건이 참이 되면 반환
-      await until(() => {
-        count++;
-        return count >= 10;
-      }, 10, undefined);
+      await until(
+        () => {
+          count++;
+          return count >= 10;
+        },
+        10,
+        undefined,
+      );
 
       expect(count).toBe(10);
     });
@@ -104,10 +112,14 @@ describe("Wait", () => {
       let count = 0;
 
       await expect(async () => {
-        await until(() => {
-          count++;
-          return false;
-        }, 10, 1);
+        await until(
+          () => {
+            count++;
+            return false;
+          },
+          10,
+          1,
+        );
       }).rejects.toThrow(TimeoutError);
 
       expect(count).toBe(1);
@@ -116,10 +128,14 @@ describe("Wait", () => {
     it("조건이 maxCount 내에 참이 되면 성공", async () => {
       let count = 0;
 
-      await until(() => {
-        count++;
-        return count >= 3;
-      }, 10, 5);
+      await until(
+        () => {
+          count++;
+          return count >= 3;
+        },
+        10,
+        5,
+      );
 
       expect(count).toBe(3);
     });

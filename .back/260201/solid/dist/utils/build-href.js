@@ -7,7 +7,5 @@ function buildHref(path) {
   }
   return new URL(path, window.location.origin).href;
 }
-export {
-  buildHref
-};
+export { buildHref };
 //# sourceMappingURL=build-href.js.map

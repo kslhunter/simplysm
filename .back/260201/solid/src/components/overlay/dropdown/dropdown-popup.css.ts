@@ -36,15 +36,15 @@ const slideFromBottom = keyframes({
 
 export const dropdownPopup = recipe({
   base: {
-    position: "fixed",
-    zIndex: tokenVars.zIndex.dropdown,
-    background: `rgb(${themeVars.surface.base})`,
-    minWidth: "7.5rem",
-    boxShadow: tokenVars.shadow.xl,
-    overflow: "hidden",
-    borderRadius: tokenVars.radius.base,
-    border: `1px solid rgb(${themeVars.border.muted})`,
-    outline: "none",
+    "position": "fixed",
+    "zIndex": tokenVars.zIndex.dropdown,
+    "background": `rgb(${themeVars.surface.base})`,
+    "minWidth": "7.5rem",
+    "boxShadow": tokenVars.shadow.xl,
+    "overflow": "hidden",
+    "borderRadius": tokenVars.radius.base,
+    "border": `1px solid rgb(${themeVars.border.muted})`,
+    "outline": "none",
 
     "@media": {
       "(max-width: 520px)": {
@@ -79,10 +79,10 @@ export const dropdownPopup = recipe({
 });
 
 export const dropdownPopupContent = style({
-  width: "100%",
-  maxHeight: "18.75rem",
-  overflow: "auto",
-  whiteSpace: "nowrap",
+  "width": "100%",
+  "maxHeight": "18.75rem",
+  "overflow": "auto",
+  "whiteSpace": "nowrap",
 
   "@media": {
     "(max-width: 520px)": {
@@ -99,10 +99,10 @@ export const backdrop = style({
 });
 
 export const mobileHandle = style({
-  display: "flex",
-  justifyContent: "center",
-  padding: tokenVars.spacing.base,
-  cursor: "grab",
+  "display": "flex",
+  "justifyContent": "center",
+  "padding": tokenVars.spacing.base,
+  "cursor": "grab",
 
   "::after": {
     content: '""',

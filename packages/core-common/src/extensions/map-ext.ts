@@ -56,11 +56,7 @@ declare global {
   }
 }
 
-Map.prototype.getOrCreate = function <K, V>(
-  this: Map<K, V>,
-  key: K,
-  newValue: V | (() => V),
-): V {
+Map.prototype.getOrCreate = function <K, V>(this: Map<K, V>, key: K, newValue: V | (() => V)): V {
   if (!this.has(key)) {
     if (typeof newValue === "function") {
       this.set(key, (newValue as () => V)());
@@ -71,11 +67,7 @@ Map.prototype.getOrCreate = function <K, V>(
   return this.get(key)!;
 };
 
-Map.prototype.update = function <K, V>(
-  this: Map<K, V>,
-  key: K,
-  updateFn: (v: V | undefined) => V,
-): void {
+Map.prototype.update = function <K, V>(this: Map<K, V>, key: K, updateFn: (v: V | undefined) => V): void {
   const val = this.get(key);
   const res = updateFn(val);
   this.set(key, res);

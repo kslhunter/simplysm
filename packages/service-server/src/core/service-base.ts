@@ -20,9 +20,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
   };
 
   get authInfo(): TAuthInfo | undefined {
-    return (this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data) as
-      | TAuthInfo
-      | undefined;
+    return (this.socket?.authTokenPayload?.data ?? this.http?.authTokenPayload?.data) as TAuthInfo | undefined;
   }
 
   get clientName(): string | undefined {
@@ -30,12 +28,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
     if (clientName == null) return undefined;
 
     // 빈 문자열 및 Path Traversal 방지
-    if (
-      clientName === "" ||
-      clientName.includes("..") ||
-      clientName.includes("/") ||
-      clientName.includes("\\")
-    ) {
+    if (clientName === "" || clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
       throw new Error(`유효하지 않은 클라이언트 명입니다: ${clientName}`);
     }
 
@@ -43,9 +36,7 @@ export abstract class ServiceBase<TAuthInfo = unknown> {
   }
 
   get clientPath(): string | undefined {
-    return this.clientName == null
-      ? undefined
-      : path.resolve(this.server.options.rootPath, "www", this.clientName);
+    return this.clientName == null ? undefined : path.resolve(this.server.options.rootPath, "www", this.clientName);
   }
 
   async getConfig<T>(section: string): Promise<T> {

@@ -1,12 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } from "@angular/core";
-import {
-  DateOnly,
-  DateTime,
-  NumberUtils,
-  SdError,
-  StringUtils,
-  Time,
-} from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, NumberUtils, SdError, StringUtils, Time } from "@simplysm/sd-core-common";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
@@ -223,26 +216,20 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
           &[data-sd-type="color"] {
             > input,
             > ._contents {
-              height: calc(
-                var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
-              );
+              height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
             }
 
             &[data-sd-size="sm"] {
               > input,
               > ._contents {
-                height: calc(
-                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
-                );
+                height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
               }
             }
 
             &[data-sd-size="lg"] {
               > input,
               > ._contents {
-                height: calc(
-                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
-                );
+                height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
               }
             }
           }
@@ -313,9 +300,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
 
   controlType = $computed(() => {
     return this.type() === "number"
@@ -393,11 +378,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       } else if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format())) {
         const formatItems = this.format()!.split("|");
 
-        if (
-          !formatItems.some(
-            (formatItem) => formatItem.match(/X/g)?.length === (value as string).length,
-          )
-        ) {
+        if (!formatItems.some((formatItem) => formatItem.match(/X/g)?.length === (value as string).length)) {
           errorMessages.push(`문자의 길이가 요구되는 길이와 다릅니다.`);
         }
       } else if (["year", "month", "date"].includes(this.type())) {
@@ -440,10 +421,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
               errorMessages.push(`입력 값이 형식에 맞지 않습니다.`);
             }
           } catch (err) {
-            throw new SdError(
-              err instanceof Error ? err : String(err),
-              `잘못된 pattern: ${pattern}`,
-            );
+            throw new SdError(err instanceof Error ? err : String(err), `잘못된 pattern: ${pattern}`);
           }
         }
       }
@@ -485,12 +463,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
     } else if (this.type() === "format") {
       const nonFormatChars = this.format()?.match(/[^X]/g)?.distinct();
       if (nonFormatChars) {
-        this._setValue(
-          value.replace(
-            new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"),
-            "",
-          ),
-        );
+        this._setValue(value.replace(new RegExp(`[${nonFormatChars.map((item) => "\\" + item).join("")}]`, "g"), ""));
       } else {
         this._setValue(value);
       }
@@ -528,11 +501,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
         : value.toString(10);
     }
 
-    if (
-      this.type() === "format" &&
-      !StringUtils.isNullOrEmpty(this.format()) &&
-      typeof value === "string"
-    ) {
+    if (this.type() === "format" && !StringUtils.isNullOrEmpty(this.format()) && typeof value === "string") {
       const formatItems = this.format()!.split("|");
 
       for (const formatItem of formatItems) {
@@ -587,9 +556,7 @@ export class SdTextfieldControl<K extends keyof TSdTextfieldTypes> {
       return value;
     }
 
-    throw new Error(
-      `'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${value.toString()})`,
-    );
+    throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${value.toString()})`);
   }
 
   /*@HostListener("sd-sheet-cell-copy")

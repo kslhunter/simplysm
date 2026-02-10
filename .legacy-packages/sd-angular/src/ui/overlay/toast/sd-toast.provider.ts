@@ -45,10 +45,7 @@ export class SdToastProvider {
 
   async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
   try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
-  async try<R>(
-    fn: () => Promise<R> | R,
-    messageFn?: (err: Error) => string,
-  ): Promise<R | undefined> {
+  async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
       return await fn();
     } catch (err) {
@@ -77,9 +74,7 @@ export class SdToastProvider {
     const compRef = createComponent(toast.type, {
       environmentInjector: this._appRef.injector,
       bindings: [
-        ...Object.keys(inputs).map((inputKey) =>
-          inputBinding(inputKey, () => inputs[inputKey]),
-        ),
+        ...Object.keys(inputs).map((inputKey) => inputBinding(inputKey, () => inputs[inputKey])),
         outputBinding("close", () => closeFn()),
       ],
     });

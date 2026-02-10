@@ -76,9 +76,9 @@ describe("getTypesFromPackageJson", () => {
     mockFsExists.mockResolvedValue(true);
     mockFsReadJson.mockResolvedValue({
       devDependencies: {
-        "typescript": "^5.0.0",
-        "vitest": "^1.0.0",
-        "eslint": "^9.0.0",
+        typescript: "^5.0.0",
+        vitest: "^1.0.0",
+        eslint: "^9.0.0",
       },
     });
 

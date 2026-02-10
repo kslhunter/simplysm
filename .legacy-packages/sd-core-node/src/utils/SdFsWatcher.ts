@@ -5,10 +5,7 @@ import { PathUtils } from "./PathUtils";
 import type { EventName } from "chokidar/handler.js";
 
 export class SdFsWatcher {
-  static async watchAsync(
-    paths: string[],
-    options?: chokidar.ChokidarOptions,
-  ): Promise<SdFsWatcher> {
+  static async watchAsync(paths: string[], options?: chokidar.ChokidarOptions): Promise<SdFsWatcher> {
     return await new Promise<SdFsWatcher>((resolve) => {
       const watcher = new SdFsWatcher(paths, options);
       watcher._watcher.on("ready", () => {
@@ -32,10 +29,7 @@ export class SdFsWatcher {
     this._ignoreInitial = options?.ignoreInitial ?? this._ignoreInitial;
   }
 
-  onChange(
-    opt: { delay?: number },
-    cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>,
-  ): this {
+  onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): this {
     const fnQ = new SdAsyncFnDebounceQueue(opt.delay);
 
     let changeInfoMap = new Map<string, EventName>();
@@ -52,10 +46,7 @@ export class SdFsWatcher {
       const prevEvent = changeInfoMap.getOrCreate(filePath, event);
       if (prevEvent === "add" && event === "change") {
         changeInfoMap.set(filePath, "add");
-      } else if (
-        (prevEvent === "add" && event === "unlink") ||
-        (prevEvent === "addDir" && event === "unlinkDir")
-      ) {
+      } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
         changeInfoMap.delete(filePath);
       } else {
         changeInfoMap.set(filePath, event);

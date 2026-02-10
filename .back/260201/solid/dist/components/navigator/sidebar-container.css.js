@@ -5,36 +5,36 @@ import { MOBILE_BREAKPOINT } from "./sidebar-constants";
 import { vars } from "@simplysm/solid/styles";
 const sidebarContainer = recipe({
   base: {
-    display: "block",
-    position: "relative",
-    height: "100%",
-    transition: `padding-left ${tokenVars.duration.base} ease-out`,
+    "display": "block",
+    "position": "relative",
+    "height": "100%",
+    "transition": `padding-left ${tokenVars.duration.base} ease-out`,
     "@media": {
       [`(max-width: ${MOBILE_BREAKPOINT})`]: {
-        paddingLeft: "0 !important"
-      }
-    }
-  }
+        paddingLeft: "0 !important",
+      },
+    },
+  },
 });
 const sidebarBackdrop = recipe({
   base: {
-    position: "absolute",
-    display: "none",
-    zIndex: 49,
+    "position": "absolute",
+    "display": "none",
+    "zIndex": 49,
     // sidebar z-index - 1
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: `rgb(${themeVars.surface.inverted})`,
-    opacity: 0,
-    pointerEvents: "none",
-    transition: `opacity ${tokenVars.duration.slow} ease-in-out`,
+    "top": 0,
+    "left": 0,
+    "width": "100%",
+    "height": "100%",
+    "backgroundColor": `rgb(${themeVars.surface.inverted})`,
+    "opacity": 0,
+    "pointerEvents": "none",
+    "transition": `opacity ${tokenVars.duration.slow} ease-in-out`,
     "@media": {
       [`(max-width: ${MOBILE_BREAKPOINT})`]: {
-        display: "block"
-      }
-    }
+        display: "block",
+      },
+    },
   },
   variants: {
     toggled: {
@@ -43,16 +43,13 @@ const sidebarBackdrop = recipe({
         "@media": {
           [`(max-width: ${MOBILE_BREAKPOINT})`]: {
             opacity: vars.overlay.muted,
-            pointerEvents: "auto"
-          }
-        }
+            pointerEvents: "auto",
+          },
+        },
       },
-      false: {}
-    }
-  }
+      false: {},
+    },
+  },
 });
-export {
-  sidebarBackdrop,
-  sidebarContainer
-};
+export { sidebarBackdrop, sidebarContainer };
 //# sourceMappingURL=sidebar-container.css.js.map

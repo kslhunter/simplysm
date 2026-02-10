@@ -92,9 +92,7 @@ export class ServiceSocket extends EventEmitter<{
   }
 
   filterEventTargetKeys(targetKeys: string[]) {
-    return this._listenerInfos
-      .filter((item) => targetKeys.includes(item.key))
-      .map((item) => item.key);
+    return this._listenerInfos.filter((item) => targetKeys.includes(item.key)).map((item) => item.key);
   }
 
   private _onError(err: Error) {

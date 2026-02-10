@@ -9,7 +9,8 @@ import * as expected from "./upsert.expected";
 describe("UPSERT - 기본", () => {
   describe("단순 UPSERT (WHERE 조건)", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
         () => ({ name: expr.val("string", "새이름") }),
@@ -50,7 +51,8 @@ describe("UPSERT - 기본", () => {
 
   describe("UPDATE 값 재사용하여 INSERT", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
         () => ({
@@ -99,7 +101,8 @@ describe("UPSERT - 기본", () => {
 
   describe("output 컬럼 지정", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpsertQueryDef(
         () => ({ name: expr.val("string", "새이름") }),
@@ -145,7 +148,8 @@ describe("UPSERT - 기본", () => {
 
   describe("복합 WHERE 조건", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
       .getUpsertQueryDef(
         () => ({ managerId: expr.val("number", 10) }),

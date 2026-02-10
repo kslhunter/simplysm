@@ -71,10 +71,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const from = this.renderFrom(join.from);
     const alias = this.expr.wrap(join.as);
-    const where =
-      join.where != null && join.where.length > 0
-        ? ` ON ${this.expr.renderWhere(join.where)}`
-        : " ON TRUE";
+    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON TRUE";
 
     // LATERAL JOIN 필요 여부 감지
     if (this.needsLateral(join)) {
@@ -212,9 +209,12 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
     // INSERT INTO SELECT에서 columns 추출
     const selectDef = def.recordsSelectQuery;
-    const colList = selectDef.select != null
-      ? Object.keys(selectDef.select).map((c) => this.expr.wrap(c)).join(", ")
-      : "*";
+    const colList =
+      selectDef.select != null
+        ? Object.keys(selectDef.select)
+            .map((c) => this.expr.wrap(c))
+            .join(", ")
+        : "*";
 
     let sql = `INSERT INTO ${table} (${colList}) ${selectSql}`;
 
@@ -236,9 +236,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const alias = this.expr.wrap(def.as);
 
     // SET
-    const setParts = Object.entries(def.record).map(
-      ([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`,
-    );
+    const setParts = Object.entries(def.record).map(([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`);
 
     let sql = `UPDATE ${table} AS ${alias} SET ${setParts.join(", ")}`;
 
@@ -255,12 +253,8 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
       if (joinConditions.length > 0) {
-        const whereCondition = def.where != null && def.where.length > 0
-          ? this.expr.renderWhere(def.where)
-          : null;
-        const allConditions = whereCondition != null
-          ? [whereCondition, ...joinConditions]
-          : joinConditions;
+        const whereCondition = def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
+        const allConditions = whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
         sql += ` WHERE ${allConditions.join(" AND ")}`;
       } else {
         sql += this.renderWhere(def.where);
@@ -301,12 +295,8 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
       if (joinConditions.length > 0) {
-        const whereCondition = def.where != null && def.where.length > 0
-          ? this.expr.renderWhere(def.where)
-          : null;
-        const allConditions = whereCondition != null
-          ? [whereCondition, ...joinConditions]
-          : joinConditions;
+        const whereCondition = def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
+        const allConditions = whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
         sql += ` WHERE ${allConditions.join(" AND ")}`;
       } else {
         sql += this.renderWhere(def.where);
@@ -350,9 +340,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         : "TRUE";
 
     // OUTPUT 컬럼
-    const outputCols = def.output != null
-      ? def.output.columns.map((c) => this.expr.wrap(c)).join(", ")
-      : "*";
+    const outputCols = def.output != null ? def.output.columns.map((c) => this.expr.wrap(c)).join(", ") : "*";
 
     // CTE 방식 UPSERT
     let sql = `WITH matched AS (\n`;
@@ -484,7 +472,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
   protected renameColumn(def: RenameColumnQueryDef): QueryBuildResult {
     const table = this.tableName(def.table);
-    return { sql: `ALTER TABLE ${table} RENAME COLUMN ${this.expr.wrap(def.column)} TO ${this.expr.wrap(def.newName)}` };
+    return {
+      sql: `ALTER TABLE ${table} RENAME COLUMN ${this.expr.wrap(def.column)} TO ${this.expr.wrap(def.newName)}`,
+    };
   }
 
   //#endregion
@@ -556,20 +546,23 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const proc = this.tableName(def.procedure);
 
     // params 처리
-    const paramList = def.params?.map(p => {
-      let sql = `${this.expr.wrap(p.name)} ${this.expr.renderDataType(p.dataType)}`;
-      if (p.default !== undefined) {
-        sql += ` DEFAULT ${this.expr.escapeValue(p.default)}`;
-      }
-      return sql;
-    }).join(", ") ?? "";
+    const paramList =
+      def.params
+        ?.map((p) => {
+          let sql = `${this.expr.wrap(p.name)} ${this.expr.renderDataType(p.dataType)}`;
+          if (p.default !== undefined) {
+            sql += ` DEFAULT ${this.expr.escapeValue(p.default)}`;
+          }
+          return sql;
+        })
+        .join(", ") ?? "";
 
     // returns 처리
     let returnClause = "VOID";
     if (def.returns && def.returns.length > 0) {
-      const returnFields = def.returns.map(r =>
-        `${this.expr.wrap(r.name)} ${this.expr.renderDataType(r.dataType)}`
-      ).join(", ");
+      const returnFields = def.returns
+        .map((r) => `${this.expr.wrap(r.name)} ${this.expr.renderDataType(r.dataType)}`)
+        .join(", ");
       returnClause = `TABLE(${returnFields})`;
     }
 
@@ -612,7 +605,8 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
       throw new Error(`유효하지 않은 스키마명: ${schemaName}`);
     }
     const schema = this.expr.escapeString(schemaName);
-    return { sql: `
+    return {
+      sql: `
 DO $$
 DECLARE
   r RECORD;
@@ -643,7 +637,8 @@ BEGIN
   LOOP
     EXECUTE 'DROP FUNCTION IF EXISTS ' || quote_ident(r.proname) || '(' || r.args || ') CASCADE';
   END LOOP;
-END $$` };
+END $$`,
+    };
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {

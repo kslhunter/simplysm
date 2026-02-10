@@ -1,13 +1,5 @@
 import { createSignal } from "solid-js";
-import {
-  Button,
-  FormGroup,
-  Icon,
-  NumberInput,
-  Select,
-  TextInput,
-  Topbar,
-} from "@simplysm/solid";
+import { Button, FormGroup, Icon, NumberInput, Select, TextInput, Topbar } from "@simplysm/solid";
 import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {

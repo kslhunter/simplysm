@@ -246,10 +246,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  toMapValues<T, K, V>(
-    keySelector: (item: T, index: number) => K,
-    valueSelector: (items: T[]) => V,
-  ): Map<K, V | T> {
+  toMapValues<T, K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V | T> {
     const itemsMap = new Map<K, T[]>();
 
     for (let i = 0; i < this.length; i++) {
@@ -307,12 +304,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return fn(rootItems);
   },
 
-  distinct<T>(
-    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
-  ): T[] {
+  distinct<T>(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[] {
     // 옵션 정규화
-    const opts =
-      typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
+    const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
     // matchAddress: Set 기반 O(n)
     if (opts.matchAddress === true) return [...new Set(this)];
@@ -373,9 +367,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  orderBy<T>(
-    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
-  ): T[] {
+  orderBy<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
     return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -383,9 +375,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDesc<T>(
-    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
-  ): T[] {
+  orderByDesc<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
     return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -409,9 +399,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     // keys 옵션이 있는 경우 target을 keys 기준으로 Map에 미리 인덱싱하여 O(n×m) → O(n+m) 개선
     // 키 값이 같은 target이 여러 개 있을 수 있으므로 배열로 저장
-    const keyIndexedTarget = hasKeys
-      ? new Map<string, P[]>()
-      : undefined;
+    const keyIndexedTarget = hasKeys ? new Map<string, P[]>() : undefined;
 
     if (keyIndexedTarget) {
       for (const targetItem of uncheckedTarget) {
@@ -479,16 +467,13 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       orgItems instanceof Map
         ? orgItems
         : orgItems.toMap((orgItem) =>
-            typeof keyPropNameOrFn === "function"
-              ? keyPropNameOrFn(orgItem)
-              : orgItem[keyPropNameOrFn],
+            typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(orgItem) : orgItem[keyPropNameOrFn],
           );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: ArrayDiffs2Result<T>[] = [];
     for (const item of this) {
-      const keyValue =
-        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
@@ -610,12 +595,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 };
 
 const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
-  distinctThis<T>(
-    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
-  ): T[] {
+  distinctThis<T>(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[] {
     // 옵션 정규화
-    const opts =
-      typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
+    const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
     // matchAddress: Set 기반 O(n)
     // 첫 번째 등장한 요소를 유지하기 위해 정방향 순회 후 제거할 인덱스 수집
@@ -718,9 +700,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     return this;
   },
 
-  orderByThis<T>(
-    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
-  ): T[] {
+  orderByThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;
@@ -728,9 +708,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDescThis<T>(
-    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
-  ): T[] {
+  orderByDescThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;

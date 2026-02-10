@@ -1,9 +1,4 @@
-import {
-  Icon,
-  Sidebar,
-  Topbar,
-  type SidebarMenuItem,
-} from "@simplysm/solid";
+import { Icon, Sidebar, Topbar, type SidebarMenuItem } from "@simplysm/solid";
 import { IconFolder, IconHome, IconSettings, IconUser } from "@tabler/icons-solidjs";
 
 const sampleMenus: SidebarMenuItem[] = [

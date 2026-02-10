@@ -387,7 +387,6 @@ describe("use:invalid directive", () => {
   describe("폼 제출 시 자동 포커스 이동", () => {
     it("invalid 필드가 있으면 폼이 유효하지 않다", () => {
       function TestComponent() {
-
         return (
           <form data-testid="form">
             <div use:invalid="필수 입력">

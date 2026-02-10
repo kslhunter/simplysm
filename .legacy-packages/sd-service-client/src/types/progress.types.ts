@@ -1,5 +1,3 @@
-
-
 export interface ISdServiceProgress {
   request?: (s: ISdServiceProgressState) => void;
   response?: (s: ISdServiceProgressState) => void;

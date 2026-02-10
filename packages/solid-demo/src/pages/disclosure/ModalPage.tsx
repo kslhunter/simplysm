@@ -1,11 +1,5 @@
 import { createSignal, type Component } from "solid-js";
-import {
-  Button,
-  Dialog,
-  useDialog,
-  Topbar,
-  type DialogContentProps,
-} from "@simplysm/solid";
+import { Button, Dialog, useDialog, Topbar, type DialogContentProps } from "@simplysm/solid";
 
 const SampleDialogContent: Component<DialogContentProps<string>> = (props) => (
   <div class="space-y-4 p-4">
@@ -68,9 +62,7 @@ export default function ModalPage() {
             <Dialog open={basicOpen()} onOpenChange={setBasicOpen} title="기본 다이얼로그">
               <div class="p-4">
                 <p class="text-sm">이것은 기본 다이얼로그입니다.</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-                  헤더의 X 버튼으로 닫을 수 있습니다.
-                </p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">헤더의 X 버튼으로 닫을 수 있습니다.</p>
               </div>
             </Dialog>
           </section>
@@ -86,9 +78,7 @@ export default function ModalPage() {
                 프로그래매틱 다이얼로그 열기
               </Button>
               {programmaticResult() !== undefined && (
-                <span class="text-sm text-base-600 dark:text-base-400">
-                  결과: {programmaticResult()}
-                </span>
+                <span class="text-sm text-base-600 dark:text-base-400">결과: {programmaticResult()}</span>
               )}
             </div>
           </section>
@@ -124,18 +114,10 @@ export default function ModalPage() {
             <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
               {floatOpen() ? "Float 다이얼로그 닫기" : "Float 다이얼로그 열기"}
             </Button>
-            <Dialog
-              open={floatOpen()}
-              onOpenChange={setFloatOpen}
-              title="Float 다이얼로그"
-              float
-              widthPx={320}
-            >
+            <Dialog open={floatOpen()} onOpenChange={setFloatOpen} title="Float 다이얼로그" float widthPx={320}>
               <div class="p-4">
                 <p class="text-sm">백드롭이 없는 플로팅 다이얼로그입니다.</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-                  뒤의 페이지와 상호작용할 수 있습니다.
-                </p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">뒤의 페이지와 상호작용할 수 있습니다.</p>
               </div>
             </Dialog>
           </section>
@@ -149,18 +131,10 @@ export default function ModalPage() {
             <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
               Fill 다이얼로그 열기
             </Button>
-            <Dialog
-              open={fillOpen()}
-              onOpenChange={setFillOpen}
-              title="Fill 다이얼로그"
-              fill
-              closeOnEscape
-            >
+            <Dialog open={fillOpen()} onOpenChange={setFillOpen} title="Fill 다이얼로그" fill closeOnEscape>
               <div class="flex flex-1 flex-col items-center justify-center p-4">
                 <p class="text-lg font-semibold">전체 화면 다이얼로그</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
-                  Escape 키 또는 X 버튼으로 닫을 수 있습니다.
-                </p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">Escape 키 또는 X 버튼으로 닫을 수 있습니다.</p>
               </div>
             </Dialog>
           </section>

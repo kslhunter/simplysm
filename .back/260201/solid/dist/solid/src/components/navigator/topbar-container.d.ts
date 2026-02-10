@@ -3,8 +3,7 @@ import "@simplysm/core-common";
 /**
  * TopbarContainer 컴포넌트의 props
  */
-export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {
-}
+export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 /**
  * Topbar 레이아웃 컨테이너
  *

@@ -5,10 +5,7 @@ declare interface HTMLElement {
 
   getRelativeOffset(parentSelector: string): { top: number; left: number };
 
-  scrollIntoViewIfNeeded(
-    target: { top: number, left: number },
-    offset?: { top: number, left: number },
-  ): void;
+  scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void;
 }
 
 HTMLElement.prototype.repaint = function (this: HTMLElement): void {
@@ -18,12 +15,10 @@ HTMLElement.prototype.repaint = function (this: HTMLElement): void {
 
 HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): {
   top: number;
-  left: number
+  left: number;
 } {
   // 1. parent 요소 찾기
-  const parentEl = typeof parent === "string"
-    ? this.closest(parent)
-    : parent;
+  const parentEl = typeof parent === "string" ? this.closest(parent) : parent;
 
   if (!(parentEl instanceof HTMLElement)) {
     throw new Error("Parent element not found");
@@ -60,7 +55,8 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
 
     // transform이 적용된 경우 매트릭스 연산으로 보정
     if (!elementMatrix.isIdentity || !parentMatrix.isIdentity) {
-      const transformedPoint = parentMatrix.inverse()
+      const transformedPoint = parentMatrix
+        .inverse()
         .multiply(elementMatrix)
         .transformPoint(new DOMPoint(relativeOffset.left, relativeOffset.top));
 
@@ -73,8 +69,8 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
 };
 
 HTMLElement.prototype.scrollIntoViewIfNeeded = function (
-  target: { top: number, left: number },
-  offset: { top: number, left: number } = { top: 0, left: 0 },
+  target: { top: number; left: number },
+  offset: { top: number; left: number } = { top: 0, left: 0 },
 ): void {
   const scroll = {
     top: this.scrollTop,

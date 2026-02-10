@@ -63,7 +63,9 @@ export default function CheckboxRadioPage() {
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled (checked)</p>
-                    <Checkbox disabled value={true}>비활성화 (체크됨)</Checkbox>
+                    <Checkbox disabled value={true}>
+                      비활성화 (체크됨)
+                    </Checkbox>
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Inset</p>
@@ -76,8 +78,11 @@ export default function CheckboxRadioPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">인라인</h3>
                 <p class="text-base-700 dark:text-base-300">
-                  텍스트 사이에 <Checkbox inline>동의</Checkbox> 체크박스를 넣을 수 있습니다.
-                  이렇게 <Checkbox inline value={true}>선택된</Checkbox> 상태로도 표시됩니다.
+                  텍스트 사이에 <Checkbox inline>동의</Checkbox> 체크박스를 넣을 수 있습니다. 이렇게{" "}
+                  <Checkbox inline value={true}>
+                    선택된
+                  </Checkbox>{" "}
+                  상태로도 표시됩니다.
                 </p>
               </div>
             </div>
@@ -131,7 +136,9 @@ export default function CheckboxRadioPage() {
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled (selected)</p>
-                    <Radio disabled value={true}>비활성화 (선택됨)</Radio>
+                    <Radio disabled value={true}>
+                      비활성화 (선택됨)
+                    </Radio>
                   </div>
                 </div>
               </div>
@@ -140,8 +147,11 @@ export default function CheckboxRadioPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">인라인</h3>
                 <p class="text-base-700 dark:text-base-300">
-                  텍스트 사이에 <Radio inline>옵션</Radio> 라디오를 넣을 수 있습니다.
-                  이렇게 <Radio inline value={true}>선택됨</Radio> 상태로도 표시됩니다.
+                  텍스트 사이에 <Radio inline>옵션</Radio> 라디오를 넣을 수 있습니다. 이렇게{" "}
+                  <Radio inline value={true}>
+                    선택됨
+                  </Radio>{" "}
+                  상태로도 표시됩니다.
                 </p>
               </div>
             </div>

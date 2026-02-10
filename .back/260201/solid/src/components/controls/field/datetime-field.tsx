@@ -22,7 +22,8 @@ import "@simplysm/core-common";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface DateTimeFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
     DateTimeFieldStyles {
   value?: DateTime | undefined;
   onChange?: (value: DateTime | undefined) => void;
@@ -139,11 +140,16 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
           !Number.isNaN(hour) &&
           !Number.isNaN(minute) &&
           !Number.isNaN(second) &&
-          month >= 1 && month <= 12 &&
-          day >= 1 && day <= 31 &&
-          hour >= 0 && hour <= 23 &&
-          minute >= 0 && minute <= 59 &&
-          second >= 0 && second <= 59
+          month >= 1 &&
+          month <= 12 &&
+          day >= 1 &&
+          day <= 31 &&
+          hour >= 0 &&
+          hour <= 23 &&
+          minute >= 0 &&
+          minute <= 59 &&
+          second >= 0 &&
+          second <= 59
         ) {
           const newValue = new DateTime(year, month, day, hour, minute, second);
           setValue(newValue);
@@ -156,13 +162,13 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
 
   // 공통 input props
   const inputProps = () => ({
-    type: "datetime-local" as const,
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    step: step(),
-    placeholder: local.placeholder,
+    "type": "datetime-local" as const,
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "step": step(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? ("true" as const) : undefined,
     "aria-readonly": rest.readOnly ? ("true" as const) : undefined,
   });
@@ -174,9 +180,7 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[dateTimeField(objPick(local, dateTimeField.variants())), local.class]
-            .filter(Boolean)
-            .join(" ")}
+          class={[dateTimeField(objPick(local, dateTimeField.variants())), local.class].filter(Boolean).join(" ")}
         />
       }
     >

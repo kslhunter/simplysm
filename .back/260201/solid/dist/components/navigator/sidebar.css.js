@@ -15,7 +15,7 @@ const sidebar = recipe({
     display: "flex",
     flexDirection: "column",
     overflowY: "auto",
-    overflowX: "hidden"
+    overflowX: "hidden",
   },
   variants: {
     toggled: {
@@ -24,14 +24,14 @@ const sidebar = recipe({
         "@media": {
           // 데스크톱: 표시
           [`not all and (max-width: ${MOBILE_BREAKPOINT})`]: {
-            transition: `transform ${tokenVars.duration.base} ease-out`
+            transition: `transform ${tokenVars.duration.base} ease-out`,
           },
           // 모바일: 숨김
           [`(max-width: ${MOBILE_BREAKPOINT})`]: {
             transform: "translateX(-100%)",
-            transition: `transform ${tokenVars.duration.slow} ease-in`
-          }
-        }
+            transition: `transform ${tokenVars.duration.slow} ease-in`,
+          },
+        },
       },
       true: {
         // 토글된 상태
@@ -39,23 +39,21 @@ const sidebar = recipe({
           // 데스크톱: 숨김
           [`not all and (max-width: ${MOBILE_BREAKPOINT})`]: {
             transform: "translateX(-100%)",
-            transition: `transform ${tokenVars.duration.base} ease-in`
+            transition: `transform ${tokenVars.duration.base} ease-in`,
           },
           // 모바일: 표시 + 그림자
           [`(max-width: ${MOBILE_BREAKPOINT})`]: {
             transform: "none",
             transition: `transform ${tokenVars.duration.slow} ease-out`,
-            boxShadow: tokenVars.shadow.xl
-          }
-        }
-      }
-    }
+            boxShadow: tokenVars.shadow.xl,
+          },
+        },
+      },
+    },
   },
   defaultVariants: {
-    toggled: false
-  }
+    toggled: false,
+  },
 });
-export {
-  sidebar
-};
+export { sidebar };
 //# sourceMappingURL=sidebar.css.js.map

@@ -16,7 +16,9 @@ export default function FieldPage() {
   // Controlled 예제용 시그널
   const [controlledText, setControlledText] = createSignal<string | undefined>("controlled 값");
   const [controlledNumber, setControlledNumber] = createSignal<number | undefined>(12345);
-  const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>("여러 줄의\n텍스트를\n입력할 수 있습니다");
+  const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>(
+    "여러 줄의\n텍스트를\n입력할 수 있습니다",
+  );
 
   return (
     <Topbar.Container>
@@ -335,13 +337,10 @@ export default function FieldPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">TextInput</h3>
                 <div class="flex flex-col items-start gap-3">
-                  <TextInput
-                    value={controlledText()}
-                    onValueChange={setControlledText}
-                    placeholder="값을 입력하세요"
-                  />
+                  <TextInput value={controlledText()} onValueChange={setControlledText} placeholder="값을 입력하세요" />
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledText() ?? "(없음)"}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledText() ?? "(없음)"}</code>
                   </p>
                   <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledText("새로운 값!")}>
                     값 변경
@@ -359,13 +358,24 @@ export default function FieldPage() {
                     placeholder="숫자를 입력하세요"
                   />
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledNumber() ?? "(없음)"}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledNumber() ?? "(없음)"}</code>
                   </p>
                   <div class="flex gap-2">
-                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledNumber((v) => (v ?? 0) + 100)}>
+                    <Button
+                      theme="primary"
+                      variant="solid"
+                      size="sm"
+                      onClick={() => setControlledNumber((v) => (v ?? 0) + 100)}
+                    >
                       +100
                     </Button>
-                    <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledNumber((v) => (v ?? 0) - 100)}>
+                    <Button
+                      theme="primary"
+                      variant="solid"
+                      size="sm"
+                      onClick={() => setControlledNumber((v) => (v ?? 0) - 100)}
+                    >
                       -100
                     </Button>
                     <Button variant="solid" size="sm" onClick={() => setControlledNumber(undefined)}>
@@ -386,9 +396,15 @@ export default function FieldPage() {
                     minRows={3}
                   />
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledTextArea() ?? "(없음)"}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledTextArea() ?? "(없음)"}</code>
                   </p>
-                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledTextArea("프로그래밍으로\n값을 변경했습니다")}>
+                  <Button
+                    theme="primary"
+                    variant="solid"
+                    size="sm"
+                    onClick={() => setControlledTextArea("프로그래밍으로\n값을 변경했습니다")}
+                  >
                     값 변경
                   </Button>
                 </div>

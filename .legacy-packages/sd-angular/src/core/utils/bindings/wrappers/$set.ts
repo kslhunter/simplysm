@@ -3,7 +3,7 @@ import type { WritableSignal } from "@angular/core";
 export function $set<T>(sig: WritableSignal<Set<T>>) {
   return {
     deletes(...values: T[]) {
-      sig.update(v => {
+      sig.update((v) => {
         const r = new Set(v);
         for (const value of values) {
           r.delete(value);
@@ -12,21 +12,21 @@ export function $set<T>(sig: WritableSignal<Set<T>>) {
       });
     },
     delete(value: T) {
-      sig.update(v => {
+      sig.update((v) => {
         const r = new Set(v);
         r.delete(value);
         return r;
       });
     },
     add(value: T) {
-      sig.update(v => {
+      sig.update((v) => {
         const r = new Set(v);
         r.add(value);
         return r;
       });
     },
     adds(...values: T[]) {
-      sig.update(v => {
+      sig.update((v) => {
         const r = new Set(v);
         r.adds(...values);
         return r;
@@ -40,20 +40,17 @@ export function $set<T>(sig: WritableSignal<Set<T>>) {
             r.add(value);
             return r;
           }
-        }
-        else if (addOrDel === "del") {
+        } else if (addOrDel === "del") {
           if (v.has(value)) {
             const r = new Set(v);
             r.delete(value);
             return r;
           }
-        }
-        else if (v.has(value)) {
+        } else if (v.has(value)) {
           const r = new Set(v);
           r.delete(value);
           return r;
-        }
-        else {
+        } else {
           const r = new Set(v);
           r.add(value);
           return r;

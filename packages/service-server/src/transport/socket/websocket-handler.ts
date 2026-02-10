@@ -27,9 +27,7 @@ export class WebSocketHandler {
       if (prevServiceSocket != null) {
         prevServiceSocket.close();
 
-        const connectionDateTimeText = prevServiceSocket.connectedAtDateTime.toFormatString(
-          "yyyy:MM:dd HH:mm:ss.fff",
-        );
+        const connectionDateTimeText = prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
         logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
@@ -129,9 +127,7 @@ export class WebSocketHandler {
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body as { name: string };
-        const infos = Array.from(this._socketMap.values()).flatMap((subSock) =>
-          subSock.getEventListeners(name),
-        );
+        const infos = Array.from(this._socketMap.values()).flatMap((subSock) => subSock.getEventListeners(name));
         return await serviceSocket.send(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body as { keys: string[]; data: unknown };
@@ -169,9 +165,7 @@ export class WebSocketHandler {
       }
     } catch (err) {
       const error =
-        err instanceof Error
-          ? err
-          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+        err instanceof Error ? err : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
       return serviceSocket.send(uuid, {
         name: "error",

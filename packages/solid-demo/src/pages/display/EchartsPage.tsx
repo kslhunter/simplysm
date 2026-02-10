@@ -45,9 +45,7 @@ export default function EchartsPage() {
           {/* Loading 토글 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Loading</h2>
-            <Button onClick={() => setLoading((v) => !v)}>
-              {loading() ? "로딩 해제" : "로딩 표시"}
-            </Button>
+            <Button onClick={() => setLoading((v) => !v)}>{loading() ? "로딩 해제" : "로딩 표시"}</Button>
           </section>
         </div>
       </div>

@@ -271,10 +271,7 @@ describe("Sidebar", () => {
         <TestRouterWrapper>
           <SidebarContainer>
             <Sidebar>
-              <SidebarUser
-                name="홍길동"
-                menus={[{ title: "로그아웃", onClick: handleLogout }]}
-              />
+              <SidebarUser name="홍길동" menus={[{ title: "로그아웃", onClick: handleLogout }]} />
             </Sidebar>
           </SidebarContainer>
         </TestRouterWrapper>

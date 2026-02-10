@@ -103,9 +103,9 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
  * @see {@link Executable} 실행 클래스
  * @see {@link ProcedureBuilder} 프로시저 정의
  */
-export function executable<
-  TParams extends ColumnBuilderRecord,
-  TReturns extends ColumnBuilderRecord,
->(db: DbContext, builder: ProcedureBuilder<TParams, TReturns>): () => Executable<TParams, TReturns> {
+export function executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord>(
+  db: DbContext,
+  builder: ProcedureBuilder<TParams, TReturns>,
+): () => Executable<TParams, TReturns> {
   return () => new Executable(db, builder);
 }

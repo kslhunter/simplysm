@@ -1,11 +1,6 @@
 import { Show, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import {
-  timeField,
-  timeFieldContainer,
-  timeFieldContent,
-  timeFieldInput
-} from "./time-field.css";
+import { timeField, timeFieldContainer, timeFieldContent, timeFieldInput } from "./time-field.css";
 import { objPick, Time } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const TimeField = (props) => {
@@ -17,13 +12,13 @@ const TimeField = (props) => {
     "type",
     "min",
     "max",
-    "placeholder"
+    "placeholder",
   ]);
   const fieldState = createFieldState({
     value: () => local.value,
-    onChange: () => local.onChange
+    onChange: () => local.onChange,
   });
-  const step = () => local.type === "time-sec" ? "1" : void 0;
+  const step = () => (local.type === "time-sec" ? "1" : void 0);
   const inputValue = () => {
     const value = fieldState.currentValue();
     if (value === void 0) return "";
@@ -66,49 +61,61 @@ const TimeField = (props) => {
         const hour = parts[0];
         const minute = parts[1];
         const second = parts[2] ?? 0;
-        if (hour !== void 0 && minute !== void 0 && !Number.isNaN(hour) && !Number.isNaN(minute) && !Number.isNaN(second) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59) {
+        if (
+          hour !== void 0 &&
+          minute !== void 0 &&
+          !Number.isNaN(hour) &&
+          !Number.isNaN(minute) &&
+          !Number.isNaN(second) &&
+          hour >= 0 &&
+          hour <= 23 &&
+          minute >= 0 &&
+          minute <= 59 &&
+          second >= 0 &&
+          second <= 59
+        ) {
           const newValue = new Time(hour, minute, second);
           fieldState.setValue(newValue);
         }
       }
-    } catch {
-    }
+    } catch {}
   };
   const inputProps = () => ({
-    type: "time",
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    step: step(),
-    placeholder: local.placeholder,
+    "type": "time",
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "step": step(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? "true" : void 0,
-    "aria-readonly": rest.readOnly ? "true" : void 0
+    "aria-readonly": rest.readOnly ? "true" : void 0,
   });
   return /* @__PURE__ */ React.createElement(
     Show,
     {
       when: local.inline,
-      fallback: /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          ...rest,
-          ...inputProps(),
-          class: [timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" ")
-        }
-      )
-    },
-    /* @__PURE__ */ React.createElement("div", { class: timeFieldContainer }, /* @__PURE__ */ React.createElement("div", { class: timeFieldContent }, displayValue() !== "" ? displayValue() : local.placeholder ?? "\xA0"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
+      fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [timeFieldInput, timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" ")
-      }
-    ))
+        class: [timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" "),
+      }),
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      { class: timeFieldContainer },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        { class: timeFieldContent },
+        displayValue() !== "" ? displayValue() : (local.placeholder ?? "\xA0"),
+      ),
+      /* @__PURE__ */ React.createElement("input", {
+        ...rest,
+        ...inputProps(),
+        class: [timeFieldInput, timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" "),
+      }),
+    ),
   );
 };
-export {
-  TimeField
-};
+export { TimeField };
 //# sourceMappingURL=time-field.js.map

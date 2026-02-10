@@ -35,8 +35,8 @@ type Transferable = ArrayBuffer;
  * @throws 순환 참조 감지 시 TypeError
  */
 export declare function transferableEncode(obj: unknown): {
-    result: unknown;
-    transferList: Transferable[];
+  result: unknown;
+  transferList: Transferable[];
 };
 /**
  * serialize 객체를 심플리즘 타입 사용 객체로 변환

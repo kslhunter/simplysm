@@ -13,7 +13,7 @@ const checkboxIndicator = style({
   background: `rgb(${themeVars.surface.base})`,
   transition: `border-color ${tokenVars.duration.base} linear, background-color ${tokenVars.duration.base} linear`,
   width: "1em",
-  height: "1em"
+  height: "1em",
 });
 const checkboxIndicatorIcon = style({
   display: "flex",
@@ -25,16 +25,16 @@ const checkboxIndicatorIcon = style({
   transition: `opacity ${tokenVars.duration.base} linear`,
   selectors: {
     [`&[data-checked="true"], &[data-indeterminate="true"]`]: {
-      opacity: 1
-    }
-  }
+      opacity: 1,
+    },
+  },
 });
 const checkboxContents = style({
   selectors: {
     "&:empty": {
-      display: "none"
-    }
-  }
+      display: "none",
+    },
+  },
 });
 const checkbox = recipe({
   base: {
@@ -49,79 +49,79 @@ const checkbox = recipe({
     borderRadius: tokenVars.radius.base,
     selectors: {
       "&:focus-within": {
-        outline: "none"
-      }
-    }
+        outline: "none",
+      },
+    },
   },
   variants: {
     theme: objFromEntries(objEntries(themeVars.control).map(([theme]) => [theme, {}])),
     checked: {
       true: {},
-      false: {}
+      false: {},
     },
     indeterminate: {
       true: {},
-      false: {}
+      false: {},
     },
     size: {
       xs: {
         fontSize: tokenVars.font.size.sm,
-        padding: `${tokenVars.spacing.xxs} ${tokenVars.spacing.sm}`
+        padding: `${tokenVars.spacing.xxs} ${tokenVars.spacing.sm}`,
       },
       sm: {
-        padding: `${tokenVars.spacing.xs} ${tokenVars.spacing.base}`
+        padding: `${tokenVars.spacing.xs} ${tokenVars.spacing.base}`,
       },
       lg: {
-        padding: `${tokenVars.spacing.base} ${tokenVars.spacing.xl}`
+        padding: `${tokenVars.spacing.base} ${tokenVars.spacing.xl}`,
       },
       xl: {
         fontSize: tokenVars.font.size.lg,
-        padding: `${tokenVars.spacing.lg} ${tokenVars.spacing.xxl}`
-      }
+        padding: `${tokenVars.spacing.lg} ${tokenVars.spacing.xxl}`,
+      },
     },
     inline: {
       true: {
         verticalAlign: "middle",
         padding: 0,
-        border: "none"
-      }
+        border: "none",
+      },
     },
     inset: {
       true: {
         border: "none",
         borderRadius: 0,
-        justifyContent: "center"
-      }
+        justifyContent: "center",
+      },
     },
     disabled: {
       true: {
         opacity: tokenVars.overlay.muted,
         pointerEvents: "none",
-        cursor: "default"
-      }
-    }
+        cursor: "default",
+      },
+    },
   },
   defaultVariants: {
     theme: "primary",
     checked: false,
-    indeterminate: false
-  }
+    indeterminate: false,
+  },
 });
 globalStyle(`${checkbox.classNames.base}:focus-within .${checkboxIndicator}`, {
-  boxShadow: `0 0 0 2px rgb(${themeVars.control.primary.muted})`
+  boxShadow: `0 0 0 2px rgb(${themeVars.control.primary.muted})`,
 });
 for (const [theme, color] of objEntries(themeVars.control)) {
   const checkedClass = checkbox.classNames.variants.checked.true;
   const themeClass = checkbox.classNames.variants.theme[theme];
   globalStyle(`${checkedClass}${themeClass} .${checkboxIndicator}`, {
     background: `rgb(${color.base})`,
-    borderColor: `rgb(${color.base})`
+    borderColor: `rgb(${color.base})`,
   });
   globalStyle(`${checkedClass}${themeClass} .${checkboxIndicatorIcon}`, {
-    color: `rgb(${themeVars.text.inverted})`
+    color: `rgb(${themeVars.text.inverted})`,
   });
   globalStyle(`${checkedClass}${themeClass}:focus-within .${checkboxIndicator}`, {
-    boxShadow: `0 0 0 2px rgb(${color.muted})`
+    boxShadow: `0 0 0 2px rgb(${color.muted})`,
   });
 }
 for (const [theme, color] of objEntries(themeVars.control)) {
@@ -129,19 +129,14 @@ for (const [theme, color] of objEntries(themeVars.control)) {
   const themeClass = checkbox.classNames.variants.theme[theme];
   globalStyle(`${indeterminateClass}${themeClass} .${checkboxIndicator}`, {
     background: `rgb(${color.base})`,
-    borderColor: `rgb(${color.base})`
+    borderColor: `rgb(${color.base})`,
   });
   globalStyle(`${indeterminateClass}${themeClass} .${checkboxIndicatorIcon}`, {
-    color: `rgb(${themeVars.text.inverted})`
+    color: `rgb(${themeVars.text.inverted})`,
   });
   globalStyle(`${indeterminateClass}${themeClass}:focus-within .${checkboxIndicator}`, {
-    boxShadow: `0 0 0 2px rgb(${color.muted})`
+    boxShadow: `0 0 0 2px rgb(${color.muted})`,
   });
 }
-export {
-  checkbox,
-  checkboxContents,
-  checkboxIndicator,
-  checkboxIndicatorIcon
-};
+export { checkbox, checkboxContents, checkboxIndicator, checkboxIndicatorIcon };
 //# sourceMappingURL=checkbox.css.js.map

@@ -11,14 +11,14 @@ export type Bytes = Uint8Array;
  * orm-common과 공유
  */
 export type PrimitiveTypeMap = {
-    string: string;
-    number: number;
-    boolean: boolean;
-    DateTime: DateTime;
-    DateOnly: DateOnly;
-    Time: Time;
-    Uuid: Uuid;
-    Bytes: Bytes;
+  string: string;
+  number: number;
+  boolean: boolean;
+  DateTime: DateTime;
+  DateOnly: DateOnly;
+  Time: Time;
+  Uuid: Uuid;
+  Bytes: Bytes;
 };
 /**
  * Primitive 타입 문자열 키
@@ -52,7 +52,7 @@ export type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
  * ```
  */
 export type DeepPartial<T> = Partial<{
-    [K in keyof T]: T[K] extends PrimitiveType ? T[K] : DeepPartial<T[K]>;
+  [K in keyof T]: T[K] extends PrimitiveType ? T[K] : DeepPartial<T[K]>;
 }>;
 /**
  * 생성자 타입
@@ -69,6 +69,6 @@ export type DeepPartial<T> = Partial<{
  * const instance = create(MyClass); // MyClass 인스턴스
  */
 export interface Type<T> extends Function {
-    new (...args: unknown[]): T;
+  new (...args: unknown[]): T;
 }
 //# sourceMappingURL=common.types.d.ts.map

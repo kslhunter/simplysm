@@ -1,11 +1,6 @@
 import { Show, createSignal, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import {
-  numberField,
-  numberFieldContainer,
-  numberFieldContent,
-  numberFieldInput
-} from "./number-field.css";
+import { numberField, numberFieldContainer, numberFieldContent, numberFieldInput } from "./number-field.css";
 import { objPick, numParseFloat } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const NumberField = (props) => {
@@ -16,12 +11,12 @@ const NumberField = (props) => {
     "onChange",
     "useNumberComma",
     "minDigits",
-    "placeholder"
+    "placeholder",
   ]);
   const [isFocused, setIsFocused] = createSignal(false);
   const fieldState = createFieldState({
     value: () => local.value,
-    onChange: () => local.onChange
+    onChange: () => local.onChange,
   });
   const displayValue = () => {
     const value = fieldState.currentValue();
@@ -73,40 +68,43 @@ const NumberField = (props) => {
     }
   };
   const inputProps = () => ({
-    type: "text",
-    inputMode: "decimal",
-    value: displayValue(),
-    onInput: handleInput,
-    onFocus: handleFocus,
-    onBlur: handleBlur,
-    placeholder: local.placeholder,
+    "type": "text",
+    "inputMode": "decimal",
+    "value": displayValue(),
+    "onInput": handleInput,
+    "onFocus": handleFocus,
+    "onBlur": handleBlur,
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? "true" : void 0,
-    "aria-readonly": rest.readOnly ? "true" : void 0
+    "aria-readonly": rest.readOnly ? "true" : void 0,
   });
   return /* @__PURE__ */ React.createElement(
     Show,
     {
       when: local.inline,
-      fallback: /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          ...rest,
-          ...inputProps(),
-          class: [numberField(objPick(local, numberField.variants())), local.class].filterExists().join(" ")
-        }
-      )
-    },
-    /* @__PURE__ */ React.createElement("div", { class: numberFieldContainer }, /* @__PURE__ */ React.createElement("div", { class: numberFieldContent }, displayValue() !== "" ? displayValue() : local.placeholder ?? "\xA0"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
+      fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [numberFieldInput, numberField(objPick(local, numberField.variants())), local.class].filterExists().join(" ")
-      }
-    ))
+        class: [numberField(objPick(local, numberField.variants())), local.class].filterExists().join(" "),
+      }),
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      { class: numberFieldContainer },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        { class: numberFieldContent },
+        displayValue() !== "" ? displayValue() : (local.placeholder ?? "\xA0"),
+      ),
+      /* @__PURE__ */ React.createElement("input", {
+        ...rest,
+        ...inputProps(),
+        class: [numberFieldInput, numberField(objPick(local, numberField.variants())), local.class]
+          .filterExists()
+          .join(" "),
+      }),
+    ),
   );
 };
-export {
-  NumberField
-};
+export { NumberField };
 //# sourceMappingURL=number-field.js.map

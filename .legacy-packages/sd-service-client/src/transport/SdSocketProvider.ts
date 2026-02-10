@@ -21,10 +21,7 @@ export class SdSocketProvider extends EventEmitter {
 
   // 이벤트
   override on(event: "message", listener: (data: Buffer) => void): this;
-  override on(
-    event: "state",
-    listener: (state: "connected" | "closed" | "reconnecting") => void,
-  ): this;
+  override on(event: "state", listener: (state: "connected" | "closed" | "reconnecting") => void): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
@@ -150,9 +147,7 @@ export class SdSocketProvider extends EventEmitter {
 
     this._reconnectCount++;
     this.emit("state", "reconnecting");
-    console.warn(
-      `WebSocket 연결 끊김. 재연결 시도... (${this._reconnectCount}/${this._maxReconnectCount})`,
-    );
+    console.warn(`WebSocket 연결 끊김. 재연결 시도... (${this._reconnectCount}/${this._maxReconnectCount})`);
 
     await Wait.time(this._RECONNECT_DELAY);
 

@@ -48,9 +48,7 @@ vi.mock("@simplysm/core-node", () => {
       if (targets.length === 0) return files;
       return files.filter((file) => {
         const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some(
-          (target) => relativePath === target || isChildPath(relativePath, target),
-        );
+        return targets.some((target) => relativePath === target || isChildPath(relativePath, target));
       });
     }),
   };
@@ -275,9 +273,9 @@ describe("runLint", () => {
     // 모든 설정 파일이 없는 경우
     vi.mocked(fsExists).mockResolvedValue(false);
 
-    await expect(
-      runLint({ targets: [], fix: false, timing: false }),
-    ).rejects.toThrow("ESLint 설정 파일을 찾을 수 없습니다");
+    await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow(
+      "ESLint 설정 파일을 찾을 수 없습니다",
+    );
 
     // 에러가 throw되므로 exitCode는 호출자가 설정해야 함 (runLint 내부에서 설정하지 않음)
     // ESLint가 호출되지 않음
@@ -320,7 +318,7 @@ describe("runLint", () => {
     const originalTiming = process.env["TIMING"];
     delete process.env["TIMING"];
 
-    await runLint({ targets: [], fix: false, timing: true,  });
+    await runLint({ targets: [], fix: false, timing: true });
 
     // TIMING이 설정되었는지 확인 (함수 내에서 설정됨)
     expect(process.env["TIMING"]).toBe("1");
@@ -351,9 +349,7 @@ describe("runLint", () => {
     await runLint({ targets: [], fix: false, timing: false });
 
     // mts 파일이 로드되었는지 확인
-    expect(mockJitiImportFn).toHaveBeenCalledWith(
-      expect.stringContaining("eslint.config.mts"),
-    );
+    expect(mockJitiImportFn).toHaveBeenCalledWith(expect.stringContaining("eslint.config.mts"));
     expect(process.exitCode).toBeUndefined();
   });
 
@@ -369,8 +365,6 @@ describe("runLint", () => {
 
     vi.mocked(fsGlob).mockRejectedValue(new Error("Glob error"));
 
-    await expect(
-      runLint({ targets: [], fix: false, timing: false }),
-    ).rejects.toThrow("Glob error");
+    await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow("Glob error");
   });
 });

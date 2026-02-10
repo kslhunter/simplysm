@@ -28,12 +28,7 @@ import type { ISdModal } from "../../ui/overlay/modal/sd-modal.provider";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
-import {
-  tablerDeviceFloppy,
-  tablerEraser,
-  tablerRefresh,
-  tablerRestore,
-} from "@ng-icons/tabler-icons";
+import { tablerDeviceFloppy, tablerEraser, tablerRefresh, tablerRestore } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-data-detail",
@@ -93,11 +88,7 @@ import {
                     <small>(CTRL+ALT+L)</small>
                   </sd-button>
                 }
-                @if (
-                  !parent.dataInfo()?.isNew &&
-                  parent.toggleDelete &&
-                  (!parent.canDelete || parent.canDelete())
-                ) {
+                @if (!parent.dataInfo()?.isNew && parent.toggleDelete && (!parent.canDelete || parent.canDelete())) {
                   @if (parent.dataInfo()?.isDeleted) {
                     <sd-button [theme]="'warning'" (click)="onRestoreButtonClick()">
                       <ng-icon [svg]="tablerRestore" />
@@ -129,10 +120,7 @@ import {
           </div>
 
           @if (parent.dataInfo()?.lastModifiedAt || parent.dataInfo()?.lastModifiedBy) {
-            <div
-              class="p-sm-default"
-              [class.bg-theme-gray-lightest]="parent.viewType() === 'modal'"
-            >
+            <div class="p-sm-default" [class.bg-theme-gray-lightest]="parent.viewType() === 'modal'">
               최종수정:
               @if (parent.dataInfo()?.lastModifiedAt) {
                 {{ parent.dataInfo()!.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
@@ -154,26 +142,16 @@ import {
       @if (parent.canEdit()) {
         <ng-template #modalBottomTpl>
           <div class="p-sm-default flex-row gap-sm">
-            @if (
-              !parent.dataInfo()?.isNew &&
-              parent.toggleDelete &&
-              (!parent.canDelete || parent.canDelete())
-            ) {
+            @if (!parent.dataInfo()?.isNew && parent.toggleDelete && (!parent.canDelete || parent.canDelete())) {
               @if (parent.dataInfo()?.isDeleted) {
-                <sd-button [size]="'sm'" [theme]="'warning'" (click)="onRestoreButtonClick()">
-                  복구
-                </sd-button>
+                <sd-button [size]="'sm'" [theme]="'warning'" (click)="onRestoreButtonClick()">복구</sd-button>
               } @else {
-                <sd-button [size]="'sm'" [theme]="'danger'" (click)="onDeleteButtonClick()">
-                  삭제
-                </sd-button>
+                <sd-button [size]="'sm'" [theme]="'danger'" (click)="onDeleteButtonClick()">삭제</sd-button>
               }
             }
 
             <div class="flex-fill flex-row gap-sm main-align-end">
-              <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">
-                확인
-              </sd-button>
+              <sd-button [size]="'sm'" [theme]="'primary'" (click)="onSubmitButtonClick()">확인</sd-button>
             </div>
           </div>
         </ng-template>
@@ -246,9 +224,7 @@ export abstract class AbsSdDataDetail<T extends object, R = boolean> implements 
 
   prepareRefreshEffect?(): void;
 
-  abstract load():
-    | Promise<{ data: T; info: ISdDataDetailDataInfo }>
-    | { data: T; info: ISdDataDetailDataInfo };
+  abstract load(): Promise<{ data: T; info: ISdDataDetailDataInfo }> | { data: T; info: ISdDataDetailDataInfo };
 
   toggleDelete?(del: boolean): Promise<R | undefined> | R | undefined;
 

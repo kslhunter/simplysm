@@ -13,24 +13,24 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   constructor(data?: ISdExcelXmlSharedStringData) {
     if (data === undefined) {
       this.data = {
-        "sst": {
-          "$": {
-            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+        sst: {
+          $: {
+            xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
           },
         },
       };
-    }
-    else {
+    } else {
       this.data = data;
     }
 
-    this._stringIndexesMap = this.data.sst.si
-      ?.map((tag, id) => ({ id, tag }))
-      .filter((item) => !this._getHasInnerStyleOnSiTag(item.tag))
-      .toArrayMap(
-        (item) => this._getStringFromSiTag(item.tag),
-        (item) => item.id,
-      ) ?? new Map<string, number[]>();
+    this._stringIndexesMap =
+      this.data.sst.si
+        ?.map((tag, id) => ({ id, tag }))
+        .filter((item) => !this._getHasInnerStyleOnSiTag(item.tag))
+        .toArrayMap(
+          (item) => this._getStringFromSiTag(item.tag),
+          (item) => item.id,
+        ) ?? new Map<string, number[]>();
   }
 
   getIdByString(str: string): number | undefined {
@@ -50,20 +50,18 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
     return newLength - 1;
   }
 
-  cleanup() {
-  }
+  cleanup() {}
 
   private _getStringFromSiTag(si: TSdExcelXmlSharedStringDataSi): string {
     if ("t" in si) {
       return this._getStringFromTTag(si.t);
-    }
-    else {
+    } else {
       return si.r.map((item) => this._getStringFromTTag(item.t)).join("");
     }
   }
 
   private _getStringFromTTag(t: TSdExcelXmlSharedStringData): string {
-    return typeof t[0] === "string" ? t[0] : (Boolean(t[0]._) ? t[0]._! : " ");
+    return typeof t[0] === "string" ? t[0] : Boolean(t[0]._) ? t[0]._! : " ";
   }
 
   private _getHasInnerStyleOnSiTag(si: TSdExcelXmlSharedStringDataSi): boolean {

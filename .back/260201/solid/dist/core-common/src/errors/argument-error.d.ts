@@ -16,10 +16,10 @@ import { SdError } from "./sd-error";
  * // 결과 메시지: "유효하지 않은 사용자\n\nuserId: 123"
  */
 export declare class ArgumentError extends SdError {
-    /** 기본 메시지("인수가 잘못되었습니다.")와 함께 인수 객체를 YAML 형식으로 출력 */
-    constructor(argObj: Record<string, unknown>);
-    /** 커스텀 메시지와 함께 인수 객체를 YAML 형식으로 출력 */
-    constructor(message: string, argObj: Record<string, unknown>);
-    constructor(arg1: Record<string, unknown> | string, arg2?: Record<string, unknown>);
+  /** 기본 메시지("인수가 잘못되었습니다.")와 함께 인수 객체를 YAML 형식으로 출력 */
+  constructor(argObj: Record<string, unknown>);
+  /** 커스텀 메시지와 함께 인수 객체를 YAML 형식으로 출력 */
+  constructor(message: string, argObj: Record<string, unknown>);
+  constructor(arg1: Record<string, unknown> | string, arg2?: Record<string, unknown>);
 }
 //# sourceMappingURL=argument-error.d.ts.map

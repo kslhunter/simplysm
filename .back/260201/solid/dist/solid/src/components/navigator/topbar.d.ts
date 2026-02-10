@@ -6,7 +6,7 @@ import "@simplysm/core-common";
  * @property showToggle - 사이드바 토글 버튼 표시 여부 (기본값: SidebarContainer 내부일 때 true)
  */
 export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
-    showToggle?: boolean;
+  showToggle?: boolean;
 }
 /**
  * 상단바 컴포넌트

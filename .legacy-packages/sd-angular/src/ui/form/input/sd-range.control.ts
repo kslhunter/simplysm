@@ -29,8 +29,8 @@ import { SdTextfieldControl, type TSdTextfieldTypes } from "./sd-textfield.contr
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";
-      
-      sd-range {        
+
+      sd-range {
         display: flex;
         align-items: center;
 

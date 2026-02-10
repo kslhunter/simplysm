@@ -7,11 +7,11 @@ import { type JSX, type ParentComponent } from "solid-js";
  * 표준 div 속성을 모두 지원한다.
  */
 export interface DropdownPopupProps extends JSX.HTMLAttributes<HTMLDivElement> {
-    /**
-     * 모바일 모드에서 드래그 핸들 표시 여부
-     * @default true
-     */
-    showHandle?: boolean;
+  /**
+   * 모바일 모드에서 드래그 핸들 표시 여부
+   * @default true
+   */
+  showHandle?: boolean;
 }
 /**
  * Dropdown의 팝업 콘텐츠를 렌더링하는 컴포넌트

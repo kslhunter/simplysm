@@ -11,9 +11,7 @@ describe("INSERT - 기본", () => {
 
   describe("단일 레코드 INSERT", () => {
     const db = new TestDbContext();
-    const def = db.employee().getInsertQueryDef([
-      { name: "홍길동", managerId: undefined, departmentId: 1 },
-    ]);
+    const def = db.employee().getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -57,10 +55,9 @@ describe("INSERT - 기본", () => {
 
   describe("output 컬럼 지정 (RETURNING/OUTPUT)", () => {
     const db = new TestDbContext();
-    const def = db.employee().getInsertQueryDef(
-      [{ name: "홍길동", managerId: undefined, departmentId: 1 }],
-      ["id", "name"],
-    );
+    const def = db
+      .employee()
+      .getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }], ["id", "name"]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -101,9 +98,7 @@ describe("INSERT - 기본", () => {
 
   describe("AI 컬럼 명시적 지정", () => {
     const db = new TestDbContext();
-    const def = db.employee().getInsertQueryDef([
-      { id: 100, name: "홍길동", managerId: undefined, departmentId: 1 },
-    ]);
+    const def = db.employee().getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -128,7 +123,8 @@ describe("INSERT IF NOT EXISTS", () => {
 
   describe("기본: WHERE NOT EXISTS로 중복 방지", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.name, "홍길동")])
       .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
 
@@ -160,7 +156,8 @@ describe("INSERT IF NOT EXISTS", () => {
 
   describe("복합 조건으로 중복 체크", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
       .getInsertIfNotExistsQueryDef({ name: "홍길동", departmentId: 1 });
 
@@ -210,7 +207,8 @@ describe("INSERT INTO ... SELECT", () => {
 
   describe("기본: SELECT 결과를 다른 테이블에 INSERT", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .select((e) => ({
         id: e.id,
         name: e.name,
@@ -241,7 +239,8 @@ describe("INSERT INTO ... SELECT", () => {
 
   describe("WHERE 조건과 함께 INSERT INTO SELECT", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.departmentId, 1)])
       .select((e) => ({
         id: e.id,

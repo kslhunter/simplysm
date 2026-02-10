@@ -42,8 +42,7 @@ export class AutoUpdateService extends ServiceBase implements AutoUpdateServiceT
     const versionItem = versions.find((item) => item.version === version);
     if (versionItem == null) return undefined;
 
-    const downloadPath =
-      "/" + path.join(this.clientName ?? "", platform, "updates", versionItem.fileName);
+    const downloadPath = "/" + path.join(this.clientName ?? "", platform, "updates", versionItem.fileName);
 
     return {
       version: version.toString(),

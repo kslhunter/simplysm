@@ -1,19 +1,14 @@
 import { Show, createSignal, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import {
-  textField,
-  textFieldContainer,
-  textFieldContent,
-  textFieldInput
-} from "./text-field.css";
+import { textField, textFieldContainer, textFieldContent, textFieldInput } from "./text-field.css";
 import { objPick } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const FORMAT_PLACEHOLDERS = /[0Xx*]/;
 const PLACEHOLDER_PATTERNS = {
   "0": /[0-9]/,
-  X: /[A-Z0-9]/,
-  x: /[a-z0-9]/,
-  "*": /./
+  "X": /[A-Z0-9]/,
+  "x": /[a-z0-9]/,
+  "*": /./,
 };
 function applyFormat(raw, format) {
   let result = "";
@@ -61,12 +56,12 @@ const TextField = (props) => {
     "onChange",
     "type",
     "format",
-    "placeholder"
+    "placeholder",
   ]);
   const [isFocused, setIsFocused] = createSignal(false);
   const fieldState = createFieldState({
     value: () => local.value,
-    onChange: () => local.onChange
+    onChange: () => local.onChange,
   });
   const displayValue = () => {
     const value = fieldState.currentValue() ?? "";
@@ -106,40 +101,41 @@ const TextField = (props) => {
     }
   };
   const inputProps = () => ({
-    type: local.type ?? "text",
-    value: displayValue(),
-    onInput: handleInput,
-    onFocus: handleFocus,
-    onBlur: handleBlur,
-    placeholder: local.placeholder,
-    inputMode: inputMode(),
+    "type": local.type ?? "text",
+    "value": displayValue(),
+    "onInput": handleInput,
+    "onFocus": handleFocus,
+    "onBlur": handleBlur,
+    "placeholder": local.placeholder,
+    "inputMode": inputMode(),
     "aria-disabled": rest.disabled ? "true" : void 0,
-    "aria-readonly": rest.readOnly ? "true" : void 0
+    "aria-readonly": rest.readOnly ? "true" : void 0,
   });
   return /* @__PURE__ */ React.createElement(
     Show,
     {
       when: local.inline,
-      fallback: /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          ...rest,
-          ...inputProps(),
-          class: [textField(objPick(local, textField.variants())), local.class].filterExists().join(" ")
-        }
-      )
-    },
-    /* @__PURE__ */ React.createElement("div", { class: textFieldContainer }, /* @__PURE__ */ React.createElement("div", { class: textFieldContent }, displayValue() !== "" ? displayValue() : local.placeholder ?? "\xA0"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
+      fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [textFieldInput, textField(objPick(local, textField.variants())), local.class].filterExists().join(" ")
-      }
-    ))
+        class: [textField(objPick(local, textField.variants())), local.class].filterExists().join(" "),
+      }),
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      { class: textFieldContainer },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        { class: textFieldContent },
+        displayValue() !== "" ? displayValue() : (local.placeholder ?? "\xA0"),
+      ),
+      /* @__PURE__ */ React.createElement("input", {
+        ...rest,
+        ...inputProps(),
+        class: [textFieldInput, textField(objPick(local, textField.variants())), local.class].filterExists().join(" "),
+      }),
+    ),
   );
 };
-export {
-  TextField
-};
+export { TextField };
 //# sourceMappingURL=text-field.js.map

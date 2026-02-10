@@ -77,10 +77,7 @@ export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string,
    * @param type 이벤트 타입
    * @param args 이벤트 데이터 (void 타입이면 생략)
    */
-  emit<K extends keyof T & string>(
-    type: K,
-    ...args: T[K] extends void ? [] : [data: T[K]]
-  ): void {
+  emit<K extends keyof T & string>(type: K, ...args: T[K] extends void ? [] : [data: T[K]]): void {
     this._target.dispatchEvent(new CustomEvent(type, { detail: args[0] }));
   }
 

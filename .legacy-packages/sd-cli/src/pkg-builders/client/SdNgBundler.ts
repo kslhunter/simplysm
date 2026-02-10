@@ -13,16 +13,10 @@ import {
   createOutputFile,
   transformSupportedBrowsersToTargets,
 } from "@angular/build/src/tools/esbuild/utils";
-import type {
-  BuildOutputFile,
-  InitialFileRecord,
-} from "@angular/build/src/tools/esbuild/bundler-context";
+import type { BuildOutputFile, InitialFileRecord } from "@angular/build/src/tools/esbuild/bundler-context";
 import { BuildOutputFileType } from "@angular/build/src/tools/esbuild/bundler-context";
 import { extractLicenses } from "@angular/build/src/tools/esbuild/license-extractor";
-import type {
-  HintMode,
-  IndexHtmlProcessResult,
-} from "@angular/build/src/utils/index-file/index-html-generator";
+import type { HintMode, IndexHtmlProcessResult } from "@angular/build/src/utils/index-file/index-html-generator";
 import { IndexHtmlGenerator } from "@angular/build/src/utils/index-file/index-html-generator";
 import type { Entrypoint } from "@angular/build/src/utils/index-file/augment-index-html";
 import { CrossOrigin } from "@angular/build/src/builders/application/schema";
@@ -115,9 +109,7 @@ export class SdNgBundler {
     if (!this._contexts) {
       this._contexts = perf.run("Preparing build contexts", () => [
         this._getAppContext(),
-        ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss"))
-          ? [this._getStyleContext()]
-          : []),
+        ...(FsUtils.exists(path.resolve(this._opt.pkgPath, "src/styles.scss")) ? [this._getStyleContext()] : []),
         ...(this._conf.builderType === "electron" ? [this._getElectronMainContext()] : []),
       ]);
     }
@@ -142,8 +134,7 @@ export class SdNgBundler {
       this._debug(`Converting build results...`);
 
       const outputFiles: BuildOutputFile[] = bundlingResults.mapMany(
-        (item) =>
-          item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
+        (item) => item.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [],
       );
       const initialFiles = new Map<string, InitialFileRecord>();
       const metafile: {
@@ -189,9 +180,7 @@ export class SdNgBundler {
             type: "gen-index",
           });
         }
-        outputFiles.push(
-          createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root),
-        );
+        outputFiles.push(createOutputFile("index.html", genIndexHtmlResult.csrContent, BuildOutputFileType.Root));
       });
 
       this._debug(`Processing assets...`);
@@ -219,9 +208,7 @@ export class SdNgBundler {
         await perf.run("Preparing service worker", async () => {
           try {
             const serviceWorkerResult = await this._genServiceWorkerAsync(outputFiles, assetFiles);
-            outputFiles.push(
-              createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root),
-            );
+            outputFiles.push(createOutputFile("ngsw.json", serviceWorkerResult.manifest, BuildOutputFileType.Root));
             assetFiles.push(...serviceWorkerResult.assetFiles);
           } catch (err) {
             buildMessages.push({
@@ -391,30 +378,28 @@ export class SdNgBundler {
         { input: "public", glob: "**/*", output: "." },
         ...(this._opt.watch?.dev ? [{ input: "public-dev", glob: "**/*", output: "." }] : []),
         ...(this._opt.watch?.dev && this._conf.builderType === "cordova"
-          ? Object.keys(this._conf.builderConfig?.platform ?? { browser: {} }).mapMany(
-              (platform) => [
-                {
-                  input: `.cordova/platforms/${platform}/platform_www/plugins`,
-                  glob: "**/*",
-                  output: `cordova-${platform}/plugins`,
-                },
-                {
-                  input: `.cordova/platforms/${platform}/platform_www`,
-                  glob: "cordova.js",
-                  output: `cordova-${platform}`,
-                },
-                {
-                  input: `.cordova/platforms/${platform}/platform_www`,
-                  glob: "cordova_plugins.js",
-                  output: `cordova-${platform}`,
-                },
-                {
-                  input: `.cordova/platforms/${platform}/www`,
-                  glob: "config.xml",
-                  output: `cordova-${platform}`,
-                },
-              ],
-            )
+          ? Object.keys(this._conf.builderConfig?.platform ?? { browser: {} }).mapMany((platform) => [
+              {
+                input: `.cordova/platforms/${platform}/platform_www/plugins`,
+                glob: "**/*",
+                output: `cordova-${platform}/plugins`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/platform_www`,
+                glob: "cordova_plugins.js",
+                output: `cordova-${platform}`,
+              },
+              {
+                input: `.cordova/platforms/${platform}/www`,
+                glob: "config.xml",
+                output: `cordova-${platform}`,
+              },
+            ])
           : []),
       ],
       this._opt.pkgPath,
@@ -632,11 +617,7 @@ export class SdNgBundler {
       tsconfig: this._tsConfigFilePath,
       write: false,
       preserveSymlinks: false,
-      external: [
-        "electron",
-        ...nodeModule.builtinModules,
-        ...(this._conf.builderConfig?.reinstallDependencies ?? []),
-      ],
+      external: ["electron", ...nodeModule.builtinModules, ...(this._conf.builderConfig?.reinstallDependencies ?? [])],
       define: {
         ...(!this._opt.watch?.dev ? { ngDevMode: "false" } : {}),
         "process.env.SD_VERSION": JSON.stringify(this._pkgNpmConf.version),

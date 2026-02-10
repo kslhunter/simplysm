@@ -239,9 +239,9 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     // 대상 열을 포함하는 기존 범위 찾기
     const col = cols
-      ? cols.col.single((item) =>
-          (numParseInt(item.$.min) ?? 0) <= colIndexNumber &&
-          (numParseInt(item.$.max) ?? 0) >= colIndexNumber,
+      ? cols.col.single(
+          (item) =>
+            (numParseInt(item.$.min) ?? 0) <= colIndexNumber && (numParseInt(item.$.max) ?? 0) >= colIndexNumber,
         )
       : undefined;
 
@@ -449,9 +449,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     for (const rowData of rowsData) {
       const cellsData = rowData.c;
       if (cellsData == null) continue;
-      cellsData.sort(
-        (a, b) => ExcelUtils.parseCellAddrCode(a.$.r).c - ExcelUtils.parseCellAddrCode(b.$.r).c,
-      );
+      cellsData.sort((a, b) => ExcelUtils.parseCellAddrCode(a.$.r).c - ExcelUtils.parseCellAddrCode(b.$.r).c);
     }
 
     // Dimension 값 적용

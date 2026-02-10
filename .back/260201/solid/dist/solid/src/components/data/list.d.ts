@@ -4,7 +4,7 @@ import { type JSX, type ParentComponent } from "solid-js";
  * @property inset - true일 경우 테두리 안쪽 여백 스타일 적용
  */
 export interface ListProps extends JSX.HTMLAttributes<HTMLDivElement> {
-    inset?: boolean;
+  inset?: boolean;
 }
 /**
  * ListItem들을 담는 컨테이너 컴포넌트

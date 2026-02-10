@@ -5,14 +5,7 @@ import type { ExcelXmlStyle, ExcelStyle } from "./xml/excel-xml-style";
 import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelAddressPoint, ExcelStyleOptions, ExcelValueType } from "./types";
-import {
-  DateOnly,
-  DateTime,
-  numParseFloat,
-  numParseInt,
-  strIsNullOrEmpty,
-  Time,
-} from "@simplysm/core-common";
+import { DateOnly, DateTime, numParseFloat, numParseInt, strIsNullOrEmpty, Time } from "@simplysm/core-common";
 import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
 import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
@@ -321,16 +314,10 @@ export class ExcelCell {
       this._zipCache.set("xl/styles.xml", styleData);
 
       const typeData = await this._getTypeData();
-      typeData.add(
-        "/xl/styles.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
-      );
+      typeData.add("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
 
       const wbRelData = await this._getWbRelData();
-      wbRelData.add(
-        "styles.xml",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
-      );
+      wbRelData.add("styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles");
     }
     return styleData;
   }

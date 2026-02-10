@@ -12,7 +12,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";
-      
+
       sd-topbar-container {
         display: flex;
         height: 100%;

@@ -10,7 +10,8 @@ describe("UPDATE - 기본", () => {
   describe("단순 UPDATE", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef((_e) => ({
         name: expr.val("string", "새이름"),
@@ -30,7 +31,7 @@ describe("UPDATE - 기본", () => {
             source: { type: "column", path: ["T1", "id"] },
             target: { type: "value", value: 1 },
           },
-        ]
+        ],
       });
     });
 
@@ -43,7 +44,8 @@ describe("UPDATE - 기본", () => {
   describe("여러 컬럼 UPDATE", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef(() => ({
         name: expr.val("string", "새이름"),
@@ -78,7 +80,8 @@ describe("UPDATE - 기본", () => {
   describe("현재 값 참조하여 UPDATE (e.g., count = count + 1)", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef((e) => ({
         // managerId = managerId + 1 (예시)
@@ -116,7 +119,8 @@ describe("UPDATE - 기본", () => {
   describe("output 컬럼 지정", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getUpdateQueryDef(
         () => ({
@@ -157,7 +161,8 @@ describe("UPDATE - 기본", () => {
   describe("TOP으로 업데이트 개수 제한", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.departmentId, 1)])
       .top(10)
       .getUpdateQueryDef(() => ({

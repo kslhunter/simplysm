@@ -25,11 +25,7 @@ export interface SpawnOptions {
  * @param options - 실행 옵션
  * @returns stdout 출력 (stderr는 stdout에 병합됨)
  */
-export async function spawn(
-  cmd: string,
-  args: string[],
-  options?: SpawnOptions,
-): Promise<string> {
+export async function spawn(cmd: string, args: string[], options?: SpawnOptions): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     // NO_COLOR 환경변수 존중 (https://no-color.org/)
     const noColor = process.env["NO_COLOR"] != null;

@@ -15,7 +15,8 @@ const ripple = (el, value) => {
   });
   createEventListener(el, "pointerdown", (e) => {
     const options = value == null ? void 0 : value();
-    const enabled = options === void 0 || options === true || typeof options === "object" && options.enabled !== false;
+    const enabled =
+      options === void 0 || options === true || (typeof options === "object" && options.enabled !== false);
     const shouldStopPropagation = typeof options === "object" && options.stopPropagation === true;
     if (!enabled) return;
     if (shouldStopPropagation) {
@@ -32,7 +33,7 @@ const ripple = (el, value) => {
       Math.hypot(clickX, clickY),
       Math.hypot(rect.width - clickX, clickY),
       Math.hypot(clickX, rect.height - clickY),
-      Math.hypot(rect.width - clickX, rect.height - clickY)
+      Math.hypot(rect.width - clickX, rect.height - clickY),
     );
     const size = radius * 2;
     const rippleEl = document.createElement("span");
@@ -66,7 +67,7 @@ const ripple = (el, value) => {
           tryFadeOut();
         }
       },
-      { signal }
+      { signal },
     );
     const onPointerRelease = () => {
       pointerReleased = true;
@@ -76,7 +77,5 @@ const ripple = (el, value) => {
     document.addEventListener("pointercancel", onPointerRelease, { signal });
   });
 };
-export {
-  ripple
-};
+export { ripple };
 //# sourceMappingURL=ripple.js.map

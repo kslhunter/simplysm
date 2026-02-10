@@ -9,7 +9,8 @@ import * as expected from "./unpivot.expected";
 describe("SELECT - UNPIVOT (join + union)", () => {
   describe("기본", () => {
     const db = new TestDbContext();
-    const def = db.monthlySales()
+    const def = db
+      .monthlySales()
       .join("unpvt", (qr, c) =>
         qr.union(
           qr.select({ month: expr.val("string", "jan"), amount: c.jan }),
@@ -80,7 +81,8 @@ describe("SELECT - UNPIVOT (join + union)", () => {
 
   describe("2개 컬럼 unpivot", () => {
     const db = new TestDbContext();
-    const def = db.monthlySales()
+    const def = db
+      .monthlySales()
       .join("unpvt", (qr, c) =>
         qr.union(
           qr.select({ period: expr.val("string", "jan"), value: c.jan }),
@@ -144,7 +146,8 @@ describe("SELECT - UNPIVOT (join + union)", () => {
 
   describe("WHERE -> UNPIVOT", () => {
     const db = new TestDbContext();
-    const def = db.monthlySales()
+    const def = db
+      .monthlySales()
       .where((r) => [expr.eq(r.category, "A")])
       .join("unpvt", (qr, c) =>
         qr.union(

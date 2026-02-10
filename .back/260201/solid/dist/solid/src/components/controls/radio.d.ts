@@ -12,9 +12,9 @@ import "@simplysm/core-common";
  * @property inset - 인셋 스타일 적용
  */
 export interface RadioProps extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, RadioStyles {
-    checked?: boolean;
-    onChange?: (checked: boolean) => void;
-    disabled?: boolean;
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
+  disabled?: boolean;
 }
 /**
  * 라디오 버튼 컴포넌트

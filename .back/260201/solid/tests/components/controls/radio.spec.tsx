@@ -28,7 +28,6 @@ describe("Radio", () => {
 
       expect(handleChange).not.toHaveBeenCalled();
     });
-
   });
 
   describe("렌더링", () => {
@@ -50,5 +49,4 @@ describe("Radio", () => {
       expect(screen.getByRole("radio")).toBeChecked();
     });
   });
-
 });

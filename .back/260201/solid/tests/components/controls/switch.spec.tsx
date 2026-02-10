@@ -64,11 +64,7 @@ describe("Switch", () => {
     });
 
     it("disabled 상태에서 input이 disabled 속성을 가진다", () => {
-      const { container } = render(() => (
-        <Switch disabled>
-          비활성화
-        </Switch>
-      ));
+      const { container } = render(() => <Switch disabled>비활성화</Switch>);
 
       const input = container.querySelector('input[type="choice"]');
       expect(input).toBeDisabled();

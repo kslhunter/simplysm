@@ -1,13 +1,6 @@
 import { createSignal } from "solid-js";
 import { IconMenu2, IconFolder, IconHome, IconSettings } from "@tabler/icons-solidjs";
-import {
-  Sidebar,
-  SidebarContainer,
-  SidebarMenu,
-  type SidebarMenuItem,
-  SidebarUser,
-  Button,
-} from "@simplysm/solid";
+import { Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser, Button } from "@simplysm/solid";
 import { atoms, themeVars, tokenVars } from "@simplysm/solid/styles";
 
 const sampleMenus: SidebarMenuItem[] = [
@@ -46,11 +39,11 @@ export default function MobileLayoutDemoPage() {
           {/* 헤더 (토글 버튼 포함) */}
           <header
             style={{
-              display: "flex",
+              "display": "flex",
               "align-items": "center",
-              padding: tokenVars.spacing.base,
+              "padding": tokenVars.spacing.base,
               "border-bottom": `1px solid rgb(${themeVars.border.base})`,
-              background: `rgb(${themeVars.surface.base})`,
+              "background": `rgb(${themeVars.surface.base})`,
             }}
           >
             <Button onClick={() => setToggled((v) => !v)} inset>
@@ -61,9 +54,7 @@ export default function MobileLayoutDemoPage() {
 
           {/* 콘텐츠 */}
           <div class={atoms({ p: "lg" })}>
-            <p style={{ color: `rgb(${themeVars.text.muted})` }}>
-              햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.
-            </p>
+            <p style={{ color: `rgb(${themeVars.text.muted})` }}>햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.</p>
             <p class={atoms({ mt: "base" })} style={{ color: `rgb(${themeVars.text.muted})` }}>
               사이드바 외부를 클릭하면 사이드바가 닫힙니다.
             </p>

@@ -15,9 +15,12 @@ import type { XmlBuilderOptions } from "fast-xml-parser";
  * xmlParse('<root id="1"><item>hello</item></root>');
  * // { root: { $: { id: "1" }, item: [{ _: "hello" }] } }
  */
-export declare function xmlParse(str: string, options?: {
+export declare function xmlParse(
+  str: string,
+  options?: {
     stripTagPrefix?: boolean;
-}): unknown;
+  },
+): unknown;
 /**
  * 객체를 XML 문자열로 직렬화
  * @param obj 직렬화할 객체

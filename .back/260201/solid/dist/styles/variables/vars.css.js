@@ -4,9 +4,7 @@ import { colorVars } from "./colors.css";
 const vars = {
   ...colorVars,
   ...tokenVars,
-  ...themeVars
+  ...themeVars,
 };
-export {
-  vars
-};
+export { vars };
 //# sourceMappingURL=vars.css.js.map

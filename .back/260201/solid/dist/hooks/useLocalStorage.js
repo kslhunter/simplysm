@@ -18,15 +18,14 @@ function useLocalStorage(key, defaultValue, options) {
     }
   };
   const [value, setValue] = createSignal(getValidatedValue());
-  const setAndPersist = ((v) => {
+  const setAndPersist = (v) => {
     const next = typeof v === "function" ? v(value()) : v;
     setValue(() => next);
     try {
       localStorage.setItem(storageKey, next);
-    } catch {
-    }
+    } catch {}
     return next;
-  });
+  };
   const handleStorageChange = (e) => {
     if (e.key !== storageKey) return;
     if (e.newValue == null) {
@@ -41,7 +40,5 @@ function useLocalStorage(key, defaultValue, options) {
   }
   return [value, setAndPersist];
 }
-export {
-  useLocalStorage
-};
+export { useLocalStorage };
 //# sourceMappingURL=useLocalStorage.js.map

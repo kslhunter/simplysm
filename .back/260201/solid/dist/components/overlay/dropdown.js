@@ -1,17 +1,7 @@
 import "@simplysm/core-common";
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-  splitProps
-} from "solid-js";
+import { createEffect, createMemo, createSignal, createUniqueId, onCleanup, splitProps } from "solid-js";
 import { tabbable } from "tabbable";
-import {
-  DropdownContext,
-  useDropdownInternal
-} from "./dropdown-context";
+import { DropdownContext, useDropdownInternal } from "./dropdown-context";
 import { dropdown } from "./dropdown.css";
 import { MOBILE_BREAKPOINT_PX } from "../../constants.js";
 const getScrollableParents = (element) => {
@@ -29,19 +19,13 @@ const getScrollableParents = (element) => {
   return scrollableParents;
 };
 const Dropdown = (props) => {
-  const [local, rest] = splitProps(props, [
-    "open",
-    "onOpenChange",
-    "disabled",
-    "children",
-    "class"
-  ]);
+  const [local, rest] = splitProps(props, ["open", "onOpenChange", "disabled", "children", "class"]);
   const id = createUniqueId();
   const parentCtx = useDropdownInternal();
   const [childIds, setChildIds] = createSignal(/* @__PURE__ */ new Set());
   const [internalOpen, setInternalOpen] = createSignal(local.open ?? false);
   const isControlled = () => local.onOpenChange !== void 0;
-  const isOpen = createMemo(() => isControlled() ? local.open ?? false : internalOpen());
+  const isOpen = createMemo(() => (isControlled() ? (local.open ?? false) : internalOpen()));
   const setOpen = (value) => {
     var _a;
     if (local.disabled) return;
@@ -79,7 +63,7 @@ const Dropdown = (props) => {
     const viewportWidth = window.innerWidth;
     const isPlaceRight = rect.left > viewportWidth / 2;
     const style = {
-      "min-width": `${rect.width}px`
+      "min-width": `${rect.width}px`,
     };
     if (placement() === "top") {
       style.bottom = `${viewportHeight - rect.top + 2}px`;
@@ -169,8 +153,10 @@ const Dropdown = (props) => {
   };
   const handleKeyDown = (e) => {
     if (e.ctrlKey || e.altKey) return;
-    const isOpenKey = e.key === "ArrowDown" && placement() === "bottom" || e.key === "ArrowUp" && placement() === "top";
-    const isCloseKey = e.key === "ArrowUp" && placement() === "bottom" || e.key === "ArrowDown" && placement() === "top";
+    const isOpenKey =
+      (e.key === "ArrowDown" && placement() === "bottom") || (e.key === "ArrowUp" && placement() === "top");
+    const isCloseKey =
+      (e.key === "ArrowUp" && placement() === "bottom") || (e.key === "ArrowDown" && placement() === "top");
     if (isOpenKey) {
       e.preventDefault();
       e.stopPropagation();
@@ -232,39 +218,41 @@ const Dropdown = (props) => {
       } else {
         triggerRef.focus();
       }
-    }
-  };
-  return /* @__PURE__ */ React.createElement(DropdownContext.Provider, { value: contextValue }, /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      ref: (el) => {
-        triggerRef = el;
-        el.addEventListener("blur", handleBlurCapture, true);
-        onCleanup(() => el.removeEventListener("blur", handleBlurCapture, true));
-        requestAnimationFrame(() => {
-          setHasFocusable(tabbable(el).length > 0);
-        });
-      },
-      tabIndex: local.disabled ? -1 : hasFocusable() ? -1 : 0,
-      role: "button",
-      "aria-haspopup": "menu",
-      "aria-expanded": isOpen(),
-      "aria-controls": isOpen() ? `dropdown-popup-${id}` : void 0,
-      "aria-disabled": local.disabled || void 0,
-      class: [dropdown, local.class].filterExists().join(" "),
-      "data-disabled": local.disabled,
-      onClick: (e) => {
-        e.stopPropagation();
-        togglePopup();
-      },
-      onKeyDown: handleKeyDown,
-      onMouseOver: handleMouseOver,
-      ...rest
     },
-    local.children
-  ));
+  };
+  return /* @__PURE__ */ React.createElement(
+    DropdownContext.Provider,
+    { value: contextValue },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "ref": (el) => {
+          triggerRef = el;
+          el.addEventListener("blur", handleBlurCapture, true);
+          onCleanup(() => el.removeEventListener("blur", handleBlurCapture, true));
+          requestAnimationFrame(() => {
+            setHasFocusable(tabbable(el).length > 0);
+          });
+        },
+        "tabIndex": local.disabled ? -1 : hasFocusable() ? -1 : 0,
+        "role": "button",
+        "aria-haspopup": "menu",
+        "aria-expanded": isOpen(),
+        "aria-controls": isOpen() ? `dropdown-popup-${id}` : void 0,
+        "aria-disabled": local.disabled || void 0,
+        "class": [dropdown, local.class].filterExists().join(" "),
+        "data-disabled": local.disabled,
+        "onClick": (e) => {
+          e.stopPropagation();
+          togglePopup();
+        },
+        "onKeyDown": handleKeyDown,
+        "onMouseOver": handleMouseOver,
+        ...rest,
+      },
+      local.children,
+    ),
+  );
 };
-export {
-  Dropdown
-};
+export { Dropdown };
 //# sourceMappingURL=dropdown.js.map

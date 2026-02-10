@@ -22,10 +22,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
   /**
    * Excel 파일 읽기 → 레코드 배열
    */
-  async read(
-    file: Bytes | Blob,
-    wsNameOrIndex: string | number = 0,
-  ): Promise<z.infer<T>[]> {
+  async read(file: Bytes | Blob, wsNameOrIndex: string | number = 0): Promise<z.infer<T>[]> {
     await using wb = new ExcelWorkbook(file);
 
     const ws = await wb.getWorksheet(wsNameOrIndex);
@@ -66,9 +63,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
       // Zod 스키마로 검증
       const parseResult = this._schema.safeParse(record);
       if (!parseResult.success) {
-        const errors = parseResult.error.issues
-          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-          .join(", ");
+        const errors = parseResult.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
         throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
       }
 
@@ -151,10 +146,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
     return map;
   }
 
-  private _convertValue(
-    rawValue: ExcelValueType,
-    fieldSchema: z.ZodType,
-  ): unknown {
+  private _convertValue(rawValue: ExcelValueType, fieldSchema: z.ZodType): unknown {
     if (rawValue == null || rawValue === "") {
       return this._getDefaultForSchema(fieldSchema);
     }
@@ -215,11 +207,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
   }
 
   private _isRequired(schema: z.ZodType): boolean {
-    return (
-      !(schema instanceof ZodOptional) &&
-      !(schema instanceof ZodNullable) &&
-      !(schema instanceof ZodDefault)
-    );
+    return !(schema instanceof ZodOptional) && !(schema instanceof ZodNullable) && !(schema instanceof ZodDefault);
   }
 
   private _isBoolean(schema: z.ZodType): boolean {

@@ -1,12 +1,5 @@
 import { NgTemplateOutlet } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  contentChild,
-  input,
-  TemplateRef,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, contentChild, input, TemplateRef, ViewEncapsulation } from "@angular/core";
 import {
   type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
@@ -51,10 +44,9 @@ export class SdSharedDataSelectButtonControl<
   items = input<TItem[]>([]);
   modal = input.required<TSdSelectModalInfo<TModal>>();
 
-  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
-    SdItemOfTemplateDirective,
-    { read: TemplateRef },
-  );
+  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   override load(keys: number[]) {
     return this.items().filter((item) => keys.includes(item.__valueKey));

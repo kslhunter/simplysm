@@ -12,8 +12,7 @@ export class SdSheetSelectRowIndicatorRenderer<T> {
     },
   ) {
     afterEveryRender(() => {
-      const selectRowIndicatorContainerEl =
-        this._options.domAccessor.getSelectRowIndicatorContainer();
+      const selectRowIndicatorContainerEl = this._options.domAccessor.getSelectRowIndicatorContainer();
 
       if (this._options.selectedItems().length <= 0) {
         selectRowIndicatorContainerEl.innerHTML = "";

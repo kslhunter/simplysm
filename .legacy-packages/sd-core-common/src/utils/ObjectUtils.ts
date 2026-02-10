@@ -84,10 +84,7 @@ export class ObjectUtils {
       const result = new Map();
       currPrevClones.set(source, result);
       for (const [key, value] of source) {
-        result.set(
-          this._clone(key, options, currPrevClones),
-          this._clone(value, options, currPrevClones),
-        );
+        result.set(this._clone(key, options, currPrevClones), this._clone(value, options, currPrevClones));
       }
       return result;
     }
@@ -112,11 +109,7 @@ export class ObjectUtils {
       } else if (options?.useRefTypes?.includes(value.constructor)) {
         result[key] = value;
       } else {
-        result[key] = this._clone(
-          source[key],
-          { useRefTypes: options?.useRefTypes },
-          currPrevClones,
-        );
+        result[key] = this._clone(source[key], { useRefTypes: options?.useRefTypes }, currPrevClones);
       }
     }
 
@@ -236,10 +229,7 @@ export class ObjectUtils {
     };
   }
 
-  static omit<T extends Record<string, any>, K extends keyof T>(
-    item: T,
-    omitKeys: K[],
-  ): Omit<T, K> {
+  static omit<T extends Record<string, any>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
     const result: any = {};
     for (const key of Object.keys(item) as K[]) {
       if (!omitKeys.includes(key)) {
@@ -249,10 +239,7 @@ export class ObjectUtils {
     return result;
   }
 
-  static omitByFilter<T extends Record<string, any>>(
-    item: T,
-    omitKeyFn: (key: keyof T) => boolean,
-  ): T {
+  static omitByFilter<T extends Record<string, any>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
     const result: any = {};
     for (const key of Object.keys(item)) {
       if (!omitKeyFn(key)) {
@@ -331,13 +318,9 @@ export class ObjectUtils {
 
       if (options?.ignoreArrayIndex) {
         if (options.onlyOneDepth) {
-          return source.every((sourceItem) =>
-            target.some((targetItem) => targetItem === sourceItem),
-          );
+          return source.every((sourceItem) => target.some((targetItem) => targetItem === sourceItem));
         } else {
-          return source.every((sourceItem) =>
-            target.some((targetItem) => this.equal(targetItem, sourceItem, options)),
-          );
+          return source.every((sourceItem) => target.some((targetItem) => this.equal(targetItem, sourceItem, options)));
         }
       } else {
         if (options?.onlyOneDepth) {
@@ -453,8 +436,7 @@ export class ObjectUtils {
       //IValidateDef<T>
       currDef = {
         ...def,
-        type:
-          def.type !== undefined ? (def.type instanceof Array ? def.type : [def.type]) : undefined,
+        type: def.type !== undefined ? (def.type instanceof Array ? def.type : [def.type]) : undefined,
       };
     }
 
@@ -469,10 +451,7 @@ export class ObjectUtils {
       return undefined;
     }
 
-    if (
-      currDef.type !== undefined &&
-      !currDef.type.some((type) => type === (value as any)?.constructor)
-    ) {
+    if (currDef.type !== undefined && !currDef.type.some((type) => type === (value as any)?.constructor)) {
       invalidateDef.type = currDef.type;
     }
 
@@ -559,10 +538,7 @@ export class ObjectUtils {
     const result: IValidateArrayResult<T>[] = [];
     for (let i = 0; i < arr.length; i++) {
       const item = arr[i];
-      const validateObjectResult = this.validateObject(
-        item,
-        typeof def === "function" ? def(item) : def,
-      );
+      const validateObjectResult = this.validateObject(item, typeof def === "function" ? def(item) : def);
       if (Object.keys(validateObjectResult).length > 0) {
         result.push({
           index: i,
@@ -612,19 +588,9 @@ export class ObjectUtils {
     }
   }
 
-  static getChainValueByDepth<T, K extends keyof T>(
-    obj: T,
-    key: K,
-    depth: number,
-    optional: true,
-  ): T[K] | undefined;
+  static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number, optional: true): T[K] | undefined;
   static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
-  static getChainValueByDepth<T, K extends keyof T>(
-    obj: T,
-    key: K,
-    depth: number,
-    optional?: true,
-  ): T[K] | undefined {
+  static getChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number, optional?: true): T[K] | undefined {
     let result: any = obj;
     for (let i = 0; i < depth; i++) {
       if (optional) {
@@ -721,12 +687,7 @@ export class ObjectUtils {
       return undefined;
     }
 
-    if (
-      obj instanceof Date ||
-      obj instanceof DateTime ||
-      obj instanceof DateOnly ||
-      obj instanceof Time
-    ) {
+    if (obj instanceof Date || obj instanceof DateTime || obj instanceof DateOnly || obj instanceof Time) {
       return obj;
     }
 

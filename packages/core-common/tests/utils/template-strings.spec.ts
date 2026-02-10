@@ -18,9 +18,7 @@ describe("template-strings", () => {
 
     it("첫/마지막 빈 줄 제거", () => {
       const result = html`
-
         <div>test</div>
-
       `;
       expect(result).toBe("<div>test</div>");
     });
@@ -68,7 +66,9 @@ describe("template-strings", () => {
     });
 
     it("html", () => {
-      expect(html`<div class="test">content</div>`).toBe('<div class="test">content</div>');
+      expect(html`
+        <div class="test">content</div>
+      `).toBe('<div class="test">content</div>');
     });
   });
 

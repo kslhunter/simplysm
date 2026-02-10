@@ -31,7 +31,9 @@ export default function FormTablePage() {
                   <td>
                     <Select
                       placeholder="부서 선택"
-                      renderValue={(v: string) => <>{v === "dev" ? "개발팀" : v === "design" ? "디자인팀" : "마케팅팀"}</>}
+                      renderValue={(v: string) => (
+                        <>{v === "dev" ? "개발팀" : v === "design" ? "디자인팀" : "마케팅팀"}</>
+                      )}
                     >
                       <Select.Item value="dev">개발팀</Select.Item>
                       <Select.Item value="design">디자인팀</Select.Item>
@@ -72,10 +74,7 @@ export default function FormTablePage() {
                 <tr>
                   <th>카테고리</th>
                   <td>
-                    <Select
-                      placeholder="선택"
-                      renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}
-                    >
+                    <Select placeholder="선택" renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}>
                       <Select.Item value="notice">공지사항</Select.Item>
                       <Select.Item value="news">뉴스</Select.Item>
                     </Select>

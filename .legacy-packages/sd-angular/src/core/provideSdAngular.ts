@@ -1,6 +1,5 @@
 import { SdAngularConfigProvider } from "./providers/app/sd-angular-config.provider";
-import type {
-  EnvironmentProviders} from "@angular/core";
+import type { EnvironmentProviders } from "@angular/core";
 import {
   DestroyRef,
   EnvironmentInjector,
@@ -21,13 +20,7 @@ import { SdBackbuttonEventPlugin } from "./plugins/events/sd-backbutton-event.pl
 import type { TSdTheme } from "./providers/sd-theme-provider";
 import { SdThemeProvider } from "./providers/sd-theme-provider";
 import { SdLocalStorageProvider } from "./providers/storage/sd-local-storage.provider";
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationStart,
-  Router,
-} from "@angular/router";
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from "@angular/router";
 import { SdBusyProvider } from "../ui/overlay/busy/sd-busy.provider";
 import { SwUpdate } from "@angular/service-worker";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
@@ -50,7 +43,7 @@ export function provideSdAngular(opt: {
     },
     provideNgIconsConfig({
       strokeWidth: 1.5,
-      size: "1.33em"
+      size: "1.33em",
     }),
     provideEnvironmentInitializer(() => {
       const _sdNgConf = inject(SdAngularConfigProvider);

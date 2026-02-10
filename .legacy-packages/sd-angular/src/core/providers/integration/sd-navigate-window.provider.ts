@@ -20,8 +20,7 @@ export class SdNavigateWindowProvider {
           newWindow.close();
         }
       });
-    }
-    else {
+    } else {
       window.open(`${location.pathname}#${navigate};${new URLSearchParams(params).toString()}`, "_blank");
     }
   }

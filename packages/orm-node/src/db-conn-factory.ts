@@ -38,7 +38,7 @@ export class DbConnFactory {
     const configKey = JSON.stringify(config, (_, value: unknown) =>
       value != null && typeof value === "object" && !Array.isArray(value)
         ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
-        : value
+        : value,
     );
 
     if (!this._poolMap.has(configKey)) {

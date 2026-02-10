@@ -282,11 +282,11 @@ describe("result-parser", () => {
 
   describe("1레벨 JOIN", () => {
     it("isSingle: true - 단일 객체", async () => {
-      const raw = [{ id: 1, name: "User1", "company.id": 100, "company.name": "Corp" }];
+      const raw = [{ "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
         },
@@ -305,13 +305,13 @@ describe("result-parser", () => {
 
     it("isSingle: false - 배열", async () => {
       const raw = [
-        { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
-        { id: 1, name: "User1", "posts.id": 11, "posts.title": "Post2" },
+        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
+        { "id": 1, "name": "User1", "posts.id": 11, "posts.title": "Post2" },
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
         },
@@ -333,13 +333,13 @@ describe("result-parser", () => {
 
     it("isSingle: true - 여러 개의 다른 결과 시 throw", async () => {
       const raw = [
-        { id: 1, name: "User1", "company.id": 100, "company.name": "Corp1" },
-        { id: 1, name: "User1", "company.id": 200, "company.name": "Corp2" },
+        { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp1" },
+        { "id": 1, "name": "User1", "company.id": 200, "company.name": "Corp2" },
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
         },
@@ -352,11 +352,11 @@ describe("result-parser", () => {
     });
 
     it("빈 JOIN 결과는 키가 없음", async () => {
-      const raw = [{ id: 1, name: "User1", "company.id": null, "company.name": null }];
+      const raw = [{ "id": 1, "name": "User1", "company.id": null, "company.name": null }];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
         },
@@ -370,14 +370,14 @@ describe("result-parser", () => {
 
     it("여러 루트 레코드와 JOIN", async () => {
       const raw = [
-        { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
-        { id: 2, name: "User2", "posts.id": 20, "posts.title": "Post2" },
-        { id: 2, name: "User2", "posts.id": 21, "posts.title": "Post3" },
+        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
+        { "id": 2, "name": "User2", "posts.id": 20, "posts.title": "Post2" },
+        { "id": 2, "name": "User2", "posts.id": 21, "posts.title": "Post3" },
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
         },
@@ -411,16 +411,16 @@ describe("result-parser", () => {
     it("2레벨 중첩", async () => {
       const raw = [
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "posts.id": 10,
           "posts.title": "Post1",
           "posts.comments.id": 100,
           "posts.comments.text": "Comment1",
         },
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "posts.id": 10,
           "posts.title": "Post1",
           "posts.comments.id": 101,
@@ -429,15 +429,15 @@ describe("result-parser", () => {
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.comments.id": "number",
           "posts.comments.text": "string",
         },
         joins: {
-          posts: { isSingle: false },
+          "posts": { isSingle: false },
           "posts.comments": { isSingle: false },
         },
       };
@@ -464,8 +464,8 @@ describe("result-parser", () => {
     it("3레벨 중첩", async () => {
       const raw = [
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "posts.id": 10,
           "posts.title": "Post1",
           "posts.comments.id": 100,
@@ -474,8 +474,8 @@ describe("result-parser", () => {
           "posts.comments.replies.text": "Reply1",
         },
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "posts.id": 10,
           "posts.title": "Post1",
           "posts.comments.id": 100,
@@ -486,8 +486,8 @@ describe("result-parser", () => {
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.comments.id": "number",
@@ -496,7 +496,7 @@ describe("result-parser", () => {
           "posts.comments.replies.text": "string",
         },
         joins: {
-          posts: { isSingle: false },
+          "posts": { isSingle: false },
           "posts.comments": { isSingle: false },
           "posts.comments.replies": { isSingle: false },
         },
@@ -530,16 +530,16 @@ describe("result-parser", () => {
     it("여러 JOIN과 혼합 isSingle", async () => {
       const raw = [
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "company.id": 100,
           "company.name": "Corp",
           "posts.id": 10,
           "posts.title": "Post1",
         },
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "company.id": 100,
           "company.name": "Corp",
           "posts.id": 11,
@@ -548,8 +548,8 @@ describe("result-parser", () => {
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
           "posts.id": "number",
@@ -578,8 +578,8 @@ describe("result-parser", () => {
     it("여러 JOIN 중 일부만 NULL - company는 있고 posts는 없음", async () => {
       const raw = [
         {
-          id: 1,
-          name: "User1",
+          "id": 1,
+          "name": "User1",
           "company.id": 100,
           "company.name": "Corp",
           "posts.id": null,
@@ -588,8 +588,8 @@ describe("result-parser", () => {
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
           "posts.id": "number",
@@ -631,13 +631,13 @@ describe("result-parser", () => {
 
     it("중복 데이터 제거", async () => {
       const raw = [
-        { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
-        { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" }, // 중복
+        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" },
+        { "id": 1, "name": "User1", "posts.id": 10, "posts.title": "Post1" }, // 중복
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
         },
@@ -656,13 +656,13 @@ describe("result-parser", () => {
 
     it("isSingle: true - 동일한 데이터는 에러 없음", async () => {
       const raw = [
-        { id: 1, name: "User1", "company.id": 100, "company.name": "Corp" },
-        { id: 1, name: "User1", "company.id": 100, "company.name": "Corp" }, // 동일
+        { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" },
+        { "id": 1, "name": "User1", "company.id": 100, "company.name": "Corp" }, // 동일
       ];
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "company.id": "number",
           "company.name": "string",
         },

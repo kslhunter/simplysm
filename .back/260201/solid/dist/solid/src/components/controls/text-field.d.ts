@@ -11,11 +11,12 @@ import "@simplysm/core-common";
  * @property inset - true일 경우 테이블 셀 등에서 사용하기 위한 인셋 스타일 적용
  * @property inline - true일 경우 inline-block으로 표시
  */
-export interface TextFieldProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">, TextFieldStyles {
-    value?: string | undefined;
-    onChange?: (value: string | undefined) => void;
-    type?: "text" | "password" | "email";
-    format?: string;
+export interface TextFieldProps
+  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">, TextFieldStyles {
+  value?: string | undefined;
+  onChange?: (value: string | undefined) => void;
+  type?: "text" | "password" | "email";
+  format?: string;
 }
 /**
  * 텍스트 입력 필드 컴포넌트

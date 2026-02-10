@@ -13,11 +13,7 @@ import {
 } from "@angular/core";
 import { SdAdditionalButtonControl } from "../../ui/form/button/sd-additional-button.control";
 import type { TSelectModeValue } from "../../ui/form/select/sd-select.control";
-import {
-  type ISdModal,
-  type ISdModalInfo,
-  SdModalProvider,
-} from "../../ui/overlay/modal/sd-modal.provider";
+import { type ISdModal, type ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { setupInvalid } from "../../core/utils/setups/setupInvalid";
@@ -91,12 +87,9 @@ import { tablerEraser, tablerSearch } from "@ng-icons/tabler-icons";
 export class SdDataSelectButtonControl {
   parent = injectParent();
 
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(
-    SdItemOfTemplateDirective,
-    {
-      read: TemplateRef,
-    },
-  );
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<any>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();
@@ -134,10 +127,7 @@ export abstract class AbsSdDataSelectButton<
   size = input<"sm" | "lg">();
   selectMode = input<TMode>("single" as TMode);
   isNoValue = $computed(() => {
-    return (
-      this.value() == null ||
-      (this.selectMode() === "multi" && (this.value() as any[]).length === 0)
-    );
+    return this.value() == null || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
   });
 
   selectedItems = $signal<TItem[]>([]);
@@ -147,11 +137,7 @@ export abstract class AbsSdDataSelectButton<
 
     $effect([this.value], async () => {
       const value = this.value();
-      if (
-        this.selectMode() === "multi" &&
-        value instanceof Array &&
-        value.filterExists().length > 0
-      ) {
+      if (this.selectMode() === "multi" && value instanceof Array && value.filterExists().length > 0) {
         this.selectedItems.set(await this.load(value.filterExists()));
       } else if (this.selectMode() === "single" && !(value instanceof Array) && value != null) {
         this.selectedItems.set(await this.load([value as TKey]));
@@ -167,17 +153,13 @@ export abstract class AbsSdDataSelectButton<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi"
-          ? (this.value() as any[])
-          : [this.value()]
-        ).filterExists(),
+        selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
         ...modal.inputs,
       },
     });
 
     if (result) {
-      const newValue =
-        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }
@@ -192,10 +174,7 @@ export interface ISdSelectModal<T> extends ISdModal<ISelectModalOutputResult<T>>
   selectedItemKeys: InputSignal<any[]>;
 }
 
-export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = ISdModalInfo<
-  T,
-  "selectMode" | "selectedItemKeys"
->;
+export type TSdSelectModalInfo<T extends ISdSelectModal<any>> = ISdModalInfo<T, "selectMode" | "selectedItemKeys">;
 
 export interface ISelectModalOutputResult<T> {
   selectedItemKeys: any[];

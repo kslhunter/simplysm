@@ -26,11 +26,7 @@ export default function DateRangePickerPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">초기값 설정</h3>
-                <DateRangePicker
-                  periodType="range"
-                  from={new DateOnly(2025, 1, 1)}
-                  to={new DateOnly(2025, 12, 31)}
-                />
+                <DateRangePicker periodType="range" from={new DateOnly(2025, 1, 1)} to={new DateOnly(2025, 12, 31)} />
               </div>
             </div>
           </section>
@@ -49,11 +45,7 @@ export default function DateRangePickerPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">범위</h3>
-                <DateRangePicker
-                  periodType="range"
-                  from={new DateOnly(2025, 3, 1)}
-                  to={new DateOnly(2025, 3, 31)}
-                />
+                <DateRangePicker periodType="range" from={new DateOnly(2025, 3, 1)} to={new DateOnly(2025, 3, 31)} />
               </div>
             </div>
           </section>
@@ -113,10 +105,16 @@ export default function DateRangePickerPage() {
                       기간 타입: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{periodType()}</code>
                     </p>
                     <p>
-                      From: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{from()?.toFormatString("yyyy-MM-dd") ?? "(없음)"}</code>
+                      From:{" "}
+                      <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                        {from()?.toFormatString("yyyy-MM-dd") ?? "(없음)"}
+                      </code>
                     </p>
                     <p>
-                      To: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{to()?.toFormatString("yyyy-MM-dd") ?? "(없음)"}</code>
+                      To:{" "}
+                      <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                        {to()?.toFormatString("yyyy-MM-dd") ?? "(없음)"}
+                      </code>
                     </p>
                   </div>
                 </div>

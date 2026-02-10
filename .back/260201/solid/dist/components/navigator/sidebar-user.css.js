@@ -7,7 +7,7 @@ const sidebarUser = style({
   margin: `${vars.spacing.sm} ${vars.spacing.base}`,
   borderRadius: vars.radius.base,
   overflow: "hidden",
-  background: `rgb(${vars.surface.elevated})`
+  background: `rgb(${vars.surface.elevated})`,
 });
 const sidebarUserContent = style({
   display: "flex",
@@ -15,7 +15,7 @@ const sidebarUserContent = style({
   gap: vars.spacing.lg,
   padding: vars.spacing.lg,
   cursor: "pointer",
-  userSelect: "none"
+  userSelect: "none",
 });
 const sidebarUserIconCircle = style({
   width: "2.5rem",
@@ -26,15 +26,11 @@ const sidebarUserIconCircle = style({
   alignItems: "center",
   justifyContent: "center",
   color: "white",
-  fontWeight: "bold"
+  fontWeight: "bold",
 });
 globalStyle(`${sidebarUser} ${list.classNames.base}`, {
   borderTop: `1px solid rgb(${vars.border.muted})`,
-  padding: `1px 0`
+  padding: `1px 0`,
 });
-export {
-  sidebarUser,
-  sidebarUserContent,
-  sidebarUserIconCircle
-};
+export { sidebarUser, sidebarUserContent, sidebarUserIconCircle };
 //# sourceMappingURL=sidebar-user.css.js.map

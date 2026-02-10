@@ -26,10 +26,7 @@ export class VirtualFileSystem {
     });
   }
 
-  private async _withStore<T>(
-    mode: IDBTransactionMode,
-    fn: (store: IDBObjectStore) => Promise<T>,
-  ): Promise<T> {
+  private async _withStore<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => Promise<T>): Promise<T> {
     const db = await this._openDb();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(this._STORE_NAME, mode);
@@ -97,9 +94,7 @@ export class VirtualFileSystem {
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
-            resolve(
-              Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })),
-            );
+            resolve(Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })));
             return;
           }
           const key = String(cursor.key);

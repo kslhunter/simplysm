@@ -30,9 +30,7 @@ export class LazyGcMap<K, V> {
   private static readonly _registry =
     typeof FinalizationRegistry !== "undefined"
       ? new FinalizationRegistry<string>((id) => {
-          LazyGcMap._logger.warn(
-            `LazyGcMap(${id})이 dispose() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`,
-          );
+          LazyGcMap._logger.warn(`LazyGcMap(${id})이 dispose() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`);
         })
       : undefined;
 

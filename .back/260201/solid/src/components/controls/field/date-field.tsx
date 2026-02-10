@@ -22,7 +22,8 @@ import "@simplysm/core-common";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface DateFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
     DateFieldStyles {
   value?: DateOnly | undefined;
   onChange?: (value: DateOnly | undefined) => void;
@@ -181,12 +182,12 @@ export const DateField: Component<DateFieldProps> = (props) => {
 
   // 공통 input props
   const inputProps = () => ({
-    type: inputType(),
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    placeholder: local.placeholder,
+    "type": inputType(),
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? ("true" as const) : undefined,
     "aria-readonly": rest.readOnly ? ("true" as const) : undefined,
   });
@@ -198,16 +199,12 @@ export const DateField: Component<DateFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[dateField(objPick(local, dateField.variants())), local.class]
-            .filter(Boolean)
-            .join(" ")}
+          class={[dateField(objPick(local, dateField.variants())), local.class].filter(Boolean).join(" ")}
         />
       }
     >
       <div class={dateFieldContainer}>
-        <div class={dateFieldContent}>
-          {displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}
-        </div>
+        <div class={dateFieldContent}>{displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}</div>
         <input
           {...rest}
           {...inputProps()}

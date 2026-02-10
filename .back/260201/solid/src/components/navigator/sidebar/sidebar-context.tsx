@@ -47,7 +47,7 @@ export function useSidebar(): SidebarContextValue {
   if (!ctx) {
     throw new Error(
       "[useSidebar] SidebarContainer 내부에서 사용해야 합니다.\n" +
-      "Sidebar, SidebarMenu, SidebarUser 등의 컴포넌트는 반드시 SidebarContainer로 감싸야 합니다.",
+        "Sidebar, SidebarMenu, SidebarUser 등의 컴포넌트는 반드시 SidebarContainer로 감싸야 합니다.",
     );
   }
   return ctx;

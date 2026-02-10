@@ -13,10 +13,10 @@ import { type Accessor } from "solid-js";
  * @property width - 사이드바 너비 accessor
  */
 export interface SidebarContextValue {
-    toggled: Accessor<boolean>;
-    setToggled: (value: boolean) => void;
-    toggle: () => void;
-    width: Accessor<string>;
+  toggled: Accessor<boolean>;
+  setToggled: (value: boolean) => void;
+  toggle: () => void;
+  width: Accessor<string>;
 }
 export declare const SidebarContext: import("solid-js").Context<SidebarContextValue | undefined>;
 /**

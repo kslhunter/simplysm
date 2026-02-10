@@ -10,7 +10,8 @@ describe("SELECT - GROUP BY", () => {
 
   describe("단일 컬럼", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),
@@ -39,7 +40,8 @@ describe("SELECT - GROUP BY", () => {
 
   describe("다중 컬럼", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         isActive: item.isActive,
@@ -73,7 +75,8 @@ describe("SELECT - GROUP BY", () => {
 
   describe("집계 함수들", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),
@@ -116,7 +119,8 @@ describe("SELECT - HAVING", () => {
 
   describe("단일 조건", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),
@@ -153,7 +157,8 @@ describe("SELECT - HAVING", () => {
 
   describe("다중 조건", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),
@@ -197,7 +202,8 @@ describe("SELECT - HAVING", () => {
 
   describe("GROUP BY + HAVING + ORDER BY 조합", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),

@@ -1,11 +1,4 @@
-import {
-  Button,
-  Icon,
-  Sidebar,
-  Topbar,
-  useSidebarContext,
-  type SidebarMenuItem,
-} from "@simplysm/solid";
+import { Button, Icon, Sidebar, Topbar, useSidebarContext, type SidebarMenuItem } from "@simplysm/solid";
 import { IconFolder, IconHome, IconMenu2, IconSettings, IconUser } from "@tabler/icons-solidjs";
 
 const sampleMenuItems: SidebarMenuItem[] = [
@@ -73,7 +66,9 @@ export default function SidebarPage() {
                     <span class="font-medium">콘텐츠 영역</span>
                   </div>
                   <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                    <p class="text-sm text-base-600 dark:text-base-400">사이드바 메뉴를 클릭하면 해당 경로로 이동합니다.</p>
+                    <p class="text-sm text-base-600 dark:text-base-400">
+                      사이드바 메뉴를 클릭하면 해당 경로로 이동합니다.
+                    </p>
                   </div>
                 </main>
               </Sidebar.Container>

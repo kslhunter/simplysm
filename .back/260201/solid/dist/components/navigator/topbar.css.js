@@ -15,14 +15,11 @@ const topbar = style({
   overflowX: "auto",
   overflowY: "hidden",
   userSelect: "none",
-  flexShrink: 0
+  flexShrink: 0,
 });
 const topbarTitle = style({
   paddingRight: vars.spacing.xl,
-  margin: 0
+  margin: 0,
 });
-export {
-  topbar,
-  topbarTitle
-};
+export { topbar, topbarTitle };
 //# sourceMappingURL=topbar.css.js.map

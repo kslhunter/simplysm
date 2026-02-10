@@ -11,11 +11,11 @@ const Radio = (props) => {
     "children",
     "checked",
     "onChange",
-    "disabled"
+    "disabled",
   ]);
   const [internalChecked, setInternalChecked] = createSignal(local.checked ?? false);
   const isControlled = () => local.onChange !== void 0;
-  const currentChecked = () => isControlled() ? local.checked ?? false : internalChecked();
+  const currentChecked = () => (isControlled() ? (local.checked ?? false) : internalChecked());
   const handleChange = () => {
     var _a;
     if (isControlled()) {
@@ -29,30 +29,31 @@ const Radio = (props) => {
     {
       "use:ripple": true,
       ...rest,
-      class: [
+      "class": [
         radio({
           ...objPick(local, radio.variants()),
           checked: currentChecked(),
-          disabled: local.disabled
+          disabled: local.disabled,
         }),
-        local.class
-      ].filter(Boolean).join(" ")
+        local.class,
+      ]
+        .filter(Boolean)
+        .join(" "),
     },
+    /* @__PURE__ */ React.createElement("input", {
+      type: "radio",
+      checked: currentChecked(),
+      disabled: local.disabled,
+      style: { "position": "absolute", "opacity": 0, "pointer-events": "none" },
+      onChange: handleChange,
+    }),
     /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "radio",
-        checked: currentChecked(),
-        disabled: local.disabled,
-        style: { position: "absolute", opacity: 0, "pointer-events": "none" },
-        onChange: handleChange
-      }
+      "span",
+      { class: radioIndicator },
+      /* @__PURE__ */ React.createElement("span", { class: radioInnerDot }),
     ),
-    /* @__PURE__ */ React.createElement("span", { class: radioIndicator }, /* @__PURE__ */ React.createElement("span", { class: radioInnerDot })),
-    /* @__PURE__ */ React.createElement("span", { class: radioContents }, local.children)
+    /* @__PURE__ */ React.createElement("span", { class: radioContents }, local.children),
   );
 };
-export {
-  Radio
-};
+export { Radio };
 //# sourceMappingURL=radio.js.map

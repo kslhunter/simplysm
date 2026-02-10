@@ -22,9 +22,7 @@ export default function RichTextEditorPage() {
 
               <div>
                 <h3 class="mb-3 text-lg font-semibold">HTML 출력</h3>
-                <pre class="max-h-40 overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">
-                  {html()}
-                </pre>
+                <pre class="max-h-40 overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">{html()}</pre>
               </div>
             </div>
           </section>
@@ -37,7 +35,6 @@ export default function RichTextEditorPage() {
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
                 <RichTextEditor value={html()} disabled />
               </div>
-
 
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Error</h3>

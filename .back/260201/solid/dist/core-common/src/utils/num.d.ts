@@ -49,12 +49,18 @@ export declare function numIsNullOrEmpty(val: number | undefined): val is 0 | un
  * numFormat(1234.567, { max: 2 }) // "1,234.57"
  * numFormat(1234, { min: 2 }) // "1,234.00"
  */
-export declare function numFormat(val: number, digit?: {
+export declare function numFormat(
+  val: number,
+  digit?: {
     max?: number;
     min?: number;
-}): string;
-export declare function numFormat(val: number | undefined, digit?: {
+  },
+): string;
+export declare function numFormat(
+  val: number | undefined,
+  digit?: {
     max?: number;
     min?: number;
-}): string | undefined;
+  },
+): string | undefined;
 //# sourceMappingURL=num.d.ts.map

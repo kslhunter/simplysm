@@ -8,12 +8,12 @@ import { type JSX, type ParentComponent } from "solid-js";
  * @property menus - 사용자 메뉴 목록 (클릭 시 실행할 콜백 포함)
  */
 export interface SidebarUserProps extends JSX.HTMLAttributes<HTMLDivElement> {
-    name: string;
-    description?: string;
-    menus?: {
-        title: string;
-        onClick: () => void;
-    }[];
+  name: string;
+  description?: string;
+  menus?: {
+    title: string;
+    onClick: () => void;
+  }[];
 }
 /**
  * 사이드바 하단의 사용자 정보 컴포넌트

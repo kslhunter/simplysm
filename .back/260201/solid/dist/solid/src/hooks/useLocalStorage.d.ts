@@ -3,11 +3,11 @@ import { type Signal } from "solid-js";
  * useLocalStorage 옵션
  */
 export interface UseLocalStorageOptions {
-    /**
-     * localStorage에서 읽은 값을 검증하는 함수
-     * false를 반환하면 defaultValue가 사용된다
-     */
-    validator?: (value: string) => boolean;
+  /**
+   * localStorage에서 읽은 값을 검증하는 함수
+   * false를 반환하면 defaultValue가 사용된다
+   */
+  validator?: (value: string) => boolean;
 }
 /**
  * localStorage와 동기화되는 Signal을 생성하는 훅
@@ -38,5 +38,9 @@ export interface UseLocalStorageOptions {
  * setTheme("dark");
  * ```
  */
-export declare function useLocalStorage<T extends string>(key: string, defaultValue: T, options?: UseLocalStorageOptions): Signal<T>;
+export declare function useLocalStorage<T extends string>(
+  key: string,
+  defaultValue: T,
+  options?: UseLocalStorageOptions,
+): Signal<T>;
 //# sourceMappingURL=useLocalStorage.d.ts.map

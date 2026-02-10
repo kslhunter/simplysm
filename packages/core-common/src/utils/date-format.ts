@@ -135,13 +135,10 @@ export function format(
 ): string {
   const { year, month, day, hour, minute, second, millisecond, timezoneOffsetMinutes } = args;
 
-  const absOffsetMinutes =
-    timezoneOffsetMinutes !== undefined ? Math.abs(timezoneOffsetMinutes) : undefined;
-  const offsetHour =
-    absOffsetMinutes !== undefined ? Math.floor(absOffsetMinutes / 60) : undefined;
+  const absOffsetMinutes = timezoneOffsetMinutes !== undefined ? Math.abs(timezoneOffsetMinutes) : undefined;
+  const offsetHour = absOffsetMinutes !== undefined ? Math.floor(absOffsetMinutes / 60) : undefined;
   const offsetMinute = absOffsetMinutes !== undefined ? absOffsetMinutes % 60 : undefined;
-  const offsetSign =
-    timezoneOffsetMinutes !== undefined ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
+  const offsetSign = timezoneOffsetMinutes !== undefined ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
 
   const week =
     year !== undefined && month !== undefined && day !== undefined
@@ -166,10 +163,7 @@ export function format(
 
   // 요일
   if (week !== undefined) {
-    result = result.replace(
-      patterns.ddd,
-      weekStrings[week],
-    );
+    result = result.replace(patterns.ddd, weekStrings[week]);
   }
 
   // 일
@@ -221,10 +215,7 @@ export function format(
       patterns.zzz,
       `${offsetSign}${offsetHour.toString().padStart(2, "0")}:${offsetMinute.toString().padStart(2, "0")}`,
     );
-    result = result.replace(
-      patterns.zz,
-      `${offsetSign}${offsetHour.toString().padStart(2, "0")}`,
-    );
+    result = result.replace(patterns.zz, `${offsetSign}${offsetHour.toString().padStart(2, "0")}`);
     result = result.replace(patterns.z, `${offsetSign}${offsetHour}`);
   }
 

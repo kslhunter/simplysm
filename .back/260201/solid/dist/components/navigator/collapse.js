@@ -26,15 +26,13 @@ const Collapse = (props) => {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      class: collapse(objPick(local, collapse.variants())),
-      style: { height: height() },
+      "class": collapse(objPick(local, collapse.variants())),
+      "style": { height: height() },
       "data-collapsed": !local.open ? "" : void 0,
-      ...rest
+      ...rest,
     },
-    /* @__PURE__ */ React.createElement("div", { ...styleProps, ref: contentRef }, local.children)
+    /* @__PURE__ */ React.createElement("div", { ...styleProps, ref: contentRef }, local.children),
   );
 };
-export {
-  Collapse
-};
+export { Collapse };
 //# sourceMappingURL=collapse.js.map

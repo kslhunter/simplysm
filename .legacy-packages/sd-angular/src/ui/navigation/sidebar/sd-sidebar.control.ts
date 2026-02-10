@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  inject,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
 import { $computed } from "../../../core/utils/bindings/$computed";
 

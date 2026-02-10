@@ -4,9 +4,7 @@ const topbarContainer = style({
   flexDirection: "column",
   height: "100%",
   width: "100%",
-  overflow: "hidden"
+  overflow: "hidden",
 });
-export {
-  topbarContainer
-};
+export { topbarContainer };
 //# sourceMappingURL=topbar-container.css.js.map

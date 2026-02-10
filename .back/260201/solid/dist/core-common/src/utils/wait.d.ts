@@ -10,7 +10,11 @@
  * await waitUntil(() => someCondition, 100, 3);
  * @throws TimeoutError 최대 시도 횟수 초과 시
  */
-export declare function waitUntil(forwarder: () => boolean | Promise<boolean>, milliseconds?: number, maxCount?: number): Promise<void>;
+export declare function waitUntil(
+  forwarder: () => boolean | Promise<boolean>,
+  milliseconds?: number,
+  maxCount?: number,
+): Promise<void>;
 /**
  * 지정된 시간만큼 대기
  * @param millisecond 대기 시간 (ms)

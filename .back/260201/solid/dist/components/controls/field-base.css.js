@@ -5,7 +5,7 @@ import { style } from "@vanilla-extract/css";
 const fieldHeight = {
   sm: `calc(${tokenVars.font.size.sm} * ${tokenVars.font.lineHeight.normal} + ${tokenVars.spacing.xs} * 2 + 2px)`,
   base: `calc(${tokenVars.font.size.base} * ${tokenVars.font.lineHeight.normal} + ${tokenVars.spacing.sm} * 2 + 2px)`,
-  lg: `calc(${tokenVars.font.size.lg} * ${tokenVars.font.lineHeight.normal} + ${tokenVars.spacing.base} * 2 + 2px)`
+  lg: `calc(${tokenVars.font.size.lg} * ${tokenVars.font.lineHeight.normal} + ${tokenVars.spacing.base} * 2 + 2px)`,
 };
 const fieldBaseStyles = {
   display: "block",
@@ -18,69 +18,69 @@ const fieldBaseStyles = {
   color: `rgb(${themeVars.text.base})`,
   fontSize: tokenVars.font.size.base,
   transition: `${tokenVars.duration.base} linear`,
-  transitionProperty: "border-color, box-shadow, background-color"
+  transitionProperty: "border-color, box-shadow, background-color",
 };
 const fieldBaseSelectors = {
   "&:focus-within": {
-    outline: "none"
+    outline: "none",
   },
   "&:focus-visible": {
-    background: `rgb(${themeVars.control.primary.muted})`
+    background: `rgb(${themeVars.control.primary.muted})`,
   },
   "&:disabled": {
     opacity: tokenVars.overlay.muted,
-    pointerEvents: "none"
+    pointerEvents: "none",
   },
   "&[readonly]": {
-    background: `rgb(${themeVars.surface.elevated})`
+    background: `rgb(${themeVars.surface.elevated})`,
   },
   "&::placeholder": {
-    color: `rgb(${themeVars.text.muted})`
-  }
+    color: `rgb(${themeVars.text.muted})`,
+  },
 };
 const fieldBaseVariants = {
   size: {
     sm: {
       height: fieldHeight.sm,
       padding: `${tokenVars.spacing.xs} ${tokenVars.spacing.sm}`,
-      fontSize: tokenVars.font.size.sm
+      fontSize: tokenVars.font.size.sm,
     },
     lg: {
       height: fieldHeight.lg,
       padding: `${tokenVars.spacing.base} ${tokenVars.spacing.lg}`,
-      fontSize: tokenVars.font.size.lg
-    }
+      fontSize: tokenVars.font.size.lg,
+    },
   },
   inset: {
     true: {
       border: "none",
       borderRadius: 0,
-      background: "transparent"
-    }
+      background: "transparent",
+    },
   },
   inline: {
     true: {
       display: "inline-block",
-      width: "auto"
-    }
-  }
+      width: "auto",
+    },
+  },
 };
 const fieldBase = recipe({
   base: {
     ...fieldBaseStyles,
-    selectors: fieldBaseSelectors
+    selectors: fieldBaseSelectors,
   },
   variants: fieldBaseVariants,
-  defaultVariants: {}
+  defaultVariants: {},
 });
 const fieldContainer = style({
   position: "relative",
-  display: "inline-block"
+  display: "inline-block",
 });
 const fieldContent = style({
   visibility: "hidden",
   whiteSpace: "pre",
-  minWidth: "1rem"
+  minWidth: "1rem",
 });
 const fieldInput = style({
   position: "absolute",
@@ -89,7 +89,7 @@ const fieldInput = style({
   right: 0,
   bottom: 0,
   width: "100%",
-  height: "100%"
+  height: "100%",
 });
 export {
   fieldBase,
@@ -99,6 +99,6 @@ export {
   fieldContainer,
   fieldContent,
   fieldHeight,
-  fieldInput
+  fieldInput,
 };
 //# sourceMappingURL=field-base.css.js.map

@@ -4,15 +4,13 @@ const dropdown = style({
   cursor: "pointer",
   selectors: {
     "&:focus": {
-      outline: "none"
+      outline: "none",
     },
     "&[data-disabled='true']": {
       cursor: "not-allowed",
-      pointerEvents: "none"
-    }
-  }
+      pointerEvents: "none",
+    },
+  },
 });
-export {
-  dropdown
-};
+export { dropdown };
 //# sourceMappingURL=dropdown.css.js.map

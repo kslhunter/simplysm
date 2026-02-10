@@ -39,12 +39,7 @@ interface LintContext {
 //#region Utilities
 
 /** ESLint 설정 파일 탐색 순서 */
-const ESLINT_CONFIG_FILES = [
-  "eslint.config.ts",
-  "eslint.config.mts",
-  "eslint.config.js",
-  "eslint.config.mjs",
-] as const;
+const ESLINT_CONFIG_FILES = ["eslint.config.ts", "eslint.config.mts", "eslint.config.js", "eslint.config.mjs"] as const;
 
 /**
  * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드
@@ -74,9 +69,7 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   }
 
   if (configPath == null) {
-    throw new SdError(
-      `ESLint 설정 파일을 찾을 수 없습니다 (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`
-    );
+    throw new SdError(`ESLint 설정 파일을 찾을 수 없습니다 (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`);
   }
 
   const jiti = createJiti(import.meta.url);
@@ -85,11 +78,7 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   let configs: unknown;
   if (Array.isArray(configModule)) {
     configs = configModule;
-  } else if (
-    configModule != null &&
-    typeof configModule === "object" &&
-    "default" in configModule
-  ) {
+  } else if (configModule != null && typeof configModule === "object" && "default" in configModule) {
     configs = configModule.default;
   } else {
     throw new SdError(`ESLint 설정 파일이 올바른 형식이 아닙니다: ${configPath}`);

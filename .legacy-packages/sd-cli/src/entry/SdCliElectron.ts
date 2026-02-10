@@ -33,10 +33,7 @@ export class SdCliElectron {
     await this._buildAsync({ pkgPath, electronPath, electronDistPath, npmConfig, electronConfig });
   }
 
-  static async buildAsync(opt: {
-    pkgPath: string;
-    electronConfig: ISdClientBuilderElectronConfig;
-  }) {
+  static async buildAsync(opt: { pkgPath: string; electronConfig: ISdClientBuilderElectronConfig }) {
     this._logger.log("준비...");
     const electronPath = path.resolve(opt.pkgPath, ".electron/src");
     const { npmConfig } = await this._prepareAsync({ ...opt, electronPath });
@@ -147,24 +144,18 @@ export class SdCliElectron {
     FsUtils.copy(
       path.resolve(
         opt.electronDistPath,
-        `${opt.npmConfig.description} ${
-          opt.electronConfig.portable ? "" : "Setup "
-        }${opt.npmConfig.version}.exe`,
+        `${opt.npmConfig.description} ${opt.electronConfig.portable ? "" : "Setup "}${opt.npmConfig.version}.exe`,
       ),
       path.resolve(
         opt.pkgPath,
-        `dist/electron/${opt.npmConfig.description}${
-          opt.electronConfig.portable ? "-portable" : ""
-        }-latest.exe`,
+        `dist/electron/${opt.npmConfig.description}${opt.electronConfig.portable ? "-portable" : ""}-latest.exe`,
       ),
     );
 
     FsUtils.copy(
       path.resolve(
         opt.electronDistPath,
-        `${opt.npmConfig.description} ${
-          opt.electronConfig.portable ? "" : "Setup "
-        }${opt.npmConfig.version}.exe`,
+        `${opt.npmConfig.description} ${opt.electronConfig.portable ? "" : "Setup "}${opt.npmConfig.version}.exe`,
       ),
       path.resolve(opt.pkgPath, `dist/electron/updates/${opt.npmConfig.version}.exe`),
     );

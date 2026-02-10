@@ -16,7 +16,8 @@ import * as expected from "./sampling.expected";
 describe("EXAMPLE - 랜덤 샘플링", () => {
   describe("기본 샘플링 (ORDER BY RANDOM + TOP)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .orderBy(() => expr.random())
       .top(5)
       .getSelectQueryDef();
@@ -39,7 +40,8 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
 
   describe("조건부 샘플링 (WHERE + ORDER BY RANDOM + TOP)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.gte(item.age, 20)])
       .orderBy(() => expr.random())
       .top(3)
@@ -70,7 +72,8 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
 
   describe("컬럼 선택과 샘플링", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         id: item.id,
         name: item.name,

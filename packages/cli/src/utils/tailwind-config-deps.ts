@@ -24,12 +24,8 @@ function resolveWithExtension(file: string, extensions: string[]): string | null
 
 function resolvePackageFile(specifier: string, fromDir: string): string | null {
   const parts = specifier.split("/");
-  const pkgName = specifier.startsWith("@")
-    ? parts.slice(0, 2).join("/")
-    : parts[0];
-  const subPath = specifier.startsWith("@")
-    ? parts.slice(2).join("/")
-    : parts.slice(1).join("/");
+  const pkgName = specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
+  const subPath = specifier.startsWith("@") ? parts.slice(2).join("/") : parts.slice(1).join("/");
 
   let searchDir = fromDir;
   while (true) {

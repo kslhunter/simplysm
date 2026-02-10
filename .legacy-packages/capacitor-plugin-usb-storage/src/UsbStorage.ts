@@ -28,10 +28,7 @@ export abstract class UsbStorage {
    * @param filter 권한을 요청할 USB 장치의 vendorId와 productId
    * @returns 권한 승인 여부
    */
-  static async requestPermission(filter: {
-    vendorId: number;
-    productId: number;
-  }): Promise<boolean> {
+  static async requestPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
     const result = await UsbStoragePlugin.requestPermission(filter);
     return result.granted;
   }
@@ -41,10 +38,7 @@ export abstract class UsbStorage {
    * @param filter 권한을 확인할 USB 장치의 vendorId와 productId
    * @returns 권한 보유 여부
    */
-  static async hasPermission(filter: {
-    vendorId: number;
-    productId: number;
-  }): Promise<boolean> {
+  static async hasPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
     const result = await UsbStoragePlugin.hasPermission(filter);
     return result.granted;
   }
@@ -55,10 +49,7 @@ export abstract class UsbStorage {
    * @param dirPath 읽어올 디렉토리 경로
    * @returns 디렉토리 내 파일/폴더 이름 배열
    */
-  static async readdir(
-    filter: { vendorId: number; productId: number },
-    dirPath: string,
-  ): Promise<string[]> {
+  static async readdir(filter: { vendorId: number; productId: number }, dirPath: string): Promise<string[]> {
     const result = await UsbStoragePlugin.readdir({ ...filter, path: dirPath });
     return result.files;
   }
@@ -69,10 +60,7 @@ export abstract class UsbStorage {
    * @param filePath 읽어올 파일 경로
    * @returns 파일 데이터를 담은 Buffer 또는 undefined
    */
-  static async read(
-    filter: { vendorId: number; productId: number },
-    filePath: string,
-  ): Promise<Buffer | undefined> {
+  static async read(filter: { vendorId: number; productId: number }, filePath: string): Promise<Buffer | undefined> {
     const result = await UsbStoragePlugin.read({ ...filter, path: filePath });
     if (result.data == null) {
       return undefined;

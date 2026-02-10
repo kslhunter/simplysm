@@ -11,12 +11,10 @@ const Sidebar = (props) => {
     {
       ...rest,
       class: [sidebar({ toggled: toggled() }), local.class].filterExists().join(" "),
-      style: combineStyle(local.style, { width: width() })
+      style: combineStyle(local.style, { width: width() }),
     },
-    local.children
+    local.children,
   );
 };
-export {
-  Sidebar
-};
+export { Sidebar };
 //# sourceMappingURL=sidebar.js.map

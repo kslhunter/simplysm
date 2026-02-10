@@ -11,12 +11,10 @@ const Button = (props) => {
     {
       "use:ripple": true,
       ...rest,
-      class: [button(objPick(local, button.variants())), local.class].filterExists().join(" ")
+      "class": [button(objPick(local, button.variants())), local.class].filterExists().join(" "),
     },
-    local.children
+    local.children,
   );
 };
-export {
-  Button
-};
+export { Button };
 //# sourceMappingURL=button.js.map

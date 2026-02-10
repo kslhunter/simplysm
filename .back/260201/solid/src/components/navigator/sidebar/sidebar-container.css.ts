@@ -14,10 +14,10 @@ import { vars } from "@simplysm/solid/styles";
  */
 export const sidebarContainer = recipe({
   base: {
-    display: "block",
-    position: "relative",
-    height: "100%",
-    transition: `padding-left ${tokenVars.duration.base} ease-out`,
+    "display": "block",
+    "position": "relative",
+    "height": "100%",
+    "transition": `padding-left ${tokenVars.duration.base} ease-out`,
     "@media": {
       [`(max-width: ${MOBILE_BREAKPOINT})`]: {
         paddingLeft: "0 !important",
@@ -36,17 +36,17 @@ export type SidebarContainerStyles = NonNullable<RecipeVariants<typeof sidebarCo
  */
 export const sidebarBackdrop = recipe({
   base: {
-    position: "absolute",
-    display: "none",
-    zIndex: 49, // sidebar z-index - 1
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: `rgb(${themeVars.surface.inverted})`,
-    opacity: 0,
-    pointerEvents: "none",
-    transition: `opacity ${tokenVars.duration.slow} ease-in-out`,
+    "position": "absolute",
+    "display": "none",
+    "zIndex": 49, // sidebar z-index - 1
+    "top": 0,
+    "left": 0,
+    "width": "100%",
+    "height": "100%",
+    "backgroundColor": `rgb(${themeVars.surface.inverted})`,
+    "opacity": 0,
+    "pointerEvents": "none",
+    "transition": `opacity ${tokenVars.duration.slow} ease-in-out`,
     "@media": {
       [`(max-width: ${MOBILE_BREAKPOINT})`]: {
         display: "block",

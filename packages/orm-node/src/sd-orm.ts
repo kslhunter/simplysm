@@ -68,10 +68,7 @@ export class SdOrm<T extends DbContext> {
    * @param isolationLevel - 트랜잭션 격리 수준
    * @returns 콜백 결과
    */
-  async connect<R>(
-    callback: (conn: T) => Promise<R>,
-    isolationLevel?: IsolationLevel,
-  ): Promise<R> {
+  async connect<R>(callback: (conn: T) => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
     const db = this._createDbContext();
     return db.connect(async () => callback(db), isolationLevel);
   }
@@ -92,12 +89,10 @@ export class SdOrm<T extends DbContext> {
    */
   private _createDbContext(): T {
     // database는 options에서 우선, 없으면 config에서
-    const database =
-      this.options?.database ?? ("database" in this.config ? this.config.database : undefined);
+    const database = this.options?.database ?? ("database" in this.config ? this.config.database : undefined);
 
     // schema는 options에서 우선, 없으면 config에서
-    const schema =
-      this.options?.schema ?? ("schema" in this.config ? this.config.schema : undefined);
+    const schema = this.options?.schema ?? ("schema" in this.config ? this.config.schema : undefined);
 
     return new this.dbContextType(new NodeDbContextExecutor(this.config), {
       database,

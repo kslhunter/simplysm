@@ -117,9 +117,7 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
   ],
 })
 export class SdKanbanLaneControl<L, T> {
-  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(
-    forwardRef(() => SdKanbanBoardControl),
-  );
+  private readonly _boardControl = inject<SdKanbanBoardControl<L, T>>(forwardRef(() => SdKanbanBoardControl));
 
   busy = input(false, { transform: transformBoolean });
 
@@ -140,9 +138,7 @@ export class SdKanbanLaneControl<L, T> {
 
   dragOvered = $signal(false);
 
-  selectableKanbanLength = $computed(
-    () => this.kanbanControls().filter((ctrl) => ctrl.selectable()).length,
-  );
+  selectableKanbanLength = $computed(() => this.kanbanControls().filter((ctrl) => ctrl.selectable()).length);
 
   onToggleCollapseButtonClick() {
     this.collapse.update((v) => !v);

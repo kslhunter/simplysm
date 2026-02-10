@@ -9,26 +9,24 @@ const list = recipe({
     userSelect: "none",
     background: `rgb(${themeVars.surface.elevated})`,
     borderRadius: tokenVars.radius.base,
-    border: `1px solid rgb(${themeVars.border.base})`
+    border: `1px solid rgb(${themeVars.border.base})`,
   },
   variants: {
     inset: {
       true: {
         background: "transparent",
         border: "none",
-        borderRadius: `0`
-      }
-    }
-  }
+        borderRadius: `0`,
+      },
+    },
+  },
 });
 globalStyle(`${list.classNames.base} ${list.classNames.base}`, {
   border: "none",
-  background: "transparent"
+  background: "transparent",
 });
 globalStyle(`${list.classNames.variants.inset} ${list.classNames.base}`, {
-  background: "transparent"
+  background: "transparent",
 });
-export {
-  list
-};
+export { list };
 //# sourceMappingURL=list.css.js.map

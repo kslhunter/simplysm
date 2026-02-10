@@ -6,9 +6,7 @@ describe("Array.prototype 확장", () => {
 
   describe("기본 체이닝", () => {
     it("기존 Array 메서드를 체이닝할 수 있다", () => {
-      const result = [1, 2, 3, 4, 5]
-        .filter((x) => x > 2)
-        .map((x) => x * 10);
+      const result = [1, 2, 3, 4, 5].filter((x) => x > 2).map((x) => x * 10);
 
       expect(result).toEqual([30, 40, 50]);
     });
@@ -30,9 +28,7 @@ describe("Array.prototype 확장", () => {
         { id: 3, name: "Park", active: true },
       ];
 
-      const result = users
-        .filter((u) => u.active)
-        .toMap((u) => u.id);
+      const result = users.filter((u) => u.active).toMap((u) => u.id);
 
       expect(result.size).toBe(2);
       expect(result.has(1)).toBe(true);
@@ -91,9 +87,7 @@ describe("Array.prototype 확장", () => {
     });
 
     it("체이닝 후 single을 사용할 수 있다", () => {
-      const result = [1, 2, 3, 4, 5]
-        .filter((x) => x > 3)
-        .single((x) => x === 4);
+      const result = [1, 2, 3, 4, 5].filter((x) => x > 3).single((x) => x === 4);
 
       expect(result).toBe(4);
     });
@@ -119,9 +113,7 @@ describe("Array.prototype 확장", () => {
     });
 
     it("체이닝 후 mapAsync를 사용할 수 있다", async () => {
-      const result = await [1, 2, 3, 4, 5]
-        .filter((x) => x > 2)
-        .mapAsync(async (x) => Promise.resolve(x * 10));
+      const result = await [1, 2, 3, 4, 5].filter((x) => x > 2).mapAsync(async (x) => Promise.resolve(x * 10));
 
       expect(result).toEqual([30, 40, 50]);
     });
@@ -386,9 +378,7 @@ describe("Array.prototype 확장", () => {
   describe("ReadonlyArray 지원", () => {
     it("readonly 배열에서도 $를 사용할 수 있다", () => {
       const arr: readonly number[] = [1, 2, 3];
-      const result = arr
-        .filter((x) => x > 1)
-        .toMap((x) => x);
+      const result = arr.filter((x) => x > 1).toMap((x) => x);
 
       expect(result.size).toBe(2);
       expect(result.has(2)).toBe(true);
@@ -402,7 +392,10 @@ describe("Array.prototype 확장", () => {
 
   describe("다양한 Array 메서드 체이닝", () => {
     it("flatMap을 체이닝할 수 있다", () => {
-      const result = [[1, 2], [3, 4]]
+      const result = [
+        [1, 2],
+        [3, 4],
+      ]
         .flatMap((x) => x)
         .toMap((x) => x);
 
@@ -410,9 +403,7 @@ describe("Array.prototype 확장", () => {
     });
 
     it("slice를 체이닝할 수 있다", () => {
-      const result = [1, 2, 3, 4, 5]
-        .slice(1, 4)
-        .toMap((x) => x);
+      const result = [1, 2, 3, 4, 5].slice(1, 4).toMap((x) => x);
 
       expect(result.size).toBe(3);
       expect(result.has(2)).toBe(true);
@@ -421,17 +412,13 @@ describe("Array.prototype 확장", () => {
     });
 
     it("concat을 체이닝할 수 있다", () => {
-      const result = [1, 2]
-        .concat([3, 4])
-        .toMap((x) => x);
+      const result = [1, 2].concat([3, 4]).toMap((x) => x);
 
       expect(result.size).toBe(4);
     });
 
     it("sort를 체이닝할 수 있다", () => {
-      const result = [3, 1, 2]
-        .sort((a, b) => a - b)
-        .toMap((x, i) => i);
+      const result = [3, 1, 2].sort((a, b) => a - b).toMap((x, i) => i);
 
       expect(result.get(0)).toBe(1);
       expect(result.get(1)).toBe(2);

@@ -15,9 +15,7 @@ async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
     roles: authInfo.roles,
     data: authInfo,
   };
-  return new jose.SignJWT(payload as unknown as jose.JWTPayload)
-    .setProtectedHeader({ alg: "HS256" })
-    .sign(JWT_SECRET);
+  return new jose.SignJWT(payload as unknown as jose.JWTPayload).setProtectedHeader({ alg: "HS256" }).sign(JWT_SECRET);
 }
 
 /** 테스트용 이벤트 */
@@ -210,14 +208,10 @@ describe("ServiceClient 브라우저 테스트", () => {
 
       // 이벤트 수신 콜백
       const receivedData: string[] = [];
-      const listenerKey = await client.addEventListener(
-        TestEvent,
-        { channel: "test-channel" },
-        (data) => {
-          receivedData.push(data);
-          return Promise.resolve();
-        },
-      );
+      const listenerKey = await client.addEventListener(TestEvent, { channel: "test-channel" }, (data) => {
+        receivedData.push(data);
+        return Promise.resolve();
+      });
 
       expect(listenerKey).toBeDefined();
       expect(typeof listenerKey).toBe("string");

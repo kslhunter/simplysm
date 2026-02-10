@@ -10,7 +10,8 @@ import * as expected from "./recursive-cte.expected";
 describe("SELECT - Recursive CTE", () => {
   describe("기본: 특정 매니저의 모든 부하직원 조회", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
       .select((e) => ({
         id: e.id,
@@ -110,7 +111,8 @@ describe("SELECT - Recursive CTE", () => {
 
   describe("depth 제한: recursive WHERE에서 depth 체크", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
       .select((e) => ({
         id: e.id,
@@ -120,10 +122,7 @@ describe("SELECT - Recursive CTE", () => {
       .recursive((qr) =>
         qr
           .from(Employee)
-          .where((e) => [
-            expr.eq(e.managerId, e.self![0].id),
-            expr.lt(e.self![0].depth, 3),
-          ])
+          .where((e) => [expr.eq(e.managerId, e.self![0].id), expr.lt(e.self![0].depth, 3)])
           .select((e) => ({
             id: e.id,
             name: e.name,
@@ -212,7 +211,8 @@ describe("SELECT - Recursive CTE", () => {
 
   describe("상위 탐색: 특정 직원의 모든 상위 매니저 조회", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 100)])
       .select((e) => ({
         id: e.id,
@@ -310,7 +310,8 @@ describe("SELECT - Recursive CTE", () => {
 
   describe("CTE 결과에 orderBy 적용", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
       .select((e) => ({
         id: e.id,
@@ -410,7 +411,8 @@ describe("SELECT - Recursive CTE", () => {
 
   describe("CTE 결과에 where 적용", () => {
     const db = new TestDbContext();
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
       .select((e) => ({
         id: e.id,

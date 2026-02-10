@@ -26,19 +26,20 @@ describe("getResultMeta", () => {
 
   it("join (1:N 배열)", () => {
     const db = new TestDbContext();
-    const meta = db.user()
+    const meta = db
+      .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        name: "string",
-        email: "string",
-        age: "number",
-        isActive: "boolean",
-        companyId: "number",
-        createdAt: "DateTime",
+        "id": "number",
+        "name": "string",
+        "email": "string",
+        "age": "number",
+        "isActive": "boolean",
+        "companyId": "number",
+        "createdAt": "DateTime",
         "posts.id": "number",
         "posts.userId": "number",
         "posts.title": "string",
@@ -54,18 +55,19 @@ describe("getResultMeta", () => {
 
   it("joinSingle (N:1 단일)", () => {
     const db = new TestDbContext();
-    const meta = db.post()
+    const meta = db
+      .post()
       .joinSingle("user", (q, c) => q.from(User).where((item) => [expr.eq(item.id, c.userId)]))
       .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        userId: "number",
-        title: "string",
-        content: "string",
-        viewCount: "number",
-        publishedAt: "DateTime",
+        "id": "number",
+        "userId": "number",
+        "title": "string",
+        "content": "string",
+        "viewCount": "number",
+        "publishedAt": "DateTime",
         "user.id": "number",
         "user.name": "string",
         "user.email": "string",
@@ -82,25 +84,24 @@ describe("getResultMeta", () => {
 
   it("다단계 join", () => {
     const db = new TestDbContext();
-    const meta = db.post()
+    const meta = db
+      .post()
       .joinSingle("user", (q, c) =>
         q
           .from(User)
-          .joinSingle("company", (q2, c2) =>
-            q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]),
-          )
+          .joinSingle("company", (q2, c2) => q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]))
           .where((item) => [expr.eq(item.id, c.userId)]),
       )
       .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        userId: "number",
-        title: "string",
-        content: "string",
-        viewCount: "number",
-        publishedAt: "DateTime",
+        "id": "number",
+        "userId": "number",
+        "title": "string",
+        "content": "string",
+        "viewCount": "number",
+        "publishedAt": "DateTime",
         "user.id": "number",
         "user.name": "string",
         "user.email": "string",
@@ -113,7 +114,7 @@ describe("getResultMeta", () => {
         "user.company.foundedAt": "DateOnly",
       },
       joins: {
-        user: { isSingle: true },
+        "user": { isSingle: true },
         "user.company": { isSingle: true },
       },
     });
@@ -121,20 +122,21 @@ describe("getResultMeta", () => {
 
   it("다중 join (배열 + 단일)", () => {
     const db = new TestDbContext();
-    const meta = db.user()
+    const meta = db
+      .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
       .joinSingle("company", (q, c) => q.from(Company).where((item) => [expr.eq(item.id, c.companyId)]))
       .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        name: "string",
-        email: "string",
-        age: "number",
-        isActive: "boolean",
-        companyId: "number",
-        createdAt: "DateTime",
+        "id": "number",
+        "name": "string",
+        "email": "string",
+        "age": "number",
+        "isActive": "boolean",
+        "companyId": "number",
+        "createdAt": "DateTime",
         "posts.id": "number",
         "posts.userId": "number",
         "posts.title": "string",
@@ -154,7 +156,8 @@ describe("getResultMeta", () => {
 
   it("select로 커스텀 columns", () => {
     const db = new TestDbContext();
-    const meta = db.user()
+    const meta = db
+      .user()
       .select((cols) => ({
         userId: cols.id,
         userName: cols.name,
@@ -172,16 +175,19 @@ describe("getResultMeta", () => {
 
   it("include (FK N:1)", () => {
     const db = new TestDbContext();
-    const meta = db.post().include((item) => item.user).getResultMeta();
+    const meta = db
+      .post()
+      .include((item) => item.user)
+      .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        userId: "number",
-        title: "string",
-        content: "string",
-        viewCount: "number",
-        publishedAt: "DateTime",
+        "id": "number",
+        "userId": "number",
+        "title": "string",
+        "content": "string",
+        "viewCount": "number",
+        "publishedAt": "DateTime",
         "user.id": "number",
         "user.name": "string",
         "user.email": "string",
@@ -198,17 +204,20 @@ describe("getResultMeta", () => {
 
   it("include (FKT 1:N)", () => {
     const db = new TestDbContext();
-    const meta = db.user().include((item) => item.posts).getResultMeta();
+    const meta = db
+      .user()
+      .include((item) => item.posts)
+      .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        name: "string",
-        email: "string",
-        age: "number",
-        isActive: "boolean",
-        companyId: "number",
-        createdAt: "DateTime",
+        "id": "number",
+        "name": "string",
+        "email": "string",
+        "age": "number",
+        "isActive": "boolean",
+        "companyId": "number",
+        "createdAt": "DateTime",
         "posts.id": "number",
         "posts.userId": "number",
         "posts.title": "string",
@@ -224,16 +233,19 @@ describe("getResultMeta", () => {
 
   it("다단계 include", () => {
     const db = new TestDbContext();
-    const meta = db.post().include((item) => item.user.company).getResultMeta();
+    const meta = db
+      .post()
+      .include((item) => item.user.company)
+      .getResultMeta();
 
     expect(meta).toEqual({
       columns: {
-        id: "number",
-        userId: "number",
-        title: "string",
-        content: "string",
-        viewCount: "number",
-        publishedAt: "DateTime",
+        "id": "number",
+        "userId": "number",
+        "title": "string",
+        "content": "string",
+        "viewCount": "number",
+        "publishedAt": "DateTime",
         "user.id": "number",
         "user.name": "string",
         "user.email": "string",
@@ -246,7 +258,7 @@ describe("getResultMeta", () => {
         "user.company.foundedAt": "DateOnly",
       },
       joins: {
-        user: { isSingle: true },
+        "user": { isSingle: true },
         "user.company": { isSingle: true },
       },
     });

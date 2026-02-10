@@ -341,9 +341,9 @@ describe("DDL - Relation Builder", () => {
       .relations(() => ({}));
 
     const RelationFactory = createRelationFactory(() => User);
-    const targetBuilder = RelationFactory
-      .relationKeyTarget(() => Post, "authoredPosts")
-      .description("작성한 게시물 목록 (논리적)");
+    const targetBuilder = RelationFactory.relationKeyTarget(() => Post, "authoredPosts").description(
+      "작성한 게시물 목록 (논리적)",
+    );
 
     it("메타 데이터 검증", () => {
       expect(targetBuilder.meta).toEqual({

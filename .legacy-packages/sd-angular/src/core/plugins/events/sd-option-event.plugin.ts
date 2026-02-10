@@ -13,9 +13,11 @@ export class SdOptionEventPlugin extends EventManagerPlugin {
 
     const realEventName = eventName.replace(/\.(capture|passive|once)/g, "");
 
-    return `on${realEventName}` in window ||
+    return (
+      `on${realEventName}` in window ||
       `on${realEventName}` in document ||
-      `on${realEventName}` in HTMLElement.prototype;
+      `on${realEventName}` in HTMLElement.prototype
+    );
   }
 
   override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
@@ -25,8 +27,7 @@ export class SdOptionEventPlugin extends EventManagerPlugin {
       once: eventName.includes(".once"),
     };
 
-    const realEventName = eventName
-      .replace(/\.(capture|passive|once)/g, "") as keyof HTMLElementEventMap;
+    const realEventName = eventName.replace(/\.(capture|passive|once)/g, "") as keyof HTMLElementEventMap;
 
     element.addEventListener(realEventName, handler, options);
 

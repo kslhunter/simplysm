@@ -129,7 +129,11 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       ...baseOptions,
       sourceMap: false,
       incremental: true,
-      tsBuildInfoFile: path.join(info.pkgDir, ".cache", shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`),
+      tsBuildInfoFile: path.join(
+        info.pkgDir,
+        ".cache",
+        shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`,
+      ),
     };
 
     // emit 여부에 따라 관련 옵션 설정
@@ -277,7 +281,9 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
         // 파일 위치 정보가 있으면 포함 (절대경로:라인:컬럼 형식 - IDE 링크 지원)
         if (diagnostic.file != null && diagnostic.start != null) {
           const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-          collectedErrors.push(`${diagnostic.file.fileName}:${line + 1}:${character + 1}: TS${diagnostic.code}: ${message}`);
+          collectedErrors.push(
+            `${diagnostic.file.fileName}:${line + 1}:${character + 1}: TS${diagnostic.code}: ${message}`,
+          );
         } else {
           collectedErrors.push(`TS${diagnostic.code}: ${message}`);
         }

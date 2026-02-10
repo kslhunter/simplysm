@@ -64,8 +64,8 @@ export function useTheme() {
   if (!ctx) {
     throw new Error(
       "[useTheme] ThemeProvider 내부에서 사용해야 합니다.\n" +
-      "ThemeProvider는 ConfigProvider 내부에 배치되어야 합니다.\n" +
-      "예: <ConfigProvider><ThemeProvider>...</ThemeProvider></ConfigProvider>",
+        "ThemeProvider는 ConfigProvider 내부에 배치되어야 합니다.\n" +
+        "예: <ConfigProvider><ThemeProvider>...</ThemeProvider></ConfigProvider>",
     );
   }
   return ctx;

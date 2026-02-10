@@ -2,12 +2,7 @@ import { ChangeDetectionStrategy, Component, input, model, ViewEncapsulation } f
 import { $computed } from "../../core/utils/bindings/$computed";
 import { SdAnchorControl } from "../form/button/sd-anchor.control";
 import { NgIcon } from "@ng-icons/core";
-import {
-  tablerChevronLeft,
-  tablerChevronRight,
-  tablerChevronsLeft,
-  tablerChevronsRight,
-} from "@ng-icons/tabler-icons";
+import { tablerChevronLeft, tablerChevronRight, tablerChevronsLeft, tablerChevronsRight } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-pagination",
@@ -26,10 +21,7 @@ import {
       <ng-icon [svg]="tablerChevronLeft" />
     </sd-anchor>
     @for (displayPage of displayPages(); track displayPage) {
-      <sd-anchor
-        (click)="onPageClick(displayPage)"
-        [class.tx-underline]="displayPage === currentPage()"
-      >
+      <sd-anchor (click)="onPageClick(displayPage)" [class.tx-underline]="displayPage === currentPage()">
         {{ displayPage + 1 }}
       </sd-anchor>
     }

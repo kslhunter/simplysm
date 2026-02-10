@@ -30,7 +30,9 @@ export default function CollapsePage() {
               <Collapse id="basic-collapse" open={collapseOpen()}>
                 <div class="rounded-lg border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
                   <p>This is the collapsible content.</p>
-                  <p class="mt-2 text-sm text-base-600 dark:text-base-400">The content smoothly animates when toggling.</p>
+                  <p class="mt-2 text-sm text-base-600 dark:text-base-400">
+                    The content smoothly animates when toggling.
+                  </p>
                 </div>
               </Collapse>
             </div>

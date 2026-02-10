@@ -15,10 +15,7 @@ export class ExcelCol {
 
   /** 행 인덱스에 해당하는 셀 반환 (0-based) */
   cell(r: number): ExcelCell {
-    return this._cellMap.getOrCreate(
-      r,
-      new ExcelCell(this._zipCache, this._targetFileName, r, this._c),
-    );
+    return this._cellMap.getOrCreate(r, new ExcelCell(this._zipCache, this._targetFileName, r, this._c));
   }
 
   /** 열의 모든 셀 반환 */
@@ -41,8 +38,6 @@ export class ExcelCol {
   }
 
   private async _getWsData(): Promise<ExcelXmlWorksheet> {
-    return (await this._zipCache.get(
-      `xl/worksheets/${this._targetFileName}`,
-    )) as ExcelXmlWorksheet;
+    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as ExcelXmlWorksheet;
   }
 }

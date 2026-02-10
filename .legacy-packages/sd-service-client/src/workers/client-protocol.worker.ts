@@ -41,10 +41,7 @@ self.onmessage = (event: MessageEvent) => {
     self.postMessage({
       id,
       type: "error",
-      error:
-        err instanceof Error
-          ? { message: err.message, stack: err.stack }
-          : { message: String(err) },
+      error: err instanceof Error ? { message: err.message, stack: err.stack } : { message: String(err) },
     });
   }
 };

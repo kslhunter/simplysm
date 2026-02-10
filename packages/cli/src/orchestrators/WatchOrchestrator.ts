@@ -116,10 +116,7 @@ export class WatchOrchestrator {
     this._dtsBuilder = new DtsBuilder(builderOptions);
 
     // Builder 초기화
-    await Promise.all([
-      this._libraryBuilder.initialize(),
-      this._dtsBuilder.initialize(),
-    ]);
+    await Promise.all([this._libraryBuilder.initialize(), this._dtsBuilder.initialize()]);
   }
 
   /**
@@ -183,10 +180,7 @@ export class WatchOrchestrator {
 
     process.stdout.write("⏳ 종료 중...\n");
 
-    await Promise.all([
-      this._libraryBuilder.shutdown(),
-      this._dtsBuilder.shutdown(),
-    ]);
+    await Promise.all([this._libraryBuilder.shutdown(), this._dtsBuilder.shutdown()]);
 
     process.stdout.write("✔ 완료\n");
   }

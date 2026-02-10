@@ -65,8 +65,8 @@ describe("filterPackagesByTargets", () => {
 
   it("모든 패키지가 scripts인 경우", () => {
     const scriptsOnly: Record<string, SdPackageConfig> = {
-      "pkg1": { target: "scripts" },
-      "pkg2": { target: "scripts" },
+      pkg1: { target: "scripts" },
+      pkg2: { target: "scripts" },
     };
     const result = filterPackagesByTargets(scriptsOnly, []);
 

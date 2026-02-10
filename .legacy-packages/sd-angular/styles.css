@@ -3,10 +3,7 @@
 /* scss/styles.scss */
 .ql-container {
   box-sizing: border-box;
-  font-family:
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
   height: 100%;
   margin: 0;
@@ -15,8 +12,8 @@
 .ql-container.ql-disabled .ql-tooltip {
   visibility: hidden;
 }
-.ql-container:not(.ql-disabled) li[data-list=checked] > .ql-ui,
-.ql-container:not(.ql-disabled) li[data-list=unchecked] > .ql-ui {
+.ql-container:not(.ql-disabled) li[data-list="checked"] > .ql-ui,
+.ql-container:not(.ql-disabled) li[data-list="unchecked"] > .ql-ui {
   cursor: pointer;
 }
 .ql-clipboard {
@@ -105,17 +102,17 @@
   white-space: nowrap;
   width: 1.2em;
 }
-.ql-editor li[data-list=checked] > .ql-ui,
-.ql-editor li[data-list=unchecked] > .ql-ui {
+.ql-editor li[data-list="checked"] > .ql-ui,
+.ql-editor li[data-list="unchecked"] > .ql-ui {
   color: #777;
 }
-.ql-editor li[data-list=bullet] > .ql-ui:before {
+.ql-editor li[data-list="bullet"] > .ql-ui:before {
   content: "\2022";
 }
-.ql-editor li[data-list=checked] > .ql-ui:before {
+.ql-editor li[data-list="checked"] > .ql-ui:before {
   content: "\2611";
 }
-.ql-editor li[data-list=unchecked] > .ql-ui:before {
+.ql-editor li[data-list="unchecked"] > .ql-ui:before {
   content: "\2610";
 }
 @supports (counter-set: none) {
@@ -128,16 +125,16 @@
     counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered] {
+.ql-editor li[data-list="ordered"] {
   counter-increment: list-0;
 }
-.ql-editor li[data-list=ordered] > .ql-ui:before {
+.ql-editor li[data-list="ordered"] > .ql-ui:before {
   content: counter(list-0, decimal) ". ";
 }
-.ql-editor li[data-list=ordered].ql-indent-1 {
+.ql-editor li[data-list="ordered"].ql-indent-1 {
   counter-increment: list-1;
 }
-.ql-editor li[data-list=ordered].ql-indent-1 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-1 > .ql-ui:before {
   content: counter(list-1, lower-alpha) ". ";
 }
 @supports (counter-set: none) {
@@ -150,10 +147,10 @@
     counter-reset: list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-2 {
+.ql-editor li[data-list="ordered"].ql-indent-2 {
   counter-increment: list-2;
 }
-.ql-editor li[data-list=ordered].ql-indent-2 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-2 > .ql-ui:before {
   content: counter(list-2, lower-roman) ". ";
 }
 @supports (counter-set: none) {
@@ -166,10 +163,10 @@
     counter-reset: list-3 list-4 list-5 list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-3 {
+.ql-editor li[data-list="ordered"].ql-indent-3 {
   counter-increment: list-3;
 }
-.ql-editor li[data-list=ordered].ql-indent-3 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-3 > .ql-ui:before {
   content: counter(list-3, decimal) ". ";
 }
 @supports (counter-set: none) {
@@ -182,10 +179,10 @@
     counter-reset: list-4 list-5 list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-4 {
+.ql-editor li[data-list="ordered"].ql-indent-4 {
   counter-increment: list-4;
 }
-.ql-editor li[data-list=ordered].ql-indent-4 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-4 > .ql-ui:before {
   content: counter(list-4, lower-alpha) ". ";
 }
 @supports (counter-set: none) {
@@ -198,10 +195,10 @@
     counter-reset: list-5 list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-5 {
+.ql-editor li[data-list="ordered"].ql-indent-5 {
   counter-increment: list-5;
 }
-.ql-editor li[data-list=ordered].ql-indent-5 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-5 > .ql-ui:before {
   content: counter(list-5, lower-roman) ". ";
 }
 @supports (counter-set: none) {
@@ -214,10 +211,10 @@
     counter-reset: list-6 list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-6 {
+.ql-editor li[data-list="ordered"].ql-indent-6 {
   counter-increment: list-6;
 }
-.ql-editor li[data-list=ordered].ql-indent-6 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-6 > .ql-ui:before {
   content: counter(list-6, decimal) ". ";
 }
 @supports (counter-set: none) {
@@ -230,10 +227,10 @@
     counter-reset: list-7 list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-7 {
+.ql-editor li[data-list="ordered"].ql-indent-7 {
   counter-increment: list-7;
 }
-.ql-editor li[data-list=ordered].ql-indent-7 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-7 > .ql-ui:before {
   content: counter(list-7, lower-alpha) ". ";
 }
 @supports (counter-set: none) {
@@ -246,10 +243,10 @@
     counter-reset: list-8 list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-8 {
+.ql-editor li[data-list="ordered"].ql-indent-8 {
   counter-increment: list-8;
 }
-.ql-editor li[data-list=ordered].ql-indent-8 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-8 > .ql-ui:before {
   content: counter(list-8, lower-roman) ". ";
 }
 @supports (counter-set: none) {
@@ -262,10 +259,10 @@
     counter-reset: list-9;
   }
 }
-.ql-editor li[data-list=ordered].ql-indent-9 {
+.ql-editor li[data-list="ordered"].ql-indent-9 {
   counter-increment: list-9;
 }
-.ql-editor li[data-list=ordered].ql-indent-9 > .ql-ui:before {
+.ql-editor li[data-list="ordered"].ql-indent-9 > .ql-ui:before {
   content: counter(list-9, decimal) ". ";
 }
 .ql-editor .ql-indent-1:not(.ql-direction-rtl) {
@@ -518,8 +515,8 @@
 .ql-snow .ql-toolbar button:active:hover {
   outline: none;
 }
-.ql-snow.ql-toolbar input.ql-image[type=file],
-.ql-snow .ql-toolbar input.ql-image[type=file] {
+.ql-snow.ql-toolbar input.ql-image[type="file"],
+.ql-snow .ql-toolbar input.ql-image[type="file"] {
   display: none;
 }
 .ql-snow.ql-toolbar button:hover,
@@ -893,21 +890,21 @@
 .ql-snow .ql-picker.ql-font .ql-picker-item::before {
   content: "Sans Serif";
 }
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
   content: "Serif";
 }
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="monospace"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before {
   content: "Monospace";
 }
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
   font-family:
     Georgia,
     Times New Roman,
     serif;
 }
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before {
   font-family:
     Monaco,
     Courier New,
@@ -920,25 +917,25 @@
 .ql-snow .ql-picker.ql-size .ql-picker-item::before {
   content: "Normal";
 }
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="small"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="small"]::before {
   content: "Small";
 }
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="large"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="large"]::before {
   content: "Large";
 }
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="huge"]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="huge"]::before {
   content: "Huge";
 }
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="small"]::before {
   font-size: 10px;
 }
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="large"]::before {
   font-size: 18px;
 }
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="huge"]::before {
   font-size: 32px;
 }
 .ql-snow .ql-color-picker.ql-background .ql-picker-item {
@@ -957,11 +954,7 @@
 .ql-toolbar.ql-snow {
   border: 1px solid #ccc;
   box-sizing: border-box;
-  font-family:
-    "Helvetica Neue",
-    "Helvetica",
-    "Arial",
-    sans-serif;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   padding: 8px;
 }
 .ql-toolbar.ql-snow .ql-formats {
@@ -1000,7 +993,7 @@
   line-height: 26px;
   margin-right: 8px;
 }
-.ql-snow .ql-tooltip input[type=text] {
+.ql-snow .ql-tooltip input[type="text"] {
   display: none;
   border: 1px solid #ccc;
   font-size: 13px;
@@ -1033,7 +1026,7 @@
 .ql-snow .ql-tooltip.ql-editing a.ql-remove {
   display: none;
 }
-.ql-snow .ql-tooltip.ql-editing input[type=text] {
+.ql-snow .ql-tooltip.ql-editing input[type="text"] {
   display: inline-block;
 }
 .ql-snow .ql-tooltip.ql-editing a.ql-action::after {
@@ -1041,13 +1034,13 @@
   content: "Save";
   padding-right: 0;
 }
-.ql-snow .ql-tooltip[data-mode=link]::before {
+.ql-snow .ql-tooltip[data-mode="link"]::before {
   content: "Enter link:";
 }
-.ql-snow .ql-tooltip[data-mode=formula]::before {
+.ql-snow .ql-tooltip[data-mode="formula"]::before {
   content: "Enter formula:";
 }
-.ql-snow .ql-tooltip[data-mode=video]::before {
+.ql-snow .ql-tooltip[data-mode="video"]::before {
   content: "Enter video:";
 }
 .ql-snow a {
@@ -4457,7 +4450,9 @@ h6 {
   background: var(--control-color);
   border-radius: var(--border-radius-default);
   transition: box-shadow 0.3s ease-in-out;
-  box-shadow: 0 calc(2 * var(--elevation-size)) calc(2 * 4 * var(--elevation-size)) var(--trans-lighter), 0 var(--elevation-size) var(--elevation-size) var(--trans-lighter);
+  box-shadow:
+    0 calc(2 * var(--elevation-size)) calc(2 * 4 * var(--elevation-size)) var(--trans-lighter),
+    0 var(--elevation-size) var(--elevation-size) var(--trans-lighter);
   animation: sd-card var(--animation-duration) ease-out;
   opacity: 0;
   transform: translateY(-1em);
@@ -4465,7 +4460,9 @@ h6 {
 }
 .card:hover,
 .card:focus-within {
-  box-shadow: 0 calc(4 * var(--elevation-size)) calc(4 * 4 * var(--elevation-size)) var(--trans-lighter), 0 var(--elevation-size) var(--elevation-size) var(--trans-lighter);
+  box-shadow:
+    0 calc(4 * var(--elevation-size)) calc(4 * 4 * var(--elevation-size)) var(--trans-lighter),
+    0 var(--elevation-size) var(--elevation-size) var(--trans-lighter);
 }
 @keyframes sd-card {
   from {

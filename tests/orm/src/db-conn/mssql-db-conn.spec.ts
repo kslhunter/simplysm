@@ -67,30 +67,24 @@ describe("MssqlDbConn", () => {
     });
 
     it("파라미터화된 쿼리", async () => {
-      const results = await conn.executeParametrized(
-        `SELECT * FROM [TestTable] WHERE name = @p0`,
-        ["test"],
-      );
+      const results = await conn.executeParametrized(`SELECT * FROM [TestTable] WHERE name = @p0`, ["test"]);
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
     it("파라미터화된 쿼리 - 숫자 타입", async () => {
-      const results = await conn.executeParametrized(
-        `SELECT * FROM [TestTable] WHERE value = @p0`,
-        [123],
-      );
+      const results = await conn.executeParametrized(`SELECT * FROM [TestTable] WHERE value = @p0`, [123]);
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ value: 123 });
     });
 
     it("파라미터화된 쿼리 - 여러 파라미터", async () => {
-      const results = await conn.executeParametrized(
-        `SELECT * FROM [TestTable] WHERE name = @p0 AND value = @p1`,
-        ["test", 123],
-      );
+      const results = await conn.executeParametrized(`SELECT * FROM [TestTable] WHERE name = @p0 AND value = @p1`, [
+        "test",
+        123,
+      ]);
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
@@ -100,9 +94,7 @@ describe("MssqlDbConn", () => {
   describe("연결 오류 처리", () => {
     it("미연결 상태에서 쿼리 실행 시 에러", async () => {
       const disconnectedConn = new MssqlDbConn(tedious, mssqlConfig);
-      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
-        "'Connection'이 연결되어있지 않습니다",
-      );
+      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow("'Connection'이 연결되어있지 않습니다");
     });
 
     it("잘못된 쿼리 실행 시 에러", async () => {
@@ -377,8 +369,12 @@ describe("MssqlDbConn", () => {
       expect(results[0]).toHaveLength(2);
       expect((results[0][0] as Record<string, unknown>)["uuid_val"]).toBe(testUuid1.toString().toUpperCase());
       expect((results[0][1] as Record<string, unknown>)["uuid_val"]).toBe(testUuid2.toString().toUpperCase());
-      expect(new Uint8Array((results[0][0] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(testBinary1);
-      expect(new Uint8Array((results[0][1] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(testBinary2);
+      expect(new Uint8Array((results[0][0] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(
+        testBinary1,
+      );
+      expect(new Uint8Array((results[0][1] as Record<string, unknown>)["binary_val"] as ArrayBuffer)).toEqual(
+        testBinary2,
+      );
     });
   });
 

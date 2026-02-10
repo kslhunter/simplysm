@@ -23,13 +23,8 @@ export class SdCliDbContextFileGenerator {
     await this.runAsync(pkgPath, kebabName);
   }
 
-  async runAsync(
-    pkgPath: string,
-    kebabName: string,
-  ): Promise<{ changed: boolean; filePath: string; content: string }> {
-    const npmConfig = (await FsUtils.readJsonAsync(
-      path.resolve(pkgPath, "package.json"),
-    )) as INpmConfig;
+  async runAsync(pkgPath: string, kebabName: string): Promise<{ changed: boolean; filePath: string; content: string }> {
+    const npmConfig = (await FsUtils.readJsonAsync(path.resolve(pkgPath, "package.json"))) as INpmConfig;
     const useExt = npmConfig.dependencies?.["@simplysm/sd-orm-common-ext"] != null;
 
     const targetFilePath = path.resolve(pkgPath, `src/${kebabName}.ts`);
@@ -81,14 +76,7 @@ export class SdCliDbContextFileGenerator {
         importTexts.push(`import { ${className} } from "./${requirePath}";`);
         if (
           useExt &&
-          [
-            "systemDataLog",
-            "systemLog",
-            "authentication",
-            "user",
-            "userConfig",
-            "userPermission",
-          ].includes(varName)
+          ["systemDataLog", "systemLog", "authentication", "user", "userConfig", "userPermission"].includes(varName)
         ) {
           modelTexts.push(`override ${varName} = queryable(this, ${className})`);
         } else {
@@ -121,12 +109,9 @@ export class SdCliDbContextFileGenerator {
     // Stored Procedures
     const spTexts: string[] = [];
     {
-      const filePaths = await FsUtils.globAsync(
-        path.resolve(pkgPath, "src/stored-procedures/**/*.ts"),
-        {
-          nodir: true,
-        },
-      );
+      const filePaths = await FsUtils.globAsync(path.resolve(pkgPath, "src/stored-procedures/**/*.ts"), {
+        nodir: true,
+      });
 
       for (const filePath of filePaths.orderBy()) {
         const requirePath = PathUtils.posix(path.relative(path.dirname(targetFilePath), filePath))

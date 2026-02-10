@@ -32,7 +32,8 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
   describe("WRAP -> SELECT", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .wrap()
       .select((item) => ({ id: item.id, name: item.name }))
       .getSelectQueryDef();
@@ -61,7 +62,8 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
   describe("SELECT -> WRAP", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({ id: item.id, name: item.name }))
       .wrap()
       .getSelectQueryDef();
@@ -90,7 +92,8 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
   describe("WHERE -> WRAP -> WHERE", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .where((item) => [expr.eq(item.isActive, true)])
       .wrap()
       .where((item) => [expr.gt(item.age, 20)])
@@ -130,7 +133,8 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
   describe("INCLUDE -> WRAP -> SELECT", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .include((item) => item.posts)
       .wrap()
       .select((item) => ({ postUserId: item.posts![0].userId }))
@@ -189,7 +193,8 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
   describe("GROUP BY -> WRAP -> ORDER BY", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((item) => ({
         name: item.name,
         cnt: expr.count(item.id),
@@ -475,12 +480,16 @@ describe("SELECT - UNION", () => {
 describe("SELECT - SCALAR SUBQUERY (expr.subquery)", () => {
   describe("기본 (COUNT)", () => {
     const db = new TestDbContext();
-    const def = db.user()
+    const def = db
+      .user()
       .select((u) => ({
         id: u.id,
         postCount: expr.subquery(
           "number",
-          db.post().where((p) => [expr.eq(p.userId, u.id)]).select(() => ({ cnt: expr.count() })),
+          db
+            .post()
+            .where((p) => [expr.eq(p.userId, u.id)])
+            .select(() => ({ cnt: expr.count() })),
         ),
       }))
       .getSelectQueryDef();

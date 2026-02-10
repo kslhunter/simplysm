@@ -22,17 +22,9 @@ export interface IDbConn extends EventEmitter {
 
   executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
 
-  bulkInsertAsync(
-    tableName: string,
-    columnDefs: IQueryColumnDef[],
-    records: Record<string, any>[],
-  ): Promise<void>;
+  bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
 
-  bulkUpsertAsync(
-    tableName: string,
-    columnDefs: IQueryColumnDef[],
-    records: Record<string, any>[],
-  ): Promise<void>;
+  bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
 }
 
 export type TDbConnConf = IDefaultDbConnConf | ISqliteDbConnConf;
@@ -53,8 +45,4 @@ export interface ISqliteDbConnConf {
   filePath: string;
 }
 
-export type ISOLATION_LEVEL =
-  | "READ_UNCOMMITTED"
-  | "READ_COMMITTED"
-  | "REPEATABLE_READ"
-  | "SERIALIZABLE";
+export type ISOLATION_LEVEL = "READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE";

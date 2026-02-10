@@ -15,7 +15,7 @@ export function queryable<D extends DbContext, T>(db: D, type: Type<T>): Queryab
       return (ensureInit() as any)[prop];
     },
     getPrototypeOf() {
-      return Queryable.prototype;  // instanceof 체크 통과용
+      return Queryable.prototype; // instanceof 체크 통과용
     },
   });
 }

@@ -19,11 +19,7 @@ export default function NumpadPage() {
             <h2 class="mb-6 text-2xl font-bold">기본 사용</h2>
             <div class="space-y-6">
               <div>
-                <Numpad
-                  value={basicValue()}
-                  onValueChange={setBasicValue}
-                  placeholder="숫자를 입력하세요"
-                />
+                <Numpad value={basicValue()} onValueChange={setBasicValue} placeholder="숫자를 입력하세요" />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
                   값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(basicValue())}</code>
                 </p>
@@ -36,10 +32,7 @@ export default function NumpadPage() {
             <h2 class="mb-6 text-2xl font-bold">초기값</h2>
             <div class="space-y-6">
               <div>
-                <Numpad
-                  value={initialValue()}
-                  onValueChange={setInitialValue}
-                />
+                <Numpad value={initialValue()} onValueChange={setInitialValue} />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
                   값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(initialValue())}</code>
                 </p>

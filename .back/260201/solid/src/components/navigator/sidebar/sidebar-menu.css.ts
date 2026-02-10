@@ -6,7 +6,7 @@ export const sidebarMenu = style({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  overflow: "auto"
+  overflow: "auto",
 });
 
 export const sidebarMenuHeader = style({
@@ -21,5 +21,5 @@ export const sidebarMenuHeader = style({
 
 export const sidebarMenuList = style({
   flex: 1,
-  overflow: "auto"
+  overflow: "auto",
 });

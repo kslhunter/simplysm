@@ -20,9 +20,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   get lastWsRelId(): number | undefined {
-    return this.data.workbook.sheets?.[0].sheet.max(
-      (sheet) => NumberUtils.parseInt(sheet.$["r:id"])!,
-    );
+    return this.data.workbook.sheets?.[0].sheet.max((sheet) => NumberUtils.parseInt(sheet.$["r:id"])!);
   }
 
   get sheetNames(): string[] {
@@ -76,9 +74,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   getWsRelIdByName(name: string): number | undefined {
-    return NumberUtils.parseInt(
-      this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name === name)?.$["r:id"],
-    );
+    return NumberUtils.parseInt(this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name === name)?.$["r:id"]);
   }
 
   getWsRelIdByIndex(index: number): number | undefined {
@@ -95,9 +91,7 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
   }
 
   private _getSheetDataById(id: number) {
-    return this.data.workbook.sheets?.[0].sheet.single(
-      (item) => NumberUtils.parseInt(item.$["r:id"]) === id,
-    );
+    return this.data.workbook.sheets?.[0].sheet.single((item) => NumberUtils.parseInt(item.$["r:id"]) === id);
   }
 
   private _getReplacedName(name: string) {

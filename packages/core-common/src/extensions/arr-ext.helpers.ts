@@ -46,7 +46,7 @@ export function compareForOrder(pp: ComparableType, pn: ComparableType, desc: bo
   }
   if (typeof cpn === "boolean" && typeof cpp === "boolean") {
     // true > false: 오름차순 시 true가 뒤, 내림차순 시 true가 앞
-    return cpn ? (desc ? 1 : -1) : (desc ? -1 : 1);
+    return cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
   }
 
   throw new ArgumentError("orderBy를 사용할 수 없는 타입입니다.", { type1: typeof cpp, type2: typeof cpn });

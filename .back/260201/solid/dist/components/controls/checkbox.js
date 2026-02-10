@@ -15,11 +15,11 @@ const Checkbox = (props) => {
     "onChange",
     "icon",
     "indeterminateIcon",
-    "disabled"
+    "disabled",
   ]);
   const [internalChecked, setInternalChecked] = createSignal(local.checked ?? false);
   const isControlled = () => local.onChange !== void 0;
-  const currentChecked = () => isControlled() ? local.checked ?? false : internalChecked();
+  const currentChecked = () => (isControlled() ? (local.checked ?? false) : internalChecked());
   const handleChange = () => {
     var _a;
     const newValue = !currentChecked();
@@ -42,39 +42,44 @@ const Checkbox = (props) => {
     {
       "use:ripple": true,
       ...rest,
-      class: [
+      "class": [
         checkbox({
           ...objPick(local, checkbox.variants()),
           checked: currentChecked(),
           indeterminate: local.indeterminate ?? false,
-          disabled: local.disabled
+          disabled: local.disabled,
         }),
-        local.class
-      ].filter(Boolean).join(" ")
+        local.class,
+      ]
+        .filter(Boolean)
+        .join(" "),
     },
+    /* @__PURE__ */ React.createElement("input", {
+      type: "checkbox",
+      checked: currentChecked(),
+      disabled: local.disabled,
+      style: { "position": "absolute", "opacity": 0, "pointer-events": "none" },
+      onChange: handleChange,
+    }),
     /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "checkbox",
-        checked: currentChecked(),
-        disabled: local.disabled,
-        style: { position: "absolute", opacity: 0, "pointer-events": "none" },
-        onChange: handleChange
-      }
-    ),
-    /* @__PURE__ */ React.createElement("span", { class: checkboxIndicator }, /* @__PURE__ */ React.createElement(
       "span",
-      {
-        class: checkboxIndicatorIcon,
-        "data-checked": String(currentChecked() && !local.indeterminate),
-        "data-indeterminate": String(local.indeterminate ?? false)
-      },
-      /* @__PURE__ */ React.createElement(Show, { when: local.indeterminate, fallback: /* @__PURE__ */ React.createElement(Icon, null) }, /* @__PURE__ */ React.createElement(IndeterminateIcon, null))
-    )),
-    /* @__PURE__ */ React.createElement("span", { class: checkboxContents }, local.children)
+      { class: checkboxIndicator },
+      /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          "class": checkboxIndicatorIcon,
+          "data-checked": String(currentChecked() && !local.indeterminate),
+          "data-indeterminate": String(local.indeterminate ?? false),
+        },
+        /* @__PURE__ */ React.createElement(
+          Show,
+          { when: local.indeterminate, fallback: /* @__PURE__ */ React.createElement(Icon, null) },
+          /* @__PURE__ */ React.createElement(IndeterminateIcon, null),
+        ),
+      ),
+    ),
+    /* @__PURE__ */ React.createElement("span", { class: checkboxContents }, local.children),
   );
 };
-export {
-  Checkbox
-};
+export { Checkbox };
 //# sourceMappingURL=checkbox.js.map

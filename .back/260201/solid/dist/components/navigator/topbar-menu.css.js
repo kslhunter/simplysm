@@ -4,13 +4,10 @@ const topbarMenu = style({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: vars.spacing.sm
+  gap: vars.spacing.sm,
 });
 const topbarMenuNestedList = style({
-  backgroundColor: `rgba(${vars.text.base}, 0.03)`
+  backgroundColor: `rgba(${vars.text.base}, 0.03)`,
 });
-export {
-  topbarMenu,
-  topbarMenuNestedList
-};
+export { topbarMenu, topbarMenuNestedList };
 //# sourceMappingURL=topbar-menu.css.js.map

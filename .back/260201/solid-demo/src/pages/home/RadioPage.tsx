@@ -42,7 +42,11 @@ export default function RadioPage() {
             <Radio checked={selectedTheme() === "primary"} onChange={() => setSelectedTheme("primary")} theme="primary">
               Primary
             </Radio>
-            <Radio checked={selectedTheme() === "secondary"} onChange={() => setSelectedTheme("secondary")} theme="secondary">
+            <Radio
+              checked={selectedTheme() === "secondary"}
+              onChange={() => setSelectedTheme("secondary")}
+              theme="secondary"
+            >
               Secondary
             </Radio>
             <Radio checked={selectedTheme() === "success"} onChange={() => setSelectedTheme("success")} theme="success">
@@ -141,10 +145,18 @@ export default function RadioPage() {
         <section>
           <h3>Inline Variant (in Text)</h3>
           <p>
-            성별을 선택하세요: <Radio inline checked>남성</Radio> <Radio inline>여성</Radio>
+            성별을 선택하세요:{" "}
+            <Radio inline checked>
+              남성
+            </Radio>{" "}
+            <Radio inline>여성</Radio>
           </p>
           <p>
-            배송 방법: <Radio inline>일반배송</Radio> <Radio inline checked>빠른배송</Radio> <Radio inline>직접수령</Radio>
+            배송 방법: <Radio inline>일반배송</Radio>{" "}
+            <Radio inline checked>
+              빠른배송
+            </Radio>{" "}
+            <Radio inline>직접수령</Radio>
           </p>
         </section>
 

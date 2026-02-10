@@ -1,21 +1,8 @@
 import "@simplysm/core-common";
-import {
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-  createMemo,
-  createEffect,
-  onCleanup,
-} from "solid-js";
+import { type JSX, type ParentComponent, Show, splitProps, createMemo, createEffect, onCleanup } from "solid-js";
 import { Portal } from "solid-js/web";
 import { tabbable } from "tabbable";
-import {
-  backdrop,
-  dropdownPopup,
-  dropdownPopupContent,
-  mobileHandle,
-} from "./dropdown-popup.css";
+import { backdrop, dropdownPopup, dropdownPopupContent, mobileHandle } from "./dropdown-popup.css";
 import { useDropdownInternal } from "./dropdown-context";
 
 /**
@@ -55,7 +42,7 @@ export const DropdownPopup: ParentComponent<DropdownPopupProps> = (props) => {
   if (!ctx) {
     throw new Error(
       "[DropdownPopup] Dropdown 컴포넌트 내부에서 사용해야 합니다.\n" +
-      "DropdownPopup은 반드시 <Dropdown> 컴포넌트의 자식으로 배치해야 합니다.",
+        "DropdownPopup은 반드시 <Dropdown> 컴포넌트의 자식으로 배치해야 합니다.",
     );
   }
 

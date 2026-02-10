@@ -10,7 +10,7 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
   styles: [
     /* language=SCSS */ `
       @use "../../../../scss/commons/mixins";
-      
+
       sd-toast-container {
         display: flex;
         position: fixed;

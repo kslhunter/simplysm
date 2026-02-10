@@ -22,7 +22,8 @@ import "@simplysm/core-common";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface TimeFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
     TimeFieldStyles {
   value?: Time | undefined;
   onChange?: (value: Time | undefined) => void;
@@ -125,9 +126,12 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
           !Number.isNaN(hour) &&
           !Number.isNaN(minute) &&
           !Number.isNaN(second) &&
-          hour >= 0 && hour <= 23 &&
-          minute >= 0 && minute <= 59 &&
-          second >= 0 && second <= 59
+          hour >= 0 &&
+          hour <= 23 &&
+          minute >= 0 &&
+          minute <= 59 &&
+          second >= 0 &&
+          second <= 59
         ) {
           const newValue = new Time(hour, minute, second);
           setValue(newValue);
@@ -140,13 +144,13 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
 
   // 공통 input props
   const inputProps = () => ({
-    type: "time" as const,
-    value: inputValue(),
-    onChange: handleChange,
-    min: minValue(),
-    max: maxValue(),
-    step: step(),
-    placeholder: local.placeholder,
+    "type": "time" as const,
+    "value": inputValue(),
+    "onChange": handleChange,
+    "min": minValue(),
+    "max": maxValue(),
+    "step": step(),
+    "placeholder": local.placeholder,
     "aria-disabled": rest.disabled ? ("true" as const) : undefined,
     "aria-readonly": rest.readOnly ? ("true" as const) : undefined,
   });
@@ -158,16 +162,12 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[timeField(objPick(local, timeField.variants())), local.class]
-            .filter(Boolean)
-            .join(" ")}
+          class={[timeField(objPick(local, timeField.variants())), local.class].filter(Boolean).join(" ")}
         />
       }
     >
       <div class={timeFieldContainer}>
-        <div class={timeFieldContent}>
-          {displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}
-        </div>
+        <div class={timeFieldContent}>{displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}</div>
         <input
           {...rest}
           {...inputProps()}

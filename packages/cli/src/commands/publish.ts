@@ -2,19 +2,10 @@ import path from "path";
 import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
-import {
-  fsExists,
-  fsReadJson,
-  fsWrite,
-  fsGlob,
-  fsCopy,
-} from "@simplysm/core-node";
+import { fsExists, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
 import { env, jsonStringify } from "@simplysm/core-common";
 import "@simplysm/core-common";
-import type {
-  SdConfig,
-  SdPublishConfig,
-} from "../sd-config.types";
+import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { spawn } from "../utils/spawn";
 import { runBuild } from "./build";
@@ -112,9 +103,7 @@ async function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolea
 
   // prerelease 여부에 따라 증가 방식 결정
   const newVersion =
-    prereleaseInfo !== null
-      ? semver.inc(currentVersion, "prerelease")!
-      : semver.inc(currentVersion, "patch")!;
+    prereleaseInfo !== null ? semver.inc(currentVersion, "prerelease")! : semver.inc(currentVersion, "patch")!;
 
   if (dryRun) {
     // dry-run: 파일 수정 없이 새 버전만 반환
@@ -248,11 +237,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
   // 패키지 경로 수집
-  const allPkgPaths = (
-    await Promise.all(
-      (projPkg.workspaces ?? []).map((item) => fsGlob(path.resolve(cwd, item))),
-    )
-  )
+  const allPkgPaths = (await Promise.all((projPkg.workspaces ?? []).map((item) => fsGlob(path.resolve(cwd, item)))))
     .flat()
     .filter((item) => !item.includes("."));
 
@@ -291,7 +276,10 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     return;
   }
 
-  logger.debug("배포 대상 패키지", publishPackages.map((p) => p.name));
+  logger.debug(
+    "배포 대상 패키지",
+    publishPackages.map((p) => p.name),
+  );
 
   // Git 사용 여부 확인
   const hasGit = await fsExists(path.resolve(cwd, ".git"));

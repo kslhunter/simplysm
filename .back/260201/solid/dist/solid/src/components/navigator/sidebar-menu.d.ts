@@ -10,10 +10,10 @@ import type { IconProps } from "@tabler/icons-solidjs";
  * @property children - 하위 메뉴 목록
  */
 export interface SidebarMenuItem {
-    title: string;
-    path?: string;
-    icon?: Component<IconProps>;
-    children?: SidebarMenuItem[];
+  title: string;
+  path?: string;
+  icon?: Component<IconProps>;
+  children?: SidebarMenuItem[];
 }
 /**
  * SidebarMenu 컴포넌트의 props
@@ -23,8 +23,8 @@ export interface SidebarMenuItem {
  *                    생략 시 메뉴 개수에 따라 자동 선택 (3개 이하: flat, 4개 이상: accordion)
  */
 export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
-    menus: SidebarMenuItem[];
-    layout?: "accordion" | "flat";
+  menus: SidebarMenuItem[];
+  layout?: "accordion" | "flat";
 }
 /**
  * 사이드바 메뉴 컴포넌트

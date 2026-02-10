@@ -1,13 +1,11 @@
 import { tokenVars } from "../variables/token.css";
 const booleanTransitionCss = {
   true: {
-    transition: `${tokenVars.duration.base} ease-out`
+    transition: `${tokenVars.duration.base} ease-out`,
   },
   false: {
-    transition: `${tokenVars.duration.base} ease-in`
-  }
+    transition: `${tokenVars.duration.base} ease-in`,
+  },
 };
-export {
-  booleanTransitionCss
-};
+export { booleanTransitionCss };
 //# sourceMappingURL=boolean-transition.css.js.map

@@ -17,8 +17,7 @@ const NotificationDemo: Component = () => {
       <section>
         <h2 class="mb-4 text-xl font-semibold">테마별 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          각 버튼을 클릭하면 해당 테마의 알림이 발생합니다. 상단 배너와 우측 상단의 벨 아이콘에서 확인할 수
-          있습니다.
+          각 버튼을 클릭하면 해당 테마의 알림이 발생합니다. 상단 배너와 우측 상단의 벨 아이콘에서 확인할 수 있습니다.
         </p>
         <div class="flex flex-wrap gap-2">
           <Button theme="info" variant="solid" onClick={() => notification.info("정보", "일반 정보 알림입니다.")}>
@@ -31,11 +30,7 @@ const NotificationDemo: Component = () => {
           >
             Success 알림
           </Button>
-          <Button
-            theme="warning"
-            variant="solid"
-            onClick={() => notification.warning("경고", "주의가 필요합니다.")}
-          >
+          <Button theme="warning" variant="solid" onClick={() => notification.warning("경고", "주의가 필요합니다.")}>
             Warning 알림
           </Button>
           <Button theme="danger" variant="solid" onClick={() => notification.danger("에러", "오류가 발생했습니다.")}>

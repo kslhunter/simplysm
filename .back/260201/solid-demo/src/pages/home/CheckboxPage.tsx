@@ -149,10 +149,18 @@ export default function CheckboxPage() {
         <section>
           <h3>Inline Variant (in Text)</h3>
           <p>
-            이 문장에서 <Checkbox inline checked>동의함</Checkbox> 체크박스가 텍스트와 함께 자연스럽게 표시됩니다.
+            이 문장에서{" "}
+            <Checkbox inline checked>
+              동의함
+            </Checkbox>{" "}
+            체크박스가 텍스트와 함께 자연스럽게 표시됩니다.
           </p>
           <p>
-            여러 옵션을 선택할 수 있습니다: <Checkbox inline>옵션A</Checkbox> <Checkbox inline checked>옵션B</Checkbox> <Checkbox inline>옵션C</Checkbox>
+            여러 옵션을 선택할 수 있습니다: <Checkbox inline>옵션A</Checkbox>{" "}
+            <Checkbox inline checked>
+              옵션B
+            </Checkbox>{" "}
+            <Checkbox inline>옵션C</Checkbox>
           </p>
         </section>
 

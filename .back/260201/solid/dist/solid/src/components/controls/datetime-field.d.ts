@@ -13,12 +13,15 @@ import "@simplysm/core-common";
  * @property inset - true일 경우 테이블 셀 등에서 사용하기 위한 인셋 스타일 적용
  * @property inline - true일 경우 inline-block으로 표시
  */
-export interface DateTimeFieldProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">, DateTimeFieldStyles {
-    value?: DateTime | undefined;
-    onChange?: (value: DateTime | undefined) => void;
-    type?: "datetime" | "datetime-sec";
-    min?: DateTime;
-    max?: DateTime;
+export interface DateTimeFieldProps
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+    DateTimeFieldStyles {
+  value?: DateTime | undefined;
+  onChange?: (value: DateTime | undefined) => void;
+  type?: "datetime" | "datetime-sec";
+  min?: DateTime;
+  max?: DateTime;
 }
 /**
  * 날짜시간 입력 필드 컴포넌트

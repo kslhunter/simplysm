@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { Type} from "@simplysm/sd-core-common";
+import type { Type } from "@simplysm/sd-core-common";
 import { Uuid } from "@simplysm/sd-core-common";
 import type { SdServiceEventListenerBase } from "@simplysm/sd-service-common";
 import type { SdServiceTransport } from "../../transport/SdServiceTransport";
@@ -57,9 +57,7 @@ export class SdServiceEventClient {
       body: { name: eventType.name },
     });
 
-    const targetKeys = listenerInfos
-      .filter((item) => infoSelector(item.info))
-      .map((item) => item.key);
+    const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
 
     if (targetKeys.length > 0) {
       await this._transport.sendAsync({

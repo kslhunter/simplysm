@@ -40,17 +40,16 @@ export default function DropdownPage() {
           {/* 기본 드롭다운 메뉴 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 드롭다운 메뉴</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.
+            </p>
             <div class="flex items-center gap-4">
-              <Button
-                ref={basicButtonRef}
-                theme="primary"
-                variant="solid"
-                onClick={() => setBasicOpen(!basicOpen())}
-              >
+              <Button ref={basicButtonRef} theme="primary" variant="solid" onClick={() => setBasicOpen(!basicOpen())}>
                 메뉴 열기
               </Button>
-              {basicSelected() != null && <span class="text-sm text-base-600 dark:text-base-400">선택: {basicSelected()}</span>}
+              {basicSelected() != null && (
+                <span class="text-sm text-base-600 dark:text-base-400">선택: {basicSelected()}</span>
+              )}
             </div>
             <Dropdown triggerRef={() => basicButtonRef} open={basicOpen()} onOpenChange={setBasicOpen}>
               <ul class="py-1">
@@ -90,7 +89,9 @@ export default function DropdownPage() {
             >
               <span class="text-base-500 dark:text-base-400">우클릭 영역</span>
             </div>
-            {contextSelected() != null && <p class="mt-2 text-sm text-base-600 dark:text-base-400">선택: {contextSelected()}</p>}
+            {contextSelected() != null && (
+              <p class="mt-2 text-sm text-base-600 dark:text-base-400">선택: {contextSelected()}</p>
+            )}
             <Dropdown position={contextPosition()} open={contextOpen()} onOpenChange={setContextOpen}>
               <ul class="py-1">
                 <For each={menuItems}>
@@ -176,7 +177,9 @@ export default function DropdownPage() {
               >
                 긴 목록 열기
               </Button>
-              {maxHeightSelected() != null && <span class="text-sm text-base-600 dark:text-base-400">선택: {maxHeightSelected()}</span>}
+              {maxHeightSelected() != null && (
+                <span class="text-sm text-base-600 dark:text-base-400">선택: {maxHeightSelected()}</span>
+              )}
             </div>
             <Dropdown
               triggerRef={() => maxHeightButtonRef}

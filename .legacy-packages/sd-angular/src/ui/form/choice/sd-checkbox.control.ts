@@ -38,9 +38,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         cursor: pointer;
         //border-radius: var(--border-radius-default);
 
-        height: calc(
-          var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
-        );
+        height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px);
         gap: var(--gap-sm);
 
         @supports not (appearance: auto) {
@@ -68,7 +66,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
             opacity: 0;
             color: white;
 
-            > ng-icon {              
+            > ng-icon {
               > svg {
                 vertical-align: top;
                 stroke-width: 2.5px !important;
@@ -170,9 +168,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         }
 
         &[data-sd-size="sm"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px);
           padding: var(--gap-xs) var(--gap-sm);
           gap: var(--gap-xs);
 
@@ -185,9 +181,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         }
 
         &[data-sd-size="lg"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px);
           padding: var(--gap-default) var(--gap-lg);
           gap: var(--gap-default);
 
@@ -200,23 +194,17 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         }
 
         &[data-sd-inset="true"] {
-          height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
-          );
+          height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2);
           border: none;
           justify-content: center;
           text-align: center;
 
           &[data-sd-size="sm"] {
-            height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
-            );
+            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2);
           }
 
           &[data-sd-size="lg"] {
-            height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
-            );
+            height: calc(var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2);
           }
         }
 
@@ -260,17 +248,7 @@ export class SdCheckboxControl {
   size = input<"sm" | "lg">();
   inline = input(false, { transform: transformBoolean });
   inset = input(false, { transform: transformBoolean });
-  theme = input<
-    | "primary"
-    | "secondary"
-    | "info"
-    | "success"
-    | "warning"
-    | "danger"
-    | "gray"
-    | "blue-gray"
-    | "white"
-  >();
+  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray" | "white">();
 
   contentStyle = input<string>();
 

@@ -1,12 +1,4 @@
-import {
-  ApplicationRef,
-  createComponent,
-  inject,
-  Injectable,
-  inputBinding,
-  type Signal,
-  Type,
-} from "@angular/core";
+import { ApplicationRef, createComponent, inject, Injectable, inputBinding, type Signal, Type } from "@angular/core";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import type { TDirectiveInputSignals } from "../../utils/TDirectiveInputSignals";
@@ -34,11 +26,7 @@ export class SdPrintProvider {
         const inputs = template.inputs as Record<string, any>;
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
-          bindings: [
-            ...Object.keys(inputs).map((inputKey) =>
-              inputBinding(inputKey, () => inputs[inputKey]),
-            ),
-          ],
+          bindings: [...Object.keys(inputs).map((inputKey) => inputBinding(inputKey, () => inputs[inputKey]))],
         });
 
         const compEl = compRef.location.nativeElement as HTMLElement;
@@ -103,11 +91,7 @@ export class SdPrintProvider {
         const inputs = template.inputs as Record<string, any>;
         const compRef = createComponent(template.type, {
           environmentInjector: this._appRef.injector,
-          bindings: [
-            ...Object.keys(inputs).map((inputKey) =>
-              inputBinding(inputKey, () => inputs[inputKey]),
-            ),
-          ],
+          bindings: [...Object.keys(inputs).map((inputKey) => inputBinding(inputKey, () => inputs[inputKey]))],
         });
 
         const compEl = compRef.location.nativeElement as HTMLElement;

@@ -39,9 +39,7 @@ const SharedDataDemo: Component = () => {
       {/* loading 상태 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">loading 상태</h2>
-        <Label theme={shared.loading() ? "warning" : "success"}>
-          {shared.loading() ? "로딩 중..." : "로드 완료"}
-        </Label>
+        <Label theme={shared.loading() ? "warning" : "success"}>{shared.loading() ? "로딩 중..." : "로드 완료"}</Label>
       </section>
 
       {/* User 목록 - items() */}

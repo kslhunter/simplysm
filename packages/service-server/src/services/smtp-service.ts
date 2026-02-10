@@ -40,9 +40,7 @@ export class SmtpService extends ServiceBase implements SmtpServiceType {
   }
 
   async sendByConfig(configName: string, options: SmtpSendByConfigOption): Promise<string> {
-    const config = (await this.getConfig<Record<string, SmtpConfig | undefined>>("smtp"))[
-      configName
-    ];
+    const config = (await this.getConfig<Record<string, SmtpConfig | undefined>>("smtp"))[configName];
     if (config == null) {
       throw new Error(`SMTP 설정을 찾을 수 없습니다: ${configName}`);
     }

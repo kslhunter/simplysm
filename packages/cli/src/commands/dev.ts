@@ -2,11 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Listr } from "listr2";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
-import type {
-  SdConfig,
-  SdClientPackageConfig,
-  SdServerPackageConfig,
-} from "../sd-config.types";
+import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
@@ -132,8 +128,7 @@ export async function runDev(options: DevOptions): Promise<void> {
   const standaloneClientWorkers: ClientWorkerInfo[] = clientPackages
     .filter(
       ({ config }) =>
-        typeof config.server === "number" ||
-        (typeof config.server === "string" && !serverNames.has(config.server)),
+        typeof config.server === "number" || (typeof config.server === "string" && !serverNames.has(config.server)),
     )
     .map(({ name, config }) => ({
       name,

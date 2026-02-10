@@ -75,10 +75,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     }
 
     // 일반 JOIN
-    const where =
-      join.where != null && join.where.length > 0
-        ? ` ON ${this.expr.renderWhere(join.where)}`
-        : " ON 1=1";
+    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON 1=1";
     return ` LEFT OUTER JOIN ${from} AS ${alias}${where}`;
   }
 
@@ -224,9 +221,12 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     // INSERT INTO SELECT에서 columns 추출
     const selectDef = def.recordsSelectQuery;
-    const colList = selectDef.select != null
-      ? Object.keys(selectDef.select).map((c) => this.expr.wrap(c)).join(", ")
-      : "*";
+    const colList =
+      selectDef.select != null
+        ? Object.keys(selectDef.select)
+            .map((c) => this.expr.wrap(c))
+            .join(", ")
+        : "*";
 
     let sql = `INSERT INTO ${table} (${colList})`;
 
@@ -321,9 +321,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `MERGE ${table} AS ${alias}\n`;
     sql += `USING (SELECT 1 AS [_]) AS [_src] ON `;
-    sql += existsWhere != null && existsWhere.length > 0
-      ? this.expr.renderWhere(existsWhere)
-      : "1=0";
+    sql += existsWhere != null && existsWhere.length > 0 ? this.expr.renderWhere(existsWhere) : "1=0";
 
     if (updateSetParts.length > 0) {
       sql += `\nWHEN MATCHED THEN UPDATE SET ${updateSetParts.join(", ")}`;
@@ -520,13 +518,16 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const proc = this.tableName(def.procedure);
 
     // params 처리
-    const paramList = def.params?.map(p => {
-      let sql = `@${p.name} ${this.expr.renderDataType(p.dataType)}`;
-      if (p.default !== undefined) {
-        sql += ` = ${this.expr.escapeValue(p.default)}`;
-      }
-      return sql;
-    }).join(", ") ?? "";
+    const paramList =
+      def.params
+        ?.map((p) => {
+          let sql = `@${p.name} ${this.expr.renderDataType(p.dataType)}`;
+          if (p.default !== undefined) {
+            sql += ` = ${this.expr.escapeValue(p.default)}`;
+          }
+          return sql;
+        })
+        .join(", ") ?? "";
 
     let sql = `CREATE OR ALTER PROCEDURE ${proc}`;
     if (paramList) {
@@ -571,7 +572,8 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     const db = this.expr.wrap(def.database);
     const schema = this.expr.escapeString(schemaName);
-    return { sql: `
+    return {
+      sql: `
 DECLARE @sql NVARCHAR(MAX);
 SET @sql = N'';
 
@@ -595,7 +597,8 @@ SELECT @sql = @sql + N'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.
 FROM ${db}.sys.procedures
 WHERE SCHEMA_NAME(schema_id) = '${schema}';
 
-EXEC sp_executesql @sql;` };
+EXEC sp_executesql @sql;`,
+    };
   }
 
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {

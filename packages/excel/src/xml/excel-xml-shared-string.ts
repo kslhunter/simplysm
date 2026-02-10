@@ -18,9 +18,9 @@ export class ExcelXmlSharedString implements ExcelXml {
   constructor(data?: ExcelXmlSharedStringData) {
     if (data === undefined) {
       this.data = {
-        "sst": {
-          "$": {
-            "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+        sst: {
+          $: {
+            xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
           },
         },
       };

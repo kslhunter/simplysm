@@ -9,10 +9,7 @@ export class SdOrm<T extends DbContext> {
     readonly dbContextOpt?: Partial<TDbContextOption>,
   ) {}
 
-  async connectAsync<R>(
-    callback: (conn: T) => Promise<R>,
-    isolationLevel?: ISOLATION_LEVEL,
-  ): Promise<R> {
+  async connectAsync<R>(callback: (conn: T) => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
     const optRec = this.dbContextOpt as Record<string, any> | undefined;
     const confRec = this.config as Record<string, any>;
     const db = new this.dbContextType(new NodeDbContextExecutor(this.config), {

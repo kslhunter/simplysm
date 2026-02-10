@@ -23,16 +23,13 @@ describe("result-parser 성능", () => {
     }));
   }
 
-  function generateJoinRecords(
-    userCount: number,
-    postsPerUser: number,
-  ): Record<string, unknown>[] {
+  function generateJoinRecords(userCount: number, postsPerUser: number): Record<string, unknown>[] {
     const records: Record<string, unknown>[] = [];
     for (let u = 0; u < userCount; u++) {
       for (let p = 0; p < postsPerUser; p++) {
         records.push({
-          id: String(u + 1),
-          name: `User${u + 1}`,
+          "id": String(u + 1),
+          "name": `User${u + 1}`,
           "posts.id": String(u * postsPerUser + p + 1),
           "posts.title": `Post${p + 1} by User${u + 1}`,
           "posts.content": `Content of post ${p + 1}`,
@@ -52,8 +49,8 @@ describe("result-parser 성능", () => {
       for (let p = 0; p < postsPerUser; p++) {
         for (let c = 0; c < commentsPerPost; c++) {
           records.push({
-            id: String(u + 1),
-            name: `User${u + 1}`,
+            "id": String(u + 1),
+            "name": `User${u + 1}`,
             "posts.id": String(u * postsPerUser + p + 1),
             "posts.title": `Post${p + 1}`,
             "posts.comments.id": String((u * postsPerUser + p) * commentsPerPost + c + 1),
@@ -116,8 +113,8 @@ describe("result-parser 성능", () => {
       const raw = generateJoinRecords(1_000, 10);
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.content": "string",
@@ -138,8 +135,8 @@ describe("result-parser 성능", () => {
       const raw = generateJoinRecords(5_000, 10);
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.content": "string",
@@ -162,15 +159,15 @@ describe("result-parser 성능", () => {
       const raw = generateNestedJoinRecords(100, 10, 5);
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.comments.id": "number",
           "posts.comments.text": "string",
         },
         joins: {
-          posts: { isSingle: false },
+          "posts": { isSingle: false },
           "posts.comments": { isSingle: false },
         },
       };
@@ -188,15 +185,15 @@ describe("result-parser 성능", () => {
       const raw = generateNestedJoinRecords(500, 10, 5);
       const meta: ResultMeta = {
         columns: {
-          id: "number",
-          name: "string",
+          "id": "number",
+          "name": "string",
           "posts.id": "number",
           "posts.title": "string",
           "posts.comments.id": "number",
           "posts.comments.text": "string",
         },
         joins: {
-          posts: { isSingle: false },
+          "posts": { isSingle: false },
           "posts.comments": { isSingle: false },
         },
       };

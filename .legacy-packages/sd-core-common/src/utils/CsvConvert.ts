@@ -16,11 +16,7 @@ export class CsvConvert {
 
       for (let cursor = 0; cursor < line.length; cursor++) {
         // '"' 시작
-        if (
-          line[cursor] === '"' &&
-          !isInQuote &&
-          (cursor === 0 || line[cursor - 1] === columnSplitter)
-        ) {
+        if (line[cursor] === '"' && !isInQuote && (cursor === 0 || line[cursor - 1] === columnSplitter)) {
           isInQuote = true;
           currStr = "";
         }

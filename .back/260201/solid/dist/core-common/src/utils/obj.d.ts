@@ -11,14 +11,14 @@
 export declare function objClone<T>(source: T): T;
 /** objEqual 옵션 타입 */
 export interface EqualOptions {
-    /** 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용) */
-    includes?: string[];
-    /** 비교에서 제외할 키 목록 (최상위 레벨에만 적용) */
-    excludes?: string[];
-    /** 배열 순서 무시 여부. true 시 O(n²) 복잡도 */
-    ignoreArrayIndex?: boolean;
-    /** 얕은 비교 여부. true 시 1단계만 비교 (참조 비교) */
-    onlyOneDepth?: boolean;
+  /** 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용) */
+  includes?: string[];
+  /** 비교에서 제외할 키 목록 (최상위 레벨에만 적용) */
+  excludes?: string[];
+  /** 배열 순서 무시 여부. true 시 O(n²) 복잡도 */
+  ignoreArrayIndex?: boolean;
+  /** 얕은 비교 여부. true 시 1단계만 비교 (참조 비교) */
+  onlyOneDepth?: boolean;
 }
 /**
  * 깊은 비교
@@ -46,10 +46,10 @@ export interface EqualOptions {
 export declare function objEqual(source: unknown, target: unknown, options?: EqualOptions): boolean;
 /** objMerge 옵션 타입 */
 export interface ObjMergeOptions {
-    /** 배열 처리 방식. "replace": target으로 대체(기본), "concat": 합침(중복 제거) */
-    arrayProcess?: "replace" | "concat";
-    /** target이 null일 때 해당 키 삭제 여부 */
-    useDelTargetNull?: boolean;
+  /** 배열 처리 방식. "replace": target으로 대체(기본), "concat": 합침(중복 제거) */
+  arrayProcess?: "replace" | "concat";
+  /** target이 null일 때 해당 키 삭제 여부 */
+  useDelTargetNull?: boolean;
 }
 /**
  * 깊은 병합 (source를 base로 target을 병합)
@@ -72,12 +72,12 @@ export interface ObjMergeOptions {
 export declare function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T & P;
 /** merge3 옵션 타입 */
 export interface ObjMerge3KeyOptions {
-    /** 비교할 하위 키 목록 (equal의 includes와 동일) */
-    keys?: string[];
-    /** 비교에서 제외할 하위 키 목록 */
-    excludes?: string[];
-    /** 배열 순서 무시 여부 */
-    ignoreArrayIndex?: boolean;
+  /** 비교할 하위 키 목록 (equal의 includes와 동일) */
+  keys?: string[];
+  /** 비교에서 제외할 하위 키 목록 */
+  excludes?: string[];
+  /** 배열 순서 무시 여부 */
+  ignoreArrayIndex?: boolean;
 }
 /**
  * 3-way 병합
@@ -105,9 +105,18 @@ export interface ObjMerge3KeyOptions {
  * );
  * // conflict: false, result: { a: 2, b: 2 }
  */
-export declare function objMerge3<S extends Record<string, unknown>, O extends Record<string, unknown>, T extends Record<string, unknown>>(source: S, origin: O, target: T, optionsObj?: Record<string, ObjMerge3KeyOptions>): {
-    conflict: boolean;
-    result: O & S & T;
+export declare function objMerge3<
+  S extends Record<string, unknown>,
+  O extends Record<string, unknown>,
+  T extends Record<string, unknown>,
+>(
+  source: S,
+  origin: O,
+  target: T,
+  optionsObj?: Record<string, ObjMerge3KeyOptions>,
+): {
+  conflict: boolean;
+  result: O & S & T;
 };
 /**
  * 객체에서 특정 키들을 제외
@@ -119,7 +128,10 @@ export declare function objMerge3<S extends Record<string, unknown>, O extends R
  * objOmit(user, ["email"]);
  * // { name: "Alice", age: 30 }
  */
-export declare function objOmit<T extends Record<string, unknown>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K>;
+export declare function objOmit<T extends Record<string, unknown>, K extends keyof T>(
+  item: T,
+  omitKeys: K[],
+): Omit<T, K>;
 /**
  * 조건에 맞는 키들을 제외
  * @param item 원본 객체
@@ -130,7 +142,10 @@ export declare function objOmit<T extends Record<string, unknown>, K extends key
  * objOmitByFilter(data, (key) => key.startsWith("_"));
  * // { name: "Alice", age: 30 }
  */
-export declare function objOmitByFilter<T extends Record<string, unknown>>(item: T, omitKeyFn: (key: keyof T) => boolean): T;
+export declare function objOmitByFilter<T extends Record<string, unknown>>(
+  item: T,
+  omitKeyFn: (key: keyof T) => boolean,
+): T;
 /**
  * 객체에서 특정 키들만 선택
  * @param item 원본 객체
@@ -157,7 +172,12 @@ export declare function objGetChainValue(obj: unknown, chain: string): unknown;
  * @throws ArgumentError depth가 1 미만일 경우
  * @example objGetChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
  */
-export declare function objGetChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number, optional: true): T[K] | undefined;
+export declare function objGetChainValueByDepth<T, K extends keyof T>(
+  obj: T,
+  key: K,
+  depth: number,
+  optional: true,
+): T[K] | undefined;
 export declare function objGetChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
 /**
  * 체인 경로로 값 설정
@@ -197,16 +217,16 @@ export declare function objUnflatten(flatObj: Record<string, unknown>): Record<s
  * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
 export type ObjUndefToOptional<T> = {
-    [K in keyof T as undefined extends T[K] ? K : never]?: T[K];
+  [K in keyof T as undefined extends T[K] ? K : never]?: T[K];
 } & {
-    [K in keyof T as undefined extends T[K] ? never : K]: T[K];
+  [K in keyof T as undefined extends T[K] ? never : K]: T[K];
 };
 /**
  * optional 프로퍼티를 required + undefined 유니온으로 변환
  * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
 export type ObjOptionalToUndef<T> = {
-    [K in keyof T]-?: {} extends Pick<T, K> ? T[K] | undefined : T[K];
+  [K in keyof T]-?: {} extends Pick<T, K> ? T[K] | undefined : T[K];
 };
 /**
  * Object.keys의 타입 안전한 버전
@@ -225,11 +245,13 @@ export declare function objEntries<T extends object>(obj: T): ObjEntries<T>;
  * @param entries [키, 값] 튜플 배열
  * @returns 생성된 객체
  */
-export declare function objFromEntries<T extends [string, unknown]>(entries: T[]): {
-    [K in T[0]]: T[1];
+export declare function objFromEntries<T extends [string, unknown]>(
+  entries: T[],
+): {
+  [K in T[0]]: T[1];
 };
 type ObjEntries<T> = {
-    [K in keyof T]: [K, T[K]];
+  [K in keyof T]: [K, T[K]];
 }[keyof T][];
 /**
  * 객체의 각 엔트리를 변환하여 새 객체 반환
@@ -247,6 +269,9 @@ type ObjEntries<T> = {
  * objMap(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
  * // { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
  */
-export declare function objMap<T extends object, NK extends string, NV>(obj: T, fn: (key: keyof T, value: T[keyof T]) => [NK | null, NV]): Record<NK | Extract<keyof T, string>, NV>;
+export declare function objMap<T extends object, NK extends string, NV>(
+  obj: T,
+  fn: (key: keyof T, value: T[keyof T]) => [NK | null, NV],
+): Record<NK | Extract<keyof T, string>, NV>;
 export {};
 //# sourceMappingURL=obj.d.ts.map

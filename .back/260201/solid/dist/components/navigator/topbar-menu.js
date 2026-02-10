@@ -36,41 +36,57 @@ const TopbarMenu = (props) => {
       closeDropdown();
     }
   };
-  return /* @__PURE__ */ React.createElement("nav", { ...rest, class: [topbarMenu, local.class].filterExists().join(" ") }, /* @__PURE__ */ React.createElement(For, { each: local.menus }, (menu) => /* @__PURE__ */ React.createElement(
-    TopbarMenuDropdown,
-    {
-      menu,
-      isSelected,
-      onMenuClick: handleMenuClick
-    }
-  )));
+  return /* @__PURE__ */ React.createElement(
+    "nav",
+    { ...rest, class: [topbarMenu, local.class].filterExists().join(" ") },
+    /* @__PURE__ */ React.createElement(For, { each: local.menus }, (menu) =>
+      /* @__PURE__ */ React.createElement(TopbarMenuDropdown, {
+        menu,
+        isSelected,
+        onMenuClick: handleMenuClick,
+      }),
+    ),
+  );
 };
 const TopbarMenuDropdown = (props) => {
   const [open, setOpen] = createSignal(false);
-  return /* @__PURE__ */ React.createElement(Dropdown, { open: open(), onOpenChange: setOpen }, /* @__PURE__ */ React.createElement(TopbarMenuTrigger, { menu: props.menu }), /* @__PURE__ */ React.createElement(
-    TopbarMenuPopup,
-    {
+  return /* @__PURE__ */ React.createElement(
+    Dropdown,
+    { open: open(), onOpenChange: setOpen },
+    /* @__PURE__ */ React.createElement(TopbarMenuTrigger, { menu: props.menu }),
+    /* @__PURE__ */ React.createElement(TopbarMenuPopup, {
       menus: props.menu.children ?? [],
       isSelected: props.isSelected,
-      onMenuClick: props.onMenuClick
-    }
-  ));
+      onMenuClick: props.onMenuClick,
+    }),
+  );
 };
 const TopbarMenuTrigger = (props) => {
-  return /* @__PURE__ */ React.createElement(Button, { link: true }, /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon }, (icon) => icon()({ size: 18 })), props.menu.title, /* @__PURE__ */ React.createElement(IconChevronDown, { size: 16 }));
+  return /* @__PURE__ */ React.createElement(
+    Button,
+    { link: true },
+    /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon }, (icon) => icon()({ size: 18 })),
+    props.menu.title,
+    /* @__PURE__ */ React.createElement(IconChevronDown, { size: 16 }),
+  );
 };
 const TopbarMenuPopup = (props) => {
   const dropdown = useDropdown();
-  return /* @__PURE__ */ React.createElement(DropdownPopup, null, /* @__PURE__ */ React.createElement(List, { inset: true }, /* @__PURE__ */ React.createElement(
-    MenuItemRenderer,
-    {
-      menus: props.menus,
-      depth: 0,
-      isSelected: props.isSelected,
-      onMenuClick: props.onMenuClick,
-      closeDropdown: () => dropdown == null ? void 0 : dropdown.close()
-    }
-  )));
+  return /* @__PURE__ */ React.createElement(
+    DropdownPopup,
+    null,
+    /* @__PURE__ */ React.createElement(
+      List,
+      { inset: true },
+      /* @__PURE__ */ React.createElement(MenuItemRenderer, {
+        menus: props.menus,
+        depth: 0,
+        isSelected: props.isSelected,
+        onMenuClick: props.onMenuClick,
+        closeDropdown: () => (dropdown == null ? void 0 : dropdown.close()),
+      }),
+    ),
+  );
 };
 const MenuItemRenderer = (props) => {
   return /* @__PURE__ */ React.createElement(For, { each: props.menus }, (menu) => {
@@ -82,24 +98,27 @@ const MenuItemRenderer = (props) => {
         selected: props.isSelected(menu),
         style: { "text-indent": `${props.depth > 0 ? (props.depth + 1) * 0.5 : 0}rem` },
         class: atoms({ gap: "xs" }),
-        onClick: (e) => props.onMenuClick(menu, e, props.closeDropdown)
+        onClick: (e) => props.onMenuClick(menu, e, props.closeDropdown),
       },
       /* @__PURE__ */ React.createElement(Show, { when: menu.icon }, (icon) => icon()({ size: 16 })),
       /* @__PURE__ */ React.createElement("span", null, menu.title),
-      /* @__PURE__ */ React.createElement(Show, { when: (_a = menu.children) == null ? void 0 : _a.length }, /* @__PURE__ */ React.createElement(List, { inset: true, class: topbarMenuNestedList }, /* @__PURE__ */ React.createElement(
-        MenuItemRenderer,
-        {
-          menus: menu.children,
-          depth: props.depth + 1,
-          isSelected: props.isSelected,
-          onMenuClick: props.onMenuClick,
-          closeDropdown: props.closeDropdown
-        }
-      )))
+      /* @__PURE__ */ React.createElement(
+        Show,
+        { when: (_a = menu.children) == null ? void 0 : _a.length },
+        /* @__PURE__ */ React.createElement(
+          List,
+          { inset: true, class: topbarMenuNestedList },
+          /* @__PURE__ */ React.createElement(MenuItemRenderer, {
+            menus: menu.children,
+            depth: props.depth + 1,
+            isSelected: props.isSelected,
+            onMenuClick: props.onMenuClick,
+            closeDropdown: props.closeDropdown,
+          }),
+        ),
+      ),
     );
   });
 };
-export {
-  TopbarMenu
-};
+export { TopbarMenu };
 //# sourceMappingURL=topbar-menu.js.map

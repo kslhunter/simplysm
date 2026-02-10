@@ -8,23 +8,23 @@ import { type Accessor, type JSX } from "solid-js";
  * @property close - 이 Dropdown을 닫는 함수
  */
 export interface DropdownContextValue {
-    id: string;
-    parentId?: string;
-    open: Accessor<boolean>;
-    close: () => void;
+  id: string;
+  parentId?: string;
+  open: Accessor<boolean>;
+  close: () => void;
 }
 /**
  * Dropdown 내부에서 사용하는 확장된 Context 값
  */
 export interface DropdownInternalContextValue extends DropdownContextValue {
-    registerChild: (childId: string) => void;
-    unregisterChild: (childId: string) => void;
-    isDescendant: (targetId: string) => boolean;
-    placement: Accessor<"top" | "bottom">;
-    isMobile: Accessor<boolean>;
-    popupStyle: Accessor<JSX.CSSProperties>;
-    /** popup에서 trigger로 포커스를 이동시키는 함수 (ArrowUp 키 처리용) */
-    focusTrigger: () => void;
+  registerChild: (childId: string) => void;
+  unregisterChild: (childId: string) => void;
+  isDescendant: (targetId: string) => boolean;
+  placement: Accessor<"top" | "bottom">;
+  isMobile: Accessor<boolean>;
+  popupStyle: Accessor<JSX.CSSProperties>;
+  /** popup에서 trigger로 포커스를 이동시키는 함수 (ArrowUp 키 처리용) */
+  focusTrigger: () => void;
 }
 export declare const DropdownContext: import("solid-js").Context<DropdownInternalContextValue | undefined>;
 /**

@@ -7,15 +7,11 @@ function useDropdown() {
     id: ctx.id,
     parentId: ctx.parentId,
     open: ctx.open,
-    close: ctx.close
+    close: ctx.close,
   };
 }
 function useDropdownInternal() {
   return useContext(DropdownContext);
 }
-export {
-  DropdownContext,
-  useDropdown,
-  useDropdownInternal
-};
+export { DropdownContext, useDropdown, useDropdownInternal };
 //# sourceMappingURL=dropdown-context.js.map

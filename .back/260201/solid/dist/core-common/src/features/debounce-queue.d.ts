@@ -21,33 +21,33 @@
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";
 interface DebounceQueueEvents {
-    error: SdError;
+  error: SdError;
 }
 export declare class DebounceQueue extends EventEmitter<DebounceQueueEvents> {
-    private readonly _delay?;
-    private static readonly _logger;
-    private _pendingFn;
-    private _isRunning;
-    private _isDisposed;
-    private _timer;
-    /**
-     * @param _delay 디바운스 지연 시간 (밀리초). 생략 시 즉시 실행 (다음 이벤트 루프)
-     */
-    constructor(_delay?: number | undefined);
-    /**
-     * 대기 중인 작업과 타이머 정리
-     */
-    dispose(): void;
-    /**
-     * using 문 지원
-     */
-    [Symbol.dispose](): void;
-    /**
-     * 함수를 큐에 추가
-     * 이전에 추가된 함수가 있으면 대체됨
-     */
-    run(fn: () => void | Promise<void>): void;
-    private _processLast;
+  private readonly _delay?;
+  private static readonly _logger;
+  private _pendingFn;
+  private _isRunning;
+  private _isDisposed;
+  private _timer;
+  /**
+   * @param _delay 디바운스 지연 시간 (밀리초). 생략 시 즉시 실행 (다음 이벤트 루프)
+   */
+  constructor(_delay?: number | undefined);
+  /**
+   * 대기 중인 작업과 타이머 정리
+   */
+  dispose(): void;
+  /**
+   * using 문 지원
+   */
+  [Symbol.dispose](): void;
+  /**
+   * 함수를 큐에 추가
+   * 이전에 추가된 함수가 있으면 대체됨
+   */
+  run(fn: () => void | Promise<void>): void;
+  private _processLast;
 }
 export {};
 //# sourceMappingURL=debounce-queue.d.ts.map

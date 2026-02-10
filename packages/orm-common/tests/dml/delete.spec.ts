@@ -30,7 +30,8 @@ describe("DELETE - 기본", () => {
   describe("단순 DELETE", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getDeleteQueryDef();
 
@@ -58,7 +59,8 @@ describe("DELETE - 기본", () => {
   describe("여러 조건으로 DELETE", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.departmentId, 1), expr.null(e.managerId)])
       .getDeleteQueryDef();
 
@@ -90,7 +92,8 @@ describe("DELETE - 기본", () => {
   describe("output 컬럼 지정", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.id, 1)])
       .getDeleteQueryDef(["id", "name"]);
 
@@ -123,7 +126,8 @@ describe("DELETE - 기본", () => {
   describe("TOP으로 삭제 개수 제한", () => {
     const db = new TestDbContext();
 
-    const def = db.employee()
+    const def = db
+      .employee()
       .where((e) => [expr.eq(e.departmentId, 1)])
       .top(100)
       .getDeleteQueryDef();

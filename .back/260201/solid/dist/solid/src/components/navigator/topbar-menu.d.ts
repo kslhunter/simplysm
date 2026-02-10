@@ -11,11 +11,11 @@ import type { IconProps } from "@tabler/icons-solidjs";
  * @property children - 중첩 메뉴
  */
 export interface TopbarMenuItem {
-    title: string;
-    path?: string;
-    url?: string;
-    icon?: Component<IconProps>;
-    children?: TopbarMenuItem[];
+  title: string;
+  path?: string;
+  url?: string;
+  icon?: Component<IconProps>;
+  children?: TopbarMenuItem[];
 }
 /**
  * TopbarMenu 컴포넌트의 props
@@ -24,8 +24,8 @@ export interface TopbarMenuItem {
  * @property isSelectedFn - 메뉴 선택 상태 판별 함수 (기본값: 현재 경로와 path 비교)
  */
 export interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
-    menus: TopbarMenuItem[];
-    isSelectedFn?: (menu: TopbarMenuItem) => boolean;
+  menus: TopbarMenuItem[];
+  isSelectedFn?: (menu: TopbarMenuItem) => boolean;
 }
 /**
  * 탑바 드롭다운 메뉴 컴포넌트

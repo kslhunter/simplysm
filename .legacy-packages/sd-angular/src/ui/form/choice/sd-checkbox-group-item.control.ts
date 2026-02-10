@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  inject,
-  input,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
 import { SdCheckboxGroupControl } from "./sd-checkbox-group.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";

@@ -161,15 +161,7 @@ describe("Button", () => {
       // 이 테스트는 컴파일 타임에 타입 검증을 수행
       // 잘못된 타입은 TypeScript 컴파일 에러 발생
       render(() => (
-        <Button
-          theme="primary"
-          size="lg"
-          link={false}
-          inset={false}
-          disabled={false}
-          type="submit"
-          onClick={() => {}}
-        >
+        <Button theme="primary" size="lg" link={false} inset={false} disabled={false} type="submit" onClick={() => {}}>
           타입 검증
         </Button>
       ));

@@ -12,9 +12,7 @@ export interface ISharedSignal<T extends ISharedDataBase<string | number>> exten
 }
 
 @Injectable({ providedIn: "root" })
-export abstract class SdSharedDataProvider<
-  T extends Record<string, ISharedDataBase<string | number>>,
-> {
+export abstract class SdSharedDataProvider<T extends Record<string, ISharedDataBase<string | number>>> {
   private readonly _sdServiceFactory = inject(SdServiceClientFactoryProvider);
 
   private readonly _infoMap = new Map<keyof T & string, ISharedDataInnerInfo<any>>();
@@ -58,18 +56,16 @@ export abstract class SdSharedDataProvider<
 
     //-- listener
     if (info.listenerKey == null) {
-      info.listenerKey = void this._sdServiceFactory
-        .get(info.getter.serviceKey)
-        .addEventListenerAsync(
-          SdSharedDataChangeEvent,
-          {
-            name,
-            filter: info.getter.filter,
-          },
-          async (changeKeys) => {
-            await this._loadDataAsync(name, changeKeys);
-          },
-        );
+      info.listenerKey = void this._sdServiceFactory.get(info.getter.serviceKey).addEventListenerAsync(
+        SdSharedDataChangeEvent,
+        {
+          name,
+          filter: info.getter.filter,
+        },
+        async (changeKeys) => {
+          await this._loadDataAsync(name, changeKeys);
+        },
+      );
     }
 
     //-- data
@@ -85,10 +81,7 @@ export abstract class SdSharedDataProvider<
     return info.signal as any;
   }
 
-  private async _loadDataAsync<K extends keyof T & string>(
-    name: K,
-    changeKeys?: T[K]["__valueKey"][],
-  ) {
+  private async _loadDataAsync<K extends keyof T & string>(name: K, changeKeys?: T[K]["__valueKey"][]) {
     this.loadingCount++;
     try {
       const info = this._infoMap.get(name);
@@ -120,10 +113,7 @@ export abstract class SdSharedDataProvider<
 
   private _ordering<TT extends T[keyof T]>(
     data: TT[],
-    orderByList: [
-      (data: TT) => string | number | DateOnly | DateTime | Time | undefined,
-      "asc" | "desc",
-    ][],
+    orderByList: [(data: TT) => string | number | DateOnly | DateTime | Time | undefined, "asc" | "desc"][],
   ): TT[] {
     let result = [...data];
     for (const orderBy of orderByList.reverse()) {

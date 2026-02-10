@@ -29,7 +29,10 @@ describe("View - 기본", () => {
 
   describe("View에서 SELECT + WHERE", () => {
     const db = new TestDbContext();
-    const def = db.activeUsers().where((u) => [expr.gt(u.age, 20)]).getSelectQueryDef();
+    const def = db
+      .activeUsers()
+      .where((u) => [expr.gt(u.age, 20)])
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -54,7 +57,8 @@ describe("View - 기본", () => {
 
   describe("View에서 SELECT + 컬럼 선택", () => {
     const db = new TestDbContext();
-    const def = db.activeUsers()
+    const def = db
+      .activeUsers()
       .select((u) => ({
         id: u.id,
         name: u.name,
@@ -81,7 +85,10 @@ describe("View - 기본", () => {
 
   describe("View에서 SELECT + ORDER BY", () => {
     const db = new TestDbContext();
-    const def = db.activeUsers().orderBy((u) => u.name, "ASC").getSelectQueryDef();
+    const def = db
+      .activeUsers()
+      .orderBy((u) => u.name, "ASC")
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -100,7 +107,11 @@ describe("View - 기본", () => {
 
   describe("View에서 SELECT + ORDER BY + LIMIT", () => {
     const db = new TestDbContext();
-    const def = db.activeUsers().orderBy((u) => u.id).limit(0, 10).getSelectQueryDef();
+    const def = db
+      .activeUsers()
+      .orderBy((u) => u.id)
+      .limit(0, 10)
+      .getSelectQueryDef();
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -140,7 +151,8 @@ describe("View - SELECT가 있는 뷰", () => {
 
   describe("UserSummaryView에서 특정 컬럼 선택", () => {
     const db = new TestDbContext();
-    const def = db.userSummary()
+    const def = db
+      .userSummary()
       .select((u) => ({
         userName: u.name,
       }))

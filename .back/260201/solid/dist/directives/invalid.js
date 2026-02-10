@@ -28,8 +28,5 @@ const invalid = (el, accessor) => {
   });
 };
 var invalid_default = invalid;
-export {
-  invalid_default as default,
-  invalid
-};
+export { invalid_default as default, invalid };
 //# sourceMappingURL=invalid.js.map

@@ -179,10 +179,7 @@ describe("JsonConvert", () => {
             },
           },
         },
-        dates: [
-          new Date("2024-01-01T00:00:00.000Z"),
-          new Date("2024-12-31T23:59:59.000Z"),
-        ],
+        dates: [new Date("2024-01-01T00:00:00.000Z"), new Date("2024-12-31T23:59:59.000Z")],
       };
 
       const json = stringify(obj);

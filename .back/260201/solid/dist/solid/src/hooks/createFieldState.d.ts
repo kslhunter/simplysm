@@ -3,32 +3,32 @@
  * @typeParam T - 필드 값의 타입
  */
 export interface FieldStateOptions<T> {
-    /**
-     * 외부에서 전달받은 value (getter로 접근하여 반응성 유지)
-     */
-    value: () => T | undefined;
-    /**
-     * onChange 콜백 (있으면 controlled, 없으면 uncontrolled)
-     */
-    onChange: () => ((value: T | undefined) => void) | undefined;
+  /**
+   * 외부에서 전달받은 value (getter로 접근하여 반응성 유지)
+   */
+  value: () => T | undefined;
+  /**
+   * onChange 콜백 (있으면 controlled, 없으면 uncontrolled)
+   */
+  onChange: () => ((value: T | undefined) => void) | undefined;
 }
 /**
  * createFieldState 반환값
  * @typeParam T - 필드 값의 타입
  */
 export interface FieldState<T> {
-    /**
-     * 현재 값 (controlled면 외부 value, uncontrolled면 내부 상태)
-     */
-    currentValue: () => T | undefined;
-    /**
-     * 값 설정 (controlled면 onChange 호출, uncontrolled면 내부 상태 변경)
-     */
-    setValue: (value: T | undefined) => void;
-    /**
-     * controlled 모드 여부
-     */
-    isControlled: () => boolean;
+  /**
+   * 현재 값 (controlled면 외부 value, uncontrolled면 내부 상태)
+   */
+  currentValue: () => T | undefined;
+  /**
+   * 값 설정 (controlled면 onChange 호출, uncontrolled면 내부 상태 변경)
+   */
+  setValue: (value: T | undefined) => void;
+  /**
+   * controlled 모드 여부
+   */
+  isControlled: () => boolean;
 }
 /**
  * Field 컴포넌트의 controlled/uncontrolled 상태를 관리하는 훅

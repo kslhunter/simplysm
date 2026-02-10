@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  contentChild,
-  input,
-  TemplateRef,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, contentChild, input, TemplateRef, ViewEncapsulation } from "@angular/core";
 import { DateOnly } from "@simplysm/sd-core-common";
 import { FormatPipe } from "../../core/pipes/format.pipe";
 import {
@@ -134,10 +127,9 @@ export class SdCalendarControl<T> {
 
   yearMonth = input(new DateOnly().setDay(1));
 
-  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
-    SdItemOfTemplateDirective,
-    { read: TemplateRef },
-  );
+  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
+    read: TemplateRef,
+  });
 
   weekStartDay = input(0);
   minDaysInFirstWeek = input(1);
@@ -150,10 +142,7 @@ export class SdCalendarControl<T> {
       items: T[];
     }[][] = [];
 
-    const firstDate = this.yearMonth().getWeekSeqStartDate(
-      this.weekStartDay(),
-      this.minDaysInFirstWeek(),
-    );
+    const firstDate = this.yearMonth().getWeekSeqStartDate(this.weekStartDay(), this.minDaysInFirstWeek());
     for (let r = 0; r < 6; r++) {
       const row: {
         date: DateOnly;
@@ -163,9 +152,7 @@ export class SdCalendarControl<T> {
         const date = firstDate.addDays(r * 7 + c);
         row.push({
           date,
-          items: this.items().filter(
-            (item, index1) => this.getItemDateFn()(item, index1).tick === date.tick,
-          ),
+          items: this.items().filter((item, index1) => this.getItemDateFn()(item, index1).tick === date.tick),
         });
       }
       result.push(row);

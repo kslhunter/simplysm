@@ -31,10 +31,7 @@ const suffixTable = {
  * getSuffix("사과", "을") // "를"
  * getSuffix("책", "이") // "이"
  */
-export function strGetSuffix(
-  text: string,
-  type: "을" | "은" | "이" | "와" | "랑" | "로" | "라",
-): string {
+export function strGetSuffix(text: string, type: "을" | "은" | "이" | "와" | "랑" | "로" | "라"): string {
   const table = suffixTable;
 
   // 빈 문자열 또는 마지막 글자가 한글이 아닌 경우 받침 없음으로 처리
@@ -166,9 +163,7 @@ export function strReplaceFullWidth(str: string): string {
  * @example "hello.world" → "HelloWorld"
  */
 export function strToPascalCase(str: string): string {
-  return str
-    .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
-    .replace(/^[a-z]/, (m) => m.toUpperCase());
+  return str.replace(/[-._][a-z]/g, (m) => m[1].toUpperCase()).replace(/^[a-z]/, (m) => m.toUpperCase());
 }
 
 /**
@@ -178,9 +173,7 @@ export function strToPascalCase(str: string): string {
  * @example "HelloWorld" → "helloWorld"
  */
 export function strToCamelCase(str: string): string {
-  return str
-    .replace(/[-._][a-z]/g, (m) => m[1].toUpperCase())
-    .replace(/^[A-Z]/, (m) => m.toLowerCase());
+  return str.replace(/[-._][a-z]/g, (m) => m[1].toUpperCase()).replace(/^[A-Z]/, (m) => m.toLowerCase());
 }
 
 /**
@@ -212,9 +205,7 @@ export function strToSnakeCase(str: string): string {
 }
 
 function toCaseWithSeparator(str: string, separator: string): string {
-  return str
-    .replace(/^[A-Z]/, (m) => m.toLowerCase())
-    .replace(/[-_]?[A-Z]/g, (m) => separator + m.toLowerCase());
+  return str.replace(/^[A-Z]/, (m) => m.toLowerCase()).replace(/[-_]?[A-Z]/g, (m) => separator + m.toLowerCase());
 }
 
 //#endregion
