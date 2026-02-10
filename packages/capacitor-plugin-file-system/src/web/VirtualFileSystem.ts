@@ -1,4 +1,5 @@
 import type { IFileInfo } from "../IFileSystemPlugin";
+import { IndexedDbStore } from "./IndexedDbStore";
 
 interface FsEntry {
   path: string;
@@ -8,72 +9,22 @@ interface FsEntry {
 
 export class VirtualFileSystem {
   private readonly _STORE_NAME = "entries";
-  private readonly _DB_VERSION = 1;
+  private readonly _db: IndexedDbStore;
 
-  constructor(private readonly _dbName: string) {}
-
-  private async _openDb(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(this._dbName, this._DB_VERSION);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(this._STORE_NAME)) {
-          db.createObjectStore(this._STORE_NAME, { keyPath: "path" });
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-      req.onblocked = () => reject(new Error("Database blocked by another connection"));
-    });
-  }
-
-  private async _withStore<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => Promise<T>): Promise<T> {
-    const db = await this._openDb();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this._STORE_NAME, mode);
-      const store = tx.objectStore(this._STORE_NAME);
-      let result: T;
-      Promise.resolve(fn(store))
-        .then((r) => {
-          result = r;
-        })
-        .catch((err) => {
-          db.close();
-          reject(err);
-        });
-      tx.oncomplete = () => {
-        db.close();
-        resolve(result);
-      };
-      tx.onerror = () => {
-        db.close();
-        reject(tx.error);
-      };
-    });
+  constructor(dbName: string) {
+    this._db = new IndexedDbStore(dbName, 1, [{ name: this._STORE_NAME, keyPath: "path" }]);
   }
 
   async getEntry(filePath: string): Promise<FsEntry | undefined> {
-    return this._withStore("readonly", async (store) => {
-      return new Promise((resolve, reject) => {
-        const req = store.get(filePath);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    });
+    return this._db.get<FsEntry>(this._STORE_NAME, filePath);
   }
 
   async putEntry(entry: FsEntry): Promise<void> {
-    return this._withStore("readwrite", async (store) => {
-      return new Promise((resolve, reject) => {
-        const req = store.put(entry);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
-      });
-    });
+    return this._db.put(this._STORE_NAME, entry);
   }
 
   async deleteByPrefix(pathPrefix: string): Promise<boolean> {
-    return this._withStore("readwrite", async (store) => {
+    return this._db.withStore(this._STORE_NAME, "readwrite", async (store) => {
       return new Promise((resolve, reject) => {
         const req = store.openCursor();
         let found = false;
@@ -105,7 +56,7 @@ export class VirtualFileSystem {
    */
   async listChildren(dirPath: string): Promise<IFileInfo[]> {
     const prefix = dirPath === "/" ? "/" : dirPath + "/";
-    return this._withStore("readonly", async (store) => {
+    return this._db.withStore(this._STORE_NAME, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
         const req = store.openCursor();
         const map = new Map<string, boolean>();
