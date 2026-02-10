@@ -369,11 +369,19 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     e.preventDefault();
   };
 
-  // 빈 영역 drop
+  // 빈 영역 또는 placeholder drop
   const handleLaneDrop = (e: DragEvent) => {
     if (!boardCtx.dragCard()) return;
     e.preventDefault();
-    boardCtx.onDropTo(local.value, undefined, undefined);
+
+    const current = dropTarget();
+    if (current) {
+      // placeholder나 카드 사이 gap에 drop된 경우 — dropTarget 위치 사용
+      boardCtx.onDropTo(local.value, current.value, current.position);
+    } else {
+      // 빈 레인에 drop된 경우 — 끝에 추가
+      boardCtx.onDropTo(local.value, undefined, undefined);
+    }
   };
 
   const laneContextValue: KanbanLaneContextValue = {
