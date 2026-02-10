@@ -53,7 +53,7 @@ describe("MysqlExprRenderer.escapeString", () => {
   it("백슬래시와 따옴표 조합을 방어해야 함", () => {
     const malicious = "\\'";
     const result = renderer.escapeString(malicious);
-    expect(result).toBe("\\\\'");
+    expect(result).toBe("\\\\''");
   });
 
   it("NULL 바이트와 SQL 주석 조합을 방어해야 함", () => {
