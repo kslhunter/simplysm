@@ -98,7 +98,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
     const position = e.clientY < midY ? "before" : "after";
 
     const current = laneCtx.dropTarget();
-    if (current?.element === hostRef && current?.position === position) {
+    if (current?.element === hostRef && current.position === position) {
       return;
     }
 
