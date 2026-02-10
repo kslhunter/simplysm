@@ -32,6 +32,7 @@ public class UsbStoragePlugin extends Plugin {
 
     private static final String TAG = "UsbStoragePlugin";
     private static final String ACTION_USB_PERMISSION = "kr.co.simplysm.capacitor.usbstorage.USB_PERMISSION";
+    private static final long MAX_FILE_SIZE = 100L * 1024 * 1024; // 100MB
 
     @PluginMethod
     public void getDevices(PluginCall call) {
@@ -158,31 +159,34 @@ public class UsbStoragePlugin extends Plugin {
 
             UsbManager usbManager = (UsbManager) getContext().getSystemService(Context.USB_SERVICE);
             if (!usbManager.hasPermission(device.getUsbDevice())) {
-                call.reject("USB 장치에 대한 접근 권한이 없습니다.");
+                call.reject("No permission for this USB device");
                 return;
             }
 
             device.init();
+            try {
+                FileSystem fs = device.getPartitions().get(0).getFileSystem();
+                UsbFile root = fs.getRootDirectory();
+                UsbFile dir = root.search(path);
 
-            FileSystem fs = device.getPartitions().get(0).getFileSystem();
-            UsbFile root = fs.getRootDirectory();
-            UsbFile dir = root.search(path);
+                if (dir == null || !dir.isDirectory()) {
+                    call.reject("Directory not found: " + path);
+                    return;
+                }
 
-            if (dir == null || !dir.isDirectory()) {
-                call.reject("Directory not found: " + path);
-                return;
+                UsbFile[] files = dir.listFiles();
+
+                JSArray result = new JSArray();
+                for (UsbFile file : files) {
+                    result.put(file.getName());
+                }
+
+                JSObject ret = new JSObject();
+                ret.put("files", result);
+                call.resolve(ret);
+            } finally {
+                device.close();
             }
-
-            UsbFile[] files = dir.listFiles();
-
-            JSArray result = new JSArray();
-            for (UsbFile file : files) {
-                result.put(file.getName());
-            }
-
-            JSObject ret = new JSObject();
-            ret.put("files", result);
-            call.resolve(ret);
         } catch (Exception e) {
             Log.e(TAG, "readdir failed", e);
             call.reject("readdir failed: " + e.getMessage());
@@ -205,43 +209,51 @@ public class UsbStoragePlugin extends Plugin {
 
             UsbManager usbManager = (UsbManager) getContext().getSystemService(Context.USB_SERVICE);
             if (!usbManager.hasPermission(device.getUsbDevice())) {
-                call.reject("USB 장치에 대한 접근 권한이 없습니다.");
+                call.reject("No permission for this USB device");
                 return;
             }
 
             device.init();
+            try {
+                FileSystem fs = device.getPartitions().get(0).getFileSystem();
+                UsbFile root = fs.getRootDirectory();
+                UsbFile usbFile = root.search(path);
 
-            FileSystem fs = device.getPartitions().get(0).getFileSystem();
-            UsbFile root = fs.getRootDirectory();
-            UsbFile usbFile = root.search(path);
+                if (usbFile == null) {
+                    JSObject ret = new JSObject();
+                    ret.put("data", (String) null);
+                    call.resolve(ret);
+                    return;
+                }
 
-            if (usbFile == null) {
+                if (usbFile.isDirectory()) {
+                    call.reject("Path is a directory: " + path);
+                    return;
+                }
+
+                long fileLength = usbFile.getLength();
+                if (fileLength > MAX_FILE_SIZE) {
+                    call.reject("File too large: " + fileLength + " bytes (max " + MAX_FILE_SIZE + ")");
+                    return;
+                }
+                ByteBuffer buffer = ByteBuffer.allocate((int) fileLength);
+
+                UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
+                byte[] tmpBuf = new byte[fs.getChunkSize()];
+                int count;
+                while ((count = inputStream.read(tmpBuf)) != -1) {
+                    buffer.put(tmpBuf, 0, count);
+                }
+                inputStream.close();
+
+                String base64Data = Base64.encodeToString(buffer.array(), Base64.NO_WRAP);
+
                 JSObject ret = new JSObject();
-                ret.put("data", (String) null);
+                ret.put("data", base64Data);
                 call.resolve(ret);
-                return;
+            } finally {
+                device.close();
             }
-
-            if (usbFile.isDirectory()) {
-                call.reject("해당 경로는 폴더입니다.");
-                return;
-            }
-
-            ByteBuffer buffer = ByteBuffer.allocate((int) usbFile.getLength());
-
-            UsbFileInputStream inputStream = new UsbFileInputStream(usbFile);
-            byte[] tmpBuf = new byte[fs.getChunkSize()];
-            int count;
-            while ((count = inputStream.read(tmpBuf)) != -1) {
-                buffer.put(tmpBuf, 0, count);
-            }
-            inputStream.close();
-
-            String base64Data = Base64.encodeToString(buffer.array(), Base64.NO_WRAP);
-
-            JSObject ret = new JSObject();
-            ret.put("data", base64Data);
-            call.resolve(ret);
         } catch (Exception e) {
             Log.e(TAG, "read failed", e);
             call.reject("read failed: " + e.getMessage());
@@ -256,7 +268,7 @@ public class UsbStoragePlugin extends Plugin {
         }).findFirst();
 
         if (!optDevice.isPresent()) {
-            throw new Exception("USB 장치를 찾을 수 없습니다.");
+            throw new Exception("USB device not found: vendorId=" + vendorId + ", productId=" + productId);
         }
         return optDevice.get();
     }
