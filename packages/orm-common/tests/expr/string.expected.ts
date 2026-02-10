@@ -203,7 +203,7 @@ export const likeEscape: ExpectedSql = {
   mysql: mysql`
     SELECT *
     FROM \`TestDb\`.\`User\` AS \`T1\`
-    WHERE \`T1\`.\`name\` LIKE '%\\%%' ESCAPE '\\\\'
+    WHERE \`T1\`.\`name\` LIKE '%\\\\%%' ESCAPE '\\\\'
   `,
   mssql: tsql`
     SELECT *
