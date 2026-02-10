@@ -80,7 +80,13 @@ export class MysqlExprRenderer extends ExprRendererBase {
 
   /** SQL 문자열 리터럴용 이스케이프 (따옴표 없이 반환) */
   escapeString(value: string): string {
-    return value.replace(/\\/g, "\\\\").replace(/'/g, "''");
+    return value
+      .replace(/\\/g, "\\\\") // 백슬래시 (최우선)
+      .replace(/'/g, "''") // 따옴표
+      .replace(/\0/g, "\\0") // NULL 바이트
+      .replace(/\n/g, "\\n") // 줄바꿈
+      .replace(/\r/g, "\\r") // 캐리지 리턴
+      .replace(/\t/g, "\\t"); // 탭
   }
 
   /** 값 이스케이프 */
