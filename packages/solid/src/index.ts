@@ -92,3 +92,15 @@ export { createPropSignal } from "./utils/createPropSignal";
 export { useRouterLink } from "./utils/useRouterLink";
 export { mergeStyles } from "./utils/mergeStyles";
 export { splitSlots } from "./utils/splitSlots";
+
+// app-structure
+export { createAppStructure } from "./utils/createAppStructure";
+export type {
+  AppStructureItem,
+  AppStructureGroupItem,
+  AppStructureLeafItem,
+  AppStructureSubPerm,
+  AppRoute,
+  AppFlatMenu,
+  AppStructure,
+} from "./utils/createAppStructure";
