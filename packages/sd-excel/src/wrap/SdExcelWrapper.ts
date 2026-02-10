@@ -80,6 +80,9 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
   async readAsync(
     file: Buffer | Blob,
     wsNameOrIndex: string | number = 0,
+    opt?: {
+      headerRowIndex?: number;
+    },
   ): Promise<TExcelValidateObjectRecord<VT>[]> {
     const wb = new SdExcelWorkbook(file);
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
@@ -89,6 +92,7 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
       typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
     const headers = Object.keys(defaultFieldConf).map((key) => defaultFieldConf[key].displayName);
     const wsdt = await ws.getDataTableAsync({
+      headerRowIndex: opt?.headerRowIndex,
       usableHeaderNameFn: (headerName) => headers.includes(headerName),
     });
 
