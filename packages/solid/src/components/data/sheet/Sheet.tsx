@@ -1057,7 +1057,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                             </div>
                           )}
                         </For>
-                        <Show when={flat.hasChildren} fallback={<div class="size-6" />}>
+                        <Show when={flat.hasChildren}>
                           <button type="button" class={expandToggleClass} onClick={() => toggleExpand(flat.item)}>
                             <Icon
                               icon={IconChevronDown}

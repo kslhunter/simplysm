@@ -1,13 +1,8 @@
-import { type Component, createMemo, createSignal, For, splitProps } from "solid-js";
 import type { JSX } from "solid-js";
-import clsx from "clsx";
+import { type Component, createEffect, createMemo, createSignal, For, on, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
-import {
-  tableBaseClass,
-  thClass,
-  thPermClass,
-} from "./PermissionTable.styles";
-import { PermissionTableRow } from "./PermissionTableRow";
+import { Sheet } from "../sheet/Sheet";
+import { CheckBox } from "../../form-control/checkbox/CheckBox";
 
 // --- 타입 ---
 
@@ -29,7 +24,7 @@ export interface PermissionTableProps<TModule = string> {
   style?: JSX.CSSProperties;
 }
 
-// --- 유틸리티 ---
+// --- 유틸리티 (테스트에서도 사용) ---
 
 /** 트리에서 모든 고유 perm 타입을 수집 */
 export function collectAllPerms<TModule>(items: PermissionItem<TModule>[]): string[] {
@@ -56,13 +51,10 @@ export function filterByModules<TModule>(
   const result: PermissionItem<TModule>[] = [];
 
   for (const item of items) {
-    // 이 아이템에 modules가 있는데 교차가 없으면 제외
     if (item.modules && !item.modules.some((m) => modules.includes(m))) {
       continue;
     }
-    // children도 재귀 필터
     const children = item.children ? filterByModules(item.children, modules) : undefined;
-    // children이 있었는데 전부 필터링되면 이 그룹도 제외
     if (item.children && (!children || children.length === 0) && !item.perms) {
       continue;
     }
@@ -86,7 +78,6 @@ export function changePermCheck<TModule>(
       const permIndex = target.perms.indexOf(perm);
 
       if (permIndex >= 0) {
-        // 기본 권한이 아닌 perm 체크 시, 기본 권한이 꺼져있으면 이 아이템만 건너뜀
         const basePerm = target.perms[0];
         const baseOff = permIndex > 0 && checked && !result[target.href + "/" + basePerm];
 
@@ -95,7 +86,6 @@ export function changePermCheck<TModule>(
         }
       }
 
-      // 기본 권한(perms[0]) 해제 시 나머지도 해제
       if (perm === target.perms[0] && !checked) {
         for (let i = 1; i < target.perms.length; i++) {
           result[target.href + "/" + target.perms[i]] = false;
@@ -103,7 +93,6 @@ export function changePermCheck<TModule>(
       }
     }
 
-    // cascading down — 항상 실행됨
     if (target.children) {
       for (const child of target.children) {
         apply(child);
@@ -115,68 +104,204 @@ export function changePermCheck<TModule>(
   return result;
 }
 
+// --- 내부 헬퍼 ---
+
+/** 모듈 필터에 의해 보이는지 확인 (객체 참조 유지) */
+function isItemVisible<TModule>(item: PermissionItem<TModule>, modules: TModule[] | undefined): boolean {
+  if (!modules || modules.length === 0) return true;
+  if (item.modules && !item.modules.some((m) => modules.includes(m))) return false;
+  if (!item.perms && item.children) {
+    return item.children.some((child) => isItemVisible(child, modules));
+  }
+  return true;
+}
+
+/** 보이는 아이템에서만 고유 perm 타입 수집 */
+function collectVisiblePerms<TModule>(items: PermissionItem<TModule>[], modules: TModule[] | undefined): string[] {
+  const set = new Set<string>();
+
+  function walk(list: PermissionItem<TModule>[]) {
+    for (const item of list) {
+      if (!isItemVisible(item, modules)) continue;
+      if (item.perms) {
+        for (const p of item.perms) set.add(p);
+      }
+      if (item.children) walk(item.children);
+    }
+  }
+
+  walk(items);
+  return [...set];
+}
+
+/** 그룹 노드의 체크 상태: 하위 중 하나라도 체크면 true */
+function isGroupPermChecked<TModule>(
+  item: PermissionItem<TModule>,
+  perm: string,
+  value: Record<string, boolean>,
+): boolean {
+  if (item.perms && item.href != null && item.href !== "") {
+    return value[item.href + "/" + perm] ?? false;
+  }
+  if (item.children) {
+    return item.children.some((child) => isGroupPermChecked(child, perm, value));
+  }
+  return false;
+}
+
+/** 하위에 특정 perm이 하나라도 있으면 true */
+function hasPermInTree<TModule>(item: PermissionItem<TModule>, perm: string): boolean {
+  if (item.perms?.includes(perm)) return true;
+  if (item.children) {
+    return item.children.some((child) => hasPermInTree(child, perm));
+  }
+  return false;
+}
+
+/** 기본 권한(perms[0])이 꺼져 있어서 비활성화해야 하는지 */
+function isPermDisabled<TModule>(item: PermissionItem<TModule>, perm: string, value: Record<string, boolean>): boolean {
+  if (!item.perms || item.href == null || item.href === "") return false;
+  const basePerm = item.perms[0];
+  if (perm === basePerm) return false;
+  return !(value[item.href + "/" + basePerm] ?? false);
+}
+
+/** 확장 가능한 모든 아이템 수집 (객체 참조 유지) */
+function collectExpandable<TModule>(
+  items: PermissionItem<TModule>[],
+  getChildren: (item: PermissionItem<TModule>) => PermissionItem<TModule>[] | undefined,
+): PermissionItem<TModule>[] {
+  const result: PermissionItem<TModule>[] = [];
+
+  function walk(list: PermissionItem<TModule>[]) {
+    for (const item of list) {
+      const children = getChildren(item);
+      if (children && children.length > 0) {
+        result.push(item);
+        walk(children);
+      }
+    }
+  }
+
+  walk(items);
+  return result;
+}
+
 // --- 컴포넌트 ---
 
 export const PermissionTable: Component<PermissionTableProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "items", "value", "onValueChange", "modules", "disabled", "class", "style",
-  ]);
+  const [local] = splitProps(props, ["items", "value", "onValueChange", "modules", "disabled", "class", "style"]);
 
-  const filteredItems = createMemo(() =>
-    filterByModules(local.items ?? [], local.modules),
-  );
+  // 보이는 최상위 아이템 (객체 참조 유지)
+  const visibleItems = createMemo(() => {
+    const items = local.items ?? [];
+    if (!local.modules || local.modules.length === 0) return items;
+    return items.filter((item) => isItemVisible(item, local.modules));
+  });
 
-  const allPerms = createMemo(() => collectAllPerms(filteredItems()));
+  // Sheet의 getChildren — 모듈 필터 적용, 객체 참조 유지
+  const getChildren = (item: PermissionItem): PermissionItem[] | undefined => {
+    if (!item.children || item.children.length === 0) return undefined;
+    const modules = local.modules;
+    if (!modules || modules.length === 0) return item.children;
+    const filtered = item.children.filter((child) => isItemVisible(child, modules));
+    return filtered.length > 0 ? filtered : undefined;
+  };
+
+  // 보이는 아이템의 모든 고유 perm 타입
+  const allPerms = createMemo(() => collectVisiblePerms(local.items ?? [], local.modules));
 
   const currentValue = createMemo(() => local.value ?? {});
 
-  const [collapsedSet, setCollapsedSet] = createSignal(new Set<string>());
+  // depth 맵 (cellClass에서 사용)
+  const depthMap = createMemo(() => {
+    const map = new Map<PermissionItem, number>();
 
-  const handleToggleCollapse = (key: string) => {
-    setCollapsedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
+    function walk(items: PermissionItem[], depth: number) {
+      for (const item of items) {
+        map.set(item, depth);
+        const children = getChildren(item);
+        if (children) walk(children, depth + 1);
       }
-      return next;
-    });
-  };
+    }
+
+    walk(visibleItems(), 0);
+    return map;
+  });
+
+  // 확장 상태 — 기본적으로 모두 펼침
+  const getAllExpandable = () => collectExpandable(visibleItems(), getChildren);
+
+  const [expandedItems, setExpandedItems] = createSignal<PermissionItem[]>(getAllExpandable());
+
+  // 트리 구조 변경 시 모두 다시 펼침 (모듈 필터 변경 등)
+  createEffect(
+    on(
+      visibleItems,
+      () => {
+        setExpandedItems(getAllExpandable());
+      },
+      { defer: true },
+    ),
+  );
 
   const handlePermChange = (item: PermissionItem, perm: string, checked: boolean) => {
     const newValue = changePermCheck(currentValue(), item, perm, checked);
     local.onValueChange?.(newValue);
   };
 
-  const getClassName = () => twMerge(tableBaseClass, local.class);
-
   return (
-    <table class={getClassName()} style={local.style} {...rest} data-permission-table>
-      <thead>
-        <tr>
-          <th class={thClass}>권한 항목</th>
-          <For each={allPerms()}>
-            {(perm) => <th class={clsx(thClass, thPermClass)}>{perm}</th>}
-          </For>
-        </tr>
-      </thead>
-      <tbody>
-        <For each={filteredItems()}>
-          {(item) => (
-            <PermissionTableRow
-              item={item}
-              depth={0}
-              allPerms={allPerms}
-              value={currentValue}
-              collapsedSet={collapsedSet}
-              disabled={local.disabled}
-              onToggleCollapse={handleToggleCollapse}
-              onPermChange={handlePermChange}
-            />
+    <div data-permission-table class={twMerge(local.class)} style={local.style}>
+      <Sheet
+        items={visibleItems()}
+        getChildren={getChildren}
+        expandedItems={expandedItems()}
+        onExpandedItemsChange={setExpandedItems}
+        hideConfigBar
+      >
+        <Sheet.Column key="title" header="권한 항목" sortable={false} resizable={false}>
+          {(ctx) => {
+            const item = ctx.item as PermissionItem;
+            return (
+              <div class="flex items-stretch px-2">
+                <For each={Array.from({ length: ctx.depth })}>
+                  {() => (
+                    <div class="mr-1 flex w-3 justify-center">
+                      <div class="w-0 self-stretch border-r border-base-300 dark:border-base-700" />
+                    </div>
+                  )}
+                </For>
+                <span class="py-1">{item.title}</span>
+              </div>
+            );
+          }}
+        </Sheet.Column>
+        <For each={allPerms()}>
+          {(perm) => (
+            <Sheet.Column
+              key={`perm-${perm}`}
+              header={perm}
+              sortable={false}
+              resizable={false}
+              cellStyle={(item) => ({ "background-color": `rgba(0,0,0,${depthMap().get(item) * 0.2})` })}
+            >
+              {(ctx) => {
+                const item = ctx.item as PermissionItem;
+                return (
+                  <Show when={hasPermInTree(item, perm)}>
+                    <CheckBox
+                      value={isGroupPermChecked(item, perm, currentValue())}
+                      onValueChange={(checked) => handlePermChange(item, perm, checked)}
+                      disabled={local.disabled || isPermDisabled(item, perm, currentValue())}
+                      inset
+                    />
+                  </Show>
+                );
+              }}
+            </Sheet.Column>
           )}
         </For>
-      </tbody>
-    </table>
+      </Sheet>
+    </div>
   );
 };

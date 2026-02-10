@@ -172,11 +172,17 @@ describe("changePermCheck", () => {
 
 describe("PermissionTable 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("data-permission-table 속성이 있는 table로 렌더링된다", () => {
+    it("data-permission-table 속성이 있는 div로 렌더링된다", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
-      const table = container.querySelector("[data-permission-table]");
+      const wrapper = container.querySelector("[data-permission-table]");
+      expect(wrapper).toBeTruthy();
+      expect(wrapper!.tagName).toBe("DIV");
+    });
+
+    it("내부에 Sheet(table)가 렌더링된다", () => {
+      const { container } = render(() => <PermissionTable items={sampleItems} />);
+      const table = container.querySelector("[data-sheet] table");
       expect(table).toBeTruthy();
-      expect(table!.tagName).toBe("TABLE");
     });
 
     it("헤더에 perm 타입 컬럼이 표시된다", () => {
@@ -192,7 +198,7 @@ describe("PermissionTable 컴포넌트", () => {
       expect(getByText("시스템")).toBeTruthy();
     });
 
-    it("자식 아이템이 표시된다", () => {
+    it("자식 아이템이 기본적으로 펼쳐져서 표시된다", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
       expect(getByText("권한 설정")).toBeTruthy();
       expect(getByText("사용자 목록")).toBeTruthy();
@@ -231,26 +237,31 @@ describe("PermissionTable 컴포넌트", () => {
   });
 
   describe("접기/펼치기", () => {
-    it("자식이 있는 아이템에 접기 버튼이 존재한다", () => {
+    it("자식이 있는 아이템의 행에 펼치기/접기 토글이 존재한다", () => {
       const { getByText } = render(() => <PermissionTable items={sampleItems} />);
-      // "사용자 관리"는 children이 있으므로 button 안에 있어야 함
+      // "사용자 관리"가 있는 행(tr)을 찾고, 그 행에 expand toggle button이 있는지 확인
       const titleEl = getByText("사용자 관리");
-      expect(titleEl.closest("button")).toBeTruthy();
+      const row = titleEl.closest("tr")!;
+      const expandButton = row.querySelector("button");
+      expect(expandButton).toBeTruthy();
     });
 
-    it("접기 버튼 클릭 시 자식이 숨겨진다", () => {
+    it("접기 버튼 클릭 시 자식이 DOM에서 제거된다", () => {
       const { getByText, queryByText } = render(() => (
         <PermissionTable items={sampleItems} />
       ));
 
-      // 초기: 자식 표시
+      // 초기: 자식 표시 (기본적으로 모두 펼침)
       expect(getByText("권한 설정")).toBeTruthy();
+      expect(getByText("사용자 목록")).toBeTruthy();
 
-      // 접기 버튼 클릭
-      const collapseButton = getByText("사용자 관리").closest("button")!;
-      fireEvent.click(collapseButton);
+      // 접기 버튼 클릭 (사용자 관리 행의 expand toggle)
+      const titleEl = getByText("사용자 관리");
+      const row = titleEl.closest("tr")!;
+      const expandButton = row.querySelector("button")!;
+      fireEvent.click(expandButton);
 
-      // 자식이 숨겨짐
+      // 자식이 DOM에서 제거됨 (Sheet는 접힌 항목을 렌더링하지 않음)
       expect(queryByText("권한 설정")).toBeNull();
       expect(queryByText("사용자 목록")).toBeNull();
     });
