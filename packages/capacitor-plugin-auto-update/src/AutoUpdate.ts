@@ -150,8 +150,13 @@ export abstract class AutoUpdate {
       // 현재 앱 버전 가져오기
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이면 반환
-      if (currentVersionInfo.versionName === serverVersionInfo.version) {
+      // 최신버전이거나 서버 버전이 낮으면 반환
+      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(serverVersionInfo.version)) {
+        // eslint-disable-next-line no-console
+        console.log("Invalid semver version, skipping update check");
+        return;
+      }
+      if (!semver.gt(serverVersionInfo.version, currentVersionInfo.versionName)) {
         return;
       }
 
@@ -214,8 +219,13 @@ export abstract class AutoUpdate {
       // 현재 앱 버전 가져오기
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이면 반환
-      if (currentVersionInfo.versionName === latestVersion) {
+      // 최신버전이거나 외부 저장소 버전이 낮으면 반환
+      if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(latestVersion)) {
+        // eslint-disable-next-line no-console
+        console.log("Invalid semver version, skipping update check");
+        return;
+      }
+      if (!semver.gt(latestVersion, currentVersionInfo.versionName)) {
         return;
       }
 
