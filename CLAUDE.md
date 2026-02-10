@@ -198,7 +198,7 @@ const User = Table("User")
 - `Parent.Child = ChildComponent;` 할당
 - `index.ts`에서 서브 컴포넌트의 별도 export 금지 (부모만 export)
 - 사용 시 부모만 import: `import { Select } from "@simplysm/solid"`
-- 예시: `Select.Item`, `Select.Button`, `List.Item`, `Sheet.Column`, `Sidebar.Container`, `Topbar.Menu`
+- 예시: `Select.Item`, `Select.Action`, `List.Item`, `DataSheet.Column`, `Sidebar.Container`, `Topbar.Menu`, `Tabs.Tab`
 
 → 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
 

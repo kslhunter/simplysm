@@ -3,9 +3,9 @@ import {
   Button,
   FormGroup,
   Icon,
-  NumberField,
+  NumberInput,
   Select,
-  TextField,
+  TextInput,
   Topbar,
 } from "@simplysm/solid";
 import { IconSearch } from "@tabler/icons-solidjs";
@@ -30,13 +30,13 @@ export default function FormGroupPage() {
             </p>
             <FormGroup>
               <FormGroup.Item label="이름">
-                <TextField placeholder="이름을 입력하세요" />
+                <TextInput placeholder="이름을 입력하세요" />
               </FormGroup.Item>
               <FormGroup.Item label="이메일">
-                <TextField placeholder="이메일을 입력하세요" />
+                <TextInput placeholder="이메일을 입력하세요" />
               </FormGroup.Item>
               <FormGroup.Item label="나이">
-                <NumberField placeholder="나이를 입력하세요" />
+                <NumberInput placeholder="나이를 입력하세요" />
               </FormGroup.Item>
             </FormGroup>
           </section>
@@ -65,7 +65,7 @@ export default function FormGroupPage() {
                 </Select>
               </FormGroup.Item>
               <FormGroup.Item label="검색어">
-                <TextField placeholder="검색어를 입력하세요" />
+                <TextInput placeholder="검색어를 입력하세요" />
               </FormGroup.Item>
             </FormGroup>
           </section>
@@ -78,10 +78,10 @@ export default function FormGroupPage() {
             </p>
             <FormGroup>
               <FormGroup.Item>
-                <TextField placeholder="제목" />
+                <TextInput placeholder="제목" />
               </FormGroup.Item>
               <FormGroup.Item>
-                <TextField placeholder="내용" />
+                <TextInput placeholder="내용" />
               </FormGroup.Item>
               <FormGroup.Item>
                 <Button theme="primary" variant="solid">
@@ -101,23 +101,23 @@ export default function FormGroupPage() {
               <FormGroup.Item label="기본 정보">
                 <FormGroup inline>
                   <FormGroup.Item>
-                    <TextField placeholder="성" />
+                    <TextInput placeholder="성" />
                   </FormGroup.Item>
                   <FormGroup.Item>
-                    <TextField placeholder="이름" />
+                    <TextInput placeholder="이름" />
                   </FormGroup.Item>
                 </FormGroup>
               </FormGroup.Item>
               <FormGroup.Item label="연락처">
-                <TextField placeholder="전화번호" />
+                <TextInput placeholder="전화번호" />
               </FormGroup.Item>
               <FormGroup.Item label="주소">
                 <FormGroup>
                   <FormGroup.Item>
-                    <TextField placeholder="우편번호" />
+                    <TextInput placeholder="우편번호" />
                   </FormGroup.Item>
                   <FormGroup.Item>
-                    <TextField placeholder="상세주소" />
+                    <TextInput placeholder="상세주소" />
                   </FormGroup.Item>
                 </FormGroup>
               </FormGroup.Item>
@@ -132,11 +132,11 @@ export default function FormGroupPage() {
             </p>
             <FormGroup>
               <FormGroup.Item label="필수 입력">
-                <TextField placeholder="필수 항목입니다" />
+                <TextInput placeholder="필수 항목입니다" />
                 <p class="mt-1 text-sm text-danger-500">이 필드는 필수입니다.</p>
               </FormGroup.Item>
               <FormGroup.Item label="선택 입력">
-                <TextField placeholder="선택 항목입니다" />
+                <TextInput placeholder="선택 항목입니다" />
                 <p class="mt-1 text-sm text-base-500">선택적으로 입력할 수 있습니다.</p>
               </FormGroup.Item>
             </FormGroup>
@@ -148,14 +148,14 @@ export default function FormGroupPage() {
             <div class="space-y-4">
               <FormGroup>
                 <FormGroup.Item label="이름">
-                  <TextField
+                  <TextInput
                     value={controlledName()}
                     onValueChange={setControlledName}
                     placeholder="이름을 입력하세요"
                   />
                 </FormGroup.Item>
                 <FormGroup.Item label="이메일">
-                  <TextField
+                  <TextInput
                     value={controlledEmail()}
                     onValueChange={setControlledEmail}
                     placeholder="이메일을 입력하세요"

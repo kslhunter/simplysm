@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import { Table, Topbar, Label } from "@simplysm/solid";
+import { Table, Topbar, Tag } from "@simplysm/solid";
 
 const sampleData = [
   { id: 1, name: "홍길동", email: "hong@example.com", role: "관리자", status: "활성" },
@@ -62,11 +62,11 @@ export default function TablePage() {
                       <td>{row.email}</td>
                       <td>{row.role}</td>
                       <td>
-                        <Label
+                        <Tag
                           theme={row.status === "활성" ? "success" : row.status === "비활성" ? "danger" : "warning"}
                         >
                           {row.status}
-                        </Label>
+                        </Tag>
                       </td>
                     </tr>
                   )}

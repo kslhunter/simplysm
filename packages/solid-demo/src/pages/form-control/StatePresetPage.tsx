@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { StatePreset, Topbar, TextField, Select } from "@simplysm/solid";
+import { StatePreset, Topbar, TextInput, Select } from "@simplysm/solid";
 
 interface FilterState {
   search: string;
@@ -35,7 +35,7 @@ export default function StatePresetPage() {
                 <div class="mt-4 space-y-2">
                   <div class="flex items-center gap-2">
                     <label class="text-sm font-medium">검색:</label>
-                    <TextField
+                    <TextInput
                       value={filter().search}
                       onValueChange={(v) => setFilter((prev) => ({ ...prev, search: v }))}
                     />

@@ -14,9 +14,9 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconEye, IconEyeOff } from "@tabler/icons-solidjs";
 import { Card } from "../../display/Card";
-import { CheckBox } from "../../form-control/checkbox/CheckBox";
+import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
-import { BusyContainer } from "../../feedback/busy/BusyContainer";
+import { LoadingContainer } from "../../feedback/loading/LoadingContainer";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { splitSlots } from "../../../utils/splitSlots";
 import "./Kanban.css";
@@ -443,7 +443,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     });
 
     return (
-      <BusyContainer busy={local.busy} variant="bar">
+      <LoadingContainer busy={local.busy} variant="bar">
         <div
           {...rest}
           data-kanban-lane
@@ -465,7 +465,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
                 </button>
               </Show>
               <Show when={hasSelectableCards()}>
-                <CheckBox
+                <Checkbox
                   value={isAllSelected()}
                   onValueChange={handleSelectAll}
                   inline
@@ -484,7 +484,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
             </div>
           </Show>
         </div>
-      </BusyContainer>
+      </LoadingContainer>
     );
   };
 

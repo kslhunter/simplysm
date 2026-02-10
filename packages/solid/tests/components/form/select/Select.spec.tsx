@@ -149,12 +149,12 @@ describe("Select 컴포넌트", () => {
   });
 
   describe("서브 컴포넌트", () => {
-    it("Select.Button이 렌더링된다", () => {
+    it("Select.Action이 렌더링된다", () => {
       const handleClick = vi.fn();
       const { getByText } = render(() => (
         <Select renderValue={(v) => <>{v}</>}>
           <Select.Item value="apple">사과</Select.Item>
-          <Select.Button onClick={handleClick}>+</Select.Button>
+          <Select.Action onClick={handleClick}>+</Select.Action>
         </Select>
       ));
 

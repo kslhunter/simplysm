@@ -2,6 +2,9 @@ packages:
   - packages/*
   - tests/*
 
+ignoredBuiltDependencies:
+  - core-js
+
 onlyBuiltDependencies:
   - bufferutil
   - cpu-features

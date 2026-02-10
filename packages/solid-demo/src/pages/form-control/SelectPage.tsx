@@ -91,16 +91,16 @@ export default function SelectPage() {
 
           {/* 추가 버튼 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Button)</h2>
+            <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Action)</h2>
             <Select
               placeholder="선택하세요"
               renderValue={(v: string) => <>{v}</>}
             >
               <Select.Item value="옵션 1">옵션 1</Select.Item>
               <Select.Item value="옵션 2">옵션 2</Select.Item>
-              <Select.Button onClick={() => alert("추가 버튼 클릭!")}>
+              <Select.Action onClick={() => alert("추가 버튼 클릭!")}>
                 <IconPlus size={16} />
-              </Select.Button>
+              </Select.Action>
             </Select>
           </section>
 

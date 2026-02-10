@@ -1,4 +1,4 @@
-import { ThemeToggle, Topbar, Card, Note } from "@simplysm/solid";
+import { ThemeToggle, Topbar, Card, Alert } from "@simplysm/solid";
 
 export default function ThemeTogglePage() {
   return (
@@ -85,14 +85,14 @@ export default function ThemeTogglePage() {
           {/* Usage Note */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">사용 시 참고사항</h2>
-            <Note theme="info">
+            <Alert theme="info">
               <p class="mb-2">
                 <strong>ThemeProvider 필요:</strong> ThemeToggle은 ThemeProvider 컨텍스트 내에서 사용해야 합니다.
               </p>
               <p>
                 테마 설정은 localStorage에 저장되어 페이지를 새로고침해도 유지됩니다.
               </p>
-            </Note>
+            </Alert>
           </section>
 
           {/* In Header Example */}

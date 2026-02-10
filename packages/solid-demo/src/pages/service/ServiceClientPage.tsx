@@ -6,8 +6,8 @@ import {
   ServiceClientProvider,
   useServiceClient,
   Button,
-  TextField,
-  TextAreaField,
+  TextInput,
+  Textarea,
   Topbar,
   Label,
 } from "@simplysm/solid";
@@ -109,7 +109,7 @@ const ServiceClientDemo: Component = () => {
         <div class="mb-6">
           <h3 class="mb-2 font-medium">echo(message)</h3>
           <div class="flex gap-2">
-            <TextField
+            <TextInput
               value={echoInput()}
               onValueChange={setEchoInput}
               class="flex-1"
@@ -130,7 +130,7 @@ const ServiceClientDemo: Component = () => {
         <div>
           <h3 class="mb-2 font-medium">echoJson(data)</h3>
           <div class="flex gap-2">
-            <TextAreaField
+            <Textarea
               value={jsonInput()}
               onValueChange={(v) => setJsonInput(v)}
               minRows={3}

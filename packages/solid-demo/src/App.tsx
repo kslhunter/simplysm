@@ -1,7 +1,7 @@
 import type { RouteSectionProps } from "@solidjs/router";
 import {
   InitializeProvider,
-  ModalProvider,
+  DialogProvider,
   NotificationBanner,
   NotificationProvider,
   ThemeProvider,
@@ -13,7 +13,7 @@ export function App(props: RouteSectionProps) {
       <ThemeProvider>
         <NotificationProvider>
           <NotificationBanner />
-          <ModalProvider>{props.children}</ModalProvider>
+          <DialogProvider>{props.children}</DialogProvider>
         </NotificationProvider>
       </ThemeProvider>
     </InitializeProvider>

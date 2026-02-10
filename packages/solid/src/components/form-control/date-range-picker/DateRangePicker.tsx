@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { type FieldSize } from "../field/Field.styles";
-import { DateField } from "../field/DateField";
+import { DatePicker } from "../field/DatePicker";
 import { Select } from "../select/Select";
 import { SelectItem } from "../select/SelectItem";
 
@@ -190,7 +190,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       <Show
         when={periodType() === "range"}
         fallback={
-          <DateField
+          <DatePicker
             unit={periodType() === "month" ? "month" : "date"}
             value={from()}
             onValueChange={handleFromChange}
@@ -199,7 +199,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
           />
         }
       >
-        <DateField
+        <DatePicker
           unit="date"
           value={from()}
           onValueChange={handleFromChange}
@@ -207,7 +207,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
           size={local.size}
         />
         <span class="text-base-400">~</span>
-        <DateField
+        <DatePicker
           unit="date"
           value={to()}
           onValueChange={handleToChange}

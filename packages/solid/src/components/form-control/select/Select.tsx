@@ -45,18 +45,18 @@ const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
 const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
 
 /**
- * Select 우측 버튼 서브 컴포넌트
+ * Select 우측 액션 서브 컴포넌트
  */
-interface SelectButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {}
+interface SelectActionProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {}
 
-const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
+const SelectAction: ParentComponent<SelectActionProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
 
   return (
     <button
       {...rest}
       type="button"
-      data-select-button
+      data-select-action
       class={twMerge(
         clsx(
           "border", borderDefault, "px-1.5",
@@ -192,7 +192,7 @@ export type SelectProps<T = unknown> =
 interface SelectComponent {
   <T = unknown>(props: SelectProps<T>): JSX.Element;
   Item: typeof SelectItem;
-  Button: typeof SelectButton;
+  Action: typeof SelectAction;
   Header: typeof SelectHeader;
   ItemTemplate: typeof SelectItemTemplate;
 }
@@ -329,7 +329,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
-    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectButton", "selectItemTemplate"] as const);
+    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectAction", "selectItemTemplate"] as const);
 
     // itemTemplate 함수 추출
     const getItemTemplate = (): ((item: T, index: number, depth: number) => JSX.Element) | undefined => {
@@ -407,7 +407,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           aria-disabled={local.disabled || undefined}
           aria-required={local.required || undefined}
           tabIndex={local.disabled ? -1 : 0}
-          class={twMerge(getTriggerClassName(), slots().selectButton.length > 0 && "rounded-r-none border-r-0")}
+          class={twMerge(getTriggerClassName(), slots().selectAction.length > 0 && "rounded-r-none border-r-0")}
           style={local.style}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
@@ -417,7 +417,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             <Icon icon={IconChevronDown} size="1em" />
           </div>
         </div>
-        <Show when={slots().selectButton.length > 0}>{slots().selectButton}</Show>
+        <Show when={slots().selectAction.length > 0}>{slots().selectAction}</Show>
 
         <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
           <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
@@ -439,6 +439,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 };
 
 Select.Item = SelectItem;
-Select.Button = SelectButton;
+Select.Action = SelectAction;
 Select.Header = SelectHeader;
 Select.ItemTemplate = SelectItemTemplate;

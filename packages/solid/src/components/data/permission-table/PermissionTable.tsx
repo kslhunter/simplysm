@@ -2,8 +2,8 @@ import type { JSX } from "solid-js";
 import { type Component, createEffect, createMemo, createSignal, For, on, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Sheet } from "../sheet/Sheet";
-import { CheckBox } from "../../form-control/checkbox/CheckBox";
+import { DataSheet } from "../sheet/DataSheet";
+import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { borderDefault } from "../../../styles/tokens.styles";
 
 const titleCellClass = clsx("flex items-stretch", "px-2");
@@ -258,14 +258,14 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
 
   return (
     <div data-permission-table class={twMerge(local.class)} style={local.style}>
-      <Sheet
+      <DataSheet
         items={visibleItems()}
         getChildren={getChildren}
         expandedItems={expandedItems()}
         onExpandedItemsChange={setExpandedItems}
         hideConfigBar
       >
-        <Sheet.Column key="title" header="권한 항목" sortable={false} resizable={false}>
+        <DataSheet.Column key="title" header="권한 항목" sortable={false} resizable={false}>
           {(ctx) => {
             const item = ctx.item as PermissionItem;
             return (
@@ -281,10 +281,10 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
               </div>
             );
           }}
-        </Sheet.Column>
+        </DataSheet.Column>
         <For each={allPerms()}>
           {(perm) => (
-            <Sheet.Column
+            <DataSheet.Column
               key={`perm-${perm}`}
               header={perm}
               sortable={false}
@@ -295,7 +295,7 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
                 const item = ctx.item as PermissionItem;
                 return (
                   <Show when={hasPermInTree(item, perm)}>
-                    <CheckBox
+                    <Checkbox
                       value={isGroupPermChecked(item, perm, currentValue())}
                       onValueChange={(checked) => handlePermChange(item, perm, checked)}
                       disabled={local.disabled || isPermDisabled(item, perm, currentValue())}
@@ -304,10 +304,10 @@ export const PermissionTable: Component<PermissionTableProps> = (props) => {
                   </Show>
                 );
               }}
-            </Sheet.Column>
+            </DataSheet.Column>
           )}
         </For>
-      </Sheet>
+      </DataSheet>
     </div>
   );
 };

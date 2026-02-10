@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Button } from "../Button";
-import { NumberField } from "../field/NumberField";
+import { NumberInput } from "../field/NumberInput";
 import { Icon } from "../../display/Icon";
 import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
 import type { ComponentSize } from "../../../styles/tokens.styles";
@@ -124,7 +124,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
     props.onEnterButtonClick?.();
   };
 
-  // NumberField 값 변경 핸들러
+  // NumberInput 값 변경 핸들러
   const handleFieldValueChange = (val: number | undefined) => {
     setValue(val);
     setInputStr(valueToInputStr(val));
@@ -138,14 +138,14 @@ export const Numpad: Component<NumpadProps> = (props) => {
       class={twMerge(baseClass, props.class)}
       style={props.style}
     >
-      {/* Row 1: NumberField + optional ENT */}
+      {/* Row 1: NumberInput + optional ENT */}
       <div
         class={clsx(
           "flex",
           props.useEnterButton ? "col-span-2" : "col-span-3",
         )}
       >
-        <NumberField
+        <NumberInput
           value={value()}
           onValueChange={handleFieldValueChange}
           placeholder={props.placeholder}

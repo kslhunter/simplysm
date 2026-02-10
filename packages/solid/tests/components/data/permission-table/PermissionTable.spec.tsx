@@ -179,7 +179,7 @@ describe("PermissionTable 컴포넌트", () => {
       expect(wrapper!.tagName).toBe("DIV");
     });
 
-    it("내부에 Sheet(table)가 렌더링된다", () => {
+    it("내부에 DataSheet(table)가 렌더링된다", () => {
       const { container } = render(() => <PermissionTable items={sampleItems} />);
       const table = container.querySelector("[data-sheet] table");
       expect(table).toBeTruthy();

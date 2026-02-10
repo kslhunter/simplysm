@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Button, FormTable, TextField, NumberField, Select, Topbar } from "@simplysm/solid";
+import { Button, FormTable, TextInput, NumberInput, Select, Topbar } from "@simplysm/solid";
 
 export default function FormTablePage() {
   const [controlledName, setControlledName] = createSignal("");
@@ -23,7 +23,7 @@ export default function FormTablePage() {
                 <tr>
                   <th>이름</th>
                   <td>
-                    <TextField placeholder="이름을 입력하세요" />
+                    <TextInput placeholder="이름을 입력하세요" />
                   </td>
                 </tr>
                 <tr>
@@ -42,13 +42,13 @@ export default function FormTablePage() {
                 <tr>
                   <th>직급</th>
                   <td>
-                    <TextField placeholder="직급을 입력하세요" />
+                    <TextInput placeholder="직급을 입력하세요" />
                   </td>
                 </tr>
                 <tr>
                   <th>급여</th>
                   <td>
-                    <NumberField placeholder="급여를 입력하세요" />
+                    <NumberInput placeholder="급여를 입력하세요" />
                   </td>
                 </tr>
               </tbody>
@@ -66,7 +66,7 @@ export default function FormTablePage() {
                 <tr>
                   <th>제목</th>
                   <td colspan="3">
-                    <TextField placeholder="제목을 입력하세요" />
+                    <TextInput placeholder="제목을 입력하세요" />
                   </td>
                 </tr>
                 <tr>
@@ -82,7 +82,7 @@ export default function FormTablePage() {
                   </td>
                   <th>작성자</th>
                   <td>
-                    <TextField placeholder="작성자" />
+                    <TextInput placeholder="작성자" />
                   </td>
                 </tr>
               </tbody>
@@ -132,7 +132,7 @@ export default function FormTablePage() {
                   <tr>
                     <th>이름</th>
                     <td>
-                      <TextField
+                      <TextInput
                         value={controlledName()}
                         onValueChange={setControlledName}
                         placeholder="이름을 입력하세요"
@@ -142,7 +142,7 @@ export default function FormTablePage() {
                   <tr>
                     <th>급여</th>
                     <td>
-                      <NumberField
+                      <NumberInput
                         value={controlledSalary()}
                         onValueChange={setControlledSalary}
                         placeholder="급여를 입력하세요"

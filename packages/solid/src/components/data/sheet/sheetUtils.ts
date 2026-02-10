@@ -1,4 +1,4 @@
-import type { FlatItem, HeaderDef, SheetColumnDef, SortingDef } from "./types";
+import type { DataSheetColumnDef, FlatItem, HeaderDef, SortingDef } from "./types";
 import { objGetChainValue } from "@simplysm/core-common";
 
 export function normalizeHeader(header?: string | string[]): string[] {
@@ -7,7 +7,7 @@ export function normalizeHeader(header?: string | string[]): string[] {
   return header;
 }
 
-export function buildHeaderTable<T>(columns: SheetColumnDef<T>[]): (HeaderDef | null)[][] {
+export function buildHeaderTable<T>(columns: DataSheetColumnDef<T>[]): (HeaderDef | null)[][] {
   if (columns.length === 0) return [];
 
   const maxDepth = Math.max(...columns.map((c) => c.header.length));

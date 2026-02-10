@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 
-export interface SheetProps<T> {
+export interface DataSheetProps<T> {
   // 데이터
   items?: T[];
   // 설정
@@ -38,14 +38,14 @@ export interface SheetProps<T> {
   cellStyle?: (item: T, colKey: string) => string | undefined;
 
   // 재정렬
-  onItemsReorder?: (event: SheetReorderEvent<T>) => void;
+  onItemsReorder?: (event: DataSheetReorderEvent<T>) => void;
 
   // 기타
   class?: string;
   children: JSX.Element;
 }
 
-export interface SheetColumnProps<T> {
+export interface DataSheetColumnProps<T> {
   key: string;
   header?: string | string[];
   headerContent?: () => JSX.Element;
@@ -59,10 +59,10 @@ export interface SheetColumnProps<T> {
   class?: string;
   sortable?: boolean;
   resizable?: boolean;
-  children: (ctx: SheetCellContext<T>) => JSX.Element;
+  children: (ctx: DataSheetCellContext<T>) => JSX.Element;
 }
 
-export interface SheetCellContext<T> {
+export interface DataSheetCellContext<T> {
   item: T;
   index: number;
   depth: number;
@@ -73,18 +73,18 @@ export interface SortingDef {
   desc: boolean;
 }
 
-export interface SheetConfig {
-  columnRecord?: Partial<Record<string, SheetConfigColumn>>;
+export interface DataSheetConfig {
+  columnRecord?: Partial<Record<string, DataSheetConfigColumn>>;
 }
 
-export interface SheetConfigColumn {
+export interface DataSheetConfigColumn {
   fixed?: boolean;
   width?: string;
   displayOrder?: number;
   hidden?: boolean;
 }
 
-export interface SheetColumnDef<T> {
+export interface DataSheetColumnDef<T> {
   __type: "sheet-column";
   key: string;
   header: string[];
@@ -99,7 +99,7 @@ export interface SheetColumnDef<T> {
   class?: string;
   sortable: boolean;
   resizable: boolean;
-  cell: (ctx: SheetCellContext<T>) => JSX.Element;
+  cell: (ctx: DataSheetCellContext<T>) => JSX.Element;
 }
 
 export interface HeaderDef {
@@ -123,17 +123,17 @@ export interface FlatItem<T> {
 }
 
 // 드래그 앤 드롭 위치
-export type SheetDragPosition = "before" | "after" | "inside";
+export type DataSheetDragPosition = "before" | "after" | "inside";
 
 // 재정렬 이벤트
-export interface SheetReorderEvent<T> {
+export interface DataSheetReorderEvent<T> {
   item: T;
   targetItem: T;
-  position: SheetDragPosition;
+  position: DataSheetDragPosition;
 }
 
 // 설정 모달에 전달할 컬럼 정보
-export interface SheetConfigColumnInfo {
+export interface DataSheetConfigColumnInfo {
   key: string;
   header: string[];
   fixed: boolean;

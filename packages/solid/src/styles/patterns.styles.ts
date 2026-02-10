@@ -8,7 +8,7 @@ export const insetFocusOutline = clsx(
   "focus-within:outline-primary-400 dark:focus-within:outline-primary-400",
 );
 
-// ── inset 포커스 아웃라인 (focus 버전: CheckBox, Select trigger) ──
+// ── inset 포커스 아웃라인 (focus 버전: Checkbox, Select trigger) ──
 export const insetFocusOutlineSelf = clsx(
   "focus:[outline-style:solid]",
   "focus:outline-1 focus:-outline-offset-1",

@@ -11,7 +11,7 @@ import {
   Label,
   Topbar,
   Table,
-  BusyContainer,
+  LoadingContainer,
 } from "@simplysm/solid";
 
 interface IDemoUser {
@@ -171,9 +171,9 @@ const ConnectedSharedDataDemo: Component = () => {
     <Show
       when={connected()}
       fallback={
-        <BusyContainer busy={true}>
+        <LoadingContainer busy={true}>
           <div class="h-32" />
-        </BusyContainer>
+        </LoadingContainer>
       }
     >
       <SharedDataProvider<DemoSharedData> definitions={definitions}>

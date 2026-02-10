@@ -2,14 +2,14 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import { twMerge } from "tailwind-merge";
 import { createPropSignal } from "../../../utils/createPropSignal";
 import { Radio } from "./Radio";
-import type { CheckBoxSize, CheckBoxTheme } from "./CheckBox.styles";
+import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
 
 interface RadioGroupContextValue<T> {
   value: () => T | undefined;
   select: (item: T) => void;
   disabled: () => boolean;
-  size: () => CheckBoxSize | undefined;
-  theme: () => CheckBoxTheme | undefined;
+  size: () => CheckboxSize | undefined;
+  theme: () => CheckboxTheme | undefined;
   inline: () => boolean;
   inset: () => boolean;
 }
@@ -51,8 +51,8 @@ interface RadioGroupProps<T> {
   value?: T;
   onValueChange?: (value: T) => void;
   disabled?: boolean;
-  size?: CheckBoxSize;
-  theme?: CheckBoxTheme;
+  size?: CheckboxSize;
+  theme?: CheckboxTheme;
   inline?: boolean;
   inset?: boolean;
   class?: string;

@@ -4,17 +4,17 @@ import { createPropSignal } from "../../../utils/createPropSignal";
 import { ripple } from "../../../directives/ripple";
 import clsx from "clsx";
 import {
-  type CheckBoxTheme,
-  type CheckBoxSize,
-  checkBoxBaseClass,
+  type CheckboxTheme,
+  type CheckboxSize,
+  checkboxBaseClass,
   indicatorBaseClass,
   themeCheckedClasses,
-  checkBoxSizeClasses,
-  checkBoxInsetClass,
-  checkBoxInsetSizeHeightClasses,
-  checkBoxInlineClass,
-  checkBoxDisabledClass,
-} from "./CheckBox.styles";
+  checkboxSizeClasses,
+  checkboxInsetClass,
+  checkboxInsetSizeHeightClasses,
+  checkboxInlineClass,
+  checkboxDisabledClass,
+} from "./Checkbox.styles";
 
 const radioDotClass = clsx("size-2", "rounded-full", "bg-current");
 
@@ -25,8 +25,8 @@ export interface RadioProps {
   value?: boolean;
   onValueChange?: (value: boolean) => void;
   disabled?: boolean;
-  size?: CheckBoxSize;
-  theme?: CheckBoxTheme;
+  size?: CheckboxSize;
+  theme?: CheckboxTheme;
   inset?: boolean;
   inline?: boolean;
   class?: string;
@@ -67,12 +67,12 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
 
   const getWrapperClass = () =>
     twMerge(
-      checkBoxBaseClass,
-      local.size && checkBoxSizeClasses[local.size],
-      local.inset && checkBoxInsetClass,
-      local.inset && local.size && checkBoxInsetSizeHeightClasses[local.size],
-      local.inline && checkBoxInlineClass,
-      local.disabled && checkBoxDisabledClass,
+      checkboxBaseClass,
+      local.size && checkboxSizeClasses[local.size],
+      local.inset && checkboxInsetClass,
+      local.inset && local.size && checkboxInsetSizeHeightClasses[local.size],
+      local.inline && checkboxInlineClass,
+      local.disabled && checkboxDisabledClass,
       local.class,
     );
 

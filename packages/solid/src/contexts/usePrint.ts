@@ -2,7 +2,7 @@ import type { JSX } from "solid-js";
 import { render } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
-import { useBusy } from "../components/feedback/busy/BusyContext";
+import { useLoading } from "../components/feedback/loading/LoadingContext";
 
 // --- Types ---
 
@@ -114,7 +114,7 @@ async function renderAndWait(
 // --- Hook ---
 
 export function usePrint(): UsePrintReturn {
-  const busy = useBusy();
+  const busy = useLoading();
 
   const toPrinter = async (factory: () => JSX.Element, options?: PrintOptions): Promise<void> => {
     busy.show();

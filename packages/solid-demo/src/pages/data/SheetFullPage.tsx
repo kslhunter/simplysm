@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Sheet, Topbar, type SortingDef } from "@simplysm/solid";
+import { DataSheet, Topbar, type SortingDef } from "@simplysm/solid";
 
 interface Employee {
   id: number;
@@ -59,13 +59,13 @@ export default function SheetFullPage() {
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">Sheet (Full)</h1>
+        <h1 class="m-0 text-base">DataSheet (Full)</h1>
         <span class="ml-2 text-sm text-base-500 dark:text-base-400">
           {employees.length}건
         </span>
       </Topbar>
       <div class="flex-1 overflow-hidden p-2">
-        <Sheet
+        <DataSheet
           items={employees}
           key="full"
           class="h-full"
@@ -77,31 +77,31 @@ export default function SheetFullPage() {
           page={page()}
           onPageChange={setPage}
         >
-          <Sheet.Column<Employee> key="id" header="No." class="px-2 py-1 text-right text-base-500" fixed>
+          <DataSheet.Column<Employee> key="id" header="No." class="px-2 py-1 text-right text-base-500" fixed>
             {(ctx) => ctx.item.id}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} class="px-2 py-1 font-medium" fixed>
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="name" header={["인사정보", "이름"]} class="px-2 py-1 font-medium" fixed>
             {(ctx) => ctx.item.name}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} class="px-2 py-1" fixed>
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="department" header={["인사정보", "부서"]} class="px-2 py-1" fixed>
             {(ctx) => ctx.item.department}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="team" header={["인사정보", "팀"]} class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="team" header={["인사정보", "팀"]} class="px-2 py-1">
             {(ctx) => ctx.item.team}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="position" header={["인사정보", "직급"]} class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="position" header={["인사정보", "직급"]} class="px-2 py-1">
             {(ctx) => ctx.item.position}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
             {(ctx) => ctx.item.email}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} class="px-2 py-1">
             {(ctx) => ctx.item.phone}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="joinDate" header="입사일" class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="joinDate" header="입사일" class="px-2 py-1">
             {(ctx) => ctx.item.joinDate}
-          </Sheet.Column>
-          <Sheet.Column<Employee>
+          </DataSheet.Column>
+          <DataSheet.Column<Employee>
             key="salary"
             header={["급여정보", "기본급"]}
             class="px-2 py-1 text-right"
@@ -110,8 +110,8 @@ export default function SheetFullPage() {
             )}
           >
             {(ctx) => <>{ctx.item.salary.toLocaleString()}만</>}
-          </Sheet.Column>
-          <Sheet.Column<Employee>
+          </DataSheet.Column>
+          <DataSheet.Column<Employee>
             key="bonus"
             header={["급여정보", "상여금"]}
             class="px-2 py-1 text-right"
@@ -120,11 +120,11 @@ export default function SheetFullPage() {
             )}
           >
             {(ctx) => <>{ctx.item.bonus.toLocaleString()}만</>}
-          </Sheet.Column>
-          <Sheet.Column<Employee> key="status" header="상태" class="px-2 py-1">
+          </DataSheet.Column>
+          <DataSheet.Column<Employee> key="status" header="상태" class="px-2 py-1">
             {(ctx) => ctx.item.status}
-          </Sheet.Column>
-        </Sheet>
+          </DataSheet.Column>
+        </DataSheet>
       </div>
     </Topbar.Container>
   );

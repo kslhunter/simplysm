@@ -1,32 +1,32 @@
 import { createSignal } from "solid-js";
-import { CheckBoxGroup, RadioGroup, Topbar } from "@simplysm/solid";
+import { CheckboxGroup, RadioGroup, Topbar } from "@simplysm/solid";
 
-export default function CheckBoxRadioGroupPage() {
+export default function CheckboxRadioGroupPage() {
   const [selectedFruits, setSelectedFruits] = createSignal<string[]>(["apple"]);
   const [selectedOption, setSelectedOption] = createSignal<string>("A");
 
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">CheckBoxGroup & RadioGroup</h1>
+        <h1 class="m-0 text-base">CheckboxGroup & RadioGroup</h1>
       </Topbar>
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-12">
-          {/* CheckBoxGroup */}
+          {/* CheckboxGroup */}
           <section>
-            <h2 class="mb-6 text-2xl font-bold">CheckBoxGroup</h2>
+            <h2 class="mb-6 text-2xl font-bold">CheckboxGroup</h2>
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-                <CheckBoxGroup
+                <CheckboxGroup
                   value={selectedFruits()}
                   onValueChange={setSelectedFruits}
                 >
-                  <CheckBoxGroup.Item value="apple">사과</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="banana">바나나</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="cherry">체리</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                  <CheckboxGroup.Item value="apple">사과</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="banana">바나나</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="cherry">체리</CheckboxGroup.Item>
+                </CheckboxGroup>
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
                   선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(selectedFruits())}</code>
                 </p>
@@ -35,46 +35,46 @@ export default function CheckBoxRadioGroupPage() {
               {/* disabled 아이템 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
-                <CheckBoxGroup>
-                  <CheckBoxGroup.Item value="a">활성</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="b" disabled>비활성</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                <CheckboxGroup>
+                  <CheckboxGroup.Item value="a">활성</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b" disabled>비활성</CheckboxGroup.Item>
+                </CheckboxGroup>
               </div>
 
               {/* 전체 disabled */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
-                <CheckBoxGroup disabled value={["a"]}>
-                  <CheckBoxGroup.Item value="a">옵션 A</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="b">옵션 B</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                <CheckboxGroup disabled value={["a"]}>
+                  <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
+                </CheckboxGroup>
               </div>
 
               {/* 테마/사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <CheckBoxGroup theme="success" size="sm" value={["x"]}>
-                  <CheckBoxGroup.Item value="x">Small Success A</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="y">Small Success B</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                <CheckboxGroup theme="success" size="sm" value={["x"]}>
+                  <CheckboxGroup.Item value="x">Small Success A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Small Success B</CheckboxGroup.Item>
+                </CheckboxGroup>
               </div>
 
               {/* inline */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Inline</h3>
-                <CheckBoxGroup inline value={["a"]}>
-                  <CheckBoxGroup.Item value="a">Inline A</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="b">Inline B</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                <CheckboxGroup inline value={["a"]}>
+                  <CheckboxGroup.Item value="a">Inline A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b">Inline B</CheckboxGroup.Item>
+                </CheckboxGroup>
               </div>
 
               {/* inset */}
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Inset</h3>
-                <CheckBoxGroup inset value={["a"]}>
-                  <CheckBoxGroup.Item value="a">Inset A</CheckBoxGroup.Item>
-                  <CheckBoxGroup.Item value="b">Inset B</CheckBoxGroup.Item>
-                </CheckBoxGroup>
+                <CheckboxGroup inset value={["a"]}>
+                  <CheckboxGroup.Item value="a">Inset A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b">Inset B</CheckboxGroup.Item>
+                </CheckboxGroup>
               </div>
             </div>
           </section>

@@ -2,17 +2,17 @@ import { createSignal } from "solid-js";
 import { createMutable } from "solid-js/store";
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 import {
-  CheckBox,
-  DateField,
-  DateTimeField,
-  NumberField,
+  Checkbox,
+  DatePicker,
+  DateTimePicker,
+  NumberInput,
   Radio,
   Select,
-  Sheet,
+  DataSheet,
   type SortingDef,
-  TextAreaField,
-  TextField,
-  TimeField,
+  Textarea,
+  TextInput,
+  TimePicker,
   Topbar,
 } from "@simplysm/solid";
 
@@ -161,24 +161,24 @@ export default function SheetPage() {
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">Sheet</h1>
+        <h1 class="m-0 text-base">DataSheet</h1>
       </Topbar>
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
           {/* 기본 테이블 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 테이블</h2>
-            <Sheet items={users} key="basic">
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            <DataSheet items={users} key="basic">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 다단계 헤더 */}
@@ -187,20 +187,20 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
             </p>
-            <Sheet items={users} key="multi-header">
-              <Sheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
+            <DataSheet items={users} key="multi-header">
+              <DataSheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header={["기본정보", "나이"]} class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header={["기본정보", "나이"]} class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 합계 행 */}
@@ -209,19 +209,19 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에 고정됩니다.
             </p>
-            <Sheet items={users} key="summary">
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            <DataSheet items={users} key="summary">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User>
+              </DataSheet.Column>
+              <DataSheet.Column<User>
                 key="salary"
                 header="급여"
                 class="px-2 py-1 text-right"
                 summary={() => <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>}
               >
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 정렬 */}
@@ -230,20 +230,20 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
             </p>
-            <Sheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            <DataSheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" sortable={false}>
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" sortable={false}>
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 페이지네이션 */}
@@ -252,17 +252,17 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
             </p>
-            <Sheet items={users} key="paging" itemsPerPage={2} page={page()} onPageChange={setPage}>
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            <DataSheet items={users} key="paging" itemsPerPage={2} page={page()} onPageChange={setPage}>
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 트리 확장 */}
@@ -271,20 +271,20 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를 표현합니다.
             </p>
-            <Sheet
+            <DataSheet
               items={categories}
               key="tree"
               getChildren={(item) => item.children}
               expandedItems={expanded()}
               onExpandedItemsChange={setExpanded}
             >
-              <Sheet.Column<Category> key="name" header="카테고리" class="px-2 py-1">
+              <DataSheet.Column<Category> key="name" header="카테고리" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<Category> key="count" header="상품 수" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<Category> key="count" header="상품 수" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.count.toLocaleString()}개</>}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 고정 컬럼 + 리사이징 */}
@@ -294,20 +294,20 @@ export default function SheetPage() {
               fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로 초기화.
             </p>
             <div>
-              <Sheet items={users} key="fixed-resize">
-                <Sheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
+              <DataSheet items={users} key="fixed-resize">
+                <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
                   {(ctx) => ctx.item.name}
-                </Sheet.Column>
-                <Sheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
+                </DataSheet.Column>
+                <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
                   {(ctx) => ctx.item.age}
-                </Sheet.Column>
-                <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+                </DataSheet.Column>
+                <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
                   {(ctx) => ctx.item.email}
-                </Sheet.Column>
-                <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+                </DataSheet.Column>
+                <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                   {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-                </Sheet.Column>
-              </Sheet>
+                </DataSheet.Column>
+              </DataSheet>
             </div>
           </section>
 
@@ -317,10 +317,10 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
             </p>
-            <Sheet items={editUsers} key="cell-edit">
-              <Sheet.Column<User> key="name" header="이름">
+            <DataSheet items={editUsers} key="cell-edit">
+              <DataSheet.Column<User> key="name" header="이름">
                 {(ctx) => (
-                  <TextField
+                  <TextInput
                     value={ctx.item.name}
                     onValueChange={(v) => {
                       ctx.item.name = v;
@@ -328,10 +328,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이">
                 {(ctx) => (
-                  <NumberField
+                  <NumberInput
                     value={ctx.item.age}
                     onValueChange={(v) => {
                       ctx.item.age = v;
@@ -339,10 +339,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="birthDate" header="생년월일">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="birthDate" header="생년월일">
                 {(ctx) => (
-                  <DateField
+                  <DatePicker
                     value={ctx.item.birthDate}
                     onValueChange={(v) => {
                       ctx.item.birthDate = v;
@@ -350,10 +350,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="startTime" header="출근시간">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="startTime" header="출근시간">
                 {(ctx) => (
-                  <TimeField
+                  <TimePicker
                     value={ctx.item.startTime}
                     onValueChange={(v) => {
                       ctx.item.startTime = v;
@@ -361,10 +361,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="createdAt" header="생성일시">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="createdAt" header="생성일시">
                 {(ctx) => (
-                  <DateTimeField
+                  <DateTimePicker
                     value={ctx.item.createdAt}
                     onValueChange={(v) => {
                       ctx.item.createdAt = v;
@@ -372,10 +372,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="memo" header="메모">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="memo" header="메모">
                 {(ctx) => (
-                  <TextAreaField
+                  <Textarea
                     value={ctx.item.memo}
                     onValueChange={(v) => {
                       ctx.item.memo = v;
@@ -383,8 +383,8 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="department" header="부서">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="department" header="부서">
                 {(ctx) => (
                   <Select
                     value={ctx.item.department}
@@ -396,10 +396,10 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="active" header="활성">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="active" header="활성">
                 {(ctx) => (
-                  <CheckBox
+                  <Checkbox
                     value={ctx.item.active}
                     onValueChange={(v) => {
                       ctx.item.active = v;
@@ -407,8 +407,8 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-              <Sheet.Column<User> key="vip" header="VIP">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="vip" header="VIP">
                 {(ctx) => (
                   <Radio
                     value={ctx.item.vip}
@@ -418,8 +418,8 @@ export default function SheetPage() {
                     inset
                   />
                 )}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
 
           {/* 다중 선택 */}
@@ -428,23 +428,23 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               selectMode="multiple"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
             </p>
-            <Sheet
+            <DataSheet
               items={users}
               key="select-multi"
               selectMode="multiple"
               selectedItems={multiSelected()}
               onSelectedItemsChange={setMultiSelected}
             >
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
             <p class="mt-2 text-sm text-base-500">
               선택된 항목: {multiSelected().map((u) => u.name).join(", ") || "(없음)"}
             </p>
@@ -456,7 +456,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시 자동 선택.
             </p>
-            <Sheet
+            <DataSheet
               items={users}
               key="select-single"
               selectMode="single"
@@ -464,16 +464,16 @@ export default function SheetPage() {
               onSelectedItemsChange={setSingleSelected}
               autoSelect="click"
             >
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
             <p class="mt-2 text-sm text-base-500">
               선택된 항목: {singleSelected().map((u) => u.name).join(", ") || "(없음)"}
             </p>
@@ -485,7 +485,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로 표시됩니다.
             </p>
-            <Sheet
+            <DataSheet
               items={users}
               key="select-disabled"
               selectMode="multiple"
@@ -493,16 +493,16 @@ export default function SheetPage() {
               onSelectedItemsChange={setDisabledSelected}
               isItemSelectable={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
             >
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
             <p class="mt-2 text-sm text-base-500">
               선택된 항목: {disabledSelected().map((u) => u.name).join(", ") || "(없음)"}
             </p>
@@ -515,7 +515,7 @@ export default function SheetPage() {
               onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다.
               핸들을 잡고 드래그하여 행 순서를 변경할 수 있습니다.
             </p>
-            <Sheet
+            <DataSheet
               items={reorderItems()}
               key="reorder"
               onItemsReorder={(event) => {
@@ -532,16 +532,16 @@ export default function SheetPage() {
                 setReorderItems(items);
               }}
             >
-              <Sheet.Column<User> key="name" header="이름" class="px-2 py-1">
+              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
-              </Sheet.Column>
-              <Sheet.Column<User> key="age" header="나이" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
                 {(ctx) => ctx.item.age}
-              </Sheet.Column>
-              <Sheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+              </DataSheet.Column>
+              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
                 {(ctx) => ctx.item.email}
-              </Sheet.Column>
-            </Sheet>
+              </DataSheet.Column>
+            </DataSheet>
           </section>
         </div>
       </div>

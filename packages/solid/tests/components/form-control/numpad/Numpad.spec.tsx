@@ -24,7 +24,7 @@ describe("Numpad", () => {
       expect(screen.getByText(".")).toBeInTheDocument();
     });
 
-    it("NumberField(input)가 렌더링된다", () => {
+    it("NumberInput(input)가 렌더링된다", () => {
       render(() => <Numpad />);
       const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();

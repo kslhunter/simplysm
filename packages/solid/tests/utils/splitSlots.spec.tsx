@@ -73,16 +73,16 @@ describe("splitSlots", () => {
         const header = document.createElement("div");
         header.dataset["selectHeader"] = "";
         const button = document.createElement("button");
-        button.dataset["selectButton"] = "";
+        button.dataset["selectAction"] = "";
         const item = document.createElement("span");
 
         const resolved = children(() => [header, button, item]);
-        const [slots, content] = splitSlots(resolved, ["selectHeader", "selectButton"] as const);
+        const [slots, content] = splitSlots(resolved, ["selectHeader", "selectAction"] as const);
 
         expect(slots().selectHeader).toHaveLength(1);
         expect(slots().selectHeader[0]).toBe(header);
-        expect(slots().selectButton).toHaveLength(1);
-        expect(slots().selectButton[0]).toBe(button);
+        expect(slots().selectAction).toHaveLength(1);
+        expect(slots().selectAction[0]).toBe(button);
         expect(content()).toHaveLength(1);
         expect(content()[0]).toBe(item);
 

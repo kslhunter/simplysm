@@ -1,13 +1,13 @@
 import { For } from "solid-js";
-import { Label, type LabelTheme, Topbar } from "@simplysm/solid";
+import { Tag, type TagTheme, Topbar } from "@simplysm/solid";
 
-const themes: LabelTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
+const themes: TagTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
 export default function LabelPage() {
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">Label</h1>
+        <h1 class="m-0 text-base">Tag</h1>
       </Topbar>
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
@@ -15,12 +15,12 @@ export default function LabelPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">테마</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              Label 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
+              Tag 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
               <For each={themes}>
                 {(theme) => (
-                  <Label theme={theme}>{theme}</Label>
+                  <Tag theme={theme}>{theme}</Tag>
                 )}
               </For>
             </div>
@@ -28,11 +28,11 @@ export default function LabelPage() {
 
           {/* Default (no theme) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 라벨</h2>
+            <h2 class="mb-4 text-xl font-semibold">기본 태그</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               theme을 지정하지 않으면 slate 테마가 적용됩니다.
             </p>
-            <Label>기본 라벨</Label>
+            <Tag>기본 태그</Tag>
           </section>
 
           {/* Use Cases */}
@@ -41,24 +41,24 @@ export default function LabelPage() {
             <div class="space-y-4">
               <div class="flex items-center gap-2">
                 <span class="font-semibold">상태:</span>
-                <Label theme="success">완료</Label>
+                <Tag theme="success">완료</Tag>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">상태:</span>
-                <Label theme="warning">대기중</Label>
+                <Tag theme="warning">대기중</Tag>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">상태:</span>
-                <Label theme="danger">오류</Label>
+                <Tag theme="danger">오류</Tag>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">버전:</span>
-                <Label theme="info">v1.0.0</Label>
+                <Tag theme="info">v1.0.0</Tag>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">카테고리:</span>
-                <Label theme="primary">공지사항</Label>
-                <Label theme="base">일반</Label>
+                <Tag theme="primary">공지사항</Tag>
+                <Tag theme="base">일반</Tag>
               </div>
             </div>
           </section>
@@ -69,19 +69,19 @@ export default function LabelPage() {
             <div class="divide-y divide-base-200 rounded border border-base-200 dark:divide-base-700 dark:border-base-700">
               <div class="flex items-center justify-between p-3">
                 <span>사용자 등록 완료</span>
-                <Label theme="success">완료</Label>
+                <Tag theme="success">완료</Tag>
               </div>
               <div class="flex items-center justify-between p-3">
                 <span>결제 처리 중</span>
-                <Label theme="warning">진행중</Label>
+                <Tag theme="warning">진행중</Tag>
               </div>
               <div class="flex items-center justify-between p-3">
                 <span>서버 오류 발생</span>
-                <Label theme="danger">실패</Label>
+                <Tag theme="danger">실패</Tag>
               </div>
               <div class="flex items-center justify-between p-3">
                 <span>새로운 기능 배포</span>
-                <Label theme="info">신규</Label>
+                <Tag theme="info">신규</Tag>
               </div>
             </div>
           </section>
@@ -93,9 +93,9 @@ export default function LabelPage() {
               class prop으로 추가 스타일을 적용할 수 있습니다.
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <Label theme="primary" class="text-lg">큰 라벨</Label>
-              <Label theme="success" class="rounded-full px-3">둥근 라벨</Label>
-              <Label theme="info" class="font-bold">굵은 라벨</Label>
+              <Tag theme="primary" class="text-lg">큰 태그</Tag>
+              <Tag theme="success" class="rounded-full px-3">둥근 태그</Tag>
+              <Tag theme="info" class="font-bold">굵은 태그</Tag>
             </div>
           </section>
         </div>

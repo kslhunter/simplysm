@@ -13,7 +13,7 @@ import type { JSX } from "solid-js/jsx-runtime";
  * @example
  * ```tsx
  * const resolved = children(() => props.children);
- * const [slots, content] = splitSlots(resolved, ["selectHeader", "selectButton"] as const);
+ * const [slots, content] = splitSlots(resolved, ["selectHeader", "selectAction"] as const);
  *
  * // JSX에서 사용
  * <div>{slots().selectHeader.single()}</div>

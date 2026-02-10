@@ -5,7 +5,7 @@ import { DateRangePicker } from "../../../../src/components/form-control/date-ra
 
 describe("DateRangePicker 컴포넌트", () => {
   describe("기본 렌더링", () => {
-    it("Select와 DateField가 렌더링된다", () => {
+    it("Select와 DatePicker가 렌더링된다", () => {
       const { container } = render(() => <DateRangePicker />);
 
       const wrapper = container.querySelector("[data-date-range-picker]");
@@ -22,14 +22,14 @@ describe("DateRangePicker 컴포넌트", () => {
       const { container } = render(() => <DateRangePicker />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
-      // 범위 모드에서는 DateField 2개가 렌더링됨
+      // 범위 모드에서는 DatePicker 2개가 렌더링됨
       const inputs = wrapper?.querySelectorAll("input[type='date']");
       expect(inputs?.length).toBe(2);
     });
   });
 
   describe("'range' 모드 렌더링", () => {
-    it("DateField 2개와 '~' 구분자가 렌더링된다", () => {
+    it("DatePicker 2개와 '~' 구분자가 렌더링된다", () => {
       const { container } = render(() => <DateRangePicker periodType="range" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -42,7 +42,7 @@ describe("DateRangePicker 컴포넌트", () => {
   });
 
   describe("'day' 모드 렌더링", () => {
-    it("DateField 1개(type=date)가 렌더링되고 '~'가 없다", () => {
+    it("DatePicker 1개(type=date)가 렌더링되고 '~'가 없다", () => {
       const { container } = render(() => <DateRangePicker periodType="day" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 
@@ -56,7 +56,7 @@ describe("DateRangePicker 컴포넌트", () => {
   });
 
   describe("'month' 모드 렌더링", () => {
-    it("DateField 1개(type=month)가 렌더링되고 '~'가 없다", () => {
+    it("DatePicker 1개(type=month)가 렌더링되고 '~'가 없다", () => {
       const { container } = render(() => <DateRangePicker periodType="month" />);
       const wrapper = container.querySelector("[data-date-range-picker]");
 

@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { Show } from "solid-js";
-import { Tab, Topbar } from "@simplysm/solid";
+import { Tabs, Topbar } from "@simplysm/solid";
 
 export default function TabPage() {
   const [tab1, setTab1] = createSignal("general");
@@ -9,7 +9,7 @@ export default function TabPage() {
   return (
     <Topbar.Container>
       <Topbar>
-        <h1 class="m-0 text-base">Tab</h1>
+        <h1 class="m-0 text-base">Tabs</h1>
       </Topbar>
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-12">
@@ -17,11 +17,11 @@ export default function TabPage() {
           <section>
             <h2 class="mb-6 text-2xl font-bold">기본 사용</h2>
             <div class="space-y-4">
-              <Tab value={tab1()} onValueChange={setTab1}>
-                <Tab.Item value="general">일반</Tab.Item>
-                <Tab.Item value="advanced">고급</Tab.Item>
-                <Tab.Item value="about">정보</Tab.Item>
-              </Tab>
+              <Tabs value={tab1()} onValueChange={setTab1}>
+                <Tabs.Tab value="general">일반</Tabs.Tab>
+                <Tabs.Tab value="advanced">고급</Tabs.Tab>
+                <Tabs.Tab value="about">정보</Tabs.Tab>
+              </Tabs>
               <div class="rounded border border-base-200 p-4 dark:border-base-700">
                 <Show when={tab1() === "general"}>
                   <p>일반 설정 내용입니다.</p>
@@ -42,11 +42,11 @@ export default function TabPage() {
           {/* Disabled */}
           <section>
             <h2 class="mb-6 text-2xl font-bold">Disabled</h2>
-            <Tab value="a">
-              <Tab.Item value="a">활성</Tab.Item>
-              <Tab.Item value="b" disabled>비활성</Tab.Item>
-              <Tab.Item value="c">활성</Tab.Item>
-            </Tab>
+            <Tabs value="a">
+              <Tabs.Tab value="a">활성</Tabs.Tab>
+              <Tabs.Tab value="b" disabled>비활성</Tabs.Tab>
+              <Tabs.Tab value="c">활성</Tabs.Tab>
+            </Tabs>
           </section>
 
           {/* 사이즈 */}
@@ -55,27 +55,27 @@ export default function TabPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Small</h3>
-                <Tab size="sm" value={tab2()} onValueChange={setTab2}>
-                  <Tab.Item value="a">탭 A</Tab.Item>
-                  <Tab.Item value="b">탭 B</Tab.Item>
-                  <Tab.Item value="c">탭 C</Tab.Item>
-                </Tab>
+                <Tabs size="sm" value={tab2()} onValueChange={setTab2}>
+                  <Tabs.Tab value="a">탭 A</Tabs.Tab>
+                  <Tabs.Tab value="b">탭 B</Tabs.Tab>
+                  <Tabs.Tab value="c">탭 C</Tabs.Tab>
+                </Tabs>
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Default</h3>
-                <Tab value={tab2()} onValueChange={setTab2}>
-                  <Tab.Item value="a">탭 A</Tab.Item>
-                  <Tab.Item value="b">탭 B</Tab.Item>
-                  <Tab.Item value="c">탭 C</Tab.Item>
-                </Tab>
+                <Tabs value={tab2()} onValueChange={setTab2}>
+                  <Tabs.Tab value="a">탭 A</Tabs.Tab>
+                  <Tabs.Tab value="b">탭 B</Tabs.Tab>
+                  <Tabs.Tab value="c">탭 C</Tabs.Tab>
+                </Tabs>
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Large</h3>
-                <Tab size="lg" value={tab2()} onValueChange={setTab2}>
-                  <Tab.Item value="a">탭 A</Tab.Item>
-                  <Tab.Item value="b">탭 B</Tab.Item>
-                  <Tab.Item value="c">탭 C</Tab.Item>
-                </Tab>
+                <Tabs size="lg" value={tab2()} onValueChange={setTab2}>
+                  <Tabs.Tab value="a">탭 A</Tabs.Tab>
+                  <Tabs.Tab value="b">탭 B</Tabs.Tab>
+                  <Tabs.Tab value="c">탭 C</Tabs.Tab>
+                </Tabs>
               </div>
             </div>
           </section>
