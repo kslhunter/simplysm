@@ -1,5 +1,25 @@
-import { type Component, createSignal } from "solid-js";
-import { LoadingProvider, Button, Print, Topbar, usePrint } from "@simplysm/solid";
+import { type Component, createSignal, onMount } from "solid-js";
+import { LoadingProvider, Button, Print, Topbar, usePrint, usePrintInstance } from "@simplysm/solid";
+
+function AsyncReadyContent() {
+  const print = usePrintInstance();
+  onMount(() => {
+    setTimeout(() => print?.ready(), 1000);
+  });
+  return (
+    <Print>
+      <Print.Page>
+        <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
+          <h1>비동기 데이터 PDF</h1>
+          <p>1초 대기 후 ready()가 호출되어 PDF가 생성됩니다.</p>
+          <div style={{ "margin-top": "20px", "padding": "20px", "background": "#e8eaf6", "border-radius": "8px" }}>
+            <p>이 콘텐츠는 데이터 로딩 완료 후 렌더링된 것을 시뮬레이션합니다.</p>
+          </div>
+        </div>
+      </Print.Page>
+    </Print>
+  );
+}
 
 const PrintDemo: Component = () => {
   const { toPrinter, toPdf } = usePrint();
@@ -193,27 +213,7 @@ const PrintDemo: Component = () => {
   const handlePdfWithReady = async () => {
     setStatus("비동기 데이터 로딩 후 PDF 생성...");
     try {
-      const buf = await toPdf(() => {
-        const [ready, setReady] = createSignal(false);
-
-        setTimeout(() => setReady(true), 1000);
-
-        return (
-          <Print ready={ready()}>
-            <Print.Page>
-              <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-                <h1>비동기 데이터 PDF</h1>
-                <p>1초 대기 후 ready=true로 변경되어 PDF가 생성됩니다.</p>
-                <div
-                  style={{ "margin-top": "20px", "padding": "20px", "background": "#e8eaf6", "border-radius": "8px" }}
-                >
-                  <p>이 콘텐츠는 데이터 로딩 완료 후 렌더링된 것을 시뮬레이션합니다.</p>
-                </div>
-              </div>
-            </Print.Page>
-          </Print>
-        );
-      });
+      const buf = await toPdf(() => <AsyncReadyContent />);
       downloadPdf(buf, "async-ready.pdf");
       setStatus(`비동기 PDF 생성 완료 (${buf.length} bytes)`);
     } catch (e) {

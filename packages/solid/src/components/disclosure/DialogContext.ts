@@ -1,4 +1,4 @@
-import { createContext, useContext, type Accessor, type Component, type JSX } from "solid-js";
+import { createContext, useContext, type Accessor, type JSX } from "solid-js";
 
 export interface DialogDefaults {
   closeOnEscape?: boolean;
@@ -26,12 +26,8 @@ export interface DialogShowOptions {
   canDeactivate?: () => boolean;
 }
 
-export interface DialogContentProps<T = undefined> {
-  close: (result?: T) => void;
-}
-
 export interface DialogContextValue {
-  show<T = undefined>(content: Component<DialogContentProps<T>>, options: DialogShowOptions): Promise<T | undefined>;
+  show<T = undefined>(factory: () => JSX.Element, options: DialogShowOptions): Promise<T | undefined>;
 }
 
 export const DialogContext = createContext<DialogContextValue>();

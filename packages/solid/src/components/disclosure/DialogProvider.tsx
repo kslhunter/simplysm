@@ -1,18 +1,17 @@
-import { type Accessor, type Component, type ParentComponent, createSignal, For, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { type Accessor, type ParentComponent, createSignal, For, splitProps, type JSX } from "solid-js";
 import {
   DialogContext,
   DialogDefaultsContext,
-  type DialogContentProps,
   type DialogContextValue,
   type DialogDefaults,
   type DialogShowOptions,
 } from "./DialogContext";
+import { DialogInstanceContext, type DialogInstance } from "./DialogInstanceContext";
 import { Dialog } from "./Dialog";
 
 interface DialogEntry {
   id: string;
-  content: Component<DialogContentProps<unknown>>;
+  factory: () => JSX.Element;
   options: DialogShowOptions;
   resolve: (result: unknown) => void;
   open: Accessor<boolean>;
@@ -47,13 +46,13 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
 
-  const show = <T,>(content: Component<DialogContentProps<T>>, options: DialogShowOptions): Promise<T | undefined> => {
+  const show = <T,>(factory: () => JSX.Element, options: DialogShowOptions): Promise<T | undefined> => {
     return new Promise<T | undefined>((resolve) => {
       const id = String(nextId++);
       const [open, setOpen] = createSignal(true);
       const entry: DialogEntry = {
         id,
-        content: content as Component<DialogContentProps<unknown>>,
+        factory,
         options,
         resolve: resolve as (result: unknown) => void,
         open,
@@ -92,35 +91,41 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
       <DialogContext.Provider value={contextValue}>
         {local.children}
         <For each={entries()}>
-          {(entry) => (
-            <Dialog
-              open={entry.open()}
-              onOpenChange={(open) => {
-                if (!open && entry.pendingResult === undefined) {
-                  requestClose(entry.id);
-                }
-              }}
-              onCloseComplete={() => removeEntry(entry.id)}
-              title={entry.options.title}
-              hideHeader={entry.options.hideHeader}
-              closable={entry.options.closable}
-              closeOnBackdrop={entry.options.closeOnBackdrop}
-              closeOnEscape={entry.options.closeOnEscape}
-              resizable={entry.options.resizable}
-              movable={entry.options.movable}
-              float={entry.options.float}
-              fill={entry.options.fill}
-              widthPx={entry.options.widthPx}
-              heightPx={entry.options.heightPx}
-              minWidthPx={entry.options.minWidthPx}
-              minHeightPx={entry.options.minHeightPx}
-              position={entry.options.position}
-              headerStyle={entry.options.headerStyle}
-              canDeactivate={entry.options.canDeactivate}
-            >
-              <Dynamic component={entry.content} close={(result?: unknown) => requestClose(entry.id, result)} />
-            </Dialog>
-          )}
+          {(entry) => {
+            const instance: DialogInstance<unknown> = {
+              close: (result?: unknown) => requestClose(entry.id, result),
+            };
+
+            return (
+              <Dialog
+                open={entry.open()}
+                onOpenChange={(open) => {
+                  if (!open && entry.pendingResult === undefined) {
+                    requestClose(entry.id);
+                  }
+                }}
+                onCloseComplete={() => removeEntry(entry.id)}
+                title={entry.options.title}
+                hideHeader={entry.options.hideHeader}
+                closable={entry.options.closable}
+                closeOnBackdrop={entry.options.closeOnBackdrop}
+                closeOnEscape={entry.options.closeOnEscape}
+                resizable={entry.options.resizable}
+                movable={entry.options.movable}
+                float={entry.options.float}
+                fill={entry.options.fill}
+                widthPx={entry.options.widthPx}
+                heightPx={entry.options.heightPx}
+                minWidthPx={entry.options.minWidthPx}
+                minHeightPx={entry.options.minHeightPx}
+                position={entry.options.position}
+                headerStyle={entry.options.headerStyle}
+                canDeactivate={entry.options.canDeactivate}
+              >
+                <DialogInstanceContext.Provider value={instance}>{entry.factory()}</DialogInstanceContext.Provider>
+              </Dialog>
+            );
+          }}
         </For>
       </DialogContext.Provider>
     </DialogDefaultsContext.Provider>

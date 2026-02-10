@@ -59,6 +59,7 @@ export * from "./components/disclosure/Collapse";
 export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
+export * from "./components/disclosure/DialogInstanceContext";
 export * from "./components/disclosure/DialogProvider";
 
 // feedback
@@ -92,6 +93,7 @@ export { ripple } from "./directives/ripple";
 
 // print
 export * from "./components/print/Print";
+export * from "./components/print/PrintInstanceContext";
 export * from "./contexts/usePrint";
 
 // utils

@@ -3,6 +3,7 @@ import { render } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { useLoading } from "../components/feedback/loading/LoadingContext";
+import { PrintInstanceContext, type PrintInstance } from "../components/print/PrintInstanceContext";
 
 // --- Types ---
 
@@ -59,27 +60,6 @@ function parseSize(size?: string): { width: number; height: number; orientation:
   return { width: 595.28, height: 841.89, orientation: "p" };
 }
 
-function waitForReady(container: HTMLElement): Promise<void> {
-  return new Promise((resolve) => {
-    const root = container.querySelector("[data-print-root]");
-    if (!root) {
-      resolve();
-      return;
-    }
-    if (root.hasAttribute("data-print-ready")) {
-      resolve();
-      return;
-    }
-    const observer = new MutationObserver(() => {
-      if (root.hasAttribute("data-print-ready")) {
-        observer.disconnect();
-        resolve();
-      }
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ["data-print-ready"] });
-  });
-}
-
 function waitForImages(container: HTMLElement): Promise<void> {
   const imgs = Array.from(container.querySelectorAll("img"));
   return Promise.all(
@@ -101,9 +81,46 @@ async function renderAndWait(factory: () => JSX.Element): Promise<{ container: H
   container.style.top = "0";
   document.body.appendChild(container);
 
-  const dispose = render(factory, container);
+  let resolveReady: (() => void) | undefined;
+  const state = { readyCalled: false };
 
-  await waitForReady(container);
+  const readyPromise = new Promise<void>((resolve) => {
+    resolveReady = resolve;
+  });
+
+  const instance: PrintInstance = {
+    ready: () => {
+      state.readyCalled = true;
+      resolveReady?.();
+    },
+  };
+
+  const dispose = render(
+    () =>
+      PrintInstanceContext.Provider({
+        value: instance,
+        get children() {
+          return factory();
+        },
+      }),
+    container,
+  );
+
+  // SolidJS 컴포넌트는 동기적으로 마운트됨.
+  // 동기적으로 ready()가 호출되었으면 이미 state.readyCalled=true.
+  // 비동기 ready (onMount 내 async 등)를 위해 rAF 대기 후 확인.
+  await Promise.resolve();
+
+  if (!state.readyCalled) {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  }
+
+  if (state.readyCalled) {
+    await readyPromise;
+  }
+
   await waitForImages(container);
 
   return { container, dispose };
@@ -204,10 +221,7 @@ export function usePrint(): UsePrintReturn {
         // container 자체는 off-screen 스타일(position/left)을 가지므로
         // html-to-image가 클론 시 동일 스타일을 복제하여 빈 캔버스가 생길 수 있음.
         // 따라서 실제 콘텐츠 요소를 target으로 사용.
-        const target =
-          container.querySelector<HTMLElement>("[data-print-root]") ??
-          (container.firstElementChild as HTMLElement | null) ??
-          container;
+        const target = (container.firstElementChild as HTMLElement | null) ?? container;
         target.style.width = pageWidth + "pt";
 
         const canvas = await htmlToImage.toCanvas(target, {
