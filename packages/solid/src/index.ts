@@ -76,6 +76,9 @@ export * from "./contexts/ThemeContext";
 export * from "./contexts/usePersisted";
 export * from "./contexts/ServiceClientContext";
 export * from "./contexts/ServiceClientProvider";
+export * from "./contexts/shared-data/SharedDataContext";
+export * from "./contexts/shared-data/SharedDataProvider";
+export * from "./contexts/shared-data/SharedDataChangeEvent";
 
 // directives
 export { ripple } from "./directives/ripple";

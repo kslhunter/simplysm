@@ -2,11 +2,12 @@ import { env } from "@simplysm/core-common";
 import { ServiceServer } from "@simplysm/service-server";
 import { EchoService } from "./services/echo-service";
 import { HealthService } from "./services/health-service";
+import { SharedDataDemoService } from "./services/shared-data-demo-service";
 
 export const server = new ServiceServer({
   rootPath: process.cwd(),
   port: 40081,
-  services: [EchoService, HealthService],
+  services: [EchoService, HealthService, SharedDataDemoService],
 });
 
 // 프로덕션 모드: 정적 파일 서빙 포함하여 직접 listen

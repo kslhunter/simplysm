@@ -96,7 +96,10 @@ const menuItems: SidebarMenuItem[] = [
   {
     title: "Service",
     icon: IconPlug,
-    children: [{ title: "ServiceClient", href: "/home/service/client" }],
+    children: [
+      { title: "ServiceClient", href: "/home/service/client" },
+      { title: "SharedData", href: "/home/service/shared-data" },
+    ],
   },
 ];
 
