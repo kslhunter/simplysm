@@ -4,7 +4,6 @@ import { input, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
 import { spawn } from "../utils/spawn";
-import { runInstall } from "./install";
 
 //#region Types
 
@@ -111,13 +110,15 @@ export async function runInit(_options: InitOptions): Promise<void> {
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
-  // 6. sd-cli install (Claude Code 스킬 설치)
-  logger.info("sd-cli install 실행 중...");
-  await runInstall({});
-  logger.success("sd-cli install 완료");
-
-  // 7. 완료 메시지
-  consola.box([`프로젝트가 생성되었습니다!`, "", `  pnpm dev ${clientName}    개발 서버 실행`].join("\n"));
+  // 6. 완료 메시지
+  consola.box(
+    [
+      `프로젝트가 생성되었습니다!`,
+      "",
+      `  sd-claude install          Claude Code 스킬 설치`,
+      `  pnpm dev ${clientName}    개발 서버 실행`,
+    ].join("\n"),
+  );
 }
 
 //#endregion
