@@ -118,7 +118,7 @@ export default function SheetFullPage() {
       <div class="flex-1 overflow-hidden p-2">
         <DataSheet
           items={employees}
-          key="full"
+          persistKey="full"
           class="h-full"
           inset
           sorts={sorts()}

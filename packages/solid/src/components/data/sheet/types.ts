@@ -4,7 +4,7 @@ export interface DataSheetProps<T> {
   // 데이터
   items?: T[];
   // 설정
-  key?: string;
+  persistKey?: string;
   hideConfigBar?: boolean;
   inset?: boolean;
   contentStyle?: JSX.CSSProperties | string;

@@ -73,7 +73,7 @@ interface DataSheetComponent {
 export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   const [local] = splitProps(props, [
     "items",
-    "key",
+    "persistKey",
     "hideConfigBar",
     "inset",
     "contentStyle",
@@ -111,10 +111,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   );
 
   // #region Config (usePersisted)
-  /* eslint-disable solid/reactivity -- key는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
+  /* eslint-disable solid/reactivity -- persistKey는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
   const [config, setConfig] =
-    local.key != null && local.key !== ""
-      ? usePersisted<DataSheetConfig>(`sheet.${local.key}`, { columnRecord: {} })
+    local.persistKey != null && local.persistKey !== ""
+      ? usePersisted<DataSheetConfig>(`sheet.${local.persistKey}`, { columnRecord: {} })
       : createSignal<DataSheetConfig>({ columnRecord: {} });
   /* eslint-enable solid/reactivity */
 
@@ -729,7 +729,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   return (
     <div
-      data-sheet={local.key ?? ""}
+      data-sheet={local.persistKey ?? ""}
       class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}
     >
       <Show when={!local.hideConfigBar && (modal != null || effectivePageCount() > 1)}>

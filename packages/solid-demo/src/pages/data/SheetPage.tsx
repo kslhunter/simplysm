@@ -168,7 +168,7 @@ export default function SheetPage() {
           {/* 기본 테이블 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 테이블</h2>
-            <DataSheet items={users} key="basic">
+            <DataSheet items={users} persistKey="basic">
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -187,7 +187,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
             </p>
-            <DataSheet items={users} key="multi-header">
+            <DataSheet items={users} persistKey="multi-header">
               <DataSheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -209,7 +209,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에 고정됩니다.
             </p>
-            <DataSheet items={users} key="summary">
+            <DataSheet items={users} persistKey="summary">
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -230,7 +230,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
             </p>
-            <DataSheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
+            <DataSheet items={users} persistKey="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -252,7 +252,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
             </p>
-            <DataSheet items={users} key="paging" itemsPerPage={2} page={page()} onPageChange={setPage}>
+            <DataSheet items={users} persistKey="paging" itemsPerPage={2} page={page()} onPageChange={setPage}>
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -273,7 +273,7 @@ export default function SheetPage() {
             </p>
             <DataSheet
               items={categories}
-              key="tree"
+              persistKey="tree"
               getChildren={(item) => item.children}
               expandedItems={expanded()}
               onExpandedItemsChange={setExpanded}
@@ -294,7 +294,7 @@ export default function SheetPage() {
               fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로 초기화.
             </p>
             <div>
-              <DataSheet items={users} key="fixed-resize">
+              <DataSheet items={users} persistKey="fixed-resize">
                 <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
                   {(ctx) => ctx.item.name}
                 </DataSheet.Column>
@@ -317,7 +317,7 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
             </p>
-            <DataSheet items={editUsers} key="cell-edit">
+            <DataSheet items={editUsers} persistKey="cell-edit">
               <DataSheet.Column<User> key="name" header="이름">
                 {(ctx) => (
                   <TextInput
@@ -430,7 +430,7 @@ export default function SheetPage() {
             </p>
             <DataSheet
               items={users}
-              key="select-multi"
+              persistKey="select-multi"
               selectMode="multiple"
               selectedItems={multiSelected()}
               onSelectedItemsChange={setMultiSelected}
@@ -461,7 +461,7 @@ export default function SheetPage() {
             </p>
             <DataSheet
               items={users}
-              key="select-single"
+              persistKey="select-single"
               selectMode="single"
               selectedItems={singleSelected()}
               onSelectedItemsChange={setSingleSelected}
@@ -493,7 +493,7 @@ export default function SheetPage() {
             </p>
             <DataSheet
               items={users}
-              key="select-disabled"
+              persistKey="select-disabled"
               selectMode="multiple"
               selectedItems={disabledSelected()}
               onSelectedItemsChange={setDisabledSelected}
@@ -526,7 +526,7 @@ export default function SheetPage() {
             </p>
             <DataSheet
               items={reorderItems()}
-              key="reorder"
+              persistKey="reorder"
               onItemsReorder={(event) => {
                 const items = [...reorderItems()];
                 const fromIndex = items.indexOf(event.item);

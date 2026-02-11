@@ -26,7 +26,7 @@ describe("DataSheet", () => {
   it("기본 렌더링: 컬럼 헤더와 데이터 행이 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test">
+        <DataSheet items={testData} persistKey="test">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -53,7 +53,7 @@ describe("DataSheet", () => {
   it("다단계 헤더: colspan과 rowspan이 올바르게 적용된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-multi">
+        <DataSheet items={testData} persistKey="test-multi">
           <DataSheet.Column<TestItem> key="name" header={["기본정보", "이름"]}>
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -86,7 +86,7 @@ describe("DataSheet", () => {
   it("합계 행: summary가 있으면 thead에 합계 행이 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-summary">
+        <DataSheet items={testData} persistKey="test-summary">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -108,7 +108,7 @@ describe("DataSheet", () => {
   it("빈 데이터: tbody가 비어있다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={[] as TestItem[]} key="test-empty">
+        <DataSheet items={[] as TestItem[]} persistKey="test-empty">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -127,7 +127,7 @@ describe("DataSheet", () => {
   it("hidden 컬럼은 렌더링되지 않는다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-hidden">
+        <DataSheet items={testData} persistKey="test-hidden">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -149,7 +149,7 @@ describe("DataSheet", () => {
       <TestWrapper>
         <DataSheet
           items={testData}
-          key="test-sort"
+          persistKey="test-sort"
           sorts={[]}
           onSortsChange={(s) => {
             capturedSorts = s;
@@ -177,7 +177,7 @@ describe("DataSheet", () => {
       <TestWrapper>
         <DataSheet
           items={testData}
-          key="test-no-sort"
+          persistKey="test-no-sort"
           sorts={[]}
           onSortsChange={(s) => {
             capturedSorts = s;
@@ -198,7 +198,7 @@ describe("DataSheet", () => {
   it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-auto-sort" sorts={[{ key: "name", desc: false }]} autoSort>
+        <DataSheet items={testData} persistKey="test-auto-sort" sorts={[{ key: "name", desc: false }]} autoSort>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -214,7 +214,7 @@ describe("DataSheet", () => {
   it("페이지네이션: itemsPerPage로 데이터가 잘린다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-paging" itemsPerPage={2} page={0}>
+        <DataSheet items={testData} persistKey="test-paging" itemsPerPage={2} page={0}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -229,7 +229,7 @@ describe("DataSheet", () => {
   it("페이지네이션: 2페이지 이상일 때 Pagination이 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-paging-nav" itemsPerPage={2} page={0}>
+        <DataSheet items={testData} persistKey="test-paging-nav" itemsPerPage={2} page={0}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -244,7 +244,7 @@ describe("DataSheet", () => {
   it("페이지네이션: 1페이지면 Pagination이 표시되지 않는다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-no-paging" itemsPerPage={10} page={0}>
+        <DataSheet items={testData} persistKey="test-no-paging" itemsPerPage={10} page={0}>
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -259,7 +259,7 @@ describe("DataSheet", () => {
   it("고정 컬럼: fixed 컬럼의 td에 sticky 클래스가 적용된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-fixed">
+        <DataSheet items={testData} persistKey="test-fixed">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -278,7 +278,7 @@ describe("DataSheet", () => {
   it("고정 컬럼: 마지막 고정 컬럼에 경계 테두리 클래스가 적용된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-fixed-border">
+        <DataSheet items={testData} persistKey="test-fixed-border">
           <DataSheet.Column<TestItem> key="name" header="이름" fixed width="100px">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -297,7 +297,7 @@ describe("DataSheet", () => {
   it("리사이저: resizable 컬럼에 리사이저 핸들이 있다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} key="test-resizer">
+        <DataSheet items={testData} persistKey="test-resizer">
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -473,7 +473,7 @@ describe("DataSheet 트리 확장", () => {
   it("getChildren 설정 시 확장 기능 컬럼이 렌더링된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={treeData} key="test-tree" getChildren={(item) => item.children}>
+        <DataSheet items={treeData} persistKey="test-tree" getChildren={(item) => item.children}>
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div>{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -493,7 +493,12 @@ describe("DataSheet 트리 확장", () => {
   it("접힌 상태에서는 루트 항목만 표시된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={treeData} key="test-tree-collapsed" getChildren={(item) => item.children} expandedItems={[]}>
+        <DataSheet
+          items={treeData}
+          persistKey="test-tree-collapsed"
+          getChildren={(item) => item.children}
+          expandedItems={[]}
+        >
           <DataSheet.Column<TreeItem> key="name" header="이름">
             {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -513,7 +518,7 @@ describe("DataSheet 트리 확장", () => {
       <TestWrapper>
         <DataSheet
           items={treeData}
-          key="test-tree-expanded"
+          persistKey="test-tree-expanded"
           getChildren={(item) => item.children}
           expandedItems={[treeData[0]]}
         >
@@ -536,7 +541,7 @@ describe("DataSheet 트리 확장", () => {
       <TestWrapper>
         <DataSheet
           items={treeData}
-          key="test-tree-no-children"
+          persistKey="test-tree-no-children"
           getChildren={(item) => item.children}
           expandedItems={[]}
         >
