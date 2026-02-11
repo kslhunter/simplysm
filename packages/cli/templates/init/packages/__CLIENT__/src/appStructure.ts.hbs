@@ -1,0 +1,20 @@
+{{#if router}}
+import { createAppStructure } from "@simplysm/solid";
+import { HomePage } from "./pages/HomePage";
+
+export const appStructure = createAppStructure({
+  items: [
+    {
+      code: "home",
+      title: "홈",
+      children: [
+        {
+          code: "main",
+          title: "메인",
+          component: HomePage,
+        },
+      ],
+    },
+  ],
+});
+{{/if}}
