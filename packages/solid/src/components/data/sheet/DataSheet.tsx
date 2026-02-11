@@ -80,8 +80,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     "sorts",
     "onSortsChange",
     "autoSort",
-    "page",
-    "onPageChange",
+    "pageIndex",
+    "onPageIndexChange",
     "totalPageCount",
     "itemsPerPage",
     "displayPageCount",
@@ -234,8 +234,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   // #region Paging
   const [currentPage, setCurrentPage] = createControllableSignal({
-    value: () => local.page ?? 0,
-    onChange: () => local.onPageChange,
+    value: () => local.pageIndex ?? 0,
+    onChange: () => local.onPageIndexChange,
   });
 
   const effectivePageCount = createMemo(() => {
@@ -736,8 +736,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
         <div class={toolbarClass}>
           <Show when={effectivePageCount() > 1}>
             <Pagination
-              page={currentPage()}
-              onPageChange={setCurrentPage}
+              pageIndex={currentPage()}
+              onPageIndexChange={setCurrentPage}
               totalPageCount={effectivePageCount()}
               displayPageCount={local.displayPageCount}
               size="sm"

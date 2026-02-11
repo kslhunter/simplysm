@@ -6,19 +6,19 @@ import { Pagination } from "../../../src/components/data/Pagination";
 describe("Pagination 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("nav 요소로 렌더링된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={5} />);
 
       expect(container.querySelector("nav")).toBeTruthy();
     });
 
     it("data-pagination 속성이 적용된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={5} />);
 
       expect(container.querySelector("[data-pagination]")).toBeTruthy();
     });
 
     it("4개의 네비게이션 버튼과 페이지 버튼이 렌더링된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       // 4 navigation buttons (<<, <, >, >>) + 5 page buttons
@@ -26,7 +26,7 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("페이지 번호가 1-based로 표시된다", () => {
-      const { getByText } = render(() => <Pagination page={0} totalPageCount={3} />);
+      const { getByText } = render(() => <Pagination pageIndex={0} totalPageCount={3} />);
 
       expect(getByText("1")).toBeTruthy();
       expect(getByText("2")).toBeTruthy();
@@ -36,7 +36,7 @@ describe("Pagination 컴포넌트", () => {
     it("custom class가 nav 요소에 전달된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Pagination page={0} totalPageCount={5} class="my-custom" />
+        <Pagination pageIndex={0} totalPageCount={5} class="my-custom" />
       ));
 
       const nav = container.querySelector("nav");
@@ -46,7 +46,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("displayPageCount 기본값", () => {
     it("displayPageCount 기본값은 10이다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={25} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={25} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       // 4 nav + 10 page buttons
@@ -54,7 +54,7 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("displayPageCount=5로 설정하면 5개의 페이지 버튼이 표시된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={25} displayPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={25} displayPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       // 4 nav + 5 page buttons
@@ -64,7 +64,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("현재 페이지 표시", () => {
     it("현재 페이지 버튼은 다른 variant를 가진다", () => {
-      const { container } = render(() => <Pagination page={2} totalPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={2} totalPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       // buttons[0]=<<, [1]=<, [2]=page1, [3]=page2, [4]=page3(현재), [5]=page4, [6]=page5, [7]=>, [8]=>>
@@ -77,7 +77,9 @@ describe("Pagination 컴포넌트", () => {
 
   describe("페이지 그룹 계산", () => {
     it("page=0, displayPageCount=5일 때 페이지 1~5가 표시된다", () => {
-      const { getByText, queryByText } = render(() => <Pagination page={0} totalPageCount={20} displayPageCount={5} />);
+      const { getByText, queryByText } = render(() => (
+        <Pagination pageIndex={0} totalPageCount={20} displayPageCount={5} />
+      ));
 
       expect(getByText("1")).toBeTruthy();
       expect(getByText("2")).toBeTruthy();
@@ -88,7 +90,9 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("page=5, displayPageCount=5일 때 페이지 6~10이 표시된다", () => {
-      const { getByText, queryByText } = render(() => <Pagination page={5} totalPageCount={20} displayPageCount={5} />);
+      const { getByText, queryByText } = render(() => (
+        <Pagination pageIndex={5} totalPageCount={20} displayPageCount={5} />
+      ));
 
       expect(queryByText("5")).toBeFalsy();
       expect(getByText("6")).toBeTruthy();
@@ -101,7 +105,7 @@ describe("Pagination 컴포넌트", () => {
 
     it("page=12, displayPageCount=10일 때 페이지 11~20이 표시된다", () => {
       const { getByText, queryByText } = render(() => (
-        <Pagination page={12} totalPageCount={25} displayPageCount={10} />
+        <Pagination pageIndex={12} totalPageCount={25} displayPageCount={10} />
       ));
 
       expect(queryByText("10")).toBeFalsy();
@@ -112,7 +116,7 @@ describe("Pagination 컴포넌트", () => {
 
     it("마지막 그룹에서 totalPageCount보다 적은 페이지만 표시된다", () => {
       const { container, getByText, queryByText } = render(() => (
-        <Pagination page={7} totalPageCount={8} displayPageCount={5} />
+        <Pagination pageIndex={7} totalPageCount={8} displayPageCount={5} />
       ));
 
       // page=7, displayPageCount=5: from = Math.floor(7/5)*5 = 5, pages = 5,6,7 (totalPageCount=8)
@@ -129,7 +133,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("네비게이션 버튼 비활성화", () => {
     it("첫 번째 그룹일 때 first/prev 버튼이 비활성화된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={20} displayPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={20} displayPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       const firstBtn = buttons[0]; // <<
@@ -140,7 +144,7 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("마지막 그룹일 때 next/last 버튼이 비활성화된다", () => {
-      const { container } = render(() => <Pagination page={18} totalPageCount={20} displayPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={18} totalPageCount={20} displayPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       const nextBtn = buttons[buttons.length - 2]; // >
@@ -151,7 +155,7 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("중간 그룹일 때 모든 네비게이션 버튼이 활성화된다", () => {
-      const { container } = render(() => <Pagination page={5} totalPageCount={20} displayPageCount={5} />);
+      const { container } = render(() => <Pagination pageIndex={5} totalPageCount={20} displayPageCount={5} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       const firstBtn = buttons[0];
@@ -169,7 +173,9 @@ describe("Pagination 컴포넌트", () => {
   describe("페이지 클릭", () => {
     it("페이지 버튼 클릭 시 onPageChange가 호출된다", () => {
       const onPageChange = vi.fn();
-      const { getByText } = render(() => <Pagination page={0} totalPageCount={5} onPageChange={onPageChange} />);
+      const { getByText } = render(() => (
+        <Pagination pageIndex={0} totalPageCount={5} onPageIndexChange={onPageChange} />
+      ));
 
       fireEvent.click(getByText("3"));
 
@@ -178,7 +184,9 @@ describe("Pagination 컴포넌트", () => {
 
     it("현재 페이지 클릭 시에도 onPageChange가 호출된다", () => {
       const onPageChange = vi.fn();
-      const { getByText } = render(() => <Pagination page={0} totalPageCount={5} onPageChange={onPageChange} />);
+      const { getByText } = render(() => (
+        <Pagination pageIndex={0} totalPageCount={5} onPageIndexChange={onPageChange} />
+      ));
 
       fireEvent.click(getByText("1"));
 
@@ -190,7 +198,7 @@ describe("Pagination 컴포넌트", () => {
     it("first 버튼 클릭 시 page 0으로 이동한다", () => {
       const onPageChange = vi.fn();
       const { container } = render(() => (
-        <Pagination page={15} totalPageCount={20} displayPageCount={5} onPageChange={onPageChange} />
+        <Pagination pageIndex={15} totalPageCount={20} displayPageCount={5} onPageIndexChange={onPageChange} />
       ));
 
       const buttons = container.querySelectorAll("[data-button]");
@@ -204,7 +212,7 @@ describe("Pagination 컴포넌트", () => {
     it("last 버튼 클릭 시 마지막 페이지로 이동한다", () => {
       const onPageChange = vi.fn();
       const { container } = render(() => (
-        <Pagination page={0} totalPageCount={20} displayPageCount={5} onPageChange={onPageChange} />
+        <Pagination pageIndex={0} totalPageCount={20} displayPageCount={5} onPageIndexChange={onPageChange} />
       ));
 
       const buttons = container.querySelectorAll("[data-button]");
@@ -218,7 +226,7 @@ describe("Pagination 컴포넌트", () => {
     it("prev 버튼 클릭 시 이전 그룹의 마지막 페이지로 이동한다", () => {
       const onPageChange = vi.fn();
       const { container } = render(() => (
-        <Pagination page={7} totalPageCount={20} displayPageCount={5} onPageChange={onPageChange} />
+        <Pagination pageIndex={7} totalPageCount={20} displayPageCount={5} onPageIndexChange={onPageChange} />
       ));
 
       // page=7, displayPageCount=5: from = Math.floor(7/5)*5 = 5
@@ -234,7 +242,7 @@ describe("Pagination 컴포넌트", () => {
     it("next 버튼 클릭 시 다음 그룹의 첫 페이지로 이동한다", () => {
       const onPageChange = vi.fn();
       const { container } = render(() => (
-        <Pagination page={3} totalPageCount={20} displayPageCount={5} onPageChange={onPageChange} />
+        <Pagination pageIndex={3} totalPageCount={20} displayPageCount={5} onPageIndexChange={onPageChange} />
       ));
 
       // page=3, displayPageCount=5: from=0, last in group = min(0+5, 20)-1 = 4
@@ -248,9 +256,9 @@ describe("Pagination 컴포넌트", () => {
 
   describe("size prop", () => {
     it("size prop이 전달되면 스타일이 달라진다", () => {
-      const { container: defaultContainer } = render(() => <Pagination page={0} totalPageCount={5} />);
-      const { container: smContainer } = render(() => <Pagination page={0} totalPageCount={5} size="sm" />);
-      const { container: lgContainer } = render(() => <Pagination page={0} totalPageCount={5} size="lg" />);
+      const { container: defaultContainer } = render(() => <Pagination pageIndex={0} totalPageCount={5} />);
+      const { container: smContainer } = render(() => <Pagination pageIndex={0} totalPageCount={5} size="sm" />);
+      const { container: lgContainer } = render(() => <Pagination pageIndex={0} totalPageCount={5} size="lg" />);
 
       const defaultNav = defaultContainer.querySelector("nav");
       const smNav = smContainer.querySelector("nav");
@@ -267,7 +275,7 @@ describe("Pagination 컴포넌트", () => {
       const [page, setPage] = createSignal(0);
 
       const { container, getByText } = render(() => (
-        <Pagination page={page()} totalPageCount={20} displayPageCount={5} onPageChange={setPage} />
+        <Pagination pageIndex={page()} totalPageCount={20} displayPageCount={5} onPageIndexChange={setPage} />
       ));
 
       // 초기 상태: 페이지 1~5 표시
@@ -284,7 +292,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("엣지 케이스", () => {
     it("totalPageCount=1일 때 네비게이션 버튼이 모두 비활성화된다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={1} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={1} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       const firstBtn = buttons[0];
@@ -299,7 +307,7 @@ describe("Pagination 컴포넌트", () => {
     });
 
     it("totalPageCount=0일 때 페이지 버튼이 표시되지 않는다", () => {
-      const { container } = render(() => <Pagination page={0} totalPageCount={0} />);
+      const { container } = render(() => <Pagination pageIndex={0} totalPageCount={0} />);
 
       const buttons = container.querySelectorAll("[data-button]");
       // 4 nav buttons only, no page buttons

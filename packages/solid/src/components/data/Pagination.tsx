@@ -8,8 +8,8 @@ import { Icon } from "../display/Icon";
 type PaginationSize = "sm" | "lg";
 
 export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
-  page: number;
-  onPageChange?: (page: number) => void;
+  pageIndex: number;
+  onPageIndexChange?: (pageIndex: number) => void;
   totalPageCount: number;
   displayPageCount?: number;
   size?: PaginationSize;
@@ -28,8 +28,8 @@ const gapClasses: Record<PaginationSize | "default", string> = {
 export const Pagination: Component<PaginationProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "class",
-    "page",
-    "onPageChange",
+    "pageIndex",
+    "onPageIndexChange",
     "totalPageCount",
     "displayPageCount",
     "size",
@@ -38,7 +38,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
   const visibleCount = () => local.displayPageCount ?? 10;
 
   const pages = () => {
-    const from = Math.floor(local.page / visibleCount()) * visibleCount();
+    const from = Math.floor(local.pageIndex / visibleCount()) * visibleCount();
     const to = Math.min(from + visibleCount(), local.totalPageCount);
     const result: number[] = [];
     for (let i = from; i < to; i++) {
@@ -60,7 +60,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         variant="ghost"
         size={local.size}
         disabled={!hasPrev()}
-        onClick={() => local.onPageChange?.(0)}
+        onClick={() => local.onPageIndexChange?.(0)}
       >
         <Icon icon={IconChevronsLeft} size="1em" />
       </Button>
@@ -70,7 +70,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         variant="ghost"
         size={local.size}
         disabled={!hasPrev()}
-        onClick={() => local.onPageChange?.((pages()[0] ?? 1) - 1)}
+        onClick={() => local.onPageIndexChange?.((pages()[0] ?? 1) - 1)}
       >
         <Icon icon={IconChevronLeft} size="1em" />
       </Button>
@@ -78,10 +78,10 @@ export const Pagination: Component<PaginationProps> = (props) => {
         {(p) => (
           <Button
             class={btnClass}
-            theme={p === local.page ? "primary" : "base"}
-            variant={p === local.page ? "solid" : "ghost"}
+            theme={p === local.pageIndex ? "primary" : "base"}
+            variant={p === local.pageIndex ? "solid" : "ghost"}
             size={local.size}
-            onClick={() => local.onPageChange?.(p)}
+            onClick={() => local.onPageIndexChange?.(p)}
           >
             {p + 1}
           </Button>
@@ -93,7 +93,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         variant="ghost"
         size={local.size}
         disabled={!hasNext()}
-        onClick={() => local.onPageChange?.((pages()[pages().length - 1] ?? 0) + 1)}
+        onClick={() => local.onPageIndexChange?.((pages()[pages().length - 1] ?? 0) + 1)}
       >
         <Icon icon={IconChevronRight} size="1em" />
       </Button>
@@ -103,7 +103,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
         variant="ghost"
         size={local.size}
         disabled={!hasNext()}
-        onClick={() => local.onPageChange?.(local.totalPageCount - 1)}
+        onClick={() => local.onPageIndexChange?.(local.totalPageCount - 1)}
       >
         <Icon icon={IconChevronsRight} size="1em" />
       </Button>
