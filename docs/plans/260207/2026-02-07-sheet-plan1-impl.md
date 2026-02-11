@@ -15,6 +15,7 @@
 ### Task 1: 타입 정의 (types.ts)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/types.ts`
 
 **Step 1: 타입 파일 생성**
@@ -168,6 +169,7 @@ git commit -m "feat(solid): Sheet 전체 타입 정의"
 ### Task 2: 순수 유틸 함수 (sheetUtils.ts)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/sheetUtils.ts`
 
 **Step 1: sheetUtils.ts 작성**
@@ -381,6 +383,7 @@ git commit -m "feat(solid): Sheet 순수 유틸 함수 (normalizeHeader, buildHe
 ### Task 3: 스타일 상수 (Sheet.styles.ts)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/Sheet.styles.ts`
 
 **Step 1: 스타일 파일 작성**
@@ -390,16 +393,9 @@ git commit -m "feat(solid): Sheet 순수 유틸 함수 (normalizeHeader, buildHe
 ```typescript
 import clsx from "clsx";
 
-export const sheetContainerClass = clsx(
-  "relative",
-  "bg-white dark:bg-base-800",
-  "overflow-auto",
-);
+export const sheetContainerClass = clsx("relative", "bg-white dark:bg-base-800", "overflow-auto");
 
-export const tableClass = clsx(
-  "border-separate border-spacing-0",
-  "table-fixed",
-);
+export const tableClass = clsx("border-separate border-spacing-0", "table-fixed");
 
 export const thClass = clsx(
   "relative",
@@ -411,9 +407,7 @@ export const thClass = clsx(
   "align-middle",
 );
 
-export const thContentClass = clsx(
-  "px-2 py-1",
-);
+export const thContentClass = clsx("px-2 py-1");
 
 export const tdClass = clsx(
   "bg-white dark:bg-base-800",
@@ -423,19 +417,11 @@ export const tdClass = clsx(
   "align-top",
 );
 
-export const summaryThClass = clsx(
-  "bg-warning-50 dark:bg-warning-900/20",
-);
+export const summaryThClass = clsx("bg-warning-50 dark:bg-warning-900/20");
 
-export const insetContainerClass = clsx(
-  "border-none",
-  "rounded-none",
-);
+export const insetContainerClass = clsx("border-none", "rounded-none");
 
-export const defaultContainerClass = clsx(
-  "border border-base-300 dark:border-base-600",
-  "rounded",
-);
+export const defaultContainerClass = clsx("border border-base-300 dark:border-base-600", "rounded");
 ```
 
 **Step 2: 커밋**
@@ -450,6 +436,7 @@ git commit -m "feat(solid): Sheet Tailwind 스타일 상수"
 ### Task 4: SheetColumn 컴포넌트 (SheetColumn.tsx)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/SheetColumn.tsx`
 
 **Step 1: SheetColumn 작성**
@@ -462,11 +449,7 @@ import type { SheetColumnDef, SheetColumnProps } from "./types";
 import { normalizeHeader } from "./sheetUtils";
 
 export function isSheetColumnDef(value: unknown): value is SheetColumnDef<unknown> {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>).__type === "sheet-column"
-  );
+  return value != null && typeof value === "object" && (value as Record<string, unknown>).__type === "sheet-column";
 }
 
 export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
@@ -501,6 +484,7 @@ git commit -m "feat(solid): SheetColumn compound component (plain object 반환)
 ### Task 5: Sheet 메인 컴포넌트 (Sheet.tsx)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: Sheet.tsx 작성**
@@ -545,8 +529,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
   // #region Column Collection
   const resolved = children(() => local.children);
   const columnDefs = createMemo(() =>
-    (resolved.toArray().filter(isSheetColumnDef) as SheetColumnDef<T>[])
-      .filter((col) => !col.hidden),
+    (resolved.toArray().filter(isSheetColumnDef) as SheetColumnDef<T>[]).filter((col) => !col.hidden),
   );
 
   // #region Header
@@ -578,19 +561,13 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
 
   // #region Styles
   const getContainerClassName = () =>
-    twMerge(
-      sheetContainerClass,
-      local.inset ? insetContainerClass : defaultContainerClass,
-      local.class,
-    );
+    twMerge(sheetContainerClass, local.inset ? insetContainerClass : defaultContainerClass, local.class);
 
   return (
     <div data-sheet={local.key} class={getContainerClassName()}>
       <table class={tableClass}>
         <colgroup>
-          <For each={columnDefs()}>
-            {(col) => <col style={col.width ? { width: col.width } : undefined} />}
-          </For>
+          <For each={columnDefs()}>{(col) => <col style={col.width ? { width: col.width } : undefined} />}</For>
         </colgroup>
         <thead>
           <For each={headerTable()}>
@@ -605,9 +582,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
                           colspan={c().colspan > 1 ? c().colspan : undefined}
                           rowspan={c().rowspan > 1 ? c().rowspan : undefined}
                         >
-                          <div class={thContentClass}>
-                            {c().headerContent?.() ?? c().text}
-                          </div>
+                          <div class={thContentClass}>{c().headerContent?.() ?? c().text}</div>
                         </th>
                       )}
                     </Show>
@@ -621,9 +596,7 @@ export const Sheet: SheetComponent = <T,>(props: SheetProps<T>) => {
               <For each={columnDefs()}>
                 {(col) => (
                   <th class={twMerge(thClass, summaryThClass)}>
-                    <div class={thContentClass}>
-                      {col.summary?.()}
-                    </div>
+                    <div class={thContentClass}>{col.summary?.()}</div>
                   </th>
                 )}
               </For>
@@ -670,6 +643,7 @@ git commit -m "feat(solid): Sheet 메인 컴포넌트 (다단계 헤더, 합계 
 ### Task 6: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -703,6 +677,7 @@ git commit -m "feat(solid): Sheet 컴포넌트 export 추가"
 ### Task 7: 컴포넌트 테스트
 
 **Files:**
+
 - Create: `packages/solid/tests/sheet/Sheet.spec.tsx`
 
 **Step 1: 테스트 파일 작성**
@@ -790,11 +765,7 @@ describe("Sheet", () => {
         <Sheet.Column<TestItem> key="name" header="이름">
           {(ctx) => <div>{ctx.item.name}</div>}
         </Sheet.Column>
-        <Sheet.Column<TestItem>
-          key="age"
-          header="나이"
-          summary={() => <span>합계: 83</span>}
-        >
+        <Sheet.Column<TestItem> key="age" header="나이" summary={() => <span>합계: 83</span>}>
           {(ctx) => <div>{ctx.item.age}</div>}
         </Sheet.Column>
       </Sheet>
@@ -864,6 +835,7 @@ git commit -m "test(solid): Sheet 컴포넌트 테스트 (기본, 다단계 헤�
 ### Task 8: 데모 페이지
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx`
 - Modify: `packages/solid-demo/src/pages/Home.tsx`
@@ -933,11 +905,7 @@ export default function SheetPage() {
                 {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
               </Sheet.Column>
               <Sheet.Column<User> key="salary" header="급여" width="120px">
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+                {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
               </Sheet.Column>
             </Sheet>
           </section>
@@ -956,15 +924,9 @@ export default function SheetPage() {
                 key="salary"
                 header="급여"
                 width="150px"
-                summary={() => (
-                  <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>
-                )}
+                summary={() => <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>}
               >
-                {(ctx) => (
-                  <div class="px-2 py-1 text-right">
-                    {ctx.item.salary.toLocaleString()}원
-                  </div>
-                )}
+                {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
               </Sheet.Column>
             </Sheet>
           </section>

@@ -13,6 +13,7 @@
 ### Task 1: CheckBox `onChange` → `onValueChange` 네이밍 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/checkbox/CheckBox.tsx:22-46`
 - Modify: `packages/solid/tests/components/form-control/checkbox/CheckBox.spec.tsx:64-69`
 - Modify: `packages/solid-demo/src/pages/form-control/CheckBoxRadioPage.tsx:158`
@@ -23,7 +24,7 @@
 // CheckBox.tsx:24 — onChange → onValueChange
 export interface CheckBoxProps {
   value?: boolean;
-  onValueChange?: (value: boolean) => void;  // 변경
+  onValueChange?: (value: boolean) => void; // 변경
   disabled?: boolean;
   size?: CheckBoxSize;
   theme?: CheckBoxTheme;
@@ -39,7 +40,7 @@ export interface CheckBoxProps {
 // CheckBox.tsx:38 — splitProps의 "onChange" → "onValueChange"
 const [local, rest] = splitProps(props, [
   "value",
-  "onValueChange",  // 변경
+  "onValueChange", // 변경
   "disabled",
   "size",
   "theme",
@@ -55,7 +56,7 @@ const [local, rest] = splitProps(props, [
 // CheckBox.tsx:49-52 — createPropSignal의 onChange 참조 수정
 const [value, setValue] = createPropSignal({
   value: () => local.value ?? false,
-  onChange: () => local.onValueChange,  // 변경
+  onChange: () => local.onValueChange, // 변경
 });
 ```
 
@@ -100,6 +101,7 @@ git commit -m "refactor(solid): CheckBox onChange → onValueChange로 네이밍
 ### Task 2: Radio `onChange` → `onValueChange` 네이밍 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/checkbox/Radio.tsx:20-45`
 - Modify: `packages/solid/tests/components/form-control/checkbox/Radio.spec.tsx:66-82`
 - Modify: `packages/solid-demo/src/pages/form-control/CheckBoxRadioPage.tsx:177-183`
@@ -110,7 +112,7 @@ git commit -m "refactor(solid): CheckBox onChange → onValueChange로 네이밍
 // Radio.tsx:22 — onChange → onValueChange
 export interface RadioProps {
   value?: boolean;
-  onValueChange?: (value: boolean) => void;  // 변경
+  onValueChange?: (value: boolean) => void; // 변경
   disabled?: boolean;
   size?: CheckBoxSize;
   theme?: CheckBoxTheme;
@@ -136,7 +138,7 @@ const [local, rest] = splitProps(props, [
 // Radio.tsx:49-52 — createPropSignal의 onChange 참조 수정
 const [value, setValue] = createPropSignal({
   value: () => local.value ?? false,
-  onChange: () => local.onValueChange,  // 변경
+  onChange: () => local.onValueChange, // 변경
 });
 ```
 
@@ -189,6 +191,7 @@ git commit -m "refactor(solid): Radio onChange → onValueChange로 네이밍 �
 ### Task 3: TextAreaField `onChange` → `onValueChange` 네이밍 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/TextAreaField.tsx:19-20,79,94`
 - Modify: `packages/solid/tests/components/form-control/field/TextAreaField.spec.tsx:34-36,44-46,57`
 - Modify: `packages/solid-demo/src/pages/form-control/FieldPage.tsx:412`
@@ -214,7 +217,7 @@ const [local, rest] = splitProps(props, [
 // TextAreaField.tsx:94 — createPropSignal의 onChange 참조 수정
 const [value, setValue] = createPropSignal({
   value: () => local.value ?? "",
-  onChange: () => local.onValueChange,  // 변경
+  onChange: () => local.onValueChange, // 변경
 });
 ```
 
@@ -273,6 +276,7 @@ git commit -m "refactor(solid): TextAreaField onChange → onValueChange로 네�
 ### Task 4: 시맨틱 색상 적용 (red-500 → danger-500, blue-500 → primary-500)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/Field.styles.ts:14,25,45`
 - Modify: `packages/solid/src/components/feedback/notification/NotificationBell.tsx:38`
 - Modify: `packages/solid/tests/components/form-control/field/TextAreaField.spec.tsx:104`
@@ -321,6 +325,7 @@ git commit -m "fix(solid): 원시 Tailwind 색상을 시맨틱 색상으로 변�
 ### Task 5: CheckBox/Radio disabled 시 tabIndex 수정
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/checkbox/CheckBox.tsx:92`
 - Modify: `packages/solid/src/components/form-control/checkbox/Radio.tsx:90`
 
@@ -355,6 +360,7 @@ git commit -m "fix(solid): CheckBox/Radio disabled 시 tabIndex를 -1로 설정�
 ### Task 6: Dropdown transitionend fallback 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Dropdown.tsx:132-136`
 
 **Step 1: 닫힘 분기에 setTimeout fallback 추가**
@@ -390,6 +396,7 @@ git commit -m "fix(solid): Dropdown 닫힘 시 transitionend 미발생 대비 se
 ### Task 7: DateField/TimeField fallback에 rest props 전달
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/DateField.tsx:211`
 - Modify: `packages/solid/src/components/form-control/field/TimeField.tsx:160-167`
 
@@ -397,7 +404,13 @@ git commit -m "fix(solid): Dropdown 닫힘 시 transitionend 미발생 대비 se
 
 ```tsx
 // DateField.tsx:211 — rest props 추가
-<div {...rest} data-date-field class={twMerge(getWrapperClass(), "sd-date-field")} style={local.style} title={local.title}>
+<div
+  {...rest}
+  data-date-field
+  class={twMerge(getWrapperClass(), "sd-date-field")}
+  style={local.style}
+  title={local.title}
+>
   {displayValue() || "\u00A0"}
 </div>
 ```

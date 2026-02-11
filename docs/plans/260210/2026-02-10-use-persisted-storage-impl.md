@@ -13,6 +13,7 @@
 ### Task 1: ConfigContext에 StorageAdapter 인터페이스 및 AppConfig.storage 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/ConfigContext.ts`
 
 **Step 1: ConfigContext.ts 수정**
@@ -73,11 +74,12 @@ git commit -m "feat(solid): AppConfig에 StorageAdapter 인터페이스 및 stor
 ### Task 2: usePersisted에서 ConfigContext의 storage 사용 + loading 반환
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/usePersisted.ts`
 
 **Step 1: usePersisted.ts 수정**
 
-```typescript
+````typescript
 // usePersisted.ts 전체 내용
 import { createSignal, type Accessor, type Setter } from "solid-js";
 import { makePersisted, type AsyncStorage, type SyncStorage } from "@solid-primitives/storage";
@@ -130,9 +132,10 @@ export function usePersisted<T>(key: string, initialValue: T): [Accessor<T>, Set
 
   return [value, setValue, loading];
 }
-```
+````
 
 핵심 변경점:
+
 - `config.storage ?? localStorage`로 저장소 결정
 - `storage as SyncStorage | AsyncStorage` 타입 단언 (`StorageAdapter`는 두 타입의 합집합과 호환)
 - `init instanceof Promise`로 비동기 여부 감지
@@ -155,6 +158,7 @@ git commit -m "feat(solid): usePersisted에 ConfigContext storage 전략 및 loa
 ### Task 3: index.ts에서 StorageAdapter export 확인
 
 **Files:**
+
 - Check: `packages/solid/src/index.ts`
 
 **Step 1: export 확인**
@@ -162,9 +166,11 @@ git commit -m "feat(solid): usePersisted에 ConfigContext storage 전략 및 loa
 `index.ts`에 이미 `export * from "./contexts/ConfigContext"`가 있으므로 `StorageAdapter`는 자동으로 export된다. 별도 수정 불필요.
 
 확인만 수행:
+
 ```bash
 grep "ConfigContext" packages/solid/src/index.ts
 ```
+
 Expected: `export * from "./contexts/ConfigContext";` 라인 존재
 
 ---
@@ -181,6 +187,7 @@ Expected: 모든 5개 테스트 PASS (하위 호환 유지 확인)
 ### Task 5: 커스텀 동기 저장소 테스트 추가
 
 **Files:**
+
 - Modify: `packages/solid/tests/contexts/usePersisted.spec.tsx`
 
 **Step 1: 커스텀 동기 저장소 테스트 작성**
@@ -192,8 +199,12 @@ it("커스텀 동기 저장소를 사용할 수 있다", () => {
   const store = new Map<string, string>();
   const customStorage = {
     getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => { store.set(key, value); },
-    removeItem: (key: string) => { store.delete(key); },
+    setItem: (key: string, value: string) => {
+      store.set(key, value);
+    },
+    removeItem: (key: string) => {
+      store.delete(key);
+    },
   };
 
   let capturedValue: string | undefined;
@@ -227,6 +238,7 @@ Expected: 6개 테스트 모두 PASS
 ### Task 6: 비동기 저장소 + loading 상태 테스트 추가
 
 **Files:**
+
 - Modify: `packages/solid/tests/contexts/usePersisted.spec.tsx`
 
 **Step 1: 비동기 저장소 테스트 작성**
@@ -238,8 +250,12 @@ it("비동기 저장소 사용 시 loading이 true에서 false로 전환된다",
   const store = new Map<string, string>();
   const asyncStorage = {
     getItem: async (key: string) => store.get(key) ?? null,
-    setItem: async (key: string, value: string) => { store.set(key, value); },
-    removeItem: async (key: string) => { store.delete(key); },
+    setItem: async (key: string, value: string) => {
+      store.set(key, value);
+    },
+    removeItem: async (key: string) => {
+      store.delete(key);
+    },
   };
 
   let capturedLoading: boolean | undefined;
@@ -313,6 +329,7 @@ Expected: PASS
 ### Task 8: 마이그레이션 문서 상태 업데이트
 
 **Files:**
+
 - Modify: `docs/2026-02-09-solid-migration-remaining.md`
 
 **Step 1: 13번 항목 상태를 [x]로 변경**

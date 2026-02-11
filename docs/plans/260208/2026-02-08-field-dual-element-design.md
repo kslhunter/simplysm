@@ -16,7 +16,9 @@
 
 ```tsx
 <Show when={!isDisplayMode()} fallback={<div>{displayValue()}</div>}>
-  <div><input /></div>
+  <div>
+    <input />
+  </div>
 </Show>
 ```
 
@@ -31,10 +33,7 @@ readonly ↔ 편집 전환 시 DOM이 통째로 교체되어 셀 크기가 바�
 ```tsx
 <div class={clsx("relative", local.class)} style={local.style}>
   {/* content div — 항상 존재, 셀 크기 잡아줌 */}
-  <div
-    class={wrapperClass}
-    style={{ visibility: isEditable() ? "hidden" : undefined }}
-  >
+  <div class={wrapperClass} style={{ visibility: isEditable() ? "hidden" : undefined }}>
     {displayValue() || local.placeholder || "\u00A0"}
   </div>
 
@@ -48,6 +47,7 @@ readonly ↔ 편집 전환 시 DOM이 통째로 교체되어 셀 크기가 바�
 ```
 
 핵심:
+
 - content div가 항상 DOM에 존재 → 셀 크기 유지
 - 편집 모드: content `visibility: hidden`, input wrapper가 `absolute left-0 top-0 size-full`로 위에 겹침
 - readonly/disabled: content만 보임, input 없음
@@ -76,7 +76,7 @@ const getWrapperClass = () =>
     local.error && fieldErrorClass,
     local.disabled && fieldDisabledClass,
     local.readonly && fieldReadonlyClass,
-    local.inset && fieldInsetClass,  // ← 마지막 (disabled/readonly보다 뒤)
+    local.inset && fieldInsetClass, // ← 마지막 (disabled/readonly보다 뒤)
     // inset 분기에서는 local.class가 outer div에 적용되므로 여기선 제외
   );
 ```
@@ -86,6 +86,7 @@ const getWrapperClass = () =>
 ## Task 1: TextField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/TextField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/TextField.spec.tsx`
 
@@ -269,7 +270,13 @@ export const TextField: Component<TextFieldProps> = (props) => {
     <Show
       when={isEditable()}
       fallback={
-        <div {...rest} data-text-field class={twMerge(getWrapperClass(true), "sd-text-field")} style={local.style} title={local.title}>
+        <div
+          {...rest}
+          data-text-field
+          class={twMerge(getWrapperClass(true), "sd-text-field")}
+          style={local.style}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
       }
@@ -291,6 +298,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
 ```
 
 **주요 변경:**
+
 - `import clsx from "clsx"` 추가
 - `getWrapperClass(includeCustomClass)` — inset 분기에서 `local.class`는 outer div에만 적용
 - `local.inset`에 따라 분기: inset이면 dual-element, 아니면 기존 Show
@@ -319,6 +327,7 @@ git commit -m "feat(solid): TextField inset dual-element overlay 패턴 적용"
 ## Task 2: NumberField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/NumberField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/NumberField.spec.tsx`
 
@@ -385,10 +394,22 @@ Expected: 새 테스트 FAIL
 ```tsx
 export const NumberField: Component<NumberFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value", "onValueChange", "useComma", "minDigits",
-    "min", "max", "step", "placeholder", "title",
-    "disabled", "readonly", "error", "size", "inset",
-    "class", "style",
+    "value",
+    "onValueChange",
+    "useComma",
+    "minDigits",
+    "min",
+    "max",
+    "step",
+    "placeholder",
+    "title",
+    "disabled",
+    "readonly",
+    "error",
+    "size",
+    "inset",
+    "class",
+    "style",
   ]);
 
   const [inputStr, setInputStr] = createSignal<string>("");
@@ -491,7 +512,13 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
     <Show
       when={isEditable()}
       fallback={
-        <div {...rest} data-number-field class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")} style={local.style} title={local.title}>
+        <div
+          {...rest}
+          data-number-field
+          class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
+          style={local.style}
+          title={local.title}
+        >
           {formatNumber(value(), local.useComma ?? true, local.minDigits) || "\u00A0"}
         </div>
       }
@@ -518,6 +545,7 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
 ```
 
 **주요 변경:**
+
 - `import clsx from "clsx"` 추가
 - `getWrapperClass(includeCustomClass)` 파라미터화
 - inset content div에 `justify-end` 추가 (우측 정렬)
@@ -540,6 +568,7 @@ git commit -m "feat(solid): NumberField inset dual-element overlay 패턴 적용
 ## Task 3: DateField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/DateField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/DateField.spec.tsx`
 
@@ -553,9 +582,7 @@ Expected: 모든 테스트 PASS
 ```tsx
 describe("inset dual-element", () => {
   it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
-    const { container } = render(() => (
-      <DateField inset readonly value={new DateOnly(2025, 3, 15)} />
-    ));
+    const { container } = render(() => <DateField inset readonly value={new DateOnly(2025, 3, 15)} />);
     const outer = container.firstChild as HTMLElement;
     expect(outer.classList.contains("relative")).toBe(true);
 
@@ -567,9 +594,7 @@ describe("inset dual-element", () => {
   });
 
   it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
-    const { container } = render(() => (
-      <DateField inset value={new DateOnly(2025, 3, 15)} />
-    ));
+    const { container } = render(() => <DateField inset value={new DateOnly(2025, 3, 15)} />);
     const outer = container.firstChild as HTMLElement;
 
     const contentDiv = outer.querySelector("[data-date-field-content]") as HTMLElement;
@@ -602,9 +627,19 @@ TextField와 동일한 패턴. return문 교체:
 ```tsx
 export const DateField: Component<DateFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value", "onValueChange", "type", "min", "max",
-    "title", "disabled", "readonly", "error", "size", "inset",
-    "class", "style",
+    "value",
+    "onValueChange",
+    "type",
+    "min",
+    "max",
+    "title",
+    "disabled",
+    "readonly",
+    "error",
+    "size",
+    "inset",
+    "class",
+    "style",
   ]);
 
   const fieldType = () => local.type ?? "date";
@@ -668,7 +703,13 @@ export const DateField: Component<DateFieldProps> = (props) => {
     <Show
       when={isEditable()}
       fallback={
-        <div {...rest} data-date-field class={twMerge(getWrapperClass(true), "sd-date-field")} style={local.style} title={local.title}>
+        <div
+          {...rest}
+          data-date-field
+          class={twMerge(getWrapperClass(true), "sd-date-field")}
+          style={local.style}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
       }
@@ -708,6 +749,7 @@ git commit -m "feat(solid): DateField inset dual-element overlay 패턴 적용"
 ## Task 4: DateTimeField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/DateTimeField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/DateTimeField.spec.tsx`
 
@@ -720,9 +762,7 @@ Run: `pnpm vitest packages/solid/tests/components/form-control/field/DateTimeFie
 ```tsx
 describe("inset dual-element", () => {
   it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
-    const { container } = render(() => (
-      <DateTimeField inset readonly value={new DateTime(2025, 3, 15, 14, 30, 0)} />
-    ));
+    const { container } = render(() => <DateTimeField inset readonly value={new DateTime(2025, 3, 15, 14, 30, 0)} />);
     const outer = container.firstChild as HTMLElement;
     expect(outer.classList.contains("relative")).toBe(true);
 
@@ -734,9 +774,7 @@ describe("inset dual-element", () => {
   });
 
   it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
-    const { container } = render(() => (
-      <DateTimeField inset value={new DateTime(2025, 3, 15, 14, 30, 0)} />
-    ));
+    const { container } = render(() => <DateTimeField inset value={new DateTime(2025, 3, 15, 14, 30, 0)} />);
     const outer = container.firstChild as HTMLElement;
 
     const contentDiv = outer.querySelector("[data-datetime-field-content]") as HTMLElement;
@@ -764,9 +802,19 @@ TextField 패턴과 동일. `import clsx`, `getWrapperClass` 파라미터화, in
 ```tsx
 export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value", "onValueChange", "type", "min", "max",
-    "title", "disabled", "readonly", "error", "size", "inset",
-    "class", "style",
+    "value",
+    "onValueChange",
+    "type",
+    "min",
+    "max",
+    "title",
+    "disabled",
+    "readonly",
+    "error",
+    "size",
+    "inset",
+    "class",
+    "style",
   ]);
 
   const fieldType = () => local.type ?? "datetime";
@@ -832,7 +880,13 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
     <Show
       when={isEditable()}
       fallback={
-        <div {...rest} data-datetime-field class={twMerge(getWrapperClass(true), "sd-datetime-field")} style={local.style} title={local.title}>
+        <div
+          {...rest}
+          data-datetime-field
+          class={twMerge(getWrapperClass(true), "sd-datetime-field")}
+          style={local.style}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
       }
@@ -868,6 +922,7 @@ git commit -m "feat(solid): DateTimeField inset dual-element overlay 패턴 적�
 ## Task 5: TimeField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/TimeField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/TimeField.spec.tsx`
 
@@ -878,9 +933,7 @@ git commit -m "feat(solid): DateTimeField inset dual-element overlay 패턴 적�
 ```tsx
 describe("inset dual-element", () => {
   it("inset + readonly일 때 content div가 보이고 input이 없다", () => {
-    const { container } = render(() => (
-      <TimeField inset readonly value={new Time(14, 30, 0)} />
-    ));
+    const { container } = render(() => <TimeField inset readonly value={new Time(14, 30, 0)} />);
     const outer = container.firstChild as HTMLElement;
     expect(outer.classList.contains("relative")).toBe(true);
 
@@ -892,9 +945,7 @@ describe("inset dual-element", () => {
   });
 
   it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
-    const { container } = render(() => (
-      <TimeField inset value={new Time(14, 30, 0)} />
-    ));
+    const { container } = render(() => <TimeField inset value={new Time(14, 30, 0)} />);
     const outer = container.firstChild as HTMLElement;
 
     const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
@@ -920,9 +971,17 @@ describe("inset dual-element", () => {
 ```tsx
 export const TimeField: Component<TimeFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value", "onValueChange", "type",
-    "title", "disabled", "readonly", "error", "size", "inset",
-    "class", "style",
+    "value",
+    "onValueChange",
+    "type",
+    "title",
+    "disabled",
+    "readonly",
+    "error",
+    "size",
+    "inset",
+    "class",
+    "style",
   ]);
 
   const fieldType = () => local.type ?? "time";
@@ -986,7 +1045,13 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
     <Show
       when={isEditable()}
       fallback={
-        <div {...rest} data-time-field class={twMerge(getWrapperClass(true), "sd-time-field")} style={local.style} title={local.title}>
+        <div
+          {...rest}
+          data-time-field
+          class={twMerge(getWrapperClass(true), "sd-time-field")}
+          style={local.style}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
       }
@@ -1020,10 +1085,12 @@ git commit -m "feat(solid): TimeField inset dual-element overlay 패턴 적용"
 ## Task 6: TextAreaField dual-element 패턴
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/TextAreaField.tsx`
 - Test: `packages/solid/tests/components/form-control/field/TextAreaField.spec.tsx`
 
 TextAreaField는 이미 hidden div + textarea overlay 구조를 가지고 있다. inset 모드에서의 변경은:
+
 - readonly/disabled일 때도 hidden div가 항상 존재하여 크기를 잡아줌
 - 기존: readonly → `<Show>` fallback div (hidden div 없음)
 - 변경: inset일 때 항상 hidden div + textarea(편집 시만) 구조 유지
@@ -1075,15 +1142,25 @@ describe("inset dual-element", () => {
 ### Step 4: TextAreaField 구현
 
 TextAreaField는 특수: 편집 모드에서도 hidden div(높이 계산용)가 이미 존재. inset에서는:
+
 - readonly/disabled → content div만 표시 (기존 텍스트 스타일)
 - editable → hidden div(높이 계산) + absolute textarea (기존 구조 유지)
 
 ```tsx
 export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
   const [local, rest] = splitProps(props, [
-    "value", "onValueChange", "placeholder", "title",
-    "disabled", "readonly", "error", "size", "inset",
-    "minRows", "class", "style",
+    "value",
+    "onValueChange",
+    "placeholder",
+    "title",
+    "disabled",
+    "readonly",
+    "error",
+    "size",
+    "inset",
+    "minRows",
+    "class",
+    "style",
   ]);
 
   const [value, setValue] = createPropSignal({
@@ -1098,9 +1175,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
   const contentForHeight = () => {
     const rows = local.minRows ?? 1;
     const val = value();
-    const content = (val !== "" && val.split("\n").length >= rows)
-      ? val
-      : "\n".repeat(rows - 1) + "\u00A0";
+    const content = val !== "" && val.split("\n").length >= rows ? val : "\n".repeat(rows - 1) + "\u00A0";
     return content.endsWith("\n") ? content + "\u00A0" : content;
   };
 
@@ -1116,11 +1191,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
     );
 
   const getTextareaClass = () =>
-    twMerge(
-      textareaBaseClass,
-      local.size && textAreaSizeClasses[local.size],
-      local.inset && "p-0",
-    );
+    twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size], local.inset && "p-0");
 
   const isEditable = () => !local.disabled && !local.readonly;
 
@@ -1132,17 +1203,17 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           data-textarea-field-content
           class={getWrapperClass(false)}
           style={{
-            visibility: isEditable() ? "hidden" : undefined,
+            "visibility": isEditable() ? "hidden" : undefined,
             "white-space": "pre-wrap",
             "word-break": "break-all",
-            position: "relative",
+            "position": "relative",
           }}
           title={local.title}
         >
           <div
             data-hidden-content
             style={{
-              visibility: "hidden",
+              "visibility": "hidden",
               "white-space": "pre-wrap",
               "word-break": "break-all",
             }}
@@ -1152,11 +1223,11 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
           <Show when={!isEditable()}>
             <div
               style={{
-                position: "absolute",
-                left: "0",
-                top: "0",
-                width: "100%",
-                height: "100%",
+                "position": "absolute",
+                "left": "0",
+                "top": "0",
+                "width": "100%",
+                "height": "100%",
                 "white-space": "pre-wrap",
                 "word-break": "break-all",
               }}
@@ -1175,7 +1246,7 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
             <div
               data-hidden-content
               style={{
-                visibility: "hidden",
+                "visibility": "hidden",
                 "white-space": "pre-wrap",
                 "word-break": "break-all",
               }}
@@ -1211,16 +1282,11 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
         </div>
       }
     >
-      <div
-        {...rest}
-        data-textarea-field
-        class={getWrapperClass(true)}
-        style={{ position: "relative", ...local.style }}
-      >
+      <div {...rest} data-textarea-field class={getWrapperClass(true)} style={{ position: "relative", ...local.style }}>
         <div
           data-hidden-content
           style={{
-            visibility: "hidden",
+            "visibility": "hidden",
             "white-space": "pre-wrap",
             "word-break": "break-all",
           }}
@@ -1257,6 +1323,7 @@ git commit -m "feat(solid): TextAreaField inset dual-element overlay 패턴 적�
 ## Task 7: Field.styles.ts twMerge 순서 확인 + 전체 검증
 
 **Files:**
+
 - Check: `packages/solid/src/components/form-control/field/Field.styles.ts`
 - All field components
 
@@ -1265,6 +1332,7 @@ git commit -m "feat(solid): TextAreaField inset dual-element overlay 패턴 적�
 현재 각 컴포넌트의 `getWrapperClass`에서 `fieldInsetClass`가 `fieldDisabledClass`/`fieldReadonlyClass` **뒤에** 위치하는지 확인. 이미 Task 1-6에서 적용됨.
 
 확인 사항:
+
 ```typescript
 // 올바른 순서 (inset이 disabled/readonly보다 뒤)
 local.disabled && fieldDisabledClass,
@@ -1292,6 +1360,7 @@ Expected: 모든 테스트 PASS
 Run: `pnpm dev`
 
 브라우저에서 확인할 항목:
+
 1. Field 데모 페이지: inset 필드가 정상 렌더링되는지
 2. Sheet 데모 페이지: 셀 편집 시 크기 변동 없는지
 3. readonly ↔ 편집 전환이 부드러운지

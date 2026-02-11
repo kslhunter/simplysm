@@ -24,11 +24,13 @@
 ## Task 1: 의존성 추가
 
 **Files:**
+
 - Modify: `packages/solid/package.json`
 
 **Step 1: package.json에 jspdf, html-to-image 추가**
 
 `packages/solid/package.json`의 `dependencies`에 추가:
+
 ```json
 "html-to-image": "^1.11.13",
 "jspdf": "^4.0.0",
@@ -54,6 +56,7 @@ git commit -m "chore(solid): jspdf, html-to-image 의존성 추가"
 ## Task 2: Print 컴파운드 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/print/Print.tsx`
 - Test: `packages/solid/tests/print/Print.spec.tsx`
 
@@ -175,10 +178,7 @@ interface PrintComponent {
 
 const PrintInner = (props: PrintProps) => {
   return (
-    <div
-      data-print-root
-      {...(props.ready !== false ? { "data-print-ready": "" } : {})}
-    >
+    <div data-print-root {...(props.ready !== false ? { "data-print-ready": "" } : {})}>
       {props.children}
     </div>
   );
@@ -210,6 +210,7 @@ git commit -m "feat(solid): Print 컴파운드 컴포넌트 구현 (Print + Prin
 ## Task 3: usePrint 훅 구현
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/usePrint.ts`
 
 이 훅은 내부에 여러 헬퍼 함수를 포함한다. 파일 하나에 모두 작성.
@@ -313,9 +314,7 @@ function waitForImages(container: HTMLElement): Promise<void> {
   ).then(() => undefined);
 }
 
-async function renderAndWait(
-  factory: () => JSX.Element,
-): Promise<{ container: HTMLElement; dispose: () => void }> {
+async function renderAndWait(factory: () => JSX.Element): Promise<{ container: HTMLElement; dispose: () => void }> {
   const container = document.createElement("div");
   container.style.position = "fixed";
   container.style.left = "-9999px";
@@ -446,10 +445,14 @@ export function usePrint(): UsePrintReturn {
           const ctx = sliceCanvas.getContext("2d")!;
           ctx.drawImage(
             canvas,
-            0, i * pageHeightPx,
-            canvas.width, sliceCanvas.height,
-            0, 0,
-            canvas.width, sliceCanvas.height,
+            0,
+            i * pageHeightPx,
+            canvas.width,
+            sliceCanvas.height,
+            0,
+            0,
+            canvas.width,
+            sliceCanvas.height,
           );
 
           const imgHeight = sliceCanvas.height * scaleFactor;
@@ -498,6 +501,7 @@ git commit -m "feat(solid): usePrint 훅 구현 (toPrinter, toPdf)"
 ## Task 4: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -528,6 +532,7 @@ git commit -m "feat(solid): Print, usePrint export 추가"
 ## Task 5: usePrint 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/print/usePrint.spec.tsx`
 
 브라우저 환경(Playwright)에서 실행. `window.print`와 jsPDF는 모킹이 필요.
@@ -641,8 +646,12 @@ describe("usePrint", () => {
 
       const result = await pdfFn!(() => (
         <Print>
-          <Print.Page><div style={{ height: "100px" }}>페이지 1</div></Print.Page>
-          <Print.Page><div style={{ height: "100px" }}>페이지 2</div></Print.Page>
+          <Print.Page>
+            <div style={{ height: "100px" }}>페이지 1</div>
+          </Print.Page>
+          <Print.Page>
+            <div style={{ height: "100px" }}>페이지 2</div>
+          </Print.Page>
         </Print>
       ));
 

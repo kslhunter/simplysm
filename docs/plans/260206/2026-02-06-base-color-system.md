@@ -22,6 +22,7 @@
 ### Task 1: tailwind.config.ts에 base 색상 추가
 
 **Files:**
+
 - Modify: `packages/solid/tailwind.config.ts:17-23`
 
 **Step 1: colors에 base 추가**
@@ -47,6 +48,7 @@ Expected: PASS
 ### Task 2: base.css의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/base.css:6,10`
 
 **Step 1: 클래스 치환**
@@ -61,6 +63,7 @@ line 10: `@apply bg-zinc-950 text-zinc-100;` → `@apply bg-base-950 text-base-1
 ### Task 3: Button.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/Button.tsx:112-126`
 
 **Step 1: base 테마 클래스 치환**
@@ -88,6 +91,7 @@ base: {
 ### Task 4: field/styles.ts의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/Field.styles.ts`
 
 **Step 1: 전체 zinc 치환**
@@ -121,6 +125,7 @@ export const fieldInputClass = clsx(
 ### Task 5: Select.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/select/Select.tsx`
 
 **Step 1: triggerBaseClass 치환**
@@ -165,6 +170,7 @@ multi tag: `"rounded bg-base-200 px-1 dark:bg-base-600"`
 ### Task 6: Card.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/display/Card.tsx:9`
 
 **Step 1: 치환**
@@ -178,6 +184,7 @@ multi tag: `"rounded bg-base-200 px-1 dark:bg-base-600"`
 ### Task 7: Label.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/display/Label.tsx:24`
 
 **Step 1: 치환**
@@ -191,6 +198,7 @@ base: "bg-base-600 dark:bg-base-600",
 ### Task 8: Note.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/display/Note.tsx:23`
 
 **Step 1: 치환**
@@ -204,6 +212,7 @@ base: clsx("bg-base-100 text-base-900", "dark:bg-base-800 dark:text-base-100"),
 ### Task 9: Dropdown.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Dropdown.tsx:398-399`
 
 **Step 1: 치환**
@@ -218,6 +227,7 @@ base: clsx("bg-base-100 text-base-900", "dark:bg-base-800 dark:text-base-100"),
 ### Task 10: NotificationBell.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/feedback/notification/NotificationBell.tsx`
 
 **Step 1: buttonClass 치환**
@@ -239,6 +249,7 @@ line 133: `"mt-1 text-xs text-base-400"`
 ### Task 11: ThemeToggle.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/ThemeToggle.tsx:18-19`
 
 **Step 1: 치환**
@@ -253,6 +264,7 @@ line 133: `"mt-1 text-xs text-base-400"`
 ### Task 12: Sidebar.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/sidebar/Sidebar.tsx:17-21`
 
 **Step 1: 치환**
@@ -270,6 +282,7 @@ line 133: `"mt-1 text-xs text-base-400"`
 ### Task 13: SidebarUser.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/sidebar/SidebarUser.tsx`
 
 **Step 1: containerClass 치환**
@@ -288,7 +301,7 @@ const containerClass = clsx`m-2 flex flex-col overflow-hidden rounded bg-white d
 **Step 3: 헤더 border 치환 (line 80)**
 
 ```typescript
-open() && "border-b border-b-base-50"
+open() && "border-b border-b-base-50";
 ```
 
 ---
@@ -296,6 +309,7 @@ open() && "border-b border-b-base-50"
 ### Task 14: SidebarMenu.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/sidebar/SidebarMenu.tsx:27-28`
 
 **Step 1: 치환**
@@ -310,6 +324,7 @@ open() && "border-b border-b-base-50"
 ### Task 15: Topbar.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/topbar/Topbar.tsx:20-23`
 
 **Step 1: 치환**
@@ -326,6 +341,7 @@ open() && "border-b border-b-base-50"
 ### Task 16: Table.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/Table.tsx:14`
 
 **Step 1: 치환**
@@ -339,6 +355,7 @@ open() && "border-b border-b-base-50"
 ### Task 17: List.tsx의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/list/List.tsx:8`
 
 **Step 1: 치환**
@@ -352,6 +369,7 @@ const rootClass = clsx`border border-base-300 bg-base-50 p-px dark:border-base-7
 ### Task 18: ListItem.styles.ts의 zinc → base 치환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/list/ListItem.Field.styles.ts`
 
 **Step 1: baseClass 치환**
@@ -391,6 +409,7 @@ Expected: PASS
 ### Task 20: CLAUDE.md 업데이트
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 **Step 1: 커스텀 테마 색상 문서에 base 추가**

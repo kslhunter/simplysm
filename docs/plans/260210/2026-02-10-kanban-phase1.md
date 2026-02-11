@@ -15,6 +15,7 @@
 ## Task 1: KanbanContext.ts 재작성
 
 **Files:**
+
 - Rewrite: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
 
 **Step 1: Context 파일 작성**
@@ -27,8 +28,7 @@ import { createContext, useContext, type Accessor } from "solid-js";
 // ── Board Context ──────────────────────────────────────────────
 // Phase 1에서는 빈 Context. Phase 2+에서 DnD/선택 등을 추가한다.
 
-export interface KanbanContextValue {
-}
+export interface KanbanContextValue {}
 
 export const KanbanContext = createContext<KanbanContextValue>();
 
@@ -74,6 +74,7 @@ git commit -m "feat(solid): Kanban Phase 1 — KanbanContext 재작성 (최소 �
 ## Task 2: Kanban.tsx 재작성 — 슬롯 컴포넌트 + Card
 
 **Files:**
+
 - Rewrite: `packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **Step 1: Kanban.tsx 작성 — 슬롯 + Card + Lane + Board**
@@ -291,6 +292,7 @@ git commit -m "feat(solid): Kanban Phase 1 — Board/Lane/Card/슬롯 재작성"
 ## Task 3: 데모 페이지 재작성
 
 **Files:**
+
 - Rewrite: `packages/solid-demo/src/pages/data/KanbanPage.tsx`
 
 **Step 1: Phase 1 전용 데모 페이지 작성**

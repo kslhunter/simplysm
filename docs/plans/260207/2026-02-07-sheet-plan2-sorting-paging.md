@@ -17,6 +17,7 @@
 ## Task 1: `applySorting` 유틸 함수 테스트 작성
 
 **Files:**
+
 - Modify: `packages/solid/tests/sheet/Sheet.spec.tsx` (테스트 추가)
 
 **Step 1: 테스트 작성**
@@ -95,6 +96,7 @@ Expected: FAIL — `applySorting` is not exported from sheetUtils
 ## Task 2: `applySorting` 유틸 함수 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/sheetUtils.ts`
 
 **Step 1: 구현**
@@ -154,6 +156,7 @@ git commit -m "feat(solid): Sheet applySorting 유틸 함수 및 테스트"
 ## Task 3: Sheet.styles.ts에 정렬/툴바 스타일 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.styles.ts`
 
 **Step 1: 스타일 상수 추가**
@@ -162,16 +165,10 @@ git commit -m "feat(solid): Sheet applySorting 유틸 함수 및 테스트"
 // Sheet.styles.ts 하단에 추가
 
 // 정렬 가능 헤더 — 클릭 가능 표시
-export const sortableThClass = clsx(
-  "cursor-pointer",
-  "hover:underline",
-);
+export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 
 // 정렬 아이콘 영역
-export const sortIconClass = clsx(
-  "px-1 py-0.5",
-  "bg-base-100 dark:bg-base-700",
-);
+export const sortIconClass = clsx("px-1 py-0.5", "bg-base-100 dark:bg-base-700");
 
 // 상단 툴바 (설정 버튼 + 페이지네이션)
 export const toolbarClass = clsx(
@@ -194,6 +191,7 @@ git commit -m "feat(solid): Sheet 정렬/툴바 스타일 상수 추가"
 ## Task 4: Sheet.tsx — #region Sorting 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 이 Task에서는 정렬 상태 관리, 헤더 클릭 토글, 정렬 아이콘을 구현한다. 페이지네이션은 Task 5에서 한다.
@@ -203,6 +201,7 @@ git commit -m "feat(solid): Sheet 정렬/툴바 스타일 상수 추가"
 `Sheet.tsx` 상단 import를 수정한다.
 
 기존:
+
 ```tsx
 import { children, createMemo, For, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
@@ -222,6 +221,7 @@ import {
 ```
 
 변경:
+
 ```tsx
 import { children, createMemo, For, type JSX, Show, splitProps } from "solid-js";
 import clsx from "clsx";
@@ -249,6 +249,7 @@ import {
 **Step 2: splitProps 수정**
 
 기존:
+
 ```tsx
 const [local] = splitProps(props, [
   "items",
@@ -263,6 +264,7 @@ const [local] = splitProps(props, [
 ```
 
 변경:
+
 ```tsx
 const [local] = splitProps(props, [
   "items",
@@ -282,6 +284,7 @@ const [local] = splitProps(props, [
 **Step 3: #region Sorting 구현**
 
 기존 스텁:
+
 ```tsx
 // #region Sorting (스텁 — Plan 2에서 구현)
 const sortedItems = createMemo(() => {
@@ -290,6 +293,7 @@ const sortedItems = createMemo(() => {
 ```
 
 변경:
+
 ```tsx
 // #region Sorting
 const [sorts, setSorts] = createPropSignal({
@@ -304,9 +308,7 @@ function toggleSort(key: string, multiple: boolean): void {
   if (existing) {
     if (!existing.desc) {
       // asc → desc
-      const updated = current.map((s) =>
-        s.key === key ? { ...s, desc: true } : s,
-      );
+      const updated = current.map((s) => (s.key === key ? { ...s, desc: true } : s));
       setSorts(multiple ? updated : [{ key, desc: true }]);
     } else {
       // desc → 제거
@@ -339,6 +341,7 @@ const sortedItems = createMemo(() => {
 **Step 4: 헤더 렌더링 수정**
 
 기존 헤더 셀 렌더링 (`<thead>` 내부):
+
 ```tsx
 <thead>
   <For each={headerTable()}>
@@ -367,6 +370,7 @@ const sortedItems = createMemo(() => {
 ```
 
 변경:
+
 ```tsx
 <thead>
   <For each={headerTable()}>
@@ -464,11 +468,13 @@ git commit -m "feat(solid): Sheet 정렬 기능 (#region Sorting)"
 ## Task 5: Sheet.tsx — #region Paging + 상단 툴바 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: splitProps에 페이지네이션 props 추가**
 
 splitProps 배열에 추가:
+
 ```tsx
 "currentPage",
 "onCurrentPageChange",
@@ -488,6 +494,7 @@ import { Pagination } from "../Pagination";
 **Step 3: #region Paging 구현**
 
 기존 스텁:
+
 ```tsx
 // #region Paging (스텁 — Plan 2에서 구현)
 const pagedItems = createMemo(() => {
@@ -496,6 +503,7 @@ const pagedItems = createMemo(() => {
 ```
 
 변경:
+
 ```tsx
 // #region Paging
 const [currentPage, setCurrentPage] = createPropSignal({
@@ -524,6 +532,7 @@ const pagedItems = createMemo(() => {
 **Step 4: 렌더링에 상단 툴바 추가**
 
 기존 return문의 최상위 div:
+
 ```tsx
 return (
   <div data-sheet={local.key} class={getContainerClassName()}>
@@ -534,7 +543,10 @@ return (
 
 ```tsx
 return (
-  <div data-sheet={local.key} class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}>
+  <div
+    data-sheet={local.key}
+    class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}
+  >
     <Show when={!local.hideConfigBar && effectivePageCount() > 1}>
       <div class={toolbarClass}>
         <Pagination
@@ -548,15 +560,14 @@ return (
       </div>
     </Show>
     <div class={sheetContainerClass} style={local.contentStyle}>
-      <table class={tableClass}>
-        {/* ... 기존 colgroup, thead, tbody ... */}
-      </table>
+      <table class={tableClass}>{/* ... 기존 colgroup, thead, tbody ... */}</table>
     </div>
   </div>
 );
 ```
 
 > **구조 변경 설명:**
+>
 > - 최상위 div: `flex flex-col` + 외곽 테두리/라운딩 (기존 `sheetContainerClass`에서 분리)
 > - 툴바: `effectivePageCount > 1`일 때만 표시
 > - 스크롤 영역: `sheetContainerClass` (overflow-auto, 배경색)
@@ -596,6 +607,7 @@ git commit -m "feat(solid): Sheet 페이지네이션 + 상단 툴바 (#region Pa
 ## Task 6: 정렬 + 페이지네이션 컴포넌트 테스트
 
 **Files:**
+
 - Modify: `packages/solid/tests/sheet/Sheet.spec.tsx`
 
 **Step 1: 정렬 렌더링 테스트 추가**
@@ -613,7 +625,9 @@ it("정렬: 헤더 클릭 시 onSortsChange가 호출된다", () => {
       items={testData}
       key="test-sort"
       sorts={[]}
-      onSortsChange={(s) => { capturedSorts = s; }}
+      onSortsChange={(s) => {
+        capturedSorts = s;
+      }}
     >
       <Sheet.Column<TestItem> key="name" header="이름">
         {(ctx) => <div>{ctx.item.name}</div>}
@@ -637,7 +651,9 @@ it("정렬: disableSorting 컬럼은 클릭해도 정렬되지 않는다", () =>
       items={testData}
       key="test-no-sort"
       sorts={[]}
-      onSortsChange={(s) => { capturedSorts = s; }}
+      onSortsChange={(s) => {
+        capturedSorts = s;
+      }}
     >
       <Sheet.Column<TestItem> key="name" header="이름" disableSorting>
         {(ctx) => <div>{ctx.item.name}</div>}
@@ -652,12 +668,7 @@ it("정렬: disableSorting 컬럼은 클릭해도 정렬되지 않는다", () =>
 
 it("자동정렬: useAutoSort가 true면 데이터가 정렬된다", () => {
   const { container } = render(() => (
-    <Sheet
-      items={testData}
-      key="test-auto-sort"
-      sorts={[{ key: "name", desc: false }]}
-      useAutoSort
-    >
+    <Sheet items={testData} key="test-auto-sort" sorts={[{ key: "name", desc: false }]} useAutoSort>
       <Sheet.Column<TestItem> key="name" header="이름">
         {(ctx) => <div class="name">{ctx.item.name}</div>}
       </Sheet.Column>
@@ -733,6 +744,7 @@ git commit -m "test(solid): Sheet 정렬/페이지네이션 컴포넌트 테스�
 ## Task 7: 데모 페이지 — 정렬 + 페이지네이션 예제
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 - Modify: `packages/solid-demo/src/pages/data/SheetFullPage.tsx`
 
@@ -751,19 +763,15 @@ const [page, setPage] = createSignal(0);
 
 // "합계 행" 섹션 아래에 추가
 
-{/* 정렬 */}
+{
+  /* 정렬 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">정렬</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
     헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. useAutoSort로 자동 정렬 적용.
   </p>
-  <Sheet
-    items={users}
-    key="sorting"
-    sorts={sorts()}
-    onSortsChange={setSorts}
-    useAutoSort
-  >
+  <Sheet items={users} key="sorting" sorts={sorts()} onSortsChange={setSorts} useAutoSort>
     <Sheet.Column<User> key="name" header="이름" width="120px">
       {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
     </Sheet.Column>
@@ -771,31 +779,23 @@ const [page, setPage] = createSignal(0);
       {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
     </Sheet.Column>
     <Sheet.Column<User> key="salary" header="급여" width="120px">
-      {(ctx) => (
-        <div class="px-2 py-1 text-right">
-          {ctx.item.salary.toLocaleString()}원
-        </div>
-      )}
+      {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
     </Sheet.Column>
     <Sheet.Column<User> key="email" header="이메일 (정렬 불가)" width="200px" disableSorting>
       {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
     </Sheet.Column>
   </Sheet>
-</section>
+</section>;
 
-{/* 페이지네이션 */}
+{
+  /* 페이지네이션 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">페이지네이션</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
     itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
   </p>
-  <Sheet
-    items={users}
-    key="paging"
-    itemsPerPage={2}
-    currentPage={page()}
-    onCurrentPageChange={setPage}
-  >
+  <Sheet items={users} key="paging" itemsPerPage={2} currentPage={page()} onCurrentPageChange={setPage}>
     <Sheet.Column<User> key="name" header="이름" width="120px">
       {(ctx) => <div class="px-2 py-1">{ctx.item.name}</div>}
     </Sheet.Column>
@@ -803,14 +803,10 @@ const [page, setPage] = createSignal(0);
       {(ctx) => <div class="px-2 py-1">{ctx.item.age}</div>}
     </Sheet.Column>
     <Sheet.Column<User> key="salary" header="급여" width="120px">
-      {(ctx) => (
-        <div class="px-2 py-1 text-right">
-          {ctx.item.salary.toLocaleString()}원
-        </div>
-      )}
+      {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
     </Sheet.Column>
   </Sheet>
-</section>
+</section>;
 ```
 
 **Step 2: SheetFullPage.tsx에 정렬 + 페이지네이션 적용**

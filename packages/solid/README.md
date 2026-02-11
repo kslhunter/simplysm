@@ -1,8 +1,8 @@
 # @simplysm/solid
 
-ERP, MES 등 기업용 백오피스 애플리케이션을 위한 SolidJS UI 컴포넌트 라이브러리. 데이터 중심의 폼, 테이블, 사이드바 레이아웃 등 관리 화면에 필요한 컴포넌트를 제공하며, Tailwind CSS 스타일링, 다크 모드, 반응형 레이아웃을 지원한다.
+A SolidJS UI component library for enterprise back-office applications such as ERP and MES. Provides components for data-intensive forms, tables, and sidebar layouts with Tailwind CSS styling, dark mode, and responsive design.
 
-## 설치
+## Installation
 
 ```bash
 pnpm add @simplysm/solid
@@ -13,13 +13,13 @@ pnpm add @simplysm/solid
 - `tailwindcss` ^3.4
 
 **Optional Peer Dependencies:**
-- `echarts` ^6.0 -- Echarts 차트 컴포넌트 사용 시
+- `echarts` ^6.0 -- Required for Echarts chart components
 
-## 설정
+## Configuration
 
 ### Tailwind CSS
 
-`@simplysm/solid`는 Tailwind CSS preset을 제공한다. 앱의 `tailwind.config.ts`에서 preset으로 등록하면 시맨틱 색상, 필드 크기, z-index 등 커스텀 테마가 자동으로 적용된다.
+`@simplysm/solid` provides a Tailwind CSS preset. Register it as a preset in your app's `tailwind.config.ts` to automatically apply custom themes including semantic colors, field sizes, and z-index values.
 
 ```typescript
 // tailwind.config.ts
@@ -35,9 +35,9 @@ export default {
 };
 ```
 
-### Provider 설정
+### Provider Setup
 
-앱 루트에서 `InitializeProvider`와 `ThemeProvider`를 감싸야 한다. `InitializeProvider`는 앱 전역 설정(clientName, storage)을 제공하고, `ThemeProvider`는 다크 모드 상태를 관리한다.
+Wrap your app root with `InitializeProvider` and `ThemeProvider`. `InitializeProvider` provides app-wide configuration (clientName, storage), and `ThemeProvider` manages dark mode state.
 
 ```tsx
 import { InitializeProvider, ThemeProvider } from "@simplysm/solid";
@@ -46,14 +46,14 @@ function App() {
   return (
     <InitializeProvider config={{ clientName: "my-app" }}>
       <ThemeProvider>
-        {/* 앱 내용 */}
+        {/* app content */}
       </ThemeProvider>
     </InitializeProvider>
   );
 }
 ```
 
-또는 `ConfigContext.Provider`를 직접 사용할 수도 있다:
+Alternatively, you can use `ConfigContext.Provider` directly:
 
 ```tsx
 import { ConfigContext, ThemeProvider } from "@simplysm/solid";
@@ -62,135 +62,135 @@ function App() {
   return (
     <ConfigContext.Provider value={{ clientName: "my-app" }}>
       <ThemeProvider>
-        {/* 앱 내용 */}
+        {/* app content */}
       </ThemeProvider>
     </ConfigContext.Provider>
   );
 }
 ```
 
-### 기본 CSS
+### Base CSS
 
-엔트리 포인트에서 기본 CSS를 import한다:
+Import the base CSS in your entry point:
 
 ```typescript
-// entry point (예: index.tsx)
+// entry point (e.g., index.tsx)
 import "@simplysm/solid/base.css";
 ```
 
 ---
 
-## 컴포넌트
+## Components
 
 ### Form Control
 
 #### Button
 
-인터랙티브 버튼 컴포넌트. Material Design ripple 효과 내장.
+Interactive button component with built-in Material Design ripple effect.
 
 ```tsx
 import { Button } from "@simplysm/solid";
 
-<Button theme="primary" variant="solid">확인</Button>
-<Button theme="danger" variant="outline" size="sm">삭제</Button>
-<Button variant="ghost">취소</Button>
-<Button disabled>비활성</Button>
+<Button theme="primary" variant="solid">Confirm</Button>
+<Button theme="danger" variant="outline" size="sm">Delete</Button>
+<Button variant="ghost">Cancel</Button>
+<Button disabled>Disabled</Button>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | 색상 테마 |
-| `variant` | `"solid" \| "outline" \| "ghost"` | `"outline"` | 스타일 변형 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 (테두리/둥근 모서리 제거) |
-| `disabled` | `boolean` | - | 비활성화 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | Color theme |
+| `variant` | `"solid" \| "outline" \| "ghost"` | `"outline"` | Style variant |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style (removes border/rounded corners) |
+| `disabled` | `boolean` | - | Disabled state |
 
-HTML `<button>` 요소의 모든 표준 속성을 추가로 전달할 수 있다.
+All standard HTML `<button>` element attributes can also be passed.
 
 ---
 
 #### TextInput
 
-텍스트 입력 필드. 포맷 마스크, IME(한글 등) 조합 처리를 지원한다.
+Text input field with format mask and IME (Korean, etc.) composition support.
 
 ```tsx
 import { TextInput } from "@simplysm/solid";
 
-// 기본 사용
-<TextInput value={name()} onValueChange={setName} placeholder="이름 입력" />
+// Basic usage
+<TextInput value={name()} onValueChange={setName} placeholder="Enter name" />
 
-// 비밀번호
+// Password
 <TextInput type="password" />
 
-// 포맷 마스크 (예: 전화번호)
+// Format mask (e.g., phone number)
 <TextInput format="XXX-XXXX-XXXX" value={phone()} onValueChange={setPhone} />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `string` | `""` | 입력 값 |
-| `onValueChange` | `(value: string) => void` | - | 값 변경 콜백 |
-| `type` | `"text" \| "password" \| "email"` | `"text"` | 입력 타입 |
-| `format` | `string` | - | 입력 포맷 (`X`는 문자 자리, 나머지는 구분자) |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `readonly` | `boolean` | - | 읽기 전용 |
-| `error` | `boolean` | - | 에러 상태 (빨간 테두리) |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | `""` | Input value |
+| `onValueChange` | `(value: string) => void` | - | Value change callback |
+| `type` | `"text" \| "password" \| "email"` | `"text"` | Input type |
+| `format` | `string` | - | Input format (`X` represents character position, rest are separators) |
+| `placeholder` | `string` | - | Placeholder |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `error` | `boolean` | - | Error state (red border) |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### NumberInput
 
-숫자 입력 필드. 천단위 콤마, 최소 소수점 자릿수를 지원한다.
+Number input field with thousand separators and minimum decimal places support.
 
 ```tsx
 import { NumberInput } from "@simplysm/solid";
 
-// 기본 사용 (천단위 콤마 자동 적용)
+// Basic usage (thousand separators auto-applied)
 <NumberInput value={amount()} onValueChange={setAmount} />
 
-// 천단위 콤마 없이
+// Without thousand separators
 <NumberInput value={num()} comma={false} />
 
-// 최소 소수점 2자리
+// Minimum 2 decimal places
 <NumberInput value={price()} minDigits={2} />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `number` | - | 입력 값 |
-| `onValueChange` | `(value: number \| undefined) => void` | - | 값 변경 콜백 |
-| `comma` | `boolean` | `true` | 천단위 콤마 표시 |
-| `minDigits` | `number` | - | 최소 소수점 자릿수 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `readonly` | `boolean` | - | 읽기 전용 |
-| `error` | `boolean` | - | 에러 상태 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `number` | - | Input value |
+| `onValueChange` | `(value: number \| undefined) => void` | - | Value change callback |
+| `comma` | `boolean` | `true` | Show thousand separators |
+| `minDigits` | `number` | - | Minimum decimal places |
+| `placeholder` | `string` | - | Placeholder |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `error` | `boolean` | - | Error state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### DatePicker
 
-날짜 입력 필드. year, month, date 단위를 지원하며, `DateOnly` 타입으로 값을 처리한다.
+Date input field supporting year, month, and date units. Values are handled using the `DateOnly` type.
 
 ```tsx
 import { DatePicker } from "@simplysm/solid";
 import { DateOnly } from "@simplysm/core-common";
 
-// 날짜 입력
+// Date input
 <DatePicker unit="date" value={date()} onValueChange={setDate} />
 
-// 연월 입력
+// Year-month input
 <DatePicker unit="month" value={monthDate()} onValueChange={setMonthDate} />
 
-// 연도만 입력
+// Year-only input
 <DatePicker unit="year" value={yearDate()} onValueChange={setYearDate} />
 
-// min/max 제한
+// min/max constraints
 <DatePicker
   unit="date"
   value={date()}
@@ -200,26 +200,26 @@ import { DateOnly } from "@simplysm/core-common";
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `DateOnly` | - | 입력 값 |
-| `onValueChange` | `(value: DateOnly \| undefined) => void` | - | 값 변경 콜백 |
-| `unit` | `"year" \| "month" \| "date"` | `"date"` | 날짜 단위 |
-| `min` | `DateOnly` | - | 최소 날짜 |
-| `max` | `DateOnly` | - | 최대 날짜 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `readonly` | `boolean` | - | 읽기 전용 |
-| `error` | `boolean` | - | 에러 상태 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `DateOnly` | - | Input value |
+| `onValueChange` | `(value: DateOnly \| undefined) => void` | - | Value change callback |
+| `unit` | `"year" \| "month" \| "date"` | `"date"` | Date unit |
+| `min` | `DateOnly` | - | Minimum date |
+| `max` | `DateOnly` | - | Maximum date |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `error` | `boolean` | - | Error state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
-> `DateTimePicker`와 `TimePicker`도 동일한 패턴으로 날짜시간(`DateTime`) 및 시간(`Time`) 입력을 지원한다.
+> `DateTimePicker` and `TimePicker` follow the same pattern for datetime (`DateTime`) and time (`Time`) input.
 
 ---
 
 #### DateRangePicker
 
-기간 타입(일/월/범위) 선택에 따라 날짜 범위를 입력하는 컴포넌트. periodType 변경 시 from/to가 자동으로 보정된다.
+Component for inputting date ranges with period type selection (day/month/range). The from/to values are automatically adjusted when periodType changes.
 
 ```tsx
 import { DateRangePicker, type DateRangePeriodType } from "@simplysm/solid";
@@ -240,113 +240,113 @@ const [to, setTo] = createSignal<DateOnly>();
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `periodType` | `"day" \| "month" \| "range"` | `"range"` | 기간 타입 |
-| `onPeriodTypeChange` | `(value: DateRangePeriodType) => void` | - | 기간 타입 변경 콜백 |
-| `from` | `DateOnly` | - | 시작 날짜 |
-| `onFromChange` | `(value: DateOnly \| undefined) => void` | - | 시작 날짜 변경 콜백 |
-| `to` | `DateOnly` | - | 종료 날짜 |
-| `onToChange` | `(value: DateOnly \| undefined) => void` | - | 종료 날짜 변경 콜백 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "일", month: "월", range: "범위" }` | 기간 타입 라벨 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `periodType` | `"day" \| "month" \| "range"` | `"range"` | Period type |
+| `onPeriodTypeChange` | `(value: DateRangePeriodType) => void` | - | Period type change callback |
+| `from` | `DateOnly` | - | Start date |
+| `onFromChange` | `(value: DateOnly \| undefined) => void` | - | Start date change callback |
+| `to` | `DateOnly` | - | End date |
+| `onToChange` | `(value: DateOnly \| undefined) => void` | - | End date change callback |
+| `disabled` | `boolean` | - | Disabled state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "Day", month: "Month", range: "Range" }` | Period type labels |
 
 ---
 
 #### Textarea
 
-여러 줄 텍스트 입력 필드. 내용에 따라 자동으로 높이가 조절되며, IME 조합 처리를 지원한다.
+Multi-line text input field. Height adjusts automatically based on content, with IME composition support.
 
 ```tsx
 import { Textarea } from "@simplysm/solid";
 
 <Textarea value={text()} onValueChange={setText} />
 
-// 최소 3줄 높이
+// Minimum 3 rows height
 <Textarea minRows={3} value={text()} onValueChange={setText} />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `string` | `""` | 입력 값 |
-| `onValueChange` | `(value: string) => void` | - | 값 변경 콜백 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `minRows` | `number` | `1` | 최소 줄 수 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `readonly` | `boolean` | - | 읽기 전용 |
-| `error` | `boolean` | - | 에러 상태 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | `""` | Input value |
+| `onValueChange` | `(value: string) => void` | - | Value change callback |
+| `placeholder` | `string` | - | Placeholder |
+| `minRows` | `number` | `1` | Minimum number of rows |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `error` | `boolean` | - | Error state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### Select
 
-드롭다운 선택 컴포넌트. items prop 방식과 children(Compound Components) 방식을 모두 지원한다. 단일 선택 및 다중 선택을 지원한다.
+Dropdown selection component. Supports both items prop approach and children (Compound Components) approach. Single and multiple selection supported.
 
 ```tsx
 import { Select } from "@simplysm/solid";
 
-// items 방식 (단순 배열)
+// items approach (simple array)
 <Select
-  items={["사과", "바나나", "딸기"]}
+  items={["Apple", "Banana", "Strawberry"]}
   value={fruit()}
   onValueChange={setFruit}
-  placeholder="과일 선택"
+  placeholder="Select fruit"
 />
 
-// children 방식 (Compound Components)
+// children approach (Compound Components)
 <Select value={fruit()} onValueChange={setFruit} renderValue={(v) => v.name}>
   <Select.Item value={item1}>{item1.name}</Select.Item>
   <Select.Item value={item2}>{item2.name}</Select.Item>
 </Select>
 
-// items 방식 + ItemTemplate으로 커스텀 렌더링
+// items approach + ItemTemplate for custom rendering
 <Select items={users} value={selectedUser()} onValueChange={setSelectedUser}>
   <Select.ItemTemplate>
     {(user) => <>{user.name} ({user.email})</>}
   </Select.ItemTemplate>
 </Select>
 
-// 다중 선택
+// Multiple selection
 <Select items={options} value={selected()} onValueChange={setSelected} multiple />
 
-// 액션 버튼 및 헤더 추가
+// With action buttons and header
 <Select value={item()} onValueChange={setItem} renderValue={(v) => v.name}>
-  <Select.Header><div>커스텀 헤더</div></Select.Header>
+  <Select.Header><div>Custom header</div></Select.Header>
   <Select.Action onClick={handleAdd}>+</Select.Action>
   <Select.Item value={item1}>{item1.name}</Select.Item>
 </Select>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `T \| T[]` | - | 선택 값 |
-| `onValueChange` | `(value: T \| T[]) => void` | - | 값 변경 콜백 |
-| `items` | `T[]` | - | 항목 배열 (items 방식) |
-| `getChildren` | `(item: T, index: number, depth: number) => T[] \| undefined` | - | 트리 구조 자식 항목 |
-| `renderValue` | `(value: T) => JSX.Element` | - | 값 렌더링 함수 (children 방식에서 필수) |
-| `multiple` | `boolean` | `false` | 다중 선택 |
-| `multiDisplayDirection` | `"horizontal" \| "vertical"` | `"horizontal"` | 다중 선택 시 표시 방향 |
-| `hideSelectAll` | `boolean` | - | 전체 선택 버튼 숨기기 (다중 선택 시) |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `required` | `boolean` | - | 필수 입력 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `T \| T[]` | - | Selected value |
+| `onValueChange` | `(value: T \| T[]) => void` | - | Value change callback |
+| `items` | `T[]` | - | Items array (items approach) |
+| `getChildren` | `(item: T, index: number, depth: number) => T[] \| undefined` | - | Tree structure children getter |
+| `renderValue` | `(value: T) => JSX.Element` | - | Value rendering function (required for children approach) |
+| `multiple` | `boolean` | `false` | Multiple selection |
+| `multiDisplayDirection` | `"horizontal" \| "vertical"` | `"horizontal"` | Display direction for multiple selection |
+| `hideSelectAll` | `boolean` | - | Hide select all button (multiple selection) |
+| `placeholder` | `string` | - | Placeholder |
+| `disabled` | `boolean` | - | Disabled state |
+| `required` | `boolean` | - | Required field |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
-**서브 컴포넌트:**
-- `Select.Item` -- 선택 항목
-- `Select.Action` -- 우측 액션 버튼
-- `Select.Header` -- 드롭다운 상단 커스텀 영역
-- `Select.ItemTemplate` -- items 방식일 때 아이템 렌더링 템플릿
+**Sub-components:**
+- `Select.Item` -- Selection item
+- `Select.Action` -- Right-side action button
+- `Select.Header` -- Dropdown top custom area
+- `Select.ItemTemplate` -- Item rendering template for items approach
 
 ---
 
 #### Combobox
 
-비동기 검색과 아이템 선택을 지원하는 자동완성 컴포넌트. 디바운스 처리가 내장되어 있다.
+Autocomplete component with async search and item selection support. Debouncing is built-in.
 
 ```tsx
 import { Combobox } from "@simplysm/solid";
@@ -359,7 +359,7 @@ import { Combobox } from "@simplysm/solid";
   renderValue={(item) => item.name}
   value={selected()}
   onValueChange={setSelected}
-  placeholder="검색..."
+  placeholder="Search..."
 >
   <Combobox.ItemTemplate>
     {(item) => <>{item.name}</>}
@@ -367,67 +367,67 @@ import { Combobox } from "@simplysm/solid";
 </Combobox>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `T` | - | 선택 값 |
-| `onValueChange` | `(value: T) => void` | - | 값 변경 콜백 |
-| `loadItems` | `(query: string) => Promise<T[]>` | **(필수)** | 아이템 로드 함수 |
-| `renderValue` | `(value: T) => JSX.Element` | **(필수)** | 값 렌더링 함수 |
-| `debounceMs` | `number` | `300` | 디바운스 딜레이 (ms) |
-| `allowCustomValue` | `boolean` | - | 커스텀 값 허용 |
-| `parseCustomValue` | `(text: string) => T` | - | 커스텀 값 파싱 함수 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `T` | - | Selected value |
+| `onValueChange` | `(value: T) => void` | - | Value change callback |
+| `loadItems` | `(query: string) => Promise<T[]>` | **(required)** | Item loading function |
+| `renderValue` | `(value: T) => JSX.Element` | **(required)** | Value rendering function |
+| `debounceMs` | `number` | `300` | Debounce delay (ms) |
+| `allowCustomValue` | `boolean` | - | Allow custom values |
+| `parseCustomValue` | `(text: string) => T` | - | Custom value parsing function |
+| `placeholder` | `string` | - | Placeholder |
+| `disabled` | `boolean` | - | Disabled state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
-**서브 컴포넌트:**
-- `Combobox.Item` -- 선택 항목
-- `Combobox.ItemTemplate` -- 아이템 렌더링 템플릿
+**Sub-components:**
+- `Combobox.Item` -- Selection item
+- `Combobox.ItemTemplate` -- Item rendering template
 
 ---
 
 #### Checkbox / Radio
 
-체크박스 및 라디오 버튼 컴포넌트.
+Checkbox and radio button components.
 
 ```tsx
 import { Checkbox, Radio } from "@simplysm/solid";
 
-<Checkbox value={checked()} onValueChange={setChecked}>동의합니다</Checkbox>
-<Checkbox theme="success" value={active()} onValueChange={setActive}>활성화</Checkbox>
+<Checkbox value={checked()} onValueChange={setChecked}>I agree</Checkbox>
+<Checkbox theme="success" value={active()} onValueChange={setActive}>Activate</Checkbox>
 
-<Radio value={option() === "a"} onValueChange={() => setOption("a")}>옵션 A</Radio>
-<Radio value={option() === "b"} onValueChange={() => setOption("b")}>옵션 B</Radio>
+<Radio value={option() === "a"} onValueChange={() => setOption("a")}>Option A</Radio>
+<Radio value={option() === "b"} onValueChange={() => setOption("b")}>Option B</Radio>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `boolean` | `false` | 선택 상태 |
-| `onValueChange` | `(value: boolean) => void` | - | 값 변경 콜백 |
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"primary"` | 색상 테마 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `inset` | `boolean` | - | 인셋 스타일 |
-| `inline` | `boolean` | - | 인라인 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `boolean` | `false` | Checked state |
+| `onValueChange` | `(value: boolean) => void` | - | Value change callback |
+| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"primary"` | Color theme |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `disabled` | `boolean` | - | Disabled state |
+| `inset` | `boolean` | - | Inset style |
+| `inline` | `boolean` | - | Inline style |
 
 ---
 
 #### CheckboxGroup / RadioGroup
 
-여러 항목에서 복수/단일 선택을 관리하는 그룹 컴포넌트.
+Group components for managing multiple/single selection across items.
 
 ```tsx
 import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 
-// 다중 선택
+// Multiple selection
 <CheckboxGroup value={selectedColors()} onValueChange={setSelectedColors}>
-  <CheckboxGroup.Item value="red">빨강</CheckboxGroup.Item>
-  <CheckboxGroup.Item value="green">초록</CheckboxGroup.Item>
-  <CheckboxGroup.Item value="blue">파랑</CheckboxGroup.Item>
+  <CheckboxGroup.Item value="red">Red</CheckboxGroup.Item>
+  <CheckboxGroup.Item value="green">Green</CheckboxGroup.Item>
+  <CheckboxGroup.Item value="blue">Blue</CheckboxGroup.Item>
 </CheckboxGroup>
 
-// 단일 선택
+// Single selection
 <RadioGroup value={size()} onValueChange={setSize}>
   <RadioGroup.Item value="sm">Small</RadioGroup.Item>
   <RadioGroup.Item value="md">Medium</RadioGroup.Item>
@@ -437,33 +437,33 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 
 **CheckboxGroup Props:**
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `T[]` | `[]` | 선택된 값 배열 |
-| `onValueChange` | `(value: T[]) => void` | - | 값 변경 콜백 |
-| `theme` | `SemanticTheme` | `"primary"` | 색상 테마 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `disabled` | `boolean` | - | 전체 비활성화 |
-| `inline` | `boolean` | - | 인라인 스타일 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `T[]` | `[]` | Selected values array |
+| `onValueChange` | `(value: T[]) => void` | - | Value change callback |
+| `theme` | `SemanticTheme` | `"primary"` | Color theme |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `disabled` | `boolean` | - | Disable all items |
+| `inline` | `boolean` | - | Inline style |
+| `inset` | `boolean` | - | Inset style |
 
 **RadioGroup Props:**
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `T` | - | 선택된 값 |
-| `onValueChange` | `(value: T) => void` | - | 값 변경 콜백 |
-| `theme` | `SemanticTheme` | `"primary"` | 색상 테마 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `disabled` | `boolean` | - | 전체 비활성화 |
-| `inline` | `boolean` | - | 인라인 스타일 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `T` | - | Selected value |
+| `onValueChange` | `(value: T) => void` | - | Value change callback |
+| `theme` | `SemanticTheme` | `"primary"` | Color theme |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `disabled` | `boolean` | - | Disable all items |
+| `inline` | `boolean` | - | Inline style |
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### ColorPicker
 
-색상 선택 컴포넌트.
+Color selection component.
 
 ```tsx
 import { ColorPicker } from "@simplysm/solid";
@@ -472,18 +472,18 @@ import { ColorPicker } from "@simplysm/solid";
 <ColorPicker value={color()} size="sm" disabled />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `string` | `"#000000"` | 색상 값 (#RRGGBB 형식) |
-| `onValueChange` | `(value: string) => void` | - | 값 변경 콜백 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `disabled` | `boolean` | - | 비활성화 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | `"#000000"` | Color value (#RRGGBB format) |
+| `onValueChange` | `(value: string) => void` | - | Value change callback |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `disabled` | `boolean` | - | Disabled state |
 
 ---
 
 #### ThemeToggle
 
-다크/라이트/시스템 테마 순환 토글 버튼. `ThemeProvider` 내부에서 사용해야 한다.
+Dark/light/system theme cycle toggle button. Must be used inside `ThemeProvider`.
 
 ```tsx
 import { ThemeToggle } from "@simplysm/solid";
@@ -493,17 +493,17 @@ import { ThemeToggle } from "@simplysm/solid";
 <ThemeToggle size="lg" />
 ```
 
-클릭 시 `light -> system -> dark -> light` 순서로 순환하며, 현재 모드에 맞는 아이콘이 표시된다.
+Clicking cycles through `light -> system -> dark -> light`, displaying an icon matching the current mode.
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `size` | `"sm" \| "lg"` | - | 버튼 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `size` | `"sm" \| "lg"` | - | Button size |
 
 ---
 
 #### RichTextEditor
 
-Tiptap 기반 리치 텍스트 에디터. 텍스트 서식(볼드, 이탤릭, 취소선), 정렬, 색상, 하이라이트, 테이블, 이미지 삽입을 지원한다.
+Tiptap-based rich text editor. Supports text formatting (bold, italic, strikethrough), alignment, colors, highlights, tables, and image insertion.
 
 ```tsx
 import { RichTextEditor } from "@simplysm/solid";
@@ -511,26 +511,26 @@ import { RichTextEditor } from "@simplysm/solid";
 <RichTextEditor value={html()} onValueChange={setHtml} />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `string` | - | HTML 문자열 값 |
-| `onValueChange` | `(value: string) => void` | - | 값 변경 콜백 |
-| `disabled` | `boolean` | - | 비활성화 |
-| `error` | `boolean` | - | 에러 상태 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | - | HTML string value |
+| `onValueChange` | `(value: string) => void` | - | Value change callback |
+| `disabled` | `boolean` | - | Disabled state |
+| `error` | `boolean` | - | Error state |
+| `size` | `"sm" \| "lg"` | - | Size |
 
 ---
 
 #### Numpad
 
-숫자 키패드 컴포넌트. 터치 기반 숫자 입력이 필요한 환경에서 사용한다.
+Numeric keypad component. Used in environments requiring touch-based number input.
 
 ```tsx
 import { Numpad } from "@simplysm/solid";
 
 <Numpad value={amount()} onValueChange={setAmount} />
 
-// ENT/마이너스 버튼 포함
+// With ENT/minus buttons
 <Numpad
   value={amount()}
   onValueChange={setAmount}
@@ -540,23 +540,23 @@ import { Numpad } from "@simplysm/solid";
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `number` | - | 입력 값 |
-| `onValueChange` | `(value: number \| undefined) => void` | - | 값 변경 콜백 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `required` | `boolean` | - | 필수 입력 여부 |
-| `inputDisabled` | `boolean` | - | 텍스트 필드 직접 입력 비활성화 |
-| `useEnterButton` | `boolean` | - | ENT 버튼 표시 |
-| `useMinusButton` | `boolean` | - | - 버튼 표시 |
-| `onEnterButtonClick` | `() => void` | - | ENT 클릭 콜백 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `number` | - | Input value |
+| `onValueChange` | `(value: number \| undefined) => void` | - | Value change callback |
+| `placeholder` | `string` | - | Placeholder |
+| `required` | `boolean` | - | Required field |
+| `inputDisabled` | `boolean` | - | Disable direct text field input |
+| `useEnterButton` | `boolean` | - | Show ENT button |
+| `useMinusButton` | `boolean` | - | Show minus button |
+| `onEnterButtonClick` | `() => void` | - | ENT click callback |
+| `size` | `"sm" \| "lg"` | - | Size |
 
 ---
 
 #### StatePreset
 
-검색 조건 등 화면 상태를 프리셋으로 저장/불러오기 하는 컴포넌트. localStorage에 영속 저장된다.
+Component for saving/loading screen state (search conditions, etc.) as presets. Persisted in localStorage.
 
 ```tsx
 import { StatePreset } from "@simplysm/solid";
@@ -568,12 +568,12 @@ import { StatePreset } from "@simplysm/solid";
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `presetKey` | `string` | **(필수)** | 프리셋 저장 키 |
-| `value` | `T` | **(필수)** | 현재 상태 값 |
-| `onValueChange` | `(value: T) => void` | **(필수)** | 상태 복원 콜백 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `presetKey` | `string` | **(required)** | Preset storage key |
+| `value` | `T` | **(required)** | Current state value |
+| `onValueChange` | `(value: T) => void` | **(required)** | State restore callback |
+| `size` | `"sm" \| "lg"` | - | Size |
 
 ---
 
@@ -581,26 +581,26 @@ import { StatePreset } from "@simplysm/solid";
 
 #### Tabs
 
-탭 네비게이션 컴포넌트.
+Tab navigation component.
 
 ```tsx
 import { Tabs } from "@simplysm/solid";
 
 <Tabs value={activeTab()} onValueChange={setActiveTab}>
-  <Tabs.Tab value="tab1">탭 1</Tabs.Tab>
-  <Tabs.Tab value="tab2">탭 2</Tabs.Tab>
-  <Tabs.Tab value="tab3" disabled>탭 3</Tabs.Tab>
+  <Tabs.Tab value="tab1">Tab 1</Tabs.Tab>
+  <Tabs.Tab value="tab2">Tab 2</Tabs.Tab>
+  <Tabs.Tab value="tab3" disabled>Tab 3</Tabs.Tab>
 </Tabs>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `string` | - | 선택된 탭 값 |
-| `onValueChange` | `(value: string) => void` | - | 탭 변경 콜백 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | - | Selected tab value |
+| `onValueChange` | `(value: string) => void` | - | Tab change callback |
+| `size` | `"sm" \| "lg"` | - | Size |
 
-**서브 컴포넌트:**
-- `Tabs.Tab` -- 개별 탭 (`value: string`, `disabled?: boolean`)
+**Sub-components:**
+- `Tabs.Tab` -- Individual tab (`value: string`, `disabled?: boolean`)
 
 ---
 
@@ -608,56 +608,56 @@ import { Tabs } from "@simplysm/solid";
 
 #### Card
 
-그림자 효과가 있는 카드 컨테이너.
+Container with shadow effect.
 
 ```tsx
 import { Card } from "@simplysm/solid";
 
-<Card>카드 내용</Card>
-<Card class="p-4">패딩이 있는 카드</Card>
+<Card>Card content</Card>
+<Card class="p-4">Card with padding</Card>
 ```
 
 ---
 
 #### Tag
 
-인라인 태그/뱃지 컴포넌트.
+Inline tag/badge component.
 
 ```tsx
 import { Tag } from "@simplysm/solid";
 
-<Tag theme="primary">신규</Tag>
-<Tag theme="success">완료</Tag>
-<Tag theme="danger">긴급</Tag>
+<Tag theme="primary">New</Tag>
+<Tag theme="success">Complete</Tag>
+<Tag theme="danger">Urgent</Tag>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | 색상 테마 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | Color theme |
 
 ---
 
 #### Alert
 
-블록 레벨 알림/공지 컴포넌트.
+Block-level alert/notice component.
 
 ```tsx
 import { Alert } from "@simplysm/solid";
 
-<Alert theme="info">안내 메시지입니다.</Alert>
-<Alert theme="warning">주의가 필요한 사항입니다.</Alert>
-<Alert theme="danger">오류가 발생했습니다.</Alert>
+<Alert theme="info">This is an information message.</Alert>
+<Alert theme="warning">Please pay attention to this.</Alert>
+<Alert theme="danger">An error has occurred.</Alert>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | 색상 테마 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | Color theme |
 
 ---
 
 #### Icon
 
-Tabler Icons 래퍼 컴포넌트. `em` 단위로 주변 텍스트 크기에 비례하여 표시된다.
+Tabler Icons wrapper component. Displayed in `em` units to scale proportionally with surrounding text.
 
 ```tsx
 import { Icon } from "@simplysm/solid";
@@ -667,16 +667,16 @@ import { IconCheck, IconAlertTriangle } from "@tabler/icons-solidjs";
 <Icon icon={IconAlertTriangle} size="2em" />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `icon` | `Component` | **(필수)** | Tabler icon 컴포넌트 |
-| `size` | `string \| number` | `"1.25em"` | 아이콘 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `icon` | `Component` | **(required)** | Tabler icon component |
+| `size` | `string \| number` | `"1.25em"` | Icon size |
 
 ---
 
 #### Progress
 
-진행률 표시 컴포넌트.
+Progress indicator component.
 
 ```tsx
 import { Progress } from "@simplysm/solid";
@@ -684,24 +684,24 @@ import { Progress } from "@simplysm/solid";
 <Progress value={0.65} />
 <Progress value={0.8} theme="success" size="lg" />
 
-// 커스텀 텍스트
+// Custom text
 <Progress value={progress()}>
-  {Math.round(progress() * 100)}% 완료
+  {Math.round(progress() * 100)}% complete
 </Progress>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `value` | `number` | **(필수)** | 진행률 (0~1) |
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"primary"` | 색상 테마 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `number` | **(required)** | Progress (0~1) |
+| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"primary"` | Color theme |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### Barcode
 
-bwip-js 기반 바코드/QR코드 렌더링 컴포넌트. 100가지 이상의 바코드 타입을 지원한다.
+bwip-js-based barcode/QR code rendering component. Supports over 100 barcode types.
 
 ```tsx
 import { Barcode } from "@simplysm/solid";
@@ -711,16 +711,16 @@ import { Barcode } from "@simplysm/solid";
 <Barcode type="ean13" value="4901234567890" />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `type` | `BarcodeType` | **(필수)** | 바코드 타입 (`"qrcode"`, `"code128"`, `"ean13"` 등) |
-| `value` | `string` | - | 바코드 값 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | `BarcodeType` | **(required)** | Barcode type (`"qrcode"`, `"code128"`, `"ean13"`, etc.) |
+| `value` | `string` | - | Barcode value |
 
 ---
 
 #### Echarts
 
-Apache ECharts 차트 래퍼 컴포넌트. `echarts` peer dependency를 설치해야 사용할 수 있다.
+Apache ECharts chart wrapper component. Requires `echarts` peer dependency installation.
 
 ```tsx
 import { Echarts } from "@simplysm/solid";
@@ -736,10 +736,10 @@ import { Echarts } from "@simplysm/solid";
 <Echarts option={chartOption()} loading={isLoading()} />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `option` | `echarts.EChartsOption` | **(필수)** | ECharts 옵션 객체 |
-| `loading` | `boolean` | - | 로딩 상태 표시 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `option` | `echarts.EChartsOption` | **(required)** | ECharts option object |
+| `loading` | `boolean` | - | Show loading state |
 
 ---
 
@@ -747,98 +747,98 @@ import { Echarts } from "@simplysm/solid";
 
 #### Sidebar
 
-사이드바 네비게이션. 반응형 지원 (520px 미만에서 모바일 오버레이). 열림/닫힘 상태는 localStorage에 저장된다.
+Sidebar navigation with responsive support (mobile overlay below 520px). Open/closed state is saved in localStorage.
 
 ```tsx
 import { Sidebar } from "@simplysm/solid";
 
 <Sidebar.Container>
   <Sidebar>
-    <Sidebar.User name="홍길동" menus={userMenus}>
-      <span>홍길동</span>
+    <Sidebar.User name="John Doe" menus={userMenus}>
+      <span>John Doe</span>
     </Sidebar.User>
     <Sidebar.Menu menus={menuItems} />
   </Sidebar>
   <div class="flex flex-1 flex-col">
     <Topbar>
-      <h1>앱 이름</h1>
+      <h1>App Name</h1>
     </Topbar>
     <main class="flex-1 overflow-auto p-4">
-      {/* 메인 콘텐츠 */}
+      {/* main content */}
     </main>
   </div>
 </Sidebar.Container>
 ```
 
-**서브 컴포넌트:**
-- `Sidebar.Container` -- 사이드바와 메인 영역을 감싸는 컨테이너 (필수)
-- `Sidebar.Menu` -- 메뉴 항목 목록 (`menus: SidebarMenuItem[]`)
-- `Sidebar.User` -- 사용자 정보 영역
+**Sub-components:**
+- `Sidebar.Container` -- Container wrapping sidebar and main area (required)
+- `Sidebar.Menu` -- Menu items list (`menus: SidebarMenuItem[]`)
+- `Sidebar.User` -- User info area
 
 ---
 
 #### Topbar
 
-상단 네비게이션 바. `Sidebar.Container` 내부에서 사용하면 사이드바 토글 버튼이 자동으로 나타난다.
+Top navigation bar. When used inside `Sidebar.Container`, a sidebar toggle button appears automatically.
 
 ```tsx
 import { Topbar } from "@simplysm/solid";
 
 <Topbar>
-  <h1 class="text-lg font-bold">앱 이름</h1>
+  <h1 class="text-lg font-bold">App Name</h1>
   <Topbar.Menu menus={menuItems} />
   <div class="flex-1" />
-  <Topbar.User menus={userMenus}>사용자</Topbar.User>
+  <Topbar.User menus={userMenus}>User</Topbar.User>
 </Topbar>
 ```
 
-**서브 컴포넌트:**
-- `Topbar.Container` -- 탑바 아래 메인 콘텐츠를 감싸는 컨테이너
-- `Topbar.Menu` -- 메뉴 항목 목록
-- `Topbar.User` -- 사용자 메뉴 (드롭다운)
+**Sub-components:**
+- `Topbar.Container` -- Container wrapping main content below topbar
+- `Topbar.Menu` -- Menu items list
+- `Topbar.User` -- User menu (dropdown)
 
 ---
 
 #### FormGroup
 
-폼 필드를 라벨과 함께 수직 또는 인라인으로 배치하는 레이아웃 컴포넌트.
+Layout component for arranging form fields with labels vertically or inline.
 
 ```tsx
 import { FormGroup, TextInput } from "@simplysm/solid";
 
-// 수직 배치 (기본)
+// Vertical layout (default)
 <FormGroup>
-  <FormGroup.Item label="이름">
+  <FormGroup.Item label="Name">
     <TextInput value={name()} onValueChange={setName} />
   </FormGroup.Item>
-  <FormGroup.Item label="이메일">
+  <FormGroup.Item label="Email">
     <TextInput type="email" value={email()} onValueChange={setEmail} />
   </FormGroup.Item>
 </FormGroup>
 
-// 인라인 배치
+// Inline layout
 <FormGroup inline>
-  <FormGroup.Item label="검색">
+  <FormGroup.Item label="Search">
     <TextInput value={query()} onValueChange={setQuery} />
   </FormGroup.Item>
   <FormGroup.Item>
-    <Button theme="primary">검색</Button>
+    <Button theme="primary">Search</Button>
   </FormGroup.Item>
 </FormGroup>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `inline` | `boolean` | `false` | 인라인 배치 모드 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `inline` | `boolean` | `false` | Inline layout mode |
 
-**서브 컴포넌트:**
-- `FormGroup.Item` -- 폼 항목 (`label?: JSX.Element`)
+**Sub-components:**
+- `FormGroup.Item` -- Form item (`label?: JSX.Element`)
 
 ---
 
 #### FormTable
 
-`<table>` 기반 폼 레이아웃. `<th>`에 라벨, `<td>`에 입력 필드를 배치한다.
+`<table>`-based form layout. Labels go in `<th>`, input fields in `<td>`.
 
 ```tsx
 import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
@@ -846,13 +846,13 @@ import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
 <FormTable>
   <tbody>
     <tr>
-      <th>이름</th>
+      <th>Name</th>
       <td><TextInput value={name()} onValueChange={setName} /></td>
-      <th>나이</th>
+      <th>Age</th>
       <td><NumberInput value={age()} onValueChange={setAge} /></td>
     </tr>
     <tr>
-      <th>이메일</th>
+      <th>Email</th>
       <td colSpan={3}><TextInput type="email" value={email()} onValueChange={setEmail} /></td>
     </tr>
   </tbody>
@@ -863,7 +863,7 @@ import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
 
 #### Kanban
 
-칸반 보드 레이아웃 컴포넌트.
+Kanban board layout component.
 
 ---
 
@@ -871,51 +871,51 @@ import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
 
 #### Table
 
-기본 HTML 테이블 래퍼. 테두리, 헤더 배경 등 일관된 스타일을 제공한다.
+Basic HTML table wrapper. Provides consistent styling for borders, header backgrounds, etc.
 
 ```tsx
 import { Table } from "@simplysm/solid";
 
 <Table>
   <thead>
-    <tr><th>이름</th><th>나이</th></tr>
+    <tr><th>Name</th><th>Age</th></tr>
   </thead>
   <tbody>
-    <tr><td>홍길동</td><td>30</td></tr>
-    <tr><td>김철수</td><td>25</td></tr>
+    <tr><td>John Doe</td><td>30</td></tr>
+    <tr><td>Jane Smith</td><td>25</td></tr>
   </tbody>
 </Table>
 
-// 인셋 스타일 (외곽 테두리 제거, 부모 컨테이너에 맞춤)
+// Inset style (removes outer border, fits parent container)
 <Table inset>...</Table>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `inset` | `boolean` | - | 인셋 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `inset` | `boolean` | - | Inset style |
 
 ---
 
 #### DataSheet
 
-고급 데이터 테이블 컴포넌트. 정렬, 페이지네이션, 행 선택, 트리 확장, 컬럼 리사이즈, 컬럼 설정, 행 재정렬을 지원한다.
+Advanced data table component. Supports sorting, pagination, row selection, tree expansion, column resize, column configuration, and row reordering.
 
 ```tsx
 import { DataSheet } from "@simplysm/solid";
 
 <DataSheet items={users()} key="user-table">
-  <DataSheet.Column key="name" header="이름" sortable>
+  <DataSheet.Column key="name" header="Name" sortable>
     {({ item }) => <>{item.name}</>}
   </DataSheet.Column>
-  <DataSheet.Column key="age" header="나이" sortable width="80px">
+  <DataSheet.Column key="age" header="Age" sortable width="80px">
     {({ item }) => <>{item.age}</>}
   </DataSheet.Column>
-  <DataSheet.Column key="email" header="이메일">
+  <DataSheet.Column key="email" header="Email">
     {({ item }) => <>{item.email}</>}
   </DataSheet.Column>
 </DataSheet>
 
-// 페이지네이션 + 정렬 + 선택
+// With pagination + sorting + selection
 <DataSheet
   items={data()}
   key="data-table"
@@ -932,83 +932,83 @@ import { DataSheet } from "@simplysm/solid";
 </DataSheet>
 ```
 
-**DataSheet Props (주요 항목):**
+**DataSheet Props (key items):**
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `items` | `T[]` | - | 데이터 배열 |
-| `key` | `string` | - | 컬럼 설정 저장 키 |
-| `inset` | `boolean` | - | 인셋 스타일 |
-| `sorts` | `SortingDef[]` | - | 정렬 정의 |
-| `onSortsChange` | `(sorts: SortingDef[]) => void` | - | 정렬 변경 콜백 |
-| `autoSort` | `boolean` | - | 클라이언트 자동 정렬 |
-| `page` | `number` | - | 현재 페이지 (0-based) |
-| `onPageChange` | `(page: number) => void` | - | 페이지 변경 콜백 |
-| `totalPageCount` | `number` | - | 전체 페이지 수 |
-| `selectMode` | `"single" \| "multiple"` | - | 선택 모드 |
-| `selectedItems` | `T[]` | - | 선택된 항목 |
-| `onSelectedItemsChange` | `(items: T[]) => void` | - | 선택 변경 콜백 |
-| `getChildren` | `(item: T, index: number) => T[] \| undefined` | - | 트리 구조 자식 항목 |
-| `hideConfigBar` | `boolean` | - | 설정 바 숨기기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `T[]` | - | Data array |
+| `key` | `string` | - | Column configuration storage key |
+| `inset` | `boolean` | - | Inset style |
+| `sorts` | `SortingDef[]` | - | Sort definition |
+| `onSortsChange` | `(sorts: SortingDef[]) => void` | - | Sort change callback |
+| `autoSort` | `boolean` | - | Client-side auto-sorting |
+| `page` | `number` | - | Current page (0-based) |
+| `onPageChange` | `(page: number) => void` | - | Page change callback |
+| `totalPageCount` | `number` | - | Total page count |
+| `selectMode` | `"single" \| "multiple"` | - | Selection mode |
+| `selectedItems` | `T[]` | - | Selected items |
+| `onSelectedItemsChange` | `(items: T[]) => void` | - | Selection change callback |
+| `getChildren` | `(item: T, index: number) => T[] \| undefined` | - | Tree structure children getter |
+| `hideConfigBar` | `boolean` | - | Hide configuration bar |
 
 **DataSheet.Column Props:**
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `key` | `string` | **(필수)** | 컬럼 식별 키 |
-| `header` | `string \| string[]` | - | 헤더 텍스트 (배열 시 다단 헤더) |
-| `headerContent` | `() => JSX.Element` | - | 커스텀 헤더 렌더링 |
-| `summary` | `() => JSX.Element` | - | 합계 행 렌더링 |
-| `width` | `string` | - | 컬럼 너비 |
-| `fixed` | `boolean` | - | 고정 컬럼 |
-| `hidden` | `boolean` | - | 숨김 컬럼 |
-| `sortable` | `boolean` | - | 정렬 가능 |
-| `resizable` | `boolean` | - | 리사이즈 가능 |
-| `children` | `(ctx: { item: T, index: number, depth: number }) => JSX.Element` | **(필수)** | 셀 렌더링 함수 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `key` | `string` | **(required)** | Column identifier key |
+| `header` | `string \| string[]` | - | Header text (array for multi-level headers) |
+| `headerContent` | `() => JSX.Element` | - | Custom header rendering |
+| `summary` | `() => JSX.Element` | - | Summary row rendering |
+| `width` | `string` | - | Column width |
+| `fixed` | `boolean` | - | Fixed column |
+| `hidden` | `boolean` | - | Hidden column |
+| `sortable` | `boolean` | - | Sortable |
+| `resizable` | `boolean` | - | Resizable |
+| `children` | `(ctx: { item: T, index: number, depth: number }) => JSX.Element` | **(required)** | Cell rendering function |
 
 ---
 
 #### List
 
-트리뷰 스타일 목록 컴포넌트. 키보드 네비게이션을 지원한다.
+Tree-view style list component. Supports keyboard navigation.
 
 ```tsx
 import { List } from "@simplysm/solid";
 
 <List>
-  <List.Item>항목 1</List.Item>
-  <List.Item>항목 2</List.Item>
+  <List.Item>Item 1</List.Item>
+  <List.Item>Item 2</List.Item>
   <List.Item>
-    부모 항목
+    Parent item
     <List.Item.Children>
-      <List.Item>자식 항목 1</List.Item>
-      <List.Item>자식 항목 2</List.Item>
+      <List.Item>Child item 1</List.Item>
+      <List.Item>Child item 2</List.Item>
     </List.Item.Children>
   </List.Item>
 </List>
 
-// 인셋 스타일
+// Inset style
 <List inset>
-  <List.Item>Inset 항목</List.Item>
+  <List.Item>Inset item</List.Item>
 </List>
 ```
 
-**키보드 네비게이션:**
-- `ArrowUp` / `ArrowDown` -- 이전/다음 항목으로 포커스 이동
-- `Space` / `Enter` -- 현재 항목 클릭
-- `ArrowRight` -- 닫혀있으면 열기, 열려있으면 첫 자식으로 포커스
-- `ArrowLeft` -- 열려있으면 닫기, 닫혀있으면 부모로 포커스
-- `Home` / `End` -- 첫 번째/마지막 항목으로 포커스
+**Keyboard navigation:**
+- `ArrowUp` / `ArrowDown` -- Move focus to previous/next item
+- `Space` / `Enter` -- Click current item
+- `ArrowRight` -- Expand if collapsed, focus first child if expanded
+- `ArrowLeft` -- Collapse if expanded, focus parent if collapsed
+- `Home` / `End` -- Focus first/last item
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `inset` | `boolean` | - | 투명 배경 스타일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `inset` | `boolean` | - | Transparent background style |
 
 ---
 
 #### Pagination
 
-페이지 네비게이션 컴포넌트.
+Page navigation component.
 
 ```tsx
 import { Pagination } from "@simplysm/solid";
@@ -1021,19 +1021,19 @@ import { Pagination } from "@simplysm/solid";
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `page` | `number` | **(필수)** | 현재 페이지 (0-based) |
-| `onPageChange` | `(page: number) => void` | - | 페이지 변경 콜백 |
-| `totalPageCount` | `number` | **(필수)** | 전체 페이지 수 |
-| `displayPageCount` | `number` | `10` | 한 번에 표시할 페이지 수 |
-| `size` | `"sm" \| "lg"` | - | 크기 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `page` | `number` | **(required)** | Current page (0-based) |
+| `onPageChange` | `(page: number) => void` | - | Page change callback |
+| `totalPageCount` | `number` | **(required)** | Total page count |
+| `displayPageCount` | `number` | `10` | Number of pages to display at once |
+| `size` | `"sm" \| "lg"` | - | Size |
 
 ---
 
 #### Calendar
 
-달력 형태의 데이터 표시 컴포넌트.
+Calendar-style data display component.
 
 ```tsx
 import { Calendar } from "@simplysm/solid";
@@ -1047,20 +1047,20 @@ import { Calendar } from "@simplysm/solid";
 />
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `items` | `T[]` | **(필수)** | 데이터 배열 |
-| `getItemDate` | `(item: T, index: number) => DateOnly` | **(필수)** | 항목의 날짜 추출 함수 |
-| `renderItem` | `(item: T, index: number) => JSX.Element` | **(필수)** | 항목 렌더링 함수 |
-| `yearMonth` | `DateOnly` | - | 표시할 연월 |
-| `onYearMonthChange` | `(value: DateOnly) => void` | - | 연월 변경 콜백 |
-| `weekStartDay` | `number` | `0` (일요일) | 주 시작 요일 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `T[]` | **(required)** | Data array |
+| `getItemDate` | `(item: T, index: number) => DateOnly` | **(required)** | Item date extraction function |
+| `renderItem` | `(item: T, index: number) => JSX.Element` | **(required)** | Item rendering function |
+| `yearMonth` | `DateOnly` | - | Year-month to display |
+| `onYearMonthChange` | `(value: DateOnly) => void` | - | Year-month change callback |
+| `weekStartDay` | `number` | `0` (Sunday) | Week start day |
 
 ---
 
 #### PermissionTable
 
-권한 관리 테이블 컴포넌트.
+Permission management table component.
 
 ---
 
@@ -1068,7 +1068,7 @@ import { Calendar } from "@simplysm/solid";
 
 #### Collapse
 
-콘텐츠 접기/펼치기 애니메이션 컴포넌트. `margin-top` 기반 트랜지션으로 부드러운 열림/닫힘 효과를 제공한다.
+Content collapse/expand animation component. Uses `margin-top`-based transition for smooth open/close effects.
 
 ```tsx
 import { Collapse, Button } from "@simplysm/solid";
@@ -1081,24 +1081,24 @@ const [open, setOpen] = createSignal(false);
   aria-controls="content"
   onClick={() => setOpen(!open())}
 >
-  토글
+  Toggle
 </Button>
 <Collapse id="content" open={open()}>
-  <p>접히는 내용</p>
+  <p>Collapsible content</p>
 </Collapse>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `open` | `boolean` | `false` | 열림 여부 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | `false` | Open state |
 
-`prefers-reduced-motion` 설정 시 애니메이션이 자동으로 비활성화된다.
+Animation is automatically disabled when `prefers-reduced-motion` is set.
 
 ---
 
 #### Dropdown
 
-포지셔닝이 적용된 드롭다운 팝업. 트리거 요소 또는 절대 좌표 기준으로 위치가 결정된다.
+Positioned dropdown popup. Position is determined relative to trigger element or absolute coordinates.
 
 ```tsx
 import { Dropdown, Button } from "@simplysm/solid";
@@ -1107,34 +1107,34 @@ import { createSignal } from "solid-js";
 const [open, setOpen] = createSignal(false);
 let triggerRef!: HTMLButtonElement;
 
-<Button ref={triggerRef} onClick={() => setOpen(!open())}>열기</Button>
+<Button ref={triggerRef} onClick={() => setOpen(!open())}>Open</Button>
 <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen}>
-  <p class="p-3">드롭다운 내용</p>
+  <p class="p-3">Dropdown content</p>
 </Dropdown>
 
-// 컨텍스트 메뉴 (절대 위치)
+// Context menu (absolute position)
 <Dropdown position={{ x: 100, y: 200 }} open={menuOpen()} onOpenChange={setMenuOpen}>
   <List inset>
-    <List.Item>메뉴 항목 1</List.Item>
-    <List.Item>메뉴 항목 2</List.Item>
+    <List.Item>Menu item 1</List.Item>
+    <List.Item>Menu item 2</List.Item>
   </List>
 </Dropdown>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `triggerRef` | `() => HTMLElement \| undefined` | - | 트리거 요소 참조 (position과 택일) |
-| `position` | `{ x: number; y: number }` | - | 절대 위치 (triggerRef와 택일) |
-| `open` | `boolean` | - | 열림 상태 |
-| `onOpenChange` | `(open: boolean) => void` | - | 상태 변경 콜백 |
-| `maxHeight` | `number` | `300` | 최대 높이 (px) |
-| `keyboardNav` | `boolean` | - | 키보드 네비게이션 활성화 (Select 등에서 사용) |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `triggerRef` | `() => HTMLElement \| undefined` | - | Trigger element reference (mutually exclusive with position) |
+| `position` | `{ x: number; y: number }` | - | Absolute position (mutually exclusive with triggerRef) |
+| `open` | `boolean` | - | Open state |
+| `onOpenChange` | `(open: boolean) => void` | - | State change callback |
+| `maxHeight` | `number` | `300` | Maximum height (px) |
+| `keyboardNav` | `boolean` | - | Enable keyboard navigation (used by Select, etc.) |
 
 ---
 
 #### Dialog
 
-모달 다이얼로그 컴포넌트. 드래그 이동, 리사이즈, 플로팅 모드, 전체 화면 모드를 지원한다.
+Modal dialog component. Supports drag movement, resize, floating mode, and fullscreen mode.
 
 ```tsx
 import { Dialog, Button } from "@simplysm/solid";
@@ -1142,52 +1142,52 @@ import { createSignal } from "solid-js";
 
 const [open, setOpen] = createSignal(false);
 
-<Button onClick={() => setOpen(true)}>열기</Button>
+<Button onClick={() => setOpen(true)}>Open</Button>
 <Dialog
-  title="다이얼로그 제목"
+  title="Dialog Title"
   open={open()}
   onOpenChange={setOpen}
   closeOnBackdrop
   widthPx={600}
 >
   <div class="p-4">
-    다이얼로그 내용
+    Dialog content
   </div>
 </Dialog>
 
-// 플로팅 모드 (백드롭 없음)
+// Floating mode (no backdrop)
 <Dialog
-  title="알림"
+  title="Notification"
   open={open()}
   onOpenChange={setOpen}
   float
   position="bottom-right"
 >
-  <div class="p-4">플로팅 다이얼로그</div>
+  <div class="p-4">Floating dialog</div>
 </Dialog>
 ```
 
-| Prop | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `open` | `boolean` | - | 열림 상태 |
-| `onOpenChange` | `(open: boolean) => void` | - | 상태 변경 콜백 |
-| `title` | `string` | **(필수)** | 모달 제목 |
-| `hideHeader` | `boolean` | - | 헤더 숨김 |
-| `closable` | `boolean` | `true` | 닫기 버튼 표시 |
-| `closeOnBackdrop` | `boolean` | - | 백드롭 클릭으로 닫기 |
-| `closeOnEscape` | `boolean` | `true` | Escape 키로 닫기 |
-| `resizable` | `boolean` | `false` | 리사이즈 가능 여부 |
-| `movable` | `boolean` | `true` | 드래그 이동 가능 여부 |
-| `float` | `boolean` | - | 플로팅 모드 (백드롭 없음) |
-| `fill` | `boolean` | - | 전체 화면 모드 |
-| `widthPx` | `number` | - | 너비 (px) |
-| `heightPx` | `number` | - | 높이 (px) |
-| `minWidthPx` | `number` | - | 최소 너비 (px) |
-| `minHeightPx` | `number` | - | 최소 높이 (px) |
-| `position` | `"bottom-right" \| "top-right"` | - | 고정 위치 |
-| `headerAction` | `JSX.Element` | - | 헤더 액션 영역 |
-| `canDeactivate` | `() => boolean` | - | 닫기 전 확인 함수 |
-| `onCloseComplete` | `() => void` | - | 닫기 애니메이션 완료 후 콜백 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | - | Open state |
+| `onOpenChange` | `(open: boolean) => void` | - | State change callback |
+| `title` | `string` | **(required)** | Modal title |
+| `hideHeader` | `boolean` | - | Hide header |
+| `closable` | `boolean` | `true` | Show close button |
+| `closeOnBackdrop` | `boolean` | - | Close on backdrop click |
+| `closeOnEscape` | `boolean` | `true` | Close on Escape key |
+| `resizable` | `boolean` | `false` | Resizable |
+| `movable` | `boolean` | `true` | Draggable |
+| `float` | `boolean` | - | Floating mode (no backdrop) |
+| `fill` | `boolean` | - | Fullscreen mode |
+| `widthPx` | `number` | - | Width (px) |
+| `heightPx` | `number` | - | Height (px) |
+| `minWidthPx` | `number` | - | Minimum width (px) |
+| `minHeightPx` | `number` | - | Minimum height (px) |
+| `position` | `"bottom-right" \| "top-right"` | - | Fixed position |
+| `headerAction` | `JSX.Element` | - | Header action area |
+| `canDeactivate` | `() => boolean` | - | Pre-close confirmation function |
+| `onCloseComplete` | `() => void` | - | Post-close animation callback |
 
 ---
 
@@ -1195,7 +1195,7 @@ const [open, setOpen] = createSignal(false);
 
 #### Notification
 
-알림 시스템. `NotificationProvider`로 감싸고, `useNotification` 훅으로 알림을 발생시킨다.
+Notification system. Wrap with `NotificationProvider` and trigger notifications using the `useNotification` hook.
 
 ```tsx
 import {
@@ -1205,7 +1205,7 @@ import {
   useNotification,
 } from "@simplysm/solid";
 
-// 앱 루트에서 Provider 설정
+// Set up Provider at app root
 <NotificationProvider>
   <NotificationBanner />
   <header>
@@ -1214,49 +1214,49 @@ import {
   <MyApp />
 </NotificationProvider>
 
-// 컴포넌트 내에서 알림 발생
+// Trigger notifications within components
 function MyComponent() {
   const notification = useNotification();
 
   const handleSave = () => {
-    notification.success("성공", "저장되었습니다.");
+    notification.success("Success", "Saved successfully.");
   };
 
   const handleError = () => {
-    notification.danger("오류", "문제가 발생했습니다.", {
-      action: { label: "재시도", onClick: handleRetry },
+    notification.danger("Error", "An issue occurred.", {
+      action: { label: "Retry", onClick: handleRetry },
     });
   };
 
-  return <Button onClick={handleSave}>저장</Button>;
+  return <Button onClick={handleSave}>Save</Button>;
 }
 ```
 
 **useNotification API:**
 
-| 메서드 | 시그니처 | 설명 |
-|--------|----------|------|
-| `info` | `(title: string, message?: string, options?: NotificationOptions) => string` | 정보 알림 |
-| `success` | `(title: string, message?: string, options?: NotificationOptions) => string` | 성공 알림 |
-| `warning` | `(title: string, message?: string, options?: NotificationOptions) => string` | 경고 알림 |
-| `danger` | `(title: string, message?: string, options?: NotificationOptions) => string` | 오류 알림 |
-| `update` | `(id: string, updates: Partial<NotificationItem>, options?: { renotify?: boolean }) => void` | 알림 수정 |
-| `remove` | `(id: string) => void` | 알림 삭제 |
-| `markAsRead` | `(id: string) => void` | 읽음 처리 |
-| `markAllAsRead` | `() => void` | 전체 읽음 처리 |
-| `dismissBanner` | `() => void` | 배너 닫기 |
-| `clear` | `() => void` | 전체 삭제 |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `info` | `(title: string, message?: string, options?: NotificationOptions) => string` | Info notification |
+| `success` | `(title: string, message?: string, options?: NotificationOptions) => string` | Success notification |
+| `warning` | `(title: string, message?: string, options?: NotificationOptions) => string` | Warning notification |
+| `danger` | `(title: string, message?: string, options?: NotificationOptions) => string` | Error notification |
+| `update` | `(id: string, updates: Partial<NotificationItem>, options?: { renotify?: boolean }) => void` | Update notification |
+| `remove` | `(id: string) => void` | Remove notification |
+| `markAsRead` | `(id: string) => void` | Mark as read |
+| `markAllAsRead` | `() => void` | Mark all as read |
+| `dismissBanner` | `() => void` | Dismiss banner |
+| `clear` | `() => void` | Clear all |
 
-**컴포넌트:**
-- `NotificationProvider` -- 알림 상태 관리 Provider
-- `NotificationBanner` -- 화면 상단 알림 배너
-- `NotificationBell` -- 알림 벨 아이콘 (읽지 않은 알림 수 표시)
+**Components:**
+- `NotificationProvider` -- Notification state management Provider
+- `NotificationBanner` -- Top-of-screen notification banner
+- `NotificationBell` -- Notification bell icon (shows unread count)
 
 ---
 
 #### Loading
 
-로딩 오버레이 시스템. `LoadingProvider`로 감싸고, `useLoading` 훅으로 로딩 상태를 제어한다.
+Loading overlay system. Wrap with `LoadingProvider` and control loading state using the `useLoading` hook.
 
 ```tsx
 import {
@@ -1265,18 +1265,18 @@ import {
   useLoading,
 } from "@simplysm/solid";
 
-// 앱 루트에서 Provider 설정
+// Set up Provider at app root
 <LoadingProvider>
   <LoadingContainer />
   <MyApp />
 </LoadingProvider>
 
-// 컴포넌트 내에서 로딩 제어
+// Control loading within components
 function MyComponent() {
   const loading = useLoading();
 
   const fetchData = async () => {
-    loading.show("데이터를 불러오는 중...");
+    loading.show("Loading data...");
     try {
       await fetch("/api/data");
     } finally {
@@ -1284,17 +1284,17 @@ function MyComponent() {
     }
   };
 
-  return <Button onClick={fetchData}>데이터 불러오기</Button>;
+  return <Button onClick={fetchData}>Load Data</Button>;
 }
 ```
 
 **useLoading API:**
 
-| 메서드 | 시그니처 | 설명 |
-|--------|----------|------|
-| `show` | `(message?: string) => void` | 로딩 표시 |
-| `hide` | `() => void` | 로딩 숨기기 |
-| `setProgress` | `(percent: number \| undefined) => void` | 진행률 설정 |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `show` | `(message?: string) => void` | Show loading |
+| `hide` | `() => void` | Hide loading |
+| `setProgress` | `(percent: number \| undefined) => void` | Set progress |
 
 ---
 
@@ -1302,7 +1302,7 @@ function MyComponent() {
 
 #### Print / usePrint
 
-브라우저 인쇄 및 PDF 생성 기능. `LoadingProvider`가 필요하다.
+Browser printing and PDF generation. Requires `LoadingProvider`.
 
 ```tsx
 import { Print, usePrint } from "@simplysm/solid";
@@ -1315,11 +1315,11 @@ function MyComponent() {
       () => (
         <Print>
           <Print.Page>
-            <h1>인쇄 내용</h1>
-            <p>페이지 1</p>
+            <h1>Print content</h1>
+            <p>Page 1</p>
           </Print.Page>
           <Print.Page>
-            <p>페이지 2</p>
+            <p>Page 2</p>
           </Print.Page>
         </Print>
       ),
@@ -1332,7 +1332,7 @@ function MyComponent() {
       () => (
         <Print>
           <Print.Page>
-            <h1>PDF 내용</h1>
+            <h1>PDF content</h1>
           </Print.Page>
         </Print>
       ),
@@ -1343,8 +1343,8 @@ function MyComponent() {
 
   return (
     <>
-      <Button onClick={handlePrint}>인쇄</Button>
-      <Button onClick={handlePdf}>PDF 다운로드</Button>
+      <Button onClick={handlePrint}>Print</Button>
+      <Button onClick={handlePdf}>Download PDF</Button>
     </>
   );
 }
@@ -1352,20 +1352,20 @@ function MyComponent() {
 
 **usePrint API:**
 
-| 메서드 | 시그니처 | 설명 |
-|--------|----------|------|
-| `toPrinter` | `(factory: () => JSX.Element, options?: PrintOptions) => Promise<void>` | 브라우저 인쇄 |
-| `toPdf` | `(factory: () => JSX.Element, options?: PrintOptions) => Promise<Uint8Array>` | PDF 생성 |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `toPrinter` | `(factory: () => JSX.Element, options?: PrintOptions) => Promise<void>` | Browser print |
+| `toPdf` | `(factory: () => JSX.Element, options?: PrintOptions) => Promise<Uint8Array>` | PDF generation |
 
 **PrintOptions:**
 
-| 옵션 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `size` | `string` | `"A4"` | 용지 크기 (`"A4"`, `"A3"`, `"A4 landscape"`, `"210mm 297mm"` 등) |
-| `margin` | `string` | `"0"` | 여백 (`"10mm"`, `"1cm"` 등) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `size` | `string` | `"A4"` | Paper size (`"A4"`, `"A3"`, `"A4 landscape"`, `"210mm 297mm"`, etc.) |
+| `margin` | `string` | `"0"` | Margins (`"10mm"`, `"1cm"`, etc.) |
 
-**서브 컴포넌트:**
-- `Print.Page` -- 명시적 페이지 분할 (미사용 시 자동 분할)
+**Sub-components:**
+- `Print.Page` -- Explicit page breaks (auto-breaks if not used)
 
 ---
 
@@ -1373,69 +1373,69 @@ function MyComponent() {
 
 ### useTheme
 
-테마(다크/라이트/시스템) 상태에 접근하는 훅. `ThemeProvider` 내부에서 사용해야 한다.
+Hook to access theme (dark/light/system) state. Must be used inside `ThemeProvider`.
 
 ```tsx
 import { useTheme } from "@simplysm/solid";
 
 const theme = useTheme();
 theme.mode();          // "light" | "dark" | "system"
-theme.resolvedTheme(); // "light" | "dark" (system일 때 OS 설정 따름)
+theme.resolvedTheme(); // "light" | "dark" (follows OS setting when system)
 theme.setMode("dark");
 theme.cycleMode();     // light -> system -> dark -> light
 ```
 
-| 속성/메서드 | 타입 | 설명 |
-|-------------|------|------|
-| `mode` | `() => ThemeMode` | 현재 테마 모드 |
-| `resolvedTheme` | `() => ResolvedTheme` | 실제 적용 테마 |
-| `setMode` | `(mode: ThemeMode) => void` | 테마 모드 설정 |
-| `cycleMode` | `() => void` | 다음 모드로 순환 |
+| Property/Method | Type | Description |
+|-----------------|------|-------------|
+| `mode` | `() => ThemeMode` | Current theme mode |
+| `resolvedTheme` | `() => ResolvedTheme` | Actual applied theme |
+| `setMode` | `(mode: ThemeMode) => void` | Set theme mode |
+| `cycleMode` | `() => void` | Cycle to next mode |
 
 ---
 
 ### usePersisted
 
-localStorage 기반 영속 시그널. `ConfigContext` 내부에서 사용해야 하며, 키는 자동으로 `{clientName}.{key}` 형태로 저장된다. `DateTime`, `DateOnly` 등 `@simplysm/core-common` 커스텀 타입의 직렬화를 지원한다.
+localStorage-based persistent signal. Must be used inside `ConfigContext`, and keys are automatically stored as `{clientName}.{key}`. Supports serialization of `@simplysm/core-common` custom types like `DateTime`, `DateOnly`.
 
 ```tsx
 import { usePersisted } from "@simplysm/solid";
 
 const [value, setValue] = usePersisted("settings.view", "grid");
 
-// loading 상태 (비동기 저장소 사용 시)
+// loading state (for async storage)
 const [data, setData, loading] = usePersisted("cache.data", defaultData);
 ```
 
-| 반환값 | 타입 | 설명 |
-|--------|------|------|
-| `[0]` | `Accessor<T>` | 값 getter |
-| `[1]` | `Setter<T>` | 값 setter |
-| `[2]` | `Accessor<boolean>` | 로딩 상태 (비동기 저장소 전용) |
+| Return value | Type | Description |
+|--------------|------|-------------|
+| `[0]` | `Accessor<T>` | Value getter |
+| `[1]` | `Setter<T>` | Value setter |
+| `[2]` | `Accessor<boolean>` | Loading state (async storage only) |
 
 ---
 
 ### useNotification
 
-알림 시스템 접근 훅. `NotificationProvider` 내부에서 사용해야 한다. 자세한 API는 [Notification](#notification) 섹션 참조.
+Hook to access notification system. Must be used inside `NotificationProvider`. See [Notification](#notification) section for detailed API.
 
 ---
 
 ### useLoading
 
-로딩 오버레이 접근 훅. `LoadingProvider` 내부에서 사용해야 한다. 자세한 API는 [Loading](#loading) 섹션 참조.
+Hook to access loading overlay. Must be used inside `LoadingProvider`. See [Loading](#loading) section for detailed API.
 
 ---
 
 ### usePrint
 
-인쇄 및 PDF 생성 훅. `LoadingProvider` 내부에서 사용해야 한다. 자세한 API는 [Print](#print--useprint) 섹션 참조.
+Hook for printing and PDF generation. Must be used inside `LoadingProvider`. See [Print](#print--useprint) section for detailed API.
 
 ---
 
 ### useConfig
 
-앱 전역 설정에 접근하는 훅. `ConfigContext.Provider` 또는 `InitializeProvider` 내부에서 사용해야 한다.
+Hook to access app-wide configuration. Must be used inside `ConfigContext.Provider` or `InitializeProvider`.
 
 ```tsx
 import { useConfig } from "@simplysm/solid";
@@ -1448,18 +1448,18 @@ console.log(config.clientName); // "my-app"
 
 ### createControllableSignal
 
-Controlled/Uncontrolled 패턴을 자동으로 처리하는 signal hook. `onChange`가 제공되면 controlled 모드, 미제공이면 uncontrolled 모드로 동작한다.
+Signal hook that automatically handles Controlled/Uncontrolled patterns. Operates in controlled mode when `onChange` is provided, uncontrolled mode otherwise.
 
 ```tsx
 import { createControllableSignal } from "@simplysm/solid";
 
-// 컴포넌트 내부에서 사용
+// Use inside components
 const [value, setValue] = createControllableSignal({
   value: () => props.value ?? "",
   onChange: () => props.onValueChange,
 });
 
-// 함수형 setter 지원
+// Supports functional setter
 setValue((prev) => prev + "!");
 ```
 
@@ -1467,7 +1467,7 @@ setValue((prev) => prev + "!");
 
 ### createMountTransition
 
-열림/닫힘 CSS 애니메이션을 위한 mount transition hook. `mounted()`로 DOM 렌더링을 제어하고, `animating()`으로 CSS 클래스를 전환한다.
+Mount transition hook for open/close CSS animations. Control DOM rendering with `mounted()` and toggle CSS classes with `animating()`.
 
 ```tsx
 import { createMountTransition } from "@simplysm/solid";
@@ -1475,23 +1475,23 @@ import { createMountTransition } from "@simplysm/solid";
 const { mounted, animating, unmount } = createMountTransition(() => open());
 ```
 
-| 반환값 | 타입 | 설명 |
-|--------|------|------|
-| `mounted` | `() => boolean` | DOM에 마운트 여부 |
-| `animating` | `() => boolean` | 애니메이션 활성 상태 |
-| `unmount` | `() => void` | 수동 언마운트 |
+| Return value | Type | Description |
+|--------------|------|-------------|
+| `mounted` | `() => boolean` | Whether mounted in DOM |
+| `animating` | `() => boolean` | Animation active state |
+| `unmount` | `() => void` | Manual unmount |
 
 ---
 
 ### createIMEHandler
 
-IME(한글 등) 조합 중 `onValueChange` 호출을 지연하여 한글 입력이 끊기지 않도록 하는 hook.
+Hook that delays `onValueChange` calls during IME (Korean, etc.) composition to prevent interrupted input.
 
 ---
 
 ### useRouterLink
 
-`@solidjs/router` 기반 네비게이션 hook. Ctrl/Alt + 클릭(새 탭), Shift + 클릭(새 창)을 자동 처리한다.
+`@solidjs/router`-based navigation hook. Automatically handles Ctrl/Alt + click (new tab), Shift + click (new window).
 
 ```tsx
 import { useRouterLink } from "@simplysm/solid";
@@ -1499,12 +1499,12 @@ import { useRouterLink } from "@simplysm/solid";
 const navigate = useRouterLink();
 
 <List.Item onClick={navigate({ href: "/home/dashboard" })}>
-  대시보드
+  Dashboard
 </List.Item>
 
-// state 전달
+// Pass state
 <List.Item onClick={navigate({ href: "/users/123", state: { from: "list" } })}>
-  사용자
+  User
 </List.Item>
 ```
 
@@ -1512,7 +1512,7 @@ const navigate = useRouterLink();
 
 ### createAppStructure
 
-앱 구조(라우팅, 메뉴, 권한)를 선언적으로 정의하는 유틸리티.
+Utility for declaratively defining app structure (routing, menus, permissions).
 
 ```tsx
 import { createAppStructure, type AppStructureItem } from "@simplysm/solid";
@@ -1520,15 +1520,15 @@ import { createAppStructure, type AppStructureItem } from "@simplysm/solid";
 const items: AppStructureItem<string>[] = [
   {
     code: "home",
-    title: "홈",
+    title: "Home",
     component: HomePage,
     perms: ["use"],
   },
   {
     code: "admin",
-    title: "관리",
+    title: "Admin",
     children: [
-      { code: "users", title: "사용자 관리", component: UsersPage, perms: ["use", "edit"] },
+      { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
     ],
   },
 ];
@@ -1538,9 +1538,9 @@ const structure = createAppStructure(items, {
   basePath: "/app",
 });
 
-// structure.routes -- 라우트 배열 (Route 컴포넌트에 전달)
-// structure.usableMenus() -- 사이드바 메뉴 배열
-// structure.permRecord() -- 권한 레코드 (Record<string, boolean>)
+// structure.routes -- Route array (pass to Route component)
+// structure.usableMenus() -- Sidebar menu array
+// structure.permRecord() -- Permission record (Record<string, boolean>)
 ```
 
 ---
@@ -1549,76 +1549,76 @@ const structure = createAppStructure(items, {
 
 ### ripple
 
-Material Design ripple 효과 directive. 클릭 시 물결 효과를 표시한다.
+Material Design ripple effect directive. Displays ripple effect on click.
 
 ```tsx
 import { ripple } from "@simplysm/solid";
-// directive 등록을 위한 참조 유지
+// Keep reference to register directive
 void ripple;
 
-<button use:ripple={true}>클릭</button>
-<button use:ripple={!props.disabled}>조건부 활성화</button>
+<button use:ripple={true}>Click</button>
+<button use:ripple={!props.disabled}>Conditional activation</button>
 ```
 
-- 내부에 ripple container를 생성하여 부모 요소에 영향 없이 동작
-- `prefers-reduced-motion: reduce` 설정 시 자동 비활성화
-- 단일 ripple 모드: 새 클릭 시 이전 ripple 제거
+- Creates internal ripple container, operates without affecting parent element
+- Automatically disabled when `prefers-reduced-motion: reduce` is set
+- Single ripple mode: removes previous ripple on new click
 
 ---
 
-## Tailwind 테마
+## Tailwind Theme
 
-`@simplysm/solid`는 Tailwind CSS preset을 통해 다음 커스텀 테마를 제공한다.
+`@simplysm/solid` provides the following custom themes via Tailwind CSS preset.
 
-### 시맨틱 색상
+### Semantic Colors
 
-| 이름 | 기반 색상 | 용도 |
-|------|-----------|------|
-| `primary` | blue | 주요 액션 |
-| `info` | sky | 정보 |
-| `success` | green | 성공 |
-| `warning` | amber | 경고 |
-| `danger` | red | 위험/에러 |
-| `base` | zinc | 중립 (배경, 테두리, 보조 텍스트 등) |
+| Name | Base Color | Usage |
+|------|------------|-------|
+| `primary` | blue | Primary actions |
+| `info` | sky | Information |
+| `success` | green | Success |
+| `warning` | amber | Warning |
+| `danger` | red | Danger/error |
+| `base` | zinc | Neutral (backgrounds, borders, secondary text, etc.) |
 
-> `zinc-*` 직접 사용 대신 `base-*`를 사용한다.
+> Use `base-*` instead of directly using `zinc-*`.
 
-### 커스텀 크기
+### Custom Sizes
 
-| 클래스 | 설명 |
-|--------|------|
-| `h-field` / `size-field` | 기본 필드 높이 (`py-1` 기준) |
-| `h-field-sm` / `size-field-sm` | 작은 필드 높이 (`py-0.5` 기준) |
-| `h-field-lg` / `size-field-lg` | 큰 필드 높이 (`py-2` 기준) |
-| `h-field-inset` / `size-field-inset` | 인셋 필드 높이 (테두리 제외) |
-| `h-field-inset-sm` / `size-field-inset-sm` | 작은 인셋 필드 높이 |
-| `h-field-inset-lg` / `size-field-inset-lg` | 큰 인셋 필드 높이 |
+| Class | Description |
+|-------|-------------|
+| `h-field` / `size-field` | Default field height (based on `py-1`) |
+| `h-field-sm` / `size-field-sm` | Small field height (based on `py-0.5`) |
+| `h-field-lg` / `size-field-lg` | Large field height (based on `py-2`) |
+| `h-field-inset` / `size-field-inset` | Inset field height (excludes border) |
+| `h-field-inset-sm` / `size-field-inset-sm` | Small inset field height |
+| `h-field-inset-lg` / `size-field-inset-lg` | Large inset field height |
 
-### z-index 계층
+### z-index Layers
 
-| 클래스 | 값 | 설명 |
-|--------|----|------|
-| `z-sidebar` | 100 | 사이드바 |
-| `z-sidebar-backdrop` | 99 | 사이드바 백드롭 |
-| `z-busy` | 500 | 로딩 오버레이 |
-| `z-dropdown` | 1000 | 드롭다운 팝업 |
-| `z-modal-backdrop` | 1999 | 모달 백드롭 |
-| `z-modal` | 2000 | 모달 다이얼로그 |
+| Class | Value | Description |
+|-------|-------|-------------|
+| `z-sidebar` | 100 | Sidebar |
+| `z-sidebar-backdrop` | 99 | Sidebar backdrop |
+| `z-busy` | 500 | Loading overlay |
+| `z-dropdown` | 1000 | Dropdown popup |
+| `z-modal-backdrop` | 1999 | Modal backdrop |
+| `z-modal` | 2000 | Modal dialog |
 
-### 다크 모드
+### Dark Mode
 
-Tailwind의 `class` 전략을 사용한다. `ThemeProvider`가 `<html>` 요소에 `dark` 클래스를 자동으로 토글한다.
+Uses Tailwind's `class` strategy. `ThemeProvider` automatically toggles the `dark` class on the `<html>` element.
 
 ```html
-<!-- 라이트 모드 -->
+<!-- Light mode -->
 <html>
-<!-- 다크 모드 -->
+<!-- Dark mode -->
 <html class="dark">
 ```
 
-### 스타일 작성 패턴
+### Styling Patterns
 
-컴포넌트에서 Tailwind 클래스를 사용할 때 `clsx`로 의미 단위별 그룹핑하고, `twMerge`로 충돌을 해결한다:
+When using Tailwind classes in components, group them by semantic units with `clsx` and resolve conflicts with `twMerge`:
 
 ```typescript
 import clsx from "clsx";
@@ -1636,17 +1636,17 @@ const className = twMerge(baseClass, props.class);
 
 ---
 
-## 데모
+## Demo
 
-`solid-demo` 패키지에서 모든 컴포넌트의 실제 사용 예시를 확인할 수 있다:
+Check out real-world usage examples of all components in the `solid-demo` package:
 
 ```bash
 pnpm dev
-# http://localhost:40081 (포트는 달라질 수 있음)
+# http://localhost:40081 (port may vary)
 ```
 
 ---
 
-## 라이선스
+## License
 
 Apache-2.0

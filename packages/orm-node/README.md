@@ -1,18 +1,18 @@
 # @simplysm/orm-node
 
-Simplysm ORM의 Node.js 구현 모듈로, MySQL, MSSQL(SQL Server), PostgreSQL에 대한 실제 데이터베이스 연결, 쿼리 실행, 트랜잭션 관리, 커넥션 풀링을 담당한다. `@simplysm/orm-common`에서 정의한 스키마와 쿼리 빌더를 기반으로, Node.js 환경에서 데이터베이스와 직접 통신하는 계층이다.
+The Node.js implementation module of Simplysm ORM, responsible for actual database connections, query execution, transaction management, and connection pooling for MySQL, MSSQL (SQL Server), and PostgreSQL. This is the layer that directly communicates with databases in a Node.js environment, based on the schemas and query builders defined in `@simplysm/orm-common`.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/orm-node
-# 또는
+# or
 pnpm add @simplysm/orm-node
 ```
 
-### 데이터베이스별 드라이버 설치
+### Database-Specific Driver Installation
 
-사용하는 데이터베이스에 맞는 드라이버를 추가로 설치해야 한다. 사용하지 않는 드라이버는 설치할 필요 없다.
+You must additionally install the driver for your database. Drivers not in use don't need to be installed.
 
 ```bash
 # MySQL
@@ -25,67 +25,67 @@ npm install tedious
 npm install pg pg-copy-streams
 ```
 
-## 아키텍처
+## Architecture
 
 ```
-SdOrm (최상위 진입점)
-  └── NodeDbContextExecutor (DbContext와 실제 DB 사이의 실행기)
-        └── DbConnFactory (커넥션 생성 및 풀 관리)
-              └── PooledDbConn (커넥션 풀 래퍼)
-                    └── MysqlDbConn / MssqlDbConn / PostgresqlDbConn (DBMS별 저수준 연결)
+SdOrm (top-level entry point)
+  └── NodeDbContextExecutor (executor between DbContext and actual DB)
+        └── DbConnFactory (connection creation and pool management)
+              └── PooledDbConn (connection pool wrapper)
+                    └── MysqlDbConn / MssqlDbConn / PostgresqlDbConn (DBMS-specific low-level connections)
 ```
 
-- `SdOrm`은 `DbContext` 타입과 연결 설정을 받아 트랜잭션을 관리하는 최상위 클래스이다.
-- `NodeDbContextExecutor`는 `DbContext`가 사용하는 실행기로, `QueryDef`를 SQL로 변환하고 실행한다.
-- `DbConnFactory`는 커넥션 풀에서 연결을 획득하는 팩토리이다.
-- `PooledDbConn`은 `generic-pool` 기반의 커넥션 풀 래퍼로, 사용 후 실제 연결을 종료하지 않고 풀에 반환한다.
-- 각 DBMS별 연결 클래스(`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`)는 저수준 DB 드라이버를 직접 사용한다.
+- `SdOrm` is the top-level class that takes a `DbContext` type and connection settings to manage transactions.
+- `NodeDbContextExecutor` is the executor used by `DbContext`, converting `QueryDef` to SQL and executing it.
+- `DbConnFactory` is a factory that acquires connections from the connection pool.
+- `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
+- Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers.
 
-## 주요 모듈
+## Core Modules
 
-### 클래스
+### Classes
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `SdOrm` | ORM 최상위 클래스. `DbContext` 타입과 연결 설정을 받아 트랜잭션 기반 연결을 관리한다. |
-| `NodeDbContextExecutor` | `DbContextExecutor` 구현체. `QueryDef`를 SQL로 변환하여 실행하고 결과를 파싱한다. |
-| `DbConnFactory` | 커넥션 팩토리. 설정별로 커넥션 풀을 캐싱하여 `PooledDbConn`을 반환한다. |
-| `PooledDbConn` | 커넥션 풀 래퍼. `generic-pool`에서 물리 연결을 획득/반환하며, `DbConn` 인터페이스를 구현한다. |
-| `MysqlDbConn` | MySQL 연결 클래스. `mysql2/promise` 드라이버를 사용한다. |
-| `MssqlDbConn` | MSSQL/Azure SQL 연결 클래스. `tedious` 드라이버를 사용한다. |
-| `PostgresqlDbConn` | PostgreSQL 연결 클래스. `pg` 및 `pg-copy-streams` 드라이버를 사용한다. |
+| `SdOrm` | ORM top-level class. Takes `DbContext` type and connection settings to manage transaction-based connections. |
+| `NodeDbContextExecutor` | `DbContextExecutor` implementation. Converts `QueryDef` to SQL, executes it, and parses results. |
+| `DbConnFactory` | Connection factory. Caches connection pools by configuration and returns `PooledDbConn`. |
+| `PooledDbConn` | Connection pool wrapper. Acquires/returns physical connections from `generic-pool`, implements `DbConn` interface. |
+| `MysqlDbConn` | MySQL connection class. Uses `mysql2/promise` driver. |
+| `MssqlDbConn` | MSSQL/Azure SQL connection class. Uses `tedious` driver. |
+| `PostgresqlDbConn` | PostgreSQL connection class. Uses `pg` and `pg-copy-streams` drivers. |
 
-### 인터페이스 및 타입
+### Interfaces and Types
 
-| 타입 | 설명 |
+| Type | Description |
 |------|------|
-| `DbConn` | 저수준 DB 연결 인터페이스. 모든 DBMS별 연결 클래스가 구현한다. |
-| `DbConnConfig` | DB 연결 설정 유니온 타입 (`MysqlDbConnConfig \| MssqlDbConnConfig \| PostgresqlDbConnConfig`). |
-| `MysqlDbConnConfig` | MySQL 연결 설정. `dialect: "mysql"`. |
-| `MssqlDbConnConfig` | MSSQL 연결 설정. `dialect: "mssql" \| "mssql-azure"`. |
-| `PostgresqlDbConnConfig` | PostgreSQL 연결 설정. `dialect: "postgresql"`. |
-| `DbPoolConfig` | 커넥션 풀 설정 (`min`, `max`, `acquireTimeoutMillis`, `idleTimeoutMillis`). |
-| `SdOrmOptions` | `SdOrm` 옵션. `DbConnConfig`보다 우선 적용되는 `database`, `schema` 설정. |
+| `DbConn` | Low-level DB connection interface. Implemented by all DBMS-specific connection classes. |
+| `DbConnConfig` | DB connection config union type (`MysqlDbConnConfig \| MssqlDbConnConfig \| PostgresqlDbConnConfig`). |
+| `MysqlDbConnConfig` | MySQL connection config. `dialect: "mysql"`. |
+| `MssqlDbConnConfig` | MSSQL connection config. `dialect: "mssql" \| "mssql-azure"`. |
+| `PostgresqlDbConnConfig` | PostgreSQL connection config. `dialect: "postgresql"`. |
+| `DbPoolConfig` | Connection pool config (`min`, `max`, `acquireTimeoutMillis`, `idleTimeoutMillis`). |
+| `SdOrmOptions` | `SdOrm` options. `database`, `schema` settings that override `DbConnConfig`. |
 
-### 상수 및 유틸 함수
+### Constants and Utility Functions
 
-| 이름 | 설명 |
+| Name | Description |
 |------|------|
-| `DB_CONN_DEFAULT_TIMEOUT` | DB 연결 기본 타임아웃 (10분, 600000ms). |
-| `DB_CONN_ERRORS` | DB 연결 에러 메시지 상수 (`NOT_CONNECTED`, `ALREADY_CONNECTED`). |
-| `getDialectFromConfig(config)` | `DbConnConfig`에서 `Dialect` 추출. `"mssql-azure"`는 `"mssql"`로 변환된다. |
+| `DB_CONN_DEFAULT_TIMEOUT` | DB connection default timeout (10 minutes, 600000ms). |
+| `DB_CONN_ERRORS` | DB connection error message constants (`NOT_CONNECTED`, `ALREADY_CONNECTED`). |
+| `getDialectFromConfig(config)` | Extract `Dialect` from `DbConnConfig`. `"mssql-azure"` is converted to `"mssql"`. |
 
-## 사용법
+## Usage
 
-### SdOrm을 통한 기본 사용
+### Basic Usage with SdOrm
 
-`SdOrm`은 `DbContext`와 함께 사용하는 최상위 진입점이다. 트랜잭션 관리까지 자동으로 처리한다.
+`SdOrm` is the top-level entry point used with `DbContext`. It automatically handles transaction management.
 
 ```typescript
 import { SdOrm } from "@simplysm/orm-node";
 import { DbContext, queryable, Table } from "@simplysm/orm-common";
 
-// 1. 테이블 정의
+// 1. Define table
 const User = Table("User")
   .database("mydb")
   .columns((c) => ({
@@ -95,12 +95,12 @@ const User = Table("User")
   }))
   .primaryKey("id");
 
-// 2. DbContext 정의
+// 2. Define DbContext
 class MyDb extends DbContext {
   readonly user = queryable(this, User);
 }
 
-// 3. SdOrm 인스턴스 생성
+// 3. Create SdOrm instance
 const orm = new SdOrm(MyDb, {
   dialect: "mysql",
   host: "localhost",
@@ -110,47 +110,47 @@ const orm = new SdOrm(MyDb, {
   database: "mydb",
 });
 
-// 4. 트랜잭션 내에서 쿼리 실행 (성공 시 커밋, 실패 시 롤백)
+// 4. Execute queries within transaction (commits on success, rolls back on failure)
 const users = await orm.connect(async (db) => {
   return await db.user().result();
 });
 ```
 
-### 트랜잭션 관리
+### Transaction Management
 
 ```typescript
-// 트랜잭션 내 실행 (자동 커밋/롤백)
+// Execute within transaction (auto commit/rollback)
 await orm.connect(async (db) => {
   await db.user().insert([
-    { name: "홍길동", email: "hong@example.com" },
-    { name: "김철수", email: "kim@example.com" },
+    { name: "John Doe", email: "john@example.com" },
+    { name: "Jane Smith", email: "jane@example.com" },
   ]);
-  // 콜백이 성공적으로 끝나면 커밋
-  // 예외 발생 시 자동 롤백
+  // Commits if callback completes successfully
+  // Auto rollback if exception occurs
 });
 
-// 격리 수준 지정
+// Specify isolation level
 await orm.connect(async (db) => {
   const users = await db.user().result();
   return users;
 }, "SERIALIZABLE");
 
-// 트랜잭션 없이 실행 (DDL 작업 등)
+// Execute without transaction (for DDL operations, etc.)
 await orm.connectWithoutTransaction(async (db) => {
   const users = await db.user().result();
   return users;
 });
 ```
 
-지원하는 격리 수준 (`IsolationLevel`):
+Supported isolation levels (`IsolationLevel`):
 - `"READ_UNCOMMITTED"`
 - `"READ_COMMITTED"`
 - `"REPEATABLE_READ"`
 - `"SERIALIZABLE"`
 
-### SdOrmOptions를 통한 database/schema 오버라이드
+### Overriding database/schema via SdOrmOptions
 
-`SdOrmOptions`를 사용하면 `DbConnConfig`에 설정된 `database`/`schema` 대신 다른 값을 사용할 수 있다.
+Using `SdOrmOptions`, you can use different values instead of the `database`/`schema` set in `DbConnConfig`.
 
 ```typescript
 const orm = new SdOrm(MyDb, {
@@ -159,17 +159,17 @@ const orm = new SdOrm(MyDb, {
   port: 5432,
   username: "postgres",
   password: "password",
-  database: "default_db",    // 연결 시 사용하는 기본 DB
+  database: "default_db",    // Default DB used for connection
   schema: "public",
 }, {
-  database: "app_db",        // DbContext에서 사용할 DB (우선 적용)
-  schema: "app_schema",      // DbContext에서 사용할 스키마 (우선 적용)
+  database: "app_db",        // DB to use in DbContext (takes precedence)
+  schema: "app_schema",      // Schema to use in DbContext (takes precedence)
 });
 ```
 
-### 커넥션 풀 설정
+### Connection Pool Configuration
 
-`DbConnConfig`의 `pool` 필드로 커넥션 풀을 구성한다. 풀은 `generic-pool` 라이브러리 기반이며, 동일한 설정에 대해 풀이 자동으로 캐싱된다.
+Configure connection pool via the `pool` field in `DbConnConfig`. The pool is based on the `generic-pool` library, and pools are automatically cached for identical configurations.
 
 ```typescript
 const orm = new SdOrm(MyDb, {
@@ -180,22 +180,22 @@ const orm = new SdOrm(MyDb, {
   password: "password",
   database: "mydb",
   pool: {
-    min: 2,                      // 최소 연결 수 (기본: 1)
-    max: 20,                     // 최대 연결 수 (기본: 10)
-    acquireTimeoutMillis: 60000, // 연결 획득 타임아웃 (기본: 30000ms)
-    idleTimeoutMillis: 60000,    // 유휴 연결 타임아웃 (기본: 30000ms)
+    min: 2,                      // Minimum connections (default: 1)
+    max: 20,                     // Maximum connections (default: 10)
+    acquireTimeoutMillis: 60000, // Connection acquisition timeout (default: 30000ms)
+    idleTimeoutMillis: 60000,    // Idle connection timeout (default: 30000ms)
   },
 });
 ```
 
-### DbConnFactory를 통한 저수준 연결
+### Low-Level Connection with DbConnFactory
 
-`SdOrm`/`DbContext` 없이 직접 DB에 연결하여 SQL을 실행할 수 있다. `DbConnFactory.create()`는 커넥션 풀에서 `PooledDbConn`을 반환한다.
+You can connect directly to the DB and execute SQL without `SdOrm`/`DbContext`. `DbConnFactory.create()` returns `PooledDbConn` from the connection pool.
 
 ```typescript
 import { DbConnFactory } from "@simplysm/orm-node";
 
-// 커넥션 생성 (풀에서 획득)
+// Create connection (acquire from pool)
 const conn = await DbConnFactory.create({
   dialect: "mysql",
   host: "localhost",
@@ -205,17 +205,17 @@ const conn = await DbConnFactory.create({
   database: "mydb",
 });
 
-// 연결
+// Connect
 await conn.connect();
 
 try {
-  // SQL 실행
+  // Execute SQL
   const results = await conn.execute(["SELECT * FROM User WHERE id = 1"]);
-  console.log(results); // [[{ id: 1, name: "홍길동", ... }]]
+  console.log(results); // [[{ id: 1, name: "John Doe", ... }]]
 
-  // 트랜잭션 수동 관리
+  // Manual transaction management
   await conn.beginTransaction("READ_COMMITTED");
-  await conn.execute(["INSERT INTO User (name) VALUES ('김철수')"]);
+  await conn.execute(["INSERT INTO User (name) VALUES ('Jane Smith')"]);
   await conn.commitTransaction();
 } catch (err) {
   if (conn.isOnTransaction) {
@@ -223,14 +223,14 @@ try {
   }
   throw err;
 } finally {
-  // 연결 반환 (풀에 반환, 실제 종료 아님)
+  // Return connection (returns to pool, not actual close)
   await conn.close();
 }
 ```
 
-### 파라미터화된 쿼리 실행
+### Parameterized Query Execution
 
-각 연결 클래스는 `executeParametrized()` 메서드를 통해 파라미터 바인딩을 지원한다.
+Each connection class supports parameter binding via the `executeParametrized()` method.
 
 ```typescript
 const conn = await DbConnFactory.create({
@@ -244,22 +244,22 @@ const conn = await DbConnFactory.create({
 
 await conn.connect();
 
-// 파라미터화된 쿼리 ($1, $2 등 DBMS별 플레이스홀더 사용)
+// Parameterized query (uses DBMS-specific placeholders like $1, $2)
 const results = await conn.executeParametrized(
   "SELECT * FROM \"User\" WHERE name = $1",
-  ["홍길동"],
+  ["John Doe"],
 );
 
 await conn.close();
 ```
 
-### 벌크 INSERT
+### Bulk INSERT
 
-각 DBMS별 네이티브 벌크 API를 사용한 대량 데이터 삽입을 지원한다.
+Supports bulk data insertion using native bulk APIs for each DBMS.
 
-| DBMS | 벌크 방식 |
+| DBMS | Bulk Method |
 |------|----------|
-| MySQL | `LOAD DATA LOCAL INFILE` (임시 CSV 파일) |
+| MySQL | `LOAD DATA LOCAL INFILE` (temporary CSV file) |
 | MSSQL | tedious `BulkLoad` API |
 | PostgreSQL | `COPY FROM STDIN` (pg-copy-streams) |
 
@@ -277,25 +277,25 @@ const conn = await DbConnFactory.create({
 
 await conn.connect();
 
-// 컬럼 메타데이터 정의
+// Define column metadata
 const columnMetas: Record<string, ColumnMeta> = {
   name: { dataType: { type: "varchar", length: 100 } },
   email: { dataType: { type: "varchar", length: 200 }, nullable: true },
   age: { dataType: { type: "int" } },
 };
 
-// 대량 레코드 삽입
+// Insert bulk records
 const records = [
-  { name: "홍길동", email: "hong@example.com", age: 30 },
-  { name: "김철수", email: "kim@example.com", age: 25 },
-  // ... 수천 건의 레코드
+  { name: "John Doe", email: "john@example.com", age: 30 },
+  { name: "Jane Smith", email: "jane@example.com", age: 25 },
+  // ... thousands of records
 ];
 
 await conn.bulkInsert("mydb.User", columnMetas, records);
 await conn.close();
 ```
 
-### DBMS별 연결 설정
+### DBMS-Specific Connection Configuration
 
 #### MySQL
 
@@ -303,41 +303,41 @@ await conn.close();
 const mysqlConfig: MysqlDbConnConfig = {
   dialect: "mysql",
   host: "localhost",
-  port: 3306,                                  // 선택 (기본: 3306)
+  port: 3306,                                  // Optional (default: 3306)
   username: "root",
   password: "password",
-  database: "mydb",                            // 선택
-  defaultIsolationLevel: "READ_UNCOMMITTED",   // 선택 (기본 격리 수준)
-  pool: { min: 1, max: 10 },                   // 선택 (커넥션 풀)
+  database: "mydb",                            // Optional
+  defaultIsolationLevel: "READ_UNCOMMITTED",   // Optional (default isolation level)
+  pool: { min: 1, max: 10 },                   // Optional (connection pool)
 };
 ```
 
-MySQL 연결 특성:
-- `multipleStatements: true` -- 한 번의 요청에 여러 SQL문 실행 가능
-- `charset: "utf8mb4"` -- 이모지 등 4바이트 문자 지원
-- `LOAD DATA LOCAL INFILE` 지원 (벌크 INSERT용)
-- `root` 사용자는 특정 database에 바인딩되지 않고 연결하여 모든 DB에 접근 가능
+MySQL connection characteristics:
+- `multipleStatements: true` -- Can execute multiple SQL statements in one request
+- `charset: "utf8mb4"` -- Supports 4-byte characters like emojis
+- `LOAD DATA LOCAL INFILE` support (for bulk INSERT)
+- `root` user can connect without binding to a specific database and access all DBs
 
 #### MSSQL / Azure SQL
 
 ```typescript
 const mssqlConfig: MssqlDbConnConfig = {
-  dialect: "mssql",               // 또는 "mssql-azure" (Azure SQL Database용)
+  dialect: "mssql",               // Or "mssql-azure" (for Azure SQL Database)
   host: "localhost",
-  port: 1433,                     // 선택
+  port: 1433,                     // Optional
   username: "sa",
   password: "password",
-  database: "mydb",               // 선택
-  schema: "dbo",                  // 선택 (MSSQL 스키마)
-  defaultIsolationLevel: "READ_UNCOMMITTED",  // 선택
-  pool: { min: 1, max: 10 },     // 선택
+  database: "mydb",               // Optional
+  schema: "dbo",                  // Optional (MSSQL schema)
+  defaultIsolationLevel: "READ_UNCOMMITTED",  // Optional
+  pool: { min: 1, max: 10 },     // Optional
 };
 ```
 
-MSSQL 연결 특성:
-- `"mssql-azure"` dialect 사용 시 `encrypt: true` 자동 설정
-- `trustServerCertificate: true` 기본 설정
-- `useUTC: false` -- 로컬 시간대 사용
+MSSQL connection characteristics:
+- `encrypt: true` automatically set when using `"mssql-azure"` dialect
+- `trustServerCertificate: true` default setting
+- `useUTC: false` -- Uses local timezone
 
 #### PostgreSQL
 
@@ -345,74 +345,74 @@ MSSQL 연결 특성:
 const pgConfig: PostgresqlDbConnConfig = {
   dialect: "postgresql",
   host: "localhost",
-  port: 5432,                     // 선택 (기본: 5432)
+  port: 5432,                     // Optional (default: 5432)
   username: "postgres",
   password: "password",
-  database: "mydb",               // 선택
-  schema: "public",               // 선택 (PostgreSQL 스키마)
-  defaultIsolationLevel: "READ_UNCOMMITTED",  // 선택
-  pool: { min: 1, max: 10 },     // 선택
+  database: "mydb",               // Optional
+  schema: "public",               // Optional (PostgreSQL schema)
+  defaultIsolationLevel: "READ_UNCOMMITTED",  // Optional
+  pool: { min: 1, max: 10 },     // Optional
 };
 ```
 
-## DbConn 인터페이스
+## DbConn Interface
 
-모든 DBMS별 연결 클래스(`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`)와 `PooledDbConn`이 구현하는 공통 인터페이스이다.
+The common interface implemented by all DBMS-specific connection classes (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) and `PooledDbConn`.
 
-| 메서드/속성 | 시그니처 | 설명 |
+| Method/Property | Signature | Description |
 |------------|----------|------|
-| `config` | `DbConnConfig` | 연결 설정 (읽기 전용) |
-| `isConnected` | `boolean` | 연결 상태 |
-| `isOnTransaction` | `boolean` | 트랜잭션 진행 여부 |
-| `connect()` | `() => Promise<void>` | DB 연결 수립 |
-| `close()` | `() => Promise<void>` | DB 연결 종료 (PooledDbConn은 풀에 반환) |
-| `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | 트랜잭션 시작 |
-| `commitTransaction()` | `() => Promise<void>` | 트랜잭션 커밋 |
-| `rollbackTransaction()` | `() => Promise<void>` | 트랜잭션 롤백 |
-| `execute()` | `(queries: string[]) => Promise<unknown[][]>` | SQL 쿼리 배열 실행 |
-| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<unknown[][]>` | 파라미터화된 쿼리 실행 |
-| `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | 네이티브 벌크 INSERT |
+| `config` | `DbConnConfig` | Connection config (read-only) |
+| `isConnected` | `boolean` | Connection status |
+| `isOnTransaction` | `boolean` | Transaction in progress |
+| `connect()` | `() => Promise<void>` | Establish DB connection |
+| `close()` | `() => Promise<void>` | Close DB connection (PooledDbConn returns to pool) |
+| `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Start transaction |
+| `commitTransaction()` | `() => Promise<void>` | Commit transaction |
+| `rollbackTransaction()` | `() => Promise<void>` | Rollback transaction |
+| `execute()` | `(queries: string[]) => Promise<unknown[][]>` | Execute SQL query array |
+| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<unknown[][]>` | Execute parameterized query |
+| `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | Native bulk INSERT |
 
-`DbConn`은 `EventEmitter<{ close: void }>`를 상속하므로 `on("close", handler)` / `off("close", handler)`로 연결 종료 이벤트를 수신할 수 있다.
+`DbConn` extends `EventEmitter<{ close: void }>`, so you can listen for connection close events with `on("close", handler)` / `off("close", handler)`.
 
-## 지원 데이터베이스
+## Supported Databases
 
-| 데이터베이스 | 드라이버 패키지 | dialect 값 | 최소 버전 |
+| Database | Driver Package | dialect Value | Minimum Version |
 |-------------|----------------|------------|----------|
 | MySQL | `mysql2` | `"mysql"` | 8.0.14+ |
 | SQL Server | `tedious` | `"mssql"` | 2012+ |
 | Azure SQL Database | `tedious` | `"mssql-azure"` | - |
 | PostgreSQL | `pg`, `pg-copy-streams` | `"postgresql"` | 9.0+ |
 
-## 주의사항
+## Notes
 
-### 타임아웃
+### Timeouts
 
-- 기본 연결 타임아웃은 10분(`DB_CONN_DEFAULT_TIMEOUT = 600000ms`)이다.
-- 유휴 상태가 타임아웃의 2배(20분)를 초과하면 연결이 자동으로 종료된다.
-- 커넥션 풀의 `acquireTimeoutMillis`(기본 30초)와 `idleTimeoutMillis`(기본 30초)는 별도로 동작한다.
+- Default connection timeout is 10 minutes (`DB_CONN_DEFAULT_TIMEOUT = 600000ms`).
+- Connections are automatically closed if idle for more than twice the timeout (20 minutes).
+- Connection pool's `acquireTimeoutMillis` (default 30s) and `idleTimeoutMillis` (default 30s) operate separately.
 
-### SQL 인젝션 보안
+### SQL Injection Security
 
-`@simplysm/orm-common`은 동적 쿼리 특성상 파라미터 바인딩 대신 문자열 이스케이프 방식을 사용한다. 따라서 사용자 입력을 ORM 쿼리에 전달할 때는 반드시 애플리케이션 레벨에서 입력 검증을 수행해야 한다. 자세한 내용은 프로젝트 루트의 `CLAUDE.md`에 있는 "ORM 보안 가이드"를 참고한다.
+`@simplysm/orm-common` uses string escaping instead of parameter binding due to its dynamic query nature. Therefore, when passing user input to ORM queries, you must perform input validation at the application level. Refer to the "ORM Security Guide" in `CLAUDE.md` at the project root for details.
 
-### 드라이버 지연 로딩
+### Driver Lazy Loading
 
-DBMS별 드라이버(`mysql2`, `tedious`, `pg`)는 `DbConnFactory` 내부에서 지연 로딩(lazy loading)된다. 따라서 사용하지 않는 드라이버를 설치하지 않아도 import 에러가 발생하지 않는다.
+DBMS-specific drivers (`mysql2`, `tedious`, `pg`) are lazy-loaded within `DbConnFactory`. Therefore, import errors won't occur even if unused drivers are not installed.
 
-### PooledDbConn의 close 동작
+### PooledDbConn close Behavior
 
-`PooledDbConn.close()`는 실제 물리 연결을 종료하지 않고 커넥션 풀에 반환한다. 트랜잭션이 진행 중인 상태에서 `close()`를 호출하면, 풀에 반환하기 전에 자동으로 롤백을 시도한다.
+`PooledDbConn.close()` returns the connection to the pool instead of closing the actual physical connection. If `close()` is called while a transaction is in progress, it automatically attempts to rollback before returning to the pool.
 
-## 선택 의존성 (Optional Peer Dependencies)
+## Optional Peer Dependencies
 
-| 패키지 | 용도 |
+| Package | Purpose |
 |--------|------|
-| `mysql2` | MySQL 드라이버 |
-| `tedious` | MSSQL 드라이버 |
-| `pg` | PostgreSQL 드라이버 |
-| `pg-copy-streams` | PostgreSQL 벌크 COPY 지원 |
+| `mysql2` | MySQL driver |
+| `tedious` | MSSQL driver |
+| `pg` | PostgreSQL driver |
+| `pg-copy-streams` | PostgreSQL bulk COPY support |
 
-## 라이선스
+## License
 
 Apache-2.0

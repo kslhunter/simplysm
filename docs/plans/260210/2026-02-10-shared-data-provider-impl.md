@@ -15,6 +15,7 @@
 ### Task 1: SharedDataChangeEvent 이벤트 클래스
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/shared-data/SharedDataChangeEvent.ts`
 
 **Step 1: 이벤트 클래스 작성**
@@ -47,6 +48,7 @@ git commit -m "feat(solid): SharedDataChangeEvent 이벤트 클래스 추가"
 ### Task 2: SharedDataContext — 타입 및 Hook
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/shared-data/SharedDataContext.ts`
 
 **Step 1: 타입 정의 및 Context/Hook 작성**
@@ -81,9 +83,7 @@ export type SharedDataValue<T extends Record<string, unknown>> = {
 // useSharedData에서 제네릭 캐스팅으로 타입 안전성 보장
 export const SharedDataContext = createContext<SharedDataValue<Record<string, unknown>>>();
 
-export function useSharedData<
-  T extends Record<string, unknown> = Record<string, unknown>,
->(): SharedDataValue<T> {
+export function useSharedData<T extends Record<string, unknown> = Record<string, unknown>>(): SharedDataValue<T> {
   const context = useContext(SharedDataContext);
   if (!context) {
     throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다");
@@ -109,6 +109,7 @@ git commit -m "feat(solid): SharedDataContext 타입 및 useSharedData hook 추�
 ### Task 3: SharedDataProvider — 핵심 구현
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/shared-data/SharedDataProvider.tsx`
 
 **Step 1: Provider 컴포넌트 작성**
@@ -143,10 +144,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   const listenerKeyMap = new Map<string, string>();
 
   // 정렬 함수
-  function ordering<TT>(
-    data: TT[],
-    orderByList: [(item: TT) => unknown, "asc" | "desc"][],
-  ): TT[] {
+  function ordering<TT>(data: TT[], orderByList: [(item: TT) => unknown, "asc" | "desc"][]): TT[] {
     let result = [...data];
     for (const orderBy of [...orderByList].reverse()) {
       if (orderBy[1] === "desc") {
@@ -176,9 +174,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
         setItems(ordering(resData, def.orderBy));
       } else {
         setItems((prev) => {
-          const filtered = (prev as unknown[]).filter(
-            (item) => !changeKeys.includes(def.getKey(item as never)),
-          );
+          const filtered = (prev as unknown[]).filter((item) => !changeKeys.includes(def.getKey(item as never)));
           filtered.push(...resData);
           return ordering(filtered, def.orderBy);
         });
@@ -196,10 +192,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   // 각 definition 초기화
   const accessors: Record<string, SharedDataAccessor<unknown>> = {};
 
-  for (const [name, def] of Object.entries(props.definitions) as [
-    string,
-    SharedDataDefinition<unknown>,
-  ][]) {
+  for (const [name, def] of Object.entries(props.definitions) as [string, SharedDataDefinition<unknown>][]) {
     // Signal 생성
     const signal = createSignal<unknown[]>([]);
     signalMap.set(name, signal);
@@ -264,11 +257,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
     loading,
   } as SharedDataValue<Record<string, unknown>>;
 
-  return (
-    <SharedDataContext.Provider value={contextValue}>
-      {props.children}
-    </SharedDataContext.Provider>
-  );
+  return <SharedDataContext.Provider value={contextValue}>{props.children}</SharedDataContext.Provider>;
 }
 ```
 
@@ -294,6 +283,7 @@ git commit -m "feat(solid): SharedDataProvider 핵심 구현"
 ### Task 4: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -323,6 +313,7 @@ git commit -m "feat(solid): SharedData 관련 export 추가"
 ### Task 5: 단위 테스트
 
 **Files:**
+
 - Create: `packages/solid/tests/SharedDataProvider.spec.tsx`
 
 **Step 1: 테스트 작성**
@@ -432,7 +423,11 @@ describe("SharedDataProvider", () => {
     const result = render(() => (
       <ServiceClientContext.Provider value={serviceClientValue}>
         <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer onData={(s) => { sharedRef = s; }} />
+          <TestConsumer
+            onData={(s) => {
+              sharedRef = s;
+            }}
+          />
         </SharedDataProvider>
       </ServiceClientContext.Provider>
     ));
@@ -470,7 +465,11 @@ describe("SharedDataProvider", () => {
     const result = render(() => (
       <ServiceClientContext.Provider value={serviceClientValue}>
         <SharedDataProvider<TestData> definitions={definitions}>
-          <TestConsumer onData={(s) => { sharedRef = s; }} />
+          <TestConsumer
+            onData={(s) => {
+              sharedRef = s;
+            }}
+          />
         </SharedDataProvider>
       </ServiceClientContext.Provider>
     ));
@@ -562,15 +561,15 @@ Expected: 모든 테스트 PASS
 
 ## 참조 파일
 
-| 용도 | 경로 |
-|------|------|
-| Context 패턴 참조 | `packages/solid/src/contexts/ServiceClientContext.ts` |
-| Provider 패턴 참조 | `packages/solid/src/contexts/ServiceClientProvider.tsx` |
-| 레거시 원본 | `.legacy-packages/sd-angular/src/core/providers/storage/sd-shared-data.provider.ts` |
-| 이벤트 타입 기반 | `packages/service-common/src/types.ts` (ServiceEventListener) |
-| ServiceClient API | `packages/service-client/src/service-client.ts` (addEventListener, emitToServer) |
-| Array 확장 메서드 | `packages/core-common/src/extensions/arr-ext.ts` (orderBy, orderByDesc) |
-| 유틸 함수 | `packages/core-common/src/utils/obj.ts` (objEqual), `wait.ts` (waitUntil) |
+| 용도               | 경로                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| Context 패턴 참조  | `packages/solid/src/contexts/ServiceClientContext.ts`                               |
+| Provider 패턴 참조 | `packages/solid/src/contexts/ServiceClientProvider.tsx`                             |
+| 레거시 원본        | `.legacy-packages/sd-angular/src/core/providers/storage/sd-shared-data.provider.ts` |
+| 이벤트 타입 기반   | `packages/service-common/src/types.ts` (ServiceEventListener)                       |
+| ServiceClient API  | `packages/service-client/src/service-client.ts` (addEventListener, emitToServer)    |
+| Array 확장 메서드  | `packages/core-common/src/extensions/arr-ext.ts` (orderBy, orderByDesc)             |
+| 유틸 함수          | `packages/core-common/src/utils/obj.ts` (objEqual), `wait.ts` (waitUntil)           |
 
 ## import 요약
 

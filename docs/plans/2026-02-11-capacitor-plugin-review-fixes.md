@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Fix all 13 issues (P0-P3) found in the capacitor-plugin-* code review.
+**Goal:** Fix all 13 issues (P0-P3) found in the capacitor-plugin-\* code review.
 
 **Architecture:** 4 Capacitor plugins (auto-update, broadcast, file-system, usb-storage) each follow a 3-layer pattern: TypeScript interface → TypeScript facade (abstract class + static methods) → Android Java implementation + web fallback. Changes span Java, TypeScript, and IndexedDB utility code.
 
@@ -19,6 +19,7 @@
 **Issues:** #1 (P0 resource leak), #3 (P1 OOM risk), #4 (P1 repeated init)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-usb-storage/android/src/main/java/kr/co/simplysm/capacitor/usbstorage/UsbStoragePlugin.java`
 
 **Step 1: Fix `readdir()` — add try-finally with device.close()**
@@ -166,6 +167,7 @@ fix(capacitor-plugin-usb-storage): add device.close() and file size guard
 **Issues:** #2 (P0 missing permission request)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-file-system/android/src/main/java/kr/co/simplysm/capacitor/filesystem/FileSystemPlugin.java:47-57`
 
 **Step 1: Add runtime permission request for pre-Android 11**
@@ -219,6 +221,7 @@ fix(capacitor-plugin-file-system): add runtime permission request for Android 10
 **Issues:** #7 (P2 naming inconsistency), #9 (P2 method name mismatch)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-file-system/src/IFileSystemPlugin.ts:16` — `checkPermission` → `hasPermission`
 - Modify: `packages/capacitor-plugin-file-system/src/FileSystem.ts:23` — `checkPermission` → `hasPermission`
 - Modify: `packages/capacitor-plugin-file-system/src/FileSystem.ts:115` — `mkdirs` → `mkdir`
@@ -289,6 +292,7 @@ refactor(capacitor-plugin-file-system): rename checkPermission to hasPermission 
 **Issues:** #10 (P2 mixed language)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-usb-storage/android/.../UsbStoragePlugin.java` — 3 Korean messages
 - Modify: `packages/capacitor-plugin-auto-update/src/AutoUpdate.ts` — Korean UI messages are intentional (user-facing), skip those
 
@@ -333,6 +337,7 @@ fix(capacitor-plugin-usb-storage): unify error messages to English
 **Issues:** #5 (P1 version comparison)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-auto-update/src/AutoUpdate.ts:154,218`
 
 **Step 1: Fix `run()` version comparison**
@@ -343,12 +348,12 @@ const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
 // Only update if server version is newer
 if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(serverVersionInfo.version)) {
-    // eslint-disable-next-line no-console
-    console.log("Invalid semver version, skipping update check");
-    return;
+  // eslint-disable-next-line no-console
+  console.log("Invalid semver version, skipping update check");
+  return;
 }
 if (!semver.gt(serverVersionInfo.version, currentVersionInfo.versionName)) {
-    return;
+  return;
 }
 ```
 
@@ -359,12 +364,12 @@ if (!semver.gt(serverVersionInfo.version, currentVersionInfo.versionName)) {
 const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
 if (!semver.valid(currentVersionInfo.versionName) || !semver.valid(latestVersion)) {
-    // eslint-disable-next-line no-console
-    console.log("Invalid semver version, skipping update check");
-    return;
+  // eslint-disable-next-line no-console
+  console.log("Invalid semver version, skipping update check");
+  return;
 }
 if (!semver.gt(latestVersion, currentVersionInfo.versionName)) {
-    return;
+  return;
 }
 ```
 
@@ -387,6 +392,7 @@ fix(capacitor-plugin-auto-update): use semver.gt() instead of equality for versi
 **Issues:** #6 (P1 callback receives spurious initial resolve)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-broadcast/src/Broadcast.ts:32-40`
 
 **Step 1: Filter out initial resolve (no action field) in callback wrapper**
@@ -427,6 +433,7 @@ fix(capacitor-plugin-broadcast): filter initial resolve from subscribe callback
 **Issues:** #12 (P3 CSS duplication)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-auto-update/src/AutoUpdate.ts`
 
 **Step 1: Extract common button CSS**
@@ -456,42 +463,43 @@ export abstract class AutoUpdate {
 **Step 2: Replace 3 duplicated CSS blocks with the constant**
 
 In `_throwAboutReinstall()`:
+
 ```typescript
 const downloadHtml =
-    targetHref != null
-        ? html`
-            <style>
-                ._button { ${this._BUTTON_CSS} }
-                ._button:active { ${this._BUTTON_ACTIVE_CSS} }
-            </style>
-            <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">
-                다운로드
-            </a>
-          `
-        : "";
+  targetHref != null
+    ? html`
+        <style>
+          ._button { ${this._BUTTON_CSS} }
+          ._button:active { ${this._BUTTON_ACTIVE_CSS} }
+        </style>
+        <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">다운로드</a>
+      `
+    : "";
 ```
 
 In `_checkPermission()`:
+
 ```typescript
 log(html`
-    설치권한이 설정되어야합니다.
-    <style>
-        button { ${this._BUTTON_CSS} }
-        button:active { ${this._BUTTON_ACTIVE_CSS} }
-    </style>
-    <button onclick="location.reload()">재시도</button>
+  설치권한이 설정되어야합니다.
+  <style>
+    button { ${this._BUTTON_CSS} }
+    button:active { ${this._BUTTON_ACTIVE_CSS} }
+  </style>
+  <button onclick="location.reload()">재시도</button>
 `);
 ```
 
 In `_installApk()`:
+
 ```typescript
 log(html`
-    최신버전을 설치한 후 재시작하세요.
-    <style>
-        button { ${this._BUTTON_CSS} }
-        button:active { ${this._BUTTON_ACTIVE_CSS} }
-    </style>
-    <button onclick="location.reload()">재시도</button>
+  최신버전을 설치한 후 재시작하세요.
+  <style>
+    button { ${this._BUTTON_CSS} }
+    button:active { ${this._BUTTON_ACTIVE_CSS} }
+  </style>
+  <button onclick="location.reload()">재시도</button>
 `);
 ```
 
@@ -514,6 +522,7 @@ refactor(capacitor-plugin-auto-update): extract duplicated button CSS into const
 **Issues:** #13 (P3 readability)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-auto-update/src/web/ApkInstallerWeb.ts:7,17`
 - Modify: `packages/capacitor-plugin-broadcast/src/web/BroadcastWeb.ts:27`
 
@@ -583,6 +592,7 @@ refactor(capacitor-plugins): remove unnecessary await Promise.resolve() in web s
 **Issues:** #8 (P2 inconsistent return type)
 
 **Files:**
+
 - Modify: `packages/capacitor-plugin-usb-storage/src/IUsbStoragePlugin.ts:18` — change `files: string[]` to `files: IUsbFileInfo[]`
 - Modify: `packages/capacitor-plugin-usb-storage/src/IUsbStoragePlugin.ts` — add `IUsbFileInfo` interface
 - Modify: `packages/capacitor-plugin-usb-storage/src/UsbStorage.ts:54` — update return type
@@ -595,8 +605,8 @@ refactor(capacitor-plugins): remove unnecessary await Promise.resolve() in web s
 
 ```typescript
 export interface IUsbFileInfo {
-    name: string;
-    isDirectory: boolean;
+  name: string;
+  isDirectory: boolean;
 }
 ```
 
@@ -704,6 +714,7 @@ refactor(capacitor-plugin-usb-storage): align readdir return type with file-syst
 **Issues:** #11 (P3 duplication)
 
 **Files:**
+
 - Create: `packages/capacitor-plugin-file-system/src/web/IndexedDbStore.ts`
 - Modify: `packages/capacitor-plugin-file-system/src/web/VirtualFileSystem.ts`
 - Modify: `packages/capacitor-plugin-usb-storage/src/web/VirtualUsbStorage.ts`
@@ -712,83 +723,87 @@ refactor(capacitor-plugin-usb-storage): align readdir return type with file-syst
 
 ```typescript
 export class IndexedDbStore {
-    constructor(
-        private readonly _dbName: string,
-        private readonly _dbVersion: number,
-        private readonly _storeConfigs: { name: string; keyPath: string }[],
-    ) {}
+  constructor(
+    private readonly _dbName: string,
+    private readonly _dbVersion: number,
+    private readonly _storeConfigs: { name: string; keyPath: string }[],
+  ) {}
 
-    async open(): Promise<IDBDatabase> {
-        return new Promise((resolve, reject) => {
-            const req = indexedDB.open(this._dbName, this._dbVersion);
-            req.onupgradeneeded = () => {
-                const db = req.result;
-                for (const config of this._storeConfigs) {
-                    if (!db.objectStoreNames.contains(config.name)) {
-                        db.createObjectStore(config.name, { keyPath: config.keyPath });
-                    }
-                }
-            };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
-            req.onblocked = () => reject(new Error("Database blocked by another connection"));
-        });
-    }
+  async open(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(this._dbName, this._dbVersion);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        for (const config of this._storeConfigs) {
+          if (!db.objectStoreNames.contains(config.name)) {
+            db.createObjectStore(config.name, { keyPath: config.keyPath });
+          }
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => reject(new Error("Database blocked by another connection"));
+    });
+  }
 
-    async withStore<T>(storeName: string, mode: IDBTransactionMode, fn: (store: IDBObjectStore) => Promise<T>): Promise<T> {
-        const db = await this.open();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, mode);
-            const store = tx.objectStore(storeName);
-            let result: T;
-            Promise.resolve(fn(store))
-                .then((r) => {
-                    result = r;
-                })
-                .catch((err) => {
-                    db.close();
-                    reject(err);
-                });
-            tx.oncomplete = () => {
-                db.close();
-                resolve(result);
-            };
-            tx.onerror = () => {
-                db.close();
-                reject(tx.error);
-            };
+  async withStore<T>(
+    storeName: string,
+    mode: IDBTransactionMode,
+    fn: (store: IDBObjectStore) => Promise<T>,
+  ): Promise<T> {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      let result: T;
+      Promise.resolve(fn(store))
+        .then((r) => {
+          result = r;
+        })
+        .catch((err) => {
+          db.close();
+          reject(err);
         });
-    }
+      tx.oncomplete = () => {
+        db.close();
+        resolve(result);
+      };
+      tx.onerror = () => {
+        db.close();
+        reject(tx.error);
+      };
+    });
+  }
 
-    async get<T>(storeName: string, key: IDBValidKey): Promise<T | undefined> {
-        return this.withStore(storeName, "readonly", async (store) => {
-            return new Promise((resolve, reject) => {
-                const req = store.get(key);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        });
-    }
+  async get<T>(storeName: string, key: IDBValidKey): Promise<T | undefined> {
+    return this.withStore(storeName, "readonly", async (store) => {
+      return new Promise((resolve, reject) => {
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    });
+  }
 
-    async put<T>(storeName: string, value: T): Promise<void> {
-        return this.withStore(storeName, "readwrite", async (store) => {
-            return new Promise((resolve, reject) => {
-                const req = store.put(value);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        });
-    }
+  async put<T>(storeName: string, value: T): Promise<void> {
+    return this.withStore(storeName, "readwrite", async (store) => {
+      return new Promise((resolve, reject) => {
+        const req = store.put(value);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    });
+  }
 
-    async getAll<T>(storeName: string): Promise<T[]> {
-        return this.withStore(storeName, "readonly", async (store) => {
-            return new Promise((resolve, reject) => {
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        });
-    }
+  async getAll<T>(storeName: string): Promise<T[]> {
+    return this.withStore(storeName, "readonly", async (store) => {
+      return new Promise((resolve, reject) => {
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    });
+  }
 }
 ```
 

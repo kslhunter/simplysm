@@ -13,6 +13,7 @@
 ### Task 1: `format` → `formatDate` 리네이밍
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/date-format.ts:123` — 함수명 변경
 - Modify: `packages/core-common/src/types/date-time.ts:285` — import/호출부 변경
 - Modify: `packages/core-common/src/types/date-only.ts:317` — import/호출부 변경
@@ -48,6 +49,7 @@ Expected: 에러 없음
 ### Task 2: `hideBytes` → `redactBytes` 리네이밍
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/json.ts:29,41,105,212` — 옵션명 + 에러 메시지 변경
 - Modify: `packages/core-common/tests/utils/json.spec.ts:110,112,434,436,438,440` — 테스트 옵션명 변경
 
@@ -73,6 +75,7 @@ Expected: PASS
 ### Task 3: `EqualOptions.includes/excludes` → `topLevelIncludes/topLevelExcludes` 리네이밍
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/obj.ts:136-139,152-155,231-258,337-348,361-363,505-510` — 옵션명 변경
 - Modify: `packages/core-common/tests/utils/object.spec.ts:273-281` — 테스트 옵션명 변경
 
@@ -94,6 +97,7 @@ export interface EqualOptions {
 **Step 2: 구현부 변경**
 
 `objEqualObject` 함수 내에서:
+
 - `options?.includes` → `options?.topLevelIncludes`
 - `options?.excludes` → `options?.topLevelExcludes`
 
@@ -126,9 +130,11 @@ Expected: PASS
 ### Task 4: `obj*` 함수에 `@internal` 태그 추가
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/obj.ts` — JSDoc에 `@internal` 추가
 
 **대상 함수 (외부 사용 없거나 극히 드문 것):**
+
 - `objGetChainValueByDepth` — 외부 사용 없음
 - `objNullToUndefined` — 내부(json.ts)에서만 사용
 - `objUnflatten` — 외부 사용 없음
@@ -158,6 +164,7 @@ Expected: 에러 없음
 ### Task 5: `LazyGcMap.gcInterval`에 기본값 추가
 
 **Files:**
+
 - Modify: `packages/core-common/src/types/lazy-gc-map.ts:55-61` — `gcInterval`을 optional로 변경 + 기본값 적용
 - Test: `packages/core-common/tests/types/` — 기존 테스트 확인 또는 새 테스트 추가 필요
 
@@ -211,6 +218,7 @@ Expected: PASS (기존 테스트는 gcInterval을 명시적으로 전달하므�
 ### Task 6: 12시간→24시간 변환 헬퍼 추출
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/date-format.ts` — `convert12To24` 함수 추가
 - Modify: `packages/core-common/src/types/date-time.ts:77-87` — 헬퍼 호출로 대체
 - Modify: `packages/core-common/src/types/time.ts:72-83` — 헬퍼 호출로 대체
@@ -266,6 +274,7 @@ Expected: 기존 DateTime.parse/Time.parse 테스트 PASS
 ### Task 7: Map/Set 확장 등록 패턴 통일
 
 **Files:**
+
 - Modify: `packages/core-common/src/extensions/map-ext.ts:59-74` — `Object.defineProperty` 패턴으로 변경
 - Modify: `packages/core-common/src/extensions/set-ext.ts:38-58` — `Object.defineProperty` 패턴으로 변경
 
@@ -363,6 +372,7 @@ Expected: PASS
 ### Task 8: `transferableEncode`에 `try/finally` 추가
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/transferable.ts:67-173` — `ancestors.add/delete`를 `try/finally`로 감싸기
 
 **Step 1: `encodeImpl` 함수의 ancestors 처리를 try/finally로 변경**
@@ -411,6 +421,7 @@ function encodeImpl(
 ```
 
 핵심 변경:
+
 - `ancestors.add(obj)` 이후의 모든 로직을 `try` 블록으로 감쌈
 - `ancestors.delete(obj)`를 `finally` 블록으로 이동
 - `cache.set(obj, result)`는 `try` 블록 내부에 유지 (성공 시에만 캐시)

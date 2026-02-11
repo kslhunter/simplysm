@@ -17,16 +17,17 @@
 
 ## Phase 3 범위 (플랜 원문 참조)
 
-| # | 기능 | 설명 |
-|---|------|------|
-| 18 | 접기/펼치기 | `collapsible`/`collapsed` — 접으면 카드 목록 숨김, 눈 아이콘 토글 |
-| 19 | Busy 상태 | `busy` prop — BusyContainer 래핑, bar 타입 로딩 표시 |
+| #   | 기능        | 설명                                                              |
+| --- | ----------- | ----------------------------------------------------------------- |
+| 18  | 접기/펼치기 | `collapsible`/`collapsed` — 접으면 카드 목록 숨김, 눈 아이콘 토글 |
+| 19  | Busy 상태   | `busy` prop — BusyContainer 래핑, bar 타입 로딩 표시              |
 
 ---
 
 ### Task 1: KanbanLaneProps 확장
 
 **Files:**
+
 - Modify: `.worktrees/kanban-redesign/packages/solid/src/components/layout/kanban/Kanban.tsx:144-147`
 
 **Step 1: KanbanLaneProps에 새 props 추가**
@@ -77,6 +78,7 @@ git commit -m "feat(solid): KanbanLaneProps에 collapsible/collapsed/busy props 
 ### Task 2: 접기/펼치기 기능 구현
 
 **Files:**
+
 - Modify: `.worktrees/kanban-redesign/packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **Step 1: import 추가**
@@ -109,15 +111,13 @@ const [collapsed, setCollapsed] = createPropSignal({
 `LaneInner` 내부의 `hasHeader` 조건을 수정한다. 기존:
 
 ```typescript
-const hasHeader = () =>
-  slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
+const hasHeader = () => slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
 ```
 
 변경:
 
 ```typescript
-const hasHeader = () =>
-  local.collapsible || slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
+const hasHeader = () => local.collapsible || slots().kanbanLaneTitle.length > 0 || slots().kanbanLaneTools.length > 0;
 ```
 
 **Step 4: 헤더 JSX에 접기 버튼 추가**
@@ -141,11 +141,7 @@ const hasHeader = () =>
 <Show when={hasHeader()}>
   <div class={laneHeaderBaseClass}>
     <Show when={local.collapsible}>
-      <button
-        type="button"
-        class={collapseButtonClass}
-        onClick={() => setCollapsed((prev) => !prev)}
-      >
+      <button type="button" class={collapseButtonClass} onClick={() => setCollapsed((prev) => !prev)}>
         <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
       </button>
     </Show>
@@ -228,12 +224,9 @@ createEffect(() => {
 
   placeholderEl.style.height = `${dc.heightOnDrag}px`;
 
-  const referenceNode = target.position === "before"
-    ? target.element
-    : target.element.nextElementSibling;
+  const referenceNode = target.position === "before" ? target.element : target.element.nextElementSibling;
 
-  if (placeholderEl.parentNode === bodyRef
-      && placeholderEl.nextSibling === referenceNode) {
+  if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
     return;
   }
 
@@ -260,6 +253,7 @@ git commit -m "feat(solid): Kanban.Lane 접기/펼치기 기능 구현"
 ### Task 3: Busy 상태 구현
 
 **Files:**
+
 - Modify: `.worktrees/kanban-redesign/packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **Step 1: BusyContainer import 추가**
@@ -327,6 +321,7 @@ git commit -m "feat(solid): Kanban.Lane busy 상태 (BusyContainer bar) 구현"
 ### Task 4: 데모 페이지 확장
 
 **Files:**
+
 - Modify: `.worktrees/kanban-redesign/packages/solid-demo/src/pages/data/KanbanPage.tsx`
 
 **Step 1: import 추가**

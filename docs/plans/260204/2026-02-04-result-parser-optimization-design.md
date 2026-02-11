@@ -32,12 +32,12 @@ current[part] = {};
 
 ### 변경 사항
 
-| 위치 | 현재 코드 | 변경 코드 | 이유 |
-|------|----------|----------|------|
-| Line 304 | `objClone(record)` | `{ ...record }` | 이후 `delete` 연산으로 키 삭제 있음, 얕은 복사 필요 |
-| Line 414 | `objClone(newJoinData)` | `newJoinData` | 이미 새 객체, 복사 불필요 |
-| Line 420 | `[objClone(newJoinData)]` | `[newJoinData]` | 이미 새 객체, 복사 불필요 |
-| Line 430 | `objClone(newJoinData)` | `newJoinData` | 이미 새 객체, 복사 불필요 |
+| 위치     | 현재 코드                 | 변경 코드       | 이유                                                |
+| -------- | ------------------------- | --------------- | --------------------------------------------------- |
+| Line 304 | `objClone(record)`        | `{ ...record }` | 이후 `delete` 연산으로 키 삭제 있음, 얕은 복사 필요 |
+| Line 414 | `objClone(newJoinData)`   | `newJoinData`   | 이미 새 객체, 복사 불필요                           |
+| Line 420 | `[objClone(newJoinData)]` | `[newJoinData]` | 이미 새 객체, 복사 불필요                           |
+| Line 430 | `objClone(newJoinData)`   | `newJoinData`   | 이미 새 객체, 복사 불필요                           |
 
 ### 안전성 근거
 
@@ -47,11 +47,11 @@ current[part] = {};
 
 ### 예상 효과
 
-| 항목 | 현재 | 변경 후 |
-|------|------|--------|
-| `objClone` 호출 | 레코드당 최대 4회 | 0회 |
-| 깊은 복사 비용 | O(객체 크기 × 중첩 깊이) | 제거 |
-| 얕은 복사 | 없음 | 레코드당 1회 |
+| 항목            | 현재                     | 변경 후      |
+| --------------- | ------------------------ | ------------ |
+| `objClone` 호출 | 레코드당 최대 4회        | 0회          |
+| 깊은 복사 비용  | O(객체 크기 × 중첩 깊이) | 제거         |
+| 얕은 복사       | 없음                     | 레코드당 1회 |
 
 ## 2단계 후보 (효과 측정 후 검토)
 
@@ -67,6 +67,7 @@ const newHash = JSON.stringify(newJoinData);
 ```
 
 대안:
+
 - 커스텀 해시 함수 (특정 필드만 사용)
 - 객체 참조 기반 비교 (WeakMap)
 
@@ -80,6 +81,7 @@ const entries = Object.entries(groupKey).sort(([a], [b]) => a.localeCompare(b));
 ```
 
 대안:
+
 - 키 순서가 일정하면 정렬 생략
 - 키 목록 캐싱
 
@@ -92,6 +94,7 @@ if (!objEqual(existingJoinData, newJoinData)) { ... }
 ```
 
 대안:
+
 - 얕은 비교로 충분한 경우 대체
 - 해시 기반 비교
 

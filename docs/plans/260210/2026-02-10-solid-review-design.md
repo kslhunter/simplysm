@@ -71,12 +71,12 @@
 
 영어로 된 4개 Context 에러 메시지를 한국어로 변경:
 
-| 파일 | 현재 (영어) | 변경 (한국어) |
-|------|------------|-------------|
-| `DialogContext.ts` | "useDialog must be used within a DialogProvider" | "useDialog는 DialogProvider 내부에서만 사용할 수 있습니다" |
-| `SidebarContext.ts` | "useSidebarContext must be used within SidebarContainer" | "useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다" |
-| `KanbanContext.ts` | "useKanbanContext must be used within Kanban" 등 | 한국어로 변경 |
-| `SelectContext.ts` | "useSelectContext must be used within a Select component" | "useSelectContext는 Select 컴포넌트 내부에서만 사용할 수 있습니다" |
+| 파일                | 현재 (영어)                                               | 변경 (한국어)                                                        |
+| ------------------- | --------------------------------------------------------- | -------------------------------------------------------------------- |
+| `DialogContext.ts`  | "useDialog must be used within a DialogProvider"          | "useDialog는 DialogProvider 내부에서만 사용할 수 있습니다"           |
+| `SidebarContext.ts` | "useSidebarContext must be used within SidebarContainer"  | "useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다" |
+| `KanbanContext.ts`  | "useKanbanContext must be used within Kanban" 등          | 한국어로 변경                                                        |
+| `SelectContext.ts`  | "useSelectContext must be used within a Select component" | "useSelectContext는 Select 컴포넌트 내부에서만 사용할 수 있습니다"   |
 
 - **변경 범위**: 4개 파일
 
@@ -84,11 +84,11 @@
 
 의존성이 있는 Provider의 에러 메시지에 필요한 상위 Provider 정보 포함:
 
-| Context | 의존성 정보 |
-|---------|-----------|
-| `ThemeContext` | InitializeProvider 아래 |
+| Context                | 의존성 정보                                    |
+| ---------------------- | ---------------------------------------------- |
+| `ThemeContext`         | InitializeProvider 아래                        |
 | `ServiceClientContext` | InitializeProvider와 NotificationProvider 아래 |
-| `SharedDataContext` | ServiceClientProvider 아래 |
+| `SharedDataContext`    | ServiceClientProvider 아래                     |
 
 - **변경 범위**: 3~4개 파일
 

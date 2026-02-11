@@ -11,13 +11,13 @@ WebSocket 이벤트로 실시간 동기화하는 Context + Provider.
 
 ## 설계 결정 사항
 
-| 항목 | 결정 | 근거 |
-|------|------|------|
-| 데이터 소스 등록 | Props 기반 (`definitions`) | SolidJS 관용적 패턴 |
-| 상태 관리 | `createSignal<T[]>` | 정렬 시 배열 전체 교체, 프로젝트 일관성 |
-| 키 식별 | `getKey` 함수 | 데이터 객체에 특수 필드 불필요 |
-| 이벤트 클래스 위치 | `solid` 패키지 | 클라이언트 간 이벤트, 서버는 중계만 |
-| WebSocket 패턴 | 레거시 유지 | 현재 ServiceClient API가 동일 |
+| 항목               | 결정                       | 근거                                    |
+| ------------------ | -------------------------- | --------------------------------------- |
+| 데이터 소스 등록   | Props 기반 (`definitions`) | SolidJS 관용적 패턴                     |
+| 상태 관리          | `createSignal<T[]>`        | 정렬 시 배열 전체 교체, 프로젝트 일관성 |
+| 키 식별            | `getKey` 함수              | 데이터 객체에 특수 필드 불필요          |
+| 이벤트 클래스 위치 | `solid` 패키지             | 클라이언트 간 이벤트, 서버는 중계만     |
+| WebSocket 패턴     | 레거시 유지                | 현재 ServiceClient API가 동일           |
 
 ## API 설계
 
@@ -85,16 +85,14 @@ interface MySharedData {
   }}
 >
   <App />
-</SharedDataProvider>
+</SharedDataProvider>;
 
 // 컴포넌트에서 사용
 function UserList() {
   const shared = useSharedData<MySharedData>();
 
   // 목록 조회 (반응형)
-  <For each={shared.user.items()}>
-    {(user) => <div>{user.name}</div>}
-  </For>
+  <For each={shared.user.items()}>{(user) => <div>{user.name}</div>}</For>;
 
   // 단일 항목 O(1) 조회
   const user = shared.user.get(selectedId());
@@ -108,7 +106,7 @@ function UserList() {
   // 전체 로딩 상태 (반응형)
   <BusyContainer busy={shared.loading()}>
     <Content />
-  </BusyContainer>
+  </BusyContainer>;
 }
 ```
 
@@ -171,14 +169,14 @@ packages/solid/src/
 
 ## 레거시 대비 변경점
 
-| 레거시 (Angular) | Solid | 이유 |
-|------------------|-------|------|
-| 추상 클래스 상속 + `register()` | Props `definitions` | SolidJS 관용적 |
-| `ISharedDataBase.__valueKey` 필수 필드 | `getKey` 함수 | 데이터 객체 비침투적 |
-| `getSignal(name)` 문자열 키 | `shared.user` 타입 안전 접근 | 제네릭 타입 맵 |
-| `loadingCount` 직접 노출 | `loading` Accessor | 캡슐화 |
-| `Wait.until()` 폴링 | Promise 기반 `wait()` | 표준 async |
-| `__searchText`, `__isHidden`, `__parentKey` | 미포함 (17번 범위) | Provider 범위 최소화 |
+| 레거시 (Angular)                            | Solid                        | 이유                 |
+| ------------------------------------------- | ---------------------------- | -------------------- |
+| 추상 클래스 상속 + `register()`             | Props `definitions`          | SolidJS 관용적       |
+| `ISharedDataBase.__valueKey` 필수 필드      | `getKey` 함수                | 데이터 객체 비침투적 |
+| `getSignal(name)` 문자열 키                 | `shared.user` 타입 안전 접근 | 제네릭 타입 맵       |
+| `loadingCount` 직접 노출                    | `loading` Accessor           | 캡슐화               |
+| `Wait.until()` 폴링                         | Promise 기반 `wait()`        | 표준 async           |
+| `__searchText`, `__isHidden`, `__parentKey` | 미포함 (17번 범위)           | Provider 범위 최소화 |
 
 ## 범위 외 (향후 작업)
 

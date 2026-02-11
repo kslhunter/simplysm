@@ -15,14 +15,14 @@ solid 패키지의 40+ 컴포넌트들이 동일한 색상/테두리/사이즈 �
 
 ## 결정 사항
 
-| 항목 | 결정 |
-|---|---|
-| 접근 방식 | 공유 `.styles.ts` 파일 (Tailwind @apply 아님) |
-| 추상화 수준 | 원시 토큰 + 복합 패턴, 파일 분리 |
-| 사이즈 타입 | `"sm" \| "lg"` 통일 (prop 없음 = 기본) |
-| 테두리 체계 | 2단계: `borderDefault`, `borderSubtle` |
-| hover 배경 | light: `{theme}-100`, dark: `{theme}-800/30` 통일 |
-| hover 토큰화 | `themeTokens` Record로 구조화 |
+| 항목         | 결정                                              |
+| ------------ | ------------------------------------------------- |
+| 접근 방식    | 공유 `.styles.ts` 파일 (Tailwind @apply 아님)     |
+| 추상화 수준  | 원시 토큰 + 복합 패턴, 파일 분리                  |
+| 사이즈 타입  | `"sm" \| "lg"` 통일 (prop 없음 = 기본)            |
+| 테두리 체계  | 2단계: `borderDefault`, `borderSubtle`            |
+| hover 배경   | light: `{theme}-100`, dark: `{theme}-800/30` 통일 |
+| hover 토큰화 | `themeTokens` Record로 구조화                     |
 
 ## 설계
 
@@ -62,13 +62,16 @@ export const paddingLg = "px-3 py-2";
 // ── 테마 ──
 export type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
 
-export const themeTokens: Record<SemanticTheme, {
-  solid: string;
-  solidHover: string;
-  text: string;
-  hoverBg: string;
-  border: string;
-}> = {
+export const themeTokens: Record<
+  SemanticTheme,
+  {
+    solid: string;
+    solidHover: string;
+    text: string;
+    hoverBg: string;
+    border: string;
+  }
+> = {
   primary: {
     solid: "bg-primary-500 text-white",
     solidHover: "hover:bg-primary-600 dark:hover:bg-primary-400",
@@ -141,23 +144,20 @@ export const insetBase = "w-full rounded-none border-none";
 export const fieldSurface = clsx(
   bgSurface,
   textDefault,
-  "border", borderDefault,
+  "border",
+  borderDefault,
   "rounded",
   "focus-within:border-primary-500",
 );
 
 // ── 입력 요소 공통 ──
-export const inputBase = clsx(
-  "min-w-0 flex-1",
-  "bg-transparent",
-  "outline-none",
-  textPlaceholder,
-);
+export const inputBase = clsx("min-w-0 flex-1", "bg-transparent", "outline-none", textPlaceholder);
 ```
 
 ### 적용 예시: Field.styles.ts
 
 **Before:**
+
 ```ts
 export const fieldBaseClass = clsx(
   "inline-flex items-center",
@@ -180,26 +180,19 @@ export const fieldInsetClass = clsx(
 ```
 
 **After:**
+
 ```ts
 import { fieldSurface, insetBase, insetFocusOutline } from "../../styles/patterns.styles";
 
-export const fieldBaseClass = clsx(
-  "inline-flex items-center",
-  fieldSurface,
-  "px-2 py-1",
-  "h-field",
-);
+export const fieldBaseClass = clsx("inline-flex items-center", fieldSurface, "px-2 py-1", "h-field");
 
-export const fieldInsetClass = clsx(
-  insetBase,
-  "bg-primary-50 dark:bg-primary-950/30",
-  insetFocusOutline,
-);
+export const fieldInsetClass = clsx(insetBase, "bg-primary-50 dark:bg-primary-950/30", insetFocusOutline);
 ```
 
 ### 적용 예시: Button.tsx themeClasses
 
 **Before (~80줄):**
+
 ```ts
 const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
   primary: {
@@ -212,29 +205,33 @@ const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = {
 ```
 
 **After (~20줄):**
+
 ```ts
 import { themeTokens } from "../../styles/tokens.styles";
 
 const themeClasses: Record<ButtonTheme, Record<ButtonVariant, string>> = Object.fromEntries(
-  Object.entries(themeTokens).map(([theme, t]) => [theme, {
-    solid: clsx(t.solid, t.solidHover),
-    outline: clsx("bg-transparent", t.hoverBg, t.text, t.border),
-    ghost: clsx("bg-transparent", t.hoverBg, t.text),
-  }]),
+  Object.entries(themeTokens).map(([theme, t]) => [
+    theme,
+    {
+      solid: clsx(t.solid, t.solidHover),
+      outline: clsx("bg-transparent", t.hoverBg, t.text, t.border),
+      ghost: clsx("bg-transparent", t.hoverBg, t.text),
+    },
+  ]),
 );
 ```
 
 ## 변경 범위
 
-| 항목 | 변경 내용 |
-|---|---|
-| **신규 파일** | `styles/tokens.styles.ts`, `styles/patterns.styles.ts` |
-| **수정 — 토큰 적용** | Field.styles.ts, CheckBox.styles.ts, ListItem.styles.ts, Sheet.styles.ts |
-| **수정 — themeTokens 적용** | Button.tsx, Label.tsx, Select.tsx, Note.tsx 등 테마 사용 컴포넌트 |
-| **수정 — 사이즈 통일** | Select.tsx (`default` 엔트리 제거, `ComponentSize` 타입 사용) |
-| **수정 — clsx 정리** | 백틱 → 표준 호출, 중첩 제거 |
-| **수정 — hover 통일** | Button.tsx (`-50` → `-100`) |
-| **수정 — 테두리 통일** | CheckBox → `borderDefault`, Modal/Dropdown → `borderSubtle` |
+| 항목                        | 변경 내용                                                                |
+| --------------------------- | ------------------------------------------------------------------------ |
+| **신규 파일**               | `styles/tokens.styles.ts`, `styles/patterns.styles.ts`                   |
+| **수정 — 토큰 적용**        | Field.styles.ts, CheckBox.styles.ts, ListItem.styles.ts, Sheet.styles.ts |
+| **수정 — themeTokens 적용** | Button.tsx, Label.tsx, Select.tsx, Note.tsx 등 테마 사용 컴포넌트        |
+| **수정 — 사이즈 통일**      | Select.tsx (`default` 엔트리 제거, `ComponentSize` 타입 사용)            |
+| **수정 — clsx 정리**        | 백틱 → 표준 호출, 중첩 제거                                              |
+| **수정 — hover 통일**       | Button.tsx (`-50` → `-100`)                                              |
+| **수정 — 테두리 통일**      | CheckBox → `borderDefault`, Modal/Dropdown → `borderSubtle`              |
 
 ## 외부 API 영향
 

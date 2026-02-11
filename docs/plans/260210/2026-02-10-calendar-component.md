@@ -13,6 +13,7 @@
 ### Task 1: Calendar.tsx 컴포넌트 작성
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/calendar/Calendar.tsx`
 
 **Step 1: Calendar.tsx 파일 작성**
@@ -52,10 +53,7 @@ const baseClass = clsx(
   "[&_td]:p-1 [&_td]:align-top",
 );
 
-const notCurrentClass = clsx(
-  "[&.not-current]:bg-base-50",
-  "[&.not-current]:dark:bg-base-900",
-);
+const notCurrentClass = clsx("[&.not-current]:bg-base-50", "[&.not-current]:dark:bg-base-900");
 
 const dayClass = clsx("mb-1 text-sm text-base-500", "dark:text-base-400");
 
@@ -130,9 +128,7 @@ function CalendarBase<T>(props: CalendarProps<T>) {
     <table data-calendar class={getClassName()} {...rest}>
       <thead>
         <tr>
-          <For each={weekHeaders()}>
-            {(header) => <th>{header}</th>}
-          </For>
+          <For each={weekHeaders()}>{(header) => <th>{header}</th>}</For>
         </tr>
       </thead>
       <tbody>
@@ -141,19 +137,14 @@ function CalendarBase<T>(props: CalendarProps<T>) {
             <tr>
               <For each={row}>
                 {(cell) => (
-                  <td
-                    class={twMerge(
-                      notCurrentClass,
-                      cell.date.month !== yearMonth().month && "not-current",
-                    )}
-                  >
-                    <div class={cell.date.month !== yearMonth().month ? twMerge(dayClass, notCurrentDayClass) : dayClass}>
+                  <td class={twMerge(notCurrentClass, cell.date.month !== yearMonth().month && "not-current")}>
+                    <div
+                      class={cell.date.month !== yearMonth().month ? twMerge(dayClass, notCurrentDayClass) : dayClass}
+                    >
                       {cell.date.day}
                     </div>
                     <div class={contentClass}>
-                      <For each={cell.items}>
-                        {(entry) => local.renderItem(entry.item, entry.index)}
-                      </For>
+                      <For each={cell.items}>{(entry) => local.renderItem(entry.item, entry.index)}</For>
                     </div>
                   </td>
                 )}
@@ -191,6 +182,7 @@ git commit -m "feat(solid): Calendar 컴포넌트 구현"
 ### Task 2: index.ts에 Calendar export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:42` (data 섹션)
 
 **Step 1: export 추가**
@@ -218,6 +210,7 @@ git commit -m "feat(solid): Calendar export 추가"
 ### Task 3: CalendarPage.tsx 데모 페이지 작성
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/data/CalendarPage.tsx`
 
 **Step 1: 데모 페이지 작성**
@@ -256,9 +249,7 @@ export default function CalendarPage() {
           {/* Section 1: 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              일정 아이템을 날짜별로 표시합니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">일정 아이템을 날짜별로 표시합니다.</p>
             <Calendar<ScheduleItem>
               items={sampleItems}
               getItemDate={(item) => item.date}
@@ -274,9 +265,7 @@ export default function CalendarPage() {
           {/* Section 2: 주 시작 요일 변경 (월요일) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">주 시작 요일: 월요일</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              weekStartDay=1로 월요일부터 시작합니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">weekStartDay=1로 월요일부터 시작합니다.</p>
             <Calendar<ScheduleItem>
               items={sampleItems}
               getItemDate={(item) => item.date}
@@ -293,9 +282,7 @@ export default function CalendarPage() {
           {/* Section 3: Controlled 연월 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Controlled 연월</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              외부에서 연월 상태를 제어합니다.
-            </p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">외부에서 연월 상태를 제어합니다.</p>
             <div class="mb-4 flex items-center gap-2">
               <button
                 class="rounded border border-base-300 px-2 py-1 text-sm dark:border-base-600"
@@ -380,6 +367,7 @@ Playwright로 `http://localhost:{포트}/#/home/data/calendar` 접속
 **Step 3: 시각적 확인**
 
 확인 항목:
+
 - [ ] 6x7 달력 그리드가 올바르게 렌더링되는가
 - [ ] 요일 헤더(일~토)가 표시되는가
 - [ ] 아이템이 해당 날짜 셀에 올바르게 배치되는가

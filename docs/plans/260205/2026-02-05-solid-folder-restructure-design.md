@@ -6,14 +6,14 @@
 
 ## 새로운 카테고리 구조
 
-| 카테고리 | 컴포넌트 | 역할 |
-|---------|---------|------|
-| **form-control** | Button, Select | 사용자 입력/상호작용 |
-| **layout** | FormGroup, FormTable, Sidebar, Topbar, Collapse | 페이지 구조/배치 |
-| **data** | Table, List | 데이터 표시 |
-| **display** | Icon, Label, Note, Card | 정보 표시 UI |
-| **overlay** | Dropdown | 오버레이/팝업 |
-| **feedback** | Notification | 알림/피드백 |
+| 카테고리         | 컴포넌트                                        | 역할                 |
+| ---------------- | ----------------------------------------------- | -------------------- |
+| **form-control** | Button, Select                                  | 사용자 입력/상호작용 |
+| **layout**       | FormGroup, FormTable, Sidebar, Topbar, Collapse | 페이지 구조/배치     |
+| **data**         | Table, List                                     | 데이터 표시          |
+| **display**      | Icon, Label, Note, Card                         | 정보 표시 UI         |
+| **overlay**      | Dropdown                                        | 오버레이/팝업        |
+| **feedback**     | Notification                                    | 알림/피드백          |
 
 ## 파일 배치 규칙
 
@@ -85,17 +85,17 @@ packages/solid/src/
 
 ### 1. packages/solid/src/components/ 폴더 구조 변경
 
-| 기존 | 신규 |
-|------|------|
-| `controls/Button.tsx` | `form-control/Button.tsx` |
-| `form/select/*` | `form-control/select/*` |
-| `navigation/*` | `layout/sidebar/*`, `layout/topbar/*` |
-| `disclosure/Collapse.tsx` | `layout/Collapse.tsx` |
-| `data/List*.tsx` | `data/list/*` |
-| `layout/*` | `layout/*` (유지) |
-| `display/*` | `display/*` (유지) |
-| `notification/*` | `feedback/notification/*` |
-| `overlay/Dropdown.tsx` | `overlay/Dropdown.tsx` (유지) |
+| 기존                      | 신규                                  |
+| ------------------------- | ------------------------------------- |
+| `controls/Button.tsx`     | `form-control/Button.tsx`             |
+| `form/select/*`           | `form-control/select/*`               |
+| `navigation/*`            | `layout/sidebar/*`, `layout/topbar/*` |
+| `disclosure/Collapse.tsx` | `layout/Collapse.tsx`                 |
+| `data/List*.tsx`          | `data/list/*`                         |
+| `layout/*`                | `layout/*` (유지)                     |
+| `display/*`               | `display/*` (유지)                    |
+| `notification/*`          | `feedback/notification/*`             |
+| `overlay/Dropdown.tsx`    | `overlay/Dropdown.tsx` (유지)         |
 
 ### 2. packages/solid/src/index.ts 경로 수정
 
@@ -132,31 +132,31 @@ export * from "./components/feedback/notification";
 
 #### 라우터 (main.tsx)
 
-| 기존 경로 | 신규 경로 |
-|----------|----------|
-| `/home/controls/button` | `/home/form-control/button` |
-| `/home/form/select` | `/home/form-control/select` |
-| `/home/disclosure/collapse` | `/home/layout/collapse` |
-| `/home/navigation/sidebar` | `/home/layout/sidebar` |
-| `/home/navigation/topbar` | `/home/layout/topbar` |
+| 기존 경로                   | 신규 경로                   |
+| --------------------------- | --------------------------- |
+| `/home/controls/button`     | `/home/form-control/button` |
+| `/home/form/select`         | `/home/form-control/select` |
+| `/home/disclosure/collapse` | `/home/layout/collapse`     |
+| `/home/navigation/sidebar`  | `/home/layout/sidebar`      |
+| `/home/navigation/topbar`   | `/home/layout/topbar`       |
 
 #### 메뉴 (Home.tsx menuItems)
 
-| 기존 | 신규 |
-|------|------|
-| Controls | Form Control |
-| Form | (Form Control에 병합) |
-| Disclosure | (Layout에 병합) |
-| Navigation | (Layout에 병합) |
+| 기존       | 신규                  |
+| ---------- | --------------------- |
+| Controls   | Form Control          |
+| Form       | (Form Control에 병합) |
+| Disclosure | (Layout에 병합)       |
+| Navigation | (Layout에 병합)       |
 
 #### 페이지 폴더 (pages/)
 
-| 기존 | 신규 |
-|------|------|
-| `controls/ButtonPage.tsx` | `form-control/ButtonPage.tsx` |
-| `form/SelectPage.tsx` | `form-control/SelectPage.tsx` |
-| `disclosure/CollapsePage.tsx` | `layout/CollapsePage.tsx` |
-| `navigation/*Page.tsx` | `layout/*Page.tsx` |
+| 기존                          | 신규                          |
+| ----------------------------- | ----------------------------- |
+| `controls/ButtonPage.tsx`     | `form-control/ButtonPage.tsx` |
+| `form/SelectPage.tsx`         | `form-control/SelectPage.tsx` |
+| `disclosure/CollapsePage.tsx` | `layout/CollapsePage.tsx`     |
+| `navigation/*Page.tsx`        | `layout/*Page.tsx`            |
 
 ### 4. 검증
 

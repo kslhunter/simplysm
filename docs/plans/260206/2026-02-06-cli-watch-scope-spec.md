@@ -27,12 +27,12 @@ dev/watch 모드에서 다음 범위의 파일 변경을 감지하여 리빌드�
 
 ## 수정 대상 빌더
 
-| 빌더 | 수정 여부 | 이유 |
-|------|----------|------|
-| Library (esbuild, bundle:false) | **불필요** | 개별 파일 트랜스파일만, 외부 의존성 resolve 안 함 |
-| DTS (TypeScript watch) | **불필요** | `ts.createWatchProgram()`이 import chain의 `.d.ts` 변경을 이미 감지 |
-| **Server (esbuild, bundle:true)** | **필요** | esbuild watch가 node_modules 캐싱으로 변경 무시 가능 |
-| **Client (Vite)** | **필요** | Vite가 node_modules를 기본 제외 |
+| 빌더                              | 수정 여부  | 이유                                                                |
+| --------------------------------- | ---------- | ------------------------------------------------------------------- |
+| Library (esbuild, bundle:false)   | **불필요** | 개별 파일 트랜스파일만, 외부 의존성 resolve 안 함                   |
+| DTS (TypeScript watch)            | **불필요** | `ts.createWatchProgram()`이 import chain의 `.d.ts` 변경을 이미 감지 |
+| **Server (esbuild, bundle:true)** | **필요**   | esbuild watch가 node_modules 캐싱으로 변경 무시 가능                |
+| **Client (Vite)**                 | **필요**   | Vite가 node_modules를 기본 제외                                     |
 
 ## 구현 방안
 

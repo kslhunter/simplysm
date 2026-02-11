@@ -13,6 +13,7 @@
 ### Task 1: 의존성 추가
 
 **Files:**
+
 - Modify: `packages/solid/package.json` — peerDependencies 추가
 - Modify: `packages/solid-demo/package.json` — dependencies 추가
 
@@ -66,6 +67,7 @@ git commit -m "chore: echarts 의존성 추가 (peerDependencies)"
 ### Task 2: Echarts 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Echarts.tsx`
 - Modify: `packages/solid/src/index.ts` — export 추가
 
@@ -117,14 +119,7 @@ export const Echarts: Component<EchartsProps> = (props) => {
     chart.resize();
   });
 
-  return (
-    <div
-      data-echarts
-      ref={containerRef}
-      class={twMerge(baseClass, local.class)}
-      {...rest}
-    />
-  );
+  return <div data-echarts ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
 };
 ```
 
@@ -164,6 +159,7 @@ git commit -m "feat(solid): Echarts 래퍼 컴포넌트 구현"
 ### Task 3: 데모 페이지 구현
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/display/EchartsPage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx` — 라우트 추가
 - Modify: `packages/solid-demo/src/pages/Home.tsx` — 사이드바 메뉴 추가
@@ -220,9 +216,7 @@ export default function EchartsPage() {
           {/* Loading 토글 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Loading</h2>
-            <Button onClick={() => setLoading((v) => !v)}>
-              {loading() ? "로딩 해제" : "로딩 표시"}
-            </Button>
+            <Button onClick={() => setLoading((v) => !v)}>{loading() ? "로딩 해제" : "로딩 표시"}</Button>
           </section>
         </div>
       </div>
@@ -286,6 +280,7 @@ Run: `pnpm dev`
 ### Task 5: 마이그레이션 문서 업데이트
 
 **Files:**
+
 - Modify: `docs/2026-02-09-solid-migration-remaining.md`
 
 **Step 1: 10번 항목 상태 업데이트**

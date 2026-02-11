@@ -13,6 +13,7 @@
 ### Task 1: bwip-js 의존성 추가
 
 **Files:**
+
 - Modify: `packages/solid/package.json`
 
 **Step 1: bwip-js 설치**
@@ -44,6 +45,7 @@ git commit -m "chore(solid): bwip-js 의존성 추가"
 ### Task 2: Barcode 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Barcode.tsx`
 - Modify: `packages/solid/src/index.ts`
 
@@ -193,14 +195,7 @@ export const Barcode: Component<BarcodeProps> = (props) => {
     });
   });
 
-  return (
-    <div
-      data-barcode
-      ref={containerRef}
-      class={twMerge(baseClass, local.class)}
-      {...rest}
-    />
-  );
+  return <div data-barcode ref={containerRef} class={twMerge(baseClass, local.class)} {...rest} />;
 };
 ```
 
@@ -246,6 +241,7 @@ git commit -m "feat(solid): Barcode 컴포넌트 구현"
 ### Task 3: Barcode 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/display/Barcode.spec.tsx`
 
 **Step 1: 테스트 파일 작성**
@@ -338,6 +334,7 @@ git commit -m "test(solid): Barcode 컴포넌트 테스트 추가"
 ### Task 4: 데모 페이지 추가
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/display/BarcodePage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx` (Route 추가)
 - Modify: `packages/solid-demo/src/pages/Home.tsx` (메뉴 추가)

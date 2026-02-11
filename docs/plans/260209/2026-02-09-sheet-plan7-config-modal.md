@@ -13,6 +13,7 @@
 ## Task 1: 타입 추가 (types.ts)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/types.ts:1-123`
 
 **Step 1: 타입 추가**
@@ -65,6 +66,7 @@ git commit -m "feat(solid): Sheet 드래그 재정렬 및 설정 모달 타입 �
 ## Task 2: 스타일 추가 (Sheet.styles.ts + Sheet.css)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.styles.ts:1-152`
 - Modify: `packages/solid/src/components/data/sheet/Sheet.css:1-17`
 
@@ -133,11 +135,13 @@ git commit -m "feat(solid): Sheet 드래그 핸들/인디케이터/설정 버튼
 ## Task 3: effectiveColumns 확장 (Sheet.tsx)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:92-103`
 
 **Step 1: effectiveColumns에 hidden 필터링, fixed 오버라이드, displayOrder 정렬 추가**
 
 기존 코드 (92-103줄):
+
 ```tsx
 const effectiveColumns = createMemo(() => {
   const cols = columnDefs();
@@ -154,6 +158,7 @@ const effectiveColumns = createMemo(() => {
 ```
 
 변경 후:
+
 ```tsx
 const effectiveColumns = createMemo(() => {
   const cols = columnDefs(); // 이미 col.hidden (코드 설정) 필터링됨
@@ -163,7 +168,7 @@ const effectiveColumns = createMemo(() => {
     .filter((col) => {
       // config에서 hidden으로 설정된 컬럼 제외
       const saved = record[col.key];
-      return !(saved?.hidden);
+      return !saved?.hidden;
     })
     .map((col) => {
       const saved = record[col.key];
@@ -183,6 +188,7 @@ const effectiveColumns = createMemo(() => {
 ```
 
 **핵심:**
+
 - `columnDefs()`는 코드에서 `hidden` 설정된 컬럼을 이미 필터링 (81줄)
 - 추가로 config의 `hidden`을 필터링 (사용자가 모달에서 숨긴 컬럼)
 - `displayOrder`가 없는 컬럼은 `Infinity`로 처리 → 원래 순서 유지
@@ -205,6 +211,7 @@ git commit -m "feat(solid): effectiveColumns에 hidden/fixed/displayOrder config
 ## Task 4: 행 드래그 재정렬 (#region Reorder) — Sheet.tsx
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 ### 개요
@@ -223,13 +230,21 @@ git commit -m "feat(solid): effectiveColumns에 hidden/fixed/displayOrder config
 
 ```tsx
 // 5줄 — @tabler/icons-solidjs에 IconGripVertical 추가
-import { IconArrowsSort, IconChevronDown, IconChevronRight, IconGripVertical, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import {
+  IconArrowsSort,
+  IconChevronDown,
+  IconChevronRight,
+  IconGripVertical,
+  IconSortAscending,
+  IconSortDescending,
+} from "@tabler/icons-solidjs";
 
 // types.ts import에 SheetReorderEvent 추가
 import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SheetReorderEvent, SortingDef } from "./types";
 ```
 
 styles import에 추가:
+
 ```tsx
 import {
   // ... 기존 import들 ...
@@ -246,7 +261,7 @@ import {
 const [local] = splitProps(props, [
   // ... 기존 props ...
   "getItemCellStyleFn",
-  "onItemsReorder",  // 추가
+  "onItemsReorder", // 추가
   "class",
   "children",
 ]);
@@ -293,12 +308,10 @@ const isExpandColLastFixed = () =>
   hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
 // 선택 기능 컬럼이 "마지막 고정"인지
-const isSelectColLastFixed = () =>
-  hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
+const isSelectColLastFixed = () => hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
 // 드래그 기능 컬럼이 "마지막 고정"인지
-const isReorderColLastFixed = () =>
-  hasReorderFeature() && lastFixedIndex() < 0;
+const isReorderColLastFixed = () => hasReorderFeature() && lastFixedIndex() < 0;
 ```
 
 **Step 6: #region Reorder — 드래그 상태 + 로직 추가**
@@ -356,7 +369,7 @@ function onReorderMouseDown(e: MouseEvent, item: T): void {
       } else if (relY > third * 2) {
         foundPosition = "after";
       } else {
-        foundPosition = local.getChildrenFn ? "inside" : (relY < rect.height / 2 ? "before" : "after");
+        foundPosition = local.getChildrenFn ? "inside" : relY < rect.height / 2 ? "before" : "after";
       }
       foundTarget = flat.item;
       break;
@@ -379,7 +392,9 @@ function onReorderMouseDown(e: MouseEvent, item: T): void {
     }
 
     // before/after 인디케이터
-    const indicatorEl = tableEl.closest("[data-sheet-scroll]")?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+    const indicatorEl = tableEl
+      .closest("[data-sheet-scroll]")
+      ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
     if (indicatorEl) {
       if (foundTarget && foundPosition && foundPosition !== "inside") {
         const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
@@ -389,9 +404,10 @@ function onReorderMouseDown(e: MouseEvent, item: T): void {
           const rowRect = targetRow.getBoundingClientRect();
           const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
 
-          const top = foundPosition === "before"
-            ? rowRect.top - containerRect.top + scrollEl.scrollTop
-            : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
+          const top =
+            foundPosition === "before"
+              ? rowRect.top - containerRect.top + scrollEl.scrollTop
+              : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
 
           indicatorEl.style.display = "block";
           indicatorEl.style.top = `${top}px`;
@@ -417,7 +433,9 @@ function onReorderMouseDown(e: MouseEvent, item: T): void {
       row.removeAttribute("data-dragging");
       row.removeAttribute("data-drag-over");
     }
-    const indicatorEl = tableEl.closest("[data-sheet-scroll]")?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+    const indicatorEl = tableEl
+      .closest("[data-sheet-scroll]")
+      ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
     if (indicatorEl) {
       indicatorEl.style.display = "none";
     }
@@ -447,15 +465,12 @@ colgroup 내 (533-535줄, 선택 컬럼 `<col />` 바로 뒤):
 선택 기능 컬럼 헤더 `</Show>` (609줄) 바로 뒤에:
 
 ```tsx
-{/* 드래그 재정렬 기능 컬럼 헤더 — 첫 번째 행에만 표시 */}
+{
+  /* 드래그 재정렬 기능 컬럼 헤더 — 첫 번째 행에만 표시 */
+}
 <Show when={hasReorderFeature() && rowIndex() === 0}>
   <th
-    class={twMerge(
-      featureThClass,
-      fixedClass,
-      "z-[5]",
-      isReorderColLastFixed() ? fixedLastClass : undefined,
-    )}
+    class={twMerge(featureThClass, fixedClass, "z-[5]", isReorderColLastFixed() ? fixedLastClass : undefined)}
     rowspan={featureHeaderRowspan()}
     style={{
       top: "0",
@@ -468,7 +483,7 @@ colgroup 내 (533-535줄, 선택 컬럼 `<col />` 바로 뒤):
     }}
     ref={registerReorderColRef}
   />
-</Show>
+</Show>;
 ```
 
 **Step 9: tbody에 드래그 기능 컬럼 바디 셀 추가**
@@ -476,15 +491,12 @@ colgroup 내 (533-535줄, 선택 컬럼 `<col />` 바로 뒤):
 선택 기능 컬럼 바디 셀 `</Show>` (890줄) 바로 뒤에:
 
 ```tsx
-{/* 드래그 재정렬 기능 컬럼 바디 셀 */}
+{
+  /* 드래그 재정렬 기능 컬럼 바디 셀 */
+}
 <Show when={hasReorderFeature()}>
   <td
-    class={twMerge(
-      featureTdClass,
-      fixedClass,
-      "z-[2]",
-      isReorderColLastFixed() ? fixedLastClass : undefined,
-    )}
+    class={twMerge(featureTdClass, fixedClass, "z-[2]", isReorderColLastFixed() ? fixedLastClass : undefined)}
     style={{
       left: (() => {
         let left = 0;
@@ -494,16 +506,13 @@ colgroup 내 (533-535줄, 선택 컬럼 `<col />` 바로 뒤):
       })(),
     }}
   >
-    <div
-      class="flex h-full items-center justify-center px-1"
-      onMouseDown={(e) => onReorderMouseDown(e, flat.item)}
-    >
+    <div class="flex h-full items-center justify-center px-1" onMouseDown={(e) => onReorderMouseDown(e, flat.item)}>
       <div class={reorderHandleClass}>
         <Icon icon={IconGripVertical} size="1em" />
       </div>
     </div>
   </td>
-</Show>
+</Show>;
 ```
 
 **Step 10: 드래그 인디케이터 엘리먼트 추가**
@@ -531,6 +540,7 @@ git commit -m "feat(solid): Sheet 행 드래그 재정렬 기능 추가"
 ## Task 5: SheetConfigModal (신규 파일)
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/sheet/SheetConfigModal.tsx`
 
 ### 개요
@@ -538,6 +548,7 @@ git commit -m "feat(solid): Sheet 행 드래그 재정렬 기능 추가"
 설정 모달은 Sheet를 내부에서 사용하여 컬럼 순서/고정/숨김/너비를 편집하는 UI이다.
 
 **중요 — 순환 참조 방지:**
+
 - `SheetConfigModal`은 `Sheet`를 import한다
 - `Sheet`는 `SheetConfigModal`을 **동적 import**한다 (Task 6에서 구현)
 
@@ -613,11 +624,7 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
   }
 
   function updateItem(key: string, field: keyof EditColumnItem, value: unknown): void {
-    setEditItems((prev) =>
-      prev.map((item) =>
-        item.key === key ? { ...item, [field]: value } : item,
-      ),
-    );
+    setEditItems((prev) => prev.map((item) => (item.key === key ? { ...item, [field]: value } : item)));
   }
 
   function handleOk(): void {
@@ -650,32 +657,21 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
 
   return (
     <div class="flex flex-col gap-2 p-2">
-      <Sheet
-        items={editItems()}
-        key="__sheet-config-modal__"
-        hideConfigBar
-        onItemsReorder={handleReorder}
-      >
+      <Sheet items={editItems()} key="__sheet-config-modal__" hideConfigBar onItemsReorder={handleReorder}>
         <Sheet.Column<EditColumnItem> key="header" header="컬럼" class="px-2 py-1">
           {(ctx) => ctx.item.headerText}
         </Sheet.Column>
         <Sheet.Column<EditColumnItem> key="fixed" header="고정" width="60px">
           {(ctx) => (
             <div class="flex items-center justify-center">
-              <CheckBox
-                value={ctx.item.fixed}
-                onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)}
-              />
+              <CheckBox value={ctx.item.fixed} onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)} />
             </div>
           )}
         </Sheet.Column>
         <Sheet.Column<EditColumnItem> key="hidden" header="숨김" width="60px">
           {(ctx) => (
             <div class="flex items-center justify-center">
-              <CheckBox
-                value={ctx.item.hidden}
-                onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)}
-              />
+              <CheckBox value={ctx.item.hidden} onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)} />
             </div>
           )}
         </Sheet.Column>
@@ -692,9 +688,13 @@ export const SheetConfigModal: Component<SheetConfigModalProps> = (props) => {
       </Sheet>
 
       <div class="flex justify-end gap-2">
-        <Button onClick={handleReset} theme="warning">초기화</Button>
+        <Button onClick={handleReset} theme="warning">
+          초기화
+        </Button>
         <Button onClick={() => props.close(undefined)}>취소</Button>
-        <Button onClick={handleOk} theme="primary">확인</Button>
+        <Button onClick={handleOk} theme="primary">
+          확인
+        </Button>
       </div>
     </div>
   );
@@ -718,16 +718,33 @@ git commit -m "feat(solid): SheetConfigModal 컴포넌트 추가"
 ## Task 6: 설정 바 + openConfigModal (Sheet.tsx)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: import 추가**
 
 ```tsx
 // @tabler/icons-solidjs에 IconSettings 추가
-import { IconArrowsSort, IconChevronDown, IconChevronRight, IconGripVertical, IconSettings, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import {
+  IconArrowsSort,
+  IconChevronDown,
+  IconChevronRight,
+  IconGripVertical,
+  IconSettings,
+  IconSortAscending,
+  IconSortDescending,
+} from "@tabler/icons-solidjs";
 
 // types import에 SheetConfigColumnInfo 추가
-import type { FlatItem, SheetColumnDef, SheetConfig, SheetConfigColumnInfo, SheetProps, SheetReorderEvent, SortingDef } from "./types";
+import type {
+  FlatItem,
+  SheetColumnDef,
+  SheetConfig,
+  SheetConfigColumnInfo,
+  SheetProps,
+  SheetReorderEvent,
+  SortingDef,
+} from "./types";
 
 // useModal import 추가
 import { useModal } from "../../disclosure/ModalContext";
@@ -791,6 +808,7 @@ async function openConfigModal(): Promise<void> {
 **Step 4: toolbar 표시 조건 변경 + 설정 버튼 추가**
 
 기존 toolbar (511-522줄):
+
 ```tsx
 <Show when={!local.hideConfigBar && effectivePageCount() > 1}>
   <div class={toolbarClass}>
@@ -807,6 +825,7 @@ async function openConfigModal(): Promise<void> {
 ```
 
 변경 후:
+
 ```tsx
 <Show when={!local.hideConfigBar && (local.key != null || effectivePageCount() > 1)}>
   <div class={toolbarClass}>
@@ -846,6 +865,7 @@ git commit -m "feat(solid): Sheet 설정 바에 설정 모달 버튼 추가"
 ## Task 7: 데모 페이지 — 드래그 재정렬 + 설정 모달 예제
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 
 **Step 1: 드래그 재정렬 예제 추가**
@@ -853,12 +873,13 @@ git commit -m "feat(solid): Sheet 설정 바에 설정 모달 버튼 추가"
 SheetPage.tsx의 기존 섹션들 뒤에 (508줄 `</section>` 뒤, `</div>` 닫기 전) 새 섹션 추가:
 
 ```tsx
-{/* 드래그 재정렬 */}
+{
+  /* 드래그 재정렬 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">드래그 재정렬</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-    onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다.
-    핸들을 잡고 드래그하여 행 순서를 변경할 수 있습니다.
+    onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여 행 순서를 변경할 수 있습니다.
   </p>
   <Sheet
     items={reorderItems()}
@@ -887,7 +908,7 @@ SheetPage.tsx의 기존 섹션들 뒤에 (508줄 `</section>` 뒤, `</div>` 닫�
       {(ctx) => ctx.item.email}
     </Sheet.Column>
   </Sheet>
-</section>
+</section>;
 ```
 
 `reorderItems` 시그널을 컴포넌트 상단에 추가:
@@ -959,18 +980,18 @@ URL: http://localhost:40081 (포트가 달라질 수 있음)
 
 ### 파일 위치 & 줄 번호
 
-| 파일 | 설명 |
-|------|------|
-| `packages/solid/src/components/data/sheet/types.ts` (123줄) | 타입 정의 |
-| `packages/solid/src/components/data/sheet/Sheet.tsx` (923줄) | 메인 컴포넌트 |
-| `packages/solid/src/components/data/sheet/Sheet.styles.ts` (152줄) | 스타일 클래스 |
-| `packages/solid/src/components/data/sheet/Sheet.css` (17줄) | CSS 효과 |
-| `packages/solid/src/components/data/sheet/SheetColumn.tsx` | 컬럼 컴포넌트 |
-| `packages/solid/src/components/data/sheet/sheetUtils.ts` | 유틸리티 함수 |
-| `packages/solid/src/components/disclosure/ModalContext.ts` | Modal 타입/훅 |
-| `packages/solid/src/components/disclosure/ModalProvider.tsx` | Modal Provider |
-| `packages/solid/src/index.ts` (32-33줄) | Sheet/types export |
-| `packages/solid-demo/src/pages/data/SheetPage.tsx` (513줄) | 데모 페이지 |
+| 파일                                                               | 설명               |
+| ------------------------------------------------------------------ | ------------------ |
+| `packages/solid/src/components/data/sheet/types.ts` (123줄)        | 타입 정의          |
+| `packages/solid/src/components/data/sheet/Sheet.tsx` (923줄)       | 메인 컴포넌트      |
+| `packages/solid/src/components/data/sheet/Sheet.styles.ts` (152줄) | 스타일 클래스      |
+| `packages/solid/src/components/data/sheet/Sheet.css` (17줄)        | CSS 효과           |
+| `packages/solid/src/components/data/sheet/SheetColumn.tsx`         | 컬럼 컴포넌트      |
+| `packages/solid/src/components/data/sheet/sheetUtils.ts`           | 유틸리티 함수      |
+| `packages/solid/src/components/disclosure/ModalContext.ts`         | Modal 타입/훅      |
+| `packages/solid/src/components/disclosure/ModalProvider.tsx`       | Modal Provider     |
+| `packages/solid/src/index.ts` (32-33줄)                            | Sheet/types export |
+| `packages/solid-demo/src/pages/data/SheetPage.tsx` (513줄)         | 데모 페이지        |
 
 ### 아이콘
 
@@ -998,6 +1019,7 @@ const result = await modal.show<SheetConfig>(
 확장 → 선택 → **드래그** (가장 우측)
 
 각 기능 컬럼은:
+
 - 너비 추적: `createSignal` + `createResizeObserver`
 - `featureColTotalWidth`에 합산
 - 고정 컬럼 left 오프셋에 사용

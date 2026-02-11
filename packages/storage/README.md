@@ -1,10 +1,10 @@
 # @simplysm/storage
 
-FTP, FTPS, SFTP 프로토콜을 지원하는 스토리지 클라이언트 패키지이다. 통일된 `Storage` 인터페이스를 통해 프로토콜에 관계없이 동일한 API로 파일 업로드, 다운로드, 디렉토리 조작 등의 작업을 수행할 수 있다.
+A storage client package that supports FTP, FTPS, and SFTP protocols. Through the unified `Storage` interface, you can perform file upload, download, directory manipulation and other operations with the same API regardless of protocol.
 
-`StorageFactory`를 사용하면 연결/종료를 자동으로 관리할 수 있으며, 필요에 따라 `FtpStorageClient` 또는 `SftpStorageClient`를 직접 인스턴스화하여 사용할 수도 있다.
+Using `StorageFactory`, you can automatically manage connection/disconnection, and you can also directly instantiate `FtpStorageClient` or `SftpStorageClient` if needed.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/storage
@@ -12,118 +12,118 @@ npm install @simplysm/storage
 pnpm add @simplysm/storage
 ```
 
-### 의존성
+### Dependencies
 
-| 패키지 | 설명 |
+| Package | Description |
 |--------|------|
-| `@simplysm/core-common` | 공통 유틸리티 (`Bytes` 타입 등) |
-| `basic-ftp` | FTP/FTPS 프로토콜 구현체 |
-| `ssh2-sftp-client` | SFTP 프로토콜 구현체 |
+| `@simplysm/core-common` | Common utilities (`Bytes` type, etc.) |
+| `basic-ftp` | FTP/FTPS protocol implementation |
+| `ssh2-sftp-client` | SFTP protocol implementation |
 
-## 주요 모듈
+## Core Modules
 
-### Export 목록
+### Export List
 
-| 모듈 | 종류 | 설명 |
+| Module | Type | Description |
 |------|------|------|
-| `StorageFactory` | 클래스 | 스토리지 타입에 따라 클라이언트를 생성하고 연결/종료를 자동 관리 |
-| `FtpStorageClient` | 클래스 | FTP/FTPS 프로토콜 클라이언트 (`basic-ftp` 기반) |
-| `SftpStorageClient` | 클래스 | SFTP 프로토콜 클라이언트 (`ssh2-sftp-client` 기반) |
-| `Storage` | 인터페이스 | 모든 스토리지 클라이언트가 구현하는 공통 인터페이스 |
-| `StorageConnConfig` | 인터페이스 | 연결 설정 |
-| `FileInfo` | 인터페이스 | 디렉토리 항목 정보 |
-| `StorageType` | 타입 | 스토리지 프로토콜 종류 (`"ftp" \| "ftps" \| "sftp"`) |
+| `StorageFactory` | Class | Creates clients based on storage type and automatically manages connection/disconnection |
+| `FtpStorageClient` | Class | FTP/FTPS protocol client (based on `basic-ftp`) |
+| `SftpStorageClient` | Class | SFTP protocol client (based on `ssh2-sftp-client`) |
+| `Storage` | Interface | Common interface implemented by all storage clients |
+| `StorageConnConfig` | Interface | Connection configuration |
+| `FileInfo` | Interface | Directory entry information |
+| `StorageType` | Type | Storage protocol types (`"ftp" \| "ftps" \| "sftp"`) |
 
-## 타입 정의
+## Type Definitions
 
 ### StorageConnConfig
 
-서버 연결에 필요한 설정이다.
+Configuration required for server connection.
 
 ```typescript
 interface StorageConnConfig {
-  host: string;   // 서버 호스트
-  port?: number;  // 포트 (FTP 기본값: 21, SFTP 기본값: 22)
-  user?: string;  // 사용자명
-  pass?: string;  // 비밀번호
+  host: string;   // Server host
+  port?: number;  // Port (FTP default: 21, SFTP default: 22)
+  user?: string;  // Username
+  pass?: string;  // Password
 }
 ```
 
 ### FileInfo
 
-`readdir()` 결과로 반환되는 파일/디렉토리 정보이다.
+File/directory information returned by `readdir()`.
 
 ```typescript
 interface FileInfo {
-  name: string;    // 파일 또는 디렉토리 이름
-  isFile: boolean; // true면 파일, false면 디렉토리
+  name: string;    // File or directory name
+  isFile: boolean; // true if file, false if directory
 }
 ```
 
 ### StorageType
 
-지원하는 스토리지 프로토콜 종류이다.
+Supported storage protocol types.
 
 ```typescript
 type StorageType = "ftp" | "ftps" | "sftp";
 ```
 
-| 값 | 프로토콜 | 기본 포트 | 설명 |
+| Value | Protocol | Default Port | Description |
 |-----|---------|----------|------|
-| `"ftp"` | FTP | 21 | 비암호화 FTP |
-| `"ftps"` | FTPS | 21 | TLS 암호화 FTP |
-| `"sftp"` | SFTP | 22 | SSH 기반 파일 전송 |
+| `"ftp"` | FTP | 21 | Unencrypted FTP |
+| `"ftps"` | FTPS | 21 | TLS-encrypted FTP |
+| `"sftp"` | SFTP | 22 | SSH-based file transfer |
 
-### Storage 인터페이스
+### Storage Interface
 
-모든 스토리지 클라이언트(`FtpStorageClient`, `SftpStorageClient`)가 구현하는 공통 인터페이스이다. `Bytes`는 `@simplysm/core-common`에서 정의한 `Uint8Array` 타입 별칭이다.
+Common interface implemented by all storage clients (`FtpStorageClient`, `SftpStorageClient`). `Bytes` is a `Uint8Array` type alias defined in `@simplysm/core-common`.
 
-| 메서드 | 시그니처 | 설명 |
+| Method | Signature | Description |
 |--------|---------|------|
-| `connect` | `(config: StorageConnConfig) => Promise<void>` | 서버에 연결 |
-| `close` | `() => Promise<void>` | 연결 종료 |
-| `put` | `(localPathOrBuffer: string \| Bytes, storageFilePath: string) => Promise<void>` | 파일 업로드 (로컬 경로 또는 바이트 데이터) |
-| `readFile` | `(filePath: string) => Promise<Bytes>` | 파일 다운로드 (`Bytes` 반환) |
-| `readdir` | `(dirPath: string) => Promise<FileInfo[]>` | 디렉토리 목록 조회 |
-| `remove` | `(filePath: string) => Promise<void>` | 파일 삭제 |
-| `exists` | `(filePath: string) => Promise<boolean>` | 파일/디렉토리 존재 여부 확인 |
-| `mkdir` | `(dirPath: string) => Promise<void>` | 디렉토리 생성 (재귀적) |
-| `rename` | `(fromPath: string, toPath: string) => Promise<void>` | 파일/디렉토리 이름 변경 |
-| `uploadDir` | `(fromPath: string, toPath: string) => Promise<void>` | 로컬 디렉토리 전체를 원격에 업로드 |
+| `connect` | `(config: StorageConnConfig) => Promise<void>` | Connect to server |
+| `close` | `() => Promise<void>` | Close connection |
+| `put` | `(localPathOrBuffer: string \| Bytes, storageFilePath: string) => Promise<void>` | Upload file (local path or byte data) |
+| `readFile` | `(filePath: string) => Promise<Bytes>` | Download file (returns `Bytes`) |
+| `readdir` | `(dirPath: string) => Promise<FileInfo[]>` | List directory contents |
+| `remove` | `(filePath: string) => Promise<void>` | Delete file |
+| `exists` | `(filePath: string) => Promise<boolean>` | Check if file/directory exists |
+| `mkdir` | `(dirPath: string) => Promise<void>` | Create directory (recursive) |
+| `rename` | `(fromPath: string, toPath: string) => Promise<void>` | Rename file/directory |
+| `uploadDir` | `(fromPath: string, toPath: string) => Promise<void>` | Upload entire local directory to remote |
 
-## 사용법
+## Usage
 
-### StorageFactory (권장)
+### StorageFactory (Recommended)
 
-`StorageFactory.connect()`는 콜백 패턴으로 연결과 종료를 자동으로 관리한다. 콜백에서 예외가 발생하더라도 연결이 반드시 종료되므로, 직접 클라이언트를 사용하는 것보다 권장된다.
+`StorageFactory.connect()` automatically manages connection and disconnection with a callback pattern. The connection is always closed even if an exception occurs in the callback, so it's recommended over using clients directly.
 
 ```typescript
 import { StorageFactory } from "@simplysm/storage";
 
-// FTP 연결
+// FTP connection
 const result = await StorageFactory.connect("ftp", {
   host: "ftp.example.com",
   port: 21,
   user: "username",
   pass: "password",
 }, async (client) => {
-  // 로컬 파일을 원격 서버에 업로드
+  // Upload local file to remote server
   await client.put("/local/path/file.txt", "/remote/path/file.txt");
 
-  // 바이트 데이터를 직접 업로드
+  // Upload byte data directly
   const data = new TextEncoder().encode("hello world");
   await client.put(data, "/remote/path/hello.txt");
 
-  // 원격 파일 다운로드
+  // Download remote file
   const content = await client.readFile("/remote/path/file.txt");
 
-  // 콜백의 반환값이 StorageFactory.connect()의 반환값이 된다
+  // The callback's return value becomes the return value of StorageFactory.connect()
   return content;
 });
 ```
 
 ```typescript
-// FTPS 연결 (TLS 암호화)
+// FTPS connection (TLS encryption)
 await StorageFactory.connect("ftps", {
   host: "ftps.example.com",
   user: "username",
@@ -134,35 +134,35 @@ await StorageFactory.connect("ftps", {
 ```
 
 ```typescript
-// SFTP 연결
+// SFTP connection
 await StorageFactory.connect("sftp", {
   host: "sftp.example.com",
   port: 22,
   user: "username",
   pass: "password",
 }, async (client) => {
-  // 디렉토리 목록 조회
+  // List directory contents
   const files = await client.readdir("/remote/path");
   for (const file of files) {
-    console.log(`${file.name} - ${file.isFile ? "파일" : "디렉토리"}`);
+    console.log(`${file.name} - ${file.isFile ? "File" : "Directory"}`);
   }
 
-  // 디렉토리 전체 업로드
+  // Upload entire directory
   await client.uploadDir("/local/dir", "/remote/dir");
 });
 ```
 
-### FtpStorageClient (직접 사용)
+### FtpStorageClient (Direct Usage)
 
-FTP 또는 FTPS 프로토콜을 사용하는 클라이언트이다. 생성자의 `secure` 파라미터로 FTPS 사용 여부를 설정한다.
+Client that uses FTP or FTPS protocol. The `secure` parameter in the constructor determines whether to use FTPS.
 
 ```typescript
 import { FtpStorageClient } from "@simplysm/storage";
 
-// FTP 클라이언트 (secure: false가 기본값)
+// FTP client (secure: false is default)
 const client = new FtpStorageClient();
 
-// FTPS 클라이언트
+// FTPS client
 const secureClient = new FtpStorageClient(true);
 
 await client.connect({
@@ -173,43 +173,43 @@ await client.connect({
 });
 
 try {
-  // 파일 업로드 - 로컬 파일 경로로 업로드
+  // Upload file - from local file path
   await client.put("/local/path/file.txt", "/remote/path/file.txt");
 
-  // 파일 업로드 - Uint8Array 바이트 데이터로 업로드
+  // Upload file - from Uint8Array byte data
   const bytes = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]);
   await client.put(bytes, "/remote/path/hello.bin");
 
-  // 파일 다운로드 (Bytes, 즉 Uint8Array 반환)
+  // Download file (returns Bytes, i.e. Uint8Array)
   const data = await client.readFile("/remote/path/file.txt");
   const text = new TextDecoder().decode(data);
 
-  // 디렉토리 목록 조회
+  // List directory contents
   const files = await client.readdir("/remote/path");
 
-  // 파일/디렉토리 존재 여부 확인
+  // Check if file/directory exists
   const exists = await client.exists("/remote/path/file.txt");
 
-  // 디렉토리 생성 (상위 디렉토리도 함께 생성)
+  // Create directory (creates parent directories too)
   await client.mkdir("/remote/new/nested/path");
 
-  // 파일 이름 변경
+  // Rename file
   await client.rename("/remote/old-name.txt", "/remote/new-name.txt");
 
-  // 파일 삭제
+  // Delete file
   await client.remove("/remote/path/file.txt");
 
-  // 로컬 디렉토리 전체를 원격에 업로드
+  // Upload entire local directory to remote
   await client.uploadDir("/local/dir", "/remote/dir");
 } finally {
-  // 반드시 연결을 종료해야 한다
+  // Connection must be closed
   await client.close();
 }
 ```
 
-### SftpStorageClient (직접 사용)
+### SftpStorageClient (Direct Usage)
 
-SFTP 프로토콜을 사용하는 클라이언트이다. `FtpStorageClient`와 동일한 `Storage` 인터페이스를 구현하므로 API가 동일하다.
+Client that uses SFTP protocol. It implements the same `Storage` interface as `FtpStorageClient`, so the API is identical.
 
 ```typescript
 import { SftpStorageClient } from "@simplysm/storage";
@@ -224,7 +224,7 @@ await client.connect({
 });
 
 try {
-  // Storage 인터페이스의 모든 메서드를 동일하게 사용할 수 있다
+  // All methods of the Storage interface can be used identically
   await client.put("/local/path/file.txt", "/remote/path/file.txt");
   const data = await client.readFile("/remote/path/file.txt");
   const files = await client.readdir("/remote/path");
@@ -238,25 +238,25 @@ try {
 }
 ```
 
-## 주의사항
+## Important Notes
 
-### 연결 관리
+### Connection Management
 
-- `StorageFactory.connect()` 사용을 권장한다. 콜백이 끝나면 연결이 자동으로 종료되며, 예외가 발생하더라도 `finally` 블록에서 종료를 보장한다.
-- 클라이언트를 직접 사용할 경우 반드시 `try/finally` 패턴으로 `close()`를 호출해야 한다. 그렇지 않으면 연결이 누수될 수 있다.
-- 이미 연결된 인스턴스에서 `connect()`를 다시 호출하면 에러가 발생한다. 재연결이 필요하면 먼저 `close()`를 호출해야 한다.
-- `close()`는 이미 종료된 상태에서 호출해도 에러가 발생하지 않는다.
+- Using `StorageFactory.connect()` is recommended. The connection is automatically closed when the callback ends, and closure is guaranteed in the `finally` block even if an exception occurs.
+- When using clients directly, you must call `close()` with a `try/finally` pattern. Otherwise, connections may leak.
+- Calling `connect()` again on an already connected instance will cause an error. If reconnection is needed, call `close()` first.
+- Calling `close()` when already closed does not cause an error.
 
-### exists() 동작 방식
+### exists() Behavior
 
-- FTP: 파일은 `SIZE` 명령(O(1))으로 확인하고, 실패 시 상위 디렉토리 목록을 조회하여 디렉토리 존재 여부를 확인한다. 항목 수가 많은 디렉토리에서는 성능이 저하될 수 있다.
-- SFTP: `ssh2-sftp-client`의 `exists()`를 사용하며, 파일(`"-"`), 디렉토리(`"d"`), 심볼릭 링크(`"l"`) 모두 `true`를 반환한다.
-- 두 구현체 모두 상위 디렉토리가 존재하지 않거나, 네트워크/권한 오류 시 예외 대신 `false`를 반환한다.
+- FTP: Checks files with the `SIZE` command (O(1)), and on failure, lists the parent directory to check if a directory exists. Performance may degrade in directories with many entries.
+- SFTP: Uses `ssh2-sftp-client`'s `exists()` method, returns `true` for files (`"-"`), directories (`"d"`), and symbolic links (`"l"`).
+- Both implementations return `false` instead of throwing exceptions when the parent directory doesn't exist or on network/permission errors.
 
-### 바이트 데이터 타입
+### Byte Data Type
 
-- `readFile()`의 반환 타입과 `put()`의 입력 타입에 사용되는 `Bytes`는 `@simplysm/core-common`에서 정의한 `Uint8Array` 타입 별칭이다.
+- `Bytes` used in the return type of `readFile()` and input type of `put()` is a `Uint8Array` type alias defined in `@simplysm/core-common`.
 
-## 라이선스
+## License
 
 Apache-2.0

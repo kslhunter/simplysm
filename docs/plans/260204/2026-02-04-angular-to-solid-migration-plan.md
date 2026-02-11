@@ -9,6 +9,7 @@
 **Tech Stack:** SolidJS, Tailwind CSS, clsx, tailwind-merge, Vitest + @solidjs/testing-library
 
 **참고 파일:**
+
 - 설계 문서: `docs/plans/2026-02-04-angular-to-solid-migration-design.md`
 - 컴포넌트 패턴: `packages/solid/src/components/controls/Button.tsx`
 - 테스트 패턴: `packages/solid/tests/components/controls/Button.spec.tsx`
@@ -18,6 +19,7 @@
 ## Task 1: Tailwind 설정 - Card 애니메이션 추가
 
 **Files:**
+
 - Modify: `packages/solid/tailwind.config.ts:9-25`
 
 **Step 1: 현재 tailwind.config.ts 확인**
@@ -46,9 +48,9 @@ export default {
         danger: colors.red,
       },
       zIndex: {
-        sidebar: "100",
+        "sidebar": "100",
         "sidebar-backdrop": "99",
-        dropdown: "1000",
+        "dropdown": "1000",
       },
       animation: {
         "card-in": "card-in 0.3s ease-out forwards",
@@ -90,6 +92,7 @@ EOF
 ## Task 2: Card 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/display/Card.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -199,6 +202,7 @@ Expected: FAIL - Card 컴포넌트가 존재하지 않음
 ## Task 3: Card 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Card.tsx`
 
 **Step 1: Card 컴포넌트 구현**
@@ -263,6 +267,7 @@ EOF
 ## Task 4: Label 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/display/Label.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -383,6 +388,7 @@ Expected: FAIL - Label 컴포넌트가 존재하지 않음
 ## Task 5: Label 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Label.tsx`
 
 **Step 1: Label 컴포넌트 구현**
@@ -399,12 +405,7 @@ export interface LabelProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   theme?: LabelTheme;
 }
 
-const baseClass = clsx(
-  "inline-block",
-  "text-white",
-  "px-2",
-  "rounded",
-);
+const baseClass = clsx("inline-block", "text-white", "px-2", "rounded");
 
 const themeClasses: Record<LabelTheme, string> = {
   primary: "bg-primary-500 dark:bg-primary-600",
@@ -463,6 +464,7 @@ EOF
 ## Task 6: Note 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/display/Note.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -577,6 +579,7 @@ Expected: FAIL - Note 컴포넌트가 존재하지 않음
 ## Task 7: Note 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Note.tsx`
 
 **Step 1: Note 컴포넌트 구현**
@@ -593,11 +596,7 @@ export interface NoteProps extends JSX.HTMLAttributes<HTMLDivElement> {
   theme?: NoteTheme;
 }
 
-const baseClass = clsx(
-  "block",
-  "p-3",
-  "rounded",
-);
+const baseClass = clsx("block", "p-3", "rounded");
 
 const themeClasses: Record<NoteTheme, string> = {
   primary: "bg-primary-100 dark:bg-primary-900/30",
@@ -656,6 +655,7 @@ EOF
 ## Task 8: FormGroup 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/layout/FormGroup.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -836,6 +836,7 @@ Expected: FAIL - FormGroup 컴포넌트가 존재하지 않음
 ## Task 9: FormGroup 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/layout/FormGroup.tsx`
 
 **Step 1: FormGroup 컴포넌트 구현**
@@ -922,6 +923,7 @@ EOF
 ## Task 10: FormTable 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/layout/FormTable.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -998,6 +1000,7 @@ Expected: FAIL - FormTable 컴포넌트가 존재하지 않음
 ## Task 11: FormTable 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/layout/FormTable.tsx`
 
 **Step 1: FormTable 컴포넌트 구현**
@@ -1010,10 +1013,7 @@ import { twMerge } from "tailwind-merge";
 
 export interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 
-const baseClass = clsx(
-  "border-separate",
-  "border-spacing-0",
-);
+const baseClass = clsx("border-separate", "border-spacing-0");
 
 export const FormTable: ParentComponent<FormTableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
@@ -1056,6 +1056,7 @@ EOF
 ## Task 12: Table 컴포넌트 - 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/layout/Table.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -1179,6 +1180,7 @@ Expected: FAIL - Table 컴포넌트가 존재하지 않음
 ## Task 13: Table 컴포넌트 - 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/layout/Table.tsx`
 
 **Step 1: Table 컴포넌트 구현**
@@ -1207,13 +1209,7 @@ const inlineClass = clsx("w-auto");
 export const Table: ParentComponent<TableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inset", "inline"]);
 
-  const getClassName = () =>
-    twMerge(
-      baseClass,
-      local.inset && insetClass,
-      local.inline && inlineClass,
-      local.class,
-    );
+  const getClassName = () => twMerge(baseClass, local.inset && insetClass, local.inline && inlineClass, local.class);
 
   return (
     <table class={getClassName()} {...rest}>
@@ -1256,6 +1252,7 @@ EOF
 ## Task 14: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 문 추가**
@@ -1317,6 +1314,7 @@ EOF
 ## Task 15: 전체 테스트 실행 및 린트
 
 **Files:**
+
 - None (검증만)
 
 **Step 1: 전체 solid 테스트 실행**
@@ -1356,6 +1354,7 @@ EOF
 ## Task 16: solid-demo에서 시각적 테스트
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/App.tsx` (또는 적절한 데모 페이지)
 
 **Step 1: solid-demo 실행**

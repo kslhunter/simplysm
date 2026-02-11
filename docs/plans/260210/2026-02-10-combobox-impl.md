@@ -13,6 +13,7 @@
 ## Task 1: ComboboxContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/combobox/ComboboxContext.ts`
 
 **Step 1: Context 파일 생성**
@@ -64,6 +65,7 @@ EOF
 ## Task 2: ComboboxItem 컴포넌트 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/combobox/ComboboxItem.tsx`
 - Test: `packages/solid/tests/components/form/combobox/ComboboxItem.spec.tsx`
 
@@ -72,7 +74,10 @@ EOF
 ```tsx
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
-import { ComboboxContext, type ComboboxContextValue } from "../../../../src/components/form-control/combobox/ComboboxContext";
+import {
+  ComboboxContext,
+  type ComboboxContextValue,
+} from "../../../../src/components/form-control/combobox/ComboboxContext";
 import { ComboboxItem } from "../../../../src/components/form-control/combobox/ComboboxItem";
 
 const createMockContext = (overrides: Partial<ComboboxContextValue> = {}): ComboboxContextValue => ({
@@ -120,7 +125,9 @@ describe("ComboboxItem 컴포넌트", () => {
     const selectValue = vi.fn();
     const { getByRole } = render(() => (
       <ComboboxContext.Provider value={createMockContext({ selectValue })}>
-        <ComboboxItem value="apple" disabled>사과</ComboboxItem>
+        <ComboboxItem value="apple" disabled>
+          사과
+        </ComboboxItem>
       </ComboboxContext.Provider>
     ));
 
@@ -236,6 +243,7 @@ EOF
 ## Task 3: Combobox 메인 컴포넌트 - 기본 렌더링
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/combobox/Combobox.tsx`
 - Test: `packages/solid/tests/components/form/combobox/Combobox.spec.tsx`
 
@@ -256,33 +264,21 @@ describe("Combobox 컴포넌트", () => {
 
   describe("기본 렌더링", () => {
     it("트리거가 렌더링된다", () => {
-      const { getByRole } = render(() => (
-        <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
-      ));
+      const { getByRole } = render(() => <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />);
 
       expect(getByRole("combobox")).not.toBeNull();
     });
 
     it("placeholder가 표시된다", () => {
       const { getByPlaceholderText } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          placeholder="검색하세요"
-          renderValue={(v) => <>{v}</>}
-        />
+        <Combobox loadItems={mockLoadItems} placeholder="검색하세요" renderValue={(v) => <>{v}</>} />
       ));
 
       expect(getByPlaceholderText("검색하세요")).not.toBeNull();
     });
 
     it("disabled일 때 aria-disabled가 설정된다", () => {
-      const { getByRole } = render(() => (
-        <Combobox
-          loadItems={mockLoadItems}
-          disabled
-          renderValue={(v) => <>{v}</>}
-        />
-      ));
+      const { getByRole } = render(() => <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />);
 
       expect(getByRole("combobox").getAttribute("aria-disabled")).toBe("true");
     });
@@ -297,7 +293,7 @@ Expected: FAIL - 모듈을 찾을 수 없음
 
 **Step 3: Combobox 기본 구조 구현**
 
-```tsx
+````tsx
 import {
   children,
   createEffect,
@@ -555,9 +551,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
         break;
       case "Enter":
         if (!open() && local.allowCustomValue && query()) {
-          const customValue = local.parseCustomValue
-            ? local.parseCustomValue(query())
-            : (query() as unknown as T);
+          const customValue = local.parseCustomValue ? local.parseCustomValue(query()) : (query() as unknown as T);
           setInternalValue(customValue);
           e.preventDefault();
         }
@@ -665,7 +659,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
 Combobox.Item = ComboboxItem;
 Combobox.ItemTemplate = ComboboxItemTemplate;
-```
+````
 
 **Step 4: 테스트 실행 (통과 확인)**
 
@@ -694,6 +688,7 @@ EOF
 ## Task 4: Combobox 드롭다운 동작 테스트
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/form/combobox/Combobox.spec.tsx`
 
 **Step 1: 드롭다운 테스트 추가**
@@ -781,6 +776,7 @@ EOF
 ## Task 5: Combobox 값 선택 및 디바운스 테스트
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/form/combobox/Combobox.spec.tsx`
 
 **Step 1: 값 선택 테스트 추가**
@@ -866,6 +862,7 @@ EOF
 ## Task 6: Combobox allowCustomValue 테스트
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/form/combobox/Combobox.spec.tsx`
 
 **Step 1: allowCustomValue 테스트 추가**
@@ -879,12 +876,7 @@ describe("allowCustomValue", () => {
     const loadItems = vi.fn(async () => []);
 
     const { getByRole } = render(() => (
-      <Combobox
-        loadItems={loadItems}
-        onValueChange={handleChange}
-        allowCustomValue
-        renderValue={(v) => <>{v}</>}
-      />
+      <Combobox loadItems={loadItems} onValueChange={handleChange} allowCustomValue renderValue={(v) => <>{v}</>} />
     ));
 
     const input = getByRole("combobox").querySelector("input")!;
@@ -939,6 +931,7 @@ EOF
 ## Task 7: index.ts에 Combobox export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -993,13 +986,13 @@ Expected: 모든 테스트 PASS
 
 ## 요약
 
-| Task | 설명 | 파일 |
-|------|------|------|
-| 1 | ComboboxContext 생성 | ComboboxContext.ts |
-| 2 | ComboboxItem 구현 + 테스트 | ComboboxItem.tsx, spec |
-| 3 | Combobox 기본 렌더링 | Combobox.tsx, spec |
-| 4 | 드롭다운 동작 테스트 | spec 추가 |
-| 5 | 값 선택/디바운스 테스트 | spec 추가 |
-| 6 | allowCustomValue 테스트 | spec 추가 |
-| 7 | index.ts export | index.ts |
-| 8 | 전체 검증 | - |
+| Task | 설명                       | 파일                   |
+| ---- | -------------------------- | ---------------------- |
+| 1    | ComboboxContext 생성       | ComboboxContext.ts     |
+| 2    | ComboboxItem 구현 + 테스트 | ComboboxItem.tsx, spec |
+| 3    | Combobox 기본 렌더링       | Combobox.tsx, spec     |
+| 4    | 드롭다운 동작 테스트       | spec 추가              |
+| 5    | 값 선택/디바운스 테스트    | spec 추가              |
+| 6    | allowCustomValue 테스트    | spec 추가              |
+| 7    | index.ts export            | index.ts               |
+| 8    | 전체 검증                  | -                      |

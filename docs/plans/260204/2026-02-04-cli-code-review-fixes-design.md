@@ -45,6 +45,7 @@ export { runDevice, type DeviceOptions } from "./commands/device";
 ### 4. Worker 종료 시 리소스 정리 개선
 
 **파일:**
+
 - `packages/cli/src/commands/watch.ts`
 - `packages/cli/src/workers/watch.worker.ts`
 
@@ -86,6 +87,7 @@ if (serverUrl == null) {
 ### 6. 에러 출력을 consola로 통일
 
 **대상 파일 (18곳):**
+
 - `build.ts` (2곳)
 - `dev.ts` (1곳)
 - `device.ts` (5곳)
@@ -106,6 +108,7 @@ consola.error(`메시지`);
 **파일:** `packages/cli/src/sd-cli.ts`
 
 모든 명령어의 options 설명 통일:
+
 ```typescript
 description: "sd.config.ts에 전달할 옵션 (예: -o key=value)",
 ```

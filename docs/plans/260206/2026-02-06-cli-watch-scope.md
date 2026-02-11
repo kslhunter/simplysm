@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** dev/watch 모드에서 node_modules 안의 특정 scope 패키지(@myapp/*, @simplysm/*) 파일 변경도 감지하여 리빌드한다.
+**Goal:** dev/watch 모드에서 node*modules 안의 특정 scope 패키지(@myapp/*, @simplysm/\_) 파일 변경도 감지하여 리빌드한다.
 
 **Architecture:** 루트 package.json에서 프로젝트 scope를 자동 추출하고, @simplysm을 하드코딩으로 추가한다. 이 watchScopes 배열을 Server(esbuild bundle:true)와 Client(Vite) worker에 전달하여 각 도구의 설정을 조정한다.
 
@@ -13,6 +13,7 @@
 ## Task 1: watchScopes 추출 유틸리티 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/utils/package-utils.ts`
 - Test: `packages/cli/tests/package-utils.spec.ts`
 
@@ -86,12 +87,14 @@ git commit -m "feat(cli): watchScopes 추출 유틸리티 추가"
 ## Task 2: Server esbuild에 scope watch 플러그인 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/utils/esbuild-config.ts` (ServerEsbuildOptions 타입 + 플러그인 팩토리)
 - Modify: `packages/cli/src/workers/server.worker.ts` (watchScopes 전달)
 
 **Step 1: esbuild-config.ts에 watchScopes 옵션 및 플러그인 팩토리 추가**
 
 `ServerEsbuildOptions`에 `watchScopes` 필드 추가:
+
 ```typescript
 export interface ServerEsbuildOptions {
   pkgDir: string;
@@ -104,6 +107,7 @@ export interface ServerEsbuildOptions {
 ```
 
 `createServerEsbuildOptions()`의 반환값에 plugins 추가:
+
 ```typescript
 import type esbuild from "esbuild";
 
@@ -166,17 +170,20 @@ function createScopeWatchPlugin(scopes: string[]): esbuild.Plugin {
 **Step 2: 검증 - esbuild bundle:true watch에서 node_modules 변경 감지 테스트**
 
 실제 외부 프로젝트 환경에서 테스트하거나, simplysm 프로젝트 자체의 `solid-demo-server`로 테스트:
+
 1. `pnpm dev solid-demo solid-demo-server` 실행
 2. `node_modules/@simplysm/core-common/dist/` 파일 수동 변경
 3. Server 빌더가 리빌드를 트리거하는지 확인
 
 결과에 따라:
+
 - **감지됨**: Server 쪽은 추가 작업 불필요
 - **감지 안 됨**: 위의 플러그인 구현 진행
 
 **Step 3: (감지 안 되는 경우만) ServerWatchInfo에 watchScopes 추가**
 
 `server.worker.ts`의 `ServerWatchInfo` 인터페이스:
+
 ```typescript
 export interface ServerWatchInfo {
   name: string;
@@ -189,6 +196,7 @@ export interface ServerWatchInfo {
 ```
 
 `startWatch()` 함수에서 `createServerEsbuildOptions()`에 watchScopes 전달:
+
 ```typescript
 const baseOptions = createServerEsbuildOptions({
   pkgDir: info.pkgDir,
@@ -202,15 +210,15 @@ const baseOptions = createServerEsbuildOptions({
 **Step 4: (감지 안 되는 경우만) dev.ts에서 watchScopes 전달**
 
 `dev.ts`의 Server Build 워커 시작 부분에서:
+
 ```typescript
-serverBuild.worker
-  .startWatch({
-    name,
-    cwd,
-    pkgDir,
-    env: { ...baseEnv, ...config.env },
-    watchScopes,  // ← 추가
-  })
+serverBuild.worker.startWatch({
+  name,
+  cwd,
+  pkgDir,
+  env: { ...baseEnv, ...config.env },
+  watchScopes, // ← 추가
+});
 ```
 
 **Step 5: 커밋**
@@ -225,6 +233,7 @@ git commit -m "feat(cli): Server esbuild watch에 scope 패키지 변경 감지 
 ## Task 3: Client Vite에 scope watch 설정 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/utils/vite-config.ts` (ViteConfigOptions + optimizeDeps/server.watch 설정)
 - Modify: `packages/cli/src/workers/client.worker.ts` (watchScopes 전달)
 
@@ -263,7 +272,7 @@ if (mode === "build") {
     // scope 패키지를 pre-bundling에서 제외하여 소스 코드로 취급
     // (pre-bundled 패키지는 변경 감지 불가)
     config.optimizeDeps = {
-      exclude: watchScopes.map((s) => `${s}/*`),  // 와일드카드 지원 확인 필요
+      exclude: watchScopes.map((s) => `${s}/*`), // 와일드카드 지원 확인 필요
     };
 
     // node_modules 중 scope 패키지는 watch에서 제외하지 않음
@@ -287,18 +296,17 @@ if (mode === "build") {
 **주의**: Vite의 `server.watch.ignored`는 chokidar의 `ignored` 옵션을 그대로 전달합니다. 문자열/정규식/함수 모두 사용 가능합니다. 단, Vite가 `node_modules`를 자동으로 추가하는 기본 동작과 충돌할 수 있으므로 실제 테스트 필요.
 
 **대안**: `server.watch.ignored`를 `anymatch` 호환 패턴으로 설정:
+
 ```typescript
 config.server.watch = {
-  ignored: [
-    "**/node_modules/!(" + watchScopes.join("|") + ")/**",
-    "**/.git/**",
-  ],
+  ignored: ["**/node_modules/!(" + watchScopes.join("|") + ")/**", "**/.git/**"],
 };
 ```
 
 **Step 3: ClientWatchInfo에 watchScopes 추가**
 
 `client.worker.ts`:
+
 ```typescript
 export interface ClientWatchInfo {
   name: string;
@@ -311,6 +319,7 @@ export interface ClientWatchInfo {
 ```
 
 `startWatch()` 함수에서 `createViteConfig()`에 watchScopes 전달:
+
 ```typescript
 const viteConfig = createViteConfig({
   pkgDir: info.pkgDir,
@@ -336,6 +345,7 @@ git commit -m "feat(cli): Client Vite에 scope 패키지 변경 감지 추가"
 ## Task 4: dev.ts에서 watchScopes 생성 및 Worker에 전달
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/dev.ts`
 
 **Step 1: watchScopes 생성 로직 추가**
@@ -357,28 +367,27 @@ const watchScopes = getWatchScopes(rootPkgName);
 **Step 2: Client worker.startWatch() 호출에 watchScopes 전달**
 
 Standalone client와 Vite client 모두에서:
+
 ```typescript
-workerInfo.worker
-  .startWatch({
-    name: workerInfo.name,
-    config: clientConfig,
-    cwd,
-    pkgDir,
-    watchScopes,  // ← 추가
-  })
+workerInfo.worker.startWatch({
+  name: workerInfo.name,
+  config: clientConfig,
+  cwd,
+  pkgDir,
+  watchScopes, // ← 추가
+});
 ```
 
 **Step 3: Server worker.startWatch() 호출에 watchScopes 전달**
 
 ```typescript
-serverBuild.worker
-  .startWatch({
-    name,
-    cwd,
-    pkgDir,
-    env: { ...baseEnv, ...config.env },
-    watchScopes,  // ← 추가
-  })
+serverBuild.worker.startWatch({
+  name,
+  cwd,
+  pkgDir,
+  env: { ...baseEnv, ...config.env },
+  watchScopes, // ← 추가
+});
 ```
 
 **Step 4: 커밋**

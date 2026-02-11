@@ -12,33 +12,34 @@
 
 ## 변경 목록 요약
 
-| # | 현재 | 변경 후 |
-|---|---|---|
-| 1 | `Note` | `Alert` |
-| 2 | `Label` | `Tag` |
-| 3 | `TextField` | `TextInput` |
-| 4 | `NumberField` | `NumberInput` |
-| 5 | `DateField` | `DatePicker` |
-| 6 | `DateTimeField` | `DateTimePicker` |
-| 7 | `TimeField` | `TimePicker` |
-| 8 | `TextAreaField` | `Textarea` |
-| 9 | `CheckBox` | `Checkbox` |
-| 10 | `CheckBoxGroup` | `CheckboxGroup` |
-| 11 | `Tab` / `Tab.Item` | `Tabs` / `Tabs.Tab` |
-| 12 | `Select.Button` | `Select.Action` |
-| 13 | `BusyContainer` | `LoadingContainer` |
-| 14 | `BusyProvider` | `LoadingProvider` |
-| 15 | `BusyContext` / `useBusy` | `LoadingContext` / `useLoading` |
-| 16 | `Modal` / `useModal` | `Dialog` / `useDialog` |
-| 17 | `ModalContext` | `DialogContext` |
-| 18 | `ModalProvider` | `DialogProvider` |
-| 19 | `Sheet` / `Sheet.Column` | `DataSheet` / `DataSheet.Column` |
+| #   | 현재                      | 변경 후                          |
+| --- | ------------------------- | -------------------------------- |
+| 1   | `Note`                    | `Alert`                          |
+| 2   | `Label`                   | `Tag`                            |
+| 3   | `TextField`               | `TextInput`                      |
+| 4   | `NumberField`             | `NumberInput`                    |
+| 5   | `DateField`               | `DatePicker`                     |
+| 6   | `DateTimeField`           | `DateTimePicker`                 |
+| 7   | `TimeField`               | `TimePicker`                     |
+| 8   | `TextAreaField`           | `Textarea`                       |
+| 9   | `CheckBox`                | `Checkbox`                       |
+| 10  | `CheckBoxGroup`           | `CheckboxGroup`                  |
+| 11  | `Tab` / `Tab.Item`        | `Tabs` / `Tabs.Tab`              |
+| 12  | `Select.Button`           | `Select.Action`                  |
+| 13  | `BusyContainer`           | `LoadingContainer`               |
+| 14  | `BusyProvider`            | `LoadingProvider`                |
+| 15  | `BusyContext` / `useBusy` | `LoadingContext` / `useLoading`  |
+| 16  | `Modal` / `useModal`      | `Dialog` / `useDialog`           |
+| 17  | `ModalContext`            | `DialogContext`                  |
+| 18  | `ModalProvider`           | `DialogProvider`                 |
+| 19  | `Sheet` / `Sheet.Column`  | `DataSheet` / `DataSheet.Column` |
 
 ---
 
 ### Task 1: Note → Alert, Label → Tag
 
 **Files:**
+
 - Rename: `packages/solid/src/components/display/Note.tsx` → `Alert.tsx`
 - Rename: `packages/solid/src/components/display/Label.tsx` → `Tag.tsx`
 - Modify: `packages/solid/src/index.ts` (줄 51-52)
@@ -51,6 +52,7 @@
 - Modify: `packages/solid-demo/src/appStructure.ts` (줄 95-96 title 수정)
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/display/Note.tsx src/components/display/Alert.tsx
@@ -60,27 +62,32 @@ git mv tests/components/display/Label.spec.tsx tests/components/display/Tag.spec
 ```
 
 **Step 2: Alert.tsx 내부 수정**
+
 - `Note` → `Alert` (컴포넌트 이름)
 - `NoteTheme` → `AlertTheme` (타입)
 - `NoteProps` → `AlertProps` (타입)
 
 **Step 3: Tag.tsx 내부 수정**
+
 - `Label` → `Tag` (컴포넌트 이름)
 - `LabelTheme` → `TagTheme` (타입)
 - `LabelProps` → `TagProps` (타입)
 
 **Step 4: index.ts export 경로 수정**
+
 ```typescript
 // 줄 51-52
-export * from "./components/display/Tag";     // was Label
-export * from "./components/display/Alert";   // was Note
+export * from "./components/display/Tag"; // was Label
+export * from "./components/display/Alert"; // was Note
 ```
 
 **Step 5: 테스트 파일 내부 수정**
+
 - `Alert.spec.tsx`: import `Alert` from `Alert`, describe 텍스트 수정
 - `Tag.spec.tsx`: import `Tag` from `Tag`, describe 텍스트 수정
 
 **Step 6: 데모 파일 수정**
+
 - `NotePage.tsx`: `Note` → `Alert`, `NoteTheme` → `AlertTheme`
 - `LabelPage.tsx`: `Label` → `Tag`, `LabelTheme` → `TagTheme`
 - `TablePage.tsx`: import `Label` → `Tag`, JSX 사용처 수정
@@ -92,6 +99,7 @@ export * from "./components/display/Alert";   // was Note
 ### Task 2: 필드 컴포넌트 6개 이름 변경
 
 **Files:**
+
 - Rename: `packages/solid/src/components/form-control/field/TextField.tsx` → `TextInput.tsx`
 - Rename: `packages/solid/src/components/form-control/field/NumberField.tsx` → `NumberInput.tsx`
 - Rename: `packages/solid/src/components/form-control/field/DateField.tsx` → `DatePicker.tsx`
@@ -110,6 +118,7 @@ export * from "./components/display/Alert";   // was Note
 - Modify: `packages/solid/src/components/data/sheet/SheetConfigModal.tsx` (TextField import)
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/form-control/field/TextField.tsx src/components/form-control/field/TextInput.tsx
@@ -128,6 +137,7 @@ git mv tests/components/form-control/field/TextAreaField.spec.tsx tests/componen
 
 **Step 2: 각 소스 파일 내부 수정**
 각 파일에서 컴포넌트 이름과 Props 타입 이름을 변경:
+
 - `TextInput.tsx`: `TextField` → `TextInput`, `TextFieldProps` → `TextInputProps`
 - `NumberInput.tsx`: `NumberField` → `NumberInput`, `NumberFieldProps` → `NumberInputProps`
 - `DatePicker.tsx`: `DateField` → `DatePicker`, `DateFieldProps` → `DatePickerProps`
@@ -136,6 +146,7 @@ git mv tests/components/form-control/field/TextAreaField.spec.tsx tests/componen
 - `Textarea.tsx`: `TextAreaField` → `Textarea`, `TextAreaFieldProps` → `TextareaProps`
 
 **Step 3: index.ts export 경로 수정**
+
 ```typescript
 // 줄 6-11
 export * from "./components/form-control/field/TextInput";
@@ -147,6 +158,7 @@ export * from "./components/form-control/field/Textarea";
 ```
 
 **Step 4: 내부 소비자 수정**
+
 - `DateRangePicker.tsx`: `import { DateField }` → `import { DatePicker }`, JSX `<DateField` → `<DatePicker`
 - `Numpad.tsx`: `import { NumberField }` → `import { NumberInput }`, JSX `<NumberField` → `<NumberInput`
 - `SheetConfigModal.tsx`: `import { TextField }` → `import { TextInput }`, JSX `<TextField` → `<TextInput`
@@ -155,6 +167,7 @@ export * from "./components/form-control/field/Textarea";
 각 spec 파일에서 import 경로와 컴포넌트 이름 수정.
 
 **Step 6: 데모 파일 수정**
+
 - `FieldPage.tsx`: 6개 import 이름 변경, JSX 사용처 전부 수정
 - `SheetPage.tsx`: import 수정 (`DateField` → `DatePicker`, `DateTimeField` → `DateTimePicker`, `NumberField` → `NumberInput`, `TextField` → `TextInput`, `TextAreaField` → `Textarea`, `TimeField` → `TimePicker`)
 - `SheetFullPage.tsx`: 확인 후 필요 시 수정
@@ -166,6 +179,7 @@ export * from "./components/form-control/field/Textarea";
 ### Task 3: CheckBox → Checkbox, CheckBoxGroup → CheckboxGroup
 
 **Files:**
+
 - Rename: `packages/solid/src/components/form-control/checkbox/CheckBox.tsx` → `Checkbox.tsx`
 - Rename: `packages/solid/src/components/form-control/checkbox/CheckBox.styles.ts` → `Checkbox.styles.ts`
 - Rename: `packages/solid/src/components/form-control/checkbox/CheckBoxGroup.tsx` → `CheckboxGroup.tsx`
@@ -175,6 +189,7 @@ export * from "./components/form-control/field/Textarea";
 - Modify: 데모 파일 3개
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/form-control/checkbox/CheckBox.tsx src/components/form-control/checkbox/Checkbox.tsx
@@ -184,6 +199,7 @@ git mv tests/components/form-control/checkbox/CheckBox.spec.tsx tests/components
 ```
 
 **Step 2: Checkbox.styles.ts 수정**
+
 - `CheckBoxTheme` → `CheckboxTheme`
 - `CheckBoxSize` → `CheckboxSize`
 - `checkBoxBaseClass` → `checkboxBaseClass`
@@ -194,21 +210,25 @@ git mv tests/components/form-control/checkbox/CheckBox.spec.tsx tests/components
 - `checkBoxDisabledClass` → `checkboxDisabledClass`
 
 **Step 3: Checkbox.tsx 수정**
+
 - `CheckBox` → `Checkbox` (컴포넌트)
 - `CheckBoxProps` → `CheckboxProps`
 - import 경로: `./CheckBox.styles` → `./Checkbox.styles`
 - 모든 styles 참조 이름 갱신 (checkBoxBaseClass → checkboxBaseClass 등)
 
 **Step 4: CheckboxGroup.tsx 수정**
+
 - `CheckBoxGroup` → `CheckboxGroup`
 - `CheckBoxGroupProps` → `CheckboxGroupProps`
 - import: `CheckBox` → `Checkbox`, `CheckBoxSize` → `CheckboxSize`, `CheckBoxTheme` → `CheckboxTheme`
 
 **Step 5: RadioGroup.tsx 수정**
+
 - import: `CheckBoxSize` → `CheckboxSize`, `CheckBoxTheme` → `CheckboxTheme`
 - import 경로: `./CheckBox.styles` → `./Checkbox.styles`
 
 **Step 6: index.ts export 수정**
+
 ```typescript
 export * from "./components/form-control/checkbox/Checkbox";
 export * from "./components/form-control/checkbox/Checkbox.styles";
@@ -217,12 +237,14 @@ export * from "./components/form-control/checkbox/CheckboxGroup";
 ```
 
 **Step 7: 내부 소비자 수정**
+
 - `Sheet.tsx` (줄 28): `import { CheckBox }` → `import { Checkbox }`, JSX `<CheckBox` → `<Checkbox`
 - `SheetConfigModal.tsx` (줄 7): 동일
 - `PermissionTable.tsx` (줄 6): 동일
 - `Kanban.tsx` (줄 17): 동일
 
 **Step 8: 테스트 및 데모 파일 수정**
+
 - `Checkbox.spec.tsx`: import 수정
 - `CheckBoxRadioPage.tsx`: `CheckBox` → `Checkbox`, `CheckBoxTheme` → `CheckboxTheme`
 - `CheckBoxRadioGroupPage.tsx`: `CheckBoxGroup` → `CheckboxGroup`
@@ -234,6 +256,7 @@ export * from "./components/form-control/checkbox/CheckboxGroup";
 ### Task 4: Tab → Tabs, Tab.Item → Tabs.Tab
 
 **Files:**
+
 - Rename: `packages/solid/src/components/navigation/Tab.tsx` → `Tabs.tsx`
 - Modify: `packages/solid/src/index.ts` (줄 25)
 - Rename: `packages/solid/tests/components/navigation/Tab.spec.tsx` → `Tabs.spec.tsx`
@@ -241,6 +264,7 @@ export * from "./components/form-control/checkbox/CheckboxGroup";
 - Modify: `packages/solid-demo/src/appStructure.ts` (줄 85)
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/navigation/Tab.tsx src/components/navigation/Tabs.tsx
@@ -248,6 +272,7 @@ git mv tests/components/navigation/Tab.spec.tsx tests/components/navigation/Tabs
 ```
 
 **Step 2: Tabs.tsx 내부 수정**
+
 - `Tab` → `Tabs` (컴포넌트)
 - `TabProps` → `TabsProps`
 - `TabItem` → `TabsTab` (서브 컴포넌트 내부 이름)
@@ -257,15 +282,18 @@ git mv tests/components/navigation/Tab.spec.tsx tests/components/navigation/Tabs
 - context 이름: `TabContext` → `TabsContext`, `TabContextValue` → `TabsContextValue`
 
 **Step 3: index.ts export 수정**
+
 ```typescript
 export * from "./components/navigation/Tabs";
 ```
 
 **Step 4: 테스트 파일 수정**
+
 - import `Tab` → `Tabs`, describe 텍스트 수정
 - `<Tab>` → `<Tabs>`, `<Tab.Item>` → `<Tabs.Tab>`
 
 **Step 5: 데모 파일 수정**
+
 - `TabPage.tsx`: import `Tab` → `Tabs`, JSX `<Tab>` → `<Tabs>`, `<Tab.Item>` → `<Tabs.Tab>`
 - `appStructure.ts`: 줄 85 `title: "Tab"` → `title: "Tabs"`
 
@@ -274,16 +302,19 @@ export * from "./components/navigation/Tabs";
 ### Task 5: Select.Button → Select.Action
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/select/Select.tsx`
 - Modify: `packages/solid-demo/src/pages/form-control/SelectPage.tsx`
 - Modify: `packages/solid/tests/components/form/select/Select.spec.tsx` (있다면)
 
 **Step 1: Select.tsx 수정**
+
 - `SelectButton` → `SelectAction` (내부 컴포넌트 이름)
 - `Select.Button = SelectButton` → `Select.Action = SelectAction`
 - interface: `SelectComponent { Button: ... }` → `SelectComponent { Action: ... }`
 
 **Step 2: 데모/테스트 수정**
+
 - `SelectPage.tsx`: `<Select.Button>` → `<Select.Action>`
 - 테스트 파일: 확인 후 수정
 
@@ -292,6 +323,7 @@ export * from "./components/navigation/Tabs";
 ### Task 6: Busy → Loading (3파일 + 디렉토리)
 
 **Files:**
+
 - Rename directory: `packages/solid/src/components/feedback/busy/` → `loading/`
 - Rename: `BusyContext.ts` → `LoadingContext.ts`
 - Rename: `BusyProvider.tsx` → `LoadingProvider.tsx`
@@ -306,6 +338,7 @@ export * from "./components/navigation/Tabs";
 - Modify: `packages/solid-demo/src/appStructure.ts` (줄 108)
 
 **Step 1: 디렉토리 및 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/feedback/busy src/components/feedback/loading
@@ -316,27 +349,32 @@ git mv src/components/feedback/loading/BusyContainer.css src/components/feedback
 ```
 
 **Step 2: LoadingContext.ts 수정**
+
 - `BusyContextValue` → `LoadingContextValue`
 - `BusyVariant` → `LoadingVariant`
 - `BusyContext` → `LoadingContext`
 - `useBusy` → `useLoading`
 
 **Step 3: LoadingProvider.tsx 수정**
+
 - `BusyProvider` → `LoadingProvider`
 - `BusyProviderProps` → `LoadingProviderProps`
 - import: `BusyContext` → `LoadingContext`, `BusyContainer` → `LoadingContainer`
 - 파일 경로 업데이트
 
 **Step 4: LoadingContainer.tsx 수정**
+
 - `BusyContainer` → `LoadingContainer`
 - `BusyContainerProps` → `LoadingContainerProps`
 - import: `BusyContext` → `LoadingContext`, `BusyVariant` → `LoadingVariant`
 - CSS import: `./BusyContainer.css` → `./LoadingContainer.css`
 
 **Step 5: LoadingContainer.css 수정**
+
 - CSS 클래스명에 `busy` 포함 여부 확인 후 수정 (CSS 클래스는 내부 구현이므로 수정 필수는 아니나 일관성 위해 권장)
 
 **Step 6: index.ts export 수정**
+
 ```typescript
 export * from "./components/feedback/loading/LoadingContext";
 export * from "./components/feedback/loading/LoadingProvider";
@@ -344,10 +382,12 @@ export * from "./components/feedback/loading/LoadingContainer";
 ```
 
 **Step 7: 내부 소비자 수정**
+
 - `usePrint.ts`: `import { useBusy }` → `import { useLoading }`, 사용처 `useBusy()` → `useLoading()`
 - `Kanban.tsx`: `import { BusyContainer }` → `import { LoadingContainer }`, JSX `<BusyContainer` → `<LoadingContainer`
 
 **Step 8: 테스트 및 데모 수정**
+
 - `usePrint.spec.tsx`: `import { BusyProvider }` → `import { LoadingProvider }`, JSX 수정
 - `BusyPage.tsx`: 모든 Busy 관련 import/사용 → Loading으로 수정
 - `PrintPage.tsx`: `BusyProvider` → `LoadingProvider`
@@ -358,6 +398,7 @@ export * from "./components/feedback/loading/LoadingContainer";
 ### Task 7: Modal → Dialog (3파일 + 관련 타입/훅)
 
 **Files:**
+
 - Rename: `packages/solid/src/components/disclosure/Modal.tsx` → `Dialog.tsx`
 - Rename: `packages/solid/src/components/disclosure/ModalContext.ts` → `DialogContext.ts`
 - Rename: `packages/solid/src/components/disclosure/ModalProvider.tsx` → `DialogProvider.tsx`
@@ -370,6 +411,7 @@ export * from "./components/feedback/loading/LoadingContainer";
 - Modify: `packages/solid-demo/src/appStructure.ts` (줄 77)
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/disclosure/Modal.tsx src/components/disclosure/Dialog.tsx
@@ -380,6 +422,7 @@ git mv tests/components/disclosure/ModalProvider.spec.tsx tests/components/discl
 ```
 
 **Step 2: DialogContext.ts 수정**
+
 - `ModalDefaults` → `DialogDefaults`
 - `ModalDefaultsContext` → `DialogDefaultsContext`
 - `ModalShowOptions` → `DialogShowOptions`
@@ -389,17 +432,20 @@ git mv tests/components/disclosure/ModalProvider.spec.tsx tests/components/discl
 - `useModal` → `useDialog`
 
 **Step 3: Dialog.tsx 수정**
+
 - `Modal` → `Dialog` (컴포넌트)
 - `ModalProps` → `DialogProps`
 - import: `ModalDefaultsContext` → `DialogDefaultsContext` 등
 - import 경로: `./ModalContext` → `./DialogContext`
 
 **Step 4: DialogProvider.tsx 수정**
+
 - `ModalProvider` → `DialogProvider`
 - `ModalProviderProps` → `DialogProviderProps`
 - import 업데이트: Modal → Dialog 관련 전체
 
 **Step 5: index.ts export 수정**
+
 ```typescript
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
@@ -407,14 +453,17 @@ export * from "./components/disclosure/DialogProvider";
 ```
 
 **Step 6: 내부 소비자 수정**
+
 - `Sheet.tsx`: `import { ModalContext }` → `import { DialogContext }`, 사용처 수정
 - `SheetConfigModal.tsx`: `import type { ModalContentProps }` → `import type { DialogContentProps }`
 
 **Step 7: 테스트 파일 수정**
+
 - `Dialog.spec.tsx`: import/describe 수정
 - `DialogProvider.spec.tsx`: import/describe 수정 (`ModalProvider` → `DialogProvider`, `useModal` → `useDialog`, `ModalContentProps` → `DialogContentProps`)
 
 **Step 8: 데모 파일 수정**
+
 - `ModalPage.tsx`: `Modal` → `Dialog`, `useModal` → `useDialog` 등 전체 수정
 - `appStructure.ts`: 줄 77 `title: "Modal"` → `title: "Dialog"`
 
@@ -423,6 +472,7 @@ export * from "./components/disclosure/DialogProvider";
 ### Task 8: Sheet → DataSheet (가장 복잡)
 
 **Files:**
+
 - Rename: `packages/solid/src/components/data/sheet/Sheet.tsx` → `DataSheet.tsx`
 - Rename: `packages/solid/src/components/data/sheet/SheetColumn.tsx` → `DataSheetColumn.tsx`
 - Rename: `packages/solid/src/components/data/sheet/Sheet.styles.ts` → `DataSheet.styles.ts`
@@ -438,6 +488,7 @@ export * from "./components/disclosure/DialogProvider";
 - Modify: `packages/solid-demo/src/appStructure.ts` (줄 63-64)
 
 **Step 1: 파일 이름 변경**
+
 ```bash
 cd packages/solid
 git mv src/components/data/sheet/Sheet.tsx src/components/data/sheet/DataSheet.tsx
@@ -450,6 +501,7 @@ git mv tests/sheet/Sheet.spec.tsx tests/sheet/DataSheet.spec.tsx
 ```
 
 **Step 2: types.ts 수정**
+
 - `SheetColumnDef` → `DataSheetColumnDef`
 - `SheetColumnProps` → `DataSheetColumnProps`
 - `SheetConfig` → `DataSheetConfig`
@@ -461,14 +513,17 @@ git mv tests/sheet/Sheet.spec.tsx tests/sheet/DataSheet.spec.tsx
 - `FlatItem` — 범용 타입이므로 유지
 
 **Step 3: DataSheetColumn.tsx 수정**
+
 - `SheetColumn` → `DataSheetColumn`
 - `isSheetColumnDef` → `isDataSheetColumnDef`
 - import 타입명 갱신
 
 **Step 4: DataSheet.styles.ts 수정**
+
 - style 변수명에 `sheet` 포함 시 `dataSheet`로 변경 (확인 필요)
 
 **Step 5: DataSheet.tsx 수정**
+
 - `Sheet` → `DataSheet` (컴포넌트)
 - `SheetProps` → `DataSheetProps`
 - `Sheet.Column` → `DataSheet.Column`
@@ -478,6 +533,7 @@ git mv tests/sheet/Sheet.spec.tsx tests/sheet/DataSheet.spec.tsx
 - `ModalContext` → `DialogContext` (Task 7에서 이미 변경됨)
 
 **Step 6: DataSheetConfigDialog.tsx 수정**
+
 - `SheetConfigModal` → `DataSheetConfigDialog` (컴포넌트)
 - `ModalContentProps` → `DialogContentProps`
 - import 경로 갱신
@@ -486,22 +542,27 @@ git mv tests/sheet/Sheet.spec.tsx tests/sheet/DataSheet.spec.tsx
 - `TextField` → `TextInput` (Task 2에서 이미 변경됨)
 
 **Step 7: sheetUtils.ts 수정**
+
 - import 타입명 갱신 (`SheetColumnDef` → `DataSheetColumnDef` 등)
 - 내부 함수는 유지 가능 (내부 유틸리티)
 
 **Step 8: index.ts export 수정**
+
 ```typescript
 export * from "./components/data/sheet/DataSheet";
 export * from "./components/data/sheet/types";
 ```
 
 **Step 9: 내부 소비자 수정**
+
 - `PermissionTable.tsx`: `import { Sheet }` → `import { DataSheet }`, JSX `<Sheet` → `<DataSheet`, `<Sheet.Column` → `<DataSheet.Column`
 
 **Step 10: 테스트 파일 수정**
+
 - `DataSheet.spec.tsx`: import/describe/JSX 전체 수정
 
 **Step 11: 데모 파일 수정**
+
 - `SheetPage.tsx`: `Sheet` → `DataSheet`, `Sheet.Column` → `DataSheet.Column`, 기타 import 수정
 - `SheetFullPage.tsx`: 동일
 - `appStructure.ts`: 줄 63 `title: "Sheet"` → `title: "DataSheet"`, 줄 64 `title: "Sheet (Full)"` → `title: "DataSheet (Full)"`
@@ -511,9 +572,11 @@ export * from "./components/data/sheet/types";
 ### Task 9: CLAUDE.md 업데이트
 
 **Files:**
+
 - Modify: `/home/kslhunter/projects/simplysm/CLAUDE.md`
 
 **Step 1: CLAUDE.md에서 이전 이름 참조를 새 이름으로 수정**
+
 - 컴파운드 컴포넌트 예시: `Select.Button` → `Select.Action`, `Sheet.Column` → `DataSheet.Column`
 - 기타 컴포넌트명 참조 업데이트
 
@@ -522,27 +585,35 @@ export * from "./components/data/sheet/types";
 ### Task 10: 검증
 
 **Step 1: TypeScript 타입 체크**
+
 ```bash
 pnpm typecheck
 ```
+
 Expected: 에러 없음
 
 **Step 2: ESLint 린트**
+
 ```bash
 pnpm lint
 ```
+
 Expected: 에러 없음
 
 **Step 3: 테스트 실행**
+
 ```bash
 pnpm vitest --project=solid --run
 ```
+
 Expected: 모든 테스트 통과
 
 **Step 4: Dev 서버 확인**
+
 ```bash
 pnpm dev
 ```
+
 데모 앱에서 변경된 컴포넌트들이 정상 렌더링되는지 확인
 
 ---
@@ -550,6 +621,7 @@ pnpm dev
 ### Task 11: 커밋
 
 **Step 1: 변경사항 확인 및 커밋**
+
 ```bash
 git add .
 git commit -m "refactor(solid): 컴포넌트 API 네이밍 표준화

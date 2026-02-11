@@ -8,14 +8,14 @@ value 타입별로 컴포넌트를 분리하여 TypeScript 타입 안전성을 �
 
 ## 컴포넌트 목록
 
-| 컴포넌트 | value 타입 | type prop | 주요 props |
-|----------|-----------|-----------|------------|
-| TextField | `string` | text, password, email | format, autocomplete |
-| NumberField | `number` | - | min, max, step, useComma, minDigits |
-| DateField | `DateOnly` | year, month, date | min, max |
-| DateTimeField | `DateTime` | datetime, datetime-sec | min, max |
-| TimeField | `Time` | time, time-sec | min, max |
-| ColorField | `string` | - | - |
+| 컴포넌트      | value 타입 | type prop              | 주요 props                          |
+| ------------- | ---------- | ---------------------- | ----------------------------------- |
+| TextField     | `string`   | text, password, email  | format, autocomplete                |
+| NumberField   | `number`   | -                      | min, max, step, useComma, minDigits |
+| DateField     | `DateOnly` | year, month, date      | min, max                            |
+| DateTimeField | `DateTime` | datetime, datetime-sec | min, max                            |
+| TimeField     | `Time`     | time, time-sec         | min, max                            |
+| ColorField    | `string`   | -                      | -                                   |
 
 ## 파일 구조
 
@@ -66,8 +66,8 @@ interface FieldBaseProps<T> {
 
 ```typescript
 interface TextFieldProps extends FieldBaseProps<string> {
-  type?: "text" | "password" | "email";  // 기본값: "text"
-  format?: string;      // text 타입 전용, 예: "XXX-XXXX-XXXX"
+  type?: "text" | "password" | "email"; // 기본값: "text"
+  format?: string; // text 타입 전용, 예: "XXX-XXXX-XXXX"
   autocomplete?: string;
 }
 ```
@@ -79,7 +79,7 @@ interface NumberFieldProps extends FieldBaseProps<number> {
   min?: number;
   max?: number;
   step?: number;
-  useComma?: boolean;   // 기본값: true
+  useComma?: boolean; // 기본값: true
   minDigits?: number;
 }
 ```
@@ -88,7 +88,7 @@ interface NumberFieldProps extends FieldBaseProps<number> {
 
 ```typescript
 interface DateFieldProps extends FieldBaseProps<DateOnly> {
-  type?: "year" | "month" | "date";  // 기본값: "date"
+  type?: "year" | "month" | "date"; // 기본값: "date"
   min?: DateOnly;
   max?: DateOnly;
 }
@@ -98,7 +98,7 @@ interface DateFieldProps extends FieldBaseProps<DateOnly> {
 
 ```typescript
 interface DateTimeFieldProps extends FieldBaseProps<DateTime> {
-  type?: "datetime" | "datetime-sec";  // 기본값: "datetime"
+  type?: "datetime" | "datetime-sec"; // 기본값: "datetime"
   min?: DateTime;
   max?: DateTime;
 }
@@ -108,7 +108,7 @@ interface DateTimeFieldProps extends FieldBaseProps<DateTime> {
 
 ```typescript
 interface TimeFieldProps extends FieldBaseProps<Time> {
-  type?: "time" | "time-sec";  // 기본값: "time"
+  type?: "time" | "time-sec"; // 기본값: "time"
   min?: Time;
   max?: Time;
 }
@@ -147,10 +147,12 @@ interface ColorFieldProps extends FieldBaseProps<string> {
 ### 레이아웃
 
 **기본 (inset이 아닐 때):**
+
 - 편집 가능: input만 표시, div는 hidden
 - readonly/disabled: div만 표시, input 없음
 
 **inset일 때 (테이블 내 사용):**
+
 - div와 input이 겹쳐서 표시 (input은 absolute)
 - 편집 가능: div는 visibility hidden (크기 유지), input 표시
 - readonly/disabled: div만 표시, input 없음
@@ -243,19 +245,19 @@ const insetClass = "border-none rounded-none bg-transparent";
 ```tsx
 // TextField
 const [name, setName] = createSignal<string>();
-<TextField value={name()} onChange={setName} placeholder="이름" />
+<TextField value={name()} onChange={setName} placeholder="이름" />;
 
 // NumberField
 const [price, setPrice] = createSignal<number>();
-<NumberField value={price()} onChange={setPrice} step={100} useComma />
+<NumberField value={price()} onChange={setPrice} step={100} useComma />;
 
 // DateField
 const [birthDate, setBirthDate] = createSignal<DateOnly>();
-<DateField type="date" value={birthDate()} onChange={setBirthDate} />
+<DateField type="date" value={birthDate()} onChange={setBirthDate} />;
 
 // TimeField
 const [startTime, setStartTime] = createSignal<Time>();
-<TimeField type="time-sec" value={startTime()} onChange={setStartTime} />
+<TimeField type="time-sec" value={startTime()} onChange={setStartTime} />;
 ```
 
 ### 외부 Validation
@@ -269,12 +271,7 @@ const emailError = () => {
   return undefined;
 };
 
-<TextField
-  type="email"
-  value={email()}
-  onChange={setEmail}
-  error={emailError()}
-/>
+<TextField type="email" value={email()} onChange={setEmail} error={emailError()} />;
 ```
 
 ### 테이블 내 사용 (inset)
@@ -283,8 +280,12 @@ const emailError = () => {
 <Table>
   <tbody>
     <tr>
-      <td><NumberField inset value={qty()} onChange={setQty} /></td>
-      <td><DateField inset type="date" value={date()} onChange={setDate} /></td>
+      <td>
+        <NumberField inset value={qty()} onChange={setQty} />
+      </td>
+      <td>
+        <DateField inset type="date" value={date()} onChange={setDate} />
+      </td>
     </tr>
   </tbody>
 </Table>

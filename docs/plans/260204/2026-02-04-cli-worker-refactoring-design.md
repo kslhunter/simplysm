@@ -6,12 +6,12 @@
 
 현재 같은 작업이 모드(dev/build)에 따라 다른 방식으로 처리됨:
 
-| 작업 | 프로덕션 (`build`) | 개발 (`dev/watch`) |
-|------|-------------------|-------------------|
-| Client (Vite) | 메인 스레드에서 직접 | `watch.worker.ts` |
-| Library (esbuild) | `build.worker.ts` | `watch.worker.ts` |
-| Server (esbuild) | `build.worker.ts` | `server-build.worker.ts` |
-| DTS 생성 | `dts.worker.ts` | `dts.worker.ts` |
+| 작업              | 프로덕션 (`build`)   | 개발 (`dev/watch`)       |
+| ----------------- | -------------------- | ------------------------ |
+| Client (Vite)     | 메인 스레드에서 직접 | `watch.worker.ts`        |
+| Library (esbuild) | `build.worker.ts`    | `watch.worker.ts`        |
+| Server (esbuild)  | `build.worker.ts`    | `server-build.worker.ts` |
+| DTS 생성          | `dts.worker.ts`      | `dts.worker.ts`          |
 
 ---
 
@@ -61,9 +61,9 @@ workers/
 
 ```typescript
 interface BuildWorker {
-  build(info: BuildInfo): Promise<BuildResult>;     // 프로덕션 1회 빌드
-  startWatch(info: WatchInfo): Promise<void>;       // 개발 모드 watch 시작
-  stopWatch(): Promise<void>;                       // watch 중지
+  build(info: BuildInfo): Promise<BuildResult>; // 프로덕션 1회 빌드
+  startWatch(info: WatchInfo): Promise<void>; // 개발 모드 watch 시작
+  stopWatch(): Promise<void>; // watch 중지
 }
 
 interface BuildResult {
@@ -85,6 +85,7 @@ interface BuildWorkerEvents {
 ### 타입별 확장
 
 **client.worker.ts 추가 이벤트:**
+
 ```typescript
 interface ClientWorkerEvents extends BuildWorkerEvents {
   serverReady: { port: number };
@@ -92,9 +93,10 @@ interface ClientWorkerEvents extends BuildWorkerEvents {
 ```
 
 **dts.worker.ts 옵션:**
+
 ```typescript
 interface DtsBuildInfo extends BuildInfo {
-  emit: boolean;  // true: .d.ts 생성 + 타입체크, false: 타입체크만
+  emit: boolean; // true: .d.ts 생성 + 타입체크, false: 타입체크만
 }
 ```
 
@@ -104,36 +106,36 @@ interface DtsBuildInfo extends BuildInfo {
 
 ### client.worker.ts (Vite)
 
-| 메서드 | 동작 |
-|--------|------|
-| `build()` | `vite.build()` 호출, 프로덕션 번들 생성 |
+| 메서드         | 동작                                        |
+| -------------- | ------------------------------------------- |
+| `build()`      | `vite.build()` 호출, 프로덕션 번들 생성     |
 | `startWatch()` | `vite.createServer()` 호출, dev server 시작 |
-| `stopWatch()` | dev server 종료 |
+| `stopWatch()`  | dev server 종료                             |
 
 ### library.worker.ts (esbuild)
 
-| 메서드 | 동작 |
-|--------|------|
-| `build()` | `esbuild.build()` 호출, 1회 빌드 |
+| 메서드         | 동작                                            |
+| -------------- | ----------------------------------------------- |
+| `build()`      | `esbuild.build()` 호출, 1회 빌드                |
 | `startWatch()` | `esbuild.context()` + `watch()`, 파일 변경 감지 |
-| `stopWatch()` | context dispose |
+| `stopWatch()`  | context dispose                                 |
 
 ### server.worker.ts (esbuild)
 
-| 메서드 | 동작 |
-|--------|------|
-| `build()` | `esbuild.build()` 호출, 1회 빌드 |
+| 메서드         | 동작                                                              |
+| -------------- | ----------------------------------------------------------------- |
+| `build()`      | `esbuild.build()` 호출, 1회 빌드                                  |
 | `startWatch()` | `esbuild.context()` + `watch()`, 빌드 완료 시 `build` 이벤트 emit |
-| `stopWatch()` | context dispose |
+| `stopWatch()`  | context dispose                                                   |
 
 ### dts.worker.ts (TypeScript)
 
-| 메서드 | 동작 |
-|--------|------|
-| `build({ emit: true })` | `.d.ts` 생성 + 타입체크 |
-| `build({ emit: false })` | 타입체크만 (noEmit) |
-| `startWatch()` | `ts.createWatchProgram()`, incremental 타입체크 |
-| `stopWatch()` | watch program 종료 |
+| 메서드                   | 동작                                            |
+| ------------------------ | ----------------------------------------------- |
+| `build({ emit: true })`  | `.d.ts` 생성 + 타입체크                         |
+| `build({ emit: false })` | 타입체크만 (noEmit)                             |
+| `startWatch()`           | `ts.createWatchProgram()`, incremental 타입체크 |
+| `stopWatch()`            | watch program 종료                              |
 
 ---
 
@@ -219,32 +221,32 @@ export function createEsbuildConfig(options: {
 
 ### 생성
 
-| 파일 | 역할 |
-|------|------|
-| `workers/client.worker.ts` | Client(Vite) 빌드/watch |
+| 파일                        | 역할                        |
+| --------------------------- | --------------------------- |
+| `workers/client.worker.ts`  | Client(Vite) 빌드/watch     |
 | `workers/library.worker.ts` | Library(esbuild) 빌드/watch |
-| `workers/server.worker.ts` | Server(esbuild) 빌드/watch |
-| `utils/vite-config.ts` | Vite 설정 생성 |
-| `utils/esbuild-config.ts` | esbuild 설정 생성 |
+| `workers/server.worker.ts`  | Server(esbuild) 빌드/watch  |
+| `utils/vite-config.ts`      | Vite 설정 생성              |
+| `utils/esbuild-config.ts`   | esbuild 설정 생성           |
 
 ### 수정
 
-| 파일 | 변경 내용 |
-|------|----------|
+| 파일                    | 변경 내용                             |
+| ----------------------- | ------------------------------------- |
 | `workers/dts.worker.ts` | `emit` 옵션 추가, typecheck 로직 통합 |
-| `commands/build.ts` | 새 Worker 호출로 변경 |
-| `commands/dev.ts` | 새 Worker 호출로 변경 |
-| `commands/watch.ts` | 새 Worker 호출로 변경 |
-| `commands/typecheck.ts` | `dts.worker` 호출로 변경 |
+| `commands/build.ts`     | 새 Worker 호출로 변경                 |
+| `commands/dev.ts`       | 새 Worker 호출로 변경                 |
+| `commands/watch.ts`     | 새 Worker 호출로 변경                 |
+| `commands/typecheck.ts` | `dts.worker` 호출로 변경              |
 
 ### 삭제
 
-| 파일 |
-|------|
-| `workers/build.worker.ts` |
-| `workers/watch.worker.ts` |
+| 파일                             |
+| -------------------------------- |
+| `workers/build.worker.ts`        |
+| `workers/watch.worker.ts`        |
 | `workers/server-build.worker.ts` |
-| `workers/typecheck.worker.ts` |
+| `workers/typecheck.worker.ts`    |
 
 ---
 

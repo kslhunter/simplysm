@@ -13,6 +13,7 @@
 ### Task 1: CheckBoxGroup 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/checkbox/CheckBoxGroup.tsx`
 
 **Step 1: CheckBoxGroup.tsx 작성**
@@ -126,11 +127,7 @@ const CheckBoxGroupInner: ParentComponent<CheckBoxGroupProps<unknown>> = (props)
 
   return (
     <CheckBoxGroupContext.Provider value={contextValue}>
-      <div
-        {...rest}
-        class={twMerge("inline-flex", local.class)}
-        style={local.style}
-      >
+      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
         {local.children}
       </div>
     </CheckBoxGroupContext.Provider>
@@ -151,6 +148,7 @@ Expected: PASS (에러 없음)
 ### Task 2: RadioGroup 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/checkbox/RadioGroup.tsx`
 
 **Step 1: RadioGroup.tsx 작성**
@@ -259,11 +257,7 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
 
   return (
     <RadioGroupContext.Provider value={contextValue}>
-      <div
-        {...rest}
-        class={twMerge("inline-flex", local.class)}
-        style={local.style}
-      >
+      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
         {local.children}
       </div>
     </RadioGroupContext.Provider>
@@ -284,6 +278,7 @@ Expected: PASS
 ### Task 3: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:15` (CheckBox/Radio export 근처)
 
 **Step 1: export 추가**
@@ -305,6 +300,7 @@ Expected: PASS
 ### Task 4: 데모 페이지에 CheckBoxGroup / RadioGroup 섹션 추가
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/form-control/CheckBoxRadioPage.tsx`
 
 **Step 1: 데모 페이지 수정**
@@ -312,6 +308,7 @@ Expected: PASS
 기존 `CheckBoxRadioPage.tsx`의 import와 내용에 CheckBoxGroup/RadioGroup 데모 섹션을 추가한다.
 
 import에 추가:
+
 ```tsx
 import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/solid";
 ```
@@ -319,18 +316,16 @@ import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/so
 기존 `{/* Controlled */}` 섹션 **앞에** 다음 두 섹션을 추가:
 
 ```tsx
-{/* CheckBoxGroup */}
+{
+  /* CheckBoxGroup */
+}
 <section>
   <h2 class="mb-6 text-2xl font-bold">CheckBoxGroup</h2>
   <div class="space-y-6">
     {/* 기본 사용 */}
     <div>
       <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-      <CheckBoxGroup
-        value={selectedFruits()}
-        onValueChange={setSelectedFruits}
-        class="flex-col gap-1"
-      >
+      <CheckBoxGroup value={selectedFruits()} onValueChange={setSelectedFruits} class="flex-col gap-1">
         <CheckBoxGroup.Item value="apple">사과</CheckBoxGroup.Item>
         <CheckBoxGroup.Item value="banana">바나나</CheckBoxGroup.Item>
         <CheckBoxGroup.Item value="cherry">체리</CheckBoxGroup.Item>
@@ -345,7 +340,9 @@ import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/so
       <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
       <CheckBoxGroup class="flex-col gap-1">
         <CheckBoxGroup.Item value="a">활성</CheckBoxGroup.Item>
-        <CheckBoxGroup.Item value="b" disabled>비활성</CheckBoxGroup.Item>
+        <CheckBoxGroup.Item value="b" disabled>
+          비활성
+        </CheckBoxGroup.Item>
       </CheckBoxGroup>
     </div>
 
@@ -376,20 +373,18 @@ import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/so
       </CheckBoxGroup>
     </div>
   </div>
-</section>
+</section>;
 
-{/* RadioGroup */}
+{
+  /* RadioGroup */
+}
 <section>
   <h2 class="mb-6 text-2xl font-bold">RadioGroup</h2>
   <div class="space-y-6">
     {/* 기본 사용 */}
     <div>
       <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
-      <RadioGroup
-        value={selectedOption()}
-        onValueChange={setSelectedOption}
-        class="flex-col gap-1"
-      >
+      <RadioGroup value={selectedOption()} onValueChange={setSelectedOption} class="flex-col gap-1">
         <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
         <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
         <RadioGroup.Item value="C">옵션 C</RadioGroup.Item>
@@ -404,7 +399,9 @@ import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/so
       <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
       <RadioGroup class="flex-col gap-1">
         <RadioGroup.Item value="a">활성</RadioGroup.Item>
-        <RadioGroup.Item value="b" disabled>비활성</RadioGroup.Item>
+        <RadioGroup.Item value="b" disabled>
+          비활성
+        </RadioGroup.Item>
       </RadioGroup>
     </div>
 
@@ -435,10 +432,11 @@ import { CheckBox, CheckBoxGroup, Radio, RadioGroup, Topbar } from "@simplysm/so
       </RadioGroup>
     </div>
   </div>
-</section>
+</section>;
 ```
 
 signal 추가 (기존 signal들 옆에):
+
 ```tsx
 const [selectedFruits, setSelectedFruits] = createSignal<string[]>(["apple"]);
 const [selectedOption, setSelectedOption] = createSignal<string>("A");
@@ -464,6 +462,7 @@ Run (background): `pnpm dev`
 **Step 2: 브라우저로 데모 페이지 확인**
 
 Playwright를 사용하여 데모 페이지에 접속:
+
 1. `{URL}/#/home/form-control/checkbox-radio`로 이동
 2. 페이지 스냅샷을 캡처하여 CheckBoxGroup / RadioGroup 섹션이 올바르게 렌더링되는지 확인
 

@@ -13,12 +13,14 @@
 ## 현재 상태 요약
 
 ### 구현 완료 (Plan 1 + Plan 2)
+
 - 기본 테이블 렌더링, 다단계 헤더, 합계 행
 - 정렬 (단일/다중, 자동 정렬)
 - 페이지네이션 (클라이언트 사이드)
 - 스타일 상수 (`Sheet.styles.ts`)
 
 ### Plan 3에서 추가할 기능
+
 1. **컬럼 고정 (sticky)**: `fixed` prop이 true인 컬럼을 좌측에 고정
 2. **고정/비고정 경계 시각 효과**: 진한 우측 테두리
 3. **컬럼 리사이징**: 드래그로 너비 변경 + 더블클릭 초기화
@@ -26,6 +28,7 @@
 5. **컬럼 설정 저장**: usePersisted로 너비 설정 localStorage 저장
 
 ### 핵심 파일 경로 (worktree)
+
 - `packages/solid/src/components/data/sheet/Sheet.tsx` (267줄)
 - `packages/solid/src/components/data/sheet/Sheet.styles.ts` (69줄)
 - `packages/solid/src/components/data/sheet/types.ts` (133줄)
@@ -40,6 +43,7 @@
 ## Task 1: 스타일 상수 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.styles.ts:69` (파일 끝에 추가)
 
 **Step 1: Sheet.styles.ts에 고정 컬럼 + 리사이징 스타일 상수 추가**
@@ -51,10 +55,7 @@
 export const fixedClass = "sticky";
 
 // 고정/비고정 경계 시각 효과 — 고정 컬럼의 마지막 셀에 적용
-export const fixedLastClass = clsx(
-  "border-r-2 border-r-base-400",
-  "dark:border-r-base-500",
-);
+export const fixedLastClass = clsx("border-r-2 border-r-base-400", "dark:border-r-base-500");
 
 // 리사이저 핸들 (헤더 셀 우측 드래그 영역)
 export const resizerClass = clsx(
@@ -90,6 +91,7 @@ git commit -m "feat(solid): Sheet 고정 컬럼/리사이징 스타일 상수 �
 ## Task 2: 컬럼 설정 저장 (usePersisted 연동)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 Sheet.tsx에 usePersisted를 연동하여 컬럼 너비 설정을 localStorage에 저장/복원한다.
@@ -97,6 +99,7 @@ Sheet.tsx에 usePersisted를 연동하여 컬럼 너비 설정을 localStorage�
 **Step 1: Sheet.tsx에 config 상태 및 effectiveColumns 추가**
 
 Sheet.tsx의 import 영역에 추가:
+
 ```typescript
 import { usePersisted } from "../../../contexts/usePersisted";
 import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } from "./types";
@@ -105,32 +108,29 @@ import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } fr
 `// #region Column Collection` 직후, `columnDefs` 계산 다음에 config 상태를 추가한다:
 
 ```typescript
-  // #region Config (usePersisted)
-  const [config, setConfig] = usePersisted<SheetConfig>(
-    `sheet.${local.key}`,
-    { columnRecord: {} },
-  );
+// #region Config (usePersisted)
+const [config, setConfig] = usePersisted<SheetConfig>(`sheet.${local.key}`, { columnRecord: {} });
 
-  // 설정이 적용된 최종 컬럼 — config의 width 오버라이드 적용
-  const effectiveColumns = createMemo(() => {
-    const cols = columnDefs();
-    const record = config().columnRecord ?? {};
-    return cols.map((col) => {
-      const saved = record[col.key];
-      if (!saved) return col;
-      return {
-        ...col,
-        width: saved.width ?? col.width,
-      };
-    });
+// 설정이 적용된 최종 컬럼 — config의 width 오버라이드 적용
+const effectiveColumns = createMemo(() => {
+  const cols = columnDefs();
+  const record = config().columnRecord ?? {};
+  return cols.map((col) => {
+    const saved = record[col.key];
+    if (!saved) return col;
+    return {
+      ...col,
+      width: saved.width ?? col.width,
+    };
   });
+});
 
-  function saveColumnWidth(colKey: string, width: string | undefined): void {
-    const prev = config();
-    const record = { ...prev.columnRecord };
-    record[colKey] = { ...record[colKey], width };
-    setConfig({ ...prev, columnRecord: record });
-  }
+function saveColumnWidth(colKey: string, width: string | undefined): void {
+  const prev = config();
+  const record = { ...prev.columnRecord };
+  record[colKey] = { ...record[colKey], width };
+  setConfig({ ...prev, columnRecord: record });
+}
 ```
 
 **Step 2: columnDefs() → effectiveColumns()로 교체**
@@ -138,6 +138,7 @@ import type { FlatItem, SheetColumnDef, SheetConfig, SheetProps, SortingDef } fr
 Sheet.tsx 전체에서 `columnDefs()`를 사용하는 곳을 `effectiveColumns()`로 교체한다. 단, `columnDefs` 정의 자체와 `effectiveColumns` 내부의 `columnDefs()` 호출은 그대로 둔다.
 
 교체 대상:
+
 - `headerTable` 계산: `buildHeaderTable(columnDefs())` → `buildHeaderTable(effectiveColumns())`
 - `hasSummary` 계산: `columnDefs().some(...)` → `effectiveColumns().some(...)`
 - `colgroup`의 `<For each={columnDefs()}>` → `<For each={effectiveColumns()}>`
@@ -171,6 +172,7 @@ git commit -m "feat(solid): Sheet 컬럼 설정 저장 (usePersisted 연동)"
 ## Task 3: 컬럼 고정 (sticky) 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: Sheet.tsx에 #region ColumnFixing 추가**
@@ -178,47 +180,47 @@ git commit -m "feat(solid): Sheet 컬럼 설정 저장 (usePersisted 연동)"
 `// #region Expanding` 앞에 다음 코드를 추가한다:
 
 ```typescript
-  // #region ColumnFixing
-  // 각 컬럼 셀의 ref → 너비 측정용
-  const columnRefs = new Map<number, HTMLElement>();
+// #region ColumnFixing
+// 각 컬럼 셀의 ref → 너비 측정용
+const columnRefs = new Map<number, HTMLElement>();
 
-  // 각 컬럼의 측정된 너비
-  const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
+// 각 컬럼의 측정된 너비
+const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
 
-  // 고정 컬럼의 left 위치 계산
-  const fixedLeftMap = createMemo(() => {
-    const map = new Map<number, number>();
-    const cols = effectiveColumns();
-    const widths = columnWidths();
-    let left = 0;
-    for (let c = 0; c < cols.length; c++) {
-      if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
-      map.set(c, left);
-      left += widths.get(c) ?? 0;
-    }
-    return map;
-  });
-
-  // 마지막 고정 컬럼 인덱스
-  const lastFixedIndex = createMemo(() => {
-    const cols = effectiveColumns();
-    let last = -1;
-    for (let c = 0; c < cols.length; c++) {
-      if (cols[c].fixed) last = c;
-      else break;
-    }
-    return last;
-  });
-
-  function getFixedStyle(colIndex: number): string | undefined {
-    const leftVal = fixedLeftMap().get(colIndex);
-    if (leftVal == null) return undefined;
-    return `left: ${leftVal}px`;
+// 고정 컬럼의 left 위치 계산
+const fixedLeftMap = createMemo(() => {
+  const map = new Map<number, number>();
+  const cols = effectiveColumns();
+  const widths = columnWidths();
+  let left = 0;
+  for (let c = 0; c < cols.length; c++) {
+    if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
+    map.set(c, left);
+    left += widths.get(c) ?? 0;
   }
+  return map;
+});
 
-  function isLastFixed(colIndex: number): boolean {
-    return colIndex === lastFixedIndex();
+// 마지막 고정 컬럼 인덱스
+const lastFixedIndex = createMemo(() => {
+  const cols = effectiveColumns();
+  let last = -1;
+  for (let c = 0; c < cols.length; c++) {
+    if (cols[c].fixed) last = c;
+    else break;
   }
+  return last;
+});
+
+function getFixedStyle(colIndex: number): string | undefined {
+  const leftVal = fixedLeftMap().get(colIndex);
+  if (leftVal == null) return undefined;
+  return `left: ${leftVal}px`;
+}
+
+function isLastFixed(colIndex: number): boolean {
+  return colIndex === lastFixedIndex();
+}
 ```
 
 **Step 2: import 추가**
@@ -232,22 +234,23 @@ import { createResizeObserver } from "@solid-primitives/resize-observer";
 `#region ColumnFixing` 내에 추가:
 
 ```typescript
-  // 고정 컬럼 셀에 ResizeObserver 등록
-  function registerColumnRef(colIndex: number, el: HTMLElement): void {
-    columnRefs.set(colIndex, el);
-    createResizeObserver(el, (rect) => {
-      setColumnWidths((prev) => {
-        const next = new Map(prev);
-        next.set(colIndex, rect.width);
-        return next;
-      });
+// 고정 컬럼 셀에 ResizeObserver 등록
+function registerColumnRef(colIndex: number, el: HTMLElement): void {
+  columnRefs.set(colIndex, el);
+  createResizeObserver(el, (rect) => {
+    setColumnWidths((prev) => {
+      const next = new Map(prev);
+      next.set(colIndex, rect.width);
+      return next;
     });
-  }
+  });
+}
 ```
 
 **Step 4: thead에 고정 컬럼 스타일 적용**
 
 Sheet.styles.ts에서 import 추가:
+
 ```typescript
 import {
   // ... 기존 import ...
@@ -261,6 +264,7 @@ import {
 thead의 마지막 depth 헤더 셀 (`isLastRow === true`)에 고정 스타일을 적용한다. `<th>` 렌더링 부분을 수정:
 
 기존 `<th>` 태그에 class와 style을 추가:
+
 - `class`: 고정 컬럼이면 `fixedClass` + `z-[4]` (thead + fixed) 추가, 마지막 고정이면 `fixedLastClass` 추가
 - `style`: 고정 컬럼이면 `left: Npx` 추가
 
@@ -303,6 +307,7 @@ thead의 마지막 depth 헤더 셀 (`isLastRow === true`)에 고정 스타일�
 합계 행의 `<th>` 렌더링에서 각 컬럼의 인덱스를 받아 고정 스타일을 적용한다:
 
 기존:
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col) => (
@@ -310,6 +315,7 @@ thead의 마지막 depth 헤더 셀 (`isLastRow === true`)에 고정 스타일�
 ```
 
 변경:
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col, colIndex) => (
@@ -327,6 +333,7 @@ thead의 마지막 depth 헤더 셀 (`isLastRow === true`)에 고정 스타일�
 **Step 7: tbody td에 고정 스타일 적용**
 
 기존:
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col) => (
@@ -334,6 +341,7 @@ thead의 마지막 depth 헤더 셀 (`isLastRow === true`)에 고정 스타일�
 ```
 
 변경:
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col, colIndex) => (
@@ -367,11 +375,14 @@ const isGroupFixed = () => {
 ```
 
 이 로직은 복잡해질 수 있으므로, **headerTable의 각 행을 `<For>`로 순회할 때 인덱스를 활용**한다. 현재 코드:
+
 ```tsx
 <For each={row}>
   {(cell) => (
 ```
+
 을 다음으로 변경:
+
 ```tsx
 <For each={row}>
   {(cell, cellColIndex) => (
@@ -380,6 +391,7 @@ const isGroupFixed = () => {
 `cellColIndex()`는 headerTable 2D 배열에서의 열 인덱스이다. null이 아닌 셀일 때, `effectiveColumns()`에서 `cellColIndex()` ~ `cellColIndex() + colspan - 1` 범위의 모든 컬럼이 fixed인지 확인하면 된다.
 
 그룹 헤더의 고정/left 스타일:
+
 ```typescript
 const isGroupFixed = (): boolean => {
   const start = cellColIndex();
@@ -417,6 +429,7 @@ git commit -m "feat(solid): Sheet 컬럼 고정 (sticky) 구현"
 ## Task 4: 컬럼 리사이징 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: Sheet.tsx에 #region Resizing 추가**
@@ -424,64 +437,66 @@ git commit -m "feat(solid): Sheet 컬럼 고정 (sticky) 구현"
 `#region ColumnFixing` 다음에 추가한다:
 
 ```typescript
-  // #region Resizing
-  const [resizeIndicatorStyle, setResizeIndicatorStyle] = createSignal<JSX.CSSProperties>({
-    display: "none",
+// #region Resizing
+const [resizeIndicatorStyle, setResizeIndicatorStyle] = createSignal<JSX.CSSProperties>({
+  display: "none",
+});
+
+function onResizerMousedown(event: MouseEvent, colKey: string): void {
+  event.preventDefault();
+  const th = (event.target as HTMLElement).closest("th")!;
+  const container = th.closest("[data-sheet]")!.querySelector("[data-sheet-scroll]") as HTMLElement;
+  const startX = event.clientX;
+  const startWidth = th.offsetWidth;
+
+  // 리사이즈 인디케이터 표시
+  const containerRect = container.getBoundingClientRect();
+  setResizeIndicatorStyle({
+    display: "block",
+    left: `${th.getBoundingClientRect().right - containerRect.left + container.scrollLeft}px`,
+    top: "0",
+    height: `${container.scrollHeight}px`,
   });
 
-  function onResizerMousedown(event: MouseEvent, colKey: string): void {
-    event.preventDefault();
-    const th = (event.target as HTMLElement).closest("th")!;
-    const container = th.closest("[data-sheet]")!.querySelector("[data-sheet-scroll]") as HTMLElement;
-    const startX = event.clientX;
-    const startWidth = th.offsetWidth;
-
-    // 리사이즈 인디케이터 표시
-    const containerRect = container.getBoundingClientRect();
+  const onMouseMove = (e: MouseEvent) => {
+    const delta = e.clientX - startX;
+    const newWidth = Math.max(30, startWidth + delta);
     setResizeIndicatorStyle({
       display: "block",
-      left: `${th.getBoundingClientRect().right - containerRect.left + container.scrollLeft}px`,
+      left: `${th.getBoundingClientRect().left - containerRect.left + container.scrollLeft + newWidth}px`,
       top: "0",
       height: `${container.scrollHeight}px`,
     });
+  };
 
-    const onMouseMove = (e: MouseEvent) => {
-      const delta = e.clientX - startX;
-      const newWidth = Math.max(30, startWidth + delta);
-      setResizeIndicatorStyle({
-        display: "block",
-        left: `${th.getBoundingClientRect().left - containerRect.left + container.scrollLeft + newWidth}px`,
-        top: "0",
-        height: `${container.scrollHeight}px`,
-      });
-    };
+  const onMouseUp = (e: MouseEvent) => {
+    const delta = e.clientX - startX;
+    const newWidth = Math.max(30, startWidth + delta);
+    saveColumnWidth(colKey, `${newWidth}px`);
+    setResizeIndicatorStyle({ display: "none" });
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
 
-    const onMouseUp = (e: MouseEvent) => {
-      const delta = e.clientX - startX;
-      const newWidth = Math.max(30, startWidth + delta);
-      saveColumnWidth(colKey, `${newWidth}px`);
-      setResizeIndicatorStyle({ display: "none" });
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
+}
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  }
-
-  function onResizerDoubleClick(colKey: string): void {
-    saveColumnWidth(colKey, undefined);
-  }
+function onResizerDoubleClick(colKey: string): void {
+  saveColumnWidth(colKey, undefined);
+}
 ```
 
 **Step 2: 스크롤 컨테이너에 data-sheet-scroll 속성 추가**
 
 기존:
+
 ```tsx
 <div class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
 ```
 
 변경:
+
 ```tsx
 <div data-sheet-scroll class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
 ```
@@ -530,6 +545,7 @@ git commit -m "feat(solid): Sheet 컬럼 리사이징 구현 (드래그 + 더블
 ## Task 5: 컬럼 고정/리사이징 단위 테스트
 
 **Files:**
+
 - Modify: `packages/solid/tests/sheet/Sheet.spec.tsx`
 
 **Step 1: 고정 컬럼 테스트 추가**
@@ -606,6 +622,7 @@ git commit -m "test(solid): Sheet 컬럼 고정/리사이징 테스트 추가"
 ## Task 6: 데모 페이지에 고정 컬럼 + 리사이징 예제 추가
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 - Modify: `packages/solid-demo/src/pages/data/SheetFullPage.tsx`
 
@@ -614,7 +631,9 @@ git commit -m "test(solid): Sheet 컬럼 고정/리사이징 테스트 추가"
 `{/* 페이지네이션 */}` 섹션 다음에 추가:
 
 ```tsx
-{/* 고정 컬럼 + 리사이징 */}
+{
+  /* 고정 컬럼 + 리사이징 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">고정 컬럼 + 리사이징</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -632,15 +651,11 @@ git commit -m "test(solid): Sheet 컬럼 고정/리사이징 테스트 추가"
         {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
       </Sheet.Column>
       <Sheet.Column<User> key="salary" header="급여" width="150px">
-        {(ctx) => (
-          <div class="px-2 py-1 text-right">
-            {ctx.item.salary.toLocaleString()}원
-          </div>
-        )}
+        {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
       </Sheet.Column>
     </Sheet>
   </div>
-</section>
+</section>;
 ```
 
 **Step 2: SheetFullPage.tsx에 고정 컬럼 적용**
@@ -650,9 +665,11 @@ git commit -m "test(solid): Sheet 컬럼 고정/리사이징 테스트 추가"
 ```tsx
 <Sheet.Column<Employee> key="id" header="No." width="60px" fixed>
 ```
+
 ```tsx
 <Sheet.Column<Employee> key="name" header={["인사정보", "이름"]} width="100px" fixed>
 ```
+
 ```tsx
 <Sheet.Column<Employee> key="department" header={["인사정보", "부서"]} width="90px" fixed>
 ```
@@ -683,6 +700,7 @@ Expected: Vite dev server 시작 (포트 확인)
 **Step 2: Playwright MCP로 SheetPage 확인**
 
 브라우저로 `http://localhost:{port}/data/sheet` 접속:
+
 - "고정 컬럼 + 리사이징" 섹션이 보이는지 확인
 - 테이블을 가로 스크롤하여 이름/나이 컬럼이 고정되는지 확인
 - 고정/비고정 경계에 진한 테두리가 있는지 확인
@@ -691,6 +709,7 @@ Expected: Vite dev server 시작 (포트 확인)
 **Step 3: SheetFullPage 확인**
 
 `http://localhost:{port}/data/sheet-full` 접속:
+
 - No., 이름, 부서 3개 컬럼이 고정되는지 확인
 - 가로 스크롤 시 정상 동작 확인
 - 고정 컬럼의 다단계 헤더(인사정보 그룹)도 sticky인지 확인
@@ -706,6 +725,7 @@ Expected: Vite dev server 시작 (포트 확인)
 **Step 5: 문제 발견 시 수정 → 커밋**
 
 발견된 이슈를 수정한 후:
+
 ```bash
 git add -A
 git commit -m "fix(solid): Sheet 고정/리사이징 수동 검증 이슈 수정"
@@ -734,13 +754,13 @@ Expected: 에러 없음
 
 ## 요약
 
-| Task | 설명 | 예상 변경 파일 |
-|------|------|--------------|
-| 1 | 스타일 상수 추가 | Sheet.styles.ts |
-| 2 | 컬럼 설정 저장 (usePersisted) | Sheet.tsx |
-| 3 | 컬럼 고정 (sticky) 구현 | Sheet.tsx |
-| 4 | 컬럼 리사이징 구현 | Sheet.tsx |
-| 5 | 단위 테스트 추가 | Sheet.spec.tsx |
-| 6 | 데모 페이지 업데이트 | SheetPage.tsx, SheetFullPage.tsx |
-| 7 | 수동 검증 (Playwright) | - |
-| 8 | 최종 검증 | - |
+| Task | 설명                          | 예상 변경 파일                   |
+| ---- | ----------------------------- | -------------------------------- |
+| 1    | 스타일 상수 추가              | Sheet.styles.ts                  |
+| 2    | 컬럼 설정 저장 (usePersisted) | Sheet.tsx                        |
+| 3    | 컬럼 고정 (sticky) 구현       | Sheet.tsx                        |
+| 4    | 컬럼 리사이징 구현            | Sheet.tsx                        |
+| 5    | 단위 테스트 추가              | Sheet.spec.tsx                   |
+| 6    | 데모 페이지 업데이트          | SheetPage.tsx, SheetFullPage.tsx |
+| 7    | 수동 검증 (Playwright)        | -                                |
+| 8    | 최종 검증                     | -                                |

@@ -11,6 +11,7 @@
 **Worktree:** `/home/kslhunter/projects/simplysm/.worktrees/kanban-redesign/`
 
 **참고 파일:**
+
 - 설계: `docs/plans/2026-02-10-kanban-phase4-selection-design.md`
 - 원본 계획: `docs/plans/2026-02-10-kanban-redesign.md` (Phase 4 섹션)
 
@@ -19,6 +20,7 @@
 ## Task 1: KanbanContext 타입 확장
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
 
 **Step 1: KanbanContextValue에 selection 필드 추가**
@@ -29,7 +31,11 @@
 export interface KanbanContextValue<L = unknown, T = unknown> {
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
-  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+  onDropTo: (
+    targetLaneValue: L | undefined,
+    targetCardValue: T | undefined,
+    position: "before" | "after" | undefined,
+  ) => void;
 
   // Selection (Phase 4)
   selectedValues: Accessor<T[]>;
@@ -72,6 +78,7 @@ git commit -m "feat(solid): KanbanContext에 selection/card-registration 타입 
 ## Task 2: Board(Kanban)에 selection 상태 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanProps, KanbanBase 함수)
 
 **Step 1: KanbanProps 확장**
@@ -94,13 +101,7 @@ export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 `splitProps`의 키 목록에 `"selectedValues"`, `"onSelectedValuesChange"` 추가:
 
 ```typescript
-const [local, rest] = splitProps(props, [
-  "children",
-  "class",
-  "onDrop",
-  "selectedValues",
-  "onSelectedValuesChange",
-]);
+const [local, rest] = splitProps(props, ["children", "class", "onDrop", "selectedValues", "onSelectedValuesChange"]);
 ```
 
 `createPropSignal`로 selection 상태 생성 (기존 `dragCard` signal 아래에 추가):
@@ -153,6 +154,7 @@ git commit -m "feat(solid): Kanban Board에 selectedValues/toggleSelection 상�
 ## Task 3: Lane에 카드 등록 + 전체 선택 체크박스
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanLane 함수, import)
 
 **Step 1: import 추가**
@@ -185,9 +187,9 @@ import { CheckBox } from "../../form-control/checkbox/CheckBox";
 `KanbanLane` 함수 내부에서, 기존 `const boardCtx = useKanbanContext();` 아래에 카드 등록 로직 추가:
 
 ```typescript
-const [registeredCards, setRegisteredCards] = createSignal<
-  Map<string, { value: unknown; selectable: boolean }>
->(new Map());
+const [registeredCards, setRegisteredCards] = createSignal<Map<string, { value: unknown; selectable: boolean }>>(
+  new Map(),
+);
 
 const registerCard = (id: string, info: { value: unknown; selectable: boolean }) => {
   setRegisteredCards((prev) => new Map(prev).set(id, info));
@@ -265,12 +267,7 @@ const hasHeader = () =>
 
 ```tsx
 <Show when={hasSelectableCards()}>
-  <CheckBox
-    value={isAllSelected()}
-    onValueChange={handleSelectAll}
-    inline
-    theme="white"
-  />
+  <CheckBox value={isAllSelected()} onValueChange={handleSelectAll} inline theme="white" />
 </Show>
 ```
 
@@ -280,21 +277,12 @@ const hasHeader = () =>
 <Show when={hasHeader()}>
   <div class={laneHeaderBaseClass}>
     <Show when={local.collapsible}>
-      <button
-        type="button"
-        class={collapseButtonClass}
-        onClick={() => setCollapsed((prev) => !prev)}
-      >
+      <button type="button" class={collapseButtonClass} onClick={() => setCollapsed((prev) => !prev)}>
         <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
       </button>
     </Show>
     <Show when={hasSelectableCards()}>
-      <CheckBox
-        value={isAllSelected()}
-        onValueChange={handleSelectAll}
-        inline
-        theme="white"
-      />
+      <CheckBox value={isAllSelected()} onValueChange={handleSelectAll} inline theme="white" />
     </Show>
     <div class="flex-1">{slots().kanbanLaneTitle}</div>
     <Show when={slots().kanbanLaneTools.length > 0}>
@@ -322,6 +310,7 @@ git commit -m "feat(solid): Kanban Lane에 카드 등록 저장소 및 전체 �
 ## Task 4: Card에 selection 기능 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (KanbanCardProps, KanbanCard 함수)
 
 **Step 1: KanbanCardProps에 selectable 추가**
@@ -339,14 +328,7 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 **Step 2: splitProps에 selectable 추가**
 
 ```typescript
-const [local, rest] = splitProps(props, [
-  "children",
-  "class",
-  "value",
-  "draggable",
-  "selectable",
-  "contentClass",
-]);
+const [local, rest] = splitProps(props, ["children", "class", "value", "draggable", "selectable", "contentClass"]);
 ```
 
 **Step 3: Card에 Context 등록/해제 추가**
@@ -388,8 +370,7 @@ const handleClick = (e: MouseEvent) => {
 **Step 5: 선택 상태 파생값 추가**
 
 ```typescript
-const isSelected = () =>
-  local.value != null && boardCtx.selectedValues().includes(local.value);
+const isSelected = () => local.value != null && boardCtx.selectedValues().includes(local.value);
 ```
 
 **Step 6: JSX 업데이트 — onClick 및 ring 피드백**
@@ -436,6 +417,7 @@ git commit -m "feat(solid): Kanban Card에 selectable prop, Shift+Click 선택, 
 ## Task 5: 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/layout/kanban/Kanban.selection.spec.tsx`
 
 **Step 1: 테스트 파일 작성**
@@ -648,6 +630,7 @@ git commit -m "test(solid): Kanban 선택 시스템 단위 테스트 추가"
 ## Task 6: 데모 페이지 확장
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/KanbanPage.tsx`
 
 **Step 1: 데모 페이지에 선택 섹션 추가**
@@ -665,18 +648,10 @@ const [selected, setSelected] = createSignal<number[]>([]);
 ```tsx
 <section>
   <h2 class="mb-4 text-xl font-semibold">선택</h2>
-  <p class="mb-2 text-sm text-base-500">
-    Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
-  </p>
-  <div class="mb-2 text-sm">
-    선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}
-  </div>
+  <p class="mb-2 text-sm text-base-500">Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.</p>
+  <div class="mb-2 text-sm">선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}</div>
   <div class="h-[500px]">
-    <Kanban
-      selectedValues={selected()}
-      onSelectedValuesChange={setSelected}
-      onDrop={handleDrop}
-    >
+    <Kanban selectedValues={selected()} onSelectedValuesChange={setSelected} onDrop={handleDrop}>
       <For each={lanes()}>
         {(lane) => (
           <Kanban.Lane value={lane.id}>

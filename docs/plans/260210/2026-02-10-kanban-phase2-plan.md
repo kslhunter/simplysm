@@ -15,6 +15,7 @@
 ### Task 1: Context 타입 확장
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
 
 **Step 1: KanbanContext.ts에 타입과 인터페이스 추가**
@@ -50,7 +51,11 @@ export interface KanbanDropTarget<T = unknown> {
 export interface KanbanContextValue<L = unknown, T = unknown> {
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
-  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+  onDropTo: (
+    targetLaneValue: L | undefined,
+    targetCardValue: T | undefined,
+    position: "before" | "after" | undefined,
+  ) => void;
 }
 
 export const KanbanContext = createContext<KanbanContextValue>();
@@ -99,36 +104,25 @@ git commit -m "feat(solid): Kanban DnD Context 타입 확장"
 ### Task 2: Board (Kanban) 확장
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (Board 부분: KanbanProps, KanbanBase)
 
 **Step 1: import 수정**
 
 기존:
+
 ```typescript
-import {
-  children,
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+import { children, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 ```
 
 변경:
+
 ```typescript
-import {
-  children,
-  createSignal,
-  type JSX,
-  onCleanup,
-  onMount,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+import { children, createSignal, type JSX, onCleanup, onMount, type ParentComponent, Show, splitProps } from "solid-js";
 ```
 
 기존:
+
 ```typescript
 import {
   KanbanContext,
@@ -139,6 +133,7 @@ import {
 ```
 
 변경:
+
 ```typescript
 import {
   KanbanContext,
@@ -153,6 +148,7 @@ import {
 **Step 2: KanbanProps 인터페이스 확장**
 
 기존:
+
 ```typescript
 export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   children?: JSX.Element;
@@ -160,6 +156,7 @@ export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 ```
 
 변경:
+
 ```typescript
 export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   onDrop?: (info: KanbanDropInfo) => void;
@@ -170,6 +167,7 @@ export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "c
 **Step 3: KanbanBase 구현체 확장**
 
 기존:
+
 ```typescript
 const KanbanBase = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
@@ -194,6 +192,7 @@ const KanbanBase = (props: KanbanProps) => {
 ```
 
 변경:
+
 ```typescript
 const KanbanBase = (props: KanbanProps) => {
   const [local, rest] = splitProps(props, [
@@ -267,6 +266,7 @@ git commit -m "feat(solid): Kanban Board에 DnD 상태 관리 추가"
 ### Task 3: Lane 확장 (placeholder + 카운터)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (Lane 부분: KanbanLane, LaneInner)
 
 **Step 1: Lane에 createSignal, createEffect import 추가**
@@ -274,20 +274,13 @@ git commit -m "feat(solid): Kanban Board에 DnD 상태 관리 추가"
 Step 2의 import에서 `createEffect`를 추가:
 
 기존 (Task 2 이후):
+
 ```typescript
-import {
-  children,
-  createSignal,
-  type JSX,
-  onCleanup,
-  onMount,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+import { children, createSignal, type JSX, onCleanup, onMount, type ParentComponent, Show, splitProps } from "solid-js";
 ```
 
 변경:
+
 ```typescript
 import {
   children,
@@ -305,6 +298,7 @@ import {
 import에 `KanbanDropTarget` 타입 추가:
 
 기존 (Task 2 이후):
+
 ```typescript
 import {
   KanbanContext,
@@ -317,6 +311,7 @@ import {
 ```
 
 변경:
+
 ```typescript
 import {
   KanbanContext,
@@ -334,15 +329,13 @@ import {
 `laneBodyBaseClass` 아래에 추가:
 
 ```typescript
-const placeholderBaseClass = clsx(
-  "rounded-lg",
-  "bg-black/10 dark:bg-white/10",
-);
+const placeholderBaseClass = clsx("rounded-lg", "bg-black/10 dark:bg-white/10");
 ```
 
 **Step 3: KanbanLane 구현체 확장**
 
 기존:
+
 ```typescript
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -393,6 +386,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 ```
 
 변경:
+
 ```typescript
 const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -543,11 +537,13 @@ git commit -m "feat(solid): Kanban Lane에 DnD placeholder 및 카운터 추가"
 ### Task 4: Card 확장 (dragstart, dragover, drop, hidden)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx` (Card 부분: KanbanCardProps, KanbanCard)
 
 **Step 1: KanbanCardProps 확장**
 
 기존:
+
 ```typescript
 export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: unknown;
@@ -557,6 +553,7 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 ```
 
 변경:
+
 ```typescript
 export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "draggable"> {
   value?: unknown;
@@ -569,6 +566,7 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 **Step 2: KanbanCard 구현체 확장**
 
 기존:
+
 ```typescript
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "value", "contentClass"]);
@@ -588,6 +586,7 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
 ```
 
 변경:
+
 ```typescript
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -690,6 +689,7 @@ git commit -m "feat(solid): Kanban Card에 DnD 이벤트 핸들링 추가"
 ### Task 5: 데모 페이지에 DnD 동작 연결
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/KanbanPage.tsx`
 
 **Step 1: 데모 페이지를 DnD 동작하는 형태로 수정**
@@ -893,6 +893,7 @@ Run: `pnpm dev`
 **Step 4: 최종 커밋 (필요시)**
 
 lint 자동 수정이 있었다면:
+
 ```bash
 git add -A
 git commit -m "fix(solid): lint 자동 수정 적용"

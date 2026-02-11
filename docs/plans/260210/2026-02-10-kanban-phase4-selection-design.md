@@ -8,6 +8,7 @@
 ## 1. 개요
 
 Kanban 컴포넌트에 카드 선택 기능을 추가한다:
+
 - Shift+Click으로 개별 카드 선택/해제 토글
 - Board 레벨에서 `selectedValues` controlled 패턴 관리
 - 선택된 카드에 ring 시각 피드백
@@ -24,7 +25,11 @@ export interface KanbanContextValue<L = unknown, T = unknown> {
   // 기존 DnD
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
-  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+  onDropTo: (
+    targetLaneValue: L | undefined,
+    targetCardValue: T | undefined,
+    position: "before" | "after" | undefined,
+  ) => void;
 
   // Phase 4 추가
   selectedValues: Accessor<T[]>;
@@ -70,7 +75,7 @@ export interface KanbanCardProps {
   children?: JSX.Element;
 
   // Phase 4 추가
-  selectable?: boolean;  // 기본값 false
+  selectable?: boolean; // 기본값 false
 }
 ```
 
@@ -127,9 +132,9 @@ const isSelected = () =>
 ### 4.1 카드 등록 저장소
 
 ```typescript
-const [registeredCards, setRegisteredCards] = createSignal<
-  Map<string, { value: unknown; selectable: boolean }>
->(new Map());
+const [registeredCards, setRegisteredCards] = createSignal<Map<string, { value: unknown; selectable: boolean }>>(
+  new Map(),
+);
 
 const registerCard = (id: string, info: { value: unknown; selectable: boolean }) => {
   setRegisteredCards((prev) => new Map(prev).set(id, info));
@@ -147,8 +152,7 @@ const unregisterCard = (id: string) => {
 ### 4.2 파생 상태
 
 ```typescript
-const selectableCards = () =>
-  [...registeredCards().values()].filter((c) => c.selectable && c.value != null);
+const selectableCards = () => [...registeredCards().values()].filter((c) => c.selectable && c.value != null);
 
 const hasSelectableCards = () => selectableCards().length > 0;
 
@@ -258,10 +262,10 @@ const contextValue: KanbanContextValue = {
 
 ## 7. 변경 파일 목록
 
-| 파일 | 변경 내용 |
-|------|----------|
-| `KanbanContext.ts` | `selectedValues`, `setSelectedValues`, `toggleSelection` (Board Context). `registerCard`, `unregisterCard` (Lane Context) |
-| `Kanban.tsx` — Board | `selectedValues`/`onSelectedValuesChange` props, `createPropSignal`, Context 확장 |
-| `Kanban.tsx` — Lane | 카드 등록 저장소, 전체 선택 체크박스, `isAllSelected` 계산 |
-| `Kanban.tsx` — Card | `selectable` prop, `onClick` Shift 핸들러, ring 피드백, `registerCard`/`unregisterCard` |
-| `KanbanPage.tsx` | 선택 데모 섹션 추가 |
+| 파일                 | 변경 내용                                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `KanbanContext.ts`   | `selectedValues`, `setSelectedValues`, `toggleSelection` (Board Context). `registerCard`, `unregisterCard` (Lane Context) |
+| `Kanban.tsx` — Board | `selectedValues`/`onSelectedValuesChange` props, `createPropSignal`, Context 확장                                         |
+| `Kanban.tsx` — Lane  | 카드 등록 저장소, 전체 선택 체크박스, `isAllSelected` 계산                                                                |
+| `Kanban.tsx` — Card  | `selectable` prop, `onClick` Shift 핸들러, ring 피드백, `registerCard`/`unregisterCard`                                   |
+| `KanbanPage.tsx`     | 선택 데모 섹션 추가                                                                                                       |

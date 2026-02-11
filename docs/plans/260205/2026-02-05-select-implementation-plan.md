@@ -24,6 +24,7 @@
 ## Task 1: Dropdown 키보드 핸들링 개선
 
 **Files:**
+
 - Modify: `packages/solid/src/components/overlay/Dropdown.tsx`
 - Modify: `packages/solid/tests/components/overlay/Dropdown.spec.tsx`
 
@@ -39,10 +40,16 @@ describe("키보드 핸들링", () => {
 
     render(() => (
       <>
-        <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
+        <button ref={(el) => (triggerRef = el)} data-testid="trigger">
+          트리거
+        </button>
         <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange}>
-          <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
-          <div data-testid="second-item" tabIndex={0}>두 번째 아이템</div>
+          <div data-testid="first-item" tabIndex={0}>
+            첫 아이템
+          </div>
+          <div data-testid="second-item" tabIndex={0}>
+            두 번째 아이템
+          </div>
         </Dropdown>
       </>
     ));
@@ -70,9 +77,13 @@ describe("키보드 핸들링", () => {
 
     render(() => (
       <>
-        <button ref={(el) => (triggerRef = el)} data-testid="trigger">트리거</button>
+        <button ref={(el) => (triggerRef = el)} data-testid="trigger">
+          트리거
+        </button>
         <Dropdown triggerRef={() => triggerRef} open={true} onOpenChange={handleOpenChange}>
-          <div data-testid="first-item" tabIndex={0}>첫 아이템</div>
+          <div data-testid="first-item" tabIndex={0}>
+            첫 아이템
+          </div>
         </Dropdown>
       </>
     ));
@@ -153,9 +164,9 @@ createEffect(() => {
     const isInPopup = popup.contains(target);
 
     // 팝업 내 focusable 요소들
-    const focusables = [...popup.querySelectorAll<HTMLElement>(
-      '[tabindex]:not([tabindex="-1"]), button, [data-list-item]'
-    )];
+    const focusables = [
+      ...popup.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, [data-list-item]'),
+    ];
     const firstFocusable = focusables[0];
     const lastFocusable = focusables[focusables.length - 1];
     const isFirstFocused = document.activeElement === firstFocusable;
@@ -227,6 +238,7 @@ EOF
 ## Task 2: SelectContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form/select/SelectContext.ts`
 
 ### Step 1: SelectContext 파일 생성
@@ -278,6 +290,7 @@ EOF
 ## Task 3: SelectItem 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form/select/SelectItem.tsx`
 - Create: `packages/solid/tests/components/form/select/SelectItem.spec.tsx`
 
@@ -291,15 +304,8 @@ import { SelectItem } from "../../../../src/components/form/select/SelectItem";
 import { SelectContext, type SelectContextValue } from "../../../../src/components/form/select/SelectContext";
 
 // 테스트용 Provider
-function TestProvider(props: {
-  children: any;
-  value: SelectContextValue;
-}) {
-  return (
-    <SelectContext.Provider value={props.value}>
-      {props.children}
-    </SelectContext.Provider>
-  );
+function TestProvider(props: { children: any; value: SelectContextValue }) {
+  return <SelectContext.Provider value={props.value}>{props.children}</SelectContext.Provider>;
 }
 
 describe("SelectItem 컴포넌트", () => {
@@ -430,7 +436,9 @@ describe("SelectItem 컴포넌트", () => {
 
       const { getByText } = render(() => (
         <TestProvider value={mockContext}>
-          <SelectItem value="apple" disabled>사과</SelectItem>
+          <SelectItem value="apple" disabled>
+            사과
+          </SelectItem>
         </TestProvider>
       ));
 
@@ -451,15 +459,8 @@ Expected: 모듈을 찾을 수 없음 에러
 
 ### Step 3: SelectItem 컴포넌트 구현
 
-```tsx
-import {
-  children,
-  createMemo,
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-} from "solid-js";
+````tsx
+import { children, createMemo, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
@@ -502,7 +503,10 @@ const SelectItemChildren: ParentComponent = (props) => (
   </div>
 );
 
-export interface SelectItemProps<T = unknown> extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onClick"> {
+export interface SelectItemProps<T = unknown> extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "value" | "onClick"
+> {
   /** 아이템의 값 */
   value: T;
 
@@ -531,12 +535,7 @@ interface SelectItemComponent<T = unknown> extends ParentComponent<SelectItemPro
  * ```
  */
 export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & { children?: JSX.Element }) => {
-  const [local, rest] = splitProps(props, [
-    "children",
-    "class",
-    "value",
-    "disabled",
-  ]);
+  const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
 
   const context = useSelectContext<T>();
 
@@ -574,12 +573,7 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
   };
 
   const getClassName = () =>
-    twMerge(
-      baseClass,
-      isSelected() && selectedClass,
-      local.disabled && disabledClass,
-      local.class,
-    );
+    twMerge(baseClass, isSelected() && selectedClass, local.disabled && disabledClass, local.class);
 
   const getCheckIconClass = () =>
     clsx(isSelected() ? "text-primary-600 dark:text-primary-400" : "text-black/30 dark:text-white/30");
@@ -602,21 +596,17 @@ export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & 
         <Show when={context.multiple() && !hasChildren()}>
           <Icon icon={IconCheck} class={getCheckIconClass()} />
         </Show>
-        <span class="flex flex-1 flex-row items-center gap-1 text-left">
-          {slots().content}
-        </span>
+        <span class="flex flex-1 flex-row items-center gap-1 text-left">{slots().content}</span>
       </button>
       <Show when={hasChildren()}>
-        <Collapse open={true}>
-          {slots().childrenSlot}
-        </Collapse>
+        <Collapse open={true}>{slots().childrenSlot}</Collapse>
       </Show>
     </>
   );
 };
 
 SelectItem.Children = SelectItemChildren;
-```
+````
 
 ### Step 4: 테스트 실행하여 통과 확인
 
@@ -648,6 +638,7 @@ EOF
 ## Task 4: Select 메인 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form/select/Select.tsx`
 - Create: `packages/solid/tests/components/form/select/Select.spec.tsx`
 
@@ -712,10 +703,13 @@ describe("Select 컴포넌트", () => {
 
       fireEvent.click(getByText("사과"));
 
-      await waitFor(() => {
-        // 애니메이션 후 닫힘
-        expect(document.querySelector("[data-dropdown]")).toBeNull();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          // 애니메이션 후 닫힘
+          expect(document.querySelector("[data-dropdown]")).toBeNull();
+        },
+        { timeout: 500 },
+      );
     });
   });
 
@@ -893,17 +887,8 @@ Expected: 모듈을 찾을 수 없음 에러
 
 ### Step 3: Select 컴포넌트 구현
 
-```tsx
-import {
-  children,
-  createMemo,
-  createSignal,
-  type JSX,
-  type ParentComponent,
-  Show,
-  splitProps,
-  For,
-} from "solid-js";
+````tsx
+import { children, createMemo, createSignal, type JSX, type ParentComponent, Show, splitProps, For } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
@@ -926,17 +911,9 @@ const triggerBaseClass = clsx(
   "focus-within:border-primary-500",
 );
 
-const triggerDisabledClass = clsx(
-  "bg-neutral-200 dark:bg-neutral-800",
-  "cursor-default",
-  "text-neutral-400",
-);
+const triggerDisabledClass = clsx("bg-neutral-200 dark:bg-neutral-800", "cursor-default", "text-neutral-400");
 
-const triggerInsetClass = clsx(
-  "border-none",
-  "rounded-none",
-  "bg-transparent",
-);
+const triggerInsetClass = clsx("border-none", "rounded-none", "bg-transparent");
 
 const sizeClasses = {
   sm: "py-0.5 px-1.5 gap-1.5",
@@ -979,9 +956,7 @@ const SelectButton: ParentComponent<SelectButtonProps> = (props) => {
 /**
  * 드롭다운 상단 커스텀 영역 서브 컴포넌트
  */
-const SelectHeader: ParentComponent = (props) => (
-  <div data-select-header>{props.children}</div>
-);
+const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.children}</div>;
 
 /**
  * items prop 방식일 때 아이템 렌더링 템플릿
@@ -990,9 +965,7 @@ interface SelectItemTemplateProps<T> {
   children: (item: T, index: number, depth: number) => JSX.Element;
 }
 
-const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
-  <>{props.children}</>
-);
+const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => <>{props.children}</>;
 
 // Props 정의
 interface SelectBaseProps<T> {
@@ -1240,9 +1213,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}
         >
-          <div class="flex-1 whitespace-nowrap">
-            {renderSelectedValue()}
-          </div>
+          <div class="flex-1 whitespace-nowrap">{renderSelectedValue()}</div>
           <div class="opacity-30 hover:opacity-100">
             <Icon icon={IconChevronDown} size="1rem" />
           </div>
@@ -1250,12 +1221,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
         {slots().buttons}
       </div>
 
-      <Dropdown
-        triggerRef={() => triggerRef}
-        open={open()}
-        onOpenChange={setOpen}
-        enableKeyboardNav
-      >
+      <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} enableKeyboardNav>
         {slots().header}
         <List inset role="listbox">
           {slots().items}
@@ -1269,7 +1235,7 @@ Select.Item = SelectItem;
 Select.Button = SelectButton;
 Select.Header = SelectHeader;
 Select.ItemTemplate = SelectItemTemplate;
-```
+````
 
 ### Step 4: 테스트 실행하여 통과 확인
 
@@ -1302,6 +1268,7 @@ EOF
 ## Task 5: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 ### Step 1: export 추가
@@ -1339,6 +1306,7 @@ EOF
 ## Task 6: solid-demo에 SelectPage 추가
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/form/SelectPage.tsx`
 - Modify: `packages/solid-demo/src/pages/Home.tsx`
 - Modify: `packages/solid-demo/src/main.tsx`
@@ -1410,15 +1378,17 @@ export default function SelectPage() {
           {/* 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <p class="mb-2 text-sm text-gray-600">
-              선택: {selected()?.name ?? "없음"}
-            </p>
+            <p class="mb-2 text-sm text-gray-600">선택: {selected()?.name ?? "없음"}</p>
             <div class="max-w-xs">
               <Select
                 value={selected()}
                 onValueChange={setSelected}
                 placeholder="과일을 선택하세요"
-                renderValue={(v) => <>{v.emoji} {v.name}</>}
+                renderValue={(v) => (
+                  <>
+                    {v.emoji} {v.name}
+                  </>
+                )}
               >
                 <For each={fruits}>
                   {(fruit) => (
@@ -1435,7 +1405,10 @@ export default function SelectPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
             <p class="mb-2 text-sm text-gray-600">
-              선택: {multiSelected().map((f) => f.name).join(", ") || "없음"}
+              선택:{" "}
+              {multiSelected()
+                .map((f) => f.name)
+                .join(", ") || "없음"}
             </p>
             <div class="max-w-xs">
               <Select
@@ -1443,7 +1416,11 @@ export default function SelectPage() {
                 value={multiSelected()}
                 onValueChange={setMultiSelected}
                 placeholder="여러 개 선택 가능"
-                renderValue={(v) => <>{v.emoji} {v.name}</>}
+                renderValue={(v) => (
+                  <>
+                    {v.emoji} {v.name}
+                  </>
+                )}
               >
                 <For each={fruits}>
                   {(fruit) => (
@@ -1460,10 +1437,7 @@ export default function SelectPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Button)</h2>
             <div class="max-w-xs">
-              <Select
-                placeholder="선택하세요"
-                renderValue={(v: string) => <>{v}</>}
-              >
+              <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
                 <Select.Item value="옵션 1">옵션 1</Select.Item>
                 <Select.Item value="옵션 2">옵션 2</Select.Item>
                 <Select.Button onClick={() => alert("추가 버튼 클릭!")}>
@@ -1477,10 +1451,7 @@ export default function SelectPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">커스텀 헤더 (Select.Header)</h2>
             <div class="max-w-xs">
-              <Select
-                placeholder="선택하세요"
-                renderValue={(v: string) => <>{v}</>}
-              >
+              <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
                 <Select.Header>
                   <div class="border-b border-neutral-200 p-2 text-sm font-semibold text-neutral-500 dark:border-neutral-700">
                     🔍 검색 결과
@@ -1496,9 +1467,7 @@ export default function SelectPage() {
           {/* 계층 구조 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
-            <p class="mb-2 text-sm text-gray-600">
-              선택: {categorySelected()?.name ?? "없음"}
-            </p>
+            <p class="mb-2 text-sm text-gray-600">선택: {categorySelected()?.name ?? "없음"}</p>
             <div class="max-w-xs">
               <Select
                 value={categorySelected()}
@@ -1513,9 +1482,7 @@ export default function SelectPage() {
                       {category.children && (
                         <Select.Item.Children>
                           <For each={category.children}>
-                            {(child) => (
-                              <Select.Item value={child}>{child.name}</Select.Item>
-                            )}
+                            {(child) => <Select.Item value={child}>{child.name}</Select.Item>}
                           </For>
                         </Select.Item.Children>
                       )}

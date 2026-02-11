@@ -11,10 +11,10 @@ Angular 레거시 `SdTextareaControl`을 Solid 패키지의 `TextAreaField`로 �
 
 ## 파일 구성
 
-| 파일 | 작업 |
-|------|------|
-| `packages/solid/src/components/form-control/field/TextAreaField.tsx` | 신규 생성 |
-| `packages/solid/src/index.ts` | export 추가 |
+| 파일                                                                 | 작업        |
+| -------------------------------------------------------------------- | ----------- |
+| `packages/solid/src/components/form-control/field/TextAreaField.tsx` | 신규 생성   |
+| `packages/solid/src/index.ts`                                        | export 추가 |
 
 별도 styles 파일은 만들지 않는다. `Field.styles.ts`의 기존 스타일을 재사용한다.
 
@@ -31,7 +31,7 @@ export interface TextAreaFieldProps {
   error?: boolean;
   size?: FieldSize;
   inset?: boolean;
-  minRows?: number;   // 최소 줄 수 (기본값: 1)
+  minRows?: number; // 최소 줄 수 (기본값: 1)
   class?: string;
   style?: JSX.CSSProperties;
 }
@@ -60,9 +60,9 @@ Table 셀에 inset으로 넣었을 때, 내용물 크기에 따라 셀 크기가
 ```tsx
 <div class={wrapperClass} style={{ position: "relative", ...local.style }}>
   {/* 높이 측정용 div — visibility: hidden이지만 레이아웃 공간 차지 */}
-  <div style={{ visibility: "hidden", "white-space": "pre-wrap", "word-break": "break-all" }}>
+  <div style={{ "visibility": "hidden", "white-space": "pre-wrap", "word-break": "break-all" }}>
     {contentForHeight()}
-    {"\n "}  {/* 마지막 줄바꿈 뒤 높이 보장 */}
+    {"\n "} {/* 마지막 줄바꿈 뒤 높이 보장 */}
   </div>
 
   {/* 실제 입력 — absolute로 hidden div 위에 겹침 */}
@@ -108,9 +108,9 @@ const contentForHeight = () => {
 
 ## 제외 항목 (Angular 대비)
 
-| Angular 기능 | 제외 이유 |
-|-------------|----------|
-| `theme` prop | Solid TextField에 없음 (일관성) |
-| `inline` prop | Solid 필드 계열에서 사용하지 않음 |
-| `validatorFn` / `required` | Solid는 `error` prop으로 외부에서 제어 |
+| Angular 기능                | 제외 이유                               |
+| --------------------------- | --------------------------------------- |
+| `theme` prop                | Solid TextField에 없음 (일관성)         |
+| `inline` prop               | Solid 필드 계열에서 사용하지 않음       |
+| `validatorFn` / `required`  | Solid는 `error` prop으로 외부에서 제어  |
 | `inputStyle` / `inputClass` | Solid는 `class` / `style` prop으로 통일 |

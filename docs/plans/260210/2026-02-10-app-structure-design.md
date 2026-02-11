@@ -19,8 +19,8 @@ interface AppStructureGroupItem<TModule> {
   code: string;
   title: string;
   icon?: Component<IconProps>;
-  modules?: TModule[];            // OR: 하나라도 활성이면 표시
-  requiredModules?: TModule[];    // AND: 모두 활성이어야 표시
+  modules?: TModule[]; // OR: 하나라도 활성이면 표시
+  requiredModules?: TModule[]; // AND: 모두 활성이어야 표시
   children: AppStructureItem<TModule>[];
 }
 
@@ -31,15 +31,13 @@ interface AppStructureLeafItem<TModule> {
   icon?: Component<IconProps>;
   modules?: TModule[];
   requiredModules?: TModule[];
-  component?: Component;          // lazy(() => import(...))
+  component?: Component; // lazy(() => import(...))
   perms?: ("use" | "edit")[];
   subPerms?: AppStructureSubPerm<TModule>[];
-  isNotMenu?: boolean;            // true면 메뉴에서 숨김
+  isNotMenu?: boolean; // true면 메뉴에서 숨김
 }
 
-type AppStructureItem<TModule> =
-  | AppStructureGroupItem<TModule>
-  | AppStructureLeafItem<TModule>;
+type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
 
 interface AppStructureSubPerm<TModule> {
   code: string;
@@ -54,13 +52,13 @@ interface AppStructureSubPerm<TModule> {
 
 ```typescript
 interface AppRoute {
-  path: string;       // "/form-control/button" (최상위 code 이하 상대 경로)
+  path: string; // "/form-control/button" (최상위 code 이하 상대 경로)
   component: Component;
 }
 
 interface AppFlatMenu {
-  titleChain: string[];  // ["Form Control", "Button"]
-  href: string;          // "/home/form-control/button"
+  titleChain: string[]; // ["Form Control", "Button"]
+  href: string; // "/home/form-control/button"
 }
 
 // usableMenus는 기존 SidebarMenuItem[] 타입 그대로 사용
@@ -77,9 +75,9 @@ function createAppStructure<TModule>(opts: {
 
 interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
-  routes: AppRoute[];                          // 정적 (한 번 추출)
-  usableMenus: Accessor<SidebarMenuItem[]>;    // 반응형 (createMemo)
-  usableFlatMenus: Accessor<AppFlatMenu[]>;    // 반응형
+  routes: AppRoute[]; // 정적 (한 번 추출)
+  usableMenus: Accessor<SidebarMenuItem[]>; // 반응형 (createMemo)
+  usableFlatMenus: Accessor<AppFlatMenu[]>; // 반응형
   permRecord: Accessor<Record<string, boolean>>;
 }
 ```
@@ -114,6 +112,7 @@ children의 상대 경로:  "/form-control/button", "/layout/sidebar", ...
 ### 권한 키 형식
 
 `/` 구분자를 사용한 경로 형식:
+
 - `/home/form-control/button/use`
 - `/home/form-control/button/edit`
 - `/home/sales/invoice/approval/use` (subPerm)

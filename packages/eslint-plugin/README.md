@@ -1,10 +1,10 @@
 # @simplysm/eslint-plugin
 
-Simplysm 프레임워크의 ESLint 플러그인이다. 프로젝트 코드 컨벤션을 강제하기 위한 커스텀 규칙과 recommended 사전 설정을 제공한다.
+An ESLint plugin for the Simplysm framework. It provides custom rules and a recommended preset to enforce project code conventions.
 
-ESLint Flat Config 형식을 사용하며, TypeScript, SolidJS, Tailwind CSS에 대한 규칙을 포함한다.
+Uses ESLint Flat Config format and includes rules for TypeScript, SolidJS, and Tailwind CSS.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/eslint-plugin
@@ -12,41 +12,41 @@ npm install @simplysm/eslint-plugin
 pnpm add @simplysm/eslint-plugin
 ```
 
-### 필수 피어 의존성
+### Required Peer Dependencies
 
-이 플러그인은 다음 패키지에 의존한다:
+This plugin depends on the following packages:
 
-| 패키지 | 설명 |
-|--------|------|
-| `eslint` | ESLint 코어 |
-| `typescript` | TypeScript 컴파일러 |
-| `typescript-eslint` | TypeScript ESLint 파서 및 플러그인 |
-| `eslint-plugin-import` | import/export 관련 규칙 |
-| `eslint-plugin-unused-imports` | 미사용 import 자동 제거 |
-| `eslint-plugin-solid` | SolidJS 전용 규칙 |
-| `eslint-plugin-tailwindcss` | Tailwind CSS 전용 규칙 |
-| `globals` | 전역 변수 정의 |
+| Package | Description |
+|---------|-------------|
+| `eslint` | ESLint core |
+| `typescript` | TypeScript compiler |
+| `typescript-eslint` | TypeScript ESLint parser and plugin |
+| `eslint-plugin-import` | Rules for import/export |
+| `eslint-plugin-unused-imports` | Auto-remove unused imports |
+| `eslint-plugin-solid` | SolidJS-specific rules |
+| `eslint-plugin-tailwindcss` | Tailwind CSS-specific rules |
+| `globals` | Global variable definitions |
 
-## 설정 방법
+## Configuration
 
 ### ESLint Flat Config (eslint.config.js)
 
-#### recommended 설정 사용 (권장)
+#### Using recommended config (recommended)
 
-`recommended` 설정은 커스텀 규칙, TypeScript 규칙, SolidJS 규칙, Tailwind CSS 규칙을 모두 포함하는 종합 설정이다. 대부분의 경우 이 설정만으로 충분하다.
+The `recommended` config is a comprehensive setup that includes custom rules, TypeScript rules, SolidJS rules, and Tailwind CSS rules. This is sufficient for most cases.
 
 ```javascript
 import simplysm from "@simplysm/eslint-plugin";
 
 export default [
-  // recommended 설정 사용
+  // Use recommended config
   simplysm.configs.recommended,
 ];
 ```
 
-#### 개별 규칙만 사용
+#### Using only specific rules
 
-특정 커스텀 규칙만 선택적으로 적용하려면 다음과 같이 설정한다:
+To selectively apply only certain custom rules:
 
 ```javascript
 import simplysm from "@simplysm/eslint-plugin";
@@ -67,32 +67,32 @@ export default [
 
 ---
 
-## 커스텀 규칙
+## Custom Rules
 
-이 플러그인이 직접 제공하는 규칙은 3가지이다.
+This plugin provides 3 custom rules.
 
-| 규칙 | 유형 | 자동 수정 | 기본 심각도 | 설명 |
-|------|------|-----------|-------------|------|
-| [`no-hard-private`](#no-hard-private) | problem | 지원 | error | ECMAScript `#field` 대신 TypeScript `private` 사용 강제 |
-| [`no-subpath-imports-from-simplysm`](#no-subpath-imports-from-simplysm) | problem | 지원 | error | `@simplysm/*/src/` 경로 import 금지 |
-| [`ts-no-throw-not-implemented-error`](#ts-no-throw-not-implemented-error) | suggestion | 미지원 | warn | `NotImplementedError` 사용 경고 |
+| Rule | Type | Auto-fix | Default Severity | Description |
+|------|------|----------|------------------|-------------|
+| [`no-hard-private`](#no-hard-private) | problem | Supported | error | Enforces TypeScript `private` instead of ECMAScript `#field` |
+| [`no-subpath-imports-from-simplysm`](#no-subpath-imports-from-simplysm) | problem | Supported | error | Prohibits importing from `@simplysm/*/src/` paths |
+| [`ts-no-throw-not-implemented-error`](#ts-no-throw-not-implemented-error) | suggestion | Not supported | warn | Warns about usage of `NotImplementedError` |
 
 ---
 
 ### no-hard-private
 
-ECMAScript private 필드(`#field`) 사용을 제한한다. TypeScript의 `private` 키워드와 `_` 접두사 네이밍을 사용해야 한다.
+Restricts the use of ECMAScript private fields (`#field`). Use TypeScript's `private` keyword and `_` prefix naming instead.
 
-`--fix` 옵션으로 자동 변환을 지원한다.
+Supports auto-fix with the `--fix` option.
 
-**검사 대상:**
+**Detection targets:**
 
-- 클래스 필드 선언: `#field`
-- 클래스 메서드 선언: `#method()`
-- 클래스 접근자 선언: `accessor #field`
-- 멤버 접근 표현식: `this.#field`
+- Class field declarations: `#field`
+- Class method declarations: `#method()`
+- Class accessor declarations: `accessor #field`
+- Member access expressions: `this.#field`
 
-**올바른 코드:**
+**Valid code:**
 
 ```typescript
 class Foo {
@@ -105,7 +105,7 @@ class Foo {
 }
 ```
 
-**잘못된 코드:**
+**Invalid code:**
 
 ```typescript
 class Foo {
@@ -118,32 +118,32 @@ class Foo {
 }
 ```
 
-**데코레이터가 있는 경우의 자동 수정:**
+**Auto-fix with decorators:**
 
-데코레이터가 존재하는 멤버도 올바르게 변환된다. `private` 키워드는 데코레이터 다음, `static` 등 다른 키워드 앞에 삽입된다.
+Members with decorators are also correctly converted. The `private` keyword is inserted after decorators and before other keywords like `static`.
 
 ```typescript
-// 수정 전
+// Before fix
 class Foo {
   @Deco
   static #value = 1;
 }
 
-// 수정 후
+// After fix
 class Foo {
   @Deco
   private static _value = 1;
 }
 ```
 
-**제한 사항:**
+**Limitations:**
 
-- 기존에 `_` 접두사가 붙은 동일 이름의 멤버가 이미 존재하면 이름 충돌이 발생할 수 있다. 이 경우 자동 수정이 적용되지 않으며, `nameConflict` 메시지로 수동 조정을 요구한다.
+- If a member with the same name prefixed with `_` already exists, a name conflict occurs. In this case, auto-fix is not applied, and a `nameConflict` message requests manual adjustment.
 
 ```typescript
 class Foo {
   private _value = 1;
-  #value = 2; // 오류: "#value"를 "_value"로 변환할 수 없음 (이름 충돌)
+  #value = 2; // Error: Cannot convert "#value" to "_value" (name conflict)
 }
 ```
 
@@ -151,18 +151,18 @@ class Foo {
 
 ### no-subpath-imports-from-simplysm
 
-`@simplysm/*` 패키지의 `/src/` 경로를 통한 import를 금지한다. 패키지의 공식 진입점(패키지 루트)을 통해서만 import해야 한다.
+Prohibits importing from `@simplysm/*` packages through `/src/` paths. Only import through the official entry point (package root).
 
-`--fix` 옵션으로 패키지 루트 경로로 자동 변환을 지원한다.
+Supports auto-fix with the `--fix` option to convert to package root paths.
 
-**검사 대상:**
+**Detection targets:**
 
-- 정적 import 문: `import ... from '...'`
-- 동적 import: `import('...')`
-- re-export 문: `export { ... } from '...'`
-- re-export all 문: `export * from '...'`
+- Static import statements: `import ... from '...'`
+- Dynamic imports: `import('...')`
+- Re-export statements: `export { ... } from '...'`
+- Re-export all statements: `export * from '...'`
 
-**올바른 코드:**
+**Valid code:**
 
 ```typescript
 import { Foo } from "@simplysm/core-common";
@@ -174,7 +174,7 @@ export { Baz } from "@simplysm/orm-common";
 export * from "@simplysm/service-common";
 ```
 
-**잘못된 코드:**
+**Invalid code:**
 
 ```typescript
 import { Foo } from "@simplysm/core-common/src/types/DateOnly";
@@ -186,12 +186,12 @@ export { Baz } from "@simplysm/orm-common/src/query-builder";
 export * from "@simplysm/service-common/src/protocols";
 ```
 
-**허용되는 서브경로:**
+**Allowed subpaths:**
 
-`/src/`가 아닌 다른 서브경로는 허용된다.
+Subpaths other than `/src/` are allowed.
 
 ```typescript
-// 허용: /src/ 경로가 아님
+// Allowed: not a /src/ path
 import { Foo } from "@simplysm/core-common/utils";
 ```
 
@@ -199,60 +199,60 @@ import { Foo } from "@simplysm/core-common/utils";
 
 ### ts-no-throw-not-implemented-error
 
-`@simplysm/core-common`의 `NotImplementedError`를 `new` 키워드로 생성하는 코드에 대해 경고한다. 미구현 코드가 프로덕션에 포함되는 것을 방지하기 위한 규칙이다.
+Warns about code that creates `NotImplementedError` from `@simplysm/core-common` with the `new` keyword. This rule prevents unimplemented code from being included in production.
 
-`throw` 없이 생성만 해도 경고 대상이다. 자동 수정은 지원하지 않는다.
+It warns even if only creating without throwing. Auto-fix is not supported.
 
-**지원하는 import 형태:**
+**Supported import forms:**
 
-| import 형태 | 감지 여부 |
-|-------------|-----------|
-| named import: `import { NotImplementedError } from "@simplysm/core-common"` | 감지 |
-| aliased import: `import { NotImplementedError as NIE } from "@simplysm/core-common"` | 감지 |
-| namespace import: `import * as CC from "@simplysm/core-common"` | 감지 |
-| 동적 import: `await import("@simplysm/core-common")` | 미감지 |
-| 다른 모듈에서 re-export된 경우 | 미감지 |
+| Import Form | Detected |
+|-------------|----------|
+| named import: `import { NotImplementedError } from "@simplysm/core-common"` | Yes |
+| aliased import: `import { NotImplementedError as NIE } from "@simplysm/core-common"` | Yes |
+| namespace import: `import * as CC from "@simplysm/core-common"` | Yes |
+| dynamic import: `await import("@simplysm/core-common")` | No |
+| Re-exported from another module | No |
 
-**잘못된 코드 (경고 발생):**
+**Invalid code (warnings):**
 
 ```typescript
 import { NotImplementedError } from "@simplysm/core-common";
 
-throw new NotImplementedError();            // 경고: "미구현"
-throw new NotImplementedError("기능 X");     // 경고: "기능 X"
-const err = new NotImplementedError();       // 경고: "미구현"
+throw new NotImplementedError();            // Warning: "Not implemented"
+throw new NotImplementedError("Feature X");     // Warning: "Feature X"
+const err = new NotImplementedError();       // Warning: "Not implemented"
 ```
 
-**aliased import도 감지한다:**
+**Aliased imports are also detected:**
 
 ```typescript
 import { NotImplementedError as NIE } from "@simplysm/core-common";
 
-throw new NIE(); // 경고
+throw new NIE(); // Warning
 ```
 
-**namespace import도 감지한다:**
+**Namespace imports are also detected:**
 
 ```typescript
 import * as CC from "@simplysm/core-common";
 
-throw new CC.NotImplementedError(); // 경고
+throw new CC.NotImplementedError(); // Warning
 ```
 
-**메시지 표시 규칙:**
+**Message display rules:**
 
-- 인자 없이 `new NotImplementedError()`를 호출하면 "미구현"이라는 경고 메시지가 출력된다.
-- 문자열 인자를 전달하면 해당 문자열이 경고 메시지로 사용된다.
+- Calling `new NotImplementedError()` without arguments outputs a warning message "Not implemented".
+- If a string argument is passed, that string is used as the warning message.
 
 ---
 
-## recommended 설정 상세
+## recommended Config Details
 
-`recommended` 설정에 포함된 전체 규칙 목록이다.
+Full list of rules included in the `recommended` config.
 
-### 전역 무시 패턴
+### Global Ignore Patterns
 
-다음 디렉터리는 린트 대상에서 제외된다:
+The following directories are excluded from linting:
 
 - `**/node_modules/**`
 - `**/dist/**`
@@ -260,182 +260,182 @@ throw new CC.NotImplementedError(); // 경고
 - `**/.*/**`
 - `**/_*/**`
 
-### 공통 규칙 (JS/TS)
+### Common Rules (JS/TS)
 
-모든 JS, TS 파일에 적용되는 규칙이다.
+Rules applied to all JS and TS files.
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `no-console` | error | 콘솔 사용 금지 (프로덕션 성능 저하 방지) |
-| `no-warning-comments` | warn | TODO/FIXME 주석 경고 (미완성 코드 확인용) |
-| `eqeqeq` | error | `===` 사용 강제, `== null` 체크는 허용 |
-| `no-self-compare` | error | `x === x`와 같은 자기 자신과의 비교 금지 (오타 방지) |
-| `array-callback-return` | error | `map`/`filter` 등 배열 콜백에서 `return` 누락 방지 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `no-console` | error | Prohibit console usage (prevent production performance degradation) |
+| `no-warning-comments` | warn | Warn about TODO/FIXME comments (to identify incomplete code) |
+| `eqeqeq` | error | Enforce `===`, allow `== null` check |
+| `no-self-compare` | error | Prohibit self-comparison like `x === x` (prevent typos) |
+| `array-callback-return` | error | Prevent missing `return` in array callbacks like `map`/`filter` |
 
-### Node.js 내장 모듈 사용 제한
+### Node.js Built-in Module Restrictions
 
-모든 패키지에서 코드 통일을 위해 Node.js 전용 API 사용을 제한한다.
+Restrict Node.js-specific API usage for code consistency across all packages.
 
-| 제한 대상 | 규칙 | 대안 |
-|-----------|------|------|
-| `Buffer` (전역) | `no-restricted-globals` | `Uint8Array`, `@simplysm/core-common`의 `BytesUtils` |
-| `buffer` (import) | `no-restricted-imports` | `Uint8Array`, `@simplysm/core-common`의 `BytesUtils` |
-| `events` (import) | `no-restricted-imports` | `@simplysm/core-common`의 `SdEventEmitter` |
-| `eventemitter3` (import) | `no-restricted-imports` | `@simplysm/core-common`의 `SdEventEmitter` |
+| Restricted Target | Rule | Alternative |
+|-------------------|------|-------------|
+| `Buffer` (global) | `no-restricted-globals` | `Uint8Array`, `BytesUtils` from `@simplysm/core-common` |
+| `buffer` (import) | `no-restricted-imports` | `Uint8Array`, `BytesUtils` from `@simplysm/core-common` |
+| `events` (import) | `no-restricted-imports` | `SdEventEmitter` from `@simplysm/core-common` |
+| `eventemitter3` (import) | `no-restricted-imports` | `SdEventEmitter` from `@simplysm/core-common` |
 
-### 미사용 import 규칙
+### Unused Imports Rules
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `unused-imports/no-unused-imports` | error | 미사용 import 자동 제거 |
-| `unused-imports/no-unused-vars` | error | 미사용 변수 감지 (`_` 접두사 변수/인자는 허용) |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `unused-imports/no-unused-imports` | error | Auto-remove unused imports |
+| `unused-imports/no-unused-vars` | error | Detect unused variables (allow `_` prefix variables/arguments) |
 
-### import 의존성 검사
+### Import Dependency Check
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `import/no-extraneous-dependencies` | error | `package.json`에 선언되지 않은 외부 의존성 import 금지 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `import/no-extraneous-dependencies` | error | Prohibit importing external dependencies not declared in `package.json` |
 
-`devDependencies`는 다음 경로에서만 허용된다:
+`devDependencies` are only allowed in the following paths:
 
-- JS 파일: `**/lib/**`, `**/eslint.config.js`, `**/simplysm.js`, `**/vitest.config.js`
-- TS 파일: `**/lib/**`, `**/eslint.config.ts`, `**/simplysm.ts`, `**/vitest.config.ts`, `**/vitest.setup.ts`
-
----
-
-### JS 파일 전용 규칙 (.js, .jsx)
-
-JS 파일에만 적용되는 규칙이다. TS 파일에서는 TypeScript 컴파일러가 동일한 검사를 수행하므로 별도로 적용하지 않는다.
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `require-await` | error | `async` 함수에 `await` 필수 |
-| `no-shadow` | error | 변수 섀도잉 금지 |
-| `no-duplicate-imports` | error | 중복 import 금지 |
-| `no-unused-expressions` | error | 미사용 표현식 금지 |
-| `no-undef` | error | 정의되지 않은 변수 사용 금지 |
+- JS files: `**/lib/**`, `**/eslint.config.js`, `**/simplysm.js`, `**/vitest.config.js`
+- TS files: `**/lib/**`, `**/eslint.config.ts`, `**/simplysm.ts`, `**/vitest.config.ts`, `**/vitest.setup.ts`
 
 ---
 
-### TypeScript 규칙 (.ts, .tsx)
+### JS-only Rules (.js, .jsx)
 
-`@typescript-eslint` 기반으로 적용되는 규칙이다. 타입 정보를 활용한 정밀한 검사를 수행한다.
+Rules applied only to JS files. Not applied to TS files as the TypeScript compiler performs the same checks.
 
-#### 비동기 관련
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `@typescript-eslint/require-await` | error | `async` 함수에 `await` 필수 |
-| `@typescript-eslint/await-thenable` | error | thenable 객체만 `await` 허용 |
-| `@typescript-eslint/return-await` | error | `try-catch` 내에서만 `return await` 허용 |
-| `@typescript-eslint/no-floating-promises` | error | 처리되지 않은 Promise 금지 |
-| `@typescript-eslint/no-misused-promises` | error | void 콜백에 async 함수 전달 시 에러 누락 방지 (`arguments`, `attributes` 제외) |
-
-#### 타입 안전성
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `@typescript-eslint/strict-boolean-expressions` | error | 엄격한 boolean 표현식 강제 (nullable boolean/object 허용) |
-| `@typescript-eslint/no-unnecessary-condition` | error | 불필요한 조건 검사 금지 (상수 루프 조건 허용) |
-| `@typescript-eslint/no-unnecessary-type-assertion` | error | 불필요한 타입 단언 금지 |
-| `@typescript-eslint/only-throw-error` | error | Error 객체가 아닌 것을 throw하는 것 금지 (스택 트레이스 보존) |
-
-#### 코드 스타일
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `@typescript-eslint/no-shadow` | error | 변수 섀도잉 금지 |
-| `@typescript-eslint/prefer-reduce-type-parameter` | error | `reduce` 타입 파라미터 사용 권장 |
-| `@typescript-eslint/prefer-return-this-type` | error | `this` 반환 타입 사용 권장 |
-| `@typescript-eslint/no-unused-expressions` | error | 미사용 표현식 금지 |
-| `@typescript-eslint/prefer-readonly` | error | 변경하지 않는 멤버에 `readonly` 사용 권장 |
-| `@typescript-eslint/no-array-delete` | error | 배열에 `delete` 사용 금지 (희소 배열 버그 방지) |
-
-#### ts-comment 규칙
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `@typescript-eslint/ban-ts-comment` | error | `@ts-expect-error`는 3글자 이상의 설명 필수 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `require-await` | error | Require `await` in `async` functions |
+| `no-shadow` | error | Prohibit variable shadowing |
+| `no-duplicate-imports` | error | Prohibit duplicate imports |
+| `no-unused-expressions` | error | Prohibit unused expressions |
+| `no-undef` | error | Prohibit using undefined variables |
 
 ---
 
-### SolidJS 규칙 (.ts, .tsx)
+### TypeScript Rules (.ts, .tsx)
 
-`eslint-plugin-solid` 기반으로 적용되는 규칙이다. `.ts`, `.tsx` 파일 모두에 적용된다.
+Rules applied based on `@typescript-eslint`. Performs precise checks using type information.
 
-#### 실수 방지
+#### Async-related
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `solid/reactivity` | error | 반응성 손실 감지 (`makePersisted` 커스텀 반응 함수 등록) |
-| `solid/no-destructure` | error | props 구조분해 금지 (반응성 손실 방지) |
-| `solid/components-return-once` | error | 컴포넌트의 early return 금지 |
-| `solid/jsx-no-duplicate-props` | error | 중복 props 금지 |
-| `solid/jsx-no-undef` | error | 정의되지 않은 JSX 변수 사용 금지 (TypeScript 지원 활성화) |
-| `solid/no-react-deps` | error | React 스타일 의존성 배열 사용 금지 |
-| `solid/no-react-specific-props` | error | React 전용 props 사용 금지 (`className` 등) |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `@typescript-eslint/require-await` | error | Require `await` in `async` functions |
+| `@typescript-eslint/await-thenable` | error | Only allow `await` on thenable objects |
+| `@typescript-eslint/return-await` | error | Allow `return await` only inside `try-catch` |
+| `@typescript-eslint/no-floating-promises` | error | Prohibit unhandled Promises |
+| `@typescript-eslint/no-misused-promises` | error | Prevent error loss when passing async functions to void callbacks (excludes `arguments`, `attributes`) |
 
-#### 보안
+#### Type Safety
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `solid/no-innerhtml` | error | `innerHTML` 사용 금지 (XSS 방지) |
-| `solid/jsx-no-script-url` | error | `javascript:` URL 사용 금지 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `@typescript-eslint/strict-boolean-expressions` | error | Enforce strict boolean expressions (allow nullable boolean/object) |
+| `@typescript-eslint/no-unnecessary-condition` | error | Prohibit unnecessary condition checks (allow constant loop conditions) |
+| `@typescript-eslint/no-unnecessary-type-assertion` | error | Prohibit unnecessary type assertions |
+| `@typescript-eslint/only-throw-error` | error | Prohibit throwing non-Error objects (preserve stack trace) |
 
-#### 도구 지원
+#### Code Style
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `solid/jsx-uses-vars` | error | JSX에서 사용된 변수가 unused import로 오탐되지 않도록 방지 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `@typescript-eslint/no-shadow` | error | Prohibit variable shadowing |
+| `@typescript-eslint/prefer-reduce-type-parameter` | error | Recommend using `reduce` type parameter |
+| `@typescript-eslint/prefer-return-this-type` | error | Recommend using `this` return type |
+| `@typescript-eslint/no-unused-expressions` | error | Prohibit unused expressions |
+| `@typescript-eslint/prefer-readonly` | error | Recommend `readonly` for members that don't change |
+| `@typescript-eslint/no-array-delete` | error | Prohibit using `delete` on arrays (prevent sparse array bugs) |
 
-#### 컨벤션
+#### ts-comment Rules
 
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `solid/prefer-for` | error | `For` 컴포넌트 사용 권장 |
-| `solid/event-handlers` | error | 이벤트 핸들러 네이밍 규칙 강제 |
-| `solid/imports` | error | import 일관성 강제 |
-| `solid/style-prop` | error | `style` prop 형식 강제 |
-| `solid/self-closing-comp` | error | 자체 닫기 태그 강제 |
-
----
-
-### Tailwind CSS 규칙 (.ts, .tsx)
-
-`eslint-plugin-tailwindcss` 기반으로 적용되는 규칙이다. `clsx` 템플릿 리터럴 태그도 인식한다.
-
-| 규칙 | 심각도 | 설명 |
-|------|--------|------|
-| `tailwindcss/classnames-order` | warn | 클래스 순서 자동 정렬 |
-| `tailwindcss/enforces-negative-arbitrary-values` | error | 음수 임의값 형식 통일 |
-| `tailwindcss/enforces-shorthand` | error | 축약형 사용 권장 |
-| `tailwindcss/no-contradicting-classname` | error | 충돌하는 클래스 금지 (`p-2 p-4` 등) |
-| `tailwindcss/no-custom-classname` | error | Tailwind에 정의되지 않은 커스텀 클래스 금지 |
-| `tailwindcss/no-unnecessary-arbitrary-value` | error | 불필요한 임의값 금지 |
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `@typescript-eslint/ban-ts-comment` | error | Require 3+ character description for `@ts-expect-error` |
 
 ---
 
-### 테스트 파일 예외 규칙
+### SolidJS Rules (.ts, .tsx)
 
-`**/tests/**/*.ts`, `**/tests/**/*.tsx` 경로의 테스트 파일에는 다음 규칙이 완화된다:
+Rules applied based on `eslint-plugin-solid`. Applied to both `.ts` and `.tsx` files.
 
-| 규칙 | 변경 | 이유 |
-|------|------|------|
-| `no-console` | off | 테스트에서 디버그 출력 허용 |
-| `import/no-extraneous-dependencies` | off | 루트 `devDependencies`(vitest 등) 사용 허용 |
-| `@simplysm/ts-no-throw-not-implemented-error` | off | 테스트 코드에서 미구현 에러 사용 허용 |
-| `solid/reactivity` | off | 테스트에서 `waitFor` 등 비동기 콜백 내 signal 접근은 의도된 동작 |
+#### Mistake Prevention
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `solid/reactivity` | error | Detect reactivity loss (registers custom reactive functions like `makePersisted`) |
+| `solid/no-destructure` | error | Prohibit destructuring props (prevent reactivity loss) |
+| `solid/components-return-once` | error | Prohibit early returns in components |
+| `solid/jsx-no-duplicate-props` | error | Prohibit duplicate props |
+| `solid/jsx-no-undef` | error | Prohibit using undefined JSX variables (TypeScript support enabled) |
+| `solid/no-react-deps` | error | Prohibit React-style dependency arrays |
+| `solid/no-react-specific-props` | error | Prohibit React-specific props (`className`, etc.) |
+
+#### Security
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `solid/no-innerhtml` | error | Prohibit `innerHTML` usage (prevent XSS) |
+| `solid/jsx-no-script-url` | error | Prohibit `javascript:` URLs |
+
+#### Tooling Support
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `solid/jsx-uses-vars` | error | Prevent variables used in JSX from being flagged as unused imports |
+
+#### Conventions
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `solid/prefer-for` | error | Recommend using `For` component |
+| `solid/event-handlers` | error | Enforce event handler naming rules |
+| `solid/imports` | error | Enforce import consistency |
+| `solid/style-prop` | error | Enforce `style` prop format |
+| `solid/self-closing-comp` | error | Enforce self-closing tags |
 
 ---
 
-## 파일별 설정 요약
+### Tailwind CSS Rules (.ts, .tsx)
 
-| 파일 패턴 | 적용 규칙 |
-|-----------|-----------|
-| `.js`, `.jsx` | 공통 규칙 + JS 전용 규칙 + `@simplysm` 커스텀 규칙 + import/unused-imports 규칙 |
-| `.ts`, `.tsx` | 공통 규칙 + `@typescript-eslint` 규칙 + `@simplysm` 커스텀 규칙 + SolidJS 규칙 + Tailwind CSS 규칙 + import/unused-imports 규칙 |
-| `**/tests/**` | 위 규칙에서 일부 완화 |
+Rules applied based on `eslint-plugin-tailwindcss`. Recognizes `clsx` template literal tags.
 
-## 라이선스
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `tailwindcss/classnames-order` | warn | Auto-sort class order |
+| `tailwindcss/enforces-negative-arbitrary-values` | error | Unify negative arbitrary value format |
+| `tailwindcss/enforces-shorthand` | error | Recommend using shorthand |
+| `tailwindcss/no-contradicting-classname` | error | Prohibit conflicting classes (`p-2 p-4`, etc.) |
+| `tailwindcss/no-custom-classname` | error | Prohibit custom classes not defined in Tailwind |
+| `tailwindcss/no-unnecessary-arbitrary-value` | error | Prohibit unnecessary arbitrary values |
+
+---
+
+### Test File Exception Rules
+
+The following rules are relaxed for test files in `**/tests/**/*.ts`, `**/tests/**/*.tsx` paths:
+
+| Rule | Change | Reason |
+|------|--------|--------|
+| `no-console` | off | Allow debug output in tests |
+| `import/no-extraneous-dependencies` | off | Allow using root `devDependencies` (vitest, etc.) |
+| `@simplysm/ts-no-throw-not-implemented-error` | off | Allow using not-implemented errors in test code |
+| `solid/reactivity` | off | Accessing signals inside async callbacks like `waitFor` in tests is intentional |
+
+---
+
+## Configuration Summary by File Type
+
+| File Pattern | Applied Rules |
+|--------------|---------------|
+| `.js`, `.jsx` | Common rules + JS-only rules + `@simplysm` custom rules + import/unused-imports rules |
+| `.ts`, `.tsx` | Common rules + `@typescript-eslint` rules + `@simplysm` custom rules + SolidJS rules + Tailwind CSS rules + import/unused-imports rules |
+| `**/tests/**` | Above rules with some relaxed |
+
+## License
 
 Apache-2.0

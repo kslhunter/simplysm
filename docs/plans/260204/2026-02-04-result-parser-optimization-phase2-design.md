@@ -7,16 +7,17 @@
 ## 배경
 
 ### 1단계 완료 사항
+
 - `objClone` 호출 4곳 제거 완료
 - 성능 테스트 추가
 
 ### 2단계 최적화 대상
 
-| 대상 | 현재 코드 | 문제점 | 결정 |
-|------|----------|--------|------|
-| serializeGroupKey | `Object.entries().sort()` | 매 레코드마다 정렬 | ✅ 최적화 |
-| JSON.stringify | 중복 체크용 해시 | CPU/메모리 비용 높음 | ✅ 최적화 |
-| objEqual | 깊은 비교 | 호출 빈도 낮음 | ⏭️ 유지 |
+| 대상              | 현재 코드                 | 문제점               | 결정      |
+| ----------------- | ------------------------- | -------------------- | --------- |
+| serializeGroupKey | `Object.entries().sort()` | 매 레코드마다 정렬   | ✅ 최적화 |
+| JSON.stringify    | 중복 체크용 해시          | CPU/메모리 비용 높음 | ✅ 최적화 |
+| objEqual          | 깊은 비교                 | 호출 빈도 낮음       | ⏭️ 유지   |
 
 ---
 
@@ -40,16 +41,14 @@ function serializeGroupKey(groupKey: Record<string, unknown>): string {
 ### 변경 후
 
 ```typescript
-function serializeGroupKey(
-  groupKey: Record<string, unknown>,
-  cachedKeyOrder?: string[],
-): string {
+function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
   return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
 }
 ```
 
 호출부에서 캐싱:
+
 ```typescript
 // groupRecordsRecursively 내부
 let groupKeyOrder: string[] | undefined;

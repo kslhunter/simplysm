@@ -13,6 +13,7 @@
 ## Task 1: serializeGroupKey 시그니처 변경
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:247-250`
 
 **Step 1: 함수 시그니처 변경**
@@ -25,10 +26,7 @@ function serializeGroupKey(groupKey: Record<string, unknown>): string {
 }
 
 // After
-function serializeGroupKey(
-  groupKey: Record<string, unknown>,
-  cachedKeyOrder?: string[],
-): string {
+function serializeGroupKey(groupKey: Record<string, unknown>, cachedKeyOrder?: string[]): string {
   const keys = cachedKeyOrder ?? Object.keys(groupKey).sort((a, b) => a.localeCompare(b));
   return keys.map((k) => `${k}:${groupKey[k] === null ? "null" : String(groupKey[k])}`).join("|");
 }
@@ -50,6 +48,7 @@ git commit -m "perf(orm-common): serializeGroupKey에 cachedKeyOrder 파라미�
 ## Task 2: groupRecordsRecursively에서 키 순서 캐싱
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:289-293`
 
 **Step 1: 캐싱 로직 추가**
@@ -93,6 +92,7 @@ git commit -m "perf(orm-common): groupRecordsRecursively에서 키 순서 캐싱
 ## Task 3: JSON.stringify를 serializeGroupKey로 대체
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:422,426`
 
 **Step 1: Line 422 수정**

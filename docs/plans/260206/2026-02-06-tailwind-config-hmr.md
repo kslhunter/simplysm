@@ -13,6 +13,7 @@
 ### Task 1: 의존성 추적 유틸리티 함수 — 테스트 작성
 
 **Files:**
+
 - Create: `packages/cli/tests/tailwind-config-deps.spec.ts`
 
 **Step 1: 테스트 파일 작성**
@@ -60,6 +61,7 @@ Expected: FAIL — 모듈을 찾을 수 없음
 ### Task 2: 의존성 추적 유틸리티 함수 — 구현
 
 **Files:**
+
 - Create: `packages/cli/src/utils/tailwind-config-deps.ts`
 
 **Step 1: 유틸리티 함수 구현**
@@ -91,12 +93,8 @@ function resolveWithExtension(file: string, extensions: string[]): string | null
 
 function resolvePackageFile(specifier: string, fromDir: string): string | null {
   const parts = specifier.split("/");
-  const pkgName = specifier.startsWith("@")
-    ? parts.slice(0, 2).join("/")
-    : parts[0];
-  const subPath = specifier.startsWith("@")
-    ? parts.slice(2).join("/")
-    : parts.slice(1).join("/");
+  const pkgName = specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
+  const subPath = specifier.startsWith("@") ? parts.slice(2).join("/") : parts.slice(1).join("/");
 
   let searchDir = fromDir;
   while (true) {
@@ -183,6 +181,7 @@ git commit -m "feat(cli): tailwind config 의존성 재귀 추적 유틸리티 �
 ### Task 3: Vite 플러그인 적용
 
 **Files:**
+
 - Modify: `packages/cli/src/utils/vite-config.ts`
 
 **Step 1: import 추가**

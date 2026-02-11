@@ -9,12 +9,12 @@
 
 ## 설계 결정
 
-| 항목 | 결정 |
-|------|------|
-| 비동기 지원 | O (서버, IndexedDB 등) |
-| loading 상태 노출 | O (세 번째 반환값) |
-| 주입 위치 | ConfigContext 확장 |
-| 오버라이드 범위 | 전역만 (ConfigContext 단일 설정) |
+| 항목              | 결정                             |
+| ----------------- | -------------------------------- |
+| 비동기 지원       | O (서버, IndexedDB 등)           |
+| loading 상태 노출 | O (세 번째 반환값)               |
+| 주입 위치         | ConfigContext 확장               |
+| 오버라이드 범위   | 전역만 (ConfigContext 단일 설정) |
 
 ## StorageAdapter 인터페이스
 
@@ -33,17 +33,14 @@ export interface StorageAdapter {
 ```typescript
 export interface AppConfig {
   clientName: string;
-  storage?: StorageAdapter;  // 없으면 localStorage 폴백
+  storage?: StorageAdapter; // 없으면 localStorage 폴백
 }
 ```
 
 ## usePersisted 변경
 
 ```typescript
-export function usePersisted<T>(
-  key: string,
-  initialValue: T,
-): [Accessor<T>, Setter<T>, Accessor<boolean>] {
+export function usePersisted<T>(key: string, initialValue: T): [Accessor<T>, Setter<T>, Accessor<boolean>] {
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
   const storage = config.storage ?? localStorage;
@@ -77,11 +74,11 @@ export function usePersisted<T>(
 
 ## 변경 파일
 
-| 파일 | 변경 |
-|------|------|
-| `packages/solid/src/contexts/ConfigContext.ts` | `StorageAdapter` 인터페이스 정의, `AppConfig.storage` 추가 |
-| `packages/solid/src/contexts/usePersisted.ts` | storage를 ConfigContext에서 읽기, loading 추가, 반환 타입 확장 |
-| `packages/solid/src/index.ts` | `StorageAdapter` 타입 export |
+| 파일                                           | 변경                                                           |
+| ---------------------------------------------- | -------------------------------------------------------------- |
+| `packages/solid/src/contexts/ConfigContext.ts` | `StorageAdapter` 인터페이스 정의, `AppConfig.storage` 추가     |
+| `packages/solid/src/contexts/usePersisted.ts`  | storage를 ConfigContext에서 읽기, loading 추가, 반환 타입 확장 |
+| `packages/solid/src/index.ts`                  | `StorageAdapter` 타입 export                                   |
 
 ## 변경 불필요 파일
 

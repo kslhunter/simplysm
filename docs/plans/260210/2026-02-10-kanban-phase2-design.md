@@ -5,12 +5,12 @@
 
 ## 0. Angular Legacy와의 차이점
 
-| 항목 | Angular Legacy | Solid 재설계 |
-|------|---------------|-------------|
-| `_drag-position` 오버레이 | 각 카드마다 absolute 오버레이 | **제거** — 카드 호스트에서 직접 dragover |
-| Placeholder 위치 | 각 카드 내부에 `_drop-position` | **Lane이 단일 placeholder 관리** |
-| 드롭 위치 판정 | 카드 위 드롭 = "이 카드 앞에" | 마우스 Y 좌표로 **before/after 판정** |
-| 위치 전달 | Board에 카드 인스턴스 전달 | Card가 **element + value + position**을 Lane Context에 전달 |
+| 항목                      | Angular Legacy                  | Solid 재설계                                                |
+| ------------------------- | ------------------------------- | ----------------------------------------------------------- |
+| `_drag-position` 오버레이 | 각 카드마다 absolute 오버레이   | **제거** — 카드 호스트에서 직접 dragover                    |
+| Placeholder 위치          | 각 카드 내부에 `_drop-position` | **Lane이 단일 placeholder 관리**                            |
+| 드롭 위치 판정            | 카드 위 드롭 = "이 카드 앞에"   | 마우스 Y 좌표로 **before/after 판정**                       |
+| 위치 전달                 | Board에 카드 인스턴스 전달      | Card가 **element + value + position**을 Lane Context에 전달 |
 
 ---
 
@@ -23,28 +23,32 @@
 export interface KanbanCardRef<L = unknown, T = unknown> {
   value: T | undefined;
   laneValue: L | undefined;
-  heightOnDrag: number;  // dragstart 시 캡처한 호스트 높이
+  heightOnDrag: number; // dragstart 시 캡처한 호스트 높이
 }
 
 // 드롭 이벤트 정보
 export interface KanbanDropInfo<L = unknown, T = unknown> {
-  sourceValue?: T;         // 드래그한 카드의 value
-  targetLaneValue?: L;     // 드롭 대상 레인의 value
-  targetCardValue?: T;     // 드롭 대상 카드의 value (빈 레인 끝이면 undefined)
-  position?: "before" | "after";  // targetCard 기준 앞/뒤 (targetCardValue가 있을 때만)
+  sourceValue?: T; // 드래그한 카드의 value
+  targetLaneValue?: L; // 드롭 대상 레인의 value
+  targetCardValue?: T; // 드롭 대상 카드의 value (빈 레인 끝이면 undefined)
+  position?: "before" | "after"; // targetCard 기준 앞/뒤 (targetCardValue가 있을 때만)
 }
 
 // 드롭 타겟 정보 (Lane이 placeholder 배치에 사용)
 export interface KanbanDropTarget<T = unknown> {
-  element: HTMLElement;          // 대상 카드의 DOM 요소
-  value: T | undefined;         // 대상 카드의 value
+  element: HTMLElement; // 대상 카드의 DOM 요소
+  value: T | undefined; // 대상 카드의 value
   position: "before" | "after"; // 앞/뒤
 }
 
 export interface KanbanContextValue<L = unknown, T = unknown> {
   dragCard: Accessor<KanbanCardRef<L, T> | undefined>;
   setDragCard: Setter<KanbanCardRef<L, T> | undefined>;
-  onDropTo: (targetLaneValue: L | undefined, targetCardValue: T | undefined, position: "before" | "after" | undefined) => void;
+  onDropTo: (
+    targetLaneValue: L | undefined,
+    targetCardValue: T | undefined,
+    position: "before" | "after" | undefined,
+  ) => void;
 }
 
 export interface KanbanLaneContextValue<L = unknown, T = unknown> {
@@ -60,32 +64,32 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
 
 ### Board (Kanban)
 
-| 역할 | 구현 |
-|------|------|
+| 역할                 | 구현                                           |
+| -------------------- | ---------------------------------------------- |
 | `dragCard` 상태 관리 | `createSignal<KanbanCardRef>()` → Context 제공 |
-| `onDropTo` 콜백 | `props.onDrop` 호출 + dragCard 초기화 |
-| 드래그 종료 정리 | `document:dragend` → `setDragCard(undefined)` |
+| `onDropTo` 콜백      | `props.onDrop` 호출 + dragCard 초기화          |
+| 드래그 종료 정리     | `document:dragend` → `setDragCard(undefined)`  |
 
 ### Lane (Kanban.Lane)
 
-| 역할 | 구현 |
-|------|------|
-| `dropTarget` 상태 관리 | `createSignal<KanbanDropTarget>()` → Lane Context 제공 |
-| Placeholder 렌더링 | 단일 div, `insertBefore`로 DOM 배치 |
-| 같은 위치 최적화 | referenceNode가 동일하면 DOM 조작 생략 |
-| 빈 영역 드롭 | Lane 바닥 영역 dragover/drop 처리 |
-| Lane 이탈 감지 | `dragenter`/`dragleave` 카운터 패턴 |
-| dragCard 리셋 시 정리 | `createEffect`로 dragCard가 undefined되면 dropTarget 초기화 |
+| 역할                   | 구현                                                        |
+| ---------------------- | ----------------------------------------------------------- |
+| `dropTarget` 상태 관리 | `createSignal<KanbanDropTarget>()` → Lane Context 제공      |
+| Placeholder 렌더링     | 단일 div, `insertBefore`로 DOM 배치                         |
+| 같은 위치 최적화       | referenceNode가 동일하면 DOM 조작 생략                      |
+| 빈 영역 드롭           | Lane 바닥 영역 dragover/drop 처리                           |
+| Lane 이탈 감지         | `dragenter`/`dragleave` 카운터 패턴                         |
+| dragCard 리셋 시 정리  | `createEffect`로 dragCard가 undefined되면 dropTarget 초기화 |
 
 ### Card (Kanban.Card)
 
-| 역할 | 구현 |
-|------|------|
-| 드래그 시작 | `dragstart` → heightOnDrag 캡처 → `setDragCard()` |
+| 역할             | 구현                                                                           |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 드래그 시작      | `dragstart` → heightOnDrag 캡처 → `setDragCard()`                              |
 | 드래그 오버 감지 | `dragover` → midY 판정 → `laneCtx.setDropTarget({ element, value, position })` |
-| 드롭 처리 | `drop` → `boardCtx.onDropTo(laneValue, cardValue, position)` |
-| 드래그 소스 숨김 | `dragCard()?.value === local.value` → `hidden` 클래스 |
-| `draggable` 제어 | `draggable` prop (기본: true) |
+| 드롭 처리        | `drop` → `boardCtx.onDropTo(laneValue, cardValue, position)`                   |
+| 드래그 소스 숨김 | `dragCard()?.value === local.value` → `hidden` 클래스                          |
+| `draggable` 제어 | `draggable` prop (기본: true)                                                  |
 
 ---
 
@@ -150,15 +154,15 @@ const position = e.clientY < midY ? "before" : "after";
 ```typescript
 // Lane의 createEffect
 const target = dropTarget();
-if (!target) { placeholderEl.remove(); return; }
+if (!target) {
+  placeholderEl.remove();
+  return;
+}
 
-const referenceNode = target.position === "before"
-  ? target.element
-  : target.element.nextElementSibling;  // null이면 끝에 추가
+const referenceNode = target.position === "before" ? target.element : target.element.nextElementSibling; // null이면 끝에 추가
 
 // 이미 올바른 위치면 DOM 조작 생략
-if (placeholderEl.parentNode === containerRef
-    && placeholderEl.nextSibling === referenceNode) {
+if (placeholderEl.parentNode === containerRef && placeholderEl.nextSibling === referenceNode) {
   return;
 }
 
@@ -168,10 +172,7 @@ containerRef.insertBefore(placeholderEl, referenceNode);
 ### 4.4 스타일
 
 ```typescript
-const placeholderClass = clsx(
-  "rounded-lg",
-  "bg-black/10 dark:bg-white/10",
-);
+const placeholderClass = clsx("rounded-lg", "bg-black/10 dark:bg-white/10");
 // height: boardCtx.dragCard()?.heightOnDrag + "px"
 // transition은 불필요 (위치 이동이므로 즉시 반영)
 ```
@@ -193,7 +194,7 @@ const handleDragEnter = () => {
 const handleDragLeave = () => {
   dragEnterCount--;
   if (dragEnterCount === 0) {
-    setDropTarget(undefined);  // 진짜로 Lane을 벗어남
+    setDropTarget(undefined); // 진짜로 Lane을 벗어남
   }
 };
 
@@ -213,19 +214,17 @@ createEffect(() => {
 ### Kanban (Board)
 
 ```typescript
-export interface KanbanProps<L = unknown, T = unknown>
-  extends JSX.HTMLAttributes<HTMLDivElement> {
-  onDrop?: (info: KanbanDropInfo<L, T>) => void;  // 추가
+export interface KanbanProps<L = unknown, T = unknown> extends JSX.HTMLAttributes<HTMLDivElement> {
+  onDrop?: (info: KanbanDropInfo<L, T>) => void; // 추가
 }
 ```
 
 ### Kanban.Card
 
 ```typescript
-export interface KanbanCardProps<T = unknown>
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface KanbanCardProps<T = unknown> extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: T;
-  draggable?: boolean;    // 추가 (기본: true)
+  draggable?: boolean; // 추가 (기본: true)
   contentClass?: string;
   children?: JSX.Element;
 }
@@ -270,11 +269,11 @@ dragover만 처리하면 됨 (dragleave 무시).
 
 ## 9. 파일 수정 범위
 
-| 파일 | 변경 내용 |
-|------|----------|
-| `KanbanContext.ts` | `KanbanCardRef`, `KanbanDropInfo`, `KanbanDropTarget` 타입 추가. Context 인터페이스 확장. |
-| `Kanban.tsx` | Board: dragCard 시그널, onDropTo, document:dragend. Lane: dropTarget, placeholder, 카운터. Card: dragstart, dragover, drop, draggable, hidden. |
-| `KanbanPage.tsx` (데모) | onDrop 핸들러 추가, DnD 동작 검증용 데이터 이동 로직. |
+| 파일                    | 변경 내용                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `KanbanContext.ts`      | `KanbanCardRef`, `KanbanDropInfo`, `KanbanDropTarget` 타입 추가. Context 인터페이스 확장.                                                      |
+| `Kanban.tsx`            | Board: dragCard 시그널, onDropTo, document:dragend. Lane: dropTarget, placeholder, 카운터. Card: dragstart, dragover, drop, draggable, hidden. |
+| `KanbanPage.tsx` (데모) | onDrop 핸들러 추가, DnD 동작 검증용 데이터 이동 로직.                                                                                          |
 
 ---
 

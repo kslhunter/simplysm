@@ -13,6 +13,7 @@
 ### Task 1: StatePreset 컴포넌트 작성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/state-preset/StatePreset.tsx`
 
 **Step 1: 컴포넌트 파일 작성**
@@ -47,10 +48,7 @@ export interface StatePresetProps<T> {
 
 // --- 스타일 ---
 
-const baseClass = clsx(
-  "inline-flex items-center gap-1.5",
-  "flex-wrap",
-);
+const baseClass = clsx("inline-flex items-center gap-1.5", "flex-wrap");
 
 const chipClass = clsx(
   "inline-flex items-center gap-1",
@@ -102,21 +100,11 @@ const inputSizeClasses: Record<StatePresetSize, string> = {
 // --- 컴포넌트 ---
 
 function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "key",
-    "value",
-    "onValueChange",
-    "size",
-    "class",
-    "style",
-  ]);
+  const [local, rest] = splitProps(props, ["key", "value", "onValueChange", "size", "class", "style"]);
 
   const notification = useNotification();
 
-  const [presets, setPresets] = usePersisted<StatePresetItem<T>[]>(
-    `state-preset.${local.key}`,
-    [],
-  );
+  const [presets, setPresets] = usePersisted<StatePresetItem<T>[]>(`state-preset.${local.key}`, []);
 
   const [showInput, setShowInput] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
@@ -126,10 +114,7 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
     const name = inputValue().trim();
     if (name === "") return;
 
-    setPresets((prev) => [
-      ...prev,
-      { name, state: objClone(local.value) },
-    ]);
+    setPresets((prev) => [...prev, { name, state: objClone(local.value) }]);
     setInputValue("");
     setShowInput(false);
     notification.info(`'${name}'에 저장되었습니다`);
@@ -147,21 +132,13 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
     const preset = presets()[index];
     const prevState = objClone(preset.state);
 
-    setPresets((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, state: objClone(local.value) } : item,
-      ),
-    );
+    setPresets((prev) => prev.map((item, i) => (i === index ? { ...item, state: objClone(local.value) } : item)));
 
     notification.info(`'${preset.name}'에 저장되었습니다`, undefined, {
       action: {
         label: "실행 취소",
         onClick: () => {
-          setPresets((prev) =>
-            prev.map((item, i) =>
-              i === index ? { ...item, state: prevState } : item,
-            ),
-          );
+          setPresets((prev) => prev.map((item, i) => (i === index ? { ...item, state: prevState } : item)));
         },
       },
     });
@@ -199,17 +176,9 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
   };
 
   return (
-    <div
-      class={twMerge(baseClass, local.class)}
-      style={local.style}
-    >
+    <div class={twMerge(baseClass, local.class)} style={local.style}>
       {/* 추가 버튼 */}
-      <button
-        type="button"
-        class={starButtonClass}
-        onClick={() => setShowInput(true)}
-        title="프리셋 추가"
-      >
+      <button type="button" class={starButtonClass} onClick={() => setShowInput(true)} title="프리셋 추가">
         <Icon icon={IconStar} size="1.25em" />
       </button>
 
@@ -224,20 +193,10 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
             >
               {preset.name}
             </button>
-            <button
-              type="button"
-              class={iconButtonClass}
-              onClick={() => handleSave(index())}
-              title="현재 상태 저장"
-            >
+            <button type="button" class={iconButtonClass} onClick={() => handleSave(index())} title="현재 상태 저장">
               <Icon icon={IconDeviceFloppy} size="0.875em" />
             </button>
-            <button
-              type="button"
-              class={iconButtonClass}
-              onClick={() => handleRemove(index())}
-              title="삭제"
-            >
+            <button type="button" class={iconButtonClass} onClick={() => handleRemove(index())} title="삭제">
               <Icon icon={IconX} size="0.875em" />
             </button>
           </div>
@@ -289,6 +248,7 @@ git commit -m "feat(solid): StatePreset 컴포넌트 구현"
 ### Task 2: index.ts에 StatePreset export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -316,6 +276,7 @@ git commit -m "feat(solid): index.ts에 StatePreset export 추가"
 ### Task 3: 데모 페이지 작성
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/form-control/StatePresetPage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx` (라우트 추가)
 - Modify: `packages/solid-demo/src/pages/Home.tsx` (메뉴 추가)
@@ -352,11 +313,7 @@ export default function StatePresetPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">필터 상태 저장/복원</h3>
-                <StatePreset<FilterState>
-                  key="demo-filter"
-                  value={filter()}
-                  onValueChange={setFilter}
-                />
+                <StatePreset<FilterState> key="demo-filter" value={filter()} onValueChange={setFilter} />
                 <div class="mt-4 space-y-2">
                   <div class="flex items-center gap-2">
                     <label class="text-sm font-medium">검색:</label>
@@ -405,29 +362,15 @@ export default function StatePresetPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">sm</h3>
-                <StatePreset<FilterState>
-                  key="demo-filter-sm"
-                  value={filter()}
-                  onValueChange={setFilter}
-                  size="sm"
-                />
+                <StatePreset<FilterState> key="demo-filter-sm" value={filter()} onValueChange={setFilter} size="sm" />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 (md)</h3>
-                <StatePreset<FilterState>
-                  key="demo-filter-md"
-                  value={filter()}
-                  onValueChange={setFilter}
-                />
+                <StatePreset<FilterState> key="demo-filter-md" value={filter()} onValueChange={setFilter} />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">lg</h3>
-                <StatePreset<FilterState>
-                  key="demo-filter-lg"
-                  value={filter()}
-                  onValueChange={setFilter}
-                  size="lg"
-                />
+                <StatePreset<FilterState> key="demo-filter-lg" value={filter()} onValueChange={setFilter} size="lg" />
               </div>
             </div>
           </section>
@@ -477,6 +420,7 @@ Run: `pnpm dev`
 **Step 2: 데모 페이지 열기**
 
 브라우저에서 데모 페이지 열고 다음을 검증:
+
 - ⭐ 버튼이 표시되는지
 - 프리셋 추가가 작동하는지 (⭐ → 이름 입력 → Enter)
 - 프리셋 클릭 시 상태가 복원되는지

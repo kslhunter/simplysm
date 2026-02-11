@@ -17,13 +17,13 @@ Kanban (Board 루트)
 
 ### 컴파운드 컴포넌트
 
-| 컴포넌트 | 역할 |
-|----------|------|
-| `Kanban` | Board 루트. DnD/선택 상태 관리 |
-| `Kanban.Lane` | 레인(열). 접기/펼치기, busy, 카드 드롭 영역 |
-| `Kanban.LaneTitle` | 레인 헤더 제목 슬롯 |
-| `Kanban.LaneTools` | 레인 헤더 도구 버튼 슬롯 |
-| `Kanban.Card` | 개별 카드. 드래그/선택 가능 |
+| 컴포넌트           | 역할                                        |
+| ------------------ | ------------------------------------------- |
+| `Kanban`           | Board 루트. DnD/선택 상태 관리              |
+| `Kanban.Lane`      | 레인(열). 접기/펼치기, busy, 카드 드롭 영역 |
+| `Kanban.LaneTitle` | 레인 헤더 제목 슬롯                         |
+| `Kanban.LaneTools` | 레인 헤더 도구 버튼 슬롯                    |
+| `Kanban.Card`      | 개별 카드. 드래그/선택 가능                 |
 
 ### Context
 
@@ -62,7 +62,7 @@ interface KanbanLaneProps<L> {
 // Kanban.Card
 interface KanbanCardProps<T> {
   value?: T;
-  draggable?: boolean;  // 기본 true
+  draggable?: boolean; // 기본 true
   children: JSX.Element;
   class?: string;
 }
@@ -101,11 +101,7 @@ HTML 표준 Drag API (`draggable`, `dragstart`, `dragover`, `drop`) 직접 사�
 ## 사용 예시
 
 ```tsx
-<Kanban
-  onDrop={(info) => handleDrop(info)}
-  value={selectedCards()}
-  onValueChange={setSelectedCards}
->
+<Kanban onDrop={(info) => handleDrop(info)} value={selectedCards()} onValueChange={setSelectedCards}>
   <For each={lanes()}>
     {(lane) => (
       <Kanban.Lane value={lane.id} collapsible>
@@ -113,7 +109,9 @@ HTML 표준 Drag API (`draggable`, `dragstart`, `dragover`, `drop`) 직접 사�
           {lane.name} ({lane.cards.length})
         </Kanban.LaneTitle>
         <Kanban.LaneTools>
-          <Button size="sm" onClick={() => addCard(lane.id)}>+</Button>
+          <Button size="sm" onClick={() => addCard(lane.id)}>
+            +
+          </Button>
         </Kanban.LaneTools>
         <For each={lane.cards}>
           {(card) => (

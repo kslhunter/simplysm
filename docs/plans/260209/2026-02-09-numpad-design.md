@@ -62,14 +62,14 @@ export interface NumpadProps {
 
 ## 버튼 동작
 
-| 버튼 | 동작 |
-|------|------|
-| 0-9 | inputStr에 문자 추가 |
-| . | 소수점 추가 (중복 시 무시) |
-| C | inputStr 초기화, value = undefined |
-| BS | inputStr 마지막 문자 제거 |
-| - | 부호 토글 |
-| ENT | onEnterButtonClick 콜백 호출 |
+| 버튼 | 동작                               |
+| ---- | ---------------------------------- |
+| 0-9  | inputStr에 문자 추가               |
+| .    | 소수점 추가 (중복 시 무시)         |
+| C    | inputStr 초기화, value = undefined |
+| BS   | inputStr 마지막 문자 제거          |
+| -    | 부호 토글                          |
+| ENT  | onEnterButtonClick 콜백 호출       |
 
 ## 스타일
 

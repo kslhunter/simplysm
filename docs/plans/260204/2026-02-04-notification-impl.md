@@ -13,6 +13,7 @@
 ## Task 1: NotificationContext 타입 정의
 
 **Files:**
+
 - Create: `packages/solid/src/components/notification/NotificationContext.ts`
 - Test: `packages/solid/tests/components/notification/NotificationContext.spec.ts`
 
@@ -28,9 +29,7 @@ describe("NotificationContext", () => {
   describe("useNotification", () => {
     it("Provider 없이 사용하면 에러가 발생한다", () => {
       createRoot((dispose) => {
-        expect(() => useNotification()).toThrow(
-          "useNotification must be used within NotificationProvider"
-        );
+        expect(() => useNotification()).toThrow("useNotification must be used within NotificationProvider");
         dispose();
       });
     });
@@ -116,6 +115,7 @@ git commit -m "feat(solid): add NotificationContext with types"
 ## Task 2: NotificationProvider 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/notification/NotificationProvider.tsx`
 - Modify: `packages/solid/tests/components/notification/NotificationContext.spec.ts`
 
@@ -450,6 +450,7 @@ git commit -m "feat(solid): add NotificationProvider with state management"
 ## Task 3: NotificationBanner 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/notification/NotificationBanner.tsx`
 - Create: `packages/solid/tests/components/notification/NotificationBanner.spec.tsx`
 
@@ -740,6 +741,7 @@ git commit -m "feat(solid): add NotificationBanner component"
 ## Task 4: NotificationBell 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/notification/NotificationBell.tsx`
 - Create: `packages/solid/tests/components/notification/NotificationBell.spec.tsx`
 
@@ -1126,6 +1128,7 @@ git commit -m "feat(solid): add NotificationBell component with Dropdown"
 ## Task 5: Live Region 추가 및 index.ts export
 
 **Files:**
+
 - Modify: `packages/solid/src/components/notification/NotificationProvider.tsx`
 - Create: `packages/solid/src/components/notification/index.ts`
 - Modify: `packages/solid/src/index.ts`
@@ -1243,6 +1246,7 @@ git commit -m "feat(solid): add Live Region for accessibility and export notific
 ## Task 6: 데모 페이지 추가
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/feedback/NotificationPage.tsx`
 - Modify: `packages/solid-demo/src/App.tsx` (라우트 추가)
 
@@ -1268,18 +1272,10 @@ const NotificationDemo: Component = () => {
       <Card>
         <h2 class="mb-4 text-lg font-semibold">알림 발생 테스트</h2>
         <div class="flex flex-wrap gap-2">
-          <Button onClick={() => notification.info("정보", "일반 정보 알림입니다.")}>
-            Info
-          </Button>
-          <Button onClick={() => notification.success("성공", "작업이 완료되었습니다.")}>
-            Success
-          </Button>
-          <Button onClick={() => notification.warning("경고", "주의가 필요합니다.")}>
-            Warning
-          </Button>
-          <Button onClick={() => notification.danger("에러", "오류가 발생했습니다.")}>
-            Danger
-          </Button>
+          <Button onClick={() => notification.info("정보", "일반 정보 알림입니다.")}>Info</Button>
+          <Button onClick={() => notification.success("성공", "작업이 완료되었습니다.")}>Success</Button>
+          <Button onClick={() => notification.warning("경고", "주의가 필요합니다.")}>Warning</Button>
+          <Button onClick={() => notification.danger("에러", "오류가 발생했습니다.")}>Danger</Button>
         </div>
       </Card>
 
@@ -1328,6 +1324,7 @@ export const NotificationPage: Component = () => {
 **Step 2: 라우트 추가**
 
 App.tsx의 routes 배열에 추가:
+
 ```tsx
 { path: "/feedback/notification", component: lazy(() => import("./pages/feedback/NotificationPage").then(m => ({ default: m.NotificationPage }))) }
 ```
@@ -1372,12 +1369,12 @@ Expected: 에러 없음
 
 ## 요약
 
-| Task | 파일 | 설명 |
-|------|------|------|
-| 1 | NotificationContext.ts | Context + 타입 정의 |
-| 2 | NotificationProvider.tsx | 상태 관리 + 알림 메서드 |
-| 3 | NotificationBanner.tsx | 상단 슬라이드 배너 |
-| 4 | NotificationBell.tsx | 🔔 버튼 + Dropdown |
-| 5 | index.ts + Live Region | 접근성 + export |
-| 6 | Demo page | 동작 확인용 데모 |
-| 7 | 테스트/린트 | 품질 검증 |
+| Task | 파일                     | 설명                    |
+| ---- | ------------------------ | ----------------------- |
+| 1    | NotificationContext.ts   | Context + 타입 정의     |
+| 2    | NotificationProvider.tsx | 상태 관리 + 알림 메서드 |
+| 3    | NotificationBanner.tsx   | 상단 슬라이드 배너      |
+| 4    | NotificationBell.tsx     | 🔔 버튼 + Dropdown      |
+| 5    | index.ts + Live Region   | 접근성 + export         |
+| 6    | Demo page                | 동작 확인용 데모        |
+| 7    | 테스트/린트              | 품질 검증               |

@@ -28,7 +28,7 @@ interface CheckBoxProps {
   onChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckBoxSize;
-  theme?: CheckBoxTheme;       // 기본 "primary"
+  theme?: CheckBoxTheme; // 기본 "primary"
   inset?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
@@ -44,7 +44,7 @@ interface RadioProps {
   onChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckBoxSize;
-  theme?: CheckBoxTheme;       // 기본 "primary"
+  theme?: CheckBoxTheme; // 기본 "primary"
   inset?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
@@ -54,11 +54,11 @@ interface RadioProps {
 
 ## 동작 차이
 
-| | CheckBox | Radio |
-|---|---|---|
-| 클릭 | `true ↔ false` 토글 | 항상 `true` (해제 불가) |
+|            | CheckBox                            | Radio                           |
+| ---------- | ----------------------------------- | ------------------------------- |
+| 클릭       | `true ↔ false` 토글                 | 항상 `true` (해제 불가)         |
 | 인디케이터 | 사각형 (`rounded-sm`) + 체크 아이콘 | 원형 (`rounded-full`) + 내부 원 |
-| 키보드 | Space로 토글 | Space로 선택 |
+| 키보드     | Space로 토글                        | Space로 선택                    |
 
 ## 스타일 (`CheckBox.styles.ts`)
 
@@ -92,10 +92,10 @@ const indicatorBaseClass = clsx(
 ```typescript
 const themeCheckedClasses: Record<CheckBoxTheme, string> = {
   primary: clsx("bg-primary-500 border-primary-500", "text-white"),
-  info:    clsx("bg-info-500 border-info-500", "text-white"),
+  info: clsx("bg-info-500 border-info-500", "text-white"),
   success: clsx("bg-success-500 border-success-500", "text-white"),
   warning: clsx("bg-warning-500 border-warning-500", "text-white"),
-  danger:  clsx("bg-danger-500 border-danger-500", "text-white"),
+  danger: clsx("bg-danger-500 border-danger-500", "text-white"),
 };
 ```
 

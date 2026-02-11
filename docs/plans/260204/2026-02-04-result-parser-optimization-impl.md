@@ -13,6 +13,7 @@
 ## Task 1: Line 304 - objClone(record) → { ...record }
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:304`
 - Test: `packages/orm-common/tests/utils/result-parser.spec.ts`
 
@@ -50,6 +51,7 @@ git commit -m "perf(orm-common): Line 304 objClone을 얕은 복사로 대체"
 ## Task 2: Line 414 - objClone(newJoinData) 제거
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:414`
 
 **Step 1: Line 414 수정**
@@ -79,6 +81,7 @@ git commit -m "perf(orm-common): Line 414 objClone 제거 (isSingle 관계)"
 ## Task 3: Line 420 - [objClone(newJoinData)] 제거
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:420`
 
 **Step 1: Line 420 수정**
@@ -108,6 +111,7 @@ git commit -m "perf(orm-common): Line 420 objClone 제거 (배열 첫 항목)"
 ## Task 4: Line 430 - objClone(newJoinData) 제거
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:430`
 
 **Step 1: Line 430 수정**
@@ -137,6 +141,7 @@ git commit -m "perf(orm-common): Line 430 objClone 제거 (배열 추가 항목)
 ## Task 5: objClone import 제거 및 최종 검증
 
 **Files:**
+
 - Modify: `packages/orm-common/src/utils/result-parser.ts:1`
 
 **Step 1: import에서 objClone 제거**

@@ -27,6 +27,7 @@
 ### Task 1: contexts/ → providers/ 이동
 
 **Files:**
+
 - Move: `packages/solid/src/contexts/ConfigContext.ts` → `packages/solid/src/providers/ConfigContext.ts`
 - Move: `packages/solid/src/contexts/InitializeProvider.tsx` → `packages/solid/src/providers/InitializeProvider.tsx`
 - Move: `packages/solid/src/contexts/ThemeContext.tsx` → `packages/solid/src/providers/ThemeContext.tsx`
@@ -56,15 +57,19 @@ git mv packages/solid/src/contexts/shared-data/SharedDataChangeEvent.ts packages
 이동된 파일들 간의 상대 import는 같은 폴더 내이므로 변경 없음. 단, 다음 파일들의 외부 참조 수정:
 
 `providers/InitializeProvider.tsx`:
+
 - `"./useClipboardValueCopy"` → `"../hooks/useClipboardValueCopy"` (Task 2 이후에 유효, 일단 보류)
 
 `providers/ThemeContext.tsx`:
+
 - `"./usePersisted"` → `"../hooks/usePersisted"` (Task 2 이후에 유효, 일단 보류)
 
 `providers/ServiceClientProvider.tsx`:
+
 - `"../components/feedback/notification/NotificationContext"` → 경로 변경 없음 (components는 안 움직임)
 
 `providers/shared-data/SharedDataProvider.tsx`:
+
 - `"../ServiceClientContext"` → 경로 변경 없음 (같이 이동)
 - `"../../components/feedback/notification/NotificationContext"` → 경로 변경 없음
 
@@ -95,6 +100,7 @@ git mv packages/solid/src/contexts/shared-data/SharedDataChangeEvent.ts packages
 ### Task 2: utils/ + contexts/ 잔여 파일 → hooks/ + helpers/ 이동
 
 **Files:**
+
 - Move to `hooks/`: `usePersisted.ts` (from contexts/), `useClipboardValueCopy.ts` (from contexts/), `useRouterLink.ts` (from utils/), `createControllableSignal.ts` (from utils/), `createMountTransition.ts` (from utils/), `createIMEHandler.ts` (from utils/)
 - Move to `helpers/`: `mergeStyles.ts` (from utils/), `splitSlots.ts` (from utils/), `createAppStructure.ts` (from utils/)
 - Delete: `contexts/` (빈 폴더), `utils/` (빈 폴더)
@@ -128,19 +134,23 @@ rmdir packages/solid/src/utils
 **Step 2: hooks/ 내부 import 수정**
 
 `hooks/usePersisted.ts`:
+
 - `"./ConfigContext"` → `"../providers/ConfigContext"`
 
 **Step 3: providers/ → hooks/ 참조 수정**
 
 `providers/InitializeProvider.tsx`:
+
 - `"./useClipboardValueCopy"` → `"../hooks/useClipboardValueCopy"`
 
 `providers/ThemeContext.tsx`:
+
 - `"./usePersisted"` → `"../hooks/usePersisted"`
 
 **Step 4: components/ → hooks/ + helpers/ 참조 일괄 수정**
 
 `../../../utils/createControllableSignal` → `../../../hooks/createControllableSignal` (깊이 3단계):
+
 - `components/data/calendar/Calendar.tsx:5`
 - `components/data/sheet/DataSheet.tsx:26`
 - `components/data/list/ListItem.tsx:8`
@@ -166,26 +176,31 @@ rmdir packages/solid/src/utils
 - `components/feedback/loading/LoadingContainer.tsx:5` → createMountTransition
 
 `../../utils/createControllableSignal` → `../../hooks/createControllableSignal` (깊이 2단계):
+
 - `components/disclosure/Dialog.tsx:6-8` → createMountTransition, mergeStyles(→helpers)도 수정
 - `components/disclosure/Dropdown.tsx:2,6-7` → createMountTransition, mergeStyles(→helpers)도 수정
 - `components/disclosure/Collapse.tsx:5` → mergeStyles(→helpers)
 - `components/navigation/Tabs.tsx:4` (이 파일은 Task 3에서 disclosure/로 이동)
 
 `../../../utils/mergeStyles` → `../../../helpers/mergeStyles`:
+
 - `components/layout/sidebar/Sidebar.tsx:6`
 - `components/layout/sidebar/SidebarContainer.tsx:8`
 
 `../../../utils/splitSlots` → `../../../helpers/splitSlots`:
+
 - `components/data/list/ListItem.tsx:11`
 - `components/layout/kanban/Kanban.tsx:21`
 
 `../../../contexts/usePersisted` → `../../../hooks/usePersisted`:
+
 - `components/data/sheet/DataSheet.tsx:30`
 - `components/layout/sidebar/SidebarContainer.tsx:7`
 
 **Step 5: index.ts export 경로 수정 (contexts/ + utils/ 부분만)**
 
 `packages/solid/src/index.ts` 변경:
+
 ```typescript
 // contexts → providers
 export * from "./providers/ConfigContext";
@@ -233,6 +248,7 @@ git commit -m "refactor(solid): contexts/ → providers/, utils/ → hooks/ + he
 ### Task 3: 컴포넌트 카테고리 재배치
 
 **Files:**
+
 - Move: `components/display/ThemeToggle.tsx` → `components/form-control/ThemeToggle.tsx`
 - Move: `components/display/Progress.tsx` → `components/feedback/Progress.tsx`
 - Move: `components/layout/kanban/` → `components/data/kanban/`
@@ -272,14 +288,17 @@ rmdir packages/solid/src/components/print
 **Step 2: 이동된 파일 내부 import 수정**
 
 `components/form-control/ThemeToggle.tsx`:
+
 - `"../../contexts/ThemeContext"` → `"../../providers/ThemeContext"` (Task 1 Step 3에서 이미 수정됨)
 - `"./Icon"` → `"../display/Icon"`
 - `"../../directives/ripple"` → 경로 변경 없음 (form-control도 깊이 2)
 
 `components/feedback/Progress.tsx`:
+
 - `"../../styles/tokens.styles"` → 경로 변경 없음 (feedback도 깊이 2)
 
 `components/data/kanban/Kanban.tsx`:
+
 - `"../../display/Card"` → 경로 변경 없음 (data와 layout 모두 깊이 2)
 - `"../../form-control/checkbox/Checkbox"` → 경로 변경 없음
 - `"../../display/Icon"` → 경로 변경 없음
@@ -288,15 +307,18 @@ rmdir packages/solid/src/components/print
 - `"../../../helpers/splitSlots"` → 경로 변경 없음
 
 `components/disclosure/Tabs.tsx`:
+
 - `"../../hooks/createControllableSignal"` → 경로 변경 없음 (Task 2에서 이미 수정)
 
 `hooks/usePrint.ts`:
+
 - `"../feedback/loading/LoadingContext"` → `"../components/feedback/loading/LoadingContext"`
 - `"./PrintInstanceContext"` → `"../components/feedback/print/PrintInstanceContext"`
 
 **Step 3: index.ts export 경로 수정**
 
 변경할 항목:
+
 ```typescript
 // form-control 섹션에 추가
 export * from "./components/form-control/ThemeToggle";
@@ -347,6 +369,7 @@ git commit -m "refactor(solid): 컴포넌트 카테고리 재배치 (ThemeToggle
 ### Task 4: 테스트 파일 이동
 
 **Files:**
+
 - Move: `tests/contexts/` → `tests/providers/`
 - Move: `tests/utils/` → `tests/hooks/` + `tests/helpers/`
 - Move: `tests/components/navigation/Tabs.spec.tsx` → `tests/components/disclosure/`
@@ -419,6 +442,7 @@ git commit -m "refactor(solid): 테스트 파일 구조를 소스 구조와 동�
 ### Task 5: solid-demo 동기화
 
 **Files:**
+
 - Move: `solid-demo/src/pages/display/ThemeTogglePage.tsx` → `pages/form-control/`
 - Move: `solid-demo/src/pages/display/ProgressPage.tsx` → `pages/feedback/`
 - Move: `solid-demo/src/pages/navigation/TabPage.tsx` → `pages/disclosure/`
@@ -440,11 +464,13 @@ rmdir packages/solid-demo/src/pages/navigation
 `packages/solid-demo/src/appStructure.ts` 변경:
 
 - **form-control 섹션** 마지막에 추가:
+
   ```typescript
   { code: "theme-toggle", title: "ThemeToggle", component: lazy(() => import("./pages/form-control/ThemeTogglePage")) },
   ```
 
 - **disclosure 섹션** 마지막에 추가:
+
   ```typescript
   { code: "tab", title: "Tabs", component: lazy(() => import("./pages/disclosure/TabPage")) },
   ```
@@ -454,6 +480,7 @@ rmdir packages/solid-demo/src/pages/navigation
   - `theme-toggle` 항목
 
 - **feedback 섹션**에 추가:
+
   ```typescript
   { code: "progress", title: "Progress", component: lazy(() => import("./pages/feedback/ProgressPage")) },
   ```
@@ -511,6 +538,7 @@ pnpm dev
 ```
 
 브라우저에서 확인:
+
 - 사이드바 메뉴 구조 정상 표시
 - ThemeToggle → Form Control 섹션
 - Progress → Feedback 섹션

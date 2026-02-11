@@ -15,6 +15,7 @@
 이전 커밋에서 `Select.Item` alias를 제거하고 `SelectItem` separate export로 변경했으나, 방향이 바뀌어 dot notation으로 되돌린다.
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/select/Select.tsx`
 - Modify: `packages/solid/src/index.ts:6`
 - Modify: `packages/solid/tests/components/form/select/Select.spec.tsx`
@@ -69,21 +70,25 @@ export * from "./components/form-control/select/SelectItem";
 **Step 5: 테스트 코드 수정**
 
 `Select.spec.tsx`에서:
+
 1. `import { SelectItem }` 라인 제거
 2. 모든 `<SelectItem` → `<Select.Item`, `</SelectItem>` → `</Select.Item>` 치환
 
 **Step 6: 데모 코드 수정**
 
 `SelectPage.tsx`에서:
+
 1. import에서 `SelectItem` 제거
 2. 모든 `<SelectItem` → `<Select.Item`, `</SelectItem>` → `</Select.Item>` 치환
 3. 모든 `<SelectItem.Children>` → `<Select.Item.Children>`, `</SelectItem.Children>` → `</Select.Item.Children>` 치환
 
 `FormTablePage.tsx`에서:
+
 1. import에서 `SelectItem` 제거
 2. 모든 `<SelectItem` → `<Select.Item`, `</SelectItem>` → `</Select.Item>` 치환
 
 `FormGroupPage.tsx`에서:
+
 1. import에서 `SelectItem` 제거
 2. 모든 `<SelectItem` → `<Select.Item`, `</SelectItem>` → `</Select.Item>` 치환
 
@@ -118,6 +123,7 @@ Expected: PASS
 ### Task 2: ListItem → List.Item dot notation 전환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/list/List.tsx`
 - Modify: `packages/solid/src/components/data/list/ListItem.tsx`
 - Modify: `packages/solid/src/index.ts:38`
@@ -129,6 +135,7 @@ Expected: PASS
 `List.tsx`에서 `ListItem`을 import하고, `ListComponent` 인터페이스를 추가하고, export를 변경한다.
 
 import 추가 (파일 상단):
+
 ```typescript
 import { ListItem } from "./ListItem";
 ```
@@ -179,6 +186,7 @@ export * from "./components/data/list/ListItem";
 **Step 5: 테스트 코드 수정**
 
 `List.spec.tsx`에서:
+
 1. `import { ListItem }` 라인 제거
 2. 모든 `<ListItem` → `<List.Item`, `</ListItem>` → `</List.Item>` 치환
 3. 모든 `<ListItem.Children>` → `<List.Item.Children>`, `</ListItem.Children>` → `</List.Item.Children>` 치환
@@ -186,6 +194,7 @@ export * from "./components/data/list/ListItem";
 **Step 6: 데모 코드 수정**
 
 `ListPage.tsx`에서:
+
 1. import에서 `ListItem` 제거
 2. 모든 `<ListItem` → `<List.Item`, `</ListItem>` → `</List.Item>` 치환
 3. 모든 `<ListItem.Children>` → `<List.Item.Children>`, `</ListItem.Children>` → `</List.Item.Children>` 치환
@@ -205,6 +214,7 @@ Expected: PASS
 ### Task 3: Sidebar 계열 → Sidebar.Container / Sidebar.Menu / Sidebar.User
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/sidebar/Sidebar.tsx`
 - Modify: `packages/solid/src/index.ts:25,27,28`
 - Modify: `packages/solid/tests/components/layout/Sidebar*.spec.tsx` (4개)
@@ -215,6 +225,7 @@ Expected: PASS
 **Step 1: Sidebar.tsx에 compound component 인터페이스 추가**
 
 import 추가:
+
 ```typescript
 import { SidebarContainer } from "./SidebarContainer";
 import { SidebarMenu } from "./SidebarMenu";
@@ -267,6 +278,7 @@ export * from "./components/layout/sidebar/SidebarUser";
 **Step 4: 테스트 코드 수정**
 
 각 테스트 파일에서:
+
 1. `import { SidebarContainer }` → `Sidebar` import에서 접근
 2. `import { SidebarMenu }` → 제거
 3. `import { SidebarUser }` → 제거
@@ -277,6 +289,7 @@ export * from "./components/layout/sidebar/SidebarUser";
 **Step 5: 데모 코드 수정**
 
 `SidebarPage.tsx`, `TopbarPage.tsx`, `MobileLayoutDemoPage.tsx`에서:
+
 1. import에서 `SidebarContainer`, `SidebarMenu`, `SidebarUser` 제거 (Sidebar import 유지)
 2. `<SidebarContainer` → `<Sidebar.Container`, `</SidebarContainer>` → `</Sidebar.Container>` 치환
 3. `<SidebarMenu` → `<Sidebar.Menu` 치환 (self-closing이므로 닫는 태그 없음)
@@ -293,6 +306,7 @@ Expected: PASS
 ### Task 4: Topbar 계열 → Topbar.Container / Topbar.Menu / Topbar.User
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/topbar/Topbar.tsx`
 - Modify: `packages/solid/src/index.ts:30,31,32`
 - Modify: `packages/solid-demo/src/pages/` 하위 **거의 모든 페이지** (TopbarContainer/Topbar import)
@@ -300,6 +314,7 @@ Expected: PASS
 **Step 1: Topbar.tsx에 compound component 인터페이스 추가**
 
 import 추가:
+
 ```typescript
 import { TopbarContainer } from "./TopbarContainer";
 import { TopbarMenu } from "./TopbarMenu";
@@ -350,6 +365,7 @@ export * from "./components/layout/topbar/TopbarUser";
 **Step 4: 데모 코드 수정 — 전체 검색 후 치환**
 
 `packages/solid-demo/src/` 하위 모든 `.tsx` 파일에서:
+
 1. import에서 `TopbarContainer` 제거 (`Topbar` import 유지)
 2. import에서 `TopbarMenu` 제거
 3. import에서 `TopbarUser` 제거
@@ -372,6 +388,7 @@ Expected: PASS
 ### Task 5: CLAUDE.md 규칙 업데이트
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 **Step 1: 기존 컴파운드 컴포넌트 네이밍 규칙 테이블을 다음으로 교체**

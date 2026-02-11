@@ -13,13 +13,14 @@
 ## Task 1: SdConfigFn 타입 정의 수정
 
 **Files:**
+
 - Modify: `packages/cli/src/sd-config.types.ts:197-210`
 
 **Step 1: SdConfigParams 인터페이스 추가 및 SdConfigFn 타입 수정**
 
 `sd-config.types.ts` 파일의 마지막 부분 (197-210행)을 수정:
 
-```typescript
+````typescript
 /**
  * sd.config.ts 함수에 전달되는 파라미터
  */
@@ -49,7 +50,7 @@ export interface SdConfigParams {
  * ```
  */
 export type SdConfigFn = (params: SdConfigParams) => SdConfig | Promise<SdConfig>;
-```
+````
 
 **Step 2: 타입체크 실행**
 
@@ -74,6 +75,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 2: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/index.ts:1-5`
 
 **Step 1: 누락된 export 추가**
@@ -112,6 +114,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 3: publish.ts 중복 spawnAsync 제거
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/publish.ts`
 
 **Step 1: import 수정 및 spawnAsync 제거**
@@ -131,6 +134,7 @@ import { spawn } from "../utils/spawn";
 **Step 2: spawnAsync 호출을 spawn으로 변경**
 
 파일 전체에서 `spawnAsync` → `spawn`으로 변경 (15곳):
+
 - 212행, 346행, 368행, 384행, 449행, 475행, 477행, 482행, 483행, 484행, 485행, 486행, 492행, 579행
 
 **Step 3: 타입체크 실행**
@@ -155,6 +159,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 4: 에러 출력을 consola로 통일
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/build.ts`
 - Modify: `packages/cli/src/commands/dev.ts`
 - Modify: `packages/cli/src/commands/device.ts`
@@ -165,6 +170,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 **Step 1: build.ts 수정 (2곳)**
 
 143행:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
@@ -173,6 +179,7 @@ consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message 
 ```
 
 173행:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
@@ -183,6 +190,7 @@ consola.error(err instanceof Error ? err.message : err);
 **Step 2: dev.ts 수정 (1곳)**
 
 78행:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
@@ -193,6 +201,7 @@ consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message 
 **Step 3: device.ts 수정 (5곳)**
 
 50행, 59행, 66행, 75행, 96행, 117행 모두 동일 패턴:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ 메시지\n`);
@@ -207,6 +216,7 @@ consola.error(`메시지`);
 **Step 5: typecheck.ts 수정 (1곳)**
 
 256행:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ ${err instanceof Error ? err.message : err}\n`);
@@ -217,6 +227,7 @@ consola.error(err instanceof Error ? err.message : err);
 **Step 6: watch.ts 수정 (1곳)**
 
 78행:
+
 ```typescript
 // 기존
 process.stderr.write(`✖ sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}\n`);
@@ -246,6 +257,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 5: device.ts server 타입 가드 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/device.ts:80-86`
 
 **Step 1: 타입 가드 추가**
@@ -290,6 +302,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 6: Worker 종료 시 리소스 정리 개선
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/watch.ts:280-289`
 - Modify: `packages/cli/src/workers/watch.worker.ts:270-276`
 
@@ -367,6 +380,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 7: --options 플래그 문서화
 
 **Files:**
+
 - Modify: `packages/cli/src/sd-cli.ts`
 
 **Step 1: 모든 options 설명 수정**

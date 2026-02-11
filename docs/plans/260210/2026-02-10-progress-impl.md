@@ -13,6 +13,7 @@
 ### Task 1: Progress 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/display/Progress.tsx`
 
 **Step 1: 컴포넌트 파일 작성**
@@ -41,26 +42,16 @@ const baseClass = clsx(
   "border border-base-200 dark:border-base-700",
 );
 
-const insetClass = clsx(
-  "rounded-none border-0",
-  "bg-transparent",
-);
+const insetClass = clsx("rounded-none border-0", "bg-transparent");
 
-const contentBaseClass = clsx(
-  "relative z-[2]",
-  "text-right",
-  "py-1 px-2",
-);
+const contentBaseClass = clsx("relative z-[2]", "text-right", "py-1 px-2");
 
 const sizeClasses: Record<ProgressSize, string> = {
   sm: "py-0.5 px-2",
   lg: "py-2 px-3",
 };
 
-const barBaseClass = clsx(
-  "absolute top-0 left-0 h-full",
-  "z-[1]",
-);
+const barBaseClass = clsx("absolute top-0 left-0 h-full", "z-[1]");
 
 const barThemeClasses: Record<ProgressTheme, string> = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [theme, t.solid]),
@@ -71,23 +62,14 @@ const formatPercent = (value: number): string => {
 };
 
 export const Progress: ParentComponent<ProgressProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "children", "class", "theme", "size", "inset", "value",
-  ]);
+  const [local, rest] = splitProps(props, ["children", "class", "theme", "size", "inset", "value"]);
 
   const getRootClass = () => {
-    return twMerge(
-      baseClass,
-      local.inset && insetClass,
-      local.class,
-    );
+    return twMerge(baseClass, local.inset && insetClass, local.class);
   };
 
   const getContentClass = () => {
-    return twMerge(
-      contentBaseClass,
-      local.size && sizeClasses[local.size],
-    );
+    return twMerge(contentBaseClass, local.size && sizeClasses[local.size]);
   };
 
   const getBarClass = () => {
@@ -97,13 +79,8 @@ export const Progress: ParentComponent<ProgressProps> = (props) => {
 
   return (
     <div data-progress class={getRootClass()} {...rest}>
-      <div class={getContentClass()}>
-        {local.children ?? formatPercent(local.value)}
-      </div>
-      <div
-        class={getBarClass()}
-        style={{ width: `${local.value * 100}%` }}
-      />
+      <div class={getContentClass()}>{local.children ?? formatPercent(local.value)}</div>
+      <div class={getBarClass()} style={{ width: `${local.value * 100}%` }} />
     </div>
   );
 };
@@ -121,6 +98,7 @@ git commit -m "feat(solid): Progress 컴포넌트 구현"
 ### Task 2: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:45-49` (display 섹션)
 
 **Step 1: export 추가**
@@ -163,11 +141,13 @@ Expected: 에러 없음
 ### Task 4: 데모 페이지 작성
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/display/ProgressPage.tsx`
 
 **Step 1: 데모 페이지 작성**
 
 LabelPage.tsx 패턴을 따른다. 섹션:
+
 1. 테마 — 6가지 테마별 Progress (value 0.75)
 2. 사이즈 — 기본 / sm / lg
 3. inset — inset 적용 예시
@@ -195,9 +175,7 @@ export default function ProgressPage() {
               Progress 컴포넌트는 6가지 테마를 지원합니다. 기본값은 primary입니다.
             </p>
             <div class="space-y-2">
-              <For each={themes}>
-                {(theme) => <Progress theme={theme} value={0.75} />}
-              </For>
+              <For each={themes}>{(theme) => <Progress theme={theme} value={0.75} />}</For>
             </div>
           </section>
 
@@ -229,8 +207,12 @@ export default function ProgressPage() {
               children을 전달하면 백분율 대신 커스텀 텍스트를 표시합니다.
             </p>
             <div class="space-y-2">
-              <Progress value={0.3} theme="info">3/10 완료</Progress>
-              <Progress value={0.75} theme="success">다운로드 중...</Progress>
+              <Progress value={0.3} theme="info">
+                3/10 완료
+              </Progress>
+              <Progress value={0.75} theme="success">
+                다운로드 중...
+              </Progress>
             </div>
           </section>
 
@@ -264,6 +246,7 @@ git commit -m "feat(solid-demo): Progress 데모 페이지 추가"
 ### Task 5: 라우터 및 사이드바 메뉴 등록
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/main.tsx` (라우터)
 - Modify: `packages/solid-demo/src/pages/Home.tsx` (사이드바 메뉴)
 

@@ -5,6 +5,7 @@
 **Goal:** MySQL ExprRenderer의 문자열 이스케이프를 강화하여 SQL 인젝션 방지
 
 **Architecture:**
+
 - MySQL의 `escapeString()` 메서드에 백슬래시, NULL 바이트, 제어 문자 이스케이프 추가
 - `escapeValue()`가 `escapeString()`을 재사용하도록 통일
 - TDD 방식으로 먼저 테스트 작성 후 구현
@@ -16,6 +17,7 @@
 ## Task 1: 이스케이프 단위 테스트 작성
 
 **Files:**
+
 - Create: `packages/orm-common/tests/escape.spec.ts`
 
 **Step 1: 테스트 파일 뼈대 작성**
@@ -115,11 +117,13 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Task 2: MySQL escapeString() 강화 구현
 
 **Files:**
+
 - Modify: `packages/orm-common/src/query-builder/mysql/mysql-expr-renderer.ts:82-84`
 
 **Step 1: escapeString() 메서드 강화**
 
 현재 (82-84행):
+
 ```typescript
 escapeString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "''");
@@ -127,6 +131,7 @@ escapeString(value: string): string {
 ```
 
 수정 후:
+
 ```typescript
 escapeString(value: string): string {
   return value
@@ -168,6 +173,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Task 3: escapeValue() 테스트 작성
 
 **Files:**
+
 - Modify: `packages/orm-common/tests/escape.spec.ts`
 
 **Step 1: escapeValue() 테스트 추가**
@@ -228,11 +234,13 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Task 4: escapeValue()가 escapeString() 재사용하도록 수정
 
 **Files:**
+
 - Modify: `packages/orm-common/src/query-builder/mysql/mysql-expr-renderer.ts:87-116`
 
 **Step 1: escapeValue() 수정**
 
 현재 (92행):
+
 ```typescript
 if (typeof value === "string") {
   return `'${value.replace(/'/g, "''")}'`;
@@ -240,6 +248,7 @@ if (typeof value === "string") {
 ```
 
 수정 후:
+
 ```typescript
 if (typeof value === "string") {
   return `'${this.escapeString(value)}'`;
@@ -275,6 +284,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Task 5: ORM 통합 테스트 작성
 
 **Files:**
+
 - Create: `tests/orm/escape-integration.spec.ts`
 
 **Step 1: 통합 테스트 파일 생성**
@@ -405,6 +415,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Task 6: CLAUDE.md에 보안 가이드 추가
 
 **Files:**
+
 - Modify: `CLAUDE.md` (ORM 보안 가이드 섹션 추가)
 
 **Step 1: CLAUDE.md 읽기**
@@ -424,16 +435,19 @@ orm-common은 문자열 이스케이프 방식으로 SQL을 생성합니다.
 다음 규칙을 준수하세요:
 
 #### ✓ 안전한 사용
+
 - 애플리케이션 코드에서 값 검증 후 ORM 사용
 - 타입이 보장된 값 (number, boolean, DateTime 등)
 - 신뢰할 수 있는 내부 데이터
 
 #### ✗ 위험한 사용
+
 - 사용자 입력을 검증 없이 WHERE 조건에 직접 사용
 - 외부 API 응답을 검증 없이 사용
 - 파일 업로드 내용을 검증 없이 사용
 
 #### 권장 패턴
+
 \`\`\`typescript
 // 나쁜 예: 사용자 입력 직접 사용
 const userInput = req.query.name; // "'; DROP TABLE users; --"
@@ -453,6 +467,7 @@ await db.user().where((u) => [expr.eq(u.id, userId)]).result();
 
 orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않습니다.
 대신 강화된 문자열 이스케이프를 사용합니다:
+
 - MySQL: 백슬래시, 따옴표, NULL 바이트, 제어 문자 이스케이프
 - utf8mb4 charset 강제로 멀티바이트 공격 방어
 - **애플리케이션 레벨 입력 검증 필수**
@@ -513,6 +528,7 @@ Expected: 빌드 성공
 ## 남은 작업 (별도 이슈)
 
 다음 작업은 이 구현 계획 범위 밖:
+
 - INSERT 청크 트랜잭션 보호 검증
 - 마이그레이션 롤백 메커니즘
 - WHERE 배열 AND 규칙 문서화

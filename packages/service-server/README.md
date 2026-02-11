@@ -1,10 +1,10 @@
 # @simplysm/service-server
 
-Fastify 기반의 HTTP/WebSocket 서버 패키지이다. RPC 스타일의 서비스 호출, JWT 인증, 파일 업로드, 정적 파일 제공, 실시간 이벤트 등 풀스택 애플리케이션에 필요한 서버 기능을 제공한다.
+A Fastify-based HTTP/WebSocket server package. Provides server features needed for full-stack applications, including RPC-style service invocation, JWT authentication, file upload, static file serving, and real-time events.
 
-`@simplysm/service-client`와 함께 사용하여 클라이언트-서버 간 WebSocket/HTTP 통신을 구성할 수 있다.
+Used together with `@simplysm/service-client` to configure WebSocket/HTTP communication between client and server.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/service-server
@@ -12,69 +12,69 @@ npm install @simplysm/service-server
 pnpm add @simplysm/service-server
 ```
 
-## 주요 모듈
+## Main Modules
 
-### 핵심 클래스
+### Core Classes
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `ServiceServer` | `service-server.ts` | 메인 서버 클래스. Fastify 인스턴스를 생성하고 라우트/플러그인을 구성한다 |
-| `ServiceBase` | `core/service-base.ts` | 서비스 기본 추상 클래스. 모든 커스텀 서비스가 상속해야 한다 |
-| `ServiceExecutor` | `core/service-executor.ts` | 서비스 메서드 탐색, 인증 검사, 실행을 담당하는 내부 실행기 |
+| `ServiceServer` | `service-server.ts` | Main server class. Creates Fastify instance and configures routes/plugins |
+| `ServiceBase` | `core/service-base.ts` | Service base abstract class. All custom services must inherit from this |
+| `ServiceExecutor` | `core/service-executor.ts` | Internal executor that handles service method discovery, auth checks, and execution |
 
-### 인증
+### Authentication
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `JwtManager` | `auth/jwt-manager.ts` | jose 라이브러리 기반 JWT 토큰 생성/검증/디코딩 (HS256, 12시간 만료) |
-| `Authorize` | `auth/auth.decorators.ts` | Stage 3 데코레이터. 클래스 또는 메서드 레벨에 인증 권한을 설정한다 |
-| `AuthTokenPayload` | `auth/auth-token-payload.ts` | JWT 페이로드 인터페이스 (`roles`, `data` 포함) |
+| `JwtManager` | `auth/jwt-manager.ts` | JWT token generation/verification/decoding based on jose library (HS256, 12-hour expiration) |
+| `Authorize` | `auth/auth.decorators.ts` | Stage 3 decorator. Sets authentication permissions at class or method level |
+| `AuthTokenPayload` | `auth/auth-token-payload.ts` | JWT payload interface (includes `roles`, `data`) |
 
-### 전송 계층 - WebSocket
+### Transport Layer - WebSocket
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `WebSocketHandler` | `transport/socket/websocket-handler.ts` | WebSocket 연결 관리, 메시지 라우팅, 이벤트 분배를 담당 |
-| `ServiceSocket` | `transport/socket/service-socket.ts` | 개별 WebSocket 연결을 래핑. ping/pong, 프로토콜 인코딩/디코딩, 이벤트 리스너 관리 |
+| `WebSocketHandler` | `transport/socket/websocket-handler.ts` | Handles WebSocket connection management, message routing, and event distribution |
+| `ServiceSocket` | `transport/socket/service-socket.ts` | Wraps individual WebSocket connections. Manages ping/pong, protocol encoding/decoding, event listener management |
 
-### 전송 계층 - HTTP
+### Transport Layer - HTTP
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `HttpRequestHandler` | `transport/http/http-request-handler.ts` | `/api/:service/:method` 라우트에서 서비스 메서드를 HTTP로 호출 |
-| `UploadHandler` | `transport/http/upload-handler.ts` | `/upload` 라우트에서 multipart 파일 업로드 처리 (인증 필수) |
-| `StaticFileHandler` | `transport/http/static-file-handler.ts` | 정적 파일 제공. Path Traversal 방지 및 숨김 파일 차단 |
+| `HttpRequestHandler` | `transport/http/http-request-handler.ts` | Calls service methods via HTTP at `/api/:service/:method` route |
+| `UploadHandler` | `transport/http/upload-handler.ts` | Handles multipart file upload at `/upload` route (auth required) |
+| `StaticFileHandler` | `transport/http/static-file-handler.ts` | Serves static files. Prevents path traversal and blocks hidden files |
 
-### 프로토콜
+### Protocol
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `ProtocolWrapper` | `protocol/protocol-wrapper.ts` | 메시지 인코딩/디코딩 래퍼. 30KB 초과 메시지는 워커 스레드에서 처리 |
+| `ProtocolWrapper` | `protocol/protocol-wrapper.ts` | Message encoding/decoding wrapper. Messages over 30KB are processed in worker threads |
 
-### 내장 서비스
+### Built-in Services
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `OrmService` | `services/orm-service.ts` | DB 연결/트랜잭션/쿼리 실행 (WebSocket 전용, 인증 필수) |
-| `CryptoService` | `services/crypto-service.ts` | SHA256 해시 및 AES-256-CBC 암호화/복호화 |
-| `SmtpService` | `services/smtp-service.ts` | nodemailer 기반 이메일 전송 |
-| `AutoUpdateService` | `services/auto-update-service.ts` | 앱 자동 업데이트 (최신 버전 조회 및 다운로드 경로 제공) |
+| `OrmService` | `services/orm-service.ts` | DB connection/transaction/query execution (WebSocket only, auth required) |
+| `CryptoService` | `services/crypto-service.ts` | SHA256 hash and AES-256-CBC encryption/decryption |
+| `SmtpService` | `services/smtp-service.ts` | nodemailer-based email sending |
+| `AutoUpdateService` | `services/auto-update-service.ts` | App auto-update (provides latest version query and download path) |
 
-### 유틸리티
+### Utilities
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `ConfigManager` | `utils/config-manager.ts` | JSON 설정 파일 로드/캐싱/실시간 감시 (LazyGcMap 기반 자동 만료) |
+| `ConfigManager` | `utils/config-manager.ts` | JSON config file loading/caching/real-time monitoring (auto expiration based on LazyGcMap) |
 
-### 레거시
+### Legacy
 
-| 모듈 | 경로 | 설명 |
+| Module | Path | Description |
 |------|------|------|
-| `handleV1Connection` | `legacy/v1-auto-update-handler.ts` | V1 프로토콜 클라이언트 호환 처리 (auto-update만 지원) |
+| `handleV1Connection` | `legacy/v1-auto-update-handler.ts` | V1 protocol client compatibility handling (supports auto-update only) |
 
-## 사용법
+## Usage
 
-### 기본 서버 구성
+### Basic Server Configuration
 
 ```typescript
 import { ServiceServer } from "@simplysm/service-server";
@@ -85,57 +85,57 @@ const server = new ServiceServer({
   services: [MyService],
 });
 
-// 서버 시작
+// Start server
 await server.listen();
 
-// 이벤트 수신
+// Receive events
 server.on("ready", () => {
-  console.log("서버 준비 완료");
+  console.log("Server ready");
 });
 
 server.on("close", () => {
-  console.log("서버 종료됨");
+  console.log("Server closed");
 });
 
-// 서버 종료
+// Close server
 await server.close();
 ```
 
-### 서버 옵션 (`ServiceServerOptions`)
+### Server Options (`ServiceServerOptions`)
 
 ```typescript
 interface ServiceServerOptions {
-  /** 서버 루트 경로 (정적 파일, 설정 파일의 기준 디렉토리) */
+  /** Server root path (base directory for static files and config files) */
   rootPath: string;
-  /** 리슨 포트 */
+  /** Listen port */
   port: number;
-  /** SSL/TLS 설정 (HTTPS 활성화) */
+  /** SSL/TLS config (enables HTTPS) */
   ssl?: {
     pfxBytes: Uint8Array;
     passphrase: string;
   };
-  /** JWT 인증 설정 */
+  /** JWT authentication config */
   auth?: {
     jwtSecret: string;
   };
-  /** 등록할 서비스 클래스 목록 */
+  /** List of service classes to register */
   services: Type<ServiceBase>[];
 }
 ```
 
-`rootPath` 하위에 다음 구조를 기대한다:
+The following structure is expected under `rootPath`:
 
 ```
 rootPath/
-  .config.json        # 루트 설정 파일
-  www/                # 정적 파일 루트
-    uploads/          # 업로드 파일 저장 디렉토리
-    {clientName}/     # 클라이언트별 디렉토리
-      .config.json    # 클라이언트별 설정 파일
+  .config.json        # Root config file
+  www/                # Static file root
+    uploads/          # Upload file storage directory
+    {clientName}/     # Per-client directory
+      .config.json    # Per-client config file
       index.html
 ```
 
-### SSL/HTTPS 서버
+### SSL/HTTPS Server
 
 ```typescript
 import { fsReadFile } from "@simplysm/core-node";
@@ -156,9 +156,9 @@ const server = new ServiceServer({
 await server.listen();
 ```
 
-### 커스텀 서비스 정의
+### Custom Service Definition
 
-`ServiceBase`를 상속하여 서비스를 정의한다. 서비스 메서드는 클라이언트에서 RPC 방식으로 호출된다.
+Define services by inheriting from `ServiceBase`. Service methods are called via RPC from the client.
 
 ```typescript
 import { ServiceBase } from "@simplysm/service-server";
@@ -174,33 +174,32 @@ class MyService extends ServiceBase {
 }
 ```
 
-서비스 내부에서 접근 가능한 컨텍스트:
+Context accessible within services:
 
-| 속성 | 타입 | 설명 |
+| Property | Type | Description |
 |------|------|------|
-| `this.server` | `ServiceServer` | 서버 인스턴스 참조 |
-| `this.socket` | `ServiceSocket \| undefined` | WebSocket 연결 (HTTP 호출 시 `undefined`) |
-| `this.http` | `{ clientName, authTokenPayload? }` | HTTP 요청 컨텍스트 |
-| `this.authInfo` | `TAuthInfo \| undefined` | 인증된 사용자 정보 |
-| `this.clientName` | `string \| undefined` | 클라이언트 앱 이름 |
-| `this.clientPath` | `string \| undefined` | 클라이언트별 디렉토리 경로 |
+| `this.server` | `ServiceServer` | Server instance reference |
+| `this.socket` | `ServiceSocket \| undefined` | WebSocket connection (`undefined` for HTTP calls) |
+| `this.http` | `{ clientName, authTokenPayload? }` | HTTP request context |
+| `this.authInfo` | `TAuthInfo \| undefined` | Authenticated user info |
+| `this.clientName` | `string \| undefined` | Client app name |
+| `this.clientPath` | `string \| undefined` | Per-client directory path |
 
-### 설정 파일 참조
+### Config File Reference
 
-`ServiceBase.getConfig()`로 `.config.json` 파일의 섹션을 읽을 수 있다. 루트 설정과 클라이언트별 설정이 자동으로 병합된다.
+Read sections from `.config.json` files using `ServiceBase.getConfig()`. Root and per-client configs are automatically merged.
 
 ```typescript
 class MyService extends ServiceBase {
   async getDbHost(): Promise<string> {
-    // rootPath/.config.json 또는 clientPath/.config.json에서
-    // "mySection" 키의 값을 읽는다
+    // Read "mySection" key from rootPath/.config.json or clientPath/.config.json
     const config = await this.getConfig<{ host: string }>("mySection");
     return config.host;
   }
 }
 ```
 
-`.config.json` 예시:
+`.config.json` example:
 
 ```json
 {
@@ -220,32 +219,32 @@ class MyService extends ServiceBase {
 }
 ```
 
-`ConfigManager`는 설정 파일을 캐싱하고, 파일 변경 시 자동으로 캐시를 갱신한다 (LazyGcMap 기반, 1시간 후 자동 만료).
+`ConfigManager` caches config files and automatically refreshes the cache on file changes (LazyGcMap-based, auto expires after 1 hour).
 
-### 인증 (`Authorize` 데코레이터)
+### Authentication (`Authorize` Decorator)
 
-Stage 3 데코레이터를 사용하여 서비스 또는 메서드에 인증 요구사항을 설정한다. `ServiceServerOptions.auth`가 설정된 경우에만 동작한다.
+Use Stage 3 decorators to set authentication requirements on services or methods. Only works when `ServiceServerOptions.auth` is configured.
 
 ```typescript
 import { ServiceBase, Authorize } from "@simplysm/service-server";
 
-// 클래스 레벨: 모든 메서드에 로그인 필수
+// Class level: all methods require login
 @Authorize()
 class UserService extends ServiceBase<{ userId: number; role: string }> {
-  // 로그인만 필요 (클래스 레벨 상속)
+  // Login only required (inherits from class level)
   async getProfile(): Promise<unknown> {
     const userId = this.authInfo?.userId;
     // ...
   }
 
-  // 메서드 레벨: 특정 역할(role) 필요 (클래스 레벨 오버라이드)
+  // Method level: specific role required (overrides class level)
   @Authorize(["admin"])
   async deleteUser(targetId: number): Promise<void> {
-    // admin 역할이 있는 사용자만 호출 가능
+    // Only users with admin role can call
   }
 }
 
-// 인증 불필요 (데코레이터 없음)
+// No authentication required (no decorator)
 class PublicService extends ServiceBase {
   async healthCheck(): Promise<string> {
     return "OK";
@@ -253,76 +252,76 @@ class PublicService extends ServiceBase {
 }
 ```
 
-데코레이터 동작 방식:
+Decorator behavior:
 
-| 적용 대상 | `@Authorize()` | `@Authorize(["admin"])` |
+| Target | `@Authorize()` | `@Authorize(["admin"])` |
 |-----------|----------------|-------------------------|
-| 클래스 | 모든 메서드에 로그인 필수 | 모든 메서드에 admin 역할 필수 |
-| 메서드 | 해당 메서드에 로그인 필수 | 해당 메서드에 admin 역할 필수 |
-| 없음 | 인증 불필요 (Public) | - |
+| Class | All methods require login | All methods require admin role |
+| Method | Method requires login | Method requires admin role |
+| None | No auth required (Public) | - |
 
-메서드 레벨 데코레이터는 클래스 레벨 설정을 오버라이드한다.
+Method-level decorators override class-level settings.
 
-### JWT 토큰 관리
+### JWT Token Management
 
-`ServiceServer` 인스턴스를 통해 JWT 토큰을 생성하고 검증할 수 있다.
+Generate and verify JWT tokens through the `ServiceServer` instance.
 
 ```typescript
-// 토큰 생성 (12시간 만료, HS256 알고리즘)
+// Generate token (12-hour expiration, HS256 algorithm)
 const token = await server.generateAuthToken({
   roles: ["admin", "user"],
   data: { userId: 1, name: "홍길동" },
 });
 
-// 토큰 검증
+// Verify token
 const payload = await server.verifyAuthToken(token);
 // payload.roles: ["admin", "user"]
 // payload.data: { userId: 1, name: "홍길동" }
 ```
 
-`AuthTokenPayload` 인터페이스:
+`AuthTokenPayload` interface:
 
 ```typescript
 interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
-  /** 사용자 역할 목록 (Authorize 데코레이터의 권한 체크에 사용) */
+  /** User role list (used for permission check in Authorize decorator) */
   roles: string[];
-  /** 커스텀 인증 정보 (제네릭 타입) */
+  /** Custom auth info (generic type) */
   data: TAuthInfo;
 }
 ```
 
-### HTTP API 호출
+### HTTP API Call
 
-서비스 메서드는 `/api/:service/:method` 경로를 통해 HTTP로도 호출할 수 있다.
+Service methods can also be called via HTTP through the `/api/:service/:method` path.
 
-**GET 요청:**
+**GET Request:**
 
 ```
 GET /api/MyService/hello?json=["World"]
 Header: x-sd-client-name: my-app
-Header: Authorization: Bearer <token>  (선택)
+Header: Authorization: Bearer <token>  (optional)
 ```
 
-**POST 요청:**
+**POST Request:**
 
 ```
 POST /api/MyService/hello
 Header: Content-Type: application/json
 Header: x-sd-client-name: my-app
-Header: Authorization: Bearer <token>  (선택)
+Header: Authorization: Bearer <token>  (optional)
 Body: ["World"]
 ```
 
-- `x-sd-client-name` 헤더가 필수이다.
-- 파라미터는 배열 형태로 전달한다 (메서드 인자 순서대로).
-- GET 요청 시 `json` 쿼리 파라미터에 JSON 직렬화된 배열을 전달한다.
+- The `x-sd-client-name` header is required.
+- Parameters are passed in array form (in the order of method arguments).
+- For GET requests, pass a JSON-serialized array in the `json` query parameter.
 
-### 파일 업로드
+### File Upload
 
-`/upload` 엔드포인트에 multipart 요청으로 파일을 업로드한다. 인증 토큰이 필수이다.
+Upload files via multipart request to the `/upload` endpoint. Auth token is required.
 
 ```typescript
-// 클라이언트 측 예시
+// Client-side example
 const formData = new FormData();
 formData.append("file", file);
 
@@ -334,21 +333,21 @@ const response = await fetch("/upload", {
   body: formData,
 });
 
-// 응답: ServiceUploadResult[]
+// Response: ServiceUploadResult[]
 const results = await response.json();
-// [{ path: "uploads/uuid.ext", filename: "원본파일명.ext", size: 12345 }]
+// [{ path: "uploads/uuid.ext", filename: "original-filename.ext", size: 12345 }]
 ```
 
-업로드된 파일은 `rootPath/www/uploads/` 디렉토리에 UUID 기반 파일명으로 저장된다.
+Uploaded files are stored in the `rootPath/www/uploads/` directory with UUID-based filenames.
 
-### 실시간 이벤트 발행
+### Real-time Event Publishing
 
-서버에서 연결된 클라이언트들에게 이벤트를 발행할 수 있다.
+Publish events to connected clients from the server.
 
 ```typescript
 import { ServiceEventListener } from "@simplysm/service-common";
 
-// 이벤트 정의 (service-common에서)
+// Event definition (from service-common)
 class OrderUpdatedEvent extends ServiceEventListener<
   { orderId: number },
   { status: string }
@@ -356,20 +355,20 @@ class OrderUpdatedEvent extends ServiceEventListener<
   readonly eventName = "OrderUpdatedEvent";
 }
 
-// 서버에서 이벤트 발행
+// Publish event from server
 await server.emitEvent(
   OrderUpdatedEvent,
-  (info) => info.orderId === 123,    // 대상 필터
-  { status: "completed" },           // 전송할 데이터
+  (info) => info.orderId === 123,    // Target filter
+  { status: "completed" },           // Data to send
 );
 
-// 모든 클라이언트에 새로고침 명령 전송
+// Send reload command to all clients
 await server.broadcastReload("my-app", new Set(["main.js"]));
 ```
 
-### 내장 서비스: OrmService
+### Built-in Service: OrmService
 
-데이터베이스 연결/쿼리/트랜잭션을 WebSocket을 통해 제공한다. `@Authorize()` 데코레이터가 적용되어 로그인이 필수이다.
+Provides database connection/query/transaction via WebSocket. `@Authorize()` decorator is applied, requiring login.
 
 ```typescript
 const server = new ServiceServer({
@@ -380,7 +379,7 @@ const server = new ServiceServer({
 });
 ```
 
-`.config.json`에 ORM 설정을 정의한다:
+Define ORM config in `.config.json`:
 
 ```json
 {
@@ -397,25 +396,25 @@ const server = new ServiceServer({
 }
 ```
 
-`OrmService`가 제공하는 메서드:
+Methods provided by `OrmService`:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `getInfo(opt)` | DB 연결 정보 조회 (dialect, database, schema) |
-| `connect(opt)` | DB 연결 생성. 연결 ID를 반환한다 |
-| `close(connId)` | DB 연결 종료 |
-| `beginTransaction(connId, isolationLevel?)` | 트랜잭션 시작 |
-| `commitTransaction(connId)` | 트랜잭션 커밋 |
-| `rollbackTransaction(connId)` | 트랜잭션 롤백 |
-| `executeParametrized(connId, query, params?)` | 파라미터 바인딩 쿼리 실행 |
-| `executeDefs(connId, defs, options?)` | QueryDef 기반 쿼리 실행 |
-| `bulkInsert(connId, tableName, columnDefs, records)` | 대량 INSERT |
+| `getInfo(opt)` | Query DB connection info (dialect, database, schema) |
+| `connect(opt)` | Create DB connection. Returns connection ID |
+| `close(connId)` | Close DB connection |
+| `beginTransaction(connId, isolationLevel?)` | Begin transaction |
+| `commitTransaction(connId)` | Commit transaction |
+| `rollbackTransaction(connId)` | Rollback transaction |
+| `executeParametrized(connId, query, params?)` | Execute parameterized query |
+| `executeDefs(connId, defs, options?)` | Execute QueryDef-based queries |
+| `bulkInsert(connId, tableName, columnDefs, records)` | Bulk INSERT |
 
-WebSocket 연결이 종료되면 해당 소켓에서 열었던 모든 DB 연결이 자동으로 정리된다.
+When a WebSocket connection is closed, all DB connections opened from that socket are automatically cleaned up.
 
-### 내장 서비스: CryptoService
+### Built-in Service: CryptoService
 
-SHA256 해시와 AES-256-CBC 대칭키 암호화/복호화를 제공한다.
+Provides SHA256 hash and AES-256-CBC symmetric key encryption/decryption.
 
 ```typescript
 const server = new ServiceServer({
@@ -425,7 +424,7 @@ const server = new ServiceServer({
 });
 ```
 
-`.config.json` 설정:
+`.config.json` config:
 
 ```json
 {
@@ -435,15 +434,15 @@ const server = new ServiceServer({
 }
 ```
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `encrypt(data)` | SHA256 HMAC 해시 생성 (단방향) |
-| `encryptAes(data)` | AES-256-CBC 암호화. `iv:encrypted` 형식의 hex 문자열 반환 |
-| `decryptAes(encText)` | AES-256-CBC 복호화. 원본 바이너리 반환 |
+| `encrypt(data)` | Generate SHA256 HMAC hash (one-way) |
+| `encryptAes(data)` | AES-256-CBC encryption. Returns hex string in `iv:encrypted` format |
+| `decryptAes(encText)` | AES-256-CBC decryption. Returns original binary |
 
-### 내장 서비스: SmtpService
+### Built-in Service: SmtpService
 
-nodemailer 기반의 이메일 전송 서비스이다. 직접 SMTP 설정을 전달하거나 서버 설정 파일을 참조할 수 있다.
+A nodemailer-based email sending service. Can pass SMTP config directly or reference server config file.
 
 ```typescript
 const server = new ServiceServer({
@@ -453,7 +452,7 @@ const server = new ServiceServer({
 });
 ```
 
-`.config.json` 설정 (설정 참조 방식 사용 시):
+`.config.json` config (when using config reference method):
 
 ```json
 {
@@ -471,12 +470,12 @@ const server = new ServiceServer({
 }
 ```
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `send(options)` | SMTP 설정을 직접 전달하여 이메일 전송 |
-| `sendByConfig(configName, options)` | 설정 파일의 SMTP 설정을 참조하여 이메일 전송 |
+| `send(options)` | Send email by directly passing SMTP config |
+| `sendByConfig(configName, options)` | Send email by referencing SMTP config in config file |
 
-`send()` 옵션:
+`send()` options:
 
 ```typescript
 interface SmtpSendOption {
@@ -495,9 +494,9 @@ interface SmtpSendOption {
 }
 ```
 
-### 내장 서비스: AutoUpdateService
+### Built-in Service: AutoUpdateService
 
-클라이언트 앱의 자동 업데이트를 지원한다. 클라이언트 디렉토리에서 플랫폼별 최신 버전 파일을 탐색한다.
+Supports auto-update for client apps. Searches for latest version files by platform in the client directory.
 
 ```typescript
 const server = new ServiceServer({
@@ -507,7 +506,7 @@ const server = new ServiceServer({
 });
 ```
 
-업데이트 파일 구조:
+Update file structure:
 
 ```
 rootPath/www/{clientName}/{platform}/updates/
@@ -517,22 +516,22 @@ rootPath/www/{clientName}/{platform}/updates/
   1.0.1.apk
 ```
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `getLastVersion(platform)` | 해당 플랫폼의 최신 버전 및 다운로드 경로 반환. 업데이트 없으면 `undefined` |
+| `getLastVersion(platform)` | Returns latest version and download path for the platform. Returns `undefined` if no update |
 
-반환값:
+Return value:
 
 ```typescript
 {
-  version: string;       // 예: "1.0.1"
-  downloadPath: string;  // 예: "/my-app/android/updates/1.0.1.apk"
+  version: string;       // e.g., "1.0.1"
+  downloadPath: string;  // e.g., "/my-app/android/updates/1.0.1.apk"
 }
 ```
 
 ### ConfigManager
 
-JSON 설정 파일의 로드, 캐싱, 실시간 감시를 관리하는 정적 유틸리티 클래스이다. `ServiceBase.getConfig()`가 내부적으로 사용한다.
+A static utility class that manages loading, caching, and real-time monitoring of JSON config files. Used internally by `ServiceBase.getConfig()`.
 
 ```typescript
 import { ConfigManager } from "@simplysm/service-server";
@@ -540,49 +539,49 @@ import { ConfigManager } from "@simplysm/service-server";
 const config = await ConfigManager.getConfig<MyConfig>("/path/to/.config.json");
 ```
 
-동작 방식:
-- 파일을 최초 로드 시 `LazyGcMap`에 캐싱한다.
-- 파일 변경 감시(`FsWatcher`)를 등록하여 변경 시 캐시를 자동 갱신한다.
-- 캐시는 1시간 미접근 시 자동 만료되며, 관련 감시도 해제된다.
+Behavior:
+- Caches file in `LazyGcMap` on first load.
+- Registers file change watch (`FsWatcher`) to auto-refresh cache on changes.
+- Cache auto-expires after 1 hour of no access, and associated watch is released.
 
 ### ProtocolWrapper
 
-WebSocket 메시지의 인코딩/디코딩을 처리한다. 메시지 크기에 따라 메인 스레드와 워커 스레드를 자동으로 분기한다.
+Handles encoding/decoding of WebSocket messages. Automatically branches between main thread and worker thread based on message size.
 
-| 조건 | 처리 방식 |
+| Condition | Processing Method |
 |------|-----------|
-| 30KB 이하 | 메인 스레드에서 직접 처리 |
-| 30KB 초과 | 워커 스레드에서 처리 (최대 4GB 메모리 할당) |
+| 30KB or less | Processed directly in main thread |
+| Over 30KB | Processed in worker thread (max 4GB memory allocation) |
 
-큰 바이너리 데이터(Uint8Array)가 포함된 메시지도 워커 스레드로 분기된다.
+Messages containing large binary data (Uint8Array) also branch to worker thread.
 
-## 서버 라우트 구조
+## Server Route Structure
 
-`ServiceServer.listen()` 호출 시 다음 라우트가 자동으로 등록된다:
+The following routes are automatically registered when `ServiceServer.listen()` is called:
 
-| 라우트 | 메서드 | 설명 |
+| Route | Method | Description |
 |--------|--------|------|
-| `/api/:service/:method` | GET, POST | HTTP를 통한 서비스 메서드 호출 |
-| `/upload` | POST | Multipart 파일 업로드 (인증 필수) |
-| `/` | WebSocket | WebSocket 연결 엔드포인트 |
-| `/ws` | WebSocket | WebSocket 연결 엔드포인트 (별칭) |
-| `/*` | GET 등 | 정적 파일 제공 (`rootPath/www/` 기준) |
+| `/api/:service/:method` | GET, POST | Service method call via HTTP |
+| `/upload` | POST | Multipart file upload (auth required) |
+| `/` | WebSocket | WebSocket connection endpoint |
+| `/ws` | WebSocket | WebSocket connection endpoint (alias) |
+| `/*` | GET, etc. | Static file serving (based on `rootPath/www/`) |
 
-## 보안
+## Security
 
-- **Helmet**: `@fastify/helmet` 플러그인으로 CSP, HSTS 등 보안 헤더를 자동 설정한다.
-- **CORS**: `@fastify/cors` 플러그인으로 CORS를 설정한다.
-- **Path Traversal 방지**: 정적 파일 핸들러와 클라이언트 이름 검증에서 `..`, `/`, `\` 문자를 차단한다.
-- **숨김 파일 차단**: `.`으로 시작하는 파일은 403 응답을 반환한다.
-- **Graceful Shutdown**: `SIGINT`/`SIGTERM` 시그널을 감지하여 열린 WebSocket 연결과 서버를 안전하게 종료한다 (10초 타임아웃).
+- **Helmet**: `@fastify/helmet` plugin automatically sets security headers like CSP, HSTS.
+- **CORS**: `@fastify/cors` plugin configures CORS.
+- **Path Traversal Prevention**: Static file handler and client name validation block `..`, `/`, `\` characters.
+- **Hidden File Blocking**: Files starting with `.` return a 403 response.
+- **Graceful Shutdown**: Detects `SIGINT`/`SIGTERM` signals to safely close open WebSocket connections and server (10-second timeout).
 
-## 주의사항
+## Caveats
 
-- `OrmService`는 WebSocket 연결 전용이다. HTTP 요청으로는 사용할 수 없다.
-- 설정 파일(`.config.json`)에 민감한 정보(DB 비밀번호, JWT 시크릿 등)가 포함되므로 정적 파일 핸들러에서 숨김 파일(`.`으로 시작)은 자동으로 차단된다.
-- WebSocket 연결 시 쿼리 파라미터 `ver=2`, `clientId`, `clientName`이 필수이다. 이 파라미터가 없으면 V1 레거시 모드로 동작한다.
-- SSL 미설정 시 `upgrade-insecure-requests` CSP 지시자가 비활성화된다.
+- `OrmService` is WebSocket-only. Cannot be used via HTTP requests.
+- Config files (`.config.json`) contain sensitive information (DB passwords, JWT secrets, etc.), so hidden files (starting with `.`) are automatically blocked by the static file handler.
+- WebSocket connection requires query parameters `ver=2`, `clientId`, `clientName`. Without these parameters, it operates in V1 legacy mode.
+- If SSL is not configured, the `upgrade-insecure-requests` CSP directive is disabled.
 
-## 라이선스
+## License
 
 Apache-2.0

@@ -34,18 +34,11 @@ Compound Components 패턴으로 구성합니다.
 ### items prop 방식
 
 ```tsx
-<Select
-  value={selected()}
-  onValueChange={setSelected}
-  items={data}
-  getChildren={(item) => item.children}
->
+<Select value={selected()} onValueChange={setSelected} items={data} getChildren={(item) => item.children}>
   <Select.Header>
     <div>커스텀 헤더</div>
   </Select.Header>
-  <Select.ItemTemplate>
-    {(item, index, depth) => <>{item.name}</>}
-  </Select.ItemTemplate>
+  <Select.ItemTemplate>{(item, index, depth) => <>{item.name}</>}</Select.ItemTemplate>
 </Select>
 ```
 
@@ -203,12 +196,12 @@ export const useSelectContext = () => useContext(SelectContext);
 
 ### 키보드 동작 요약
 
-| 상태 | direction: down | direction: up |
-|------|-----------------|---------------|
-| 열기 | ArrowDown | ArrowUp |
-| 진입 | ArrowDown → 첫 아이템 | ArrowUp → 마지막 아이템 |
-| 탈출 | ArrowUp (첫 아이템에서) | ArrowDown (마지막에서) |
-| 닫기 | ArrowUp (트리거에서) | ArrowDown (트리거에서) |
+| 상태 | direction: down         | direction: up           |
+| ---- | ----------------------- | ----------------------- |
+| 열기 | ArrowDown               | ArrowUp                 |
+| 진입 | ArrowDown → 첫 아이템   | ArrowUp → 마지막 아이템 |
+| 탈출 | ArrowUp (첫 아이템에서) | ArrowDown (마지막에서)  |
+| 닫기 | ArrowUp (트리거에서)    | ArrowDown (트리거에서)  |
 
 > 팝업 방향으로 "들어가고", 반대 방향으로 "나오는" 직관적인 흐름
 
@@ -252,34 +245,34 @@ export const useSelectContext = () => useContext(SelectContext);
 
 ```tsx
 // 기본
-<div class={clsx(
-  "inline-flex items-center gap-2",
-  "min-w-40",
-  "border border-neutral-300 dark:border-neutral-600",
-  "rounded-md",
-  "bg-neutral-50 dark:bg-neutral-900",
-  "cursor-pointer",
-  "focus-within:border-primary-500",
-)}>
-  <div class="flex-1 py-1 px-2 whitespace-nowrap">
-    {/* 선택된 값 표시 */}
-  </div>
+<div
+  class={clsx(
+    "inline-flex items-center gap-2",
+    "min-w-40",
+    "border border-neutral-300 dark:border-neutral-600",
+    "rounded-md",
+    "bg-neutral-50 dark:bg-neutral-900",
+    "cursor-pointer",
+    "focus-within:border-primary-500",
+  )}
+>
+  <div class="flex-1 py-1 px-2 whitespace-nowrap">{/* 선택된 값 표시 */}</div>
   <div class="opacity-30 hover:opacity-100 pr-2">
     <IconChevronDown />
   </div>
-</div>
+</div>;
 
 // size="sm"
-"py-0.5 px-1.5 gap-1.5"
+("py-0.5 px-1.5 gap-1.5");
 
 // size="lg"
-"py-2 px-3 gap-3"
+("py-2 px-3 gap-3");
 
 // disabled
-"bg-neutral-200 dark:bg-neutral-800 cursor-default text-neutral-400"
+("bg-neutral-200 dark:bg-neutral-800 cursor-default text-neutral-400");
 
 // inset
-"border-none rounded-none bg-transparent"
+("border-none rounded-none bg-transparent");
 ```
 
 ### Select.Button

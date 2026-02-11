@@ -13,6 +13,7 @@
 ### Task 1: DateRangePicker 테스트 파일 생성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/form-control/date-range-picker/DateRangePicker.spec.tsx`
 
 **Step 1: 테스트 파일 작성 — 기본 렌더링 + periodType 변경 로직**
@@ -64,13 +65,7 @@ describe("DateRangePicker 컴포넌트", () => {
     it("'일'로 변경 시 to가 from과 동일해진다", () => {
       const onToChange = vi.fn();
 
-      render(() => (
-        <DateRangePicker
-          periodType="일"
-          from={new DateOnly(2025, 3, 15)}
-          onToChange={onToChange}
-        />
-      ));
+      render(() => <DateRangePicker periodType="일" from={new DateOnly(2025, 3, 15)} onToChange={onToChange} />);
 
       // "일" 모드에서는 from 변경 시 to = from
     });
@@ -142,9 +137,7 @@ describe("DateRangePicker 컴포넌트", () => {
 
   describe("disabled 상태", () => {
     it("disabled=true일 때 내부 필드들이 비활성화된다", () => {
-      const { container } = render(() => (
-        <DateRangePicker periodType="범위" disabled />
-      ));
+      const { container } = render(() => <DateRangePicker periodType="범위" disabled />);
       const select = container.querySelector("[data-select]");
       expect(select?.querySelector("[aria-disabled='true']")).toBeTruthy();
     });
@@ -178,11 +171,12 @@ git commit -m "test(solid): DateRangePicker 테스트 추가 (failing)"
 ### Task 2: DateRangePicker 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/date-range-picker/DateRangePicker.tsx`
 
 **Step 1: 컴포넌트 구현**
 
-```tsx
+````tsx
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -340,12 +334,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
   const getWrapperClass = () => twMerge(baseClass, local.class);
 
   return (
-    <div
-      {...rest}
-      data-date-range-picker
-      class={getWrapperClass()}
-      style={local.style}
-    >
+    <div {...rest} data-date-range-picker class={getWrapperClass()} style={local.style}>
       <Select
         value={periodType()}
         onValueChange={handlePeriodTypeChange}
@@ -395,7 +384,7 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     </div>
   );
 };
-```
+````
 
 **Step 2: 테스트 실행하여 통과 확인**
 
@@ -414,6 +403,7 @@ git commit -m "feat(solid): DateRangePicker 컴포넌트 구현"
 ### Task 3: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:17` (ColorPicker export 아래에 추가)
 
 **Step 1: export 추가**
@@ -446,6 +436,7 @@ git commit -m "feat(solid): DateRangePicker export 추가"
 ### Task 4: 테스트 보강 및 최종 검증
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/form-control/date-range-picker/DateRangePicker.spec.tsx`
 
 **Step 1: 테스트 실행하여 전체 통과 확인**

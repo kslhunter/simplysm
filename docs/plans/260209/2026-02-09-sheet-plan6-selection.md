@@ -15,6 +15,7 @@
 ## Task 1: types.ts — autoSelect 타입 수정
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/types.ts:30`
 
 **Step 1: autoSelect 타입을 "click"만으로 변경**
@@ -44,6 +45,7 @@ git commit -m "refactor(solid): Sheet autoSelect 타입에서 focus 옵션 제�
 ## Task 2: Sheet.styles.ts — 선택 컬럼 스타일 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.styles.ts` (파일 끝에 추가)
 
 **Step 1: 선택 컬럼 스타일 상수 추가**
@@ -52,24 +54,13 @@ git commit -m "refactor(solid): Sheet autoSelect 타입에서 focus 옵션 제�
 
 ```typescript
 // 선택 컬럼 — single 모드 아이콘 래퍼
-export const selectSingleClass = clsx(
-  "flex items-center justify-center",
-  "size-6",
-  "cursor-pointer",
-  "rounded",
-);
+export const selectSingleClass = clsx("flex items-center justify-center", "size-6", "cursor-pointer", "rounded");
 
 // single 모드 — 선택됨
-export const selectSingleSelectedClass = clsx(
-  "text-primary-500",
-  "dark:text-primary-400",
-);
+export const selectSingleSelectedClass = clsx("text-primary-500", "dark:text-primary-400");
 
 // single 모드 — 미선택
-export const selectSingleUnselectedClass = clsx(
-  "text-base-300",
-  "dark:text-base-600",
-);
+export const selectSingleUnselectedClass = clsx("text-base-300", "dark:text-base-600");
 ```
 
 **Step 2: 타입체크 실행**
@@ -89,6 +80,7 @@ git commit -m "feat(solid): Sheet 선택 컬럼 스타일 상수 추가"
 ## Task 3: Sheet.css — 선택 행 시각 효과 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.css` (파일 끝에 추가)
 
 **Step 1: 선택 행 box-shadow 스타일 추가**
@@ -120,6 +112,7 @@ git commit -m "feat(solid): Sheet 선택 행 box-shadow 시각 효과 추가"
 이 태스크에서 Sheet.tsx에 선택 관련 상태와 로직 함수들을 추가한다. 렌더링(JSX)은 Task 5에서 수정한다.
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: import 추가**
@@ -131,7 +124,13 @@ line 5 수정 — `IconChevronRight` 추가:
 import { IconArrowsSort, IconChevronDown, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
 
 // 변경 후
-import { IconArrowsSort, IconChevronDown, IconChevronRight, IconSortAscending, IconSortDescending } from "@tabler/icons-solidjs";
+import {
+  IconArrowsSort,
+  IconChevronDown,
+  IconChevronRight,
+  IconSortAscending,
+  IconSortDescending,
+} from "@tabler/icons-solidjs";
 ```
 
 line 15-36의 Sheet.styles.ts import에 선택 스타일 추가:
@@ -232,11 +231,7 @@ function toggleSelect(item: T): void {
     setSelectedItems(isSelected ? [] : [item]);
   } else {
     const isSelected = selectedItems().includes(item);
-    setSelectedItems(
-      isSelected
-        ? selectedItems().filter((i) => i !== item)
-        : [...selectedItems(), item],
-    );
+    setSelectedItems(isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item]);
   }
 }
 
@@ -271,9 +266,7 @@ function rangeSelect(targetRow: number): void {
     }
     setSelectedItems(newItems);
   } else {
-    setSelectedItems(
-      selectedItems().filter((item) => !rangeItems.includes(item)),
-    );
+    setSelectedItems(selectedItems().filter((item) => !rangeItems.includes(item)));
   }
 }
 ```
@@ -300,8 +293,7 @@ function selectItem(item: T): void {
 
 ```typescript
 // 선택 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
-const isSelectColLastFixed = () =>
-  hasSelectFeature() && lastFixedIndex() < 0;
+const isSelectColLastFixed = () => hasSelectFeature() && lastFixedIndex() < 0;
 
 // 확장 컬럼은 선택 컬럼이 있으면 마지막 고정이 아님
 ```
@@ -310,12 +302,10 @@ const isSelectColLastFixed = () =>
 
 ```typescript
 // 변경 전
-const isExpandColLastFixed = () =>
-  hasExpandFeature() && lastFixedIndex() < 0;
+const isExpandColLastFixed = () => hasExpandFeature() && lastFixedIndex() < 0;
 
 // 변경 후
-const isExpandColLastFixed = () =>
-  hasExpandFeature() && !hasSelectFeature() && lastFixedIndex() < 0;
+const isExpandColLastFixed = () => hasExpandFeature() && !hasSelectFeature() && lastFixedIndex() < 0;
 ```
 
 **Step 7: 타입체크 실행**
@@ -337,6 +327,7 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
 이 태스크에서 Sheet.tsx의 JSX를 수정하여 선택 컬럼 헤더/바디/colgroup을 렌더링한다.
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: colgroup에 선택 컬럼 col 추가**
@@ -354,15 +345,12 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
 확장 기능 컬럼 헤더 `</Show>` 뒤 (기존 line 474 근처), 일반 컬럼 `<For each={row}>` 앞에 추가:
 
 ```tsx
-{/* 선택 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */}
+{
+  /* 선택 기능 컬럼 헤더 — 첫 번째 행에만 표시 (rowspan으로 전체 덮기) */
+}
 <Show when={hasSelectFeature() && rowIndex() === 0}>
   <th
-    class={twMerge(
-      featureThClass,
-      fixedClass,
-      "z-[5]",
-      isSelectColLastFixed() ? fixedLastClass : undefined,
-    )}
+    class={twMerge(featureThClass, fixedClass, "z-[5]", isSelectColLastFixed() ? fixedLastClass : undefined)}
     rowspan={featureHeaderRowspan()}
     style={{
       top: "0",
@@ -371,10 +359,7 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
     ref={registerSelectColRef}
   >
     <Show when={local.selectMode === "multi"}>
-      <div
-        class="flex items-center justify-center px-1 py-0.5 cursor-pointer"
-        onClick={() => toggleSelectAll()}
-      >
+      <div class="flex items-center justify-center px-1 py-0.5 cursor-pointer" onClick={() => toggleSelectAll()}>
         <CheckBox
           value={(() => {
             const selectableItems = displayItems()
@@ -387,7 +372,7 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
       </div>
     </Show>
   </th>
-</Show>
+</Show>;
 ```
 
 **Step 3: tbody — 선택 기능 컬럼 바디 셀 추가**
@@ -417,7 +402,9 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
 선택 컬럼 바디 셀 (확장 컬럼 바디 `</Show>` 뒤에 추가):
 
 ```tsx
-{/* 선택 기능 컬럼 바디 셀 */}
+{
+  /* 선택 기능 컬럼 바디 셀 */
+}
 <Show when={hasSelectFeature()}>
   {(() => {
     const selectable = () => getItemSelectable(flat.item);
@@ -426,12 +413,7 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
 
     return (
       <td
-        class={twMerge(
-          featureTdClass,
-          fixedClass,
-          "z-[2]",
-          isSelectColLastFixed() ? fixedLastClass : undefined,
-        )}
+        class={twMerge(featureTdClass, fixedClass, "z-[2]", isSelectColLastFixed() ? fixedLastClass : undefined)}
         style={{
           left: hasExpandFeature() ? `${expandColWidth()}px` : "0",
         }}
@@ -470,17 +452,13 @@ git commit -m "feat(solid): Sheet Selection/AutoSelect 상태 및 로직 추가"
             }}
             title={typeof selectable() === "string" ? (selectable() as string) : undefined}
           >
-            <CheckBox
-              value={isSelected()}
-              disabled={selectable() !== true}
-              class="pointer-events-none"
-            />
+            <CheckBox value={isSelected()} disabled={selectable() !== true} class="pointer-events-none" />
           </div>
         </Show>
       </td>
     );
   })()}
-</Show>
+</Show>;
 ```
 
 **Step 4: 타입체크 + 린트 실행**
@@ -500,6 +478,7 @@ git commit -m "feat(solid): Sheet 선택 기능 컬럼 렌더링 구현"
 ## Task 6: 데모 페이지 — 선택 예제 추가
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 
 **Step 1: import에 Sheet 관련 시그널 확인 (이미 있음)**
@@ -519,7 +498,9 @@ const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
 **Step 3: 인라인 편집 `</section>` 뒤에 3개 예제 추가**
 
 ```tsx
-{/* 다중 선택 */}
+{
+  /* 다중 선택 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -543,11 +524,16 @@ const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
     </Sheet.Column>
   </Sheet>
   <p class="mt-2 text-sm text-base-500">
-    선택된 항목: {multiSelected().map((u) => u.name).join(", ") || "(없음)"}
+    선택된 항목:{" "}
+    {multiSelected()
+      .map((u) => u.name)
+      .join(", ") || "(없음)"}
   </p>
-</section>
+</section>;
 
-{/* 단일 선택 + autoSelect */}
+{
+  /* 단일 선택 + autoSelect */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">단일 선택 + autoSelect</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -572,11 +558,16 @@ const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
     </Sheet.Column>
   </Sheet>
   <p class="mt-2 text-sm text-base-500">
-    선택된 항목: {singleSelected().map((u) => u.name).join(", ") || "(없음)"}
+    선택된 항목:{" "}
+    {singleSelected()
+      .map((u) => u.name)
+      .join(", ") || "(없음)"}
   </p>
-</section>
+</section>;
 
-{/* 선택 불가 항목 */}
+{
+  /* 선택 불가 항목 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">선택 불가 항목</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -601,9 +592,12 @@ const [disabledSelected, setDisabledSelected] = createSignal<User[]>([]);
     </Sheet.Column>
   </Sheet>
   <p class="mt-2 text-sm text-base-500">
-    선택된 항목: {disabledSelected().map((u) => u.name).join(", ") || "(없음)"}
+    선택된 항목:{" "}
+    {disabledSelected()
+      .map((u) => u.name)
+      .join(", ") || "(없음)"}
   </p>
-</section>
+</section>;
 ```
 
 **Step 4: 타입체크 + 린트 실행**

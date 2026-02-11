@@ -11,9 +11,9 @@
 ```typescript
 interface PermissionItem<TModule = string> {
   title: string;
-  href?: string;                        // "/user/permission"
-  modules?: TModule[];                  // 표시 조건 모듈
-  perms?: string[];                     // ["use", "edit", "approve"] 확장 가능
+  href?: string; // "/user/permission"
+  modules?: TModule[]; // 표시 조건 모듈
+  perms?: string[]; // ["use", "edit", "approve"] 확장 가능
   children?: PermissionItem<TModule>[];
 }
 ```
@@ -42,11 +42,11 @@ href="/user/permission" + perm="use" → "/user/permission/use"
 
 ```tsx
 <PermissionTable
-  items={permissionItems}           // PermissionItem[]
-  value={permRecord()}              // Record<string, boolean>
-  onValueChange={setPermRecord}     // (value: Record<string, boolean>) => void
-  modules={activeModules()}         // TModule[] — 활성 모듈 목록
-  disabled={false}                  // 전체 비활성화
+  items={permissionItems} // PermissionItem[]
+  value={permRecord()} // Record<string, boolean>
+  onValueChange={setPermRecord} // (value: Record<string, boolean>) => void
+  modules={activeModules()} // TModule[] — 활성 모듈 목록
+  disabled={false} // 전체 비활성화
 />
 ```
 

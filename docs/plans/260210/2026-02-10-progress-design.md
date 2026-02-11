@@ -10,11 +10,11 @@
 
 ```typescript
 interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  value: number;            // 0~1 범위의 진행률 (필수)
-  theme?: SemanticTheme;    // 기본값 "primary"
-  size?: "sm" | "lg";      // 패딩 변형
-  inset?: boolean;          // 테두리/둥근모서리 제거
-  children?: JSX.Element;   // 없으면 백분율 텍스트 표시
+  value: number; // 0~1 범위의 진행률 (필수)
+  theme?: SemanticTheme; // 기본값 "primary"
+  size?: "sm" | "lg"; // 패딩 변형
+  inset?: boolean; // 테두리/둥근모서리 제거
+  children?: JSX.Element; // 없으면 백분율 텍스트 표시
 }
 ```
 
@@ -37,19 +37,25 @@ interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
 ## 스타일 변형
 
 ### theme
+
 `themeTokens`에서 `solid` 변형 사용 (바 배경색):
+
 - 예: `primary` → `bg-primary-500`, `danger` → `bg-danger-500`
 
 ### size
+
 콘텐츠 영역 패딩으로 구분:
+
 - 기본: `py-1 px-2`
 - `sm`: `py-0.5 px-2`
 - `lg`: `py-2 px-3`
 
 ### inset
+
 `true`일 때 `rounded-none border-0` + 배경을 투명하게 변경
 
 ### 루트 기본 스타일
+
 `rounded bg-base-200 dark:bg-base-700 border border-base-200 dark:border-base-700`
 
 ## 파일 위치

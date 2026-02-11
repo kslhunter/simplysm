@@ -15,6 +15,7 @@
 ### Task 1: esbuild-config.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/utils/esbuild-config.ts`
 - Reference: `packages/cli/src/workers/build.worker.ts`
 - Reference: `packages/cli/src/workers/watch.worker.ts`
@@ -23,6 +24,7 @@
 **Step 1: 기존 esbuild 설정 패턴 분석**
 
 기존 코드에서 공통 esbuild 옵션 파악:
+
 - `build.worker.ts`: library 일회성 빌드 (bundle: false)
 - `watch.worker.ts`: library watch 모드 (bundle: false)
 - `server-build.worker.ts`: server watch 모드 (bundle: true, packages: "external")
@@ -133,6 +135,7 @@ EOF
 ### Task 2: vite-config.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/utils/vite-config.ts`
 - Reference: `packages/cli/src/commands/build.ts:286-303`
 - Reference: `packages/cli/src/workers/watch.worker.ts:213-233`
@@ -180,10 +183,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const config: ViteUserConfig = {
     root: pkgDir,
     base: `/${name}/`,
-    plugins: [
-      tsconfigPaths({ projects: [tsconfigPath] }),
-      solidPlugin(),
-    ],
+    plugins: [tsconfigPaths({ projects: [tsconfigPath] }), solidPlugin()],
     css: {
       postcss: {
         plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
@@ -235,6 +235,7 @@ EOF
 ### Task 3: library.worker.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/workers/library.worker.ts`
 - Reference: `packages/cli/src/workers/build.worker.ts`
 - Reference: `packages/cli/src/workers/watch.worker.ts:125-181`
@@ -249,15 +250,8 @@ import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
-import {
-  parseRootTsconfig,
-  getPackageSourceFiles,
-  getCompilerOptionsForPackage,
-} from "../utils/tsconfig";
-import {
-  createLibraryEsbuildOptions,
-  getTypecheckEnvFromTarget,
-} from "../utils/esbuild-config";
+import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
+import { createLibraryEsbuildOptions, getTypecheckEnvFromTarget } from "../utils/esbuild-config";
 
 //#region Types
 
@@ -509,6 +503,7 @@ EOF
 ### Task 4: server.worker.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/workers/server.worker.ts`
 - Reference: `packages/cli/src/workers/build.worker.ts`
 - Reference: `packages/cli/src/workers/server-build.worker.ts`
@@ -522,11 +517,7 @@ import path from "path";
 import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
-import {
-  parseRootTsconfig,
-  getPackageSourceFiles,
-  getCompilerOptionsForPackage,
-} from "../utils/tsconfig";
+import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import { createServerEsbuildOptions } from "../utils/esbuild-config";
 
 //#region Types
@@ -789,6 +780,7 @@ EOF
 ### Task 5: client.worker.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/workers/client.worker.ts`
 - Reference: `packages/cli/src/commands/build.ts:286-319`
 - Reference: `packages/cli/src/workers/watch.worker.ts:190-239`
@@ -803,10 +795,7 @@ import { build as viteBuild, createServer, type ViteDevServer } from "vite";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdClientPackageConfig } from "../sd-config.types";
-import {
-  parseRootTsconfig,
-  getCompilerOptionsForPackage,
-} from "../utils/tsconfig";
+import { parseRootTsconfig, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import { createViteConfig } from "../utils/vite-config";
 
 //#region Types
@@ -1039,6 +1028,7 @@ EOF
 ### Task 6: dts.worker.ts에 emit 옵션 통합
 
 **Files:**
+
 - Modify: `packages/cli/src/workers/dts.worker.ts:28-35`
 - Reference: `packages/cli/src/workers/typecheck.worker.ts`
 
@@ -1049,6 +1039,7 @@ EOF
 **Step 2: emit 옵션으로 리네임 (noEmit → emit)**
 
 기존 `noEmit: boolean`을 `emit: boolean`으로 변경:
+
 - `emit: true` → .d.ts 생성 + 타입체크
 - `emit: false` → 타입체크만
 
@@ -1149,6 +1140,7 @@ EOF
 ### Task 7: build.ts 수정 - 새 Worker 사용
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/build.ts`
 - Reference: `packages/cli/src/workers/library.worker.ts`
 - Reference: `packages/cli/src/workers/server.worker.ts`
@@ -1185,7 +1177,8 @@ const clientWorkerPath = path.resolve(import.meta.dirname, "../workers/client.wo
 const buildWorker: WorkerProxy<typeof BuildWorkerModule> = Worker.create<typeof BuildWorkerModule>(buildWorkerPath);
 
 // 변경 후:
-const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> = Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
+const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> =
+  Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
 
 // build 호출 변경:
 // 기존: buildWorker.build({ name, config, cwd, pkgDir })
@@ -1235,12 +1228,12 @@ const serverWorker: WorkerProxy<typeof ServerWorkerModule> = Worker.create<typeo
 
 ```typescript
 // 기존 코드:
-dtsWorker.buildDts({ name, cwd, pkgDir, env, noEmit: false })
-dtsWorker.buildDts({ name, cwd, pkgDir, env: "browser", noEmit: true })
+dtsWorker.buildDts({ name, cwd, pkgDir, env, noEmit: false });
+dtsWorker.buildDts({ name, cwd, pkgDir, env: "browser", noEmit: true });
 
 // 변경 후:
-dtsWorker.buildDts({ name, cwd, pkgDir, env, emit: true })
-dtsWorker.buildDts({ name, cwd, pkgDir, env: "browser", emit: false })
+dtsWorker.buildDts({ name, cwd, pkgDir, env, emit: true });
+dtsWorker.buildDts({ name, cwd, pkgDir, env: "browser", emit: false });
 ```
 
 **Step 7: 린트 검증**
@@ -1267,6 +1260,7 @@ EOF
 ### Task 8: dev.ts 수정 - 새 Worker 사용
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/dev.ts`
 - Reference: `packages/cli/src/workers/client.worker.ts`
 - Reference: `packages/cli/src/workers/server.worker.ts`
@@ -1374,6 +1368,7 @@ EOF
 ### Task 9: watch.ts 수정 - 새 Worker 사용
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/watch.ts`
 - Reference: 기존 watch.ts 구조 확인 필요
 
@@ -1413,6 +1408,7 @@ EOF
 ### Task 10: typecheck.ts 수정 - dts.worker 사용
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/typecheck.ts`
 - Reference: `packages/cli/src/workers/dts.worker.ts`
 
@@ -1461,6 +1457,7 @@ EOF
 ### Task 11: 기존 Worker 파일 삭제
 
 **Files:**
+
 - Delete: `packages/cli/src/workers/build.worker.ts`
 - Delete: `packages/cli/src/workers/watch.worker.ts`
 - Delete: `packages/cli/src/workers/server-build.worker.ts`
@@ -1586,6 +1583,7 @@ Expected: 에러 없음
 ## 요약
 
 ### 생성 파일
+
 - `packages/cli/src/utils/esbuild-config.ts`
 - `packages/cli/src/utils/vite-config.ts`
 - `packages/cli/src/workers/library.worker.ts`
@@ -1593,6 +1591,7 @@ Expected: 에러 없음
 - `packages/cli/src/workers/client.worker.ts`
 
 ### 수정 파일
+
 - `packages/cli/src/workers/dts.worker.ts` (emit 옵션)
 - `packages/cli/src/commands/build.ts`
 - `packages/cli/src/commands/dev.ts`
@@ -1600,6 +1599,7 @@ Expected: 에러 없음
 - `packages/cli/src/commands/typecheck.ts`
 
 ### 삭제 파일
+
 - `packages/cli/src/workers/build.worker.ts`
 - `packages/cli/src/workers/watch.worker.ts`
 - `packages/cli/src/workers/server-build.worker.ts`

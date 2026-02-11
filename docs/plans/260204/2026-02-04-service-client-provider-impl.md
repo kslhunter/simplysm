@@ -13,6 +13,7 @@
 ## Task 1: NotificationContext 타입 확장
 
 **Files:**
+
 - Modify: `packages/solid/src/components/notification/NotificationContext.ts`
 - Test: `packages/solid/tests/components/notification/NotificationContext.spec.tsx`
 
@@ -47,6 +48,7 @@ it("info 호출 시 생성된 알림의 id를 반환한다", async () => {
 ```bash
 pnpm vitest packages/solid/tests/components/notification/NotificationContext.spec.tsx --project=solid --run
 ```
+
 Expected: FAIL - info()가 void를 반환하므로 id가 undefined
 
 **Step 3: NotificationContext 타입 수정**
@@ -97,7 +99,7 @@ export interface NotificationContextValue {
   update: (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: NotificationUpdateOptions
+    options?: NotificationUpdateOptions,
   ) => void;
 
   // 알림 삭제
@@ -126,6 +128,7 @@ export function useNotification(): NotificationContextValue {
 ```bash
 pnpm typecheck packages/solid
 ```
+
 Expected: FAIL - NotificationProvider에서 타입 불일치
 
 ---
@@ -133,6 +136,7 @@ Expected: FAIL - NotificationProvider에서 타입 불일치
 ## Task 2: NotificationProvider 구현 수정
 
 **Files:**
+
 - Modify: `packages/solid/src/components/notification/NotificationProvider.tsx`
 - Test: `packages/solid/tests/components/notification/NotificationContext.spec.tsx`
 
@@ -170,7 +174,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     theme: NotificationTheme,
     title: string,
     message?: string,
-    options?: NotificationOptions
+    options?: NotificationOptions,
   ): string => {
     const id = crypto.randomUUID();
     const newItem: NotificationItem = {
@@ -214,7 +218,7 @@ export const NotificationProvider: ParentComponent = (props) => {
   const update = (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: NotificationUpdateOptions
+    options?: NotificationUpdateOptions,
   ): void => {
     setItems((prev) =>
       prev.map((item) => {
@@ -230,7 +234,7 @@ export const NotificationProvider: ParentComponent = (props) => {
         }
 
         return updated;
-      })
+      }),
     );
   };
 
@@ -239,9 +243,7 @@ export const NotificationProvider: ParentComponent = (props) => {
   };
 
   const markAsRead = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, read: true } : item))
-    );
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
   };
 
   const markAllAsRead = () => {
@@ -279,15 +281,8 @@ export const NotificationProvider: ParentComponent = (props) => {
   return (
     <NotificationContext.Provider value={contextValue}>
       {/* 스크린 리더용 Live Region */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        class="sr-only"
-      >
-        <Show when={latestUnread()}>
-          {(item) => `알림: ${item().title} ${item().message ?? ""}`}
-        </Show>
+      <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+        <Show when={latestUnread()}>{(item) => `알림: ${item().title} ${item().message ?? ""}`}</Show>
       </div>
       {props.children}
     </NotificationContext.Provider>
@@ -300,6 +295,7 @@ export const NotificationProvider: ParentComponent = (props) => {
 ```bash
 pnpm typecheck packages/solid
 ```
+
 Expected: PASS
 
 **Step 3: 기존 테스트 실행**
@@ -307,6 +303,7 @@ Expected: PASS
 ```bash
 pnpm vitest packages/solid/tests/components/notification/NotificationContext.spec.tsx --project=solid --run
 ```
+
 Expected: PASS (10 tests)
 
 **Step 4: 커밋**
@@ -321,6 +318,7 @@ git commit -m "feat(solid): NotificationProvider에 update, remove 메서드 및
 ## Task 3: update/remove/renotify 테스트 추가
 
 **Files:**
+
 - Test: `packages/solid/tests/components/notification/NotificationContext.spec.tsx`
 
 **Step 1: update 테스트 작성**
@@ -437,6 +435,7 @@ it("update with renotify: 읽지 않은 알림은 그대로 읽지 않음 상태
 ```bash
 pnpm vitest packages/solid/tests/components/notification/NotificationContext.spec.tsx --project=solid --run
 ```
+
 Expected: PASS (14 tests)
 
 **Step 3: 커밋**
@@ -451,6 +450,7 @@ git commit -m "test(solid): NotificationProvider update/remove/renotify 테스�
 ## Task 4: ServiceClientContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/ServiceClientContext.ts`
 - Test: `packages/solid/tests/contexts/ServiceClientContext.spec.tsx`
 
@@ -468,7 +468,7 @@ describe("ServiceClientContext", () => {
     it("Provider 없이 사용하면 에러가 발생한다", () => {
       createRoot((dispose) => {
         expect(() => useServiceClient()).toThrow(
-          "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다"
+          "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다",
         );
         dispose();
       });
@@ -482,6 +482,7 @@ describe("ServiceClientContext", () => {
 ```bash
 pnpm vitest packages/solid/tests/contexts/ServiceClientContext.spec.tsx --project=solid --run
 ```
+
 Expected: FAIL - 모듈이 없음
 
 **Step 3: ServiceClientContext 생성**
@@ -515,6 +516,7 @@ export function useServiceClient(): ServiceClientContextValue {
 ```bash
 pnpm vitest packages/solid/tests/contexts/ServiceClientContext.spec.tsx --project=solid --run
 ```
+
 Expected: PASS (1 test)
 
 **Step 5: 커밋**
@@ -529,6 +531,7 @@ git commit -m "feat(solid): ServiceClientContext 및 useServiceClient 훅 생성
 ## Task 5: ServiceClientProvider 생성
 
 **Files:**
+
 - Create: `packages/solid/src/contexts/ServiceClientProvider.tsx`
 - Modify: `packages/solid/tests/contexts/ServiceClientContext.spec.tsx`
 
@@ -583,9 +586,7 @@ describe("ServiceClientProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    expect(() => serviceClient!.get("unknown")).toThrow(
-      "연결하지 않은 클라이언트 키입니다. unknown"
-    );
+    expect(() => serviceClient!.get("unknown")).toThrow("연결하지 않은 클라이언트 키입니다. unknown");
   });
 
   it("연결하지 않은 키로 isConnected 호출 시 false를 반환한다", () => {
@@ -614,6 +615,7 @@ describe("ServiceClientProvider", () => {
 ```bash
 pnpm vitest packages/solid/tests/contexts/ServiceClientContext.spec.tsx --project=solid --run
 ```
+
 Expected: FAIL - ServiceClientProvider 모듈 없음
 
 **Step 3: ServiceClientProvider 생성**
@@ -678,10 +680,14 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       if (state.completedSize === state.totalSize) {
         const id = reqProgressMap.get(state.uuid);
         if (id) {
-          notification.update(id, {
-            title: "요청 전송 완료",
-            message: "100%",
-          }, { renotify: true });
+          notification.update(
+            id,
+            {
+              title: "요청 전송 완료",
+              message: "100%",
+            },
+            { renotify: true },
+          );
           reqProgressMap.delete(state.uuid);
         }
       }
@@ -702,10 +708,14 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       if (state.completedSize === state.totalSize) {
         const id = resProgressMap.get(state.uuid);
         if (id) {
-          notification.update(id, {
-            title: "응답 전송 완료",
-            message: "100%",
-          }, { renotify: true });
+          notification.update(
+            id,
+            {
+              title: "응답 전송 완료",
+              message: "100%",
+            },
+            { renotify: true },
+          );
           resProgressMap.delete(state.uuid);
         }
       }
@@ -743,11 +753,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     isConnected,
   };
 
-  return (
-    <ServiceClientContext.Provider value={contextValue}>
-      {props.children}
-    </ServiceClientContext.Provider>
-  );
+  return <ServiceClientContext.Provider value={contextValue}>{props.children}</ServiceClientContext.Provider>;
 };
 ```
 
@@ -756,6 +762,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
 ```bash
 pnpm vitest packages/solid/tests/contexts/ServiceClientContext.spec.tsx --project=solid --run
 ```
+
 Expected: PASS (4 tests)
 
 **Step 5: 타입체크**
@@ -763,6 +770,7 @@ Expected: PASS (4 tests)
 ```bash
 pnpm typecheck packages/solid
 ```
+
 Expected: PASS
 
 **Step 6: 커밋**
@@ -777,6 +785,7 @@ git commit -m "feat(solid): ServiceClientProvider 생성"
 ## Task 6: Export 추가 및 전체 테스트
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: index.ts에 export 추가**
@@ -793,6 +802,7 @@ export * from "./contexts/ServiceClientProvider";
 ```bash
 pnpm typecheck packages/solid
 ```
+
 Expected: PASS
 
 **Step 3: 전체 테스트 실행**
@@ -800,6 +810,7 @@ Expected: PASS
 ```bash
 pnpm vitest --project=solid --run
 ```
+
 Expected: PASS (모든 테스트)
 
 **Step 4: 린트**
@@ -807,6 +818,7 @@ Expected: PASS (모든 테스트)
 ```bash
 pnpm lint packages/solid --fix
 ```
+
 Expected: PASS
 
 **Step 5: 커밋**

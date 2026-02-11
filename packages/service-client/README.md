@@ -1,176 +1,176 @@
 # @simplysm/service-client
 
-Simplysm 프레임워크의 서비스 클라이언트 패키지이다. `@simplysm/service-server`와의 WebSocket 통신, 원격 서비스 호출(RPC), 이벤트 구독, 파일 업로드/다운로드, ORM 원격 접근 기능을 제공한다.
+A service client package for the Simplysm framework. Provides WebSocket communication with `@simplysm/service-server`, remote service invocation (RPC), event subscription, file upload/download, and ORM remote access.
 
-브라우저와 Node.js 환경 모두에서 동작하며, 대용량 메시지의 자동 분할/병합, 하트비트 기반 연결 감시, 자동 재연결 등의 기능을 내장하고 있다.
+Works in both browser and Node.js environments, with built-in features like automatic message chunking/merging for large payloads, heartbeat-based connection monitoring, and automatic reconnection.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/service-client
-# 또는
+# or
 pnpm add @simplysm/service-client
 ```
 
-### 의존성
+### Dependencies
 
-| 패키지 | 설명 |
+| Package | Description |
 |--------|------|
-| `@simplysm/core-common` | 공통 유틸리티 (EventEmitter, Uuid 등) |
-| `@simplysm/orm-common` | ORM 쿼리 빌더, 스키마 정의 |
-| `@simplysm/service-common` | 서비스 프로토콜, 타입 정의 |
+| `@simplysm/core-common` | Common utilities (EventEmitter, Uuid, etc.) |
+| `@simplysm/orm-common` | ORM query builder, schema definitions |
+| `@simplysm/service-common` | Service protocol, type definitions |
 
-## 주요 모듈
+## Main Modules
 
-### 핵심 클래스
+### Core Classes
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `ServiceClient` | 메인 서비스 클라이언트. 연결 관리, RPC 호출, 이벤트, 파일, 인증을 통합 제공한다. |
-| `ServiceTransport` | 메시지 전송 계층. 요청/응답 매칭, 진행률 추적, 프로토콜 인코딩/디코딩을 담당한다. |
-| `SocketProvider` | WebSocket 연결 관리. 하트비트, 자동 재연결, 연결 상태 이벤트를 처리한다. |
-| `ClientProtocolWrapper` | 프로토콜 래퍼. 데이터 크기에 따라 메인 스레드/Web Worker를 자동 선택하여 인코딩/디코딩한다. |
+| `ServiceClient` | Main service client. Provides integrated connection management, RPC calls, events, files, and authentication. |
+| `ServiceTransport` | Message transport layer. Handles request/response matching, progress tracking, and protocol encoding/decoding. |
+| `SocketProvider` | WebSocket connection management. Handles heartbeat, auto-reconnection, and connection state events. |
+| `ClientProtocolWrapper` | Protocol wrapper. Automatically selects main thread/Web Worker for encoding/decoding based on data size. |
 
-### 기능 클래스
+### Feature Classes
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `EventClient` | 서버 이벤트 구독/발행. 재연결 시 리스너 자동 복구를 지원한다. |
-| `FileClient` | HTTP 기반 파일 업로드/다운로드를 처리한다. |
-| `OrmClientConnector` | ORM 원격 접속 커넥터. 트랜잭션/비트랜잭션 연결을 지원한다. |
-| `OrmClientDbContextExecutor` | ORM DbContext 원격 실행기. 서버의 `OrmService`를 RPC로 호출한다. |
+| `EventClient` | Server event subscription/publishing. Supports automatic listener recovery on reconnection. |
+| `FileClient` | Handles HTTP-based file upload/download. |
+| `OrmClientConnector` | ORM remote connection connector. Supports transaction/non-transaction connections. |
+| `OrmClientDbContextExecutor` | ORM DbContext remote executor. Calls server's `OrmService` via RPC. |
 
-### 타입/인터페이스
+### Types/Interfaces
 
-| 타입 | 설명 |
+| Type | Description |
 |------|------|
-| `ServiceConnectionConfig` | 서버 연결 설정 (host, port, ssl, maxReconnectCount) |
-| `ServiceProgress` | 요청/응답 진행률 콜백 |
-| `ServiceProgressState` | 진행률 상태 (uuid, totalSize, completedSize) |
-| `OrmConnectConfig<T>` | ORM 연결 설정 (DbContext 타입, 연결 옵션, DB/스키마 오버라이드) |
-| `RemoteService<T>` | 서비스 인터페이스의 모든 메서드 반환형을 `Promise`로 감싸는 유틸리티 타입 |
+| `ServiceConnectionConfig` | Server connection config (host, port, ssl, maxReconnectCount) |
+| `ServiceProgress` | Request/response progress callback |
+| `ServiceProgressState` | Progress state (uuid, totalSize, completedSize) |
+| `OrmConnectConfig<T>` | ORM connection config (DbContext type, connection options, DB/schema override) |
+| `RemoteService<T>` | Utility type that wraps all method return types of a service interface with `Promise` |
 
-## 사용법
+## Usage
 
-### 기본 연결 및 서비스 호출
+### Basic Connection and Service Call
 
 ```typescript
 import { ServiceClient } from "@simplysm/service-client";
 
-// 클라이언트 생성
+// Create client
 const client = new ServiceClient("my-app", {
   host: "localhost",
   port: 8080,
   ssl: false,
-  maxReconnectCount: 10, // 최대 재연결 시도 횟수 (기본값: 10, 0이면 재연결 안 함)
+  maxReconnectCount: 10, // Max reconnection attempts (default: 10, 0 means no reconnection)
 });
 
-// 서버 연결
+// Connect to server
 await client.connect();
 
-// 연결 상태 확인
+// Check connection status
 console.log(client.connected); // true
 console.log(client.hostUrl);   // "http://localhost:8080"
 
-// 직접 RPC 호출
+// Direct RPC call
 const result = await client.send("MyService", "getUsers", [{ page: 1 }]);
 
-// 연결 종료
+// Close connection
 await client.close();
 ```
 
-### 타입 안전한 서비스 호출 (getService)
+### Type-Safe Service Call (getService)
 
-`getService<T>()`는 `Proxy`를 사용하여 서비스 인터페이스에 대한 타입 안전한 원격 호출을 제공한다.
+`getService<T>()` uses `Proxy` to provide type-safe remote calls to service interfaces.
 
 ```typescript
-// 서비스 인터페이스 정의 (service-common에서 공유)
+// Service interface definition (shared from service-common)
 interface UserService {
   getUsers(filter: { page: number }): Promise<User[]>;
   createUser(data: CreateUserDto): Promise<number>;
   deleteUser(id: number): Promise<void>;
 }
 
-// 타입 안전한 프록시 생성
+// Create type-safe proxy
 const userService = client.getService<UserService>("UserService");
 
-// 메서드 호출 시 파라미터/반환 타입이 자동으로 추론됨
+// Parameter/return types are automatically inferred on method calls
 const users = await userService.getUsers({ page: 1 }); // users: User[]
 const newId = await userService.createUser({ name: "test" }); // newId: number
 ```
 
-`RemoteService<T>` 타입은 원본 인터페이스의 모든 메서드 반환형을 `Promise`로 감싸준다. 이미 `Promise`를 반환하는 메서드는 이중 래핑되지 않는다.
+`RemoteService<T>` wraps all method return types of the original interface with `Promise`. Methods already returning `Promise` are not double-wrapped.
 
-### 인증
+### Authentication
 
 ```typescript
-// 서버 연결 후 인증 토큰 전송
+// Send auth token after server connection
 await client.connect();
 await client.auth("jwt-token-here");
 
-// 재연결 시 자동으로 재인증됨
+// Automatically re-authenticated on reconnection
 ```
 
-`auth()` 호출 후 저장된 토큰은 WebSocket 재연결 시 자동으로 서버에 재전송된다.
+Tokens stored after `auth()` calls are automatically resent to the server on WebSocket reconnection.
 
-### 연결 상태 감시
+### Connection State Monitoring
 
-`ServiceClient`는 `EventEmitter`를 상속하며, 다음 이벤트를 지원한다.
+`ServiceClient` extends `EventEmitter` and supports the following events.
 
-| 이벤트 | 타입 | 설명 |
+| Event | Type | Description |
 |--------|------|------|
-| `state` | `"connected" \| "closed" \| "reconnecting"` | 연결 상태 변경 |
-| `request-progress` | `ServiceProgressState` | 요청 전송 진행률 |
-| `response-progress` | `ServiceProgressState` | 응답 수신 진행률 |
-| `reload` | `Set<string>` | 서버에서 파일 변경 알림 (개발 모드 HMR) |
+| `state` | `"connected" \| "closed" \| "reconnecting"` | Connection state change |
+| `request-progress` | `ServiceProgressState` | Request transmission progress |
+| `response-progress` | `ServiceProgressState` | Response reception progress |
+| `reload` | `Set<string>` | File change notification from server (dev mode HMR) |
 
 ```typescript
-// 연결 상태 변경 감시
+// Monitor connection state changes
 client.on("state", (state) => {
   if (state === "connected") {
-    console.log("서버 연결됨");
+    console.log("Connected to server");
   } else if (state === "reconnecting") {
-    console.log("재연결 시도 중...");
+    console.log("Reconnection in progress...");
   } else if (state === "closed") {
-    console.log("연결 종료됨");
+    console.log("Connection closed");
   }
 });
 
-// 요청/응답 진행률 감시 (대용량 메시지)
+// Monitor request/response progress (large messages)
 client.on("request-progress", (state) => {
   const percent = Math.round((state.completedSize / state.totalSize) * 100);
-  console.log(`전송 중: ${percent}%`);
+  console.log(`Sending: ${percent}%`);
 });
 
 client.on("response-progress", (state) => {
   const percent = Math.round((state.completedSize / state.totalSize) * 100);
-  console.log(`수신 중: ${percent}%`);
+  console.log(`Receiving: ${percent}%`);
 });
 ```
 
-### 개별 요청 진행률 추적
+### Individual Request Progress Tracking
 
-`send()` 메서드의 `progress` 파라미터로 개별 요청의 진행률을 추적할 수 있다.
+Track progress of individual requests with the `progress` parameter of the `send()` method.
 
 ```typescript
 const result = await client.send("DataService", "getLargeData", [query], {
   request: (state) => {
-    console.log(`요청 전송: ${state.completedSize}/${state.totalSize} bytes`);
+    console.log(`Request sending: ${state.completedSize}/${state.totalSize} bytes`);
   },
   response: (state) => {
-    console.log(`응답 수신: ${state.completedSize}/${state.totalSize} bytes`);
+    console.log(`Response receiving: ${state.completedSize}/${state.totalSize} bytes`);
   },
 });
 ```
 
-### 이벤트 구독 (서버 -> 클라이언트)
+### Event Subscription (Server -> Client)
 
-서버에서 발생하는 이벤트를 구독하고, 재연결 시 자동으로 리스너가 복구된다.
+Subscribe to events from the server, and listeners are automatically recovered on reconnection.
 
 ```typescript
 import { ServiceEventListener } from "@simplysm/service-common";
 
-// 이벤트 리스너 타입 정의 (서버/클라이언트 공유)
+// Event listener type definition (shared between server/client)
 class SharedDataChangeEvent extends ServiceEventListener<
   { name: string; filter: unknown },
   (string | number)[] | undefined
@@ -178,69 +178,69 @@ class SharedDataChangeEvent extends ServiceEventListener<
   readonly eventName = "SharedDataChangeEvent";
 }
 
-// 이벤트 구독
+// Subscribe to event
 const listenerKey = await client.addEventListener(
   SharedDataChangeEvent,
   { name: "users", filter: null },
   async (data) => {
-    console.log("데이터 변경됨:", data);
+    console.log("Data changed:", data);
   },
 );
 
-// 이벤트 구독 해제
+// Unsubscribe from event
 await client.removeEventListener(listenerKey);
 ```
 
-### 이벤트 발행 (클라이언트 -> 서버 -> 다른 클라이언트)
+### Event Publishing (Client -> Server -> Other Clients)
 
 ```typescript
-// 특정 조건을 만족하는 리스너들에게 이벤트 발행
+// Publish event to listeners matching specific conditions
 await client.emitToServer(
   SharedDataChangeEvent,
-  (info) => info.name === "users", // 대상 필터
-  [1, 2, 3],                       // 전송할 데이터
+  (info) => info.name === "users", // Target filter
+  [1, 2, 3],                       // Data to send
 );
 ```
 
-서버가 등록된 리스너 목록에서 `infoSelector` 조건에 맞는 리스너를 찾아 이벤트를 전달한다.
+The server finds listeners matching the `infoSelector` condition in the registered listener list and delivers the event.
 
-### 파일 업로드
+### File Upload
 
-파일 업로드는 HTTP POST 요청으로 처리되며, 인증 토큰이 필요하다.
+File upload is handled via HTTP POST requests and requires an authentication token.
 
 ```typescript
-// 인증 필수
+// Authentication required
 await client.auth("jwt-token");
 
-// 브라우저 File 객체로 업로드
+// Upload with browser File object
 const fileInput = document.querySelector("input[type=file]") as HTMLInputElement;
 const results = await client.uploadFile(fileInput.files!);
 
-// 커스텀 데이터로 업로드
+// Upload with custom data
 const results = await client.uploadFile([
   { name: "data.json", data: JSON.stringify({ key: "value" }) },
   { name: "image.png", data: imageBlob },
 ]);
 
-// 업로드 결과
+// Upload results
 for (const result of results) {
-  console.log(result.path);     // 서버 저장 경로
-  console.log(result.filename); // 원본 파일명
-  console.log(result.size);     // 파일 크기 (bytes)
+  console.log(result.path);     // Server storage path
+  console.log(result.filename); // Original filename
+  console.log(result.size);     // File size (bytes)
 }
 ```
 
-### 파일 다운로드
+### File Download
 
 ```typescript
-// 서버의 상대 경로로 파일 다운로드
+// Download file from server's relative path
 const buffer = await client.downloadFileBuffer("/uploads/2024/file.pdf");
 // buffer: Uint8Array
 ```
 
-### ORM 원격 접속
+### ORM Remote Access
 
-서버의 ORM 서비스를 통해 데이터베이스에 접근한다. 트랜잭션이 자동으로 관리된다.
+Access the database through the server's ORM service. Transactions are automatically managed.
 
 ```typescript
 import { OrmClientConnector } from "@simplysm/service-client";
@@ -249,21 +249,21 @@ import { DbContext } from "@simplysm/orm-common";
 
 const connector = new OrmClientConnector(client);
 
-// 트랜잭션 포함 연결 (오류 시 자동 롤백)
+// Connect with transaction (auto rollback on error)
 await connector.connect(
   {
     dbContextType: MyDbContext,
     connOpt: { configName: "default" },
-    dbContextOpt: { database: "mydb", schema: "dbo" }, // 선택사항
+    dbContextOpt: { database: "mydb", schema: "dbo" }, // Optional
   },
   async (db) => {
     const users = await db.from(User).resultAsync();
     await db.from(User).insert({ name: "test" });
-    // 콜백 정상 완료 시 자동 커밋
+    // Auto commit on callback success
   },
 );
 
-// 트랜잭션 없이 연결 (읽기 전용 작업에 적합)
+// Connect without transaction (suitable for read-only operations)
 await connector.connectWithoutTransaction(
   {
     dbContextType: MyDbContext,
@@ -276,122 +276,122 @@ await connector.connectWithoutTransaction(
 );
 ```
 
-## 상세 API
+## Detailed API
 
 ### ServiceConnectionConfig
 
-서버 연결 설정 인터페이스이다.
+Server connection configuration interface.
 
-| 속성 | 타입 | 필수 | 설명 |
+| Property | Type | Required | Description |
 |------|------|------|------|
-| `host` | `string` | 예 | 서버 호스트 주소 |
-| `port` | `number` | 예 | 서버 포트 번호 |
-| `ssl` | `boolean` | 아니오 | SSL 사용 여부. `true`이면 `wss://` / `https://` 사용 |
-| `maxReconnectCount` | `number` | 아니오 | 최대 재연결 시도 횟수 (기본값: 10). 0이면 재연결하지 않음 |
+| `host` | `string` | Yes | Server host address |
+| `port` | `number` | Yes | Server port number |
+| `ssl` | `boolean` | No | SSL usage. If `true`, uses `wss://` / `https://` |
+| `maxReconnectCount` | `number` | No | Max reconnection attempts (default: 10). 0 means no reconnection |
 
 ### ServiceClient
 
-| 메서드/속성 | 반환 타입 | 설명 |
+| Method/Property | Return Type | Description |
 |-------------|----------|------|
-| `constructor(name, options)` | - | 클라이언트 인스턴스 생성. `name`은 클라이언트 식별자 |
-| `connected` | `boolean` | WebSocket 연결 상태 |
-| `hostUrl` | `string` | HTTP URL (예: `http://localhost:8080`) |
-| `connect()` | `Promise<void>` | 서버에 WebSocket 연결 |
-| `close()` | `Promise<void>` | 연결 종료 (Graceful Shutdown) |
-| `send(serviceName, methodName, params, progress?)` | `Promise<unknown>` | 서비스 메서드를 원격 호출 |
-| `getService<T>(serviceName)` | `RemoteService<T>` | 타입 안전한 서비스 프록시 생성 |
-| `auth(token)` | `Promise<void>` | 인증 토큰 전송 (재연결 시 자동 재인증) |
-| `addEventListener(eventType, info, cb)` | `Promise<string>` | 이벤트 리스너 등록. 리스너 key 반환 |
-| `removeEventListener(key)` | `Promise<void>` | 이벤트 리스너 해제 |
-| `emitToServer(eventType, infoSelector, data)` | `Promise<void>` | 서버를 통해 다른 클라이언트에 이벤트 발행 |
-| `uploadFile(files)` | `Promise<ServiceUploadResult[]>` | 파일 업로드 (인증 필수) |
-| `downloadFileBuffer(relPath)` | `Promise<Uint8Array>` | 파일 다운로드 |
+| `constructor(name, options)` | - | Create client instance. `name` is the client identifier |
+| `connected` | `boolean` | WebSocket connection status |
+| `hostUrl` | `string` | HTTP URL (e.g., `http://localhost:8080`) |
+| `connect()` | `Promise<void>` | Connect to server via WebSocket |
+| `close()` | `Promise<void>` | Close connection (Graceful Shutdown) |
+| `send(serviceName, methodName, params, progress?)` | `Promise<unknown>` | Remote call to service method |
+| `getService<T>(serviceName)` | `RemoteService<T>` | Create type-safe service proxy |
+| `auth(token)` | `Promise<void>` | Send auth token (auto re-auth on reconnection) |
+| `addEventListener(eventType, info, cb)` | `Promise<string>` | Register event listener. Returns listener key |
+| `removeEventListener(key)` | `Promise<void>` | Remove event listener |
+| `emitToServer(eventType, infoSelector, data)` | `Promise<void>` | Publish event to other clients through server |
+| `uploadFile(files)` | `Promise<ServiceUploadResult[]>` | File upload (auth required) |
+| `downloadFileBuffer(relPath)` | `Promise<Uint8Array>` | File download |
 
 ### ServiceProgress / ServiceProgressState
 
-대용량 메시지 전송 시 진행률을 추적하기 위한 인터페이스이다.
+Interfaces for tracking progress of large message transmissions.
 
 ```typescript
 interface ServiceProgress {
-  request?: (s: ServiceProgressState) => void;   // 요청 전송 진행률
-  response?: (s: ServiceProgressState) => void;  // 응답 수신 진행률
+  request?: (s: ServiceProgressState) => void;   // Request transmission progress
+  response?: (s: ServiceProgressState) => void;  // Response reception progress
 }
 
 interface ServiceProgressState {
-  uuid: string;          // 요청 고유 식별자
-  totalSize: number;     // 전체 크기 (bytes)
-  completedSize: number; // 완료된 크기 (bytes)
+  uuid: string;          // Request unique identifier
+  totalSize: number;     // Total size (bytes)
+  completedSize: number; // Completed size (bytes)
 }
 ```
 
 ### OrmConnectConfig\<T\>
 
-ORM 원격 연결 설정 인터페이스이다.
+ORM remote connection configuration interface.
 
-| 속성 | 타입 | 필수 | 설명 |
+| Property | Type | Required | Description |
 |------|------|------|------|
-| `dbContextType` | `Type<T>` | 예 | DbContext 클래스 |
-| `connOpt` | `DbConnOptions & { configName: string }` | 예 | DB 연결 옵션 (서버 측 설정 이름 포함) |
-| `dbContextOpt` | `{ database: string; schema: string }` | 아니오 | 데이터베이스/스키마 오버라이드 |
+| `dbContextType` | `Type<T>` | Yes | DbContext class |
+| `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options (including server-side config name) |
+| `dbContextOpt` | `{ database: string; schema: string }` | No | Database/schema override |
 
 ### SocketProvider
 
-WebSocket 연결의 저수준 관리를 담당한다. 일반적으로 직접 사용하지 않고 `ServiceClient`를 통해 간접 사용한다.
+Handles low-level management of WebSocket connections. Not typically used directly, but indirectly through `ServiceClient`.
 
-| 상수 | 값 | 설명 |
+| Constant | Value | Description |
 |------|-----|------|
-| Heartbeat Timeout | 30초 | 이 시간 동안 메시지가 없으면 연결 끊김으로 간주 |
-| Heartbeat Interval | 5초 | Ping 전송 간격 |
-| Reconnect Delay | 3초 | 재연결 시도 간격 |
+| Heartbeat Timeout | 30s | Connection considered disconnected if no messages for this duration |
+| Heartbeat Interval | 5s | Ping transmission interval |
+| Reconnect Delay | 3s | Reconnection attempt interval |
 
 ### ClientProtocolWrapper
 
-메시지 인코딩/디코딩을 담당한다. 브라우저 환경에서 30KB를 초과하는 데이터는 자동으로 Web Worker에서 처리하여 메인 스레드 블로킹을 방지한다.
+Handles message encoding/decoding. In browser environments, data exceeding 30KB is automatically processed in a Web Worker to prevent main thread blocking.
 
-| 임계값 | 조건 |
+| Threshold | Condition |
 |--------|------|
-| 30KB 이하 | 메인 스레드에서 직접 처리 |
-| 30KB 초과 | Web Worker로 위임 (브라우저 환경만 해당) |
+| 30KB or less | Processed directly in main thread |
+| Over 30KB | Delegated to Web Worker (browser environments only) |
 
-Worker 위임 조건 (인코딩 시):
-- `Uint8Array` 데이터
-- 30KB를 초과하는 문자열
-- 100개를 초과하는 배열 또는 `Uint8Array`를 포함하는 배열
+Worker delegation conditions (during encoding):
+- `Uint8Array` data
+- Strings exceeding 30KB
+- Arrays exceeding 100 elements or arrays containing `Uint8Array`
 
-## 아키텍처
+## Architecture
 
 ```
-ServiceClient (통합 진입점)
+ServiceClient (integrated entry point)
   |
-  +-- SocketProvider (WebSocket 연결 관리)
-  |     +-- 하트비트 (Ping/Pong)
-  |     +-- 자동 재연결
+  +-- SocketProvider (WebSocket connection management)
+  |     +-- Heartbeat (Ping/Pong)
+  |     +-- Auto reconnection
   |
-  +-- ServiceTransport (메시지 전송/수신)
-  |     +-- ClientProtocolWrapper (인코딩/디코딩)
-  |     |     +-- ServiceProtocol (메인 스레드)
-  |     |     +-- Web Worker (대용량 데이터)
-  |     +-- 요청/응답 매칭 (UUID 기반)
-  |     +-- 진행률 추적
+  +-- ServiceTransport (message send/receive)
+  |     +-- ClientProtocolWrapper (encoding/decoding)
+  |     |     +-- ServiceProtocol (main thread)
+  |     |     +-- Web Worker (large data)
+  |     +-- Request/response matching (UUID-based)
+  |     +-- Progress tracking
   |
-  +-- EventClient (이벤트 구독/발행)
-  |     +-- 리스너 관리 (등록/해제)
-  |     +-- 재연결 시 자동 복구
+  +-- EventClient (event subscription/publishing)
+  |     +-- Listener management (registration/removal)
+  |     +-- Auto recovery on reconnection
   |
-  +-- FileClient (HTTP 파일 전송)
-        +-- 업로드 (FormData, POST)
-        +-- 다운로드 (GET)
+  +-- FileClient (HTTP file transfer)
+        +-- Upload (FormData, POST)
+        +-- Download (GET)
 ```
 
-## 주의사항
+## Caveats
 
-- **인증 필수**: `uploadFile()`을 호출하기 전에 반드시 `auth()`로 인증해야 한다. 미인증 시 에러가 발생한다.
-- **연결 상태 확인**: `addEventListener()`는 서버와 연결된 상태에서만 호출할 수 있다. 미연결 시 에러가 발생한다.
-- **자동 재연결**: 연결이 끊기면 `maxReconnectCount`까지 3초 간격으로 자동 재연결을 시도한다. 재연결 성공 시 인증 토큰과 이벤트 리스너가 자동으로 복구된다.
-- **대용량 메시지**: `@simplysm/service-common`의 `ServiceProtocol`에 의해 대용량 메시지는 자동으로 분할/병합된다. 진행률은 `ServiceProgress` 콜백 또는 `ServiceClient`의 이벤트로 추적할 수 있다.
-- **Web Worker**: 브라우저 환경에서 30KB를 초과하는 데이터의 인코딩/디코딩은 자동으로 Web Worker에서 처리된다. Node.js 환경에서는 항상 메인 스레드에서 처리된다.
-- **Foreign Key 에러 변환**: ORM 연결에서 외래 키 제약 조건 위반 에러가 발생하면, 사용자 친화적인 메시지로 자동 변환된다.
+- **Auth Required**: You must authenticate with `auth()` before calling `uploadFile()`. An error occurs if not authenticated.
+- **Connection State Check**: `addEventListener()` can only be called when connected to the server. An error occurs if not connected.
+- **Auto Reconnection**: If the connection is lost, automatic reconnection is attempted up to `maxReconnectCount` times at 3-second intervals. On successful reconnection, auth tokens and event listeners are automatically recovered.
+- **Large Messages**: Large messages are automatically split/merged by `ServiceProtocol` from `@simplysm/service-common`. Progress can be tracked via `ServiceProgress` callbacks or `ServiceClient` events.
+- **Web Worker**: In browser environments, encoding/decoding of data exceeding 30KB is automatically handled in a Web Worker. In Node.js environments, it's always processed in the main thread.
+- **Foreign Key Error Conversion**: ORM connection errors due to foreign key constraint violations are automatically converted to user-friendly messages.
 
-## 라이선스
+## License
 
 Apache-2.0

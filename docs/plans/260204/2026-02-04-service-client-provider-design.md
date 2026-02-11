@@ -6,14 +6,14 @@ Angular 레거시의 `sd-service-client-factory.provider.ts`를 SolidJS로 마�
 
 ## 결정 사항
 
-| 항목 | 결정 |
-|------|------|
-| 제공 방식 | Context + Provider 패턴 |
-| HMR/Reload 로직 | 제외 (Vite 사용) |
-| Progress 표시 | NotificationProvider 활용 |
-| Progress 완료 후 | 목록에 유지 (수동 제거) |
-| 클라이언트 관리 | 멀티 클라이언트 (key 기반) |
-| 연결 기본값 | location 기반 |
+| 항목             | 결정                       |
+| ---------------- | -------------------------- |
+| 제공 방식        | Context + Provider 패턴    |
+| HMR/Reload 로직  | 제외 (Vite 사용)           |
+| Progress 표시    | NotificationProvider 활용  |
+| Progress 완료 후 | 목록에 유지 (수동 제거)    |
+| 클라이언트 관리  | 멀티 클라이언트 (key 기반) |
+| 연결 기본값      | location 기반              |
 
 ## 1. NotificationProvider 확장
 
@@ -32,7 +32,7 @@ export interface NotificationContextValue {
   update: (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
-    options?: { renotify?: boolean }
+    options?: { renotify?: boolean },
   ) => void;
   remove: (id: string) => void;
 }
@@ -92,10 +92,14 @@ client.on("request-progress", (state) => {
   }
 
   if (state.completedSize === state.totalSize) {
-    notification.update(existing, {
-      title: "요청 전송 완료",
-      message: "100%"
-    }, { renotify: true });
+    notification.update(
+      existing,
+      {
+        title: "요청 전송 완료",
+        message: "100%",
+      },
+      { renotify: true },
+    );
     reqProgressMap.delete(state.uuid);
   }
 });

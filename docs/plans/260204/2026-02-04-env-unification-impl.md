@@ -5,6 +5,7 @@
 **Goal:** 모든 코드에서 `process.env`를 통일하여 사용하고, Vite에서 polyfill하여 neutral 패키지가 양쪽 환경에서 동작하도록 함
 
 **Architecture:**
+
 - library 빌드: 치환 없음 (그대로 `process.env` 유지)
 - server 빌드: `bundle: true`로 변경 + `define`으로 특정 키 상수 치환
 - client 빌드 (Vite): `define`으로 `process.env`를 객체로 치환
@@ -16,6 +17,7 @@
 ## Task 1: SdConfig 타입에 env 필드 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/sd-config.types.ts:159-164`
 
 **Step 1: SdServerPackageConfig에 env 필드 추가**
@@ -79,6 +81,7 @@ git commit -m "feat(cli): add env field to SdServerPackageConfig and SdClientPac
 ## Task 2: server-build.worker.ts 수정 (bundle: true + define)
 
 **Files:**
+
 - Modify: `packages/cli/src/workers/server-build.worker.ts`
 
 **Step 1: ServerBuildWatchInfo 타입에 env 필드 추가**
@@ -124,9 +127,9 @@ esbuildContext = await esbuild.context({
   sourcemap: true,
   platform: "node",
   target: "node20",
-  bundle: true,  // false에서 true로 변경
-  packages: "external",  // node_modules는 번들에서 제외
-  define,  // 환경변수 치환
+  bundle: true, // false에서 true로 변경
+  packages: "external", // node_modules는 번들에서 제외
+  define, // 환경변수 치환
   tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
   plugins: [
     // ... 기존 플러그인 유지
@@ -151,6 +154,7 @@ git commit -m "feat(cli): enable bundle mode and add env define for server build
 ## Task 3: watch.worker.ts Vite 설정에 define 추가
 
 **Files:**
+
 - Modify: `packages/cli/src/workers/watch.worker.ts`
 
 **Step 1: startViteWatch 함수에서 define 옵션 추가**
@@ -173,16 +177,13 @@ createServer 옵션에 `define: envDefine` 추가:
 viteServer = await createServer({
   root: pkgDir,
   base: `/${name}/`,
-  plugins: [
-    tsconfigPaths({ projects: [tsconfigPath] }),
-    solidPlugin(),
-  ],
+  plugins: [tsconfigPaths({ projects: [tsconfigPath] }), solidPlugin()],
   css: {
     postcss: {
       plugins: [tailwindcss({ config: path.join(pkgDir, "tailwind.config.ts") })],
     },
   },
-  define: envDefine,  // 추가
+  define: envDefine, // 추가
   esbuild: {
     tsconfigRaw: { compilerOptions: compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
   },
@@ -210,6 +211,7 @@ git commit -m "feat(cli): add process.env define for Vite client build"
 ## Task 4: dev.ts에서 env 전달
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/dev.ts:493-512`
 
 **Step 1: Server Build 워커 시작 시 env 전달**
@@ -217,25 +219,25 @@ git commit -m "feat(cli): add process.env define for Vite client build"
 `packages/cli/src/commands/dev.ts` 라인 493-512에서 `serverBuild.worker.startWatch` 호출 부분 수정:
 
 현재 코드:
+
 ```typescript
-serverBuild.worker
-  .startWatch({
-    name,
-    cwd,
-    pkgDir,
-  })
+serverBuild.worker.startWatch({
+  name,
+  cwd,
+  pkgDir,
+});
 ```
 
 수정:
+
 ```typescript
 const serverConfig = sdConfig.packages[name] as SdServerPackageConfig;
-serverBuild.worker
-  .startWatch({
-    name,
-    cwd,
-    pkgDir,
-    env: serverConfig.env,
-  })
+serverBuild.worker.startWatch({
+  name,
+  cwd,
+  pkgDir,
+  env: serverConfig.env,
+});
 ```
 
 **Step 2: 타입체크 실행**
@@ -255,6 +257,7 @@ git commit -m "feat(cli): pass env config to server build worker in dev command"
 ## Task 5: 단위 테스트 추가
 
 **Files:**
+
 - Create: `packages/cli/tests/env-define.spec.ts`
 
 **Step 1: 테스트 파일 작성**
@@ -334,6 +337,7 @@ git commit -m "test(cli): add unit tests for env define generation"
 **Step 2: CLI 빌드 후 dev 실행 테스트**
 
 Run:
+
 ```bash
 pnpm build cli
 pnpm dev solid-demo solid-demo-server
@@ -355,11 +359,11 @@ git commit -m "feat(cli): complete env unification for process.env"
 
 ## 요약
 
-| Task | 설명 |
-|------|------|
-| 1 | SdConfig 타입에 env 필드 추가 |
-| 2 | server-build.worker.ts 수정 (bundle: true + define) |
-| 3 | watch.worker.ts Vite 설정 수정 |
-| 4 | dev.ts에서 env 전달 |
-| 5 | 단위 테스트 추가 |
-| 6 | 통합 테스트 (수동) |
+| Task | 설명                                                |
+| ---- | --------------------------------------------------- |
+| 1    | SdConfig 타입에 env 필드 추가                       |
+| 2    | server-build.worker.ts 수정 (bundle: true + define) |
+| 3    | watch.worker.ts Vite 설정 수정                      |
+| 4    | dev.ts에서 env 전달                                 |
+| 5    | 단위 테스트 추가                                    |
+| 6    | 통합 테스트 (수동)                                  |

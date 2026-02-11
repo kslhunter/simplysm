@@ -34,14 +34,14 @@ interface ComboboxProps<T> {
 
   // 데이터 로딩
   loadItems: (query: string) => Promise<T[]>;
-  debounceMs?: number;  // 기본값 300
+  debounceMs?: number; // 기본값 300
 
   // 자유 입력
   allowCustomValue?: boolean;
-  parseCustomValue?: (text: string) => T;  // 문자열 → T 변환
+  parseCustomValue?: (text: string) => T; // 문자열 → T 변환
 
   // 표시
-  renderValue: (value: T) => JSX.Element;  // 선택된 값 표시
+  renderValue: (value: T) => JSX.Element; // 선택된 값 표시
 
   // 공통 (Select와 동일)
   disabled?: boolean;
@@ -76,10 +76,10 @@ Select.ItemTemplate과 동일한 패턴으로 드롭다운 아이템 렌더링.
 ## 내부 상태
 
 ```typescript
-const [open, setOpen] = createSignal(false);           // 드롭다운 열림 여부
-const [query, setQuery] = createSignal("");            // 입력된 검색어
-const [items, setItems] = createSignal<T[]>([]);       // 로드된 아이템 목록
-const [loading, setLoading] = createSignal(false);     // 로딩 중 여부
+const [open, setOpen] = createSignal(false); // 드롭다운 열림 여부
+const [query, setQuery] = createSignal(""); // 입력된 검색어
+const [items, setItems] = createSignal<T[]>([]); // 로드된 아이템 목록
+const [loading, setLoading] = createSignal(false); // 로딩 중 여부
 ```
 
 ## UI 구조

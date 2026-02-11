@@ -45,18 +45,19 @@ packages/cli/src/
 
 #### Critical: 책임 분리 부족
 
-| 파일 | 줄수 | 책임 |
-|------|------|------|
-| `dev.ts` | 581 | 설정 로드, 패키지 분류, Worker 생성, 이벤트 핸들러 등록, Listr 구성, 초기 빌드, Capacitor 초기화, 종료 처리 |
-| `build.ts` | 461 | 설정 로드, 패키지 분류, lint 호출, Worker 생성, Vite 빌드, DTS 생성, Capacitor 빌드, 결과 수집 |
-| `watch.ts` | 309 | 설정 로드, 패키지 분류, Worker 생성, 이벤트 핸들러, Listr 구성, 종료 처리 |
-| `capacitor.ts` | 885 | 초기화, Android 설정, 빌드, 디바이스 실행, 서명 등 모든 것 |
+| 파일           | 줄수 | 책임                                                                                                        |
+| -------------- | ---- | ----------------------------------------------------------------------------------------------------------- |
+| `dev.ts`       | 581  | 설정 로드, 패키지 분류, Worker 생성, 이벤트 핸들러 등록, Listr 구성, 초기 빌드, Capacitor 초기화, 종료 처리 |
+| `build.ts`     | 461  | 설정 로드, 패키지 분류, lint 호출, Worker 생성, Vite 빌드, DTS 생성, Capacitor 빌드, 결과 수집              |
+| `watch.ts`     | 309  | 설정 로드, 패키지 분류, Worker 생성, 이벤트 핸들러, Listr 구성, 종료 처리                                   |
+| `capacitor.ts` | 885  | 초기화, Android 설정, 빌드, 디바이스 실행, 서명 등 모든 것                                                  |
 
 **결과**: 하나의 함수/클래스가 너무 많은 책임을 가져 로직 추적이 어려움
 
 #### Important: 코드 중복
 
 `dev.ts`와 `watch.ts` 공통 패턴:
+
 - Worker 생성 및 관리
 - 이벤트 핸들러 등록
 - Promise resolver 패턴
@@ -414,7 +415,7 @@ class WorkerManager {
   }
 
   async terminateAll(): Promise<void> {
-    await Promise.all([...this.workers.values()].map(w => w.terminate()));
+    await Promise.all([...this.workers.values()].map((w) => w.terminate()));
     this.workers.clear();
   }
 }
@@ -426,8 +427,8 @@ class WorkerManager {
 interface BuildResult {
   name: string;
   target: string;
-  type: 'build' | 'dts' | 'server' | 'capacitor';
-  status: 'pending' | 'building' | 'success' | 'error';
+  type: "build" | "dts" | "server" | "capacitor";
+  status: "pending" | "building" | "success" | "error";
   message?: string;
   port?: number;
   diagnostics?: ts.Diagnostic[];
@@ -441,11 +442,11 @@ class ResultCollector {
   }
 
   getErrors(): BuildResult[] {
-    return [...this.results.values()].filter(r => r.status === 'error');
+    return [...this.results.values()].filter((r) => r.status === "error");
   }
 
   getServers(): BuildResult[] {
-    return [...this.results.values()].filter(r => r.type === 'server' && r.port);
+    return [...this.results.values()].filter((r) => r.type === "server" && r.port);
   }
 
   printErrors(): void {
@@ -466,18 +467,18 @@ class SignalHandler {
   private terminatePromise: Promise<void>;
 
   constructor() {
-    this.terminatePromise = new Promise(resolve => {
+    this.terminatePromise = new Promise((resolve) => {
       this.terminateResolver = resolve;
     });
 
     const handler = () => {
-      process.off('SIGINT', handler);
-      process.off('SIGTERM', handler);
+      process.off("SIGINT", handler);
+      process.off("SIGTERM", handler);
       this.terminateResolver?.();
     };
 
-    process.on('SIGINT', handler);
-    process.on('SIGTERM', handler);
+    process.on("SIGINT", handler);
+    process.on("SIGTERM", handler);
   }
 
   async waitForTermination(): Promise<void> {
@@ -566,15 +567,16 @@ class DeviceRunner {
 
 ### 6.1 유지보수성 개선
 
-| Before | After |
-|--------|-------|
-| `dev.ts` 581줄 단일 함수 | `DevOrchestrator` ~100줄 + Builder들 각 ~100줄 |
-| 로직 추적: "dev.ts 어디?" | 로직 추적: "ServerBuilder.startWatch()" |
-| 수정 영향 범위 불명확 | 클래스별 책임 명확 |
+| Before                    | After                                          |
+| ------------------------- | ---------------------------------------------- |
+| `dev.ts` 581줄 단일 함수  | `DevOrchestrator` ~100줄 + Builder들 각 ~100줄 |
+| 로직 추적: "dev.ts 어디?" | 로직 추적: "ServerBuilder.startWatch()"        |
+| 수정 영향 범위 불명확     | 클래스별 책임 명확                             |
 
 ### 6.2 확장성 향상
 
 새 빌드 타겟 추가 시:
+
 ```typescript
 // 기존: dev.ts, build.ts, watch.ts 모두 수정
 // 신규: ElectronBuilder extends BaseBuilder 추가 + Orchestrator에 등록
@@ -620,8 +622,8 @@ export interface BuilderConfig {
 export interface BuildResult {
   name: string;
   target: string;
-  type: 'build' | 'dts' | 'server' | 'capacitor';
-  status: 'pending' | 'building' | 'success' | 'error' | 'server';
+  type: "build" | "dts" | "server" | "capacitor";
+  status: "pending" | "building" | "success" | "error" | "server";
   message?: string;
   port?: number;
   diagnostics?: ts.Diagnostic[];

@@ -15,6 +15,7 @@
 ## Task 1: TextField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/text-field/TextField.tsx`
 - Test: `packages/solid/tests/components/form-control/text-field/TextField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -84,10 +85,7 @@ const inputBaseClass = clsx(
   "focus:outline-none focus:border-primary-500",
 );
 
-const contentBaseClass = clsx(
-  "whitespace-pre",
-  "text-neutral-900 dark:text-neutral-100",
-);
+const contentBaseClass = clsx("whitespace-pre", "text-neutral-900 dark:text-neutral-100");
 
 const sizeClasses = {
   sm: "px-1.5 py-0.5",
@@ -285,95 +283,91 @@ Expected: PASS
 ```tsx
 // TextField.spec.tsx에 추가
 
-  describe("controlled/uncontrolled", () => {
-    it("controlled: value와 onChange로 값을 제어한다", () => {
-      const [value, setValue] = createSignal<string | undefined>("초기값");
-      const { getByRole } = render(() => (
-        <TextField value={value()} onChange={setValue} />
-      ));
+describe("controlled/uncontrolled", () => {
+  it("controlled: value와 onChange로 값을 제어한다", () => {
+    const [value, setValue] = createSignal<string | undefined>("초기값");
+    const { getByRole } = render(() => <TextField value={value()} onChange={setValue} />);
 
-      const input = getByRole("textbox") as HTMLInputElement;
-      expect(input.value).toBe("초기값");
+    const input = getByRole("textbox") as HTMLInputElement;
+    expect(input.value).toBe("초기값");
 
-      fireEvent.input(input, { target: { value: "새 값" } });
-      expect(value()).toBe("새 값");
-    });
-
-    it("uncontrolled: 내부 상태로 값을 관리한다", () => {
-      const { getByRole } = render(() => <TextField />);
-
-      const input = getByRole("textbox") as HTMLInputElement;
-      fireEvent.input(input, { target: { value: "입력값" } });
-      expect(input.value).toBe("입력값");
-    });
+    fireEvent.input(input, { target: { value: "새 값" } });
+    expect(value()).toBe("새 값");
   });
 
-  describe("disabled 상태", () => {
-    it("disabled일 때 input이 렌더링되지 않는다", () => {
-      const { container } = render(() => <TextField disabled value="값" />);
-      expect(container.querySelector("input")).toBeNull();
-    });
+  it("uncontrolled: 내부 상태로 값을 관리한다", () => {
+    const { getByRole } = render(() => <TextField />);
 
-    it("disabled일 때 값이 div에 표시된다", () => {
-      const { getByText } = render(() => <TextField disabled value="표시값" />);
-      expect(getByText("표시값")).not.toBeNull();
-    });
+    const input = getByRole("textbox") as HTMLInputElement;
+    fireEvent.input(input, { target: { value: "입력값" } });
+    expect(input.value).toBe("입력값");
+  });
+});
+
+describe("disabled 상태", () => {
+  it("disabled일 때 input이 렌더링되지 않는다", () => {
+    const { container } = render(() => <TextField disabled value="값" />);
+    expect(container.querySelector("input")).toBeNull();
   });
 
-  describe("readonly 상태", () => {
-    it("readonly일 때 input이 렌더링되지 않는다", () => {
-      const { container } = render(() => <TextField readonly value="값" />);
-      expect(container.querySelector("input")).toBeNull();
-    });
+  it("disabled일 때 값이 div에 표시된다", () => {
+    const { getByText } = render(() => <TextField disabled value="표시값" />);
+    expect(getByText("표시값")).not.toBeNull();
+  });
+});
 
-    it("readonly일 때 값이 div에 표시된다", () => {
-      const { getByText } = render(() => <TextField readonly value="읽기전용" />);
-      expect(getByText("읽기전용")).not.toBeNull();
-    });
+describe("readonly 상태", () => {
+  it("readonly일 때 input이 렌더링되지 않는다", () => {
+    const { container } = render(() => <TextField readonly value="값" />);
+    expect(container.querySelector("input")).toBeNull();
   });
 
-  describe("error 상태", () => {
-    it("error가 있을 때 에러 스타일이 적용된다", () => {
-      const { container } = render(() => <TextField error="에러 메시지" />);
-      const input = container.querySelector("input");
-      expect(input?.classList.contains("border-danger-500")).toBe(true);
-    });
+  it("readonly일 때 값이 div에 표시된다", () => {
+    const { getByText } = render(() => <TextField readonly value="읽기전용" />);
+    expect(getByText("읽기전용")).not.toBeNull();
+  });
+});
+
+describe("error 상태", () => {
+  it("error가 있을 때 에러 스타일이 적용된다", () => {
+    const { container } = render(() => <TextField error="에러 메시지" />);
+    const input = container.querySelector("input");
+    expect(input?.classList.contains("border-danger-500")).toBe(true);
+  });
+});
+
+describe("format", () => {
+  it("format이 적용되면 표시 값이 포맷팅된다", () => {
+    const { getByRole } = render(() => <TextField value="01012345678" format="XXX-XXXX-XXXX" />);
+    const input = getByRole("textbox") as HTMLInputElement;
+    expect(input.value).toBe("010-1234-5678");
+  });
+});
+
+describe("size", () => {
+  it("size=sm일 때 작은 padding이 적용된다", () => {
+    const { container } = render(() => <TextField size="sm" />);
+    const input = container.querySelector("input");
+    expect(input?.classList.contains("py-0.5")).toBe(true);
+    expect(input?.classList.contains("px-1.5")).toBe(true);
   });
 
-  describe("format", () => {
-    it("format이 적용되면 표시 값이 포맷팅된다", () => {
-      const { getByRole } = render(() => (
-        <TextField value="01012345678" format="XXX-XXXX-XXXX" />
-      ));
-      const input = getByRole("textbox") as HTMLInputElement;
-      expect(input.value).toBe("010-1234-5678");
-    });
+  it("size=lg일 때 큰 padding이 적용된다", () => {
+    const { container } = render(() => <TextField size="lg" />);
+    const input = container.querySelector("input");
+    expect(input?.classList.contains("py-2")).toBe(true);
+    expect(input?.classList.contains("px-3")).toBe(true);
   });
+});
 
-  describe("size", () => {
-    it("size=sm일 때 작은 padding이 적용된다", () => {
-      const { container } = render(() => <TextField size="sm" />);
-      const input = container.querySelector("input");
-      expect(input?.classList.contains("py-0.5")).toBe(true);
-      expect(input?.classList.contains("px-1.5")).toBe(true);
-    });
-
-    it("size=lg일 때 큰 padding이 적용된다", () => {
-      const { container } = render(() => <TextField size="lg" />);
-      const input = container.querySelector("input");
-      expect(input?.classList.contains("py-2")).toBe(true);
-      expect(input?.classList.contains("px-3")).toBe(true);
-    });
+describe("inset", () => {
+  it("inset일 때 테두리가 없다", () => {
+    const { container } = render(() => <TextField inset />);
+    const input = container.querySelector("input");
+    expect(input?.classList.contains("border-none")).toBe(true);
+    expect(input?.classList.contains("rounded-none")).toBe(true);
   });
-
-  describe("inset", () => {
-    it("inset일 때 테두리가 없다", () => {
-      const { container } = render(() => <TextField inset />);
-      const input = container.querySelector("input");
-      expect(input?.classList.contains("border-none")).toBe(true);
-      expect(input?.classList.contains("rounded-none")).toBe(true);
-    });
-  });
+});
 ```
 
 ### Step 6: 테스트 실행하여 통과 확인
@@ -409,6 +403,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 2: NumberField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/number-field/NumberField.tsx`
 - Test: `packages/solid/tests/components/form-control/number-field/NumberField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -439,9 +434,7 @@ describe("NumberField 컴포넌트", () => {
   describe("값 변환", () => {
     it("숫자를 입력하면 number 타입으로 변환된다", () => {
       const [value, setValue] = createSignal<number | undefined>();
-      const { getByRole } = render(() => (
-        <NumberField value={value()} onChange={setValue} />
-      ));
+      const { getByRole } = render(() => <NumberField value={value()} onChange={setValue} />);
 
       const input = getByRole("textbox") as HTMLInputElement;
       fireEvent.input(input, { target: { value: "123" } });
@@ -450,9 +443,7 @@ describe("NumberField 컴포넌트", () => {
 
     it("소수점을 입력할 수 있다", () => {
       const [value, setValue] = createSignal<number | undefined>();
-      const { getByRole } = render(() => (
-        <NumberField value={value()} onChange={setValue} />
-      ));
+      const { getByRole } = render(() => <NumberField value={value()} onChange={setValue} />);
 
       const input = getByRole("textbox") as HTMLInputElement;
       fireEvent.input(input, { target: { value: "123.45" } });
@@ -461,9 +452,7 @@ describe("NumberField 컴포넌트", () => {
 
     it("입력 중인 상태(123.)에서는 값이 변경되지 않는다", () => {
       const [value, setValue] = createSignal<number | undefined>(123);
-      const { getByRole } = render(() => (
-        <NumberField value={value()} onChange={setValue} />
-      ));
+      const { getByRole } = render(() => <NumberField value={value()} onChange={setValue} />);
 
       const input = getByRole("textbox") as HTMLInputElement;
       fireEvent.input(input, { target: { value: "123." } });
@@ -473,9 +462,7 @@ describe("NumberField 컴포넌트", () => {
 
     it("유효하지 않은 입력(abc)은 무시된다", () => {
       const [value, setValue] = createSignal<number | undefined>(100);
-      const { getByRole } = render(() => (
-        <NumberField value={value()} onChange={setValue} />
-      ));
+      const { getByRole } = render(() => <NumberField value={value()} onChange={setValue} />);
 
       const input = getByRole("textbox") as HTMLInputElement;
       fireEvent.input(input, { target: { value: "abc" } });
@@ -576,11 +563,7 @@ const inputBaseClass = clsx(
   "[&::-webkit-inner-spin-button]:appearance-none",
 );
 
-const contentBaseClass = clsx(
-  "whitespace-pre",
-  "text-neutral-900 dark:text-neutral-100",
-  "text-right",
-);
+const contentBaseClass = clsx("whitespace-pre", "text-neutral-900 dark:text-neutral-100", "text-right");
 
 const sizeClasses = {
   sm: "px-1.5 py-0.5",
@@ -661,10 +644,7 @@ export const NumberField = (props: NumberFieldProps) => {
     }
 
     // 입력 중인 상태 (소수점으로 끝나거나, 0.0 등)
-    if (
-      inputValue.endsWith(".") ||
-      (inputValue.includes(".") && parseFloat(inputValue) === 0 && inputValue !== "0")
-    ) {
+    if (inputValue.endsWith(".") || (inputValue.includes(".") && parseFloat(inputValue) === 0 && inputValue !== "0")) {
       return;
     }
 
@@ -726,11 +706,9 @@ export const NumberField = (props: NumberFieldProps) => {
         }}
         title={local.title ?? local.placeholder}
       >
-        {displayValue() || local.placeholder ? (
-          displayValue() || <span class="text-neutral-400">{local.placeholder}</span>
-        ) : (
-          "\u00A0"
-        )}
+        {displayValue() || local.placeholder
+          ? displayValue() || <span class="text-neutral-400">{local.placeholder}</span>
+          : "\u00A0"}
       </div>
 
       <Show when={isEditable()}>
@@ -784,6 +762,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 3: DateField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/date-field/DateField.tsx`
 - Test: `packages/solid/tests/components/form-control/date-field/DateField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -827,9 +806,7 @@ describe("DateField 컴포넌트", () => {
   describe("값 변환", () => {
     it("날짜를 입력하면 DateOnly로 변환된다", () => {
       const [value, setValue] = createSignal<DateOnly | undefined>();
-      const { container } = render(() => (
-        <DateField value={value()} onChange={setValue} />
-      ));
+      const { container } = render(() => <DateField value={value()} onChange={setValue} />);
 
       const input = container.querySelector("input") as HTMLInputElement;
       fireEvent.input(input, { target: { value: "2024-01-15" } });
@@ -918,10 +895,7 @@ const inputBaseClass = clsx(
   "focus:outline-none focus:border-primary-500",
 );
 
-const contentBaseClass = clsx(
-  "whitespace-pre",
-  "text-neutral-900 dark:text-neutral-100",
-);
+const contentBaseClass = clsx("whitespace-pre", "text-neutral-900 dark:text-neutral-100");
 
 const sizeClasses = {
   sm: "px-1.5 py-0.5",
@@ -1111,11 +1085,9 @@ export const DateField = (props: DateFieldProps) => {
         }}
         title={local.title ?? local.placeholder}
       >
-        {displayValue() || local.placeholder ? (
-          displayValue() || <span class="text-neutral-400">{local.placeholder}</span>
-        ) : (
-          "\u00A0"
-        )}
+        {displayValue() || local.placeholder
+          ? displayValue() || <span class="text-neutral-400">{local.placeholder}</span>
+          : "\u00A0"}
       </div>
 
       <Show when={isEditable()}>
@@ -1166,6 +1138,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 4: DateTimeField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/datetime-field/DateTimeField.tsx`
 - Test: `packages/solid/tests/components/form-control/datetime-field/DateTimeField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -1173,6 +1146,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ### Step 1-6: DateField와 동일한 패턴으로 구현
 
 주요 차이점:
+
 - value 타입: `DateTime`
 - type: `"datetime" | "datetime-sec"`
 - input type: `"datetime-local"`
@@ -1180,6 +1154,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 - 포맷: `"yyyy-MM-ddTHH:mm"` 또는 `"yyyy-MM-ddTHH:mm:ss"`
 
 커밋 메시지:
+
 ```bash
 git commit -m "feat(solid): DateTimeField 컴포넌트 추가
 
@@ -1195,6 +1170,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 5: TimeField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/time-field/TimeField.tsx`
 - Test: `packages/solid/tests/components/form-control/time-field/TimeField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -1202,6 +1178,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ### Step 1-6: DateField와 동일한 패턴으로 구현
 
 주요 차이점:
+
 - value 타입: `Time`
 - type: `"time" | "time-sec"`
 - input type: `"time"`
@@ -1209,6 +1186,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 - 포맷: `"HH:mm"` 또는 `"HH:mm:ss"`
 
 커밋 메시지:
+
 ```bash
 git commit -m "feat(solid): TimeField 컴포넌트 추가
 
@@ -1224,6 +1202,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ## Task 6: ColorField 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/color-field/ColorField.tsx`
 - Test: `packages/solid/tests/components/form-control/color-field/ColorField.spec.tsx`
 - Modify: `packages/solid/src/index.ts`
@@ -1231,11 +1210,13 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ### Step 1-6: TextField와 유사하지만 단순화
 
 주요 특징:
+
 - value 타입: `string` (#RRGGBB 형식)
 - input type: `"color"`
 - format 옵션 없음
 
 커밋 메시지:
+
 ```bash
 git commit -m "feat(solid): ColorField 컴포넌트 추가
 

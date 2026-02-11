@@ -13,6 +13,7 @@
 ### Task 1: `createPropSignal` → `createControllableSignal` 리네이밍 (DX-3)
 
 **Files:**
+
 - Rename: `packages/solid/src/utils/createPropSignal.ts` → `packages/solid/src/utils/createControllableSignal.ts`
 - Modify: `packages/solid/src/index.ts:92`
 - Modify: 22개 컴포넌트 파일 (import 경로/함수명)
@@ -40,6 +41,7 @@ JSDoc의 `createPropSignal` 참조도 `createControllableSignal`로 변경.
 **Step 2: index.ts export 변경**
 
 `packages/solid/src/index.ts:92`:
+
 ```typescript
 // 기존
 export { createPropSignal } from "./utils/createPropSignal";
@@ -74,6 +76,7 @@ export { createControllableSignal } from "./utils/createControllableSignal";
 - `packages/solid/src/components/navigation/Tabs.tsx`
 
 각 파일에서:
+
 ```typescript
 // 기존
 import { createPropSignal } from "../../utils/createPropSignal";
@@ -90,6 +93,7 @@ git mv packages/solid/tests/utils/createPropSignal.spec.ts packages/solid/tests/
 ```
 
 `createControllableSignal.spec.ts` 내용에서:
+
 ```typescript
 // 기존
 import { createPropSignal } from "../../src/utils/createPropSignal";
@@ -129,6 +133,7 @@ git commit -m "refactor(solid): createPropSignal → createControllableSignal �
 ### Task 2: `createMountTransition` 훅 추출 (S-1)
 
 **Files:**
+
 - Create: `packages/solid/src/utils/createMountTransition.ts`
 - Modify: `packages/solid/src/components/disclosure/Dropdown.tsx:96-134`
 - Modify: `packages/solid/src/components/disclosure/Dialog.tsx:156-207`
@@ -209,7 +214,7 @@ Expected: FAIL (모듈 없음)
 
 `packages/solid/src/utils/createMountTransition.ts`:
 
-```typescript
+````typescript
 import { createSignal, createEffect, onCleanup } from "solid-js";
 
 /**
@@ -263,7 +268,7 @@ export function createMountTransition(open: () => boolean): {
 
   return { mounted, animating };
 }
-```
+````
 
 **Step 4: 테스트 실행 (통과 확인)**
 
@@ -278,11 +283,13 @@ Expected: PASS
 `packages/solid/src/components/disclosure/Dropdown.tsx`:
 
 import 추가:
+
 ```typescript
 import { createMountTransition } from "../../utils/createMountTransition";
 ```
 
 라인 96-134의 mounted/animating signal 정의와 createEffect를 교체:
+
 ```typescript
 // 기존 (삭제)
 const [mounted, setMounted] = createSignal(false);
@@ -310,6 +317,7 @@ export function createMountTransition(open: () => boolean): {
 ```
 
 Dropdown의 `handleTransitionEnd`:
+
 ```typescript
 const handleTransitionEnd = (e: TransitionEvent) => {
   if (e.propertyName !== "opacity") return;
@@ -326,6 +334,7 @@ Dialog는 추가로 `onCloseComplete` 콜백과 `closeCompleteEmitted` 가드가
 `packages/solid/src/components/disclosure/Dialog.tsx`:
 
 import 추가 및 기존 코드 교체:
+
 ```typescript
 import { createMountTransition } from "../../utils/createMountTransition";
 
@@ -365,6 +374,7 @@ const handleTransitionEnd = (e: TransitionEvent) => {
 `packages/solid/src/components/feedback/loading/LoadingContainer.tsx`:
 
 import 추가 및 기존 코드 교체:
+
 ```typescript
 import { createMountTransition } from "../../utils/createMountTransition";
 
@@ -374,6 +384,7 @@ const { mounted, animating, unmount } = createMountTransition(() => !!local.busy
 ```
 
 `handleTransitionEnd`:
+
 ```typescript
 const handleTransitionEnd = (e: TransitionEvent) => {
   if (e.propertyName !== "opacity") return;
@@ -386,6 +397,7 @@ const handleTransitionEnd = (e: TransitionEvent) => {
 **Step 8: index.ts에 export 추가**
 
 `packages/solid/src/index.ts`의 utils 섹션에 추가:
+
 ```typescript
 export { createMountTransition } from "./utils/createMountTransition";
 ```
@@ -418,6 +430,7 @@ git commit -m "refactor(solid): 애니메이션 이중 signal 패턴을 createMo
 ### Task 3: `createIMEHandler` 훅 추출 (S-2)
 
 **Files:**
+
 - Create: `packages/solid/src/utils/createIMEHandler.ts`
 - Modify: `packages/solid/src/components/form-control/field/TextInput.tsx:149-223`
 - Modify: `packages/solid/src/components/form-control/field/Textarea.tsx:95-141`
@@ -608,11 +621,13 @@ Expected: PASS
 `packages/solid/src/components/form-control/field/TextInput.tsx`:
 
 import 추가:
+
 ```typescript
 import { createIMEHandler } from "../../utils/createIMEHandler";
 ```
 
 기존 IME 로직 (라인 149-223)을 교체:
+
 ```typescript
 const [value, setValue] = createControllableSignal({
   value: () => local.value ?? "",
@@ -666,6 +681,7 @@ const handleCompositionEnd: JSX.EventHandler<HTMLInputElement, CompositionEvent>
 `packages/solid/src/components/form-control/field/Textarea.tsx`:
 
 import 추가 및 기존 IME 로직(라인 95-141) 교체:
+
 ```typescript
 import { createIMEHandler } from "../../utils/createIMEHandler";
 
@@ -723,6 +739,7 @@ git commit -m "refactor(solid): IME 조합 처리 로직을 createIMEHandler 훅
 ### Task 4: SharedData 버그 수정 (CR-1 + CR-2)
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/shared-data/SharedDataProvider.tsx`
 - Modify: `packages/solid/tests/SharedDataProvider.spec.tsx`
 
@@ -739,21 +756,25 @@ pnpm vitest packages/solid/tests/SharedDataProvider.spec.tsx --project=solid --r
 `packages/solid/src/contexts/shared-data/SharedDataProvider.tsx`:
 
 notification import 추가:
+
 ```typescript
 import { useNotification } from "../../components/feedback/notification/NotificationContext";
 ```
 
 Provider 함수 내에서 notification 사용:
+
 ```typescript
 const notification = useNotification();
 ```
 
 version counter 추가 (signalMap 근처):
+
 ```typescript
 const versionMap = new Map<string, number>();
 ```
 
 `loadData` 함수 수정:
+
 ```typescript
 async function loadData(
   name: string,
@@ -824,6 +845,7 @@ git commit -m "fix(solid): SharedData loadData 동시 호출 데이터 역전 �
 ### Task 5: Dropdown resize 시 닫기 (CR-3)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Dropdown.tsx`
 
 **Step 1: Dropdown.tsx에 resize 이벤트 리스너 추가**
@@ -870,6 +892,7 @@ git commit -m "fix(solid): Dropdown 열린 상태에서 뷰포트 resize 시 닫
 ### Task 6: ServiceClient onCleanup 개선 (CR-4)
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/ServiceClientProvider.tsx:15-20`
 
 **Step 1: onCleanup 수정**
@@ -912,6 +935,7 @@ git commit -m "fix(solid): ServiceClientProvider onCleanup에서 async 제거하
 ### Task 7: 에러 메시지 통일 + styles export 통일 (DX-1 + DX-2 + DX-4)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/DialogContext.ts:41`
 - Modify: `packages/solid/src/components/layout/sidebar/SidebarContext.ts:27`
 - Modify: `packages/solid/src/components/layout/kanban/KanbanContext.ts:46,68`
@@ -924,6 +948,7 @@ git commit -m "fix(solid): ServiceClientProvider onCleanup에서 async 제거하
 **Step 1: 영어 에러 메시지를 한국어로 변경 (DX-1)**
 
 `DialogContext.ts:41`:
+
 ```typescript
 // 기존
 if (!ctx) throw new Error("useDialog must be used within a DialogProvider");
@@ -932,6 +957,7 @@ if (!ctx) throw new Error("useDialog는 DialogProvider 내부에서만 사용할
 ```
 
 `SidebarContext.ts:27`:
+
 ```typescript
 // 기존
 throw new Error("useSidebarContext must be used within SidebarContainer");
@@ -940,6 +966,7 @@ throw new Error("useSidebarContext는 SidebarContainer 내부에서만 사용할
 ```
 
 `KanbanContext.ts:46`:
+
 ```typescript
 // 기존
 throw new Error("useKanbanContext must be used within Kanban");
@@ -948,6 +975,7 @@ throw new Error("useKanbanContext는 Kanban 내부에서만 사용할 수 있습
 ```
 
 `KanbanContext.ts:68`:
+
 ```typescript
 // 기존
 throw new Error("useKanbanLaneContext must be used within Kanban.Lane");
@@ -956,6 +984,7 @@ throw new Error("useKanbanLaneContext는 Kanban.Lane 내부에서만 사용할 �
 ```
 
 `SelectContext.ts:22`:
+
 ```typescript
 // 기존
 throw new Error("useSelectContext must be used within a Select component");
@@ -966,27 +995,36 @@ throw new Error("useSelectContext는 Select 컴포넌트 내부에서만 사용�
 **Step 2: Provider 에러 메시지에 의존성 정보 추가 (DX-2)**
 
 `ThemeContext.tsx:56`:
+
 ```typescript
 // 기존
 throw new Error("useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다");
 // 변경
-throw new Error("useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다. ThemeProvider는 InitializeProvider 아래에 위치해야 합니다");
+throw new Error(
+  "useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다. ThemeProvider는 InitializeProvider 아래에 위치해야 합니다",
+);
 ```
 
 `ServiceClientContext.ts:16`:
+
 ```typescript
 // 기존
 throw new Error("useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다");
 // 변경
-throw new Error("useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다. ServiceClientProvider는 InitializeProvider와 NotificationProvider 아래에 위치해야 합니다");
+throw new Error(
+  "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다. ServiceClientProvider는 InitializeProvider와 NotificationProvider 아래에 위치해야 합니다",
+);
 ```
 
 `SharedDataContext.ts:29`:
+
 ```typescript
 // 기존
 throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다");
 // 변경
-throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다. SharedDataProvider는 ServiceClientProvider 아래에 위치해야 합니다");
+throw new Error(
+  "useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다. SharedDataProvider는 ServiceClientProvider 아래에 위치해야 합니다",
+);
 ```
 
 **Step 3: styles export 통일 (DX-4)**
@@ -1006,6 +1044,7 @@ export * from "./styles/patterns.styles";
 **Step 4: 관련 테스트 실행**
 
 에러 메시지 변경이 테스트에 영향을 미칠 수 있음:
+
 ```bash
 pnpm vitest packages/solid/tests --project=solid --run
 ```

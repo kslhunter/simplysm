@@ -13,6 +13,7 @@
 ## Task 1: NumberField에서 min/max/step props 제거
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/field/NumberField.tsx`
 - Modify: `packages/solid/tests/components/form-control/field/NumberField.spec.tsx`
 
@@ -39,15 +40,39 @@
 ```typescript
 // 변경 전
 const [local, rest] = splitProps(mergedProps, [
-  "value", "onValueChange", "comma", "minDigits",
-  "min", "max", "step",
-  "placeholder", "title", "disabled", "readonly", "error", "size", "inset", "class", "style",
+  "value",
+  "onValueChange",
+  "comma",
+  "minDigits",
+  "min",
+  "max",
+  "step",
+  "placeholder",
+  "title",
+  "disabled",
+  "readonly",
+  "error",
+  "size",
+  "inset",
+  "class",
+  "style",
 ]);
 
 // 변경 후
 const [local, rest] = splitProps(mergedProps, [
-  "value", "onValueChange", "comma", "minDigits",
-  "placeholder", "title", "disabled", "readonly", "error", "size", "inset", "class", "style",
+  "value",
+  "onValueChange",
+  "comma",
+  "minDigits",
+  "placeholder",
+  "title",
+  "disabled",
+  "readonly",
+  "error",
+  "size",
+  "inset",
+  "class",
+  "style",
 ]);
 ```
 
@@ -108,6 +133,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ## Task 2: Modal에 ARIA 속성 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx`
 - Modify: `packages/solid/tests/components/disclosure/Modal.spec.tsx`
 
@@ -202,6 +228,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ## Task 3: Modal closeOnEscape 기본값을 true로 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx`
 - Modify: `packages/solid/tests/components/disclosure/Modal.spec.tsx`
 
@@ -290,6 +317,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ## Task 4: DateRangePicker periodLabels prop 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/date-range-picker/DateRangePicker.tsx`
 - Modify: `packages/solid/tests/components/form-control/date-range-picker/DateRangePicker.spec.tsx`
 
@@ -391,6 +419,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ## Task 5: Select discriminated union 타입 분리
 
 **Files:**
+
 - Modify: `packages/solid/src/components/form-control/select/Select.tsx`
 - Modify: `packages/solid/tests/components/form/select/Select.spec.tsx`
 
@@ -507,6 +536,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ## Task 6: clsx 태그드 템플릿을 함수 호출로 통일
 
 **Files:** (14개 파일)
+
 - Modify: `packages/solid/src/components/form-control/select/Select.tsx`
 - Modify: `packages/solid/src/components/form-control/field/Field.styles.ts`
 - Modify: `packages/solid/src/components/form-control/checkbox/CheckBox.styles.ts`
@@ -539,11 +569,7 @@ const cls = clsx("inline-flex items-center gap-2");
 const cls = clsx`bg-transparent text-info-600 hover:bg-info-50 dark:text-info-400 dark:hover:bg-info-800/30`;
 
 // 변경 후
-const cls = clsx(
-  "bg-transparent text-info-600",
-  "hover:bg-info-50",
-  "dark:text-info-400 dark:hover:bg-info-800/30",
-);
+const cls = clsx("bg-transparent text-info-600", "hover:bg-info-50", "dark:text-info-400 dark:hover:bg-info-800/30");
 ```
 
 `clsx()` 안에 중첩된 `clsx\`\``도 함수 호출로 변환:
@@ -558,9 +584,10 @@ const cls = clsx("inline-flex items-center", "gap-2");
 
 **Step 1: 14개 파일에서 clsx 태그드 템플릿을 함수 호출로 변환**
 
-각 파일을 열어 `clsx\`...\`` 패턴을 `clsx("...")` 패턴으로 변환. 의미 단위별 분리를 적용.
+각 파일을 열어 `clsx\`...\``패턴을`clsx("...")` 패턴으로 변환. 의미 단위별 분리를 적용.
 
 파일별로 순서대로 처리:
+
 1. `Field.styles.ts` (8곳)
 2. `CheckBox.styles.ts` (5곳)
 3. `Select.tsx` (10곳)

@@ -1,97 +1,97 @@
 # @simplysm/core-common
 
-심플리즘 프레임워크의 공통 유틸리티 패키지이다.
-Node.js와 브라우저 환경 모두에서 사용 가능한(neutral) 기본 모듈로, 날짜/시간 타입, 에러 클래스, 객체/배열/문자열 유틸리티, JSON 직렬화, ZIP 처리, 프로토타입 확장 등을 제공한다.
+A common utility package for the Simplysm framework.
+As a neutral base module usable in both Node.js and browser environments, it provides date/time types, error classes, object/array/string utilities, JSON serialization, ZIP processing, prototype extensions, and more.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/core-common
-# 또는
+# or
 pnpm add @simplysm/core-common
 ```
 
-## 초기화
+## Initialization
 
-애플리케이션 엔트리 포인트(예: `index.ts`, `main.ts`)에서 패키지를 임포트하세요:
+Import the package at your application entry point (e.g., `index.ts`, `main.ts`):
 
 ```typescript
 import "@simplysm/core-common";
 ```
 
-이 임포트는 Array, Map, Set 프로토타입 확장을 전역으로 활성화합니다.
-확장 메서드(`getOrCreate()`, `toggle()` 등)를 사용하려면 반드시 앱 시작 시 임포트해야 합니다.
+This import globally activates Array, Map, and Set prototype extensions.
+To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import this at app startup.
 
-## 주요 모듈
+## Main Modules
 
 ### Errors
 
-커스텀 에러 클래스들이다. 모두 `SdError`를 기반으로 cause 체인을 지원한다.
+Custom error classes. All are based on `SdError` and support cause chaining.
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `SdError` | 기본 에러 클래스 (cause 체인으로 오류 추적, 중첩된 스택 자동 통합) |
-| `ArgumentError` | 인자 검증 에러 (YAML 포맷팅) |
-| `NotImplementedError` | 미구현 기능 표시 |
-| `TimeoutError` | 타임아웃 에러 |
+| `SdError` | Base error class (error tracking with cause chain, automatic nested stack integration) |
+| `ArgumentError` | Argument validation error (YAML formatting) |
+| `NotImplementedError` | Indicates unimplemented functionality |
+| `TimeoutError` | Timeout error |
 
 ```typescript
 import { SdError, ArgumentError, NotImplementedError, TimeoutError } from "@simplysm/core-common";
 
-// SdError: cause 체인으로 에러 추적
+// SdError: track errors with cause chain
 try {
   await fetch(url);
 } catch (err) {
-  throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
-  // 결과 메시지: "사용자 로드 실패 => API 호출 실패 => 원본 에러 메시지"
+  throw new SdError(err, "API call failed", "Failed to load user");
+  // Result message: "Failed to load user => API call failed => original error message"
 }
 
-// ArgumentError: 인수 객체를 YAML 형식으로 출력
-throw new ArgumentError("유효하지 않은 사용자", { userId: 123 });
-// 결과 메시지: "유효하지 않은 사용자\n\nuserId: 123"
+// ArgumentError: output argument object in YAML format
+throw new ArgumentError("Invalid user", { userId: 123 });
+// Result message: "Invalid user\n\nuserId: 123"
 
-// NotImplementedError: 미구현 분기 표시
+// NotImplementedError: indicate unimplemented branch
 switch (type) {
   case "A": return handleA();
-  case "B": throw new NotImplementedError(`타입 ${type} 처리`);
+  case "B": throw new NotImplementedError(`Handling type ${type}`);
 }
 
-// TimeoutError: 대기 시간 초과
-throw new TimeoutError(5, "API 응답 대기 초과");
-// 결과 메시지: "대기 시간이 초과되었습니다(5회): API 응답 대기 초과"
+// TimeoutError: wait time exceeded
+throw new TimeoutError(5, "API response wait exceeded");
+// Result message: "Wait time exceeded(5): API response wait exceeded"
 ```
 
 ### Types
 
-불변(immutable) 커스텀 타입 클래스들이다. 모든 변환 메서드는 새 인스턴스를 반환한다.
+Immutable custom type classes. All transformation methods return new instances.
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `DateTime` | 날짜+시간 (밀리초 단위, 로컬 타임존 기준) |
-| `DateOnly` | 날짜만 (시간 제외) |
-| `Time` | 시간만 (날짜 제외, 24시간 순환) |
-| `Uuid` | UUID v4 (`crypto.getRandomValues` 기반) |
-| `LazyGcMap` | 자동 만료 기능이 있는 Map (LRU 방식) |
+| `DateTime` | Date + time (millisecond precision, local timezone) |
+| `DateOnly` | Date only (no time) |
+| `Time` | Time only (no date, 24-hour cycle) |
+| `Uuid` | UUID v4 (based on `crypto.getRandomValues`) |
+| `LazyGcMap` | Map with auto-expiration (LRU style) |
 
 #### DateTime
 
 ```typescript
 import { DateTime } from "@simplysm/core-common";
 
-// 생성
-const now = new DateTime();                          // 현재 시간
-const dt = new DateTime(2025, 1, 15, 10, 30, 0);    // 연월일시분초
-const fromTick = new DateTime(1705312200000);         // tick (밀리초)
-const fromDate = new DateTime(new Date());            // Date 객체
+// Creation
+const now = new DateTime();                          // Current time
+const dt = new DateTime(2025, 1, 15, 10, 30, 0);    // Year, month, day, hour, minute, second
+const fromTick = new DateTime(1705312200000);         // Tick (milliseconds)
+const fromDate = new DateTime(new Date());            // Date object
 
-// 파싱
+// Parsing
 DateTime.parse("2025-01-15 10:30:00");               // yyyy-MM-dd HH:mm:ss
 DateTime.parse("2025-01-15 10:30:00.123");           // yyyy-MM-dd HH:mm:ss.fff
 DateTime.parse("20250115103000");                     // yyyyMMddHHmmss
-DateTime.parse("2025-01-15 오전 10:30:00");           // 한국어 오전/오후
+DateTime.parse("2025-01-15 오전 10:30:00");           // Korean AM/PM
 DateTime.parse("2025-01-15T10:30:00Z");              // ISO 8601
 
-// 속성 (읽기 전용)
+// Properties (read-only)
 dt.year;       // 2025
 dt.month;      // 1 (1-12)
 dt.day;        // 15
@@ -99,18 +99,18 @@ dt.hour;       // 10
 dt.minute;     // 30
 dt.second;     // 0
 dt.millisecond; // 0
-dt.tick;       // 밀리초 타임스탬프
-dt.dayOfWeek;  // 요일 (일~토: 0~6)
-dt.isValid;    // 유효성 검사
+dt.tick;       // Millisecond timestamp
+dt.dayOfWeek;  // Day of week (Sun~Sat: 0~6)
+dt.isValid;    // Validity check
 
-// 불변 변환 (새 인스턴스 반환)
-dt.setYear(2026);         // 연도 변경
-dt.setMonth(3);           // 월 변경 (일자 자동 조정)
-dt.addDays(7);            // 7일 후
-dt.addHours(-2);          // 2시간 전
-dt.addMonths(1);          // 1개월 후
+// Immutable transformations (return new instances)
+dt.setYear(2026);         // Change year
+dt.setMonth(3);           // Change month (day auto-adjusted)
+dt.addDays(7);            // 7 days later
+dt.addHours(-2);          // 2 hours ago
+dt.addMonths(1);          // 1 month later
 
-// 포맷팅
+// Formatting
 dt.toFormatString("yyyy-MM-dd");               // "2025-01-15"
 dt.toFormatString("yyyy년 M월 d일 (ddd)");     // "2025년 1월 15일 (수)"
 dt.toFormatString("tt h:mm:ss");               // "오전 10:30:00"
@@ -122,28 +122,28 @@ dt.toString();                                  // "2025-01-15T10:30:00.000+09:0
 ```typescript
 import { DateOnly } from "@simplysm/core-common";
 
-// 생성 및 파싱
+// Creation and parsing
 const today = new DateOnly();
 const d = new DateOnly(2025, 1, 15);
-DateOnly.parse("2025-01-15");     // 타임존 영향 없음
-DateOnly.parse("20250115");       // 타임존 영향 없음
+DateOnly.parse("2025-01-15");     // No timezone influence
+DateOnly.parse("20250115");       // No timezone influence
 
-// 불변 변환
+// Immutable transformations
 d.addDays(30);
 d.addMonths(-1);
-d.setMonth(2);  // 1월 31일 -> 2월 28일 (자동 조정)
+d.setMonth(2);  // Jan 31 -> Feb 28 (auto-adjusted)
 
-// 주차 계산 (ISO 8601 표준)
+// Week calculation (ISO 8601 standard)
 d.getWeekSeqOfYear();    // { year: 2025, weekSeq: 3 }
 d.getWeekSeqOfMonth();   // { year: 2025, monthSeq: 1, weekSeq: 3 }
 
-// 미국식 주차 (일요일 시작, 첫 주 1일 이상)
+// US-style week (Sunday start, first week with 1+ days)
 d.getWeekSeqOfYear(0, 1);
 
-// 주차로 날짜 역산
-DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 }); // 2025-01-06 (월요일)
+// Reverse calculate date from week
+DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 }); // 2025-01-06 (Monday)
 
-// 포맷팅
+// Formatting
 d.toFormatString("yyyy년 MM월 dd일"); // "2025년 01월 15일"
 d.toString();                          // "2025-01-15"
 ```
@@ -153,18 +153,18 @@ d.toString();                          // "2025-01-15"
 ```typescript
 import { Time } from "@simplysm/core-common";
 
-// 생성 및 파싱
+// Creation and parsing
 const now = new Time();
 const t = new Time(14, 30, 0);
 Time.parse("14:30:00");           // HH:mm:ss
 Time.parse("14:30:00.123");       // HH:mm:ss.fff
-Time.parse("오후 2:30:00");       // 한국어 오전/오후
+Time.parse("오후 2:30:00");       // Korean AM/PM
 
-// 24시간 순환
-t.addHours(12);    // 14:30 + 12시간 = 02:30 (다음 날이 아닌 순환)
-t.addMinutes(-60); // 14:30 - 60분 = 13:30
+// 24-hour cycle
+t.addHours(12);    // 14:30 + 12 hours = 02:30 (cycles, not next day)
+t.addMinutes(-60); // 14:30 - 60 minutes = 13:30
 
-// 포맷팅
+// Formatting
 t.toFormatString("tt h:mm"); // "오후 2:30"
 t.toString();                 // "14:30:00.000"
 ```
@@ -174,14 +174,14 @@ t.toString();                 // "14:30:00.000"
 ```typescript
 import { Uuid } from "@simplysm/core-common";
 
-// 새 UUID 생성 (암호학적으로 안전)
+// Generate new UUID (cryptographically secure)
 const id = Uuid.new();
 
-// 문자열에서 생성
+// Create from string
 const fromStr = new Uuid("550e8400-e29b-41d4-a716-446655440000");
 
-// 바이트 변환
-const bytes = id.toBytes();           // Uint8Array (16바이트)
+// Byte conversion
+const bytes = id.toBytes();           // Uint8Array (16 bytes)
 const fromBytes = Uuid.fromBytes(bytes);
 
 id.toString(); // "550e8400-e29b-41d4-a716-446655440000"
@@ -192,46 +192,46 @@ id.toString(); // "550e8400-e29b-41d4-a716-446655440000"
 ```typescript
 import { LazyGcMap } from "@simplysm/core-common";
 
-// using 문 사용 (권장)
+// using statement (recommended)
 using map = new LazyGcMap<string, object>({
-  gcInterval: 10000,  // GC 실행 간격: 10초
-  expireTime: 60000,  // 항목 만료 시간: 60초
+  gcInterval: 10000,  // GC execution interval: 10 seconds
+  expireTime: 60000,  // Item expiration time: 60 seconds
   onExpire: (key, value) => {
-    console.log(`만료됨: ${key}`);
+    console.log(`Expired: ${key}`);
   },
 });
 
 map.set("key1", { data: "hello" });
-map.get("key1");                       // 접근 시간 갱신 (LRU)
-map.getOrCreate("key2", () => ({}));   // 없으면 생성 후 반환
-map.has("key1");                       // 접근 시간 갱신 안 함
+map.get("key1");                       // Refreshes access time (LRU)
+map.getOrCreate("key2", () => ({}));   // Create and return if not exists
+map.has("key1");                       // Does not refresh access time
 map.delete("key1");
 ```
 
 ### Features
 
-비동기 작업 제어 및 이벤트 처리 클래스들이다. 모두 `using` 문 또는 `dispose()`를 지원한다.
+Async operation control and event handling classes. All support `using` statements or `dispose()`.
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `DebounceQueue` | 비동기 디바운스 큐 (마지막 요청만 실행) |
-| `SerialQueue` | 비동기 직렬 큐 (순차 실행) |
-| `EventEmitter` | EventTarget 래퍼 (type-safe 이벤트) |
+| `DebounceQueue` | Async debounce queue (executes only last request) |
+| `SerialQueue` | Async serial queue (sequential execution) |
+| `EventEmitter` | EventTarget wrapper (type-safe events) |
 
 #### DebounceQueue
 
 ```typescript
 import { DebounceQueue } from "@simplysm/core-common";
 
-using queue = new DebounceQueue(300); // 300ms 디바운스
+using queue = new DebounceQueue(300); // 300ms debounce
 
-// 에러 처리
+// Error handling
 queue.on("error", (err) => console.error(err));
 
-// 마지막 호출만 실행됨
-queue.run(() => console.log("1")); // 무시됨
-queue.run(() => console.log("2")); // 무시됨
-queue.run(() => console.log("3")); // 300ms 후 실행됨
+// Only last call is executed
+queue.run(() => console.log("1")); // Ignored
+queue.run(() => console.log("2")); // Ignored
+queue.run(() => console.log("3")); // Executed after 300ms
 ```
 
 #### SerialQueue
@@ -239,13 +239,13 @@ queue.run(() => console.log("3")); // 300ms 후 실행됨
 ```typescript
 import { SerialQueue } from "@simplysm/core-common";
 
-using queue = new SerialQueue(100); // 작업 사이 100ms 간격
+using queue = new SerialQueue(100); // 100ms interval between tasks
 
 queue.on("error", (err) => console.error(err));
 
 queue.run(async () => { await fetch("/api/1"); });
-queue.run(async () => { await fetch("/api/2"); }); // 1번 완료 후 실행
-queue.run(async () => { await fetch("/api/3"); }); // 2번 완료 후 실행
+queue.run(async () => { await fetch("/api/2"); }); // Runs after #1 completes
+queue.run(async () => { await fetch("/api/3"); }); // Runs after #2 completes
 ```
 
 #### EventEmitter
@@ -261,39 +261,39 @@ interface MyEvents {
 
 class MyService extends EventEmitter<MyEvents> {
   process(): void {
-    this.emit("data", "결과 데이터");
-    this.emit("done"); // void 타입은 인자 없이 호출
+    this.emit("data", "result data");
+    this.emit("done"); // void type called without arguments
   }
 }
 
 const service = new MyService();
-service.on("data", (data) => console.log(data)); // data: string (타입 추론)
-service.off("data", listener);                   // 리스너 제거
-service.listenerCount("data");                   // 등록된 리스너 수
-service.dispose();                                // 모든 리스너 제거
+service.on("data", (data) => console.log(data)); // data: string (type inferred)
+service.off("data", listener);                   // Remove listener
+service.listenerCount("data");                   // Number of registered listeners
+service.dispose();                                // Remove all listeners
 ```
 
 ### Utils
 
-유틸리티 함수들이다.
+Utility functions.
 
-#### 객체 유틸리티 (obj)
+#### Object utilities (obj)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `objClone` | 깊은 복사 (순환 참조, 커스텀 타입 지원) |
-| `objEqual` | 깊은 비교 (키 포함/제외, 배열 순서 무시 옵션) |
-| `objMerge` | 깊은 병합 (source + target, 배열 처리 옵션) |
-| `objMerge3` | 3-way 병합 (충돌 감지) |
-| `objOmit` | 특정 키 제외 |
-| `objPick` | 특정 키만 선택 |
-| `objGetChainValue` | 체인 경로로 값 조회 (`"a.b[0].c"`) |
-| `objSetChainValue` | 체인 경로로 값 설정 |
-| `objDeleteChainValue` | 체인 경로로 값 삭제 |
-| `objKeys` | 타입 안전한 `Object.keys` |
-| `objEntries` | 타입 안전한 `Object.entries` |
-| `objFromEntries` | 타입 안전한 `Object.fromEntries` |
-| `objMap` | 객체의 각 엔트리를 변환하여 새 객체 반환 |
+| `objClone` | Deep clone (supports circular references, custom types) |
+| `objEqual` | Deep comparison (include/exclude keys, array order ignore option) |
+| `objMerge` | Deep merge (source + target, array processing option) |
+| `objMerge3` | 3-way merge (conflict detection) |
+| `objOmit` | Exclude specific keys |
+| `objPick` | Select specific keys |
+| `objGetChainValue` | Query value by chain path (`"a.b[0].c"`) |
+| `objSetChainValue` | Set value by chain path |
+| `objDeleteChainValue` | Delete value by chain path |
+| `objKeys` | Type-safe `Object.keys` |
+| `objEntries` | Type-safe `Object.entries` |
+| `objFromEntries` | Type-safe `Object.fromEntries` |
+| `objMap` | Transform each entry of object and return new object |
 
 ```typescript
 import {
@@ -302,48 +302,48 @@ import {
   objKeys, objEntries, objMap,
 } from "@simplysm/core-common";
 
-// 깊은 복사 (DateTime, Uuid 등 커스텀 타입도 지원)
+// Deep clone (supports custom types like DateTime, Uuid)
 const cloned = objClone({ date: new DateTime(), nested: { arr: [1, 2] } });
 
-// 깊은 비교
+// Deep comparison
 objEqual({ a: 1, b: [2] }, { a: 1, b: [2] });                       // true
-objEqual(arr1, arr2, { ignoreArrayIndex: true });                     // 배열 순서 무시
-objEqual(obj1, obj2, { topLevelExcludes: ["updatedAt"] });            // 특정 키 제외
+objEqual(arr1, arr2, { ignoreArrayIndex: true });                     // Ignore array order
+objEqual(obj1, obj2, { topLevelExcludes: ["updatedAt"] });            // Exclude specific keys
 
-// 깊은 병합
+// Deep merge
 objMerge({ a: 1, b: { c: 2 } }, { b: { d: 3 } });
 // { a: 1, b: { c: 2, d: 3 } }
 
-// 3-way 병합 (충돌 감지)
+// 3-way merge (conflict detection)
 const { conflict, result } = objMerge3(
-  { a: 1, b: 2 },  // source (변경본 1)
-  { a: 1, b: 1 },  // origin (기준본)
-  { a: 2, b: 1 },  // target (변경본 2)
+  { a: 1, b: 2 },  // source (change #1)
+  { a: 1, b: 1 },  // origin (base)
+  { a: 2, b: 1 },  // target (change #2)
 );
 // conflict: false, result: { a: 2, b: 2 }
 
-// 키 선택/제외
+// Key selection/exclusion
 objOmit(user, ["password", "email"]);
 objPick(user, ["name", "age"]);
 
-// 체인 경로
+// Chain path
 objGetChainValue(obj, "a.b[0].c");
 objSetChainValue(obj, "a.b[0].c", "value");
 
-// 타입 안전한 Object 유틸리티
+// Type-safe Object utilities
 objKeys(obj);       // (keyof typeof obj)[]
 objEntries(obj);    // [keyof typeof obj, typeof obj[keyof typeof obj]][]
-objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]); // 값만 변환 (키 유지)
+objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]); // Transform values only (keep keys)
 ```
 
-#### JSON 유틸리티 (json)
+#### JSON utilities (json)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `jsonStringify` | 커스텀 타입 지원 JSON 직렬화 |
-| `jsonParse` | 커스텀 타입 복원 JSON 역직렬화 |
+| `jsonStringify` | JSON serialization with custom type support |
+| `jsonParse` | JSON deserialization with custom type restoration |
 
-`DateTime`, `DateOnly`, `Time`, `Uuid`, `Date`, `Set`, `Map`, `Error`, `Uint8Array` 타입을 `__type__` 메타데이터로 직렬화/복원한다.
+Serializes/restores `DateTime`, `DateOnly`, `Time`, `Uuid`, `Date`, `Set`, `Map`, `Error`, `Uint8Array` types using `__type__` metadata.
 
 ```typescript
 import { jsonStringify, jsonParse, DateTime, Uuid } from "@simplysm/core-common";
@@ -356,26 +356,26 @@ const data = {
   file: new Uint8Array([1, 2, 3]),
 };
 
-// 직렬화 (커스텀 타입 보존)
+// Serialization (preserves custom types)
 const json = jsonStringify(data, { space: 2 });
 
-// 역직렬화 (커스텀 타입 복원)
+// Deserialization (restores custom types)
 const parsed = jsonParse(json);
 // parsed.createdAt instanceof DateTime === true
 // parsed.id instanceof Uuid === true
 // parsed.tags instanceof Set === true
 
-// 로깅용: 바이너리 데이터 숨김
+// For logging: hide binary data
 jsonStringify(data, { redactBytes: true });
-// Uint8Array 내용이 "__hidden__"으로 대체됨
+// Uint8Array content replaced with "__hidden__"
 ```
 
-#### XML 유틸리티 (xml)
+#### XML utilities (xml)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `xmlParse` | XML 문자열을 객체로 파싱 (속성: `$`, 텍스트: `_`) |
-| `xmlStringify` | 객체를 XML 문자열로 직렬화 |
+| `xmlParse` | Parse XML string to object (attributes: `$`, text: `_`) |
+| `xmlStringify` | Serialize object to XML string |
 
 ```typescript
 import { xmlParse, xmlStringify } from "@simplysm/core-common";
@@ -386,23 +386,23 @@ const obj = xmlParse('<root id="1"><item>hello</item></root>');
 const xml = xmlStringify(obj);
 // '<root id="1"><item>hello</item></root>'
 
-// namespace prefix 제거
+// Remove namespace prefix
 xmlParse('<ns:root><ns:item>text</ns:item></ns:root>', { stripTagPrefix: true });
 // { root: { item: [{ _: "text" }] } }
 ```
 
-#### 문자열 유틸리티 (str)
+#### String utilities (str)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `strGetSuffix` | 한글 조사 처리 (을/를, 은/는, 이/가, 과/와, 이랑/랑, 으로/로, 이라/라) |
-| `strReplaceFullWidth` | 전각 문자를 반각 문자로 변환 |
-| `strToPascalCase` | PascalCase 변환 |
-| `strToCamelCase` | camelCase 변환 |
-| `strToKebabCase` | kebab-case 변환 |
-| `strToSnakeCase` | snake_case 변환 |
-| `strIsNullOrEmpty` | undefined/null/빈 문자열 체크 (타입 가드) |
-| `strInsert` | 문자열 특정 위치에 삽입 |
+| `strGetSuffix` | Korean postposition handling (을/를, 은/는, 이/가, 과/와, 이랑/랑, 으로/로, 이라/라) |
+| `strReplaceFullWidth` | Convert full-width characters to half-width |
+| `strToPascalCase` | PascalCase conversion |
+| `strToCamelCase` | camelCase conversion |
+| `strToKebabCase` | kebab-case conversion |
+| `strToSnakeCase` | snake_case conversion |
+| `strIsNullOrEmpty` | Check for undefined/null/empty string (type guard) |
+| `strInsert` | Insert at specific position in string |
 
 ```typescript
 import {
@@ -410,35 +410,35 @@ import {
   strIsNullOrEmpty, strReplaceFullWidth,
 } from "@simplysm/core-common";
 
-// 한글 조사
+// Korean postposition
 strGetSuffix("사과", "을"); // "를"
 strGetSuffix("책", "이");   // "이"
-strGetSuffix("서울", "로"); // "로" (ㄹ 받침은 "로")
+strGetSuffix("서울", "로"); // "로" (ㄹ final consonant uses "로")
 
-// 케이스 변환
+// Case conversion
 strToCamelCase("hello-world");   // "helloWorld"
 strToKebabCase("HelloWorld");    // "hello-world"
 
-// 빈 문자열 체크 (타입 가드)
+// Empty string check (type guard)
 if (strIsNullOrEmpty(name)) {
   // name: "" | undefined
 } else {
-  // name: string (비어있지 않은 문자열)
+  // name: string (non-empty string)
 }
 
-// 전각 -> 반각
+// Full-width -> half-width
 strReplaceFullWidth("Ａ１２３（株）"); // "A123(株)"
 ```
 
-#### 숫자 유틸리티 (num)
+#### Number utilities (num)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `numParseInt` | 문자열을 정수로 파싱 (숫자 외 문자 제거) |
-| `numParseFloat` | 문자열을 실수로 파싱 |
-| `numParseRoundedInt` | 실수를 반올림하여 정수 반환 |
-| `numFormat` | 천단위 구분자 포맷팅 |
-| `numIsNullOrEmpty` | undefined/null/0 체크 (타입 가드) |
+| `numParseInt` | Parse string to integer (remove non-digit characters) |
+| `numParseFloat` | Parse string to float |
+| `numParseRoundedInt` | Round float and return integer |
+| `numFormat` | Thousands separator formatting |
+| `numIsNullOrEmpty` | Check for undefined/null/0 (type guard) |
 
 ```typescript
 import { numParseInt, numParseFloat, numFormat, numIsNullOrEmpty } from "@simplysm/core-common";
@@ -453,31 +453,31 @@ if (numIsNullOrEmpty(count)) {
 }
 ```
 
-#### 날짜/시간 포맷 (date-format)
+#### Date/time formatting (date-format)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `formatDate` | 포맷 문자열에 따라 날짜/시간을 문자열로 변환 |
-| `normalizeMonth` | 월 설정 시 연도/월/일 정규화 |
+| `formatDate` | Convert date/time to string according to format string |
+| `normalizeMonth` | Normalize year/month/day when setting month |
 
-C#과 동일한 포맷 문자열을 지원한다:
+Supports the same format strings as C#:
 
-| 포맷 | 설명 | 예시 |
+| Format | Description | Example |
 |------|------|------|
-| `yyyy` | 4자리 연도 | 2024 |
-| `yy` | 2자리 연도 | 24 |
-| `MM` | 0 패딩 월 | 01~12 |
-| `M` | 월 | 1~12 |
-| `ddd` | 요일 (한글) | 일, 월, 화, 수, 목, 금, 토 |
-| `dd` | 0 패딩 일 | 01~31 |
-| `d` | 일 | 1~31 |
-| `tt` | 오전/오후 | 오전, 오후 |
-| `HH` | 0 패딩 24시간 | 00~23 |
-| `hh` | 0 패딩 12시간 | 01~12 |
-| `mm` | 0 패딩 분 | 00~59 |
-| `ss` | 0 패딩 초 | 00~59 |
-| `fff` | 밀리초 (3자리) | 000~999 |
-| `zzz` | 타임존 오프셋 | +09:00 |
+| `yyyy` | 4-digit year | 2024 |
+| `yy` | 2-digit year | 24 |
+| `MM` | 0-padded month | 01~12 |
+| `M` | Month | 1~12 |
+| `ddd` | Day of week (Korean) | 일, 월, 화, 수, 목, 금, 토 |
+| `dd` | 0-padded day | 01~31 |
+| `d` | Day | 1~31 |
+| `tt` | AM/PM | 오전, 오후 |
+| `HH` | 0-padded 24-hour | 00~23 |
+| `hh` | 0-padded 12-hour | 01~12 |
+| `mm` | 0-padded minute | 00~59 |
+| `ss` | 0-padded second | 00~59 |
+| `fff` | Millisecond (3 digits) | 000~999 |
+| `zzz` | Timezone offset | +09:00 |
 
 ```typescript
 import { formatDate, normalizeMonth } from "@simplysm/core-common";
@@ -492,15 +492,15 @@ normalizeMonth(2025, 13, 15); // { year: 2026, month: 1, day: 15 }
 normalizeMonth(2025, 2, 31);  // { year: 2025, month: 2, day: 28 }
 ```
 
-#### 바이트 유틸리티 (bytes)
+#### Byte utilities (bytes)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `bytesConcat` | 여러 Uint8Array 연결 |
-| `bytesToHex` | Uint8Array를 hex 문자열로 변환 |
-| `bytesFromHex` | hex 문자열을 Uint8Array로 변환 |
-| `bytesToBase64` | Uint8Array를 base64 문자열로 변환 |
-| `bytesFromBase64` | base64 문자열을 Uint8Array로 변환 |
+| `bytesConcat` | Concatenate multiple Uint8Arrays |
+| `bytesToHex` | Convert Uint8Array to hex string |
+| `bytesFromHex` | Convert hex string to Uint8Array |
+| `bytesToBase64` | Convert Uint8Array to base64 string |
+| `bytesFromBase64` | Convert base64 string to Uint8Array |
 
 ```typescript
 import { bytesConcat, bytesToHex, bytesFromHex, bytesToBase64, bytesFromBase64 } from "@simplysm/core-common";
@@ -515,50 +515,50 @@ bytesToBase64(new Uint8Array([72, 101, 108, 108, 111]));  // "SGVsbG8="
 bytesFromBase64("SGVsbG8=");                               // Uint8Array([72, 101, 108, 108, 111])
 ```
 
-#### 비동기 대기 (wait)
+#### Async wait (wait)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `waitTime` | 지정 시간만큼 대기 |
-| `waitUntil` | 조건이 참이 될 때까지 대기 (최대 시도 횟수 제한) |
+| `waitTime` | Wait for specified time |
+| `waitUntil` | Wait until condition is true (max attempts limit) |
 
 ```typescript
 import { waitTime, waitUntil } from "@simplysm/core-common";
 
-await waitTime(1000); // 1초 대기
+await waitTime(1000); // Wait 1 second
 
-// 조건 충족 대기 (100ms 간격, 최대 50회 = 5초)
+// Wait for condition (100ms interval, max 50 attempts = 5 seconds)
 await waitUntil(() => isReady, 100, 50);
-// 50회 초과 시 TimeoutError 발생
+// Throws TimeoutError after 50 attempts
 ```
 
-#### Worker 데이터 변환 (transferable)
+#### Worker data conversion (transferable)
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `transferableEncode` | 커스텀 타입을 Worker 전송 가능 형태로 직렬화 |
-| `transferableDecode` | Worker에서 받은 데이터를 커스텀 타입으로 역직렬화 |
+| `transferableEncode` | Serialize custom types into Worker-transferable form |
+| `transferableDecode` | Deserialize Worker-received data to custom types |
 
 ```typescript
 import { transferableEncode, transferableDecode } from "@simplysm/core-common";
 
-// Worker로 전송
+// Send to Worker
 const { result, transferList } = transferableEncode(data);
 worker.postMessage(result, transferList);
 
-// Worker에서 수신
+// Receive from Worker
 const decoded = transferableDecode(event.data);
 ```
 
-#### 경로 유틸리티 (path)
+#### Path utilities (path)
 
-Node.js `path` 모듈 대체용이다. POSIX 스타일 경로(`/`)만 지원한다.
+Replacement for Node.js `path` module. Supports POSIX-style paths (`/`) only.
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `pathJoin` | 경로 조합 (`path.join` 대체) |
-| `pathBasename` | 파일명 추출 (`path.basename` 대체) |
-| `pathExtname` | 확장자 추출 (`path.extname` 대체) |
+| `pathJoin` | Combine paths (`path.join` replacement) |
+| `pathBasename` | Extract filename (`path.basename` replacement) |
+| `pathExtname` | Extract extension (`path.extname` replacement) |
 
 ```typescript
 import { pathJoin, pathBasename, pathExtname } from "@simplysm/core-common";
@@ -569,18 +569,18 @@ pathBasename("file.txt", ".txt");      // "file"
 pathExtname("file.txt");               // ".txt"
 ```
 
-#### 템플릿 리터럴 태그 (template-strings)
+#### Template literal tags (template-strings)
 
-IDE 코드 하이라이팅을 위한 태그 함수들이다. 실제 동작은 문자열 조합 + 들여쓰기 정리이다.
+Tag functions for IDE code highlighting. Actual behavior is string combination + indentation cleanup.
 
-| 함수 | 설명 |
+| Function | Description |
 |------|------|
-| `js` | JavaScript 코드 하이라이팅 |
-| `ts` | TypeScript 코드 하이라이팅 |
-| `html` | HTML 마크업 하이라이팅 |
-| `tsql` | MSSQL T-SQL 하이라이팅 |
-| `mysql` | MySQL SQL 하이라이팅 |
-| `pgsql` | PostgreSQL SQL 하이라이팅 |
+| `js` | JavaScript code highlighting |
+| `ts` | TypeScript code highlighting |
+| `html` | HTML markup highlighting |
+| `tsql` | MSSQL T-SQL highlighting |
+| `mysql` | MySQL SQL highlighting |
+| `pgsql` | PostgreSQL SQL highlighting |
 
 ```typescript
 import { tsql } from "@simplysm/core-common";
@@ -592,12 +592,12 @@ const query = tsql`
 `;
 ```
 
-#### 기타 유틸리티
+#### Other utilities
 
-| 함수/타입 | 설명 |
+| Function/Type | Description |
 |-----------|------|
-| `getPrimitiveTypeStr` | 런타임 값에서 `PrimitiveTypeStr` 추론 |
-| `env` | 환경 변수 객체 (`DEV`, `VER` 등) |
+| `getPrimitiveTypeStr` | Infer `PrimitiveTypeStr` from runtime value |
+| `env` | Environment variable object (`DEV`, `VER`, etc.) |
 
 ```typescript
 import { getPrimitiveTypeStr, env } from "@simplysm/core-common";
@@ -607,33 +607,33 @@ getPrimitiveTypeStr(123);            // "number"
 getPrimitiveTypeStr(new DateTime()); // "DateTime"
 
 if (env.DEV) {
-  console.log("개발 모드");
+  console.log("Development mode");
 }
-console.log(`버전: ${env.VER}`);
+console.log(`Version: ${env.VER}`);
 ```
 
 ### Zip
 
-ZIP 파일 압축/해제 유틸리티이다. `await using`으로 리소스를 자동 정리할 수 있다.
+ZIP file compression/decompression utility. Resources can be auto-cleaned with `await using`.
 
-| 클래스 | 설명 |
+| Class | Description |
 |--------|------|
-| `ZipArchive` | ZIP 파일 읽기/쓰기/압축/해제 |
+| `ZipArchive` | ZIP file read/write/compress/extract |
 
 ```typescript
 import { ZipArchive } from "@simplysm/core-common";
 
-// ZIP 파일 읽기
+// Read ZIP file
 await using archive = new ZipArchive(zipBytes);
 const content = await archive.get("file.txt");
 const exists = await archive.exists("data.json");
 
-// 전체 압축 해제 (진행률 표시)
+// Extract all (with progress)
 const files = await archive.extractAll((progress) => {
   console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
 });
 
-// ZIP 파일 생성
+// Create ZIP file
 await using newArchive = new ZipArchive();
 newArchive.write("file.txt", textBytes);
 newArchive.write("data.json", jsonBytes);
@@ -642,122 +642,122 @@ const zipBytes = await newArchive.compress();
 
 ### Type Utilities
 
-TypeScript 유틸리티 타입들이다.
+TypeScript utility types.
 
-| 타입 | 설명 |
+| Type | Description |
 |------|------|
-| `Bytes` | `Uint8Array`의 별칭 (`Buffer` 대체) |
-| `PrimitiveTypeStr` | 원시 타입 문자열 키 (`"string"`, `"number"`, `"boolean"`, `"DateTime"`, `"DateOnly"`, `"Time"`, `"Uuid"`, `"Bytes"`) |
-| `PrimitiveTypeMap` | `PrimitiveTypeStr`에서 실제 타입으로의 매핑 |
-| `PrimitiveType` | 모든 Primitive 타입의 유니온 |
-| `DeepPartial<T>` | 모든 속성을 재귀적으로 optional로 변환 |
-| `Type<T>` | 생성자 타입 (의존성 주입, 팩토리 패턴용) |
-| `ObjUndefToOptional<T>` | `undefined`를 가진 프로퍼티를 optional로 변환 |
-| `ObjOptionalToUndef<T>` | optional 프로퍼티를 `required + undefined` 유니온으로 변환 |
+| `Bytes` | Alias for `Uint8Array` (`Buffer` replacement) |
+| `PrimitiveTypeStr` | Primitive type string keys (`"string"`, `"number"`, `"boolean"`, `"DateTime"`, `"DateOnly"`, `"Time"`, `"Uuid"`, `"Bytes"`) |
+| `PrimitiveTypeMap` | Mapping from `PrimitiveTypeStr` to actual type |
+| `PrimitiveType` | Union of all Primitive types |
+| `DeepPartial<T>` | Recursively convert all properties to optional |
+| `Type<T>` | Constructor type (for dependency injection, factory patterns) |
+| `ObjUndefToOptional<T>` | Convert properties with `undefined` to optional |
+| `ObjOptionalToUndef<T>` | Convert optional properties to `required + undefined` union |
 
 ```typescript
 import type { DeepPartial, Type, Bytes } from "@simplysm/core-common";
 
-// DeepPartial: 깊은 Partial
+// DeepPartial: deep Partial
 interface Config {
   db: { host: string; port: number };
 }
 const partial: DeepPartial<Config> = { db: { host: "localhost" } };
 
-// Type: 생성자 타입
+// Type: constructor type
 function create<T>(ctor: Type<T>): T {
   return new ctor();
 }
 
-// Bytes: Buffer 대체
+// Bytes: Buffer replacement
 const data: Bytes = new Uint8Array([1, 2, 3]);
 ```
 
 ### Extensions
 
-Array, Map, Set 프로토타입 확장이다. `import "@simplysm/core-common"`으로 활성화된다.
+Array, Map, Set prototype extensions. Activated by `import "@simplysm/core-common"`.
 
-#### Array 확장 메서드
+#### Array extension methods
 
-**조회**:
+**Query**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `single(predicate?)` | 단일 요소 반환 (2개 이상이면 에러) |
-| `first(predicate?)` | 첫 번째 요소 반환 |
-| `last(predicate?)` | 마지막 요소 반환 |
+| `single(predicate?)` | Return single element (error if 2+) |
+| `first(predicate?)` | Return first element |
+| `last(predicate?)` | Return last element |
 
-**필터링**:
+**Filtering**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `filterExists()` | `null`/`undefined` 제거 |
-| `ofType(type)` | 타입별 필터 (`PrimitiveTypeStr` 또는 생성자) |
-| `filterAsync(predicate)` | 비동기 필터 |
+| `filterExists()` | Remove `null`/`undefined` |
+| `ofType(type)` | Filter by type (`PrimitiveTypeStr` or constructor) |
+| `filterAsync(predicate)` | Async filter |
 
-**매핑/변환**:
+**Mapping/Transformation**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `mapAsync(selector)` | 비동기 매핑 (순차 실행) |
+| `mapAsync(selector)` | Async mapping (sequential execution) |
 | `mapMany(selector?)` | flat + filterExists |
-| `mapManyAsync(selector?)` | 비동기 mapMany |
-| `parallelAsync(fn)` | 병렬 비동기 매핑 (`Promise.all`) |
+| `mapManyAsync(selector?)` | Async mapMany |
+| `parallelAsync(fn)` | Parallel async mapping (`Promise.all`) |
 
-**그룹화/변환**:
+**Grouping/Transformation**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `groupBy(keySelector, valueSelector?)` | 키별 그룹화 |
-| `toMap(keySelector, valueSelector?)` | Map 변환 (키 중복 시 에러) |
-| `toMapAsync(keySelector, valueSelector?)` | 비동기 Map 변환 |
-| `toArrayMap(keySelector, valueSelector?)` | `Map<K, V[]>` 변환 |
-| `toSetMap(keySelector, valueSelector?)` | `Map<K, Set<V>>` 변환 |
-| `toMapValues(keySelector, valueSelector)` | 그룹별 집계 Map |
-| `toObject(keySelector, valueSelector?)` | `Record<string, V>` 변환 |
-| `toTree(key, parentKey)` | 트리 구조 변환 |
+| `groupBy(keySelector, valueSelector?)` | Group by key |
+| `toMap(keySelector, valueSelector?)` | Convert to Map (error on duplicate key) |
+| `toMapAsync(keySelector, valueSelector?)` | Async Map conversion |
+| `toArrayMap(keySelector, valueSelector?)` | Convert to `Map<K, V[]>` |
+| `toSetMap(keySelector, valueSelector?)` | Convert to `Map<K, Set<V>>` |
+| `toMapValues(keySelector, valueSelector)` | Aggregate Map by group |
+| `toObject(keySelector, valueSelector?)` | Convert to `Record<string, V>` |
+| `toTree(key, parentKey)` | Convert to tree structure |
 
-**중복 제거**:
+**Deduplication**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `distinct(options?)` | 중복 제거 (새 배열 반환) |
-| `distinctThis(options?)` | 중복 제거 (원본 수정) |
+| `distinct(options?)` | Remove duplicates (return new array) |
+| `distinctThis(options?)` | Remove duplicates (modify original) |
 
-**정렬**:
+**Sorting**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `orderBy(selector?)` | 오름차순 정렬 (새 배열 반환) |
-| `orderByDesc(selector?)` | 내림차순 정렬 (새 배열 반환) |
-| `orderByThis(selector?)` | 오름차순 정렬 (원본 수정) |
-| `orderByDescThis(selector?)` | 내림차순 정렬 (원본 수정) |
+| `orderBy(selector?)` | Ascending sort (return new array) |
+| `orderByDesc(selector?)` | Descending sort (return new array) |
+| `orderByThis(selector?)` | Ascending sort (modify original) |
+| `orderByDescThis(selector?)` | Descending sort (modify original) |
 
-**비교/병합**:
+**Comparison/Merging**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `diffs(target, options?)` | 두 배열의 차이 비교 |
-| `oneWayDiffs(orgItems, keyProp, options?)` | 단방향 차이 비교 (create/update/same) |
-| `merge(target, options?)` | 배열 병합 |
+| `diffs(target, options?)` | Compare differences between two arrays |
+| `oneWayDiffs(orgItems, keyProp, options?)` | One-way diff comparison (create/update/same) |
+| `merge(target, options?)` | Merge arrays |
 
-**집계**:
+**Aggregation**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `sum(selector?)` | 합계 |
-| `min(selector?)` | 최솟값 |
-| `max(selector?)` | 최댓값 |
+| `sum(selector?)` | Sum |
+| `min(selector?)` | Minimum |
+| `max(selector?)` | Maximum |
 
-**변형 (원본 수정)**:
+**Mutation (modify original)**:
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `insert(index, ...items)` | 특정 위치에 삽입 |
-| `remove(itemOrSelector)` | 항목 제거 |
-| `toggle(item)` | 있으면 제거, 없으면 추가 |
-| `clear()` | 모든 항목 제거 |
-| `shuffle()` | 셔플 (새 배열 반환) |
+| `insert(index, ...items)` | Insert at specific position |
+| `remove(itemOrSelector)` | Remove item |
+| `toggle(item)` | Remove if exists, add if not |
+| `clear()` | Remove all items |
+| `shuffle()` | Shuffle (return new array) |
 
 ```typescript
 import "@simplysm/core-common";
@@ -768,120 +768,120 @@ const users = [
   { id: 3, name: "Charlie", dept: "hr" },
 ];
 
-// 조회
+// Query
 users.single((u) => u.id === 1);       // { id: 1, ... }
 users.first();                           // { id: 1, ... }
 users.last();                            // { id: 3, ... }
 
-// 그룹화
+// Grouping
 users.groupBy((u) => u.dept);
 // [{ key: "dev", values: [...] }, { key: "hr", values: [...] }]
 
-// Map 변환
+// Map conversion
 users.toMap((u) => u.id);               // Map<number, User>
 users.toArrayMap((u) => u.dept);         // Map<string, User[]>
 
-// 정렬
+// Sorting
 users.orderBy((u) => u.name);
 users.orderByDesc((u) => u.id);
 
-// 필터링
+// Filtering
 [1, null, 2, undefined, 3].filterExists(); // [1, 2, 3]
 
-// 중복 제거
+// Deduplication
 [1, 2, 2, 3, 3].distinct(); // [1, 2, 3]
 
-// 비동기 매핑 (순차 실행)
+// Async mapping (sequential execution)
 await ids.mapAsync(async (id) => await fetchUser(id));
 
-// 병렬 비동기 매핑
+// Parallel async mapping
 await ids.parallelAsync(async (id) => await fetchUser(id));
 ```
 
-#### Map 확장 메서드
+#### Map extension methods
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `getOrCreate(key, value)` | 키에 해당하는 값이 없으면 새 값 설정 후 반환 |
-| `update(key, updateFn)` | 키에 해당하는 값을 함수로 업데이트 |
+| `getOrCreate(key, value)` | If key doesn't exist, set new value and return |
+| `update(key, updateFn)` | Update value for key using function |
 
 ```typescript
 const map = new Map<string, number[]>();
 
-// 값이 없으면 생성 후 반환
+// Create and return if value doesn't exist
 const arr = map.getOrCreate("key", []);
 arr.push(1);
 
-// 팩토리 함수로 생성 (계산 비용이 큰 경우)
+// Create with factory function (when computation is expensive)
 map.getOrCreate("key2", () => expensiveComputation());
 
-// 값 업데이트
+// Update value
 const countMap = new Map<string, number>();
-countMap.update("key", (v) => (v ?? 0) + 1); // 카운터 증가
+countMap.update("key", (v) => (v ?? 0) + 1); // Increment counter
 ```
 
-#### Set 확장 메서드
+#### Set extension methods
 
-| 메서드 | 설명 |
+| Method | Description |
 |--------|------|
-| `adds(...values)` | 여러 값을 한 번에 추가 |
-| `toggle(value, addOrDel?)` | 값 토글 (있으면 제거, 없으면 추가) |
+| `adds(...values)` | Add multiple values at once |
+| `toggle(value, addOrDel?)` | Toggle value (remove if exists, add if not) |
 
 ```typescript
 const set = new Set<number>([1, 2, 3]);
 
 set.adds(4, 5, 6);       // {1, 2, 3, 4, 5, 6}
-set.toggle(2);            // 2가 있으므로 제거 -> {1, 3, 4, 5, 6}
-set.toggle(7);            // 7이 없으므로 추가 -> {1, 3, 4, 5, 6, 7}
-set.toggle(8, "add");     // 강제 추가
-set.toggle(1, "del");     // 강제 제거
+set.toggle(2);            // 2 exists so remove -> {1, 3, 4, 5, 6}
+set.toggle(7);            // 7 doesn't exist so add -> {1, 3, 4, 5, 6, 7}
+set.toggle(8, "add");     // Force add
+set.toggle(1, "del");     // Force delete
 ```
 
-## 주의사항
+## Caveats
 
-### 프로토타입 확장 충돌
+### Prototype Extension Conflicts
 
-이 패키지는 Array, Map, Set 프로토타입을 확장한다.
-동일한 메서드명을 확장하는 다른 라이브러리와 함께 사용 시 충돌이 발생할 수 있다.
-충돌 시 로드 순서에 따라 마지막에 정의된 구현이 적용된다.
+This package extends Array, Map, and Set prototypes.
+Conflicts may occur when used with other libraries that extend the same method names.
+In case of conflict, the last defined implementation is applied based on load order.
 
-### 타임존 처리
+### Timezone Handling
 
-`DateOnly.parse()`, `DateTime.parse()` 사용 시:
-- `yyyy-MM-dd`, `yyyyMMdd` 형식: 문자열에서 직접 파싱 (타임존 영향 없음)
-- ISO 8601 형식 (`2024-01-15T00:00:00Z`): UTC로 해석 후 로컬 변환
+When using `DateOnly.parse()`, `DateTime.parse()`:
+- `yyyy-MM-dd`, `yyyyMMdd` format: parse directly from string (no timezone influence)
+- ISO 8601 format (`2024-01-15T00:00:00Z`): interpret as UTC then convert to local
 
-서버와 클라이언트 타임존이 다른 경우 `yyyy-MM-dd` 형식을 적극 활용한다.
+When server and client timezones differ, actively use `yyyy-MM-dd` format.
 
-### 메모리 관리 (LazyGcMap)
+### Memory Management (LazyGcMap)
 
-`LazyGcMap`은 내부 GC 타이머가 있으므로 반드시 정리해야 한다.
+`LazyGcMap` has an internal GC timer, so it must be cleaned up.
 
 ```typescript
-// using 문 사용 (권장)
-// gcInterval: GC 실행 간격 (ms), expireTime: 항목 만료 시간 (ms)
-using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
+// using statement (recommended)
+// gcInterval: GC execution interval (ms), expireTime: item expiration time (ms)
+using map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // GC every 10 seconds, expire after 60 seconds
 
-// 또는 명시적 dispose() 호출
-const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // 10초 간격 GC, 60초 후 만료
+// Or explicit dispose() call
+const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 }); // GC every 10 seconds, expire after 60 seconds
 try {
-  // ... 사용
+  // ... use
 } finally {
   map.dispose();
 }
 ```
 
-### jsonStringify의 __type__ 예약어
+### jsonStringify's __type__ Reserved Word
 
-`jsonStringify`/`jsonParse`는 `__type__`과 `data` 키를 가진 객체를 타입 복원에 사용한다.
-사용자 데이터에 `{ __type__: "DateTime", data: "..." }` 형태가 있으면 의도치 않게 타입 변환될 수 있으므로 주의한다.
+`jsonStringify`/`jsonParse` uses objects with `__type__` and `data` keys for type restoration.
+Be careful as user data in the form `{ __type__: "DateTime", data: "..." }` may be unintentionally type-converted.
 
-### 순환 참조
+### Circular References
 
-- `objClone`: 순환 참조 지원 (WeakMap으로 추적)
-- `jsonStringify`: 순환 참조 시 TypeError 발생
-- `transferableEncode`: 순환 참조 시 TypeError 발생 (경로 정보 포함)
+- `objClone`: supports circular references (tracked with WeakMap)
+- `jsonStringify`: throws TypeError on circular reference
+- `transferableEncode`: throws TypeError on circular reference (includes path information)
 
-## 라이선스
+## License
 
 Apache-2.0

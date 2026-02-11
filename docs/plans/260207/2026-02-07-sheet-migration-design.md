@@ -10,9 +10,11 @@ Angular `sd-sheet` 데이터 그리드 컴포넌트를 SolidJS로 마이그레�
 ## 범위
 
 ### 포함
+
 - `sd-sheet` 컴포넌트 및 하위 기능 전체
 
 ### 제외
+
 - `sd-data-sheet` (CRUD, 필터, 엑셀 등 상위 래퍼) — 마이그레이션 대상 아님
 
 ## 요구사항
@@ -78,7 +80,7 @@ const [page, setPage] = createSignal(0);
   <Sheet.Column key="name" header="이름">
     {(ctx) => <div class="p-1">{ctx.item.name}</div>}
   </Sheet.Column>
-</Sheet>
+</Sheet>;
 ```
 
 ### 트리 구조
@@ -185,19 +187,19 @@ interface SheetProps<T> {
 ```tsx
 interface SheetColumnProps<T> {
   key: string;
-  header?: string | string[];              // string이면 단일, string[]이면 다단계
-  headerContent?: () => JSX.Element;       // 커스텀 헤더 렌더러
+  header?: string | string[]; // string이면 단일, string[]이면 다단계
+  headerContent?: () => JSX.Element; // 커스텀 헤더 렌더러
   headerStyle?: string;
-  summary?: () => JSX.Element;             // 요약 행 렌더러
+  summary?: () => JSX.Element; // 요약 행 렌더러
   tooltip?: string;
   fixed?: boolean;
   hidden?: boolean;
   collapse?: boolean;
   width?: string;
-  class?: string;                          // 셀에 적용되는 클래스
+  class?: string; // 셀에 적용되는 클래스
   disableSorting?: boolean;
   disableResizing?: boolean;
-  children: (ctx: SheetCellContext<T>) => JSX.Element;   // 셀 렌더러
+  children: (ctx: SheetCellContext<T>) => JSX.Element; // 셀 렌더러
 }
 ```
 
@@ -239,9 +241,9 @@ Context 기반 등록이 아닌, SheetColumn이 plain object를 반환하고 She
 
 ```tsx
 interface SheetColumnDef<T> {
-  __type: "sheet-column";                   // 타입 판별 마커
+  __type: "sheet-column"; // 타입 판별 마커
   key: string;
-  header: string[];                         // 항상 배열로 정규화
+  header: string[]; // 항상 배열로 정규화
   headerContent?: () => JSX.Element;
   headerStyle?: string;
   summary?: () => JSX.Element;
@@ -275,9 +277,7 @@ export function SheetColumn<T>(props: SheetColumnProps<T>): JSX.Element {
 /* eslint-enable solid/reactivity */
 
 export function isSheetColumnDef(value: unknown): value is SheetColumnDef<unknown> {
-  return value != null
-    && typeof value === "object"
-    && (value as Record<string, unknown>)["__type"] === "sheet-column";
+  return value != null && typeof value === "object" && (value as Record<string, unknown>)["__type"] === "sheet-column";
 }
 ```
 
@@ -286,8 +286,7 @@ export function isSheetColumnDef(value: unknown): value is SheetColumnDef<unknow
 ```tsx
 const resolved = children(() => local.children);
 const columnDefs = createMemo(() =>
-  (resolved.toArray().filter(isSheetColumnDef) as unknown as SheetColumnDef<T>[])
-    .filter((col) => !col.hidden),
+  (resolved.toArray().filter(isSheetColumnDef) as unknown as SheetColumnDef<T>[]).filter((col) => !col.hidden),
 );
 ```
 
@@ -425,7 +424,7 @@ interface HeaderDef {
   colspan: number;
   rowspan: number;
   isLastRow: boolean;
-  colIndex?: number;      // isLastRow일 때만 — effectiveColumns 인덱스
+  colIndex?: number; // isLastRow일 때만 — effectiveColumns 인덱스
   fixed?: boolean;
   width?: string;
   style?: string;
@@ -434,6 +433,7 @@ interface HeaderDef {
 ```
 
 colspan 병합 조건:
+
 - 같은 행에서 같은 텍스트
 - 같은 fixed 여부
 - 상위 그룹이 같음 (`isSameGroup` 헬퍼로 0행~현재행까지 같은 텍스트 시퀀스 확인)
@@ -467,7 +467,7 @@ visible(부모가 모두 확장된) 항목만 반환합니다. 접힌 하위 항
 ```tsx
 interface FlatItem<T> {
   item: T;
-  index: number;       // 전체 순회 순서
+  index: number; // 전체 순회 순서
   depth: number;
   hasChildren: boolean;
   parent?: T;
@@ -534,7 +534,7 @@ const fixedLeftMap = createMemo(() => {
   const widths = columnWidths();
   let left = featureColTotalWidth();
   for (let c = 0; c < cols.length; c++) {
-    if (!cols[c].fixed) break;  // 고정 컬럼은 앞쪽에 연속 배치
+    if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
     map.set(c, left);
     left += widths.get(c) ?? 0;
   }
@@ -550,10 +550,7 @@ const fixedLeftMap = createMemo(() => {
 `th`와 `td` 모두에 적용됩니다.
 
 ```tsx
-export const fixedLastClass = clsx(
-  "border-r-2 border-r-base-300",
-  "dark:border-r-base-700",
-);
+export const fixedLastClass = clsx("border-r-2 border-r-base-300", "dark:border-r-base-700");
 ```
 
 ### 그룹 헤더의 고정 처리
@@ -632,6 +629,7 @@ const summaryRowTop = createMemo(() => {
 ### 선택 컬럼 UI
 
 **Multi 모드** (`selectMode="multi"`):
+
 - 헤더: 전체 선택 CheckBox
 - 각 행: 개별 CheckBox
 - 선택 불가 항목 (`getItemSelectableFn`이 `false` 반환): `disabled` 처리
@@ -639,6 +637,7 @@ const summaryRowTop = createMemo(() => {
 - Shift+Click: 범위 선택 (마지막 클릭 행 ~ 현재 클릭 행)
 
 **Single 모드** (`selectMode="single"`):
+
 - 화살표 아이콘 표시
 - 선택 시 primary 테마, 미선택 시 base 테마
 - 선택 불가 항목: 아이콘 숨김
@@ -658,10 +657,10 @@ function onTableKeyDown(e: KeyboardEvent): void {
 }
 ```
 
-| 키 | 동작 |
-|----|------|
-| Enter | 아래 행의 같은 열로 이동 (focusable 요소) |
-| Shift+Enter | 위 행의 같은 열로 이동 (focusable 요소) |
+| 키          | 동작                                      |
+| ----------- | ----------------------------------------- |
+| Enter       | 아래 행의 같은 열로 이동 (focusable 요소) |
+| Shift+Enter | 위 행의 같은 열로 이동 (focusable 요소)   |
 
 ## 10. 행 호버 효과
 
@@ -725,11 +724,7 @@ function toggleSelect(item: T): void {
     setSelectedItems(isSelected ? [] : [item]);
   } else {
     const isSelected = selectedItems().includes(item);
-    setSelectedItems(
-      isSelected
-        ? selectedItems().filter((i) => i !== item)
-        : [...selectedItems(), item],
-    );
+    setSelectedItems(isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item]);
   }
 }
 
@@ -772,9 +767,7 @@ function rangeSelect(targetRow: number): void {
     }
     setSelectedItems(newItems);
   } else {
-    setSelectedItems(
-      selectedItems().filter((item) => !rangeItems.includes(item)),
-    );
+    setSelectedItems(selectedItems().filter((item) => !rangeItems.includes(item)));
   }
 }
 ```
@@ -871,28 +864,21 @@ Tailwind CSS로 구현합니다. `Sheet.styles.ts`에 스타일 상수를 정의
 
 ### z-index 계층 (인라인 z-[N] 클래스)
 
-| 레벨 | 대상 | z-index |
-|------|------|---------|
-| 고정 컬럼 (tbody) | td[sticky] | `z-[2]` |
-| 헤더 (thead) | th[비고정] | `z-[3]` |
-| 헤더 고정 (thead) | th[고정] + 기능 컬럼 th | `z-[5]` |
-| 리사이즈 인디케이터 | div | `z-[7]` |
+| 레벨                | 대상                    | z-index |
+| ------------------- | ----------------------- | ------- |
+| 고정 컬럼 (tbody)   | td[sticky]              | `z-[2]` |
+| 헤더 (thead)        | th[비고정]              | `z-[3]` |
+| 헤더 고정 (thead)   | th[고정] + 기능 컬럼 th | `z-[5]` |
+| 리사이즈 인디케이터 | div                     | `z-[7]` |
 
 ### 주요 스타일 클래스
 
 ```tsx
 // Sheet.styles.ts
 
-export const sheetContainerClass = clsx(
-  "relative",
-  "bg-white dark:bg-base-950",
-  "overflow-auto",
-);
+export const sheetContainerClass = clsx("relative", "bg-white dark:bg-base-950", "overflow-auto");
 
-export const tableClass = clsx(
-  "border-separate border-spacing-0",
-  "w-max",
-);
+export const tableClass = clsx("border-separate border-spacing-0", "w-max");
 
 export const thClass = clsx(
   "relative",
@@ -914,15 +900,10 @@ export const tdClass = clsx(
   "align-top",
 );
 
-export const summaryThClass = clsx(
-  "bg-warning-50 dark:bg-warning-900/20",
-);
+export const summaryThClass = clsx("bg-warning-50 dark:bg-warning-900/20");
 
 export const insetContainerClass = clsx("border-none", "rounded-none");
-export const defaultContainerClass = clsx(
-  "border border-base-300 dark:border-base-700",
-  "rounded",
-);
+export const defaultContainerClass = clsx("border border-base-300 dark:border-base-700", "rounded");
 
 export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 export const sortIconClass = clsx("px-1 py-0.5", "bg-base-100 dark:bg-base-900");
@@ -935,10 +916,7 @@ export const toolbarClass = clsx(
 );
 
 export const fixedClass = "sticky";
-export const fixedLastClass = clsx(
-  "border-r-2 border-r-base-300",
-  "dark:border-r-base-700",
-);
+export const fixedLastClass = clsx("border-r-2 border-r-base-300", "dark:border-r-base-700");
 
 export const resizerClass = clsx(
   "absolute inset-y-0 right-0",
@@ -971,16 +949,10 @@ export const featureTdClass = clsx(
 );
 
 // 확장 컬럼 깊이 가이드 — 래퍼
-export const expandIndentGuideClass = clsx(
-  "mr-0.5 w-3 self-stretch",
-  "flex justify-end",
-);
+export const expandIndentGuideClass = clsx("mr-0.5 w-3 self-stretch", "flex justify-end");
 
 // 확장 컬럼 깊이 가이드 — 세로선
-export const expandIndentGuideLineClass = clsx(
-  "w-0 self-stretch",
-  "border-r border-base-300 dark:border-base-700",
-);
+export const expandIndentGuideLineClass = clsx("w-0 self-stretch", "border-r border-base-300 dark:border-base-700");
 
 // 확장 토글 버튼
 export const expandToggleClass = clsx(
@@ -1018,18 +990,18 @@ packages/solid/src/components/data/sheet/
 
 ## 16. 활용하는 기존 유틸리티
 
-| 유틸리티 | 패키지 | 용도 |
-|---------|--------|------|
-| `createPropSignal` | `solid/utils` | sorts, selectedItems 등 양방향 바인딩 |
-| `usePersisted` | `solid/contexts` | 시트 설정 localStorage 저장 |
-| `useModal` (show) | `solid/disclosure` | ConfigModal 표시 |
-| `Pagination` | `solid/data` | 페이지네이션 UI |
-| `CheckBox` | `solid/form-control` | 다중 선택 체크박스 |
-| `Icon` | `solid/display` | 정렬/확장 아이콘 |
-| `createResizeObserver` | `@solid-primitives/resize-observer` | 고정 컬럼/헤더 너비 추적 |
-| `.orderBy()`, `.orderByDesc()` | `core-common/extensions` | 배열 확장 메서드 |
-| `objGetChainValue` | `core-common` | 점 표기법 정렬 키 접근 |
-| `findFirstFocusableChild` | `core-browser/extensions` | 셀 간 포커스 이동 |
+| 유틸리티                       | 패키지                              | 용도                                  |
+| ------------------------------ | ----------------------------------- | ------------------------------------- |
+| `createPropSignal`             | `solid/utils`                       | sorts, selectedItems 등 양방향 바인딩 |
+| `usePersisted`                 | `solid/contexts`                    | 시트 설정 localStorage 저장           |
+| `useModal` (show)              | `solid/disclosure`                  | ConfigModal 표시                      |
+| `Pagination`                   | `solid/data`                        | 페이지네이션 UI                       |
+| `CheckBox`                     | `solid/form-control`                | 다중 선택 체크박스                    |
+| `Icon`                         | `solid/display`                     | 정렬/확장 아이콘                      |
+| `createResizeObserver`         | `@solid-primitives/resize-observer` | 고정 컬럼/헤더 너비 추적              |
+| `.orderBy()`, `.orderByDesc()` | `core-common/extensions`            | 배열 확장 메서드                      |
+| `objGetChainValue`             | `core-common`                       | 점 표기법 정렬 키 접근                |
+| `findFirstFocusableChild`      | `core-browser/extensions`           | 셀 간 포커스 이동                     |
 
 ## 17. 검증
 
@@ -1043,6 +1015,7 @@ pnpm lint packages/solid
 ### 데모 페이지
 
 `solid-demo`에 SheetPage 추가:
+
 - 기본 테이블 (정적 컬럼)
 - 다단계 헤더 + 합계 행
 - 정렬 + 페이징
@@ -1055,6 +1028,7 @@ pnpm lint packages/solid
 ### 브라우저 테스트
 
 Playwright MCP로 데모 페이지를 열어 수동 검증:
+
 1. 컬럼 리사이징 (드래그 중 점선 인디케이터 + 더블클릭 초기화)
 2. 정렬 (클릭/Shift+Click)
 3. 키보드 네비게이션 (Enter/Shift+Enter)

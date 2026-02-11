@@ -15,6 +15,7 @@
 ### Task 1: Numpad 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/numpad/Numpad.tsx`
 
 **Step 1: Numpad.tsx 작성**
@@ -55,11 +56,7 @@ export interface NumpadProps {
   style?: JSX.CSSProperties;
 }
 
-const baseClass = clsx(
-  "inline-grid grid-cols-3",
-  "gap-0.5",
-  "p-1",
-);
+const baseClass = clsx("inline-grid grid-cols-3", "gap-0.5", "p-1");
 
 export const Numpad: Component<NumpadProps> = (props) => {
   const [local, rest] = splitProps(props, [
@@ -141,11 +138,7 @@ export const Numpad: Component<NumpadProps> = (props) => {
   const btnSize = () => local.size ?? "lg";
 
   return (
-    <div
-      data-numpad
-      class={twMerge(baseClass, local.class)}
-      style={local.style}
-    >
+    <div data-numpad class={twMerge(baseClass, local.class)} style={local.style}>
       {/* 상단: NumberField */}
       <div class={local.useEnterButton ? "col-span-2" : "col-span-3"}>
         <NumberField
@@ -177,21 +170,11 @@ export const Numpad: Component<NumpadProps> = (props) => {
         </Button>
       </Show>
       <div class={local.useMinusButton ? "" : "col-span-2"}>
-        <Button
-          size={btnSize()}
-          inset
-          class="w-full text-danger-500"
-          onClick={() => handleButtonClick("C")}
-        >
+        <Button size={btnSize()} inset class="w-full text-danger-500" onClick={() => handleButtonClick("C")}>
           <Icon icon={IconEraser} size="1.25em" />
         </Button>
       </div>
-      <Button
-        size={btnSize()}
-        inset
-        class="text-warning-500"
-        onClick={() => handleButtonClick("BS")}
-      >
+      <Button size={btnSize()} inset class="text-warning-500" onClick={() => handleButtonClick("BS")}>
         <Icon icon={IconArrowLeft} size="1.25em" />
       </Button>
 
@@ -238,6 +221,7 @@ git commit -m "feat(solid): Numpad 컴포넌트 구현"
 ### Task 2: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -265,6 +249,7 @@ git commit -m "feat(solid): Numpad를 index.ts에 export 추가"
 ### Task 3: 데모 페이지 작성
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/form-control/NumpadPage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx` (라우트 추가)
 - Modify: `packages/solid-demo/src/pages/Home.tsx` (메뉴 추가)
@@ -386,6 +371,7 @@ git commit -m "feat(solid-demo): Numpad 데모 페이지 추가"
 ### Task 4: 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/form-control/numpad/Numpad.spec.tsx`
 
 **Step 1: 테스트 작성**
@@ -453,7 +439,9 @@ describe("Numpad", () => {
       // C 버튼은 Icon을 포함하므로 data-icon으로 찾기보다 부모 버튼의 클릭 이벤트 테스트
       const buttons = screen.getAllByRole("button");
       // C 버튼 찾기 (eraser 아이콘이 있는 버튼)
-      const cButton = buttons.find((btn) => btn.querySelector("[data-icon]") && btn.classList.contains("text-danger-500"));
+      const cButton = buttons.find(
+        (btn) => btn.querySelector("[data-icon]") && btn.classList.contains("text-danger-500"),
+      );
       expect(cButton).toBeTruthy();
       fireEvent.click(cButton!);
       expect(onChange).toHaveBeenLastCalledWith(undefined);
@@ -466,7 +454,9 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("2"));
       // BS 버튼 (warning 색상 아이콘 버튼)
       const buttons = screen.getAllByRole("button");
-      const bsButton = buttons.find((btn) => btn.querySelector("[data-icon]") && btn.classList.contains("text-warning-500"));
+      const bsButton = buttons.find(
+        (btn) => btn.querySelector("[data-icon]") && btn.classList.contains("text-warning-500"),
+      );
       expect(bsButton).toBeTruthy();
       fireEvent.click(bsButton!);
       expect(onChange).toHaveBeenLastCalledWith(1);
@@ -554,6 +544,7 @@ git commit -m "test(solid): Numpad 테스트 추가"
 ### Task 5: 마이그레이션 문서 업데이트
 
 **Files:**
+
 - Modify: `docs/2026-02-09-solid-migration-remaining.md`
 
 **Step 1: 5번 항목 상태를 `[x]`로 변경**

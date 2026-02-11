@@ -13,6 +13,7 @@
 ### Task 1: createAppStructure 유틸리티 생성
 
 **Files:**
+
 - Create: `packages/solid/src/utils/createAppStructure.ts`
 
 **Step 1: 파일 생성 — 타입 정의 + 함수 구현**
@@ -46,9 +47,7 @@ export interface AppStructureLeafItem<TModule> {
   isNotMenu?: boolean;
 }
 
-export type AppStructureItem<TModule> =
-  | AppStructureGroupItem<TModule>
-  | AppStructureLeafItem<TModule>;
+export type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
 
 export interface AppStructureSubPerm<TModule> {
   code: string;
@@ -80,9 +79,7 @@ export interface AppStructure<TModule> {
 
 // ── 내부 헬퍼 ──
 
-function isGroupItem<TModule>(
-  item: AppStructureItem<TModule>,
-): item is AppStructureGroupItem<TModule> {
+function isGroupItem<TModule>(item: AppStructureItem<TModule>): item is AppStructureGroupItem<TModule> {
   return "children" in item;
 }
 
@@ -105,11 +102,7 @@ function checkModules<TModule>(
 }
 
 /** 트리에서 component가 있는 리프를 수집하여 상대 경로 배열 반환 */
-function collectRoutes<TModule>(
-  items: AppStructureItem<TModule>[],
-  parentCodes: string[],
-  routes: AppRoute[],
-): void {
+function collectRoutes<TModule>(items: AppStructureItem<TModule>[], parentCodes: string[], routes: AppRoute[]): void {
   for (const item of items) {
     const codes = [...parentCodes, item.code];
 
@@ -197,9 +190,7 @@ export function createAppStructure<TModule>(opts: {
     const menus: SidebarMenuItem[] = [];
     for (const top of opts.items) {
       if (isGroupItem(top)) {
-        menus.push(
-          ...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()),
-        );
+        menus.push(...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()));
       }
     }
     return menus;
@@ -227,6 +218,7 @@ Expected: 에러 없음
 ### Task 2: 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/utils/createAppStructure.spec.tsx`
 
 **Step 1: 테스트 파일 생성**
@@ -235,10 +227,7 @@ Expected: 에러 없음
 import { describe, it, expect } from "vitest";
 import { createRoot, createSignal } from "solid-js";
 import type { Component } from "solid-js";
-import {
-  createAppStructure,
-  type AppStructureItem,
-} from "../../src/utils/createAppStructure";
+import { createAppStructure, type AppStructureItem } from "../../src/utils/createAppStructure";
 
 // 테스트용 더미 컴포넌트
 const DummyA: Component = () => null;
@@ -318,9 +307,7 @@ describe("createAppStructure", () => {
           {
             code: "home",
             title: "홈",
-            children: [
-              { code: "about", title: "소개" },
-            ],
+            children: [{ code: "about", title: "소개" }],
           },
         ];
 
@@ -521,6 +508,7 @@ Expected: 모든 테스트 PASS
 ### Task 3: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -563,6 +551,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 4: solid-demo 라우트 구조 수정 및 AppStructure 적용
 
 **Files:**
+
 - Create: `packages/solid-demo/src/appStructure.ts`
 - Modify: `packages/solid-demo/src/main.tsx`
 - Modify: `packages/solid-demo/src/pages/Home.tsx`
@@ -604,13 +593,37 @@ export const appStructure = createAppStructure({
             { code: "button", title: "Button", component: lazy(() => import("./pages/form-control/ButtonPage")) },
             { code: "select", title: "Select", component: lazy(() => import("./pages/form-control/SelectPage")) },
             { code: "field", title: "Field", component: lazy(() => import("./pages/form-control/FieldPage")) },
-            { code: "theme-toggle", title: "ThemeToggle", component: lazy(() => import("./pages/form-control/ThemeTogglePage")) },
-            { code: "checkbox-radio", title: "CheckBox & Radio", component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")) },
-            { code: "checkbox-radio-group", title: "CheckBoxGroup & RadioGroup", component: lazy(() => import("./pages/form-control/CheckBoxRadioGroupPage")) },
-            { code: "date-range-picker", title: "DateRangePicker", component: lazy(() => import("./pages/form-control/DateRangePickerPage")) },
-            { code: "rich-text-editor", title: "RichTextEditor", component: lazy(() => import("./pages/form-control/RichTextEditorPage")) },
+            {
+              code: "theme-toggle",
+              title: "ThemeToggle",
+              component: lazy(() => import("./pages/form-control/ThemeTogglePage")),
+            },
+            {
+              code: "checkbox-radio",
+              title: "CheckBox & Radio",
+              component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")),
+            },
+            {
+              code: "checkbox-radio-group",
+              title: "CheckBoxGroup & RadioGroup",
+              component: lazy(() => import("./pages/form-control/CheckBoxRadioGroupPage")),
+            },
+            {
+              code: "date-range-picker",
+              title: "DateRangePicker",
+              component: lazy(() => import("./pages/form-control/DateRangePickerPage")),
+            },
+            {
+              code: "rich-text-editor",
+              title: "RichTextEditor",
+              component: lazy(() => import("./pages/form-control/RichTextEditorPage")),
+            },
             { code: "numpad", title: "Numpad", component: lazy(() => import("./pages/form-control/NumpadPage")) },
-            { code: "state-preset", title: "StatePreset", component: lazy(() => import("./pages/form-control/StatePresetPage")) },
+            {
+              code: "state-preset",
+              title: "StatePreset",
+              component: lazy(() => import("./pages/form-control/StatePresetPage")),
+            },
           ],
         },
         {
@@ -652,9 +665,7 @@ export const appStructure = createAppStructure({
           code: "navigation",
           title: "Navigation",
           icon: IconLayoutSidebar,
-          children: [
-            { code: "tab", title: "Tab", component: lazy(() => import("./pages/navigation/TabPage")) },
-          ],
+          children: [{ code: "tab", title: "Tab", component: lazy(() => import("./pages/navigation/TabPage")) }],
         },
         {
           code: "display",
@@ -675,7 +686,11 @@ export const appStructure = createAppStructure({
           title: "Feedback",
           icon: IconBell,
           children: [
-            { code: "notification", title: "Notification", component: lazy(() => import("./pages/feedback/NotificationPage")) },
+            {
+              code: "notification",
+              title: "Notification",
+              component: lazy(() => import("./pages/feedback/NotificationPage")),
+            },
             { code: "busy", title: "Busy", component: lazy(() => import("./pages/feedback/BusyPage")) },
             { code: "print", title: "Print", component: lazy(() => import("./pages/feedback/PrintPage")) },
           ],
@@ -685,7 +700,11 @@ export const appStructure = createAppStructure({
           title: "Service",
           icon: IconPlug,
           children: [
-            { code: "client", title: "ServiceClient", component: lazy(() => import("./pages/service/ServiceClientPage")) },
+            {
+              code: "client",
+              title: "ServiceClient",
+              component: lazy(() => import("./pages/service/ServiceClientPage")),
+            },
           ],
         },
       ],
@@ -828,6 +847,7 @@ Expected: 에러 없음
 
 Run: `pnpm dev`
 확인 사항:
+
 - 사이드바 메뉴가 기존과 동일하게 표시되는지
 - 각 메뉴 클릭 시 올바른 페이지로 이동하는지
 - `/home` 접속 시 `/home/main`으로 리다이렉트되는지

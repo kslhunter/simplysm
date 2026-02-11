@@ -13,6 +13,7 @@
 ### Task 1: `env.ts` — `??` → `||` 변경
 
 **Files:**
+
 - Modify: `packages/core-common/src/env.ts:8`
 
 **Step 1: 수정**
@@ -44,6 +45,7 @@ git commit -m "fix(core-common): env.ts에서 ?? 대신 || 사용하여 빈 문�
 ### Task 2: `lazy-gc-map.ts` — `_isDestroyed` 가드 추가
 
 **Files:**
+
 - Modify: `packages/core-common/src/types/lazy-gc-map.ts`
 - Test: `packages/core-common/tests/types/lazy-gc-map.spec.ts`
 
@@ -196,6 +198,7 @@ git commit -m "fix(core-common): LazyGcMap dispose 후 메서드 호출 시 안�
 ### Task 3: `obj.ts` — `objNullToUndefined` 순환 참조 감지
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/obj.ts:811-847`
 - Test: `packages/core-common/tests/utils/object.spec.ts`
 
@@ -207,7 +210,7 @@ git commit -m "fix(core-common): LazyGcMap dispose 후 메서드 호출 시 안�
 describe("objNullToUndefined()", () => {
   it("순환 참조가 있는 객체를 안전하게 처리한다", () => {
     const obj: Record<string, unknown> = { a: null };
-    obj.self = obj;  // 순환 참조
+    obj.self = obj; // 순환 참조
     const result = objNullToUndefined(obj);
     expect(result).toBeDefined();
     expect((result as Record<string, unknown>).a).toBeUndefined();
@@ -215,7 +218,7 @@ describe("objNullToUndefined()", () => {
 
   it("순환 참조가 있는 배열을 안전하게 처리한다", () => {
     const arr: unknown[] = [null, 1];
-    arr.push(arr);  // 순환 참조
+    arr.push(arr); // 순환 참조
     const result = objNullToUndefined(arr);
     expect(result).toBeDefined();
     expect((result as unknown[])[0]).toBeUndefined();
@@ -295,6 +298,7 @@ git commit -m "fix(core-common): objNullToUndefined에 WeakSet 기반 순환 참
 ### Task 4: `transferable.ts` — DAG 지원 (ancestors + cache)
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/transferable.ts`
 - Test: `packages/core-common/tests/utils/transferable.spec.ts`
 
@@ -341,6 +345,7 @@ Expected: FAIL (현재 공유 객체를 순환 참조로 오인하여 TypeError)
 `packages/core-common/src/utils/transferable.ts` 수정:
 
 1. JSDoc 27번줄 수정:
+
 ```typescript
 // Before:
 // * @note 동일 객체가 여러 곳에서 참조되면 순환 참조로 처리되어 TypeError 발생
@@ -349,6 +354,7 @@ Expected: FAIL (현재 공유 객체를 순환 참조로 오인하여 TypeError)
 ```
 
 2. `transferableEncode` 함수:
+
 ```typescript
 export function transferableEncode(obj: unknown): {
   result: unknown;
@@ -363,6 +369,7 @@ export function transferableEncode(obj: unknown): {
 ```
 
 3. `encodeImpl` 시그니처 및 로직:
+
 ```typescript
 function encodeImpl(
   obj: unknown,
@@ -398,9 +405,7 @@ function encodeImpl(
 
   // 1. Uint8Array
   if (obj instanceof Uint8Array) {
-    const isSharedArrayBuffer =
-      typeof SharedArrayBuffer !== "undefined" &&
-      obj.buffer instanceof SharedArrayBuffer;
+    const isSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
     const buffer = obj.buffer as ArrayBuffer;
     if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
       transferList.push(buffer);
@@ -408,13 +413,19 @@ function encodeImpl(
     result = obj;
   }
   // 2. 특수 타입 변환
-  else if (obj instanceof Date) { result = { __type__: "Date", data: obj.getTime() }; }
-  else if (obj instanceof DateTime) { result = { __type__: "DateTime", data: obj.tick }; }
-  else if (obj instanceof DateOnly) { result = { __type__: "DateOnly", data: obj.tick }; }
-  else if (obj instanceof Time) { result = { __type__: "Time", data: obj.tick }; }
-  else if (obj instanceof Uuid) { result = { __type__: "Uuid", data: obj.toString() }; }
-  else if (obj instanceof RegExp) { result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } }; }
-  else if (obj instanceof Error) {
+  else if (obj instanceof Date) {
+    result = { __type__: "Date", data: obj.getTime() };
+  } else if (obj instanceof DateTime) {
+    result = { __type__: "DateTime", data: obj.tick };
+  } else if (obj instanceof DateOnly) {
+    result = { __type__: "DateOnly", data: obj.tick };
+  } else if (obj instanceof Time) {
+    result = { __type__: "Time", data: obj.tick };
+  } else if (obj instanceof Uuid) {
+    result = { __type__: "Uuid", data: obj.toString() };
+  } else if (obj instanceof RegExp) {
+    result = { __type__: "RegExp", data: { source: obj.source, flags: obj.flags } };
+  } else if (obj instanceof Error) {
     const errObj = obj as Error & { code?: unknown; detail?: unknown };
     result = {
       __type__: "Error",
@@ -499,6 +510,7 @@ git commit -m "feat(core-common): transferable에 DAG 지원 추가 (ancestors +
 ### Task 5: `arr-ext.ts` — `diffs()` 성능 개선
 
 **Files:**
+
 - Modify: `packages/core-common/src/extensions/arr-ext.ts:396-467`
 - Test: `packages/core-common/tests/extensions/array-extension.spec.ts`
 
@@ -603,6 +615,7 @@ git commit -m "perf(core-common): diffs()에서 splice O(n) 제거, Set 기반 �
 ### Task 6: `obj.ts` — 불필요한 impl 래퍼 제거
 
 **Files:**
+
 - Modify: `packages/core-common/src/utils/obj.ts`
 
 **Step 1: 구현**
@@ -610,6 +623,7 @@ git commit -m "perf(core-common): diffs()에서 splice O(n) 제거, Set 기반 �
 4개 함수 쌍의 Impl을 인라인:
 
 1. `objOmit` + `objOmitImpl` (585-597줄):
+
 ```typescript
 export function objOmit<T extends Record<string, unknown>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
   const result: Record<string, unknown> = {};
@@ -624,6 +638,7 @@ export function objOmit<T extends Record<string, unknown>, K extends keyof T>(it
 ```
 
 2. `objOmitByFilter` + `objOmitByFilterImpl` (609-621줄):
+
 ```typescript
 export function objOmitByFilter<T extends Record<string, unknown>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
   const result: Record<string, unknown> = {};
@@ -638,6 +653,7 @@ export function objOmitByFilter<T extends Record<string, unknown>>(item: T, omit
 ```
 
 3. `objPick` + `objPickImpl` (633-643줄):
+
 ```typescript
 export function objPick<T extends Record<string, unknown>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
   const result: Record<string, unknown> = {};
@@ -650,6 +666,7 @@ export function objPick<T extends Record<string, unknown>, K extends keyof T>(it
 ```
 
 4. `objClearUndefined` + `objClearUndefinedImpl` (779-792줄):
+
 ```typescript
 export function objClearUndefined<T extends object>(obj: T): T {
   const record = obj as Record<string, unknown>;
@@ -685,6 +702,7 @@ git commit -m "refactor(core-common): objOmit/objPick/objOmitByFilter/objClearUn
 ### Task 7: `path.ts` / `primitive.ts` 테스트 추가
 
 **Files:**
+
 - Create: `packages/core-common/tests/utils/path.spec.ts`
 - Create: `packages/core-common/tests/utils/primitive.spec.ts`
 

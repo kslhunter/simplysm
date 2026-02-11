@@ -1,97 +1,97 @@
 # @simplysm/capacitor-plugin-file-system
 
-Capacitor 기반의 파일 시스템 접근 플러그인이다. Android에서는 네이티브 파일 시스템에 직접 접근하며, 웹 환경에서는 IndexedDB 기반의 가상 파일 시스템으로 동작한다.
+A Capacitor-based file system access plugin. On Android, it provides direct access to the native file system, while in web environments it operates as an IndexedDB-based virtual file system.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/capacitor-plugin-file-system
 npx cap sync
 ```
 
-### 피어 의존성
+### Peer Dependencies
 
-| 패키지 | 버전 |
+| Package | Version |
 |--------|------|
 | `@capacitor/core` | `^7.4.4` |
 
-### 내부 의존성
+### Internal Dependencies
 
-| 패키지 | 설명 |
+| Package | Description |
 |--------|------|
-| `@simplysm/core-common` | base64 변환, `Bytes` 타입 등 공통 유틸리티 |
+| `@simplysm/core-common` | Common utilities such as base64 conversion, `Bytes` type |
 
-## 지원 플랫폼
+## Supported Platforms
 
-| 플랫폼 | 지원 여부 | 구현 방식 |
+| Platform | Supported | Implementation |
 |--------|----------|----------|
-| Android | 지원 | 네이티브 Java (API 23+) |
-| Web | 지원 | IndexedDB 기반 가상 파일 시스템 |
-| iOS | 미지원 | - |
+| Android | Yes | Native Java (API 23+) |
+| Web | Yes | IndexedDB-based virtual file system |
+| iOS | No | - |
 
-### Android 권한
+### Android Permissions
 
-Android 버전에 따라 다른 권한 모델을 사용한다.
+Different permission models are used depending on the Android version.
 
-| Android 버전 | 권한 | 동작 |
+| Android Version | Permission | Behavior |
 |-------------|------|------|
-| Android 11+ (API 30+) | `MANAGE_EXTERNAL_STORAGE` | 설정 화면으로 이동하여 전체 파일 접근 권한 부여 |
-| Android 10 이하 | `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` | 런타임 권한 다이얼로그 표시 |
+| Android 11+ (API 30+) | `MANAGE_EXTERNAL_STORAGE` | Navigate to settings screen to grant full file access permission |
+| Android 10 and below | `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` | Display runtime permission dialog |
 
-플러그인이 `AndroidManifest.xml`에 필요한 권한을 자동으로 선언하므로, 앱의 매니페스트에 별도로 추가할 필요가 없다.
+The plugin automatically declares the necessary permissions in `AndroidManifest.xml`, so you don't need to add them separately in your app's manifest.
 
-## 주요 API
+## Main API
 
-모든 API는 `FileSystem` 클래스의 정적 메서드로 제공된다.
+All APIs are provided as static methods of the `FileSystem` class.
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 ```
 
-### 메서드 목록
+### Method List
 
-| 메서드 | 반환 타입 | 설명 |
+| Method | Return Type | Description |
 |--------|----------|------|
-| `hasPermission()` | `Promise<boolean>` | 파일 시스템 접근 권한 보유 여부 확인 |
-| `requestPermission()` | `Promise<void>` | 파일 시스템 접근 권한 요청 |
-| `readdir(dirPath)` | `Promise<IFileInfo[]>` | 디렉토리 내 파일/폴더 목록 조회 |
-| `getStoragePath(type)` | `Promise<string>` | 저장소 유형별 절대 경로 반환 |
-| `getFileUri(filePath)` | `Promise<string>` | FileProvider URI 반환 (Android) / Blob URL 반환 (Web) |
-| `writeFile(filePath, data)` | `Promise<void>` | 파일 쓰기 (문자열 또는 바이너리) |
-| `readFileString(filePath)` | `Promise<string>` | 파일을 UTF-8 문자열로 읽기 |
-| `readFileBytes(filePath)` | `Promise<Bytes>` | 파일을 바이너리(`Uint8Array`)로 읽기 |
-| `remove(targetPath)` | `Promise<void>` | 파일 또는 디렉토리 재귀 삭제 |
-| `mkdir(targetPath)` | `Promise<void>` | 디렉토리 재귀 생성 |
-| `exists(targetPath)` | `Promise<boolean>` | 파일 또는 디렉토리 존재 여부 확인 |
+| `hasPermission()` | `Promise<boolean>` | Check if file system access permission is granted |
+| `requestPermission()` | `Promise<void>` | Request file system access permission |
+| `readdir(dirPath)` | `Promise<IFileInfo[]>` | List files/folders in directory |
+| `getStoragePath(type)` | `Promise<string>` | Return absolute path by storage type |
+| `getFileUri(filePath)` | `Promise<string>` | Return FileProvider URI (Android) / Blob URL (Web) |
+| `writeFile(filePath, data)` | `Promise<void>` | Write file (string or binary) |
+| `readFileString(filePath)` | `Promise<string>` | Read file as UTF-8 string |
+| `readFileBytes(filePath)` | `Promise<Bytes>` | Read file as binary (`Uint8Array`) |
+| `remove(targetPath)` | `Promise<void>` | Recursively delete file or directory |
+| `mkdir(targetPath)` | `Promise<void>` | Recursively create directory |
+| `exists(targetPath)` | `Promise<boolean>` | Check if file or directory exists |
 
-### 타입 정의
+### Type Definitions
 
 #### `TStorage`
 
-저장소 유형을 나타내는 문자열 리터럴 타입이다.
+A string literal type representing storage types.
 
-| 값 | Android 경로 | 설명 |
+| Value | Android Path | Description |
 |----|-------------|------|
-| `"external"` | `Environment.getExternalStorageDirectory()` | 외부 저장소 루트 |
-| `"externalFiles"` | `Context.getExternalFilesDir(null)` | 앱 전용 외부 파일 디렉토리 |
-| `"externalCache"` | `Context.getExternalCacheDir()` | 앱 전용 외부 캐시 디렉토리 |
-| `"externalMedia"` | `Context.getExternalMediaDirs()[0]` | 앱 전용 외부 미디어 디렉토리 |
-| `"appData"` | `ApplicationInfo.dataDir` | 앱 데이터 디렉토리 |
-| `"appFiles"` | `Context.getFilesDir()` | 앱 내부 파일 디렉토리 |
-| `"appCache"` | `Context.getCacheDir()` | 앱 내부 캐시 디렉토리 |
+| `"external"` | `Environment.getExternalStorageDirectory()` | External storage root |
+| `"externalFiles"` | `Context.getExternalFilesDir(null)` | App-specific external files directory |
+| `"externalCache"` | `Context.getExternalCacheDir()` | App-specific external cache directory |
+| `"externalMedia"` | `Context.getExternalMediaDirs()[0]` | App-specific external media directory |
+| `"appData"` | `ApplicationInfo.dataDir` | App data directory |
+| `"appFiles"` | `Context.getFilesDir()` | App internal files directory |
+| `"appCache"` | `Context.getCacheDir()` | App internal cache directory |
 
 #### `IFileInfo`
 
 ```typescript
 interface IFileInfo {
-  name: string;        // 파일 또는 디렉토리 이름
-  isDirectory: boolean; // 디렉토리 여부
+  name: string;        // File or directory name
+  isDirectory: boolean; // Whether it's a directory
 }
 ```
 
-## 사용 예시
+## Usage Examples
 
-### 권한 확인 및 요청
+### Check and Request Permission
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
@@ -100,15 +100,15 @@ async function ensurePermission(): Promise<boolean> {
   const granted = await FileSystem.hasPermission();
   if (!granted) {
     await FileSystem.requestPermission();
-    // Android 11+에서는 설정 화면으로 이동하므로,
-    // 앱으로 복귀한 후 다시 확인해야 한다.
+    // On Android 11+, it navigates to settings screen,
+    // so you need to check again after returning to the app.
     return await FileSystem.hasPermission();
   }
   return true;
 }
 ```
 
-### 텍스트 파일 읽기/쓰기
+### Read/Write Text Files
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
@@ -117,18 +117,18 @@ async function textFileExample(): Promise<void> {
   const storagePath = await FileSystem.getStoragePath("appFiles");
   const filePath = storagePath + "/config.json";
 
-  // 파일 쓰기
+  // Write file
   const config = { theme: "dark", lang: "ko" };
   await FileSystem.writeFile(filePath, JSON.stringify(config, null, 2));
 
-  // 파일 읽기
+  // Read file
   const content = await FileSystem.readFileString(filePath);
   const parsed = JSON.parse(content);
   console.log(parsed.theme); // "dark"
 }
 ```
 
-### 바이너리 파일 읽기/쓰기
+### Read/Write Binary Files
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
@@ -137,17 +137,17 @@ async function binaryFileExample(): Promise<void> {
   const storagePath = await FileSystem.getStoragePath("appFiles");
   const filePath = storagePath + "/data.bin";
 
-  // Uint8Array로 쓰기
+  // Write as Uint8Array
   const bytes = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]);
   await FileSystem.writeFile(filePath, bytes);
 
-  // 바이너리로 읽기
+  // Read as binary
   const readBytes = await FileSystem.readFileBytes(filePath);
   console.log(readBytes.length); // 5
 }
 ```
 
-### 디렉토리 관리
+### Directory Management
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
@@ -156,71 +156,71 @@ async function directoryExample(): Promise<void> {
   const storagePath = await FileSystem.getStoragePath("appFiles");
   const dirPath = storagePath + "/logs/2024";
 
-  // 디렉토리 재귀 생성
+  // Recursively create directory
   await FileSystem.mkdir(dirPath);
 
-  // 파일 생성
-  await FileSystem.writeFile(dirPath + "/app.log", "시작됨\n");
+  // Create file
+  await FileSystem.writeFile(dirPath + "/app.log", "Started\n");
 
-  // 디렉토리 목록 조회
+  // List directory contents
   const files = await FileSystem.readdir(dirPath);
   for (const file of files) {
-    console.log(`${file.name} (디렉토리: ${file.isDirectory})`);
+    console.log(`${file.name} (directory: ${file.isDirectory})`);
   }
 
-  // 존재 여부 확인
+  // Check existence
   const dirExists = await FileSystem.exists(dirPath);
   console.log(dirExists); // true
 
-  // 디렉토리 재귀 삭제
+  // Recursively delete directory
   await FileSystem.remove(dirPath);
 }
 ```
 
-### FileProvider URI 얻기
+### Get FileProvider URI
 
-Android에서 다른 앱과 파일을 공유할 때 `content://` URI가 필요하다.
+On Android, a `content://` URI is needed when sharing files with other apps.
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 
 async function shareFile(filePath: string): Promise<string> {
-  // Android: content:// URI 반환
-  // Web: blob: URL 반환 (사용 후 URL.revokeObjectURL() 호출 필요)
+  // Android: returns content:// URI
+  // Web: returns blob: URL (must call URL.revokeObjectURL() after use)
   const uri = await FileSystem.getFileUri(filePath);
   return uri;
 }
 ```
 
-> **주의**: 웹 환경에서 `getFileUri()`가 반환하는 Blob URL은 사용 후 반드시 `URL.revokeObjectURL(uri)`를 호출하여 메모리를 해제해야 한다.
+> **Warning**: In web environments, the Blob URL returned by `getFileUri()` must be released by calling `URL.revokeObjectURL(uri)` after use to free memory.
 
-## Android 설정
+## Android Configuration
 
 ### FileProvider
 
-플러그인은 자체 `FileSystemProvider`를 포함하고 있으며, authority는 `${applicationId}.filesystem.provider` 형식으로 자동 설정된다. 공유 가능한 경로는 다음과 같다:
+The plugin includes its own `FileSystemProvider`, and the authority is automatically set in the format `${applicationId}.filesystem.provider`. Shareable paths are:
 
-- 외부 저장소 (`external-path`)
-- 앱 전용 외부 파일 (`external-files-path`)
-- 앱 전용 외부 캐시 (`external-cache-path`)
-- 앱 내부 파일 (`files-path`)
-- 앱 내부 캐시 (`cache-path`)
+- External storage (`external-path`)
+- App-specific external files (`external-files-path`)
+- App-specific external cache (`external-cache-path`)
+- App internal files (`files-path`)
+- App internal cache (`cache-path`)
 
-### 최소 SDK 버전
+### Minimum SDK Version
 
 - `minSdkVersion`: 23 (Android 6.0)
 - `compileSdkVersion`: 35
 
-## 웹 환경 동작
+## Web Environment Behavior
 
-웹 환경에서는 IndexedDB 기반의 가상 파일 시스템(`VirtualFileSystem`)으로 동작한다.
+In web environments, it operates as an IndexedDB-based virtual file system (`VirtualFileSystem`).
 
-- 데이터베이스 이름: `capacitor_web_virtual_fs`
-- 권한 관련 메서드(`hasPermission`, `requestPermission`)는 항상 성공으로 처리된다.
-- `getStoragePath()`는 `/webfs/{type}` 형태의 가상 경로를 반환한다.
-- `getFileUri()`는 Blob URL을 반환하며, 사용 후 `URL.revokeObjectURL()`로 해제해야 한다.
-- 파일 데이터는 base64로 인코딩되어 IndexedDB에 저장된다.
+- Database name: `capacitor_web_virtual_fs`
+- Permission-related methods (`hasPermission`, `requestPermission`) always succeed.
+- `getStoragePath()` returns virtual paths in the format `/webfs/{type}`.
+- `getFileUri()` returns a Blob URL, which must be released with `URL.revokeObjectURL()` after use.
+- File data is base64-encoded and stored in IndexedDB.
 
-## 라이선스
+## License
 
 MIT

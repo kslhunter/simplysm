@@ -13,6 +13,7 @@
 ### Task 1: Pagination 컴포넌트 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/data/Pagination.spec.tsx`
 
 **Step 1: 테스트 파일 작성**
@@ -25,25 +26,19 @@ import { Pagination } from "../../../src/components/data/Pagination";
 describe("Pagination 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("nav 요소로 렌더링된다", () => {
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={10} />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={10} />);
       const nav = container.firstChild as HTMLElement;
       expect(nav.tagName).toBe("NAV");
     });
 
     it("페이지 번호가 1-based로 표시된다", () => {
-      const { getByText } = render(() => (
-        <Pagination page={0} totalPages={5} />
-      ));
+      const { getByText } = render(() => <Pagination page={0} totalPages={5} />);
       expect(getByText("1")).toBeTruthy();
       expect(getByText("5")).toBeTruthy();
     });
 
     it("totalPages가 0이면 페이지 번호 버튼이 없다", () => {
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={0} />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={0} />);
       const buttons = container.querySelectorAll("[data-button]");
       // 네비게이션 버튼 4개만 존재
       expect(buttons.length).toBe(4);
@@ -52,27 +47,21 @@ describe("Pagination 컴포넌트", () => {
 
   describe("페이지 그룹 표시", () => {
     it("displayPages 기본값 10으로 첫 그룹이 표시된다", () => {
-      const { getByText, queryByText } = render(() => (
-        <Pagination page={0} totalPages={25} />
-      ));
+      const { getByText, queryByText } = render(() => <Pagination page={0} totalPages={25} />);
       expect(getByText("1")).toBeTruthy();
       expect(getByText("10")).toBeTruthy();
       expect(queryByText("11")).toBeNull();
     });
 
     it("displayPages=5로 설정하면 5개씩 표시된다", () => {
-      const { getByText, queryByText } = render(() => (
-        <Pagination page={0} totalPages={25} displayPages={5} />
-      ));
+      const { getByText, queryByText } = render(() => <Pagination page={0} totalPages={25} displayPages={5} />);
       expect(getByText("1")).toBeTruthy();
       expect(getByText("5")).toBeTruthy();
       expect(queryByText("6")).toBeNull();
     });
 
     it("page가 다음 그룹에 속하면 해당 그룹이 표시된다", () => {
-      const { getByText, queryByText } = render(() => (
-        <Pagination page={12} totalPages={25} displayPages={5} />
-      ));
+      const { getByText, queryByText } = render(() => <Pagination page={12} totalPages={25} displayPages={5} />);
       expect(getByText("11")).toBeTruthy();
       expect(getByText("15")).toBeTruthy();
       expect(queryByText("10")).toBeNull();
@@ -82,9 +71,7 @@ describe("Pagination 컴포넌트", () => {
   describe("페이지 클릭", () => {
     it("페이지 번호 클릭 시 onPageChange가 호출된다", () => {
       const handler = vi.fn();
-      const { getByText } = render(() => (
-        <Pagination page={0} totalPages={10} onPageChange={handler} />
-      ));
+      const { getByText } = render(() => <Pagination page={0} totalPages={10} onPageChange={handler} />);
       fireEvent.click(getByText("3"));
       expect(handler).toHaveBeenCalledWith(2);
     });
@@ -92,18 +79,14 @@ describe("Pagination 컴포넌트", () => {
 
   describe("네비게이션 버튼", () => {
     it("첫 그룹일 때 이전/첫 페이지 버튼이 disabled된다", () => {
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={25} />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={25} />);
       const buttons = container.querySelectorAll("[data-button]");
       expect((buttons[0] as HTMLButtonElement).disabled).toBe(true);
       expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
     });
 
     it("마지막 그룹일 때 다음/마지막 페이지 버튼이 disabled된다", () => {
-      const { container } = render(() => (
-        <Pagination page={20} totalPages={25} />
-      ));
+      const { container } = render(() => <Pagination page={20} totalPages={25} />);
       const buttons = container.querySelectorAll("[data-button]");
       const lastIdx = buttons.length - 1;
       expect((buttons[lastIdx] as HTMLButtonElement).disabled).toBe(true);
@@ -132,9 +115,7 @@ describe("Pagination 컴포넌트", () => {
 
     it("첫 페이지 버튼 클릭 시 page=0으로 이동한다", () => {
       const handler = vi.fn();
-      const { container } = render(() => (
-        <Pagination page={15} totalPages={25} onPageChange={handler} />
-      ));
+      const { container } = render(() => <Pagination page={15} totalPages={25} onPageChange={handler} />);
       const buttons = container.querySelectorAll("[data-button]");
       fireEvent.click(buttons[0]); // 첫 페이지 버튼
       expect(handler).toHaveBeenCalledWith(0);
@@ -142,9 +123,7 @@ describe("Pagination 컴포넌트", () => {
 
     it("마지막 페이지 버튼 클릭 시 마지막 페이지로 이동한다", () => {
       const handler = vi.fn();
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={25} onPageChange={handler} />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={25} onPageChange={handler} />);
       const buttons = container.querySelectorAll("[data-button]");
       fireEvent.click(buttons[buttons.length - 1]); // 마지막 페이지 버튼
       expect(handler).toHaveBeenCalledWith(24);
@@ -153,9 +132,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("현재 페이지 강조", () => {
     it("현재 페이지 버튼은 다른 버튼과 class가 다르다", () => {
-      const { getByText } = render(() => (
-        <Pagination page={2} totalPages={10} />
-      ));
+      const { getByText } = render(() => <Pagination page={2} totalPages={10} />);
       const currentBtn = getByText("3"); // 0-based page=2 → 표시 "3"
       const otherBtn = getByText("1");
       expect(currentBtn.className).not.toBe(otherBtn.className);
@@ -165,9 +142,7 @@ describe("Pagination 컴포넌트", () => {
   describe("class 병합", () => {
     it("사용자 정의 class가 병합된다", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={10} class="my-pagination" />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={10} class="my-pagination" />);
       const nav = container.firstChild as HTMLElement;
       expect(nav.classList.contains("my-pagination")).toBe(true);
     });
@@ -175,9 +150,7 @@ describe("Pagination 컴포넌트", () => {
 
   describe("HTML 속성 전달", () => {
     it("data-* 속성이 전달된다", () => {
-      const { container } = render(() => (
-        <Pagination page={0} totalPages={10} data-testid="test-pagination" />
-      ));
+      const { container } = render(() => <Pagination page={0} totalPages={10} data-testid="test-pagination" />);
       const nav = container.firstChild as HTMLElement;
       expect(nav.getAttribute("data-testid")).toBe("test-pagination");
     });
@@ -202,6 +175,7 @@ git commit -m "test: Pagination 컴포넌트 테스트 작성"
 ### Task 2: Pagination 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/Pagination.tsx`
 - Modify: `packages/solid/src/index.ts:33-36` — data 섹션에 export 추가
 
@@ -235,14 +209,7 @@ const gapClasses: Record<PaginationSize | "default", string> = {
 };
 
 export const Pagination: Component<PaginationProps> = (props) => {
-  const [local, rest] = splitProps(props, [
-    "class",
-    "page",
-    "onPageChange",
-    "totalPages",
-    "displayPages",
-    "size",
-  ]);
+  const [local, rest] = splitProps(props, ["class", "page", "onPageChange", "totalPages", "displayPages", "size"]);
 
   const visibleCount = () => local.displayPages ?? 10;
 
@@ -261,15 +228,26 @@ export const Pagination: Component<PaginationProps> = (props) => {
 
   const btnSize = (): ButtonProps["size"] => local.size;
 
-  const getClassName = () =>
-    twMerge(baseClass, gapClasses[local.size ?? "default"], local.class);
+  const getClassName = () => twMerge(baseClass, gapClasses[local.size ?? "default"], local.class);
 
   return (
     <nav {...rest} class={getClassName()}>
-      <Button theme="base" variant="ghost" size={btnSize()} disabled={!hasPrev()} onClick={() => local.onPageChange?.(0)}>
+      <Button
+        theme="base"
+        variant="ghost"
+        size={btnSize()}
+        disabled={!hasPrev()}
+        onClick={() => local.onPageChange?.(0)}
+      >
         <Icon icon={IconChevronsLeft} size="1em" />
       </Button>
-      <Button theme="base" variant="ghost" size={btnSize()} disabled={!hasPrev()} onClick={() => local.onPageChange?.((pages()[0] ?? 1) - 1)}>
+      <Button
+        theme="base"
+        variant="ghost"
+        size={btnSize()}
+        disabled={!hasPrev()}
+        onClick={() => local.onPageChange?.((pages()[0] ?? 1) - 1)}
+      >
         <Icon icon={IconChevronLeft} size="1em" />
       </Button>
       <For each={pages()}>
@@ -284,10 +262,22 @@ export const Pagination: Component<PaginationProps> = (props) => {
           </Button>
         )}
       </For>
-      <Button theme="base" variant="ghost" size={btnSize()} disabled={!hasNext()} onClick={() => local.onPageChange?.((pages()[pages().length - 1] ?? 0) + 1)}>
+      <Button
+        theme="base"
+        variant="ghost"
+        size={btnSize()}
+        disabled={!hasNext()}
+        onClick={() => local.onPageChange?.((pages()[pages().length - 1] ?? 0) + 1)}
+      >
         <Icon icon={IconChevronRight} size="1em" />
       </Button>
-      <Button theme="base" variant="ghost" size={btnSize()} disabled={!hasNext()} onClick={() => local.onPageChange?.(local.totalPages - 1)}>
+      <Button
+        theme="base"
+        variant="ghost"
+        size={btnSize()}
+        disabled={!hasNext()}
+        onClick={() => local.onPageChange?.(local.totalPages - 1)}
+      >
         <Icon icon={IconChevronsRight} size="1em" />
       </Button>
     </nav>
@@ -298,6 +288,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
 **Step 2: index.ts에 export 추가**
 
 `packages/solid/src/index.ts`의 data 섹션(33행 부근)에 추가:
+
 ```typescript
 export * from "./components/data/Pagination";
 ```
@@ -329,6 +320,7 @@ git commit -m "feat: Pagination 컴포넌트 구현"
 ### Task 3: 데모 페이지 및 라우팅
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/data/PaginationPage.tsx`
 - Modify: `packages/solid-demo/src/pages/Home.tsx:45` — Data 메뉴에 Pagination 추가
 - Modify: `packages/solid-demo/src/main.tsx:31` — 라우트 추가
@@ -398,6 +390,7 @@ export default function PaginationPage() {
 **Step 2: Home.tsx 수정**
 
 `packages/solid-demo/src/pages/Home.tsx`의 Data children 배열(44행 부근)에 추가:
+
 ```typescript
 { title: "Pagination", href: "/home/data/pagination" },
 ```
@@ -405,6 +398,7 @@ export default function PaginationPage() {
 **Step 3: main.tsx 수정**
 
 `packages/solid-demo/src/main.tsx`의 data 라우트 섹션(31행 부근)에 추가:
+
 ```typescript
 <Route path="/home/data/pagination" component={lazy(() => import("./pages/data/PaginationPage"))} />
 ```

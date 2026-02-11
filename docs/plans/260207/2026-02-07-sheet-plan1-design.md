@@ -15,13 +15,13 @@
 
 ## 핵심 결정 사항
 
-| 항목 | 결정 |
-|------|------|
-| Compound Component | `Sheet.Column` 정적 속성 패턴 |
-| 컬럼 등록 | `children()` resolve로 plain object 수집 (Context 불필요) |
-| 데이터 파이프라인 | 전체 스텁 선언 (pass-through, 이후 Plan에서 로직 채움) |
-| Props 범위 | `types.ts`에 전체 `SheetProps` 선언, Sheet.tsx에서는 Plan 1 해당분만 사용 |
-| 데모 구성 | 기본 테이블 + 다단계 헤더 + 합계 행 |
+| 항목               | 결정                                                                      |
+| ------------------ | ------------------------------------------------------------------------- |
+| Compound Component | `Sheet.Column` 정적 속성 패턴                                             |
+| 컬럼 등록          | `children()` resolve로 plain object 수집 (Context 불필요)                 |
+| 데이터 파이프라인  | 전체 스텁 선언 (pass-through, 이후 Plan에서 로직 채움)                    |
+| Props 범위         | `types.ts`에 전체 `SheetProps` 선언, Sheet.tsx에서는 Plan 1 해당분만 사용 |
+| 데모 구성          | 기본 테이블 + 다단계 헤더 + 합계 행                                       |
 
 ## 1. 파일 구조
 
@@ -63,9 +63,7 @@ const SheetColumn = <T,>(props: SheetColumnProps<T>) => {
 
 // Sheet — children()으로 수집
 const resolved = children(() => props.children);
-const columnDefs = createMemo(() =>
-  resolved.toArray().filter(isSheetColumnDef) as SheetColumnDef<T>[]
-);
+const columnDefs = createMemo(() => resolved.toArray().filter(isSheetColumnDef) as SheetColumnDef<T>[]);
 ```
 
 ## 3. 데이터 파이프라인 (전체 스텁)
@@ -104,9 +102,7 @@ const displayItems = createMemo(() => flatItems());
 <div class={containerClass}>
   <table class={tableClass}>
     <colgroup>
-      <For each={columnDefs()}>
-        {(col) => <col style={{ width: col.width }} />}
-      </For>
+      <For each={columnDefs()}>{(col) => <col style={{ width: col.width }} />}</For>
     </colgroup>
     <thead>
       {/* 다단계 헤더 행들 */}
@@ -116,11 +112,7 @@ const displayItems = createMemo(() => flatItems());
             <For each={row}>
               {(cell) =>
                 cell && (
-                  <th
-                    class={thClass}
-                    colspan={cell.colspan}
-                    rowspan={cell.rowspan}
-                  >
+                  <th class={thClass} colspan={cell.colspan} rowspan={cell.rowspan}>
                     {cell.headerContent?.() ?? cell.text}
                   </th>
                 )
@@ -132,9 +124,7 @@ const displayItems = createMemo(() => flatItems());
       {/* 합계 행 (하나라도 summary가 있으면) */}
       <Show when={hasSummary()}>
         <tr class={summaryRowClass}>
-          <For each={columnDefs()}>
-            {(col) => <th class={thClass}>{col.summary?.()}</th>}
-          </For>
+          <For each={columnDefs()}>{(col) => <th class={thClass}>{col.summary?.()}</th>}</For>
         </tr>
       </Show>
     </thead>
@@ -178,6 +168,7 @@ const displayItems = createMemo(() => flatItems());
 라우팅: `main.tsx`에 `/home/data/sheet` 추가, `Home.tsx` 메뉴에 "Sheet" 항목 추가
 
 3개 섹션:
+
 1. **기본 테이블** — 이름/나이/이메일 정적 데이터
 2. **다단계 헤더** — `["기본정보", "이름"]`, `["기본정보", "나이"]`, `["연락처"]`로 colspan/rowspan 확인
 3. **합계 행** — 숫자 컬럼에 `summary` prop으로 합계 표시

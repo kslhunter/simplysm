@@ -6,14 +6,14 @@ Angular legacy 패키지의 시각/레이아웃 컴포넌트들을 SolidJS solid
 
 ## 마이그레이션 대상
 
-| Angular 원본 | SolidJS 컴포넌트 | 분류 |
-|-------------|-----------------|------|
-| `SdCardDirective` + `_card.scss` | `Card` | display |
-| `SdLabelControl` | `Label` | display |
-| `SdNoteControl` | `Note` | display |
-| `_form-box.scss` | `FormGroup` + `FormGroup.Item` | layout |
-| `_form-table.scss` | `FormTable` | layout |
-| `_table.scss` | `Table` | layout |
+| Angular 원본                     | SolidJS 컴포넌트               | 분류    |
+| -------------------------------- | ------------------------------ | ------- |
+| `SdCardDirective` + `_card.scss` | `Card`                         | display |
+| `SdLabelControl`                 | `Label`                        | display |
+| `SdNoteControl`                  | `Note`                         | display |
+| `_form-box.scss`                 | `FormGroup` + `FormGroup.Item` | layout  |
+| `_form-table.scss`               | `FormTable`                    | layout  |
+| `_table.scss`                    | `Table`                        | layout  |
 
 ### 제외 항목
 
@@ -47,9 +47,8 @@ interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {
   // 컴포넌트별 고유 prop
 }
 
-const baseClass = clsx(
-  // Tailwind 클래스들
-);
+const baseClass = clsx();
+// Tailwind 클래스들
 
 export const Card: ParentComponent<CardProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
@@ -82,7 +81,7 @@ const baseClass = clsx(
   "rounded-lg",
   "shadow-md hover:shadow-lg focus-within:shadow-lg",
   "transition-shadow duration-300",
-  "animate-card-in",  // 등장 애니메이션 (tailwind.config.ts에 keyframes 정의 필요)
+  "animate-card-in", // 등장 애니메이션 (tailwind.config.ts에 keyframes 정의 필요)
 );
 
 export const Card: ParentComponent<CardProps> = (props) => {
@@ -102,15 +101,10 @@ export const Card: ParentComponent<CardProps> = (props) => {
 type LabelTheme = "primary" | "info" | "success" | "warning" | "danger" | "gray";
 
 interface LabelProps extends JSX.HTMLAttributes<HTMLSpanElement> {
-  theme?: LabelTheme;  // 기본값: "gray"
+  theme?: LabelTheme; // 기본값: "gray"
 }
 
-const baseClass = clsx(
-  "inline-block",
-  "text-white",
-  "px-2",
-  "rounded",
-);
+const baseClass = clsx("inline-block", "text-white", "px-2", "rounded");
 
 const themeClasses: Record<LabelTheme, string> = {
   primary: "bg-primary-500 dark:bg-primary-600",
@@ -143,14 +137,10 @@ export const Label: ParentComponent<LabelProps> = (props) => {
 type NoteTheme = "primary" | "info" | "success" | "warning" | "danger" | "gray";
 
 interface NoteProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  theme?: NoteTheme;  // 기본값: "gray"
+  theme?: NoteTheme; // 기본값: "gray"
 }
 
-const baseClass = clsx(
-  "block",
-  "p-3",
-  "rounded",
-);
+const baseClass = clsx("block", "p-3", "rounded");
 
 const themeClasses: Record<NoteTheme, string> = {
   primary: "bg-primary-100 dark:bg-primary-900/30",
@@ -181,11 +171,11 @@ export const Note: ParentComponent<NoteProps> = (props) => {
 
 ```tsx
 interface FormGroupProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  inline?: boolean;  // true면 가로 배치
+  inline?: boolean; // true면 가로 배치
 }
 
 interface FormGroupItemProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  label?: JSX.Element;  // string, 컴포넌트 모두 가능
+  label?: JSX.Element; // string, 컴포넌트 모두 가능
 }
 
 const baseClass = clsx("flex", "flex-col", "gap-4");
@@ -211,8 +201,7 @@ interface FormGroupComponent extends ParentComponent<FormGroupProps> {
 export const FormGroup: FormGroupComponent = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inline"]);
 
-  const getClassName = () =>
-    twMerge(local.inline ? inlineClass : baseClass, local.class);
+  const getClassName = () => twMerge(local.inline ? inlineClass : baseClass, local.class);
 
   return (
     <div class={getClassName()} {...rest}>
@@ -225,6 +214,7 @@ FormGroup.Item = FormGroupItem;
 ```
 
 사용 예:
+
 ```tsx
 <FormGroup>
   <FormGroup.Item label="이름">
@@ -246,10 +236,7 @@ FormGroup.Item = FormGroupItem;
 ```tsx
 interface FormTableProps extends JSX.HTMLAttributes<HTMLTableElement> {}
 
-const baseClass = clsx(
-  "border-separate",
-  "border-spacing-0",
-);
+const baseClass = clsx("border-separate", "border-spacing-0");
 
 export const FormTable: ParentComponent<FormTableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
@@ -268,8 +255,8 @@ th/td 스타일은 Tailwind로 사용처에서 직접 적용하거나, 별도 CS
 
 ```tsx
 interface TableProps extends JSX.HTMLAttributes<HTMLTableElement> {
-  inset?: boolean;   // 외곽 테두리 제거
-  inline?: boolean;  // width: auto
+  inset?: boolean; // 외곽 테두리 제거
+  inline?: boolean; // width: auto
 }
 
 const baseClass = clsx(
@@ -285,13 +272,7 @@ const inlineClass = clsx("w-auto");
 export const Table: ParentComponent<TableProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "inset", "inline"]);
 
-  const getClassName = () =>
-    twMerge(
-      baseClass,
-      local.inset && insetClass,
-      local.inline && inlineClass,
-      local.class,
-    );
+  const getClassName = () => twMerge(baseClass, local.inset && insetClass, local.inline && inlineClass, local.class);
 
   return (
     <table class={getClassName()} {...rest}>

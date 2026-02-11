@@ -15,6 +15,7 @@
 ### Task 1: 스타일 파일 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/permission-table/PermissionTable.styles.ts`
 
 **Step 1: 스타일 파일 작성**
@@ -23,11 +24,7 @@
 import clsx from "clsx";
 
 // 테이블 기본
-export const tableBaseClass = clsx(
-  "w-full",
-  "border-separate border-spacing-0",
-  "text-sm",
-);
+export const tableBaseClass = clsx("w-full", "border-separate border-spacing-0", "text-sm");
 
 // 헤더 셀 (th)
 export const thClass = clsx(
@@ -38,15 +35,10 @@ export const thClass = clsx(
   "text-base-700 dark:text-base-300",
 );
 
-export const thPermClass = clsx(
-  "text-center",
-  "w-20",
-);
+export const thPermClass = clsx("text-center", "w-20");
 
 // 행 (tr)
-export const trBaseClass = clsx(
-  "group",
-);
+export const trBaseClass = clsx("group");
 
 // depth별 배경색 (레거시 테마 대응)
 export const depthClasses: Record<number, string> = {
@@ -62,15 +54,10 @@ export const getDepthClass = (depth: number): string => {
 };
 
 // 타이틀 셀 (td)
-export const tdTitleClass = clsx(
-  "px-2 py-1",
-);
+export const tdTitleClass = clsx("px-2 py-1");
 
 // 권한 셀 (td)
-export const tdPermClass = clsx(
-  "px-1 py-1",
-  "text-center",
-);
+export const tdPermClass = clsx("px-1 py-1", "text-center");
 
 // 접기/펼치기 버튼
 export const collapseButtonClass = clsx(
@@ -80,9 +67,7 @@ export const collapseButtonClass = clsx(
 );
 
 // 화살표 아이콘 회전
-export const chevronClass = clsx(
-  "transition-transform duration-150",
-);
+export const chevronClass = clsx("transition-transform duration-150");
 
 export const chevronOpenClass = "rotate-90";
 ```
@@ -99,6 +84,7 @@ git commit -m "feat(solid): add PermissionTable styles"
 ### Task 2: 타입 정의 + 유틸리티 함수가 포함된 메인 컴포넌트 뼈대
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/permission-table/PermissionTable.tsx`
 
 **Step 1: 타입과 유틸리티 함수 작성**
@@ -301,6 +287,7 @@ git commit -m "feat(solid): add PermissionTable component skeleton with types an
 ### Task 3: 재귀 행 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/data/permission-table/PermissionTableRow.tsx`
 
 **Step 1: PermissionTableRow 작성**
@@ -465,6 +452,7 @@ git commit -m "feat(solid): add PermissionTableRow recursive tree rendering"
 ### Task 4: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -516,6 +504,7 @@ git commit -m "fix(solid): fix lint/type issues in PermissionTable"
 ### Task 6: 테스트 - 유틸리티 함수
 
 **Files:**
+
 - Create: `packages/solid/tests/components/data/permission-table/PermissionTable.spec.tsx`
 
 **Step 1: 유틸리티 함수 테스트 작성**
@@ -634,6 +623,7 @@ git commit -m "test(solid): add PermissionTable utility function tests"
 ### Task 7: 테스트 - 컴포넌트 렌더링 및 상호작용
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/data/permission-table/PermissionTable.spec.tsx`
 
 **Step 1: 컴포넌트 테스트 추가**
@@ -752,6 +742,7 @@ git commit -m "test(solid): add PermissionTable component rendering tests"
 ### Task 8: 데모 페이지 추가
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/PermissionTablePage.tsx`
 - Modify: solid-demo의 라우트/메뉴에 추가 (기존 패턴 확인 필요)
 
@@ -800,17 +791,11 @@ export default function PermissionTablePage() {
     <div class="p-4 flex flex-col gap-4">
       <h1 class="text-xl font-bold">PermissionTable</h1>
 
-      <PermissionTable
-        items={demoItems}
-        value={value()}
-        onValueChange={setValue}
-      />
+      <PermissionTable items={demoItems} value={value()} onValueChange={setValue} />
 
       <div class="mt-4">
         <h2 class="font-semibold">현재 값:</h2>
-        <pre class="bg-base-100 dark:bg-base-800 p-2 rounded text-xs">
-          {JSON.stringify(value(), null, 2)}
-        </pre>
+        <pre class="bg-base-100 dark:bg-base-800 p-2 rounded text-xs">{JSON.stringify(value(), null, 2)}</pre>
       </div>
     </div>
   );

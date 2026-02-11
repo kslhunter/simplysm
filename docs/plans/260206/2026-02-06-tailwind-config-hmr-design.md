@@ -20,6 +20,7 @@ getTailwindConfigDeps(configPath, scopes) → string[]
 - `scopes`: 추적할 패키지 scope 배열 (예: `["@simplysm", "@myapp"]`)
 
 **동작:**
+
 1. config 파일을 읽어 import/require 문을 정규식으로 파싱
 2. 상대 경로(`./`, `../`): Tailwind과 동일하게 파일시스템에서 resolve
 3. scope 패키지 경로 (예: `@simplysm/solid/tailwind.config`): `node_modules`에서 패키지 디렉토리를 찾고 → `fs.realpathSync`로 symlink를 풀어 실제 경로 반환
@@ -33,11 +34,13 @@ getTailwindConfigDeps(configPath, scopes) → string[]
 **파일:** `packages/cli/src/utils/vite-config.ts` (기존 파일에 추가)
 
 **scope 결정 로직:**
+
 - `pkgDir/package.json`의 `name`에서 scope 추출 (예: `@simplysm/solid-demo` → `@simplysm`)
 - `@simplysm`은 항상 포함
 - 두 scope를 Set으로 합쳐서 중복 제거 후 `getTailwindConfigDeps`에 전달
 
 **플러그인 동작 (`configureServer` 훅):**
+
 1. `pkgDir/tailwind.config.ts` 존재 여부 확인
 2. `getTailwindConfigDeps`로 전체 의존성 수집
 3. config 자신을 제외한 외부 의존성을 `server.watcher.add()`로 등록

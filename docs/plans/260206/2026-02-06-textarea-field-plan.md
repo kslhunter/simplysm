@@ -15,6 +15,7 @@
 ### Task 1: TextAreaField 테스트 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/form-control/field/TextAreaField.spec.tsx`
 
 **참조:** `packages/solid/tests/components/form-control/field/TextField.spec.tsx` (동일 패턴)
@@ -183,9 +184,11 @@ Expected: FAIL — `TextAreaField` 모듈을 찾을 수 없음
 ### Task 2: TextAreaField 컴포넌트 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/field/TextAreaField.tsx`
 
 **참조:**
+
 - `packages/solid/src/components/form-control/field/TextField.tsx` (동일 패턴)
 - `packages/solid/src/components/form-control/field/Field.styles.ts` (공통 스타일)
 - `packages/solid/src/utils/createPropSignal.ts` (controlled/uncontrolled)
@@ -318,16 +321,11 @@ export const TextAreaField: Component<TextAreaFieldProps> = (props) => {
         </div>
       }
     >
-      <div
-        {...rest}
-        data-textarea-field
-        class={getWrapperClass()}
-        style={{ position: "relative", ...local.style }}
-      >
+      <div {...rest} data-textarea-field class={getWrapperClass()} style={{ position: "relative", ...local.style }}>
         <div
           data-hidden-content
           style={{
-            visibility: "hidden",
+            "visibility": "hidden",
             "white-space": "pre-wrap",
             "word-break": "break-all",
           }}
@@ -366,6 +364,7 @@ git commit -m "feat(solid): TextAreaField 컴포넌트 및 테스트 추가"
 ### Task 3: Export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:11` (TimeField export 다음 줄)
 
 **Step 1: index.ts에 export 추가**
@@ -398,6 +397,7 @@ git commit -m "feat(solid): TextAreaField export 추가"
 ### Task 4: 데모 페이지에 TextAreaField 섹션 추가
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/form-control/FieldPage.tsx`
 
 **참조:** 같은 파일의 TextField 섹션 구조 (라인 26-85)
@@ -420,7 +420,9 @@ import {
 기존 시그널 선언 부분 (`controlledNumber` 다음)에 추가:
 
 ```typescript
-const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>("여러 줄의\n텍스트를\n입력할 수 있습니다");
+const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>(
+  "여러 줄의\n텍스트를\n입력할 수 있습니다",
+);
 ```
 
 **Step 3: TextField 섹션 다음에 TextAreaField 섹션 추가**
@@ -428,7 +430,9 @@ const [controlledTextArea, setControlledTextArea] = createSignal<string | undefi
 TextField `</section>` (라인 85) 바로 다음에:
 
 ```tsx
-{/* TextAreaField */}
+{
+  /* TextAreaField */
+}
 <section>
   <h2 class="mb-6 text-2xl font-bold">TextAreaField</h2>
   <div class="space-y-6">
@@ -490,7 +494,7 @@ TextField `</section>` (라인 85) 바로 다음에:
       </div>
     </div>
   </div>
-</section>
+</section>;
 ```
 
 **Step 4: Controlled 섹션에 TextAreaField 추가**
@@ -498,7 +502,9 @@ TextField `</section>` (라인 85) 바로 다음에:
 기존 Controlled 섹션 내 NumberField `</div>` 다음에:
 
 ```tsx
-{/* TextAreaField Controlled */}
+{
+  /* TextAreaField Controlled */
+}
 <div>
   <h3 class="mb-3 text-lg font-semibold">TextAreaField</h3>
   <div class="flex flex-col items-start gap-3">
@@ -518,7 +524,7 @@ TextField `</section>` (라인 85) 바로 다음에:
       값 변경
     </button>
   </div>
-</div>
+</div>;
 ```
 
 **Step 5: dev 서버로 시각적 확인**

@@ -13,6 +13,7 @@
 ## Task 1: DialogInstanceContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/disclosure/DialogInstanceContext.ts`
 
 **Step 1: Context 파일 작성**
@@ -43,11 +44,13 @@ git commit -m "feat(solid): DialogInstanceContext 추가"
 ## Task 2: DialogContext.ts show() 시그니처 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/DialogContext.ts`
 
 **Step 1: show() 시그니처를 팩토리 함수 방식으로 변경**
 
 `DialogContextValue.show` 시그니처 변경:
+
 ```typescript
 // before
 show<T = undefined>(content: Component<DialogContentProps<T>>, options: DialogShowOptions): Promise<T | undefined>;
@@ -59,6 +62,7 @@ show<T = undefined>(factory: () => JSX.Element, options: DialogShowOptions): Pro
 `DialogContentProps` 인터페이스 제거. `Component`, `Accessor` import도 더 이상 불필요하면 제거.
 
 최종 파일:
+
 ```typescript
 import { createContext, useContext, type JSX } from "solid-js";
 
@@ -113,11 +117,13 @@ git commit -m "refactor(solid): DialogContext show() 시그니처를 팩토리 �
 ## Task 3: DialogProvider.tsx 팩토리 + Context 방식으로 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/DialogProvider.tsx`
 
 **Step 1: DialogEntry 타입과 렌더링 방식 변경**
 
 핵심 변경사항:
+
 1. `DialogEntry.content`를 `Component` → `() => JSX.Element` (팩토리 함수)로 변경
 2. `<Dynamic>` 제거 → `<DialogInstanceContext.Provider>` + `{entry.factory()}` 실행
 3. `requestClose`를 `DialogInstanceContext`의 `close` 함수로 제공
@@ -257,6 +263,7 @@ git commit -m "refactor(solid): DialogProvider를 팩토리+Context 방식으로
 ## Task 4: DataSheetConfigDialog 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/DataSheetConfigDialog.tsx`
 - Modify: `packages/solid/src/components/data/sheet/DataSheet.tsx`
 
@@ -283,6 +290,7 @@ export interface DataSheetConfigDialogProps {
 ```
 
 변경점 (DataSheetConfigDialog.tsx):
+
 1. `DialogContentProps` import → `useDialogInstance` import
 2. `extends DialogContentProps<DataSheetConfig>` 제거
 3. 컴포넌트 최상단에 `const dialog = useDialogInstance<DataSheetConfig>();` 추가
@@ -319,6 +327,7 @@ git commit -m "refactor(solid): DataSheetConfigDialog를 useDialogInstance 패�
 ## Task 5: index.ts export 업데이트
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: 새 export 추가, 기존 export 유지**
@@ -342,6 +351,7 @@ git commit -m "feat(solid): useDialogInstance export 추가"
 ## Task 6: Dialog 테스트 업데이트
 
 **Files:**
+
 - Modify: `packages/solid/tests/components/disclosure/DialogProvider.spec.tsx`
 
 **Step 1: 테스트를 새 API로 업데이트**
@@ -408,6 +418,7 @@ git commit -m "test(solid): Dialog 테스트를 useDialogInstance 패턴으로 �
 ## Task 7: PrintInstanceContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/print/PrintInstanceContext.ts`
 
 **Step 1: Context 파일 작성**
@@ -438,6 +449,7 @@ git commit -m "feat(solid): PrintInstanceContext 추가"
 ## Task 8: usePrint.ts Context 기반으로 변경
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/usePrint.ts`
 
 **Step 1: renderAndWait를 Context 기반으로 변경**
@@ -596,6 +608,7 @@ git commit -m "refactor(solid): usePrint을 PrintInstanceContext 기반으로 �
 ## Task 9: Print.tsx 간소화
 
 **Files:**
+
 - Modify: `packages/solid/src/components/print/Print.tsx`
 
 **Step 1: data-print-root, data-print-ready 속성 제거, ready prop 제거**
@@ -635,6 +648,7 @@ git commit -m "refactor(solid): Print 컴포넌트에서 data-print-ready 속성
 ## Task 10: index.ts에 PrintInstanceContext export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: print 섹션에 추가**
@@ -658,6 +672,7 @@ git commit -m "feat(solid): usePrintInstance export 추가"
 ## Task 11: Print 테스트 업데이트
 
 **Files:**
+
 - Modify: `packages/solid/tests/print/Print.spec.tsx`
 - Modify: `packages/solid/tests/print/usePrint.spec.tsx`
 
@@ -864,6 +879,7 @@ git commit -m "test(solid): Print 테스트를 usePrintInstance 패턴으로 업
 ## Task 12: 데모 페이지 업데이트
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/disclosure/ModalPage.tsx`
 - Modify: `packages/solid-demo/src/pages/feedback/PrintPage.tsx`
 
@@ -931,11 +947,13 @@ git commit -m "refactor(solid-demo): 데모 페이지를 새 Dialog/Print API로
 ## Task 13: usePrint의 data-print-root 참조 제거
 
 **Files:**
+
 - Modify: `packages/solid/src/contexts/usePrint.ts`
 
 **Step 1: toPdf에서 data-print-root 참조 제거**
 
 `usePrint.ts:207` 부근에서 `[data-print-root]`를 사용하는 부분:
+
 ```typescript
 // before
 const target =
@@ -944,9 +962,7 @@ const target =
   container;
 
 // after
-const target =
-  (container.firstElementChild as HTMLElement | null) ??
-  container;
+const target = (container.firstElementChild as HTMLElement | null) ?? container;
 ```
 
 **Step 2: Commit**

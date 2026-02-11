@@ -27,53 +27,53 @@ Kanban            (Board 루트, KanbanContext Provider)
 
 ### DnD (드래그 앤 드롭)
 
-| # | 기능 | 설명 | Phase |
-|---|------|------|-------|
-| 1 | 카드 레인 간 이동 | 카드를 다른 레인으로 드래그하여 이동 | 2 |
-| 2 | 카드 순서 변경 | 같은 레인 내에서 카드 위에 드롭 = "이 카드 앞에 삽입" | 2 |
-| 3 | 빈 레인에 드롭 | 레인 하단 빈 영역에 드롭 = "레인 맨 끝에 추가" | 2 |
-| 4 | 드래그 소스 숨김 | 드래그 중 원본 카드 `display: none` 처리 | 2 |
-| 5 | 드롭 미리보기 | 드롭 위치에 placeholder 표시 (드래그 소스 높이, 0.1s 애니메이션) | 2 |
-| 6 | 오버레이 패턴 | `_drag-position` 투명 오버레이로 pointer-events 전환 (dragleave 깜빡임 방지) | 2 |
-| 7 | 드래그 취소 처리 | ESC/외부 드롭 시 `document:dragend`로 상태 초기화 | 2 |
-| 8 | 드롭 후 정리 | `document:drop.capture`로 모든 카드의 dragOvered 리셋 | 2 |
-| 9 | draggable 제어 | `draggable` prop이 false인 카드는 드래그 불가 | 2 |
+| #   | 기능              | 설명                                                                         | Phase |
+| --- | ----------------- | ---------------------------------------------------------------------------- | ----- |
+| 1   | 카드 레인 간 이동 | 카드를 다른 레인으로 드래그하여 이동                                         | 2     |
+| 2   | 카드 순서 변경    | 같은 레인 내에서 카드 위에 드롭 = "이 카드 앞에 삽입"                        | 2     |
+| 3   | 빈 레인에 드롭    | 레인 하단 빈 영역에 드롭 = "레인 맨 끝에 추가"                               | 2     |
+| 4   | 드래그 소스 숨김  | 드래그 중 원본 카드 `display: none` 처리                                     | 2     |
+| 5   | 드롭 미리보기     | 드롭 위치에 placeholder 표시 (드래그 소스 높이, 0.1s 애니메이션)             | 2     |
+| 6   | 오버레이 패턴     | `_drag-position` 투명 오버레이로 pointer-events 전환 (dragleave 깜빡임 방지) | 2     |
+| 7   | 드래그 취소 처리  | ESC/외부 드롭 시 `document:dragend`로 상태 초기화                            | 2     |
+| 8   | 드롭 후 정리      | `document:drop.capture`로 모든 카드의 dragOvered 리셋                        | 2     |
+| 9   | draggable 제어    | `draggable` prop이 false인 카드는 드래그 불가                                | 2     |
 
 ### 선택 (Selection)
 
-| # | 기능 | 설명 | Phase |
-|---|------|------|-------|
-| 10 | Shift+Click 선택 | Shift+Click으로 개별 카드 선택/해제 토글 | 4 |
-| 11 | selectable 제어 | `selectable` prop이 false인 카드는 선택 불가 | 4 |
-| 12 | 레인별 전체 선택 | selectable 카드가 1개 이상인 레인에 CheckBox 자동 표시 | 4 |
-| 13 | 레인 독립 선택 | 전체 선택/해제는 해당 레인 카드만 조작 (다른 레인 유지) | 4 |
-| 14 | selectedValues 관리 | Board 레벨에서 `selectedValues` 배열로 선택 상태 관리 (controlled) | 4 |
-| 15 | 선택 시각 피드백 | 선택된 카드에 강조 스타일 표시 (ring) | 4 |
+| #   | 기능                | 설명                                                               | Phase |
+| --- | ------------------- | ------------------------------------------------------------------ | ----- |
+| 10  | Shift+Click 선택    | Shift+Click으로 개별 카드 선택/해제 토글                           | 4     |
+| 11  | selectable 제어     | `selectable` prop이 false인 카드는 선택 불가                       | 4     |
+| 12  | 레인별 전체 선택    | selectable 카드가 1개 이상인 레인에 CheckBox 자동 표시             | 4     |
+| 13  | 레인 독립 선택      | 전체 선택/해제는 해당 레인 카드만 조작 (다른 레인 유지)            | 4     |
+| 14  | selectedValues 관리 | Board 레벨에서 `selectedValues` 배열로 선택 상태 관리 (controlled) | 4     |
+| 15  | 선택 시각 피드백    | 선택된 카드에 강조 스타일 표시 (ring)                              | 4     |
 
 ### 레인 기능
 
-| # | 기능 | 설명 | Phase |
-|---|------|------|-------|
-| 16 | 제목 슬롯 | `Kanban.LaneTitle`로 커스텀 제목 렌더링 | 1 |
-| 17 | 도구 슬롯 | `Kanban.LaneTools`로 커스텀 도구 버튼 영역 | 1 |
-| 18 | 접기/펼치기 | `collapsible`/`collapsed` — 접으면 카드 목록 숨김, 눈 아이콘 토글 | 3 |
-| 19 | Busy 상태 | `busy` prop — BusyContainer 래핑, bar 타입 로딩 표시 | 3 |
+| #   | 기능        | 설명                                                              | Phase |
+| --- | ----------- | ----------------------------------------------------------------- | ----- |
+| 16  | 제목 슬롯   | `Kanban.LaneTitle`로 커스텀 제목 렌더링                           | 1     |
+| 17  | 도구 슬롯   | `Kanban.LaneTools`로 커스텀 도구 버튼 영역                        | 1     |
+| 18  | 접기/펼치기 | `collapsible`/`collapsed` — 접으면 카드 목록 숨김, 눈 아이콘 토글 | 3     |
+| 19  | Busy 상태   | `busy` prop — BusyContainer 래핑, bar 타입 로딩 표시              | 3     |
 
 ### 카드 기능
 
-| # | 기능 | 설명 | Phase |
-|---|------|------|-------|
-| 20 | Card 래핑 | 내부적으로 Card 컴포넌트 래핑 (그림자, 둥근 모서리, 호버 효과) | 1 |
-| 21 | contentClass | 카드에 커스텀 클래스 추가 | 1 |
-| 22 | value | 카드 식별값 (DnD/선택에서 사용) | 1 |
+| #   | 기능         | 설명                                                           | Phase |
+| --- | ------------ | -------------------------------------------------------------- | ----- |
+| 20  | Card 래핑    | 내부적으로 Card 컴포넌트 래핑 (그림자, 둥근 모서리, 호버 효과) | 1     |
+| 21  | contentClass | 카드에 커스텀 클래스 추가                                      | 1     |
+| 22  | value        | 카드 식별값 (DnD/선택에서 사용)                                | 1     |
 
 ### 레이아웃
 
-| # | 기능 | 설명 | Phase |
-|---|------|------|-------|
-| 23 | Board 레이아웃 | `inline-flex flex-nowrap whitespace-nowrap`, 가로 스크롤, `height: 100%`, 레인 간 `gap` | 1 |
-| 24 | Lane 레이아웃 | 세로 `flex-column`, 배경색 (연한 회색), 둥근 모서리, 외부 패딩+간격 | 1 |
-| 25 | Card 스타일 | `user-select: none`, `whitespace-normal` (Board nowrap 복원), 카드 간 간격 (`mb-2`), `position: relative` (오버레이 기준) | 1 |
+| #   | 기능           | 설명                                                                                                                      | Phase |
+| --- | -------------- | ------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 23  | Board 레이아웃 | `inline-flex flex-nowrap whitespace-nowrap`, 가로 스크롤, `height: 100%`, 레인 간 `gap`                                   | 1     |
+| 24  | Lane 레이아웃  | 세로 `flex-column`, 배경색 (연한 회색), 둥근 모서리, 외부 패딩+간격                                                       | 1     |
+| 25  | Card 스타일    | `user-select: none`, `whitespace-normal` (Board nowrap 복원), 카드 간 간격 (`mb-2`), `position: relative` (오버레이 기준) | 1     |
 
 ---
 
@@ -84,6 +84,7 @@ Kanban            (Board 루트, KanbanContext Provider)
 > Board/Lane/Card 렌더링과 레이아웃이 동작하는 최소 MVP
 
 **구현 범위:**
+
 - KanbanContext / KanbanLaneContext
 - Kanban (Board) — Context Provider, `inline-flex` 가로 레이아웃
 - Kanban.Lane — 레인 컨테이너 (배경/레이아웃), LaneContext Provider
@@ -98,6 +99,7 @@ Kanban            (Board 루트, KanbanContext Provider)
 > 드래그 앤 드롭 기능 추가
 
 **구현 범위:**
+
 - Kanban (Board) — `document:dragend` 정리, `onDrop` 발행
 - Kanban.Lane — 빈 레인 드롭 (dragover/dragleave/drop)
 - Kanban.Card — `_drag-position` 오버레이, `_drop-position` 미리보기, DnD 이벤트 체인, `draggable` 제어
@@ -110,6 +112,7 @@ Kanban            (Board 루트, KanbanContext Provider)
 > 접기/펼치기, Busy 상태
 
 **구현 범위:**
+
 - 접기/펼치기 — `collapsible`/`collapsed` props, 눈 아이콘
 - Busy 상태 — BusyContainer 래핑
 - 데모 페이지 확장
@@ -121,6 +124,7 @@ Kanban            (Board 루트, KanbanContext Provider)
 > Shift+Click 선택 + 전체 선택 + 시각 피드백
 
 **구현 범위:**
+
 - Shift+Click 토글 — `selectable` prop, stopPropagation
 - selectedValues 관리 — Board의 `selectedValues`/`onSelectedValuesChange` (createPropSignal)
 - 선택 시각 피드백 — 선택된 카드에 `ring-2 ring-primary-500` 등
@@ -148,9 +152,9 @@ Phase 3 → 4: 도구 슬롯(`Kanban.LaneTools`) 구조가 있어야 Phase 4의 
 // KanbanContext.ts
 
 export interface KanbanDropInfo<L = unknown, T = unknown> {
-  sourceValue?: T;         // 드래그한 카드의 value
-  targetLaneValue?: L;     // 드롭 대상 레인의 value
-  targetCardValue?: T;     // 드롭 대상 카드의 value (카드 위 드롭 시, 빈 레인이면 undefined)
+  sourceValue?: T; // 드래그한 카드의 value
+  targetLaneValue?: L; // 드롭 대상 레인의 value
+  targetCardValue?: T; // 드롭 대상 카드의 value (카드 위 드롭 시, 빈 레인이면 undefined)
 }
 
 export interface KanbanContextValue<L = unknown, T = unknown> {
@@ -179,16 +183,14 @@ export interface KanbanLaneContextValue<L = unknown> {
 
 ```typescript
 // --- Kanban (Board) ---
-export interface KanbanProps<L = unknown, T = unknown>
-  extends JSX.HTMLAttributes<HTMLDivElement> {
+export interface KanbanProps<L = unknown, T = unknown> extends JSX.HTMLAttributes<HTMLDivElement> {
   selectedValues?: T[];
   onSelectedValuesChange?: (values: T[]) => void;
   onDrop?: (info: KanbanDropInfo<L, T>) => void;
 }
 
 // --- Kanban.Lane ---
-export interface KanbanLaneProps<L = unknown>
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface KanbanLaneProps<L = unknown> extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: L;
   busy?: boolean;
   collapsible?: boolean;
@@ -198,8 +200,7 @@ export interface KanbanLaneProps<L = unknown>
 }
 
 // --- Kanban.Card ---
-export interface KanbanCardProps<T = unknown>
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface KanbanCardProps<T = unknown> extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: T;
   selectable?: boolean;
   draggable?: boolean;
@@ -254,10 +255,10 @@ div.kanban-card (호스트, position: relative)
 
 ### 5.4 높이 계산
 
-| 값 | 계산 | 용도 | 갱신 시점 |
-|---|---|---|---|
-| `cardHeight` | `Card.offsetHeight + margin-bottom` | `_drag-position` 오버레이 높이 | ResizeObserver (실시간). Tailwind gap 사용 시 margin이 없으므로, Card에 `mb-2` 등을 적용하고 이를 포함하여 계산 |
-| `heightOnDrag` | 카드 호스트의 `offsetHeight` | `_drop-position` 미리보기 높이 | dragstart 시 캡처 |
+| 값             | 계산                                | 용도                           | 갱신 시점                                                                                                       |
+| -------------- | ----------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `cardHeight`   | `Card.offsetHeight + margin-bottom` | `_drag-position` 오버레이 높이 | ResizeObserver (실시간). Tailwind gap 사용 시 margin이 없으므로, Card에 `mb-2` 등을 적용하고 이를 포함하여 계산 |
+| `heightOnDrag` | 카드 호스트의 `offsetHeight`        | `_drop-position` 미리보기 높이 | dragstart 시 캡처                                                                                               |
 
 `heightOnDrag`는 dragstart 직후 캡처해야 함 — 이후 `display: none`이 되어 높이를 읽을 수 없음.
 
@@ -296,24 +297,27 @@ div.kanban-card (호스트, position: relative)
 ### 5.6 Tailwind 클래스 전략
 
 **카드 호스트:**
+
 ```typescript
 const kanbanCardClass = clsx(
-  "relative block",  // _drag-position(absolute)의 기준 + block 레벨
+  "relative block", // _drag-position(absolute)의 기준 + block 레벨
 );
 ```
 
 **드래그 소스 숨김:** `dragCard()?.value === local.value` 일 때 `hidden` 클래스 적용
 
 **`_drag-position`:**
+
 ```typescript
 const dragPositionClass = clsx(
   "absolute top-0 left-0 right-0",
-  "pointer-events-none",  // 기본
+  "pointer-events-none", // 기본
 );
 // 드래그 중: pointer-events-auto 동적 추가
 ```
 
 **`_drop-position`:**
+
 ```typescript
 const dropPositionClass = clsx(
   "rounded-lg",
@@ -325,6 +329,7 @@ const dropPositionClass = clsx(
 ```
 
 **Card 내부:**
+
 ```typescript
 // Card 컴포넌트에 whitespace-normal 적용 (Board의 inline-flex가 nowrap이므로 복원 필요)
 <Card class={clsx("whitespace-normal select-none", props.contentClass)}>
@@ -360,10 +365,12 @@ const dropPositionClass = clsx(
 **체크 상태 계산:** 레인 내 모든 selectable 카드가 `selectedValues`에 포함되어 있는지
 
 **전체 선택 (체크):**
+
 - 이 레인의 미선택 카드만 `selectedValues`에 추가
 - 다른 레인의 선택 상태 유지
 
 **전체 해제 (언체크):**
+
 - 이 레인의 선택된 카드만 `selectedValues`에서 제거
 - 다른 레인의 선택 상태 유지
 
@@ -424,10 +431,7 @@ const [slots, content] = splitSlots(resolved, ["kanbanLaneTitle", "kanbanLaneToo
 
 ```typescript
 // 레인 기본 스타일 (외부: 패딩 + 간격)
-const laneBaseClass = clsx(
-  "flex flex-col",
-  "p-2 gap-2",
-);
+const laneBaseClass = clsx("flex flex-col", "p-2 gap-2");
 
 // 레인 콘텐츠 영역
 const laneContentClass = clsx(
@@ -463,13 +467,15 @@ Lane 콘텐츠 (BusyContainer 래핑)
 ```tsx
 function KanbanDemo() {
   const [lanes, setLanes] = createSignal([
-    { id: "todo", name: "할 일", cards: [
-      { id: 1, title: "카드 1" },
-      { id: 2, title: "카드 2" },
-    ]},
-    { id: "progress", name: "진행 중", cards: [
-      { id: 3, title: "카드 3" },
-    ]},
+    {
+      id: "todo",
+      name: "할 일",
+      cards: [
+        { id: 1, title: "카드 1" },
+        { id: 2, title: "카드 2" },
+      ],
+    },
+    { id: "progress", name: "진행 중", cards: [{ id: 3, title: "카드 3" }] },
     { id: "done", name: "완료", cards: [] },
   ]);
 
@@ -484,11 +490,7 @@ function KanbanDemo() {
   };
 
   return (
-    <Kanban
-      selectedValues={selected()}
-      onSelectedValuesChange={setSelected}
-      onDrop={handleDrop}
-    >
+    <Kanban selectedValues={selected()} onSelectedValuesChange={setSelected} onDrop={handleDrop}>
       <For each={lanes()}>
         {(lane) => (
           <Kanban.Lane value={lane.id} collapsible busy={false}>
@@ -534,20 +536,20 @@ packages/solid-demo/src/pages/data/
 
 ## 10. Angular → Solid 매핑 요약
 
-| Angular | Solid | 비고 |
-|---------|-------|------|
-| `SdKanbanBoardControl` | `Kanban` | Board 루트 |
-| `SdKanbanLaneControl` | `Kanban.Lane` | 레인 컨테이너 |
-| `SdKanbanControl` | `Kanban.Card` | 카드 |
-| `inject(SdKanbanBoardControl)` | `useKanbanContext()` | Context hook |
-| `inject(SdKanbanLaneControl)` | `useKanbanLaneContext()` | Context hook |
-| `model()` (two-way) | `createPropSignal` | controlled 패턴 |
-| `contentChildren(descendants)` | Lane Context 등록/해제 패턴 | Phase 3 |
-| `$signal` / `$computed` | `createSignal` / `createMemo` | 반응성 |
-| `SdCardDirective` (card class) | `Card` 컴포넌트 래핑 | 스타일 재사용 |
-| `#titleTpl` / `#toolTpl` | `splitSlots` + `Kanban.LaneTitle/Tools` | 슬롯 |
-| `data-sd-*` 속성 + SCSS | Tailwind 조건부 클래스 | 상태 스타일링 |
-| `SdBusyContainerControl` | `BusyContainer` | Phase 2 |
-| `SdCheckboxControl` | `CheckBox` | Phase 3 전체 선택 |
-| `SdEventsDirective` (sdResize) | `ResizeObserver` 직접 사용 | cardHeight 계산 |
-| SCSS `--gap-lg` (8px) 등 | Tailwind `gap-2` (8px) 등 | CSS 변수 → 유틸리티 |
+| Angular                        | Solid                                   | 비고                |
+| ------------------------------ | --------------------------------------- | ------------------- |
+| `SdKanbanBoardControl`         | `Kanban`                                | Board 루트          |
+| `SdKanbanLaneControl`          | `Kanban.Lane`                           | 레인 컨테이너       |
+| `SdKanbanControl`              | `Kanban.Card`                           | 카드                |
+| `inject(SdKanbanBoardControl)` | `useKanbanContext()`                    | Context hook        |
+| `inject(SdKanbanLaneControl)`  | `useKanbanLaneContext()`                | Context hook        |
+| `model()` (two-way)            | `createPropSignal`                      | controlled 패턴     |
+| `contentChildren(descendants)` | Lane Context 등록/해제 패턴             | Phase 3             |
+| `$signal` / `$computed`        | `createSignal` / `createMemo`           | 반응성              |
+| `SdCardDirective` (card class) | `Card` 컴포넌트 래핑                    | 스타일 재사용       |
+| `#titleTpl` / `#toolTpl`       | `splitSlots` + `Kanban.LaneTitle/Tools` | 슬롯                |
+| `data-sd-*` 속성 + SCSS        | Tailwind 조건부 클래스                  | 상태 스타일링       |
+| `SdBusyContainerControl`       | `BusyContainer`                         | Phase 2             |
+| `SdCheckboxControl`            | `CheckBox`                              | Phase 3 전체 선택   |
+| `SdEventsDirective` (sdResize) | `ResizeObserver` 직접 사용              | cardHeight 계산     |
+| SCSS `--gap-lg` (8px) 등       | Tailwind `gap-2` (8px) 등               | CSS 변수 → 유틸리티 |

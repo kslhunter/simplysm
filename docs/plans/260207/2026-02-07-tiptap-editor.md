@@ -6,13 +6,14 @@
 
 **Architecture:** `solid-tiptap` 래퍼를 사용하여 Tiptap 에디터를 SolidJS에 통합한다. 헤드리스 Tiptap 코어 위에 Tailwind CSS 기반 툴바 UI를 직접 구성한다. 기존 simplysm 폼 컴포넌트 패턴(`value`/`onValueChange`, `createPropSignal`, `splitProps`, `twMerge`)을 따른다.
 
-**Tech Stack:** Tiptap 3.0, solid-tiptap, @tiptap/starter-kit, 각종 @tiptap/extension-*, SolidJS, Tailwind CSS, @tabler/icons-solidjs
+**Tech Stack:** Tiptap 3.0, solid-tiptap, @tiptap/starter-kit, 각종 @tiptap/extension-\*, SolidJS, Tailwind CSS, @tabler/icons-solidjs
 
 ---
 
 ## Task 1: 의존성 설치
 
 **Files:**
+
 - Modify: `packages/solid/package.json`
 
 **Step 1: npm 패키지 설치**
@@ -58,6 +59,7 @@ git commit -m "feat(solid): Tiptap 에디터 의존성 추가"
 ## Task 2: 에디터 코어 컴포넌트 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/editor/RichTextEditor.tsx`
 
 **Step 1: 기본 에디터 컴포넌트 작성**
@@ -123,10 +125,7 @@ const editorWrapperClass = clsx(
 const editorErrorClass = clsx("border-danger-500");
 
 // 에디터 disabled 스타일
-const editorDisabledClass = clsx(
-  "bg-base-100 dark:bg-base-800",
-  "text-base-500",
-);
+const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
 
 // 에디터 콘텐츠 영역 스타일
 const editorContentClass = clsx(
@@ -222,26 +221,12 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
   });
 
   const getWrapperClass = () =>
-    twMerge(
-      editorWrapperClass,
-      local.error && editorErrorClass,
-      local.disabled && editorDisabledClass,
-      local.class,
-    );
+    twMerge(editorWrapperClass, local.error && editorErrorClass, local.disabled && editorDisabledClass, local.class);
 
-  const getContentClass = () =>
-    twMerge(
-      editorContentClass,
-      local.size && editorContentSizeClasses[local.size],
-    );
+  const getContentClass = () => twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
 
   return (
-    <div
-      {...rest}
-      data-rich-text-editor
-      class={getWrapperClass()}
-      style={local.style}
-    >
+    <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>
       {/* Task 3에서 툴바 추가 예정 */}
       <div ref={editorRef} class={getContentClass()} />
     </div>
@@ -271,6 +256,7 @@ git commit -m "feat(solid): RichTextEditor 코어 컴포넌트 생성"
 ## Task 3: 툴바 컴포넌트 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/editor/EditorToolbar.tsx`
 - Modify: `packages/solid/src/components/form-control/editor/RichTextEditor.tsx`
 
@@ -339,16 +325,10 @@ const toolbarBtnClass = clsx(
 );
 
 // 툴바 버튼 활성 상태
-const toolbarBtnActiveClass = clsx(
-  "bg-primary-100 text-primary-700",
-  "dark:bg-primary-900/40 dark:text-primary-300",
-);
+const toolbarBtnActiveClass = clsx("bg-primary-100 text-primary-700", "dark:bg-primary-900/40 dark:text-primary-300");
 
 // 구분선
-const separatorClass = clsx(
-  "w-px h-5 mx-1",
-  "bg-base-300 dark:bg-base-700",
-);
+const separatorClass = clsx("w-px h-5 mx-1", "bg-base-300 dark:bg-base-700");
 
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
@@ -373,8 +353,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const isAlignJustify = isActive({ textAlign: "justify" });
 
   // 툴바 버튼 헬퍼
-  const btnClass = (active: () => boolean) =>
-    twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
+  const btnClass = (active: () => boolean) => twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
 
   // 이미지 삽입
   const insertImage = () => {
@@ -448,12 +427,8 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <div class={separatorClass} />
 
       {/* 텍스트 색상 (간단한 input[type=color] 사용) */}
-      <label
-        class={toolbarBtnClass}
-        title="텍스트 색상"
-        style={{ position: "relative" }}
-      >
-        <span style={{ color: "currentColor", "font-weight": "bold", "font-size": "0.85em" }}>A</span>
+      <label class={toolbarBtnClass} title="텍스트 색상" style={{ position: "relative" }}>
+        <span style={{ "color": "currentColor", "font-weight": "bold", "font-size": "0.85em" }}>A</span>
         <input
           type="color"
           style={{
@@ -471,11 +446,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
           }}
         />
       </label>
-      <label
-        class={toolbarBtnClass}
-        title="배경색"
-        style={{ position: "relative" }}
-      >
+      <label class={toolbarBtnClass} title="배경색" style={{ position: "relative" }}>
         <span
           style={{
             "background-color": "yellow",
@@ -605,22 +576,12 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <div class={separatorClass} />
 
       {/* 테이블 */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
-        onClick={insertTable}
-        title="테이블 삽입"
-      >
+      <button type="button" class={toolbarBtnClass} onClick={insertTable} title="테이블 삽입">
         <Icon icon={IconTablePlus} size="1em" />
       </button>
 
       {/* 이미지 */}
-      <button
-        type="button"
-        class={toolbarBtnClass}
-        onClick={insertImage}
-        title="이미지 삽입"
-      >
+      <button type="button" class={toolbarBtnClass} onClick={insertImage} title="이미지 삽입">
         <Icon icon={IconPhoto} size="1em" />
       </button>
 
@@ -650,12 +611,7 @@ import { EditorToolbar } from "./EditorToolbar";
 
 // return 부분:
 return (
-  <div
-    {...rest}
-    data-rich-text-editor
-    class={getWrapperClass()}
-    style={local.style}
-  >
+  <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>
     <Show when={editor()}>
       {(instance) => (
         <Show when={!local.disabled && !local.readonly}>
@@ -699,6 +655,7 @@ git commit -m "feat(solid): RichTextEditor 툴바 컴포넌트 추가"
 ## Task 4: index.ts에 export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -731,6 +688,7 @@ git commit -m "feat(solid): RichTextEditor export 추가"
 ## Task 5: 에디터 CSS 스타일 보완
 
 **Files:**
+
 - Create: `packages/solid/src/components/form-control/editor/editor.css`
 - Modify: `packages/solid/src/components/form-control/editor/RichTextEditor.tsx` (import 추가)
 
@@ -825,6 +783,7 @@ Tiptap은 헤드리스라서 에디터 콘텐츠 영역의 기본 스타일(테�
 **Step 2: RichTextEditor.tsx에서 CSS import**
 
 파일 상단에 추가:
+
 ```typescript
 import "./editor.css";
 ```
@@ -851,6 +810,7 @@ git commit -m "feat(solid): RichTextEditor CSS 스타일 추가"
 ## Task 6: 데모 페이지에 에디터 추가
 
 **Files:**
+
 - Modify: 데모 앱의 적절한 페이지 (기존 데모 구조 확인 필요)
 
 **Step 1: 기존 데모 구조 확인**
@@ -881,9 +841,7 @@ export default function EditorDemo() {
 
       <div class="mt-4">
         <h3 class="text-sm font-semibold mb-1">HTML 출력:</h3>
-        <pre class="text-xs bg-base-100 dark:bg-base-800 p-2 rounded overflow-auto max-h-40">
-          {html()}
-        </pre>
+        <pre class="text-xs bg-base-100 dark:bg-base-800 p-2 rounded overflow-auto max-h-40">{html()}</pre>
       </div>
 
       <div class="mt-4">
@@ -908,12 +866,13 @@ pnpm dev
 ```
 
 브라우저에서 데모 페이지를 열어 에디터가 정상 동작하는지 확인한다:
+
 - 텍스트 입력/서식 적용
 - 툴바 버튼 클릭 시 서식 토글
 - 테이블 삽입
 - 이미지 URL 삽입
 - disabled/readonly 상태
-- 마크다운 단축키 (# + Space → H1, ** → Bold 등 — StarterKit InputRules)
+- 마크다운 단축키 (# + Space → H1, \*\* → Bold 등 — StarterKit InputRules)
 
 **Step 4: 커밋**
 

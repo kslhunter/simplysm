@@ -5,6 +5,7 @@
 현재 코드베이스에서 `process.env`를 사용하고 있으나, neutral 패키지(Node.js와 브라우저 양쪽에서 동작)에서 환경변수 접근 방식이 통일되어 있지 않음.
 
 ### 문제점
+
 - `process.env`는 브라우저에서 기본 지원되지 않음
 - `import.meta.env`는 Node.js에서 기본 지원되지 않음
 - neutral 패키지에서 일관된 방식이 필요
@@ -14,6 +15,7 @@
 **모든 코드에서 `process.env` 사용, Vite에서 polyfill/define 강제**
 
 ### 이유
+
 - Node.js 표준 방식으로 익숙함
 - 기존 코드 변경 최소화
 - 대부분의 프로젝트(Next.js 등)도 이 방식 사용
@@ -31,13 +33,13 @@ const isDev = process.env["__DEV__"] === "true";
 
 ### 2. 빌드 타겟별 처리
 
-| 타겟 | bundle | define |
-|------|--------|--------|
-| library (node) | false | 없음 |
-| library (browser) | false | 없음 |
-| library (neutral) | false | 없음 |
-| server | **true** | `'process.env.__VER__': '"x.x.x"'` 등 |
-| client (Vite) | Vite | `'process.env': JSON.stringify({ ... })` |
+| 타겟              | bundle   | define                                   |
+| ----------------- | -------- | ---------------------------------------- |
+| library (node)    | false    | 없음                                     |
+| library (browser) | false    | 없음                                     |
+| library (neutral) | false    | 없음                                     |
+| server            | **true** | `'process.env.__VER__': '"x.x.x"'` 등    |
+| client (Vite)     | Vite     | `'process.env': JSON.stringify({ ... })` |
 
 ### 3. 환경변수 체인
 
@@ -124,15 +126,18 @@ define: {
 ## 환경변수 네이밍 컨벤션
 
 ### 프로젝트 전용 환경변수
+
 - `__DEV__`: 개발 모드 플래그 ("true" | "false")
 - `__VER__`: 앱 버전 정보 (예: "1.0.0")
 
 ### 외부 표준 환경변수 (변경 금지)
+
 - `NO_COLOR`: CLI 색상 출력 비활성화 (https://no-color.org/)
 - `TIMING`: ESLint 규칙별 실행 시간 출력
 - `ANDROID_HOME`, `ANDROID_SDK_ROOT`: Android SDK 경로
 - `HOME`, `LOCALAPPDATA`: 시스템 경로
 
 ### CONSOLA_LEVEL 제거
+
 - 환경변수 대신 `consola.level` API 직접 사용
 - `--debug` CLI 옵션으로 `consola.level = LogLevels.debug` 설정

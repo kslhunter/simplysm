@@ -10,21 +10,25 @@
 ### 현재 이스케이프 방식
 
 orm-common의 QueryBuilder는 **문자열 이스케이프 방식**을 사용하여 SQL 생성:
+
 - 값을 SQL 문자열에 직접 포함
 - 파라미터 바인딩 미사용 (ORM의 동적 쿼리 특성상 불가능)
 
 ### 발견된 취약점
 
 **MySQL** (`mysql-expr-renderer.ts`):
+
 - `escapeString()`: `\` → `\\`, `'` → `''` ✓
 - `escapeValue()`: `'` → `''` 만 처리 ✗ (백슬래시 누락)
 - 불일치로 인한 혼란 및 잠재적 취약점
 
 **MSSQL** (`mssql-expr-renderer.ts`):
+
 - `'` → `''` 처리
 - MSSQL은 백슬래시를 특수 문자로 취급하지 않으므로 안전 ✓
 
 **PostgreSQL** (`postgresql-expr-renderer.ts`):
+
 - `'` → `''` 처리
 - `standard_conforming_strings=on` (기본) 환경에서 안전 ✓
 
@@ -41,9 +45,11 @@ orm-common의 QueryBuilder는 **문자열 이스케이프 방식**을 사용하�
 ### MySQL 이스케이프 규칙
 
 **현재 연결 설정** (`mysql-db-conn.ts:58`):
+
 - `charset: "utf8mb4"` → 멀티바이트 공격 방어됨 ✓
 
 **강화할 이스케이프:**
+
 ```typescript
 escapeString(value: string): string {
   return value
@@ -65,12 +71,14 @@ escapeValue(value: unknown): string {
 ```
 
 **추가 고려사항:**
+
 - `\x1a` (Ctrl+Z, EOF): Windows 환경 고려 시 이스케이프
 - 단, 현재까지 실무에서 문제된 사례 없음 → YAGNI 원칙으로 제외
 
 ### MSSQL 이스케이프 규칙
 
 **현재 구현 유지:**
+
 ```typescript
 escapeValue(value: string): string {
   return `N'${value.replace(/'/g, "''")}'`;
@@ -84,6 +92,7 @@ escapeValue(value: string): string {
 ### PostgreSQL 이스케이프 규칙
 
 **현재 구현 유지:**
+
 ```typescript
 escapeValue(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
@@ -98,6 +107,7 @@ escapeValue(value: string): string {
 ### 통일성 확보
 
 **`escapeString()`과 `escapeValue()` 일치:**
+
 - MySQL: `escapeValue`가 `escapeString` + 따옴표 감싸기로 통일
 - 혼란 제거 및 재사용성 향상
 
@@ -136,9 +146,11 @@ escapeValue(value: unknown): string {
 ### 테스트 계획
 
 **테스트 파일 위치:**
+
 - `packages/orm-common/tests/escape.spec.ts` (신규 생성)
 
 **테스트 케이스:**
+
 1. 기본 이스케이프: `'`, `\`, `\0`
 2. 제어 문자: `\n`, `\r`, `\t`
 3. 조합 공격: `\' OR 1=1 --`
@@ -146,6 +158,7 @@ escapeValue(value: unknown): string {
 5. 멀티바이트 (이미 방어됨 확인)
 
 **통합 테스트:**
+
 - `tests/orm/` - 실제 DB 연결하여 INSERT/SELECT 검증
 - 이스케이프된 값이 올바르게 저장/조회되는지 확인
 
@@ -174,16 +187,19 @@ orm-common은 문자열 이스케이프 방식으로 SQL을 생성합니다.
 다음 규칙을 준수하세요:
 
 #### ✓ 안전한 사용
+
 - 애플리케이션 코드에서 값 검증 후 ORM 사용
 - 타입이 보장된 값 (number, boolean, DateTime 등)
 - 신뢰할 수 있는 내부 데이터
 
 #### ✗ 위험한 사용
+
 - 사용자 입력을 검증 없이 WHERE 조건에 직접 사용
 - 외부 API 응답을 검증 없이 사용
 - 파일 업로드 내용을 검증 없이 사용
 
 #### 권장 패턴
+
 \`\`\`typescript
 // 나쁜 예: 사용자 입력 직접 사용
 const userInput = req.query.name; // "'; DROP TABLE users; --"
@@ -213,11 +229,13 @@ orm-common은 동적 쿼리 빌딩 특성상 파라미터 바인딩을 사용하
 대신 강화된 문자열 이스케이프를 사용합니다.
 
 **이유:**
+
 - WHERE 조건, JOIN이 런타임에 동적으로 결정됨
 - 표현식이 중첩되고 조합됨
 - 파라미터 바인딩 전환 시 전체 아키텍처 재설계 필요
 
 **완화 조치:**
+
 - MySQL: 백슬래시, 따옴표, NULL 바이트, 제어 문자 이스케이프
 - utf8mb4 charset 강제로 멀티바이트 공격 방어
 - 애플리케이션 레벨 입력 검증 필수
@@ -226,10 +244,12 @@ orm-common은 동적 쿼리 빌딩 특성상 파라미터 바인딩을 사용하
 ### 변경 이력 기록
 
 **CHANGELOG.md**:
+
 ```markdown
 ## [Unreleased]
 
 ### Security
+
 - MySQL ExprRenderer의 문자열 이스케이프 강화
   - 백슬래시, NULL 바이트, 제어 문자 이스케이프 추가
   - escapeString()과 escapeValue() 동작 통일

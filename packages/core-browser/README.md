@@ -1,10 +1,10 @@
 # @simplysm/core-browser
 
-Simplysm 프레임워크의 브라우저 전용 유틸리티 패키지이다. DOM 요소 탐색, 클립보드 처리, Blob 다운로드, 바이너리 다운로드 등 브라우저 환경에서 자주 필요한 기능을 제공한다.
+A browser-specific utility package for the Simplysm framework. It provides frequently needed features in browser environments such as DOM element traversal, clipboard handling, Blob downloads, and binary downloads.
 
-이 패키지는 `Element`와 `HTMLElement` 프로토타입을 확장하여 인스턴스 메서드로 직접 호출할 수 있는 API와, 정적 함수 형태의 유틸리티를 모두 포함한다.
+This package includes both APIs that can be called directly as instance methods by extending `Element` and `HTMLElement` prototypes, and utilities in the form of static functions.
 
-## 설치
+## Installation
 
 ```bash
 npm install @simplysm/core-browser
@@ -12,140 +12,140 @@ npm install @simplysm/core-browser
 pnpm add @simplysm/core-browser
 ```
 
-### 의존성
+### Dependencies
 
-| 패키지 | 설명 |
+| Package | Description |
 |--------|------|
-| `@simplysm/core-common` | 공통 유틸리티 (에러 클래스 등) |
-| `tabbable` | 포커스 가능 요소 판별 |
+| `@simplysm/core-common` | Common utilities (error classes, etc.) |
+| `tabbable` | Focusable element detection |
 
-## 주요 모듈
+## Main Modules
 
-### Element 확장 메서드
+### Element Extension Methods
 
-`import "@simplysm/core-browser"` 시 `Element.prototype`에 자동으로 추가되는 인스턴스 메서드이다. side-effect import로 동작한다.
+Instance methods automatically added to `Element.prototype` when importing `"@simplysm/core-browser"`. Works as a side-effect import.
 
-| 메서드 | 반환 타입 | 설명 |
+| Method | Return Type | Description |
 |--------|-----------|------|
-| `findAll<T>(selector)` | `T[]` | 셀렉터로 하위 요소 전체 검색 |
-| `findFirst<T>(selector)` | `T \| undefined` | 셀렉터로 첫 번째 매칭 요소 검색 |
-| `prependChild<T>(child)` | `T` | 요소를 첫 번째 자식으로 삽입 |
-| `getParents()` | `Element[]` | 모든 부모 요소 목록 반환 (가까운 순서) |
-| `findFocusableParent()` | `HTMLElement \| undefined` | 부모 중 첫 번째 포커스 가능 요소 검색 |
-| `findFirstFocusableChild()` | `HTMLElement \| undefined` | 자식 중 첫 번째 포커스 가능 요소 검색 |
-| `isOffsetElement()` | `boolean` | offset 기준 요소 여부 확인 |
-| `isVisible()` | `boolean` | 요소 가시성 확인 |
+| `findAll<T>(selector)` | `T[]` | Search all descendant elements by selector |
+| `findFirst<T>(selector)` | `T \| undefined` | Search first matching element by selector |
+| `prependChild<T>(child)` | `T` | Insert element as first child |
+| `getParents()` | `Element[]` | Return list of all parent elements (closest first) |
+| `findFocusableParent()` | `HTMLElement \| undefined` | Search for first focusable element among parents |
+| `findFirstFocusableChild()` | `HTMLElement \| undefined` | Search for first focusable element among children |
+| `isOffsetElement()` | `boolean` | Check if element is an offset reference element |
+| `isVisible()` | `boolean` | Check element visibility |
 
-### HTMLElement 확장 메서드
+### HTMLElement Extension Methods
 
-`HTMLElement.prototype`에 자동으로 추가되는 인스턴스 메서드이다.
+Instance methods automatically added to `HTMLElement.prototype`.
 
-| 메서드 | 반환 타입 | 설명 |
+| Method | Return Type | Description |
 |--------|-----------|------|
-| `repaint()` | `void` | 강제 리페인트 트리거 |
-| `getRelativeOffset(parent)` | `{ top, left }` | 부모 요소 기준 상대 위치 계산 |
-| `scrollIntoViewIfNeeded(target, offset?)` | `void` | 고정 영역에 가려진 경우 스크롤 조정 |
+| `repaint()` | `void` | Trigger forced repaint |
+| `getRelativeOffset(parent)` | `{ top, left }` | Calculate relative position based on parent element |
+| `scrollIntoViewIfNeeded(target, offset?)` | `void` | Adjust scroll if obscured by fixed regions |
 
-### 정적 함수
+### Static Functions
 
-| 함수 | 반환 타입 | 설명 |
+| Function | Return Type | Description |
 |------|-----------|------|
-| `copyElement(event)` | `void` | 요소 내용을 클립보드에 복사 |
-| `pasteToElement(event)` | `void` | 클립보드 내용을 요소에 붙여넣기 |
-| `getBounds(els, timeout?)` | `Promise<ElementBounds[]>` | IntersectionObserver를 사용한 요소 bounds 조회 |
+| `copyElement(event)` | `void` | Copy element content to clipboard |
+| `pasteToElement(event)` | `void` | Paste clipboard content into element |
+| `getBounds(els, timeout?)` | `Promise<ElementBounds[]>` | Query element bounds using IntersectionObserver |
 
 ### BlobUtils
 
-| 메서드 | 반환 타입 | 설명 |
+| Method | Return Type | Description |
 |--------|-----------|------|
-| `BlobUtils.download(blob, fileName)` | `void` | Blob을 파일로 다운로드 |
+| `BlobUtils.download(blob, fileName)` | `void` | Download Blob as file |
 
 ### downloadBytes
 
-| 함수 | 반환 타입 | 설명 |
+| Function | Return Type | Description |
 |------|-----------|------|
-| `downloadBytes(url, options?)` | `Promise<Uint8Array>` | URL에서 바이너리 데이터 다운로드 (진행률 콜백 지원) |
+| `downloadBytes(url, options?)` | `Promise<Uint8Array>` | Download binary data from URL (with progress callback support) |
 
-### 타입
+### Types
 
-| 타입 | 설명 |
+| Type | Description |
 |------|------|
-| `ElementBounds` | 요소 bounds 정보 (`target`, `top`, `left`, `width`, `height`) |
-| `DownloadProgress` | 다운로드 진행률 정보 (`receivedLength`, `contentLength`) |
+| `ElementBounds` | Element bounds information (`target`, `top`, `left`, `width`, `height`) |
+| `DownloadProgress` | Download progress information (`receivedLength`, `contentLength`) |
 
-## 사용 예시
+## Usage Examples
 
-### Element 확장 메서드
+### Element Extension Methods
 
 ```typescript
 import "@simplysm/core-browser";
 
-// 하위 요소 검색
+// Search descendant elements
 const buttons = container.findAll<HTMLButtonElement>("button.primary");
 const firstInput = container.findFirst<HTMLInputElement>("input[type='text']");
 
-// 요소를 첫 번째 자식으로 삽입
+// Insert element as first child
 const newEl = document.createElement("div");
 container.prependChild(newEl);
 
-// 모든 부모 요소 조회 (가까운 부모부터 순서대로)
+// Query all parent elements (closest parent first)
 const parents = element.getParents();
 
-// 포커스 가능 요소 검색 (tabbable 라이브러리 기반)
+// Search focusable elements (based on tabbable library)
 const focusableParent = element.findFocusableParent();
 const focusableChild = element.findFirstFocusableChild();
 
-// 요소 상태 확인
+// Check element state
 if (element.isOffsetElement()) {
-  // position이 relative, absolute, fixed, sticky 중 하나
+  // position is one of relative, absolute, fixed, sticky
 }
 
 if (element.isVisible()) {
-  // 요소가 화면에 보임 (clientRects 존재, visibility !== "hidden", opacity !== "0")
+  // Element is visible on screen (clientRects exist, visibility !== "hidden", opacity !== "0")
 }
 ```
 
-### HTMLElement 확장 메서드
+### HTMLElement Extension Methods
 
 ```typescript
 import "@simplysm/core-browser";
 
-// 강제 리페인트 (CSS 애니메이션 재시작 등에 유용)
+// Forced repaint (useful for restarting CSS animations)
 element.repaint();
 
-// 부모 요소 기준 상대 위치 계산 (CSS top/left에 직접 사용 가능)
+// Calculate relative position based on parent element (can be used directly for CSS top/left)
 const offset = element.getRelativeOffset(document.body);
 popup.style.top = `${offset.top}px`;
 popup.style.left = `${offset.left}px`;
 
-// 셀렉터로 부모 지정도 가능
+// Parent can also be specified by selector
 const offset2 = element.getRelativeOffset(".scroll-container");
 
-// 고정 헤더/열이 있는 테이블에서 스크롤 위치 조정
+// Adjust scroll position in table with fixed header/columns
 const scrollContainer = document.getElementById("table-body") as HTMLElement;
 const targetRow = document.getElementById("row-42") as HTMLElement;
 
 scrollContainer.scrollIntoViewIfNeeded(
   { top: targetRow.offsetTop, left: targetRow.offsetLeft },
-  { top: 50, left: 120 }, // 고정 헤더 높이 50px, 고정 열 너비 120px
+  { top: 50, left: 120 }, // Fixed header height 50px, fixed column width 120px
 );
 ```
 
-### 클립보드 처리
+### Clipboard Handling
 
 ```typescript
 import { copyElement, pasteToElement } from "@simplysm/core-browser";
 
-// copy 이벤트 핸들러에서 사용
-// 대상 요소 내의 첫 번째 input/textarea 값을 클립보드에 복사
+// Use in copy event handler
+// Copy value of first input/textarea within target element to clipboard
 element.addEventListener("copy", (e) => copyElement(e));
 
-// paste 이벤트 핸들러에서 사용
-// 클립보드 내용을 대상 요소 내의 첫 번째 input/textarea에 붙여넣기
+// Use in paste event handler
+// Paste clipboard content into first input/textarea within target element
 element.addEventListener("paste", (e) => pasteToElement(e));
 ```
 
-### 요소 bounds 비동기 조회
+### Asynchronous Element Bounds Query
 
 ```typescript
 import { getBounds } from "@simplysm/core-browser";
@@ -154,68 +154,68 @@ import type { ElementBounds } from "@simplysm/core-browser";
 const el1 = document.getElementById("item1")!;
 const el2 = document.getElementById("item2")!;
 
-// IntersectionObserver를 사용하여 bounds 정보를 비동기로 조회
+// Query bounds information asynchronously using IntersectionObserver
 const bounds: ElementBounds[] = await getBounds([el1, el2]);
 
 for (const b of bounds) {
-  console.log(b.target);  // 측정 대상 요소
-  console.log(b.top);     // 뷰포트 기준 상단 위치
-  console.log(b.left);    // 뷰포트 기준 왼쪽 위치
-  console.log(b.width);   // 요소 너비
-  console.log(b.height);  // 요소 높이
+  console.log(b.target);  // Target element being measured
+  console.log(b.top);     // Top position relative to viewport
+  console.log(b.left);    // Left position relative to viewport
+  console.log(b.width);   // Element width
+  console.log(b.height);  // Element height
 }
 
-// 커스텀 타임아웃 지정 (기본값: 5000ms)
-// 타임아웃 초과 시 TimeoutError 발생
+// Specify custom timeout (default: 5000ms)
+// TimeoutError is thrown if timeout is exceeded
 const bounds2 = await getBounds([el1], 3000);
 ```
 
-### Blob 다운로드
+### Blob Download
 
 ```typescript
 import { BlobUtils } from "@simplysm/core-browser";
 
-// Blob 객체를 파일로 다운로드
+// Download Blob object as file
 const blob = new Blob(["Hello, World!"], { type: "text/plain" });
 BlobUtils.download(blob, "hello.txt");
 
-// Excel 파일 등 바이너리 데이터 다운로드
+// Download binary data such as Excel files
 const excelBlob = new Blob([excelData], {
   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 });
 BlobUtils.download(excelBlob, "report.xlsx");
 ```
 
-### 바이너리 다운로드 (진행률 지원)
+### Binary Download (with Progress Support)
 
 ```typescript
 import { downloadBytes } from "@simplysm/core-browser";
 import type { DownloadProgress } from "@simplysm/core-browser";
 
-// 기본 사용
+// Basic usage
 const data: Uint8Array = await downloadBytes("https://example.com/file.bin");
 
-// 진행률 콜백 사용
+// Using progress callback
 const data2 = await downloadBytes("https://example.com/large-file.zip", {
   onProgress: (progress: DownloadProgress) => {
     const percent = progress.contentLength > 0
       ? Math.round((progress.receivedLength / progress.contentLength) * 100)
       : 0;
-    console.log(`다운로드 진행: ${percent}%`);
+    console.log(`Download progress: ${percent}%`);
   },
 });
 ```
 
-## 주의사항
+## Caveats
 
-- 이 패키지는 **브라우저 전용**이다. Node.js 환경에서는 사용할 수 없다.
-- `Element`와 `HTMLElement` 프로토타입 확장은 **side-effect import**로 동작한다. `import "@simplysm/core-browser"` 또는 패키지에서 아무 항목이나 import하면 자동으로 확장이 적용된다.
-- `getBounds()` 함수는 `IntersectionObserver`를 사용하므로 비동기로 동작하며, 지정된 타임아웃(기본 5000ms) 내에 모든 요소가 관측되지 않으면 `TimeoutError`가 발생한다.
-- `getRelativeOffset()` 메서드는 CSS `transform`이 적용된 요소도 올바르게 처리한다. 중간 요소들의 border 두께와 스크롤 위치도 계산에 포함된다.
-- `scrollIntoViewIfNeeded()` 메서드는 대상이 위쪽/왼쪽 경계를 벗어난 경우만 처리한다. 아래쪽/오른쪽 방향은 브라우저 기본 포커스 스크롤에 의존한다.
-- `downloadBytes()` 함수는 `Content-Length` 헤더를 알 수 있는 경우 미리 할당하여 메모리 효율성을 높이고, chunked encoding인 경우에는 청크를 수집 후 병합한다.
-- `pasteToElement()` 함수는 대상 input/textarea의 전체 값을 교체한다. 커서 위치나 선택 영역을 고려하지 않는다.
+- This package is **browser-only**. It cannot be used in Node.js environments.
+- `Element` and `HTMLElement` prototype extensions work as **side-effect imports**. Extensions are automatically applied when importing `"@simplysm/core-browser"` or any item from the package.
+- The `getBounds()` function uses `IntersectionObserver` and works asynchronously. If all elements are not observed within the specified timeout (default 5000ms), a `TimeoutError` is thrown.
+- The `getRelativeOffset()` method correctly handles elements with CSS `transform` applied. Border thickness and scroll position of intermediate elements are also included in the calculation.
+- The `scrollIntoViewIfNeeded()` method only handles cases where the target is beyond the top/left boundaries. The bottom/right directions rely on the browser's default focus scrolling.
+- The `downloadBytes()` function improves memory efficiency by pre-allocating when the `Content-Length` header is available, and collects and merges chunks for chunked encoding.
+- The `pasteToElement()` function replaces the entire value of the target input/textarea. It does not consider cursor position or selection range.
 
-## 라이선스
+## License
 
 Apache-2.0

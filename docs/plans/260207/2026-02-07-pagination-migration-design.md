@@ -6,24 +6,24 @@ Angular `sd-pagination.control.ts`를 SolidJS로 마이그레이션한다.
 
 ## 디자인 결정
 
-| 항목 | 결정 |
-|------|------|
-| 카테고리 | `data` (Table, List와 같은 위치) |
-| 페이지 번호 | 0-based (Angular 원본 유지, UI 표시만 +1) |
-| API 스타일 | `page` + `onPageChange` 제어 컴포넌트 패턴 |
-| 버튼 스타일 | Button 컴포넌트 재사용 (theme=`base` 고정, variant: 현재 페이지 `outline` / 나머지 `ghost`) |
-| theme/variant | 외부 노출 안 함 (내부 고정) |
-| size | 외부 노출. Button `size` prop 전달 + Pagination `gap` 연동 |
+| 항목          | 결정                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| 카테고리      | `data` (Table, List와 같은 위치)                                                            |
+| 페이지 번호   | 0-based (Angular 원본 유지, UI 표시만 +1)                                                   |
+| API 스타일    | `page` + `onPageChange` 제어 컴포넌트 패턴                                                  |
+| 버튼 스타일   | Button 컴포넌트 재사용 (theme=`base` 고정, variant: 현재 페이지 `outline` / 나머지 `ghost`) |
+| theme/variant | 외부 노출 안 함 (내부 고정)                                                                 |
+| size          | 외부 노출. Button `size` prop 전달 + Pagination `gap` 연동                                  |
 
 ## API
 
 ```tsx
 export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
-  page: number;                          // 현재 페이지 (0-based)
+  page: number; // 현재 페이지 (0-based)
   onPageChange?: (page: number) => void; // 페이지 변경 콜백
-  totalPages: number;                    // 전체 페이지 수
-  displayPages?: number;                 // 한 번에 표시할 페이지 수 (기본 10)
-  size?: "sm" | "lg";                   // Button size + gap 연동
+  totalPages: number; // 전체 페이지 수
+  displayPages?: number; // 한 번에 표시할 페이지 수 (기본 10)
+  size?: "sm" | "lg"; // Button size + gap 연동
 }
 ```
 
@@ -32,11 +32,7 @@ export interface PaginationProps extends JSX.HTMLAttributes<HTMLElement> {
 ```tsx
 const [page, setPage] = createSignal(0);
 
-<Pagination
-  page={page()}
-  onPageChange={setPage}
-  totalPages={50}
-/>
+<Pagination page={page()} onPageChange={setPage} totalPages={50} />;
 ```
 
 ## 내부 구현
@@ -44,19 +40,20 @@ const [page, setPage] = createSignal(0);
 ### 레이아웃
 
 `<nav>` 요소, `inline-flex items-center` + size별 gap:
+
 - 기본: `gap-1`
 - sm: `gap-0.5`
 - lg: `gap-1.5`
 
 ### 버튼 구성
 
-| 버튼 | 아이콘 | 동작 | disabled 조건 |
-|------|--------|------|---------------|
-| 첫 페이지 | `IconChevronsLeft` | `page → 0` | 첫 그룹일 때 |
-| 이전 그룹 | `IconChevronLeft` | `page → 이전 그룹 마지막` | 첫 그룹일 때 |
-| 페이지 번호 | 숫자 텍스트 | `page → 해당 페이지` | - |
-| 다음 그룹 | `IconChevronRight` | `page → 다음 그룹 첫 번째` | 마지막 그룹일 때 |
-| 마지막 페이지 | `IconChevronsRight` | `page → totalPages - 1` | 마지막 그룹일 때 |
+| 버튼          | 아이콘              | 동작                       | disabled 조건    |
+| ------------- | ------------------- | -------------------------- | ---------------- |
+| 첫 페이지     | `IconChevronsLeft`  | `page → 0`                 | 첫 그룹일 때     |
+| 이전 그룹     | `IconChevronLeft`   | `page → 이전 그룹 마지막`  | 첫 그룹일 때     |
+| 페이지 번호   | 숫자 텍스트         | `page → 해당 페이지`       | -                |
+| 다음 그룹     | `IconChevronRight`  | `page → 다음 그룹 첫 번째` | 마지막 그룹일 때 |
+| 마지막 페이지 | `IconChevronsRight` | `page → totalPages - 1`    | 마지막 그룹일 때 |
 
 ### 페이지 그룹 계산 (Angular 로직 유지)
 

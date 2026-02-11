@@ -108,7 +108,7 @@ const [to, setTo] = createSignal<DateOnly>();
   to={to()}
   onToChange={setTo}
   required
-/>
+/>;
 ```
 
 ## 의존 컴포넌트

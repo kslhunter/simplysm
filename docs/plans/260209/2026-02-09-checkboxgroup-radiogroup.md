@@ -31,7 +31,9 @@ Angular의 `sd-checkbox-group` / `sd-checkbox-group-item`을 SolidJS로 마이�
 >
   <CheckBoxGroup.Item value="apple">사과</CheckBoxGroup.Item>
   <CheckBoxGroup.Item value="banana">바나나</CheckBoxGroup.Item>
-  <CheckBoxGroup.Item value="cherry" disabled>체리</CheckBoxGroup.Item>
+  <CheckBoxGroup.Item value="cherry" disabled>
+    체리
+  </CheckBoxGroup.Item>
 </CheckBoxGroup>
 ```
 
@@ -58,6 +60,7 @@ Angular의 `sd-checkbox-group` / `sd-checkbox-group-item`을 SolidJS로 마이�
 ### RadioGroup
 
 동일 구조, 차이점:
+
 - `value: T` (단일 값)
 - `onValueChange: (v: T) => void`
 - Item 내부에서 `<Radio>` 렌더링

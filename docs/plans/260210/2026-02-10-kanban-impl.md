@@ -13,6 +13,7 @@
 ### Task 1: KanbanContext 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/layout/kanban/KanbanContext.ts`
 
 **참조:** `packages/solid/src/components/layout/sidebar/SidebarContext.ts` 패턴
@@ -78,9 +79,11 @@ git commit -m "feat(solid): KanbanContext, KanbanLaneContext 추가"
 ### Task 2: Kanban (Board) 컴포넌트
 
 **Files:**
+
 - Create: `packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **참조 패턴:**
+
 - `packages/solid/src/components/layout/sidebar/Sidebar.tsx` — compound component interface
 - `packages/solid/src/components/display/Card.tsx` — 기본 스타일 패턴
 - `.legacy-packages/sd-angular/src/ui/layout/kanban/sd-kanban-board.control.ts` — 로직
@@ -90,6 +93,7 @@ git commit -m "feat(solid): KanbanContext, KanbanLaneContext 추가"
 Kanban 컴포넌트(Board 루트)를 작성한다. 이 단계에서는 Board만 구현하고, Lane/Card는 placeholder로 둔다.
 
 핵심 구현 사항:
+
 - `KanbanContext.Provider`로 드래그/선택 상태 공유
 - `document:dragend` 이벤트에서 드래그 상태 초기화
 - `onCleanup`으로 이벤트 리스너 정리
@@ -139,15 +143,18 @@ git commit -m "feat(solid): Kanban Board 컴포넌트 추가"
 ### Task 3: Kanban.Card 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **참조:**
+
 - `.legacy-packages/sd-angular/src/ui/layout/kanban/sd-kanban.control.ts` — DnD/선택 로직
 - `packages/solid/src/components/display/Card.tsx` — Card 스타일
 
 **Step 1: KanbanCard 컴포넌트 구현**
 
 핵심 구현 사항:
+
 - HTML `draggable` 속성 + `dragstart` 이벤트
 - `dragover`/`dragleave`/`drop` 이벤트로 드롭 위치 피드백
 - Shift+Click으로 선택 토글
@@ -213,9 +220,11 @@ git commit -m "feat(solid): Kanban.Card 컴포넌트 구현 (DnD + 선택)"
 ### Task 4: Kanban.Lane 구현
 
 **Files:**
+
 - Modify: `packages/solid/src/components/layout/kanban/Kanban.tsx`
 
 **참조:**
+
 - `.legacy-packages/sd-angular/src/ui/layout/kanban/sd-kanban-lane.control.ts` — 레인 로직
 - `packages/solid/src/utils/splitSlots.ts` — splitSlots 사용법
 - `packages/solid/src/components/feedback/busy/BusyContainer.tsx` — busy 상태
@@ -235,6 +244,7 @@ const KanbanLaneTools: ParentComponent = (props) => (
 **Step 2: KanbanLane 컴포넌트 구현**
 
 핵심 구현 사항:
+
 - `splitSlots`로 LaneTitle/LaneTools 분리
 - `KanbanLaneContext.Provider`로 레인 value 제공
 - `collapsible`/`collapsed` 접기 기능
@@ -300,6 +310,7 @@ git commit -m "feat(solid): Kanban.Lane 컴포넌트 구현 (접기/busy/DnD)"
 ### Task 5: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts`
 
 **Step 1: export 추가**
@@ -328,6 +339,7 @@ git commit -m "feat(solid): Kanban export 추가"
 ### Task 6: 데모 페이지 작성
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/data/KanbanPage.tsx`
 - Modify: `packages/solid-demo/src/main.tsx` — 라우트 추가
 - Modify: `packages/solid-demo/src/pages/Home.tsx` — 메뉴 추가
@@ -337,6 +349,7 @@ git commit -m "feat(solid): Kanban export 추가"
 **Step 1: KanbanPage.tsx 작성**
 
 데모 페이지에 다음 섹션을 포함:
+
 1. **기본 Kanban** — 3개 레인 + 카드 DnD
 2. **접기/펼치기** — collapsible 레인 데모
 3. **Shift+Click 선택** — 선택 상태 표시

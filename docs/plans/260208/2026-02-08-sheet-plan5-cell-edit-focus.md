@@ -13,6 +13,7 @@
 ### Task 1: `findFirstFocusableChild` 구현 (core-browser)
 
 **Files:**
+
 - Modify: `packages/core-browser/src/extensions/element-ext.ts:65` (선언만 있고 구현 없음)
 
 **Step 1: 구현 추가**
@@ -52,6 +53,7 @@ git commit -m "feat(core-browser): findFirstFocusableChild 구현 추가"
 ### Task 2: Sheet splitProps에 신규 props 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:42-62`
 
 **Step 1: splitProps 배열에 props 추가**
@@ -91,6 +93,7 @@ git commit -m "feat(solid): Sheet splitProps에 focusMode, 이벤트, 셀 스타
 ### Task 3: CellAgent — 포커스/편집 상태 Signal + 셀 조회 함수
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 
 **Step 1: containerRef 변수 선언**
@@ -121,11 +124,13 @@ function getCell(r: number, c: number): HTMLTableCellElement | null {
 **Step 3: `data-sheet-scroll` div에 ref 연결**
 
 기존 JSX (Sheet.tsx line 385):
+
 ```tsx
 <div data-sheet-scroll class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
 ```
 
 변경:
+
 ```tsx
 <div data-sheet-scroll ref={containerRef} class={twMerge(sheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
 ```
@@ -147,11 +152,13 @@ git commit -m "feat(solid): Sheet CellAgent region — 포커스/편집 상태 S
 ### Task 4: 데이터 셀 td에 tabindex/data 속성 부여 + edit prop 연결
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:633-651` (tbody의 데이터 셀 렌더링)
 
 **Step 1: td 속성 및 edit prop 변경**
 
 기존 데이터 셀 `<td>` (Sheet.tsx line 634-650):
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col, colIndex) => (
@@ -175,6 +182,7 @@ git commit -m "feat(solid): Sheet CellAgent region — 포커스/편집 상태 S
 ```
 
 변경:
+
 ```tsx
 <For each={effectiveColumns()}>
   {(col, colIndex) => {
@@ -190,7 +198,10 @@ git commit -m "feat(solid): Sheet CellAgent region — 포커스/편집 상태 S
           isLastFixed(colIndex()) ? fixedLastClass : undefined,
           local.getItemCellClassFn?.(flat.item, col.key),
         )}
-        style={[getFixedStyle(colIndex()), local.getItemCellStyleFn?.(flat.item, col.key)].filter(Boolean).join("; ") || undefined}
+        style={
+          [getFixedStyle(colIndex()), local.getItemCellStyleFn?.(flat.item, col.key)].filter(Boolean).join("; ") ||
+          undefined
+        }
         onDblClick={() => enterEditMode(displayIndex(), colIndex())}
       >
         {col.cell({
@@ -210,18 +221,21 @@ git commit -m "feat(solid): Sheet CellAgent region — 포커스/편집 상태 S
 수정된 접근 — `<For>` 콜백에서 인덱스 활용:
 
 기존 line 589:
+
 ```tsx
 <For each={displayItems()}>
   {(flat) => (
 ```
 
 변경:
+
 ```tsx
 <For each={displayItems()}>
   {(flat, flatIndex) => (
 ```
 
 그리고 `displayIndex()` 대신 `flatIndex()`를 사용:
+
 ```tsx
 data-r={flatIndex()}
 data-c={colIndex()}
@@ -241,6 +255,7 @@ Expected: PASS (enterEditMode은 Task 6에서 구현하므로 여기서는 에�
 ### Task 5: 포커스 이벤트 캡처 (focusin/focusout)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx` — CellAgent region
 
 **Step 1: 이벤트 핸들러 함수 추가**
@@ -279,6 +294,7 @@ function onBlurCapture(e: FocusEvent): void {
 **Step 2: JSX에 이벤트 바인딩**
 
 `data-sheet-scroll` div에 이벤트 추가:
+
 ```tsx
 <div
   data-sheet-scroll
@@ -297,6 +313,7 @@ function onBlurCapture(e: FocusEvent): void {
 ### Task 6: 키보드 네비게이션 + 편집 모드 진입/해제
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx` — CellAgent region
 
 **Step 1: 편집/이동 함수 추가**
@@ -329,7 +346,13 @@ function moveFocus(r: number, c: number, dr: number, dc: number): void {
   if (td) {
     containerRef!.scrollIntoViewIfNeeded(
       { top: td.offsetTop, left: td.offsetLeft },
-      { top: summaryRowTop() + (headerRowHeights().reduce((a, b) => a + b, 0) - summaryRowTop()), left: featureColTotalWidth() + fixedLeftMap().size > 0 ? [...fixedLeftMap().values()].pop()! + (columnWidths().get(lastFixedIndex()) ?? 0) : 0 },
+      {
+        top: summaryRowTop() + (headerRowHeights().reduce((a, b) => a + b, 0) - summaryRowTop()),
+        left:
+          featureColTotalWidth() + fixedLeftMap().size > 0
+            ? [...fixedLeftMap().values()].pop()! + (columnWidths().get(lastFixedIndex()) ?? 0)
+            : 0,
+      },
     );
     td.focus();
   }
@@ -344,6 +367,7 @@ function moveFocusWithEdit(r: number, c: number, dr: number, dc: number): void {
 ```
 
 **참고 - `moveFocus`의 `scrollIntoViewIfNeeded` offset 계산:**
+
 - `top` offset: 헤더 총 높이 (합계행 포함) → `headerRowHeights()`를 합산
 - `left` offset: 기능 컬럼 너비 + 고정 컬럼 총 너비
 
@@ -375,10 +399,7 @@ function moveFocus(r: number, c: number, dr: number, dc: number): void {
   const td = getCell(newR, newC);
   if (td) {
     const offset = getScrollOffset();
-    containerRef!.scrollIntoViewIfNeeded(
-      { top: td.offsetTop, left: td.offsetLeft },
-      offset,
-    );
+    containerRef!.scrollIntoViewIfNeeded({ top: td.offsetTop, left: td.offsetLeft }, offset);
     td.focus();
   }
 }
@@ -398,33 +419,65 @@ function onKeyDown(e: KeyboardEvent): void {
 
   if (!isEditing) {
     switch (e.key) {
-      case "ArrowUp": moveFocus(r, c, -1, 0); e.preventDefault(); break;
-      case "ArrowDown": moveFocus(r, c, 1, 0); e.preventDefault(); break;
-      case "ArrowLeft": moveFocus(r, c, 0, -1); e.preventDefault(); break;
-      case "ArrowRight": moveFocus(r, c, 0, 1); e.preventDefault(); break;
+      case "ArrowUp":
+        moveFocus(r, c, -1, 0);
+        e.preventDefault();
+        break;
+      case "ArrowDown":
+        moveFocus(r, c, 1, 0);
+        e.preventDefault();
+        break;
+      case "ArrowLeft":
+        moveFocus(r, c, 0, -1);
+        e.preventDefault();
+        break;
+      case "ArrowRight":
+        moveFocus(r, c, 0, 1);
+        e.preventDefault();
+        break;
       case "Enter":
-        if (e.shiftKey) { moveFocus(r, c, -1, 0); }
-        else { moveFocus(r, c, 1, 0); }
-        e.preventDefault(); break;
+        if (e.shiftKey) {
+          moveFocus(r, c, -1, 0);
+        } else {
+          moveFocus(r, c, 1, 0);
+        }
+        e.preventDefault();
+        break;
       case "Tab":
-        if (e.shiftKey) { moveFocus(r, c, 0, -1); }
-        else { moveFocus(r, c, 0, 1); }
-        e.preventDefault(); break;
+        if (e.shiftKey) {
+          moveFocus(r, c, 0, -1);
+        } else {
+          moveFocus(r, c, 0, 1);
+        }
+        e.preventDefault();
+        break;
       case "F2":
-        enterEditMode(r, c); e.preventDefault(); break;
+        enterEditMode(r, c);
+        e.preventDefault();
+        break;
     }
   } else {
     switch (e.key) {
       case "Escape":
-        exitEditMode(); e.preventDefault(); break;
+        exitEditMode();
+        e.preventDefault();
+        break;
       case "Enter":
-        if (e.shiftKey) { moveFocusWithEdit(r, c, -1, 0); }
-        else { moveFocusWithEdit(r, c, 1, 0); }
-        e.preventDefault(); break;
+        if (e.shiftKey) {
+          moveFocusWithEdit(r, c, -1, 0);
+        } else {
+          moveFocusWithEdit(r, c, 1, 0);
+        }
+        e.preventDefault();
+        break;
       case "Tab":
-        if (e.shiftKey) { moveFocusWithEdit(r, c, 0, -1); }
-        else { moveFocusWithEdit(r, c, 0, 1); }
-        e.preventDefault(); break;
+        if (e.shiftKey) {
+          moveFocusWithEdit(r, c, 0, -1);
+        } else {
+          moveFocusWithEdit(r, c, 0, 1);
+        }
+        e.preventDefault();
+        break;
     }
   }
 
@@ -436,6 +489,7 @@ function onKeyDown(e: KeyboardEvent): void {
 **Step 3: JSX에 onKeyDown 바인딩**
 
 `data-sheet-scroll` div에 추가:
+
 ```tsx
 <div
   data-sheet-scroll
@@ -470,6 +524,7 @@ git commit -m "feat(solid): Sheet 셀 포커스/편집 모드 + 키보드 네비
 ### Task 7: 포커스 인디케이터 (overlay div)
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx`
 - Modify: `packages/solid/src/components/data/sheet/Sheet.styles.ts`
 
@@ -479,11 +534,7 @@ git commit -m "feat(solid): Sheet 셀 포커스/편집 모드 + 키보드 네비
 
 ```typescript
 // 포커스 인디케이터 — 행 하이라이트
-export const focusRowIndicatorClass = clsx(
-  "absolute pointer-events-none",
-  "bg-base-500/10",
-  "z-[6]",
-);
+export const focusRowIndicatorClass = clsx("absolute pointer-events-none", "bg-base-500/10", "z-[6]");
 
 // 포커스 인디케이터 — 셀 테두리
 export const focusCellIndicatorClass = clsx(
@@ -497,6 +548,7 @@ export const focusCellIndicatorClass = clsx(
 **Step 2: Sheet.tsx에 스타일 import 추가**
 
 기존 import (line 13-34)에 추가:
+
 ```typescript
 import {
   // ... 기존 imports ...
@@ -550,12 +602,12 @@ function redrawFocusIndicator(): void {
 
   const isFixed = td.classList.contains("sticky");
   setFocusCellStyle({
-    display: "block",
-    position: isFixed ? "sticky" : "absolute",
-    top: `${td.offsetTop}px`,
-    left: isFixed ? (td.style.left || "0px") : `${td.offsetLeft}px`,
-    width: `${td.offsetWidth}px`,
-    height: `${td.offsetHeight}px`,
+    "display": "block",
+    "position": isFixed ? "sticky" : "absolute",
+    "top": `${td.offsetTop}px`,
+    "left": isFixed ? td.style.left || "0px" : `${td.offsetLeft}px`,
+    "width": `${td.offsetWidth}px`,
+    "height": `${td.offsetHeight}px`,
     "z-index": "6",
   });
 }
@@ -564,6 +616,7 @@ function redrawFocusIndicator(): void {
 **Step 4: 이벤트에 redraw 트리거 연결**
 
 `onFocusCapture` 함수 끝에 추가:
+
 ```typescript
 function onFocusCapture(e: FocusEvent): void {
   // ... 기존 코드 ...
@@ -572,6 +625,7 @@ function onFocusCapture(e: FocusEvent): void {
 ```
 
 `onBlurCapture` 함수의 각 return/끝에 추가:
+
 ```typescript
 function onBlurCapture(e: FocusEvent): void {
   // ... 기존 코드 ...
@@ -582,6 +636,7 @@ function onBlurCapture(e: FocusEvent): void {
 **Step 5: 스크롤 이벤트에 연결**
 
 `data-sheet-scroll` div에 `onScroll` 추가:
+
 ```tsx
 <div
   data-sheet-scroll
@@ -608,8 +663,9 @@ function setContainerRef(el: HTMLDivElement): void {
 ```
 
 JSX에서:
+
 ```tsx
-ref={setContainerRef}
+ref = { setContainerRef };
 ```
 
 **Step 7: overlay div를 JSX에 추가**
@@ -645,16 +701,19 @@ git commit -m "feat(solid): Sheet 포커스 인디케이터 (행 + 셀 overlay) 
 ### Task 8: 데모 페이지에 셀 편집 섹션 추가
 
 **Files:**
+
 - Modify: `packages/solid-demo/src/pages/data/SheetPage.tsx`
 
 **Step 1: import에 TextField 추가**
 
 기존 import (line 2):
+
 ```typescript
 import { Sheet, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
 ```
 
 변경:
+
 ```typescript
 import { Sheet, TextField, Topbar, TopbarContainer, type SortingDef } from "@simplysm/solid";
 ```
@@ -673,7 +732,7 @@ const [editUsers, setEditUsers] = createSignal<User[]>([
 ]);
 
 function updateEditUser(index: number, field: keyof User, value: string | number): void {
-  setEditUsers((prev) => prev.map((u, i) => i === index ? { ...u, [field]: value } : u));
+  setEditUsers((prev) => prev.map((u, i) => (i === index ? { ...u, [field]: value } : u)));
 }
 ```
 
@@ -682,7 +741,9 @@ function updateEditUser(index: number, field: keyof User, value: string | number
 "고정 컬럼 + 리사이징" section 뒤에 추가:
 
 ```tsx
-{/* 셀 편집 */}
+{
+  /* 셀 편집 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">셀 편집</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -692,11 +753,7 @@ function updateEditUser(index: number, field: keyof User, value: string | number
     <Sheet.Column<User> key="name" header="이름">
       {(ctx) => (
         <Show when={ctx.edit} fallback={<div class="px-2 py-1">{ctx.item.name}</div>}>
-          <TextField
-            value={ctx.item.name}
-            onValueChange={(v) => updateEditUser(ctx.index, "name", v)}
-            inset
-          />
+          <TextField value={ctx.item.name} onValueChange={(v) => updateEditUser(ctx.index, "name", v)} inset />
         </Show>
       )}
     </Sheet.Column>
@@ -715,16 +772,14 @@ function updateEditUser(index: number, field: keyof User, value: string | number
       {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
     </Sheet.Column>
     <Sheet.Column<User> key="salary" header="급여">
-      {(ctx) => (
-        <div class="px-2 py-1 text-right">
-          {ctx.item.salary.toLocaleString()}원
-        </div>
-      )}
+      {(ctx) => <div class="px-2 py-1 text-right">{ctx.item.salary.toLocaleString()}원</div>}
     </Sheet.Column>
   </Sheet>
-</section>
+</section>;
 
-{/* 행 포커스 모드 */}
+{
+  /* 행 포커스 모드 */
+}
 <section>
   <h2 class="mb-4 text-xl font-semibold">행 포커스 모드</h2>
   <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -741,12 +796,13 @@ function updateEditUser(index: number, field: keyof User, value: string | number
       {(ctx) => <div class="px-2 py-1">{ctx.item.email}</div>}
     </Sheet.Column>
   </Sheet>
-</section>
+</section>;
 ```
 
 **Step 4: Show import 추가**
 
 파일 상단 import에 `Show` 추가:
+
 ```typescript
 import { createSignal, Show } from "solid-js";
 ```
@@ -787,6 +843,7 @@ Expected: PASS
 Run: `pnpm dev`
 
 데모 페이지 (Sheet)에서 아래 시나리오 확인:
+
 1. 셀 클릭 → 포커스 인디케이터(행 배경 + 셀 테두리) 표시
 2. Arrow 키 → 인접 셀로 이동, 인디케이터 추적
 3. Enter/Tab → 셀 이동
@@ -810,9 +867,9 @@ git commit -m "fix(solid): Sheet 셀 편집/포커스 통합 검증 수정"
 
 ## 파일 변경 요약
 
-| 파일 | 변경 내용 | Task |
-|------|----------|------|
-| `packages/core-browser/src/extensions/element-ext.ts` | `findFirstFocusableChild` 구현 추가 | 1 |
-| `packages/solid/src/components/data/sheet/Sheet.tsx` | splitProps 확장, CellAgent region, FocusIndicator region, td 속성/이벤트 | 2-7 |
-| `packages/solid/src/components/data/sheet/Sheet.styles.ts` | `focusRowIndicatorClass`, `focusCellIndicatorClass` 추가 | 7 |
-| `packages/solid-demo/src/pages/data/SheetPage.tsx` | 셀 편집 + 행 포커스 모드 데모 섹션 추가 | 8 |
+| 파일                                                       | 변경 내용                                                                | Task |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------ | ---- |
+| `packages/core-browser/src/extensions/element-ext.ts`      | `findFirstFocusableChild` 구현 추가                                      | 1    |
+| `packages/solid/src/components/data/sheet/Sheet.tsx`       | splitProps 확장, CellAgent region, FocusIndicator region, td 속성/이벤트 | 2-7  |
+| `packages/solid/src/components/data/sheet/Sheet.styles.ts` | `focusRowIndicatorClass`, `focusCellIndicatorClass` 추가                 | 7    |
+| `packages/solid-demo/src/pages/data/SheetPage.tsx`         | 셀 편집 + 행 포커스 모드 데모 섹션 추가                                  | 8    |

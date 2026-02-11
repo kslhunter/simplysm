@@ -12,17 +12,18 @@
 
 ## 크기 변환 참조
 
-| Tailwind | CSS | Icon size prop |
-|----------|-----|----------------|
-| size-4, w-4 h-4 | 1rem | `"1rem"` |
-| size-5 | 1.25rem | `"1.25rem"` |
-| size-6 | 1.5rem | `"1.5rem"` |
+| Tailwind        | CSS     | Icon size prop |
+| --------------- | ------- | -------------- |
+| size-4, w-4 h-4 | 1rem    | `"1rem"`       |
+| size-5          | 1.25rem | `"1.25rem"`    |
+| size-6          | 1.5rem  | `"1.5rem"`     |
 
 ---
 
 ### Task 1: Topbar.tsx 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/navigation/Topbar.tsx`
 
 **Step 1: import 변경**
@@ -56,6 +57,7 @@ Expected: 에러 0개
 ### Task 2: TopbarUser.tsx 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/navigation/TopbarUser.tsx`
 
 **Step 1: import 변경**
@@ -89,6 +91,7 @@ Expected: 에러 0개
 ### Task 3: TopbarMenu.tsx 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/navigation/TopbarMenu.tsx`
 
 **Step 1: import 변경**
@@ -116,12 +119,14 @@ import { Icon } from "../display/Icon";
 
 ```tsx
 // Before
-{props.menu.icon?.({})}
+{
+  props.menu.icon?.({});
+}
 
 // After
 <Show when={props.menu.icon}>
   <Icon icon={props.menu.icon!} />
-</Show>
+</Show>;
 ```
 
 **Step 4: TopbarMenuButton의 IconChevronDown 변경 (line 143)**
@@ -138,12 +143,14 @@ import { Icon } from "../display/Icon";
 
 ```tsx
 // Before
-{props.menu.icon?.({})}
+{
+  props.menu.icon?.({});
+}
 
 // After
 <Show when={props.menu.icon}>
   <Icon icon={props.menu.icon!} />
-</Show>
+</Show>;
 ```
 
 **Step 6: 검증**
@@ -156,6 +163,7 @@ Expected: 에러 0개
 ### Task 4: ListItem.tsx 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/ListItem.tsx`
 
 **Step 1: import 변경**
@@ -213,6 +221,7 @@ Expected: 에러 0개
 ### Task 5: SidebarMenu.tsx 마이그레이션
 
 **Files:**
+
 - Modify: `packages/solid/src/components/navigation/SidebarMenu.tsx`
 
 **Step 1: import 추가**
@@ -230,12 +239,14 @@ import { Icon } from "../display/Icon";
 
 ```tsx
 // Before
-{props.menu.icon?.({})}
+{
+  props.menu.icon?.({});
+}
 
 // After
 <Show when={props.menu.icon}>
   <Icon icon={props.menu.icon!} />
-</Show>
+</Show>;
 ```
 
 **Step 3: Show import 확인**

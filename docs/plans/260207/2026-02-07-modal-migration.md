@@ -17,6 +17,7 @@
 ### Task 1: Tailwind z-index 설정 추가
 
 **Files:**
+
 - Modify: `packages/solid/tailwind.config.ts:33-37`
 
 **Step 1: tailwind.config.ts에 modal z-index 추가**
@@ -49,6 +50,7 @@ git commit -m "feat(solid): Modal용 z-index 추가 (modal: 2000, modal-backdrop
 ### Task 2: ModalContext.ts 생성
 
 **Files:**
+
 - Create: `packages/solid/src/components/disclosure/ModalContext.ts`
 
 **Step 1: ModalContext.ts 작성**
@@ -80,10 +82,7 @@ export interface ModalContentProps<T = undefined> {
 }
 
 export interface ModalContextValue {
-  show<T = undefined>(
-    content: Component<ModalContentProps<T>>,
-    options: ModalShowOptions,
-  ): Promise<T | undefined>;
+  show<T = undefined>(content: Component<ModalContentProps<T>>, options: ModalShowOptions): Promise<T | undefined>;
 }
 
 export const ModalContext = createContext<ModalContextValue>();
@@ -117,9 +116,11 @@ git commit -m "feat(solid): ModalContext 및 useModal hook 추가"
 ### Task 3: Modal.tsx — 테스트 먼저 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/disclosure/Modal.spec.tsx`
 
 **참고 파일:**
+
 - 테스트 패턴: `packages/solid/tests/components/overlay/Dropdown.spec.tsx`
 - 렌더/이벤트: `@solidjs/testing-library` (render, fireEvent, waitFor)
 - Mock: `vitest` (vi.fn, vi.stubGlobal)
@@ -292,12 +293,7 @@ describe("Modal 컴포넌트", () => {
       const handleOpenChange = vi.fn();
 
       render(() => (
-        <Modal
-          open={true}
-          title="테스트"
-          onOpenChange={handleOpenChange}
-          canDeactivate={() => false}
-        >
+        <Modal open={true} title="테스트" onOpenChange={handleOpenChange} canDeactivate={() => false}>
           <div>내용</div>
         </Modal>
       ));
@@ -443,9 +439,11 @@ git commit -m "test(solid): Modal 컴포넌트 테스트 작성 (red phase)"
 ### Task 4: Modal.tsx — 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/disclosure/Modal.tsx`
 
 **참고 파일:**
+
 - 패턴 원본: `packages/solid/src/components/disclosure/Dropdown.tsx`
 - 유틸리티: `packages/solid/src/utils/createPropSignal.ts`, `packages/solid/src/utils/mergeStyles.ts`
 - 아이콘: `@tabler/icons-solidjs` → `IconX`
@@ -454,6 +452,7 @@ git commit -m "test(solid): Modal 컴포넌트 테스트 작성 (red phase)"
 **Step 1: Modal.tsx 전체 구현 작성**
 
 주요 구현 사항:
+
 - `ModalProps` 인터페이스 (설계서의 Props 참조)
 - mount/animate 패턴 (Dropdown과 동일: `mounted`, `animating`, double rAF, transitionend + 200ms fallback)
 - `createPropSignal`으로 open 상태 controlled/uncontrolled
@@ -478,11 +477,7 @@ Tailwind 클래스 설계:
 
 ```typescript
 // 루트 wrapper
-const wrapperClass = clsx(
-  "fixed",
-  "top-0 right-0 bottom-0 left-0",
-  "z-modal",
-);
+const wrapperClass = clsx("fixed", "top-0 right-0 bottom-0 left-0", "z-modal");
 
 // 백드롭
 const backdropClass = clsx(
@@ -505,30 +500,16 @@ const dialogBaseClass = clsx(
 );
 
 // 다이얼로그 float 변형
-const dialogFloatClass = clsx(
-  "shadow-md dark:shadow-black/30",
-  "border border-base-200 dark:border-base-700",
-);
+const dialogFloatClass = clsx("shadow-md dark:shadow-black/30", "border border-base-200 dark:border-base-700");
 
 // 다이얼로그 fill 변형 (라운딩/테두리 없앰)
-const dialogFillClass = clsx(
-  "rounded-none",
-  "border-none",
-);
+const dialogFillClass = clsx("rounded-none", "border-none");
 
 // 헤더
-const headerClass = clsx(
-  "flex items-center",
-  "select-none",
-  "border-b border-base-200 dark:border-base-700",
-);
+const headerClass = clsx("flex items-center", "select-none", "border-b border-base-200 dark:border-base-700");
 
 // 제목
-const titleClass = clsx(
-  "flex-1",
-  "px-4 py-2",
-  "text-sm font-semibold",
-);
+const titleClass = clsx("flex-1", "px-4 py-2", "text-sm font-semibold");
 
 // 닫기 버튼
 const closeButtonClass = clsx(
@@ -541,10 +522,7 @@ const closeButtonClass = clsx(
 );
 
 // 콘텐츠 영역
-const contentClass = clsx(
-  "flex-1",
-  "overflow-auto",
-);
+const contentClass = clsx("flex-1", "overflow-auto");
 ```
 
 **Step 2: 테스트 실행 (통과 확인)**
@@ -574,6 +552,7 @@ git commit -m "feat(solid): Modal 컴포넌트 구현 (선언적 UI, 드래그/�
 ### Task 5: ModalProvider.tsx — 테스트 먼저 작성
 
 **Files:**
+
 - Create: `packages/solid/tests/components/disclosure/ModalProvider.spec.tsx`
 
 **Step 1: ModalProvider 테스트 작성**
@@ -589,8 +568,12 @@ import { useModal, type ModalContentProps } from "../../../src/components/disclo
 const TestContent: Component<ModalContentProps<string>> = (props) => (
   <div>
     <span data-testid="modal-content">모달 내용</span>
-    <button data-testid="close-btn" onClick={() => props.close("result")}>닫기</button>
-    <button data-testid="close-no-result" onClick={() => props.close()}>취소</button>
+    <button data-testid="close-btn" onClick={() => props.close("result")}>
+      닫기
+    </button>
+    <button data-testid="close-no-result" onClick={() => props.close()}>
+      취소
+    </button>
   </div>
 );
 
@@ -605,7 +588,9 @@ function TestApp() {
   };
 
   return (
-    <button data-testid="open-btn" onClick={openModal}>모달 열기</button>
+    <button data-testid="open-btn" onClick={openModal}>
+      모달 열기
+    </button>
   );
 }
 
@@ -699,9 +684,11 @@ git commit -m "test(solid): ModalProvider 테스트 작성 (red phase)"
 ### Task 6: ModalProvider.tsx — 구현
 
 **Files:**
+
 - Create: `packages/solid/src/components/disclosure/ModalProvider.tsx`
 
 **참고 파일:**
+
 - Context: `packages/solid/src/components/disclosure/ModalContext.ts`
 - Modal UI: `packages/solid/src/components/disclosure/Modal.tsx`
 - 레거시: `.legacy-packages/sd-angular/src/ui/overlay/modal/sd-modal.provider.ts`
@@ -830,6 +817,7 @@ git commit -m "feat(solid): ModalProvider 구현 (프로그래매틱 show/close 
 ### Task 7: index.ts export 추가
 
 **Files:**
+
 - Modify: `packages/solid/src/index.ts:44-46`
 
 **Step 1: disclosure 섹션에 export 추가**
@@ -860,11 +848,13 @@ git commit -m "feat(solid): Modal, ModalContext, ModalProvider를 index.ts에서
 ### Task 8: 데모 페이지 추가
 
 **Files:**
+
 - Create: `packages/solid-demo/src/pages/disclosure/ModalPage.tsx`
 - Modify: `packages/solid-demo/src/pages/Home.tsx:52-54` (사이드바 메뉴에 Modal 추가)
 - Modify: `packages/solid-demo/src/main.tsx:33` (라우트 추가)
 
 **참고 파일:**
+
 - 데모 패턴: `packages/solid-demo/src/pages/disclosure/DropdownPage.tsx`
 - 사이드바 메뉴: `packages/solid-demo/src/pages/Home.tsx:49-55`
 - 라우팅: `packages/solid-demo/src/main.tsx:32-33`
@@ -872,6 +862,7 @@ git commit -m "feat(solid): Modal, ModalContext, ModalProvider를 index.ts에서
 **Step 1: ModalPage.tsx 데모 작성**
 
 데모 섹션:
+
 1. **기본 모달** — 버튼 클릭으로 열기/닫기
 2. **프로그래매틱 모달** — `useModal().show()` 로 열고 결과 받기
 3. **Float 모달** — 백드롭 없는 플로팅 윈도우
@@ -884,6 +875,7 @@ git commit -m "feat(solid): Modal, ModalContext, ModalProvider를 index.ts에서
 **Step 2: Home.tsx 사이드바에 Modal 메뉴 항목 추가**
 
 Disclosure 섹션의 children에 추가:
+
 ```typescript
 { title: "Modal", href: "/home/disclosure/modal" },
 ```
@@ -928,6 +920,7 @@ Expected: PASS
 **Step 4: 데모 앱 시각 확인**
 
 Run: `pnpm dev` (별도 터미널)
+
 - `http://localhost:40081/solid-demo/` 접속
 - Disclosure → Modal 메뉴 클릭
 - 각 데모 섹션 동작 확인
@@ -937,13 +930,13 @@ Run: `pnpm dev` (별도 터미널)
 
 ## 재사용할 기존 코드
 
-| 유틸리티 | 경로 | 용도 |
-|----------|------|------|
-| `createPropSignal` | `packages/solid/src/utils/createPropSignal.ts` | controlled/uncontrolled 상태 |
-| `mergeStyles` | `packages/solid/src/utils/mergeStyles.ts` | CSS 스타일 병합 |
-| `Icon` | `packages/solid/src/components/display/Icon.tsx` | 닫기 아이콘 |
-| `IconX` | `@tabler/icons-solidjs` | X 아이콘 |
-| `clsx` + `twMerge` | 외부 의존성 | Tailwind 클래스 관리 |
-| `Portal` | `solid-js/web` | DOM 계층 분리 |
-| `Dropdown.tsx` | `packages/solid/src/components/disclosure/Dropdown.tsx` | mount/animate 패턴 참조 |
-| `sd-modal.control.ts` | `.legacy-packages/sd-angular/src/ui/overlay/modal/sd-modal.control.ts` | 드래그/리사이즈 로직 참조 |
+| 유틸리티              | 경로                                                                   | 용도                         |
+| --------------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| `createPropSignal`    | `packages/solid/src/utils/createPropSignal.ts`                         | controlled/uncontrolled 상태 |
+| `mergeStyles`         | `packages/solid/src/utils/mergeStyles.ts`                              | CSS 스타일 병합              |
+| `Icon`                | `packages/solid/src/components/display/Icon.tsx`                       | 닫기 아이콘                  |
+| `IconX`               | `@tabler/icons-solidjs`                                                | X 아이콘                     |
+| `clsx` + `twMerge`    | 외부 의존성                                                            | Tailwind 클래스 관리         |
+| `Portal`              | `solid-js/web`                                                         | DOM 계층 분리                |
+| `Dropdown.tsx`        | `packages/solid/src/components/disclosure/Dropdown.tsx`                | mount/animate 패턴 참조      |
+| `sd-modal.control.ts` | `.legacy-packages/sd-angular/src/ui/overlay/modal/sd-modal.control.ts` | 드래그/리사이즈 로직 참조    |

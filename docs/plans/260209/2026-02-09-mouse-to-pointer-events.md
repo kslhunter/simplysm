@@ -11,6 +11,7 @@
 **변경 범위:** 파일 2개 (Sheet.tsx, Modal.tsx), 스타일 1개 (Sheet.styles.ts)
 
 **변경하지 않는 것:**
+
 - `onClick` 이벤트 (79곳) — 마우스/터치 모두 자동 발생하는 고수준 이벤트
 - `useRouterLink.ts`의 `MouseEvent` 타입 — `onClick` 핸들러의 타입이므로 유지
 - `ListItem.tsx`의 `onClick?: (e: MouseEvent) => void` — 같은 이유로 유지
@@ -21,6 +22,7 @@
 ### Task 1: Sheet 컬럼 리사이저 드래그 — pointer 이벤트 전환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:288-329` (드래그 함수)
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:549-553` (테이블 onMouseDown)
 - Modify: `packages/solid/src/components/data/sheet/Sheet.tsx:759` (리사이저 onMouseDown)
@@ -132,6 +134,7 @@ touch-action: none으로 터치 기기 pointercancel 방지."
 ### Task 2: Modal 드래그 이동 — pointer 이벤트 전환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx:267-316` (handleHeaderMouseDown 함수)
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx:518` (JSX 바인딩)
 
@@ -200,7 +203,7 @@ const handleHeaderPointerDown = (event: PointerEvent) => {
 `packages/solid/src/components/disclosure/Modal.tsx:518`를 수정:
 
 ```tsx
-onPointerDown={handleHeaderPointerDown}
+onPointerDown = { handleHeaderPointerDown };
 ```
 
 **Step 3: 헤더에 `touch-action: none` 추가**
@@ -237,6 +240,7 @@ setPointerCapture를 활용하여 document.documentElement 리스너 패턴 제�
 ### Task 3: Modal 리사이즈 바 — pointer 이벤트 전환
 
 **Files:**
+
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx:319-373` (handleResizeBarMouseDown 함수)
 - Modify: `packages/solid/src/components/disclosure/Modal.tsx:566` (JSX 바인딩)
 
@@ -312,12 +316,7 @@ const handleResizeBarPointerDown = (event: PointerEvent, direction: ResizeDirect
 ```tsx
 <div
   data-resize-bar={direction}
-  class={clsx(
-    "absolute",
-    "touch-none",
-    resizePositionMap[direction],
-    resizeCursorMap[direction],
-  )}
+  class={clsx("absolute", "touch-none", resizePositionMap[direction], resizeCursorMap[direction])}
   onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
 />
 ```
@@ -360,6 +359,7 @@ Expected: 결과 없음 (mouse 이벤트가 남아있지 않아야 함)
 Run: `pnpm dev`
 
 확인 항목:
+
 1. Sheet 컬럼 리사이저 드래그 — 마우스로 정상 동작
 2. Sheet 컬럼 리사이저 더블클릭 — 너비 초기화 정상 동작
 3. Sheet Shift+Click 텍스트 선택 방지 — 정상 동작

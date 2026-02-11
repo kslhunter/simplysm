@@ -15,6 +15,7 @@
 ### Task 1: ResultCollector 구현
 
 **Files:**
+
 - Create: `packages/cli/src/infra/ResultCollector.ts`
 - Reference: `packages/cli/src/utils/package-utils.ts` (PackageResult 타입)
 - Reference: `packages/cli/src/utils/output-utils.ts` (printErrors, printServers 로직)
@@ -180,6 +181,7 @@ EOF
 ### Task 2: SignalHandler 구현
 
 **Files:**
+
 - Create: `packages/cli/src/infra/SignalHandler.ts`
 - Reference: `packages/cli/src/commands/watch.ts:144-157` (기존 시그널 처리 로직)
 
@@ -304,6 +306,7 @@ EOF
 ### Task 3: WorkerManager 구현
 
 **Files:**
+
 - Create: `packages/cli/src/infra/WorkerManager.ts`
 - Reference: `packages/cli/src/commands/watch.ts:112-131` (기존 Worker 생성 로직)
 
@@ -462,6 +465,7 @@ EOF
 ### Task 4: infra 모듈 index.ts 생성 및 export
 
 **Files:**
+
 - Create: `packages/cli/src/infra/index.ts`
 
 **Step 1: index.ts 생성**
@@ -497,6 +501,7 @@ EOF
 ### Task 5: Builder 타입 정의
 
 **Files:**
+
 - Create: `packages/cli/src/builders/types.ts`
 - Reference: `packages/cli/src/sd-config.types.ts` (SdPackageConfig)
 - Reference: `packages/cli/src/infra/ResultCollector.ts` (BuildResult)
@@ -584,6 +589,7 @@ EOF
 ### Task 6: BaseBuilder 추상 클래스 구현
 
 **Files:**
+
 - Create: `packages/cli/src/builders/BaseBuilder.ts`
 - Reference: `packages/cli/src/builders/types.ts`
 - Reference: `packages/cli/src/infra/WorkerManager.ts`
@@ -755,6 +761,7 @@ EOF
 ### Task 7: LibraryBuilder 구현
 
 **Files:**
+
 - Create: `packages/cli/src/builders/LibraryBuilder.ts`
 - Reference: `packages/cli/src/commands/watch.ts` (기존 esbuild watch 로직)
 - Reference: `packages/cli/src/utils/worker-events.ts` (registerWorkerEventHandlers)
@@ -791,10 +798,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   protected createWorkers(): void {
     for (const pkg of this.packages) {
-      this.workerManager.create<typeof WatchWorkerModule>(
-        `${pkg.name}:build`,
-        this._workerPath,
-      );
+      this.workerManager.create<typeof WatchWorkerModule>(`${pkg.name}:build`, this._workerPath);
     }
   }
 
@@ -950,6 +954,7 @@ EOF
 ### Task 8: DtsBuilder 구현
 
 **Files:**
+
 - Create: `packages/cli/src/builders/DtsBuilder.ts`
 - Reference: `packages/cli/src/commands/watch.ts:121-131` (기존 DTS Worker 로직)
 
@@ -995,10 +1000,7 @@ export class DtsBuilder extends BaseBuilder {
 
   protected createWorkers(): void {
     for (const pkg of this.packages) {
-      this.workerManager.create<typeof DtsWorkerModule>(
-        `${pkg.name}:dts`,
-        this._workerPath,
-      );
+      this.workerManager.create<typeof DtsWorkerModule>(`${pkg.name}:dts`, this._workerPath);
     }
   }
 
@@ -1124,6 +1126,7 @@ EOF
 ### Task 9: builders 모듈 index.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/builders/index.ts`
 
 **Step 1: index.ts 생성**
@@ -1160,6 +1163,7 @@ EOF
 ### Task 10: WatchOrchestrator 구현
 
 **Files:**
+
 - Create: `packages/cli/src/orchestrators/WatchOrchestrator.ts`
 - Reference: `packages/cli/src/commands/watch.ts` (기존 watch 로직 전체)
 
@@ -1285,10 +1289,7 @@ export class WatchOrchestrator {
     this._dtsBuilder = new DtsBuilder(builderOptions);
 
     // Builder 초기화
-    await Promise.all([
-      this._libraryBuilder.initialize(),
-      this._dtsBuilder.initialize(),
-    ]);
+    await Promise.all([this._libraryBuilder.initialize(), this._dtsBuilder.initialize()]);
   }
 
   /**
@@ -1352,10 +1353,7 @@ export class WatchOrchestrator {
 
     process.stdout.write("⏳ 종료 중...\n");
 
-    await Promise.all([
-      this._libraryBuilder.shutdown(),
-      this._dtsBuilder.shutdown(),
-    ]);
+    await Promise.all([this._libraryBuilder.shutdown(), this._dtsBuilder.shutdown()]);
 
     process.stdout.write("✔ 완료\n");
   }
@@ -1384,6 +1382,7 @@ EOF
 ### Task 11: watch 명령어를 얇은 레이어로 변경
 
 **Files:**
+
 - Modify: `packages/cli/src/commands/watch.ts`
 - Backup: 기존 파일을 `watch.ts.bak`으로 백업 (선택)
 
@@ -1459,6 +1458,7 @@ EOF
 ### Task 12: orchestrators 모듈 index.ts 생성
 
 **Files:**
+
 - Create: `packages/cli/src/orchestrators/index.ts`
 
 **Step 1: index.ts 생성**
@@ -1492,6 +1492,7 @@ EOF
 ### Task 13: 불필요한 코드 정리
 
 **Files:**
+
 - Review: `packages/cli/src/utils/worker-events.ts` (필요시 수정)
 - Review: `packages/cli/src/utils/package-utils.ts` (필요시 수정)
 
@@ -1536,6 +1537,7 @@ Expected: 에러 없음
 
 Run: `cd /home/kslhunter/projects/simplysm/.worktrees/cli-refactoring && pnpm watch core-common core-node`
 Expected:
+
 - 초기 빌드 완료 (esbuild + dts)
 - 파일 변경 시 리빌드 동작
 - Ctrl+C로 정상 종료

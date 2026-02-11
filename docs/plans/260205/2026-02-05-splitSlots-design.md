@@ -17,7 +17,7 @@ solid 패키지의 Compound Components 패턴에서 반복되는 slots 처리 �
 ```typescript
 function splitSlots<K extends string>(
   resolved: { toArray: () => unknown[] },
-  keys: readonly K[]
+  keys: readonly K[],
 ): [Accessor<Record<K, HTMLElement[]>>, Accessor<JSX.Element[]>];
 ```
 
@@ -42,21 +42,18 @@ const [slots, content] = splitSlots(resolved, ["selectHeader", "selectButton"] a
 
 ### 설계 결정사항
 
-| 항목 | 결정 | 이유 |
-|------|------|------|
-| 형태 | 유틸 함수 (`splitSlots`) | `splitProps`와 일관된 네이밍 |
-| 타입 안전성 | 제네릭으로 slot 키 추론 | 컴파일 타임 오타 검출 |
-| slot 키 네이밍 | 전체 이름 포함 (`listItemChildren`) | 명시적이고 안전함 |
-| slot 반환값 | 항상 `HTMLElement[]` | API 일관성 |
-| 나머지 요소 | 튜플 반환 `[slots, content]` | `splitProps` 패턴과 일치 |
+| 항목           | 결정                                | 이유                         |
+| -------------- | ----------------------------------- | ---------------------------- |
+| 형태           | 유틸 함수 (`splitSlots`)            | `splitProps`와 일관된 네이밍 |
+| 타입 안전성    | 제네릭으로 slot 키 추론             | 컴파일 타임 오타 검출        |
+| slot 키 네이밍 | 전체 이름 포함 (`listItemChildren`) | 명시적이고 안전함            |
+| slot 반환값    | 항상 `HTMLElement[]`                | API 일관성                   |
+| 나머지 요소    | 튜플 반환 `[slots, content]`        | `splitProps` 패턴과 일치     |
 
 ## 타입 정의
 
 ```typescript
-type SplitSlotsResult<K extends string> = [
-  Accessor<Record<K, HTMLElement[]>>,
-  Accessor<JSX.Element[]>
-];
+type SplitSlotsResult<K extends string> = [Accessor<Record<K, HTMLElement[]>>, Accessor<JSX.Element[]>];
 ```
 
 **타입 안전성 보장:**
@@ -64,9 +61,9 @@ type SplitSlotsResult<K extends string> = [
 ```typescript
 const [slots, content] = splitSlots(resolved, ["selectHeader", "selectButton"] as const);
 
-slots().selectHeader  // ✅ OK
-slots().selectButton  // ✅ OK
-slots().selectFooter  // ❌ 컴파일 에러
+slots().selectHeader; // ✅ OK
+slots().selectButton; // ✅ OK
+slots().selectFooter; // ❌ 컴파일 에러
 ```
 
 ## 구현
@@ -85,7 +82,7 @@ import { JSX } from "solid-js/jsx-runtime";
 
 export function splitSlots<K extends string>(
   resolved: { toArray: () => unknown[] },
-  keys: readonly K[]
+  keys: readonly K[],
 ): [Accessor<Record<K, HTMLElement[]>>, Accessor<JSX.Element[]>] {
   const slots = createMemo(() => {
     const arr = resolved.toArray();
@@ -106,10 +103,7 @@ export function splitSlots<K extends string>(
     return { result, content };
   });
 
-  return [
-    () => slots().result,
-    () => slots().content
-  ];
+  return [() => slots().result, () => slots().content];
 }
 ```
 
@@ -120,18 +114,18 @@ export function splitSlots<K extends string>(
 ```typescript
 // utils
 export { mergeStyles } from "./utils/mergeStyles";
-export { splitSlots } from "./utils/splitSlots";  // 추가
+export { splitSlots } from "./utils/splitSlots"; // 추가
 ```
 
 ## 마이그레이션
 
 ### 대상 컴포넌트
 
-| 컴포넌트 | slot 키 |
-|----------|---------|
-| `ListItem.tsx` | `listItemChildren` |
-| `Select.tsx` | `selectHeader`, `selectButton` |
-| `SelectItem.tsx` | `selectItemChildren` |
+| 컴포넌트         | slot 키                        |
+| ---------------- | ------------------------------ |
+| `ListItem.tsx`   | `listItemChildren`             |
+| `Select.tsx`     | `selectHeader`, `selectButton` |
+| `SelectItem.tsx` | `selectItemChildren`           |
 
 ### 마이그레이션 예시
 
@@ -162,8 +156,12 @@ const resolved = children(() => local.children);
 const [slots, content] = splitSlots(resolved, ["listItemChildren"] as const);
 
 // 사용 시
-{content()}                               // 기존: {slots().content}
-{slots().listItemChildren.single()}       // 기존: {slots().childrenSlot}
+{
+  content();
+} // 기존: {slots().content}
+{
+  slots().listItemChildren.single();
+} // 기존: {slots().childrenSlot}
 ```
 
 ## 작업 순서
