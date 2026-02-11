@@ -559,7 +559,21 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         } else {
           logger.info(`[${pkg.name}] 배포 중...`);
         }
-        await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+            break;
+          } catch (err) {
+            if (attempt < maxRetries) {
+              const delay = attempt * 5_000;
+              logger.warn(`[${pkg.name}] 배포 실패 (시도 ${attempt}/${maxRetries}), ${delay / 1000}초 후 재시도...`);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            } else {
+              throw err;
+            }
+          }
+        }
         publishedPackages.push(pkg.name);
         if (dryRun) {
           logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션 완료`);
