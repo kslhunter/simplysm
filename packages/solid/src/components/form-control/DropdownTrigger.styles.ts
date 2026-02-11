@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 import { borderDefault, type ComponentSize, paddingLg, paddingSm } from "../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../styles/patterns.styles";
 
@@ -27,3 +28,20 @@ export const triggerSizeClasses: Record<ComponentSize, string> = {
 };
 
 export const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");
+
+/** Select/Combobox 공유 트리거 클래스 빌더 */
+export function getTriggerClass(options: {
+  size?: ComponentSize;
+  disabled?: boolean;
+  inset?: boolean;
+  class?: string;
+}): string {
+  return twMerge(
+    triggerBaseClass,
+    "px-2 py-1",
+    options.size && triggerSizeClasses[options.size],
+    options.disabled && triggerDisabledClass,
+    options.inset && triggerInsetClass,
+    options.class,
+  );
+}

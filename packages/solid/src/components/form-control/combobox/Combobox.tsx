@@ -1,6 +1,5 @@
 import { children, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
 import { DebounceQueue } from "@simplysm/core-common";
 import { Icon } from "../../display/Icon";
@@ -12,13 +11,7 @@ import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { splitSlots } from "../../../helpers/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
-import {
-  triggerBaseClass,
-  triggerDisabledClass,
-  triggerInsetClass,
-  triggerSizeClasses,
-  chevronWrapperClass,
-} from "../DropdownTrigger.styles";
+import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 
 void ripple;
 
@@ -270,14 +263,12 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
   // 트리거 클래스
   const getTriggerClassName = () =>
-    twMerge(
-      triggerBaseClass,
-      "px-2 py-1",
-      local.size && triggerSizeClasses[local.size],
-      local.disabled && triggerDisabledClass,
-      local.inset && triggerInsetClass,
-      local.class,
-    );
+    getTriggerClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      class: local.class,
+    });
 
   // 참고: 초기 검색은 handleTriggerClick에서 수행됨
   // 입력 시에는 handleInput에서 performSearch가 호출됨

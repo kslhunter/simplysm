@@ -11,13 +11,7 @@ import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import {
-  triggerBaseClass,
-  triggerDisabledClass,
-  triggerInsetClass,
-  triggerSizeClasses,
-  chevronWrapperClass,
-} from "../DropdownTrigger.styles";
+import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 
 void ripple;
 
@@ -287,14 +281,12 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   // 트리거 클래스
   const getTriggerClassName = () =>
-    twMerge(
-      triggerBaseClass,
-      "px-2 py-1",
-      local.size && triggerSizeClasses[local.size],
-      local.disabled && triggerDisabledClass,
-      local.inset && triggerInsetClass,
-      local.class,
-    );
+    getTriggerClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      class: local.class,
+    });
 
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
