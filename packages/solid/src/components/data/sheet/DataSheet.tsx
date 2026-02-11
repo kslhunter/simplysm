@@ -260,32 +260,30 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   const hasSelectFeature = () => local.selectMode != null;
   const hasReorderFeature = () => local.onItemsReorder != null;
 
-  // 확장 컬럼의 고정 너비 추적
-  const [expandColWidth, setExpandColWidth] = createSignal(0);
-
-  function registerExpandColRef(el: HTMLElement): void {
-    createResizeObserver(el, () => {
-      setExpandColWidth(el.offsetWidth);
-    });
+  // 기능 컬럼 너비 추적 헬퍼
+  function createTrackedWidth(): [() => number, (el: HTMLElement) => void] {
+    const [width, setWidth] = createSignal(0);
+    const register = (el: HTMLElement) => {
+      createResizeObserver(el, () => {
+        setWidth(el.offsetWidth);
+      });
+    };
+    return [width, register];
   }
 
-  // 선택 컬럼의 고정 너비 추적
-  const [selectColWidth, setSelectColWidth] = createSignal(0);
+  const [expandColWidth, registerExpandColRef] = createTrackedWidth();
+  const [selectColWidth, registerSelectColRef] = createTrackedWidth();
+  const [reorderColWidth, registerReorderColRef] = createTrackedWidth();
 
-  function registerSelectColRef(el: HTMLElement): void {
-    createResizeObserver(el, () => {
-      setSelectColWidth(el.offsetWidth);
-    });
-  }
+  // 기능 컬럼 left 위치 (선택/재정렬 컬럼의 style에 사용)
+  const selectColLeft = createMemo(() => (hasExpandFeature() ? `${expandColWidth()}px` : "0"));
 
-  // 드래그 컬럼의 고정 너비 추적
-  const [reorderColWidth, setReorderColWidth] = createSignal(0);
-
-  function registerReorderColRef(el: HTMLElement): void {
-    createResizeObserver(el, () => {
-      setReorderColWidth(el.offsetWidth);
-    });
-  }
+  const reorderColLeft = createMemo(() => {
+    let left = 0;
+    if (hasExpandFeature()) left += expandColWidth();
+    if (hasSelectFeature()) left += selectColWidth();
+    return `${left}px`;
+  });
 
   // #region ColumnFixing
   // 각 컬럼 셀의 ref → 너비 측정용
@@ -702,7 +700,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   }
 
   // #region Display
-  const displayItems = createMemo(() => flatItems());
+  const displayItems = flatItems;
 
   // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
   const isExpandColLastFixed = () =>
@@ -820,7 +818,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       rowspan={featureHeaderRowspan()}
                       style={{
                         top: "0",
-                        left: hasExpandFeature() ? `${expandColWidth()}px` : "0",
+                        left: selectColLeft(),
                       }}
                       ref={registerSelectColRef}
                     >
@@ -855,12 +853,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       rowspan={featureHeaderRowspan()}
                       style={{
                         top: "0",
-                        left: (() => {
-                          let left = 0;
-                          if (hasExpandFeature()) left += expandColWidth();
-                          if (hasSelectFeature()) left += selectColWidth();
-                          return `${left}px`;
-                        })(),
+                        left: reorderColLeft(),
                       }}
                       ref={registerReorderColRef}
                     />
@@ -1091,7 +1084,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                             isSelectColLastFixed() ? fixedLastClass : undefined,
                           )}
                           style={{
-                            left: hasExpandFeature() ? `${expandColWidth()}px` : "0",
+                            left: selectColLeft(),
                           }}
                         >
                           <Show
@@ -1152,12 +1145,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                         isReorderColLastFixed() ? fixedLastClass : undefined,
                       )}
                       style={{
-                        left: (() => {
-                          let left = 0;
-                          if (hasExpandFeature()) left += expandColWidth();
-                          if (hasSelectFeature()) left += selectColWidth();
-                          return `${left}px`;
-                        })(),
+                        left: reorderColLeft(),
                       }}
                     >
                       <div class={reorderCellWrapperClass} onPointerDown={(e) => onReorderPointerDown(e, flat.item)}>
