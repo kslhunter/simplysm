@@ -377,9 +377,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     const onPointerMove = (e: PointerEvent) => {
       const delta = e.clientX - startX;
       const newWidth = Math.max(30, startWidth + delta);
+      const currentRect = container.getBoundingClientRect();
       setResizeIndicatorStyle({
         display: "block",
-        left: `${th.getBoundingClientRect().left - containerRect.left + container.scrollLeft + newWidth}px`,
+        left: `${th.getBoundingClientRect().left - currentRect.left + container.scrollLeft + newWidth}px`,
         top: "0",
         height: `${container.scrollHeight}px`,
       });
