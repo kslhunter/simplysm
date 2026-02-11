@@ -2,13 +2,14 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
+import { type ComponentSize } from "../../styles/tokens.styles";
 
 // --- Context ---
 
 interface TabsContextValue {
   value: () => string | undefined;
   select: (value: string) => void;
-  size: () => "sm" | "lg" | undefined;
+  size: () => ComponentSize | undefined;
 }
 
 const TabsContext = createContext<TabsContextValue>();
@@ -84,7 +85,7 @@ function TabsTabInner(props: TabsTabProps) {
 interface TabsProps {
   value?: string;
   onValueChange?: (value: string) => void;
-  size?: "sm" | "lg";
+  size?: ComponentSize;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
