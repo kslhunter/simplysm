@@ -26,7 +26,7 @@ interface RadioGroupItemProps<T> {
 
 function RadioGroupItemInner<T>(props: RadioGroupItemProps<T>) {
   const ctx = useContext(RadioGroupContext);
-  if (!ctx) throw new Error("RadioGroup.Item must be used inside RadioGroup");
+  if (!ctx) throw new Error("RadioGroup.Item은 RadioGroup 내부에서만 사용할 수 있습니다");
 
   const isSelected = () => ctx.value() === props.value;
 

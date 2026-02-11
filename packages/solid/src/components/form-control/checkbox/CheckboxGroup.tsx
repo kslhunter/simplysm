@@ -26,7 +26,7 @@ interface CheckboxGroupItemProps<T> {
 
 function CheckboxGroupItemInner<T>(props: CheckboxGroupItemProps<T>) {
   const ctx = useContext(CheckboxGroupContext);
-  if (!ctx) throw new Error("CheckboxGroup.Item must be used inside CheckboxGroup");
+  if (!ctx) throw new Error("CheckboxGroup.Item은 CheckboxGroup 내부에서만 사용할 수 있습니다");
 
   const isSelected = () => ctx.value().includes(props.value);
 

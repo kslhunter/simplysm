@@ -24,7 +24,7 @@ interface TabsTabProps {
 
 function TabsTabInner(props: TabsTabProps) {
   const ctx = useContext(TabsContext);
-  if (!ctx) throw new Error("Tabs.Tab must be used inside Tabs");
+  if (!ctx) throw new Error("Tabs.Tab은 Tabs 내부에서만 사용할 수 있습니다");
 
   const isSelected = () => ctx.value() === props.value;
 
