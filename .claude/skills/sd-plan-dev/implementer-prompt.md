@@ -1,6 +1,6 @@
 # Implementer Prompt
 
-Send the following to `Skill(sd-fork)`.
+Send the following as prompt to `Task(general-purpose)`.
 
 ```
 You are implementing Task N: [task name]

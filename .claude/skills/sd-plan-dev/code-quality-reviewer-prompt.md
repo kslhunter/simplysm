@@ -1,6 +1,6 @@
 # Code Quality Reviewer Prompt
 
-Send the following to `Skill(sd-fork)`.
+Send the following as prompt to `Task(general-purpose)` (sub-Task launched by task agent).
 
 **Purpose:** Verify implementation quality (clean, tested, maintainable)
 
