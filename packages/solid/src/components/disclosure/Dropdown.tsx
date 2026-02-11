@@ -220,6 +220,7 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.stopImmediatePropagation();
         setOpen(false);
       }
     };
