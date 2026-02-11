@@ -10,21 +10,11 @@
     "directory": "packages/cli"
   },
   "license": "Apache-2.0",
-  "files": [
-    "src",
-    "dist",
-    "claude",
-    "templates"
-  ],
-  "scripts": {
-    "prepack": "node scripts/sync-claude-assets.mjs"
-  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "sd-cli": "./dist/sd-cli.js",
-    "cli": "./dist/sd-cli.js"
+    "sd-cli": "./dist/sd-cli.js"
   },
   "dependencies": {
     "@fastify/http-proxy": "^11.4.1",

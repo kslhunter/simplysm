@@ -51,7 +51,7 @@ async function findSdEntries(baseDir: string): Promise<string[]> {
  */
 export async function runInstall(_options: InstallOptions): Promise<void> {
   const cwd = process.cwd();
-  const logger = consola.withTag("sd:cli:install");
+  const logger = consola.withTag("sd:claude:install");
 
   // 패키지의 claude/ 디렉토리
   const pkgRoot = findPackageRoot(import.meta.dirname);

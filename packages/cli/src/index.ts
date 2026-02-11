@@ -7,7 +7,5 @@ export { runBuild, type BuildOptions } from "./commands/build";
 export { runPublish, type PublishOptions } from "./commands/publish";
 export { runDevice, type DeviceOptions } from "./commands/device";
 export { runInit, type InitOptions } from "./commands/init";
-export { runInstall, type InstallOptions } from "./commands/install";
-export { runUninstall, type UninstallOptions } from "./commands/uninstall";
 export { Electron } from "./electron/electron";
 export { renderTemplateDir } from "./utils/template";

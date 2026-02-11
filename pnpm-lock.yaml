@@ -333,6 +333,22 @@ importers:
         specifier: ^19.2.1
         version: 19.2.1(@azure/core-client@1.10.1)
 
+  packages/sd-claude:
+    dependencies:
+      "@simplysm/core-node":
+        specifier: workspace:*
+        version: link:../core-node
+      consola:
+        specifier: ^3.4.2
+        version: 3.4.2
+      yargs:
+        specifier: ^18.0.0
+        version: 18.0.0
+    devDependencies:
+      "@types/yargs":
+        specifier: ^17.0.35
+        version: 17.0.35
+
   packages/service-client:
     dependencies:
       "@simplysm/core-common":

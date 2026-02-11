@@ -14,6 +14,7 @@ const config: SdConfigFn = () => ({
     "excel": { target: "neutral", publish: "npm" },
     "orm-common": { target: "neutral", publish: "npm" },
     "orm-node": { target: "node", publish: "npm" },
+    "sd-claude": { target: "node", publish: "npm" },
     "service-client": { target: "neutral", publish: "npm" },
     "service-common": { target: "neutral", publish: "npm" },
     "service-server": { target: "node", publish: "npm" },

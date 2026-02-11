@@ -18,7 +18,7 @@ export interface UninstallOptions {}
  */
 export async function runUninstall(_options: UninstallOptions): Promise<void> {
   const cwd = process.cwd();
-  const logger = consola.withTag("sd:cli:uninstall");
+  const logger = consola.withTag("sd:claude:uninstall");
 
   const targetDir = path.join(cwd, ".claude");
 

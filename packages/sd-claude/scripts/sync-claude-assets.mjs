@@ -1,5 +1,5 @@
 /**
- * publish/pack 전에 실행되어 .claude/sd-* 에셋을 packages/cli/claude/에 복사한다.
+ * publish/pack 전에 실행되어 .claude/sd-* 에셋을 packages/sd-claude/claude/에 복사한다.
  * package.json의 prepack 스크립트로 등록하여 사용.
  */
 import fs from "fs";
