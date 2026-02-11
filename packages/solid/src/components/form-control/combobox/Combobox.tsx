@@ -242,8 +242,9 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       }
     } else {
       // 다른 영역 클릭 시 토글
-      setOpen((v) => !v);
-      if (!open()) {
+      const wasOpen = open();
+      setOpen(!wasOpen);
+      if (!wasOpen) {
         performSearch(query());
       }
     }
