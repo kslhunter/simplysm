@@ -1,9 +1,9 @@
 import path from "path";
 import fs from "fs";
-import { input, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
 import { spawn } from "../utils/spawn";
+import { runInstall } from "./install";
 
 //#region Types
 
@@ -45,9 +45,8 @@ function isValidScopeName(name: string): boolean {
  *
  * 1. 디렉토리 비어있는지 확인
  * 2. 프로젝트명(폴더명) 검증
- * 3. 대화형 프롬프트로 설정 수집
- * 4. Handlebars 템플릿 렌더링
- * 5. pnpm install + sd-cli install 실행
+ * 3. Handlebars 템플릿 렌더링
+ * 4. pnpm install + sd-cli install 실행
  */
 export async function runInit(_options: InitOptions): Promise<void> {
   const cwd = process.cwd();
@@ -69,54 +68,34 @@ export async function runInit(_options: InitOptions): Promise<void> {
     return;
   }
 
-  // 3. 대화형 프롬프트
-  const clientSuffix = await input({
-    message: "클라이언트 이름을 입력하세요 (client-___):",
-    validate: (value) => {
-      if (!value.trim()) return "이름을 입력해주세요.";
-      if (!/^[a-z][a-z0-9-]*$/.test(value)) return "소문자, 숫자, 하이픈만 사용 가능합니다.";
-      return true;
-    },
-  });
-
-  const useRouter = await confirm({
-    message: "라우터를 사용하시겠습니까?",
-    default: true,
-  });
-
-  const clientName = `client-${clientSuffix}`;
-
-  // 4. 템플릿 렌더링
+  // 3. 템플릿 렌더링
   const pkgRoot = findPackageRoot(import.meta.dirname);
   const templateDir = path.join(pkgRoot, "templates", "init");
 
-  const context = {
-    projectName,
-    clientSuffix,
-    clientName,
-    router: useRouter,
-  };
-
-  const dirReplacements = {
-    __CLIENT__: clientName,
-  };
+  const context = { projectName };
 
   logger.info("프로젝트 파일 생성 중...");
-  await renderTemplateDir(templateDir, cwd, context, dirReplacements);
+  await renderTemplateDir(templateDir, cwd, context);
   logger.success("프로젝트 파일 생성 완료");
 
-  // 5. pnpm install
+  // 4. pnpm install
   logger.info("pnpm install 실행 중...");
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
+  // 5. sd-cli install (Claude Code 스킬 설치)
+  logger.info("sd-cli install 실행 중...");
+  await runInstall({});
+  logger.success("sd-cli install 완료");
+
   // 6. 완료 메시지
   consola.box(
     [
-      `프로젝트가 생성되었습니다!`,
+      "프로젝트가 생성되었습니다!",
       "",
-      `  sd-claude install          Claude Code 스킬 설치`,
-      `  pnpm dev ${clientName}    개발 서버 실행`,
+      "다음 단계:",
+      "  sd-cli add client    클라이언트 패키지 추가",
+      "  sd-cli add server    서버 패키지 추가",
     ].join("\n"),
   );
 }

@@ -2,12 +2,4 @@ import simplysmPlugin from "@simplysm/eslint-plugin";
 
 export default [
   ...simplysmPlugin.configs.recommended,
-  {
-    files: ["**/*.{ts,tsx}"],
-    settings: {
-      tailwindcss: {
-        config: "packages/{{clientName}}/tailwind.config.ts",
-      },
-    },
-  },
 ];
