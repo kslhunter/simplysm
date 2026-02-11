@@ -18,6 +18,26 @@ model: haiku
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -10`
 
+## Commit Message Format
+
+Follow the Conventional Commits style, matching the recent commit history above:
+
+```
+type(scope): short description
+```
+
+- **type**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf`
+- **scope**: package name or area (e.g., `solid`, `core-common`, `orm-node`)
+- **description**: imperative, lowercase, no period at end
+
+Examples:
+- `feat(solid): add Select component`
+- `fix(orm-node): handle null values in bulk insert`
+- `refactor(core-common): simplify DateTime parsing`
+- `docs: update README with new API examples`
+
+Use a HEREDOC for multi-line messages when needed.
+
 ## Your task
 
 Based on the above changes, create a single git commit.

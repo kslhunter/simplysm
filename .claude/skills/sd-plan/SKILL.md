@@ -49,39 +49,41 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ### Task N: [Component Name]
 
 **Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
+- Create: `exact/path/to/file.ts`
+- Modify: `exact/path/to/existing.ts:123-145`
+- Test: `exact/path/to/tests/file.spec.ts`
 
 **Step 1: Write the failing test**
 
-```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+```typescript
+test("specific behavior", () => {
+  const result = functionUnderTest(input);
+  expect(result).toBe(expected);
+});
 ```
 
 **Step 2: Run test to verify it fails**
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
+Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
+Expected: FAIL with "functionUnderTest is not defined"
 
 **Step 3: Write minimal implementation**
 
-```python
-def function(input):
-    return expected
+```typescript
+function functionUnderTest(input: InputType): OutputType {
+  return expected;
+}
 ```
 
 **Step 4: Run test to verify it passes**
 
-Run: `pytest tests/path/test.py::test_name -v`
+Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
 Expected: PASS
 
 **Step 5: Commit**
 
 ```bash
-git add tests/path/test.py src/path/file.py
+git add exact/path/to/tests/file.spec.ts exact/path/to/file.ts
 git commit -m "feat: add specific feature"
 ```
 ```

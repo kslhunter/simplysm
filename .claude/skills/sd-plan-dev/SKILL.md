@@ -54,12 +54,12 @@ digraph process {
         "Mark task complete" [shape=box];
     }
 
-    "Read plan, extract all tasks, create TodoWrite" [shape=box];
+    "Read plan, extract all tasks, create TaskCreate" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Skill(sd-fork): final review for entire implementation" [shape=box];
     "Done" [shape=ellipse];
 
-    "Read plan, extract all tasks, create TodoWrite" -> "Skill(sd-fork): implementer (./implementer-prompt.md)";
+    "Read plan, extract all tasks, create TaskCreate" -> "Skill(sd-fork): implementer (./implementer-prompt.md)";
     "Skill(sd-fork): implementer (./implementer-prompt.md)" -> "Implementer asks questions?";
     "Implementer asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Skill(sd-fork): implementer (./implementer-prompt.md)";
@@ -92,7 +92,7 @@ digraph process {
 You: Using sd-plan-dev to execute this plan.
 
 [Read plan file: docs/plans/feature-plan.md]
-[Extract all 5 tasks with full text + create TodoWrite]
+[Extract all 5 tasks with full text + create TaskCreate]
 
 Task 1: Hook installation script
 

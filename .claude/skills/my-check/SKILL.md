@@ -1,5 +1,5 @@
 ---
-name: sd-check
+name: my-check
 description: Verify code via typecheck, lint, and tests
 argument-hint: "[path]"
 model: inherit
@@ -7,8 +7,8 @@ model: inherit
 
 ## Usage
 
-- `/sd-check` — verify the entire project
-- `/sd-check packages/core-common` — verify a specific path only
+- `/my-check` — verify the entire project
+- `/my-check packages/core-common` — verify a specific path only
 
 If an argument is provided, run against that path. Otherwise, run against the entire project.
 
