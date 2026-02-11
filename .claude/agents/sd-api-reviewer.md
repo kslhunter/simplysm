@@ -17,6 +17,7 @@ Analyze the specified package's public API surface (exports, types, configuratio
 - **Industry standard comparison**: Compare naming patterns against major libraries in the same domain (use WebSearch)
 - **Internal consistency**: Same concept with different names, same pattern with different prefixes/suffixes
 - **Intuitiveness**: Whether the behavior can be predicted from the name alone
+- **Internal consistency over external standards**: Before suggesting a naming change, verify the existing pattern across ALL similar components in the library. If the library consistently uses one convention (e.g., `value`/`onValueChange` for all form controls), do NOT suggest an industry-standard alternative (e.g., `checked`/`onCheckedChange`) that would break internal consistency.
 
 ### 2. API Intuitiveness
 

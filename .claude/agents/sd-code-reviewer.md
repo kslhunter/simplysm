@@ -30,6 +30,11 @@ Rate each potential issue on a scale from 0-100:
 
 **Only report issues with confidence ≥ 80.** Focus on issues that truly matter - quality over quantity.
 
+## False Positive Prevention
+
+- **Visual/UI behavior**: Do NOT flag CSS transforms (rotate, translate, scale) or visual states without verifying the actual rendering context (e.g., icon position, layout direction). CSS rotate values depend on icon placement — rotate-90 on a right-aligned chevron is correct for a "collapsed" state.
+- **Pre-existing patterns**: If an issue exists in unchanged code and is part of an established pattern, do NOT report it unless it causes actual bugs.
+
 ## Output Guidance
 
 Start by clearly stating what you're reviewing. For each high-confidence issue, provide:
