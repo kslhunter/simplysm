@@ -34,6 +34,11 @@ export const appStructure = createAppStructure({
             { code: "combobox", title: "Combobox", component: lazy(() => import("./pages/form-control/ComboboxPage")) },
             { code: "field", title: "Field", component: lazy(() => import("./pages/form-control/FieldPage")) },
             {
+              code: "color-picker",
+              title: "ColorPicker",
+              component: lazy(() => import("./pages/form-control/ColorPickerPage")),
+            },
+            {
               code: "checkbox-radio",
               title: "Checkbox & Radio",
               component: lazy(() => import("./pages/form-control/CheckBoxRadioPage")),
