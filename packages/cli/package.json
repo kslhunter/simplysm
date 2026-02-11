@@ -14,7 +14,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "sd-cli": "./dist/sd-cli.js"
+    "sd-cli": "./dist/sd-cli.js",
+    "cli": "./dist/sd-cli.js"
   },
   "dependencies": {
     "@fastify/http-proxy": "^11.4.1",
