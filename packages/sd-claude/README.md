@@ -1,6 +1,6 @@
 # @simplysm/sd-claude
 
-CLI tool for installing and uninstalling Simplysm Claude Code skills and agents. Standalone package — does not require `@simplysm/cli`.
+CLI tool for installing and uninstalling Simplysm Claude Code skills and agents. Standalone package — does not require `@simplysm/sd-cli`.
 
 ## Installation
 

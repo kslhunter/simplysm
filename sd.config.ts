@@ -1,4 +1,4 @@
-import type { SdConfigFn } from "@simplysm/cli";
+import type { SdConfigFn } from "@simplysm/sd-cli";
 
 const config: SdConfigFn = () => ({
   packages: {
@@ -6,7 +6,7 @@ const config: SdConfigFn = () => ({
     "capacitor-plugin-broadcast": { target: "browser", publish: "npm" },
     "capacitor-plugin-file-system": { target: "browser", publish: "npm" },
     "capacitor-plugin-usb-storage": { target: "browser", publish: "npm" },
-    "cli": { target: "node", publish: "npm" },
+    "sd-cli": { target: "node", publish: "npm" },
     "core-browser": { target: "browser", publish: "npm" },
     "core-common": { target: "neutral", publish: "npm" },
     "core-node": { target: "node", publish: "npm" },

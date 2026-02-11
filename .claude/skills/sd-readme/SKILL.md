@@ -10,7 +10,7 @@ Update a package's README.md based on git commits since its last modification.
 
 ## Step 1: Resolve Package Path
 
-`$ARGUMENTS` is the package name or path (e.g., `cli`, `packages/cli`, `packages/core-common`).
+`$ARGUMENTS` is the package name or path (e.g., `sd-cli`, `packages/sd-cli`, `packages/core-common`).
 
 - If it doesn't start with `packages/`, prepend `packages/`.
 - Verify `<pkg-path>/README.md` exists. If not, stop and report.

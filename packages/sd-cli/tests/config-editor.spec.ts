@@ -21,7 +21,7 @@ describe("config-editor", () => {
       fs.writeFileSync(
         configPath,
         [
-          'import type { SdConfigFn } from "@simplysm/cli";',
+          'import type { SdConfigFn } from "@simplysm/sd-cli";',
           "",
           "const config: SdConfigFn = () => ({",
           "  packages: {},",
@@ -43,7 +43,7 @@ describe("config-editor", () => {
       fs.writeFileSync(
         configPath,
         [
-          'import type { SdConfigFn } from "@simplysm/cli";',
+          'import type { SdConfigFn } from "@simplysm/sd-cli";',
           "",
           "const config: SdConfigFn = () => ({",
           "  packages: {",
@@ -67,7 +67,7 @@ describe("config-editor", () => {
       fs.writeFileSync(
         configPath,
         [
-          'import type { SdConfigFn } from "@simplysm/cli";',
+          'import type { SdConfigFn } from "@simplysm/sd-cli";',
           "",
           "const config: SdConfigFn = () => ({",
           "  packages: {",
@@ -90,7 +90,7 @@ describe("config-editor", () => {
       fs.writeFileSync(
         configPath,
         [
-          'import type { SdConfigFn } from "@simplysm/cli";',
+          'import type { SdConfigFn } from "@simplysm/sd-cli";',
           "",
           "const config: SdConfigFn = () => ({",
           "  packages: {",

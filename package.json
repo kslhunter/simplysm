@@ -20,12 +20,12 @@
     "publish": "pnpm _sd-cli_ publish",
     "publish:no-build": "pnpm _sd-cli_ --no-build",
     "----": "",
-    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/cli/src/sd-cli.ts",
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
     "reinstall": "pnpm install --force",
     "postinstall": "playwright install"
   },
   "devDependencies": {
-    "@simplysm/cli": "workspace:*",
+    "@simplysm/sd-cli": "workspace:*",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^20.19.33",

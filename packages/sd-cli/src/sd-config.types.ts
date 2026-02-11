@@ -232,7 +232,7 @@ export interface SdConfigParams {
  * sd.config.ts는 다음과 같은 형태의 함수를 default export해야 한다:
  *
  * ```typescript
- * import type { SdConfig, SdConfigFn, SdConfigParams } from "@simplysm/cli";
+ * import type { SdConfig, SdConfigFn, SdConfigParams } from "@simplysm/sd-cli";
  *
  * const config: SdConfigFn = (params: SdConfigParams) => ({
  *   packages: {

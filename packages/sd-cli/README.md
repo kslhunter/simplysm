@@ -1,13 +1,13 @@
-# @simplysm/cli
+# @simplysm/sd-cli
 
 The CLI tool for the Simplysm framework. It provides project initialization, ESLint linting, TypeScript type-checking, library/client/server package builds, development mode, deployment, Android device execution, and Electron desktop app build capabilities.
 
 ## Installation
 
 ```bash
-npm install --save-dev @simplysm/cli
+npm install --save-dev @simplysm/sd-cli
 # or
-pnpm add -D @simplysm/cli
+pnpm add -D @simplysm/sd-cli
 ```
 
 ## Main Commands
@@ -279,7 +279,7 @@ The `typecheck` command treats all packages as `neutral` target if no config fil
 ### Basic Example
 
 ```typescript
-import type { SdConfigFn } from "@simplysm/cli";
+import type { SdConfigFn } from "@simplysm/sd-cli";
 
 const config: SdConfigFn = () => ({
   packages: {
@@ -312,7 +312,7 @@ export default config;
 The `sd.config.ts` function receives a `SdConfigParams` object as an argument:
 
 ```typescript
-import type { SdConfigFn, SdConfigParams } from "@simplysm/cli";
+import type { SdConfigFn, SdConfigParams } from "@simplysm/sd-cli";
 
 const config: SdConfigFn = (params: SdConfigParams) => {
   // params.cwd  - Current working directory

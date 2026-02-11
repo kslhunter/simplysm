@@ -82,13 +82,17 @@ export async function runInit(_options: InitOptions): Promise<void> {
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
-  // 5. 완료 메시지
+  // 5. sd-claude install
+  logger.info("sd-claude install 실행 중...");
+  await spawn("sd-claude", ["install"], { cwd });
+  logger.success("sd-claude install 완료");
+
+  // 6. 완료 메시지
   consola.box(
     [
       "프로젝트가 생성되었습니다!",
       "",
       "다음 단계:",
-      "  sd-claude install    Claude Code 스킬 설치",
       "  sd-cli add client    클라이언트 패키지 추가",
       "  sd-cli add server    서버 패키지 추가",
     ].join("\n"),
