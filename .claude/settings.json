@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "node .claude/scripts/statusline.js"
+    "command": "node .claude/sd-statusline.js"
   },
   "permissions": {
     "allow": [

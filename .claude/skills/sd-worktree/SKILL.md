@@ -1,6 +1,7 @@
 ---
 name: sd-worktree
 description: Use when starting new feature work, bug fixes, or any task that benefits from branch isolation - creates a git worktree under .worktrees/ and guides to next planning step
+model: inherit
 ---
 
 # sd-worktree
@@ -32,8 +33,8 @@ cd .worktrees/<name>   # Move into the worktree
 
 - All subsequent work should be done inside the worktree
 - Suggest next steps:
-  1. **brainstorming** (`/brainstorming`)
-  2. **writing-plans** (`/writing-plans`)
+  1. **brainstorming** (`/sd-brainstorm`)
+  2. **writing-plans** (`/sd-plan`)
 
 ### rebase — Rebase onto main branch
 

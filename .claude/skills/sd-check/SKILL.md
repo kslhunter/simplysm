@@ -1,6 +1,8 @@
 ---
+name: sd-check
 description: Verify code via typecheck, lint, and tests
-argument-hint: [path]
+argument-hint: "[path]"
+model: inherit
 ---
 
 ## Usage
@@ -35,7 +37,7 @@ On error: Read the failing file, fix with Edit, then re-run lint.
 ### Step 3: Tests (Vitest)
 
 ```
-pnpm vitest package/{{package-name}} --run $ARGUMENTS
+pnpm vitest $ARGUMENTS --run
 ```
 
 Run with `--run` flag for single execution (no watch mode).

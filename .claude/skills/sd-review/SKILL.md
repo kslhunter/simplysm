@@ -1,6 +1,7 @@
 ---
 name: sd-review
 description: Use when performing a comprehensive code review of a package or path - uses sd-explore for code analysis in a forked context, then dispatches to specialized reviewer agents
+model: inherit
 ---
 
 # sd-review
@@ -27,11 +28,11 @@ Analyzes code via the `sd-explore` skill, then runs 3 subagents in parallel for 
 
 Run 3 subagents in parallel via the Task tool:
 
-| Agent Type | Role |
-|-----------|------|
-| `feature-dev:code-reviewer` | Bugs, security, logic errors, convention issues |
-| `code-simplifier:code-simplifier` | Complexity, duplication, readability issues |
-| `sd-api-reviewer` | DX/usability, naming, type hints |
+| Agent Type           | Role |
+|----------------------|------|
+| `sd-code-reviewer`   | Bugs, security, logic errors, convention issues |
+| `sd-code-simplifier` | Complexity, duplication, readability issues |
+| `sd-api-reviewer`    | DX/usability, naming, type hints |
 
 ## Workflow
 
