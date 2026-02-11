@@ -36,6 +36,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.worktrees" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo-server/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-auto-update/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-broadcast/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-file-system/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-usb-storage/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cli/claude" />
     </content>
     <orderEntry type="inheritedJdk" />
