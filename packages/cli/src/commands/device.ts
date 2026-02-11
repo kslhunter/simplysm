@@ -5,6 +5,7 @@ import { consola } from "consola";
 import type { SdConfig, SdClientPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { Capacitor } from "../capacitor/capacitor";
+import { Electron } from "../electron/electron";
 
 //#region Types
 
@@ -65,56 +66,84 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     return;
   }
 
-  // pkgConfig.target === "client" 이므로 타입 좁힘
   const clientConfig: SdClientPackageConfig = pkgConfig;
-  if (clientConfig.capacitor == null) {
-    consola.error(`capacitor 설정이 없습니다: ${packageName}`);
-    process.exitCode = 1;
-    return;
-  }
+  const pkgDir = path.join(cwd, "packages", packageName);
 
-  // 개발 서버 URL 결정
-  let serverUrl = url;
-  if (serverUrl == null) {
-    if (typeof clientConfig.server === "number") {
-      serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
-    } else {
-      consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+  if (clientConfig.electron != null) {
+    // Electron 개발 실행
+    let serverUrl = url;
+    if (serverUrl == null) {
+      if (typeof clientConfig.server === "number") {
+        serverUrl = `http://localhost:${clientConfig.server}/${packageName}/`;
+      } else {
+        consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        process.exitCode = 1;
+        return;
+      }
+    }
+
+    logger.debug("개발 서버 URL", { serverUrl });
+
+    const listr = new Listr([
+      {
+        title: `${packageName} (electron)`,
+        task: async () => {
+          const electron = await Electron.create(pkgDir, clientConfig.electron!);
+          await electron.run(serverUrl);
+        },
+      },
+    ]);
+
+    try {
+      await listr.run();
+      logger.info("Electron 실행 완료");
+    } catch (err) {
+      consola.error(`Electron 실행 실패: ${err instanceof Error ? err.message : err}`);
+      process.exitCode = 1;
+    }
+  } else if (clientConfig.capacitor != null) {
+    // Capacitor 디바이스 실행 (기존 로직)
+    let serverUrl = url;
+    if (serverUrl == null) {
+      if (typeof clientConfig.server === "number") {
+        serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
+      } else {
+        consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        process.exitCode = 1;
+        return;
+      }
+    } else if (!serverUrl.endsWith("/")) {
+      serverUrl = `${serverUrl}/${packageName}/capacitor/`;
+    }
+
+    logger.debug("개발 서버 URL", { serverUrl });
+
+    const capPath = path.join(pkgDir, ".capacitor");
+    if (!(await fsExists(capPath))) {
+      consola.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
       process.exitCode = 1;
       return;
     }
-  } else if (!serverUrl.endsWith("/")) {
-    serverUrl = `${serverUrl}/${packageName}/capacitor/`;
-  }
 
-  logger.debug("개발 서버 URL", { serverUrl });
-
-  // Capacitor 프로젝트 확인
-  const pkgDir = path.join(cwd, "packages", packageName);
-  const capPath = path.join(pkgDir, ".capacitor");
-
-  if (!(await fsExists(capPath))) {
-    consola.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
-    process.exitCode = 1;
-    return;
-  }
-
-  // Listr로 디바이스 실행
-  const listr = new Listr([
-    {
-      title: `${packageName} (device)`,
-      task: async () => {
-        const cap = await Capacitor.create(pkgDir, clientConfig.capacitor!);
-        await cap.runOnDevice(serverUrl);
+    const listr = new Listr([
+      {
+        title: `${packageName} (device)`,
+        task: async () => {
+          const cap = await Capacitor.create(pkgDir, clientConfig.capacitor!);
+          await cap.runOnDevice(serverUrl);
+        },
       },
-    },
-  ]);
+    ]);
 
-  try {
-    await listr.run();
-    logger.info("디바이스 실행 완료");
-  } catch (err) {
-    consola.error(`디바이스 실행 실패: ${err instanceof Error ? err.message : err}`);
+    try {
+      await listr.run();
+      logger.info("디바이스 실행 완료");
+    } catch (err) {
+      consola.error(`디바이스 실행 실패: ${err instanceof Error ? err.message : err}`);
+      process.exitCode = 1;
+    }
+  } else {
+    consola.error(`electron 또는 capacitor 설정이 없습니다: ${packageName}`);
     process.exitCode = 1;
   }
 }

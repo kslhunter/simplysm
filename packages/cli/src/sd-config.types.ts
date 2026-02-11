@@ -136,6 +136,26 @@ export interface SdCapacitorConfig {
 }
 
 /**
+ * Electron 설정
+ */
+export interface SdElectronConfig {
+  /** Electron 앱 ID (예: "com.example.myapp") */
+  appId: string;
+  /** portable .exe (true) 또는 NSIS 인스톨러 (false/미지정) */
+  portable?: boolean;
+  /** 인스톨러 아이콘 경로 (.ico, 패키지 디렉토리 기준 상대경로) */
+  installerIcon?: string;
+  /** Electron에 포함할 npm 패키지 (native 모듈 등) */
+  reinstallDependencies?: string[];
+  /** npm postinstall 스크립트 */
+  postInstallScript?: string;
+  /** NSIS 옵션 (portable이 아닌 경우) */
+  nsisOptions?: Record<string, unknown>;
+  /** 환경변수 (electron-main.ts에서 process.env로 접근) */
+  env?: Record<string, string>;
+}
+
+/**
  * 클라이언트 패키지 설정 (Vite 개발 서버)
  */
 export interface SdClientPackageConfig {
@@ -153,6 +173,8 @@ export interface SdClientPackageConfig {
   publish?: SdPublishConfig;
   /** Capacitor 설정 */
   capacitor?: SdCapacitorConfig;
+  /** Electron 설정 */
+  electron?: SdElectronConfig;
 }
 
 /**

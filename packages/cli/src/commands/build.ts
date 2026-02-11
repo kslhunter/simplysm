@@ -15,6 +15,7 @@ import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import { Capacitor } from "../capacitor/capacitor";
+import { Electron } from "../electron/electron";
 
 //#region Types
 
@@ -34,7 +35,7 @@ export interface BuildOptions {
 interface BuildResult {
   name: string;
   target: string;
-  type: "js" | "dts" | "vite" | "capacitor";
+  type: "js" | "dts" | "vite" | "capacitor" | "electron";
   success: boolean;
   errors?: string[];
   diagnostics?: ts.Diagnostic[];
@@ -334,6 +335,31 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                       name,
                       target: "client",
                       type: "capacitor",
+                      success: false,
+                      errors: [err instanceof Error ? err.message : String(err)],
+                    });
+                    state.hasError = true;
+                  }
+                }
+
+                // Electron 빌드 (설정이 있는 경우만)
+                if (config.electron != null) {
+                  const outPath = path.join(pkgDir, "dist");
+                  try {
+                    const electron = await Electron.create(pkgDir, config.electron);
+                    await electron.initialize();
+                    await electron.build(outPath);
+                    results.push({
+                      name,
+                      target: "client",
+                      type: "electron",
+                      success: true,
+                    });
+                  } catch (err) {
+                    results.push({
+                      name,
+                      target: "client",
+                      type: "electron",
                       success: false,
                       errors: [err instanceof Error ? err.message : String(err)],
                     });
