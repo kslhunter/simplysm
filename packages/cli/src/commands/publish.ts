@@ -2,7 +2,7 @@ import path from "path";
 import semver from "semver";
 import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
-import { fsExists, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
+import { fsExists, fsRead, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
 import { env, jsonStringify } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../sd-config.types";
@@ -32,7 +32,6 @@ export interface PublishOptions {
 interface PackageJson {
   name: string;
   version: string;
-  workspaces?: string[];
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
@@ -236,8 +235,29 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const projPkgPath = path.resolve(cwd, "package.json");
   const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
-  // 패키지 경로 수집
-  const allPkgPaths = (await Promise.all((projPkg.workspaces ?? []).map((item) => fsGlob(path.resolve(cwd, item)))))
+  // pnpm-workspace.yaml에서 워크스페이스 패키지 경로 수집
+  const workspaceYamlPath = path.resolve(cwd, "pnpm-workspace.yaml");
+  const workspaceGlobs: string[] = [];
+  if (await fsExists(workspaceYamlPath)) {
+    const yamlContent = await fsRead(workspaceYamlPath);
+    let inPackages = false;
+    for (const line of yamlContent.split("\n")) {
+      if (/^packages:\s*$/.test(line)) {
+        inPackages = true;
+        continue;
+      }
+      if (inPackages) {
+        const match = /^\s+-\s+(.+)$/.exec(line);
+        if (match != null) {
+          workspaceGlobs.push(match[1].trim());
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  const allPkgPaths = (await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item)))))
     .flat()
     .filter((item) => !item.includes("."));
 
