@@ -393,32 +393,14 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (!noBuild && hasGit) {
     logger.debug("Git 커밋 여부 확인...");
     try {
-      // unstaged 변경사항 확인
-      const diff = await spawn("git", [
-        "diff",
-        "--name-only",
-        "--",
-        ".",
-        ":(exclude).*",
-        ":(exclude)_*",
-        ":(exclude)yarn.lock",
-        ":(exclude)pnpm-lock.yaml",
-        ":(exclude)package-lock.json",
-      ]);
+      // unstaged 변경사항 확인 (packages/ 폴더만)
+      const diff = await spawn("git", ["diff", "--name-only", "--", "packages/"]);
       if (diff.trim() !== "") {
         throw new Error("커밋되지 않은 변경사항이 있습니다.\n" + diff);
       }
 
-      // staged 변경사항 확인
-      const stagedDiff = await spawn("git", [
-        "diff",
-        "--cached",
-        "--name-only",
-        "--",
-        ".",
-        ":(exclude).*",
-        ":(exclude)_*",
-      ]);
+      // staged 변경사항 확인 (packages/ 폴더만)
+      const stagedDiff = await spawn("git", ["diff", "--cached", "--name-only", "--", "packages/"]);
       if (stagedDiff.trim() !== "") {
         throw new Error("staged된 변경사항이 있습니다. 먼저 커밋하거나 unstage하세요.\n" + stagedDiff);
       }
