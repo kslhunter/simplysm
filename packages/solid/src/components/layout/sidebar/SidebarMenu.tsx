@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from "@solidjs/router";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps } from "@tabler/icons-solidjs";
+import type { ComponentSize } from "../../../styles/tokens.styles";
 import { Icon } from "../../display/Icon";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
@@ -115,7 +116,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
       <div {...rest} data-sidebar-menu class={getClassName()}>
         <div class={headerClass}>MENU</div>
         <List inset>
-          <For each={local.menus}>{(menu) => <MenuItem menu={menu} />}</For>
+          <For each={local.menus}>{(menu) => <MenuItem menu={menu} size="lg" />}</For>
         </List>
       </div>
     </MenuContext.Provider>
@@ -124,6 +125,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
 
 interface MenuItemProps {
   menu: SidebarMenuItem;
+  size?: ComponentSize;
 }
 
 const MenuItem: Component<MenuItemProps> = (props) => {
@@ -164,7 +166,7 @@ const MenuItem: Component<MenuItemProps> = (props) => {
   };
 
   return (
-    <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick}>
+    <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick} size={props.size}>
       <Show when={props.menu.icon}>
         <Icon icon={props.menu.icon!} />
       </Show>

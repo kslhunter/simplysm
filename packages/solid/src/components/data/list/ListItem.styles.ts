@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { borderDefault } from "../../../styles/tokens.styles";
+import { borderDefault, type ComponentSize } from "../../../styles/tokens.styles";
 
 // 기본 아이템 스타일
 export const listItemBaseClass = clsx(
@@ -16,6 +16,12 @@ export const listItemBaseClass = clsx(
   "focus-visible:bg-base-200 dark:focus-visible:bg-base-700",
   "hover:bg-base-500/10 dark:hover:bg-base-700",
 );
+
+// 사이즈별 스타일
+export const listItemSizeClasses: Record<ComponentSize, string> = {
+  sm: clsx("py-0.5 px-1"),
+  lg: clsx("py-1.5 px-2"),
+};
 
 // 선택된 상태
 export const listItemSelectedClass = clsx(

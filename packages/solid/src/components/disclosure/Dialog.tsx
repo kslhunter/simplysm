@@ -9,6 +9,7 @@ import { mergeStyles } from "../../helpers/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
+import { registerDialog, unregisterDialog, bringToFront } from "./dialogZIndex";
 
 export interface DialogProps {
   /** 모달 열림 상태 */
@@ -187,6 +188,16 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
   });
 
+  // 열릴 때 등록, 닫힐 때 해제
+  createEffect(() => {
+    if (!open()) return;
+    if (!wrapperRef) return;
+    registerDialog(wrapperRef);
+    onCleanup(() => {
+      if (wrapperRef) unregisterDialog(wrapperRef);
+    });
+  });
+
   // 닫기 시도 (canDeactivate 체크)
   const tryClose = () => {
     if (local.canDeactivate && !local.canDeactivate()) return;
@@ -215,16 +226,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   // z-index 자동 관리
   const handleDialogFocus = () => {
     if (!wrapperRef) return;
-
-    const modals = document.querySelectorAll("[data-modal]");
-    let maxZ = 0;
-    modals.forEach((el) => {
-      const z = Number(getComputedStyle(el).zIndex);
-      if (z > maxZ) maxZ = z;
-    });
-    if (maxZ > 0) {
-      wrapperRef.style.zIndex = (maxZ + 1).toString();
-    }
+    bringToFront(wrapperRef);
   };
 
   // 드래그 이동
@@ -396,7 +398,6 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     // eslint-disable-next-line tailwindcss/enforces-shorthand -- inset-0은 Chrome 84 미지원
     clsx(
       "fixed bottom-0 left-0 right-0 top-0",
-      "z-modal",
       "flex flex-col items-center",
       !local.fill && "pt-[calc(3rem+0.5rem)]",
       local.float && "pointer-events-none",

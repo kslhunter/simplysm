@@ -117,7 +117,7 @@ Vague name, tests mock not code
 **MANDATORY. Never skip.**
 
 ```bash
-npm test path/to/test.test.ts
+pnpm vitest path/to/test.spec.ts --run
 ```
 
 Confirm:
@@ -172,7 +172,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-npm test path/to/test.test.ts
+pnpm vitest path/to/test.spec.ts --run
 ```
 
 Confirm:
@@ -303,7 +303,7 @@ test('rejects empty email', async () => {
 
 **Verify RED**
 ```bash
-$ npm test
+$ pnpm vitest path/to/test.spec.ts --run
 FAIL: expected 'Email required', got undefined
 ```
 
@@ -319,7 +319,7 @@ function submitForm(data: FormData) {
 
 **Verify GREEN**
 ```bash
-$ npm test
+$ pnpm vitest path/to/test.spec.ts --run
 PASS
 ```
 
@@ -358,7 +358,7 @@ Never fix bugs without a test.
 
 ## Testing Anti-Patterns
 
-When adding mocks or test utilities, read @testing-anti-patterns.md to avoid common pitfalls:
+When adding mocks or test utilities, read testing-anti-patterns.md to avoid common pitfalls:
 - Testing mock behavior instead of real behavior
 - Adding test-only methods to production classes
 - Mocking without understanding dependencies

@@ -11,6 +11,7 @@ import { List } from "./List";
 import { splitSlots } from "../../../helpers/splitSlots";
 import {
   listItemBaseClass,
+  listItemSizeClasses,
   listItemSelectedClass,
   listItemDisabledClass,
   listItemReadonlyClass,
@@ -18,6 +19,7 @@ import {
   listItemContentClass,
   getListItemSelectedIconClass,
 } from "./ListItem.styles";
+import type { ComponentSize } from "../../../styles/tokens.styles";
 
 void ripple;
 
@@ -82,6 +84,11 @@ export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonE
   selectedIcon?: Component<IconProps>;
 
   /**
+   * 아이템 크기
+   */
+  size?: ComponentSize;
+
+  /**
    * 클릭 핸들러 (중첩 List가 없을 때 호출)
    */
   onClick?: (e: MouseEvent) => void;
@@ -128,6 +135,7 @@ export const ListItem: ListItemComponent = (props) => {
     "readonly",
     "disabled",
     "selectedIcon",
+    "size",
     "onClick",
   ]);
 
@@ -159,6 +167,7 @@ export const ListItem: ListItemComponent = (props) => {
   const getHeaderClassName = () =>
     twMerge(
       listItemBaseClass,
+      local.size && listItemSizeClasses[local.size],
       local.selected && listItemSelectedClass,
       local.readonly && listItemReadonlyClass,
       local.disabled && listItemDisabledClass,

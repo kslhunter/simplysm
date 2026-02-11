@@ -83,7 +83,7 @@ pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 | `storage` | node | FTP/SFTP 클라이언트                        |
 
 ### 통합 테스트 (`tests/`)
-- `tests/orm/`: ORM 통합 테스트 (Docker DB 필요)
+- `tests/orm/`: ORM 통합 테스트 (Docker DB 필요, `orm-node` 패키지 자체에는 단위 테스트 없음)
 - `tests/service/`: 서비스 통합 테스트 (브라우저 테스트)
 
 ### 커스텀 타입 (`core-common`)
@@ -185,6 +185,8 @@ orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않
   → import 추가 전: 해당 패키지의 `index.ts`를 Read하여 export 확인
 - `no-console`, `eqeqeq`, `no-shadow` 적용
 - Node.js 내장 `Buffer` → `Uint8Array` 사용
+  - 단, 외부 라이브러리가 `Buffer`를 요구하는 경우 `eslint-disable` 주석으로 예외 처리
+  - 패턴: `// eslint-disable-next-line no-restricted-globals -- {라이브러리}가 Buffer를 요구함`
 - async 함수에 await 필수
 
 ### 함수 명명 규칙
