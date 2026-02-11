@@ -1,4 +1,4 @@
-import { children, createEffect, createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import { children, createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
@@ -10,6 +10,7 @@ import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import {
   triggerBaseClass,
   triggerDisabledClass,
@@ -224,23 +225,10 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
   type ValueType = T | T[] | undefined;
-  const [internalValue, setInternalValueRaw] = createSignal<ValueType>(undefined);
-
-  // props 변경 시 내부 상태 동기화
-  createEffect(() => {
-    const propValue = local.value;
-    setInternalValueRaw(() => propValue);
-  });
-
-  const isControlled = () => local.onValueChange !== undefined;
-  const getValue = () => (isControlled() ? local.value : internalValue());
-  const setInternalValue = (newValue: ValueType) => {
-    if (isControlled()) {
-      (local.onValueChange as ((v: T | T[]) => void) | undefined)?.(newValue as T | T[]);
-    } else {
-      setInternalValueRaw(() => newValue);
-    }
-  };
+  const [getValue, setInternalValue] = createControllableSignal<ValueType>({
+    value: () => local.value,
+    onChange: () => local.onValueChange as ((v: ValueType) => void) | undefined,
+  } as Parameters<typeof createControllableSignal<ValueType>>[0]);
 
   // 값이 선택되어 있는지 확인
   const isSelected = (value: T): boolean => {
