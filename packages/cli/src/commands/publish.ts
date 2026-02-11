@@ -488,26 +488,26 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       } else {
         logger.debug("Git 커밋/태그/푸시...");
         try {
-          await spawn("git", ["add", "."]);
-          await spawn("git", ["commit", "-m", `v${version}`]);
+          // await spawn("git", ["add", "."]);
+          // await spawn("git", ["commit", "-m", `v${version}`]);
           await spawn("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
           await spawn("git", ["push"]);
           await spawn("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
           // Git 실패 시 롤백
-          logger.error("Git 작업 실패, 롤백 시도...");
-          try {
-            await spawn("git", ["checkout", "."]);
-            logger.debug("Git 롤백 완료");
-          } catch {
-            consola.error(
-              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
-                "  git reset --hard HEAD~1\n" +
-                "  git tag -d v" +
-                version,
-            );
-          }
+          // logger.error("Git 작업 실패, 롤백 시도...");
+          // try {
+          //   await spawn("git", ["checkout", "."]);
+          //   logger.debug("Git 롤백 완료");
+          // } catch {
+          //   consola.error(
+          //     "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
+          //       "  git reset --hard HEAD~1\n" +
+          //       "  git tag -d v" +
+          //       version,
+          //   );
+          // }
           consola.error(`Git 작업 실패: ${err instanceof Error ? err.message : err}`);
           process.exitCode = 1;
           return;
