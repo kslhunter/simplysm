@@ -66,7 +66,7 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
       throw new Error("File not found: " + options.path);
     }
     const bytes = bytesFromBase64(entry.dataBase64);
-    const blob = new Blob([bytes]);
+    const blob = new Blob([bytes as BlobPart]);
     return { uri: URL.createObjectURL(blob) };
   }
 

@@ -82,7 +82,7 @@ function extractTextFromRange(range: Range): string | null {
     }
     if (node instanceof HTMLSelectElement) {
       if (node.selectedOptions.length > 0) {
-        parts.push(node.selectedOptions[0].textContent?.trim() ?? "");
+        parts.push(node.selectedOptions[0].textContent.trim());
       }
       return;
     }

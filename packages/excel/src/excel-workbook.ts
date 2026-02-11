@@ -172,7 +172,7 @@ export class ExcelWorkbook {
   async getBlob(): Promise<Blob> {
     this._ensureNotClosed();
     const bytes = await this.zipCache.toBytes();
-    return new Blob([bytes], {
+    return new Blob([new Uint8Array(bytes)], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
   }

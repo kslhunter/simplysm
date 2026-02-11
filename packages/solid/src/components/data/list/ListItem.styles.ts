@@ -19,8 +19,8 @@ export const listItemBaseClass = clsx(
 
 // 사이즈별 스타일
 export const listItemSizeClasses: Record<ComponentSize, string> = {
-  sm: clsx("py-0.5 px-1"),
-  lg: clsx("py-1.5 px-2"),
+  sm: clsx("px-1 py-0.5"),
+  lg: clsx("px-2 py-1.5"),
 };
 
 // 선택된 상태

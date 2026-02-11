@@ -73,12 +73,12 @@ describe("DataSheet", () => {
 
     const firstRowThs = headerRows[0].querySelectorAll("th");
     // "기본정보" th는 colspan=2
-    const groupTh = Array.from(firstRowThs).find((th) => th.textContent?.includes("기본정보"));
+    const groupTh = Array.from(firstRowThs).find((th) => th.textContent.includes("기본정보"));
     expect(groupTh).toBeTruthy();
     expect(groupTh!.getAttribute("colspan")).toBe("2");
 
     // "이메일" th는 rowspan=2
-    const emailTh = Array.from(firstRowThs).find((th) => th.textContent?.includes("이메일"));
+    const emailTh = Array.from(firstRowThs).find((th) => th.textContent.includes("이메일"));
     expect(emailTh).toBeTruthy();
     expect(emailTh!.getAttribute("rowspan")).toBe("2");
   });
