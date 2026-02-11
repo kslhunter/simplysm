@@ -1,6 +1,6 @@
 # @simplysm/cli
 
-The CLI tool for the Simplysm framework. It provides ESLint linting, TypeScript type-checking, library/client/server package builds, development mode, deployment, and Android device execution capabilities.
+The CLI tool for the Simplysm framework. It provides project initialization, ESLint linting, TypeScript type-checking, library/client/server package builds, development mode, deployment, Android device execution, and Electron desktop app build capabilities.
 
 ## Installation
 
@@ -128,6 +128,7 @@ sd-cli dev solid-demo my-server
 - `client` target: Starts Vite dev server. If `server` config is a string (package name), connects proxy to that server
 - `server` target: Builds in esbuild watch mode, then runs server runtime in separate Worker. Auto-rebuilds and restarts server on file changes
 - Client packages with Capacitor config perform Capacitor initialization after build completes
+- Client packages with Electron config launch Electron in dev mode after build completes
 - Terminates on SIGINT/SIGTERM signals
 
 ### build
@@ -154,7 +155,7 @@ sd-cli build solid core-common
 | Target                     | JS build        | .d.ts generation | Type-check | Note                                  |
 | -------------------------- | --------------- | ---------------- | ---------- | ------------------------------------- |
 | `node`/`browser`/`neutral` | esbuild         | O                | O          | Library package                       |
-| `client`                   | Vite production | X                | O          | Client app (+ Capacitor build)        |
+| `client`                   | Vite production | X                | O          | Client app (+ Capacitor/Electron build) |
 | `server`                   | esbuild         | X                | X          | Server app                            |
 | `scripts`                  | Excluded        | Excluded         | Excluded   | -                                     |
 
@@ -191,6 +192,25 @@ sd-cli publish --dry-run
 | `--dry-run`              | Simulate without actual deployment                         | `false` |
 | `--options`, `-o`        | Additional options to pass to sd.config.ts (multi-use)     | `[]`    |
 | `--debug`                | Output debug logs                                          | `false` |
+
+### init
+
+Initializes a new Simplysm project in the current directory. The directory must be empty and the directory name must be a valid npm scope name (lowercase, numbers, hyphens only).
+
+Runs an interactive prompt to collect:
+1. Client package name suffix (creates `client-{suffix}` package)
+2. Whether to use router
+
+After collecting inputs, it:
+1. Renders project files from Handlebars templates
+2. Runs `pnpm install`
+3. Runs `sd-cli install` (installs Claude Code skills/agents)
+
+```bash
+# Create an empty directory and run init
+mkdir my-project && cd my-project
+sd-cli init
+```
 
 ### install
 
@@ -311,6 +331,7 @@ export default config;
   env?: Record<string, string>; // Environment variables to replace during build
   publish?: SdPublishConfig;    // Deployment config (optional)
   capacitor?: SdCapacitorConfig; // Capacitor config (optional)
+  electron?: SdElectronConfig;  // Electron config (optional)
 }
 ```
 
@@ -407,11 +428,17 @@ Capacitor configuration for Android app builds in `client` target packages.
     },
     platform: {
       android: {
+        config: {                         // AndroidManifest.xml application attributes
+          requestLegacyExternalStorage: "true",
+        },
         bundle: true,                     // AAB bundle build (APK if false)
         sdkVersion: 33,                   // Android SDK version
         permissions: [                    // Additional permissions
           { name: "CAMERA" },
           { name: "WRITE_EXTERNAL_STORAGE", maxSdkVersion: 29 },
+        ],
+        intentFilters: [                  // Intent Filters
+          { action: "android.intent.action.VIEW", category: "android.intent.category.DEFAULT" },
         ],
         sign: {                           // APK/AAB signing
           keystore: "keystore.jks",
@@ -424,6 +451,34 @@ Capacitor configuration for Android app builds in `client` target packages.
   },
 },
 ```
+
+### Electron Configuration (SdElectronConfig)
+
+Electron configuration for Windows desktop app builds in `client` target packages. Requires `src/electron-main.ts` entry point in the package directory.
+
+```typescript
+"my-app": {
+  target: "client",
+  server: 3000,
+  electron: {
+    appId: "com.example.myapp",           // Electron app ID (required)
+    portable: false,                       // true: portable .exe, false: NSIS installer
+    installerIcon: "resources/icon.ico",   // Installer icon (.ico, relative to package directory)
+    reinstallDependencies: ["better-sqlite3"], // npm packages to include (native modules etc.)
+    postInstallScript: "node scripts/setup.js", // npm postinstall script
+    nsisOptions: {},                       // NSIS options (when portable is false)
+    env: {                                 // Environment variables (accessible via process.env in electron-main.ts)
+      API_URL: "https://api.example.com",
+    },
+  },
+},
+```
+
+**How it works:**
+
+- **Initialize**: Creates `.electron/src/package.json`, runs `npm install`, rebuilds native modules with `electron-rebuild`
+- **Build**: Bundles `electron-main.ts` with esbuild, copies web assets, runs `electron-builder` for Windows
+- **Dev mode**: Bundles `electron-main.ts`, launches Electron pointing to Vite dev server URL
 
 ## Direct API Calls
 
@@ -447,6 +502,8 @@ In addition to the CLI, you can import and use functions directly in code.
 | `PublishOptions`                | Type     | `runPublish` options                           |
 | `runDevice`                     | Function | Run app on Android device                      |
 | `DeviceOptions`                 | Type     | `runDevice` options                            |
+| `runInit`                       | Function | Initialize a new Simplysm project              |
+| `InitOptions`                   | Type     | `runInit` options                              |
 | `runInstall`                    | Function | Install Claude Code skills/agents              |
 | `InstallOptions`                | Type     | `runInstall` options                           |
 | `runUninstall`                  | Function | Uninstall Claude Code skills/agents            |
@@ -469,11 +526,14 @@ In addition to the CLI, you can import and use functions directly in code.
 | `SdCapacitorSignConfig`         | Type     | Capacitor Android signing config               |
 | `SdCapacitorPermission`         | Type     | Capacitor Android permission config            |
 | `SdCapacitorIntentFilter`       | Type     | Capacitor Android Intent Filter config         |
+| `SdElectronConfig`              | Type     | Electron config                                |
+| `Electron`                      | Class    | Electron project management (init/build/run)   |
+| `renderTemplateDir`             | Function | Render Handlebars template directory            |
 
 ### Usage Examples
 
 ```typescript
-import { runLint, runTypecheck, runWatch, runDev, runBuild, runPublish, runDevice, runInstall, runUninstall } from "@simplysm/cli";
+import { runLint, runTypecheck, runWatch, runDev, runBuild, runPublish, runDevice, runInit, runInstall, runUninstall } from "@simplysm/cli";
 
 // Run lint
 await runLint({
@@ -520,6 +580,9 @@ await runDevice({
   url: "http://192.168.0.10:3000",
   options: [],
 });
+
+// Initialize new project (interactive)
+await runInit({});
 
 // Install Claude Code skills/agents
 await runInstall({});
@@ -583,6 +646,10 @@ await runUninstall({});
 | `url`     | `string \| undefined` | Dev server URL (uses server port from sd.config.ts if not specified) |
 | `options` | `string[]`            | Additional options to pass to sd.config.ts                   |
 
+#### InitOptions
+
+No options. Currently pass an empty object (`{}`).
+
 #### InstallOptions
 
 No options. Currently pass an empty object (`{}`).
@@ -597,6 +664,7 @@ No options. Currently pass an empty object (`{}`).
 - `runWatch`, `runDev`: Returns `Promise<void>`. Resolves on SIGINT/SIGTERM signal reception
 - `runPublish`: Returns `Promise<void>`. Auto-rollback where possible on failure, then sets `process.exitCode = 1`
 - `runDevice`: Returns `Promise<void>`. Sets `process.exitCode = 1` on failure
+- `runInit`: Returns `Promise<void>`. Sets `process.exitCode = 1` if directory is not empty or project name is invalid
 - `runInstall`: Returns `Promise<void>`. Sets `process.exitCode = 1` if asset directory not found
 - `runUninstall`: Returns `Promise<void>`. Prints warning if `.claude` directory doesn't exist
 
