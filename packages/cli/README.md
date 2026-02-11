@@ -37,11 +37,11 @@ sd-cli lint --timing
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--fix` | 자동 수정 | `false` |
+| 옵션       | 설명                                                  | 기본값  |
+| ---------- | ----------------------------------------------------- | ------- |
+| `--fix`    | 자동 수정                                             | `false` |
 | `--timing` | 규칙별 실행 시간 출력 (ESLint `TIMING` 환경변수 설정) | `false` |
-| `--debug` | debug 로그 출력 | `false` |
+| `--debug`  | debug 로그 출력                                       | `false` |
 
 ### typecheck
 
@@ -63,19 +63,19 @@ sd-cli typecheck -o key=value
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션              | 설명                                                | 기본값  |
+| ----------------- | --------------------------------------------------- | ------- |
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]`    |
+| `--debug`         | debug 로그 출력                                     | `false` |
 
 **타겟별 타입체크 환경:**
 
-| 타겟 | 환경 |
-|------|------|
-| `node` | node 환경 1회 |
-| `browser`, `client` | browser 환경 1회 |
-| `neutral` | node + browser 환경 2회 |
-| `scripts` | 타입체크 제외 |
+| 타겟                | 환경                    |
+| ------------------- | ----------------------- |
+| `node`              | node 환경 1회           |
+| `browser`, `client` | browser 환경 1회        |
+| `neutral`           | node + browser 환경 2회 |
+| `scripts`           | 타입체크 제외           |
 
 ### watch
 
@@ -96,10 +96,10 @@ sd-cli watch solid core-common
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션              | 설명                                                | 기본값  |
+| ----------------- | --------------------------------------------------- | ------- |
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]`    |
+| `--debug`         | debug 로그 출력                                     | `false` |
 
 ### dev
 
@@ -118,10 +118,10 @@ sd-cli dev solid-demo my-server
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션              | 설명                                                | 기본값  |
+| ----------------- | --------------------------------------------------- | ------- |
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]`    |
+| `--debug`         | debug 로그 출력                                     | `false` |
 
 **동작 방식:**
 
@@ -144,19 +144,19 @@ sd-cli build solid core-common
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션              | 설명                                                | 기본값  |
+| ----------------- | --------------------------------------------------- | ------- |
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]`    |
+| `--debug`         | debug 로그 출력                                     | `false` |
 
 **타겟별 빌드 동작:**
 
-| 타겟 | JS 빌드 | .d.ts 생성 | 타입체크 | 비고 |
-|------|---------|-----------|---------|------|
-| `node`/`browser`/`neutral` | esbuild | O | O | 라이브러리 패키지 |
-| `client` | Vite production | X | O | 클라이언트 앱 (+ Capacitor 빌드) |
-| `server` | esbuild | X | X | 서버 앱 |
-| `scripts` | 제외 | 제외 | 제외 | - |
+| 타겟                       | JS 빌드         | .d.ts 생성 | 타입체크 | 비고                             |
+| -------------------------- | --------------- | ---------- | -------- | -------------------------------- |
+| `node`/`browser`/`neutral` | esbuild         | O          | O        | 라이브러리 패키지                |
+| `client`                   | Vite production | X          | O        | 클라이언트 앱 (+ Capacitor 빌드) |
+| `server`                   | esbuild         | X          | X        | 서버 앱                          |
+| `scripts`                  | 제외            | 제외       | 제외     | -                                |
 
 ### publish
 
@@ -185,12 +185,12 @@ sd-cli publish --dry-run
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--build` / `--no-build` | 빌드 실행 여부 (`--no-build`로 스킵) | `true` |
-| `--dry-run` | 실제 배포 없이 시뮬레이션 | `false` |
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션                     | 설명                                                | 기본값  |
+| ------------------------ | --------------------------------------------------- | ------- |
+| `--build` / `--no-build` | 빌드 실행 여부 (`--no-build`로 스킵)                | `true`  |
+| `--dry-run`              | 실제 배포 없이 시뮬레이션                           | `false` |
+| `--options`, `-o`        | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]`    |
+| `--debug`                | debug 로그 출력                                     | `false` |
 
 ### device
 
@@ -206,12 +206,12 @@ sd-cli device -p my-app -u http://192.168.0.10:3000
 
 **옵션:**
 
-| 옵션 | 설명 | 기본값 |
-|------|------|--------|
-| `--package`, `-p` | 패키지 이름 (필수) | - |
-| `--url`, `-u` | 개발 서버 URL (미지정 시 sd.config.ts의 server 포트 사용) | - |
-| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능) | `[]` |
-| `--debug` | debug 로그 출력 | `false` |
+| 옵션              | 설명                                                      | 기본값  |
+| ----------------- | --------------------------------------------------------- | ------- |
+| `--package`, `-p` | 패키지 이름 (필수)                                        | -       |
+| `--url`, `-u`     | 개발 서버 URL (미지정 시 sd.config.ts의 server 포트 사용) | -       |
+| `--options`, `-o` | sd.config.ts에 전달할 추가 옵션 (여러 번 사용 가능)       | `[]`    |
+| `--debug`         | debug 로그 출력                                           | `false` |
 
 ## 설정 (sd.config.ts)
 
@@ -241,14 +241,14 @@ export default config;
 
 ### 타겟 종류
 
-| 타겟 | 설명 | 타입체크 | watch | dev | build |
-|------|------|---------|-------|-----|-------|
-| `node` | Node.js 전용 패키지. DOM lib 제거, `@types/node` 포함 | O (node) | O | X | O (JS + dts) |
-| `browser` | 브라우저 전용 패키지. DOM lib 유지, `@types/node` 제외 | O (browser) | O | X | O (JS + dts) |
-| `neutral` | Node/브라우저 공용. DOM lib 유지, `@types/node` 포함 | O (node + browser) | O | X | O (JS + dts) |
-| `client` | Vite dev server 기반 클라이언트 앱 | O (browser) | X | O | O (Vite) |
-| `server` | Fastify 기반 서버 앱 | X | X | O | O (JS) |
-| `scripts` | typecheck/watch/build 대상에서 제외 | X | X | X | X |
+| 타겟      | 설명                                                   | 타입체크           | watch | dev | build        |
+| --------- | ------------------------------------------------------ | ------------------ | ----- | --- | ------------ |
+| `node`    | Node.js 전용 패키지. DOM lib 제거, `@types/node` 포함  | O (node)           | O     | X   | O (JS + dts) |
+| `browser` | 브라우저 전용 패키지. DOM lib 유지, `@types/node` 제외 | O (browser)        | O     | X   | O (JS + dts) |
+| `neutral` | Node/브라우저 공용. DOM lib 유지, `@types/node` 포함   | O (node + browser) | O     | X   | O (JS + dts) |
+| `client`  | Vite dev server 기반 클라이언트 앱                     | O (browser)        | X     | O   | O (Vite)     |
+| `server`  | Fastify 기반 서버 앱                                   | X                  | X     | O   | O (JS)       |
+| `scripts` | typecheck/watch/build 대상에서 제외                    | X                  | X     | X   | X            |
 
 ### 함수 파라미터
 
@@ -320,11 +320,11 @@ export default config;
 
 배포 방식은 세 가지를 지원한다:
 
-| 방식 | 설정 값 | 설명 |
-|------|---------|------|
-| npm | `"npm"` | npm 레지스트리에 배포 |
-| 로컬 디렉토리 | `{ type: "local-directory", path: "..." }` | 로컬 경로에 dist 복사 |
-| 스토리지 | `{ type: "ftp" \| "ftps" \| "sftp", host, port?, path?, user?, pass? }` | FTP/FTPS/SFTP 서버에 업로드 |
+| 방식          | 설정 값                                                                 | 설명                        |
+| ------------- | ----------------------------------------------------------------------- | --------------------------- |
+| npm           | `"npm"`                                                                 | npm 레지스트리에 배포       |
+| 로컬 디렉토리 | `{ type: "local-directory", path: "..." }`                              | 로컬 경로에 dist 복사       |
+| 스토리지      | `{ type: "ftp" \| "ftps" \| "sftp", host, port?, path?, user?, pass? }` | FTP/FTPS/SFTP 서버에 업로드 |
 
 로컬 디렉토리와 스토리지의 `path`에서는 환경변수 치환을 지원한다: `%VER%` (버전), `%PROJECT%` (프로젝트 경로).
 
@@ -359,7 +359,9 @@ export default config;
 
 ```typescript
 const config: SdConfigFn = () => ({
-  packages: { /* ... */ },
+  packages: {
+    /* ... */
+  },
   postPublish: [
     {
       type: "script",
@@ -413,40 +415,40 @@ CLI 외에 코드에서 직접 함수를 import하여 사용할 수 있다.
 
 ### 내보내기 목록
 
-| 내보내기 | 종류 | 설명 |
-|---------|------|------|
-| `runLint` | 함수 | ESLint 실행 |
-| `LintOptions` | 타입 | `runLint` 옵션 |
-| `runTypecheck` | 함수 | TypeScript 타입체크 실행 |
-| `TypecheckOptions` | 타입 | `runTypecheck` 옵션 |
-| `runWatch` | 함수 | 라이브러리 패키지 watch 모드 빌드 |
-| `WatchOptions` | 타입 | `runWatch` 옵션 |
-| `runDev` | 함수 | Client/Server 패키지 개발 모드 실행 |
-| `DevOptions` | 타입 | `runDev` 옵션 |
-| `runBuild` | 함수 | 프로덕션 빌드 실행 |
-| `BuildOptions` | 타입 | `runBuild` 옵션 |
-| `runPublish` | 함수 | 패키지 배포 실행 |
-| `PublishOptions` | 타입 | `runPublish` 옵션 |
-| `runDevice` | 함수 | Android 디바이스에서 앱 실행 |
-| `DeviceOptions` | 타입 | `runDevice` 옵션 |
-| `SdConfigFn` | 타입 | sd.config.ts 함수 타입 |
-| `SdConfig` | 타입 | sd.config.ts 반환 타입 |
-| `SdConfigParams` | 타입 | sd.config.ts 함수 파라미터 타입 |
-| `SdPackageConfig` | 타입 | 패키지 설정 유니온 타입 |
-| `SdBuildPackageConfig` | 타입 | 라이브러리 패키지 설정 |
-| `SdClientPackageConfig` | 타입 | 클라이언트 패키지 설정 |
-| `SdServerPackageConfig` | 타입 | 서버 패키지 설정 |
-| `SdScriptsPackageConfig` | 타입 | 스크립트 패키지 설정 |
-| `BuildTarget` | 타입 | 빌드 타겟 (`"node" \| "browser" \| "neutral"`) |
-| `SdPublishConfig` | 타입 | 배포 설정 유니온 타입 |
-| `SdLocalDirectoryPublishConfig` | 타입 | 로컬 디렉토리 배포 설정 |
-| `SdStoragePublishConfig` | 타입 | 스토리지(FTP/SFTP) 배포 설정 |
-| `SdPostPublishScriptConfig` | 타입 | postPublish 스크립트 설정 |
-| `SdCapacitorConfig` | 타입 | Capacitor 설정 |
-| `SdCapacitorAndroidConfig` | 타입 | Capacitor Android 플랫폼 설정 |
-| `SdCapacitorSignConfig` | 타입 | Capacitor Android 서명 설정 |
-| `SdCapacitorPermission` | 타입 | Capacitor Android 권한 설정 |
-| `SdCapacitorIntentFilter` | 타입 | Capacitor Android Intent Filter 설정 |
+| 내보내기                        | 종류 | 설명                                           |
+| ------------------------------- | ---- | ---------------------------------------------- |
+| `runLint`                       | 함수 | ESLint 실행                                    |
+| `LintOptions`                   | 타입 | `runLint` 옵션                                 |
+| `runTypecheck`                  | 함수 | TypeScript 타입체크 실행                       |
+| `TypecheckOptions`              | 타입 | `runTypecheck` 옵션                            |
+| `runWatch`                      | 함수 | 라이브러리 패키지 watch 모드 빌드              |
+| `WatchOptions`                  | 타입 | `runWatch` 옵션                                |
+| `runDev`                        | 함수 | Client/Server 패키지 개발 모드 실행            |
+| `DevOptions`                    | 타입 | `runDev` 옵션                                  |
+| `runBuild`                      | 함수 | 프로덕션 빌드 실행                             |
+| `BuildOptions`                  | 타입 | `runBuild` 옵션                                |
+| `runPublish`                    | 함수 | 패키지 배포 실행                               |
+| `PublishOptions`                | 타입 | `runPublish` 옵션                              |
+| `runDevice`                     | 함수 | Android 디바이스에서 앱 실행                   |
+| `DeviceOptions`                 | 타입 | `runDevice` 옵션                               |
+| `SdConfigFn`                    | 타입 | sd.config.ts 함수 타입                         |
+| `SdConfig`                      | 타입 | sd.config.ts 반환 타입                         |
+| `SdConfigParams`                | 타입 | sd.config.ts 함수 파라미터 타입                |
+| `SdPackageConfig`               | 타입 | 패키지 설정 유니온 타입                        |
+| `SdBuildPackageConfig`          | 타입 | 라이브러리 패키지 설정                         |
+| `SdClientPackageConfig`         | 타입 | 클라이언트 패키지 설정                         |
+| `SdServerPackageConfig`         | 타입 | 서버 패키지 설정                               |
+| `SdScriptsPackageConfig`        | 타입 | 스크립트 패키지 설정                           |
+| `BuildTarget`                   | 타입 | 빌드 타겟 (`"node" \| "browser" \| "neutral"`) |
+| `SdPublishConfig`               | 타입 | 배포 설정 유니온 타입                          |
+| `SdLocalDirectoryPublishConfig` | 타입 | 로컬 디렉토리 배포 설정                        |
+| `SdStoragePublishConfig`        | 타입 | 스토리지(FTP/SFTP) 배포 설정                   |
+| `SdPostPublishScriptConfig`     | 타입 | postPublish 스크립트 설정                      |
+| `SdCapacitorConfig`             | 타입 | Capacitor 설정                                 |
+| `SdCapacitorAndroidConfig`      | 타입 | Capacitor Android 플랫폼 설정                  |
+| `SdCapacitorSignConfig`         | 타입 | Capacitor Android 서명 설정                    |
+| `SdCapacitorPermission`         | 타입 | Capacitor Android 권한 설정                    |
+| `SdCapacitorIntentFilter`       | 타입 | Capacitor Android Intent Filter 설정           |
 
 ### 사용 예시
 
@@ -504,56 +506,56 @@ await runDevice({
 
 #### LintOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                               |
+| --------- | ---------- | ---------------------------------- |
 | `targets` | `string[]` | 린트할 경로 목록. 빈 배열이면 전체 |
-| `fix` | `boolean` | 자동 수정 여부 |
-| `timing` | `boolean` | 규칙별 실행 시간 출력 |
+| `fix`     | `boolean`  | 자동 수정 여부                     |
+| `timing`  | `boolean`  | 규칙별 실행 시간 출력              |
 
 #### TypecheckOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                                   |
+| --------- | ---------- | -------------------------------------- |
 | `targets` | `string[]` | 타입체크할 경로 목록. 빈 배열이면 전체 |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션        |
 
 #### WatchOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                                             |
+| --------- | ---------- | ------------------------------------------------ |
 | `targets` | `string[]` | watch할 라이브러리 패키지 목록. 빈 배열이면 전체 |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션                  |
 
 #### DevOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                                                   |
+| --------- | ---------- | ------------------------------------------------------ |
 | `targets` | `string[]` | dev 실행할 client/server 패키지 목록. 빈 배열이면 전체 |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션                        |
 
 #### BuildOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                                 |
+| --------- | ---------- | ------------------------------------ |
 | `targets` | `string[]` | 빌드할 패키지 목록. 빈 배열이면 전체 |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션      |
 
 #### PublishOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
+| 속성      | 타입       | 설명                                                     |
+| --------- | ---------- | -------------------------------------------------------- |
 | `targets` | `string[]` | 배포할 패키지 목록. 빈 배열이면 publish 설정이 있는 전체 |
-| `noBuild` | `boolean` | 빌드 없이 배포 (위험) |
-| `dryRun` | `boolean` | 실제 배포 없이 시뮬레이션 |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| `noBuild` | `boolean`  | 빌드 없이 배포 (위험)                                    |
+| `dryRun`  | `boolean`  | 실제 배포 없이 시뮬레이션                                |
+| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션                          |
 
 #### DeviceOptions
 
-| 속성 | 타입 | 설명 |
-|------|------|------|
-| `package` | `string` | 패키지 이름 (필수) |
-| `url` | `string \| undefined` | 개발 서버 URL (미지정 시 sd.config.ts의 server 포트 사용) |
-| `options` | `string[]` | sd.config.ts에 전달할 추가 옵션 |
+| 속성      | 타입                  | 설명                                                      |
+| --------- | --------------------- | --------------------------------------------------------- |
+| `package` | `string`              | 패키지 이름 (필수)                                        |
+| `url`     | `string \| undefined` | 개발 서버 URL (미지정 시 sd.config.ts의 server 포트 사용) |
+| `options` | `string[]`            | sd.config.ts에 전달할 추가 옵션                           |
 
 ### API 동작 방식
 
@@ -564,11 +566,11 @@ await runDevice({
 
 ## 캐시
 
-| 명령어 | 캐시 경로 | 설명 |
-|--------|----------|------|
-| `lint` | `.cache/eslint.cache` | ESLint 캐시 |
-| `typecheck` | `packages/{pkg}/.cache/typecheck-{env}.tsbuildinfo` | incremental 타입체크 정보 (`{env}`는 `node` 또는 `browser`) |
-| `watch` (dts) | `packages/{pkg}/.cache/dts.tsbuildinfo` | incremental .d.ts 빌드 정보 |
+| 명령어        | 캐시 경로                                           | 설명                                                        |
+| ------------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| `lint`        | `.cache/eslint.cache`                               | ESLint 캐시                                                 |
+| `typecheck`   | `packages/{pkg}/.cache/typecheck-{env}.tsbuildinfo` | incremental 타입체크 정보 (`{env}`는 `node` 또는 `browser`) |
+| `watch` (dts) | `packages/{pkg}/.cache/dts.tsbuildinfo`             | incremental .d.ts 빌드 정보                                 |
 
 캐시를 초기화하려면 `.cache` 디렉토리를 삭제한다:
 
