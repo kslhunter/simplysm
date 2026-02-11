@@ -1,0 +1,11 @@
+import { ServiceServer } from "@simplysm/service-server";
+
+const server = new ServiceServer({
+  rootPath: process.cwd(),
+  port: {{port}},
+  services: [],
+});
+
+if (!process.env["DEV"]) {
+  await server.listen();
+}
