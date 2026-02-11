@@ -40,6 +40,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-file-system/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/capacitor-plugin-usb-storage/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/cli/claude" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

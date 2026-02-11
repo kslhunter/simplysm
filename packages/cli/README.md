@@ -197,14 +197,11 @@ sd-cli publish --dry-run
 
 Initializes a new Simplysm project in the current directory. The directory must be empty and the directory name must be a valid npm scope name (lowercase, numbers, hyphens only).
 
-Runs an interactive prompt to collect:
-1. Client package name suffix (creates `client-{suffix}` package)
-2. Whether to use router
+Creates a skeleton project with:
+- `sd.config.ts`, `tsconfig.json`, `eslint.config.ts`, `pnpm-workspace.yaml`
+- `.gitignore`, `.prettierrc.yaml`, `.prettierignore`, `mise.toml`
 
-After collecting inputs, it:
-1. Renders project files from Handlebars templates
-2. Runs `pnpm install`
-3. Runs `sd-cli install` (installs Claude Code skills/agents)
+After rendering templates, runs `pnpm install` automatically.
 
 ```bash
 # Create an empty directory and run init
@@ -212,20 +209,44 @@ mkdir my-project && cd my-project
 sd-cli init
 ```
 
-### install
+After initialization, use `sd-cli add client` and `sd-cli add server` to add packages.
 
-Installs Claude Code skills/agents to the current project. Reads `sd-*` assets from the package's `claude/` directory and copies them to the current project's `.claude/`. Existing `sd-*` entries are completely removed before new ones are copied. Also automatically adds `statusLine` configuration to `.claude/settings.json`.
+> **Note**: To install Claude Code skills/agents, use `sd-claude install` from the separate `@simplysm/sd-claude` package.
+
+### add client
+
+Adds a client package to an existing project. Must be run from the project root (where `sd.config.ts` exists).
+
+Runs an interactive prompt to collect:
+1. Client package name suffix (creates `client-{suffix}` package)
+2. Whether to use router
+
+After collecting inputs, it:
+1. Renders client package from Handlebars templates into `packages/client-{suffix}/`
+2. Adds the package entry to `sd.config.ts` (via ts-morph AST editing)
+3. Adds tailwind CSS settings to `eslint.config.ts` (if first client)
+4. Runs `pnpm install`
 
 ```bash
-sd-cli install
+sd-cli add client
 ```
 
-### uninstall
+### add server
 
-Removes `sd-*` skills/agents from the current project's `.claude/`. Also automatically removes `statusLine` configuration from `.claude/settings.json`.
+Adds a server package to an existing project. Must be run from the project root (where `sd.config.ts` exists).
+
+Runs an interactive prompt to collect:
+1. Server name suffix (leave empty for just `server`, otherwise creates `server-{suffix}`)
+2. Which existing client packages this server should serve (multi-select)
+
+After collecting inputs, it:
+1. Renders server package from Handlebars templates into `packages/{server-name}/`
+2. Adds the server package entry to `sd.config.ts`
+3. Updates selected client packages' `server` field in `sd.config.ts`
+4. Runs `pnpm install`
 
 ```bash
-sd-cli uninstall
+sd-cli add server
 ```
 
 ### device
@@ -479,194 +500,6 @@ Electron configuration for Windows desktop app builds in `client` target package
 - **Initialize**: Creates `.electron/src/package.json`, runs `npm install`, rebuilds native modules with `electron-rebuild`
 - **Build**: Bundles `electron-main.ts` with esbuild, copies web assets, runs `electron-builder` for Windows
 - **Dev mode**: Bundles `electron-main.ts`, launches Electron pointing to Vite dev server URL
-
-## Direct API Calls
-
-In addition to the CLI, you can import and use functions directly in code.
-
-### Export List
-
-| Export                          | Type     | Description                                    |
-| ------------------------------- | -------- | ---------------------------------------------- |
-| `runLint`                       | Function | Run ESLint                                     |
-| `LintOptions`                   | Type     | `runLint` options                              |
-| `runTypecheck`                  | Function | Run TypeScript type-check                      |
-| `TypecheckOptions`              | Type     | `runTypecheck` options                         |
-| `runWatch`                      | Function | Watch mode build for library packages          |
-| `WatchOptions`                  | Type     | `runWatch` options                             |
-| `runDev`                        | Function | Run Client/Server packages in dev mode         |
-| `DevOptions`                    | Type     | `runDev` options                               |
-| `runBuild`                      | Function | Run production build                           |
-| `BuildOptions`                  | Type     | `runBuild` options                             |
-| `runPublish`                    | Function | Run package deployment                         |
-| `PublishOptions`                | Type     | `runPublish` options                           |
-| `runDevice`                     | Function | Run app on Android device                      |
-| `DeviceOptions`                 | Type     | `runDevice` options                            |
-| `runInit`                       | Function | Initialize a new Simplysm project              |
-| `InitOptions`                   | Type     | `runInit` options                              |
-| `runInstall`                    | Function | Install Claude Code skills/agents              |
-| `InstallOptions`                | Type     | `runInstall` options                           |
-| `runUninstall`                  | Function | Uninstall Claude Code skills/agents            |
-| `UninstallOptions`              | Type     | `runUninstall` options                         |
-| `SdConfigFn`                    | Type     | sd.config.ts function type                     |
-| `SdConfig`                      | Type     | sd.config.ts return type                       |
-| `SdConfigParams`                | Type     | sd.config.ts function parameter type           |
-| `SdPackageConfig`               | Type     | Package config union type                      |
-| `SdBuildPackageConfig`          | Type     | Library package config                         |
-| `SdClientPackageConfig`         | Type     | Client package config                          |
-| `SdServerPackageConfig`         | Type     | Server package config                          |
-| `SdScriptsPackageConfig`        | Type     | Scripts package config                         |
-| `BuildTarget`                   | Type     | Build target (`"node" \| "browser" \| "neutral"`) |
-| `SdPublishConfig`               | Type     | Deployment config union type                   |
-| `SdLocalDirectoryPublishConfig` | Type     | Local directory deployment config              |
-| `SdStoragePublishConfig`        | Type     | Storage (FTP/SFTP) deployment config           |
-| `SdPostPublishScriptConfig`     | Type     | postPublish script config                      |
-| `SdCapacitorConfig`             | Type     | Capacitor config                               |
-| `SdCapacitorAndroidConfig`      | Type     | Capacitor Android platform config              |
-| `SdCapacitorSignConfig`         | Type     | Capacitor Android signing config               |
-| `SdCapacitorPermission`         | Type     | Capacitor Android permission config            |
-| `SdCapacitorIntentFilter`       | Type     | Capacitor Android Intent Filter config         |
-| `SdElectronConfig`              | Type     | Electron config                                |
-| `Electron`                      | Class    | Electron project management (init/build/run)   |
-| `renderTemplateDir`             | Function | Render Handlebars template directory            |
-
-### Usage Examples
-
-```typescript
-import { runLint, runTypecheck, runWatch, runDev, runBuild, runPublish, runDevice, runInit, runInstall, runUninstall } from "@simplysm/cli";
-
-// Run lint
-await runLint({
-  targets: ["packages/core-common"],
-  fix: false,
-  timing: false,
-});
-
-// Run type-check
-await runTypecheck({
-  targets: ["packages/core-common"],
-  options: [],
-});
-
-// Run watch (library packages)
-await runWatch({
-  targets: ["solid"],
-  options: [],
-});
-
-// Run dev (client/server packages)
-await runDev({
-  targets: ["solid-demo"],
-  options: [],
-});
-
-// Production build
-await runBuild({
-  targets: ["solid", "core-common"],
-  options: [],
-});
-
-// Publish
-await runPublish({
-  targets: ["core-common"],
-  noBuild: false,
-  dryRun: true,
-  options: [],
-});
-
-// Run on Android device
-await runDevice({
-  package: "my-app",
-  url: "http://192.168.0.10:3000",
-  options: [],
-});
-
-// Initialize new project (interactive)
-await runInit({});
-
-// Install Claude Code skills/agents
-await runInstall({});
-
-// Uninstall Claude Code skills/agents
-await runUninstall({});
-```
-
-### Options Type Details
-
-#### LintOptions
-
-| Property  | Type       | Description                                       |
-| --------- | ---------- | ------------------------------------------------- |
-| `targets` | `string[]` | List of paths to lint. All if empty array        |
-| `fix`     | `boolean`  | Whether to auto-fix                               |
-| `timing`  | `boolean`  | Output rule execution times                       |
-
-#### TypecheckOptions
-
-| Property  | Type       | Description                                       |
-| --------- | ---------- | ------------------------------------------------- |
-| `targets` | `string[]` | List of paths to type-check. All if empty array   |
-| `options` | `string[]` | Additional options to pass to sd.config.ts        |
-
-#### WatchOptions
-
-| Property  | Type       | Description                                       |
-| --------- | ---------- | ------------------------------------------------- |
-| `targets` | `string[]` | List of library packages to watch. All if empty   |
-| `options` | `string[]` | Additional options to pass to sd.config.ts        |
-
-#### DevOptions
-
-| Property  | Type       | Description                                                |
-| --------- | ---------- | ---------------------------------------------------------- |
-| `targets` | `string[]` | List of client/server packages to run. All if empty       |
-| `options` | `string[]` | Additional options to pass to sd.config.ts                 |
-
-#### BuildOptions
-
-| Property  | Type       | Description                                       |
-| --------- | ---------- | ------------------------------------------------- |
-| `targets` | `string[]` | List of packages to build. All if empty          |
-| `options` | `string[]` | Additional options to pass to sd.config.ts        |
-
-#### PublishOptions
-
-| Property  | Type       | Description                                                      |
-| --------- | ---------- | ---------------------------------------------------------------- |
-| `targets` | `string[]` | List of packages to publish. All with publish config if empty   |
-| `noBuild` | `boolean`  | Publish without build (dangerous)                                |
-| `dryRun`  | `boolean`  | Simulate without actual deployment                               |
-| `options` | `string[]` | Additional options to pass to sd.config.ts                       |
-
-#### DeviceOptions
-
-| Property  | Type                  | Description                                                  |
-| --------- | --------------------- | ------------------------------------------------------------ |
-| `package` | `string`              | Package name (required)                                      |
-| `url`     | `string \| undefined` | Dev server URL (uses server port from sd.config.ts if not specified) |
-| `options` | `string[]`            | Additional options to pass to sd.config.ts                   |
-
-#### InitOptions
-
-No options. Currently pass an empty object (`{}`).
-
-#### InstallOptions
-
-No options. Currently pass an empty object (`{}`).
-
-#### UninstallOptions
-
-No options. Currently pass an empty object (`{}`).
-
-### API Behavior
-
-- `runLint`, `runTypecheck`, `runBuild`: Returns `Promise<void>`. On error, sets `process.exitCode = 1` and resolves (does not throw)
-- `runWatch`, `runDev`: Returns `Promise<void>`. Resolves on SIGINT/SIGTERM signal reception
-- `runPublish`: Returns `Promise<void>`. Auto-rollback where possible on failure, then sets `process.exitCode = 1`
-- `runDevice`: Returns `Promise<void>`. Sets `process.exitCode = 1` on failure
-- `runInit`: Returns `Promise<void>`. Sets `process.exitCode = 1` if directory is not empty or project name is invalid
-- `runInstall`: Returns `Promise<void>`. Sets `process.exitCode = 1` if asset directory not found
-- `runUninstall`: Returns `Promise<void>`. Prints warning if `.claude` directory doesn't exist
 
 ## Cache
 
