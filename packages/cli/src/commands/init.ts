@@ -3,7 +3,6 @@ import fs from "fs";
 import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
 import { spawn } from "../utils/spawn";
-import { runInstall } from "./install";
 
 //#region Types
 
@@ -83,17 +82,13 @@ export async function runInit(_options: InitOptions): Promise<void> {
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
-  // 5. sd-cli install (Claude Code 스킬 설치)
-  logger.info("sd-cli install 실행 중...");
-  await runInstall({});
-  logger.success("sd-cli install 완료");
-
-  // 6. 완료 메시지
+  // 5. 완료 메시지
   consola.box(
     [
       "프로젝트가 생성되었습니다!",
       "",
       "다음 단계:",
+      "  sd-claude install    Claude Code 스킬 설치",
       "  sd-cli add client    클라이언트 패키지 추가",
       "  sd-cli add server    서버 패키지 추가",
     ].join("\n"),

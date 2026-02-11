@@ -9,7 +9,5 @@ export { runDevice, type DeviceOptions } from "./commands/device";
 export { runInit, type InitOptions } from "./commands/init";
 export { runAddClient, type AddClientOptions } from "./commands/add-client";
 export { runAddServer, type AddServerOptions } from "./commands/add-server";
-export { runInstall, type InstallOptions } from "./commands/install";
-export { runUninstall, type UninstallOptions } from "./commands/uninstall";
 export { Electron } from "./electron/electron";
 export { renderTemplateDir } from "./utils/template";
