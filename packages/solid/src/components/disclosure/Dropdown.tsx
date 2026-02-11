@@ -1,4 +1,5 @@
 import { type JSX, type ParentComponent, createSignal, createEffect, onCleanup, Show, splitProps } from "solid-js";
+import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
@@ -103,10 +104,8 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
   // 방향 (위/아래)
   const [direction, setDirection] = createSignal<"down" | "up">("down");
 
-  // 위치 계산
-  createEffect(() => {
-    if (!mounted()) return;
-
+  // 위치 계산 함수 추출
+  const updatePosition = () => {
     const popup = popupRef();
     if (!popup) return;
 
@@ -159,6 +158,20 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     }
 
     setComputedStyle(style);
+  };
+
+  // 마운트 시 위치 계산 + popup 크기 변경 시 재계산
+  createEffect(() => {
+    if (!mounted()) return;
+
+    updatePosition();
+
+    const popup = popupRef();
+    if (popup) {
+      createResizeObserver(popup, () => {
+        updatePosition();
+      });
+    }
   });
 
   // 외부 클릭 감지 (pointerdown)
