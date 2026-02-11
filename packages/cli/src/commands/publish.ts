@@ -196,6 +196,69 @@ async function publishPackage(
 
 //#endregion
 
+//#region Dependency Levels
+
+/**
+ * 배포 패키지의 의존성 레벨을 계산한다.
+ * 의존성이 없는 패키지 → Level 0, Level 0에만 의존 → Level 1, ...
+ */
+async function computePublishLevels(
+  publishPkgs: Array<{ name: string; path: string; config: SdPublishConfig }>,
+): Promise<Array<Array<{ name: string; path: string; config: SdPublishConfig }>>> {
+  const pkgNames = new Set(publishPkgs.map((p) => p.name));
+
+  // 각 패키지의 워크스페이스 내 의존성 수집
+  const depsMap = new Map<string, Set<string>>();
+  for (const pkg of publishPkgs) {
+    const pkgJson = await fsReadJson<PackageJson>(path.resolve(pkg.path, "package.json"));
+    const allDeps = {
+      ...pkgJson.dependencies,
+      ...pkgJson.peerDependencies,
+      ...pkgJson.optionalDependencies,
+    };
+
+    const workspaceDeps = new Set<string>();
+    for (const depName of Object.keys(allDeps)) {
+      const shortName = depName.replace(/^@simplysm\//, "");
+      if (shortName !== depName && pkgNames.has(shortName)) {
+        workspaceDeps.add(shortName);
+      }
+    }
+    depsMap.set(pkg.name, workspaceDeps);
+  }
+
+  // 위상 정렬로 레벨 분류
+  const levels: Array<Array<{ name: string; path: string; config: SdPublishConfig }>> = [];
+  const assigned = new Set<string>();
+  const remaining = new Map(publishPkgs.map((p) => [p.name, p]));
+
+  while (remaining.size > 0) {
+    const level: Array<{ name: string; path: string; config: SdPublishConfig }> = [];
+    for (const [name, pkg] of remaining) {
+      const deps = depsMap.get(name)!;
+      if ([...deps].every((d) => assigned.has(d))) {
+        level.push(pkg);
+      }
+    }
+
+    if (level.length === 0) {
+      // 순환 의존성 — 남은 패키지를 모두 마지막 레벨에 배치
+      levels.push([...remaining.values()]);
+      break;
+    }
+
+    for (const pkg of level) {
+      assigned.add(pkg.name);
+      remaining.delete(pkg.name);
+    }
+    levels.push(level);
+  }
+
+  return levels;
+}
+
+//#endregion
+
 //#region Main
 
 /**
@@ -475,31 +538,43 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#endregion
 
-  //#region Phase 4: 배포
+  //#region Phase 4: 배포 (의존성 레벨별 병렬)
+
+  const levels = await computePublishLevels(publishPackages);
 
   if (dryRun) {
-    logger.info("[DRY-RUN] 배포 시뮬레이션 시작...");
+    logger.info(`[DRY-RUN] 배포 시뮬레이션 시작... (${levels.length}개 레벨, ${publishPackages.length}개 패키지)`);
   } else {
-    logger.debug("배포 시작...");
+    logger.debug(`배포 시작... (${levels.length}개 레벨, ${publishPackages.length}개 패키지)`);
   }
   const publishedPackages: string[] = [];
 
-  for (const pkg of publishPackages) {
-    try {
-      if (dryRun) {
-        logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션...`);
-      } else {
-        logger.info(`[${pkg.name}] 배포 중...`);
-      }
-      await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
-      publishedPackages.push(pkg.name);
-      if (dryRun) {
-        logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션 완료`);
-      } else {
-        logger.info(`[${pkg.name}] 배포 완료`);
-      }
-    } catch (err) {
-      // 이미 배포된 패키지 목록 출력
+  for (const [levelIdx, levelPkgs] of levels.entries()) {
+    logger.debug(`배포 레벨 ${levelIdx + 1}/${levels.length}: ${levelPkgs.map((p) => p.name).join(", ")}`);
+
+    const results = await Promise.allSettled(
+      levelPkgs.map(async (pkg) => {
+        if (dryRun) {
+          logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션...`);
+        } else {
+          logger.info(`[${pkg.name}] 배포 중...`);
+        }
+        await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+        publishedPackages.push(pkg.name);
+        if (dryRun) {
+          logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션 완료`);
+        } else {
+          logger.info(`[${pkg.name}] 배포 완료`);
+        }
+      }),
+    );
+
+    // 한 레벨에서 실패하면 다음 레벨 진행하지 않음
+    const failures = results
+      .map((r, i) => (r.status === "rejected" ? { pkg: levelPkgs[i], reason: r.reason } : null))
+      .filter((f) => f != null);
+
+    if (failures.length > 0) {
       if (publishedPackages.length > 0) {
         consola.error(
           "배포 중 오류가 발생했습니다.\n" +
@@ -510,7 +585,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         );
       }
 
-      consola.error(`[${pkg.name}] 배포 실패: ${err instanceof Error ? err.message : err}`);
+      for (const f of failures) {
+        consola.error(`[${f.pkg.name}] 배포 실패: ${f.reason instanceof Error ? f.reason.message : f.reason}`);
+      }
       process.exitCode = 1;
       return;
     }
