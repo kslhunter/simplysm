@@ -2,7 +2,6 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { execSync } from "child_process";
 import { stdin } from "process";
 
 //#region Constants
@@ -256,21 +255,13 @@ async function main() {
   // 폴더명 + git 브랜치
   const cwd = input.cwd ?? process.cwd();
   const folderName = path.basename(cwd);
-  let branch = "";
-  try {
-    branch = execSync("git branch --show-current", { cwd, timeout: 2000 }).toString().trim();
-  } catch {
-    // git 없거나 실패 시 무시
-  }
-  const gitPart = branch !== "" ? ` (${branch})` : "";
 
   // 출력
   const ctxBar = formatProgressBar(contextPercent);
   const dailyBar = dailyPercent !== "?" ? formatProgressBar(Number(dailyPercent)) : "□□□□□";
   const weekBar = weekPercent !== "?" ? formatProgressBar(Number(weekPercent)) : "□□□□□";
-  const extraPart = extraUsage !== "" ? ` 💰  ${extraUsage}` : "";
   console.log(
-    `🤖  ${modelName} 📊  ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}%${extraPart} 📁  ${folderName}${gitPart}`,
+    `${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}% ─ ${extraUsage} ─ ${folderName}`,
   );
 }
 

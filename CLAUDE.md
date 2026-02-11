@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일은 영문 작성)
+**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일및 각 패키지의 README.md 파일은 영문 작성)
 - 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
 - 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
 

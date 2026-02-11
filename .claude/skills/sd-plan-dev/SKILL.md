@@ -253,8 +253,14 @@ Done!
 - Re-review only the failed aspects (parallel sub-Tasks)
 - Repeat until both approved
 
+## After Completion
+
+When all tasks and final review are done, if the current working directory is inside a worktree (`.worktrees/`), guide the user to:
+- `/sd-worktree merge` — Merge the worktree branch back into main
+
 ## Integration
 
 **Related skills:**
 - **sd-plan** — creates the plan this skill executes
 - **sd-tdd** — task agents follow TDD
+- **sd-worktree** — branch isolation for worktree-based workflows

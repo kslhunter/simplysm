@@ -1,97 +1,97 @@
 # Simplysm
 
-TypeScript 기반의 풀스택 프레임워크 모노레포.
-pnpm 워크스페이스로 관리되며, SolidJS UI 컴포넌트, ORM, 서비스 통신, Excel 처리 등 다양한 패키지를 제공합니다.
+A TypeScript full-stack framework monorepo.
+Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service communication, Excel processing, and more.
 
-## 설계 철학
+## Design Philosophy
 
-- **표준 패턴 우선** — TypeScript/JavaScript/SolidJS의 관용적 패턴을 활용하여 러닝커브를 낮춥니다.
-- **명시적이고 예측 가능한 코드** — 암묵적 동작보다 명시적 코드를 선호합니다.
-- **점진적 학습** — 각 패키지를 독립적으로 사용할 수 있어 필요한 부분만 학습하고 적용할 수 있습니다.
+- **Standard patterns first** -- Leverage idiomatic TypeScript/JavaScript/SolidJS patterns to minimize the learning curve.
+- **Explicit and predictable code** -- Favor explicit code over implicit behavior.
+- **Incremental adoption** -- Each package is independently usable; learn and adopt only what you need.
 
-## 패키지
+## Packages
 
 ### Core
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [`@simplysm/core-common`](packages/core-common/README.md) | neutral | 공통 유틸리티, 커스텀 타입(`DateTime`, `DateOnly`, `Time`, `Uuid`), 에러 클래스 |
-| [`@simplysm/core-browser`](packages/core-browser/README.md) | browser | 브라우저 전용 확장 |
-| [`@simplysm/core-node`](packages/core-node/README.md) | node | Node.js 유틸리티 (파일시스템, 워커) |
+| Package | Target | Description |
+|---------|--------|-------------|
+| [`@simplysm/core-common`](packages/core-common/README.md) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`), error classes |
+| [`@simplysm/core-browser`](packages/core-browser/README.md) | browser | Browser-specific extensions |
+| [`@simplysm/core-node`](packages/core-node/README.md) | node | Node.js utilities (filesystem, worker threads) |
 
 ### ORM
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [`@simplysm/orm-common`](packages/orm-common/README.md) | neutral | ORM 쿼리 빌더, 테이블 스키마 정의 |
-| [`@simplysm/orm-node`](packages/orm-node/README.md) | node | DB 커넥션 (MySQL, MSSQL, PostgreSQL) |
+| Package | Target | Description |
+|---------|--------|-------------|
+| [`@simplysm/orm-common`](packages/orm-common/README.md) | neutral | ORM query builder, table schema definitions |
+| [`@simplysm/orm-node`](packages/orm-node/README.md) | node | DB connectors (MySQL, MSSQL, PostgreSQL) |
 
 ### Service
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [`@simplysm/service-common`](packages/service-common/README.md) | neutral | 서비스 프로토콜, 타입 정의 |
-| [`@simplysm/service-client`](packages/service-client/README.md) | neutral | WebSocket 클라이언트 |
-| [`@simplysm/service-server`](packages/service-server/README.md) | node | Fastify 기반 HTTP/WebSocket 서버 |
+| Package | Target | Description |
+|---------|--------|-------------|
+| [`@simplysm/service-common`](packages/service-common/README.md) | neutral | Service protocol, type definitions |
+| [`@simplysm/service-client`](packages/service-client/README.md) | neutral | WebSocket client |
+| [`@simplysm/service-server`](packages/service-server/README.md) | node | Fastify-based HTTP/WebSocket server |
 
 ### UI
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [`@simplysm/solid`](packages/solid/README.md) | browser | SolidJS UI 컴포넌트 + Tailwind CSS |
+| Package | Target | Description |
+|---------|--------|-------------|
+| [`@simplysm/solid`](packages/solid/README.md) | browser | SolidJS UI components + Tailwind CSS |
 
-### 도구
+### Tools
 
-| 패키지 | 타겟 | 설명 |
-|--------|------|------|
-| [`@simplysm/cli`](packages/cli/README.md) | node | 빌드, 린트, 타입체크 CLI 도구 |
-| [`@simplysm/eslint-plugin`](packages/eslint-plugin/README.md) | node | ESLint 커스텀 규칙 |
-| [`@simplysm/excel`](packages/excel/README.md) | neutral | Excel(.xlsx) 읽기/쓰기 |
-| [`@simplysm/storage`](packages/storage/README.md) | node | FTP/SFTP 클라이언트 |
+| Package | Target | Description |
+|---------|--------|-------------|
+| [`@simplysm/cli`](packages/cli/README.md) | node | Build, lint, typecheck CLI tool |
+| [`@simplysm/eslint-plugin`](packages/eslint-plugin/README.md) | node | Custom ESLint rules |
+| [`@simplysm/excel`](packages/excel/README.md) | neutral | Excel (.xlsx) read/write |
+| [`@simplysm/storage`](packages/storage/README.md) | node | FTP/SFTP client |
 
-### Capacitor 플러그인
+### Capacitor Plugins
 
-| 패키지 | 설명 |
-|--------|------|
-| [`@simplysm/capacitor-plugin-auto-update`](packages/capacitor-plugin-auto-update/README.md) | 자동 업데이트 |
-| [`@simplysm/capacitor-plugin-broadcast`](packages/capacitor-plugin-broadcast/README.md) | 브로드캐스트 |
-| [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system/README.md) | 파일 시스템 |
-| [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage/README.md) | USB 스토리지 |
+| Package | Description |
+|---------|-------------|
+| [`@simplysm/capacitor-plugin-auto-update`](packages/capacitor-plugin-auto-update/README.md) | Auto update |
+| [`@simplysm/capacitor-plugin-broadcast`](packages/capacitor-plugin-broadcast/README.md) | Broadcast |
+| [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system/README.md) | File system |
+| [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage/README.md) | USB storage |
 
-## 시작하기
+## Getting Started
 
-### 사전 요구사항
+### Prerequisites
 
 - Node.js 20+
 - pnpm
 
-### 설치
+### Installation
 
 ```bash
 pnpm install
 ```
 
-### 개발
+### Development
 
 ```bash
-# Watch 모드 (라이브러리 빌드 + .d.ts 생성, 변경 감지)
+# Watch mode (library build + .d.ts generation, file change detection)
 pnpm watch
 
-# Dev 모드 (클라이언트: Vite dev server, 서버: 빌드)
+# Dev mode (client: Vite dev server, server: build)
 pnpm dev
 
-# 특정 패키지만
+# Specific package only
 pnpm watch solid
 pnpm build solid
 ```
 
-### 빌드
+### Build
 
 ```bash
 pnpm build
 ```
 
-### 린트 & 타입체크
+### Lint & Typecheck
 
 ```bash
 pnpm lint
@@ -99,47 +99,47 @@ pnpm lint --fix
 pnpm typecheck
 ```
 
-### 테스트
+### Test
 
-[Vitest](https://vitest.dev/)를 사용합니다.
+Tests are powered by [Vitest](https://vitest.dev/).
 
 ```bash
-pnpm vitest                     # 전체
-pnpm vitest --project=node      # Node 환경
-pnpm vitest --project=browser   # 브라우저 환경
-pnpm vitest --project=solid     # SolidJS 컴포넌트
-pnpm vitest --project=orm       # ORM 통합 테스트 (Docker DB 필요)
-pnpm vitest --project=service   # Service 통합 테스트
+pnpm vitest                     # all
+pnpm vitest --project=node      # Node.js environment
+pnpm vitest --project=browser   # browser environment
+pnpm vitest --project=solid     # SolidJS components
+pnpm vitest --project=orm       # ORM integration tests (requires Docker DB)
+pnpm vitest --project=service   # Service integration tests
 ```
 
-## 아키텍처
+## Architecture
 
-### 의존성 계층
+### Dependency Layers
 
 ```
-core-common (공통 유틸리티)
+core-common (common utilities)
     ↑
-core-browser / core-node (환경별 확장)
+core-browser / core-node (environment-specific extensions)
     ↑
-orm-common / service-common (도메인별 공통)
+orm-common / service-common (domain-specific common)
     ↑
-orm-node / service-server / service-client (구현체)
+orm-node / service-server / service-client (implementations)
     ↑
-solid (UI 컴포넌트)
+solid (UI components)
 ```
 
-### 빌드 타겟
+### Build Targets
 
-| 타겟 | 설명 |
-|------|------|
-| `node` | Node.js 전용 (DOM 제외) |
-| `browser` | 브라우저 전용 (DOM 포함) |
-| `neutral` | Node/브라우저 공용 |
-| `client` | Vite dev server 개발용 |
+| Target | Description |
+|--------|-------------|
+| `node` | Node.js only (no DOM) |
+| `browser` | Browser only (includes DOM) |
+| `neutral` | Node.js / browser shared |
+| `client` | Vite dev server for development |
 
-## 사용 예시
+## Usage Examples
 
-### ORM 테이블 정의
+### ORM Table Definition
 
 ```typescript
 import { Table } from "@simplysm/orm-common";
@@ -153,12 +153,12 @@ const User = Table("User")
   .primaryKey("id");
 ```
 
-### 서비스 통신
+### Service Communication
 
-- `ServiceServer`: Fastify 기반 HTTP/WebSocket 서버
-- `ServiceClient`: WebSocket 클라이언트, RPC 호출
-- `ServiceProtocol`: 대용량 메시지 자동 분할/병합
+- `ServiceServer`: Fastify-based HTTP/WebSocket server
+- `ServiceClient`: WebSocket client with RPC calls
+- `ServiceProtocol`: Automatic chunking/merging for large messages
 
-## 라이선스
+## License
 
 [Apache-2.0](LICENSE)

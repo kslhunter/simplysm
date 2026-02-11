@@ -41,7 +41,9 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Implementation (if continuing):**
 - Ask: "Ready to set up for implementation?"
-- Use sd-plan to create detailed implementation plan
+- Guide the user to next steps:
+  - `/sd-worktree` — Create a git worktree for branch isolation before starting work
+  - `/sd-plan` — Create a detailed implementation plan from the design
 
 ## Key Principles
 
