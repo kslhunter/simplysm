@@ -13,7 +13,8 @@
   "files": [
     "src",
     "dist",
-    "claude"
+    "claude",
+    "templates"
   ],
   "scripts": {
     "prepack": "node scripts/sync-claude-assets.mjs"
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@fastify/http-proxy": "^11.4.1",
+    "@inquirer/prompts": "^7.5.3",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",
@@ -34,6 +36,7 @@
     "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
     "glob": "^13.0.0",
+    "handlebars": "^4.7.8",
     "jiti": "^2.6.1",
     "listr2": "^10.0.0",
     "sharp": "^0.34.2",

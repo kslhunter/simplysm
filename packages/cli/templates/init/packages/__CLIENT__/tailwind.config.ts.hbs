@@ -1,0 +1,15 @@
+import simplysmPreset from "@simplysm/solid/tailwind.config";
+
+const __dirname = new URL(".", import.meta.url).pathname
+  .replace(/^\/[^/]+\/@fs/, "")
+  .replace(/index\.ts$/, "");
+
+export default {
+  darkMode: "class",
+  presets: [simplysmPreset],
+  content: [
+    `${__dirname}index.html`,
+    `${__dirname}src/**/*.{ts,tsx}`,
+    ...simplysmPreset.content,
+  ],
+};

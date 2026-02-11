@@ -223,6 +223,15 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .command(
+      "init",
+      "새 프로젝트를 초기화한다.",
+      (cmd) => cmd.version(false).hide("help"),
+      async () => {
+        const { runInit } = await import("./commands/init.js");
+        await runInit({});
+      },
+    )
+    .command(
       "install",
       "Claude Code 스킬/에이전트를 현재 프로젝트에 설치한다.",
       (cmd) => cmd.version(false).hide("help"),
