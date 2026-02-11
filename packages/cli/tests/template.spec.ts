@@ -31,7 +31,7 @@ describe("renderTemplateDir", () => {
     fs.writeFileSync(path.join(srcDir, "icon.bin"), binaryData);
     await renderTemplateDir(srcDir, destDir, {});
     const copied = fs.readFileSync(path.join(destDir, "icon.bin"));
-    expect(Buffer.from(copied)).toEqual(Buffer.from(binaryData));
+    expect(new Uint8Array(copied)).toEqual(binaryData);
   });
 
   test("replaces directory name placeholders", async () => {
