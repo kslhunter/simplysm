@@ -13,7 +13,8 @@
   "files": [
     "src",
     "dist",
-    "claude"
+    "claude",
+    "templates"
   ],
   "scripts": {
     "prepack": "node scripts/sync-claude-assets.mjs"
