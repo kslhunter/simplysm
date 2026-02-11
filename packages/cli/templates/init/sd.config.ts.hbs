@@ -2,7 +2,9 @@ import type { SdConfigFn } from "@simplysm/cli";
 
 const config: SdConfigFn = () => ({
   packages: {
-    "{{clientName}}": { target: "client" },
+    "{{clientName}}": {
+      target: "client",
+    },
   },
 });
 
