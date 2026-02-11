@@ -231,6 +231,30 @@ export function createCliParser(argv: string[]): Argv {
         await runInit({});
       },
     )
+    .command("add", "프로젝트에 패키지를 추가한다.", (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .command(
+          "client",
+          "클라이언트 패키지를 추가한다.",
+          (subCmd) => subCmd.version(false).hide("help"),
+          async () => {
+            const { runAddClient } = await import("./commands/add-client.js");
+            await runAddClient({});
+          },
+        )
+        .command(
+          "server",
+          "서버 패키지를 추가한다.",
+          (subCmd) => subCmd.version(false).hide("help"),
+          async () => {
+            const { runAddServer } = await import("./commands/add-server.js");
+            await runAddServer({});
+          },
+        )
+        .demandCommand(1, "패키지 타입을 지정해주세요. (client, server)"),
+    )
     .command(
       "install",
       "Claude Code 스킬/에이전트를 현재 프로젝트에 설치한다.",
