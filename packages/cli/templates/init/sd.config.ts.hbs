@@ -1,0 +1,9 @@
+import type { SdConfigFn } from "@simplysm/cli";
+
+const config: SdConfigFn = () => ({
+  packages: {
+    "{{clientName}}": { target: "client" },
+  },
+});
+
+export default config;
