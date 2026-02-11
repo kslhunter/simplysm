@@ -233,6 +233,11 @@ orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않
     - 사용 가능: Flexbox gap
     - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 
+**Hook 네이밍 컨벤션:**
+- `create*`: SolidJS primitive를 래핑/조합하는 반응형 Hook (`createControllableSignal`, `createMountTransition`, `createTrackedWidth`)
+- `use*`: Provider Context에 의존하는 Hook (`useConfig`, `usePersisted`, `useTheme`)
+- 일반 유틸리티 함수는 Hook prefix 없이 명명
+
 **컴파운드 컴포넌트 네이밍 규칙:**
 
 모든 서브 컴포넌트는 dot notation(`Parent.Child`)으로만 접근한다.
