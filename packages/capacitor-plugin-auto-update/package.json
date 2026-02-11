@@ -18,18 +18,18 @@
     }
   },
   "dependencies": {
-    "@simplysm/core-common": "workspace:*",
-    "@simplysm/core-browser": "workspace:*",
     "@simplysm/capacitor-plugin-file-system": "workspace:*",
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*",
     "@simplysm/service-client": "workspace:*",
     "@simplysm/service-common": "workspace:*",
-    "semver": "^7.7.3"
+    "semver": "^7.7.4"
   },
   "peerDependencies": {
     "@capacitor/core": "^7.4.4"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.4.4",
+    "@capacitor/core": "^7.4.5",
     "@types/semver": "^7.7.1"
   }
 }

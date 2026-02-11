@@ -14,18 +14,18 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@typescript-eslint/utils": "^8.53.1",
+    "@typescript-eslint/utils": "^8.55.0",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-solid": "^0.14.5",
     "eslint-plugin-tailwindcss": "^3.18.2",
-    "eslint-plugin-unused-imports": "^4.3.0",
-    "globals": "^17.0.0",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.53.1"
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "globals": "^17.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
   },
   "devDependencies": {
     "@types/eslint-plugin-tailwindcss": "^3.17.0",
-    "@typescript-eslint/rule-tester": "^8.53.1"
+    "@typescript-eslint/rule-tester": "^8.55.0"
   }
 }

@@ -16,8 +16,8 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "chokidar": "^5.0.0",
-    "consola": "^3.4.0",
-    "glob": "^13.0.0",
+    "consola": "^3.4.2",
+    "glob": "^13.0.2",
     "tsx": "^4.21.0"
   }
 }

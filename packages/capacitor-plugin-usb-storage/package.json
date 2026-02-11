@@ -24,6 +24,6 @@
     "@capacitor/core": "^7.4.4"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.4.4"
+    "@capacitor/core": "^7.4.5"
   }
 }

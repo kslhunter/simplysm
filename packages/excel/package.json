@@ -16,6 +16,6 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "mime": "^4.1.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   }
 }

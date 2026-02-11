@@ -22,10 +22,10 @@
   "devDependencies": {
     "@types/pg": "^8.16.0",
     "@types/pg-copy-streams": "^1.2.5",
-    "mysql2": "^3.16.1",
-    "pg": "^8.17.2",
+    "mysql2": "^3.17.0",
+    "pg": "^8.18.0",
     "pg-copy-streams": "^7.0.0",
-    "tedious": "^19.2.0"
+    "tedious": "^19.2.1"
   },
   "peerDependencies": {
     "mysql2": "^3.16.0",
