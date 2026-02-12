@@ -41,6 +41,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/claude" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/claude/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/claude/claude" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/claude" />
     </content>
     <orderEntry type="inheritedJdk" />
