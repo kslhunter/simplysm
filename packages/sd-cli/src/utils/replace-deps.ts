@@ -37,3 +37,42 @@ export function resolveReplaceDepEntries(
 
   return results;
 }
+
+/**
+ * pnpm-workspace.yaml 내용을 파싱하여 workspace packages glob 배열을 반환한다.
+ * 별도 YAML 라이브러리 없이 간단한 라인 파싱으로 처리한다.
+ *
+ * @param content - pnpm-workspace.yaml 파일 내용
+ * @returns glob 패턴 배열 (예: ["packages/*", "tools/*"])
+ */
+export function parseWorkspaceGlobs(content: string): string[] {
+  const lines = content.split("\n");
+  const globs: string[] = [];
+  let inPackages = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed === "packages:") {
+      inPackages = true;
+      continue;
+    }
+
+    // packages 섹션 내의 리스트 항목
+    if (inPackages && trimmed.startsWith("- ")) {
+      const value = trimmed
+        .slice(2)
+        .trim()
+        .replace(/^["']|["']$/g, "");
+      globs.push(value);
+      continue;
+    }
+
+    // 다른 섹션이 시작되면 종료
+    if (inPackages && trimmed !== "" && !trimmed.startsWith("#")) {
+      break;
+    }
+  }
+
+  return globs;
+}

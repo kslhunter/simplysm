@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { resolveReplaceDepEntries } from "../src/utils/replace-deps";
+import { parseWorkspaceGlobs, resolveReplaceDepEntries } from "../src/utils/replace-deps";
 
 describe("resolveReplaceDepEntries", () => {
   test("glob * 패턴이 캡처되어 소스 경로의 *에 치환된다", () => {
@@ -35,5 +35,26 @@ describe("resolveReplaceDepEntries", () => {
       { targetName: "@simplysm/solid", sourcePath: "../simplysm/packages/solid" },
       { targetName: "@other/lib", sourcePath: "../other/lib" },
     ]);
+  });
+});
+
+describe("parseWorkspaceGlobs", () => {
+  test("packages glob 배열을 파싱한다", () => {
+    const yaml = `packages:\n  - "packages/*"\n  - "tools/*"`;
+    expect(parseWorkspaceGlobs(yaml)).toEqual(["packages/*", "tools/*"]);
+  });
+
+  test("따옴표 없는 glob도 파싱한다", () => {
+    const yaml = `packages:\n  - packages/*\n  - tools/*`;
+    expect(parseWorkspaceGlobs(yaml)).toEqual(["packages/*", "tools/*"]);
+  });
+
+  test("빈 내용이면 빈 배열을 반환한다", () => {
+    expect(parseWorkspaceGlobs("")).toEqual([]);
+  });
+
+  test("packages 섹션이 없으면 빈 배열을 반환한다", () => {
+    const yaml = `# some comment\nsomething: value`;
+    expect(parseWorkspaceGlobs(yaml)).toEqual([]);
   });
 });
