@@ -12,6 +12,7 @@ render(
     <HashRouter>
       <Route path="/" component={App}>
         {/* Home 레이아웃 외부 라우트 */}
+        <Route path="/login" component={lazy(() => import("./pages/LoginPage"))} />
         <Route path="/mobile-layout-demo" component={lazy(() => import("./pages/mobile/MobileLayoutDemoPage"))} />
         {/* Home 레이아웃 내부 */}
         <Route path="/home" component={Home}>
@@ -20,7 +21,7 @@ render(
           <Route path="/*" component={NotFoundPage} />
         </Route>
         {/* 루트 리다이렉트 */}
-        <Route path="/" component={() => <Navigate href="/home" />} />
+        <Route path="/" component={() => <Navigate href="/login" />} />
       </Route>
     </HashRouter>
   ),
