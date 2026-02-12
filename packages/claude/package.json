@@ -1,32 +1,22 @@
 {
-  "name": "@simplysm/sd-claude",
+  "name": "@simplysm/claude",
   "sideEffects": false,
   "version": "13.0.0-beta.21",
-  "description": "심플리즘 패키지 - Claude Code 스킬/에이전트 설치 도구",
+  "description": "Simplysm Claude Code skills/agents — auto-installs via postinstall",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
-    "directory": "packages/sd-claude"
+    "directory": "packages/claude"
   },
   "license": "Apache-2.0",
   "files": [
-    "dist",
+    "scripts",
     "claude"
   ],
   "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
     "prepack": "node scripts/sync-claude-assets.mjs"
   },
-  "type": "module",
-  "bin": {
-    "sd-claude": "./dist/sd-claude.js"
-  },
-  "dependencies": {
-    "@simplysm/core-node": "workspace:*",
-    "consola": "^3.4.2",
-    "yargs": "^18.0.0"
-  },
-  "devDependencies": {
-    "@types/yargs": "^17.0.35"
-  }
+  "type": "module"
 }
