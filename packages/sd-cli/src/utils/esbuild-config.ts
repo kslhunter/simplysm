@@ -1,5 +1,5 @@
 import path from "path";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import fs from "fs/promises";
 import { createRequire } from "module";
 import { glob } from "glob";
@@ -190,6 +190,55 @@ function scanOptionalPeerDeps(pkgName: string, resolveDir: string, external: Set
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     scanOptionalPeerDeps(dep, depDir, external, visited);
+  }
+}
+
+//#endregion
+
+//#region Native Module Externals
+
+/**
+ * 의존성 중 binding.gyp가 있는 네이티브 모듈 수집
+ *
+ * node-gyp로 빌드되는 네이티브 모듈은 esbuild가 번들링할 수 없으므로
+ * external로 지정해야 한다.
+ */
+export function collectNativeModuleExternals(pkgDir: string): string[] {
+  const external = new Set<string>();
+  const visited = new Set<string>();
+
+  const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    scanNativeModules(dep, pkgDir, external, visited);
+  }
+
+  return [...external];
+}
+
+function scanNativeModules(pkgName: string, resolveDir: string, external: Set<string>, visited: Set<string>): void {
+  if (visited.has(pkgName)) return;
+  visited.add(pkgName);
+
+  const req = createRequire(path.join(resolveDir, "noop.js"));
+
+  let pkgJsonPath: string;
+  try {
+    pkgJsonPath = req.resolve(`${pkgName}/package.json`);
+  } catch {
+    return;
+  }
+
+  const depDir = path.dirname(pkgJsonPath);
+
+  // binding.gyp 존재 여부로 네이티브 모듈 감지
+  if (existsSync(path.join(depDir, "binding.gyp"))) {
+    external.add(pkgName);
+  }
+
+  // 하위 dependencies도 재귀 탐색
+  const depPkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
+  for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
+    scanNativeModules(dep, depDir, external, visited);
   }
 }
 
