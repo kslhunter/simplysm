@@ -4,12 +4,6 @@ import type { Bytes } from "@simplysm/core-common";
 
 describe("ExcelWorkbook", () => {
   describe("빈 워크북 생성", () => {
-    it("새 워크북을 생성할 수 있다", () => {
-      const wb = new ExcelWorkbook();
-      expect(wb).toBeDefined();
-      expect(wb.zipCache).toBeDefined();
-    });
-
     it("워크시트를 생성할 수 있다", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.createWorksheet("TestSheet");

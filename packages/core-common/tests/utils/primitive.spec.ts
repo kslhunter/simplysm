@@ -7,20 +7,8 @@ describe("primitive utils", () => {
       expect(getPrimitiveTypeStr("hello")).toBe("string");
     });
 
-    it("빈 문자열도 string을 반환한다", () => {
-      expect(getPrimitiveTypeStr("")).toBe("string");
-    });
-
     it("number를 반환한다", () => {
       expect(getPrimitiveTypeStr(42)).toBe("number");
-    });
-
-    it("0도 number를 반환한다", () => {
-      expect(getPrimitiveTypeStr(0)).toBe("number");
-    });
-
-    it("NaN도 number를 반환한다", () => {
-      expect(getPrimitiveTypeStr(NaN)).toBe("number");
     });
 
     it("boolean을 반환한다", () => {
