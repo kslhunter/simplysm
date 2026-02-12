@@ -2,7 +2,7 @@ import simplysmRootConfigs from "./packages/eslint-plugin/src/configs/recommende
 import { globalIgnores } from "eslint/config";
 
 export default [
-  globalIgnores([".legacy-packages/**", "packages/sd-claude/claude/**"]),
+  globalIgnores([".legacy-packages/**", "packages/claude/claude/**"]),
   ...simplysmRootConfigs,
   // Tailwind CSS v3: 설정 파일 경로 지정
   {
