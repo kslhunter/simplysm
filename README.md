@@ -45,7 +45,7 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 | Package | Target | Description |
 |---------|--------|-------------|
 | [`@simplysm/sd-cli`](packages/sd-cli/README.md) | node | Build, lint, typecheck CLI tool |
-| [`@simplysm/sd-claude`](packages/sd-claude/README.md) | node | Claude Code skills/agents install/uninstall CLI |
+| [`@simplysm/claude`](packages/claude/README.md) | - | Claude Code skills/agents (auto-installs via postinstall) |
 | [`@simplysm/eslint-plugin`](packages/eslint-plugin/README.md) | node | Custom ESLint rules |
 | [`@simplysm/excel`](packages/excel/README.md) | neutral | Excel (.xlsx) read/write |
 | [`@simplysm/storage`](packages/storage/README.md) | node | FTP/SFTP client |

@@ -1,40 +1,31 @@
-# @simplysm/sd-claude
+# @simplysm/claude
 
-CLI tool for installing and uninstalling Simplysm Claude Code skills and agents. Standalone package — does not require `@simplysm/sd-cli`.
+Simplysm Claude Code skills and agents. Automatically installs via `postinstall` when added as a dev dependency.
 
 ## Installation
 
 ```bash
-npm install --save-dev @simplysm/sd-claude
+pnpm add -D @simplysm/claude
 # or
-pnpm add -D @simplysm/sd-claude
+npm install --save-dev @simplysm/claude
 ```
 
-Or run directly with `npx`:
+Skills and agents are automatically installed to `.claude/` on `pnpm install` / `npm install`.
 
-```bash
-npx @simplysm/sd-claude install
-```
+## How It Works
 
-## Commands
+When installed as a dependency, the `postinstall` script:
 
-The CLI binary name is `sd-claude`. All commands support the `--debug` option to output detailed logs.
+1. Copies `sd-*` assets (skills, agents, rules) to the project's `.claude/` directory
+2. Configures `statusLine` in `.claude/settings.json`
+3. Existing `sd-*` entries are replaced with the latest version
 
-### install
+Updates also trigger reinstallation (`pnpm up @simplysm/claude`).
 
-Installs Claude Code skills/agents to the current project. Reads `sd-*` assets from the package's `claude/` directory and copies them to the project's `.claude/`. Existing `sd-*` entries are completely removed before new ones are copied. Also adds `statusLine` configuration to `.claude/settings.json`.
+## Note
 
-```bash
-sd-claude install
-```
-
-### uninstall
-
-Removes `sd-*` skills/agents from the current project's `.claude/`. Also removes `statusLine` configuration from `.claude/settings.json`.
-
-```bash
-sd-claude uninstall
-```
+- If using `pnpm install --ignore-scripts`, the postinstall won't run
+- If using `onlyBuiltDependencies` in `pnpm-workspace.yaml`, add `@simplysm/claude` to the list
 
 ## License
 
