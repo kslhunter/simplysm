@@ -34,7 +34,7 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
       try {
         const stored = localStorage.getItem(key);
         if (stored !== null) {
-          setValue(JSON.parse(stored) as T);
+          setValue(() => JSON.parse(stored) as T);
         }
       } catch {
         // Ignore parse errors, keep default value
@@ -47,14 +47,14 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
     try {
       const stored = await config.syncStorage.getItem(key);
       if (stored !== null) {
-        setValue(JSON.parse(stored) as T);
+        setValue(() => JSON.parse(stored) as T);
       }
     } catch {
       // Fall back to localStorage on error
       try {
         const stored = localStorage.getItem(key);
         if (stored !== null) {
-          setValue(JSON.parse(stored) as T);
+          setValue(() => JSON.parse(stored) as T);
         }
       } catch {
         // Ignore parse errors

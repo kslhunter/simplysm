@@ -38,11 +38,16 @@ export function useLocalConfig<T>(key: string, initialValue?: T): [Accessor<T | 
 
   const [value, setValue] = createSignal<T | undefined>(storedValue);
 
-  const setAndStore: Setter<T | undefined> = (newValue) => {
-    setValue(newValue);
+  const setAndStore = (newValue: T | undefined | ((prev: T | undefined) => T | undefined)) => {
+    let resolved: T | undefined;
 
-    const resolved =
-      typeof newValue === "function" ? (newValue as (prev: T | undefined) => T | undefined)(value()) : newValue;
+    if (typeof newValue === "function") {
+      resolved = (newValue as (prev: T | undefined) => T | undefined)(value());
+      setValue(() => resolved as T | undefined);
+    } else {
+      resolved = newValue;
+      setValue(() => newValue);
+    }
 
     if (resolved === undefined) {
       localStorage.removeItem(key);
@@ -53,5 +58,5 @@ export function useLocalConfig<T>(key: string, initialValue?: T): [Accessor<T | 
     return resolved;
   };
 
-  return [value, setAndStore];
+  return [value, setAndStore as Setter<T | undefined>];
 }

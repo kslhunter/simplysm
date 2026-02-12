@@ -1,10 +1,9 @@
-import { type JSX, type ParentComponent, Show, splitProps, createMemo } from "solid-js";
+import { type JSX, type ParentComponent, Show, splitProps, createMemo, createSignal } from "solid-js";
 import { useBeforeLeave } from "@solidjs/router";
 import { createMediaQuery } from "@solid-primitives/media";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { SidebarContext, SM_MEDIA_QUERY } from "./SidebarContext";
-import { usePersisted } from "../../../hooks/usePersisted";
 import { mergeStyles } from "../../../helpers/mergeStyles";
 
 const backdropClass = clsx(
@@ -32,7 +31,7 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
  * - 부모 요소에 높이가 지정되어야 함 (`h-full` 사용)
  * - 콘텐츠 영역의 `overflow-auto`는 사용자가 직접 적용해야 함
  * - SidebarContext.Provider로 toggle 상태 공유
- * - usePersisted로 toggle 상태 localStorage 저장 (키: sidebar.toggle)
+ * - toggle 상태는 메모리에만 유지 (페이지 새로고침 시 초기화)
  * - 데스크탑(640px+)에서 padding-left + transition으로 콘텐츠 확장/축소
  * - 모바일(640px-)에서 backdrop 렌더링 및 클릭 시 닫기
  * - 페이지 이동 시 모바일에서 자동 닫기
@@ -55,7 +54,7 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
 export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
 
-  const [toggle, setToggle] = usePersisted("sidebar.toggle", false);
+  const [toggle, setToggle] = createSignal(false);
 
   // Tailwind sm: breakpoint 감지
   const isDesktop = createMediaQuery(SM_MEDIA_QUERY);

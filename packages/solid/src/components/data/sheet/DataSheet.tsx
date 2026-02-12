@@ -27,7 +27,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
-import { usePersisted } from "../../../hooks/usePersisted";
+import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { DialogContext } from "../../disclosure/DialogContext";
 import "./DataSheet.css";
 import {
@@ -110,11 +110,11 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     ),
   );
 
-  // #region Config (usePersisted)
+  // #region Config (useSyncConfig)
   /* eslint-disable solid/reactivity -- persistKey는 정적 값으로 컴포넌트 마운트 시 한 번만 사용됨 */
   const [config, setConfig] =
     local.persistKey != null && local.persistKey !== ""
-      ? usePersisted<DataSheetConfig>(`sheet.${local.persistKey}`, { columnRecord: {} })
+      ? useSyncConfig<DataSheetConfig>(`sheet.${local.persistKey}`, { columnRecord: {} })
       : createSignal<DataSheetConfig>({ columnRecord: {} });
   /* eslint-enable solid/reactivity */
 

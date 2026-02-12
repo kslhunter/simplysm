@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 import clsx from "clsx";
 import { IconDeviceFloppy, IconStar, IconX } from "@tabler/icons-solidjs";
 import { objClone, objEqual } from "@simplysm/core-common";
-import { usePersisted } from "../../../hooks/usePersisted";
+import { useSyncConfig } from "../../../hooks/useSyncConfig";
 import { useNotification } from "../../feedback/notification/NotificationContext";
 import { Icon } from "../../display/Icon";
 import { textPlaceholder } from "../../../styles/tokens.styles";
@@ -110,7 +110,7 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
 
   // presetKey는 마운트 시 한 번만 설정되는 식별자이므로 즉시 평가하여 캡처
   /* eslint-disable solid/reactivity */
-  const [presets, setPresets] = usePersisted<StatePresetItem<T>[]>(`state-preset.${local.presetKey}`, []);
+  const [presets, setPresets] = useSyncConfig<StatePresetItem<T>[]>(`state-preset.${local.presetKey}`, []);
   /* eslint-enable solid/reactivity */
   const [adding, setAdding] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");

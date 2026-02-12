@@ -89,7 +89,9 @@ export * from "./providers/shared-data/SharedDataProvider";
 export * from "./providers/shared-data/SharedDataChangeEvent";
 
 // hooks
-export * from "./hooks/usePersisted";
+export * from "./hooks/useLocalConfig";
+export * from "./hooks/useSyncConfig";
+export * from "./hooks/useLogger";
 export * from "./hooks/usePrint";
 export { createControllableSignal } from "./hooks/createControllableSignal";
 export { createIMEHandler } from "./hooks/createIMEHandler";

@@ -1,6 +1,6 @@
 import { createContext, useContext, type ParentComponent, createMemo, createEffect, onCleanup } from "solid-js";
 import { createMediaQuery } from "@solid-primitives/media";
-import { usePersisted } from "../hooks/usePersisted";
+import { useSyncConfig } from "../hooks/useSyncConfig";
 
 /**
  * 테마 모드
@@ -64,7 +64,7 @@ export function useTheme(): ThemeContextValue {
  * 테마 Provider 컴포넌트
  *
  * @remarks
- * - ConfigContext.Provider 내부에서 사용해야 함 (usePersisted 의존)
+ * - ConfigContext.Provider 내부에서 사용해야 함 (useSyncConfig 의존)
  * - localStorage에 테마 설정 저장
  * - `<html>` 요소에 `dark` 클래스 자동 토글
  *
@@ -78,7 +78,7 @@ export function useTheme(): ThemeContextValue {
  * ```
  */
 export const ThemeProvider: ParentComponent = (props) => {
-  const [mode, setMode] = usePersisted<ThemeMode>("theme", "system");
+  const [mode, setMode] = useSyncConfig<ThemeMode>("theme", "system");
 
   // OS 다크모드 감지
   const prefersDark = createMediaQuery("(prefers-color-scheme: dark)");
