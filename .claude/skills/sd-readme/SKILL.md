@@ -1,15 +1,51 @@
 ---
 name: sd-readme
 description: Use when updating a package README.md to reflect recent code changes, or when asked to sync README with current implementation
-argument-hint: "<package-name or path>"
+argument-hint: "<package-name or path> (optional - omit to update all)"
 model: haiku
 ---
 
 # sd-readme
 
-Update a package's README.md based on git commits since its last modification.
+Update README.md files based on git commits since their last modification.
 
-## Step 1: Resolve Package Path
+## Step 0: Check for Batch Mode
+
+If `$ARGUMENTS` is **empty or blank**:
+
+1. Use `Glob` with pattern `packages/*/package.json` to discover all packages.
+2. Launch **parallel subagents** via the `Task` tool (`subagent_type: "general-purpose"`, `model: "haiku"`):
+   - One subagent for **project root README.md** with prompt:
+     ```
+     Update the project root README.md at /home/kslhunter/projects/simplysm/README.md based on recent git changes.
+     - Run: git log -1 --format="%H %ai %s" -- README.md
+     - If no output, treat all commits as relevant: git log --oneline -30
+     - Otherwise: git log <hash>..HEAD --oneline
+     - If no commits since last update, report "already up to date" and stop.
+     - Read the current README.md, read CLAUDE.md for project context, then edit only affected sections.
+     - README content must be in English.
+     - Preserve existing structure. Match existing style. Do not add changelog sections.
+     ```
+   - One subagent **per package** with prompt:
+     ```
+     Update the README.md for package <pkg-name> at <pkg-path>/README.md based on recent git changes.
+     Follow these steps:
+     1. Run: git log -1 --format="%H %ai %s" -- <pkg-path>/README.md
+     2. If no output, all commits are relevant: git log --oneline -- <pkg-path>/
+        Otherwise: git log <hash>..HEAD --oneline -- <pkg-path>/
+     3. If no commits since last update, report "already up to date" and stop.
+     4. Read <pkg-path>/src/index.ts to verify all public exports are documented.
+     5. Read the current README.md, then edit only affected sections.
+     6. README content must be in English.
+     7. Preserve existing structure. Match existing style. Do not add changelog sections.
+     8. If README.md does not exist, create it following the style of other package READMEs in this repo.
+     ```
+3. Collect all subagent results and **report a summary** to the user: which READMEs were updated, which were already up to date.
+4. **Stop here** — do not proceed to the single-package steps below.
+
+---
+
+## Step 1: Resolve Package Path (Single Package Mode)
 
 `$ARGUMENTS` is the package name or path (e.g., `sd-cli`, `packages/sd-cli`, `packages/core-common`).
 

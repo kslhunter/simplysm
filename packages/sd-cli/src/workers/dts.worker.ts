@@ -108,6 +108,70 @@ process.on("SIGINT", () => {
 
 //#endregion
 
+//#region DTS 출력 경로 재작성
+
+/**
+ * .d.ts.map 파일의 sources 경로를 새 위치 기준으로 조정
+ */
+function adjustDtsMapSources(content: string, originalDir: string, newDir: string): string {
+  if (originalDir === newDir) return content;
+  try {
+    const map = JSON.parse(content) as { sources?: string[] };
+    if (Array.isArray(map.sources)) {
+      map.sources = map.sources.map((source) => {
+        const absoluteSource = path.resolve(originalDir, source);
+        return path.relative(newDir, absoluteSource);
+      });
+    }
+    return JSON.stringify(map);
+  } catch {
+    return content;
+  }
+}
+
+/**
+ * DTS writeFile용 경로 재작성 함수 생성
+ *
+ * TypeScript는 path alias(@simplysm/*)로 참조된 다른 패키지 소스까지 rootDir 계산에
+ * 포함하므로, 출력이 dist/{pkgName}/src/... 형태의 중첩 구조로 생성된다.
+ * 반환된 함수는 현재 패키지의 .d.ts만 flat 구조(dist/...)로 재작성하고,
+ * 다른 패키지의 .d.ts는 무시한다.
+ *
+ * @returns (fileName, content) => [newPath, newContent] | null (null이면 쓰기 무시)
+ */
+function createDtsPathRewriter(pkgDir: string): (fileName: string, content: string) => [string, string] | null {
+  const pkgName = path.basename(pkgDir);
+  const distDir = path.join(pkgDir, "dist");
+  const distPrefix = distDir + path.sep;
+  // 중첩 구조에서 현재 패키지의 접두사: dist/{pkgName}/src/
+  const ownNestedPrefix = path.join(distDir, pkgName, "src") + path.sep;
+
+  return (fileName, content) => {
+    if (!fileName.startsWith(distPrefix)) return null;
+
+    if (fileName.startsWith(ownNestedPrefix)) {
+      // 중첩 경로를 flat으로 재작성: dist/{pkgName}/src/... → dist/...
+      const flatPath = path.join(distDir, fileName.slice(ownNestedPrefix.length));
+      if (fileName.endsWith(".d.ts.map")) {
+        content = adjustDtsMapSources(content, path.dirname(fileName), path.dirname(flatPath));
+      }
+      return [flatPath, content];
+    }
+
+    // 다른 패키지의 중첩 출력 (dist/{otherPkg}/src/...) → 무시
+    const relFromDist = fileName.slice(distPrefix.length);
+    const segments = relFromDist.split(path.sep);
+    if (segments.length >= 3 && segments[1] === "src") {
+      return null;
+    }
+
+    // 이미 flat 구조 (의존성 없는 패키지) → 그대로 출력
+    return [fileName, content];
+  };
+}
+
+//#endregion
+
 //#region buildDts (일회성 빌드)
 
 /**
@@ -151,13 +215,14 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     // program 생성
     const host = ts.createCompilerHost(options);
 
-    // 해당 패키지 dist 폴더로 가는 파일만 실제로 쓰기 (다른 패키지 .d.ts 생성 방지)
+    // 현재 패키지의 .d.ts만 flat 경로로 출력 (다른 패키지 .d.ts 생성 방지 + 중첩 경로 재작성)
     if (shouldEmit) {
-      const pkgDistPrefix = path.join(info.pkgDir, "dist") + path.sep;
+      const rewritePath = createDtsPathRewriter(info.pkgDir);
       const originalWriteFile = host.writeFile;
       host.writeFile = (fileName, content, writeByteOrderMark, onError, sourceFiles, data) => {
-        if (fileName.startsWith(pkgDistPrefix)) {
-          originalWriteFile(fileName, content, writeByteOrderMark, onError, sourceFiles, data);
+        const result = rewritePath(fileName, content);
+        if (result != null) {
+          originalWriteFile(result[0], result[1], writeByteOrderMark, onError, sourceFiles, data);
         }
       };
     }
@@ -245,7 +310,6 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
 
     // 해당 패키지 경로 (필터링용)
     const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
-    const pkgDistPrefix = path.join(info.pkgDir, "dist") + path.sep;
 
     const options: ts.CompilerOptions = {
       ...baseOptions,
@@ -282,15 +346,18 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
       }
     };
 
-    // 해당 패키지 dist 폴더로 가는 파일만 실제로 쓰기 (다른 패키지 .d.ts 생성 방지)
+    // 현재 패키지의 .d.ts만 flat 경로로 출력 (다른 패키지 .d.ts 생성 방지 + 중첩 경로 재작성)
     // TypeScript watch 모드는 import된 모든 모듈의 .d.ts를 생성하려고 시도함.
-    // 모노레포에서 다른 패키지의 .d.ts까지 덮어쓰는 것을 방지하기 위해 필터링 필요.
+    // 모노레포에서 다른 패키지의 .d.ts까지 덮어쓰는 것을 방지하고,
+    // 중첩 경로(dist/{pkgName}/src/...)를 flat 경로(dist/...)로 재작성한다.
+    const rewritePath = createDtsPathRewriter(info.pkgDir);
     const originalWriteFile = ts.sys.writeFile;
     const customSys: ts.System = {
       ...ts.sys,
       writeFile: (filePath, content, writeByteOrderMark) => {
-        if (filePath.startsWith(pkgDistPrefix)) {
-          originalWriteFile(filePath, content, writeByteOrderMark);
+        const result = rewritePath(filePath, content);
+        if (result != null) {
+          originalWriteFile(result[0], result[1], writeByteOrderMark);
         }
       },
     };
