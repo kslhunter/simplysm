@@ -326,6 +326,8 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
       declarationDir: path.join(info.pkgDir, "dist"),
       sourceMap: false,
       noEmit: false,
+      incremental: true,
+      tsBuildInfoFile: path.join(info.pkgDir, ".cache", "dts.tsbuildinfo"),
     };
 
     let isFirstBuild = true;
