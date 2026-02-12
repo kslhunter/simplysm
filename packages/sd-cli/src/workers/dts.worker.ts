@@ -192,6 +192,12 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     const options: ts.CompilerOptions = {
       ...baseOptions,
       sourceMap: false,
+      incremental: true,
+      tsBuildInfoFile: path.join(
+        info.pkgDir,
+        ".cache",
+        shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`,
+      ),
     };
 
     // emit 여부에 따라 관련 옵션 설정
@@ -212,8 +218,8 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       // emit 안 할 때 outDir/declarationDir 불필요
     }
 
-    // program 생성
-    const host = ts.createCompilerHost(options);
+    // incremental program 생성
+    const host = ts.createIncrementalCompilerHost(options);
 
     // 현재 패키지의 .d.ts만 flat 경로로 출력 (다른 패키지 .d.ts 생성 방지 + 중첩 경로 재작성)
     if (shouldEmit) {
@@ -227,7 +233,7 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       };
     }
 
-    const program = ts.createProgram({
+    const program = ts.createIncrementalProgram({
       rootNames: rootFiles,
       options,
       host,
