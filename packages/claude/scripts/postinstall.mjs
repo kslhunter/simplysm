@@ -11,10 +11,19 @@ try {
   const pkgRoot = path.resolve(__dirname, "..");
   const sourceDir = path.join(pkgRoot, "claude");
 
-  // INIT_CWD: pnpm/npm 명령이 실행된 원래 디렉토리 (프로젝트 루트)
-  const projectRoot = process.env.INIT_CWD;
+  // INIT_CWD: npm/yarn이 설정하는 프로젝트 루트 경로
+  // pnpm은 INIT_CWD를 설정하지 않으므로 (https://github.com/pnpm/pnpm/issues/7042)
+  // 스크립트 경로에서 첫 번째 node_modules 이전 경로를 프로젝트 루트로 사용
+  const projectRoot =
+    process.env.INIT_CWD ||
+    (() => {
+      const sep = path.sep;
+      const marker = sep + "node_modules" + sep;
+      const idx = __dirname.indexOf(marker);
+      return idx !== -1 ? __dirname.substring(0, idx) : null;
+    })();
   if (!projectRoot) {
-    console.log("[sd-claude] INIT_CWD가 설정되지 않아 건너뜁니다.");
+    console.log("[@simplysm/claude] 프로젝트 루트를 찾을 수 없어 건너뜁니다.");
     process.exit(0);
   }
 
