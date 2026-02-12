@@ -93,7 +93,7 @@ pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
 - `LazyGcMap`: LRU 캐시 (자동 만료)
 
 ### 디렉토리 참조
-- `.cache/`: 빌드 캐시 (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). 초기화: `.cache/` 삭제
+- `.cache/`: (더 이상 사용되지 않음. 기존 파일이 남아있을 수 있으나 CLI가 읽거나 쓰지 않음)
 - `.playwright-mcp/`: Playwright MCP 도구의 스크린샷 등 출력 디렉토리
   - 스크린샷/스냅샷 저장 시 반드시 `.playwright-mcp/` 디렉토리에 저장할 것
 
