@@ -1,4 +1,5 @@
 import type { ParentComponent } from "solid-js";
+import { onCleanup } from "solid-js";
 import { type AppConfig, ConfigContext } from "./ConfigContext";
 import { useClipboardValueCopy } from "../hooks/useClipboardValueCopy";
 import { ThemeProvider } from "./ThemeContext";
@@ -7,10 +8,34 @@ import { NotificationBanner } from "../components/feedback/notification/Notifica
 import { LoadingProvider } from "../components/feedback/loading/LoadingProvider";
 import { DialogProvider } from "../components/disclosure/DialogProvider";
 import { createPwaUpdate } from "../hooks/createPwaUpdate";
+import { useLogger } from "../hooks/useLogger";
 
 /** Runs PWA update detection inside NotificationProvider context */
 function PwaUpdater() {
   createPwaUpdate();
+  return null;
+}
+
+/** Captures uncaught errors and unhandled rejections via useLogger */
+function GlobalErrorLogger() {
+  const logger = useLogger();
+
+  const onError = (event: ErrorEvent) => {
+    logger.error("Uncaught error:", event.error ?? event.message);
+  };
+
+  const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+    logger.error("Unhandled rejection:", event.reason);
+  };
+
+  window.addEventListener("error", onError);
+  window.addEventListener("unhandledrejection", onUnhandledRejection);
+
+  onCleanup(() => {
+    window.removeEventListener("error", onError);
+    window.removeEventListener("unhandledrejection", onUnhandledRejection);
+  });
+
   return null;
 }
 
@@ -23,6 +48,7 @@ function PwaUpdater() {
  * - 폼 컨트롤 value 클립보드 복사 지원
  * - 테마 (라이트/다크/시스템)
  * - 알림 시스템 + 배너
+ * - 전역 에러 캡처 (window.onerror, unhandledrejection)
  * - 루트 로딩 오버레이
  * - 프로그래매틱 다이얼로그
  *
@@ -43,6 +69,7 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
       <ThemeProvider>
         <NotificationProvider>
           <NotificationBanner />
+          <GlobalErrorLogger />
           <PwaUpdater />
           <LoadingProvider variant={props.config.loadingVariant}>
             <DialogProvider>{props.children}</DialogProvider>
