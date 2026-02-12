@@ -26,6 +26,11 @@ export interface AppConfig {
    * 커스텀 저장소 (기본값: localStorage)
    */
   storage?: StorageAdapter;
+
+  /**
+   * 루트 로딩 오버레이 변형 (기본값: "spinner")
+   */
+  loadingVariant?: "spinner" | "bar";
 }
 
 /**
