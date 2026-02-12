@@ -14,6 +14,16 @@ export interface StorageAdapter {
 }
 
 /**
+ * 로그 어댑터 인터페이스
+ *
+ * @remarks
+ * - `useLogger`에서 consola 출력 외에 추가 로그 전송(DB, 서버 등)에 사용
+ */
+export interface LogAdapter {
+  write(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> | void;
+}
+
+/**
  * 앱 전역 설정
  */
 export interface AppConfig {
@@ -23,9 +33,14 @@ export interface AppConfig {
   clientName: string;
 
   /**
-   * 커스텀 저장소 (기본값: localStorage)
+   * 동기화 가능 저장소 (useSyncConfig에서 사용, 기본값: localStorage)
    */
-  storage?: StorageAdapter;
+  syncStorage?: StorageAdapter;
+
+  /**
+   * 로그 어댑터 (useLogger에서 consola 외 추가 전송에 사용)
+   */
+  logger?: LogAdapter;
 
   /**
    * 루트 로딩 오버레이 변형 (기본값: "spinner")

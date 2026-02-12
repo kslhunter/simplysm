@@ -29,7 +29,7 @@ import { useConfig } from "../providers/ConfigContext";
 export function usePersisted<T>(key: string, initialValue: T): [Accessor<T>, Setter<T>, Accessor<boolean>] {
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
-  const storage = config.storage ?? localStorage;
+  const storage = config.syncStorage ?? localStorage;
 
   // eslint-disable-next-line solid/reactivity -- makePersisted는 signal 튜플을 직접 받도록 설계됨
   const [value, setValue, init] = makePersisted(createSignal<T>(initialValue), {
