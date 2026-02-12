@@ -84,7 +84,7 @@ export async function runInit(_options: InitOptions): Promise<void> {
 
   // 5. sd-claude install
   logger.info("sd-claude install 실행 중...");
-  await spawn("sd-claude", ["install"], { cwd });
+  await spawn("pnpm", ["exec", "sd-claude", "install"], { cwd });
   logger.success("sd-claude install 완료");
 
   // 6. 완료 메시지

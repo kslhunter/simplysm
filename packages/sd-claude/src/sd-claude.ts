@@ -5,6 +5,7 @@ import { hideBin } from "yargs/helpers";
 import { runInstall } from "./commands/install";
 import { runUninstall } from "./commands/uninstall";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { consola, LogLevels } from "consola";
 
@@ -46,6 +47,6 @@ export function createCliParser(argv: string[]): Argv {
 }
 
 const cliEntryPath = process.argv.at(1);
-if (cliEntryPath != null && fileURLToPath(import.meta.url) === path.resolve(cliEntryPath)) {
+if (cliEntryPath != null && fileURLToPath(import.meta.url) === fs.realpathSync(path.resolve(cliEntryPath))) {
   await createCliParser(hideBin(process.argv)).parse();
 }
