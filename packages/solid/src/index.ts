@@ -82,7 +82,6 @@ export * from "./providers/ConfigContext";
 export * from "./providers/InitializeProvider";
 export { useTheme } from "./providers/ThemeContext";
 export type { ThemeMode, ResolvedTheme } from "./providers/ThemeContext";
-export * from "./providers/ThemeProvider";
 export * from "./providers/ServiceClientContext";
 export * from "./providers/ServiceClientProvider";
 export * from "./providers/shared-data/SharedDataContext";

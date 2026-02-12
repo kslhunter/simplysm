@@ -30,7 +30,7 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
   // 폼 컨트롤 value 클립보드 복사
   useClipboardValueCopy();
 
-  // eslint-disable-next-line solid/reactivity -- config는 초기 설정값으로 변경되지 않음
+  /* eslint-disable solid/reactivity -- config는 초기 설정값으로 변경되지 않음 */
   return (
     <ConfigContext.Provider value={props.config}>
       <ThemeProvider>
@@ -43,4 +43,5 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
       </ThemeProvider>
     </ConfigContext.Provider>
   );
+  /* eslint-enable solid/reactivity */
 };
