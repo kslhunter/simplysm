@@ -9,6 +9,7 @@ import {
 import { SharedDataChangeEvent } from "./SharedDataChangeEvent";
 import { useServiceClient } from "../ServiceClientContext";
 import { useNotification } from "../../components/feedback/notification/NotificationContext";
+import { useLogger } from "../../hooks/useLogger";
 
 export function SharedDataProvider<T extends Record<string, unknown>>(props: {
   definitions: { [K in keyof T]: SharedDataDefinition<T[K]> };
@@ -16,6 +17,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
 }): JSX.Element {
   const serviceClient = useServiceClient();
   const notification = useNotification();
+  const logger = useLogger();
 
   const [loadingCount, setLoadingCount] = createSignal(0);
   const loading: Accessor<boolean> = () => loadingCount() > 0;
@@ -69,6 +71,7 @@ export function SharedDataProvider<T extends Record<string, unknown>>(props: {
       }
     } catch (err) {
       // CR-2: fetch 실패 시 사용자에게 알림
+      logger.error(`SharedData '${name}' fetch failed:`, err);
       notification.danger(
         "공유 데이터 로드 실패",
         err instanceof Error ? err.message : `'${name}' 데이터를 불러오는 중 오류가 발생했습니다.`,
