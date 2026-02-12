@@ -94,7 +94,12 @@ async function waitWithCountdown(message: string, seconds: number): Promise<void
  * 프로젝트 및 패키지 버전 업그레이드
  * @param dryRun true면 파일 수정 없이 새 버전만 계산
  */
-async function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolean): Promise<string> {
+async function upgradeVersion(
+  cwd: string,
+  allPkgPaths: string[],
+  dryRun: boolean,
+): Promise<{ version: string; changedFiles: string[] }> {
+  const changedFiles: string[] = [];
   const projPkgPath = path.resolve(cwd, "package.json");
   const projPkg = await fsReadJson<PackageJson>(projPkgPath);
 
@@ -107,11 +112,12 @@ async function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolea
 
   if (dryRun) {
     // dry-run: 파일 수정 없이 새 버전만 반환
-    return newVersion;
+    return { version: newVersion, changedFiles: [] };
   }
 
   projPkg.version = newVersion;
   await fsWrite(projPkgPath, jsonStringify(projPkg, { space: 2 }) + "\n");
+  changedFiles.push(projPkgPath);
 
   // 각 패키지 package.json 버전 설정
   for (const pkgPath of allPkgPaths) {
@@ -119,9 +125,24 @@ async function upgradeVersion(cwd: string, allPkgPaths: string[], dryRun: boolea
     const pkgJson = await fsReadJson<PackageJson>(pkgJsonPath);
     pkgJson.version = newVersion;
     await fsWrite(pkgJsonPath, jsonStringify(pkgJson, { space: 2 }) + "\n");
+    changedFiles.push(pkgJsonPath);
   }
 
-  return newVersion;
+  // 템플릿 파일의 @simplysm 패키지 버전 동기화
+  const templateFiles = await fsGlob(path.resolve(cwd, "packages/sd-cli/templates/**/*.hbs"));
+  const versionRegex = /("@simplysm\/[^"]+"\s*:\s*)"~[^"]+"/g;
+
+  for (const templatePath of templateFiles) {
+    const content = await fsRead(templatePath);
+    const newContent = content.replace(versionRegex, `$1"~${newVersion}"`);
+
+    if (content !== newContent) {
+      await fsWrite(templatePath, newContent);
+      changedFiles.push(templatePath);
+    }
+  }
+
+  return { version: newVersion, changedFiles };
 }
 
 //#endregion
@@ -145,7 +166,7 @@ async function publishPackage(
   if (publishConfig === "npm") {
     // npm publish
     const prereleaseInfo = semver.prerelease(version);
-    const args = ["publish", "--access", "public", "--no-git-checks"];
+    const args = ["publish", "--access", "public"];
 
     if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
       args.push("--tag", prereleaseInfo[0]);
@@ -267,10 +288,10 @@ async function computePublishLevels(
  *
  * **배포 순서 (안전성 우선):**
  * 1. 사전 검증 (npm 인증, Git 상태)
- * 2. 버전 업그레이드
- * 3. 빌드 (실패 시 롤백)
- * 4. Git 커밋/태그/푸시 (실패 시 롤백)
- * 5. npm/sftp/local 배포 (실패 시 수동 복구 안내)
+ * 2. 버전 업그레이드 (package.json + 템플릿)
+ * 3. 빌드
+ * 4. Git 커밋/태그/푸시 (변경된 파일만 명시적으로 staging)
+ * 5. pnpm 배포
  * 6. postPublish (실패해도 계속)
  */
 export async function runPublish(options: PublishOptions): Promise<void> {
@@ -425,7 +446,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   } else {
     // 버전 업그레이드
     logger.debug("버전 업그레이드...");
-    version = await upgradeVersion(cwd, allPkgPaths, dryRun);
+    const upgradeResult = await upgradeVersion(cwd, allPkgPaths, dryRun);
+    version = upgradeResult.version;
+    const _changedFiles = upgradeResult.changedFiles;
     if (dryRun) {
       logger.info(`[DRY-RUN] 버전 업그레이드: ${projPkg.version} → ${version} (파일 수정 없음)`);
     } else {
@@ -450,23 +473,14 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         throw new Error("빌드 실패");
       }
     } catch {
-      // 빌드 실패 시 롤백 (dryRun이면 롤백 불필요)
       if (dryRun) {
         logger.error("[DRY-RUN] 빌드 실패");
       } else {
-        logger.error("빌드 실패, 변경사항 롤백...");
-        if (hasGit) {
-          try {
-            await spawn("git", ["checkout", "."]);
-            logger.debug("Git 롤백 완료");
-          } catch {
-            consola.error(
-              "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
-                "  git checkout .\n" +
-                "  git clean -fd  # 새로 생성된 파일 삭제 (주의: untracked 파일 모두 삭제됨)",
-            );
-          }
-        }
+        consola.error(
+          "빌드 실패. 수동 복구가 필요할 수 있습니다:\n" +
+            "  버전 변경을 되돌리려면:\n" +
+            "    git checkout -- package.json packages/*/package.json packages/sd-cli/templates/",
+        );
       }
       process.exitCode = 1;
       return;
@@ -477,10 +491,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     if (hasGit) {
       if (dryRun) {
         logger.info("[DRY-RUN] Git 커밋/태그/푸시 시뮬레이션...");
-        logger.info(`[DRY-RUN] git add .`);
+        logger.info(`[DRY-RUN] git add (${_changedFiles.length}개 파일)`);
         logger.info(`[DRY-RUN] git commit -m "v${version}"`);
         logger.info(`[DRY-RUN] git tag -a v${version} -m "v${version}"`);
-        // push만 실제 dry-run 실행
         logger.info("[DRY-RUN] git push --dry-run");
         await spawn("git", ["push", "--dry-run"]);
         logger.info("[DRY-RUN] git push --tags --dry-run");
@@ -489,27 +502,19 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       } else {
         logger.debug("Git 커밋/태그/푸시...");
         try {
-          // await spawn("git", ["add", "."]);
-          // await spawn("git", ["commit", "-m", `v${version}`]);
+          await spawn("git", ["add", ..._changedFiles]);
+          await spawn("git", ["commit", "-m", `v${version}`]);
           await spawn("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
           await spawn("git", ["push"]);
           await spawn("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
-          // Git 실패 시 롤백
-          // logger.error("Git 작업 실패, 롤백 시도...");
-          // try {
-          //   await spawn("git", ["checkout", "."]);
-          //   logger.debug("Git 롤백 완료");
-          // } catch {
-          //   consola.error(
-          //     "Git 롤백에 실패했습니다. 수동으로 복구하세요:\n" +
-          //       "  git reset --hard HEAD~1\n" +
-          //       "  git tag -d v" +
-          //       version,
-          //   );
-          // }
-          consola.error(`Git 작업 실패: ${err instanceof Error ? err.message : err}`);
+          consola.error(
+            `Git 작업 실패: ${err instanceof Error ? err.message : err}\n` +
+              "수동 복구가 필요할 수 있습니다:\n" +
+              `  git revert HEAD  # 버전 커밋 되돌리기\n` +
+              `  git tag -d v${version}  # 태그 삭제`,
+          );
           process.exitCode = 1;
           return;
         }
