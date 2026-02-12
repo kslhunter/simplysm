@@ -12,7 +12,7 @@ export function useLogger(): Logger {
   const createLogFunction = (level: LogEntry["level"]) => {
     return (...args: unknown[]) => {
       // Always log to consola
-      consola[level](...args);
+      (consola as any)[level](...args);
 
       // Optionally write to adapter
       if (LogAdapter.write != null) {
