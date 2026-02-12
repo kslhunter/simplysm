@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { build as viteBuild, createServer, type ViteDevServer } from "vite";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
@@ -144,6 +145,10 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
 
     await viteBuild(viteConfig);
 
+    // Generate .config.json
+    const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
+    fs.writeFileSync(confDistPath, JSON.stringify(info.config.configs ?? {}, undefined, 2));
+
     return { success: true };
   } catch (err) {
     return {
@@ -194,6 +199,11 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     // Vite dev server 시작
     viteServer = await createServer(viteConfig);
     await viteServer.listen();
+
+    // Generate .config.json
+    const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
+    fs.mkdirSync(path.dirname(confDistPath), { recursive: true });
+    fs.writeFileSync(confDistPath, JSON.stringify(info.config.configs ?? {}, undefined, 2));
 
     // 실제 할당된 포트 반환
     sender.send("serverReady", { port: viteServer.config.server.port });
