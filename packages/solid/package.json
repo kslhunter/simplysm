@@ -12,6 +12,10 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "tailwind.config.ts"
+  ],
   "sideEffects": false,
   "dependencies": {
     "@simplysm/core-browser": "workspace:*",

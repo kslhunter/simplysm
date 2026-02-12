@@ -12,6 +12,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "sideEffects": [
     "./src/extensions/arr-ext.ts",
     "./src/extensions/map-ext.ts",

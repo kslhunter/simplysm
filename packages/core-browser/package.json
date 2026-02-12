@@ -12,6 +12,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "sideEffects": [
     "./dist/extensions/element-ext.js",
     "./dist/extensions/html-element-ext.js"

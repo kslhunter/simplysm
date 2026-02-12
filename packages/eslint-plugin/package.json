@@ -13,6 +13,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@typescript-eslint/utils": "^8.55.0",
     "eslint": "^9.39.2",
