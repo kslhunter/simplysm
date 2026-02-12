@@ -36,6 +36,8 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
     // 개발 환경 (.ts 파일)인 경우 tsx를 통해 실행
     // worker-dev-proxy.js: tsx로 TypeScript 워커 파일을 동적으로 로드하는 프록시
     if (ext === ".ts") {
+      // file:// URL인 경우 절대 경로로 변환 (worker-dev-proxy.js에서 다시 pathToFileURL 적용)
+      const workerPath = filePath.startsWith("file://") ? fileURLToPath(filePath) : filePath;
       this._worker = new WorkerRaw(path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"), {
         stdout: true,
         stderr: true,
@@ -44,7 +46,7 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
           ...process.env,
           ...envObj,
         },
-        argv: [filePath, ...(opt?.argv ?? [])],
+        argv: [workerPath, ...(opt?.argv ?? [])],
       });
     } else {
       // 프로덕션 환경 (.js 파일)
