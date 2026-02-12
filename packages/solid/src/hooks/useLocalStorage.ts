@@ -1,9 +1,12 @@
 import { type Accessor, type Setter, createSignal } from "solid-js";
+import { useConfig } from "../providers/ConfigContext";
 
 /**
- * localStorage 기반 설정 관리 훅.
+ * localStorage 기반 저장소 훅.
  * syncStorage 설정과 무관하게 항상 localStorage를 사용한다.
  * 기기별로 독립적으로 유지되어야 하는 데이터(인증 토큰, 기기별 상태 등)에 사용한다.
+ *
+ * 키는 ConfigContext의 `clientName`으로 자동 prefix된다. (`${clientName}.${key}`)
  *
  * @template T - 저장할 값의 타입
  * @param key - localStorage 키
@@ -12,7 +15,7 @@ import { type Accessor, type Setter, createSignal } from "solid-js";
  *
  * @example
  * ```tsx
- * const [token, setToken] = useLocalConfig<string>("auth-token");
+ * const [token, setToken] = useLocalStorage<string>("auth-token");
  *
  * // 값 설정
  * setToken("abc123");
@@ -24,11 +27,14 @@ import { type Accessor, type Setter, createSignal } from "solid-js";
  * setToken(undefined);
  * ```
  */
-export function useLocalConfig<T>(key: string, initialValue?: T): [Accessor<T | undefined>, Setter<T | undefined>] {
+export function useLocalStorage<T>(key: string, initialValue?: T): [Accessor<T | undefined>, Setter<T | undefined>] {
+  const config = useConfig();
+  const prefixedKey = `${config.clientName}.${key}`;
+
   // localStorage에서 초기값 읽기
   let storedValue: T | undefined = initialValue;
   try {
-    const item = localStorage.getItem(key);
+    const item = localStorage.getItem(prefixedKey);
     if (item !== null) {
       storedValue = JSON.parse(item) as T;
     }
@@ -50,9 +56,9 @@ export function useLocalConfig<T>(key: string, initialValue?: T): [Accessor<T | 
     }
 
     if (resolved === undefined) {
-      localStorage.removeItem(key);
+      localStorage.removeItem(prefixedKey);
     } else {
-      localStorage.setItem(key, JSON.stringify(resolved));
+      localStorage.setItem(prefixedKey, JSON.stringify(resolved));
     }
 
     return resolved;

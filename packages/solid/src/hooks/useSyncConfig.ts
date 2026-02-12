@@ -24,6 +24,7 @@ import { useConfig } from "../providers/ConfigContext";
  */
 export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Setter<T>, Accessor<boolean>] {
   const config = useConfig();
+  const prefixedKey = `${config.clientName}.${key}`;
   const [value, setValue] = createSignal<T>(defaultValue);
   const [loading, setLoading] = createSignal(false);
 
@@ -32,7 +33,7 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
     if (!config.syncStorage) {
       // Use localStorage synchronously
       try {
-        const stored = localStorage.getItem(key);
+        const stored = localStorage.getItem(prefixedKey);
         if (stored !== null) {
           setValue(() => JSON.parse(stored) as T);
         }
@@ -45,14 +46,14 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
     // Use syncStorage asynchronously
     setLoading(true);
     try {
-      const stored = await config.syncStorage.getItem(key);
+      const stored = await config.syncStorage.getItem(prefixedKey);
       if (stored !== null) {
         setValue(() => JSON.parse(stored) as T);
       }
     } catch {
       // Fall back to localStorage on error
       try {
-        const stored = localStorage.getItem(key);
+        const stored = localStorage.getItem(prefixedKey);
         if (stored !== null) {
           setValue(() => JSON.parse(stored) as T);
         }
@@ -74,17 +75,17 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
 
     if (!config.syncStorage) {
       // Use localStorage synchronously
-      localStorage.setItem(key, serialized);
+      localStorage.setItem(prefixedKey, serialized);
       return;
     }
 
     // Use syncStorage asynchronously
     void (async () => {
       try {
-        await config.syncStorage!.setItem(key, serialized);
+        await config.syncStorage!.setItem(prefixedKey, serialized);
       } catch {
         // Fall back to localStorage on error
-        localStorage.setItem(key, serialized);
+        localStorage.setItem(prefixedKey, serialized);
       }
     })();
   });

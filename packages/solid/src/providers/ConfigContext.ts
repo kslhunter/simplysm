@@ -33,7 +33,7 @@ export interface AppConfig {
   clientName: string;
 
   /**
-   * 동기화 가능 저장소 (useSyncConfig에서 사용, 기본값: localStorage)
+   * 동기화 가능 저장소 (useSyncConfig에서 사용, 없으면 localStorage로 fallback)
    */
   syncStorage?: StorageAdapter;
 

@@ -89,7 +89,7 @@ export * from "./providers/shared-data/SharedDataProvider";
 export * from "./providers/shared-data/SharedDataChangeEvent";
 
 // hooks
-export * from "./hooks/useLocalConfig";
+export * from "./hooks/useLocalStorage";
 export * from "./hooks/useSyncConfig";
 export * from "./hooks/useLogger";
 export * from "./hooks/usePrint";

@@ -32,7 +32,7 @@ describe("useSyncConfig", () => {
   });
 
   it("should load value from localStorage when no syncStorage is configured", () => {
-    localStorage.setItem("test-key", JSON.stringify("stored"));
+    localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
     let value: () => string;
 
@@ -66,7 +66,7 @@ describe("useSyncConfig", () => {
     ));
 
     setValue("new-value");
-    expect(localStorage.getItem("test-key")).toBe(JSON.stringify("new-value"));
+    expect(localStorage.getItem("testApp.test-key")).toBe(JSON.stringify("new-value"));
   });
 
   it("should return loading=false when using localStorage", () => {
@@ -114,13 +114,13 @@ describe("useSyncConfig", () => {
     });
 
     expect(value()).toBe("synced-value");
-    expect(mockSyncStorage.getItem).toHaveBeenCalledWith("test-key");
+    expect(mockSyncStorage.getItem).toHaveBeenCalledWith("testApp.test-key");
 
     // Test setting value
     setValue("new-synced");
     expect(value()).toBe("new-synced");
     await vi.waitFor(() => {
-      expect(mockSyncStorage.setItem).toHaveBeenCalledWith("test-key", JSON.stringify("new-synced"));
+      expect(mockSyncStorage.setItem).toHaveBeenCalledWith("testApp.test-key", JSON.stringify("new-synced"));
     });
   });
 
@@ -159,7 +159,7 @@ describe("useSyncConfig", () => {
       removeItem: vi.fn(),
     };
 
-    localStorage.setItem("test-key", JSON.stringify("local-fallback"));
+    localStorage.setItem("testApp.test-key", JSON.stringify("local-fallback"));
 
     let value: () => string;
     let setValue: (v: string) => void;
@@ -187,12 +187,12 @@ describe("useSyncConfig", () => {
     setValue("new-local");
     expect(value()).toBe("new-local");
     await vi.waitFor(() => {
-      expect(localStorage.getItem("test-key")).toBe(JSON.stringify("new-local"));
+      expect(localStorage.getItem("testApp.test-key")).toBe(JSON.stringify("new-local"));
     });
   });
 
   it("should handle non-JSON values in storage", () => {
-    localStorage.setItem("test-key", "not-json");
+    localStorage.setItem("testApp.test-key", "not-json");
 
     let value: () => string;
 
@@ -233,6 +233,6 @@ describe("useSyncConfig", () => {
     setValue(newObj);
 
     expect(value()).toEqual(newObj);
-    expect(JSON.parse(localStorage.getItem("test-key")!)).toEqual(newObj);
+    expect(JSON.parse(localStorage.getItem("testApp.test-key")!)).toEqual(newObj);
   });
 });

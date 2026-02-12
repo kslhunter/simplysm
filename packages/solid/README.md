@@ -1780,14 +1780,14 @@ theme.cycleMode();     // light -> system -> dark -> light
 
 ---
 
-### useLocalConfig
+### useLocalStorage
 
-Local-only persistent config hook. Always uses `localStorage` regardless of `syncStorage` setting. Keys are automatically stored as `{clientName}.{key}`. Use for data that should never leave the device (auth tokens, device-specific state).
+Local-only persistent storage hook. Always uses `localStorage` regardless of `syncStorage` setting. Keys are automatically prefixed as `{clientName}.{key}`. Use for data that should never leave the device (auth tokens, device-specific state).
 
 ```tsx
-import { useLocalConfig } from "@simplysm/solid";
+import { useLocalStorage } from "@simplysm/solid";
 
-const [token, setToken] = useLocalConfig<string | undefined>("auth-token", undefined);
+const [token, setToken] = useLocalStorage<string | undefined>("auth-token", undefined);
 ```
 
 | Return value | Type | Description |
@@ -1799,7 +1799,7 @@ const [token, setToken] = useLocalConfig<string | undefined>("auth-token", undef
 
 ### useSyncConfig
 
-Syncable config hook. Uses `syncStorage` if configured, falls back to `localStorage` otherwise. Keys are automatically stored as `{clientName}.{key}`. Use for user preferences that should sync across devices (theme, DataSheet column configs, filter presets).
+Syncable config hook. Uses `syncStorage` if configured, falls back to `localStorage` otherwise. Keys are automatically prefixed as `{clientName}.{key}`. Use for user preferences that should sync across devices (theme, DataSheet column configs, filter presets).
 
 ```tsx
 import { useSyncConfig } from "@simplysm/solid";
