@@ -256,7 +256,6 @@ The following directories are excluded from linting:
 
 - `**/node_modules/**`
 - `**/dist/**`
-- `**/.legacy-packages/**`
 - `**/.*/**`
 - `**/_*/**`
 

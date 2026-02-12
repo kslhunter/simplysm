@@ -37,36 +37,27 @@ export default {
 
 ### Provider Setup
 
-Wrap your app root with `InitializeProvider` and `ThemeProvider`. `InitializeProvider` provides app-wide configuration (clientName, storage), and `ThemeProvider` manages dark mode state.
+Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, loading overlay, and programmatic dialog support.
 
 ```tsx
-import { InitializeProvider, ThemeProvider } from "@simplysm/solid";
+import { InitializeProvider } from "@simplysm/solid";
 
 function App() {
   return (
     <InitializeProvider config={{ clientName: "my-app" }}>
-      <ThemeProvider>
-        {/* app content */}
-      </ThemeProvider>
+      {/* app content */}
     </InitializeProvider>
   );
 }
 ```
 
-Alternatively, you can use `ConfigContext.Provider` directly:
+**AppConfig options:**
 
-```tsx
-import { ConfigContext, ThemeProvider } from "@simplysm/solid";
-
-function App() {
-  return (
-    <ConfigContext.Provider value={{ clientName: "my-app" }}>
-      <ThemeProvider>
-        {/* app content */}
-      </ThemeProvider>
-    </ConfigContext.Provider>
-  );
-}
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `clientName` | `string` | **(required)** | Client identifier (used as storage key prefix) |
+| `storage` | `StorageAdapter` | `localStorage` | Custom storage adapter |
+| `loadingVariant` | `"spinner" \| "bar"` | `"spinner"` | Root loading overlay variant |
 ```
 
 ### Base CSS
@@ -483,7 +474,7 @@ import { ColorPicker } from "@simplysm/solid";
 
 #### ThemeToggle
 
-Dark/light/system theme cycle toggle button. Must be used inside `ThemeProvider`.
+Dark/light/system theme cycle toggle button. Must be used inside `InitializeProvider`.
 
 ```tsx
 import { ThemeToggle } from "@simplysm/solid";
@@ -1195,24 +1186,13 @@ const [open, setOpen] = createSignal(false);
 
 #### Notification
 
-Notification system. Wrap with `NotificationProvider` and trigger notifications using the `useNotification` hook.
+Notification system. `InitializeProvider` automatically sets up `NotificationProvider` and `NotificationBanner`, so you only need to use the `useNotification` hook and optionally add `NotificationBell` in your layout.
 
 ```tsx
 import {
-  NotificationProvider,
-  NotificationBanner,
   NotificationBell,
   useNotification,
 } from "@simplysm/solid";
-
-// Set up Provider at app root
-<NotificationProvider>
-  <NotificationBanner />
-  <header>
-    <NotificationBell />
-  </header>
-  <MyApp />
-</NotificationProvider>
 
 // Trigger notifications within components
 function MyComponent() {
@@ -1248,28 +1228,17 @@ function MyComponent() {
 | `clear` | `() => void` | Clear all |
 
 **Components:**
-- `NotificationProvider` -- Notification state management Provider
-- `NotificationBanner` -- Top-of-screen notification banner
-- `NotificationBell` -- Notification bell icon (shows unread count)
+- `NotificationBanner` -- Top-of-screen notification banner (automatically included by `InitializeProvider`)
+- `NotificationBell` -- Notification bell icon (shows unread count, add to your layout as needed)
 
 ---
 
 #### Loading
 
-Loading overlay system. Wrap with `LoadingProvider` and control loading state using the `useLoading` hook.
+Loading overlay system. `InitializeProvider` automatically sets up `LoadingProvider` and `LoadingContainer`. Use the `loadingVariant` option in `AppConfig` to choose between `"spinner"` (default) and `"bar"` variants. Control the loading state using the `useLoading` hook.
 
 ```tsx
-import {
-  LoadingProvider,
-  LoadingContainer,
-  useLoading,
-} from "@simplysm/solid";
-
-// Set up Provider at app root
-<LoadingProvider>
-  <LoadingContainer />
-  <MyApp />
-</LoadingProvider>
+import { useLoading } from "@simplysm/solid";
 
 // Control loading within components
 function MyComponent() {
@@ -1302,7 +1271,7 @@ function MyComponent() {
 
 #### Print / usePrint
 
-Browser printing and PDF generation. Requires `LoadingProvider`.
+Browser printing and PDF generation. Must be used inside `InitializeProvider`.
 
 ```tsx
 import { Print, usePrint } from "@simplysm/solid";
@@ -1373,7 +1342,7 @@ function MyComponent() {
 
 ### useTheme
 
-Hook to access theme (dark/light/system) state. Must be used inside `ThemeProvider`.
+Hook to access theme (dark/light/system) state. Must be used inside `InitializeProvider`.
 
 ```tsx
 import { useTheme } from "@simplysm/solid";
@@ -1396,7 +1365,7 @@ theme.cycleMode();     // light -> system -> dark -> light
 
 ### usePersisted
 
-localStorage-based persistent signal. Must be used inside `ConfigContext`, and keys are automatically stored as `{clientName}.{key}`. Supports serialization of `@simplysm/core-common` custom types like `DateTime`, `DateOnly`.
+localStorage-based persistent signal. Must be used inside `InitializeProvider`, and keys are automatically stored as `{clientName}.{key}`. Supports serialization of `@simplysm/core-common` custom types like `DateTime`, `DateOnly`.
 
 ```tsx
 import { usePersisted } from "@simplysm/solid";
@@ -1417,25 +1386,25 @@ const [data, setData, loading] = usePersisted("cache.data", defaultData);
 
 ### useNotification
 
-Hook to access notification system. Must be used inside `NotificationProvider`. See [Notification](#notification) section for detailed API.
+Hook to access notification system. Must be used inside `InitializeProvider`. See [Notification](#notification) section for detailed API.
 
 ---
 
 ### useLoading
 
-Hook to access loading overlay. Must be used inside `LoadingProvider`. See [Loading](#loading) section for detailed API.
+Hook to access loading overlay. Must be used inside `InitializeProvider`. See [Loading](#loading) section for detailed API.
 
 ---
 
 ### usePrint
 
-Hook for printing and PDF generation. Must be used inside `LoadingProvider`. See [Print](#print--useprint) section for detailed API.
+Hook for printing and PDF generation. Must be used inside `InitializeProvider`. See [Print](#print--useprint) section for detailed API.
 
 ---
 
 ### useConfig
 
-Hook to access app-wide configuration. Must be used inside `ConfigContext.Provider` or `InitializeProvider`.
+Hook to access app-wide configuration. Must be used inside `InitializeProvider`.
 
 ```tsx
 import { useConfig } from "@simplysm/solid";
@@ -1607,7 +1576,7 @@ void ripple;
 
 ### Dark Mode
 
-Uses Tailwind's `class` strategy. `ThemeProvider` automatically toggles the `dark` class on the `<html>` element.
+Uses Tailwind's `class` strategy. `InitializeProvider` automatically toggles the `dark` class on the `<html>` element via the built-in theme provider.
 
 ```html
 <!-- Light mode -->
