@@ -312,8 +312,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
       listr2:
-        specifier: ^10.1.0
-        version: 10.1.0
+        specifier: ^9.0.5
+        version: 9.0.5
       semver:
         specifier: ^7.7.4
         version: 7.7.4
@@ -3959,10 +3959,10 @@ packages:
     resolution:
       { integrity: sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA== }
 
-  listr2@10.1.0:
+  listr2@9.0.5:
     resolution:
-      { integrity: sha512-/6t2KgDYIcCjhELwvrRxi1gaJ4xCGLTjNvh6mSjYenBkrZxggek8EwCbwBU33GMUCpyyrOzz2TzylrO5mTiI1w== }
-    engines: { node: ">=22.0.0" }
+      { integrity: sha512-ME4Fb83LgEgwNw96RKNvKV4VTLuXfoKudAmm2lP8Kk87KaMK0/Xrx/aAkMWmT8mDb+3MlFDspfbCs7adjRxA2g== }
+    engines: { node: ">=20.0.0" }
 
   locate-path@6.0.0:
     resolution:
@@ -4001,10 +4001,10 @@ packages:
     resolution:
       { integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg== }
 
-  log-update@7.1.0:
+  log-update@6.1.0:
     resolution:
-      { integrity: sha512-y9pi/ZOQQVvTgfRDEHV1Cj4zQUkJZPipEUNOxhn1R6KgmdMs7LKvXWCd9eMVPGJgvYzFLCenecWr0Ps8ChVv2A== }
-    engines: { node: ">=20" }
+      { integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w== }
+    engines: { node: ">=18" }
 
   long@5.3.2:
     resolution:
@@ -8430,12 +8430,12 @@ snapshots:
 
   linkifyjs@4.3.2: {}
 
-  listr2@10.1.0:
+  listr2@9.0.5:
     dependencies:
       cli-truncate: 5.1.1
       colorette: 2.0.20
       eventemitter3: 5.0.4
-      log-update: 7.1.0
+      log-update: 6.1.0
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
 
@@ -8459,7 +8459,7 @@ snapshots:
 
   lodash.once@4.1.1: {}
 
-  log-update@7.1.0:
+  log-update@6.1.0:
     dependencies:
       ansi-escapes: 7.3.0
       cli-cursor: 5.0.0

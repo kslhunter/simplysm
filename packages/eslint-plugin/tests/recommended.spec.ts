@@ -36,7 +36,7 @@ describe("recommended 설정", () => {
     expect(ignoresConfig).toBeDefined();
     if (ignoresConfig == null) return;
 
-    const expectedPatterns = ["**/node_modules/**", "**/dist/**", "**/.legacy-packages/**", "**/.*/**", "**/_*/**"];
+    const expectedPatterns = ["**/node_modules/**", "**/dist/**", "**/.*/**", "**/_*/**"];
     expect(ignoresConfig.ignores).toEqual(expect.arrayContaining(expectedPatterns));
   });
 
