@@ -41,6 +41,10 @@ npx cap sync
 
 The main entry point of the plugin. All methods are static and operate asynchronously.
 
+```typescript
+import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
+```
+
 | Method | Return Type | Description |
 |--------|-----------|------|
 | `getDevices()` | `Promise<IUsbDeviceInfo[]>` | Retrieve list of connected USB devices |
@@ -49,7 +53,28 @@ The main entry point of the plugin. All methods are static and operate asynchron
 | `readdir(filter, dirPath)` | `Promise<IUsbFileInfo[]>` | Read list of files/folders in directory |
 | `read(filter, filePath)` | `Promise<Bytes \| undefined>` | Read file contents as binary |
 
+### IUsbStoragePlugin (Raw Plugin Interface)
+
+The low-level Capacitor plugin interface. Most users should use the `UsbStorage` static class instead.
+This interface is useful for advanced scenarios such as creating custom plugin implementations.
+
+```typescript
+import type { IUsbStoragePlugin } from "@simplysm/capacitor-plugin-usb-storage";
+```
+
+| Method | Return Type | Description |
+|--------|-----------|------|
+| `getDevices()` | `Promise<{ devices: IUsbDeviceInfo[] }>` | Get connected USB devices (raw) |
+| `requestPermission(options)` | `Promise<{ granted: boolean }>` | Request USB permission (raw) |
+| `hasPermission(options)` | `Promise<{ granted: boolean }>` | Check USB permission (raw) |
+| `readdir(options)` | `Promise<{ files: IUsbFileInfo[] }>` | List directory contents (raw) |
+| `read(options)` | `Promise<{ data: string \| null }>` | Read file as Base64 string (raw) |
+
 ### Interfaces
+
+```typescript
+import type { IUsbDeviceInfo, IUsbDeviceFilter, IUsbFileInfo } from "@simplysm/capacitor-plugin-usb-storage";
+```
 
 #### IUsbDeviceInfo
 
@@ -186,6 +211,13 @@ async function readUsbFile(filePath: string): Promise<string | undefined> {
 In web environments, the `UsbStorageWeb` class is automatically used, providing an IndexedDB-based virtual USB storage. Permission requests are always processed as approved.
 
 `UsbStorageWeb` provides methods for adding virtual devices and files for development and testing purposes.
+
+> **Note**: `UsbStorageWeb` is not re-exported from the main package entry point.
+> Import it via a deep path as shown below.
+
+```typescript
+import { UsbStorageWeb } from "@simplysm/capacitor-plugin-usb-storage/dist/web/UsbStorageWeb";
+```
 
 | Method | Description |
 |--------|------|

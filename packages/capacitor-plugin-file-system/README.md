@@ -66,6 +66,10 @@ import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 
 ### Type Definitions
 
+```typescript
+import type { TStorage, IFileInfo } from "@simplysm/capacitor-plugin-file-system";
+```
+
 #### `TStorage`
 
 A string literal type representing storage types.
@@ -87,6 +91,14 @@ interface IFileInfo {
   name: string;        // File or directory name
   isDirectory: boolean; // Whether it's a directory
 }
+```
+
+#### `IFileSystemPlugin`
+
+The low-level Capacitor plugin interface. Not intended for direct use -- use the `FileSystem` static class instead.
+
+```typescript
+import type { IFileSystemPlugin } from "@simplysm/capacitor-plugin-file-system";
 ```
 
 ## Usage Examples
@@ -132,6 +144,7 @@ async function textFileExample(): Promise<void> {
 
 ```typescript
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
+import type { Bytes } from "@simplysm/core-common";
 
 async function binaryFileExample(): Promise<void> {
   const storagePath = await FileSystem.getStoragePath("appFiles");
@@ -141,8 +154,8 @@ async function binaryFileExample(): Promise<void> {
   const bytes = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]);
   await FileSystem.writeFile(filePath, bytes);
 
-  // Read as binary
-  const readBytes = await FileSystem.readFileBytes(filePath);
+  // Read as Bytes (Uint8Array alias from @simplysm/core-common)
+  const readBytes: Bytes = await FileSystem.readFileBytes(filePath);
   console.log(readBytes.length); // 5
 }
 ```

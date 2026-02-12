@@ -5,6 +5,8 @@ A package that provides shared communication protocols, message types, and servi
 ## Installation
 
 ```bash
+npm install @simplysm/service-common
+# or
 pnpm add @simplysm/service-common
 ```
 
@@ -13,7 +15,7 @@ pnpm add @simplysm/service-common
 | Package | Description |
 |--------|------|
 | `@simplysm/core-common` | Common utilities (`Uuid`, `LazyGcMap`, `jsonStringify`, `jsonParse`, etc.) |
-| `@simplysm/orm-common` | ORM types (`Dialect`, `IsolationLevel`, `QueryDef`, etc.) |
+| `@simplysm/orm-common` | ORM types (`Dialect`, `IsolationLevel`, `QueryDef`, `ColumnMeta`, `ResultMeta`, etc.) |
 
 ## Main Modules
 
@@ -230,8 +232,8 @@ Defines database connection, transaction management, and query execution capabil
 | `commitTransaction` | `connId: number` | `Promise<void>` | Commit transaction |
 | `rollbackTransaction` | `connId: number` | `Promise<void>` | Rollback transaction |
 | `executeParametrized` | `connId, query, params?` | `Promise<unknown[][]>` | Execute parameterized query |
-| `executeDefs` | `connId, defs, options?` | `Promise<unknown[][]>` | Execute queries with `QueryDef` array |
-| `bulkInsert` | `connId, tableName, columnDefs, records` | `Promise<void>` | Bulk data insertion |
+| `executeDefs` | `connId, defs: QueryDef[], options?: (ResultMeta \| undefined)[]` | `Promise<unknown[][]>` | Execute queries with `QueryDef` array |
+| `bulkInsert` | `connId, tableName, columnDefs: Record<string, ColumnMeta>, records` | `Promise<void>` | Bulk data insertion |
 
 #### DbConnOptions
 

@@ -257,8 +257,8 @@ await connector.connect(
     dbContextOpt: { database: "mydb", schema: "dbo" }, // Optional
   },
   async (db) => {
-    const users = await db.from(User).resultAsync();
-    await db.from(User).insert({ name: "test" });
+    const users = await db.user().result();
+    await db.user().insert([{ name: "test" }]);
     // Auto commit on callback success
   },
 );
@@ -270,7 +270,7 @@ await connector.connectWithoutTransaction(
     connOpt: { configName: "default" },
   },
   async (db) => {
-    const users = await db.from(User).resultAsync();
+    const users = await db.user().result();
     return users;
   },
 );
@@ -331,7 +331,7 @@ ORM remote connection configuration interface.
 | Property | Type | Required | Description |
 |------|------|------|------|
 | `dbContextType` | `Type<T>` | Yes | DbContext class |
-| `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options (including server-side config name) |
+| `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options. `configName` identifies the server-side DB config; `config` can pass additional connection settings |
 | `dbContextOpt` | `{ database: string; schema: string }` | No | Database/schema override |
 
 ### SocketProvider

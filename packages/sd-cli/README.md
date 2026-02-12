@@ -270,6 +270,56 @@ sd-cli device -p my-app -u http://192.168.0.10:3000
 | `--options`, `-o` | Additional options to pass to sd.config.ts (multi-use)                    | `[]`    |
 | `--debug`         | Output debug logs                                                         | `false` |
 
+## Exported Types
+
+This package exports configuration types for `sd.config.ts`. All types are importable from `@simplysm/sd-cli`.
+
+```typescript
+import type {
+  SdConfigFn,
+  SdConfigParams,
+  SdConfig,
+  SdPackageConfig,
+  BuildTarget,
+  SdBuildPackageConfig,
+  SdClientPackageConfig,
+  SdServerPackageConfig,
+  SdScriptsPackageConfig,
+  SdPublishConfig,
+  SdLocalDirectoryPublishConfig,
+  SdStoragePublishConfig,
+  SdPostPublishScriptConfig,
+  SdCapacitorConfig,
+  SdCapacitorAndroidConfig,
+  SdCapacitorSignConfig,
+  SdCapacitorPermission,
+  SdCapacitorIntentFilter,
+  SdElectronConfig,
+} from "@simplysm/sd-cli";
+```
+
+| Type | Description |
+|------|-------------|
+| `SdConfigFn` | Function type for `sd.config.ts` default export: `(params: SdConfigParams) => SdConfig \| Promise<SdConfig>` |
+| `SdConfigParams` | Parameters passed to the config function (`cwd`, `dev`, `opt`) |
+| `SdConfig` | Root configuration object (`packages`, `replaceDeps?`, `postPublish?`) |
+| `SdPackageConfig` | Union of all package config types |
+| `BuildTarget` | Library build target: `"node" \| "browser" \| "neutral"` |
+| `SdBuildPackageConfig` | Config for library packages (`node`/`browser`/`neutral` targets) |
+| `SdClientPackageConfig` | Config for client packages (`client` target) |
+| `SdServerPackageConfig` | Config for server packages (`server` target) |
+| `SdScriptsPackageConfig` | Config for scripts-only packages (`scripts` target) |
+| `SdPublishConfig` | Deployment config: `"npm" \| SdLocalDirectoryPublishConfig \| SdStoragePublishConfig` |
+| `SdLocalDirectoryPublishConfig` | Local directory deployment config (`type: "local-directory"`, `path`) |
+| `SdStoragePublishConfig` | FTP/FTPS/SFTP deployment config (`type`, `host`, `port?`, `path?`, `user?`, `pass?`) |
+| `SdPostPublishScriptConfig` | Post-publish script config (`type: "script"`, `cmd`, `args`) |
+| `SdCapacitorConfig` | Capacitor config for Android app builds |
+| `SdCapacitorAndroidConfig` | Android platform-specific Capacitor config |
+| `SdCapacitorSignConfig` | APK/AAB signing config (`keystore`, `storePassword`, `alias`, `password`) |
+| `SdCapacitorPermission` | Android permission entry (`name`, `maxSdkVersion?`, `ignore?`) |
+| `SdCapacitorIntentFilter` | Android intent filter entry (`action?`, `category?`) |
+| `SdElectronConfig` | Electron desktop app build config |
+
 ## Configuration (sd.config.ts)
 
 Create an `sd.config.ts` file in the project root to define build targets and deployment settings per package. Used by `typecheck`, `watch`, `dev`, `build`, `publish`, and `device` commands.
@@ -411,11 +461,36 @@ Environment variable substitution is supported in `path` for local directory and
 },
 ```
 
+### Dependency Replacement (replaceDeps)
+
+Replace `node_modules` packages with local source directories via symlinks. Useful for local development of dependent packages across separate repositories.
+
+The key is a glob pattern to match packages in `node_modules`, and the value is the local source directory path. The `*` wildcard in the key is substituted into the `*` in the value.
+
+```typescript
+import type { SdConfigFn } from "@simplysm/sd-cli";
+
+const config: SdConfigFn = () => ({
+  packages: {
+    "my-app": { target: "client", server: "my-server" },
+  },
+  replaceDeps: {
+    // Replaces @simplysm/* packages in node_modules
+    // with symlinks to ../simplysm/packages/*/dist
+    "@simplysm/*": "../simplysm/packages/*",
+  },
+});
+
+export default config;
+```
+
 ### postPublish Scripts
 
 You can define scripts to run after deployment completes. Supports environment variable substitution (`%VER%`, `%PROJECT%`). On script failure, only a warning is printed and execution continues.
 
 ```typescript
+import type { SdConfigFn } from "@simplysm/sd-cli";
+
 const config: SdConfigFn = () => ({
   packages: {
     /* ... */
@@ -428,6 +503,8 @@ const config: SdConfigFn = () => ({
     },
   ],
 });
+
+export default config;
 ```
 
 ### Capacitor Configuration (SdCapacitorConfig)

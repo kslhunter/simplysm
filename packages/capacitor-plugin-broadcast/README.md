@@ -50,6 +50,23 @@ An interface representing Broadcast reception results or Intent information.
 | `action` | `string \| undefined` | Broadcast action string |
 | `extras` | `Record<string, unknown> \| undefined` | Additional data included in the Intent |
 
+### `IBroadcastPlugin` Interface
+
+The low-level Capacitor plugin interface. In most cases, use the `Broadcast` wrapper class instead of this interface directly. It is exported for advanced use cases such as custom plugin registration.
+
+| Method | Return Type | Description |
+|--------|----------|------|
+| `subscribe(options, callback)` | `Promise<{ id: string }>` | Register a BroadcastReceiver with intent filters |
+| `unsubscribe(options)` | `Promise<void>` | Unregister a specific BroadcastReceiver by ID |
+| `unsubscribeAll()` | `Promise<void>` | Unregister all BroadcastReceivers |
+| `send(options)` | `Promise<void>` | Send a Broadcast Intent |
+| `getLaunchIntent()` | `Promise<IBroadcastResult>` | Retrieve the launch Intent |
+| `addListener("onNewIntent", callback)` | `Promise<PluginListenerHandle>` | Listen for new Intents while the app is running |
+
+```typescript
+import type { IBroadcastPlugin, IBroadcastResult } from "@simplysm/capacitor-plugin-broadcast";
+```
+
 ## Usage Examples
 
 ### Receiving Broadcasts

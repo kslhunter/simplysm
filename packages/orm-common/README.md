@@ -111,16 +111,32 @@ pnpm add @simplysm/orm-common
 | `DataRecord` | Query result record (supports recursive nesting) |
 | `DataType` | Column data type definition |
 | `ColumnPrimitive` | Column primitive type union |
+| `ColumnPrimitiveMap` | TypeScript type name to actual type mapping |
+| `ColumnPrimitiveStr` | Column primitive type name union (`"string" \| "number" \| ...`) |
 | `ColumnMeta` | Column metadata |
+| `ColumnBuilderRecord` | Record of column name to `ColumnBuilder` |
 | `InferColumns<T>` | Infer value types from column builder |
 | `InferInsertColumns<T>` | Infer types for INSERT (autoIncrement/nullable/default are optional) |
 | `InferUpdateColumns<T>` | Infer types for UPDATE (all fields optional) |
+| `InferColumnExprs<T>` | Infer expression input types from column builder |
+| `InferColumnPrimitiveFromDataType<T>` | Infer TypeScript type from `DataType` |
+| `DataToColumnBuilderRecord<T>` | Convert `DataRecord` to `ColumnBuilderRecord` |
 | `InferDeepRelations<T>` | Deep type inference from relation definitions |
+| `RelationBuilderRecord` | Record of relation name to relation builder |
 | `QueryableRecord<T>` | Queryable internal column record type |
 | `PathProxy<T>` | Type-safe path proxy for `include()` |
+| `ExprInput<T>` | Expression input type (`ExprUnit<T> \| T`) |
+| `SwitchExprBuilder<T>` | CASE WHEN builder (returned by `expr.switch()`) |
+| `ParsedSearchQuery` | Result of `parseSearchQuery()` (`{ or, must, not }`) |
 | `QueryDef` | Query definition union type (DML + DDL) |
 | `SelectQueryDef` | SELECT query definition |
+| `DDL_TYPES` | Array of all DDL query type strings |
+| `DdlType` | Union type of DDL query types |
 | `Expr`, `WhereExpr` | Expression AST types |
+| `DateSeparator` | Date part separator (`"year" \| "month" \| "day" \| ...`) |
+| `WinSpec` | Window function specification (`partitionBy`, `orderBy`) |
+| `dataTypeStrToColumnPrimitiveStr` | SQL type name to TypeScript type name mapping |
+| `inferColumnPrimitiveStr(value)` | Infer `ColumnPrimitiveStr` from runtime value |
 
 ## Usage
 

@@ -303,6 +303,17 @@ import { Select } from "@simplysm/solid";
 // Multiple selection
 <Select items={options} value={selected()} onValueChange={setSelected} multiple />
 
+// Hierarchical items (children approach)
+<Select value={item()} onValueChange={setItem} renderValue={(v) => v.name}>
+  <Select.Item value={parent}>
+    {parent.name}
+    <Select.Item.Children>
+      <Select.Item value={child1}>{child1.name}</Select.Item>
+      <Select.Item value={child2}>{child2.name}</Select.Item>
+    </Select.Item.Children>
+  </Select.Item>
+</Select>
+
 // With action buttons and header
 <Select value={item()} onValueChange={setItem} renderValue={(v) => v.name}>
   <Select.Header><div>Custom header</div></Select.Header>
@@ -329,6 +340,7 @@ import { Select } from "@simplysm/solid";
 
 **Sub-components:**
 - `Select.Item` -- Selection item
+- `Select.Item.Children` -- Nested child items container (for hierarchical selection)
 - `Select.Action` -- Right-side action button
 - `Select.Header` -- Dropdown top custom area
 - `Select.ItemTemplate` -- Item rendering template for items approach
@@ -741,7 +753,7 @@ import { Echarts } from "@simplysm/solid";
 Sidebar navigation with responsive support (mobile overlay below 520px). Open/closed state is saved in localStorage.
 
 ```tsx
-import { Sidebar } from "@simplysm/solid";
+import { Sidebar, Topbar } from "@simplysm/solid";
 
 <Sidebar.Container>
   <Sidebar>
@@ -766,6 +778,27 @@ import { Sidebar } from "@simplysm/solid";
 - `Sidebar.Menu` -- Menu items list (`menus: SidebarMenuItem[]`)
 - `Sidebar.User` -- User info area
 
+**SidebarMenuItem type:**
+
+```typescript
+interface SidebarMenuItem {
+  title: string;
+  href?: string;
+  icon?: Component<IconProps>;
+  children?: SidebarMenuItem[];
+}
+```
+
+**useSidebarContext hook:**
+
+```tsx
+import { useSidebarContext } from "@simplysm/solid";
+
+const sidebar = useSidebarContext();
+sidebar.toggle();          // current open/closed state
+sidebar.setToggle(false);  // programmatically close
+```
+
 ---
 
 #### Topbar
@@ -774,6 +807,24 @@ Top navigation bar. When used inside `Sidebar.Container`, a sidebar toggle butto
 
 ```tsx
 import { Topbar } from "@simplysm/solid";
+import { IconSettings, IconUser } from "@tabler/icons-solidjs";
+
+const menuItems: TopbarMenuItem[] = [
+  { title: "Settings", icon: IconSettings, href: "/settings" },
+  {
+    title: "Admin",
+    icon: IconUser,
+    children: [
+      { title: "Users", href: "/admin/users" },
+      { title: "Roles", href: "/admin/roles" },
+    ],
+  },
+];
+
+const userMenus: TopbarUserMenu[] = [
+  { title: "Profile", onClick: () => navigate("/profile") },
+  { title: "Logout", onClick: handleLogout },
+];
 
 <Topbar>
   <h1 class="text-lg font-bold">App Name</h1>
@@ -787,6 +838,26 @@ import { Topbar } from "@simplysm/solid";
 - `Topbar.Container` -- Container wrapping main content below topbar
 - `Topbar.Menu` -- Menu items list
 - `Topbar.User` -- User menu (dropdown)
+
+**TopbarMenuItem type:**
+
+```typescript
+interface TopbarMenuItem {
+  title: string;
+  href?: string;
+  icon?: Component<IconProps>;
+  children?: TopbarMenuItem[];  // supports unlimited nesting
+}
+```
+
+**TopbarUserMenu type:**
+
+```typescript
+interface TopbarUserMenu {
+  title: string;
+  onClick: () => void;
+}
+```
 
 ---
 
@@ -854,7 +925,90 @@ import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
 
 #### Kanban
 
-Kanban board layout component.
+Kanban board layout component with drag-and-drop cards, lane collapse, multi-select, and loading states.
+
+```tsx
+import { createSignal, For } from "solid-js";
+import { Button, Icon, Kanban, type KanbanDropInfo } from "@simplysm/solid";
+import { IconPlus } from "@tabler/icons-solidjs";
+
+const [selected, setSelected] = createSignal<unknown[]>([]);
+
+const handleDrop = (info: KanbanDropInfo) => {
+  // info.sourceValue: dragged card value
+  // info.targetLaneValue: target lane value
+  // info.targetCardValue: target card value (undefined if dropped on empty area)
+  // info.position: "before" | "after" | undefined
+  moveCard(info);
+};
+
+<div class="h-[500px]">
+  <Kanban
+    selectedValues={selected()}
+    onSelectedValuesChange={setSelected}
+    onDrop={handleDrop}
+  >
+    <For each={lanes()}>
+      {(lane) => (
+        <Kanban.Lane value={lane.id} collapsible busy={lane.loading}>
+          <Kanban.LaneTitle>
+            {lane.title} ({lane.cards.length})
+          </Kanban.LaneTitle>
+          <Kanban.LaneTools>
+            <Button size="sm" variant="ghost">
+              <Icon icon={IconPlus} />
+            </Button>
+          </Kanban.LaneTools>
+          <For each={lane.cards}>
+            {(card) => (
+              <Kanban.Card value={card.id} selectable draggable contentClass="p-2">
+                {card.title}
+              </Kanban.Card>
+            )}
+          </For>
+        </Kanban.Lane>
+      )}
+    </For>
+  </Kanban>
+</div>
+```
+
+**Kanban Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onDrop` | `(info: KanbanDropInfo) => void` | - | Drop event handler |
+| `selectedValues` | `unknown[]` | - | Selected card values |
+| `onSelectedValuesChange` | `(values: unknown[]) => void` | - | Selection change callback |
+
+`KanbanDropInfo`: `{ sourceValue: unknown; targetLaneValue: unknown; targetCardValue: unknown | undefined; position: "before" | "after" | undefined }`
+
+**Kanban.Lane Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `unknown` | - | Lane identifier |
+| `busy` | `boolean` | - | Show loading bar |
+| `collapsible` | `boolean` | - | Allow collapse/expand |
+| `collapsed` | `boolean` | - | Collapsed state (controlled) |
+| `onCollapsedChange` | `(collapsed: boolean) => void` | - | Collapse state callback |
+
+**Kanban.Card Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `unknown` | - | Card identifier |
+| `draggable` | `boolean` | `true` | Enable drag |
+| `selectable` | `boolean` | `false` | Enable selection |
+| `contentClass` | `string` | - | Card content class |
+
+**Sub-components:**
+- `Kanban.Lane` -- Board lane/column
+- `Kanban.LaneTitle` -- Lane header title area
+- `Kanban.LaneTools` -- Lane header action buttons
+- `Kanban.Card` -- Draggable card
+
+**Selection:** Shift+Click for multi-select, long press for single select. Lane header checkbox toggles all cards in the lane.
 
 ---
 
@@ -889,19 +1043,20 @@ import { Table } from "@simplysm/solid";
 
 #### DataSheet
 
-Advanced data table component. Supports sorting, pagination, row selection, tree expansion, column resize, column configuration, and row reordering.
+Advanced data table component. Supports sorting, pagination, row selection, tree expansion, column resize, column configuration, drag-and-drop reordering, and persistent column settings.
 
 ```tsx
 import { DataSheet } from "@simplysm/solid";
 
-<DataSheet items={users()} key="user-table">
-  <DataSheet.Column key="name" header="Name" sortable>
+// Basic usage
+<DataSheet items={users()} persistKey="user-table">
+  <DataSheet.Column key="name" header="Name" sortable class="px-2 py-1">
     {({ item }) => <>{item.name}</>}
   </DataSheet.Column>
-  <DataSheet.Column key="age" header="Age" sortable width="80px">
+  <DataSheet.Column key="age" header="Age" sortable width="80px" class="px-2 py-1">
     {({ item }) => <>{item.age}</>}
   </DataSheet.Column>
-  <DataSheet.Column key="email" header="Email">
+  <DataSheet.Column key="email" header="Email" class="px-2 py-1">
     {({ item }) => <>{item.email}</>}
   </DataSheet.Column>
 </DataSheet>
@@ -909,9 +1064,10 @@ import { DataSheet } from "@simplysm/solid";
 // With pagination + sorting + selection
 <DataSheet
   items={data()}
-  key="data-table"
-  page={page()}
-  onPageChange={setPage}
+  persistKey="data-table"
+  pageIndex={pageIndex()}
+  onPageIndexChange={setPageIndex}
+  itemsPerPage={20}
   totalPageCount={totalPages()}
   sorts={sorts()}
   onSortsChange={setSorts}
@@ -921,26 +1077,66 @@ import { DataSheet } from "@simplysm/solid";
 >
   {/* columns */}
 </DataSheet>
+
+// Tree structure with expansion
+<DataSheet
+  items={treeData()}
+  persistKey="tree-table"
+  getChildren={(item) => item.children}
+  expandedItems={expanded()}
+  onExpandedItemsChange={setExpanded}
+>
+  {/* columns */}
+</DataSheet>
+
+// Auto-select on row click + drag reorder
+<DataSheet
+  items={items()}
+  persistKey="reorder-table"
+  autoSelect="click"
+  selectMode="single"
+  selectedItems={selected()}
+  onSelectedItemsChange={setSelected}
+  onItemsReorder={(e) => {
+    // e: { item: T, targetItem: T, position: "before" | "after" | "inside" }
+    reorderItems(e);
+  }}
+>
+  {/* columns */}
+</DataSheet>
 ```
 
-**DataSheet Props (key items):**
+**DataSheet Props:**
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `items` | `T[]` | - | Data array |
-| `key` | `string` | - | Column configuration storage key |
+| `persistKey` | `string` | - | Column configuration localStorage key |
+| `class` | `string` | - | CSS class |
+| `contentStyle` | `JSX.CSSProperties \| string` | - | Scroll area style |
 | `inset` | `boolean` | - | Inset style |
-| `sorts` | `SortingDef[]` | - | Sort definition |
+| `hideConfigBar` | `boolean` | - | Hide config bar and pagination |
+| `sorts` | `SortingDef[]` | - | Sort state (`{ key: string; desc: boolean }[]`) |
 | `onSortsChange` | `(sorts: SortingDef[]) => void` | - | Sort change callback |
 | `autoSort` | `boolean` | - | Client-side auto-sorting |
-| `page` | `number` | - | Current page (0-based) |
-| `onPageChange` | `(page: number) => void` | - | Page change callback |
+| `pageIndex` | `number` | - | Current page index (0-based) |
+| `onPageIndexChange` | `(pageIndex: number) => void` | - | Page change callback |
 | `totalPageCount` | `number` | - | Total page count |
+| `itemsPerPage` | `number` | - | Items per page |
+| `displayPageCount` | `number` | - | Number of page buttons to display |
 | `selectMode` | `"single" \| "multiple"` | - | Selection mode |
 | `selectedItems` | `T[]` | - | Selected items |
 | `onSelectedItemsChange` | `(items: T[]) => void` | - | Selection change callback |
+| `autoSelect` | `"click"` | - | Auto-select row on click |
+| `isItemSelectable` | `(item: T) => boolean \| string` | - | Item selectability (string returns tooltip) |
 | `getChildren` | `(item: T, index: number) => T[] \| undefined` | - | Tree structure children getter |
-| `hideConfigBar` | `boolean` | - | Hide configuration bar |
+| `expandedItems` | `T[]` | - | Expanded tree items |
+| `onExpandedItemsChange` | `(items: T[]) => void` | - | Expansion state change callback |
+| `cellClass` | `(item: T, colKey: string) => string \| undefined` | - | Dynamic cell class function |
+| `cellStyle` | `(item: T, colKey: string) => string \| undefined` | - | Dynamic cell style function |
+| `onItemsReorder` | `(event: DataSheetReorderEvent<T>) => void` | - | Drag reorder handler (shows drag handle when set) |
+
+`DataSheetReorderEvent<T>`: `{ item: T; targetItem: T; position: "before" | "after" | "inside" }`
 
 **DataSheet.Column Props:**
 
@@ -949,12 +1145,16 @@ import { DataSheet } from "@simplysm/solid";
 | `key` | `string` | **(required)** | Column identifier key |
 | `header` | `string \| string[]` | - | Header text (array for multi-level headers) |
 | `headerContent` | `() => JSX.Element` | - | Custom header rendering |
+| `headerStyle` | `string` | - | Header style |
 | `summary` | `() => JSX.Element` | - | Summary row rendering |
-| `width` | `string` | - | Column width |
-| `fixed` | `boolean` | - | Fixed column |
-| `hidden` | `boolean` | - | Hidden column |
-| `sortable` | `boolean` | - | Sortable |
-| `resizable` | `boolean` | - | Resizable |
+| `tooltip` | `string` | - | Header tooltip |
+| `width` | `string` | - | Column width (e.g., `"100px"`, `"10rem"`) |
+| `class` | `string` | - | Cell CSS class |
+| `fixed` | `boolean` | `false` | Fixed column |
+| `hidden` | `boolean` | `false` | Hidden column |
+| `collapse` | `boolean` | `false` | Hidden in config modal |
+| `sortable` | `boolean` | `true` | Sortable |
+| `resizable` | `boolean` | `true` | Resizable |
 | `children` | `(ctx: { item: T, index: number, depth: number }) => JSX.Element` | **(required)** | Cell rendering function |
 
 ---
@@ -1051,7 +1251,71 @@ import { Calendar } from "@simplysm/solid";
 
 #### PermissionTable
 
-Permission management table component.
+Hierarchical permission management table. Displays a tree of permission items with per-item checkboxes for each permission type. Supports cascading checks (parent toggles children) and permission dependencies (disabling the first permission disables the rest).
+
+```tsx
+import { createSignal } from "solid-js";
+import { type PermissionItem, PermissionTable } from "@simplysm/solid";
+
+const items: PermissionItem[] = [
+  {
+    title: "User Management",
+    href: "/user",
+    perms: ["use", "edit"],
+    children: [
+      { title: "Permission Settings", href: "/user/permission", perms: ["use", "edit", "approve"] },
+      { title: "User List", href: "/user/list", perms: ["use", "edit"] },
+    ],
+  },
+  {
+    title: "Board",
+    href: "/board",
+    perms: ["use", "edit"],
+    modules: ["community"],  // only shown when "community" module is active
+    children: [
+      { title: "Notice", href: "/board/notice", perms: ["use", "edit"] },
+      { title: "Free Board", href: "/board/free", perms: ["use"] },
+    ],
+  },
+];
+
+const [value, setValue] = createSignal<Record<string, boolean>>({});
+
+// Basic usage
+<PermissionTable items={items} value={value()} onValueChange={setValue} />
+
+// Filtered by module
+<PermissionTable items={items} value={value()} onValueChange={setValue} modules={["community"]} />
+
+// Disabled
+<PermissionTable items={items} value={value()} disabled />
+```
+
+The `value` record uses keys in `"{href}/{perm}"` format (e.g., `{ "/user/use": true, "/user/edit": false }`).
+
+**PermissionTable Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `PermissionItem<TModule>[]` | - | Permission tree structure |
+| `value` | `Record<string, boolean>` | - | Permission state record |
+| `onValueChange` | `(value: Record<string, boolean>) => void` | - | State change callback |
+| `modules` | `TModule[]` | - | Module filter (show only matching items) |
+| `disabled` | `boolean` | - | Disable all checkboxes |
+
+**PermissionItem type:**
+
+```typescript
+interface PermissionItem<TModule = string> {
+  title: string;                       // Display text
+  href?: string;                       // Permission path (used as value key prefix)
+  modules?: TModule[];                 // Modules this item belongs to
+  perms?: string[];                    // Permission types (e.g., ["use", "edit", "approve"])
+  children?: PermissionItem<TModule>[]; // Child items
+}
+```
+
+**Cascading behavior:** Checking a parent checks all children. Unchecking `perms[0]` (base permission) automatically unchecks all other permissions for that item.
 
 ---
 
@@ -1125,7 +1389,9 @@ let triggerRef!: HTMLButtonElement;
 
 #### Dialog
 
-Modal dialog component. Supports drag movement, resize, floating mode, and fullscreen mode.
+Modal dialog component. Supports drag movement, resize, floating mode, fullscreen mode, and programmatic opening via `useDialog`.
+
+**Declarative usage:**
 
 ```tsx
 import { Dialog, Button } from "@simplysm/solid";
@@ -1158,6 +1424,48 @@ const [open, setOpen] = createSignal(false);
 </Dialog>
 ```
 
+**Programmatic usage with `useDialog`:**
+
+```tsx
+import { useDialog, useDialogInstance, Button, TextInput } from "@simplysm/solid";
+import { createSignal } from "solid-js";
+
+// Dialog content component
+function EditDialog() {
+  const dialogInstance = useDialogInstance<string>();
+  const [name, setName] = createSignal("");
+
+  return (
+    <div class="p-4 space-y-4">
+      <TextInput value={name()} onValueChange={setName} placeholder="Enter name" />
+      <Button theme="primary" onClick={() => dialogInstance?.close(name())}>
+        Save
+      </Button>
+    </div>
+  );
+}
+
+// Opening dialog programmatically
+function MyPage() {
+  const dialog = useDialog();
+
+  const handleOpen = async () => {
+    const result = await dialog.show<string>(
+      () => <EditDialog />,
+      { title: "Edit Name", widthPx: 400, closeOnBackdrop: true },
+    );
+    if (result != null) {
+      // result is the value passed to dialogInstance.close()
+      console.log("Saved:", result);
+    }
+  };
+
+  return <Button onClick={handleOpen}>Open Editor</Button>;
+}
+```
+
+**Dialog Props:**
+
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `open` | `boolean` | - | Open state |
@@ -1177,8 +1485,23 @@ const [open, setOpen] = createSignal(false);
 | `minHeightPx` | `number` | - | Minimum height (px) |
 | `position` | `"bottom-right" \| "top-right"` | - | Fixed position |
 | `headerAction` | `JSX.Element` | - | Header action area |
+| `headerStyle` | `JSX.CSSProperties \| string` | - | Header style |
 | `canDeactivate` | `() => boolean` | - | Pre-close confirmation function |
 | `onCloseComplete` | `() => void` | - | Post-close animation callback |
+
+**useDialog API:**
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `show` | `<T>(factory: () => JSX.Element, options: DialogShowOptions) => Promise<T \| undefined>` | Open dialog, returns result on close |
+
+`DialogShowOptions` accepts all Dialog props except `open`, `onOpenChange`, and `children`.
+
+**useDialogInstance API:**
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `close` | `(result?: T) => void` | Close dialog with optional return value |
 
 ---
 
@@ -1336,6 +1659,43 @@ function MyComponent() {
 **Sub-components:**
 - `Print.Page` -- Explicit page breaks (auto-breaks if not used)
 
+**usePrintInstance (for async data in print content):**
+
+Use `usePrintInstance` inside print content components when you need to load async data before rendering. Call `ready()` to signal that the content is ready to print.
+
+```tsx
+import { usePrintInstance } from "@simplysm/solid";
+import { createResource, Show } from "solid-js";
+
+function InvoicePrintContent(props: { invoiceId: number }) {
+  const printInstance = usePrintInstance();
+  const [invoice] = createResource(() => fetchInvoice(props.invoiceId));
+
+  createEffect(() => {
+    if (invoice()) {
+      printInstance?.ready();  // signal that content is ready
+    }
+  });
+
+  return (
+    <Show when={invoice()}>
+      {(inv) => (
+        <Print>
+          <Print.Page>
+            <h1>Invoice #{inv().id}</h1>
+            {/* invoice content */}
+          </Print.Page>
+        </Print>
+      )}
+    </Show>
+  );
+}
+
+// Usage
+const { toPrinter } = usePrint();
+await toPrinter(() => <InvoicePrintContent invoiceId={123} />, { size: "A4", margin: "10mm" });
+```
+
 ---
 
 ## Context & Hooks
@@ -1481,35 +1841,98 @@ const navigate = useRouterLink();
 
 ### createAppStructure
 
-Utility for declaratively defining app structure (routing, menus, permissions).
+Utility for declaratively defining app structure (routing, menus, permissions). Takes a single options object.
 
 ```tsx
 import { createAppStructure, type AppStructureItem } from "@simplysm/solid";
+import { IconHome, IconUsers } from "@tabler/icons-solidjs";
 
 const items: AppStructureItem<string>[] = [
   {
     code: "home",
     title: "Home",
+    icon: IconHome,
     component: HomePage,
     perms: ["use"],
   },
   {
     code: "admin",
     title: "Admin",
+    icon: IconUsers,
     children: [
       { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
+      { code: "roles", title: "Role Management", component: RolesPage, perms: ["use"], isNotMenu: true },
     ],
   },
 ];
 
-const structure = createAppStructure(items, {
-  modules: () => activeModules(),
-  basePath: "/app",
+const structure = createAppStructure({
+  items,
+  usableModules: () => activeModules(),  // optional: filter by active modules
+  permRecord: () => userPermissions(),   // optional: user permission state
 });
 
-// structure.routes -- Route array (pass to Route component)
-// structure.usableMenus() -- Sidebar menu array
-// structure.permRecord() -- Permission record (Record<string, boolean>)
+// structure.routes         -- Route array (pass to @solidjs/router)
+// structure.usableMenus()  -- SidebarMenuItem[] for Sidebar.Menu
+// structure.usableFlatMenus() -- Flat menu list
+// structure.permRecord()   -- Record<string, boolean> permission state
+```
+
+**AppStructureItem types:**
+
+```typescript
+// Group item (has children, no component)
+interface AppStructureGroupItem<TModule> {
+  code: string;
+  title: string;
+  icon?: Component<IconProps>;
+  modules?: TModule[];
+  requiredModules?: TModule[];
+  children: AppStructureItem<TModule>[];
+}
+
+// Leaf item (has component, no children)
+interface AppStructureLeafItem<TModule> {
+  code: string;
+  title: string;
+  icon?: Component<IconProps>;
+  modules?: TModule[];
+  requiredModules?: TModule[];
+  component?: Component;
+  perms?: ("use" | "edit")[];
+  subPerms?: AppStructureSubPerm<TModule>[];
+  isNotMenu?: boolean;  // exclude from menu but include in routing
+}
+
+type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
+```
+
+---
+
+## Providers
+
+### ServiceClientProvider
+
+WebSocket client provider for RPC communication with `@simplysm/service-server`. Wraps `ServiceClient` from `@simplysm/service-client`.
+
+```tsx
+import { ServiceClientProvider } from "@simplysm/solid";
+
+<ServiceClientProvider url="ws://localhost:3000">
+  <App />
+</ServiceClientProvider>
+```
+
+### SharedDataProvider
+
+Shared data provider for managing server-side data subscriptions. Works with `ServiceClientProvider` to provide reactive shared data across components.
+
+```tsx
+import { SharedDataProvider, SharedDataChangeEvent } from "@simplysm/solid";
+
+<SharedDataProvider>
+  <App />
+</SharedDataProvider>
 ```
 
 ---
@@ -1601,6 +2024,34 @@ const baseClass = clsx(
 );
 
 const className = twMerge(baseClass, props.class);
+```
+
+---
+
+## Helpers
+
+### mergeStyles
+
+Utility for merging inline style strings and `JSX.CSSProperties` objects.
+
+```typescript
+import { mergeStyles } from "@simplysm/solid";
+
+const style = mergeStyles("color: red", { fontSize: "14px" }, props.style);
+```
+
+### splitSlots
+
+Utility for splitting children into named slots based on component type.
+
+```typescript
+import { splitSlots } from "@simplysm/solid";
+
+const slots = splitSlots(props.children, {
+  header: HeaderComponent,
+  footer: FooterComponent,
+});
+// slots.header, slots.footer, slots.rest
 ```
 
 ---

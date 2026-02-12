@@ -82,7 +82,14 @@ export async function runInit(_options: InitOptions): Promise<void> {
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
-  // 5. 완료 메시지
+  // 5. git 초기화
+  logger.info("git 저장소 초기화 중...");
+  await spawn("git", ["init"], { cwd });
+  await spawn("git", ["add", "."], { cwd });
+  await spawn("git", ["commit", "-m", "init"], { cwd });
+  logger.success("git 저장소 초기화 완료");
+
+  // 6. 완료 메시지
   consola.box(
     [
       "프로젝트가 생성되었습니다!",

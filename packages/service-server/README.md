@@ -16,61 +16,62 @@ pnpm add @simplysm/service-server
 
 ### Core Classes
 
-| Module | Path | Description |
-|------|------|------|
-| `ServiceServer` | `service-server.ts` | Main server class. Creates Fastify instance and configures routes/plugins |
-| `ServiceBase` | `core/service-base.ts` | Service base abstract class. All custom services must inherit from this |
-| `ServiceExecutor` | `core/service-executor.ts` | Internal executor that handles service method discovery, auth checks, and execution |
+| Module | Description |
+|--------|------|
+| `ServiceServer` | Main server class. Creates Fastify instance and configures routes/plugins |
+| `ServiceBase` | Service base abstract class. All custom services must inherit from this |
+| `ServiceExecutor` | Internal executor that handles service method discovery, auth checks, and execution |
 
 ### Authentication
 
-| Module | Path | Description |
-|------|------|------|
-| `JwtManager` | `auth/jwt-manager.ts` | JWT token generation/verification/decoding based on jose library (HS256, 12-hour expiration) |
-| `Authorize` | `auth/auth.decorators.ts` | Stage 3 decorator. Sets authentication permissions at class or method level |
-| `AuthTokenPayload` | `auth/auth-token-payload.ts` | JWT payload interface (includes `roles`, `data`) |
+| Module | Description |
+|--------|------|
+| `JwtManager` | JWT token generation/verification/decoding based on jose library (HS256, 12-hour expiration) |
+| `Authorize` | Stage 3 decorator. Sets authentication permissions at class or method level |
+| `getAuthPermissions` | Queries auth permissions for a service class/method (used internally by `ServiceExecutor`) |
+| `AuthTokenPayload` | JWT payload interface (includes `roles`, `data`) |
 
 ### Transport Layer - WebSocket
 
-| Module | Path | Description |
-|------|------|------|
-| `WebSocketHandler` | `transport/socket/websocket-handler.ts` | Handles WebSocket connection management, message routing, and event distribution |
-| `ServiceSocket` | `transport/socket/service-socket.ts` | Wraps individual WebSocket connections. Manages ping/pong, protocol encoding/decoding, event listener management |
+| Module | Description |
+|--------|------|
+| `WebSocketHandler` | Handles WebSocket connection management, message routing, and event distribution |
+| `ServiceSocket` | Wraps individual WebSocket connections. Manages ping/pong, protocol encoding/decoding, event listener management |
 
 ### Transport Layer - HTTP
 
-| Module | Path | Description |
-|------|------|------|
-| `HttpRequestHandler` | `transport/http/http-request-handler.ts` | Calls service methods via HTTP at `/api/:service/:method` route |
-| `UploadHandler` | `transport/http/upload-handler.ts` | Handles multipart file upload at `/upload` route (auth required) |
-| `StaticFileHandler` | `transport/http/static-file-handler.ts` | Serves static files. Prevents path traversal and blocks hidden files |
+| Module | Description |
+|--------|------|
+| `HttpRequestHandler` | Calls service methods via HTTP at `/api/:service/:method` route |
+| `UploadHandler` | Handles multipart file upload at `/upload` route (auth required) |
+| `StaticFileHandler` | Serves static files. Prevents path traversal and blocks hidden files |
 
 ### Protocol
 
-| Module | Path | Description |
-|------|------|------|
-| `ProtocolWrapper` | `protocol/protocol-wrapper.ts` | Message encoding/decoding wrapper. Messages over 30KB are processed in worker threads |
+| Module | Description |
+|--------|------|
+| `ProtocolWrapper` | Message encoding/decoding wrapper. Messages over 30KB are processed in worker threads |
 
 ### Built-in Services
 
-| Module | Path | Description |
-|------|------|------|
-| `OrmService` | `services/orm-service.ts` | DB connection/transaction/query execution (WebSocket only, auth required) |
-| `CryptoService` | `services/crypto-service.ts` | SHA256 hash and AES-256-CBC encryption/decryption |
-| `SmtpService` | `services/smtp-service.ts` | nodemailer-based email sending |
-| `AutoUpdateService` | `services/auto-update-service.ts` | App auto-update (provides latest version query and download path) |
+| Module | Description |
+|--------|------|
+| `OrmService` | DB connection/transaction/query execution (WebSocket only, auth required) |
+| `CryptoService` | SHA256 hash and AES-256-CBC encryption/decryption |
+| `SmtpService` | nodemailer-based email sending |
+| `AutoUpdateService` | App auto-update (provides latest version query and download path) |
 
 ### Utilities
 
-| Module | Path | Description |
-|------|------|------|
-| `ConfigManager` | `utils/config-manager.ts` | JSON config file loading/caching/real-time monitoring (auto expiration based on LazyGcMap) |
+| Module | Description |
+|--------|------|
+| `ConfigManager` | JSON config file loading/caching/real-time monitoring (auto expiration based on LazyGcMap) |
 
 ### Legacy
 
-| Module | Path | Description |
-|------|------|------|
-| `handleV1Connection` | `legacy/v1-auto-update-handler.ts` | V1 protocol client compatibility handling (supports auto-update only) |
+| Module | Description |
+|--------|------|
+| `handleV1Connection` | V1 protocol client compatibility handling (supports auto-update only) |
 
 ## Usage
 
@@ -101,9 +102,41 @@ server.on("close", () => {
 await server.close();
 ```
 
+### ServiceServer
+
+`ServiceServer<TAuthInfo>` extends `EventEmitter` and is the main entry point for creating a server.
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|------|
+| `options` | `ServiceServerOptions` | Server configuration (read-only, passed via constructor) |
+| `isOpen` | `boolean` | Whether the server is currently listening |
+| `fastify` | `FastifyInstance` | Underlying Fastify instance (read-only, for advanced use) |
+
+**Methods:**
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `listen()` | `Promise<void>` | Register all plugins/routes and start listening |
+| `close()` | `Promise<void>` | Close all WebSocket connections and shut down the server |
+| `generateAuthToken(payload)` | `Promise<string>` | Generate a JWT token (HS256, 12-hour expiration) |
+| `verifyAuthToken(token)` | `Promise<AuthTokenPayload<TAuthInfo>>` | Verify and decode a JWT token |
+| `emitEvent(eventType, infoSelector, data)` | `Promise<void>` | Publish an event to matching WebSocket clients |
+| `broadcastReload(clientName, changedFileSet)` | `Promise<void>` | Send a reload command to all connected clients |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|------|
+| `ready` | `void` | Emitted when the server starts listening |
+| `close` | `void` | Emitted when the server is closed |
+
 ### Server Options (`ServiceServerOptions`)
 
 ```typescript
+import type { ServiceServerOptions } from "@simplysm/service-server";
+
 interface ServiceServerOptions {
   /** Server root path (base directory for static files and config files) */
   rootPath: string;
@@ -138,6 +171,7 @@ rootPath/
 ### SSL/HTTPS Server
 
 ```typescript
+import { ServiceServer } from "@simplysm/service-server";
 import { fsReadFile } from "@simplysm/core-node";
 
 const pfxBytes = await fsReadFile("/path/to/cert.pfx");
@@ -174,22 +208,32 @@ class MyService extends ServiceBase {
 }
 ```
 
-Context accessible within services:
+#### ServiceBase Properties
+
+`ServiceBase<TAuthInfo>` is an abstract class. The generic `TAuthInfo` type represents the shape of the authenticated user's data stored in the JWT token.
 
 | Property | Type | Description |
-|------|------|------|
-| `this.server` | `ServiceServer` | Server instance reference |
+|----------|------|------|
+| `this.server` | `ServiceServer<TAuthInfo>` | Server instance reference |
 | `this.socket` | `ServiceSocket \| undefined` | WebSocket connection (`undefined` for HTTP calls) |
-| `this.http` | `{ clientName, authTokenPayload? }` | HTTP request context |
-| `this.authInfo` | `TAuthInfo \| undefined` | Authenticated user info |
-| `this.clientName` | `string \| undefined` | Client app name |
-| `this.clientPath` | `string \| undefined` | Per-client directory path |
+| `this.http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> } \| undefined` | HTTP request context |
+| `this.authInfo` | `TAuthInfo \| undefined` | Authenticated user's custom data (from JWT `data` field) |
+| `this.clientName` | `string \| undefined` | Client app name (validated against path traversal) |
+| `this.clientPath` | `string \| undefined` | Resolved per-client directory path (`rootPath/www/{clientName}`) |
+
+#### ServiceBase Methods
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `getConfig<T>(section)` | `Promise<T>` | Read a section from `.config.json` (root + client configs merged) |
 
 ### Config File Reference
 
 Read sections from `.config.json` files using `ServiceBase.getConfig()`. Root and per-client configs are automatically merged.
 
 ```typescript
+import { ServiceBase } from "@simplysm/service-server";
+
 class MyService extends ServiceBase {
   async getDbHost(): Promise<string> {
     // Read "mySection" key from rootPath/.config.json or clientPath/.config.json
@@ -262,26 +306,65 @@ Decorator behavior:
 
 Method-level decorators override class-level settings.
 
-### JWT Token Management
+#### `getAuthPermissions`
 
-Generate and verify JWT tokens through the `ServiceServer` instance.
+Query auth permissions for a given service class and method. Primarily used internally by `ServiceExecutor`, but exported for advanced use cases.
 
 ```typescript
+import { getAuthPermissions } from "@simplysm/service-server";
+
+// Returns string[] if permissions are set, or undefined for public (no decorator)
+const perms = getAuthPermissions(UserService, "deleteUser");
+// ["admin"]
+
+const classPerms = getAuthPermissions(UserService);
+// [] (empty array = login required, no specific role)
+
+const publicPerms = getAuthPermissions(PublicService, "healthCheck");
+// undefined (no auth required)
+```
+
+### JWT Token Management
+
+#### JwtManager
+
+`JwtManager<TAuthInfo>` handles JWT operations internally. Access its functionality through `ServiceServer` methods.
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `sign(payload)` | `Promise<string>` | Generate a JWT token (HS256, 12-hour expiration) |
+| `verify(token)` | `Promise<AuthTokenPayload<TAuthInfo>>` | Verify token signature and expiration, return payload |
+| `decode(token)` | `AuthTokenPayload<TAuthInfo>` | Decode token without verification (synchronous) |
+
+Generate and verify JWT tokens through the `ServiceServer` instance:
+
+```typescript
+import { ServiceServer } from "@simplysm/service-server";
+
+const server = new ServiceServer({
+  port: 8080,
+  rootPath: "/app/data",
+  auth: { jwtSecret: "my-secret-key" },
+  services: [],
+});
+
 // Generate token (12-hour expiration, HS256 algorithm)
 const token = await server.generateAuthToken({
   roles: ["admin", "user"],
-  data: { userId: 1, name: "홍길동" },
+  data: { userId: 1, name: "John" },
 });
 
 // Verify token
 const payload = await server.verifyAuthToken(token);
 // payload.roles: ["admin", "user"]
-// payload.data: { userId: 1, name: "홍길동" }
+// payload.data: { userId: 1, name: "John" }
 ```
 
-`AuthTokenPayload` interface:
+#### `AuthTokenPayload`
 
 ```typescript
+import type { AuthTokenPayload } from "@simplysm/service-server";
+
 interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
   /** User role list (used for permission check in Authorize decorator) */
   roles: string[];
@@ -289,6 +372,37 @@ interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
   data: TAuthInfo;
 }
 ```
+
+### ServiceSocket
+
+`ServiceSocket` extends `EventEmitter` and wraps an individual WebSocket connection. It is available in service methods as `this.socket` when the request comes via WebSocket.
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|------|
+| `clientName` | `string` | Client app name (from WebSocket query parameter) |
+| `connectedAtDateTime` | `DateTime` | Connection timestamp |
+| `authTokenPayload` | `AuthTokenPayload \| undefined` | Authenticated token payload (set after `auth` message) |
+| `connReq` | `FastifyRequest` | Original Fastify request that initiated the WebSocket upgrade |
+
+**Methods:**
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `send(uuid, msg)` | `Promise<number>` | Send a message to this client. Returns total bytes sent |
+| `close()` | `void` | Terminate the WebSocket connection |
+| `addEventListener(key, eventName, info)` | `void` | Register an event listener for this socket |
+| `removeEventListener(key)` | `void` | Remove an event listener by key |
+| `getEventListeners(eventName)` | `{ key, info }[]` | Get all event listeners for a given event name |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|------|
+| `error` | `Error` | WebSocket error occurred |
+| `close` | `number` | Connection closed (payload is the close code) |
+| `message` | `{ uuid: string; msg: ServiceClientMessage }` | Decoded message received from client |
 
 ### HTTP API Call
 
@@ -345,6 +459,7 @@ Uploaded files are stored in the `rootPath/www/uploads/` directory with UUID-bas
 Publish events to connected clients from the server.
 
 ```typescript
+import { ServiceServer } from "@simplysm/service-server";
 import { ServiceEventListener } from "@simplysm/service-common";
 
 // Event definition (from service-common)
@@ -371,6 +486,8 @@ await server.broadcastReload("my-app", new Set(["main.js"]));
 Provides database connection/query/transaction via WebSocket. `@Authorize()` decorator is applied, requiring login.
 
 ```typescript
+import { ServiceServer, OrmService } from "@simplysm/service-server";
+
 const server = new ServiceServer({
   port: 8080,
   rootPath: "/app/data",
@@ -398,17 +515,17 @@ Define ORM config in `.config.json`:
 
 Methods provided by `OrmService`:
 
-| Method | Description |
-|--------|------|
-| `getInfo(opt)` | Query DB connection info (dialect, database, schema) |
-| `connect(opt)` | Create DB connection. Returns connection ID |
-| `close(connId)` | Close DB connection |
-| `beginTransaction(connId, isolationLevel?)` | Begin transaction |
-| `commitTransaction(connId)` | Commit transaction |
-| `rollbackTransaction(connId)` | Rollback transaction |
-| `executeParametrized(connId, query, params?)` | Execute parameterized query |
-| `executeDefs(connId, defs, options?)` | Execute QueryDef-based queries |
-| `bulkInsert(connId, tableName, columnDefs, records)` | Bulk INSERT |
+| Method | Returns | Description |
+|--------|---------|------|
+| `getInfo(opt)` | `Promise<{ dialect, database?, schema? }>` | Query DB connection info |
+| `connect(opt)` | `Promise<number>` | Create DB connection. Returns connection ID |
+| `close(connId)` | `Promise<void>` | Close DB connection |
+| `beginTransaction(connId, isolationLevel?)` | `Promise<void>` | Begin transaction |
+| `commitTransaction(connId)` | `Promise<void>` | Commit transaction |
+| `rollbackTransaction(connId)` | `Promise<void>` | Rollback transaction |
+| `executeParametrized(connId, query, params?)` | `Promise<unknown[][]>` | Execute parameterized query |
+| `executeDefs(connId, defs, options?)` | `Promise<unknown[][]>` | Execute QueryDef-based queries |
+| `bulkInsert(connId, tableName, columnDefs, records)` | `Promise<void>` | Bulk INSERT |
 
 When a WebSocket connection is closed, all DB connections opened from that socket are automatically cleaned up.
 
@@ -417,6 +534,8 @@ When a WebSocket connection is closed, all DB connections opened from that socke
 Provides SHA256 hash and AES-256-CBC symmetric key encryption/decryption.
 
 ```typescript
+import { ServiceServer, CryptoService } from "@simplysm/service-server";
+
 const server = new ServiceServer({
   port: 8080,
   rootPath: "/app/data",
@@ -434,17 +553,19 @@ const server = new ServiceServer({
 }
 ```
 
-| Method | Description |
-|--------|------|
-| `encrypt(data)` | Generate SHA256 HMAC hash (one-way) |
-| `encryptAes(data)` | AES-256-CBC encryption. Returns hex string in `iv:encrypted` format |
-| `decryptAes(encText)` | AES-256-CBC decryption. Returns original binary |
+| Method | Returns | Description |
+|--------|---------|------|
+| `encrypt(data)` | `Promise<string>` | Generate SHA256 HMAC hash (one-way). `data` is `string \| Uint8Array` |
+| `encryptAes(data)` | `Promise<string>` | AES-256-CBC encryption. `data` is `Uint8Array`. Returns hex string in `iv:encrypted` format |
+| `decryptAes(encText)` | `Promise<Uint8Array>` | AES-256-CBC decryption. Returns original binary |
 
 ### Built-in Service: SmtpService
 
 A nodemailer-based email sending service. Can pass SMTP config directly or reference server config file.
 
 ```typescript
+import { ServiceServer, SmtpService } from "@simplysm/service-server";
+
 const server = new ServiceServer({
   port: 8080,
   rootPath: "/app/data",
@@ -470,10 +591,10 @@ const server = new ServiceServer({
 }
 ```
 
-| Method | Description |
-|--------|------|
-| `send(options)` | Send email by directly passing SMTP config |
-| `sendByConfig(configName, options)` | Send email by referencing SMTP config in config file |
+| Method | Returns | Description |
+|--------|---------|------|
+| `send(options)` | `Promise<string>` | Send email by directly passing SMTP config. Returns message ID |
+| `sendByConfig(configName, options)` | `Promise<string>` | Send email by referencing SMTP config in config file. Returns message ID |
 
 `send()` options:
 
@@ -499,6 +620,8 @@ interface SmtpSendOption {
 Supports auto-update for client apps. Searches for latest version files by platform in the client directory.
 
 ```typescript
+import { ServiceServer, AutoUpdateService } from "@simplysm/service-server";
+
 const server = new ServiceServer({
   port: 8080,
   rootPath: "/app/data",
@@ -516,16 +639,16 @@ rootPath/www/{clientName}/{platform}/updates/
   1.0.1.apk
 ```
 
-| Method | Description |
-|--------|------|
-| `getLastVersion(platform)` | Returns latest version and download path for the platform. Returns `undefined` if no update |
+| Method | Returns | Description |
+|--------|---------|------|
+| `getLastVersion(platform)` | `Promise<{ version: string; downloadPath: string } \| undefined>` | Returns latest version and download path for the platform. Returns `undefined` if no update |
 
-Return value:
+Return value example:
 
 ```typescript
 {
-  version: string;       // e.g., "1.0.1"
-  downloadPath: string;  // e.g., "/my-app/android/updates/1.0.1.apk"
+  version: "1.0.1",
+  downloadPath: "/my-app/android/updates/1.0.1.apk",
 }
 ```
 
@@ -536,17 +659,46 @@ A static utility class that manages loading, caching, and real-time monitoring o
 ```typescript
 import { ConfigManager } from "@simplysm/service-server";
 
+// Returns undefined if the file does not exist
 const config = await ConfigManager.getConfig<MyConfig>("/path/to/.config.json");
 ```
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `ConfigManager.getConfig<T>(filePath)` | `Promise<T \| undefined>` | Load and cache a JSON config file. Returns `undefined` if file not found |
 
 Behavior:
 - Caches file in `LazyGcMap` on first load.
 - Registers file change watch (`FsWatcher`) to auto-refresh cache on changes.
 - Cache auto-expires after 1 hour of no access, and associated watch is released.
+- GC runs every 10 minutes to check for expired entries.
 
 ### ProtocolWrapper
 
 Handles encoding/decoding of WebSocket messages. Automatically branches between main thread and worker thread based on message size.
+
+```typescript
+import { ProtocolWrapper } from "@simplysm/service-server";
+
+const protocol = new ProtocolWrapper();
+
+// Encode a message into chunks
+const { chunks, totalSize } = await protocol.encode(uuid, message);
+
+// Decode received bytes
+const result = await protocol.decode(bytes);
+
+// Clean up
+protocol.dispose();
+```
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `encode(uuid, message)` | `Promise<{ chunks: Uint8Array[]; totalSize: number }>` | Encode a message into transmittable chunks |
+| `decode(bytes)` | `Promise<ServiceMessageDecodeResult>` | Decode received bytes into a message |
+| `dispose()` | `void` | Clean up internal protocol resources |
+
+Worker thread branching:
 
 | Condition | Processing Method |
 |------|-----------|
@@ -554,6 +706,79 @@ Handles encoding/decoding of WebSocket messages. Automatically branches between 
 | Over 30KB | Processed in worker thread (max 4GB memory allocation) |
 
 Messages containing large binary data (Uint8Array) also branch to worker thread.
+
+### Legacy: handleV1Connection
+
+Handles V1 protocol WebSocket clients. Only supports the `SdAutoUpdateService.getLastVersion` command. All other requests return an upgrade-required error.
+
+```typescript
+import { handleV1Connection, AutoUpdateService } from "@simplysm/service-server";
+
+// Used internally by ServiceServer for WebSocket connections without ver=2 query parameter
+handleV1Connection(webSocket, autoUpdateService);
+```
+
+## Full Server Example
+
+```typescript
+import { ServiceServer, ServiceBase, Authorize, OrmService, CryptoService } from "@simplysm/service-server";
+import { ServiceEventListener } from "@simplysm/service-common";
+
+// Define a custom service
+@Authorize()
+class UserService extends ServiceBase<{ userId: number; role: string }> {
+  async getProfile(): Promise<{ name: string }> {
+    const userId = this.authInfo?.userId;
+    // Use this.getConfig(), this.socket, this.server, etc.
+    return { name: "John" };
+  }
+
+  @Authorize(["admin"])
+  async deleteUser(targetId: number): Promise<void> {
+    // Admin-only operation
+  }
+}
+
+class PublicService extends ServiceBase {
+  async healthCheck(): Promise<string> {
+    return "OK";
+  }
+}
+
+// Create and start server
+const server = new ServiceServer({
+  port: 8080,
+  rootPath: "/app/data",
+  auth: { jwtSecret: "my-secret-key" },
+  services: [UserService, PublicService, OrmService, CryptoService],
+});
+
+server.on("ready", () => {
+  console.log("Server is ready on port 8080");
+});
+
+await server.listen();
+
+// Generate auth token for a user
+const token = await server.generateAuthToken({
+  roles: ["admin"],
+  data: { userId: 1, role: "admin" },
+});
+
+// Emit events to connected clients
+class UserUpdatedEvent extends ServiceEventListener<
+  { userId: number },
+  { action: string }
+> {
+  readonly eventName = "UserUpdatedEvent";
+}
+
+await server.emitEvent(
+  UserUpdatedEvent,
+  (info) => info.userId === 1,
+  { action: "profile-updated" },
+);
+```
 
 ## Server Route Structure
 

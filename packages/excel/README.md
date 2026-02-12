@@ -381,6 +381,21 @@ Behavior of the `read()` method:
 | `convertNumFmtCodeToName(code)` | Format code | `ExcelNumberFormat` | Convert format code to name |
 | `convertNumFmtNameToId(name)` | `ExcelNumberFormat` | Format ID | Convert format name to ID |
 
+## ExcelRow API
+
+| Method | Return Type | Description |
+|--------|-----------|------|
+| `cell(c)` | `ExcelCell` | Get cell at column index (0-based) |
+| `getCells()` | `Promise<ExcelCell[]>` | Get all cells in the row |
+
+## ExcelCol API
+
+| Method | Return Type | Description |
+|--------|-----------|------|
+| `cell(r)` | `ExcelCell` | Get cell at row index (0-based) |
+| `getCells()` | `Promise<ExcelCell[]>` | Get all cells in the column |
+| `setWidth(size)` | `Promise<void>` | Set column width |
+
 ## ExcelCell API
 
 | Method | Return Type | Description |

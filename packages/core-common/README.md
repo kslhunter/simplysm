@@ -654,9 +654,12 @@ TypeScript utility types.
 | `Type<T>` | Constructor type (for dependency injection, factory patterns) |
 | `ObjUndefToOptional<T>` | Convert properties with `undefined` to optional |
 | `ObjOptionalToUndef<T>` | Convert optional properties to `required + undefined` union |
+| `ArrayDiffsResult<T, P>` | Result of `Array.diffs()` — insert / delete / update entries |
+| `ArrayDiffs2Result<T>` | Result of `Array.oneWayDiffs()` — create / update / same entries |
+| `TreeArray<T>` | Result of `Array.toTree()` — `T & { children: TreeArray<T>[] }` |
 
 ```typescript
-import type { DeepPartial, Type, Bytes } from "@simplysm/core-common";
+import type { DeepPartial, Type, Bytes, ArrayDiffsResult, TreeArray } from "@simplysm/core-common";
 
 // DeepPartial: deep Partial
 interface Config {
@@ -671,6 +674,19 @@ function create<T>(ctor: Type<T>): T {
 
 // Bytes: Buffer replacement
 const data: Bytes = new Uint8Array([1, 2, 3]);
+
+// ArrayDiffsResult: diff comparison result type
+const diffs: ArrayDiffsResult<User, User>[] = oldUsers.diffs(newUsers, { keys: ["id"] });
+for (const diff of diffs) {
+  if (diff.source === undefined) { /* INSERT */ }
+  else if (diff.target === undefined) { /* DELETE */ }
+  else { /* UPDATE */ }
+}
+
+// TreeArray: tree structure result type
+interface Category { id: number; parentId: number | undefined; name: string }
+const tree: TreeArray<Category>[] = categories.toTree("id", "parentId");
+// Each node has a `children` array of the same type
 ```
 
 ### Extensions
