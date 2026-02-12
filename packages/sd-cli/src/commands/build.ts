@@ -392,6 +392,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     cwd,
                     pkgDir,
                     env: { ...baseEnv, ...config.env },
+                    configs: config.configs,
                   });
 
                   results.push({
