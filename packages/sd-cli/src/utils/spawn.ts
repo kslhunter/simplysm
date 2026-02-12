@@ -49,7 +49,7 @@ export async function spawn(cmd: string, args: string[], options?: SpawnOptions)
       // shell: false for security (avoid shell injection)
       // Windows .bat/.cmd files are handled by calling cmd.exe explicitly in capacitor.ts
       shell: false,
-      stdio: ["inherit", "pipe", "pipe"],
+      stdio: ["ignore", "pipe", "pipe"],
     };
 
     const child = cpSpawn(cmd, args, spawnOptions);
