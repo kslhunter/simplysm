@@ -4,6 +4,8 @@ When you need to look up usage examples or API details for `@simplysm/*` package
 
 The simplysm library is registered as `/kslhunter/simplysm` on Context7.
 
+**IMPORTANT**: Context7 documentation is only available for **v13+ (beta onwards)**. v12 and earlier versions have NO documentation on Context7. If working with v12 code, do NOT rely on Context7 — read the source code directly instead.
+
 ## How to use
 
 Skip `resolve-library-id` (the ID is already known) and call `query-docs` directly:
