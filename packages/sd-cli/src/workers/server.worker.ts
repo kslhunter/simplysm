@@ -4,7 +4,7 @@ import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
-import { createServerEsbuildOptions } from "../utils/esbuild-config";
+import { createServerEsbuildOptions, collectUninstalledOptionalPeerDeps } from "../utils/esbuild-config";
 
 //#region Types
 
@@ -132,12 +132,19 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     // 서버는 node 환경
     const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "node", info.pkgDir);
 
+    // 미설치 optional peer dep을 external 처리
+    const external = collectUninstalledOptionalPeerDeps(info.pkgDir);
+    if (external.length > 0) {
+      logger.debug("미설치 optional peer deps (external):", external);
+    }
+
     // esbuild 일회성 빌드
     const esbuildOptions = createServerEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,
       compilerOptions,
       env: info.env,
+      external,
     });
 
     const result = await esbuild.build(esbuildOptions);
@@ -193,12 +200,19 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 
     let isFirstBuild = true;
 
+    // 미설치 optional peer dep을 external 처리
+    const external = collectUninstalledOptionalPeerDeps(info.pkgDir);
+    if (external.length > 0) {
+      logger.debug("미설치 optional peer deps (external):", external);
+    }
+
     // esbuild 기본 옵션 생성
     const baseOptions = createServerEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,
       compilerOptions,
       env: info.env,
+      external,
     });
 
     // watch용 플러그인 추가

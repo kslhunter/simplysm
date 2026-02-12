@@ -1,5 +1,7 @@
 import path from "path";
+import { readFileSync } from "fs";
 import fs from "fs/promises";
+import { createRequire } from "module";
 import { glob } from "glob";
 import type esbuild from "esbuild";
 import type { TypecheckEnv } from "./tsconfig";
@@ -61,6 +63,8 @@ export interface ServerEsbuildOptions {
   entryPoints: string[];
   compilerOptions: Record<string, unknown>;
   env?: Record<string, string>;
+  /** 번들에서 제외할 외부 모듈 */
+  external?: string[];
 }
 
 /**
@@ -112,6 +116,7 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     banner: {
       js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
     },
+    external: options.external,
     define,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
   };
@@ -126,3 +131,66 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
 export function getTypecheckEnvFromTarget(target: "node" | "browser" | "neutral"): TypecheckEnv {
   return target === "node" ? "node" : "browser";
 }
+
+//#region Optional Peer Deps
+
+interface PkgJson {
+  dependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+}
+
+/**
+ * 의존성 트리에서 미설치 optional peer dep 수집
+ *
+ * 서버 빌드(bundle: true) 시 설치되지 않은 optional peer dependency를
+ * esbuild external로 지정하여 빌드 실패를 방지한다.
+ */
+export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
+  const external = new Set<string>();
+  const visited = new Set<string>();
+
+  const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    scanOptionalPeerDeps(dep, pkgDir, external, visited);
+  }
+
+  return [...external];
+}
+
+function scanOptionalPeerDeps(pkgName: string, resolveDir: string, external: Set<string>, visited: Set<string>): void {
+  if (visited.has(pkgName)) return;
+  visited.add(pkgName);
+
+  const req = createRequire(path.join(resolveDir, "noop.js"));
+
+  let pkgJsonPath: string;
+  try {
+    pkgJsonPath = req.resolve(`${pkgName}/package.json`);
+  } catch {
+    return;
+  }
+
+  const depDir = path.dirname(pkgJsonPath);
+  const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
+
+  if (pkgJson.peerDependenciesMeta != null) {
+    const peerDeps = pkgJson.peerDependencies ?? {};
+    const depReq = createRequire(path.join(depDir, "noop.js"));
+    for (const [name, meta] of Object.entries(pkgJson.peerDependenciesMeta)) {
+      if (meta.optional === true && name in peerDeps) {
+        try {
+          depReq.resolve(name);
+        } catch {
+          external.add(name);
+        }
+      }
+    }
+  }
+
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    scanOptionalPeerDeps(dep, depDir, external, visited);
+  }
+}
+
+//#endregion
