@@ -1700,6 +1700,45 @@ await toPrinter(() => <InvoicePrintContent invoiceId={123} />, { size: "A4", mar
 
 ## Context & Hooks
 
+### createPwaUpdate
+
+PWA Service Worker update detection hook. Automatically polls for Service Worker updates every 5 minutes. When a new version is detected, shows a notification with a "새로고침" (reload) action button.
+
+**Automatic Integration:** Already integrated into `InitializeProvider` — no manual setup required for most applications. The hook runs automatically inside the notification system.
+
+**Manual Usage (Custom Provider Tree):**
+
+```tsx
+import { createPwaUpdate } from "@simplysm/solid";
+
+function MyProvider(props) {
+  // Must be called inside NotificationProvider
+  createPwaUpdate();
+
+  return (
+    <NotificationProvider>
+      {props.children}
+    </NotificationProvider>
+  );
+}
+```
+
+**Notification Message:** When an update is detected, displays:
+- Title: "앱이 업데이트되었습니다" (App has been updated)
+- Message: "새로고침하면 최신 버전을 사용할 수 있습니다" (Refresh to use the latest version)
+- Action button: "새로고침" (Refresh)
+
+**Graceful No-ops:** Works safely in the following scenarios where Service Workers are unavailable:
+- HTTP protocol (non-HTTPS dev servers)
+- Browsers that don't support Service Workers
+- Development/test environments without SW registration
+
+**Requirements:**
+- Must be called inside `NotificationProvider` (to display the update notification)
+- `InitializeProvider` already includes both, so manual setup only needed for custom provider trees
+
+---
+
 ### useTheme
 
 Hook to access theme (dark/light/system) state. Must be used inside `InitializeProvider`.

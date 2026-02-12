@@ -411,6 +411,26 @@ export default config;
 }
 ```
 
+##### Progressive Web App (PWA) Support
+
+All client packages automatically generate PWA files during build. No configuration is required to enable PWA.
+
+**Generated Files:**
+
+- `sw.js` - Service worker (handles offline caching and precache of all build assets)
+- `manifest.webmanifest` - Web app manifest (for app install/launch)
+- `registerSW.js` - Service worker registration script (injected automatically)
+
+**Key behaviors:**
+
+- **Build mode**: Service worker is fully enabled with offline support and asset precaching via Workbox
+- **Dev mode**: Service worker registration is disabled by default for safe development (no stale cache issues)
+- **Precache strategy**: All build assets (`*.js`, `*.css`, `*.html`, `*.ico`, `*.png`, `*.svg`, `*.woff2`) are precached for instant loading
+- **HTTPS requirement**: Service workers require HTTPS at runtime (localhost dev mode is exempt)
+- **Offline capability**: Once cached, the app works offline with all precached resources available
+
+Users can install the app on their home screen on supported browsers and devices. No additional code or dependencies are needed.
+
 #### Server Package (SdServerPackageConfig)
 
 ```typescript
