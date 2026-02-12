@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "13.0.0-beta.10",
+  "version": "13.0.0-beta.11",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -17,8 +17,8 @@
     "watch": "pnpm _sd-cli_ watch",
     "dev": "pnpm _sd-cli_ dev",
     "build": "pnpm _sd-cli_ build",
-    "publish": "pnpm _sd-cli_ publish",
-    "publish:no-build": "pnpm _sd-cli_ --no-build",
+    "pub": "pnpm _sd-cli_ publish",
+    "pub:no-build": "pnpm _sd-cli_ --no-build",
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
     "reinstall": "pnpm install --force",

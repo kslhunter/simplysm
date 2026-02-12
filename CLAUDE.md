@@ -47,8 +47,8 @@ pnpm watch solid              # 특정 패키지만 watch
 pnpm dev                      # solid-demo: 주소 출력됨 포트가 달라질 수 있음
 
 # NPM 배포
-pnpm run publish                  # 빌드 후 배포
-pnpm run publish:no-build         # 빌드 없이 배포
+pnpm pub                  # 빌드 후 배포
+pnpm pub:no-build         # 빌드 없이 배포
 
 # 테스트 (Vitest)
 pnpm vitest                     # 모든 프로젝트
