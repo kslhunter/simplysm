@@ -212,6 +212,13 @@ export type SdPackageConfig =
 export interface SdConfig {
   /** 패키지별 설정 (키: packages/ 하위 디렉토리 이름, 예: "core-common") */
   packages: Record<string, SdPackageConfig | undefined>;
+  /**
+   * 의존성 교체 설정 (node_modules 패키지를 로컬 소스로 symlink 교체)
+   * - 키: node_modules에서 찾을 패키지 glob 패턴 (예: "@simplysm/*")
+   * - 값: 소스 디렉토리 경로 (키의 * 캡처값이 값의 *에 치환됨)
+   * - 예: { "@simplysm/*": "../simplysm/packages/*" }
+   */
+  replaceDeps?: Record<string, string>;
   /** 배포 완료 후 실행할 스크립트 */
   postPublish?: SdPostPublishScriptConfig[];
 }

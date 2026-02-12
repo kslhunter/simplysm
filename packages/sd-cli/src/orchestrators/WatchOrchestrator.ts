@@ -4,6 +4,7 @@ import { consola } from "consola";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
+import { setupReplaceDeps } from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
 import { RebuildListrManager } from "../utils/listr-manager";
 import { ResultCollector } from "../infra/ResultCollector";
@@ -66,6 +67,11 @@ export class WatchOrchestrator {
       consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
+    }
+
+    // replaceDeps 설정이 있으면 symlink 교체
+    if (sdConfig.replaceDeps != null) {
+      await setupReplaceDeps(this._cwd, sdConfig.replaceDeps);
     }
 
     // targets 필터링

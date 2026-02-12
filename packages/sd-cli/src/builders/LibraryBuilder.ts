@@ -1,4 +1,3 @@
-import path from "path";
 import type * as LibraryWorkerModule from "../workers/library.worker";
 import type { BuildResult } from "../infra/ResultCollector";
 import type { SdBuildPackageConfig } from "../sd-config.types";
