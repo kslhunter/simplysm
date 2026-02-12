@@ -37,7 +37,7 @@ export default {
 
 ### Provider Setup
 
-Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, loading overlay, and programmatic dialog support.
+Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), loading overlay, and programmatic dialog support.
 
 ```tsx
 import { InitializeProvider } from "@simplysm/solid";
@@ -74,7 +74,7 @@ interface StorageAdapter {
 
 ```typescript
 interface LogAdapter {
-  write(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> | void;
+  write(severity: "error" | "warn" | "info" | "log", ...data: any[]): Promise<void> | void;
 }
 ```
 
@@ -1820,20 +1820,26 @@ const [theme, setTheme, loading] = useSyncConfig("theme", "light");
 
 ### useLogger
 
-Logging hook. Always logs to `consola`. Additionally calls `LogAdapter.write()` if `logger` is configured in `AppConfig`. Errors from `LogAdapter.write()` are caught and logged to `consola.error`.
+Logging hook. If `logger` adapter is configured in `AppConfig`, logs are sent to the adapter only. Otherwise, logs fall back to `consola`. Must be used inside `InitializeProvider`.
 
 ```tsx
 import { useLogger } from "@simplysm/solid";
 
 const logger = useLogger();
-logger.write("log", "user action", { userId: 123 });
-logger.write("error", "something failed", errorObj);
-logger.write("warn", "deprecation notice");
+logger.log("user action", { userId: 123 });
+logger.info("app started");
+logger.error("something failed", errorObj);
+logger.warn("deprecation notice");
 ```
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `write` | `(severity: "error" \| "warn" \| "log", ...data: any[]) => void` | Log with severity level |
+| `log` | `(...args: unknown[]) => void` | Log message (general) |
+| `info` | `(...args: unknown[]) => void` | Log message (informational) |
+| `warn` | `(...args: unknown[]) => void` | Log message (warning) |
+| `error` | `(...args: unknown[]) => void` | Log message (error) |
+
+**Global error capturing:** `InitializeProvider` automatically captures uncaught errors (`window.onerror`) and unhandled promise rejections (`unhandledrejection`) and logs them via `useLogger`. No additional setup required.
 
 ---
 
