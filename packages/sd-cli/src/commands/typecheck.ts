@@ -135,6 +135,7 @@ function createTypecheckTasks(packages: Map<string, PackageInfo>, cwd: string): 
  * - `tsconfig.json`을 로드하여 컴파일러 옵션 적용
  * - `sd.config.ts`를 로드하여 패키지별 타겟 정보 확인 (없으면 기본값 사용)
  * - Worker threads를 사용하여 실제 병렬 타입체크 수행
+ * - incremental 컴파일 사용 (`.cache/typecheck-{env}.tsbuildinfo`)
  * - listr2를 사용하여 진행 상황 표시
  * - 에러 발생 시 `process.exitCode = 1` 설정
  *
