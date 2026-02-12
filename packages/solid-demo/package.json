@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/solid-demo",
-  "version": "13.0.0-beta.9",
+  "version": "13.0.0-beta.10",
   "description": "심플리즘 패키지 - SolidJS 라이브러리 데모",
   "repository": {
     "type": "git",

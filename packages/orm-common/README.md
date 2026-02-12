@@ -838,7 +838,7 @@ Always perform input validation at the application level.
 
 ```typescript
 // Bad: Direct user input
-const userInput = req.query.name; // "'; DROP TABLE users; --"
+const userInput = req.query.name; // e.g. malicious SQL payload
 await db.user().where((u) => [expr.eq(u.name, userInput)]).result();
 
 // Good: Validate before use
