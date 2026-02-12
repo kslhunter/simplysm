@@ -63,14 +63,14 @@ export * from "./components/disclosure/Tabs";
 
 // feedback
 export * from "./components/feedback/notification/NotificationContext";
+export * from "./components/feedback/notification/NotificationBell";
 export * from "./components/feedback/notification/NotificationProvider";
 export * from "./components/feedback/notification/NotificationBanner";
-export * from "./components/feedback/notification/NotificationBell";
 
 // feedback - loading
 export * from "./components/feedback/loading/LoadingContext";
-export * from "./components/feedback/loading/LoadingProvider";
 export * from "./components/feedback/loading/LoadingContainer";
+export * from "./components/feedback/loading/LoadingProvider";
 
 // feedback - print
 export * from "./components/feedback/print/Print";
@@ -80,7 +80,8 @@ export * from "./components/feedback/Progress";
 // providers
 export * from "./providers/ConfigContext";
 export * from "./providers/InitializeProvider";
-export * from "./providers/ThemeContext";
+export { useTheme } from "./providers/ThemeContext";
+export type { ThemeMode, ResolvedTheme } from "./providers/ThemeContext";
 export * from "./providers/ServiceClientContext";
 export * from "./providers/ServiceClientProvider";
 export * from "./providers/shared-data/SharedDataContext";
