@@ -1,11 +1,12 @@
 import { Show, Suspense } from "solid-js";
-import type { RouteSectionProps } from "@solidjs/router";
+import { useNavigate, type RouteSectionProps } from "@solidjs/router";
 import { Icon, Sidebar, ThemeToggle } from "@simplysm/solid";
 import { env } from "@simplysm/core-common";
 import { IconUser } from "@tabler/icons-solidjs";
 import { appStructure } from "../appStructure";
 
 export function Home(props: RouteSectionProps) {
+  const navigate = useNavigate();
   return (
     <Sidebar.Container>
       <Sidebar>
@@ -16,7 +17,7 @@ export function Home(props: RouteSectionProps) {
         <Sidebar.User
           menus={[
             { title: "설정", onClick: () => alert("설정") },
-            { title: "로그아웃", onClick: () => alert("로그아웃") },
+            { title: "로그아웃", onClick: () => navigate("/login") },
           ]}
         >
           <div class="relative flex flex-1 items-center gap-3">
