@@ -7,6 +7,6 @@ if (!workerFile) {
   throw new Error("Worker file path is required as argument!");
 }
 
-// Windows에서 절대 경로는 file:// URL로 변환해야 ESM 로더가 처리 가능
-const workerFileUrl = pathToFileURL(workerFile).href;
+// file:// URL이 이미 전달된 경우 그대로 사용, 일반 경로인 경우 변환
+const workerFileUrl = workerFile.startsWith("file://") ? workerFile : pathToFileURL(workerFile).href;
 await tsImport(workerFileUrl, import.meta.url);
