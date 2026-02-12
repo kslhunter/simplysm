@@ -1,5 +1,7 @@
 import { consola } from "consola";
-import { LogAdapter, type LogEntry } from "../configs/LogConfig";
+import { useConfig, type LogAdapter } from "../providers/ConfigContext";
+
+type LogLevel = Parameters<LogAdapter["write"]>[0];
 
 interface Logger {
   log: (...args: unknown[]) => void;
@@ -9,38 +11,14 @@ interface Logger {
 }
 
 export function useLogger(): Logger {
-  const createLogFunction = (level: LogEntry["level"]) => {
+  const config = useConfig();
+
+  const createLogFunction = (level: LogLevel) => {
     return (...args: unknown[]) => {
-      // Always log to consola
-      (consola as any)[level](...args);
-
-      // Optionally write to adapter
-      if (LogAdapter.write != null) {
-        try {
-          const message = args
-            .map((arg) => {
-              if (typeof arg === "string") {
-                return arg;
-              }
-              if (arg == null) {
-                return String(arg);
-              }
-              try {
-                return JSON.stringify(arg);
-              } catch {
-                return String(arg);
-              }
-            })
-            .join(" ");
-
-          LogAdapter.write({
-            level,
-            message,
-            timestamp: Date.now(),
-          });
-        } catch (err) {
-          consola.error("Failed to write log to adapter:", err);
-        }
+      if (config.logger) {
+        void config.logger.write(level, ...args);
+      } else {
+        (consola as any)[level](...args);
       }
     };
   };
