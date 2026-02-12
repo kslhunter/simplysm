@@ -56,8 +56,26 @@ function App() {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `clientName` | `string` | **(required)** | Client identifier (used as storage key prefix) |
-| `storage` | `StorageAdapter` | `localStorage` | Custom storage adapter |
+| `syncStorage` | `StorageAdapter` | `localStorage` | Custom sync storage adapter (used by `useSyncConfig`) |
+| `logger` | `LogAdapter` | - | Log adapter for remote logging (used by `useLogger`) |
 | `loadingVariant` | `"spinner" \| "bar"` | `"spinner"` | Root loading overlay variant |
+
+**StorageAdapter interface:**
+
+```typescript
+interface StorageAdapter {
+  getItem(key: string): string | null | Promise<string | null>;
+  setItem(key: string, value: string): void | Promise<unknown>;
+  removeItem(key: string): void | Promise<void>;
+}
+```
+
+**LogAdapter interface:**
+
+```typescript
+interface LogAdapter {
+  write(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> | void;
+}
 ```
 
 ### Base CSS
@@ -559,7 +577,7 @@ import { Numpad } from "@simplysm/solid";
 
 #### StatePreset
 
-Component for saving/loading screen state (search conditions, etc.) as presets. Persisted in localStorage.
+Component for saving/loading screen state (search conditions, etc.) as presets. Persisted via `useSyncConfig` (defaults to localStorage, can be configured to sync externally).
 
 ```tsx
 import { StatePreset } from "@simplysm/solid";
@@ -750,7 +768,7 @@ import { Echarts } from "@simplysm/solid";
 
 #### Sidebar
 
-Sidebar navigation with responsive support (mobile overlay below 520px). Open/closed state is saved in localStorage.
+Sidebar navigation with responsive support (mobile overlay below 520px). Open/closed state is in-memory only (resets on page refresh).
 
 ```tsx
 import { Sidebar, Topbar } from "@simplysm/solid";
@@ -1762,17 +1780,34 @@ theme.cycleMode();     // light -> system -> dark -> light
 
 ---
 
-### usePersisted
+### useLocalConfig
 
-localStorage-based persistent signal. Must be used inside `InitializeProvider`, and keys are automatically stored as `{clientName}.{key}`. Supports serialization of `@simplysm/core-common` custom types like `DateTime`, `DateOnly`.
+Local-only persistent config hook. Always uses `localStorage` regardless of `syncStorage` setting. Keys are automatically stored as `{clientName}.{key}`. Use for data that should never leave the device (auth tokens, device-specific state).
 
 ```tsx
-import { usePersisted } from "@simplysm/solid";
+import { useLocalConfig } from "@simplysm/solid";
 
-const [value, setValue] = usePersisted("settings.view", "grid");
+const [token, setToken] = useLocalConfig<string | undefined>("auth-token", undefined);
+```
 
-// loading state (for async storage)
-const [data, setData, loading] = usePersisted("cache.data", defaultData);
+| Return value | Type | Description |
+|--------------|------|-------------|
+| `[0]` | `Accessor<T>` | Value getter |
+| `[1]` | `Setter<T>` | Value setter |
+
+---
+
+### useSyncConfig
+
+Syncable config hook. Uses `syncStorage` if configured, falls back to `localStorage` otherwise. Keys are automatically stored as `{clientName}.{key}`. Use for user preferences that should sync across devices (theme, DataSheet column configs, filter presets).
+
+```tsx
+import { useSyncConfig } from "@simplysm/solid";
+
+const [theme, setTheme, loading] = useSyncConfig("theme", "light");
+
+// loading state is useful when syncStorage is async (e.g., DB-backed)
+// When syncStorage is not configured, loading is always false
 ```
 
 | Return value | Type | Description |
@@ -1780,6 +1815,25 @@ const [data, setData, loading] = usePersisted("cache.data", defaultData);
 | `[0]` | `Accessor<T>` | Value getter |
 | `[1]` | `Setter<T>` | Value setter |
 | `[2]` | `Accessor<boolean>` | Loading state (async storage only) |
+
+---
+
+### useLogger
+
+Logging hook. Always logs to `consola`. Additionally calls `LogAdapter.write()` if `logger` is configured in `AppConfig`. Errors from `LogAdapter.write()` are caught and logged to `consola.error`.
+
+```tsx
+import { useLogger } from "@simplysm/solid";
+
+const logger = useLogger();
+logger.write("log", "user action", { userId: 123 });
+logger.write("error", "something failed", errorObj);
+logger.write("warn", "deprecation notice");
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `write` | `(severity: "error" \| "warn" \| "log", ...data: any[]) => void` | Log with severity level |
 
 ---
 
