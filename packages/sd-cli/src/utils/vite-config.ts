@@ -4,6 +4,7 @@ import path from "path";
 import type { Plugin, UserConfig as ViteUserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import solidPlugin from "vite-plugin-solid";
+import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
@@ -124,6 +125,11 @@ export interface ViteConfigOptions {
 export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, watchScopes } = options;
 
+  // Read package.json to extract app name for PWA manifest
+  const pkgJsonPath = path.join(pkgDir, "package.json");
+  const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string };
+  const appName = pkgJson.name.replace(/^@[^/]+\//, "");
+
   // process.env 치환 (dev 모드에서만 사용, build 모드는 inline으로 처리됨)
   const envDefine: Record<string, string> = {};
   if (env != null) {
@@ -136,6 +142,20 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
     plugins: [
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
+      VitePWA({
+        registerType: "prompt",
+        injectRegister: "script",
+        manifest: {
+          name: appName,
+          short_name: appName,
+          display: "standalone",
+          theme_color: "#ffffff",
+          background_color: "#ffffff",
+        },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        },
+      }),
       sdTailwindConfigDepsPlugin(pkgDir),
       ...(watchScopes != null && watchScopes.length > 0 ? [sdScopeWatchPlugin(pkgDir, watchScopes)] : []),
     ],
