@@ -2,7 +2,7 @@
 name: sd-check
 description: Verify code via typecheck, lint, and tests
 argument-hint: "[path]"
-model: inherit
+model: sonnet
 ---
 
 ## Usage

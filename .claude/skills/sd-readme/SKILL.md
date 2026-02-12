@@ -2,6 +2,7 @@
 name: sd-readme
 description: Use when updating a package README.md to reflect recent code changes, or when asked to sync README with current implementation
 argument-hint: "<package-name or path>"
+model: haiku
 ---
 
 # sd-readme

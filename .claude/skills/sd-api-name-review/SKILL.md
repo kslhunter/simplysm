@@ -1,7 +1,7 @@
 ---
 name: sd-api-name-review
 description: Use when reviewing a library or module's public API naming for consistency and industry standard alignment - function names, parameter names, option keys, enum values, type names
-model: inherit
+model: haiku
 ---
 
 # sd-api-name-review

@@ -1,7 +1,7 @@
 ---
 name: sd-worktree
 description: Use when starting new feature work, bug fixes, or any task that benefits from branch isolation - creates a git worktree under .worktrees/ and guides to next planning step
-model: inherit
+model: haiku
 ---
 
 # sd-worktree
