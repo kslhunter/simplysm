@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/claude",
   "sideEffects": false,
-  "version": "13.0.0-beta.27",
+  "version": "13.0.0-beta.28",
   "description": "Simplysm Claude Code skills/agents — auto-installs via postinstall",
   "author": "김석래",
   "repository": {
