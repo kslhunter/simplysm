@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일및 각 패키지의 README.md 파일은 영문 작성)
+**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일및 각 패키지의 README.md 파일은 Context7 문서화용이므로 영문 작성)
 - 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
 - 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
 
@@ -364,3 +364,13 @@ export default {
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증
 2. 새로운 패턴 도입 시 기존 코드베이스에서 유사 사례 검색
 3. 테스트 코드 작성 시 `vitest.config.ts`의 프로젝트 구성 확인
+
+### README.md 작성 규칙
+
+각 패키지의 `README.md`는 **Context7 MCP 서버의 문서 소스**로 사용된다.
+Claude가 `query-docs(libraryId="/kslhunter/simplysm", query="...")` 호출 시 이 README들이 검색/참조되므로, Context7이 잘 인덱싱할 수 있도록 작성해야 한다.
+
+- **영문**으로 작성 (Context7 인덱싱 및 검색 품질을 위해)
+- 패키지의 **공개 API, 주요 함수/클래스, props, 설정 옵션**을 코드 예제와 함께 문서화
+- 코드 예제에는 반드시 **import 경로** 포함 (Context7이 패키지 매핑에 활용)
+- 작성/수정 전 기존 README 패턴을 Read하여 일관된 구조 유지
