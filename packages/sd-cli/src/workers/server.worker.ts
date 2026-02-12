@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
@@ -16,6 +17,8 @@ export interface ServerBuildInfo {
   pkgDir: string;
   /** 빌드 시 치환할 환경변수 */
   env?: Record<string, string>;
+  /** 런타임 설정 (dist/.config.json에 기록) */
+  configs?: Record<string, unknown>;
 }
 
 /**
@@ -36,6 +39,8 @@ export interface ServerWatchInfo {
   pkgDir: string;
   /** 빌드 시 치환할 환경변수 */
   env?: Record<string, string>;
+  /** 런타임 설정 (dist/.config.json에 기록) */
+  configs?: Record<string, unknown>;
 }
 
 /**
@@ -137,6 +142,10 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 
     const result = await esbuild.build(esbuildOptions);
 
+    // Generate .config.json
+    const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
+    fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
+
     const errors = result.errors.map((e) => e.text);
     return {
       success: result.errors.length === 0,
@@ -206,6 +215,12 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
             pluginBuild.onEnd((result) => {
               const errors = result.errors.map((e) => e.text);
               const success = result.errors.length === 0;
+
+              // Generate .config.json on first successful build
+              if (isFirstBuild && success) {
+                const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
+                fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
+              }
 
               sender.send("build", { success, mainJsPath, errors: errors.length > 0 ? errors : undefined });
 
