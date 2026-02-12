@@ -45,7 +45,7 @@ function isValidScopeName(name: string): boolean {
  * 1. 디렉토리 비어있는지 확인
  * 2. 프로젝트명(폴더명) 검증
  * 3. Handlebars 템플릿 렌더링
- * 4. pnpm install + sd-cli install 실행
+ * 4. pnpm install 실행
  */
 export async function runInit(_options: InitOptions): Promise<void> {
   const cwd = process.cwd();
@@ -82,12 +82,7 @@ export async function runInit(_options: InitOptions): Promise<void> {
   await spawn("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
-  // 5. sd-claude install
-  logger.info("sd-claude install 실행 중...");
-  await spawn("pnpm", ["exec", "sd-claude", "install"], { cwd });
-  logger.success("sd-claude install 완료");
-
-  // 6. 완료 메시지
+  // 5. 완료 메시지
   consola.box(
     [
       "프로젝트가 생성되었습니다!",
