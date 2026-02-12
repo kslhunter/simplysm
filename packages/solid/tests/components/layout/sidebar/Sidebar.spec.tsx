@@ -1,6 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createSignal } from "solid-js";
+import type { Component, Setter } from "solid-js";
 
 // 미디어 쿼리 mock
 const mockCreateMediaQuery = vi.fn(() => () => true as boolean);
@@ -15,20 +15,18 @@ vi.mock("@solidjs/router", () => ({
   useNavigate: vi.fn(() => vi.fn()),
 }));
 
-// usePersisted mock - 테스트에서 상태를 제어할 수 있도록
-let mockToggle: ReturnType<typeof createSignal<boolean>>;
-vi.mock("../../../../src/hooks/usePersisted", () => ({
-  usePersisted: () => {
-    return mockToggle;
-  },
-}));
-
 import { Sidebar, useSidebarContext } from "../../../../src";
+
+// ToggleCapture helper - Context에서 setToggle을 추출하여 외부에서 제어
+const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
+  const { setToggle } = useSidebarContext();
+  props.onCapture(setToggle);
+  return null;
+};
 
 describe("Sidebar 컴포넌트", () => {
   beforeEach(() => {
     mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑 모드
-    mockToggle = createSignal(false);
   });
 
   afterEach(() => {
@@ -62,7 +60,6 @@ describe("Sidebar 컴포넌트", () => {
   describe("열림/닫힘 상태", () => {
     it("데스크탑에서 toggle=false일 때 열림 상태 (translateX(0))", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
-      mockToggle = createSignal(false);
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -70,27 +67,29 @@ describe("Sidebar 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 데스크탑에서 열림
       const sidebar = container.querySelector("aside") as HTMLElement;
       expect(sidebar.style.transform).toBe("translateX(0px)");
     });
 
     it("데스크탑에서 toggle=true일 때 닫힘 상태 (translateX(-100%))", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
-      mockToggle = createSignal(true);
+      let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <Sidebar>Content</Sidebar>
         </Sidebar.Container>
       ));
 
+      setToggle(true); // 닫힘으로 전환
       const sidebar = container.querySelector("aside") as HTMLElement;
       expect(sidebar.style.transform).toBe("translateX(-100%)");
     });
 
     it("모바일에서 toggle=false일 때 닫힘 상태 (translateX(-100%))", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(false);
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -98,20 +97,23 @@ describe("Sidebar 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 모바일에서 닫힘
       const sidebar = container.querySelector("aside") as HTMLElement;
       expect(sidebar.style.transform).toBe("translateX(-100%)");
     });
 
     it("모바일에서 toggle=true일 때 열림 상태 (translateX(0))", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(true);
+      let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <Sidebar>Content</Sidebar>
         </Sidebar.Container>
       ));
 
+      setToggle(true); // 열림으로 전환
       const sidebar = container.querySelector("aside") as HTMLElement;
       expect(sidebar.style.transform).toBe("translateX(0px)");
     });
@@ -119,8 +121,7 @@ describe("Sidebar 컴포넌트", () => {
 
   describe("aria 속성", () => {
     it("열림 상태일 때 aria-hidden=false", () => {
-      mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑, 열림
-      mockToggle = createSignal(false);
+      mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -128,13 +129,13 @@ describe("Sidebar 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 데스크탑에서 열림
       const sidebar = container.querySelector("aside");
       expect(sidebar?.getAttribute("aria-hidden")).toBe("false");
     });
 
     it("닫힘 상태일 때 aria-hidden=true", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일, 닫힘
-      mockToggle = createSignal(false);
+      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -142,13 +143,13 @@ describe("Sidebar 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 모바일에서 닫힘
       const sidebar = container.querySelector("aside");
       expect(sidebar?.getAttribute("aria-hidden")).toBe("true");
     });
 
     it("닫힘 상태일 때 inert 속성이 설정된다", () => {
-      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일, 닫힘
-      mockToggle = createSignal(false);
+      mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -156,6 +157,7 @@ describe("Sidebar 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 모바일에서 닫힘
       const sidebar = container.querySelector("aside");
       expect(sidebar?.hasAttribute("inert")).toBe(true);
     });

@@ -85,7 +85,7 @@ describe("useLocalConfig", () => {
   it("같은 키로 여러 훅을 생성하면 독립적인 시그널을 갖는다", () =>
     createRoot((dispose) => {
       const [value1, setValue1] = useLocalConfig("test-key", "initial");
-      const [value2, setValue2] = useLocalConfig("test-key", "initial");
+      const [value2, _setValue2] = useLocalConfig("test-key", "initial");
 
       // 초기값은 같음
       expect(value1()).toBe("initial");

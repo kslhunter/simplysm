@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createSignal } from "solid-js";
+import type { Component, Setter } from "solid-js";
 
 // 미디어 쿼리 mock
 const mockCreateMediaQuery = vi.fn(() => () => true as boolean);
@@ -15,20 +15,18 @@ vi.mock("@solidjs/router", () => ({
   useNavigate: vi.fn(() => vi.fn()),
 }));
 
-// usePersisted mock - 테스트에서 상태를 제어할 수 있도록
-let mockToggle: ReturnType<typeof createSignal<boolean>>;
-vi.mock("../../../../src/hooks/usePersisted", () => ({
-  usePersisted: () => {
-    return mockToggle;
-  },
-}));
+import { Sidebar, useSidebarContext } from "../../../../src";
 
-import { Sidebar } from "../../../../src";
+// ToggleCapture helper - Context에서 setToggle을 추출하여 외부에서 제어
+const ToggleCapture: Component<{ onCapture: (setToggle: Setter<boolean>) => void }> = (props) => {
+  const { setToggle } = useSidebarContext();
+  props.onCapture(setToggle);
+  return null;
+};
 
 describe("SidebarContainer 컴포넌트", () => {
   beforeEach(() => {
     mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑 모드
-    mockToggle = createSignal(false);
   });
 
   afterEach(() => {
@@ -50,7 +48,6 @@ describe("SidebarContainer 컴포넌트", () => {
   describe("padding-left 처리", () => {
     it("데스크탑에서 열림 상태일 때 padding-left 적용", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
-      mockToggle = createSignal(false); // toggle=false → 데스크탑에서 열림
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -58,27 +55,29 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 데스크탑에서 열림
       const containerEl = container.firstElementChild as HTMLElement;
       expect(containerEl.style.paddingLeft).toBe("16rem");
     });
 
     it("데스크탑에서 닫힘 상태일 때 padding-left 없음", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
-      mockToggle = createSignal(true); // toggle=true → 데스크탑에서 닫힘
+      let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <div>Content</div>
         </Sidebar.Container>
       ));
 
+      setToggle(true); // 닫힘으로 전환
       const containerEl = container.firstElementChild as HTMLElement;
       expect(containerEl.style.paddingLeft).toBe("");
     });
 
     it("모바일에서는 padding-left 없음", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(false);
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -94,21 +93,22 @@ describe("SidebarContainer 컴포넌트", () => {
   describe("backdrop 렌더링", () => {
     it("모바일에서 열림 상태일 때 backdrop이 렌더링된다", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(true); // toggle=true → 모바일에서 열림
+      let setToggle!: Setter<boolean>;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture onCapture={(fn) => (setToggle = fn)} />
           <div>Content</div>
         </Sidebar.Container>
       ));
 
+      setToggle(true); // 모바일에서 열림
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
       expect(backdrop).toBeTruthy();
     });
 
     it("모바일에서 닫힘 상태일 때 backdrop이 렌더링되지 않는다", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(false); // toggle=false → 모바일에서 닫힘
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -116,13 +116,13 @@ describe("SidebarContainer 컴포넌트", () => {
         </Sidebar.Container>
       ));
 
+      // toggle=false (초기값) → 모바일에서 닫힘
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]');
       expect(backdrop).toBeFalsy();
     });
 
     it("데스크탑에서는 backdrop이 렌더링되지 않는다", () => {
       mockCreateMediaQuery.mockReturnValue(() => true); // 데스크탑
-      mockToggle = createSignal(false); // 열림 상태
 
       const { container } = render(() => (
         <Sidebar.Container>
@@ -138,14 +138,28 @@ describe("SidebarContainer 컴포넌트", () => {
   describe("backdrop 클릭 이벤트", () => {
     it("backdrop 클릭 시 사이드바가 닫힌다", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(true); // 열림 상태
+      let setToggle!: Setter<boolean>;
+      let toggleValue = false;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture
+            onCapture={(fn) => {
+              setToggle = fn;
+            }}
+          />
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
         </Sidebar.Container>
       ));
+
+      setToggle(true); // 열림 상태로 전환
+      // setToggle을 감싸서 변경 추적
+      const originalSetToggle = setToggle;
+      setToggle = (val: boolean) => {
+        toggleValue = val;
+        originalSetToggle(val);
+      };
 
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]') as HTMLElement;
       expect(backdrop).toBeTruthy();
@@ -153,26 +167,40 @@ describe("SidebarContainer 컴포넌트", () => {
       fireEvent.click(backdrop);
 
       // toggle이 false로 변경되었는지 확인
-      expect(mockToggle[0]()).toBe(false);
+      expect(toggleValue).toBe(false);
     });
 
     it("backdrop에서 Escape 키 누르면 사이드바가 닫힌다", () => {
       mockCreateMediaQuery.mockReturnValue(() => false); // 모바일
-      mockToggle = createSignal(true); // 열림 상태
+      let setToggle!: Setter<boolean>;
+      let toggleValue = false;
 
       const { container } = render(() => (
         <Sidebar.Container>
+          <ToggleCapture
+            onCapture={(fn) => {
+              setToggle = fn;
+            }}
+          />
           <Sidebar>Sidebar Content</Sidebar>
           <div>Content</div>
         </Sidebar.Container>
       ));
+
+      setToggle(true); // 열림 상태로 전환
+      // setToggle을 감싸서 변경 추적
+      const originalSetToggle = setToggle;
+      setToggle = (val: boolean) => {
+        toggleValue = val;
+        originalSetToggle(val);
+      };
 
       const backdrop = container.querySelector('[role="button"][aria-label="사이드바 닫기"]') as HTMLElement;
       expect(backdrop).toBeTruthy();
 
       fireEvent.keyDown(backdrop, { key: "Escape" });
 
-      expect(mockToggle[0]()).toBe(false);
+      expect(toggleValue).toBe(false);
     });
   });
 

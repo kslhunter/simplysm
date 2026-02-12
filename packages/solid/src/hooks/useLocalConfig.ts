@@ -43,7 +43,7 @@ export function useLocalConfig<T>(key: string, initialValue?: T): [Accessor<T | 
 
     if (typeof newValue === "function") {
       resolved = (newValue as (prev: T | undefined) => T | undefined)(value());
-      setValue(() => resolved as T | undefined);
+      setValue(() => resolved);
     } else {
       resolved = newValue;
       setValue(() => newValue);
