@@ -188,6 +188,7 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
     esbuildContext = await esbuild.context({
       ...baseOptions,
       plugins: [
+        ...(baseOptions.plugins ?? []),
         {
           name: "watch-notify",
           setup(pluginBuild) {

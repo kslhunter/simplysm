@@ -1,6 +1,44 @@
 import path from "path";
+import fs from "fs/promises";
+import { glob } from "glob";
 import type esbuild from "esbuild";
 import type { TypecheckEnv } from "./tsconfig";
+
+/**
+ * ESM 상대 import 경로에 .js 확장자를 추가하는 esbuild 플러그인.
+ *
+ * bundle: false 모드에서 esbuild는 import 경로를 그대로 유지하므로,
+ * Node.js ESM에서 직접 실행 시 확장자 누락으로 모듈을 찾지 못하는 문제를 해결한다.
+ */
+function esmRelativeImportPlugin(outdir: string): esbuild.Plugin {
+  return {
+    name: "esm-relative-import",
+    setup(build) {
+      build.onEnd(async () => {
+        const files = await glob("**/*.js", { cwd: outdir });
+
+        await Promise.all(
+          files.map(async (file) => {
+            const filePath = path.join(outdir, file);
+            const content = await fs.readFile(filePath, "utf-8");
+
+            const rewritten = content.replace(
+              /((?:from|import)\s*["'])(\.\.?\/[^"']*?)(["'])/g,
+              (_match, prefix: string, importPath: string, suffix: string) => {
+                if (/\.(js|mjs|cjs|json|css|wasm|node)$/i.test(importPath)) return _match;
+                return `${prefix}${importPath}.js${suffix}`;
+              },
+            );
+
+            if (rewritten !== content) {
+              await fs.writeFile(filePath, rewritten);
+            }
+          }),
+        );
+      });
+    },
+  };
+}
 
 /**
  * Library 빌드용 esbuild 옵션
@@ -43,6 +81,7 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     target: options.target === "node" ? "node20" : "chrome84",
     bundle: false,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
+    plugins: [esmRelativeImportPlugin(path.join(options.pkgDir, "dist"))],
   };
 }
 
