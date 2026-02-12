@@ -157,7 +157,7 @@ async function publishPackage(
       logger.debug(`[${pkgName}] npm ${args.join(" ")}`);
     }
 
-    await spawn("npm", args, { cwd: pkgPath });
+    await spawn("pnpm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
     // 로컬 디렉토리 복사
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
