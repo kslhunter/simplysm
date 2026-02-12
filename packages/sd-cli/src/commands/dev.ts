@@ -6,6 +6,7 @@ import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
+import { setupReplaceDeps } from "../utils/replace-deps";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
@@ -75,6 +76,11 @@ export async function runDev(options: DevOptions): Promise<void> {
     consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
+  }
+
+  // replaceDeps 설정이 있으면 symlink 교체
+  if (sdConfig.replaceDeps != null) {
+    await setupReplaceDeps(cwd, sdConfig.replaceDeps);
   }
 
   // VER, DEV 환경변수 준비

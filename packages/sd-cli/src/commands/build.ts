@@ -7,6 +7,7 @@ import { consola, LogLevels } from "consola";
 import type { SdConfig, SdBuildPackageConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
+import { setupReplaceDeps } from "../utils/replace-deps";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import { runLint, type LintOptions } from "./lint";
@@ -134,6 +135,11 @@ export async function runBuild(options: BuildOptions): Promise<void> {
     consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
+  }
+
+  // replaceDeps 설정이 있으면 symlink 교체
+  if (sdConfig.replaceDeps != null) {
+    await setupReplaceDeps(cwd, sdConfig.replaceDeps);
   }
 
   // VER, DEV 환경변수 준비

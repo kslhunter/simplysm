@@ -1,4 +1,3 @@
-import path from "path";
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import type { BuildResult } from "../infra/ResultCollector";
 import type { TypecheckEnv } from "../utils/tsconfig";
