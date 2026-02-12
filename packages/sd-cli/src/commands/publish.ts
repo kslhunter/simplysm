@@ -1,6 +1,7 @@
 import path from "path";
 import semver from "semver";
-import { consola } from "consola";
+import { consola, LogLevels } from "consola";
+import { Listr, type ListrTask } from "listr2";
 import { StorageFactory } from "@simplysm/storage";
 import { fsExists, fsRead, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
 import { env, jsonStringify } from "@simplysm/core-common";
@@ -520,73 +521,83 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#endregion
 
-  //#region Phase 4: 배포 (의존성 레벨별 병렬)
+  //#region Phase 4: 배포 (의존성 레벨별 병렬, Listr)
 
   const levels = await computePublishLevels(publishPackages);
-
-  if (dryRun) {
-    logger.info(`[DRY-RUN] 배포 시뮬레이션 시작... (${levels.length}개 레벨, ${publishPackages.length}개 패키지)`);
-  } else {
-    logger.debug(`배포 시작... (${levels.length}개 레벨, ${publishPackages.length}개 패키지)`);
-  }
   const publishedPackages: string[] = [];
+  let publishFailed = false;
 
-  for (const [levelIdx, levelPkgs] of levels.entries()) {
-    logger.debug(`배포 레벨 ${levelIdx + 1}/${levels.length}: ${levelPkgs.map((p) => p.name).join(", ")}`);
-
-    const results = await Promise.allSettled(
-      levelPkgs.map(async (pkg) => {
-        if (dryRun) {
-          logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션...`);
-        } else {
-          logger.info(`[${pkg.name}] 배포 중...`);
-        }
-        const maxRetries = 3;
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-          try {
-            await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
-            break;
-          } catch (err) {
-            if (attempt < maxRetries) {
-              const delay = attempt * 5_000;
-              logger.warn(`[${pkg.name}] 배포 실패 (시도 ${attempt}/${maxRetries}), ${delay / 1000}초 후 재시도...`);
-              await new Promise((resolve) => setTimeout(resolve, delay));
-            } else {
-              throw err;
-            }
-          }
-        }
-        publishedPackages.push(pkg.name);
-        if (dryRun) {
-          logger.info(`[DRY-RUN] [${pkg.name}] 배포 시뮬레이션 완료`);
-        } else {
-          logger.info(`[${pkg.name}] 배포 완료`);
-        }
+  const publishListr = new Listr(
+    levels.map(
+      (levelPkgs, levelIdx): ListrTask => ({
+        title: `Level ${levelIdx + 1}/${levels.length}`,
+        skip: () => publishFailed,
+        task: (_, task) =>
+          task.newListr(
+            levelPkgs.map(
+              (pkg): ListrTask => ({
+                title: dryRun ? `[DRY-RUN] ${pkg.name}` : pkg.name,
+                task: async (_ctx, pkgTask) => {
+                  const maxRetries = 3;
+                  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                    try {
+                      await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+                      break;
+                    } catch (err) {
+                      if (attempt < maxRetries) {
+                        const delay = attempt * 5_000;
+                        pkgTask.title = dryRun
+                          ? `[DRY-RUN] ${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`
+                          : `${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`;
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                      } else {
+                        throw err;
+                      }
+                    }
+                  }
+                  publishedPackages.push(pkg.name);
+                },
+              }),
+            ),
+            { concurrent: true, exitOnError: false },
+          ),
       }),
-    );
+    ),
+    {
+      concurrent: false,
+      exitOnError: false,
+      renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
+    },
+  );
 
-    // 한 레벨에서 실패하면 다음 레벨 진행하지 않음
-    const failures = results
-      .map((r, i) => (r.status === "rejected" ? { pkg: levelPkgs[i], reason: r.reason } : null))
-      .filter((f) => f != null);
+  try {
+    await publishListr.run();
+  } catch {
+    // Listr 내부 에러는 아래에서 처리
+  }
 
-    if (failures.length > 0) {
-      if (publishedPackages.length > 0) {
-        consola.error(
-          "배포 중 오류가 발생했습니다.\n" +
-            "이미 배포된 패키지:\n" +
-            publishedPackages.map((n) => `  - ${n}`).join("\n") +
-            "\n\n수동 복구가 필요할 수 있습니다.\n" +
-            "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.",
-        );
-      }
+  // 실패한 패키지 확인
+  const allPkgNames = publishPackages.map((p) => p.name);
+  const failedPkgNames = allPkgNames.filter((n) => !publishedPackages.includes(n));
 
-      for (const f of failures) {
-        consola.error(`[${f.pkg.name}] 배포 실패: ${f.reason instanceof Error ? f.reason.message : f.reason}`);
-      }
-      process.exitCode = 1;
-      return;
+  if (failedPkgNames.length > 0) {
+    publishFailed = true;
+
+    if (publishedPackages.length > 0) {
+      consola.error(
+        "배포 중 오류가 발생했습니다.\n" +
+          "이미 배포된 패키지:\n" +
+          publishedPackages.map((n) => `  - ${n}`).join("\n") +
+          "\n\n수동 복구가 필요할 수 있습니다.\n" +
+          "npm 패키지는 72시간 내에 `npm unpublish <pkg>@<version>` 으로 삭제할 수 있습니다.",
+      );
     }
+
+    for (const name of failedPkgNames) {
+      consola.error(`[${name}] 배포 실패`);
+    }
+    process.exitCode = 1;
+    return;
   }
 
   //#endregion
