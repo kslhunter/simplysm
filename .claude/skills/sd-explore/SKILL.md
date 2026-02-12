@@ -1,7 +1,7 @@
 ---
 name: sd-explore
 description: Deeply analyze a codebase path by tracing execution paths, mapping architecture layers, understanding patterns, and documenting dependencies
-model: haiku
+model: sonnet
 context: fork
 user-invocable: false
 ---

@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/sd-cli",
   "sideEffects": false,
-  "version": "13.0.0-beta.11",
+  "version": "13.0.0-beta.12",
   "description": "심플리즘 패키지 - CLI 도구",
   "author": "김석래",
   "repository": {
@@ -14,7 +14,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "templates"
   ],
   "bin": {
     "sd-cli": "./dist/sd-cli.js"

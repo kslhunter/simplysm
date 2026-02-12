@@ -28,8 +28,8 @@ digraph when_to_use {
 All execution uses `Task(general-purpose)` for parallel execution.
 
 - **task agent**: `Task(general-purpose)` — implements one task, launches sub-Tasks for review, fixes issues
-- **spec reviewer**: `Task(general-purpose)` — sub-Task launched by task agent (read-only)
-- **quality reviewer**: `Task(general-purpose)` — sub-Task launched by task agent (read-only)
+- **spec reviewer**: `Task(general-purpose, model: "opus")` — sub-Task launched by task agent (read-only)
+- **quality reviewer**: `Task(general-purpose, model: "opus")` — sub-Task launched by task agent (read-only)
 
 Independent tasks run as **parallel Task calls in a single message**. Within each task agent, spec and quality reviews also run as **parallel sub-Task calls**.
 
