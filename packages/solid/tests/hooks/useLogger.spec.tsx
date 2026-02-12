@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, renderHook, waitFor } from "@solidjs/testing-library";
-import { LogAdapter } from "../../src/configs/LogConfig";
+import { cleanup, render, renderHook } from "@solidjs/testing-library";
 import { useLogger } from "../../src/hooks/useLogger";
+import { ConfigContext, type LogAdapter } from "../../src/providers/ConfigContext";
 import { consola } from "consola";
+
+function configWrapper(logger?: LogAdapter) {
+  return (props: { children: any }) => (
+    <ConfigContext.Provider value={{ clientName: "test", logger }}>{props.children}</ConfigContext.Provider>
+  );
+}
 
 describe("useLogger", () => {
   beforeEach(() => {
@@ -11,22 +17,17 @@ describe("useLogger", () => {
 
   afterEach(() => {
     cleanup();
-    LogAdapter.write = undefined;
   });
 
   it("should return a logger object with log, info, warn, error methods", () => {
-    const { result } = renderHook(() => useLogger());
-    expect(result).toHaveProperty("log");
-    expect(result).toHaveProperty("info");
-    expect(result).toHaveProperty("warn");
-    expect(result).toHaveProperty("error");
+    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper() });
     expect(typeof result.log).toBe("function");
     expect(typeof result.info).toBe("function");
     expect(typeof result.warn).toBe("function");
     expect(typeof result.error).toBe("function");
   });
 
-  it("should call consola methods when logging", () => {
+  it("should call consola when no adapter is configured", () => {
     const consolaSpy = {
       log: vi.spyOn(consola, "log").mockImplementation(() => {}),
       info: vi.spyOn(consola, "info").mockImplementation(() => {}),
@@ -34,7 +35,7 @@ describe("useLogger", () => {
       error: vi.spyOn(consola, "error").mockImplementation(() => {}),
     };
 
-    const { result } = renderHook(() => useLogger());
+    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper() });
 
     result.log("log message");
     result.info("info message");
@@ -47,61 +48,39 @@ describe("useLogger", () => {
     expect(consolaSpy.error).toHaveBeenCalledWith("error message");
   });
 
-  it("should call LogAdapter.write if configured", async () => {
+  it("should call adapter only when adapter is configured (no consola)", () => {
     const writeSpy = vi.fn();
-    LogAdapter.write = writeSpy;
+    const adapter: LogAdapter = { write: writeSpy };
+    const consolaSpy = vi.spyOn(consola, "info").mockImplementation(() => {});
 
-    const { result } = renderHook(() => useLogger());
+    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper(adapter) });
 
-    result.info("test message");
+    result.info("test message", { key: "value" });
 
-    await waitFor(() => {
-      expect(writeSpy).toHaveBeenCalledWith({
-        level: "info",
-        message: "test message",
-        timestamp: expect.any(Number),
-      });
-    });
+    expect(writeSpy).toHaveBeenCalledWith("info", "test message", { key: "value" });
+    expect(consolaSpy).not.toHaveBeenCalled();
   });
 
-  it("should swallow errors from LogAdapter.write and log to consola.error", async () => {
-    const adapterError = new Error("Adapter failed");
-    LogAdapter.write = vi.fn(() => {
-      throw adapterError;
-    });
+  it("should pass all severity levels to adapter", () => {
+    const writeSpy = vi.fn();
+    const adapter: LogAdapter = { write: writeSpy };
 
-    const consolaErrorSpy = vi.spyOn(consola, "error").mockImplementation(() => {});
+    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper(adapter) });
 
-    const { result } = renderHook(() => useLogger());
+    result.log("a");
+    result.info("b");
+    result.warn("c");
+    result.error("d");
 
-    result.warn("test message");
-
-    await waitFor(() => {
-      expect(consolaErrorSpy).toHaveBeenCalledWith("Failed to write log to adapter:", adapterError);
-    });
+    expect(writeSpy).toHaveBeenCalledWith("log", "a");
+    expect(writeSpy).toHaveBeenCalledWith("info", "b");
+    expect(writeSpy).toHaveBeenCalledWith("warn", "c");
+    expect(writeSpy).toHaveBeenCalledWith("error", "d");
   });
 
-  it("should include multiple arguments in the message", async () => {
+  it("should work correctly in a component", () => {
     const writeSpy = vi.fn();
-    LogAdapter.write = writeSpy;
-
-    const { result } = renderHook(() => useLogger());
-
-    result.info("message", { key: "value" }, 123);
-
-    await waitFor(() => {
-      expect(writeSpy).toHaveBeenCalledWith({
-        level: "info",
-        message: 'message {"key":"value"} 123',
-        timestamp: expect.any(Number),
-      });
-    });
-  });
-
-  it("should work correctly in a component", async () => {
-    const writeSpy = vi.fn();
-    LogAdapter.write = writeSpy;
-    const consolaInfoSpy = vi.spyOn(consola, "info").mockImplementation(() => {});
+    const adapter: LogAdapter = { write: writeSpy };
 
     function TestComponent() {
       const logger = useLogger();
@@ -109,15 +88,8 @@ describe("useLogger", () => {
       return <div>test</div>;
     }
 
-    render(() => <TestComponent />);
+    render(() => <TestComponent />, { wrapper: configWrapper(adapter) });
 
-    expect(consolaInfoSpy).toHaveBeenCalledWith("component log");
-    await waitFor(() => {
-      expect(writeSpy).toHaveBeenCalledWith({
-        level: "info",
-        message: "component log",
-        timestamp: expect.any(Number),
-      });
-    });
+    expect(writeSpy).toHaveBeenCalledWith("info", "component log");
   });
 });
