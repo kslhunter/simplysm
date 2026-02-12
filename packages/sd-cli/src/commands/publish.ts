@@ -144,7 +144,7 @@ async function publishPackage(
   if (publishConfig === "npm") {
     // npm publish
     const prereleaseInfo = semver.prerelease(version);
-    const args = ["publish", "--access", "public"];
+    const args = ["publish", "--access", "public", "--no-git-checks"];
 
     if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
       args.push("--tag", prereleaseInfo[0]);
@@ -152,9 +152,9 @@ async function publishPackage(
 
     if (dryRun) {
       args.push("--dry-run");
-      logger.info(`[DRY-RUN] [${pkgName}] npm ${args.join(" ")}`);
+      logger.info(`[DRY-RUN] [${pkgName}] pnpm ${args.join(" ")}`);
     } else {
-      logger.debug(`[${pkgName}] npm ${args.join(" ")}`);
+      logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
     }
 
     await spawn("pnpm", args, { cwd: pkgPath });
