@@ -159,6 +159,10 @@ sd-cli build solid core-common
 | `server`                   | esbuild         | X                | X          | Server app                            |
 | `scripts`                  | Excluded        | Excluded         | Excluded   | -                                     |
 
+**Runtime Configuration File (.config.json):**
+
+If a `server` or `client` package defines a `configs` field in `sd.config.ts`, the build automatically generates `dist/.config.json` containing that configuration. This is useful for storing environment-specific settings (database config, API endpoints, etc.) that are read at runtime via `ServiceBase.getConfig()` in `service-server`.
+
 ### publish
 
 Publishes packages. For safety, proceeds in the following order:
@@ -403,6 +407,7 @@ export default config;
   publish?: SdPublishConfig;    // Deployment config (optional)
   capacitor?: SdCapacitorConfig; // Capacitor config (optional)
   electron?: SdElectronConfig;  // Electron config (optional)
+  configs?: Record<string, unknown>; // Runtime config (written to dist/.config.json during build)
 }
 ```
 
@@ -413,6 +418,7 @@ export default config;
   target: "server";
   env?: Record<string, string>; // Environment variables to replace during build
   publish?: SdPublishConfig;    // Deployment config (optional)
+  configs?: Record<string, unknown>; // Runtime config (written to dist/.config.json during build)
 }
 ```
 
@@ -460,6 +466,71 @@ Environment variable substitution is supported in `path` for local directory and
   },
 },
 ```
+
+### Runtime Configuration (configs)
+
+Define runtime configuration for `server` or `client` packages using the `configs` field. This configuration is automatically written to `dist/.config.json` during build and can be read at runtime via `ServiceBase.getConfig()` in the `service-server` package.
+
+```typescript
+import type { SdConfigFn } from "@simplysm/sd-cli";
+
+const config: SdConfigFn = () => ({
+  packages: {
+    "my-server": {
+      target: "server",
+      configs: {
+        // Runtime configuration sections
+        orm: {
+          default: {
+            dialect: "mysql",
+            host: process.env.DB_HOST || "localhost",
+            port: 3306,
+            database: "mydb",
+            user: process.env.DB_USER || "root",
+            password: process.env.DB_PASSWORD,
+          },
+        },
+        smtp: {
+          default: {
+            host: "smtp.example.com",
+            port: 587,
+            secure: false,
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        },
+      },
+    },
+    "my-app": {
+      target: "client",
+      server: "my-server",
+      configs: {
+        api: {
+          baseUrl: process.env.API_URL || "http://localhost:3000",
+          timeout: 30000,
+        },
+      },
+    },
+  },
+});
+
+export default config;
+```
+
+At runtime, services access configuration sections:
+
+```typescript
+// In a service class
+const ormConfig = await this.getConfig<Record<string, DbConfig>>("orm");
+const dbConfig = ormConfig.default;  // Access specific DB config by name
+```
+
+**Key points:**
+
+- Configuration sections can be nested objects with any structure
+- Environment variable substitution can be used in config values
+- Generated `dist/.config.json` files are not included in version control (add to `.gitignore`)
+- Client and server both support `configs`, but typically only servers expose configuration via `ServiceBase.getConfig()`
 
 ### Dependency Replacement (replaceDeps)
 
