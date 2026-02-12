@@ -191,6 +191,17 @@ export interface SdServerPackageConfig {
   publish?: SdPublishConfig;
   /** runtime config (written to dist/.config.json during build) */
   configs?: Record<string, unknown>;
+  /** esbuild에서 번들에 포함하지 않을 외부 모듈 (binding.gyp 자동 감지에 더해 수동 지정) */
+  externals?: string[];
+  /** PM2 설정 (지정 시 dist/pm2.config.cjs 생성) */
+  pm2?: {
+    /** PM2 프로세스 이름 (미지정 시 package.json name에서 생성) */
+    name?: string;
+    /** PM2 watch에서 제외할 경로 */
+    ignoreWatchPaths?: string[];
+    /** true면 interpreter 경로 생략 (시스템 PATH의 node 사용) */
+    noInterpreter?: boolean;
+  };
 }
 
 /**
