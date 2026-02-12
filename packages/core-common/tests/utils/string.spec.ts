@@ -6,7 +6,6 @@ import {
   strToCamelCase,
   strToKebabCase,
   strToSnakeCase,
-  strIsNullOrEmpty,
   strInsert,
 } from "@simplysm/core-common";
 
@@ -253,24 +252,6 @@ describe("string utils", () => {
   //#endregion
 
   //#region 기타
-
-  describe("strIsNullOrEmpty()", () => {
-    it("undefined이면 true를 반환한다", () => {
-      expect(strIsNullOrEmpty(undefined)).toBe(true);
-    });
-
-    it("빈 문자열이면 true를 반환한다", () => {
-      expect(strIsNullOrEmpty("")).toBe(true);
-    });
-
-    it("일반 문자열이면 false를 반환한다", () => {
-      expect(strIsNullOrEmpty("hello")).toBe(false);
-    });
-
-    it("공백만 있는 문자열은 false를 반환한다", () => {
-      expect(strIsNullOrEmpty("   ")).toBe(false);
-    });
-  });
 
   describe("strInsert()", () => {
     it("문자열 시작에 삽입한다", () => {

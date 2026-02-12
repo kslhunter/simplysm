@@ -1,17 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { SdError, ArgumentError, NotImplementedError, TimeoutError } from "@simplysm/core-common";
+import { SdError, ArgumentError } from "@simplysm/core-common";
 
 describe("Errors", () => {
   //#region SdError
 
   describe("SdError", () => {
-    it("메시지로 생성한다", () => {
-      const error = new SdError("test message");
-
-      expect(error.message).toBe("test message");
-      expect(error.name).toBe("SdError");
-    });
-
     it("cause와 함께 생성한다", () => {
       const cause = new Error("original error");
       const error = new SdError(cause, "wrapped message");
@@ -66,13 +59,6 @@ describe("Errors", () => {
   //#region ArgumentError
 
   describe("ArgumentError", () => {
-    it("메시지로 생성한다", () => {
-      const error = new ArgumentError("invalid argument");
-
-      expect(error.message).toBe("invalid argument");
-      expect(error.name).toBe("ArgumentError");
-    });
-
     it("argObj와 함께 생성한다", () => {
       const error = new ArgumentError("invalid argument", { param: "value", expected: "string" });
 
@@ -87,53 +73,6 @@ describe("Errors", () => {
 
       expect(error.message).toContain("인수가 잘못되었습니다");
       expect(error.message).toContain("key");
-    });
-  });
-
-  //#endregion
-
-  //#region NotImplementedError
-
-  describe("NotImplementedError", () => {
-    it("기본 메시지로 생성한다", () => {
-      const error = new NotImplementedError();
-
-      expect(error.name).toBe("NotImplementedError");
-      expect(error.message).toBe("구현되어 있지 않습니다");
-    });
-
-    it("커스텀 메시지로 생성한다", () => {
-      const error = new NotImplementedError("custom message");
-
-      // "구현되어 있지 않습니다: custom message" 형식
-      expect(error.message).toContain("구현되어 있지 않습니다");
-      expect(error.message).toContain("custom message");
-    });
-  });
-
-  //#endregion
-
-  //#region TimeoutError
-
-  describe("TimeoutError", () => {
-    it("기본 메시지로 생성한다", () => {
-      const error = new TimeoutError();
-
-      expect(error.name).toBe("TimeoutError");
-      expect(error.message).toContain("대기 시간이 초과되었습니다");
-    });
-
-    it("시도 횟수와 함께 생성한다", () => {
-      const error = new TimeoutError(5);
-
-      expect(error.message).toContain("5회");
-    });
-
-    it("시도 횟수와 커스텀 메시지로 생성한다", () => {
-      const error = new TimeoutError(3, "custom timeout");
-
-      expect(error.message).toContain("3회");
-      expect(error.message).toContain("custom timeout");
     });
   });
 

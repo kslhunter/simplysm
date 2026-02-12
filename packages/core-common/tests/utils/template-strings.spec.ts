@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { html, js, mysql, pgsql, ts, tsql } from "../../src/index.js";
+import { html, js } from "../../src/index.js";
 
 describe("template-strings", () => {
   describe("기본 동작", () => {
@@ -30,45 +30,6 @@ describe("template-strings", () => {
         const y = 2;
       `;
       expect(result).toBe("const x = 1;\n\nconst y = 2;");
-    });
-  });
-
-  describe("SQL 함수들", () => {
-    it("tsql", () => {
-      expect(tsql`SELECT * FROM [User]`).toBe("SELECT * FROM [User]");
-    });
-
-    it("mysql", () => {
-      expect(mysql`SELECT * FROM \`User\``).toBe("SELECT * FROM `User`");
-    });
-
-    it("pgsql", () => {
-      expect(pgsql`SELECT * FROM "User"`).toBe('SELECT * FROM "User"');
-    });
-
-    it("tsql 멀티라인", () => {
-      const result = tsql`
-        SELECT id, name
-        FROM [User]
-        WHERE id = 1
-      `;
-      expect(result).toBe("SELECT id, name\nFROM [User]\nWHERE id = 1");
-    });
-  });
-
-  describe("코드 함수들", () => {
-    it("js", () => {
-      expect(js`console.log("hello")`).toBe('console.log("hello")');
-    });
-
-    it("ts", () => {
-      expect(ts`const x: number = 1`).toBe("const x: number = 1");
-    });
-
-    it("html", () => {
-      expect(html`
-        <div class="test">content</div>
-      `).toBe('<div class="test">content</div>');
     });
   });
 

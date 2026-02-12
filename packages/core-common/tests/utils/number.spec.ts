@@ -3,7 +3,6 @@ import {
   numParseInt as parseInt,
   numParseRoundedInt as parseRoundedInt,
   numParseFloat as parseFloat,
-  numIsNullOrEmpty as isNullOrEmpty,
   numFormat as format,
 } from "@simplysm/core-common";
 
@@ -112,32 +111,6 @@ describe("number utils", () => {
     it("string이 아닌 타입이면 undefined를 반환한다", () => {
       expect(parseFloat(null)).toBe(undefined);
       expect(parseFloat(undefined)).toBe(undefined);
-    });
-  });
-
-  //#endregion
-
-  //#region numIsNullOrEmpty
-
-  describe("numIsNullOrEmpty()", () => {
-    it("undefined이면 true를 반환한다", () => {
-      expect(isNullOrEmpty(undefined)).toBe(true);
-    });
-
-    it("0이면 true를 반환한다", () => {
-      expect(isNullOrEmpty(0)).toBe(true);
-    });
-
-    it("양수이면 false를 반환한다", () => {
-      expect(isNullOrEmpty(123)).toBe(false);
-    });
-
-    it("음수이면 false를 반환한다", () => {
-      expect(isNullOrEmpty(-123)).toBe(false);
-    });
-
-    it("실수이면 false를 반환한다", () => {
-      expect(isNullOrEmpty(0.1)).toBe(false);
     });
   });
 
