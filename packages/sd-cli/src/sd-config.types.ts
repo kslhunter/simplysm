@@ -175,6 +175,8 @@ export interface SdClientPackageConfig {
   capacitor?: SdCapacitorConfig;
   /** Electron 설정 */
   electron?: SdElectronConfig;
+  /** runtime config (written to dist/.config.json during build) */
+  configs?: Record<string, unknown>;
 }
 
 /**
@@ -187,6 +189,8 @@ export interface SdServerPackageConfig {
   env?: Record<string, string>;
   /** publish 설정 */
   publish?: SdPublishConfig;
+  /** runtime config (written to dist/.config.json during build) */
+  configs?: Record<string, unknown>;
 }
 
 /**
