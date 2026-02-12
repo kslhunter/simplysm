@@ -206,7 +206,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   logger.debug("동시성 설정", { concurrency, maxConcurrency, taskCount: tasks.length });
 
   // Worker 풀 생성 (작업 수만큼만 생성)
-  const workerPath = path.resolve(import.meta.dirname, "../workers/dts.worker.ts");
+  const workerPath = import.meta.resolve("../workers/dts.worker");
   const workers: WorkerProxy<typeof DtsWorkerModule>[] = [];
   for (let i = 0; i < concurrency; i++) {
     workers.push(Worker.create<typeof DtsWorkerModule>(workerPath));

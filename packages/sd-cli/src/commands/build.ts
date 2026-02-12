@@ -165,10 +165,10 @@ export async function runBuild(options: BuildOptions): Promise<void> {
   const state = { hasError: false };
 
   // Worker 경로
-  const libraryWorkerPath = path.resolve(import.meta.dirname, "../workers/library.worker.ts");
-  const serverWorkerPath = path.resolve(import.meta.dirname, "../workers/server.worker.ts");
-  const clientWorkerPath = path.resolve(import.meta.dirname, "../workers/client.worker.ts");
-  const dtsWorkerPath = path.resolve(import.meta.dirname, "../workers/dts.worker.ts");
+  const libraryWorkerPath = import.meta.resolve("../workers/library.worker");
+  const serverWorkerPath = import.meta.resolve("../workers/server.worker");
+  const clientWorkerPath = import.meta.resolve("../workers/client.worker");
+  const dtsWorkerPath = import.meta.resolve("../workers/dts.worker");
 
   // 파일 캐시 (diagnostics 출력용)
   const fileCache = new Map<string, string>();

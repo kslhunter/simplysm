@@ -17,7 +17,7 @@ export class LibraryBuilder extends BaseBuilder {
 
   constructor(options: ConstructorParameters<typeof BaseBuilder>[0]) {
     super(options);
-    this._workerPath = path.resolve(import.meta.dirname, "../workers/library.worker.ts");
+    this._workerPath = import.meta.resolve("../workers/library.worker");
   }
 
   protected getBuilderType(): string {

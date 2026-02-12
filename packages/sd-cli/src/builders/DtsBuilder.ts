@@ -17,7 +17,7 @@ export class DtsBuilder extends BaseBuilder {
 
   constructor(options: ConstructorParameters<typeof BaseBuilder>[0]) {
     super(options);
-    this._workerPath = path.resolve(import.meta.dirname, "../workers/dts.worker.ts");
+    this._workerPath = import.meta.resolve("../workers/dts.worker");
   }
 
   protected getBuilderType(): string {

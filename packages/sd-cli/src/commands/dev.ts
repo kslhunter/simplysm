@@ -118,9 +118,9 @@ export async function runDev(options: DevOptions): Promise<void> {
   }
 
   // Worker 경로
-  const clientWorkerPath = path.resolve(import.meta.dirname, "../workers/client.worker.ts");
-  const serverWorkerPath = path.resolve(import.meta.dirname, "../workers/server.worker.ts");
-  const serverRuntimeWorkerPath = path.resolve(import.meta.dirname, "../workers/server-runtime.worker.ts");
+  const clientWorkerPath = import.meta.resolve("../workers/client.worker");
+  const serverWorkerPath = import.meta.resolve("../workers/server.worker");
+  const serverRuntimeWorkerPath = import.meta.resolve("../workers/server-runtime.worker");
 
   // 클라이언트가 단독 실행인 경우:
   // - server가 숫자인 경우
