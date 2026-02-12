@@ -1,8 +1,8 @@
-# LocalUpdates 마이그레이션 설계 문서
+# replaceDeps 마이그레이션 설계 문서
 
 **Date**: 2026-02-12
 **Status**: Design Complete
-**Scope**: pnpm 환경에서 symlink 기반 로컬 라이브러리 업데이트
+**Scope**: pnpm 환경에서 symlink 기반 의존성 교체
 
 ---
 
@@ -14,8 +14,8 @@
 - 빌드/워치 시 **1회 복사** + watch 모드에서 **실시간 감지 후 복사**
 
 ### 현재 CLI의 상황
-- `packages/sd-cli`로 마이그레이션되었으나 `localUpdates` 기능은 **누락됨**
-- `SdConfig` 인터페이스에 `localUpdates` 필드 없음
+- `packages/sd-cli`로 마이그레이션되었으나 해당 기능은 **누락됨**
+- `SdConfig` 인터페이스에 관련 필드 없음
 - `build.ts`, `watch.ts` 등 명령어에서 관련 코드 없음
 
 ### pnpm 환경의 복잡성
@@ -51,7 +51,7 @@
 
 ```typescript
 export default {
-  localUpdates: {
+  replaceDeps: {
     "@simplysm/*": "../simplysm/packages/*",
     "@other/*": "../../other-project/packages/*",
   },
@@ -71,10 +71,10 @@ export default {
 
 ## 3. 핵심 알고리즘
 
-### 3.1 `setupLocalUpdates(projectRoot, localUpdates)` 함수
+### 3.1 `setupReplaceDeps(projectRoot, replaceDeps)` 함수
 
 ```
-입력: projectRoot (외부 앱 루트), localUpdates 설정
+입력: projectRoot (외부 앱 루트), replaceDeps 설정
 출력: symlink 교체 완료
 
 1단계: Workspace 구조 파악
@@ -88,7 +88,7 @@ export default {
   탐색 대상 = [projectRoot, ...workspace 패키지 경로들]
 
 3단계: Glob 패턴 매칭 및 symlink 교체
-  localUpdates의 각 항목에 대해:
+  replaceDeps의 각 항목에 대해:
     예: "@simplysm/*" → "../simplysm/packages/*"
 
     a. 패턴 파싱
@@ -123,11 +123,11 @@ export default {
 
 ### 4.1 새 파일
 
-**`packages/sd-cli/src/utils/local-updates.ts`**
+**`packages/sd-cli/src/utils/replace-deps.ts`**
 ```typescript
-export async function setupLocalUpdates(
+export async function setupReplaceDeps(
   projectRoot: string,
-  localUpdates: Record<string, string>,
+  replaceDeps: Record<string, string>,
 ): Promise<void>
 ```
 
@@ -135,10 +135,10 @@ export async function setupLocalUpdates(
 
 | 파일 | 변경 |
 |------|------|
-| `sd-config.types.ts` | `SdConfig` 인터페이스에 `localUpdates?: Record<string, string>` 필드 추가 |
-| `commands/build.ts` | 빌드 시작 전 `setupLocalUpdates()` 호출 (1줄) |
-| `commands/watch.ts` | 와치 시작 전 `setupLocalUpdates()` 호출 (1줄) |
-| `commands/dev.ts` (있다면) | dev 시작 전 `setupLocalUpdates()` 호출 (1줄) |
+| `sd-config.types.ts` | `SdConfig` 인터페이스에 `replaceDeps?: Record<string, string>` 필드 추가 |
+| `commands/build.ts` | 빌드 시작 전 `setupReplaceDeps()` 호출 (1줄) |
+| `orchestrators/WatchOrchestrator.ts` | 와치 시작 전 `setupReplaceDeps()` 호출 (1줄) |
+| `commands/dev.ts` | dev 시작 전 `setupReplaceDeps()` 호출 (1줄) |
 
 ### 4.3 호출 위치
 
@@ -147,8 +147,8 @@ export async function setupLocalUpdates(
 const config = await loadConfig();
 
 // config 로드 직후, 실제 빌드/와치 시작 전
-if (config.localUpdates) {
-  await setupLocalUpdates(projectRoot, config.localUpdates);
+if (config.replaceDeps) {
+  await setupReplaceDeps(projectRoot, config.replaceDeps);
 }
 
 // ... 이후 기존 빌드/와치/dev 로직
@@ -164,9 +164,9 @@ if (config.localUpdates) {
 외부 앱에서 실행:
   $ pnpm build / pnpm watch / pnpm dev
     ↓
-config 로드 → localUpdates 설정 확인
+config 로드 → replaceDeps 설정 확인
     ↓
-setupLocalUpdates() 실행 (1회)
+setupReplaceDeps() 실행 (1회)
   ├─ pnpm-workspace.yaml 파싱
   ├─ [루트, ...workspace 패키지] 탐색
   ├─ glob 매칭 → symlink 교체
@@ -178,7 +178,7 @@ setupLocalUpdates() 실행 (1회)
 ### 5.2 주요 특성
 
 - **watch 감시 불필요**: symlink 방식이므로 소스 변경이 바로 반영
-- **1회만 실행**: build/watch/dev 시작 시 setupLocalUpdates 1회 호출
+- **1회만 실행**: build/watch/dev 시작 시 setupReplaceDeps 1회 호출
 - **종료 시 원복 안 함**: `pnpm install`로 원복 가능
 - **기존 아키텍처 영향 없음**: Builder/Worker/Orchestrator 패턴 유지
 
@@ -186,16 +186,16 @@ setupLocalUpdates() 실행 (1회)
 
 ## 6. 구현 체크리스트
 
-- [ ] `sd-config.types.ts` - `localUpdates` 필드 추가
-- [ ] `utils/local-updates.ts` - 새 파일 생성 (setupLocalUpdates 함수)
+- [ ] `sd-config.types.ts` - `replaceDeps` 필드 추가
+- [ ] `utils/replace-deps.ts` - 새 파일 생성 (setupReplaceDeps 함수)
   - [ ] pnpm-workspace.yaml 파싱
   - [ ] workspace 패키지 목록 추출
   - [ ] glob 패턴 매칭
   - [ ] symlink 교체 로직
   - [ ] 에러 처리
-- [ ] `commands/build.ts` - setupLocalUpdates 호출 추가
-- [ ] `commands/watch.ts` - setupLocalUpdates 호출 추가
-- [ ] dev 명령어 확인 및 통합 (있다면)
+- [ ] `commands/build.ts` - setupReplaceDeps 호출 추가
+- [ ] `orchestrators/WatchOrchestrator.ts` - setupReplaceDeps 호출 추가
+- [ ] `commands/dev.ts` - setupReplaceDeps 호출 추가
 - [ ] 단위 테스트 (로컬 테스트용 임시 프로젝트)
 - [ ] 통합 테스트 (실제 simplysm + 외부 앱)
 
@@ -211,7 +211,7 @@ setupLocalUpdates() 실행 (1회)
 ### 7.2 통합 테스트
 - 단일 프로젝트 (pnpm-workspace.yaml 없음)
 - workspace 프로젝트 (여러 패키지)
-- 복수 localUpdates 항목
+- 복수 replaceDeps 항목
 - 소스 경로 미존재 시 경고 처리
 
 ---
@@ -223,7 +223,7 @@ setupLocalUpdates() 실행 (1회)
 - 설정 추가로 인한 기존 코드 변경 최소화
 
 ### 8.2 사용자 영향
-- 레거시에서 사용 중이던 `localUpdates` 설정을 현재 CLI로 그대로 옮길 수 있음
+- 레거시 `localUpdates` 설정을 `replaceDeps`로 이름만 변경하여 사용 가능
 - `pnpm install` 만으로 원복 가능 (원복 명령어 불필요)
 
 ---
@@ -232,5 +232,4 @@ setupLocalUpdates() 실행 (1회)
 
 - `.gitignore` 또는 별도 설정에서 symlink 교체 대상 제외 필요 (선택사항)
 - 개발 중 symlink 손상 시 자동 복구 메커니즘 (선택사항)
-- 프로덕션 빌드에서 localUpdates 비활성화 옵션 (선택사항)
-
+- 프로덕션 빌드에서 replaceDeps 비활성화 옵션 (선택사항)
