@@ -17,10 +17,11 @@ export interface StorageAdapter {
  * 로그 어댑터 인터페이스
  *
  * @remarks
- * - `useLogger`에서 consola 출력 외에 추가 로그 전송(DB, 서버 등)에 사용
+ * - `useLogger`에서 사용하는 로그 전송 어댑터 (DB, 서버 등)
+ * - adapter가 설정되면 consola 대신 adapter만 사용됨
  */
 export interface LogAdapter {
-  write(severity: "error" | "warn" | "log", ...data: any[]): Promise<void> | void;
+  write(severity: "error" | "warn" | "info" | "log", ...data: any[]): Promise<void> | void;
 }
 
 /**
