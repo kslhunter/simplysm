@@ -85,7 +85,6 @@ export default defineConfig([
     // directory/** 형태로 순회 자체를 건너뜀
     "**/node_modules/**",
     "**/dist/**",
-    "**/.legacy-packages/**",
     "**/.*/**",
     "**/_*/**",
   ]),

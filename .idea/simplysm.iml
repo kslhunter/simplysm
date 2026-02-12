@@ -18,7 +18,6 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/core-common/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid/.cache" />
-
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid-demo/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/packages/solid/node_modules" />
@@ -42,6 +41,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/claude" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/claude" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
