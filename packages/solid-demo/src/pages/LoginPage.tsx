@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { TextInput, Button, ThemeToggle } from "@simplysm/solid";
+import { TextInput, Button, ThemeToggle, FormGroup } from "@simplysm/solid";
 import clsx from "clsx";
 
 export default function LoginPage() {
@@ -22,25 +22,23 @@ export default function LoginPage() {
         )}
       >
         {/* Logo */}
-        <div class="mb-8 flex justify-center">
-          <img src="logo-landscape.png" alt="SIMPLYSM" class="h-10 w-auto" />
+        <div class="mb-10 flex justify-center">
+          <img src="logo-landscape.png" alt="SIMPLYSM" class="h-12 w-auto" />
         </div>
 
         {/* Form */}
-        <div class="space-y-4">
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-base-700 dark:text-base-300">아이디</label>
-            <TextInput placeholder="아이디를 입력하세요" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-sm font-medium text-base-700 dark:text-base-300">비밀번호</label>
-            <TextInput type="password" placeholder="비밀번호를 입력하세요" />
-          </div>
-        </div>
+        <FormGroup class="w-full">
+          <FormGroup.Item label="아이디">
+            <TextInput class="w-full" placeholder="아이디를 입력하세요" size="lg" />
+          </FormGroup.Item>
+          <FormGroup.Item label="비밀번호">
+            <TextInput class="w-full" type="password" placeholder="비밀번호를 입력하세요" size="lg" />
+          </FormGroup.Item>
+        </FormGroup>
 
         {/* Login Button */}
-        <div class="mt-6">
-          <Button theme="primary" variant="solid" class="w-full" onClick={() => navigate("/home")}>
+        <div class="mt-5">
+          <Button theme="primary" variant="solid" class="w-full" onClick={() => navigate("/home")} size="lg">
             로그인
           </Button>
         </div>
