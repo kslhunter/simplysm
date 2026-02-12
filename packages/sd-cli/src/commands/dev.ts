@@ -519,6 +519,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         pkgDir,
         env: { ...baseEnv, ...config.env },
         configs: config.configs,
+        externals: config.externals,
       })
       .catch((err: unknown) => {
         results.set(`${name}:build`, {

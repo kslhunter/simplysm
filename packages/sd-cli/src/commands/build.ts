@@ -393,6 +393,8 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     pkgDir,
                     env: { ...baseEnv, ...config.env },
                     configs: config.configs,
+                    externals: config.externals,
+                    pm2: config.pm2,
                   });
 
                   results.push({

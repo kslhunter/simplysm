@@ -1,6 +1,5 @@
 import path from "path";
 import fs from "fs";
-import cp from "child_process";
 import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";

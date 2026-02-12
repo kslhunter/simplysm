@@ -163,6 +163,25 @@ sd-cli build solid core-common
 
 If a `server` or `client` package defines a `configs` field in `sd.config.ts`, the build automatically generates `dist/.config.json` containing that configuration. This is useful for storing environment-specific settings (database config, API endpoints, etc.) that are read at runtime via `ServiceBase.getConfig()` in `service-server`.
 
+**Server Build: Externals & Production Deployment Files:**
+
+Server builds (`target: "server"`) automatically detect modules that cannot be bundled by esbuild and mark them as external. Three sources of externals are combined:
+
+1. **Uninstalled optional peer dependencies** — automatically detected via `peerDependenciesMeta`
+2. **Native modules (node-gyp)** — automatically detected by scanning for `binding.gyp` files in the dependency tree
+3. **Manual externals** — specified via `externals` in `sd.config.ts`
+
+During production build (`sd-cli build`), the following deployment files are generated in `dist/`:
+
+| File | Description |
+|------|-------------|
+| `package.json` | Minimal package.json with externalized dependencies (version `"*"`) for `npm install` on the deployment server |
+| `mise.toml` | Node.js version specification (read from root `mise.toml`) |
+| `openssl.cnf` | Legacy OpenSSL provider activation (required for MSSQL and other legacy TLS connections) |
+| `pm2.config.cjs` | PM2 process manager config (only generated when `pm2` is configured) |
+
+> **Note**: Production deployment files are only generated during `sd-cli build`, not during `sd-cli dev` (watch mode).
+
 ### publish
 
 Publishes packages. For safety, proceeds in the following order:
@@ -311,7 +330,7 @@ import type {
 | `BuildTarget` | Library build target: `"node" \| "browser" \| "neutral"` |
 | `SdBuildPackageConfig` | Config for library packages (`node`/`browser`/`neutral` targets) |
 | `SdClientPackageConfig` | Config for client packages (`client` target) |
-| `SdServerPackageConfig` | Config for server packages (`server` target) |
+| `SdServerPackageConfig` | Config for server packages (`server` target, with `externals` and `pm2` options) |
 | `SdScriptsPackageConfig` | Config for scripts-only packages (`scripts` target) |
 | `SdPublishConfig` | Deployment config: `"npm" \| SdLocalDirectoryPublishConfig \| SdStoragePublishConfig` |
 | `SdLocalDirectoryPublishConfig` | Local directory deployment config (`type: "local-directory"`, `path`) |
@@ -436,9 +455,15 @@ Users can install the app on their home screen on supported browsers and devices
 ```typescript
 {
   target: "server";
-  env?: Record<string, string>; // Environment variables to replace during build
-  publish?: SdPublishConfig;    // Deployment config (optional)
+  env?: Record<string, string>;      // Environment variables to replace during build
+  publish?: SdPublishConfig;         // Deployment config (optional)
   configs?: Record<string, unknown>; // Runtime config (written to dist/.config.json during build)
+  externals?: string[];              // Additional modules to exclude from bundle (optional)
+  pm2?: {                            // PM2 config — generates dist/pm2.config.cjs (optional)
+    name?: string;                   // PM2 process name (defaults to package name)
+    ignoreWatchPaths?: string[];     // Paths to ignore in PM2 watch
+    noInterpreter?: boolean;         // Skip interpreter path (use system PATH node)
+  };
 }
 ```
 
@@ -668,6 +693,61 @@ Electron configuration for Windows desktop app builds in `client` target package
 - **Initialize**: Creates `.electron/src/package.json`, runs `npm install`, rebuilds native modules with `electron-rebuild`
 - **Build**: Bundles `electron-main.ts` with esbuild, copies web assets, runs `electron-builder` for Windows
 - **Dev mode**: Bundles `electron-main.ts`, launches Electron pointing to Vite dev server URL
+
+### Server Externals & PM2 Configuration
+
+Server packages can configure external modules and PM2 deployment settings.
+
+#### Externals
+
+Native modules (with `binding.gyp`) are automatically detected and externalized. You can also manually specify additional modules to exclude from the bundle:
+
+```typescript
+"my-server": {
+  target: "server",
+  externals: ["cpu-features", "ssh2"],  // Manually externalize these modules
+},
+```
+
+#### PM2 Configuration
+
+When `pm2` is configured, `dist/pm2.config.cjs` is generated during production build for use with [PM2](https://pm2.keymetrics.io/) process manager:
+
+```typescript
+"my-server": {
+  target: "server",
+  env: {
+    CUSTOM_VAR: "value",
+  },
+  pm2: {
+    name: "my-app-server",           // PM2 process name (optional)
+    ignoreWatchPaths: ["uploads"],   // Additional paths to ignore in PM2 watch (optional)
+    noInterpreter: false,            // Set true to skip mise-managed node path (optional)
+  },
+},
+```
+
+**Generated `pm2.config.cjs` includes:**
+
+- Process name (from `pm2.name` or derived from package name)
+- Watch mode enabled with configurable ignore paths (`node_modules`, `www` + custom paths)
+- Node.js interpreter path via `mise which node` (unless `noInterpreter: true`)
+- `--openssl-config=openssl.cnf` interpreter argument for legacy TLS support
+- Environment variables: `NODE_ENV=production`, `TZ=Asia/Seoul`, `SD_VERSION`, plus custom `env` values
+
+**Deployment workflow:**
+
+```bash
+# 1. Build the server
+sd-cli build my-server
+
+# 2. Copy dist/ to deployment server
+
+# 3. On the deployment server:
+cd /path/to/my-server/dist
+npm install          # Install externalized dependencies
+pm2 start pm2.config.cjs  # Start with PM2
+```
 
 ## Cache
 
