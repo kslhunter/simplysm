@@ -39,6 +39,7 @@
     "@tiptap/starter-kit": "^3.19.0",
     "bwip-js": "^4.8.0",
     "clsx": "^2.1.1",
+    "consola": "^3.4.2",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.1.0",
     "solid-js": "^1.9.11",
