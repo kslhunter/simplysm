@@ -51,8 +51,8 @@ export async function runInit(_options: InitOptions): Promise<void> {
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:init");
 
-  // 1. 디렉토리 비어있는지 확인
-  const entries = fs.readdirSync(cwd);
+  // 1. 디렉토리 비어있는지 확인 (dotfile/dotfolder 제외)
+  const entries = fs.readdirSync(cwd).filter((e) => !e.startsWith("."));
   if (entries.length > 0) {
     consola.error("디렉토리가 비어있지 않습니다. 빈 디렉토리에서 실행해주세요.");
     process.exitCode = 1;
