@@ -6,6 +6,13 @@ import { NotificationProvider } from "../components/feedback/notification/Notifi
 import { NotificationBanner } from "../components/feedback/notification/NotificationBanner";
 import { LoadingProvider } from "../components/feedback/loading/LoadingProvider";
 import { DialogProvider } from "../components/disclosure/DialogProvider";
+import { createPwaUpdate } from "../hooks/createPwaUpdate";
+
+/** Runs PWA update detection inside NotificationProvider context */
+function PwaUpdater() {
+  createPwaUpdate();
+  return null;
+}
 
 /**
  * @simplysm/solid 초기화 Provider
@@ -36,6 +43,7 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
       <ThemeProvider>
         <NotificationProvider>
           <NotificationBanner />
+          <PwaUpdater />
           <LoadingProvider variant={props.config.loadingVariant}>
             <DialogProvider>{props.children}</DialogProvider>
           </LoadingProvider>
