@@ -58,18 +58,14 @@ export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
 export * from "./components/disclosure/DialogInstanceContext";
-export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
 // feedback
 export * from "./components/feedback/notification/NotificationContext";
-export * from "./components/feedback/notification/NotificationProvider";
-export * from "./components/feedback/notification/NotificationBanner";
 export * from "./components/feedback/notification/NotificationBell";
 
 // feedback - loading
 export * from "./components/feedback/loading/LoadingContext";
-export * from "./components/feedback/loading/LoadingProvider";
 export * from "./components/feedback/loading/LoadingContainer";
 
 // feedback - print
@@ -80,7 +76,8 @@ export * from "./components/feedback/Progress";
 // providers
 export * from "./providers/ConfigContext";
 export * from "./providers/InitializeProvider";
-export * from "./providers/ThemeContext";
+export { useTheme } from "./providers/ThemeContext";
+export type { ThemeMode, ResolvedTheme } from "./providers/ThemeContext";
 export * from "./providers/ServiceClientContext";
 export * from "./providers/ServiceClientProvider";
 export * from "./providers/shared-data/SharedDataContext";
