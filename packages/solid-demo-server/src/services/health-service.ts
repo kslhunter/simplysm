@@ -1,5 +1,5 @@
 import { env } from "@simplysm/core-common";
-import { ServiceBase } from "@simplysm/service-server";
+import { defineService } from "@simplysm/service-server";
 
 export interface HealthStatus {
   status: "ok" | "error";
@@ -7,16 +7,16 @@ export interface HealthStatus {
   version?: string;
 }
 
-export class HealthService extends ServiceBase {
-  check(): HealthStatus {
+export const HealthService = defineService("Health", () => ({
+  check: (): HealthStatus => {
     return {
       status: "ok",
       timestamp: Date.now(),
       version: env.VER,
     };
-  }
+  },
 
-  ping(): string {
+  ping: (): string => {
     return "pong";
-  }
-}
+  },
+}));

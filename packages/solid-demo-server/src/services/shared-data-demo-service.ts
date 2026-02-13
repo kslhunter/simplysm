@@ -1,4 +1,4 @@
-import { ServiceBase } from "@simplysm/service-server";
+import { defineService } from "@simplysm/service-server";
 
 export interface IDemoUser {
   id: number;
@@ -26,18 +26,18 @@ const COMPANIES: IDemoCompany[] = [
   { id: 3, name: "이노베이션", ceo: "이철수" },
 ];
 
-export class SharedDataDemoService extends ServiceBase {
-  getUsers(changeKeys?: number[]): IDemoUser[] {
+export const SharedDataDemoService = defineService("SharedDataDemo", () => ({
+  getUsers: (changeKeys?: number[]): IDemoUser[] => {
     if (changeKeys) {
       return USERS.filter((u) => changeKeys.includes(u.id));
     }
     return USERS;
-  }
+  },
 
-  getCompanies(changeKeys?: number[]): IDemoCompany[] {
+  getCompanies: (changeKeys?: number[]): IDemoCompany[] => {
     if (changeKeys) {
       return COMPANIES.filter((c) => changeKeys.includes(c.id));
     }
     return COMPANIES;
-  }
-}
+  },
+}));

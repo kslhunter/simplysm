@@ -2,14 +2,12 @@
 export * from "./types/server-options";
 
 // Auth
-export * from "./auth/auth.decorators";
 export * from "./auth/auth-token-payload";
 export * from "./auth/jwt-manager";
 
 // Core
-export * from "./core/service-base";
-export * from "./core/service-executor";
 export * from "./core/define-service";
+export * from "./core/service-executor";
 
 // Transport - Socket
 export * from "./transport/socket/websocket-handler";
