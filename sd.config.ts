@@ -19,8 +19,25 @@ const config: SdConfigFn = () => ({
     "service-common": { target: "neutral", publish: "npm" },
     "service-server": { target: "node", publish: "npm" },
     "solid": { target: "browser", publish: "npm", copySrc: ["**/*.css"] },
-    "solid-demo": { target: "client", server: "solid-demo-server" },
-    "solid-demo-server": { target: "server" },
+    "solid-demo": {
+      target: "client",
+      server: "solid-demo-server",
+      publish: {
+        type: "sftp",
+        host: "simplysm.co.kr",
+        path: "pm2/simplysm-demo/www/solid-demo",
+        user: "simplysm",
+      },
+    },
+    "solid-demo-server": {
+      target: "server",
+      publish: {
+        type: "sftp",
+        host: "simplysm.co.kr",
+        path: "pm2/simplysm-demo",
+        user: "simplysm",
+      },
+    },
     "storage": { target: "node", publish: "npm" },
   },
 });
