@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { downloadBlob } from "../../src/utils/blob";
+import { downloadBlob } from "../../src/utils/download";
 
 describe("downloadBlob", () => {
   let originalCreateObjectURL: typeof URL.createObjectURL;

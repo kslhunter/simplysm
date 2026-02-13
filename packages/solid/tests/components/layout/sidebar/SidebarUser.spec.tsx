@@ -16,22 +16,14 @@ describe("SidebarUser", () => {
   });
 
   describe("렌더링", () => {
-    it("children을 렌더링", () => {
-      const { getByText } = render(() => (
-        <Sidebar.User>
-          <span>사용자 이름</span>
-        </Sidebar.User>
-      ));
+    it("name prop을 렌더링", () => {
+      const { getByText } = render(() => <Sidebar.User name="사용자 이름" />);
 
       expect(getByText("사용자 이름")).toBeTruthy();
     });
 
     it("menus가 없을 때 버튼에 aria-expanded 없음", () => {
-      const { container } = render(() => (
-        <Sidebar.User>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container } = render(() => <Sidebar.User name="사용자" />);
 
       const button = container.querySelector("button");
       expect(button?.hasAttribute("aria-expanded")).toBe(false);
@@ -40,11 +32,7 @@ describe("SidebarUser", () => {
     it("menus가 있을 때 버튼에 aria-expanded=false", () => {
       const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
-      const { container } = render(() => (
-        <Sidebar.User menus={menus}>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container } = render(() => <Sidebar.User name="사용자" menus={menus} />);
 
       const button = container.querySelector("button");
       expect(button?.getAttribute("aria-expanded")).toBe("false");
@@ -53,11 +41,7 @@ describe("SidebarUser", () => {
 
   describe("클릭 동작", () => {
     it("menus가 없을 때 클릭해도 드롭다운이 열리지 않음", () => {
-      const { container } = render(() => (
-        <Sidebar.User>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container } = render(() => <Sidebar.User name="사용자" />);
 
       const button = container.querySelector("button")!;
       fireEvent.click(button);
@@ -69,11 +53,7 @@ describe("SidebarUser", () => {
     it("menus가 있을 때 클릭으로 드롭다운 토글", () => {
       const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
-      const { container } = render(() => (
-        <Sidebar.User menus={menus}>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container } = render(() => <Sidebar.User name="사용자" menus={menus} />);
 
       const button = container.querySelector("button")!;
 
@@ -95,11 +75,7 @@ describe("SidebarUser", () => {
       const onLogout = vi.fn();
       const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: onLogout }];
 
-      const { container, getByText } = render(() => (
-        <Sidebar.User menus={menus}>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container, getByText } = render(() => <Sidebar.User name="사용자" menus={menus} />);
 
       // 드롭다운 열기
       const button = container.querySelector("button")!;
@@ -114,11 +90,7 @@ describe("SidebarUser", () => {
     it("메뉴 아이템 클릭 시 드롭다운 닫힘", () => {
       const menus: SidebarUserMenu[] = [{ title: "프로필", onClick: () => {} }];
 
-      const { container, getByText } = render(() => (
-        <Sidebar.User menus={menus}>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container, getByText } = render(() => <Sidebar.User name="사용자" menus={menus} />);
 
       const button = container.querySelector("button")!;
 
@@ -138,16 +110,8 @@ describe("SidebarUser", () => {
     it("menus prop에 따라 스타일이 달라진다", () => {
       const menus: SidebarUserMenu[] = [{ title: "로그아웃", onClick: () => {} }];
 
-      const { container: withoutMenus } = render(() => (
-        <Sidebar.User>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
-      const { container: withMenus } = render(() => (
-        <Sidebar.User menus={menus}>
-          <span>사용자</span>
-        </Sidebar.User>
-      ));
+      const { container: withoutMenus } = render(() => <Sidebar.User name="사용자" />);
+      const { container: withMenus } = render(() => <Sidebar.User name="사용자" menus={menus} />);
 
       const buttonWithout = withoutMenus.querySelector("button")!;
       const buttonWith = withMenus.querySelector("button")!;
@@ -160,9 +124,7 @@ describe("SidebarUser", () => {
     it("사용자 정의 class가 병합된다", () => {
       const { container } = render(() => (
         // eslint-disable-next-line tailwindcss/no-custom-classname
-        <Sidebar.User class="my-custom-class">
-          <span>사용자</span>
-        </Sidebar.User>
+        <Sidebar.User name="사용자" class="my-custom-class" />
       ));
 
       expect(container.querySelector(".my-custom-class")).toBeTruthy();

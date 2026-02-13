@@ -69,7 +69,7 @@ describe("SftpStorageClient", () => {
 
     it("연결 실패 시 클라이언트를 정리해야 함", async () => {
       mockConnect.mockRejectedValueOnce(new Error("Auth failed"));
-      await expect(client.connect({ host: "test" })).rejects.toThrow("Auth failed");
+      await expect(client.connect({ host: "test", pass: "wrong" })).rejects.toThrow("Auth failed");
       expect(mockEnd).toHaveBeenCalled();
     });
   });

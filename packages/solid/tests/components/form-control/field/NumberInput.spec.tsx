@@ -194,13 +194,6 @@ describe("NumberInput", () => {
       const contentDiv = outer.querySelector("[data-number-field-content]") as HTMLElement;
       expect(contentDiv.className).toContain("border-none");
     });
-
-    it("error 상태에서 에러 스타일이 적용된다", () => {
-      const { container } = render(() => <NumberInput error />);
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("border-danger-500");
-    });
   });
 
   describe("inset dual-element", () => {

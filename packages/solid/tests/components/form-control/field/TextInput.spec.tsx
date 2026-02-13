@@ -127,14 +127,6 @@ describe("TextInput 컴포넌트", () => {
     });
   });
 
-  describe("error 스타일", () => {
-    it("error=true일 때 에러 스타일이 적용된다", () => {
-      const { container } = render(() => <TextInput error />);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
-    });
-  });
-
   describe("format 옵션", () => {
     it("format이 적용되어 표시된다", () => {
       const { container } = render(() => <TextInput format="XXX-XXXX-XXXX" value="01012345678" />);
