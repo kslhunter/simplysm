@@ -29,7 +29,8 @@ pnpm add @simplysm/service-common
 | `service-types/crypto-service.types` | Crypto service interface and config |
 | `service-types/smtp-service.types` | SMTP service interface and email options |
 | `service-types/auto-update-service.types` | Auto-update service interface |
-| `types` | `ServiceEventListener`, `ServiceUploadResult` |
+| `types` | `ServiceUploadResult` |
+| `define-event` | `defineEvent`, `ServiceEventDef` |
 
 ---
 
@@ -159,9 +160,17 @@ Type definitions for messages exchanged between client and server. `ServiceMessa
 
 ---
 
-## ServiceEventListener
+## defineEvent / ServiceEventDef
 
-An abstract class for defining event listener types. Used by inheriting when defining custom events.
+A function for defining event types. Events are used to publish real-time notifications from server to client.
+
+### API
+
+```typescript
+function defineEvent<TInfo = unknown, TData = unknown>(
+  eventName: string
+): ServiceEventDef<TInfo, TData>
+```
 
 ### Type Parameters
 
@@ -170,26 +179,24 @@ An abstract class for defining event listener types. Used by inheriting when def
 | `TInfo` | Additional information type for listener filtering |
 | `TData` | Data type passed when the event is emitted |
 
-### Properties
+### ServiceEventDef Properties
 
 | Property | Type | Description |
 |------|------|------|
-| `eventName` | `string` (abstract) | Mangle-safe event identifier. Must be implemented when inheriting |
+| `eventName` | `string` | Unique event identifier |
 | `$info` | `TInfo` (declare) | For type extraction. Not used at runtime |
 | `$data` | `TData` (declare) | For type extraction. Not used at runtime |
 
 ### Usage Example
 
 ```typescript
-import { ServiceEventListener } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
 // Custom event definition
-export class DataChangeEvent extends ServiceEventListener<
+export const DataChangeEvent = defineEvent<
   { tableName: string; filter: unknown },
   (string | number)[] | undefined
-> {
-  readonly eventName = "DataChangeEvent";
-}
+>("DataChangeEvent");
 
 // Register listener on client (using service-client)
 await client.addEventListener(
@@ -331,7 +338,7 @@ Pass values like `"win32"`, `"darwin"`, `"linux"` to `platform`.
 - Encoding or decoding messages exceeding `PROTOCOL_CONFIG.MAX_TOTAL_SIZE` (100MB) will throw an `ArgumentError`.
 - Passing binary data less than 28 bytes during decoding will throw an `ArgumentError`.
 - Service interfaces (`OrmService`, `CryptoService`, etc.) only provide type definitions. Actual implementations are handled by the `@simplysm/service-server` package.
-- The `$info` and `$data` properties of `ServiceEventListener` are declared with `declare` and do not exist at runtime; they are only used for TypeScript type extraction.
+- The `$info` and `$data` properties of `ServiceEventDef` are declared with `declare` and do not exist at runtime; they are only used for TypeScript type extraction.
 
 ## License
 

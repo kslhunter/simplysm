@@ -14,17 +14,18 @@ pnpm add @simplysm/service-server
 
 ## Main Modules
 
-### Core Classes
+### Core Functions and Classes
 
+- [`createServiceServer`](#basic-server-configuration) - Factory function for creating a ServiceServer instance
 - [`ServiceServer`](docs/server.md#serviceserver) - Main server class. Creates Fastify instance and configures routes/plugins
-- [`ServiceBase`](docs/server.md#custom-service-definition) - Service base abstract class. All custom services must inherit from this
+- [`defineService`](#custom-services) - Defines a service with a factory function pattern
 - `ServiceExecutor` - Internal executor that handles service method discovery, auth checks, and execution
 
 ### Authentication
 
-- [`Authorize`](docs/authentication.md#authorize-decorator) - Stage 3 decorator. Sets authentication permissions at class or method level
+- [`auth`](#authentication) - Function wrapper that sets authentication permissions at service or method level
+- [`getServiceAuthPermissions`](#authentication) - Queries auth permissions for a service or method (used internally by `ServiceExecutor`)
 - [`JwtManager`](docs/authentication.md#jwtmanager) - JWT token generation/verification/decoding based on jose library (HS256, 12-hour expiration)
-- [`getAuthPermissions`](docs/authentication.md#getauthpermissions) - Queries auth permissions for a service class/method (used internally by `ServiceExecutor`)
 - [`AuthTokenPayload`](docs/authentication.md#authtokenpayload) - JWT payload interface (includes `roles`, `data`)
 
 ### Transport Layer - WebSocket
@@ -62,9 +63,9 @@ pnpm add @simplysm/service-server
 ### Basic Server Configuration
 
 ```typescript
-import { ServiceServer } from "@simplysm/service-server";
+import { createServiceServer } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   services: [MyService],
@@ -92,43 +93,94 @@ See [`ServiceServerOptions`](docs/server.md#server-options-serviceserveroptions)
 
 ### Custom Services
 
-Services are defined by inheriting from `ServiceBase`. Service methods are called via RPC from the client.
+Services are defined using the `defineService` function. Service methods are called via RPC from the client.
 
 ```typescript
-import { ServiceBase } from "@simplysm/service-server";
+import { defineService } from "@simplysm/service-server";
 
-class MyService extends ServiceBase {
-  async hello(name: string): Promise<string> {
+export const MyService = defineService("MyService", (ctx) => ({
+  hello: async (name: string): Promise<string> => {
     return `Hello, ${name}!`;
-  }
+  },
 
-  async getServerTime(): Promise<Date> {
+  getServerTime: async (): Promise<Date> => {
     return new Date();
-  }
-}
+  },
+}));
+
+// Export type for client-side type sharing
+export type MyServiceMethods = import("@simplysm/service-server").ServiceMethods<typeof MyService>;
 ```
 
-See [Custom Service Definition](docs/server.md#custom-service-definition) for more details on `ServiceBase` properties and methods.
+#### ServiceContext
+
+The `ctx` parameter provides access to server resources:
+
+- `ctx.server` - ServiceServer instance
+- `ctx.socket` - ServiceSocket instance (WebSocket only, undefined for HTTP)
+- `ctx.http` - HTTP request/reply objects (HTTP only, undefined for WebSocket)
+- `ctx.authInfo` - Authentication info (set via JWT token)
+- `ctx.clientName` - Client identifier
+- `ctx.getConfig(name)` - Get server config by name
 
 ### Authentication
 
-Use the `@Authorize()` decorator to set authentication requirements:
+Use the `auth()` wrapper to set authentication requirements at service or method level:
 
 ```typescript
-import { ServiceBase, Authorize } from "@simplysm/service-server";
+import { defineService, auth } from "@simplysm/service-server";
 
-@Authorize()
-class UserService extends ServiceBase<{ userId: number; role: string }> {
-  async getProfile(): Promise<unknown> {
-    const userId = this.authInfo?.userId;
-    // ...
-  }
-
-  @Authorize(["admin"])
-  async deleteUser(targetId: number): Promise<void> {
-    // Only users with admin role can call
-  }
+interface UserAuthInfo {
+  userId: number;
+  role: string;
 }
+
+// Service-level auth: all methods require authentication
+export const UserService = defineService("UserService", auth((ctx) => ({
+  getProfile: async (): Promise<unknown> => {
+    const userId = (ctx.authInfo as UserAuthInfo)?.userId;
+    // ...
+  },
+
+  deleteUser: auth(["admin"], async (targetId: number): Promise<void> => {
+    // Only users with admin role can call
+  }),
+})));
+
+export type UserServiceMethods = import("@simplysm/service-server").ServiceMethods<typeof UserService>;
+```
+
+#### Auth Patterns
+
+**Method-level auth only:**
+```typescript
+export const MyService = defineService("MyService", (ctx) => ({
+  publicMethod: async (): Promise<void> => {
+    // No auth required
+  },
+
+  protectedMethod: auth(async (): Promise<void> => {
+    // Auth required
+  }),
+
+  adminMethod: auth(["admin"], async (): Promise<void> => {
+    // Auth + admin role required
+  }),
+}));
+```
+
+**Service-level auth with method override:**
+```typescript
+// All methods require authentication by default
+export const SecureService = defineService("SecureService", auth((ctx) => ({
+  normalMethod: async (): Promise<void> => {
+    // Auth required (inherited from service level)
+  },
+
+  adminMethod: auth(["admin"], async (): Promise<void> => {
+    // Auth + admin role required
+  }),
+})));
 ```
 
 See [Authentication](docs/authentication.md) for JWT token management and permission handling.
@@ -166,14 +218,12 @@ See [File Upload](docs/transport.md#file-upload) for more details.
 Publish real-time events to connected WebSocket clients:
 
 ```typescript
-import { ServiceEventListener } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
-class OrderUpdatedEvent extends ServiceEventListener<
+export const OrderUpdatedEvent = defineEvent<
   { orderId: number },
   { status: string }
-> {
-  readonly eventName = "OrderUpdatedEvent";
-}
+>("OrderUpdatedEvent");
 
 await server.emitEvent(
   OrderUpdatedEvent,
@@ -196,7 +246,9 @@ The package provides several built-in services:
 Register them like any other service:
 
 ```typescript
-const server = new ServiceServer({
+import { createServiceServer, OrmService, CryptoService, SmtpService } from "@simplysm/service-server";
+
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "secret" },

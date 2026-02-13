@@ -84,22 +84,35 @@ await client.close();
 `getService<T>()` uses `Proxy` to provide type-safe remote calls to service interfaces.
 
 ```typescript
-// Service interface definition (shared from service-common)
-interface UserService {
-  getUsers(filter: { page: number }): Promise<User[]>;
-  createUser(data: CreateUserDto): Promise<number>;
-  deleteUser(id: number): Promise<void>;
-}
+// Server-side service definition
+import { defineService } from "@simplysm/service-server";
 
-// Create type-safe proxy
-const userService = client.getService<UserService>("UserService");
+export const UserService = defineService("UserService", (ctx) => ({
+  getUsers: async (filter: { page: number }): Promise<User[]> => {
+    // ...
+  },
+  createUser: async (data: CreateUserDto): Promise<number> => {
+    // ...
+  },
+  deleteUser: async (id: number): Promise<void> => {
+    // ...
+  },
+}));
+
+// Export type for client-side usage
+export type UserServiceMethods = import("@simplysm/service-server").ServiceMethods<typeof UserService>;
+
+// Client-side usage
+import type { UserServiceMethods } from "./server/services/user-service";
+
+const userService = client.getService<UserServiceMethods>("UserService");
 
 // Parameter/return types are automatically inferred on method calls
 const users = await userService.getUsers({ page: 1 }); // users: User[]
 const newId = await userService.createUser({ name: "test" }); // newId: number
 ```
 
-`RemoteService<T>` wraps all method return types of the original interface with `Promise`. Methods already returning `Promise` are not double-wrapped.
+`ServiceMethods<T>` extracts method types from a service definition. `RemoteService<T>` wraps all method return types with `Promise` (methods already returning `Promise` are not double-wrapped).
 
 ### Authentication
 
@@ -168,15 +181,13 @@ const result = await client.send("DataService", "getLargeData", [query], {
 Subscribe to events from the server, and listeners are automatically recovered on reconnection.
 
 ```typescript
-import { ServiceEventListener } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
-// Event listener type definition (shared between server/client)
-class SharedDataChangeEvent extends ServiceEventListener<
+// Event definition (shared between server/client)
+export const SharedDataChangeEvent = defineEvent<
   { name: string; filter: unknown },
   (string | number)[] | undefined
-> {
-  readonly eventName = "SharedDataChangeEvent";
-}
+>("SharedDataChangeEvent");
 
 // Subscribe to event
 const listenerKey = await client.addEventListener(
@@ -194,6 +205,13 @@ await client.removeEventListener(listenerKey);
 ### Event Publishing (Client -> Server -> Other Clients)
 
 ```typescript
+import { defineEvent } from "@simplysm/service-common";
+
+export const SharedDataChangeEvent = defineEvent<
+  { name: string; filter: unknown },
+  (string | number)[] | undefined
+>("SharedDataChangeEvent");
+
 // Publish event to listeners matching specific conditions
 await client.emitToServer(
   SharedDataChangeEvent,
