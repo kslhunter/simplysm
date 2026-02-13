@@ -344,4 +344,98 @@ describe("runTypecheck", () => {
 
     expect(process.exitCode).toBe(1);
   });
+
+  it("non-package 파일(tests/ 등)이 포함된 경우 기타 task 생성", async () => {
+    vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
+
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      options: { lib: ["ES2024"], types: [] },
+      fileNames: ["/project/packages/core-node/src/index.ts", "/project/tests/orm/some-test.ts"],
+      errors: [],
+    } as unknown as ts.ParsedCommandLine);
+
+    vi.mocked(fsExists).mockResolvedValue(false);
+    // core-node는 node 타겟 패키지로 설정
+    vi.mocked(fsReadJson).mockImplementation((filePath: string) => {
+      if (filePath.includes("core-node")) {
+        return Promise.resolve({ name: "@simplysm/core-node" });
+      }
+      return Promise.resolve({ devDependencies: {} });
+    });
+
+    // sd.config.ts 모킹: core-node를 node 타겟으로 설정
+    mockJitiImport.mockResolvedValue({
+      default: () => ({
+        packages: {
+          "core-node": { target: "node" },
+        },
+      }),
+    });
+
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+
+    const { Worker } = await import("@simplysm/core-node");
+    const mockBuildDts = vi.fn(() =>
+      Promise.resolve({
+        success: true,
+        diagnostics: [],
+        errorCount: 0,
+        warningCount: 0,
+      }),
+    );
+    vi.mocked(Worker.create).mockReturnValue({
+      buildDts: mockBuildDts,
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
+
+    await runTypecheck({ targets: [], options: [] });
+
+    // buildDts 호출 확인
+    expect(mockBuildDts).toHaveBeenCalled();
+
+    // 기타 task: pkgDir/env 없이 호출
+    const nonPkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "root");
+    expect(nonPkgCall).toBeDefined();
+    expect((nonPkgCall![0] as { pkgDir?: string }).pkgDir).toBeUndefined();
+    expect((nonPkgCall![0] as { env?: string }).env).toBeUndefined();
+
+    // core-node 패키지 task도 존재
+    const pkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "core-node");
+    expect(pkgCall).toBeDefined();
+  });
+
+  it("packages/ 파일만 있으면 기타 task 생성 안 함", async () => {
+    vi.mocked(ts.readConfigFile).mockReturnValue({ config: {} });
+
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      options: { lib: ["ES2024"], types: [] },
+      fileNames: ["/project/packages/core-common/src/index.ts"],
+      errors: [],
+    } as unknown as ts.ParsedCommandLine);
+
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+
+    const { Worker } = await import("@simplysm/core-node");
+    const mockBuildDts = vi.fn(() =>
+      Promise.resolve({
+        success: true,
+        diagnostics: [],
+        errorCount: 0,
+        warningCount: 0,
+      }),
+    );
+    vi.mocked(Worker.create).mockReturnValue({
+      buildDts: mockBuildDts,
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
+
+    await runTypecheck({ targets: [], options: [] });
+
+    // buildDts 호출에 name="root"인 것이 없어야 함
+    const nonPkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "root");
+    expect(nonPkgCall).toBeUndefined();
+  });
 });
