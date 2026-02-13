@@ -229,10 +229,11 @@ function registerSshPublicKey(
         }
 
         let stderr = "";
+        stream.on("data", () => {}); // stdout 소비 (미소비 시 stream 미종료)
         stream.stderr.on("data", (data: Uint8Array) => {
           stderr += data.toString();
         });
-        stream.on("close", (code: number | null) => {
+        stream.on("exit", (code: number | null) => {
           conn.end();
           if (code !== 0) {
             reject(new Error(`SSH 공개키 등록 실패 (exit code: ${code}): ${stderr}`));
