@@ -11,14 +11,14 @@ export interface InvalidProps {
 }
 
 const indicatorClass = clsx(
-  "absolute top-0.5 left-0.5",
+  "absolute left-0.5 top-0.5",
   "size-1.5 rounded-full",
   "bg-danger-500",
   "pointer-events-none select-none",
 );
 
 const hiddenInputClass = clsx(
-  "absolute left-0.5 bottom-0",
+  "absolute bottom-0 left-0.5",
   "size-px opacity-0",
   "pointer-events-none -z-10",
   "select-none",
