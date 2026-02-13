@@ -309,6 +309,9 @@ importers:
       solid-js:
         specifier: ^1.9.11
         version: 1.9.11
+      ssh2:
+        specifier: ^1.17.0
+        version: 1.17.0
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
@@ -337,6 +340,9 @@ importers:
       "@types/semver":
         specifier: ^7.7.1
         version: 7.7.1
+      "@types/ssh2":
+        specifier: ^1.15.5
+        version: 1.15.5
       "@types/yargs":
         specifier: ^17.0.35
         version: 17.0.35
