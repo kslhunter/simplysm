@@ -1,9 +1,18 @@
+import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { TextInput, Button, ThemeToggle, FormGroup } from "@simplysm/solid";
+import { TextInput, Button, ThemeToggle, FormGroup, Invalid } from "@simplysm/solid";
 import clsx from "clsx";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+
+  const [id, setId] = createSignal("");
+  const [pw, setPw] = createSignal("");
+
+  function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+    navigate("/home");
+  }
 
   return (
     <div
@@ -27,21 +36,40 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <FormGroup class="w-full">
-          <FormGroup.Item label="아이디">
-            <TextInput class="w-full" placeholder="아이디를 입력하세요" size="lg" />
-          </FormGroup.Item>
-          <FormGroup.Item label="비밀번호">
-            <TextInput class="w-full" type="password" placeholder="비밀번호를 입력하세요" size="lg" />
-          </FormGroup.Item>
-        </FormGroup>
+        <form onSubmit={handleSubmit}>
+          <FormGroup class="w-full">
+            <FormGroup.Item label="아이디">
+              <Invalid message={id().trim() === "" ? "아이디를 입력하세요" : ""}>
+                <TextInput
+                  class="w-full"
+                  placeholder="아이디를 입력하세요"
+                  size="lg"
+                  value={id()}
+                  onValueChange={setId}
+                />
+              </Invalid>
+            </FormGroup.Item>
+            <FormGroup.Item label="비밀번호">
+              <Invalid message={pw().trim() === "" ? "비밀번호를 입력하세요" : ""}>
+                <TextInput
+                  class="w-full"
+                  type="password"
+                  placeholder="비밀번호를 입력하세요"
+                  size="lg"
+                  value={pw()}
+                  onValueChange={setPw}
+                />
+              </Invalid>
+            </FormGroup.Item>
+          </FormGroup>
 
-        {/* Login Button */}
-        <div class="mt-5">
-          <Button theme="primary" variant="solid" class="w-full" onClick={() => navigate("/home")} size="lg">
-            로그인
-          </Button>
-        </div>
+          {/* Login Button */}
+          <div class="mt-5">
+            <Button theme="primary" variant="solid" class="w-full" type="submit" size="lg">
+              로그인
+            </Button>
+          </div>
+        </form>
 
         {/* Links */}
         <div class={clsx("mt-4 flex items-center justify-center gap-3", "text-sm text-base-500 dark:text-base-400")}>

@@ -71,8 +71,8 @@ export default function FieldPage() {
                     <TextInput disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error</p>
-                    <TextInput error placeholder="에러 상태" />
+                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
+                    <TextInput placeholder="에러 상태 (error prop 제거됨)" />
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
@@ -131,8 +131,8 @@ export default function FieldPage() {
                     <Textarea disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error</p>
-                    <Textarea error placeholder="에러 상태" />
+                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
+                    <Textarea placeholder="에러 상태 (error prop 제거됨)" />
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
@@ -183,8 +183,8 @@ export default function FieldPage() {
                     <NumberInput disabled value={9999} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error</p>
-                    <NumberInput error placeholder="에러 상태" />
+                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
+                    <NumberInput placeholder="에러 상태 (error prop 제거됨)" />
                   </div>
                 </div>
               </div>

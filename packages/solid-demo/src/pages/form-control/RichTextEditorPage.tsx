@@ -37,8 +37,8 @@ export default function RichTextEditorPage() {
               </div>
 
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Error</h3>
-                <RichTextEditor value={html()} onValueChange={setHtml} error />
+                <h3 class="mb-3 text-lg font-semibold">Error (removed)</h3>
+                <RichTextEditor value={html()} onValueChange={setHtml} />
               </div>
             </div>
           </section>
