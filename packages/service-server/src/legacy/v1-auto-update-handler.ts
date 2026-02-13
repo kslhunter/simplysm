@@ -1,5 +1,4 @@
 import type { WebSocket } from "ws";
-import type { AutoUpdateService } from "../services/auto-update-service";
 import consola from "consola";
 
 const logger = consola.withTag("service-server:V1AutoUpdateHandler");
@@ -22,7 +21,11 @@ interface IV1Response {
  * V1 레거시 클라이언트 처리 (auto-update만 지원)
  * 다른 모든 요청은 업그레이드 유도 에러를 반환합니다.
  */
-export function handleV1Connection(socket: WebSocket, autoUpdateService: AutoUpdateService) {
+export function handleV1Connection(
+  socket: WebSocket,
+  autoUpdateMethods: { getLastVersion: (platform: string) => Promise<any> },
+  clientNameSetter?: (clientName: string | undefined) => void,
+) {
   // 연결 완료 알림
   socket.send(JSON.stringify({ name: "connected" }));
 
@@ -33,9 +36,9 @@ export function handleV1Connection(socket: WebSocket, autoUpdateService: AutoUpd
       // SdAutoUpdateService.getLastVersion만 허용
       if (msg.command === "SdAutoUpdateService.getLastVersion") {
         // legacy 컨텍스트 설정
-        autoUpdateService.legacy = { clientName: msg.clientName };
+        clientNameSetter?.(msg.clientName);
 
-        const result = autoUpdateService.getLastVersion(msg.params[0] as string);
+        const result = autoUpdateMethods.getLastVersion(msg.params[0] as string);
 
         const response: IV1Response = {
           name: "response",

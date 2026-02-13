@@ -1,8 +1,7 @@
-import type { ServiceEventListener } from "@simplysm/service-common";
+import type { ServiceEventDef } from "@simplysm/service-common";
 import { StaticFileHandler } from "./transport/http/static-file-handler";
 import { HttpRequestHandler } from "./transport/http/http-request-handler";
 import { ServiceExecutor } from "./core/service-executor";
-import type { Type } from "@simplysm/core-common";
 import { jsonStringify, jsonParse, EventEmitter, env } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
@@ -20,7 +19,7 @@ import { JwtManager } from "./auth/jwt-manager";
 import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection } from "./legacy/v1-auto-update-handler";
-import { AutoUpdateService } from "./services/auto-update-service";
+import { createServiceContext } from "./core/define-service";
 import consola from "consola";
 
 const logger = consola.withTag("service-server:ServiceServer");
@@ -141,9 +140,20 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         this._wsHandler.addSocket(socket, clientId, clientName, req);
       } else {
         // V1 레거시 지원 (auto-update만)
-        const autoUpdateService = new AutoUpdateService();
-        autoUpdateService.server = this;
-        handleV1Connection(socket, autoUpdateService);
+        const autoUpdateDef = this.options.services.find((s) => s.name === "AutoUpdate");
+        if (autoUpdateDef == null) {
+          socket.close(1008, "AutoUpdate service not configured");
+          return;
+        }
+
+        const legacyCtx = createServiceContext(this, undefined, undefined, {});
+        const autoUpdateMethods = autoUpdateDef.factory(legacyCtx) as {
+          getLastVersion: (platform: string) => Promise<any>;
+        };
+
+        handleV1Connection(socket, autoUpdateMethods, (name) => {
+          legacyCtx.legacy = { clientName: name };
+        });
       }
     };
     this.fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
@@ -191,12 +201,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     await this._wsHandler.broadcastReload(clientName, changedFileSet);
   }
 
-  async emitEvent<T extends ServiceEventListener<unknown, unknown>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["$info"]) => boolean,
-    data: T["$data"],
+  async emitEvent<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
   ) {
-    await this._wsHandler.emitToServer(eventType, infoSelector, data);
+    await this._wsHandler.emitToServer(eventDef, infoSelector, data);
   }
 
   async generateAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
@@ -232,4 +242,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     process.on("SIGINT", () => shutdownHandler("SIGINT"));
     process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
   }
+}
+
+export function createServiceServer<TAuthInfo = unknown>(options: ServiceServerOptions): ServiceServer<TAuthInfo> {
+  return new ServiceServer<TAuthInfo>(options);
 }

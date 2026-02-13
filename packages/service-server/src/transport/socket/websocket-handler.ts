@@ -1,7 +1,6 @@
 import type { WebSocket } from "ws";
-import type { Type } from "@simplysm/core-common";
 import { Uuid } from "@simplysm/core-common";
-import type { ServiceEventListener, ServiceClientMessage } from "@simplysm/service-common";
+import type { ServiceEventDef, ServiceClientMessage } from "@simplysm/service-common";
 import type { ServiceExecutor } from "../../core/service-executor";
 import { ServiceSocket } from "./service-socket";
 import type { JwtManager } from "../../auth/jwt-manager";
@@ -75,15 +74,15 @@ export class WebSocketHandler {
     }
   }
 
-  async emitToServer<T extends ServiceEventListener<unknown, unknown>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["$info"]) => boolean,
-    data: T["$data"],
+  async emitToServer<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
   ) {
-    const eventName = eventType.prototype.eventName as string;
+    const eventName = eventDef.eventName;
     const targetKeys = Array.from(this._socketMap.values())
       .flatMap((subSock) => subSock.getEventListeners(eventName))
-      .filter((item) => infoSelector(item.info as T["$info"]))
+      .filter((item) => infoSelector(item.info as TInfo))
       .map((item) => item.key);
 
     for (const subSock of this._socketMap.values()) {
