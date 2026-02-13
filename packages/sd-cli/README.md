@@ -176,7 +176,7 @@ During production build (`sd-cli build`), the following deployment files are gen
 | File | Description |
 |------|-------------|
 | `package.json` | Minimal package.json with externalized dependencies (version `"*"`) for `npm install` on the deployment server |
-| `mise.toml` | Node.js version specification (read from root `mise.toml`) |
+| `mise.toml` | Node.js version specification (read from root `mise.toml`) — only generated when `packageManager: "mise"` is set |
 | `openssl.cnf` | Legacy OpenSSL provider activation (required for MSSQL and other legacy TLS connections) |
 | `pm2.config.cjs` | PM2 process manager config (only generated when `pm2` is configured) |
 
@@ -478,10 +478,10 @@ Users can install the app on their home screen on supported browsers and devices
   publish?: SdPublishConfig;         // Deployment config (optional)
   configs?: Record<string, unknown>; // Runtime config (written to dist/.config.json during build)
   externals?: string[];              // Additional modules to exclude from bundle (optional)
+  packageManager?: "volta" | "mise"; // Package manager for Node.js version management (optional)
   pm2?: {                            // PM2 config — generates dist/pm2.config.cjs (optional)
     name?: string;                   // PM2 process name (defaults to package name)
     ignoreWatchPaths?: string[];     // Paths to ignore in PM2 watch
-    noInterpreter?: boolean;         // Skip interpreter path (use system PATH node)
   };
 }
 ```
@@ -715,7 +715,7 @@ Electron configuration for Windows desktop app builds in `client` target package
 
 ### Server Externals & PM2 Configuration
 
-Server packages can configure external modules and PM2 deployment settings.
+Server packages can configure external modules, package manager selection, and PM2 deployment settings.
 
 #### Externals
 
@@ -728,6 +728,55 @@ Native modules (with `binding.gyp`) are automatically detected and externalized.
 },
 ```
 
+#### Package Manager Selection
+
+The `packageManager` field controls which Node.js version management tool is used in production deployment:
+
+```typescript
+"my-server": {
+  target: "server",
+  packageManager: "volta",  // Use Volta for Node.js version management
+},
+```
+
+**Supported package managers:**
+
+| Value | Behavior | Generated Files |
+|-------|----------|-----------------|
+| `"volta"` | Uses Volta for Node.js version management. PM2 config will execute `node` directly (Volta manages version via `package.json` engines field). | `package.json` includes `volta` field with Node.js version |
+| `"mise"` | Uses mise for Node.js version management. PM2 config will resolve interpreter path via `mise which node`. | `mise.toml` is copied to `dist/` with Node.js version from root `mise.toml` |
+| `undefined` | No version management tool. PM2 config will execute `node` directly from system PATH. | No additional version management files |
+
+**Examples:**
+
+```typescript
+// Using Volta
+"my-server": {
+  target: "server",
+  packageManager: "volta",
+  pm2: {
+    name: "my-app-server",
+  },
+},
+
+// Using mise
+"my-server": {
+  target: "server",
+  packageManager: "mise",
+  pm2: {
+    name: "my-app-server",
+  },
+},
+
+// No package manager (use system PATH node)
+"my-server": {
+  target: "server",
+  pm2: {
+    name: "my-app-server",
+  },
+},
+```
+
 #### PM2 Configuration
 
 When `pm2` is configured, `dist/pm2.config.cjs` is generated during production build for use with [PM2](https://pm2.keymetrics.io/) process manager:
@@ -735,13 +784,13 @@ When `pm2` is configured, `dist/pm2.config.cjs` is generated during production b
 ```typescript
 "my-server": {
   target: "server",
+  packageManager: "mise",  // Optional: specify package manager
   env: {
     CUSTOM_VAR: "value",
   },
   pm2: {
     name: "my-app-server",           // PM2 process name (optional)
     ignoreWatchPaths: ["uploads"],   // Additional paths to ignore in PM2 watch (optional)
-    noInterpreter: false,            // Set true to skip mise-managed node path (optional)
   },
 },
 ```
@@ -750,7 +799,7 @@ When `pm2` is configured, `dist/pm2.config.cjs` is generated during production b
 
 - Process name (from `pm2.name` or derived from package name)
 - Watch mode enabled with configurable ignore paths (`node_modules`, `www` + custom paths)
-- Node.js interpreter path via `mise which node` (unless `noInterpreter: true`)
+- Node.js interpreter path (resolved via `mise which node` if `packageManager: "mise"`, otherwise `node` from PATH)
 - `--openssl-config=openssl.cnf` interpreter argument for legacy TLS support
 - Environment variables: `NODE_ENV=production`, `TZ=Asia/Seoul`, plus custom `env` values
 
@@ -764,8 +813,15 @@ sd-cli build my-server
 
 # 3. On the deployment server:
 cd /path/to/my-server/dist
-npm install          # Install externalized dependencies
-pm2 start pm2.config.cjs  # Start with PM2
+
+# If using mise, install mise and activate
+mise install  # Only needed if packageManager: "mise"
+
+# Install externalized dependencies
+npm install
+
+# Start with PM2
+pm2 start pm2.config.cjs
 ```
 
 ## Cache

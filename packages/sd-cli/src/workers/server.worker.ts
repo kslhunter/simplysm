@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import cp from "child_process";
 import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
@@ -29,8 +30,9 @@ export interface ServerBuildInfo {
   pm2?: {
     name?: string;
     ignoreWatchPaths?: string[];
-    noInterpreter?: boolean;
   };
+  /** Package manager to use (affects mise.toml or volta settings generation) */
+  packageManager?: "volta" | "mise";
 }
 
 /**
@@ -134,8 +136,8 @@ function collectAllExternals(pkgDir: string, manualExternals?: string[]): string
 /**
  * 프로덕션 배포용 파일 생성 (일회성 빌드에서만 호출)
  *
- * - dist/package.json: external 모듈을 dependencies로 포함
- * - dist/mise.toml: Node 버전 지정
+ * - dist/package.json: external 모듈을 dependencies로 포함 (volta 사용 시 volta 필드 추가)
+ * - dist/mise.toml: Node 버전 지정 (packageManager === "mise"일 때만)
  * - dist/openssl.cnf: 레거시 OpenSSL 프로바이더 활성화
  * - dist/pm2.config.cjs: PM2 프로세스 설정 (pm2 옵션이 있을 때만)
  */
@@ -157,20 +159,26 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     }
     distPkgJson["dependencies"] = deps;
   }
+  if (info.packageManager === "volta") {
+    const nodeVersion = cp.execSync("node -v").toString().trim();
+    distPkgJson["volta"] = { node: nodeVersion };
+  }
   fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
 
-  // dist/mise.toml
-  logger.debug("GEN mise.toml...");
-  const rootMiseTomlPath = path.join(info.cwd, "mise.toml");
-  let nodeVersion = "20";
-  if (fs.existsSync(rootMiseTomlPath)) {
-    const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
-    const match = /node\s*=\s*"([^"]+)"/.exec(miseContent);
-    if (match != null) {
-      nodeVersion = match[1];
+  // dist/mise.toml (packageManager === "mise"일 때만)
+  if (info.packageManager === "mise") {
+    logger.debug("GEN mise.toml...");
+    const rootMiseTomlPath = path.join(info.cwd, "mise.toml");
+    let nodeVersion = "20";
+    if (fs.existsSync(rootMiseTomlPath)) {
+      const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
+      const match = /node\s*=\s*"([^"]+)"/.exec(miseContent);
+      if (match != null) {
+        nodeVersion = match[1];
+      }
     }
+    fs.writeFileSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);
   }
-  fs.writeFileSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);
 
   // dist/openssl.cnf
   logger.debug("GEN openssl.cnf...");
@@ -214,9 +222,8 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     };
     const envStr = JSON.stringify(envObj, undefined, 4);
 
-    const interpreterLine = info.pm2.noInterpreter
-      ? ""
-      : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
+    const interpreterLine =
+      info.packageManager === "volta" ? "" : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
 
     const pm2Config = [
       `const cp = require("child_process");`,
