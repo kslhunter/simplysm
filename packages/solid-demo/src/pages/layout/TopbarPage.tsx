@@ -1,13 +1,5 @@
 import { Icon, Sidebar, Topbar, type SidebarMenuItem, type TopbarMenuItem, type TopbarUserMenu } from "@simplysm/solid";
-import {
-  IconDatabase,
-  IconFolder,
-  IconHome,
-  IconServer,
-  IconSettings,
-  IconUser,
-  IconUsers,
-} from "@tabler/icons-solidjs";
+import { IconDatabase, IconFolder, IconHome, IconServer, IconSettings, IconUsers } from "@tabler/icons-solidjs";
 
 // 단순 메뉴 (2단계)
 const simpleMenus: TopbarMenuItem[] = [

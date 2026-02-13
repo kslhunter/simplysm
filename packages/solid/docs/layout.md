@@ -6,12 +6,20 @@ Sidebar navigation with responsive support (mobile overlay below 520px). Open/cl
 
 ```tsx
 import { Sidebar, Topbar } from "@simplysm/solid";
+import { useNavigate } from "@solidjs/router";
+
+const navigate = useNavigate();
 
 <Sidebar.Container>
   <Sidebar>
-    <Sidebar.User name="John Doe" menus={userMenus}>
-      <span>John Doe</span>
-    </Sidebar.User>
+    <Sidebar.User
+      name="John Doe"
+      description="john@example.com"
+      menus={[
+        { title: "Profile", onClick: () => navigate("/profile") },
+        { title: "Logout", onClick: handleLogout },
+      ]}
+    />
     <Sidebar.Menu menus={menuItems} />
   </Sidebar>
   <div class="flex flex-1 flex-col">
@@ -28,7 +36,25 @@ import { Sidebar, Topbar } from "@simplysm/solid";
 **Sub-components:**
 - `Sidebar.Container` -- Container wrapping sidebar and main area (required)
 - `Sidebar.Menu` -- Menu items list (`menus: SidebarMenuItem[]`)
-- `Sidebar.User` -- User info area
+- `Sidebar.User` -- User info area with avatar and optional dropdown menu
+
+**Sidebar.User Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | `string` | **(required)** | User name |
+| `description` | `string` | - | Optional additional info (email, role, etc.). If omitted, only name is shown |
+| `icon` | `Component<TablerIconProps>` | `IconUser` | Avatar icon (Tabler Icons component). Rendered in a circular badge |
+| `menus` | `SidebarUserMenu[]` | - | Dropdown menu items. When present, component becomes clickable |
+
+**SidebarUserMenu type:**
+
+```typescript
+interface SidebarUserMenu {
+  title: string;
+  onClick: () => void;
+}
+```
 
 **SidebarMenuItem type:**
 
