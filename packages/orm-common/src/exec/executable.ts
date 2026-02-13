@@ -1,6 +1,6 @@
 import type { ColumnBuilderRecord, InferColumnExprs } from "../schema/factory/column-builder";
 import type { ProcedureBuilder } from "../schema/procedure-builder";
-import type { DbContext } from "../db-context";
+import type { DbContextBase } from "../types/db-context-def";
 import { ExprUnit } from "../expr/expr-unit";
 import { expr } from "../expr/expr";
 
@@ -24,7 +24,7 @@ import { expr } from "../expr/expr";
  */
 export class Executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord> {
   constructor(
-    private readonly _db: DbContext,
+    private readonly _db: DbContextBase,
     private readonly _builder: ProcedureBuilder<TParams, TReturns>,
   ) {}
 
@@ -104,7 +104,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
  * @see {@link ProcedureBuilder} 프로시저 정의
  */
 export function executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord>(
-  db: DbContext,
+  db: DbContextBase,
   builder: ProcedureBuilder<TParams, TReturns>,
 ): () => Executable<TParams, TReturns> {
   return () => new Executable(db, builder);

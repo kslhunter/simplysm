@@ -13,7 +13,7 @@ import type {
   UpdateQueryDef,
   UpsertQueryDef,
 } from "../types/query-def";
-import type { DbContext } from "../db-context";
+import type { DbContextBase } from "../types/db-context-def";
 import { type ColumnBuilderRecord, type DataToColumnBuilderRecord } from "../schema/factory/column-builder";
 import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit } from "../expr/expr-unit";
@@ -36,7 +36,7 @@ import { expr } from "../expr/expr";
  */
 class JoinQueryable {
   constructor(
-    private readonly _db: DbContext,
+    private readonly _db: DbContextBase,
     private readonly _joinAlias: string,
   ) {}
 
@@ -1766,7 +1766,7 @@ function transformColumnsAlias<T extends DataRecord>(
 //#region ========== Types ==========
 
 interface QueryableMeta<TData extends DataRecord> {
-  db: DbContext;
+  db: DbContextBase;
   from?: TableBuilder<any, any> | ViewBuilder<any, any, any> | Queryable<any, any> | Queryable<TData, any>[] | string;
   as: string;
   columns: QueryableRecord<TData>;
@@ -1880,7 +1880,7 @@ function createPathProxy<T>(path: string[] = []): PathProxy<T> {
  * ```
  */
 export function queryable<T extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
-  db: DbContext,
+  db: DbContextBase,
   tableOrView: T,
   as?: string,
 ): () => Queryable<T["$infer"], T extends TableBuilder<any, any> ? T : never> {

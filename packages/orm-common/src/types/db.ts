@@ -1,6 +1,6 @@
 import type { ColumnPrimitive, ColumnPrimitiveStr } from "./column";
 import type { QueryDef } from "./query-def";
-import type { DbContext } from "../db-context";
+import type { DbContextBase, DbContextDdlMethods } from "./db-context-def";
 
 // ============================================
 // Database Types
@@ -197,5 +197,5 @@ export interface ResultMeta {
  */
 export interface Migration {
   name: string;
-  up: (db: DbContext) => Promise<void>;
+  up: (db: DbContextBase & DbContextDdlMethods) => Promise<void>;
 }

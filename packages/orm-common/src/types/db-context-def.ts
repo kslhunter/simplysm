@@ -22,6 +22,7 @@ export interface DbContextBase {
   resetAliasCounter(): void;
   executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]>;
   getQueryDefObjectName(tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>): QueryDefObjectName;
+  switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void>;
 }
 
 export type DbContextStatus = "ready" | "connect" | "transact";
