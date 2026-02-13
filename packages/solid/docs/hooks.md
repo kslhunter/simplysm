@@ -254,6 +254,35 @@ const structure = createAppStructure({
 // structure.permRecord()   -- Record<string, boolean> permission state
 ```
 
+**Routing integration with `@solidjs/router`:**
+
+```tsx
+import { render } from "solid-js/web";
+import { HashRouter, Navigate, Route } from "@solidjs/router";
+import { For } from "solid-js";
+import { appStructure } from "./appStructure";
+
+render(
+  () => (
+    <HashRouter>
+      <Route path="/" component={App}>
+        <Route path="/home" component={Home}>
+          <Route path="/" component={() => <Navigate href="/home/main" />} />
+          <For each={appStructure.routes}>
+            {(r) => <Route path={r.path} component={r.component} />}
+          </For>
+          <Route path="/*" component={NotFoundPage} />
+        </Route>
+        <Route path="/" component={() => <Navigate href="/home" />} />
+      </Route>
+    </HashRouter>
+  ),
+  document.getElementById("root")!,
+);
+```
+
+Each route object in `structure.routes` has `path` (derived from nested `code` values) and `component` properties, ready to pass directly to `<Route>`.
+
 **AppStructureItem types:**
 
 ```typescript
