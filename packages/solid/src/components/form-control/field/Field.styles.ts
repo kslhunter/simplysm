@@ -13,9 +13,6 @@ export const fieldSizeClasses: Record<FieldSize, string> = {
   lg: clsx("h-field-lg", paddingLg),
 };
 
-// 에러 스타일
-export const fieldErrorClass = "border-danger-500";
-
 // inset 스타일
 export const fieldInsetClass = clsx(insetBase, "bg-primary-50 dark:bg-primary-950/30", insetFocusOutline);
 
