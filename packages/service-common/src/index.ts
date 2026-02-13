@@ -10,3 +10,6 @@ export * from "./service-types/smtp-service.types";
 
 // Types
 export * from "./types";
+
+// Define
+export * from "./define-event";
