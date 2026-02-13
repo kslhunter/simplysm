@@ -401,6 +401,7 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                     configs: config.configs,
                     externals: config.externals,
                     pm2: config.pm2,
+                    packageManager: config.packageManager,
                   });
 
                   results.push({
