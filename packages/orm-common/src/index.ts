@@ -16,9 +16,6 @@ export type {
   DbContextStatus,
 } from "./types/db-context-def";
 
-// Legacy class-based API (deprecated, use defineDbContext + createDbContext instead)
-export type { DbContext } from "./db-context";
-
 export { DbTransactionError, DbErrorCode } from "./errors/db-transaction-error";
 
 //#endregion
