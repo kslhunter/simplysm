@@ -141,12 +141,20 @@ async function ensureSshAuth(
     logger.info(`SSH 키 생성 완료: ${keyPath}`);
   }
 
-  const privateKey = fs.readFileSync(keyPath);
+  const privateKeyData = fs.readFileSync(keyPath);
   const publicKey = fs.readFileSync(pubKeyPath, "utf-8").trim();
+
+  // privateKey가 암호화되어 있는지 확인
+  const parsed = utils.parseKey(privateKeyData);
+  const isKeyEncrypted = parsed instanceof Error;
+  const sshAgent = process.env["SSH_AUTH_SOCK"];
 
   // 각 서버에 대해 키 인증 확인
   for (const [label, target] of sshTargets) {
-    const canAuth = await testSshKeyAuth(target, privateKey);
+    const canAuth = await testSshKeyAuth(target, {
+      privateKey: isKeyEncrypted ? undefined : privateKeyData,
+      agent: sshAgent,
+    });
     if (canAuth) {
       logger.debug(`SSH 키 인증 확인: ${label}`);
       continue;
@@ -166,7 +174,14 @@ async function ensureSshAuth(
 /**
  * SSH 키 인증 테스트 (접속 후 즉시 종료)
  */
-function testSshKeyAuth(target: { host: string; port?: number; user: string }, privateKey: Buffer): Promise<boolean> {
+function testSshKeyAuth(
+  target: { host: string; port?: number; user: string },
+  auth: { privateKey?: Buffer; agent?: string },
+): Promise<boolean> {
+  if (auth.privateKey == null && auth.agent == null) {
+    return Promise.resolve(false);
+  }
+
   return new Promise((resolve) => {
     const conn = new SshClient();
     conn.on("ready", () => {
@@ -180,7 +195,8 @@ function testSshKeyAuth(target: { host: string; port?: number; user: string }, p
       host: target.host,
       port: target.port ?? 22,
       username: target.user,
-      privateKey,
+      ...(auth.privateKey != null ? { privateKey: auth.privateKey } : {}),
+      ...(auth.agent != null ? { agent: auth.agent } : {}),
       readyTimeout: 10_000,
     });
   });
