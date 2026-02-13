@@ -564,6 +564,15 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     }
   }
 
+  // SSH 키 인증 확인 (pass 없는 SFTP publish 설정이 있는 경우)
+  try {
+    await ensureSshAuth(publishPackages, logger);
+  } catch (err) {
+    consola.error(`SSH 인증 설정 실패: ${err instanceof Error ? err.message : err}`);
+    process.exitCode = 1;
+    return;
+  }
+
   // Git 미커밋 변경사항 확인 (noBuild가 아닌 경우)
   if (!noBuild && hasGit) {
     logger.debug("Git 커밋 여부 확인...");
