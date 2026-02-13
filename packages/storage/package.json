@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/storage",
   "sideEffects": false,
-  "version": "13.0.0-beta.43",
+  "version": "13.0.0-beta.44",
   "description": "심플리즘 패키지 - 스토리지 모듈 (node)",
   "author": "김석래",
   "repository": {
