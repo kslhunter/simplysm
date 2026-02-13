@@ -367,7 +367,7 @@ git commit -m "feat(sd-cli): integrate SSH pre-auth into publish Phase 1"
 
 3. Run publish in dry-run mode:
    ```bash
-   pnpm pub -- --dry-run
+   pnpm pub --dry-run
    ```
 
 4. Expected:
@@ -381,7 +381,7 @@ git commit -m "feat(sd-cli): integrate SSH pre-auth into publish Phase 1"
 
 1. Run publish again:
    ```bash
-   pnpm pub -- --dry-run
+   pnpm pub --dry-run
    ```
 
 2. Expected: No password prompt, SSH auth succeeds silently.
