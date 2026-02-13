@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { ServiceClient } from "@simplysm/service-client";
-import { ServiceEventListener } from "@simplysm/service-common";
-import type { TestService, TestAuthInfo } from "./test-service";
+import { defineEvent } from "@simplysm/service-common";
+import type { TestServiceMethods, TestAuthInfo } from "./test-service";
 import * as jose from "jose";
 
 const TEST_PORT = 23100;
@@ -19,9 +19,7 @@ async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
 }
 
 /** 테스트용 이벤트 */
-class TestEvent extends ServiceEventListener<{ channel: string }, string> {
-  readonly eventName = "TestEvent";
-}
+const TestEvent = defineEvent<{ channel: string }, string>("TestEvent");
 
 describe("ServiceClient 브라우저 테스트", () => {
   let client: ServiceClient;
@@ -57,13 +55,13 @@ describe("ServiceClient 브라우저 테스트", () => {
 
   describe("서비스 호출", () => {
     it("echo 메소드 호출", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.echo("Hello from Browser");
       expect(result).toBe("Echo: Hello from Browser");
     });
 
     it("복잡한 객체 반환 (직렬화/역직렬화)", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getComplexData();
 
       expect(result.number).toBe(42);
@@ -76,13 +74,13 @@ describe("ServiceClient 브라우저 테스트", () => {
 
   describe("대용량 데이터 (Worker 테스트)", () => {
     it("30KB 이하 데이터 처리 (메인 스레드)", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getLargeData(25); // 25KB
       expect(result.length).toBe(25 * 1024);
     });
 
     it("30KB 초과 데이터 처리 (Worker 사용)", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       // 50KB 데이터 요청 - Worker가 처리해야 함
       const result = await svc.getLargeData(50);
@@ -90,7 +88,7 @@ describe("ServiceClient 브라우저 테스트", () => {
     });
 
     it("100KB 대용량 데이터 처리 (Worker 사용)", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       // 100KB 데이터 요청
       const result = await svc.getLargeData(100);
@@ -98,7 +96,7 @@ describe("ServiceClient 브라우저 테스트", () => {
     });
 
     it("3MB 초과 데이터 진행률 콜백 호출", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       // 진행률 콜백 추적
       const progressStates: Array<{ totalSize: number; completedSize: number }> = [];
@@ -134,7 +132,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       await client.auth(token);
 
       // 인증 정보 조회
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getAuthInfo();
 
       expect(result).toBeDefined();
@@ -153,7 +151,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       const token = await createTestToken(authInfo);
       await client.auth(token);
 
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       // 권한 없음 에러 예상
       await expect(svc.adminOnly()).rejects.toThrow();
@@ -169,7 +167,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       const token = await createTestToken(authInfo);
       await client.auth(token);
 
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.adminOnly();
 
       expect(result).toBe("Admin access granted");
@@ -178,13 +176,13 @@ describe("ServiceClient 브라우저 테스트", () => {
 
   describe("에러 처리", () => {
     it("서비스 메서드 에러 전파", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       await expect(svc.throwError("테스트 에러 메시지")).rejects.toThrow("테스트 에러 메시지");
     });
 
     it("에러 발생 후에도 후속 요청 정상 처리", async () => {
-      const svc = client.getService<TestService>("TestService");
+      const svc = client.getService<TestServiceMethods>("TestService");
 
       // 에러 발생
       await expect(svc.throwError("에러")).rejects.toThrow();

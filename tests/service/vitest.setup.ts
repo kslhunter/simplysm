@@ -1,4 +1,4 @@
-import { ServiceServer } from "@simplysm/service-server";
+import { createServiceServer } from "@simplysm/service-server";
 import { TestService, type TestAuthInfo } from "./src/test-service";
 import fs from "fs";
 import path from "path";
@@ -13,7 +13,7 @@ const rootDir = __dirname;
 export const TEST_PORT = 23100;
 
 // 서버 인스턴스
-let testServer: ServiceServer<TestAuthInfo> | undefined;
+let testServer: ReturnType<typeof createServiceServer<TestAuthInfo>> | undefined;
 
 export async function setup() {
   console.log("[service] Setting up test environment...");
@@ -35,7 +35,7 @@ export async function setup() {
   }
 
   // 서버 생성 및 시작
-  testServer = new ServiceServer<TestAuthInfo>({
+  testServer = createServiceServer<TestAuthInfo>({
     rootPath: rootDir,
     port: TEST_PORT,
     auth: {
