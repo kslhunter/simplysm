@@ -14,9 +14,12 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "docs",
     "tailwind.config.ts"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css"
+  ],
   "dependencies": {
     "@simplysm/core-browser": "workspace:*",
     "@simplysm/core-common": "workspace:*",
