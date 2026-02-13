@@ -413,8 +413,27 @@ export default config;
 {
   target: "node" | "browser" | "neutral";
   publish?: SdPublishConfig;  // Deployment config (optional)
+  copySrc?: string[];         // Glob patterns for copying assets from src/ to dist/ (optional)
 }
 ```
+
+**Asset Copying (copySrc)**
+
+The `copySrc` option allows copying non-TypeScript files (CSS, images, etc.) from `src/` to `dist/` during build and watch mode:
+
+```typescript
+"my-lib": {
+  target: "browser",
+  publish: "npm",
+  copySrc: ["**/*.css", "**/*.png"],  // Copy all CSS and PNG files
+}
+```
+
+**How it works:**
+- Glob patterns are relative to `src/` directory
+- File directory structure is preserved during copy (e.g., `src/styles/theme.css` → `dist/styles/theme.css`)
+- Applied during both production build (`sd-cli build`) and watch mode (`sd-cli watch`)
+- Useful for including CSS files with component libraries when consuming apps may not bundle them automatically
 
 #### Client Package (SdClientPackageConfig)
 
