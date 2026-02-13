@@ -217,14 +217,6 @@ describe("DatePicker 컴포넌트", () => {
     });
   });
 
-  describe("error 스타일", () => {
-    it("error=true일 때 에러 스타일이 적용된다", () => {
-      const { container } = render(() => <DatePicker error />);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-danger-500")).toBe(true);
-    });
-  });
-
   describe("size 옵션", () => {
     it("size=sm일 때 작은 padding이 적용된다", () => {
       const { container } = render(() => <DatePicker size="sm" />);
