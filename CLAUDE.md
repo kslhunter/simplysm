@@ -364,6 +364,7 @@ export default {
 1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증
 2. 새로운 패턴 도입 시 기존 코드베이스에서 유사 사례 검색
 3. 테스트 코드 작성 시 `vitest.config.ts`의 프로젝트 구성 확인
+4. 공개 API 변경 시 (함수/클래스 추가·수정·삭제, props 변경, export 변경 등) 해당 패키지의 `README.md`도 함께 업데이트 — Context7 문서 소스이므로 코드와 문서의 동기화 필수
 
 ### README.md 작성 규칙
 

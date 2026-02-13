@@ -125,24 +125,14 @@ export default function SidebarPage() {
                 </div>
               </div>
 
-              {/* 기본 (children만) */}
+              {/* 기본 (메뉴 없음) */}
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (children만)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (메뉴 없음)</p>
                 <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Sidebar.Container>
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
-                      <Sidebar.User>
-                        <div class="flex items-center gap-3">
-                          <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <Icon icon={IconUser} class="size-6" />
-                          </div>
-                          <div class="flex flex-col">
-                            <span class="font-semibold">홍길동</span>
-                            <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
-                          </div>
-                        </div>
-                      </Sidebar.User>
+                      <Sidebar.User name="홍길동" description="hong@example.com" />
                       <Sidebar.Menu menus={sampleMenuItems} />
                     </Sidebar>
                     <main class="h-full overflow-auto p-4">
@@ -163,21 +153,13 @@ export default function SidebarPage() {
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
                       <Sidebar.User
+                        name="홍길동"
+                        description="admin@example.com"
                         menus={[
                           { title: "프로필", onClick: () => alert("프로필") },
                           { title: "로그아웃", onClick: () => alert("로그아웃") },
                         ]}
-                      >
-                        <div class="flex items-center gap-3">
-                          <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <Icon icon={IconUser} class="size-6" />
-                          </div>
-                          <div class="flex flex-col">
-                            <span class="font-semibold">홍길동</span>
-                            <span class="text-sm text-base-500 dark:text-base-400">admin@example.com</span>
-                          </div>
-                        </div>
-                      </Sidebar.User>
+                      />
                       <Sidebar.Menu menus={sampleMenuItems} />
                     </Sidebar>
                     <main class="h-full overflow-auto p-4">

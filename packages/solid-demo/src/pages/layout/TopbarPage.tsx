@@ -240,21 +240,13 @@ export default function TopbarPage() {
                     <Sidebar>
                       <div class="p-2 px-4 font-bold">LOGO</div>
                       <Sidebar.User
+                        name="홍길동"
+                        description="hong@example.com"
                         menus={[
                           { title: "프로필", onClick: () => alert("프로필") },
                           { title: "로그아웃", onClick: () => alert("로그아웃") },
                         ]}
-                      >
-                        <div class="flex items-center gap-3">
-                          <div class="flex size-10 items-center justify-center rounded-full bg-primary-500 text-white">
-                            <Icon icon={IconUser} class="size-6" />
-                          </div>
-                          <div class="flex flex-col">
-                            <span class="font-semibold">홍길동</span>
-                            <span class="text-sm text-base-500 dark:text-base-400">hong@example.com</span>
-                          </div>
-                        </div>
-                      </Sidebar.User>
+                      />
                       <Sidebar.Menu menus={sidebarMenus} />
                     </Sidebar>
                     <Topbar.Container>
