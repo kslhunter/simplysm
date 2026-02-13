@@ -29,8 +29,9 @@ export interface ServerBuildInfo {
   pm2?: {
     name?: string;
     ignoreWatchPaths?: string[];
-    noInterpreter?: boolean;
   };
+  /** Package manager to use (affects mise.toml or volta settings generation) */
+  packageManager?: "volta" | "mise";
 }
 
 /**
@@ -215,9 +216,8 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     };
     const envStr = JSON.stringify(envObj, undefined, 4);
 
-    const interpreterLine = info.pm2.noInterpreter
-      ? ""
-      : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
+    // TODO: Task 2 will implement packageManager logic
+    const interpreterLine = `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
 
     const pm2Config = [
       `const cp = require("child_process");`,

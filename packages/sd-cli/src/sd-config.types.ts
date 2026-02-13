@@ -201,9 +201,9 @@ export interface SdServerPackageConfig {
     name?: string;
     /** PM2 watch에서 제외할 경로 */
     ignoreWatchPaths?: string[];
-    /** true면 interpreter 경로 생략 (시스템 PATH의 node 사용) */
-    noInterpreter?: boolean;
   };
+  /** Package manager to use (affects mise.toml or volta settings generation) */
+  packageManager?: "volta" | "mise";
 }
 
 /**
