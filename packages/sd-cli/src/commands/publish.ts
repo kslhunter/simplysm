@@ -590,20 +590,31 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     return;
   }
 
-  // Git 미커밋 변경사항 확인 (noBuild가 아닌 경우)
+  // Git 미커밋 변경사항 확인 및 자동 커밋 (noBuild가 아닌 경우)
   if (!noBuild && hasGit) {
     logger.debug("Git 커밋 여부 확인...");
     try {
-      // unstaged 변경사항 확인 (packages/ 폴더만)
-      const diff = await spawn("git", ["diff", "--name-only", "--", "packages/"]);
-      if (diff.trim() !== "") {
-        throw new Error("커밋되지 않은 변경사항이 있습니다.\n" + diff);
-      }
+      const diff = await spawn("git", ["diff", "--name-only"]);
+      const stagedDiff = await spawn("git", ["diff", "--cached", "--name-only"]);
 
-      // staged 변경사항 확인 (packages/ 폴더만)
-      const stagedDiff = await spawn("git", ["diff", "--cached", "--name-only", "--", "packages/"]);
-      if (stagedDiff.trim() !== "") {
-        throw new Error("staged된 변경사항이 있습니다. 먼저 커밋하거나 unstage하세요.\n" + stagedDiff);
+      if (diff.trim() !== "" || stagedDiff.trim() !== "") {
+        logger.info("커밋되지 않은 변경사항 감지. claude 자동 커밋 시도...");
+        try {
+          await spawn("claude", ["-p", "/sd-commit all", "--dangerously-skip-permissions"]);
+        } catch (e) {
+          throw new Error(
+            "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도하세요.\n" +
+              (e instanceof Error ? e.message : String(e)),
+          );
+        }
+
+        // 커밋 후 재확인
+        const recheckDiff = await spawn("git", ["diff", "--name-only"]);
+        const recheckStaged = await spawn("git", ["diff", "--cached", "--name-only"]);
+        if (recheckDiff.trim() !== "" || recheckStaged.trim() !== "") {
+          throw new Error("자동 커밋 후에도 미커밋 변경사항이 남아있습니다.\n" + recheckDiff + recheckStaged);
+        }
+        logger.info("자동 커밋 완료.");
       }
     } catch (err) {
       consola.error(err instanceof Error ? err.message : err);
