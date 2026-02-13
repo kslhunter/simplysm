@@ -34,7 +34,7 @@ Updates also trigger reinstallation (`pnpm up @simplysm/claude`).
   claude/
     sd-statusline.js          # Status line script
     rules/
-      sd-context7.md          # Context7 MCP rule
+      sd-simplysm-docs.md     # Local README documentation rule
     agents/
       sd-code-reviewer.md     # Code review agent
       sd-code-simplifier.md   # Code simplification agent
@@ -303,12 +303,13 @@ Reviews a library's public API for developer experience (DX) quality. Uses confi
 
 ## Rules
 
-### sd-context7
+### sd-simplysm-docs
 
-Configures Context7 MCP for looking up `@simplysm/*` package documentation. The library ID is pre-configured as `/kslhunter/simplysm`.
+Instructs Claude to read `@simplysm/*` package documentation from local `node_modules/` README.md files. Includes an embedded package list so Claude can immediately identify which package to look up.
 
 ```
-query-docs(libraryId="/kslhunter/simplysm", query="<your question>")
+# Claude automatically reads when needing @simplysm/* docs:
+node_modules/@simplysm/{package-name}/README.md
 ```
 
 ## Status Line
