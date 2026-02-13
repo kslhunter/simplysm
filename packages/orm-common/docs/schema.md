@@ -103,17 +103,52 @@ Calling `.single()` on `foreignKeyTarget` / `relationKeyTarget` establishes a 1:
 
 ## DbContext Configuration
 
-Register tables and procedures by extending `DbContext`.
+### Functional API (Recommended)
+
+Register tables, views, and procedures using `defineDbContext`.
 
 ```typescript
-import { DbContext, queryable, executable, expr } from "@simplysm/orm-common";
+import { defineDbContext, createDbContext, createColumnFactory } from "@simplysm/orm-common";
+
+const MyDbDef = defineDbContext({
+  tables: { user: User, post: Post },
+  views: { activeUsers: ActiveUsers },
+  procedures: { getUserById: GetUserById },
+  migrations: [
+    {
+      name: "20260101_add_status",
+      up: async (db) => {
+        const c = createColumnFactory();
+        await db.addColumn(
+          { database: "mydb", name: "User" },
+          "status",
+          c.varchar(20).nullable(),
+        );
+      },
+    },
+  ],
+});
+
+// Create instance with executor (from orm-node package)
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
+
+// Use queryable accessors
+await db.connect(async () => {
+  const users = await db.user().result();
+  const result = await db.getUserById().execute({ userId: 1 });
+});
+```
+
+### Class-based API (Deprecated)
+
+```typescript
+import { DbContext, queryable, executable, createColumnFactory } from "@simplysm/orm-common";
 
 class MyDb extends DbContext {
   readonly user = queryable(this, User);
   readonly post = queryable(this, Post);
   readonly getUserById = executable(this, GetUserById);
 
-  // Migration definitions
   readonly migrations = [
     {
       name: "20260101_add_status",
@@ -133,11 +168,11 @@ class MyDb extends DbContext {
 ## View Definition
 
 ```typescript
-import { View, expr } from "@simplysm/orm-common";
+import { View, expr, type DbContextInstance } from "@simplysm/orm-common";
 
 const ActiveUsers = View("ActiveUsers")
   .database("mydb")
-  .query((db: MyDb) =>
+  .query((db: DbContextInstance<any>) =>
     db.user()
       .where((u) => [expr.eq(u.isActive, true)])
       .select((u) => ({
@@ -150,7 +185,7 @@ const ActiveUsers = View("ActiveUsers")
 // Define logical relationships on views (no DB FK)
 const UserSummary = View("UserSummary")
   .database("mydb")
-  .query((db: MyDb) =>
+  .query((db: DbContextInstance<any>) =>
     db.user().select((u) => ({
       id: u.id,
       name: u.name,
@@ -165,7 +200,7 @@ const UserSummary = View("UserSummary")
 ## Procedure Definition
 
 ```typescript
-import { Procedure, executable } from "@simplysm/orm-common";
+import { Procedure, defineDbContext, createDbContext } from "@simplysm/orm-common";
 
 const GetUserById = Procedure("GetUserById")
   .database("mydb")
@@ -180,9 +215,11 @@ const GetUserById = Procedure("GetUserById")
   .body("SELECT id, name, email FROM User WHERE id = userId");
 
 // Register in DbContext
-class MyDb extends DbContext {
-  readonly getUserById = executable(this, GetUserById);
-}
+const MyDbDef = defineDbContext({
+  procedures: { getUserById: GetUserById },
+});
+
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
 
 // Invoke
 const result = await db.getUserById().execute({ userId: 1 });

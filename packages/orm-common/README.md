@@ -76,6 +76,134 @@ See [docs/expressions.md](docs/expressions.md) for full documentation.
 - **[Window Functions](docs/expressions.md#window-functions)** - `expr.rowNumber()`, `expr.rank()`, `expr.denseRank()`, `expr.lag()`, `expr.lead()`, `expr.sumOver()`, `expr.avgOver()`
 - **[Other Expressions](docs/expressions.md#other-expressions)** - `expr.val()`, `expr.raw()`, `expr.cast()`, `expr.subquery()`, `expr.random()`
 
+## DbContext API
+
+### Functional API (Recommended)
+
+The functional API uses `defineDbContext` + `createDbContext` for better type safety and composability.
+
+```typescript
+import { defineDbContext, createDbContext, createColumnFactory } from "@simplysm/orm-common";
+
+// Step 1: Define DbContext schema
+const MyDbDef = defineDbContext({
+  tables: { user: User, post: Post },
+  views: { activeUsers: ActiveUsers },
+  procedures: { getUserById: GetUserById },
+  migrations: [
+    {
+      name: "20260101_add_status",
+      up: async (db) => {
+        const c = createColumnFactory();
+        await db.addColumn(
+          { database: "mydb", name: "User" },
+          "status",
+          c.varchar(20).nullable(),
+        );
+      },
+    },
+  ],
+});
+
+// Step 2: Create instance with executor
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
+
+// Use queryable accessors
+await db.connect(async () => {
+  const users = await db.user().result();
+  const posts = await db.post().result();
+});
+```
+
+#### Type Definitions
+
+| Type | Description |
+|------|-------------|
+| `DbContextDef<TTables, TViews, TProcedures>` | DbContext definition (schema blueprint) |
+| `DbContextInstance<TDef>` | Full DbContext instance with queryable accessors and DDL methods |
+| `DbContextBase` | Core interface used internally (status, executeDefs, etc.) |
+
+### Class-based API (Deprecated)
+
+The old class-based API is deprecated. Migrate to the functional API for better type safety.
+
+```typescript
+// Old (deprecated):
+import { DbContext, queryable } from "@simplysm/orm-common";
+
+class MyDb extends DbContext {
+  readonly user = queryable(this, User);
+  readonly migrations = [...];
+}
+const db = new MyDb(executor, { database: "mydb" });
+
+// New (recommended):
+const MyDbDef = defineDbContext({
+  tables: { user: User },
+  migrations: [...],
+});
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
+```
+
+### Migration Guide
+
+To migrate from class-based to functional API:
+
+**Step 1: Replace class definition**
+
+```typescript
+// Before:
+class MyDb extends DbContext {
+  readonly user = queryable(this, User);
+  readonly post = queryable(this, Post);
+  readonly getUserById = executable(this, GetUserById);
+
+  readonly migrations = [
+    { name: "...", up: async (db: MyDb) => { ... } }
+  ];
+}
+
+// After:
+const MyDbDef = defineDbContext({
+  tables: { user: User, post: Post },
+  procedures: { getUserById: GetUserById },
+  migrations: [
+    { name: "...", up: async (db) => { ... } }
+  ],
+});
+```
+
+**Step 2: Replace instantiation**
+
+```typescript
+// Before:
+const db = new MyDb(executor, { database: "mydb" });
+
+// After:
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
+```
+
+**Step 3: Update usage (no changes needed)**
+
+```typescript
+// Both APIs use the same queryable accessors:
+await db.connect(async () => {
+  const users = await db.user().result();  // Same syntax
+});
+```
+
+**Type inference:**
+
+```typescript
+// Extract instance type:
+type MyDb = DbContextInstance<typeof MyDbDef>;
+
+// Use in function parameters:
+async function doSomething(db: MyDb) {
+  await db.user().result();
+}
+```
+
 ## Security Notes
 
 orm-common uses **enhanced string escaping** instead of parameter binding due to its dynamic query nature.
@@ -99,7 +227,7 @@ await db.user().where((u) => [expr.eq(u.id, userId)]).result();
 ## Quick Start
 
 ```typescript
-import { Table, DbContext, queryable, expr } from "@simplysm/orm-common";
+import { Table, defineDbContext, createDbContext, expr, DateTime } from "@simplysm/orm-common";
 
 // Define table schema
 const User = Table("User")
@@ -112,13 +240,13 @@ const User = Table("User")
   }))
   .primaryKey("id");
 
-// Create DbContext
-class MyDb extends DbContext {
-  readonly user = queryable(this, User);
-}
+// Define DbContext
+const MyDbDef = defineDbContext({
+  tables: { user: User },
+});
 
-// Use with executor (from orm-node package)
-const db = new MyDb(executor, { database: "mydb" });
+// Create DbContext instance with executor (from orm-node package)
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
 
 // Execute queries
 await db.connect(async () => {
