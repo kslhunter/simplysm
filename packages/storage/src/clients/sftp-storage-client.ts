@@ -39,7 +39,7 @@ export class SftpStorageClient implements Storage {
           password: config.pass,
         });
       } else {
-        const fs = await import("fs");
+        const fs = await import("fs/promises");
         const os = await import("os");
         const path = await import("path");
         const keyPath = path.join(os.homedir(), ".ssh", "id_ed25519");
@@ -47,7 +47,7 @@ export class SftpStorageClient implements Storage {
           host: config.host,
           port: config.port,
           username: config.user,
-          privateKey: fs.readFileSync(keyPath),
+          privateKey: await fs.readFile(keyPath),
         });
       }
       this._client = client;
