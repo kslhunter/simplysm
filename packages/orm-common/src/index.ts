@@ -4,7 +4,7 @@
 
 //#region ========== Core ==========
 
-// New functional API
+// Functional API (recommended)
 export { defineDbContext } from "./define-db-context";
 export { createDbContext } from "./create-db-context";
 export type {
@@ -16,8 +16,8 @@ export type {
   DbContextStatus,
 } from "./types/db-context-def";
 
-// Keep old export (still works via structural typing)
-export { DbContext } from "./db-context";
+// Legacy class-based API (deprecated, use defineDbContext + createDbContext instead)
+export type { DbContext } from "./db-context";
 
 export { DbTransactionError, DbErrorCode } from "./errors/db-transaction-error";
 
