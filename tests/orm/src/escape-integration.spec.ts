@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { DbContext, Table, queryable, expr } from "@simplysm/orm-common";
 import { MysqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
-import { mysqlConfig } from "./src/test-configs";
+import { mysqlConfig } from "./test-configs";
 
 const EscapeTest = Table("EscapeTest")
   .database("TestDb")

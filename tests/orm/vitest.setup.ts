@@ -10,17 +10,17 @@ export async function setup() {
   const composePath = path.resolve(__dirname, "docker-compose.test.yml");
 
   try {
-    execSync(`docker-compose -f "${composePath}" up -d --wait`, {
+    execSync(`docker compose -f "${composePath}" up -d --wait`, {
       stdio: "inherit",
     });
 
     console.log("[orm] Docker containers started, creating MSSQL database...");
 
-    // MSSQL TestDb 생성 (MySQL, PostgreSQL은 docker-compose에서 자동 생성)
+    // MSSQL TestDb 생성 (MySQL, PostgreSQL은 docker compose에서 자동 생성)
     for (let i = 0; i < 10; i++) {
       try {
         execSync(
-          `docker-compose -f "${composePath}" exec -T mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb"`,
+          `docker compose -f "${composePath}" exec -T mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb"`,
           { stdio: "pipe" },
         );
         console.log("[orm] MSSQL TestDb created.");
@@ -44,7 +44,7 @@ export function teardown() {
   const composePath = path.resolve(__dirname, "docker-compose.test.yml");
 
   try {
-    execSync(`docker-compose -f "${composePath}" down`, {
+    execSync(`docker compose -f "${composePath}" down`, {
       stdio: "inherit",
     });
     console.log("[orm] Docker containers stopped.");

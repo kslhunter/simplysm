@@ -1,7 +1,7 @@
 # 통합 테스트용 DB 컨테이너
 # 사용법:
-#   시작: docker-compose -f docker-compose.test.yml up -d
-#   종료: docker-compose -f docker-compose.test.yml down
+#   시작: docker compose -f docker-compose.test.yml up -d
+#   종료: docker compose -f docker-compose.test.yml down
 
 services:
   mysql:
