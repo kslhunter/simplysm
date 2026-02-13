@@ -10,7 +10,7 @@ model: inherit
 
 Perform a multi-perspective code review of a package or specified path, producing a comprehensive report. **Analysis only — no code modifications.**
 
-Analyzes code via the `sd-explore` skill, then runs 3 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
+Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in parallel for specialized review. Collects subagent results, verifies each finding against actual code, and writes the final report.
 
 ## Usage
 
@@ -26,13 +26,14 @@ Analyzes code via the `sd-explore` skill, then runs 3 subagents in parallel for 
 
 ## Reviewer Agents
 
-Run 3 subagents in parallel via the Task tool:
+Run subagents in parallel via the Task tool:
 
-| Agent Type           | Role |
-|----------------------|------|
-| `sd-code-reviewer`   | Bugs, security, logic errors, convention issues |
-| `sd-code-simplifier` | Complexity, duplication, readability issues |
-| `sd-api-reviewer`    | DX/usability, naming, type hints |
+| Agent Type               | Role | Condition |
+|--------------------------|------|-----------|
+| `sd-code-reviewer`       | Bugs, security, logic errors, convention issues | Always |
+| `sd-code-simplifier`     | Complexity, duplication, readability issues | Always |
+| `sd-api-reviewer`        | DX/usability, naming, type hints | Always |
+| `sd-security-reviewer`   | ORM SQL injection, input validation vulnerabilities | When target path contains ORM queries or service endpoints |
 
 ## Workflow
 
@@ -54,11 +55,12 @@ This runs in a **separate context**, so it does not consume the main context win
 
 ### Step 2: Dispatch Analysis to Reviewers
 
-Run 3 subagents **in parallel** via the Task tool. Include the sd-explore analysis results in each subagent's prompt:
+Run subagents **in parallel** via the Task tool. Include the sd-explore analysis results in each subagent's prompt:
 
 - **sd-code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
 - **sd-code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
 - **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
+- **sd-security-reviewer** *(conditional)*: If the sd-explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
 
 ### Step 3: Verify Issues
 
@@ -79,6 +81,7 @@ Compile only **verified findings** into a comprehensive report.
 |---------|----------|--------|
 | **Architecture Summary** | — | sd-explore analysis |
 | **Critical Issues** | P0 | Bugs, security vulnerabilities |
+| **Security Issues** | P0 | SQL injection, input validation (when sd-security-reviewer ran) |
 | **Quality Issues** | P1 | Logic errors, missing error handling, performance |
 | **DX/Usability Issues** | P2 | API intuitiveness, naming, type hints |
 | **Simplification Opportunities** | P3 | Complexity removal, duplicate code, abstractions |
