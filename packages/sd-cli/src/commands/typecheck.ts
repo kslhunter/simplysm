@@ -96,13 +96,28 @@ export function extractPackages(fileNames: string[], cwd: string, config: SdConf
 }
 
 /**
+ * tsconfig 파일 목록에서 packages/ 하위가 아닌 파일이 있는지 확인합니다.
+ */
+function hasNonPackageFiles(fileNames: string[], cwd: string): boolean {
+  return fileNames.some((f) => {
+    const relativePath = pathPosix(path.relative(cwd, f));
+    return !relativePath.startsWith("packages/");
+  });
+}
+
+/**
  * 패키지 정보로부터 타입체크 작업 목록을 생성합니다.
  * neutral 패키지는 node/browser 두 환경으로 분리하여 각각 체크합니다.
  * @param packages 패키지 정보 맵
  * @param cwd 현재 작업 디렉토리
+ * @param includeNonPackage non-package 파일이 있으면 "기타" 작업 추가
  * @returns 타입체크 작업 정보 배열
  */
-function createTypecheckTasks(packages: Map<string, PackageInfo>, cwd: string): TypecheckTask[] {
+function createTypecheckTasks(
+  packages: Map<string, PackageInfo>,
+  cwd: string,
+  includeNonPackage: boolean,
+): TypecheckTask[] {
   const tasks: TypecheckTask[] = [];
 
   // packages/* - 각 env마다 별도 task 생성
@@ -120,6 +135,18 @@ function createTypecheckTasks(packages: Map<string, PackageInfo>, cwd: string): 
         },
       });
     }
+  }
+
+  // non-package 파일 (tests/, 루트 *.ts 등)
+  if (includeNonPackage) {
+    tasks.push({
+      displayName: "기타",
+      buildInfo: {
+        name: "root",
+        cwd,
+        emit: false,
+      },
+    });
   }
 
   return tasks;
@@ -193,10 +220,11 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   });
 
   // 타입체크 작업 생성
-  const tasks = createTypecheckTasks(packages, cwd);
+  const nonPackage = hasNonPackageFiles(fileNames, cwd);
+  const tasks = createTypecheckTasks(packages, cwd, nonPackage);
 
   if (tasks.length === 0) {
-    process.stdout.write("✔ 타입체크할 패키지가 없습니다.\n");
+    process.stdout.write("✔ 타입체크할 대상이 없습니다.\n");
     return;
   }
 
