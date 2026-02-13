@@ -17,6 +17,7 @@ import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import { Capacitor } from "../capacitor/capacitor";
 import { Electron } from "../electron/electron";
+import { copySrcFiles } from "../utils/copy-src";
 
 //#region Types
 
@@ -262,6 +263,11 @@ export async function runBuild(options: BuildOptions): Promise<void> {
                   if (!dtsResult.success) state.hasError = true;
                 } finally {
                   await Promise.all([libraryWorker.terminate(), dtsWorker.terminate()]);
+                }
+
+                // copySrc 파일 복사
+                if (config.copySrc != null && config.copySrc.length > 0) {
+                  await copySrcFiles(pkgDir, config.copySrc);
                 }
               },
             });
