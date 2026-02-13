@@ -10,6 +10,12 @@ import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { spawn } from "../utils/spawn";
 import { runBuild } from "./build";
+import os from "os";
+import fs from "fs";
+import ssh2 from "ssh2";
+import { password as passwordPrompt } from "@inquirer/prompts";
+
+const { Client: SshClient, utils } = ssh2;
 
 //#region Types
 
@@ -84,6 +90,153 @@ async function waitWithCountdown(message: string, seconds: number): Promise<void
   } else {
     process.stdout.write("\n");
   }
+}
+
+/**
+ * SSH 키 인증 사전 확인 및 설정
+ *
+ * pass가 없는 SFTP 서버에 대해:
+ * 1. SSH 키 파일이 없으면 생성
+ * 2. 키 인증을 테스트하고, 실패하면 비밀번호로 공개키 등록
+ */
+async function ensureSshAuth(
+  publishPackages: Array<{ name: string; config: SdPublishConfig }>,
+  logger: ReturnType<typeof consola.withTag>,
+): Promise<void> {
+  // pass 없는 SFTP 서버 수집 (user@host 중복 제거)
+  const sshTargets = new Map<string, { host: string; port?: number; user: string }>();
+  for (const pkg of publishPackages) {
+    if (pkg.config === "npm") continue;
+    if (pkg.config.type !== "sftp") continue;
+    if (pkg.config.pass != null) continue;
+    if (pkg.config.user == null) {
+      throw new Error(`[${pkg.name}] SFTP 설정에 user가 없습니다.`);
+    }
+    const key = `${pkg.config.user}@${pkg.config.host}`;
+    sshTargets.set(key, {
+      host: pkg.config.host,
+      port: pkg.config.port,
+      user: pkg.config.user,
+    });
+  }
+
+  if (sshTargets.size === 0) return;
+
+  // SSH 키 파일 확인/생성
+  const sshDir = path.join(os.homedir(), ".ssh");
+  const keyPath = path.join(sshDir, "id_ed25519");
+  const pubKeyPath = path.join(sshDir, "id_ed25519.pub");
+
+  if (!fs.existsSync(keyPath)) {
+    logger.info("SSH 키가 없습니다. 생성합니다...");
+
+    if (!fs.existsSync(sshDir)) {
+      fs.mkdirSync(sshDir, { mode: 0o700 });
+    }
+
+    const keyPair = utils.generateKeyPairSync("ed25519");
+    fs.writeFileSync(keyPath, keyPair.private, { mode: 0o600 });
+    fs.writeFileSync(pubKeyPath, keyPair.public + "\n", { mode: 0o644 });
+
+    logger.info(`SSH 키 생성 완료: ${keyPath}`);
+  }
+
+  const privateKey = fs.readFileSync(keyPath);
+  const publicKey = fs.readFileSync(pubKeyPath, "utf-8").trim();
+
+  // 각 서버에 대해 키 인증 확인
+  for (const [label, target] of sshTargets) {
+    const canAuth = await testSshKeyAuth(target, privateKey);
+    if (canAuth) {
+      logger.debug(`SSH 키 인증 확인: ${label}`);
+      continue;
+    }
+
+    // 키 인증 실패 → 비밀번호로 공개키 등록
+    logger.info(`${label}: SSH 키가 서버에 등록되어 있지 않습니다.`);
+    const pass = await passwordPrompt({
+      message: `${label} 비밀번호 (공개키 등록용):`,
+    });
+
+    await registerSshPublicKey(target, pass, publicKey);
+    logger.info(`SSH 공개키 등록 완료: ${label}`);
+  }
+}
+
+/**
+ * SSH 키 인증 테스트 (접속 후 즉시 종료)
+ */
+function testSshKeyAuth(target: { host: string; port?: number; user: string }, privateKey: Buffer): Promise<boolean> {
+  return new Promise((resolve) => {
+    const conn = new SshClient();
+    conn.on("ready", () => {
+      conn.end();
+      resolve(true);
+    });
+    conn.on("error", () => {
+      resolve(false);
+    });
+    conn.connect({
+      host: target.host,
+      port: target.port ?? 22,
+      username: target.user,
+      privateKey,
+      readyTimeout: 10_000,
+    });
+  });
+}
+
+/**
+ * 비밀번호로 서버에 접속하여 SSH 공개키를 등록
+ */
+function registerSshPublicKey(
+  target: { host: string; port?: number; user: string },
+  pass: string,
+  publicKey: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const conn = new SshClient();
+    conn.on("ready", () => {
+      // authorized_keys에 공개키 추가
+      const cmd = [
+        "mkdir -p ~/.ssh",
+        "chmod 700 ~/.ssh",
+        `echo '${publicKey}' >> ~/.ssh/authorized_keys`,
+        "chmod 600 ~/.ssh/authorized_keys",
+      ].join(" && ");
+
+      conn.exec(cmd, (err, stream) => {
+        if (err) {
+          conn.end();
+          reject(new Error(`SSH 명령 실행 실패: ${err.message}`));
+          return;
+        }
+
+        let stderr = "";
+        stream.stderr.on("data", (data: Uint8Array) => {
+          stderr += data.toString();
+        });
+        stream.on("close", (code: number | null) => {
+          conn.end();
+          if (code !== 0) {
+            reject(new Error(`SSH 공개키 등록 실패 (exit code: ${code}): ${stderr}`));
+          } else {
+            resolve();
+          }
+        });
+      });
+    });
+    conn.on("error", (err) => {
+      reject(new Error(`SSH 접속 실패 (${target.host}): ${err.message}`));
+    });
+    conn.connect({
+      host: target.host,
+      port: target.port ?? 22,
+      username: target.user,
+      password: pass,
+      readyTimeout: 10_000,
+    });
+  });
 }
 
 //#endregion
