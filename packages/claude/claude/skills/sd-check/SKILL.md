@@ -81,7 +81,13 @@ pnpm vitest $ARGUMENTS --run
 Run with `--run` flag for single execution (no watch mode).
 Some packages may require integration tests as configured in vitest.config.ts.
 
-On failure: Read the failing test and related source files to identify the cause, fix with Edit, then re-run tests.
+On failure:
+
+1. **Check git diff**: Run `git diff` (staged + unstaged) to identify intentional code changes.
+2. **Determine root cause**: Check whether the test failure is caused by intentional code changes (feature changes, API changes, behavior changes) that haven't been reflected in tests yet.
+   - **Intentional changes not reflected in tests**: Update the **test code** to match the new behavior, not the source code.
+   - **Source code bug**: Fix the source code.
+3. Re-run tests after the fix.
 
 ## Completion Criteria
 
