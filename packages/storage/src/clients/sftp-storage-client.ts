@@ -38,7 +38,7 @@ export class SftpStorageClient implements Storage {
           username: config.user,
           password: config.pass,
         });
-      } else if (process.env["SSH_AUTH_SOCK"]) {
+      } else if (process.env["SSH_AUTH_SOCK"] != null) {
         // SSH agent 사용 (passphrase로 보호된 키도 처리)
         await client.connect({
           host: config.host,
