@@ -1,20 +1,23 @@
 import { OrmClientDbContextExecutor } from "./orm-client-db-context-executor";
 import type { OrmConnectConfig } from "./orm-connect-config";
-import type { DbContext } from "@simplysm/orm-common";
+import { createDbContext, type DbContextDef, type DbContextInstance } from "@simplysm/orm-common";
 import type { ServiceClient } from "../../service-client";
 
 export class OrmClientConnector {
   constructor(private readonly _serviceClient: ServiceClient) {}
 
-  async connect<T extends DbContext, R>(
-    config: OrmConnectConfig<T>,
-    callback: (conn: T) => Promise<R> | R,
+  async connect<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfo();
-    const db = new config.dbContextType(executor, {
-      dialect: info.dialect,
-      database: config.dbContextOpt?.database ?? info.database,
+    const database = config.dbContextOpt?.database ?? info.database;
+    if (!database) {
+      throw new Error("Database name is required");
+    }
+    const db = createDbContext(config.dbContextDef, executor, {
+      database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
     return db.connect(async () => {
@@ -34,15 +37,18 @@ export class OrmClientConnector {
     });
   }
 
-  async connectWithoutTransaction<T extends DbContext, R>(
-    config: OrmConnectConfig<T>,
-    callback: (conn: T) => Promise<R> | R,
+  async connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R> {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfo();
-    const db = new config.dbContextType(executor, {
-      dialect: info.dialect,
-      database: config.dbContextOpt?.database ?? info.database,
+    const database = config.dbContextOpt?.database ?? info.database;
+    if (!database) {
+      throw new Error("Database name is required");
+    }
+    const db = createDbContext(config.dbContextDef, executor, {
+      database,
       schema: config.dbContextOpt?.schema ?? info.schema,
     });
     return db.connectWithoutTransaction(async () => callback(db));

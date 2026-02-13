@@ -1,8 +1,8 @@
-import type { Type } from "@simplysm/core-common";
+import type { DbContextDef } from "@simplysm/orm-common";
 import type { DbConnOptions } from "@simplysm/service-common";
 
-export interface OrmConnectConfig<T> {
-  dbContextType: Type<T>;
+export interface OrmConnectConfig<TDef extends DbContextDef<any, any, any>> {
+  dbContextDef: TDef;
   connOpt: DbConnOptions & { configName: string };
   dbContextOpt?: {
     database: string;
