@@ -39,11 +39,33 @@ Start by understanding the current project context, then ask questions one at a 
 - Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 - Commit the design document to git
 
-**Implementation (if continuing):**
-- Ask: "Ready to set up for implementation?"
-- Guide the user to next steps:
-  - `/sd-worktree` — Create a git worktree for branch isolation before starting work
-  - `/sd-plan` — Create a detailed implementation plan from the design
+**Next Steps Guide:**
+
+Present the following two workflow paths so the user can see the full process and choose.
+Display the guide in the **user's configured language** (follow the language settings from CLAUDE.md or system instructions).
+
+```
+Design complete! Here's how to proceed:
+
+--- Path A: With branch isolation (recommended for features/large changes) ---
+
+1. /sd-worktree add <name>  — Create a worktree branch
+2. /sd-plan                 — Break into detailed tasks
+3. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
+4. /sd-commit               — Commit
+5. /sd-worktree merge       — Merge back to main
+6. /sd-worktree clean       — Remove worktree
+
+--- Path B: Direct on current branch (quick fixes/small changes) ---
+
+1. /sd-plan                 — Break into detailed tasks
+2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
+3. /sd-commit               — Commit
+
+You can start from any step or skip steps as needed.
+```
+
+- Do NOT auto-proceed to any step. Present the overview and wait for the user's choice.
 
 ## Key Principles
 
