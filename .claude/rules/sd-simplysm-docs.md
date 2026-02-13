@@ -33,4 +33,9 @@ node_modules/@simplysm/{package-name}/README.md
 | `excel` | Excel (.xlsx) read/write |
 | `storage` | FTP/SFTP client |
 | `sd-cli` | Build, lint, typecheck CLI tool |
+| `claude` | Claude Code skills/agents (auto-installs via postinstall) |
 | `eslint-plugin` | Custom ESLint rules |
+| `capacitor-plugin-auto-update` | Auto update |
+| `capacitor-plugin-broadcast` | Broadcast |
+| `capacitor-plugin-file-system` | File system |
+| `capacitor-plugin-usb-storage` | USB storage |
