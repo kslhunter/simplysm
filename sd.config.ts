@@ -31,11 +31,8 @@ const config: SdConfigFn = () => ({
     },
     "solid-demo-server": {
       target: "server",
-      packageManager: "mise",
-      pm2: {
-        packageManager: "volta",
-        ignoreWatchPaths: [],
-      },
+      packageManager: "volta",
+      pm2: {},
       publish: {
         type: "sftp",
         host: "simplysm.co.kr",
