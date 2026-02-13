@@ -31,6 +31,7 @@ const config: SdConfigFn = () => ({
     },
     "solid-demo-server": {
       target: "server",
+      packageManager: "mise",
       pm2: {
         ignoreWatchPaths: [],
       },
