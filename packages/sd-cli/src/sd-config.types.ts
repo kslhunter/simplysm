@@ -57,6 +57,8 @@ export interface SdBuildPackageConfig {
   target: BuildTarget;
   /** publish 설정 */
   publish?: SdPublishConfig;
+  /** src/에서 dist/로 복사할 파일 glob 패턴 (src/ 기준 상대 경로) */
+  copySrc?: string[];
 }
 
 /**
