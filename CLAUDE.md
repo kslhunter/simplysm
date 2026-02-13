@@ -2,15 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Workflow Rules
-
-- **No auto-proceeding after skill completion**: When the user explicitly invokes a skill, report the result and **stop** once the skill finishes. Do not guess the next step and proceed arbitrarily. Wait for explicit user instructions if further work is needed.
-
 ## Project Overview
-
-**IMPORTANT**: All responses and explanations must be written in **Korean** (files in `.claude/` folder and each package's `README.md` are written in English for Context7 documentation).
-- Technical terms, code identifiers (variable names, function names, etc.), and library names should remain as-is
-- Show English error messages and logs in their original form, but provide explanations in Korean
 
 Simplysm is a TypeScript-based full-stack framework monorepo. Managed with pnpm workspaces, it provides packages for SolidJS UI, ORM, service communication, Excel processing, and more.
 
@@ -188,18 +180,6 @@ Instead, it uses enhanced string escaping:
   - Exception: When an external library requires `Buffer`, use `eslint-disable` comment
   - Pattern: `// eslint-disable-next-line no-restricted-globals -- {library} requires Buffer`
 - `await` required in async functions
-
-### Function Naming Rules
-- Do not use `Async` suffix on function names → Async is the default
-- When both sync and async versions exist, use `Sync` suffix on the sync function
-  ```typescript
-  // Good
-  async function readFile() { ... }      // Async (default)
-  function readFileSync() { ... }        // Sync version
-
-  // Bad
-  async function readFileAsync() { ... } // Async suffix prohibited
-  ```
 
 ### TypeScript Configuration
 - `strict: true`, `verbatimModuleSyntax: true`
