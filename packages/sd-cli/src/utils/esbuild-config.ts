@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import { createRequire } from "module";
 import { glob } from "glob";
 import type esbuild from "esbuild";
+import { solidPlugin } from "esbuild-plugin-solid";
 import type { TypecheckEnv } from "./tsconfig";
 
 /**
@@ -68,6 +69,15 @@ export interface ServerEsbuildOptions {
 }
 
 /**
+ * package.json에서 solid-js 의존성 감지
+ */
+function hasSolidDependency(pkgDir: string): boolean {
+  const pkgJson = JSON.parse(readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as PkgJson;
+  const allDeps = { ...pkgJson.dependencies, ...pkgJson.peerDependencies };
+  return "solid-js" in allDeps;
+}
+
+/**
  * Library용 esbuild 설정 생성
  *
  * node/browser/neutral 타겟의 라이브러리 패키지 빌드에 사용합니다.
@@ -76,6 +86,12 @@ export interface ServerEsbuildOptions {
  * - target: node면 node20, 그 외는 chrome84
  */
 export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esbuild.BuildOptions {
+  const plugins: esbuild.Plugin[] = [esmRelativeImportPlugin(path.join(options.pkgDir, "dist"))];
+
+  if (hasSolidDependency(options.pkgDir)) {
+    plugins.unshift(solidPlugin());
+  }
+
   return {
     entryPoints: options.entryPoints,
     outdir: path.join(options.pkgDir, "dist"),
@@ -85,7 +101,7 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     target: options.target === "node" ? "node20" : "chrome84",
     bundle: false,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
-    plugins: [esmRelativeImportPlugin(path.join(options.pkgDir, "dist"))],
+    plugins,
   };
 }
 
