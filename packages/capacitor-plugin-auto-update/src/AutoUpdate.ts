@@ -1,6 +1,6 @@
 import { FileSystem } from "@simplysm/capacitor-plugin-file-system";
 import { html, waitUntil, pathJoin, pathBasename, pathExtname } from "@simplysm/core-common";
-import { downloadBytes } from "@simplysm/core-browser";
+import { fetchUrlBytes } from "@simplysm/core-browser";
 import type { ServiceClient } from "@simplysm/service-client";
 import type { AutoUpdateService } from "@simplysm/service-common";
 import semver from "semver";
@@ -136,7 +136,7 @@ export abstract class AutoUpdate {
       }
 
       opt.log(`최신버전 파일 다운로드중...`);
-      const buffer = await downloadBytes(opt.serviceClient.hostUrl + serverVersionInfo.downloadPath, {
+      const buffer = await fetchUrlBytes(opt.serviceClient.hostUrl + serverVersionInfo.downloadPath, {
         onProgress: (progress) => {
           const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(2);
           opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
