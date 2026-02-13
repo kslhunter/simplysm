@@ -1,7 +1,6 @@
 import consola from "consola";
-import type { Type } from "@simplysm/core-common";
 import { EventEmitter } from "@simplysm/core-common";
-import type { ServiceEventListener } from "@simplysm/service-common";
+import type { ServiceEventDef } from "@simplysm/service-common";
 
 import type { ServiceConnectionConfig } from "./types/connection-config";
 import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
@@ -118,25 +117,25 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     this._authToken = token;
   }
 
-  async addEventListener<T extends ServiceEventListener<unknown, unknown>>(
-    eventType: Type<T>,
-    info: T["$info"],
-    cb: (data: T["$data"]) => PromiseLike<void>,
+  async addEventListener<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    info: TInfo,
+    cb: (data: TData) => PromiseLike<void>,
   ): Promise<string> {
     if (!this.connected) throw new Error("서버와 연결되어있지 않습니다.");
-    return this._eventClient.addListener(eventType, info, cb);
+    return this._eventClient.addListener(eventDef, info, cb);
   }
 
   async removeEventListener(key: string): Promise<void> {
     await this._eventClient.removeListener(key);
   }
 
-  async emitToServer<T extends ServiceEventListener<unknown, unknown>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["$info"]) => boolean,
-    data: T["$data"],
+  async emitToServer<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
   ): Promise<void> {
-    await this._eventClient.emitToServer(eventType, infoSelector, data);
+    await this._eventClient.emitToServer(eventDef, infoSelector, data);
   }
 
   async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {

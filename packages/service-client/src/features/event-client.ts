@@ -1,6 +1,5 @@
-import type { Type } from "@simplysm/core-common";
 import { Uuid } from "@simplysm/core-common";
-import type { ServiceEventListener } from "@simplysm/service-common";
+import type { ServiceEventDef } from "@simplysm/service-common";
 import type { ServiceTransport } from "../transport/service-transport";
 import consola from "consola";
 
@@ -18,14 +17,13 @@ export class EventClient {
     });
   }
 
-  async addListener<T extends ServiceEventListener<unknown, unknown>>(
-    eventListenerType: Type<T>,
-    info: T["$info"],
-    cb: (data: T["$data"]) => PromiseLike<void>,
+  async addListener<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    info: TInfo,
+    cb: (data: TData) => PromiseLike<void>,
   ): Promise<string> {
     const key = Uuid.new().toString();
-    // mangle 안전한 이벤트명 사용
-    const eventName = eventListenerType.prototype.eventName;
+    const eventName = eventDef.eventName;
 
     // 서버에 등록 요청
     await this._transport.send({
@@ -37,7 +35,7 @@ export class EventClient {
     this._listenerMap.set(key, {
       eventName,
       info,
-      cb,
+      cb: cb as (data: unknown) => PromiseLike<void>,
     });
 
     return key;
@@ -48,19 +46,18 @@ export class EventClient {
     this._listenerMap.delete(key);
   }
 
-  async emitToServer<T extends ServiceEventListener<unknown, unknown>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["$info"]) => boolean,
-    data: T["$data"],
+  async emitToServer<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
   ): Promise<void> {
-    // mangle 안전한 이벤트명 사용
-    const eventName = eventType.prototype.eventName;
+    const eventName = eventDef.eventName;
 
     // 서버에 'gets' 요청을 보내 타겟을 확보
     const listenerInfos = (await this._transport.send({
       name: "evt:gets",
       body: { name: eventName },
-    })) as { key: string; info: T["$info"] }[];
+    })) as { key: string; info: TInfo }[];
 
     const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
 
