@@ -84,7 +84,7 @@ Import the base CSS in your entry point:
 
 ```typescript
 // entry point (e.g., index.tsx)
-import "@simplysm/solid/base.css";
+import "@simplysm/solid/tailwind.css";
 ```
 
 ---

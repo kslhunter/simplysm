@@ -14,8 +14,10 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "src",
     "docs",
-    "tailwind.config.ts"
+    "tailwind.config.ts",
+    "tailwind.css"
   ],
   "sideEffects": [
     "*.css"
