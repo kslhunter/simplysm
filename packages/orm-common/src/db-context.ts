@@ -29,21 +29,12 @@ import { ColumnBuilder } from "./schema/factory/column-builder";
 import type { ForeignKeyBuilder } from "./schema/factory/relation-builder";
 import type { IndexBuilder } from "./schema/factory/index-builder";
 import { SystemMigration } from "./models/system-migration";
-import type { DbContextDef } from "./types/db-context-def";
+import type { DbContextDef, DbContextStatus } from "./types/db-context-def";
 import * as tableDdl from "./ddl/table-ddl";
 import * as columnDdl from "./ddl/column-ddl";
 import * as relationDdl from "./ddl/relation-ddl";
 import * as schemaDdl from "./ddl/schema-ddl";
 import { initialize as initializeImpl, validateRelations as validateRelationsImpl } from "./ddl/initialize";
-
-/**
- * DbContext 연결 상태
- *
- * @property ready - 연결 대기 상태 (초기 상태)
- * @property connect - 연결됨 (트랜잭션 없음)
- * @property transact - 트랜잭션 진행 중
- */
-export type DbContextStatus = "ready" | "connect" | "transact";
 
 /**
  * 데이터베이스 컨텍스트 추상 클래스

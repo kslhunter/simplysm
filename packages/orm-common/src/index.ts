@@ -4,7 +4,21 @@
 
 //#region ========== Core ==========
 
-export { DbContext, type DbContextStatus } from "./db-context";
+// New functional API
+export { defineDbContext } from "./define-db-context";
+export { createDbContext } from "./create-db-context";
+export type {
+  DbContextBase,
+  DbContextDef,
+  DbContextInstance,
+  DbContextConnectionMethods,
+  DbContextDdlMethods,
+  DbContextStatus,
+} from "./types/db-context-def";
+
+// Keep old export (still works via structural typing)
+export { DbContext } from "./db-context";
+
 export { DbTransactionError, DbErrorCode } from "./errors/db-transaction-error";
 
 //#endregion
