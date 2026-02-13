@@ -44,6 +44,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/claude/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/claude/claude" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-claude/claude" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/orm/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/service/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
