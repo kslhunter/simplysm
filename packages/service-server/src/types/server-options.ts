@@ -1,5 +1,4 @@
-import type { Type } from "@simplysm/core-common";
-import type { ServiceBase } from "../core/service-base";
+import type { ServiceDefinition } from "../core/define-service";
 
 export interface ServiceServerOptions {
   rootPath: string;
@@ -11,5 +10,5 @@ export interface ServiceServerOptions {
   auth?: {
     jwtSecret: string;
   };
-  services: Type<ServiceBase>[];
+  services: ServiceDefinition[];
 }
