@@ -1,5 +1,4 @@
-import type { DbContext, IsolationLevel } from "@simplysm/orm-common";
-import type { Type } from "@simplysm/core-common";
+import { createDbContext, type DbContextDef, type DbContextInstance, type IsolationLevel } from "@simplysm/orm-common";
 import type { DbConnConfig } from "./types/db-conn";
 import { NodeDbContextExecutor } from "./node-db-context-executor";
 
@@ -24,13 +23,13 @@ export interface SdOrmOptions {
  * Node.js ORM 클래스
  *
  * DbContext와 DB 연결을 관리하는 최상위 클래스입니다.
- * DbContext 타입과 연결 설정을 받아 트랜잭션을 관리합니다.
+ * DbContext 정의와 연결 설정을 받아 트랜잭션을 관리합니다.
  *
  * @example
  * ```typescript
- * class MyDb extends DbContext {
- *   readonly user = queryable(this, User);
- * }
+ * const MyDb = defineDbContext({
+ *   user: (db) => queryable(db, User),
+ * });
  *
  * const orm = new SdOrm(MyDb, {
  *   dialect: "mysql",
@@ -54,9 +53,9 @@ export interface SdOrmOptions {
  * });
  * ```
  */
-export class SdOrm<T extends DbContext> {
+export class SdOrm<TDef extends DbContextDef<any, any, any>> {
   constructor(
-    readonly dbContextType: Type<T>,
+    readonly dbContextDef: TDef,
     readonly config: DbConnConfig,
     readonly options?: SdOrmOptions,
   ) {}
@@ -68,7 +67,10 @@ export class SdOrm<T extends DbContext> {
    * @param isolationLevel - 트랜잭션 격리 수준
    * @returns 콜백 결과
    */
-  async connect<R>(callback: (conn: T) => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
+  async connect<R>(
+    callback: (conn: DbContextInstance<TDef>) => Promise<R>,
+    isolationLevel?: IsolationLevel,
+  ): Promise<R> {
     const db = this._createDbContext();
     return db.connect(async () => callback(db), isolationLevel);
   }
@@ -79,7 +81,7 @@ export class SdOrm<T extends DbContext> {
    * @param callback - DB 연결 후 실행할 콜백
    * @returns 콜백 결과
    */
-  async connectWithoutTransaction<R>(callback: (conn: T) => Promise<R>): Promise<R> {
+  async connectWithoutTransaction<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>): Promise<R> {
     const db = this._createDbContext();
     return db.connectWithoutTransaction(async () => callback(db));
   }
@@ -87,14 +89,17 @@ export class SdOrm<T extends DbContext> {
   /**
    * DbContext 인스턴스 생성
    */
-  private _createDbContext(): T {
+  private _createDbContext(): DbContextInstance<TDef> {
     // database는 options에서 우선, 없으면 config에서
     const database = this.options?.database ?? ("database" in this.config ? this.config.database : undefined);
+    if (!database) {
+      throw new Error("database is required");
+    }
 
     // schema는 options에서 우선, 없으면 config에서
     const schema = this.options?.schema ?? ("schema" in this.config ? this.config.schema : undefined);
 
-    return new this.dbContextType(new NodeDbContextExecutor(this.config), {
+    return createDbContext(this.dbContextDef, new NodeDbContextExecutor(this.config), {
       database,
       schema,
     });
