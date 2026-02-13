@@ -101,6 +101,39 @@ try {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
   }
 
+  // .mcp.json에 MCP 서버 설정 (없는 항목만 추가)
+  const mcpPath = path.join(projectRoot, ".mcp.json");
+  let mcpConfig = { mcpServers: {} };
+  if (fs.existsSync(mcpPath)) {
+    mcpConfig = JSON.parse(fs.readFileSync(mcpPath, "utf-8"));
+    mcpConfig.mcpServers ??= {};
+  }
+
+  let mcpChanged = false;
+
+  if (!mcpConfig.mcpServers.context7) {
+    mcpConfig.mcpServers.context7 = {
+      command: "npx",
+      args: ["-y", "@upstash/context7-mcp"],
+    };
+    mcpChanged = true;
+  }
+
+  if (!mcpConfig.mcpServers.playwright) {
+    mcpConfig.mcpServers.playwright = {
+      command: "npx",
+      args: ["@anthropic-ai/mcp-server-playwright@latest"],
+      env: {
+        PLAYWRIGHT_OUTPUT_DIR: ".playwright-mcp",
+      },
+    };
+    mcpChanged = true;
+  }
+
+  if (mcpChanged) {
+    fs.writeFileSync(mcpPath, JSON.stringify(mcpConfig, null, 2) + "\n");
+  }
+
   console.log(`[@simplysm/claude] ${sourceEntries.length}개의 sd-* 항목을 설치했습니다.`);
 } catch (err) {
   // postinstall 실패가 pnpm install 전체를 막지 않도록 에러 무시
