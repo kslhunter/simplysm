@@ -19,9 +19,14 @@ packages/*/node_modules/@simplysm/{package-name}/README.md
 
 ## When to use
 
-- Before writing code that uses an unfamiliar `@simplysm/*` API
-- When unsure about component props, method signatures, or configuration
-- When looking for usage patterns or code examples
+**MANDATORY**: Read the relevant README BEFORE any of the following:
+
+- Writing new code that uses `@simplysm/*` APIs
+- Fixing type errors or bugs in code that uses `@simplysm/*` APIs
+- Making assumptions about type mappings (e.g., DB column types → TypeScript types)
+- Refactoring or migrating code that depends on `@simplysm/*` packages
+
+Do NOT guess API behavior or type mappings — always verify from the README first.
 
 ## Available Packages
 
