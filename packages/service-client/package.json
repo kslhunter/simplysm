@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/service-client",
   "sideEffects": false,
-  "version": "13.0.0-beta.42",
+  "version": "13.0.0-beta.43",
   "description": "심플리즘 패키지 - 서비스 모듈 (client)",
   "author": "김석래",
   "repository": {
