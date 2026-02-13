@@ -111,6 +111,7 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
  *
  * 서버 패키지 빌드에 사용합니다.
  * - bundle: true (모든 의존성 포함한 단일 번들)
+ * - minify: true (코드 보호를 위한 압축)
  * - banner: CJS 패키지의 require() 지원을 위한 createRequire shim
  * - env를 define 옵션으로 치환 (process.env["KEY"] 형태)
  */
@@ -126,8 +127,7 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     entryPoints: options.entryPoints,
     outdir: path.join(options.pkgDir, "dist"),
     format: "esm",
-    sourcemap: true,
-    sourcesContent: false,
+    minify: true,
     platform: "node",
     target: "node20",
     bundle: true,
