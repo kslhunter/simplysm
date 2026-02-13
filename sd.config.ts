@@ -31,6 +31,9 @@ const config: SdConfigFn = () => ({
     },
     "solid-demo-server": {
       target: "server",
+      pm2: {
+        ignoreWatchPaths: [],
+      },
       publish: {
         type: "sftp",
         host: "simplysm.co.kr",
