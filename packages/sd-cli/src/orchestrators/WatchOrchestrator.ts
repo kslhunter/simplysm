@@ -12,6 +12,9 @@ import { SignalHandler } from "../infra/SignalHandler";
 import { LibraryBuilder } from "../builders/LibraryBuilder";
 import { DtsBuilder } from "../builders/DtsBuilder";
 import type { PackageInfo } from "../builders/types";
+import { watchCopySrcFiles } from "../utils/copy-src";
+import type { FsWatcher } from "@simplysm/core-node";
+import type { SdBuildPackageConfig } from "../sd-config.types";
 
 /**
  * Watch 명령 옵션
@@ -39,6 +42,7 @@ export class WatchOrchestrator {
   private _libraryBuilder!: LibraryBuilder;
   private _dtsBuilder!: DtsBuilder;
   private _packages: PackageInfo[] = [];
+  private _copySrcWatchers: FsWatcher[] = [];
 
   constructor(options: WatchOrchestratorOptions) {
     this._cwd = process.cwd();
@@ -155,6 +159,15 @@ export class WatchOrchestrator {
       { concurrent: true },
     );
 
+    // copySrc watch 시작
+    for (const pkg of this._packages) {
+      const buildConfig = pkg.config as SdBuildPackageConfig;
+      if (buildConfig.copySrc != null && buildConfig.copySrc.length > 0) {
+        const watcher = await watchCopySrcFiles(pkg.dir, buildConfig.copySrc);
+        this._copySrcWatchers.push(watcher);
+      }
+    }
+
     // Watch 시작 (백그라운드 실행)
     void this._libraryBuilder.startWatch();
     void this._dtsBuilder.startWatch();
@@ -186,7 +199,12 @@ export class WatchOrchestrator {
 
     process.stdout.write("⏳ 종료 중...\n");
 
-    await Promise.all([this._libraryBuilder.shutdown(), this._dtsBuilder.shutdown()]);
+    await Promise.all([
+      this._libraryBuilder.shutdown(),
+      this._dtsBuilder.shutdown(),
+      ...this._copySrcWatchers.map((w) => w.close()),
+    ]);
+    this._copySrcWatchers = [];
 
     process.stdout.write("✔ 완료\n");
   }
