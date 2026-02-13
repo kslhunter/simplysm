@@ -106,6 +106,7 @@ import "@simplysm/solid/base.css";
 - [`ColorPicker`](docs/form-controls.md#colorpicker) - Color selection component
 - [`ThemeToggle`](docs/form-controls.md#themetoggle) - Dark/light/system theme cycle toggle
 - [`RichTextEditor`](docs/form-controls.md#richtexteditor) - Tiptap-based rich text editor with formatting, tables, images
+- [`Invalid`](docs/form-controls.md#invalid) - Wrapper component for form validation using native browser validation
 - [`Numpad`](docs/form-controls.md#numpad) - Numeric keypad for touch-based input
 - [`StatePreset`](docs/form-controls.md#statepreset) - Save/load screen state as presets
 

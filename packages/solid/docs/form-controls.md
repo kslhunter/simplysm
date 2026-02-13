@@ -51,7 +51,6 @@ import { TextInput } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `error` | `boolean` | - | Error state (red border) |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 
@@ -83,7 +82,6 @@ import { NumberInput } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `error` | `boolean` | - | Error state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 
@@ -125,7 +123,6 @@ import { DateOnly } from "@simplysm/core-common";
 | `max` | `DateOnly` | - | Maximum date |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `error` | `boolean` | - | Error state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 
@@ -191,7 +188,6 @@ import { Textarea } from "@simplysm/solid";
 | `minRows` | `number` | `1` | Minimum number of rows |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `error` | `boolean` | - | Error state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 
@@ -444,8 +440,43 @@ import { RichTextEditor } from "@simplysm/solid";
 | `value` | `string` | - | HTML string value |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `disabled` | `boolean` | - | Disabled state |
-| `error` | `boolean` | - | Error state |
 | `size` | `"sm" \| "lg"` | - | Size |
+
+---
+
+## Invalid
+
+Wrapper component for form validation using native browser `setCustomValidity` API. Displays a red indicator dot and manages validation state for form fields. Useful for integrating with native form validation or custom validation frameworks.
+
+```tsx
+import { Invalid, TextInput } from "@simplysm/solid";
+import { createSignal } from "solid-js";
+
+const [value, setValue] = createSignal("");
+const [error, setError] = createSignal("");
+
+const handleChange = (val: string) => {
+  setValue(val);
+  setError(val.length < 3 ? "Must be at least 3 characters" : "");
+};
+
+<Invalid message={error()}>
+  <TextInput value={value()} onValueChange={handleChange} />
+</Invalid>
+```
+
+The `Invalid` component wraps any form field and displays a validation state using the browser's native validation API. A red indicator dot appears when a message is present.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `message` | `string` | - | Validation error message (non-empty = invalid state) |
+| `class` | `string` | - | Custom CSS class |
+
+**Key features:**
+- Uses native `setCustomValidity` for browser validation integration
+- Red indicator dot displayed when error message is present
+- Reactively updates validation state when message changes
+- Works with any form field component
 
 ---
 
