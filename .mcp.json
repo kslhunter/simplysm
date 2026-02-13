@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-playwright@latest"],
+      "env": {
+        "PLAYWRIGHT_OUTPUT_DIR": ".playwright-mcp"
+      }
+    }
+  }
+}
