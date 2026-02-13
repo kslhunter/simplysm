@@ -9,6 +9,7 @@ export * from "./auth/jwt-manager";
 // Core
 export * from "./core/service-base";
 export * from "./core/service-executor";
+export * from "./core/define-service";
 
 // Transport - Socket
 export * from "./transport/socket/websocket-handler";
