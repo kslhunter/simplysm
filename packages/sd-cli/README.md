@@ -752,7 +752,7 @@ When `pm2` is configured, `dist/pm2.config.cjs` is generated during production b
 - Watch mode enabled with configurable ignore paths (`node_modules`, `www` + custom paths)
 - Node.js interpreter path via `mise which node` (unless `noInterpreter: true`)
 - `--openssl-config=openssl.cnf` interpreter argument for legacy TLS support
-- Environment variables: `NODE_ENV=production`, `TZ=Asia/Seoul`, `SD_VERSION`, plus custom `env` values
+- Environment variables: `NODE_ENV=production`, `TZ=Asia/Seoul`, plus custom `env` values
 
 **Deployment workflow:**
 

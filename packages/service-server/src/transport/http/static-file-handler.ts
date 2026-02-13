@@ -2,9 +2,9 @@ import path from "path";
 import { fsExists, fsStat } from "@simplysm/core-node";
 import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:StaticFileHandler");
+const logger = consola.withTag("service-server:StaticFileHandler");
 
 export class StaticFileHandler {
   constructor(private readonly _server: ServiceServer) {}

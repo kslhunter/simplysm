@@ -2,9 +2,9 @@ import type { Type } from "@simplysm/core-common";
 import { Uuid } from "@simplysm/core-common";
 import type { ServiceEventListener } from "@simplysm/service-common";
 import type { ServiceTransport } from "../transport/service-transport";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-client:EventClient");
+const logger = consola.withTag("service-client:EventClient");
 
 export class EventClient {
   private readonly _listenerMap = new Map<

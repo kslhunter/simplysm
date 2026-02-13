@@ -1,10 +1,10 @@
-import { createConsola } from "consola";
+import consola from "consola";
 import { SdError, EventEmitter } from "@simplysm/core-common";
 import type { Pool } from "generic-pool";
 import type { ColumnMeta, IsolationLevel } from "@simplysm/orm-common";
 import { DB_CONN_ERRORS, type DbConn, type DbConnConfig } from "./types/db-conn";
 
-const logger = createConsola().withTag("pooled-db-conn");
+const logger = consola.withTag("pooled-db-conn");
 
 /**
  * 커넥션 풀에서 관리되는 DB 연결 래퍼

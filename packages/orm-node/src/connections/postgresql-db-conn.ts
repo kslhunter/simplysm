@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import { createConsola } from "consola";
+import consola from "consola";
 import {
   bytesToHex,
   DateOnly,
@@ -15,7 +15,7 @@ import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type PostgresqlDb
 import type { Client } from "pg";
 import type { CopyStreamQuery } from "pg-copy-streams";
 
-const logger = createConsola().withTag("postgresql-db-conn");
+const logger = consola.withTag("postgresql-db-conn");
 
 /**
  * PostgreSQL 데이터베이스 연결 클래스

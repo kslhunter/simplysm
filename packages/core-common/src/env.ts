@@ -5,7 +5,7 @@ export const env: {
   VER?: string;
   [key: string]: unknown;
 } = {
+  ...process.env,
   DEV: JSON.parse(process.env.DEV != null && process.env.DEV !== "" ? process.env.DEV : "false"),
   VER: process.env.VER,
-  ...process.env,
 };

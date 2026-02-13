@@ -1,4 +1,4 @@
-import { createConsola } from "consola";
+import consola from "consola";
 
 /**
  * 자동 만료 기능이 있는 Map
@@ -20,7 +20,7 @@ import { createConsola } from "consola";
  * }
  */
 export class LazyGcMap<K, V> {
-  private static readonly _logger = createConsola().withTag("LazyGcMap");
+  private static readonly _logger = consola.withTag("LazyGcMap");
 
   /**
    * dispose() 미호출 감지용 registry

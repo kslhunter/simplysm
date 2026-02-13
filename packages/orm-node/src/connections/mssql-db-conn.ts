@@ -1,4 +1,4 @@
-import { createConsola } from "consola";
+import consola from "consola";
 import {
   DateOnly,
   DateTime,
@@ -15,7 +15,7 @@ import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type MssqlDbConnC
 import type tediousType from "tedious";
 import type { DataType as TediousDataType } from "tedious/lib/data-type";
 
-const logger = createConsola().withTag("mssql-db-conn");
+const logger = consola.withTag("mssql-db-conn");
 
 /**
  * MSSQL 데이터베이스 연결 클래스

@@ -3,7 +3,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
-import { createConsola } from "consola";
+import consola from "consola";
 import {
   bytesToHex,
   DateOnly,
@@ -17,7 +17,7 @@ import {
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
 import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type MysqlDbConnConfig } from "../types/db-conn";
 
-const logger = createConsola().withTag("mysql-db-conn");
+const logger = consola.withTag("mysql-db-conn");
 
 /**
  * MySQL 데이터베이스 연결 클래스

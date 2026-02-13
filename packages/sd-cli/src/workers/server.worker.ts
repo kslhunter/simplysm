@@ -210,7 +210,6 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     const envObj: Record<string, string> = {
       NODE_ENV: "production",
       TZ: "Asia/Seoul",
-      SD_VERSION: pkgJson.version,
       ...(info.env ?? {}),
     };
     const envStr = JSON.stringify(envObj, undefined, 4);

@@ -6,9 +6,9 @@ import type { ServiceExecutor } from "../../core/service-executor";
 import { ServiceSocket } from "./service-socket";
 import type { JwtManager } from "../../auth/jwt-manager";
 import type { FastifyRequest } from "fastify";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:WebSocketHandler");
+const logger = consola.withTag("service-server:WebSocketHandler");
 
 export class WebSocketHandler {
   private readonly _socketMap = new Map<string, ServiceSocket>();

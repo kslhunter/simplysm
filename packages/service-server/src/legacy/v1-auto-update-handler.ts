@@ -1,8 +1,8 @@
 import type { WebSocket } from "ws";
 import type { AutoUpdateService } from "../services/auto-update-service";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:V1AutoUpdateHandler");
+const logger = consola.withTag("service-server:V1AutoUpdateHandler");
 
 interface IV1Request {
   uuid: string;

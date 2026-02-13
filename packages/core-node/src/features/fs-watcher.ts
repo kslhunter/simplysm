@@ -1,6 +1,6 @@
 import { DebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
-import { createConsola } from "consola";
+import consola from "consola";
 import type { EventName } from "chokidar/handler.js";
 import { type NormPath, pathNorm } from "../utils/path";
 
@@ -72,7 +72,7 @@ export class FsWatcher {
   private readonly _ignoreInitial: boolean = true;
   private readonly _debounceQueues: DebounceQueue[] = [];
 
-  private readonly _logger = createConsola().withTag("sd-fs-watcher");
+  private readonly _logger = consola.withTag("sd-fs-watcher");
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
     this._watcher = chokidar.watch(paths, {

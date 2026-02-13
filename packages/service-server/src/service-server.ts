@@ -21,9 +21,9 @@ import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection } from "./legacy/v1-auto-update-handler";
 import { AutoUpdateService } from "./services/auto-update-service";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:ServiceServer");
+const logger = consola.withTag("service-server:ServiceServer");
 
 export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   ready: void;
@@ -55,7 +55,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async listen(): Promise<void> {
-    logger.debug(`서버 시작... ${env.VER ?? ""}`);
+    logger.info(`서버 시작... ${env.VER ?? ""}`);
 
     // Websocket 플러그인
     await this.fastify.register(fastifyWebsocket);
@@ -173,7 +173,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this._registerGracefulShutdown();
 
     this.isOpen = true;
-    logger.debug("서버 시작됨");
+    logger.info(`서버 시작됨 (port: ${this.options.port})`);
     this.emit("ready");
   }
 

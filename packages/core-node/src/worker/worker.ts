@@ -1,12 +1,12 @@
 import { EventEmitter, transferableDecode, transferableEncode, Uuid } from "@simplysm/core-common";
-import { createConsola } from "consola";
+import consola from "consola";
 import path from "path";
 import { fileURLToPath } from "url";
 import type { WorkerOptions as WorkerRawOptions } from "worker_threads";
 import { Worker as WorkerRaw } from "worker_threads";
 import type { WorkerModule, WorkerProxy, WorkerRequest, WorkerResponse } from "./types";
 
-const logger = createConsola().withTag("sd-worker");
+const logger = consola.withTag("sd-worker");
 
 //#region WorkerInternal
 

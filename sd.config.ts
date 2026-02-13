@@ -32,6 +32,7 @@ const config: SdConfigFn = () => ({
     "solid-demo-server": {
       target: "server",
       pm2: {
+        packageManager: "volta",
         ignoreWatchPaths: [],
       },
       publish: {

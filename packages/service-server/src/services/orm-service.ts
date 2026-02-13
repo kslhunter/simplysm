@@ -12,9 +12,9 @@ import { ServiceBase } from "../core/service-base";
 import type { OrmService as OrmServiceType, DbConnOptions } from "@simplysm/service-common";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import { Authorize } from "../auth/auth.decorators";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:OrmService");
+const logger = consola.withTag("service-server:OrmService");
 
 @Authorize()
 export class OrmService extends ServiceBase implements OrmServiceType {

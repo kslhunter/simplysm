@@ -2,13 +2,13 @@ import type { Bytes } from "@simplysm/core-common";
 import { DateTime, EventEmitter } from "@simplysm/core-common";
 import type { FastifyRequest } from "fastify";
 import { clearInterval } from "node:timers";
-import { createConsola } from "consola";
+import consola from "consola";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
 import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 
-const logger = createConsola().withTag("service-server:ServiceSocket");
+const logger = consola.withTag("service-server:ServiceSocket");
 
 export class ServiceSocket extends EventEmitter<{
   error: Error;

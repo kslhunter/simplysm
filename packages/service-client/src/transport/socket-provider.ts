@@ -1,8 +1,8 @@
 import type { Bytes } from "@simplysm/core-common";
 import { EventEmitter, Uuid, waitUntil, waitTime } from "@simplysm/core-common";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-client:SocketProvider");
+const logger = consola.withTag("service-client:SocketProvider");
 
 interface SocketProviderEvents {
   message: Bytes;

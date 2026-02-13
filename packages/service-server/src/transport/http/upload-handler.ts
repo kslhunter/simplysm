@@ -7,9 +7,9 @@ import type { ServiceServer } from "../../service-server";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 import type { JwtManager } from "../../auth/jwt-manager";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:UploadHandler");
+const logger = consola.withTag("service-server:UploadHandler");
 
 export class UploadHandler {
   constructor(

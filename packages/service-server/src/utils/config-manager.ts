@@ -1,9 +1,9 @@
 import { LazyGcMap } from "@simplysm/core-common";
 import { fsExists, fsReadJson, FsWatcher } from "@simplysm/core-node";
 import path from "path";
-import { createConsola } from "consola";
+import consola from "consola";
 
-const logger = createConsola().withTag("service-server:ConfigManager");
+const logger = consola.withTag("service-server:ConfigManager");
 
 export class ConfigManager {
   // 값: Config 객체, 키: 파일 경로
