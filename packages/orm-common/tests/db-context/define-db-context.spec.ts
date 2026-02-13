@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { DbContextBase, DbContextDef } from "../../src/types/db-context-def";
+import { defineDbContext } from "../../src/define-db-context";
+import { User } from "../setup/models/User";
+import { Post } from "../setup/models/Post";
+import { ActiveUsers } from "../setup/views/ActiveUsers";
 
 describe("DbContext types", () => {
   it("DbContextBase interface has required members", () => {
@@ -28,5 +32,36 @@ describe("DbContext types", () => {
     };
     expect(def.meta.tables).toEqual({});
     expect(def.meta.migrations).toEqual([]);
+  });
+});
+
+describe("defineDbContext", () => {
+  it("creates a DbContextDef with tables", () => {
+    const MyDb = defineDbContext({
+      tables: { user: User, post: Post },
+    });
+
+    expect(MyDb.meta.tables.user).toBe(User);
+    expect(MyDb.meta.tables.post).toBe(Post);
+    expect(MyDb.meta.migrations).toEqual([]);
+  });
+
+  it("creates a DbContextDef with views", () => {
+    const MyDb = defineDbContext({
+      tables: { user: User },
+      views: { activeUsers: ActiveUsers },
+    });
+
+    expect(MyDb.meta.views.activeUsers).toBe(ActiveUsers);
+  });
+
+  it("creates a DbContextDef with migrations", () => {
+    const migrations = [{ name: "test", up: async () => {} }];
+    const MyDb = defineDbContext({
+      tables: { user: User },
+      migrations,
+    });
+
+    expect(MyDb.meta.migrations).toBe(migrations);
   });
 });
