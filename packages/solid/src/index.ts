@@ -22,6 +22,7 @@ export * from "./components/form-control/editor/RichTextEditor";
 export * from "./components/form-control/numpad/Numpad";
 export * from "./components/form-control/state-preset/StatePreset";
 export * from "./components/form-control/ThemeToggle";
+export * from "./components/form-control/Invalid";
 
 // layout
 export * from "./components/layout/FormGroup";
