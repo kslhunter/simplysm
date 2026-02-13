@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { RichTextEditor, Topbar } from "@simplysm/solid";
+import { RichTextEditor, Invalid, Topbar } from "@simplysm/solid";
 
 export default function RichTextEditorPage() {
   const [html, setHtml] = createSignal("<p>여기에 내용을 입력하세요...</p>");
@@ -37,8 +37,10 @@ export default function RichTextEditorPage() {
               </div>
 
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Error</h3>
-                <RichTextEditor value={html()} onValueChange={setHtml} error />
+                <h3 class="mb-3 text-lg font-semibold">Invalid</h3>
+                <Invalid message="에러 메시지 예시">
+                  <RichTextEditor value={html()} onValueChange={setHtml} />
+                </Invalid>
               </div>
             </div>
           </section>

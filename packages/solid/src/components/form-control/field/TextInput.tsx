@@ -7,7 +7,6 @@ import {
   type FieldSize,
   fieldBaseClass,
   fieldSizeClasses,
-  fieldErrorClass,
   fieldInsetClass,
   fieldInsetHeightClass,
   fieldInsetSizeHeightClasses,
@@ -42,9 +41,6 @@ export interface TextInputProps {
 
   /** 읽기 전용 */
   readonly?: boolean;
-
-  /** 에러 상태 */
-  error?: boolean;
 
   /** 사이즈 */
   size?: FieldSize;
@@ -133,7 +129,6 @@ export const TextInput: Component<TextInputProps> = (props) => {
     "autocomplete",
     "disabled",
     "readonly",
-    "error",
     "size",
     "inset",
     "format",
@@ -194,7 +189,6 @@ export const TextInput: Component<TextInputProps> = (props) => {
     twMerge(
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
-      local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
       local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),

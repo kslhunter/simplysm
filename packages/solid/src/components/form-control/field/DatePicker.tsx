@@ -7,7 +7,6 @@ import {
   type FieldSize,
   fieldBaseClass,
   fieldSizeClasses,
-  fieldErrorClass,
   fieldInsetClass,
   fieldInsetHeightClass,
   fieldInsetSizeHeightClasses,
@@ -41,9 +40,6 @@ export interface DatePickerProps {
 
   /** 읽기 전용 */
   readonly?: boolean;
-
-  /** 에러 상태 */
-  error?: boolean;
 
   /** 사이즈 */
   size?: FieldSize;
@@ -165,7 +161,6 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "title",
     "disabled",
     "readonly",
-    "error",
     "size",
     "inset",
     "class",
@@ -196,7 +191,6 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     twMerge(
       fieldBaseClass,
       local.size && fieldSizeClasses[local.size],
-      local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass + " block",
       local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),

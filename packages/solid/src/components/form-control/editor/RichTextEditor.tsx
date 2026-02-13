@@ -27,9 +27,6 @@ export interface RichTextEditorProps {
   /** 비활성화 */
   disabled?: boolean;
 
-  /** 에러 상태 */
-  error?: boolean;
-
   /** 사이즈 */
   size?: FieldSize;
 
@@ -50,9 +47,6 @@ const editorWrapperClass = clsx(
   "focus-within:border-primary-500",
 );
 
-// 에디터 에러 스타일
-const editorErrorClass = clsx("border-danger-500");
-
 // 에디터 disabled 스타일
 const editorDisabledClass = clsx("bg-base-100 dark:bg-base-800", "text-base-500");
 
@@ -72,7 +66,7 @@ const editorContentSizeClasses: Record<FieldSize, string> = {
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
-  const [local, rest] = splitProps(props, ["value", "onValueChange", "disabled", "error", "size", "class", "style"]);
+  const [local, rest] = splitProps(props, ["value", "onValueChange", "disabled", "size", "class", "style"]);
 
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
@@ -153,8 +147,7 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     editor()?.destroy();
   });
 
-  const getWrapperClass = () =>
-    twMerge(editorWrapperClass, local.error && editorErrorClass, local.disabled && editorDisabledClass, local.class);
+  const getWrapperClass = () => twMerge(editorWrapperClass, local.disabled && editorDisabledClass, local.class);
 
   const getContentClass = () => twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
 
