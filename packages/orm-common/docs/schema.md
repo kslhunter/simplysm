@@ -42,6 +42,10 @@ const User = Table("User")
 | `c.uuid()` | UUID / UNIQUEIDENTIFIER / BINARY(16) | `Uuid` |
 | `c.binary()` | BLOB / VARBINARY(MAX) / BYTEA | `Bytes` |
 
+> **Important:** `c.int()` and `c.bigint()` both map to TypeScript `number`, **not** JavaScript's native `BigInt`.
+> The names `int` / `bigint` refer to SQL data types (storage size), not JavaScript types.
+> Do not use `BigInt` literals (e.g. `1n`) or the `bigint` TypeScript type with this ORM.
+
 ## Column Options
 
 | Method | Description |
