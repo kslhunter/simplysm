@@ -11,6 +11,12 @@ Read the package README directly:
 node_modules/@simplysm/{package-name}/README.md
 ```
 
+If not found (pnpm hoisting), try:
+
+```
+packages/*/node_modules/@simplysm/{package-name}/README.md
+```
+
 ## When to use
 
 - Before writing code that uses an unfamiliar `@simplysm/*` API
