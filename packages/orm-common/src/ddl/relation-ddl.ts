@@ -1,6 +1,5 @@
 import type { ForeignKeyBuilder } from "../schema/factory/relation-builder";
 import type { IndexBuilder } from "../schema/factory/index-builder";
-import type { TableBuilder } from "../schema/table-builder";
 import type {
   QueryDef,
   QueryDefObjectName,

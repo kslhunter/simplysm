@@ -92,7 +92,7 @@ export class SdOrm<TDef extends DbContextDef<any, any, any>> {
   private _createDbContext(): DbContextInstance<TDef> {
     // database는 options에서 우선, 없으면 config에서
     const database = this.options?.database ?? ("database" in this.config ? this.config.database : undefined);
-    if (!database) {
+    if (database == null || database === "") {
       throw new Error("database is required");
     }
 

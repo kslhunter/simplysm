@@ -96,6 +96,7 @@ describe("createDbContext", () => {
 
     expect(db.status).toBe("ready");
     await db.connect(async () => {
+      await Promise.resolve();
       expect(db.status).toBe("transact");
     });
     expect(db.status).toBe("ready");
@@ -108,6 +109,7 @@ describe("createDbContext", () => {
 
     expect(db.status).toBe("ready");
     await db.connectWithoutTransaction(async () => {
+      await Promise.resolve();
       expect(db.status).toBe("connect");
     });
     expect(db.status).toBe("ready");
@@ -119,8 +121,10 @@ describe("createDbContext", () => {
     });
 
     await db.connectWithoutTransaction(async () => {
+      await Promise.resolve();
       expect(db.status).toBe("connect");
       await db.trans(async () => {
+        await Promise.resolve();
         expect(db.status).toBe("transact");
       });
       expect(db.status).toBe("connect");
@@ -138,6 +142,7 @@ describe("createDbContext", () => {
     db.getNextAlias(); // T2
 
     await db.connect(async () => {
+      await Promise.resolve();
       // After connect, alias counter should be reset
       const userDef = db.user().getSelectQueryDef();
       expect(userDef.as).toBe("T1");
@@ -152,6 +157,7 @@ describe("createDbContext", () => {
     const testError = new Error("test error");
     await expect(
       db.connect(async () => {
+        await Promise.resolve();
         throw testError;
       }),
     ).rejects.toThrow("test error");
@@ -167,6 +173,7 @@ describe("createDbContext", () => {
     const testError = new Error("test error");
     await expect(
       db.connectWithoutTransaction(async () => {
+        await Promise.resolve();
         throw testError;
       }),
     ).rejects.toThrow("test error");

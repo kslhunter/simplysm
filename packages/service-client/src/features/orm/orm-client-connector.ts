@@ -13,7 +13,7 @@ export class OrmClientConnector {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfo();
     const database = config.dbContextOpt?.database ?? info.database;
-    if (!database) {
+    if (database == null || database === "") {
       throw new Error("Database name is required");
     }
     const db = createDbContext(config.dbContextDef, executor, {
@@ -44,7 +44,7 @@ export class OrmClientConnector {
     const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
     const info = await executor.getInfo();
     const database = config.dbContextOpt?.database ?? info.database;
-    if (!database) {
+    if (database == null || database === "") {
       throw new Error("Database name is required");
     }
     const db = createDbContext(config.dbContextDef, executor, {

@@ -158,17 +158,20 @@ function getBuilders(
   const builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] = [];
 
   // Tables
-  for (const table of Object.values(def.meta.tables) as TableBuilder<any, any>[]) {
+  const tables: TableBuilder<any, any>[] = Object.values(def.meta.tables);
+  for (const table of tables) {
     builders.push(table);
   }
 
   // Views
-  for (const view of Object.values(def.meta.views) as ViewBuilder<any, any, any>[]) {
+  const views: ViewBuilder<any, any, any>[] = Object.values(def.meta.views);
+  for (const view of views) {
     builders.push(view);
   }
 
   // Procedures
-  for (const proc of Object.values(def.meta.procedures) as ProcedureBuilder<any, any>[]) {
+  const procs: ProcedureBuilder<any, any>[] = Object.values(def.meta.procedures);
+  for (const proc of procs) {
     builders.push(proc);
   }
 
