@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { MssqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
-import { DbContext, Table, queryable } from "@simplysm/orm-common";
+import { Table, defineDbContext, createDbContext } from "@simplysm/orm-common";
 import { mssqlConfig } from "../test-configs";
 
 // 테스트용 User 테이블
@@ -14,15 +14,13 @@ const User = Table("User")
   .primaryKey("id");
 
 // 테스트용 DbContext
-class TestDbContext extends DbContext {
-  user = queryable(this, User);
-}
+const TestDbDef = defineDbContext({ tables: { user: User } });
 
 describe("MSSQL DbContext - trans", () => {
   let tedious: typeof import("tedious");
   let conn: MssqlDbConn;
   let executor: NodeDbContextExecutor;
-  let db: TestDbContext;
+  let db: ReturnType<typeof createDbContext<typeof TestDbDef>>;
 
   beforeAll(async () => {
     tedious = await import("tedious");
@@ -41,7 +39,7 @@ describe("MSSQL DbContext - trans", () => {
 
     // DbContext 실행기 생성
     executor = new NodeDbContextExecutor(mssqlConfig);
-    db = new TestDbContext(executor, { database: "TestDb", schema: "dbo" });
+    db = createDbContext(TestDbDef, executor, { database: "TestDb", schema: "dbo" });
   });
 
   afterAll(async () => {

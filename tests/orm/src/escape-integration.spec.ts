@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { DbContext, Table, queryable, expr } from "@simplysm/orm-common";
+import { Table, expr, defineDbContext, createDbContext } from "@simplysm/orm-common";
 import { MysqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
 import { mysqlConfig } from "./test-configs";
 
@@ -11,13 +11,11 @@ const EscapeTest = Table("EscapeTest")
   }))
   .primaryKey("id");
 
-class TestDbContext extends DbContext {
-  escapeTest = queryable(this, EscapeTest);
-}
+const TestDbDef = defineDbContext({ tables: { escapeTest: EscapeTest } });
 
 describe("SQL Escape Integration Test", () => {
   let mysql2: typeof import("mysql2/promise");
-  let db: TestDbContext;
+  let db: ReturnType<typeof createDbContext<typeof TestDbDef>>;
 
   beforeAll(async () => {
     mysql2 = await import("mysql2/promise");
@@ -36,7 +34,7 @@ describe("SQL Escape Integration Test", () => {
 
     // DbContext 실행기 생성
     const executor = new NodeDbContextExecutor(mysqlConfig);
-    db = new TestDbContext(executor, { database: "TestDb" });
+    db = createDbContext(TestDbDef, executor, { database: "TestDb" });
   });
 
   afterAll(async () => {

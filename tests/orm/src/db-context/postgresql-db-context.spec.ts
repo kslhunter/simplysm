@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PostgresqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
-import { DbContext, Table, queryable } from "@simplysm/orm-common";
+import { Table, defineDbContext, createDbContext } from "@simplysm/orm-common";
 import { postgresqlConfig } from "../test-configs";
 
 // 테스트용 User 테이블
@@ -14,16 +14,14 @@ const User = Table("User")
   .primaryKey("id");
 
 // 테스트용 DbContext
-class TestDbContext extends DbContext {
-  user = queryable(this, User);
-}
+const TestDbDef = defineDbContext({ tables: { user: User } });
 
 describe("PostgreSQL DbContext - trans", () => {
   let pg: typeof import("pg");
   let pgCopyStreams: typeof import("pg-copy-streams");
   let conn: PostgresqlDbConn;
   let executor: NodeDbContextExecutor;
-  let db: TestDbContext;
+  let db: ReturnType<typeof createDbContext<typeof TestDbDef>>;
 
   beforeAll(async () => {
     pg = await import("pg");
@@ -43,7 +41,7 @@ describe("PostgreSQL DbContext - trans", () => {
 
     // DbContext 실행기 생성
     executor = new NodeDbContextExecutor(postgresqlConfig);
-    db = new TestDbContext(executor, { database: "TestDb", schema: "public" });
+    db = createDbContext(TestDbDef, executor, { database: "TestDb", schema: "public" });
   });
 
   afterAll(async () => {

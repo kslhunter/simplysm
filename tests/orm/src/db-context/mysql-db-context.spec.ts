@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { MysqlDbConn, NodeDbContextExecutor } from "@simplysm/orm-node";
-import { DbContext, Table, queryable } from "@simplysm/orm-common";
+import { Table, defineDbContext, createDbContext } from "@simplysm/orm-common";
 import { mysqlConfig } from "../test-configs";
 
 // 테스트용 User 테이블
@@ -13,15 +13,13 @@ const User = Table("User")
   .primaryKey("id");
 
 // 테스트용 DbContext
-class TestDbContext extends DbContext {
-  user = queryable(this, User);
-}
+const TestDbDef = defineDbContext({ tables: { user: User } });
 
 describe("MySQL DbContext - trans", () => {
   let mysql2: typeof import("mysql2/promise");
   let conn: MysqlDbConn;
   let executor: NodeDbContextExecutor;
-  let db: TestDbContext;
+  let db: ReturnType<typeof createDbContext<typeof TestDbDef>>;
 
   beforeAll(async () => {
     mysql2 = await import("mysql2/promise");
@@ -40,7 +38,7 @@ describe("MySQL DbContext - trans", () => {
 
     // DbContext 실행기 생성
     executor = new NodeDbContextExecutor(mysqlConfig);
-    db = new TestDbContext(executor, { database: "TestDb" });
+    db = createDbContext(TestDbDef, executor, { database: "TestDb" });
   });
 
   afterAll(async () => {
