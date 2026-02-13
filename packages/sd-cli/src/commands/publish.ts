@@ -336,7 +336,7 @@ async function publishPackage(
   if (publishConfig === "npm") {
     // npm publish
     const prereleaseInfo = semver.prerelease(version);
-    const args = ["publish", "--access", "public"];
+    const args = ["publish", "--access", "public", "--no-git-checks"];
 
     if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
       args.push("--tag", prereleaseInfo[0]);
@@ -600,7 +600,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude 자동 커밋 시도...");
         try {
-          await spawn("claude", ["-p", "/sd-commit all", "--dangerously-skip-permissions"]);
+          await spawn("claude", ["-p", "/sd-commit all", "--dangerously-skip-permissions", "--model", "haiku"]);
         } catch (e) {
           throw new Error(
             "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도하세요.\n" +
