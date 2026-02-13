@@ -1,8 +1,5 @@
-import { ServiceEventListener } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 
-export class SharedDataChangeEvent extends ServiceEventListener<
-  { name: string; filter: unknown },
-  (string | number)[] | undefined
-> {
-  readonly eventName = "SharedDataChangeEvent";
-}
+export const SharedDataChangeEvent = defineEvent<{ name: string; filter: unknown }, (string | number)[] | undefined>(
+  "SharedDataChangeEvent",
+);

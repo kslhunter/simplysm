@@ -96,11 +96,9 @@ git commit -m "feat: add specific feature"
 
 ## Execution Handoff
 
-After saving the plan, display the message in the user's language (per system instructions).
+After saving the plan:
 
-Tell the user:
-1. Where the plan file was saved
-2. The next step is `/sd-plan-dev`
+**"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
 
 - **REQUIRED SUB-SKILL:** Use sd-plan-dev
 - Fresh fork per task + two-stage review (spec compliance → code quality)

@@ -1,62 +1,58 @@
 # Authentication
 
-## Authorize Decorator
+## auth() Wrapper
 
-Use Stage 3 decorators to set authentication requirements on services or methods. Only works when `ServiceServerOptions.auth` is configured.
+Use the `auth()` wrapper to set authentication requirements on services or methods. Only works when `ServiceServerOptions.auth` is configured.
 
 ```typescript
-import { ServiceBase, Authorize } from "@simplysm/service-server";
+import { defineService, auth } from "@simplysm/service-server";
 
-// Class level: all methods require login
-@Authorize()
-class UserService extends ServiceBase<{ userId: number; role: string }> {
-  // Login only required (inherits from class level)
-  async getProfile(): Promise<unknown> {
-    const userId = this.authInfo?.userId;
+// Service-level auth: all methods require login
+export const UserService = defineService("UserService", auth((ctx) => ({
+  // Login only required (inherits from service level)
+  getProfile: async (): Promise<unknown> => {
+    const userId = (ctx.authInfo as { userId: number; role: string })?.userId;
     // ...
-  }
+  },
 
-  // Method level: specific role required (overrides class level)
-  @Authorize(["admin"])
-  async deleteUser(targetId: number): Promise<void> {
+  // Method-level auth: specific role required (overrides service level)
+  deleteUser: auth(["admin"], async (targetId: number): Promise<void> => {
     // Only users with admin role can call
-  }
-}
+  }),
+})));
 
-// No authentication required (no decorator)
-class PublicService extends ServiceBase {
-  async healthCheck(): Promise<string> {
+// No authentication required (no auth wrapper)
+export const PublicService = defineService("PublicService", (ctx) => ({
+  healthCheck: async (): Promise<string> => {
     return "OK";
-  }
-}
+  },
+}));
 ```
 
-Decorator behavior:
+Auth behavior:
 
-| Target | `@Authorize()` | `@Authorize(["admin"])` |
+| Target | `auth(factory)` | `auth(["admin"], fn)` |
 |-----------|----------------|-------------------------|
-| Class | All methods require login | All methods require admin role |
+| Service | All methods require login | All methods require admin role |
 | Method | Method requires login | Method requires admin role |
 | None | No auth required (Public) | - |
 
-Method-level decorators override class-level settings.
+Method-level `auth()` overrides service-level settings.
 
-## getAuthPermissions
+## getServiceAuthPermissions
 
-Query auth permissions for a given service class and method. Primarily used internally by `ServiceExecutor`, but exported for advanced use cases.
+Query auth permissions for a given service definition or method. Primarily used internally by `ServiceExecutor`, but exported for advanced use cases.
 
 ```typescript
-import { getAuthPermissions } from "@simplysm/service-server";
+import { defineService, auth, getServiceAuthPermissions } from "@simplysm/service-server";
 
-// Returns string[] if permissions are set, or undefined for public (no decorator)
-const perms = getAuthPermissions(UserService, "deleteUser");
-// ["admin"]
+// For a method with auth wrapper
+const methodPerms = getServiceAuthPermissions(someMethod);
+// string[] if permissions are set, or undefined for public (no auth wrapper)
 
-const classPerms = getAuthPermissions(UserService);
-// [] (empty array = login required, no specific role)
-
-const publicPerms = getAuthPermissions(PublicService, "healthCheck");
-// undefined (no auth required)
+// For a service definition
+const servicePerms = someServiceDef.authPermissions;
+// string[] if service-level auth is set, or undefined for public
 ```
 
 ## JWT Token Management
@@ -74,9 +70,9 @@ const publicPerms = getAuthPermissions(PublicService, "healthCheck");
 Generate and verify JWT tokens through the `ServiceServer` instance:
 
 ```typescript
-import { ServiceServer } from "@simplysm/service-server";
+import { createServiceServer } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "my-secret-key" },
@@ -101,7 +97,7 @@ const payload = await server.verifyAuthToken(token);
 import type { AuthTokenPayload } from "@simplysm/service-server";
 
 interface AuthTokenPayload<TAuthInfo = unknown> extends JWTPayload {
-  /** User role list (used for permission check in Authorize decorator) */
+  /** User role list (used for permission check in auth wrapper) */
   roles: string[];
   /** Custom auth info (generic type) */
   data: TAuthInfo;

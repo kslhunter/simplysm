@@ -1,7 +1,7 @@
 import type { ServiceServer } from "../service-server";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import type { AuthTokenPayload } from "../auth/auth-token-payload";
-import { getAuthPermissions } from "../auth/auth.decorators";
+import { createServiceContext, getServiceAuthPermissions } from "./define-service";
 
 export class ServiceExecutor {
   constructor(private readonly _server: ServiceServer) {}
@@ -13,10 +13,10 @@ export class ServiceExecutor {
     socket?: ServiceSocket;
     http?: { clientName: string; authTokenPayload?: AuthTokenPayload };
   }): Promise<unknown> {
-    // 서비스 클래스 찾기
-    const ServiceClass = this._server.options.services.find((item) => item.name === def.serviceName);
+    // 서비스 정의 찾기
+    const serviceDef = this._server.options.services.find((item) => item.name === def.serviceName);
 
-    if (ServiceClass == null) {
+    if (serviceDef == null) {
       throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
     }
 
@@ -28,21 +28,31 @@ export class ServiceExecutor {
       }
     }
 
-    // 인증검사
-    if (this._server.options.auth != null) {
-      // 메소드 레벨 → 클래스 레벨 순으로 권한 확인
-      const requiredPerms = getAuthPermissions(ServiceClass, def.methodName);
+    // Context 생성
+    const ctx = createServiceContext(this._server, def.socket, def.http);
 
-      // 권한 설정이 있으면 인증 필요
+    // Factory 호출하여 메서드 객체 생성
+    const methods = serviceDef.factory(ctx);
+
+    // 메서드 찾기
+    const method = (methods as Record<string, unknown>)[def.methodName];
+    if (typeof method !== "function") {
+      throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
+    }
+
+    // 인증 검사
+    if (this._server.options.auth != null) {
+      // 메서드 레벨 auth 먼저 확인, 없으면 서비스 레벨 확인
+      const methodPerms = getServiceAuthPermissions(method);
+      const requiredPerms = methodPerms ?? serviceDef.authPermissions;
+
       if (requiredPerms != null) {
         const authTokenPayload = def.socket?.authTokenPayload ?? def.http?.authTokenPayload;
 
-        // 권한이 필요한데 인증정보가 없으면 에러
         if (authTokenPayload == null) {
           throw new Error("로그인이 필요합니다.");
         }
 
-        // 권한 목록 체크 (빈 배열이면 로그인만 체크)
         if (requiredPerms.length > 0) {
           const hasPerm = requiredPerms.some((perm) => authTokenPayload.roles.includes(perm));
           if (!hasPerm) {
@@ -52,19 +62,7 @@ export class ServiceExecutor {
       }
     }
 
-    // 서비스 인스턴스 생성 (Context 주입)
-    const service = new ServiceClass();
-    service.server = this._server;
-    service.socket = def.socket;
-    service.http = def.http;
-
-    // 메소드 찾기
-    const method = (service as unknown as Record<string, unknown>)[def.methodName];
-    if (typeof method !== "function") {
-      throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
-    }
-
     // 실행
-    return await method.apply(service, def.params);
+    return await method(...def.params);
   }
 }

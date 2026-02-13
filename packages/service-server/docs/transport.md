@@ -2,7 +2,7 @@
 
 ## ServiceSocket
 
-`ServiceSocket` extends `EventEmitter` and wraps an individual WebSocket connection. It is available in service methods as `this.socket` when the request comes via WebSocket.
+`ServiceSocket` extends `EventEmitter` and wraps an individual WebSocket connection. It is available in service methods as `ctx.socket` when the request comes via WebSocket.
 
 **Properties:**
 
@@ -83,19 +83,17 @@ Uploaded files are stored in the `rootPath/www/uploads/` directory with UUID-bas
 
 ## Real-time Event Publishing
 
-Publish events to connected clients from the server.
+Publish events to connected clients from the server using `defineEvent` from `@simplysm/service-common`.
 
 ```typescript
-import { ServiceServer } from "@simplysm/service-server";
-import { ServiceEventListener } from "@simplysm/service-common";
+import { createServiceServer } from "@simplysm/service-server";
+import { defineEvent } from "@simplysm/service-common";
 
-// Event definition (from service-common)
-class OrderUpdatedEvent extends ServiceEventListener<
+// Event definition
+const OrderUpdatedEvent = defineEvent<
   { orderId: number },
   { status: string }
-> {
-  readonly eventName = "OrderUpdatedEvent";
-}
+>("OrderUpdatedEvent");
 
 // Publish event from server
 await server.emitEvent(

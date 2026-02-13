@@ -161,7 +161,7 @@ sd-cli build solid core-common
 
 **Runtime Configuration File (.config.json):**
 
-If a `server` or `client` package defines a `configs` field in `sd.config.ts`, the build automatically generates `dist/.config.json` containing that configuration. This is useful for storing environment-specific settings (database config, API endpoints, etc.) that are read at runtime via `ServiceBase.getConfig()` in `service-server`.
+If a `server` or `client` package defines a `configs` field in `sd.config.ts`, the build automatically generates `dist/.config.json` containing that configuration. This is useful for storing environment-specific settings (database config, API endpoints, etc.) that are read at runtime via `ctx.getConfig()` in `service-server`.
 
 **Server Build: Externals & Production Deployment Files:**
 
@@ -533,7 +533,7 @@ Environment variable substitution is supported in `path` for local directory and
 
 ### Runtime Configuration (configs)
 
-Define runtime configuration for `server` or `client` packages using the `configs` field. This configuration is automatically written to `dist/.config.json` during build and can be read at runtime via `ServiceBase.getConfig()` in the `service-server` package.
+Define runtime configuration for `server` or `client` packages using the `configs` field. This configuration is automatically written to `dist/.config.json` during build and can be read at runtime via `ctx.getConfig()` in the `service-server` package.
 
 ```typescript
 import type { SdConfigFn } from "@simplysm/sd-cli";
@@ -594,7 +594,7 @@ const dbConfig = ormConfig.default;  // Access specific DB config by name
 - Configuration sections can be nested objects with any structure
 - Environment variable substitution can be used in config values
 - Generated `dist/.config.json` files are not included in version control (add to `.gitignore`)
-- Client and server both support `configs`, but typically only servers expose configuration via `ServiceBase.getConfig()`
+- Client and server both support `configs`, but typically only servers expose configuration via `ctx.getConfig()`
 
 ### Dependency Replacement (replaceDeps)
 
