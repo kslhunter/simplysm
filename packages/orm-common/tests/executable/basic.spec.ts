@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
 import "../setup/test-utils";
@@ -7,7 +7,7 @@ import * as expected from "./basic.expected";
 
 describe("Executable - 기본", () => {
   describe("getExecProcQueryDef - 파라미터 없이", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getUserById().getExecProcQueryDef();
 
     it("QueryDef 검증", () => {
@@ -29,7 +29,7 @@ describe("Executable - 기본", () => {
   });
 
   describe("getExecProcQueryDef - 파라미터 포함", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getUserById().getExecProcQueryDef({ userId: 123 });
 
     it("QueryDef 검증", () => {

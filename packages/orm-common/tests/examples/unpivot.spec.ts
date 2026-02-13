@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./unpivot.expected";
 
 describe("SELECT - UNPIVOT (join + union)", () => {
   describe("기본", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .monthlySales()
       .join("unpvt", (qr, c) =>
@@ -80,7 +80,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
   });
 
   describe("2개 컬럼 unpivot", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .monthlySales()
       .join("unpvt", (qr, c) =>
@@ -145,7 +145,7 @@ describe("SELECT - UNPIVOT (join + union)", () => {
   });
 
   describe("WHERE -> UNPIVOT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .monthlySales()
       .where((r) => [expr.eq(r.category, "A")])

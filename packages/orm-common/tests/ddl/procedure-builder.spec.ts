@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { Procedure } from "../../src/schema/procedure-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -131,7 +131,7 @@ describe("DDL - Procedure Builder", () => {
   describe("body 지정 + 기본 DDL 생성", () => {
     const proc = Procedure("TestProc").database("TestDb").schema("TestSchema").body("SELECT 1 AS result");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateProcQueryDef(proc);
 
     it("QueryDef 검증", () => {
@@ -163,7 +163,7 @@ describe("DDL - Procedure Builder", () => {
       }))
       .body("-- DBMS별 맞는 쿼리 작성 --");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateProcQueryDef(GetUserById);
 
     it("QueryDef 검증", () => {

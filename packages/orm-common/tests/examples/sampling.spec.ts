@@ -6,7 +6,7 @@
  * 사용법: db.user().orderBy(() => expr.random()).top(5)
  */
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -15,7 +15,7 @@ import * as expected from "./sampling.expected";
 
 describe("EXAMPLE - 랜덤 샘플링", () => {
   describe("기본 샘플링 (ORDER BY RANDOM + TOP)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy(() => expr.random())
@@ -39,7 +39,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
   });
 
   describe("조건부 샘플링 (WHERE + ORDER BY RANDOM + TOP)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.gte(item.age, 20)])
@@ -71,7 +71,7 @@ describe("EXAMPLE - 랜덤 샘플링", () => {
   });
 
   describe("컬럼 선택과 샘플링", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

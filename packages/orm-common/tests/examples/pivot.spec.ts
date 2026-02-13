@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./pivot.expected";
 
 describe("SELECT - PIVOT (groupBy + switch)", () => {
   describe("기본 (SUM)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -69,7 +69,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("COUNT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -130,7 +130,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("AVG", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -191,7 +191,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("MAX", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -252,7 +252,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("MIN", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -313,7 +313,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("3개 이상의 피벗 값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.category])
@@ -402,7 +402,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("문자열 피벗 컬럼", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .groupBy((item) => [item.id, item.year])
@@ -463,7 +463,7 @@ describe("SELECT - PIVOT (groupBy + switch)", () => {
   });
 
   describe("WHERE -> PIVOT (groupBy)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .sales()
       .where((item) => [expr.eq(item.category, "식품")])

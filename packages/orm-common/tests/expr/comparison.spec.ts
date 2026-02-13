@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -9,7 +9,7 @@ import { DateTime } from "@simplysm/core-common";
 
 describe("Expr - 비교 연산자 (null-safe)", () => {
   describe("eq - 동등 비교 (null == null → true)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.eq(item.email, undefined)])
@@ -37,7 +37,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("eq - 값 비교 (1 == 1 → true)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.eq(item.id, 1)])
@@ -63,7 +63,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("gt - 초과 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.gt(item.age, 20)])
@@ -89,7 +89,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("lt - 미만 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.lt(item.age, 30)])
@@ -115,7 +115,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("gte - 이상 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.gte(item.age, 18)])
@@ -141,7 +141,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("lte - 이하 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.lte(item.age, 65)])
@@ -167,7 +167,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("between - 범위 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, 20, 30)])
@@ -194,7 +194,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("between - from만 있는 경우 (>= 처리)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, 20, undefined)])
@@ -221,7 +221,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("between - to만 있는 경우 (<= 처리)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, undefined, 30)])
@@ -248,7 +248,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("between - 둘 다 없는 경우 (항상 true)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.between(item.age, undefined, undefined)])
@@ -275,7 +275,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("between - 컬럼 참조를 from/to로 사용", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .monthlySales()
       .where((item) => [expr.between(item.feb, item.jan, item.mar)])
@@ -302,7 +302,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("regexp - 정규식 비교 (MySQL/PostgreSQL)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.regexp(item.name, "^test.*")])
@@ -315,7 +315,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   });
 
   describe("in - 빈 배열 (항상 false)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.in(item.id, [])])
@@ -343,7 +343,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   //#region ========== DateTime 값 테스트 ==========
 
   describe("eq - DateTime 값 비교", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const testDateTime = new DateTime(2024, 1, 15, 10, 30, 0);
     const def = db
       .user()
@@ -361,7 +361,7 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
   //#region ========== inQuery 테스트 ==========
 
   describe("inQuery - 서브쿼리 IN 조건", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((u) => [

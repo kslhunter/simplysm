@@ -1,5 +1,6 @@
 import "@simplysm/core-common";
-import { DbContext } from "../../src/db-context";
+import { defineDbContext } from "../../src/define-db-context";
+import { createDbContext } from "../../src/create-db-context";
 import { Post } from "./models/Post";
 import { Company } from "./models/Company";
 import { Sales } from "./models/Sales";
@@ -9,29 +10,34 @@ import { ActiveUsers } from "./views/ActiveUsers";
 import { UserSummary } from "./views/UserSummary";
 import { MockExecutor } from "./MockExecutor";
 import { User } from "./models/User";
-import { executable } from "../../src/exec/executable";
 import { GetUserById } from "./procedure/GetUserById";
 import { GetAllUsers } from "./procedure/GetAllUsers";
-import { queryable } from "../../src/exec/queryable";
 
-export class TestDbContext extends DbContext {
-  constructor() {
-    super(new MockExecutor(), { database: "TestDb", schema: "TestSchema" });
-  }
+export const TestDbDef = defineDbContext({
+  tables: {
+    company: Company,
+    user: User,
+    post: Post,
+    sales: Sales,
+    monthlySales: MonthlySales,
+    employee: Employee,
+  },
+  views: {
+    activeUsers: ActiveUsers,
+    userSummary: UserSummary,
+  },
+  procedures: {
+    getUserById: GetUserById,
+    getAllUsers: GetAllUsers,
+  },
+});
 
-  // Tables
-  company = queryable(this, Company);
-  user = queryable(this, User);
-  post = queryable(this, Post);
-  sales = queryable(this, Sales);
-  monthlySales = queryable(this, MonthlySales);
-  employee = queryable(this, Employee);
-
-  // Views
-  activeUsers = queryable(this, ActiveUsers);
-  userSummary = queryable(this, UserSummary);
-
-  // Procedures
-  getUserById = executable(this, GetUserById);
-  getAllUsers = executable(this, GetAllUsers);
+export function createTestDb() {
+  return createDbContext(TestDbDef, new MockExecutor(), {
+    database: "TestDb",
+    schema: "TestSchema",
+  });
 }
+
+// Type alias for backward compatibility with view definitions
+export type TestDbContext = ReturnType<typeof createTestDb>;

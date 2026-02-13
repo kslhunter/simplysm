@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb, type TestDbContext } from "../setup/TestDbContext";
 import { View } from "../../src/schema/view-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -80,7 +80,7 @@ describe("DDL - View Builder", () => {
       expect(view.meta.viewFn).toBeTypeOf("function");
     });
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateViewQueryDef(view);
 
     it("QueryDef 검증", () => {
@@ -125,7 +125,7 @@ describe("DDL - View Builder", () => {
       expect(view.meta.viewFn).toBeTypeOf("function");
     });
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateViewQueryDef(view);
 
     it("QueryDef 검증", () => {

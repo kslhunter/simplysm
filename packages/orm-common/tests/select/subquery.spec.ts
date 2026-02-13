@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { Queryable } from "../../src/exec/queryable";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
@@ -9,7 +9,7 @@ import * as expected from "./subquery.expected";
 
 describe("SELECT - WRAP (서브쿼리)", () => {
   describe("기본", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().wrap().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -31,7 +31,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
   });
 
   describe("WRAP -> SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .wrap()
@@ -61,7 +61,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
   });
 
   describe("SELECT -> WRAP", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({ id: item.id, name: item.name }))
@@ -91,7 +91,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
   });
 
   describe("WHERE -> WRAP -> WHERE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.eq(item.isActive, true)])
@@ -132,7 +132,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
   });
 
   describe("INCLUDE -> WRAP -> SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .include((item) => item.posts)
@@ -192,7 +192,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
   });
 
   describe("GROUP BY -> WRAP -> ORDER BY", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -231,7 +231,7 @@ describe("SELECT - WRAP (서브쿼리)", () => {
 
 describe("SELECT - UNION", () => {
   describe("기본 (2개)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const qr1 = db.user().where((item) => [expr.eq(item.isActive, true)]);
     const qr2 = db.user().where((item) => [expr.gt(item.age, 30)]);
     const def = Queryable.union(qr1, qr2).getSelectQueryDef();
@@ -276,7 +276,7 @@ describe("SELECT - UNION", () => {
   });
 
   describe("3개 이상", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const qr1 = db.user().where((item) => [expr.eq(item.age, 20)]);
     const qr2 = db.user().where((item) => [expr.eq(item.age, 30)]);
     const qr3 = db.user().where((item) => [expr.eq(item.age, 40)]);
@@ -334,7 +334,7 @@ describe("SELECT - UNION", () => {
   });
 
   describe("UNION -> WHERE (각 쿼리에 적용)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const qr1 = db.user();
     const qr2 = db.user();
     const def = Queryable.union(qr1, qr2)
@@ -381,7 +381,7 @@ describe("SELECT - UNION", () => {
   });
 
   describe("UNION -> WRAP -> ORDER BY + LIMIT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const qr1 = db.user().where((item) => [expr.eq(item.isActive, true)]);
     const qr2 = db.user().where((item) => [expr.gt(item.age, 30)]);
     const def = Queryable.union(qr1, qr2)
@@ -436,7 +436,7 @@ describe("SELECT - UNION", () => {
   });
 
   describe("UNION -> SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const qr1 = db.user().select((item) => ({ id: item.id, name: item.name }));
     const qr2 = db.user().select((item) => ({ id: item.id, name: item.name }));
     const def = Queryable.union(qr1, qr2).getSelectQueryDef();
@@ -479,7 +479,7 @@ describe("SELECT - UNION", () => {
 
 describe("SELECT - SCALAR SUBQUERY (expr.subquery)", () => {
   describe("기본 (COUNT)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((u) => ({

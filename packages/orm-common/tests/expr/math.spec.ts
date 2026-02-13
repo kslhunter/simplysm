@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./math.expected";
 
 describe("Expr - 수학 함수", () => {
   describe("abs - 절댓값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -32,7 +32,7 @@ describe("Expr - 수학 함수", () => {
   });
 
   describe("round - 반올림", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -57,7 +57,7 @@ describe("Expr - 수학 함수", () => {
   });
 
   describe("ceil - 올림", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -81,7 +81,7 @@ describe("Expr - 수학 함수", () => {
   });
 
   describe("floor - 내림", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { Table } from "../../src/schema/table-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -110,7 +110,7 @@ describe("DDL - Table Builder", () => {
       .columns((c) => ({ id: c.bigint() }))
       .primaryKey("id");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
     it("QueryDef 검증", () => {
@@ -147,7 +147,7 @@ describe("DDL - Table Builder", () => {
       }))
       .primaryKey("userId", "productId");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateTableQueryDef(Order);
 
     it("QueryDef 검증", () => {
@@ -273,7 +273,7 @@ describe("DDL - Table Builder", () => {
       }))
       .primaryKey("id");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
     it("QueryDef 검증", () => {
@@ -344,7 +344,7 @@ describe("DDL - Table Builder", () => {
       }))
       .primaryKey("id");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateTableQueryDef(Product);
 
     it("QueryDef 검증", () => {

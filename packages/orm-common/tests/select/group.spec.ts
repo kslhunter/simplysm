@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -9,7 +9,7 @@ describe("SELECT - GROUP BY", () => {
   //#region ========== 기본 GROUP BY ==========
 
   describe("단일 컬럼", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -39,7 +39,7 @@ describe("SELECT - GROUP BY", () => {
   });
 
   describe("다중 컬럼", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -74,7 +74,7 @@ describe("SELECT - GROUP BY", () => {
   });
 
   describe("집계 함수들", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -118,7 +118,7 @@ describe("SELECT - HAVING", () => {
   //#region ========== HAVING ==========
 
   describe("단일 조건", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -156,7 +156,7 @@ describe("SELECT - HAVING", () => {
   });
 
   describe("다중 조건", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -201,7 +201,7 @@ describe("SELECT - HAVING", () => {
   });
 
   describe("GROUP BY + HAVING + ORDER BY 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

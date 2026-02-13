@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./update.expected";
 
 describe("UPDATE - 기본", () => {
   describe("단순 UPDATE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -42,7 +42,7 @@ describe("UPDATE - 기본", () => {
   });
 
   describe("여러 컬럼 UPDATE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -78,7 +78,7 @@ describe("UPDATE - 기본", () => {
   });
 
   describe("현재 값 참조하여 UPDATE (e.g., count = count + 1)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -117,7 +117,7 @@ describe("UPDATE - 기본", () => {
   });
 
   describe("output 컬럼 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -159,7 +159,7 @@ describe("UPDATE - 기본", () => {
   });
 
   describe("TOP으로 업데이트 개수 제한", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -197,7 +197,7 @@ describe("UPDATE - 기본", () => {
 
 describe("FK 스위치", () => {
   describe("FK off", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" }, "off");
 
@@ -216,7 +216,7 @@ describe("FK 스위치", () => {
   });
 
   describe("FK on", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" }, "on");
 

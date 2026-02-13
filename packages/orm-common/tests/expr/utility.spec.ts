@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -10,7 +10,7 @@ describe("Expr - 유틸리티 함수", () => {
   //#region ========== ROW_NUM ==========
 
   describe("rowNum - 행 번호 (윈도우 없이)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -37,7 +37,7 @@ describe("Expr - 유틸리티 함수", () => {
   //#region ========== RANDOM ==========
 
   describe("random - 랜덤 값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -64,7 +64,7 @@ describe("Expr - 유틸리티 함수", () => {
   //#region ========== CAST ==========
 
   describe("cast - INT로 타입 변환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -91,7 +91,7 @@ describe("Expr - 유틸리티 함수", () => {
   });
 
   describe("cast - VARCHAR로 타입 변환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -122,7 +122,7 @@ describe("Expr - 유틸리티 함수", () => {
   //#region ========== RAW ==========
 
   describe("raw - 기본 raw SQL", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -149,7 +149,7 @@ describe("Expr - 유틸리티 함수", () => {
   });
 
   describe("raw - 파라미터가 있는 raw SQL", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./delete.expected";
 
 describe("TRUNCATE", () => {
   describe("테이블 전체 삭제 (TRUNCATE)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db.getTruncateQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" });
 
@@ -28,7 +28,7 @@ describe("TRUNCATE", () => {
 
 describe("DELETE - 기본", () => {
   describe("단순 DELETE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -57,7 +57,7 @@ describe("DELETE - 기본", () => {
   });
 
   describe("여러 조건으로 DELETE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -90,7 +90,7 @@ describe("DELETE - 기본", () => {
   });
 
   describe("output 컬럼 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()
@@ -124,7 +124,7 @@ describe("DELETE - 기본", () => {
   });
 
   describe("TOP으로 삭제 개수 제한", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db
       .employee()

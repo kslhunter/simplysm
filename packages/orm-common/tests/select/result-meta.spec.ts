@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { Post } from "../setup/models/Post";
 import { User } from "../setup/models/User";
 import { Company } from "../setup/models/Company";
@@ -7,7 +7,7 @@ import { expr } from "../../src/expr/expr";
 
 describe("getResultMeta", () => {
   it("기본 테이블", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db.user().getResultMeta();
 
     expect(meta).toEqual({
@@ -25,7 +25,7 @@ describe("getResultMeta", () => {
   });
 
   it("join (1:N 배열)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
@@ -54,7 +54,7 @@ describe("getResultMeta", () => {
   });
 
   it("joinSingle (N:1 단일)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .post()
       .joinSingle("user", (q, c) => q.from(User).where((item) => [expr.eq(item.id, c.userId)]))
@@ -83,7 +83,7 @@ describe("getResultMeta", () => {
   });
 
   it("다단계 join", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .post()
       .joinSingle("user", (q, c) =>
@@ -121,7 +121,7 @@ describe("getResultMeta", () => {
   });
 
   it("다중 join (배열 + 단일)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
@@ -155,7 +155,7 @@ describe("getResultMeta", () => {
   });
 
   it("select로 커스텀 columns", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .user()
       .select((cols) => ({
@@ -174,7 +174,7 @@ describe("getResultMeta", () => {
   });
 
   it("include (FK N:1)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .post()
       .include((item) => item.user)
@@ -203,7 +203,7 @@ describe("getResultMeta", () => {
   });
 
   it("include (FKT 1:N)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .user()
       .include((item) => item.posts)
@@ -232,7 +232,7 @@ describe("getResultMeta", () => {
   });
 
   it("다단계 include", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const meta = db
       .post()
       .include((item) => item.user.company)

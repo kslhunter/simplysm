@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -9,7 +9,7 @@ import { DateTime } from "@simplysm/core-common";
 
 describe("Expr - 날짜/시간 함수", () => {
   describe("year - 연도 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -33,7 +33,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("month - 월 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -57,7 +57,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("day - 일 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -81,7 +81,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("hour - 시 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -105,7 +105,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("minute - 분 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -129,7 +129,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("second - 초 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -153,7 +153,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (일)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -180,7 +180,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (년)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -207,7 +207,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (월)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -234,7 +234,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (시)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -261,7 +261,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (분)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -288,7 +288,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateDiff - 날짜 차이 (초)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const targetDate = new DateTime(2024, 1, 1);
     const def = db
       .user()
@@ -315,7 +315,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (월)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -341,7 +341,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (년)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -356,7 +356,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (일)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -371,7 +371,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (시)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -386,7 +386,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (분)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -401,7 +401,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("dateAdd - 날짜 더하기 (초)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -416,7 +416,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("formatDate - 날짜 포맷팅", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -441,7 +441,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("isoWeek - ISO 주차", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -469,7 +469,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("isoWeekStartDate - ISO 주차 시작일", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -497,7 +497,7 @@ describe("Expr - 날짜/시간 함수", () => {
   });
 
   describe("isoYearMonth - ISO 년월 (YYYY-MM)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

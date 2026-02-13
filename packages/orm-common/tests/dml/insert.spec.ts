@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { Table } from "../../src/schema/table-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
@@ -10,7 +10,7 @@ describe("INSERT - 기본", () => {
   //#region ========== 단일/다중 INSERT ==========
 
   describe("단일 레코드 INSERT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.employee().getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
@@ -28,7 +28,7 @@ describe("INSERT - 기본", () => {
   });
 
   describe("다중 레코드 INSERT (bulk)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.employee().getInsertQueryDef([
       { name: "홍길동", departmentId: 1 },
       { name: "김철수", managerId: 1, departmentId: 1 },
@@ -54,7 +54,7 @@ describe("INSERT - 기본", () => {
   });
 
   describe("output 컬럼 지정 (RETURNING/OUTPUT)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }], ["id", "name"]);
@@ -79,7 +79,7 @@ describe("INSERT - 기본", () => {
   });
 
   describe("nullable 컬럼 생략", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.employee().getInsertQueryDef([{ name: "홍길동" }]);
 
     it("QueryDef 검증", () => {
@@ -97,7 +97,7 @@ describe("INSERT - 기본", () => {
   });
 
   describe("AI 컬럼 명시적 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.employee().getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
@@ -122,7 +122,7 @@ describe("INSERT IF NOT EXISTS", () => {
   //#region ========== INSERT IF NOT EXISTS ==========
 
   describe("기본: WHERE NOT EXISTS로 중복 방지", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.name, "홍길동")])
@@ -155,7 +155,7 @@ describe("INSERT IF NOT EXISTS", () => {
   });
 
   describe("복합 조건으로 중복 체크", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])
@@ -206,7 +206,7 @@ describe("INSERT INTO ... SELECT", () => {
   //#region ========== INSERT INTO SELECT ==========
 
   describe("기본: SELECT 결과를 다른 테이블에 INSERT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -238,7 +238,7 @@ describe("INSERT INTO ... SELECT", () => {
   });
 
   describe("WHERE 조건과 함께 INSERT INTO SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.departmentId, 1)])

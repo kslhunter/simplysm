@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { createRelationFactory } from "../../src/schema/factory/relation-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -35,7 +35,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => Post);
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user", fkBuilder);
 
     it("QueryDef 검증", () => {
@@ -71,7 +71,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => Post);
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User).description("사용자 관계");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user", fkBuilder);
 
     it("QueryDef 검증", () => {
@@ -119,7 +119,7 @@ describe("DDL - Relation Builder", () => {
     const RelationFactory = createRelationFactory(() => Employee);
     const fkBuilder = RelationFactory.foreignKey(["companyId", "companyRegionId"], () => Company);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddFkQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Employee" },
       "company",

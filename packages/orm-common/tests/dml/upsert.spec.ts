@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./upsert.expected";
 
 describe("UPSERT - 기본", () => {
   describe("단순 UPSERT (WHERE 조건)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
@@ -50,7 +50,7 @@ describe("UPSERT - 기본", () => {
   });
 
   describe("UPDATE 값 재사용하여 INSERT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
@@ -100,7 +100,7 @@ describe("UPSERT - 기본", () => {
   });
 
   describe("output 컬럼 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 1)])
@@ -147,7 +147,7 @@ describe("UPSERT - 기본", () => {
   });
 
   describe("복합 WHERE 조건", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.name, "홍길동"), expr.eq(e.departmentId, 1)])

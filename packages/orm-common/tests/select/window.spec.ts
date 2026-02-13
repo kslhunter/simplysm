@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./window.expected";
 
 describe("SELECT - Window Functions", () => {
   describe("ROW_NUMBER: 부서별 급여 순위", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -47,7 +47,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("RANK: 전체 점수 순위 (동점 시 건너뜀)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -83,7 +83,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("DENSE_RANK: 전체 점수 순위 (동점 시 연속)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -117,7 +117,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("NTILE: 4분위로 나누기", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -151,7 +151,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("LAG: 이전 행 값 조회", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -192,7 +192,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("LEAD: 다음 행 값 조회", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -230,7 +230,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("LAG with default: 이전 행이 없을 때 기본값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -269,7 +269,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("LEAD with default: 다음 행이 없을 때 기본값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -308,7 +308,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("SUM OVER: 누적 합계", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -349,7 +349,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("AVG OVER: 이동 평균", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -386,7 +386,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("COUNT OVER: 파티션 내 개수", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -420,7 +420,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("FIRST_VALUE / LAST_VALUE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -476,7 +476,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("여러 윈도우 함수 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -535,7 +535,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("MIN OVER: 부서별 최소 ID", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({
@@ -572,7 +572,7 @@ describe("SELECT - Window Functions", () => {
   });
 
   describe("MAX OVER: 부서별 최대 ID", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .select((e) => ({

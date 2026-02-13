@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./basic.expected";
 
 describe("SELECT - 기본", () => {
   describe("테이블에서 가져오기", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -26,7 +26,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("컬럼 선택", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -54,7 +54,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("표현식 사용 (concat)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -86,7 +86,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("집계 함수", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -120,7 +120,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("ifNull (2개 인자)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -152,7 +152,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("ifNull (3개 인자, COALESCE)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -185,7 +185,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("nullIf", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -215,7 +215,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("substring", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -246,7 +246,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("substring (length 생략)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -276,7 +276,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("indexOf", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -306,7 +306,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("least", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -338,7 +338,7 @@ describe("SELECT - 기본", () => {
   });
 
   describe("greatest", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -372,7 +372,7 @@ describe("SELECT - 기본", () => {
 
 describe("SELECT - 옵션", () => {
   describe("DISTINCT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().distinct().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -391,7 +391,7 @@ describe("SELECT - 옵션", () => {
   });
 
   describe("LOCK", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().lock().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -410,7 +410,7 @@ describe("SELECT - 옵션", () => {
   });
 
   describe("DISTINCT + LOCK 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().distinct().lock().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -432,7 +432,7 @@ describe("SELECT - 옵션", () => {
 
 describe("SELECT - 제한", () => {
   describe("TOP", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.user().top(10).getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -451,7 +451,7 @@ describe("SELECT - 제한", () => {
   });
 
   describe("LIMIT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id)
@@ -475,7 +475,7 @@ describe("SELECT - 제한", () => {
   });
 
   describe("LIMIT - offset 포함", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id)

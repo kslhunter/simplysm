@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { ActiveUsers } from "../setup/views/ActiveUsers";
 import { UserSummary } from "../setup/views/UserSummary";
@@ -10,7 +10,7 @@ import * as expected from "./view.expected";
 
 describe("View - 기본", () => {
   describe("View에서 SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.activeUsers().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -28,7 +28,7 @@ describe("View - 기본", () => {
   });
 
   describe("View에서 SELECT + WHERE", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .activeUsers()
       .where((u) => [expr.gt(u.age, 20)])
@@ -56,7 +56,7 @@ describe("View - 기본", () => {
   });
 
   describe("View에서 SELECT + 컬럼 선택", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .activeUsers()
       .select((u) => ({
@@ -84,7 +84,7 @@ describe("View - 기본", () => {
   });
 
   describe("View에서 SELECT + ORDER BY", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .activeUsers()
       .orderBy((u) => u.name, "ASC")
@@ -106,7 +106,7 @@ describe("View - 기본", () => {
   });
 
   describe("View에서 SELECT + ORDER BY + LIMIT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .activeUsers()
       .orderBy((u) => u.id)
@@ -132,7 +132,7 @@ describe("View - 기본", () => {
 
 describe("View - SELECT가 있는 뷰", () => {
   describe("UserSummaryView에서 SELECT", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.userSummary().getSelectQueryDef();
 
     it("QueryDef 검증", () => {
@@ -150,7 +150,7 @@ describe("View - SELECT가 있는 뷰", () => {
   });
 
   describe("UserSummaryView에서 특정 컬럼 선택", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .userSummary()
       .select((u) => ({
@@ -178,7 +178,7 @@ describe("View - SELECT가 있는 뷰", () => {
 
 describe("View - DDL", () => {
   describe("getCreateViewQueryDef - ActiveUsersView", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateViewQueryDef(ActiveUsers);
 
     it("QueryDef 검증", () => {
@@ -207,7 +207,7 @@ describe("View - DDL", () => {
   });
 
   describe("getCreateViewQueryDef - UserSummaryView", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateViewQueryDef(UserSummary);
 
     it("QueryDef 검증", () => {

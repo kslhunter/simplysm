@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { Post } from "../setup/models/Post";
 import { User } from "../setup/models/User";
 import { Company } from "../setup/models/Company";
@@ -11,7 +11,7 @@ import * as expected from "./join.expected";
 
 describe("SELECT - JOIN", () => {
   describe("기본", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
@@ -62,7 +62,7 @@ describe("SELECT - JOIN", () => {
   });
 
   describe("joinSingle", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .joinSingle("user", (q, c) => q.from(User).where((item) => [expr.eq(item.id, c.userId)]))
@@ -113,7 +113,7 @@ describe("SELECT - JOIN", () => {
   });
 
   it("select 후 join", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({ id: item.id, name: item.name }))
@@ -153,7 +153,7 @@ describe("SELECT - JOIN", () => {
   });
 
   it("다중 join", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
@@ -214,7 +214,7 @@ describe("SELECT - JOIN", () => {
   });
 
   it("다단계 join(Single)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .joinSingle("user", (q, c) =>
@@ -293,7 +293,7 @@ describe("SELECT - JOIN", () => {
   });
 
   it("join + where 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .join("post", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
@@ -347,7 +347,7 @@ describe("SELECT - JOIN", () => {
 
 describe("SELECT - INCLUDE", () => {
   it("FK (N:1)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user)
@@ -391,7 +391,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   it("FKT (1:N)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .include((item) => item.posts)
@@ -435,7 +435,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   it("다단계 include (FK -> FK)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user.company)
@@ -495,7 +495,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   it("다중 include", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user)
@@ -557,7 +557,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   it("include + select 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user)
@@ -594,7 +594,7 @@ describe("SELECT - INCLUDE", () => {
   });
 
   it("include + where 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user)
@@ -647,7 +647,7 @@ describe("SELECT - INCLUDE", () => {
 
   describe("3 depth include (FK -> FKT -> FK)", () => {
     // Post → user(FK) → posts(FKT) → user(FK)
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .post()
       .include((item) => item.user.posts.user)

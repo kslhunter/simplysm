@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { createIndexFactory } from "../../src/schema/factory/index-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -10,7 +10,7 @@ const IndexFactory = createIndexFactory<"name" | "email" | "age">();
 
 describe("DDL - Index Builder", () => {
   describe("IndexBuilder - 단일 컬럼 인덱스", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("email");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -33,7 +33,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - unique 인덱스", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").unique();
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -56,7 +56,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - 복합 인덱스", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -82,7 +82,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - orderBy 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").orderBy("DESC", "ASC");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -108,7 +108,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - name 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").name("UQ_User_email");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -131,7 +131,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - description 지정", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").description("이메일 검색용 인덱스");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 
@@ -154,7 +154,7 @@ describe("DDL - Index Builder", () => {
   });
 
   describe("IndexBuilder - 복합 옵션 (unique + orderBy)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").unique().orderBy("DESC", "ASC");
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
 

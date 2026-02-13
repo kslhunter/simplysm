@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { User } from "../setup/models/User";
 import { Post } from "../setup/models/Post";
 import { GetUserById } from "../setup/procedure/GetUserById";
@@ -16,7 +16,7 @@ const Column = createColumnFactory();
 
 describe("DDL - Database", () => {
   describe("getClearSchemaQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getClearSchemaQueryDef({ database: "TestDb", schema: "TestSchema" });
 
     it("QueryDef 검증", () => {
@@ -34,7 +34,7 @@ describe("DDL - Database", () => {
   });
 
   describe("getSchemaExistsQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getSchemaExistsQueryDef("TestDb", "TestSchema");
 
     it("QueryDef 검증", () => {
@@ -54,7 +54,7 @@ describe("DDL - Database", () => {
 
 describe("DDL - Table", () => {
   describe("getCreateTableQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateTableQueryDef(User);
 
     it("QueryDef 검증", () => {
@@ -123,7 +123,7 @@ describe("DDL - Table", () => {
   });
 
   describe("getTruncateQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getTruncateQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
     it("QueryDef 검증", () => {
@@ -140,7 +140,7 @@ describe("DDL - Table", () => {
   });
 
   describe("getSwitchFkQueryDef - on", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "on");
 
     it("QueryDef 검증", () => {
@@ -158,7 +158,7 @@ describe("DDL - Table", () => {
   });
 
   describe("getSwitchFkQueryDef - off", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "off");
 
     it("QueryDef 검증", () => {
@@ -176,7 +176,7 @@ describe("DDL - Table", () => {
   });
 
   describe("getDropTableQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropTableQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
     it("QueryDef 검증", () => {
@@ -193,7 +193,7 @@ describe("DDL - Table", () => {
   });
 
   describe("getRenameTableQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getRenameTableQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "Member");
 
     it("QueryDef 검증", () => {
@@ -213,7 +213,7 @@ describe("DDL - Table", () => {
 
 describe("DDL - Column", () => {
   describe("getAddColumnQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const column = Column.varchar(50).nullable();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "nickname", column);
 
@@ -238,7 +238,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getAddColumnQueryDef - with default", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const column = Column.int().default(0);
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
 
@@ -263,7 +263,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getAddColumnQueryDef - with autoIncrement", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const column = Column.bigint().autoIncrement();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "seq", column);
 
@@ -288,7 +288,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getDropColumnQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "email");
 
     it("QueryDef 검증", () => {
@@ -306,7 +306,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getModifyColumnQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const column = Column.varchar(200).nullable();
     const def = db.getModifyColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
 
@@ -331,7 +331,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getModifyColumnQueryDef - TYPE + DEFAULT 동시 변경", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const column = Column.int().default(100);
     const def = db.getModifyColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
 
@@ -356,7 +356,7 @@ describe("DDL - Column", () => {
   });
 
   describe("getRenameColumnQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getRenameColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       "name",
@@ -381,7 +381,7 @@ describe("DDL - Column", () => {
 
 describe("DDL - Primary Key", () => {
   describe("getDropPkQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" });
 
     it("QueryDef 검증", () => {
@@ -398,7 +398,7 @@ describe("DDL - Primary Key", () => {
   });
 
   describe("getAddPkQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["id"]);
 
     it("QueryDef 검증", () => {
@@ -416,7 +416,7 @@ describe("DDL - Primary Key", () => {
   });
 
   describe("getAddPkQueryDef - composite key", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "UserRole" }, [
       "userId",
       "roleId",
@@ -439,7 +439,7 @@ describe("DDL - Primary Key", () => {
 
 describe("DDL - Foreign Key / Index", () => {
   describe("getAddFkQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const userRelation = Post.meta.relations?.["user"];
     if (!(userRelation instanceof ForeignKeyBuilder)) {
       throw new Error("user relation not found");
@@ -467,7 +467,7 @@ describe("DDL - Foreign Key / Index", () => {
   });
 
   describe("getDropFkQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user");
 
     it("QueryDef 검증", () => {
@@ -485,7 +485,7 @@ describe("DDL - Foreign Key / Index", () => {
   });
 
   describe("getAddIdxQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const indexBuilder = new IndexBuilder({ columns: ["email"] as string[], unique: true });
 
     const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
@@ -509,7 +509,7 @@ describe("DDL - Foreign Key / Index", () => {
   });
 
   describe("getDropIdxQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["email"]);
 
     it("QueryDef 검증", () => {
@@ -527,7 +527,7 @@ describe("DDL - Foreign Key / Index", () => {
   });
 
   describe("getDropIdxQueryDef - composite", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["name", "email"]);
 
     it("QueryDef 검증", () => {
@@ -547,7 +547,7 @@ describe("DDL - Foreign Key / Index", () => {
 
 describe("DDL - View", () => {
   describe("getCreateViewQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
 
     const def = db.getCreateViewQueryDef(ActiveUsers);
 
@@ -577,7 +577,7 @@ describe("DDL - View", () => {
   });
 
   describe("getDropViewQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropViewQueryDef({ database: "TestDb", schema: "TestSchema", name: "ActiveUsers" });
 
     it("QueryDef 검증", () => {
@@ -596,7 +596,7 @@ describe("DDL - View", () => {
 
 describe("DDL - Procedure", () => {
   describe("getCreateProcQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getCreateProcQueryDef(GetUserById);
 
     it("QueryDef 검증", () => {
@@ -639,7 +639,7 @@ describe("DDL - Procedure", () => {
   });
 
   describe("getDropProcQueryDef", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getDropProcQueryDef({ database: "TestDb", schema: "TestSchema", name: "GetUserById" });
 
     it("QueryDef 검증", () => {

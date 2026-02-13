@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./conditional.expected";
 
 describe("Expr - 조건 함수", () => {
   describe("ifNull - null 대체", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -35,7 +35,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("nullIf - 값이 같으면 null", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -60,7 +60,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("if - 조건 분기", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -90,7 +90,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("switch - CASE WHEN", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -136,7 +136,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("is - 조건 boolean 변환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -164,7 +164,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("greatest - 최댓값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -191,7 +191,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("least - 최솟값", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -219,7 +219,7 @@ describe("Expr - 조건 함수", () => {
 
   describe("switch - 모든 case/default가 undefined인 경우", () => {
     it("에러를 발생시킨다", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
       expect(() => {
         db.user()
           .select((item) => ({
@@ -232,7 +232,7 @@ describe("Expr - 조건 함수", () => {
 
   describe("if - then과 else가 모두 undefined인 경우", () => {
     it("에러를 발생시킨다", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
       expect(() => {
         db.user()
           .select((item) => ({
@@ -244,7 +244,7 @@ describe("Expr - 조건 함수", () => {
   });
 
   describe("ifNull - 3개 이상 인자로 COALESCE 생성", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({

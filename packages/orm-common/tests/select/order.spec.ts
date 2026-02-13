@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -9,7 +9,7 @@ describe("SELECT - ORDER BY", () => {
   //#region ========== 기본 ORDER BY ==========
 
   describe("ASC (기본값)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id)
@@ -31,7 +31,7 @@ describe("SELECT - ORDER BY", () => {
   });
 
   describe("ASC (명시적)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id, "ASC")
@@ -53,7 +53,7 @@ describe("SELECT - ORDER BY", () => {
   });
 
   describe("DESC", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id, "DESC")
@@ -79,7 +79,7 @@ describe("SELECT - ORDER BY", () => {
   //#region ========== 다중 정렬 ==========
 
   describe("다중 정렬", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.name, "ASC")
@@ -109,7 +109,7 @@ describe("SELECT - ORDER BY", () => {
   //#region ========== 표현식 정렬 ==========
 
   describe("표현식으로 정렬", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => expr.length(item.name), "DESC")
@@ -135,7 +135,7 @@ describe("SELECT - ORDER BY", () => {
   //#region ========== 조합 ==========
 
   describe("SELECT + ORDER BY 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({ id: item.id, name: item.name }))
@@ -162,7 +162,7 @@ describe("SELECT - ORDER BY", () => {
   });
 
   describe("ORDER BY + LIMIT 조합", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .orderBy((item) => item.id, "DESC")

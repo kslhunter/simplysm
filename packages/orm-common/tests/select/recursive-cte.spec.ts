@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { Employee } from "../setup/models/Employee";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
@@ -9,7 +9,7 @@ import * as expected from "./recursive-cte.expected";
 
 describe("SELECT - Recursive CTE", () => {
   describe("기본: 특정 매니저의 모든 부하직원 조회", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
@@ -110,7 +110,7 @@ describe("SELECT - Recursive CTE", () => {
   });
 
   describe("depth 제한: recursive WHERE에서 depth 체크", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
@@ -210,7 +210,7 @@ describe("SELECT - Recursive CTE", () => {
   });
 
   describe("상위 탐색: 특정 직원의 모든 상위 매니저 조회", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.id, 100)])
@@ -309,7 +309,7 @@ describe("SELECT - Recursive CTE", () => {
   });
 
   describe("CTE 결과에 orderBy 적용", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.managerId, 1)])
@@ -410,7 +410,7 @@ describe("SELECT - Recursive CTE", () => {
   });
 
   describe("CTE 결과에 where 적용", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .employee()
       .where((e) => [expr.eq(e.managerId, 1)])

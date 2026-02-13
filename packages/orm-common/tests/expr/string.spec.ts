@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -8,7 +8,7 @@ import * as expected from "./string.expected";
 
 describe("Expr - 문자열 함수", () => {
   describe("concat - 문자열 연결 (null 처리)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -36,7 +36,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("length - 문자 길이", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -60,7 +60,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("byteLength - 바이트 길이", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -84,7 +84,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("left - 왼쪽 문자열 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -109,7 +109,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("right - 오른쪽 문자열 추출", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -134,7 +134,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("trim - 공백 제거", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -158,7 +158,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("padStart - 왼쪽 패딩", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -184,7 +184,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("replace - 문자 치환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -210,7 +210,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("upper - 대문자 변환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -234,7 +234,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("lower - 소문자 변환", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -258,7 +258,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("substring - 부분 문자열", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -284,7 +284,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("indexOf - 문자 위치 (0-based)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .select((item) => ({
@@ -309,7 +309,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("like - LIKE 패턴 매칭", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.like(item.name, "%test%")])
@@ -332,7 +332,7 @@ describe("Expr - 문자열 함수", () => {
   });
 
   describe("like - 이스케이프 처리 (%)", () => {
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db
       .user()
       .where((item) => [expr.like(item.name, "%\\%%")])

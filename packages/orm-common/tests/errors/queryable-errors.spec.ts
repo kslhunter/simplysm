@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { Queryable } from "../../src/exec/queryable";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { expr } from "../../src/expr/expr";
@@ -17,7 +17,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("executable 에러", () => {
     it("파라미터 없는 프로시저에 파라미터 전달 시 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
       expect(() => {
         // @ts-expect-error - 파라미터 없는 프로시저에 파라미터 전달 테스트
         db.getAllUsers().getExecProcQueryDef({ unexpectedParam: 1 });
@@ -27,7 +27,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("include() 에러", () => {
     it("존재하지 않는 관계를 include하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         // @ts-expect-error - 존재하지 않는 관계 테스트
@@ -36,7 +36,7 @@ describe("Queryable 에러 케이스", () => {
     });
 
     it("ViewBuilder 기반 queryable에서 include 호출 시 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         // @ts-expect-error - ViewBuilder에는 relations가 없어 include 불가
@@ -47,7 +47,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("union() 에러", () => {
     it("queryable 1개로 union하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         Queryable.union(db.user());
@@ -57,7 +57,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("limit() 에러", () => {
     it("ORDER BY 없이 limit하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.user().limit(0, 10);
@@ -67,7 +67,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("regexp() 에러", () => {
     it("MSSQL에서 regexp 사용하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
       const def = db
         .user()
         .where((item) => [expr.regexp(item.name, "^test.*")])
@@ -82,7 +82,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("inQuery() 에러", () => {
     it("다중 컬럼 서브쿼리 사용 시 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.user()
@@ -98,7 +98,7 @@ describe("Queryable 에러 케이스", () => {
     });
 
     it("컬럼 지정 없는 서브쿼리 사용 시 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.user()
@@ -116,7 +116,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("countAsync() 에러", () => {
     it("distinct() 후 직접 호출하면 에러", async () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       await expect(
         db
@@ -128,7 +128,7 @@ describe("Queryable 에러 케이스", () => {
     });
 
     it("groupBy() 후 직접 호출하면 에러", async () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       await expect(
         db
@@ -141,7 +141,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("RecursiveQueryable.union() 에러", () => {
     it("queryable 1개로 union하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.employee()
@@ -151,7 +151,7 @@ describe("Queryable 에러 케이스", () => {
     });
 
     it("queryable 0개로 union하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.employee()
@@ -163,7 +163,7 @@ describe("Queryable 에러 케이스", () => {
 
   describe("JoinQueryable.union() 에러", () => {
     it("join 내에서 queryable 1개로 union하면 에러", () => {
-      const db = new TestDbContext();
+      const db = createTestDb();
 
       expect(() => {
         db.user().join("posts", (j, u) => j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])));

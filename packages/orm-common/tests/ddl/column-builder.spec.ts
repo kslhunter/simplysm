@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TestDbContext } from "../setup/TestDbContext";
+import { createTestDb } from "../setup/TestDbContext";
 import { createColumnFactory } from "../../src/schema/factory/column-builder";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
@@ -13,7 +13,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.int();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "age", column);
 
     it("QueryDef 검증", () => {
@@ -40,7 +40,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.bigint();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
@@ -67,7 +67,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.float();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Product" },
       "weight",
@@ -98,7 +98,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.double();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "Product" }, "price", column);
 
     it("QueryDef 검증", () => {
@@ -125,7 +125,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.decimal(10, 2);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Product" },
       "amount",
@@ -156,7 +156,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.varchar(100);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
 
     it("QueryDef 검증", () => {
@@ -183,7 +183,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.char(10);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "code", column);
 
     it("QueryDef 검증", () => {
@@ -210,7 +210,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.text();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "content", column);
 
     it("QueryDef 검증", () => {
@@ -237,7 +237,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.binary();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "File" }, "data", column);
 
     it("QueryDef 검증", () => {
@@ -264,7 +264,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.boolean();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "isActive", column);
 
     it("QueryDef 검증", () => {
@@ -291,7 +291,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.datetime();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       "createdAt",
@@ -322,7 +322,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.date();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "User" },
       "birthDate",
@@ -353,7 +353,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.time();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef(
       { database: "TestDb", schema: "TestSchema", name: "Schedule" },
       "startTime",
@@ -384,7 +384,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.uuid();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "uuid", column);
 
     it("QueryDef 검증", () => {
@@ -415,7 +415,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.varchar(100).nullable();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "nickname", column);
 
     it("QueryDef 검증", () => {
@@ -442,7 +442,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.int().default(0);
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
 
     it("QueryDef 검증", () => {
@@ -469,7 +469,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.bigint().autoIncrement();
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
@@ -496,7 +496,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.varchar(100).description("사용자 이름");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
 
     it("QueryDef 검증", () => {
@@ -523,7 +523,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.varchar(50).nullable().default("Unknown");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "status", column);
 
     it("QueryDef 검증", () => {
@@ -550,7 +550,7 @@ describe("DDL - Column Builder", () => {
     const c = createColumnFactory();
     const column = c.bigint().autoIncrement().description("Primary Key");
 
-    const db = new TestDbContext();
+    const db = createTestDb();
     const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "id", column);
 
     it("QueryDef 검증", () => {
