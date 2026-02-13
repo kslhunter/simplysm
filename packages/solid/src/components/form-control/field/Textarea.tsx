@@ -7,7 +7,6 @@ import {
   type FieldSize,
   textAreaBaseClass as fieldTextAreaBaseClass,
   textAreaSizeClasses,
-  fieldErrorClass,
   fieldInsetClass,
   fieldDisabledClass,
 } from "./Field.styles";
@@ -31,9 +30,6 @@ export interface TextareaProps {
 
   /** 읽기 전용 */
   readonly?: boolean;
-
-  /** 에러 상태 */
-  error?: boolean;
 
   /** 사이즈 */
   size?: FieldSize;
@@ -80,7 +76,6 @@ export const Textarea: Component<TextareaProps> = (props) => {
     "title",
     "disabled",
     "readonly",
-    "error",
     "size",
     "inset",
     "minRows",
@@ -143,7 +138,6 @@ export const Textarea: Component<TextareaProps> = (props) => {
     twMerge(
       fieldTextAreaBaseClass,
       local.size && textAreaSizeClasses[local.size],
-      local.error && fieldErrorClass,
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
 
