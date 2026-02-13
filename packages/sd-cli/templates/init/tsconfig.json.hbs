@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
+    // 출력
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
     "moduleResolution": "bundler",
+
+    // JSX (SolidJS)
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
+
+    // Strict
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
@@ -15,13 +20,19 @@
     "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
+
+    // 모듈
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
+
+    // 빌드
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
     "importHelpers": true,
+
+    // 경로
     "baseUrl": ".",
     "paths": {
       "@{{projectName}}/*": ["packages/*/src/index.ts"]
@@ -31,6 +42,9 @@
     "*.ts",
     "packages/*/*.ts",
     "packages/*/src/**/*.ts",
-    "packages/*/src/**/*.tsx"
+    "packages/*/src/**/*.tsx",
+    "packages/*/tests/**/*.ts",
+    "packages/*/tests/**/*.tsx",
+    "tests/**/*.ts"
   ]
 }
