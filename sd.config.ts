@@ -25,7 +25,7 @@ const config: SdConfigFn = () => ({
       publish: {
         type: "sftp",
         host: "simplysm.co.kr",
-        path: "pm2/simplysm-demo/www/solid-demo",
+        path: "/srv/pm2/simplysm-demo/www/solid-demo",
         user: "simplysm",
       },
     },
@@ -34,7 +34,7 @@ const config: SdConfigFn = () => ({
       publish: {
         type: "sftp",
         host: "simplysm.co.kr",
-        path: "pm2/simplysm-demo",
+        path: "/srv/pm2/simplysm-demo",
         user: "simplysm",
       },
     },
