@@ -6,6 +6,7 @@ import {
   DatePicker,
   DateTimePicker,
   TimePicker,
+  Invalid,
   Topbar,
   Button,
 } from "@simplysm/solid";
@@ -71,8 +72,10 @@ export default function FieldPage() {
                     <TextInput disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
-                    <TextInput placeholder="에러 상태 (error prop 제거됨)" />
+                    <p class="mb-1 text-sm text-base-500">Invalid</p>
+                    <Invalid message="에러 메시지 예시">
+                      <TextInput placeholder="에러 상태" />
+                    </Invalid>
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
@@ -131,8 +134,10 @@ export default function FieldPage() {
                     <Textarea disabled value="비활성화됨" />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
-                    <Textarea placeholder="에러 상태 (error prop 제거됨)" />
+                    <p class="mb-1 text-sm text-base-500">Invalid</p>
+                    <Invalid message="에러 메시지 예시">
+                      <Textarea placeholder="에러 상태" />
+                    </Invalid>
                   </div>
                   <div>
                     <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
@@ -183,8 +188,10 @@ export default function FieldPage() {
                     <NumberInput disabled value={9999} />
                   </div>
                   <div>
-                    <p class="mb-1 text-sm text-base-500">Error (removed)</p>
-                    <NumberInput placeholder="에러 상태 (error prop 제거됨)" />
+                    <p class="mb-1 text-sm text-base-500">Invalid</p>
+                    <Invalid message="에러 메시지 예시">
+                      <NumberInput placeholder="에러 상태" />
+                    </Invalid>
                   </div>
                 </div>
               </div>
