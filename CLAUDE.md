@@ -2,125 +2,125 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 작업 흐름 규칙
+## Workflow Rules
 
-- **스킬(Skill) 완료 후 자동 진행 금지**: 사용자가 명시적으로 스킬을 호출한 경우, 스킬 실행이 완료되면 반드시 결과를 사용자에게 보고하고 **멈출 것**. 스킬 결과를 바탕으로 다음 단계를 추측하여 임의로 진행하지 않는다. 추가 작업이 필요한 경우 사용자의 명시적 지시를 기다린다.
+- **No auto-proceeding after skill completion**: When the user explicitly invokes a skill, report the result and **stop** once the skill finishes. Do not guess the next step and proceed arbitrarily. Wait for explicit user instructions if further work is needed.
 
-## 프로젝트 개요
+## Project Overview
 
-**중요**: 모든 응답과 설명은 반드시 **한국어**로 작성해야 합니다. (.claude폴더내 md파일및 각 패키지의 README.md 파일은 Context7 문서화용이므로 영문 작성)
-- 기술 용어, 코드 식별자(변수명, 함수명 등), 라이브러리 이름은 원문 그대로 유지
-- 영어로 된 에러 메시지나 로그는 원문을 보여주되, 설명은 한국어로 제공
+**IMPORTANT**: All responses and explanations must be written in **Korean** (files in `.claude/` folder and each package's `README.md` are written in English for Context7 documentation).
+- Technical terms, code identifiers (variable names, function names, etc.), and library names should remain as-is
+- Show English error messages and logs in their original form, but provide explanations in Korean
 
-Simplysm은 TypeScript 기반의 풀스택 프레임워크 모노레포이다. pnpm 워크스페이스로 관리되며, SolidJS UI, ORM, 서비스 통신, Excel 처리 등의 패키지를 제공한다.
+Simplysm is a TypeScript-based full-stack framework monorepo. Managed with pnpm workspaces, it provides packages for SolidJS UI, ORM, service communication, Excel processing, and more.
 
-### 설계 철학
+### Design Philosophy
 
-- **표준 패턴 우선**: TypeScript/JavaScript/SolidJS의 표준 패턴과 관용적인 코드 스타일을 최대한 활용하여 러닝커브를 낮춘다. 독자적인 패턴보다 익숙한 패턴을 선호한다.
-- **명시적이고 예측 가능한 코드**: 암묵적인 동작보다 명시적인 코드를 선호하여 코드의 의도를 쉽게 파악할 수 있게 한다.
-- **점진적 학습**: 각 패키지가 독립적으로 사용 가능하여 필요한 부분만 학습하고 적용할 수 있다.
+- **Standard patterns first**: Leverage standard TypeScript/JavaScript/SolidJS patterns and idiomatic code style to lower the learning curve. Prefer familiar patterns over custom ones.
+- **Explicit and predictable code**: Prefer explicit code over implicit behavior so that intent is easily understood.
+- **Incremental learning**: Each package is independently usable, allowing you to learn and apply only what you need.
 
-## 주요 명령어
+## Key Commands
 
 ```bash
-# 의존성 설치
+# Install dependencies
 pnpm install
 
-# ESLint 린트 (전체 또는 특정 경로)
+# ESLint lint (all or specific path)
 pnpm lint
 pnpm lint packages/core-common
-pnpm lint --fix              # 자동 수정
+pnpm lint --fix              # Auto-fix
 
-# TypeScript 타입체크
+# TypeScript typecheck
 pnpm typecheck
 pnpm typecheck packages/core-common
 
-# 빌드 (프로덕션)
+# Build (production)
 pnpm build
-pnpm build solid              # 특정 패키지만 빌드
+pnpm build solid              # Build specific package
 
-# Watch 모드 (라이브러리 빌드 + .d.ts 생성, 변경 감지)
+# Watch mode (library build + .d.ts generation, change detection)
 pnpm watch
-pnpm watch solid              # 특정 패키지만 watch
+pnpm watch solid              # Watch specific package
 
-# Dev 모드 (client: Vite dev server, server: 빌드)
-pnpm dev                      # solid-demo: 주소 출력됨 포트가 달라질 수 있음
+# Dev mode (client: Vite dev server, server: build)
+pnpm dev                      # solid-demo: URL printed, port may vary
 
-# NPM 배포
-pnpm pub                  # 빌드 후 배포
-pnpm pub:no-build         # 빌드 없이 배포
+# NPM publish
+pnpm pub                  # Build then publish
+pnpm pub:no-build         # Publish without build
 
-# 테스트 (Vitest)
-pnpm vitest                     # 모든 프로젝트
-pnpm vitest --project=node      # Node 환경 테스트만
-pnpm vitest --project=browser   # 브라우저 환경 테스트만
-pnpm vitest --project=solid     # SolidJS 컴포넌트 테스트
-pnpm vitest --project=orm       # ORM 통합 테스트 (Docker DB 필요)
-pnpm vitest --project=service   # Service 통합 테스트
-pnpm vitest packages/core-common      # 패키지 테스트
-pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node  # 단일 파일
-pnpm vitest -t "DateTime" --project=node   # 테스트 이름으로 필터링
+# Tests (Vitest)
+pnpm vitest                     # All projects
+pnpm vitest --project=node      # Node environment tests only
+pnpm vitest --project=browser   # Browser environment tests only
+pnpm vitest --project=solid     # SolidJS component tests
+pnpm vitest --project=orm       # ORM integration tests (Docker DB required)
+pnpm vitest --project=service   # Service integration tests
+pnpm vitest packages/core-common      # Package tests
+pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node  # Single file
+pnpm vitest -t "DateTime" --project=node   # Filter by test name
 ```
 
-## 패키지 구조
+## Package Structure
 
-### 라이브러리 패키지 (`packages/`)
-| 패키지 | 타겟 | 설명                                    |
-|--------|------|---------------------------------------|
-| `core-common` | neutral | 공통 유틸리티, 타입, 에러 클래스                   |
-| `core-browser` | browser | 브라우저 전용 확장                            |
-| `core-node` | node | Node.js 유틸리티 (파일시스템, 워커)              |
-| `cli` | node | 빌드/린트/타입체크 CLI 도구                     |
-| `eslint-plugin` | node | ESLint 커스텀 규칙                         |
-| `orm-common` | neutral | ORM 쿼리 빌더, 스키마 정의                     |
-| `orm-node` | node | DB 커넥션 (MySQL, MSSQL, PostgreSQL)     |
-| `service-common` | neutral | 서비스 프로토콜, 타입 정의                       |
-| `service-client` | neutral | WebSocket 클라이언트                       |
-| `service-server` | node | Fastify 기반 HTTP/WebSocket 서버          |
-| `solid` | browser | SolidJS UI 컴포넌트                       |
-| `solid-demo` | client | SolidJS 데모 앱 (http://localhost:40081) |
-| `excel` | neutral | Excel(.xlsx) 읽기/쓰기                    |
-| `storage` | node | FTP/SFTP 클라이언트                        |
+### Library Packages (`packages/`)
+| Package | Target | Description |
+|---------|--------|-------------|
+| `core-common` | neutral | Common utilities, types, error classes |
+| `core-browser` | browser | Browser-specific extensions |
+| `core-node` | node | Node.js utilities (filesystem, workers) |
+| `cli` | node | Build/lint/typecheck CLI tools |
+| `eslint-plugin` | node | ESLint custom rules |
+| `orm-common` | neutral | ORM query builder, schema definition |
+| `orm-node` | node | DB connections (MySQL, MSSQL, PostgreSQL) |
+| `service-common` | neutral | Service protocol, type definitions |
+| `service-client` | neutral | WebSocket client |
+| `service-server` | node | Fastify-based HTTP/WebSocket server |
+| `solid` | browser | SolidJS UI components |
+| `solid-demo` | client | SolidJS demo app (http://localhost:40081) |
+| `excel` | neutral | Excel(.xlsx) read/write |
+| `storage` | node | FTP/SFTP client |
 
-### 통합 테스트 (`tests/`)
-- `tests/orm/`: ORM 통합 테스트 (Docker DB 필요, `orm-node` 패키지 자체에는 단위 테스트 없음)
-- `tests/service/`: 서비스 통합 테스트 (브라우저 테스트)
+### Integration Tests (`tests/`)
+- `tests/orm/`: ORM integration tests (Docker DB required, `orm-node` package itself has no unit tests)
+- `tests/service/`: Service integration tests (browser tests)
 
-### 커스텀 타입 (`core-common`)
-`@simplysm/core-common`에서 제공하는 불변 타입:
-- `DateTime`, `DateOnly`, `Time`: 날짜/시간 처리
+### Custom Types (`core-common`)
+Immutable types provided by `@simplysm/core-common`:
+- `DateTime`, `DateOnly`, `Time`: Date/time handling
 - `Uuid`: UUID v4
-- `LazyGcMap`: LRU 캐시 (자동 만료)
+- `LazyGcMap`: LRU cache (auto-expiry)
 
-### 디렉토리 참조
-- `.cache/`: 빌드 캐시 (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). 초기화: `.cache/` 삭제
-- `.playwright-mcp/`: Playwright MCP 도구의 스크린샷 등 출력 디렉토리
-  - 스크린샷/스냅샷 저장 시 반드시 `.playwright-mcp/` 디렉토리에 저장할 것
+### Directory Reference
+- `.cache/`: Build cache (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). Reset: delete `.cache/`
+- `.playwright-mcp/`: Output directory for Playwright MCP tool screenshots, etc.
+  - Screenshots/snapshots must always be saved to the `.playwright-mcp/` directory
 
-## 아키텍처
+## Architecture
 
-### 의존성 계층
+### Dependency Layers
 ```
-core-common (최하위, 공통 유틸리티)
+core-common (lowest level, common utilities)
     ↑
-core-browser / core-node (환경별 확장)
+core-browser / core-node (environment-specific extensions)
     ↑
-orm-common / service-common (도메인별 공통)
+orm-common / service-common (domain-specific common)
     ↑
-orm-node / service-server / service-client (구현체)
+orm-node / service-server / service-client (implementations)
     ↑
-solid (UI 컴포넌트)
+solid (UI components)
 ```
 
-### 빌드 타겟 (sd.config.ts)
-- `node`: Node.js 전용 (DOM 제외, `@types/node` 포함)
-- `browser`: 브라우저 전용 (DOM 포함, `@types/node` 제외)
-- `neutral`: Node/브라우저 공용
-- `client`: Vite dev server로 개발
+### Build Targets (sd.config.ts)
+- `node`: Node.js only (no DOM, includes `@types/node`)
+- `browser`: Browser only (includes DOM, excludes `@types/node`)
+- `neutral`: Node/browser shared
+- `client`: Developed with Vite dev server
 
-### 주요 패턴
+### Key Patterns
 
-**ORM 테이블 정의:**
+**ORM Table Definition:**
 ```typescript
 const User = Table("User")
   .database("mydb")
@@ -131,162 +131,162 @@ const User = Table("User")
   .primaryKey("id");
 ```
 
-**서비스 아키텍처:**
-- `ServiceServer`: Fastify 기반 HTTP/WebSocket 서버
-- `ServiceClient`: WebSocket 클라이언트, RPC 호출
-- `ServiceProtocol`: 메시지 분할/병합 (3MB 초과 시 300KB 청크)
+**Service Architecture:**
+- `ServiceServer`: Fastify-based HTTP/WebSocket server
+- `ServiceClient`: WebSocket client, RPC calls
+- `ServiceProtocol`: Message split/merge (300KB chunks when >3MB)
 
-## ORM 보안 가이드
+## ORM Security Guide
 
-### SQL 인젝션 방지
+### SQL Injection Prevention
 
-orm-common은 문자열 이스케이프 방식으로 SQL을 생성합니다.
-다음 규칙을 준수하세요:
+orm-common generates SQL using string escaping.
+Follow these rules:
 
-#### ✓ 안전한 사용
-- 애플리케이션 코드에서 값 검증 후 ORM 사용
-- 타입이 보장된 값 (number, boolean, DateTime 등)
-- 신뢰할 수 있는 내부 데이터
+#### Safe Usage
+- Use ORM after validating values in application code
+- Type-guaranteed values (number, boolean, DateTime, etc.)
+- Trusted internal data
 
-#### ✗ 위험한 사용
-- 사용자 입력을 검증 없이 WHERE 조건에 직접 사용
-- 외부 API 응답을 검증 없이 사용
-- 파일 업로드 내용을 검증 없이 사용
+#### Unsafe Usage
+- Using user input directly in WHERE conditions without validation
+- Using external API responses without validation
+- Using file upload content without validation
 
-#### 권장 패턴
+#### Recommended Patterns
 ```typescript
-// 나쁜 예: 사용자 입력 직접 사용
+// Bad: Direct user input
 const userInput = req.query.name; // "'; DROP TABLE users; --"
 await db.user().where((u) => [expr.eq(u.name, userInput)]).result();
 
-// 좋은 예: 검증 후 사용
-const userName = validateUserName(req.query.name); // 검증 실패 시 예외
+// Good: Validate first
+const userName = validateUserName(req.query.name); // Throws on invalid
 await db.user().where((u) => [expr.eq(u.name, userName)]).result();
 
-// 더 좋은 예: 타입 강제
-const userId = Number(req.query.id); // NaN 체크 필수
+// Better: Type coercion
+const userId = Number(req.query.id); // NaN check required
 if (Number.isNaN(userId)) throw new Error("Invalid ID");
 await db.user().where((u) => [expr.eq(u.id, userId)]).result();
 ```
 
-#### 기술적 제약
+#### Technical Constraints
 
-orm-common은 동적 쿼리 특성상 파라미터 바인딩을 사용하지 않습니다.
-대신 강화된 문자열 이스케이프를 사용합니다:
-- MySQL: 백슬래시, 따옴표, NULL 바이트, 제어 문자 이스케이프
-- utf8mb4 charset 강제로 멀티바이트 공격 방어
-- **애플리케이션 레벨 입력 검증 필수**
+orm-common does not use parameter binding due to dynamic query characteristics.
+Instead, it uses enhanced string escaping:
+- MySQL: Escapes backslashes, quotes, NULL bytes, control characters
+- Forces utf8mb4 charset to defend against multi-byte attacks
+- **Application-level input validation is required**
 
-## 코드 컨벤션
+## Code Conventions
 
-### ESLint 규칙 (`@simplysm/eslint-plugin`)
-- ECMAScript private 필드(`#field`) 금지 → TypeScript `private` 사용
-- `@simplysm/*/src/` 경로 import 금지 (*.ts, *.tsx 파일만 해당)
-  → import 추가 전: 해당 패키지의 `index.ts`를 Read하여 export 확인
-- `no-console`, `eqeqeq`, `no-shadow` 적용
-- Node.js 내장 `Buffer` → `Uint8Array` 사용
-  - 단, 외부 라이브러리가 `Buffer`를 요구하는 경우 `eslint-disable` 주석으로 예외 처리
-  - 패턴: `// eslint-disable-next-line no-restricted-globals -- {라이브러리}가 Buffer를 요구함`
-- async 함수에 await 필수
+### ESLint Rules (`@simplysm/eslint-plugin`)
+- ECMAScript private fields (`#field`) prohibited → Use TypeScript `private`
+- `@simplysm/*/src/` path imports prohibited (*.ts, *.tsx files only)
+  → Before adding imports: Read the package's `index.ts` to check exports
+- `no-console`, `eqeqeq`, `no-shadow` enforced
+- Node.js built-in `Buffer` → Use `Uint8Array`
+  - Exception: When an external library requires `Buffer`, use `eslint-disable` comment
+  - Pattern: `// eslint-disable-next-line no-restricted-globals -- {library} requires Buffer`
+- `await` required in async functions
 
-### 함수 명명 규칙
-- 함수명 끝에 `Async` 접미사 사용 금지 → 비동기 함수가 기본
-- 동기/비동기 버전이 모두 존재할 때는 동기 함수에 `Sync` 접미사 사용
+### Function Naming Rules
+- Do not use `Async` suffix on function names → Async is the default
+- When both sync and async versions exist, use `Sync` suffix on the sync function
   ```typescript
-  // 좋은 예
-  async function readFile() { ... }      // 비동기 (기본)
-  function readFileSync() { ... }        // 동기 버전
+  // Good
+  async function readFile() { ... }      // Async (default)
+  function readFileSync() { ... }        // Sync version
 
-  // 나쁜 예
-  async function readFileAsync() { ... } // Async 접미사 금지
+  // Bad
+  async function readFileAsync() { ... } // Async suffix prohibited
   ```
 
-### TypeScript 설정
+### TypeScript Configuration
 - `strict: true`, `verbatimModuleSyntax: true`
-- 경로 별칭: `@simplysm/*` → `packages/*/src/index.ts`
+- Path aliases: `@simplysm/*` → `packages/*/src/index.ts`
 - JSX: SolidJS (`jsxImportSource: "solid-js"`)
 
-### 프로토타입 확장
-`core-common`을 import하면 Array, Map, Set에 확장 메서드가 추가됨:
-- `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()` 등
+### Prototype Extensions
+Importing `core-common` adds extension methods to Array, Map, Set:
+- `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()`, etc.
 - `Map`: `getOrCreate()`, `update()`
 - `Set`: `adds()`, `toggle()`
 
-→ 확장 메서드 사용 전: `core-common/src/extensions/` 소스에서 실제 존재 여부 확인. 존재하지 않는 메서드를 추측하여 사용하지 말 것
+→ Before using extension methods: Verify actual existence in `core-common/src/extensions/` source. Do not guess methods that don't exist.
 
-### SolidJS 규칙
+### SolidJS Rules
 
-**SolidJS와 React는 다르다! React에 대한 지식으로 SolidJS를 추측하지 말라**
-- **컴포넌트 함수는 마운트 시 한 번만 실행됨** (React는 상태 변경마다 재실행)
-- **Fine-grained Reactivity**: 시그널이 변경되지 않으면 해당 expression 자체가 다시 평가되지 않음
-- **`createMemo`**: 비용이 비싼 계산을 여러 곳에서 사용할 때 필요
-  - 시그널 변경 시 같은 함수를 3곳에서 호출하면 3번 실행됨, `createMemo`는 1번 계산 + 캐시 반환
-  - 단순 조건 분기나 가벼운 연산은 일반 함수 `() => count() * 2`로도 충분
-- **Props 구조 분해 금지** → `{ label }` 대신 `props.label`로 접근 (반응성 유지)
-- **조건부: `<Show when={...}>`**, 리스트: **`<For each={...}>`** 사용
-- **Compound Components 패턴**: 복합 컴포넌트는 부모-자식 관계를 명시적으로 표현
-- **SSR 미지원**: `window`, `document` 등 브라우저 API 직접 사용 가능
-- 반응형: 520px 미만에서 모바일 UI
-- Chrome 84+ 타겟
-  - TypeScript는 esbuild로 트랜스파일됨 → `?.`, `??` 등 최신 JS 문법 사용 가능
-  - CSS는 트랜스파일 안됨 → Chrome 84 미지원 CSS 기능 사용 금지
-    - 사용 가능: Flexbox gap
-    - 사용 금지: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
+**SolidJS is NOT React! Do not infer SolidJS behavior from React knowledge.**
+- **Component functions run only once at mount** (React re-runs on every state change)
+- **Fine-grained Reactivity**: If a signal doesn't change, the expression itself is not re-evaluated
+- **`createMemo`**: Needed when expensive computations are used in multiple places
+  - If the same function is called in 3 places on signal change, it runs 3 times; `createMemo` computes once + returns cached value
+  - Simple conditions or lightweight operations are fine as plain functions `() => count() * 2`
+- **Props destructuring prohibited** → Access via `props.label` instead of `{ label }` (preserves reactivity)
+- **Conditionals: `<Show when={...}>`**, Lists: **`<For each={...}>`**
+- **Compound Components pattern**: Complex components explicitly express parent-child relationships
+- **No SSR support**: Browser APIs like `window`, `document` can be used directly
+- Responsive: Mobile UI below 520px
+- Chrome 84+ target
+  - TypeScript is transpiled via esbuild → Modern JS syntax like `?.`, `??` is usable
+  - CSS is NOT transpiled → Do not use CSS features unsupported in Chrome 84
+    - Usable: Flexbox gap
+    - Prohibited: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 
-**Hook 네이밍 컨벤션:**
-- `create*`: SolidJS primitive를 래핑/조합하는 반응형 Hook (`createControllableSignal`, `createMountTransition`, `createTrackedWidth`)
-- `use*`: Provider Context에 의존하는 Hook (`useConfig`, `usePersisted`, `useTheme`)
-- 일반 유틸리티 함수는 Hook prefix 없이 명명
+**Hook Naming Conventions:**
+- `create*`: Reactive hooks that wrap/compose SolidJS primitives (`createControllableSignal`, `createMountTransition`, `createTrackedWidth`)
+- `use*`: Hooks that depend on Provider Context (`useConfig`, `usePersisted`, `useTheme`)
+- General utility functions are named without hook prefixes
 
-**컴파운드 컴포넌트 네이밍 규칙:**
+**Compound Component Naming Rules:**
 
-모든 서브 컴포넌트는 dot notation(`Parent.Child`)으로만 접근한다.
+All sub-components are accessed only via dot notation (`Parent.Child`).
 
-- 부모 컴포넌트에 `interface ParentComponent { Child: typeof ChildComponent }` 인터페이스 정의
-- `Parent.Child = ChildComponent;` 할당
-- `index.ts`에서 서브 컴포넌트의 별도 export 금지 (부모만 export)
-- 사용 시 부모만 import: `import { Select } from "@simplysm/solid"`
-- 예시: `Select.Item`, `Select.Action`, `List.Item`, `DataSheet.Column`, `Sidebar.Container`, `Topbar.Menu`, `Tabs.Tab`
+- Define `interface ParentComponent { Child: typeof ChildComponent }` on the parent component
+- Assign `Parent.Child = ChildComponent;`
+- Do not export sub-components separately in `index.ts` (export parent only)
+- Import only the parent when using: `import { Select } from "@simplysm/solid"`
+- Examples: `Select.Item`, `Select.Action`, `List.Item`, `DataSheet.Column`, `Sidebar.Container`, `Topbar.Menu`, `Tabs.Tab`
 
-→ 컴포넌트 수정 전: 반드시 해당 파일을 Read하여 기존 props/패턴 확인
+→ Before modifying components: Always Read the file to check existing props/patterns
 
-**구현 단순화 규칙:**
-- Provider/Context 패턴보다 단순 시그널/스토어를 우선 사용
-- 불필요한 추상화 계층 도입 금지 — 기존 코드베이스의 동일 패턴을 먼저 확인
+**Implementation Simplification Rules:**
+- Prefer simple signals/stores over Provider/Context pattern
+- Do not introduce unnecessary abstraction layers — check existing codebase for the same pattern first
 
-### 데모 페이지 규칙
-- raw HTML 요소(`<button>`, `<input>`, `<select>`, `<textarea>`) 직접 사용 금지 → `@simplysm/solid` 라이브러리 컴포넌트 사용
-- 과도한 커스텀 인라인 스타일 금지
-- 새 데모 페이지 작성 전 기존 데모 파일의 패턴을 Read하여 확인
+### Demo Page Rules
+- Do not use raw HTML elements (`<button>`, `<input>`, `<select>`, `<textarea>`) directly → Use `@simplysm/solid` library components
+- No excessive custom inline styles
+- Before writing new demo pages, Read existing demo files to check patterns
 
 ### Tailwind CSS
 
-**설정 (`packages/solid/tailwind.config.ts`):**
-- `darkMode: "class"` → `<html class="dark">`로 다크 모드 전환
-- Chrome 84 미지원으로 `aspectRatio` 플러그인 비활성화
-- 크기 단위는 `rem` 기본. 단, 주변 텍스트 크기에 비례해야 하는 경우(예: Icon)는 `em` 사용
+**Configuration (`packages/solid/tailwind.config.ts`):**
+- `darkMode: "class"` → Toggle dark mode with `<html class="dark">`
+- `aspectRatio` plugin disabled due to Chrome 84 incompatibility
+- Default size unit is `rem`. Use `em` when size should scale relative to surrounding text (e.g., Icon)
 
-**커스텀 테마:**
+**Custom Theme:**
 ```typescript
-// 시맨틱 색상 (Tailwind colors 기반)
+// Semantic colors (based on Tailwind colors)
 colors: {
   primary: colors.blue,
   info: colors.sky,
   success: colors.green,
   warning: colors.amber,
   danger: colors.red,
-  base: colors.zinc,       // 중립 회색 (배경, 테두리, 보조 텍스트 등)
+  base: colors.zinc,       // Neutral gray (backgrounds, borders, secondary text, etc.)
 }
-// → zinc-* 직접 사용 금지 → base-* 사용
+// → Do not use zinc-* directly → Use base-*
 
-// 폼 필드 높이
+// Form field heights
 height/size: {
-  field: "...",      // 기본 (py-1 기준)
-  "field-sm": "...", // 작은 (py-0.5 기준)
-  "field-lg": "...", // 큰 (py-2 기준)
+  field: "...",      // Default (py-1 basis)
+  "field-sm": "...", // Small (py-0.5 basis)
+  "field-lg": "...", // Large (py-2 basis)
 }
 
-// z-index 계층
+// z-index layers
 zIndex: {
   sidebar: "100",
   "sidebar-backdrop": "99",
@@ -294,15 +294,15 @@ zIndex: {
 }
 ```
 
-**스타일 작성 패턴:**
+**Style Writing Patterns:**
 ```typescript
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// 기본 클래스와 조건부 클래스 조합
+// Combine base and conditional classes
 const baseClass = clsx("inline-flex items-center", "px-2 py-1");
 
-// 테마/변형별 클래스 객체로 정의
+// Define theme/variant classes as objects
 const themeClasses = {
   primary: {
     solid: clsx("bg-primary-500", "hover:bg-primary-600", "dark:hover:bg-primary-400"),
@@ -310,25 +310,25 @@ const themeClasses = {
   },
 };
 
-// twMerge로 클래스 충돌 해결
+// Resolve class conflicts with twMerge
 const className = twMerge(baseClass, themeClasses.primary.solid, props.class);
 ```
 
-**`clsx` 템플릿 필수 사용 규칙:**
-- 여러 Tailwind 클래스를 나열할 때 반드시 `clsx()`로 묶어야 한다
-- 의미 단위(레이아웃, 색상, 간격, dark 모드 등)별로 문자열을 분리하여 가독성을 높인다
+**`clsx` Template Mandatory Usage Rule:**
+- When listing multiple Tailwind classes, always wrap them in `clsx()`
+- Separate strings by semantic groups (layout, colors, spacing, dark mode, etc.) for readability
 ```typescript
-// 좋은 예: clsx로 의미 단위별 분리
+// Good: Separate by semantic groups with clsx
 const cls = clsx(
   "bg-primary-100 text-primary-900",
   "dark:bg-primary-900/40 dark:text-primary-100",
 );
 
-// 나쁜 예: 긴 클래스를 하나의 문자열에 모두 나열
+// Bad: All classes in a single long string
 const cls = "bg-primary-100 text-primary-900 dark:bg-primary-900/40 dark:text-primary-100";
 ```
 
-**앱에서 preset으로 사용:**
+**Using as preset in apps:**
 ```typescript
 // solid-demo/tailwind.config.ts
 import simplysmPreset from "@simplysm/solid/tailwind.config";
@@ -340,38 +340,38 @@ export default {
 };
 ```
 
-→ 스타일 수정 전: 같은 컴포넌트의 기존 클래스 패턴을 Read하여 확인
+→ Before modifying styles: Read existing class patterns of the same component
 
-## 테스트 환경 (vitest.config.ts)
+## Test Environment (vitest.config.ts)
 
-| 프로젝트 | 환경 | 패턴 |
-|---------|------|------|
-| node | Node.js | `packages/*/tests/**/*.spec.ts` (node 패키지) |
-| browser | Playwright | `packages/*/tests/**/*.spec.ts` (browser 패키지) |
+| Project | Environment | Pattern |
+|---------|-------------|---------|
+| node | Node.js | `packages/*/tests/**/*.spec.ts` (node packages) |
+| browser | Playwright | `packages/*/tests/**/*.spec.ts` (browser packages) |
 | solid | Playwright + vite-plugin-solid | `packages/solid/tests/**/*.spec.tsx` |
 | orm | Node.js + Docker | `tests/orm/**/*.spec.ts` |
 | service | Playwright | `tests/service/**/*.spec.ts` |
 
-## 코드 작성 전 필수 확인
+## Pre-coding Checklist
 
-- 새 파일 생성 전: 유사한 기존 파일을 Glob/Read하여 구조와 패턴 확인
-- 함수/클래스 수정 전: 해당 파일을 Read하여 기존 코드 스타일 파악
-- API/메서드 사용 시 확신이 없으면: 소스코드에서 시그니처 확인
-- CLI 명령어 실행 전: 이 문서의 "주요 명령어" 섹션 참조 (임의의 플래그 사용 금지)
-- **확신도가 낮으면 코드를 작성하지 말고 사용자에게 질문할 것**
+- Before creating new files: Glob/Read similar existing files to check structure and patterns
+- Before modifying functions/classes: Read the file to understand existing code style
+- When unsure about API/method usage: Check signatures in source code
+- Before running CLI commands: Refer to the "Key Commands" section of this document (do not use arbitrary flags)
+- **If confidence is low, ask the user instead of writing code**
 
-### 검증 절차
-1. 코드 작성 후 `pnpm typecheck` 또는 `pnpm lint`로 검증
-2. 새로운 패턴 도입 시 기존 코드베이스에서 유사 사례 검색
-3. 테스트 코드 작성 시 `vitest.config.ts`의 프로젝트 구성 확인
-4. 공개 API 변경 시 (함수/클래스 추가·수정·삭제, props 변경, export 변경 등) 해당 패키지의 `README.md`도 함께 업데이트 — Context7 문서 소스이므로 코드와 문서의 동기화 필수
+### Verification Procedure
+1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
+2. When introducing new patterns, search the existing codebase for similar examples
+3. When writing test code, check the project configuration in `vitest.config.ts`
+4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — It's the Context7 documentation source, so code and docs must stay in sync
 
-### README.md 작성 규칙
+### README.md Writing Rules
 
-각 패키지의 `README.md`는 **Context7 MCP 서버의 문서 소스**로 사용된다.
-Claude가 `query-docs(libraryId="/kslhunter/simplysm", query="...")` 호출 시 이 README들이 검색/참조되므로, Context7이 잘 인덱싱할 수 있도록 작성해야 한다.
+Each package's `README.md` is used as a **documentation source for the Context7 MCP server**.
+When Claude calls `query-docs(libraryId="/kslhunter/simplysm", query="...")`, these READMEs are searched/referenced, so they must be written for good Context7 indexing.
 
-- **영문**으로 작성 (Context7 인덱싱 및 검색 품질을 위해)
-- 패키지의 **공개 API, 주요 함수/클래스, props, 설정 옵션**을 코드 예제와 함께 문서화
-- 코드 예제에는 반드시 **import 경로** 포함 (Context7이 패키지 매핑에 활용)
-- 작성/수정 전 기존 README 패턴을 Read하여 일관된 구조 유지
+- Write in **English** (for Context7 indexing and search quality)
+- Document the package's **public API, key functions/classes, props, configuration options** with code examples
+- Code examples must include **import paths** (Context7 uses these for package mapping)
+- Before writing/modifying, Read existing README patterns to maintain consistent structure
