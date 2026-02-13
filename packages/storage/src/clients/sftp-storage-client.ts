@@ -38,26 +38,29 @@ export class SftpStorageClient implements Storage {
           username: config.user,
           password: config.pass,
         });
-      } else if (process.env["SSH_AUTH_SOCK"] != null) {
-        // SSH agent 사용 (passphrase로 보호된 키도 처리)
-        await client.connect({
-          host: config.host,
-          port: config.port,
-          username: config.user,
-          agent: process.env["SSH_AUTH_SOCK"],
-        });
       } else {
-        // SSH 키 파일 직접 사용
-        const fs = await import("fs/promises");
+        // SSH agent + 키 파일로 인증 시도
+        const fsP = await import("fs/promises");
         const os = await import("os");
-        const path = await import("path");
-        const keyPath = path.join(os.homedir(), ".ssh", "id_ed25519");
-        await client.connect({
+        const pathMod = await import("path");
+        const keyPath = pathMod.join(os.homedir(), ".ssh", "id_ed25519");
+
+        const baseOptions = {
           host: config.host,
           port: config.port,
           username: config.user,
-          privateKey: await fs.readFile(keyPath),
-        });
+          ...(process.env["SSH_AUTH_SOCK"] != null ? { agent: process.env["SSH_AUTH_SOCK"] } : {}),
+        };
+
+        try {
+          await client.connect({
+            ...baseOptions,
+            privateKey: await fsP.readFile(keyPath),
+          });
+        } catch {
+          // privateKey 파싱 실패 (암호화된 키 등) → agent만으로 재시도
+          await client.connect(baseOptions);
+        }
       }
       this._client = client;
     } catch (err) {
