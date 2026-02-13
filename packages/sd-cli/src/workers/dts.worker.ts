@@ -28,8 +28,10 @@ export interface DtsWatchInfo {
 export interface DtsBuildInfo {
   name: string;
   cwd: string;
-  pkgDir: string;
-  env: TypecheckEnv;
+  /** 패키지 디렉토리. 미지정 시 non-package 모드 (packages/ 제외 전체 타입체크) */
+  pkgDir?: string;
+  /** 타입체크 환경. pkgDir과 함께 사용 */
+  env?: TypecheckEnv;
   /** true면 .d.ts 생성 + 타입체크, false면 타입체크만 (기본값: true) */
   emit?: boolean;
 }
@@ -180,11 +182,33 @@ function createDtsPathRewriter(pkgDir: string): (fileName: string, content: stri
 async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
   try {
     const parsedConfig = parseRootTsconfig(info.cwd);
-    const rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
-    const baseOptions = await getCompilerOptionsForPackage(parsedConfig.options, info.env, info.pkgDir);
 
-    // 해당 패키지 경로 (필터링용)
-    const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
+    let rootFiles: string[];
+    let baseOptions: ts.CompilerOptions;
+    let diagnosticFilter: (d: ts.Diagnostic) => boolean;
+    let tsBuildInfoFile: string;
+
+    if (info.pkgDir != null && info.env != null) {
+      // 패키지 모드 (기존 동작)
+      rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
+      baseOptions = await getCompilerOptionsForPackage(parsedConfig.options, info.env, info.pkgDir);
+      const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
+      diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix);
+
+      const shouldEmit = info.emit !== false;
+      tsBuildInfoFile = path.join(
+        info.pkgDir,
+        ".cache",
+        shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`,
+      );
+    } else {
+      // non-package 모드: packages/ 제외한 나머지 파일 타입체크
+      const packagesPrefix = path.join(info.cwd, "packages") + path.sep;
+      rootFiles = parsedConfig.fileNames.filter((f) => !f.startsWith(packagesPrefix));
+      baseOptions = parsedConfig.options;
+      diagnosticFilter = (d) => d.file == null || !d.file.fileName.startsWith(packagesPrefix);
+      tsBuildInfoFile = path.join(info.cwd, ".cache", "typecheck-root.tsbuildinfo");
+    }
 
     // emit 여부 결정 (기본값: true)
     const shouldEmit = info.emit !== false;
@@ -193,16 +217,12 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       ...baseOptions,
       sourceMap: false,
       incremental: true,
-      tsBuildInfoFile: path.join(
-        info.pkgDir,
-        ".cache",
-        shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`,
-      ),
+      tsBuildInfoFile,
     };
 
     // emit 여부에 따라 관련 옵션 설정
-    if (shouldEmit) {
-      // dts 생성 + 타입체크
+    if (shouldEmit && info.pkgDir != null) {
+      // dts 생성 + 타입체크 (패키지 모드에서만)
       options.noEmit = false;
       options.emitDeclarationOnly = true;
       options.declaration = true;
@@ -222,7 +242,7 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     const host = ts.createIncrementalCompilerHost(options);
 
     // 현재 패키지의 .d.ts만 flat 경로로 출력 (다른 패키지 .d.ts 생성 방지 + 중첩 경로 재작성)
-    if (shouldEmit) {
+    if (shouldEmit && info.pkgDir != null) {
       const rewritePath = createDtsPathRewriter(info.pkgDir);
       const originalWriteFile = host.writeFile;
       host.writeFile = (fileName, content, writeByteOrderMark, onError, sourceFiles, data) => {
@@ -253,9 +273,7 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     ];
 
     // 해당 패키지 src 폴더 내 파일만 에러 수집 (다른 패키지 에러 무시)
-    const filteredDiagnostics = allDiagnostics.filter(
-      (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix),
-    );
+    const filteredDiagnostics = allDiagnostics.filter(diagnosticFilter);
 
     const serializedDiagnostics = filteredDiagnostics.map(serializeDiagnostic);
     const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
