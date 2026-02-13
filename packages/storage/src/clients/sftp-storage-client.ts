@@ -31,12 +31,25 @@ export class SftpStorageClient implements Storage {
 
     const client = new SftpClient();
     try {
-      await client.connect({
-        host: config.host,
-        port: config.port,
-        username: config.user,
-        password: config.pass,
-      });
+      if (config.pass != null) {
+        await client.connect({
+          host: config.host,
+          port: config.port,
+          username: config.user,
+          password: config.pass,
+        });
+      } else {
+        const fs = await import("fs");
+        const os = await import("os");
+        const path = await import("path");
+        const keyPath = path.join(os.homedir(), ".ssh", "id_ed25519");
+        await client.connect({
+          host: config.host,
+          port: config.port,
+          username: config.user,
+          privateKey: fs.readFileSync(keyPath),
+        });
+      }
       this._client = client;
     } catch (err) {
       await client.end();
