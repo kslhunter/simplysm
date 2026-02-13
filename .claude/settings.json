@@ -46,6 +46,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "npx eslint --fix \"$TOOL_INPUT_file_path\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "npx prettier --write \"$TOOL_INPUT_file_path\" 2>/dev/null || true"
           }
         ]
