@@ -24,17 +24,17 @@ import {
 import { TableBuilder } from "./schema/table-builder";
 import { ViewBuilder } from "./schema/view-builder";
 import { ProcedureBuilder } from "./schema/procedure-builder";
-import { getMatchedPrimaryKeys, queryable, Queryable } from "./exec/queryable";
-import { ColumnBuilder, type ColumnBuilderRecord } from "./schema/factory/column-builder";
-import {
-  ForeignKeyBuilder,
-  ForeignKeyTargetBuilder,
-  RelationKeyBuilder,
-  RelationKeyTargetBuilder,
-} from "./schema/factory/relation-builder";
-import { objClearUndefined } from "@simplysm/core-common";
+import { queryable, Queryable } from "./exec/queryable";
+import { ColumnBuilder } from "./schema/factory/column-builder";
+import type { ForeignKeyBuilder } from "./schema/factory/relation-builder";
 import type { IndexBuilder } from "./schema/factory/index-builder";
 import { SystemMigration } from "./models/system-migration";
+import type { DbContextDef } from "./types/db-context-def";
+import * as tableDdl from "./ddl/table-ddl";
+import * as columnDdl from "./ddl/column-ddl";
+import * as relationDdl from "./ddl/relation-ddl";
+import * as schemaDdl from "./ddl/schema-ddl";
+import { initialize as initializeImpl, validateRelations as validateRelationsImpl } from "./ddl/initialize";
 
 /**
  * DbContext 연결 상태
@@ -200,7 +200,7 @@ export abstract class DbContext {
    * ```
    */
   async connectWithoutTransaction<R>(callback: () => Promise<R>): Promise<R> {
-    this._validateRelations();
+    validateRelationsImpl(this._getDbContextDef());
     this.resetAliasCounter();
 
     await this._executor.connect();
@@ -252,7 +252,7 @@ export abstract class DbContext {
    * @see {@link trans} 이미 연결된 상태에서 트랜잭션 시작
    */
   async connect<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
-    this._validateRelations();
+    validateRelationsImpl(this._getDbContextDef());
     this.resetAliasCounter();
 
     await this._executor.connect();
@@ -431,149 +431,16 @@ export abstract class DbContext {
    * ```
    */
   async initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void> {
-    const dbNames = options?.dbs ?? (this.database !== undefined ? [this.database] : []);
-    if (dbNames.length < 1) {
-      throw new Error("초기화할 데이터베이스가 없습니다.");
-    }
-
-    const force = options?.force ?? false;
-
-    // 1. DB 존재 확인
-    for (const dbName of dbNames) {
-      const schemaExists = await this.schemaExists(dbName);
-      if (!schemaExists) {
-        throw new Error(`데이터베이스 '${dbName}'가 존재하지 않습니다.`);
-      }
-    }
-
-    if (force) {
-      // 2. force: dbs 전체 초기화
-      for (const dbName of dbNames) {
-        await this.clearSchema({ database: dbName, schema: this.schema });
-      }
-      await this._createAllObjects();
-
-      // 모든 migration을 "적용됨"으로 등록
-      if (this.migrations.length > 0) {
-        await this.systemMigration().insert(this.migrations.map((m) => ({ code: m.name })));
-      }
-    } else {
-      // 3. Migration 기반 초기화
-      let appliedMigrations: { code: string }[] | undefined;
-      try {
-        appliedMigrations = await this.systemMigration().result();
-      } catch (err) {
-        // 테이블 없음 = 신규 환경
-        if (!this._isTableNotExistsError(err)) {
-          throw err;
-        }
-      }
-
-      if (appliedMigrations == null) {
-        // 신규 환경: 전체 생성
-        await this._createAllObjects();
-
-        // 모든 migration을 "적용됨"으로 등록
-        if (this.migrations.length > 0) {
-          await this.systemMigration().insert(this.migrations.map((m) => ({ code: m.name })));
-        }
-      } else {
-        // 기존 환경: 미적용 migration만 실행
-        const appliedCodes = new Set(appliedMigrations.map((m) => m.code));
-        const pendingMigrations = this.migrations.filter((m) => !appliedCodes.has(m.name));
-
-        for (const migration of pendingMigrations) {
-          await migration.up(this);
-          await this.systemMigration().insert([{ code: migration.name }]);
-        }
-      }
-    }
+    return initializeImpl(this, this._getDbContextDef(), options);
   }
 
   /**
-   * 전체 객체 생성 (테이블/뷰/프로시저/FK/Index)
+   * DbContextDef 객체 생성
    */
-  private async _createAllObjects(): Promise<void> {
-    // 1. 테이블/뷰/프로시저 생성
-    const builders = this._getBuilders();
-    const createDefs: QueryDef[] = [];
-    for (const builder of builders) {
-      createDefs.push(this.getCreateObjectQueryDef(builder));
-    }
-    if (createDefs.length > 0) {
-      await this.executeDefs(createDefs);
-    }
-
-    // 2. FK 생성 (TableBuilder만)
-    const tables = builders.filter((b) => b instanceof TableBuilder);
-    const addFkDefs: QueryDef[] = [];
-    for (const table of tables) {
-      const relations = table.meta.relations;
-      if (relations == null) continue;
-
-      const tableDef = this.getQueryDefObjectName(table);
-      for (const [relationName, relationDef] of Object.entries(relations)) {
-        if (!(relationDef instanceof ForeignKeyBuilder)) continue;
-
-        addFkDefs.push(this.getAddFkQueryDef(tableDef, relationName, relationDef));
-      }
-    }
-    if (addFkDefs.length > 0) {
-      await this.executeDefs(addFkDefs);
-    }
-
-    // 3. Index 생성 (TableBuilder만)
-    const createIndexDefs: QueryDef[] = [];
-    for (const table of tables) {
-      const indexes = table.meta.indexes;
-      if (indexes == null || indexes.length === 0) continue;
-
-      const indexTableDef = this.getQueryDefObjectName(table);
-      for (const indexBuilder of indexes) {
-        createIndexDefs.push(this.getAddIdxQueryDef(indexTableDef, indexBuilder));
-      }
-    }
-    if (createIndexDefs.length > 0) {
-      await this.executeDefs(createIndexDefs);
-    }
-  }
-
-  /**
-   * ForeignKeyTarget/RelationKeyTarget 관계의 유효성 검증
-   * - targetTableFn()이 반환하는 테이블에 relationName에 해당하는 FK/RelationKey가 있는지 확인
-   */
-  private _validateRelations(): void {
-    const builders = this._getBuilders();
-    const tables = builders.filter((b) => b instanceof TableBuilder);
-
-    for (const table of tables) {
-      const relations = table.meta.relations;
-      if (relations == null) continue;
-
-      for (const [relName, relDef] of Object.entries(relations)) {
-        if (!(relDef instanceof ForeignKeyTargetBuilder) && !(relDef instanceof RelationKeyTargetBuilder)) {
-          continue;
-        }
-
-        const targetTable = relDef.meta.targetTableFn();
-        const fkRelName = relDef.meta.relationName;
-        const fkRel = targetTable.meta.relations?.[fkRelName];
-
-        if (!(fkRel instanceof ForeignKeyBuilder) && !(fkRel instanceof RelationKeyBuilder)) {
-          throw new Error(
-            `Invalid relation target: ${table.meta.name}.${relName}이 참조하는 ` +
-              `'${fkRelName}'이(가) ${targetTable.meta.name}의 유효한 ForeignKey/RelationKey가 아닙니다.`,
-          );
-        }
-      }
-    }
-  }
-
-  /**
-   * DbContext의 모든 Builder 수집 (Table/View/Procedure)
-   */
-  private _getBuilders(): (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
-    const builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] = [];
+  private _getDbContextDef(): DbContextDef<any, any, any> {
+    const tables: Record<string, TableBuilder<any, any>> = {};
+    const views: Record<string, ViewBuilder<any, any, any>> = {};
+    const procedures: Record<string, ProcedureBuilder<any, any>> = {};
 
     for (const key of Object.keys(this)) {
       const value = this[key as keyof this];
@@ -581,13 +448,24 @@ export abstract class DbContext {
       // Queryable → Builder 추출
       if (value instanceof Queryable) {
         const from = value.meta.from;
-        if (from instanceof TableBuilder || from instanceof ViewBuilder || from instanceof ProcedureBuilder) {
-          builders.push(from);
+        if (from instanceof TableBuilder) {
+          tables[key] = from;
+        } else if (from instanceof ViewBuilder) {
+          views[key] = from;
+        } else if (from instanceof ProcedureBuilder) {
+          procedures[key] = from;
         }
       }
     }
 
-    return builders;
+    return {
+      meta: {
+        tables,
+        views,
+        procedures,
+        migrations: this.migrations,
+      },
+    };
   }
 
   //#endregion
@@ -703,15 +581,7 @@ export abstract class DbContext {
   getCreateObjectQueryDef(
     builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef {
-    if (builder instanceof TableBuilder) {
-      return this.getCreateTableQueryDef(builder);
-    } else if (builder instanceof ViewBuilder) {
-      return this.getCreateViewQueryDef(builder);
-    } else if (builder instanceof ProcedureBuilder) {
-      return this.getCreateProcQueryDef(builder);
-    }
-
-    throw new Error(`알 수 없는 빌더 타입: ${typeof builder}`);
+    return tableDdl.getCreateObjectQueryDef(this, builder);
   }
 
   /**
@@ -722,23 +592,7 @@ export abstract class DbContext {
    * @throws {Error} 테이블에 컬럼이 없을 때
    */
   getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef {
-    const columns = table.meta.columns as ColumnBuilderRecord | undefined;
-    if (columns == null) {
-      throw new Error(`테이블 '${table.meta.name}'에 컬럼이 없습니다.`);
-    }
-
-    return {
-      type: "createTable",
-      table: this.getQueryDefObjectName(table),
-      columns: Object.entries(columns).map(([key, col]) => ({
-        name: key,
-        dataType: col.meta.dataType,
-        autoIncrement: col.meta.autoIncrement,
-        nullable: col.meta.nullable,
-        default: col.meta.default,
-      })),
-      primaryKey: table.meta.primaryKey,
-    };
+    return tableDdl.getCreateTableQueryDef(this, table);
   }
 
   /**
@@ -749,22 +603,7 @@ export abstract class DbContext {
    * @throws {Error} 뷰에 viewFn이 없을 때
    */
   getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef {
-    if (view.meta.viewFn == null) {
-      throw new Error(`뷰 '${view.meta.name}'에 viewFn이 없습니다.`);
-    }
-
-    const qr = view.meta.viewFn(this);
-    const selectDef = qr.getSelectQueryDef();
-
-    return {
-      type: "createView",
-      view: {
-        database: view.meta.database ?? this.database,
-        schema: view.meta.schema ?? this.schema,
-        name: view.meta.name,
-      },
-      queryDef: selectDef,
-    };
+    return tableDdl.getCreateViewQueryDef(this, view);
   }
 
   /**
@@ -775,57 +614,27 @@ export abstract class DbContext {
    * @throws {Error} 프로시저에 본문이 없을 때
    */
   getCreateProcQueryDef(procedure: ProcedureBuilder<any, any>): QueryDef {
-    if (procedure.meta.query == null) {
-      throw new Error(`프로시저 '${procedure.meta.name}'에 본문이 없습니다.`);
-    }
-
-    const params = procedure.meta.params as ColumnBuilderRecord | undefined;
-    const returns = procedure.meta.returns as ColumnBuilderRecord | undefined;
-
-    return {
-      type: "createProc",
-      procedure: {
-        database: procedure.meta.database ?? this.database,
-        schema: procedure.meta.schema ?? this.schema,
-        name: procedure.meta.name,
-      },
-      params: params
-        ? Object.entries(params).map(([key, col]) => ({
-            name: key,
-            dataType: col.meta.dataType,
-            nullable: col.meta.nullable,
-            default: col.meta.default,
-          }))
-        : undefined,
-      returns: returns
-        ? Object.entries(returns).map(([key, col]) => ({
-            name: key,
-            dataType: col.meta.dataType,
-            nullable: col.meta.nullable,
-          }))
-        : undefined,
-      query: procedure.meta.query,
-    };
+    return tableDdl.getCreateProcQueryDef(this, procedure);
   }
 
   /** DROP TABLE QueryDef 생성 */
   getDropTableQueryDef(table: QueryDefObjectName): DropTableQueryDef {
-    return { type: "dropTable", table };
+    return tableDdl.getDropTableQueryDef(table);
   }
 
   /** RENAME TABLE QueryDef 생성 */
   getRenameTableQueryDef(table: QueryDefObjectName, newName: string): RenameTableQueryDef {
-    return { type: "renameTable", table, newName };
+    return tableDdl.getRenameTableQueryDef(table, newName);
   }
 
   /** DROP VIEW QueryDef 생성 */
   getDropViewQueryDef(view: QueryDefObjectName): DropViewQueryDef {
-    return { type: "dropView", view };
+    return tableDdl.getDropViewQueryDef(view);
   }
 
   /** DROP PROCEDURE QueryDef 생성 */
   getDropProcQueryDef(procedure: QueryDefObjectName): DropProcQueryDef {
-    return { type: "dropProc", procedure };
+    return tableDdl.getDropProcQueryDef(procedure);
   }
 
   //#endregion
@@ -916,22 +725,12 @@ export abstract class DbContext {
     columnName: string,
     column: ColumnBuilder<any, any>,
   ): AddColumnQueryDef {
-    return {
-      type: "addColumn",
-      table,
-      column: {
-        name: columnName,
-        dataType: column.meta.dataType,
-        autoIncrement: column.meta.autoIncrement,
-        nullable: column.meta.nullable,
-        default: column.meta.default,
-      },
-    };
+    return columnDdl.getAddColumnQueryDef(table, columnName, column);
   }
 
   /** DROP COLUMN QueryDef 생성 */
   getDropColumnQueryDef(table: QueryDefObjectName, column: string): DropColumnQueryDef {
-    return { type: "dropColumn", table, column };
+    return columnDdl.getDropColumnQueryDef(table, column);
   }
 
   /** MODIFY COLUMN QueryDef 생성 */
@@ -940,22 +739,12 @@ export abstract class DbContext {
     columnName: string,
     column: ColumnBuilder<any, any>,
   ): ModifyColumnQueryDef {
-    return {
-      type: "modifyColumn",
-      table,
-      column: {
-        name: columnName,
-        dataType: column.meta.dataType,
-        autoIncrement: column.meta.autoIncrement,
-        nullable: column.meta.nullable,
-        default: column.meta.default,
-      },
-    };
+    return columnDdl.getModifyColumnQueryDef(table, columnName, column);
   }
 
   /** RENAME COLUMN QueryDef 생성 */
   getRenameColumnQueryDef(table: QueryDefObjectName, column: string, newName: string): RenameColumnQueryDef {
-    return { type: "renameColumn", table, column, newName };
+    return columnDdl.getRenameColumnQueryDef(table, column, newName);
   }
 
   //#endregion
@@ -1068,12 +857,12 @@ export abstract class DbContext {
 
   /** DROP PRIMARY KEY QueryDef 생성 */
   getDropPkQueryDef(table: QueryDefObjectName): DropPkQueryDef {
-    return { type: "dropPk", table };
+    return relationDdl.getDropPkQueryDef(table);
   }
 
   /** ADD PRIMARY KEY QueryDef 생성 */
   getAddPkQueryDef(table: QueryDefObjectName, columns: string[]): AddPkQueryDef {
-    return { type: "addPk", table, columns };
+    return relationDdl.getAddPkQueryDef(table, columns);
   }
 
   /** ADD FOREIGN KEY QueryDef 생성 */
@@ -1082,48 +871,22 @@ export abstract class DbContext {
     relationName: string,
     relationDef: ForeignKeyBuilder<any, any>,
   ): QueryDef {
-    const targetTable = relationDef.meta.targetFn();
-    const fkColumns = relationDef.meta.columns;
-    const pk = getMatchedPrimaryKeys(fkColumns, targetTable);
-
-    return {
-      type: "addFk",
-      table,
-      foreignKey: {
-        name: `FK_${table.name}_${relationName}`,
-        fkColumns,
-        targetTable: this.getQueryDefObjectName(targetTable),
-        targetPkColumns: pk,
-      },
-    };
+    return relationDdl.getAddFkQueryDef(this, table, relationName, relationDef);
   }
 
   /** ADD INDEX QueryDef 생성 */
   getAddIdxQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef {
-    const indexMeta = indexBuilder.meta;
-
-    return {
-      type: "addIdx",
-      table,
-      index: {
-        name: indexBuilder.meta.name ?? `IDX_${table.name}_${indexMeta.columns.join("_")}`,
-        columns: indexMeta.columns.map((col, i) => ({
-          name: col,
-          orderBy: indexMeta.orderBy?.[i] ?? "ASC",
-        })),
-        unique: indexMeta.unique,
-      },
-    };
+    return relationDdl.getAddIdxQueryDef(table, indexBuilder);
   }
 
   /** DROP FOREIGN KEY QueryDef 생성 */
   getDropFkQueryDef(table: QueryDefObjectName, relationName: string): DropFkQueryDef {
-    return { type: "dropFk", table, foreignKey: `FK_${table.name}_${relationName}` };
+    return relationDdl.getDropFkQueryDef(table, relationName);
   }
 
   /** DROP INDEX QueryDef 생성 */
   getDropIdxQueryDef(table: QueryDefObjectName, columns: string[]): DropIdxQueryDef {
-    return { type: "dropIdx", table, index: `IDX_${table.name}_${columns.join("_")}` };
+    return relationDdl.getDropIdxQueryDef(table, columns);
   }
 
   //#endregion
@@ -1172,12 +935,12 @@ export abstract class DbContext {
 
   /** CLEAR SCHEMA QueryDef 생성 */
   getClearSchemaQueryDef(params: { database: string; schema?: string }): ClearSchemaQueryDef {
-    return { type: "clearSchema", database: params.database, schema: params.schema };
+    return schemaDdl.getClearSchemaQueryDef(params);
   }
 
   /** SCHEMA EXISTS QueryDef 생성 */
   getSchemaExistsQueryDef(database: string, schema?: string): SchemaExistsQueryDef {
-    return { type: "schemaExists", database, schema };
+    return schemaDdl.getSchemaExistsQueryDef(database, schema);
   }
 
   //#endregion
@@ -1224,12 +987,12 @@ export abstract class DbContext {
 
   /** TRUNCATE TABLE QueryDef 생성 */
   getTruncateQueryDef(table: QueryDefObjectName): TruncateQueryDef {
-    return { type: "truncate", table };
+    return schemaDdl.getTruncateQueryDef(table);
   }
 
   /** SWITCH FK QueryDef 생성 */
   getSwitchFkQueryDef(table: QueryDefObjectName, switch_: "on" | "off"): SwitchFkQueryDef {
-    return { type: "switchFk", table, switch: switch_ };
+    return schemaDdl.getSwitchFkQueryDef(table, switch_);
   }
 
   //#endregion
@@ -1243,50 +1006,7 @@ export abstract class DbContext {
    * @returns QueryDef에서 사용할 객체 이름 정보
    */
   getQueryDefObjectName(tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>): QueryDefObjectName {
-    return objClearUndefined({
-      database: tableOrView.meta.database ?? this.database,
-      schema: tableOrView.meta.schema ?? this.schema,
-      name: tableOrView.meta.name,
-    });
-  }
-
-  /**
-   * 테이블 없음 에러인지 확인
-   *
-   * DBMS별 에러 코드/메시지 패턴:
-   * - MySQL: errno 1146 (ER_NO_SUCH_TABLE), "Table 'xxx' doesn't exist"
-   * - MSSQL: number 208, "Invalid object name 'xxx'"
-   * - PostgreSQL: code "42P01", "relation \"xxx\" does not exist"
-   */
-  private _isTableNotExistsError(err: unknown): boolean {
-    if (err == null) return false;
-
-    // 에러 코드로 우선 확인 (다국어 환경에서도 안정적)
-    const errObj = err as Record<string, unknown>;
-    if (errObj["errno"] === 1146) return true; // MySQL ER_NO_SUCH_TABLE
-    if (errObj["number"] === 208) return true; // MSSQL
-    if (errObj["code"] === "42P01") return true; // PostgreSQL
-
-    // 폴백: 메시지 매칭 (다국어 환경에서 불안정할 수 있음)
-    const message = err instanceof Error ? err.message : String(err);
-    const lowerMessage = message.toLowerCase();
-
-    // MySQL: Table 'xxx' doesn't exist
-    if (lowerMessage.includes("doesn't exist") && lowerMessage.includes("table")) {
-      return true;
-    }
-
-    // MSSQL: Invalid object name 'xxx'
-    if (lowerMessage.includes("invalid object name")) {
-      return true;
-    }
-
-    // PostgreSQL: relation "xxx" does not exist
-    if (lowerMessage.includes("does not exist") && lowerMessage.includes("relation")) {
-      return true;
-    }
-
-    return false;
+    return tableDdl.getQueryDefObjectName(this, tableOrView);
   }
 
   //#endregion
