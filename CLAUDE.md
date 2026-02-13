@@ -344,14 +344,14 @@ export default {
 1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
 2. When introducing new patterns, search the existing codebase for similar examples
 3. When writing test code, check the project configuration in `vitest.config.ts`
-4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — It's the Context7 documentation source, so code and docs must stay in sync
+4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — README.md serves as the documentation source for consumer apps (read by Claude via `sd-simplysm-docs` rule), so code and docs must stay in sync
 
 ### README.md Writing Rules
 
-Each package's `README.md` is used as a **documentation source for the Context7 MCP server**.
-When Claude calls `query-docs(libraryId="/kslhunter/simplysm", query="...")`, these READMEs are searched/referenced, so they must be written for good Context7 indexing.
+Each package's `README.md` is used as a **documentation source for consumer apps**.
+When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-simplysm-docs` rule instructs it to read these READMEs from `node_modules/`.
 
-- Write in **English** (for Context7 indexing and search quality)
+- Write in **English** (for consistent documentation quality)
 - Document the package's **public API, key functions/classes, props, configuration options** with code examples
-- Code examples must include **import paths** (Context7 uses these for package mapping)
+- Code examples must include **import paths** (helps Claude understand which package to import from)
 - Before writing/modifying, Read existing README patterns to maintain consistent structure
