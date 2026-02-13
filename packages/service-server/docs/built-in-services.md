@@ -2,12 +2,12 @@
 
 ## OrmService
 
-Provides database connection/query/transaction via WebSocket. `@Authorize()` decorator is applied, requiring login.
+Provides database connection/query/transaction via WebSocket. `auth()` wrapper is applied, requiring login.
 
 ```typescript
-import { ServiceServer, OrmService } from "@simplysm/service-server";
+import { createServiceServer, OrmService } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "secret" },
@@ -53,9 +53,9 @@ When a WebSocket connection is closed, all DB connections opened from that socke
 Provides SHA256 hash and AES-256-CBC symmetric key encryption/decryption.
 
 ```typescript
-import { ServiceServer, CryptoService } from "@simplysm/service-server";
+import { createServiceServer, CryptoService } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   services: [CryptoService],
@@ -83,9 +83,9 @@ const server = new ServiceServer({
 A nodemailer-based email sending service. Can pass SMTP config directly or reference server config file.
 
 ```typescript
-import { ServiceServer, SmtpService } from "@simplysm/service-server";
+import { createServiceServer, SmtpService } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   services: [SmtpService],
@@ -139,9 +139,9 @@ interface SmtpSendOption {
 Supports auto-update for client apps. Searches for latest version files by platform in the client directory.
 
 ```typescript
-import { ServiceServer, AutoUpdateService } from "@simplysm/service-server";
+import { createServiceServer, AutoUpdateService } from "@simplysm/service-server";
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   services: [AutoUpdateService],

@@ -20,7 +20,7 @@
 | `close()` | `Promise<void>` | Close all WebSocket connections and shut down the server |
 | `generateAuthToken(payload)` | `Promise<string>` | Generate a JWT token (HS256, 12-hour expiration) |
 | `verifyAuthToken(token)` | `Promise<AuthTokenPayload<TAuthInfo>>` | Verify and decode a JWT token |
-| `emitEvent(eventType, infoSelector, data)` | `Promise<void>` | Publish an event to matching WebSocket clients |
+| `emitEvent(eventDef, infoSelector, data)` | `Promise<void>` | Publish an event to matching WebSocket clients |
 | `broadcastReload(clientName, changedFileSet)` | `Promise<void>` | Send a reload command to all connected clients |
 
 **Events:**
@@ -29,6 +29,21 @@
 |-------|---------|------|
 | `ready` | `void` | Emitted when the server starts listening |
 | `close` | `void` | Emitted when the server is closed |
+
+## createServiceServer
+
+Factory function for creating a `ServiceServer` instance:
+
+```typescript
+import { createServiceServer } from "@simplysm/service-server";
+
+const server = createServiceServer({
+  port: 8080,
+  rootPath: "/app/data",
+  auth: { jwtSecret: "my-secret-key" },
+  services: [MyService],
+});
+```
 
 ## Server Options (`ServiceServerOptions`)
 
@@ -49,8 +64,8 @@ interface ServiceServerOptions {
   auth?: {
     jwtSecret: string;
   };
-  /** List of service classes to register */
-  services: Type<ServiceBase>[];
+  /** List of service definitions to register */
+  services: ServiceDefinition[];
 }
 ```
 
@@ -69,12 +84,12 @@ rootPath/
 ## SSL/HTTPS Server
 
 ```typescript
-import { ServiceServer } from "@simplysm/service-server";
+import { createServiceServer } from "@simplysm/service-server";
 import { fsReadFile } from "@simplysm/core-node";
 
 const pfxBytes = await fsReadFile("/path/to/cert.pfx");
 
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 443,
   rootPath: "/app/data",
   ssl: {
@@ -90,55 +105,58 @@ await server.listen();
 
 ## Custom Service Definition
 
-Define services by inheriting from `ServiceBase`. Service methods are called via RPC from the client.
+Define services using the `defineService` function. Service methods are called via RPC from the client.
 
 ```typescript
-import { ServiceBase } from "@simplysm/service-server";
+import { defineService } from "@simplysm/service-server";
 
-class MyService extends ServiceBase {
-  async hello(name: string): Promise<string> {
+export const MyService = defineService("MyService", (ctx) => ({
+  hello: async (name: string): Promise<string> => {
     return `Hello, ${name}!`;
-  }
+  },
 
-  async getServerTime(): Promise<Date> {
+  getServerTime: async (): Promise<Date> => {
     return new Date();
-  }
-}
+  },
+}));
+
+// Export type for client-side type sharing
+export type MyServiceMethods = import("@simplysm/service-server").ServiceMethods<typeof MyService>;
 ```
 
-### ServiceBase Properties
+### ServiceContext
 
-`ServiceBase<TAuthInfo>` is an abstract class. The generic `TAuthInfo` type represents the shape of the authenticated user's data stored in the JWT token.
+The `ctx` parameter provides access to server resources within service methods.
 
 | Property | Type | Description |
 |----------|------|------|
-| `this.server` | `ServiceServer<TAuthInfo>` | Server instance reference |
-| `this.socket` | `ServiceSocket \| undefined` | WebSocket connection (`undefined` for HTTP calls) |
-| `this.http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> } \| undefined` | HTTP request context |
-| `this.authInfo` | `TAuthInfo \| undefined` | Authenticated user's custom data (from JWT `data` field) |
-| `this.clientName` | `string \| undefined` | Client app name (validated against path traversal) |
-| `this.clientPath` | `string \| undefined` | Resolved per-client directory path (`rootPath/www/{clientName}`) |
+| `ctx.server` | `ServiceServer<TAuthInfo>` | Server instance reference |
+| `ctx.socket` | `ServiceSocket \| undefined` | WebSocket connection (`undefined` for HTTP calls) |
+| `ctx.http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> } \| undefined` | HTTP request context |
+| `ctx.authInfo` | `TAuthInfo \| undefined` | Authenticated user's custom data (from JWT `data` field) |
+| `ctx.clientName` | `string \| undefined` | Client app name (validated against path traversal) |
+| `ctx.clientPath` | `string \| undefined` | Resolved per-client directory path (`rootPath/www/{clientName}`) |
 
-### ServiceBase Methods
+### ServiceContext Methods
 
 | Method | Returns | Description |
 |--------|---------|------|
-| `getConfig<T>(section)` | `Promise<T>` | Read a section from `.config.json` (root + client configs merged) |
+| `ctx.getConfig<T>(section)` | `Promise<T>` | Read a section from `.config.json` (root + client configs merged) |
 
 ## Config File Reference
 
-Read sections from `.config.json` files using `ServiceBase.getConfig()`. Root and per-client configs are automatically merged.
+Read sections from `.config.json` files using `ctx.getConfig()`. Root and per-client configs are automatically merged.
 
 ```typescript
-import { ServiceBase } from "@simplysm/service-server";
+import { defineService } from "@simplysm/service-server";
 
-class MyService extends ServiceBase {
-  async getDbHost(): Promise<string> {
+export const MyService = defineService("MyService", (ctx) => ({
+  getDbHost: async (): Promise<string> => {
     // Read "mySection" key from rootPath/.config.json or clientPath/.config.json
-    const config = await this.getConfig<{ host: string }>("mySection");
+    const config = await ctx.getConfig<{ host: string }>("mySection");
     return config.host;
-  }
-}
+  },
+}));
 ```
 
 `.config.json` example:
@@ -165,7 +183,7 @@ class MyService extends ServiceBase {
 
 ## ConfigManager
 
-A static utility class that manages loading, caching, and real-time monitoring of JSON config files. Used internally by `ServiceBase.getConfig()`.
+A static utility class that manages loading, caching, and real-time monitoring of JSON config files. Used internally by `ctx.getConfig()`.
 
 ```typescript
 import { ConfigManager } from "@simplysm/service-server";
@@ -199,32 +217,30 @@ The following routes are automatically registered when `ServiceServer.listen()` 
 ## Full Server Example
 
 ```typescript
-import { ServiceServer, ServiceBase, Authorize, OrmService, CryptoService } from "@simplysm/service-server";
-import { ServiceEventListener } from "@simplysm/service-common";
+import { createServiceServer, defineService, auth, OrmService, CryptoService } from "@simplysm/service-server";
+import { defineEvent } from "@simplysm/service-common";
 
-// Define a custom service
-@Authorize()
-class UserService extends ServiceBase<{ userId: number; role: string }> {
-  async getProfile(): Promise<{ name: string }> {
-    const userId = this.authInfo?.userId;
-    // Use this.getConfig(), this.socket, this.server, etc.
+// Define a custom service with auth
+export const UserService = defineService("UserService", auth((ctx) => ({
+  getProfile: async (): Promise<{ name: string }> => {
+    const userId = (ctx.authInfo as { userId: number; role: string })?.userId;
+    // Use ctx.getConfig(), ctx.socket, ctx.server, etc.
     return { name: "John" };
-  }
+  },
 
-  @Authorize(["admin"])
-  async deleteUser(targetId: number): Promise<void> {
+  deleteUser: auth(["admin"], async (targetId: number): Promise<void> => {
     // Admin-only operation
-  }
-}
+  }),
+})));
 
-class PublicService extends ServiceBase {
-  async healthCheck(): Promise<string> {
+export const PublicService = defineService("PublicService", (ctx) => ({
+  healthCheck: async (): Promise<string> => {
     return "OK";
-  }
-}
+  },
+}));
 
 // Create and start server
-const server = new ServiceServer({
+const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "my-secret-key" },
@@ -244,12 +260,10 @@ const token = await server.generateAuthToken({
 });
 
 // Emit events to connected clients
-class UserUpdatedEvent extends ServiceEventListener<
+const UserUpdatedEvent = defineEvent<
   { userId: number },
   { action: string }
-> {
-  readonly eventName = "UserUpdatedEvent";
-}
+>("UserUpdatedEvent");
 
 await server.emitEvent(
   UserUpdatedEvent,
