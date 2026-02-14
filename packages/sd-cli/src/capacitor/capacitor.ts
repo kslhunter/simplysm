@@ -668,7 +668,8 @@ export default config;
 
     // versionName, versionCode 설정
     const version = this._npmConfig.version;
-    const versionParts = version.split(".");
+    const cleanVersion = version.replace(/-.*$/, "");
+    const versionParts = cleanVersion.split(".");
     const versionCode =
       parseInt(versionParts[0] ?? "0") * 10000 +
       parseInt(versionParts[1] ?? "0") * 100 +
