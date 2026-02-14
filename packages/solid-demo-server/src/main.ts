@@ -1,10 +1,10 @@
 import { env } from "@simplysm/core-common";
-import { ServiceServer } from "@simplysm/service-server";
+import { createServiceServer } from "@simplysm/service-server";
 import { EchoService } from "./services/echo-service";
 import { HealthService } from "./services/health-service";
 import { SharedDataDemoService } from "./services/shared-data-demo-service";
 
-export const server = new ServiceServer({
+export const server = createServiceServer({
   rootPath: process.cwd(),
   port: 40081,
   services: [EchoService, HealthService, SharedDataDemoService],
