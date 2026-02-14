@@ -115,10 +115,10 @@ describe("config-editor", () => {
       fs.writeFileSync(
         configPath,
         [
-          'import simplysmPlugin from "@simplysm/eslint-plugin";',
+          'import simplysmEslintRecommended from "@simplysm/lint/eslint-recommended";',
           "",
           "export default [",
-          "  ...simplysmPlugin.configs.recommended,",
+          "  ...simplysmEslintRecommended,",
           "];",
         ].join("\n"),
       );
@@ -133,10 +133,10 @@ describe("config-editor", () => {
     test("does nothing if tailwind settings already exist", () => {
       const configPath = path.join(tmpDir, "eslint.config.ts");
       const original = [
-        'import simplysmPlugin from "@simplysm/eslint-plugin";',
+        'import simplysmEslintRecommended from "@simplysm/lint/eslint-recommended";',
         "",
         "export default [",
-        "  ...simplysmPlugin.configs.recommended,",
+        "  ...simplysmEslintRecommended,",
         "  {",
         '    files: ["**/*.{ts,tsx}"],',
         "    settings: {",

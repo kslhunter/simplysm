@@ -10,7 +10,7 @@ const config: SdConfigFn = () => ({
     "core-browser": { target: "browser", publish: "npm" },
     "core-common": { target: "neutral", publish: "npm" },
     "core-node": { target: "node", publish: "npm" },
-    "eslint-plugin": { target: "node", publish: "npm" },
+    "lint": { target: "node", publish: "npm" },
     "excel": { target: "neutral", publish: "npm" },
     "orm-common": { target: "neutral", publish: "npm" },
     "orm-node": { target: "node", publish: "npm" },

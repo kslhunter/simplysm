@@ -1,4 +1,4 @@
-import simplysmRootConfigs from "./packages/eslint-plugin/src/configs/recommended";
+import simplysmRootConfigs from "./packages/lint/src/eslint-recommended";
 import { globalIgnores } from "eslint/config";
 
 export default [

@@ -57,8 +57,7 @@ Group changes by **intent/purpose**, not by package. Files across multiple packa
 ## Your task
 
 **Default mode:**
-- First, unstage any already-staged files that are NOT context-relevant: `git reset HEAD -- <file>...`
-- Then stage only the context-relevant files with `git add <file>...`, then `git commit` (single commit).
+- Stage only the context-relevant files with `git add <file>...`, then `git commit` (single commit).
 
 **All mode:**
 1. Decide: single commit or split commits.

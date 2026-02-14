@@ -63,7 +63,7 @@ pnpm vitest -t "DateTime" --project=node   # Filter by test name
 | `core-browser` | browser | Browser-specific extensions |
 | `core-node` | node | Node.js utilities (filesystem, workers) |
 | `cli` | node | Build/lint/typecheck CLI tools |
-| `eslint-plugin` | node | ESLint custom rules |
+| `lint` | node | Lint config (ESLint + Stylelint) |
 | `orm-common` | neutral | ORM query builder, schema definition |
 | `orm-node` | node | DB connections (MySQL, MSSQL, PostgreSQL) |
 | `service-common` | neutral | Service protocol, type definitions |
@@ -171,7 +171,7 @@ Instead, it uses enhanced string escaping:
 
 ## Code Conventions
 
-### ESLint Rules (`@simplysm/eslint-plugin`)
+### ESLint Rules (`@simplysm/lint`)
 - ECMAScript private fields (`#field`) prohibited → Use TypeScript `private`
 - `@simplysm/*/src/` path imports prohibited (*.ts, *.tsx files only)
   → Before adding imports: Read the package's `index.ts` to check exports
