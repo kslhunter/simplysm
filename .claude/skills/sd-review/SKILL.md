@@ -1,7 +1,6 @@
 ---
 name: sd-review
-description: Use when performing a comprehensive code review of a package or path - uses sd-explore for code analysis in a forked context, then dispatches to specialized reviewer agents
-model: inherit
+description: Use when performing a comprehensive code review of a package or path for bugs, security issues, code quality, DX, and simplification opportunities
 ---
 
 # sd-review
@@ -17,12 +16,22 @@ Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in paralle
 - `/sd-review packages/solid` — review source code at the given path
 - `/sd-review` — if no argument, ask the user for the target path
 
+## When to Use
+
+- Before merging major features or after significant refactoring
+- When assessing overall code quality of a package
+- When onboarding to unfamiliar code and want a quality overview
+
+**When NOT to use:**
+- Single-file or trivial changes (typo, config tweak)
+- When you need code modifications (sd-review is analysis-only)
+
 ## Target Selection
 
-1. If `$ARGUMENTS` contains a path, use that path
-2. Otherwise, ask the user for the target path
+- With argument: `/sd-review packages/solid` — review source code at the given path
+- Without argument: ask the user for the target path
 
-**Important: the review scope is ALL source files under the target path.** Do not use git status or git diff to limit to changed files. Analyze every source file in the target path.
+**Important:** Review ALL source files under the target path. Do not use git status or git diff to limit scope.
 
 ## Reviewer Agents
 
@@ -90,6 +99,14 @@ Compile only **verified findings** into a comprehensive report.
 Each issue includes **file:line**, **description**, and **suggestion**.
 
 Optionally include an **Invalid Findings Summary** appendix showing which findings were filtered out and why.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Using git diff to limit review scope | Review ALL source files under target path |
+| Skipping verification step | Always verify subagent findings against actual code |
+| Reporting unverified issues | Only include verified findings in final report |
 
 ## Completion Criteria
 
