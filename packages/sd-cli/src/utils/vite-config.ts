@@ -139,9 +139,6 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const config: ViteUserConfig = {
     root: pkgDir,
     base: `/${name}/`,
-    resolve: {
-      preserveSymlinks: true,
-    },
     plugins: [
       tsconfigPaths({ projects: [tsconfigPath] }),
       solidPlugin(),
