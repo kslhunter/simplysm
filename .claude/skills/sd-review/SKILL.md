@@ -43,7 +43,7 @@ Invoke the `sd-explore` skill via the Skill tool to analyze the target path:
 
 ```
 Skill: sd-explore
-Args: <target-path>
+**Args:** <target-path>
 ```
 
 This runs in a **separate context**, so it does not consume the main context window. The analysis covers:

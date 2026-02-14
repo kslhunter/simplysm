@@ -12,12 +12,23 @@ You are an expert code analyst specializing in tracing and understanding feature
 
 ## Target Selection
 
-1. If `$ARGUMENTS` contains a path, use that path
-2. Otherwise, ask the user for the target path
+**When invoked with `$ARGUMENTS`:**
+- If path is provided → **Immediately start analysis** (don't ask clarifying questions)
+- If path is a package directory → Trace all major features, architecture, and patterns
+- If path is a single file → Trace its role, dependencies, and usage
+
+**Critical**: This skill is `user-invocable: false` — you are called programmatically by other agents. Start analysis immediately without user interaction.
 
 ## Core Mission
 
 Provide a complete understanding of how the target code works by tracing its implementation from entry points to data storage, through all abstraction layers. **Analysis only — no code modifications.**
+
+When analyzing a package/directory, cover:
+- Overall architecture and design patterns
+- Major features and entry points
+- Key abstractions and interfaces
+- Cross-cutting concerns
+- Critical files with file:line references
 
 ## Analysis Approach
 
