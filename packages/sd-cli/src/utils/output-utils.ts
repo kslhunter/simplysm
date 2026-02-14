@@ -34,7 +34,7 @@ export function printErrors(results: Map<string, ErrorResult>): void {
  */
 export function printServers(results: Map<string, PackageResult>, serverClientsMap?: Map<string, string[]>): void {
   // 서버 정보 수집
-  const servers = [...results.values()].filter((r) => r.status === "server" && r.port != null);
+  const servers = [...results.values()].filter((r) => r.status === "running" && r.port != null);
 
   // 서버 정보 출력 (있으면 앞에 빈 줄 추가)
   if (servers.length > 0) {

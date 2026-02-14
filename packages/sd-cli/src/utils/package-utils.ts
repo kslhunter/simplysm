@@ -38,7 +38,7 @@ export interface PackageResult {
   name: string;
   target: string;
   type: "build" | "dts" | "server" | "capacitor";
-  status: "success" | "error" | "server";
+  status: "success" | "error" | "running";
   message?: string;
   port?: number;
 }

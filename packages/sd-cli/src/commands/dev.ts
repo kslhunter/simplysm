@@ -272,7 +272,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         name: workerInfo.name,
         target: workerInfo.config.target,
         type: "server",
-        status: "server",
+        status: "running",
         port: event.port,
       });
     });
@@ -419,7 +419,7 @@ export async function runDev(options: DevOptions): Promise<void> {
           name: serverName,
           target: "server",
           type: "server",
-          status: "server",
+          status: "running",
           port: readyEvent.port,
         });
 
