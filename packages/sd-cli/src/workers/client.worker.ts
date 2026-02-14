@@ -205,8 +205,10 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     fs.mkdirSync(path.dirname(confDistPath), { recursive: true });
     fs.writeFileSync(confDistPath, JSON.stringify(info.config.configs ?? {}, undefined, 2));
 
-    // 실제 할당된 포트 반환
-    sender.send("serverReady", { port: viteServer.config.server.port });
+    // 실제 할당된 포트 반환 (config.server.port는 설정값이므로 httpServer에서 실제 포트를 가져옴)
+    const address = viteServer.httpServer?.address();
+    const actualPort = typeof address === "object" && address != null ? address.port : viteServer.config.server.port;
+    sender.send("serverReady", { port: actualPort });
   } catch (err) {
     sender.send("error", {
       message: err instanceof Error ? err.message : String(err),
