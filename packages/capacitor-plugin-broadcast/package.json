@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-broadcast",
-  "version": "13.0.3",
+  "version": "13.0.4",
   "description": "심플리즘 패키지 - Capacitor Broadcast Plugin",
   "author": "김석래",
   "repository": {
@@ -25,6 +25,6 @@
     "@capacitor/core": "^7.4.4"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.4.5"
+    "@capacitor/core": "^8.1.0"
   }
 }

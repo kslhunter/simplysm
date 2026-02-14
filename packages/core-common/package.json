@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/core-common",
-  "version": "13.0.3",
+  "version": "13.0.4",
   "description": "심플리즘 패키지 - 코어 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -30,7 +30,7 @@
   "dependencies": {
     "@zip.js/zip.js": "^2.8.20",
     "consola": "^3.4.2",
-    "fast-xml-parser": "^5.3.5",
+    "fast-xml-parser": "^5.3.6",
     "yaml": "^2.8.2"
   }
 }

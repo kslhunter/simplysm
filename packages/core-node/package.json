@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/core-node",
-  "version": "13.0.3",
+  "version": "13.0.4",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -20,9 +20,9 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "chokidar": "^5.0.0",
-    "minimatch": "^10.0.0",
     "consola": "^3.4.2",
-    "glob": "^13.0.2",
+    "glob": "^13.0.3",
+    "minimatch": "^10.2.0",
     "tsx": "^4.21.0"
   }
 }

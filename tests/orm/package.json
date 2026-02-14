@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/orm",
   "sideEffects": false,
-  "version": "13.0.3",
+  "version": "13.0.4",
   "description": "심플리즘 패키지 - ORM 통합 테스트",
   "author": "김석래",
   "repository": {
@@ -19,7 +19,7 @@
   "dependencies": {
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",
-    "mysql2": "^3.17.0",
+    "mysql2": "^3.17.1",
     "pg": "^8.18.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.1"

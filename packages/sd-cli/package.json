@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/sd-cli",
   "sideEffects": false,
-  "version": "13.0.3",
+  "version": "13.0.4",
   "description": "심플리즘 패키지 - CLI 도구",
   "author": "김석래",
   "repository": {
@@ -31,10 +31,10 @@
     "esbuild": "^0.27.3",
     "esbuild-plugin-solid": "^0.6.0",
     "eslint": "^9.39.2",
-    "glob": "^13.0.2",
+    "glob": "^13.0.3",
     "handlebars": "^4.7.8",
     "jiti": "^2.6.1",
-    "listr2": "^9.0.5",
+    "listr2": "^10.1.0",
     "semver": "^7.7.4",
     "sharp": "^0.34.5",
     "solid-js": "^1.9.11",
@@ -46,7 +46,7 @@
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-solid": "^2.11.10",
-    "vite-tsconfig-paths": "^6.1.0",
+    "vite-tsconfig-paths": "^6.1.1",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
