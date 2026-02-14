@@ -1,4 +1,19 @@
+import path from "path";
+import fs from "fs";
 import type { SdPackageConfig } from "../sd-config.types";
+
+/**
+ * import.meta.dirname에서 상위로 올라가며 package.json을 찾아 패키지 루트를 반환한다.
+ */
+export function findPackageRoot(startDir: string): string {
+  let dir = startDir;
+  while (!fs.existsSync(path.join(dir, "package.json"))) {
+    const parent = path.dirname(dir);
+    if (parent === dir) throw new Error("package.json을 찾을 수 없습니다.");
+    dir = parent;
+  }
+  return dir;
+}
 
 /**
  * 패키지명에서 watch scope 목록을 생성한다.

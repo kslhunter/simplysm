@@ -113,7 +113,7 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
       return port;
     }
   }
-  return startPort;
+  throw new Error(`포트 ${startPort}부터 ${startPort + maxRetries - 1}까지 사용 가능한 포트가 없습니다.`);
 }
 
 /**

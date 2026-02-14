@@ -213,10 +213,11 @@ function registerSshPublicKey(
     const conn = new SshClient();
     conn.on("ready", () => {
       // authorized_keys에 공개키 추가
+      const escapedKey = publicKey.replace(/'/g, "'\\''");
       const cmd = [
         "mkdir -p ~/.ssh",
         "chmod 700 ~/.ssh",
-        `echo '${publicKey}' >> ~/.ssh/authorized_keys`,
+        `echo '${escapedKey}' >> ~/.ssh/authorized_keys`,
         "chmod 600 ~/.ssh/authorized_keys",
       ].join(" && ");
 
@@ -513,7 +514,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   const allPkgPaths = (await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item)))))
     .flat()
-    .filter((item) => !item.includes("."));
+    .filter((item) => !path.basename(item).includes("."));
 
   // publish 설정이 있는 패키지 필터링
   const publishPackages: Array<{
