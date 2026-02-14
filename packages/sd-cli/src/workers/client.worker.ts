@@ -6,6 +6,7 @@ import { consola } from "consola";
 import type { SdClientPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import { createViteConfig } from "../utils/vite-config";
+import { registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
 
@@ -97,25 +98,7 @@ async function cleanup(): Promise<void> {
 // 프로세스 종료 전 리소스 정리 (SIGTERM/SIGINT)
 // 주의: worker.terminate()는 이 핸들러들을 호출하지 않고 즉시 종료됨.
 // 그러나 watch 모드에서 정상 종료는 메인 프로세스의 SIGINT/SIGTERM을 통해 이루어지므로 문제없음.
-process.on("SIGTERM", () => {
-  cleanup()
-    .catch((err) => {
-      logger.error("cleanup 실패", err);
-    })
-    .finally(() => {
-      process.exit(0);
-    });
-});
-
-process.on("SIGINT", () => {
-  cleanup()
-    .catch((err) => {
-      logger.error("cleanup 실패", err);
-    })
-    .finally(() => {
-      process.exit(0);
-    });
-});
+registerCleanupHandlers(cleanup, logger);
 
 //#endregion
 
