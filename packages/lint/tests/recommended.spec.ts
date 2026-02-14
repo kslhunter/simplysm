@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import recommended from "../src/configs/recommended";
-import plugin from "../src/plugin";
+import recommended from "../src/eslint-recommended";
+import plugin from "../src/eslint-plugin";
 
 // ESLint 설정 타입 헬퍼
 type ConfigItem = (typeof recommended)[number];

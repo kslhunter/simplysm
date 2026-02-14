@@ -6,6 +6,7 @@ import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
 import { consola, LogLevels } from "consola";
+import stylelint from "stylelint";
 
 //#region Types
 
@@ -40,6 +41,9 @@ interface LintContext {
 
 /** ESLint 설정 파일 탐색 순서 */
 const ESLINT_CONFIG_FILES = ["eslint.config.ts", "eslint.config.mts", "eslint.config.js", "eslint.config.mjs"] as const;
+
+/** Stylelint 설정 파일 탐색 순서 */
+const STYLELINT_CONFIG_FILES = ["stylelint.config.ts", "stylelint.config.mts", "stylelint.config.js", "stylelint.config.mjs", ".stylelintrc.json", ".stylelintrc.yml"] as const;
 
 /**
  * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드

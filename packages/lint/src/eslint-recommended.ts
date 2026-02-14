@@ -1,6 +1,6 @@
 import globals from "globals";
 import tseslint, { type FlatConfig } from "typescript-eslint";
-import plugin from "../plugin";
+import plugin from "./eslint-plugin";
 import importPlugin from "eslint-plugin-import";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import solidPlugin from "eslint-plugin-solid";
