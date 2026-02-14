@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/orm-common",
   "sideEffects": false,
-  "version": "13.0.7",
+  "version": "13.0.8",
   "description": "심플리즘 패키지 - ORM 모듈 (common)",
   "author": "김석래",
   "repository": {
