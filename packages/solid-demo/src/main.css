@@ -1,3 +1,4 @@
 @import "@simplysm/solid/tailwind.css";
+
 @tailwind components;
 @tailwind utilities;

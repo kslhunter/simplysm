@@ -232,8 +232,20 @@ export async function runLint(options: LintOptions): Promise<void> {
         task: async (ctx, task) => {
           const cssFiles = ctx.cssFiles!;
           task.title = `Stylelint 실행 중... (${cssFiles.length}개 파일)`;
+
+          // Stylelint 설정 파일 경로 찾기
+          let configFile: string | undefined;
+          for (const f of STYLELINT_CONFIG_FILES) {
+            const configPath = path.join(cwd, f);
+            if (await fsExists(configPath)) {
+              configFile = configPath;
+              break;
+            }
+          }
+
           const result = await stylelint.lint({
             files: cssFiles,
+            configFile,
             fix,
             cache: true,
             cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),

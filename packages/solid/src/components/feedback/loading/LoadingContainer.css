@@ -2,6 +2,7 @@
   0% {
     transform: scaleX(0);
   }
+
   60%,
   100% {
     transform: scaleX(1);
@@ -13,6 +14,7 @@
   50% {
     transform: scaleX(0);
   }
+
   100% {
     transform: scaleX(1);
   }

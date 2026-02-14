@@ -3,6 +3,7 @@
 @layer base {
   html {
     font-size: 12px;
+
     @apply bg-white text-base-900;
   }
 
@@ -28,38 +29,38 @@
   }
 
   ::-webkit-scrollbar-track {
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgb(0 0 0 / 8%);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgb(0 0 0 / 20%);
     border-radius: 0.25rem;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgb(0 0 0 / 30%);
   }
 
   ::-webkit-scrollbar-corner {
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgb(0 0 0 / 8%);
   }
 
   /* 다크모드 스크롤바 - zinc 계열 중립 톤 */
   .dark ::-webkit-scrollbar-track {
-    background-color: rgba(161, 161, 170, 0.1);
+    background-color: rgb(161 161 170 / 10%);
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    background-color: rgba(161, 161, 170, 0.25);
+    background-color: rgb(161 161 170 / 25%);
     border-radius: 0.25rem;
   }
 
   .dark ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(161, 161, 170, 0.4);
+    background-color: rgb(161 161 170 / 40%);
   }
 
   .dark ::-webkit-scrollbar-corner {
-    background-color: rgba(161, 161, 170, 0.1);
+    background-color: rgb(161 161 170 / 10%);
   }
 
   /* 텍스트 선택 영역 */
