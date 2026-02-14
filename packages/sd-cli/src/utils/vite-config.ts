@@ -123,7 +123,27 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
                   continue;
                 }
               } catch {
-                // dep package.json을 읽을 수 없으면 일단 포함 (Vite가 알아서 처리)
+                // workspace 패키지는 realpath가 소스 디렉토리로 해석되어 .pnpm 구조가 아님
+                // symlink 경로의 node_modules에서 fallback 시도
+                try {
+                  const depPkgJsonFallback = path.join(scopeDir, name, "node_modules", dep, "package.json");
+                  const depPkg = JSON.parse(fs.readFileSync(depPkgJsonFallback, "utf-8")) as {
+                    exports?: Record<string, unknown> | string;
+                    main?: string;
+                    module?: string;
+                  };
+                  if (
+                    depPkg.exports != null &&
+                    typeof depPkg.exports === "object" &&
+                    !("." in depPkg.exports) &&
+                    depPkg.main == null &&
+                    depPkg.module == null
+                  ) {
+                    continue;
+                  }
+                } catch {
+                  // 둘 다 실패하면 일단 포함 (Vite가 알아서 처리)
+                }
               }
 
               nestedDepsToInclude.push(`${excludedPkg} > ${dep}`);

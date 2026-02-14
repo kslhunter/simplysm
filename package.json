@@ -20,7 +20,7 @@
     "pub": "pnpm _sd-cli_ publish",
     "pub:no-build": "pnpm _sd-cli_ --no-build",
     "----": "",
-    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts --debug",
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
     "reinstall": "pnpm install --force",
     "postinstall": "playwright install"
   },
