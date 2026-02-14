@@ -38,9 +38,11 @@ if (path.extname(cliEntryFilePath) === ".ts") {
   }
 
   // Phase 2: 새 프로세스로 실제 CLI 실행 (모듈 캐시 초기화)
-  const child = spawn("node", [cliEntryFilePath, ...process.argv.slice(2)], {
-    stdio: "inherit",
-  });
+  const child = spawn(
+    "node",
+    ["--max-old-space-size=8192", "--max-semi-space-size=16", cliEntryFilePath, ...process.argv.slice(2)],
+    { stdio: "inherit" },
+  );
   child.on("spawn", () => {
     if (child.pid != null) configureAffinityAndPriority(child.pid);
   });
