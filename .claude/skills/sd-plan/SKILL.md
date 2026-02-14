@@ -96,7 +96,7 @@ git commit -m "feat: add specific feature"
 
 ## Execution Handoff
 
-After saving the plan:
+After saving the plan, display this message **in the system's configured language** (detect from the language setting and translate accordingly):
 
 **"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
 
