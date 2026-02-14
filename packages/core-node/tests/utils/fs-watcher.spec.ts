@@ -116,6 +116,50 @@ describe("SdFsWatcher", () => {
 
   //#endregion
 
+  //#region glob 패턴 필터링
+
+  describe("glob 패턴 필터링", () => {
+    const DELAY = 300;
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const waitForChanges = (
+      watcherInstance: FsWatcher,
+      delay: number,
+    ): Promise<Array<{ event: string; path: string }>> => {
+      return new Promise((resolve) => {
+        watcherInstance.onChange({ delay }, (changeInfos) => {
+          resolve(changeInfos.map((c) => ({ event: c.event, path: c.path })));
+        });
+      });
+    };
+
+    it("glob 패턴에 매칭되는 파일만 이벤트 수신", async () => {
+      // .txt 파일만 감시하는 glob 패턴
+      const globPattern = path.join(testDir, "**/*.txt");
+
+      watcher = await FsWatcher.watch([globPattern]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      // .txt 파일 생성 (매칭됨)
+      fs.writeFileSync(path.join(testDir, "matched.txt"), "hello");
+
+      // .json 파일 생성 (매칭 안 됨)
+      await wait(50);
+      fs.writeFileSync(path.join(testDir, "ignored.json"), "{}");
+
+      const changes = await changesPromise;
+
+      // .txt 파일만 이벤트를 받아야 함
+      expect(changes.length).toBe(1);
+      expect(changes[0].path).toContain("matched.txt");
+      expect(changes[0].event).toBe("add");
+    });
+  });
+
+  //#endregion
+
   //#region 이벤트 병합 (Event Merging)
 
   describe("이벤트 병합", () => {

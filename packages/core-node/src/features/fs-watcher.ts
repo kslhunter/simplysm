@@ -2,7 +2,30 @@ import { DebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
 import consola from "consola";
 import type { EventName } from "chokidar/handler.js";
+import { Minimatch } from "minimatch";
+import path from "path";
 import { type NormPath, pathNorm } from "../utils/path";
+
+//#region Helpers
+
+/** glob 메타문자 패턴 */
+const GLOB_CHARS_RE = /[*?{[\]]/;
+
+/**
+ * glob 패턴에서 base 디렉토리 추출.
+ * @example extractGlobBase("/home/user/src/**\/*.ts") → "/home/user/src"
+ */
+function extractGlobBase(globPath: string): string {
+  const segments = globPath.split(/[/\\]/);
+  const baseSegments: string[] = [];
+  for (const seg of segments) {
+    if (GLOB_CHARS_RE.test(seg)) break;
+    baseSegments.push(seg);
+  }
+  return baseSegments.join(path.sep) || path.sep;
+}
+
+//#endregion
 
 //#region Types
 
@@ -71,11 +94,27 @@ export class FsWatcher {
   private readonly _watcher: chokidar.FSWatcher;
   private readonly _ignoreInitial: boolean = true;
   private readonly _debounceQueues: DebounceQueue[] = [];
+  private readonly _globMatchers: Minimatch[] = [];
 
   private readonly _logger = consola.withTag("sd-fs-watcher");
 
   private constructor(paths: string[], options?: chokidar.ChokidarOptions) {
-    this._watcher = chokidar.watch(paths, {
+    const watchPaths: string[] = [];
+
+    for (const p of paths) {
+      const posixPath = p.replace(/\\/g, "/");
+      if (GLOB_CHARS_RE.test(posixPath)) {
+        this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
+        watchPaths.push(extractGlobBase(p));
+      } else {
+        watchPaths.push(p);
+      }
+    }
+
+    // 중복 경로 제거
+    const uniquePaths = [...new Set(watchPaths)];
+
+    this._watcher = chokidar.watch(uniquePaths, {
       persistent: true,
       ...options,
       ignoreInitial: true,
@@ -111,6 +150,12 @@ export class FsWatcher {
     this._watcher.on("all", (event, filePath) => {
       // 지원하는 이벤트만 처리
       if (!FS_WATCHER_EVENTS.includes(event as FsWatcherEvent)) return;
+
+      // glob 매처가 있으면 패턴 필터링 적용
+      if (this._globMatchers.length > 0) {
+        const posixFilePath = filePath.replace(/\\/g, "/");
+        if (!this._globMatchers.some((m) => m.match(posixFilePath))) return;
+      }
 
       /*
        * 이벤트 병합 전략:
@@ -148,8 +193,8 @@ export class FsWatcher {
         changeInfoMap = new Map<string, EventName>();
 
         const changeInfos = Array.from(currChangeInfoMap.entries()).map(
-          ([path, evt]): FsWatcherChangeInfo => ({
-            path: pathNorm(path),
+          ([changedPath, evt]): FsWatcherChangeInfo => ({
+            path: pathNorm(changedPath),
             event: evt as FsWatcherEvent,
           }),
         );
