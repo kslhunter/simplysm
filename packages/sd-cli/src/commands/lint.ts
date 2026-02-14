@@ -33,6 +33,10 @@ interface LintContext {
   eslint?: ESLint;
   /** 린트 대상 파일이 있을 때만 초기화됨 */
   results?: ESLint.LintResult[];
+  // Stylelint
+  hasStylelintConfig?: boolean;
+  cssFiles?: string[];
+  stylelintResult?: stylelint.LinterResult;
 }
 
 //#endregion
@@ -43,7 +47,14 @@ interface LintContext {
 const ESLINT_CONFIG_FILES = ["eslint.config.ts", "eslint.config.mts", "eslint.config.js", "eslint.config.mjs"] as const;
 
 /** Stylelint 설정 파일 탐색 순서 */
-const STYLELINT_CONFIG_FILES = ["stylelint.config.ts", "stylelint.config.mts", "stylelint.config.js", "stylelint.config.mjs", ".stylelintrc.json", ".stylelintrc.yml"] as const;
+const STYLELINT_CONFIG_FILES = [
+  "stylelint.config.ts",
+  "stylelint.config.mts",
+  "stylelint.config.js",
+  "stylelint.config.mjs",
+  ".stylelintrc.json",
+  ".stylelintrc.yml",
+] as const;
 
 /**
  * ignores 속성만 가진 ESLint 설정 객체인지 검사하는 타입 가드
@@ -93,6 +104,16 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   }
 
   return configs.filter(isGlobalIgnoresConfig).flatMap((item) => item.ignores);
+}
+
+/**
+ * Stylelint 설정 파일이 존재하는지 확인한다.
+ */
+async function hasStylelintConfig(cwd: string): Promise<boolean> {
+  for (const f of STYLELINT_CONFIG_FILES) {
+    if (await fsExists(path.join(cwd, f))) return true;
+  }
+  return false;
 }
 
 //#endregion
@@ -178,6 +199,48 @@ export async function runLint(options: LintOptions): Promise<void> {
           logger.debug("자동 수정 적용 완료");
         },
       },
+      {
+        title: "Stylelint 설정 확인",
+        task: async (ctx, task) => {
+          ctx.hasStylelintConfig = await hasStylelintConfig(cwd);
+          if (!ctx.hasStylelintConfig) {
+            task.skip("stylelint.config 파일 없음");
+          }
+        },
+      },
+      {
+        title: "CSS 파일 수집",
+        enabled: (ctx) => ctx.hasStylelintConfig === true,
+        task: async (ctx, task) => {
+          let cssFiles = await fsGlob("**/*.css", {
+            cwd,
+            ignore: ctx.ignorePatterns,
+            nodir: true,
+            absolute: true,
+          });
+          cssFiles = pathFilterByTargets(cssFiles, targets, cwd);
+          ctx.cssFiles = cssFiles;
+          task.title = `CSS 파일 수집 (${cssFiles.length}개)`;
+          if (cssFiles.length === 0) {
+            task.skip("린트할 CSS 파일이 없습니다.");
+          }
+        },
+      },
+      {
+        title: "Stylelint 실행",
+        enabled: (ctx) => (ctx.cssFiles?.length ?? 0) > 0,
+        task: async (ctx, task) => {
+          const cssFiles = ctx.cssFiles!;
+          task.title = `Stylelint 실행 중... (${cssFiles.length}개 파일)`;
+          const result = await stylelint.lint({
+            files: cssFiles,
+            fix,
+            cache: true,
+            cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
+          });
+          ctx.stylelintResult = result;
+        },
+      },
     ],
     {
       renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
@@ -214,6 +277,38 @@ export async function runLint(options: LintOptions): Promise<void> {
   // 에러 있으면 exit code 1
   if (errorCount > 0) {
     process.exitCode = 1;
+  }
+
+  // Stylelint 결과 출력
+  if (ctx.stylelintResult != null && ctx.stylelintResult.results.length > 0) {
+    const stylelintErrorCount = ctx.stylelintResult.results.sum(
+      (r) => r.warnings.filter((w) => w.severity === "error").length,
+    );
+    const stylelintWarningCount = ctx.stylelintResult.results.sum(
+      (r) => r.warnings.filter((w) => w.severity === "warning").length,
+    );
+
+    if (stylelintErrorCount > 0) {
+      logger.error("Stylelint 에러 발생", { errorCount: stylelintErrorCount, warningCount: stylelintWarningCount });
+    } else if (stylelintWarningCount > 0) {
+      logger.info("Stylelint 완료 (경고 있음)", {
+        errorCount: stylelintErrorCount,
+        warningCount: stylelintWarningCount,
+      });
+    } else {
+      logger.info("Stylelint 완료", { errorCount: stylelintErrorCount, warningCount: stylelintWarningCount });
+    }
+
+    // Stylelint formatter 출력
+    const stylelintFormatter = await stylelint.formatters.string;
+    const stylelintOutput = stylelintFormatter(ctx.stylelintResult.results, ctx.stylelintResult);
+    if (stylelintOutput) {
+      process.stdout.write(stylelintOutput);
+    }
+
+    if (stylelintErrorCount > 0) {
+      process.exitCode = 1;
+    }
   }
 }
 

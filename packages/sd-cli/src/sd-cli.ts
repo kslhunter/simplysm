@@ -40,7 +40,7 @@ export function createCliParser(argv: string[]): Argv {
     })
     .command(
       "lint [targets..]",
-      "ESLint를 실행한다.",
+      "ESLint + Stylelint를 실행한다.",
       (cmd) =>
         cmd
           .version(false)
