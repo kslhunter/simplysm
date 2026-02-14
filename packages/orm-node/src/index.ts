@@ -7,7 +7,7 @@ export * from "./connections/mysql-db-conn";
 export * from "./connections/postgresql-db-conn";
 
 // Core
-export * from "./db-conn-factory";
+export * from "./create-db-conn";
 export * from "./node-db-context-executor";
 export * from "./pooled-db-conn";
-export * from "./sd-orm";
+export * from "./create-orm";
