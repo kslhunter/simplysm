@@ -28,28 +28,33 @@ npm install pg pg-copy-streams
 ## Architecture
 
 ```
-SdOrm (top-level entry point)
+createOrm() (top-level entry point)
   └── NodeDbContextExecutor (executor between DbContext and actual DB)
-        └── DbConnFactory (connection creation and pool management)
+        └── createDbConn() (connection creation and pool management)
               └── PooledDbConn (connection pool wrapper)
                     └── MysqlDbConn / MssqlDbConn / PostgresqlDbConn (DBMS-specific low-level connections)
 ```
 
-- `SdOrm` is the top-level class that takes a `DbContext` type and connection settings to manage transactions.
+- `createOrm()` is the top-level factory function that takes a `DbContext` type and connection settings to manage transactions.
 - `NodeDbContextExecutor` is the executor used by `DbContext`, converting `QueryDef` to SQL and executing it.
-- `DbConnFactory` is a factory that acquires connections from the connection pool.
+- `createDbConn()` is a factory function that acquires connections from the connection pool.
 - `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
 - Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers.
 
 ## Core Modules
 
+### Functions
+
+| Function | Description |
+|----------|-------------|
+| `createOrm()` | ORM factory function. Takes `DbContext` type and connection settings to manage transaction-based connections. |
+| `createDbConn()` | Connection factory function. Caches connection pools by configuration and returns `PooledDbConn`. |
+
 ### Classes
 
 | Class | Description |
 |--------|------|
-| `SdOrm` | ORM top-level class. Takes `DbContext` type and connection settings to manage transaction-based connections. |
 | `NodeDbContextExecutor` | `DbContextExecutor` implementation. Converts `QueryDef` to SQL, executes it, and parses results. |
-| `DbConnFactory` | Connection factory. Caches connection pools by configuration and returns `PooledDbConn`. |
 | `PooledDbConn` | Connection pool wrapper. Acquires/returns physical connections from `generic-pool`, implements `DbConn` interface. |
 | `MysqlDbConn` | MySQL connection class. Uses `mysql2/promise` driver. |
 | `MssqlDbConn` | MSSQL/Azure SQL connection class. Uses `tedious` driver. |
@@ -65,7 +70,7 @@ SdOrm (top-level entry point)
 | `MssqlDbConnConfig` | MSSQL connection config. `dialect: "mssql" \| "mssql-azure"`. |
 | `PostgresqlDbConnConfig` | PostgreSQL connection config. `dialect: "postgresql"`. |
 | `DbPoolConfig` | Connection pool config (`min`, `max`, `acquireTimeoutMillis`, `idleTimeoutMillis`). |
-| `SdOrmOptions` | `SdOrm` options. `database`, `schema` settings that override `DbConnConfig`. |
+| `OrmOptions` | `createOrm()` options. `database`, `schema` settings that override `DbConnConfig`. |
 
 ### Constants and Utility Functions
 
@@ -77,12 +82,12 @@ SdOrm (top-level entry point)
 
 ## Usage
 
-### Basic Usage with SdOrm
+### Basic Usage with createOrm
 
-`SdOrm` is the top-level entry point used with `DbContext`. It automatically handles transaction management.
+`createOrm()` is the top-level factory function used with `DbContext`. It automatically handles transaction management.
 
 ```typescript
-import { SdOrm } from "@simplysm/orm-node";
+import { createOrm } from "@simplysm/orm-node";
 import { DbContext, queryable, Table } from "@simplysm/orm-common";
 
 // 1. Define table
@@ -100,8 +105,8 @@ class MyDb extends DbContext {
   readonly user = queryable(this, User);
 }
 
-// 3. Create SdOrm instance
-const orm = new SdOrm(MyDb, {
+// 3. Create ORM instance
+const orm = createOrm(MyDb, {
   dialect: "mysql",
   host: "localhost",
   port: 3306,
@@ -148,12 +153,12 @@ Supported isolation levels (`IsolationLevel`):
 - `"REPEATABLE_READ"`
 - `"SERIALIZABLE"`
 
-### Overriding database/schema via SdOrmOptions
+### Overriding database/schema via OrmOptions
 
-Using `SdOrmOptions`, you can use different values instead of the `database`/`schema` set in `DbConnConfig`.
+Using `OrmOptions`, you can use different values instead of the `database`/`schema` set in `DbConnConfig`.
 
 ```typescript
-const orm = new SdOrm(MyDb, {
+const orm = createOrm(MyDb, {
   dialect: "postgresql",
   host: "localhost",
   port: 5432,
@@ -172,7 +177,7 @@ const orm = new SdOrm(MyDb, {
 Configure connection pool via the `pool` field in `DbConnConfig`. The pool is based on the `generic-pool` library, and pools are automatically cached for identical configurations.
 
 ```typescript
-const orm = new SdOrm(MyDb, {
+const orm = createOrm(MyDb, {
   dialect: "mssql",
   host: "localhost",
   port: 1433,
@@ -188,15 +193,15 @@ const orm = new SdOrm(MyDb, {
 });
 ```
 
-### Low-Level Connection with DbConnFactory
+### Low-Level Connection with createDbConn
 
-You can connect directly to the DB and execute SQL without `SdOrm`/`DbContext`. `DbConnFactory.create()` returns `PooledDbConn` from the connection pool.
+You can connect directly to the DB and execute SQL without `createOrm`/`DbContext`. `createDbConn()` returns `PooledDbConn` from the connection pool.
 
 ```typescript
-import { DbConnFactory } from "@simplysm/orm-node";
+import { createDbConn } from "@simplysm/orm-node";
 
 // Create connection (acquire from pool)
-const conn = await DbConnFactory.create({
+const conn = await createDbConn({
   dialect: "mysql",
   host: "localhost",
   port: 3306,
@@ -233,7 +238,7 @@ try {
 Each connection class supports parameter binding via the `executeParametrized()` method.
 
 ```typescript
-const conn = await DbConnFactory.create({
+const conn = await createDbConn({
   dialect: "postgresql",
   host: "localhost",
   port: 5432,
@@ -266,7 +271,7 @@ Supports bulk data insertion using native bulk APIs for each DBMS.
 ```typescript
 import type { ColumnMeta } from "@simplysm/orm-common";
 
-const conn = await DbConnFactory.create({
+const conn = await createDbConn({
   dialect: "mysql",
   host: "localhost",
   port: 3306,
@@ -398,7 +403,7 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 
 ### Driver Lazy Loading
 
-DBMS-specific drivers (`mysql2`, `tedious`, `pg`) are lazy-loaded within `DbConnFactory`. Therefore, import errors won't occur even if unused drivers are not installed.
+DBMS-specific drivers (`mysql2`, `tedious`, `pg`) are lazy-loaded within `createDbConn()`. Therefore, import errors won't occur even if unused drivers are not installed.
 
 ### PooledDbConn close Behavior
 
