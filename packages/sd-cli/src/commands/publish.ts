@@ -496,21 +496,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const workspaceGlobs: string[] = [];
   if (await fsExists(workspaceYamlPath)) {
     const yamlContent = await fsRead(workspaceYamlPath);
-    let inPackages = false;
-    for (const line of yamlContent.split("\n")) {
-      if (/^packages:\s*$/.test(line)) {
-        inPackages = true;
-        continue;
-      }
-      if (inPackages) {
-        const match = /^\s+-\s+(.+)$/.exec(line);
-        if (match != null) {
-          workspaceGlobs.push(match[1].trim());
-        } else {
-          break;
-        }
-      }
-    }
+    workspaceGlobs.push(...parseWorkspaceGlobs(yamlContent));
   }
 
   const allPkgPaths = (await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item)))))
