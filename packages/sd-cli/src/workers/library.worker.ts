@@ -4,7 +4,11 @@ import { createWorker, FsWatcher } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
-import { createLibraryEsbuildOptions, getTypecheckEnvFromTarget } from "../utils/esbuild-config";
+import {
+  createLibraryEsbuildOptions,
+  getTypecheckEnvFromTarget,
+  writeChangedOutputFiles,
+} from "../utils/esbuild-config";
 import { registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
@@ -119,7 +123,9 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
     });
 
     const result = await esbuild.build(esbuildOptions);
-
+    if (result.outputFiles) {
+      await writeChangedOutputFiles(result.outputFiles);
+    }
     const errors = result.errors.map((e) => e.text);
     return {
       success: result.errors.length === 0,
@@ -176,7 +182,12 @@ async function createAndBuildContext(
             sender.send("buildStart", {});
           });
 
-          pluginBuild.onEnd((result) => {
+          pluginBuild.onEnd(async (result) => {
+            // Write only changed files to disk
+            if (result.outputFiles) {
+              await writeChangedOutputFiles(result.outputFiles);
+            }
+
             const errors = result.errors.map((e) => e.text);
             const success = result.errors.length === 0;
 
