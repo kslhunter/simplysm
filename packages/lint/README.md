@@ -1,15 +1,16 @@
-# @simplysm/eslint-plugin
+# @simplysm/lint
 
-An ESLint plugin for the Simplysm framework. It provides custom rules and a recommended preset to enforce project code conventions.
+Lint configurations for the Simplysm framework. Provides ESLint plugin with custom rules and Stylelint configuration for comprehensive code quality enforcement.
 
-Uses ESLint Flat Config format and includes rules for TypeScript, SolidJS, and Tailwind CSS.
+- **ESLint**: Custom rules, TypeScript, SolidJS, and Tailwind CSS support (Flat Config format)
+- **Stylelint**: CSS linting with Chrome 84+ compatibility checks, Tailwind CSS support, and file resolution validation
 
 ## Installation
 
 ```bash
-npm install @simplysm/eslint-plugin
+npm install @simplysm/lint
 # or
-pnpm add @simplysm/eslint-plugin
+pnpm add @simplysm/lint
 ```
 
 ### Required Peer Dependencies
@@ -26,17 +27,22 @@ This plugin depends on the following packages:
 | `eslint-plugin-solid` | SolidJS-specific rules |
 | `eslint-plugin-tailwindcss` | Tailwind CSS-specific rules |
 | `globals` | Global variable definitions |
+| `stylelint` | Stylelint core |
+| `stylelint-config-standard` | Standard Stylelint rules |
+| `stylelint-config-tailwindcss` | Tailwind CSS-specific Stylelint rules |
+| `stylelint-no-unsupported-browser-features` | Browser compatibility checker |
+| `stylelint-no-unresolved-module` | Import/url() file existence checker |
 
 ## Configuration
 
-### ESLint Flat Config (eslint.config.js)
+### ESLint Flat Config (eslint.config.js or eslint.config.ts)
 
 #### Using recommended config (recommended)
 
 The `recommended` config is a comprehensive setup that includes custom rules, TypeScript rules, SolidJS rules, and Tailwind CSS rules. This is sufficient for most cases.
 
 ```javascript
-import simplysm from "@simplysm/eslint-plugin";
+import simplysm from "@simplysm/lint/eslint-plugin";
 
 export default [
   // Use recommended config
@@ -49,7 +55,7 @@ export default [
 To selectively apply only certain custom rules:
 
 ```javascript
-import simplysm from "@simplysm/eslint-plugin";
+import simplysm from "@simplysm/lint/eslint-plugin";
 
 export default [
   {
@@ -64,6 +70,82 @@ export default [
   },
 ];
 ```
+
+---
+
+### Stylelint Config (.stylelintrc.json)
+
+#### Using recommended config (recommended)
+
+Create a `.stylelintrc.json` file at the project root:
+
+```json
+{
+  "extends": ["@simplysm/lint/stylelint-recommended"]
+}
+```
+
+Or use the full configuration directly:
+
+```json
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-tailwindcss"],
+  "plugins": ["stylelint-no-unsupported-browser-features", "stylelint-no-unresolved-module"],
+  "rules": {
+    "plugin/no-unsupported-browser-features": [
+      true,
+      {
+        "severity": "error",
+        "browsers": ["chrome >= 84"]
+      }
+    ],
+    "plugin/no-unresolved-module": true
+  }
+}
+```
+
+#### Overrides for specific files
+
+Add overrides to disable rules for specific files:
+
+```json
+{
+  "extends": ["@simplysm/lint/stylelint-recommended"],
+  "overrides": [
+    {
+      "files": ["**/tailwind.css"],
+      "rules": {
+        "plugin/no-unsupported-browser-features": null
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Stylelint Rules
+
+The `stylelint-recommended` config includes:
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `plugin/no-unsupported-browser-features` | error | Checks CSS features compatibility with Chrome 84+ |
+| `plugin/no-unresolved-module` | error | Validates that `@import` and `url()` references exist |
+| All rules from `stylelint-config-standard` | varies | Standard CSS linting rules |
+| All rules from `stylelint-config-tailwindcss` | varies | Tailwind CSS-specific rules (`@apply`, `@layer`, etc.) |
+
+### Browser Compatibility
+
+The config enforces Chrome 84+ compatibility by default. This aligns with Simplysm's target browser support.
+
+Unsupported features will trigger errors:
+- CSS nesting (Chrome 112+)
+- `@layer` directive (Chrome 99+)
+- `aspect-ratio` property (Chrome 88+)
+- `:is()`, `:where()` selectors (Chrome 88+)
+
+Use overrides to disable checks for files using modern features intentionally (e.g., Tailwind's built-in nesting).
 
 ---
 
