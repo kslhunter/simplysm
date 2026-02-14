@@ -120,19 +120,15 @@ export interface WatchReplaceDepResult {
 }
 
 /**
- * replaceDeps 설정에 따라 node_modules 내 패키지를 소스 디렉토리로 복사 교체한다.
+ * 프로젝트 루트와 workspace 패키지 경로 목록을 수집한다.
  *
- * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
- * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
- * 3. 기존 symlink/디렉토리 제거 → 소스 경로를 복사 (node_modules, package.json, .cache, tests 제외)
+ * pnpm-workspace.yaml을 파싱하여 workspace 패키지들의 절대 경로를 수집한다.
+ * 파일이 없거나 파싱 실패 시 루트 경로만 반환한다.
  *
  * @param projectRoot - 프로젝트 루트 경로
- * @param replaceDeps - sd.config.ts의 replaceDeps 설정
+ * @returns [루트, ...workspace 패키지 경로] 배열
  */
-export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<string, string>): Promise<void> {
-  const logger = consola.withTag("sd:cli:replace-deps");
-
-  // 1. Workspace 패키지 경로 목록 수집
+async function collectSearchRoots(projectRoot: string): Promise<string[]> {
   const searchRoots = [projectRoot];
 
   const workspaceYamlPath = path.join(projectRoot, "pnpm-workspace.yaml");
@@ -147,6 +143,25 @@ export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<
   } catch {
     // pnpm-workspace.yaml가 없으면 루트만 처리
   }
+
+  return searchRoots;
+}
+
+/**
+ * replaceDeps 설정에 따라 node_modules 내 패키지를 소스 디렉토리로 복사 교체한다.
+ *
+ * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
+ * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
+ * 3. 기존 symlink/디렉토리 제거 → 소스 경로를 복사 (node_modules, package.json, .cache, tests 제외)
+ *
+ * @param projectRoot - 프로젝트 루트 경로
+ * @param replaceDeps - sd.config.ts의 replaceDeps 설정
+ */
+export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<string, string>): Promise<void> {
+  const logger = consola.withTag("sd:cli:replace-deps");
+
+  // 1. Workspace 패키지 경로 목록 수집
+  const searchRoots = await collectSearchRoots(projectRoot);
 
   // 2. 각 searchRoot의 node_modules에서 매칭되는 패키지 찾기
   for (const searchRoot of searchRoots) {
@@ -226,20 +241,7 @@ export async function watchReplaceDeps(
   const entries: ReplaceDepEntry[] = [];
 
   // 1. Workspace 패키지 경로 목록 수집
-  const searchRoots = [projectRoot];
-
-  const workspaceYamlPath = path.join(projectRoot, "pnpm-workspace.yaml");
-  try {
-    const yamlContent = await fs.promises.readFile(workspaceYamlPath, "utf-8");
-    const workspaceGlobs = parseWorkspaceGlobs(yamlContent);
-
-    for (const pattern of workspaceGlobs) {
-      const dirs = await glob(pattern, { cwd: projectRoot, absolute: true });
-      searchRoots.push(...dirs);
-    }
-  } catch {
-    // pnpm-workspace.yaml가 없으면 루트만 처리
-  }
+  const searchRoots = await collectSearchRoots(projectRoot);
 
   // 2. 각 searchRoot의 node_modules에서 매칭되는 패키지 찾기
   for (const searchRoot of searchRoots) {
