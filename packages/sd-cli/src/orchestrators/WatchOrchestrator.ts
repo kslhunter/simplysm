@@ -1,12 +1,11 @@
 import path from "path";
-import { Listr } from "listr2";
 import { consola } from "consola";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
 import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
-import { RebuildListrManager } from "../utils/listr-manager";
+import { RebuildManager } from "../utils/listr-manager";
 import { ResultCollector } from "../infra/ResultCollector";
 import { SignalHandler } from "../infra/SignalHandler";
 import { LibraryBuilder } from "../builders/LibraryBuilder";
@@ -38,7 +37,7 @@ export class WatchOrchestrator {
 
   private _resultCollector!: ResultCollector;
   private _signalHandler!: SignalHandler;
-  private _rebuildManager!: RebuildListrManager;
+  private _rebuildManager!: RebuildManager;
   private _libraryBuilder!: LibraryBuilder;
   private _dtsBuilder!: DtsBuilder;
   private _packages: PackageInfo[] = [];
@@ -69,7 +68,7 @@ export class WatchOrchestrator {
       });
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
-      consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
     }
@@ -109,7 +108,7 @@ export class WatchOrchestrator {
     // 인프라 초기화
     this._resultCollector = new ResultCollector();
     this._signalHandler = new SignalHandler();
-    this._rebuildManager = new RebuildListrManager(this._logger);
+    this._rebuildManager = new RebuildManager(this._logger);
 
     // 배치 완료 시 에러 출력
     this._rebuildManager.on("batchComplete", () => {
@@ -133,7 +132,7 @@ export class WatchOrchestrator {
 
   /**
    * Watch 모드 시작
-   * - 초기 빌드 Listr 실행
+   * - 초기 빌드 실행
    * - 결과 출력
    */
   async start(): Promise<void> {
@@ -141,25 +140,9 @@ export class WatchOrchestrator {
       return;
     }
 
-    // 초기 빌드 Listr 구성
+    // 초기 빌드 Promise 구성
     const buildPromises = this._libraryBuilder.getInitialBuildPromises();
     const dtsPromises = this._dtsBuilder.getInitialBuildPromises();
-
-    const initialListr = new Listr(
-      [
-        // Library 빌드 태스크
-        ...this._packages.map((pkg) => ({
-          title: `${pkg.name} (${pkg.config.target})`,
-          task: () => buildPromises.get(`${pkg.name}:build`) ?? Promise.resolve(),
-        })),
-        // DTS 태스크
-        ...this._packages.map((pkg) => ({
-          title: `${pkg.name} (dts)`,
-          task: () => dtsPromises.get(`${pkg.name}:dts`) ?? Promise.resolve(),
-        })),
-      ],
-      { concurrent: true },
-    );
 
     // copySrc watch 시작
     for (const pkg of this._packages) {
@@ -174,8 +157,42 @@ export class WatchOrchestrator {
     void this._libraryBuilder.startWatch();
     void this._dtsBuilder.startWatch();
 
-    // Listr 실행 (초기 빌드 완료까지 대기)
-    await initialListr.run();
+    // 초기 빌드 시작
+    this._logger.start("초기 빌드 진행 중...");
+
+    // Library 빌드 및 DTS 빌드 전체 Promise 배열 구성
+    const allBuildTasks: Array<{ name: string; promise: Promise<void> }> = [];
+
+    // Library 빌드 태스크
+    for (const pkg of this._packages) {
+      const promise = buildPromises.get(`${pkg.name}:build`) ?? Promise.resolve();
+      allBuildTasks.push({
+        name: `${pkg.name}:build`,
+        promise: (async () => {
+          this._logger.debug(`${pkg.name} (${pkg.config.target}) 빌드 시작`);
+          await promise;
+          this._logger.debug(`${pkg.name} (${pkg.config.target}) 빌드 완료`);
+        })(),
+      });
+    }
+
+    // DTS 태스크
+    for (const pkg of this._packages) {
+      const promise = dtsPromises.get(`${pkg.name}:dts`) ?? Promise.resolve();
+      allBuildTasks.push({
+        name: `${pkg.name}:dts`,
+        promise: (async () => {
+          this._logger.debug(`${pkg.name} (dts) 시작`);
+          await promise;
+          this._logger.debug(`${pkg.name} (dts) 완료`);
+        })(),
+      });
+    }
+
+    // 모든 빌드 작업 동시 실행 (초기 빌드 완료까지 대기)
+    await Promise.allSettled(allBuildTasks.map((task) => task.promise));
+
+    this._logger.success("초기 빌드 완료");
 
     // 초기 빌드 결과 출력
     printErrors(this._resultCollector.toMap());

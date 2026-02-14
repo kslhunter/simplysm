@@ -1,6 +1,6 @@
 import type { SdPackageConfig } from "../sd-config.types";
 import type { ResultCollector } from "../infra/ResultCollector";
-import type { RebuildListrManager } from "../utils/listr-manager";
+import type { RebuildManager } from "../utils/listr-manager";
 
 /**
  * 패키지 정보
@@ -18,7 +18,7 @@ export interface BuilderOptions {
   cwd: string;
   packages: PackageInfo[];
   resultCollector: ResultCollector;
-  rebuildManager?: RebuildListrManager;
+  rebuildManager?: RebuildManager;
 }
 
 /**

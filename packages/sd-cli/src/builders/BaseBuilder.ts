@@ -1,6 +1,6 @@
 import { WorkerManager } from "../infra/WorkerManager";
 import type { ResultCollector } from "../infra/ResultCollector";
-import type { RebuildListrManager } from "../utils/listr-manager";
+import type { RebuildManager } from "../utils/listr-manager";
 import type { IBuilder, PackageInfo } from "./types";
 
 /**
@@ -12,7 +12,7 @@ import type { IBuilder, PackageInfo } from "./types";
 export abstract class BaseBuilder implements IBuilder {
   protected readonly workerManager: WorkerManager;
   protected readonly resultCollector: ResultCollector;
-  protected readonly rebuildManager: RebuildListrManager | undefined;
+  protected readonly rebuildManager: RebuildManager | undefined;
   protected readonly packages: PackageInfo[];
   protected readonly cwd: string;
   protected isWatchMode = false;
@@ -26,7 +26,7 @@ export abstract class BaseBuilder implements IBuilder {
     cwd: string;
     packages: PackageInfo[];
     resultCollector: ResultCollector;
-    rebuildManager?: RebuildListrManager;
+    rebuildManager?: RebuildManager;
   }) {
     this.cwd = options.cwd;
     this.packages = options.packages;

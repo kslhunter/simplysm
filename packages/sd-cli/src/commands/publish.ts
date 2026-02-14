@@ -1,7 +1,6 @@
 import path from "path";
 import semver from "semver";
-import { consola, LogLevels } from "consola";
-import { Listr, type ListrTask } from "listr2";
+import { consola } from "consola";
 import { StorageFactory } from "@simplysm/storage";
 import { fsExists, fsRead, fsReadJson, fsWrite, fsGlob, fsCopy } from "@simplysm/core-node";
 import { env, jsonStringify } from "@simplysm/core-common";
@@ -481,7 +480,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -571,7 +570,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       }
       logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
     } catch {
-      consola.error(
+      logger.error(
         "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
           "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
           "  npm config set //registry.npmjs.org/:_authToken <토큰>",
@@ -585,7 +584,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   try {
     await ensureSshAuth(publishPackages, logger);
   } catch (err) {
-    consola.error(`SSH 인증 설정 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`SSH 인증 설정 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -617,7 +616,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.info("자동 커밋 완료.");
       }
     } catch (err) {
-      consola.error(err instanceof Error ? err.message : err);
+      logger.error(err instanceof Error ? err.message : err);
       process.exitCode = 1;
       return;
     }
@@ -666,7 +665,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       if (dryRun) {
         logger.error("[DRY-RUN] 빌드 실패");
       } else {
-        consola.error(
+        logger.error(
           "빌드 실패. 수동 복구가 필요할 수 있습니다:\n" +
             "  버전 변경을 되돌리려면:\n" +
             "    git checkout -- package.json packages/*/package.json packages/sd-cli/templates/",
@@ -699,7 +698,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           await spawn("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
-          consola.error(
+          logger.error(
             `Git 작업 실패: ${err instanceof Error ? err.message : err}\n` +
               "수동 복구가 필요할 수 있습니다:\n" +
               `  git revert HEAD  # 버전 커밋 되돌리기\n` +
@@ -716,59 +715,56 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#endregion
 
-  //#region Phase 4: 배포 (의존성 레벨별 병렬, Listr)
+  //#region Phase 4: 배포 (의존성 레벨별 순차, 레벨 내 병렬)
 
   const levels = await computePublishLevels(publishPackages);
   const publishedPackages: string[] = [];
   let publishFailed = false;
 
-  const publishListr = new Listr(
-    levels.map(
-      (levelPkgs, levelIdx): ListrTask => ({
-        title: `Level ${levelIdx + 1}/${levels.length}`,
-        skip: () => publishFailed,
-        task: (_, task) =>
-          task.newListr(
-            levelPkgs.map(
-              (pkg): ListrTask => ({
-                title: dryRun ? `[DRY-RUN] ${pkg.name}` : pkg.name,
-                task: async (_ctx, pkgTask) => {
-                  const maxRetries = 3;
-                  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                    try {
-                      await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
-                      break;
-                    } catch (err) {
-                      if (attempt < maxRetries) {
-                        const delay = attempt * 5_000;
-                        pkgTask.title = dryRun
-                          ? `[DRY-RUN] ${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`
-                          : `${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`;
-                        await new Promise((resolve) => setTimeout(resolve, delay));
-                      } else {
-                        throw err;
-                      }
-                    }
-                  }
-                  publishedPackages.push(pkg.name);
-                },
-              }),
-            ),
-            { concurrent: true, exitOnError: false },
-          ),
-      }),
-    ),
-    {
-      concurrent: false,
-      exitOnError: false,
-      renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
-    },
-  );
+  // 레벨별 순차 실행
+  for (let levelIdx = 0; levelIdx < levels.length; levelIdx++) {
+    if (publishFailed) break;
 
-  try {
-    await publishListr.run();
-  } catch {
-    // Listr 내부 에러는 아래에서 처리
+    const levelPkgs = levels[levelIdx];
+    logger.start(`Level ${levelIdx + 1}/${levels.length}`);
+
+    // 레벨 내 패키지 병렬 실행 (Promise.allSettled)
+    const publishPromises = levelPkgs.map(async (pkg) => {
+      const maxRetries = 3;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          await publishPackage(pkg.path, pkg.config, version, cwd, logger, dryRun);
+          logger.debug(dryRun ? `[DRY-RUN] ${pkg.name}` : pkg.name);
+          publishedPackages.push(pkg.name);
+          return { status: "success" as const, name: pkg.name };
+        } catch (err) {
+          if (attempt < maxRetries) {
+            const delay = attempt * 5_000;
+            logger.debug(
+              dryRun
+                ? `[DRY-RUN] ${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`
+                : `${pkg.name} (재시도 ${attempt + 1}/${maxRetries})`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            throw err;
+          }
+        }
+      }
+      // TypeScript 타입 체커를 위한 fallback (실제로는 도달하지 않음)
+      return { status: "error" as const, name: pkg.name, error: new Error("Unknown error") };
+    });
+
+    const results = await Promise.allSettled(publishPromises);
+
+    // 레벨 내 실패 확인
+    const levelFailed = results.some((r) => r.status === "rejected");
+    if (levelFailed) {
+      publishFailed = true;
+      logger.fail(`Level ${levelIdx + 1}/${levels.length}`);
+    } else {
+      logger.success(`Level ${levelIdx + 1}/${levels.length}`);
+    }
   }
 
   // 실패한 패키지 확인
@@ -776,10 +772,8 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const failedPkgNames = allPkgNames.filter((n) => !publishedPackages.includes(n));
 
   if (failedPkgNames.length > 0) {
-    publishFailed = true;
-
     if (publishedPackages.length > 0) {
-      consola.error(
+      logger.error(
         "배포 중 오류가 발생했습니다.\n" +
           "이미 배포된 패키지:\n" +
           publishedPackages.map((n) => `  - ${n}`).join("\n") +
@@ -789,7 +783,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     }
 
     for (const name of failedPkgNames) {
-      consola.error(`[${name}] 배포 실패`);
+      logger.error(`[${name}] 배포 실패`);
     }
     process.exitCode = 1;
     return;

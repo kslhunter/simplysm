@@ -1,5 +1,4 @@
 import path from "path";
-import { Listr } from "listr2";
 import { fsExists } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdConfig, SdClientPackageConfig } from "../sd-config.types";
@@ -47,7 +46,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: true, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -55,13 +54,13 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   // 패키지 설정 확인
   const pkgConfig = sdConfig.packages[packageName];
   if (pkgConfig == null) {
-    consola.error(`패키지를 찾을 수 없습니다: ${packageName}`);
+    logger.error(`패키지를 찾을 수 없습니다: ${packageName}`);
     process.exitCode = 1;
     return;
   }
 
   if (pkgConfig.target !== "client") {
-    consola.error(`client 타겟 패키지만 지원합니다: ${packageName} (현재: ${pkgConfig.target})`);
+    logger.error(`client 타겟 패키지만 지원합니다: ${packageName} (현재: ${pkgConfig.target})`);
     process.exitCode = 1;
     return;
   }
@@ -76,7 +75,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       if (typeof clientConfig.server === "number") {
         serverUrl = `http://localhost:${clientConfig.server}/${packageName}/`;
       } else {
-        consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        logger.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
         process.exitCode = 1;
         return;
       }
@@ -84,21 +83,13 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
     logger.debug("개발 서버 URL", { serverUrl });
 
-    const listr = new Listr([
-      {
-        title: `${packageName} (electron)`,
-        task: async () => {
-          const electron = await Electron.create(pkgDir, clientConfig.electron!);
-          await electron.run(serverUrl);
-        },
-      },
-    ]);
-
+    logger.start(`${packageName} (electron) 실행 중...`);
     try {
-      await listr.run();
-      logger.info("Electron 실행 완료");
+      const electron = await Electron.create(pkgDir, clientConfig.electron);
+      await electron.run(serverUrl);
+      logger.success("Electron 실행 완료");
     } catch (err) {
-      consola.error(`Electron 실행 실패: ${err instanceof Error ? err.message : err}`);
+      logger.error(`Electron 실행 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
     }
   } else if (clientConfig.capacitor != null) {
@@ -108,7 +99,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       if (typeof clientConfig.server === "number") {
         serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
       } else {
-        consola.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        logger.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
         process.exitCode = 1;
         return;
       }
@@ -120,30 +111,22 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
     const capPath = path.join(pkgDir, ".capacitor");
     if (!(await fsExists(capPath))) {
-      consola.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
+      logger.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
       process.exitCode = 1;
       return;
     }
 
-    const listr = new Listr([
-      {
-        title: `${packageName} (device)`,
-        task: async () => {
-          const cap = await Capacitor.create(pkgDir, clientConfig.capacitor!);
-          await cap.runOnDevice(serverUrl);
-        },
-      },
-    ]);
-
+    logger.start(`${packageName} (device) 실행 중...`);
     try {
-      await listr.run();
-      logger.info("디바이스 실행 완료");
+      const cap = await Capacitor.create(pkgDir, clientConfig.capacitor);
+      await cap.runOnDevice(serverUrl);
+      logger.success("디바이스 실행 완료");
     } catch (err) {
-      consola.error(`디바이스 실행 실패: ${err instanceof Error ? err.message : err}`);
+      logger.error(`디바이스 실행 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
     }
   } else {
-    consola.error(`electron 또는 capacitor 설정이 없습니다: ${packageName}`);
+    logger.error(`electron 또는 capacitor 설정이 없습니다: ${packageName}`);
     process.exitCode = 1;
   }
 }

@@ -1,11 +1,10 @@
 import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
-import { Listr } from "listr2";
 import { fsExists, fsGlob, pathFilterByTargets } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { SdError } from "@simplysm/core-common";
-import { consola, LogLevels } from "consola";
+import { consola } from "consola";
 import stylelint from "stylelint";
 
 //#region Types
@@ -20,23 +19,6 @@ export interface LintOptions {
   fix: boolean;
   /** ESLint 규칙별 실행 시간 측정 활성화 (TIMING 환경변수 설정) */
   timing: boolean;
-}
-
-/**
- * Listr2 컨텍스트 타입
- */
-interface LintContext {
-  ignorePatterns: string[];
-  /** 파일 수집 태스크 완료 후 초기화됨 */
-  files?: string[];
-  /** 린트 대상 파일이 있을 때만 초기화됨 */
-  eslint?: ESLint;
-  /** 린트 대상 파일이 있을 때만 초기화됨 */
-  results?: ESLint.LintResult[];
-  // Stylelint
-  hasStylelintConfig?: boolean;
-  cssFiles?: string[];
-  stylelintResult?: stylelint.LinterResult;
 }
 
 //#endregion
@@ -124,7 +106,7 @@ async function hasStylelintConfig(cwd: string): Promise<boolean> {
  * ESLint를 실행한다.
  *
  * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
- * - listr2를 사용하여 진행 상황 표시
+ * - consola를 사용하여 진행 상황 표시
  * - 캐시 활성화 (`.cache/eslint.cache`에 저장, 설정 변경 시 자동 무효화)
  * - 에러 발생 시 `process.exitCode = 1` 설정
  *
@@ -143,133 +125,90 @@ export async function runLint(options: LintOptions): Promise<void> {
     process.env["TIMING"] = "1";
   }
 
-  const listr = new Listr<LintContext, "default" | "verbose">(
-    [
-      {
-        title: "ESLint 설정 로드",
-        task: async (ctx, task) => {
-          ctx.ignorePatterns = await loadIgnorePatterns(cwd);
-          logger.debug("ignore 패턴 로드 완료", { ignorePatternCount: ctx.ignorePatterns.length });
-          task.title = `ESLint 설정 로드 (${ctx.ignorePatterns.length}개 ignore 패턴)`;
-        },
-      },
-      {
-        title: "린트 대상 파일 수집",
-        task: async (ctx, task) => {
-          let files = await fsGlob("**/*.{ts,tsx,js,jsx}", {
-            cwd,
-            ignore: ctx.ignorePatterns,
-            nodir: true,
-            absolute: true,
-          });
+  // ESLint 설정 로드
+  logger.start("ESLint 설정 로드");
+  const ignorePatterns = await loadIgnorePatterns(cwd);
+  logger.debug("ignore 패턴 로드 완료", { ignorePatternCount: ignorePatterns.length });
+  logger.success(`ESLint 설정 로드 (${ignorePatterns.length}개 ignore 패턴)`);
 
-          // targets가 주어지면 해당 경로의 하위 파일만 필터링
-          files = pathFilterByTargets(files, targets, cwd);
-          ctx.files = files;
-          logger.debug("파일 수집 완료", { fileCount: files.length });
-          task.title = `린트 대상 파일 수집 (${files.length}개)`;
+  // 린트 대상 파일 수집
+  logger.start("린트 대상 파일 수집");
+  let files = await fsGlob("**/*.{ts,tsx,js,jsx}", {
+    cwd,
+    ignore: ignorePatterns,
+    nodir: true,
+    absolute: true,
+  });
+  files = pathFilterByTargets(files, targets, cwd);
+  logger.debug("파일 수집 완료", { fileCount: files.length });
+  logger.success(`린트 대상 파일 수집 (${files.length}개)`);
 
-          if (files.length === 0) {
-            task.skip("린트할 파일이 없습니다.");
-          }
-        },
-      },
-      {
-        title: "린트 실행",
-        enabled: (ctx) => (ctx.files?.length ?? 0) > 0,
-        task: async (ctx, task) => {
-          const files = ctx.files!;
-          task.title = `린트 실행 중... (${files.length}개 파일)`;
-          ctx.eslint = new ESLint({
-            cwd,
-            fix,
-            cache: true,
-            cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
-          });
-          ctx.results = await ctx.eslint.lintFiles(files);
-        },
-      },
-      {
-        title: "자동 수정 적용",
-        enabled: () => fix,
-        skip: (ctx) => (ctx.files?.length ?? 0) === 0 || ctx.results == null,
-        task: async (ctx) => {
-          if (ctx.results == null) return;
-          await ESLint.outputFixes(ctx.results);
-          logger.debug("자동 수정 적용 완료");
-        },
-      },
-      {
-        title: "Stylelint 설정 확인",
-        task: async (ctx, task) => {
-          ctx.hasStylelintConfig = await hasStylelintConfig(cwd);
-          if (!ctx.hasStylelintConfig) {
-            task.skip("stylelint.config 파일 없음");
-          }
-        },
-      },
-      {
-        title: "CSS 파일 수집",
-        enabled: (ctx) => ctx.hasStylelintConfig === true,
-        task: async (ctx, task) => {
-          let cssFiles = await fsGlob("**/*.css", {
-            cwd,
-            ignore: ctx.ignorePatterns,
-            nodir: true,
-            absolute: true,
-          });
-          cssFiles = pathFilterByTargets(cssFiles, targets, cwd);
-          ctx.cssFiles = cssFiles;
-          task.title = `CSS 파일 수집 (${cssFiles.length}개)`;
-          if (cssFiles.length === 0) {
-            task.skip("린트할 CSS 파일이 없습니다.");
-          }
-        },
-      },
-      {
-        title: "Stylelint 실행",
-        enabled: (ctx) => (ctx.cssFiles?.length ?? 0) > 0,
-        task: async (ctx, task) => {
-          const cssFiles = ctx.cssFiles!;
-          task.title = `Stylelint 실행 중... (${cssFiles.length}개 파일)`;
+  // 린트 실행
+  let eslint: ESLint | undefined;
+  let eslintResults: ESLint.LintResult[] | undefined;
+  if (files.length > 0) {
+    logger.start(`린트 실행 중... (${files.length}개 파일)`);
+    eslint = new ESLint({
+      cwd,
+      fix,
+      cache: true,
+      cacheLocation: path.join(cwd, ".cache", "eslint.cache"),
+    });
+    eslintResults = await eslint.lintFiles(files);
+    logger.success("린트 실행 완료");
 
-          // Stylelint 설정 파일 경로 찾기
-          let configFile: string | undefined;
-          for (const f of STYLELINT_CONFIG_FILES) {
-            const configPath = path.join(cwd, f);
-            if (await fsExists(configPath)) {
-              configFile = configPath;
-              break;
-            }
-          }
+    // 자동 수정 적용
+    if (fix) {
+      logger.debug("자동 수정 적용 중...");
+      await ESLint.outputFixes(eslintResults);
+      logger.debug("자동 수정 적용 완료");
+    }
+  }
 
-          const result = await stylelint.lint({
-            files: cssFiles,
-            configFile,
-            fix,
-            cache: true,
-            cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
-          });
-          ctx.stylelintResult = result;
-        },
-      },
-    ],
-    {
-      renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
-    },
-  );
+  // Stylelint
+  const hasStylelintCfg = await hasStylelintConfig(cwd);
+  let stylelintResult: stylelint.LinterResult | undefined;
+  if (hasStylelintCfg) {
+    logger.start("CSS 파일 수집");
+    let cssFiles = await fsGlob("**/*.css", {
+      cwd,
+      ignore: ignorePatterns,
+      nodir: true,
+      absolute: true,
+    });
+    cssFiles = pathFilterByTargets(cssFiles, targets, cwd);
+    logger.success(`CSS 파일 수집 (${cssFiles.length}개)`);
 
-  const ctx = await listr.run();
+    if (cssFiles.length > 0) {
+      logger.start(`Stylelint 실행 중... (${cssFiles.length}개 파일)`);
+      let configFile: string | undefined;
+      for (const f of STYLELINT_CONFIG_FILES) {
+        const configPath = path.join(cwd, f);
+        if (await fsExists(configPath)) {
+          configFile = configPath;
+          break;
+        }
+      }
+      stylelintResult = await stylelint.lint({
+        files: cssFiles,
+        configFile,
+        fix,
+        cache: true,
+        cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
+      });
+      logger.success("Stylelint 실행 완료");
+    }
+  }
 
   // 파일이 없거나 린트가 실행되지 않았으면 조기 종료
-  if ((ctx.files?.length ?? 0) === 0 || ctx.results == null || ctx.eslint == null) {
+  if (files.length === 0 || eslintResults == null || eslint == null) {
     logger.info("린트할 파일 없음");
     return;
   }
 
   // 결과 집계
-  const errorCount = ctx.results.sum((r) => r.errorCount);
-  const warningCount = ctx.results.sum((r) => r.warningCount);
+  const errorCount = eslintResults.sum((r) => r.errorCount);
+  const warningCount = eslintResults.sum((r) => r.warningCount);
 
   if (errorCount > 0) {
     logger.error("린트 에러 발생", { errorCount, warningCount });
@@ -280,8 +219,8 @@ export async function runLint(options: LintOptions): Promise<void> {
   }
 
   // 포맷터 출력
-  const formatter = await ctx.eslint.loadFormatter("stylish");
-  const resultText = await formatter.format(ctx.results);
+  const formatter = await eslint.loadFormatter("stylish");
+  const resultText = await formatter.format(eslintResults);
   if (resultText) {
     process.stdout.write(resultText);
   }
@@ -292,11 +231,11 @@ export async function runLint(options: LintOptions): Promise<void> {
   }
 
   // Stylelint 결과 출력
-  if (ctx.stylelintResult != null && ctx.stylelintResult.results.length > 0) {
-    const stylelintErrorCount = ctx.stylelintResult.results.sum(
+  if (stylelintResult != null && stylelintResult.results.length > 0) {
+    const stylelintErrorCount = stylelintResult.results.sum(
       (r) => r.warnings.filter((w) => w.severity === "error").length,
     );
-    const stylelintWarningCount = ctx.stylelintResult.results.sum(
+    const stylelintWarningCount = stylelintResult.results.sum(
       (r) => r.warnings.filter((w) => w.severity === "warning").length,
     );
 
@@ -313,7 +252,7 @@ export async function runLint(options: LintOptions): Promise<void> {
 
     // Stylelint formatter 출력
     const stylelintFormatter = await stylelint.formatters.string;
-    const stylelintOutput = stylelintFormatter(ctx.stylelintResult.results, ctx.stylelintResult);
+    const stylelintOutput = stylelintFormatter(stylelintResult.results, stylelintResult);
     if (stylelintOutput) {
       process.stdout.write(stylelintOutput);
     }

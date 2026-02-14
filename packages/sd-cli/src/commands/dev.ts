@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { Listr } from "listr2";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
@@ -13,7 +12,7 @@ import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worke
 import { Capacitor } from "../capacitor/capacitor";
 import { filterPackagesByTargets, getWatchScopes, type PackageResult } from "../utils/package-utils";
 import { printErrors, printServers } from "../utils/output-utils";
-import { RebuildListrManager } from "../utils/listr-manager";
+import { RebuildManager } from "../utils/listr-manager";
 import {
   registerWorkerEventHandlers,
   type ServerReadyEventData,
@@ -73,7 +72,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: true, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    consola.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
     return;
   }
@@ -160,8 +159,8 @@ export async function runDev(options: DevOptions): Promise<void> {
   // 결과 상태 관리
   const results = new Map<string, PackageResult>();
 
-  // RebuildListrManager 생성
-  const rebuildManager = new RebuildListrManager(logger);
+  // RebuildManager 생성
+  const rebuildManager = new RebuildManager(logger);
 
   // 배치 완료 시 에러와 서버 URL 출력
   rebuildManager.on("batchComplete", () => {
@@ -300,7 +299,7 @@ export async function runDev(options: DevOptions): Promise<void> {
       clientPorts[workerInfo.name] = event.port;
       // Vite 서버 준비 완료 알림 (서버가 프록시 설정을 위해 대기 중)
       viteClientReadyPromises.get(workerInfo.name)?.resolver();
-      // listr 완료를 위해 completeTask 호출 (Vite는 build 이벤트를 발생시키지 않음)
+      // 빌드 완료를 위해 completeTask 호출 (Vite는 build 이벤트를 발생시키지 않음)
       completeTask({
         name: workerInfo.name,
         target: workerInfo.config.target,
@@ -323,7 +322,7 @@ export async function runDev(options: DevOptions): Promise<void> {
 
     serverBuild.worker.on("buildStart", () => {
       if (!isFirstBuild) {
-        // 리빌드 시 RebuildListrManager에 등록
+        // 리빌드 시 RebuildManager에 등록
         const resolver = rebuildManager.registerBuild(`${name}:server`, `${name} (server)`);
         serverBuildWorkers.set(name, {
           ...serverBuild,
@@ -356,7 +355,7 @@ export async function runDev(options: DevOptions): Promise<void> {
       // 빌드 성공 시 런타임 워커 시작 (async 로직은 별도 함수로 분리하여 에러 전파 방지)
       void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
         const message = err instanceof Error ? err.message : String(err);
-        consola.error(`[${name}] Server Runtime 시작 중 오류:`, message);
+        logger.error(`[${name}] Server Runtime 시작 중 오류:`, message);
 
         results.set(`${name}:server`, {
           name,
@@ -387,7 +386,7 @@ export async function runDev(options: DevOptions): Promise<void> {
       // 기존 Server Runtime Worker 종료
       const existingRuntime = serverRuntimeWorkers.get(serverName);
       if (existingRuntime != null) {
-        consola.info(`[${serverName}] 서버 재시작 중...`);
+        logger.info(`[${serverName}] 서버 재시작 중...`);
         await existingRuntime.terminate();
       }
 
@@ -450,7 +449,7 @@ export async function runDev(options: DevOptions): Promise<void> {
 
       // Server Runtime 시작
       // Worker가 크래시하면 "serverReady"/"error" 이벤트 없이 종료되므로
-      // promise rejection을 catch하여 listr 무한 대기를 방지
+      // promise rejection을 catch하여 무한 대기를 방지
       runtimeWorker
         .start({
           mainJsPath,
@@ -458,7 +457,7 @@ export async function runDev(options: DevOptions): Promise<void> {
         })
         .catch((err: unknown) => {
           const message = err instanceof Error ? err.message : String(err);
-          consola.error(`[${serverName}] Server Runtime Worker 크래시:`, message);
+          logger.error(`[${serverName}] Server Runtime Worker 크래시:`, message);
 
           results.set(`${serverName}:server`, {
             name: serverName,
@@ -492,28 +491,6 @@ export async function runDev(options: DevOptions): Promise<void> {
       serverBuild.buildResolver();
     });
   }
-
-  // 초기 빌드 listr (standalone client + vite client + server 빌드)
-  const initialListr = new Listr(
-    [
-      // Standalone client 태스크
-      ...standaloneClientWorkers.map((workerInfo) => ({
-        title: `${workerInfo.name} (client)`,
-        task: () => standaloneClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
-      })),
-      // Vite client 태스크 (서버 연결)
-      ...viteClientWorkers.map((workerInfo) => ({
-        title: `${workerInfo.name} (client)`,
-        task: () => viteClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
-      })),
-      // Server 빌드 태스크 (빌드 + 런타임 시작)
-      ...serverPackages.map(({ name }) => ({
-        title: `${name} (server)`,
-        task: () => serverRuntimePromises.get(name)?.promise ?? Promise.resolve(),
-      })),
-    ],
-    { concurrent: true },
-  );
 
   // Standalone client 워커 시작
   for (const workerInfo of standaloneClientWorkers) {
@@ -597,8 +574,36 @@ export async function runDev(options: DevOptions): Promise<void> {
       });
   }
 
-  // listr 실행 (초기 빌드 완료까지 대기)
-  await initialListr.run();
+  // 초기 빌드 완료까지 대기 (병렬 실행)
+  logger.debug("초기 빌드 시작 (Promise.allSettled)");
+  const initialBuildPromises: Array<{ name: string; promise: Promise<void> }> = [
+    // Standalone client
+    ...standaloneClientWorkers.map((workerInfo) => ({
+      name: `${workerInfo.name} (client)`,
+      promise: standaloneClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
+    })),
+    // Vite client (서버 연결)
+    ...viteClientWorkers.map((workerInfo) => ({
+      name: `${workerInfo.name} (client)`,
+      promise: viteClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
+    })),
+    // Server 빌드 + 런타임 시작
+    ...serverPackages.map(({ name }) => ({
+      name: `${name} (server)`,
+      promise: serverRuntimePromises.get(name)?.promise ?? Promise.resolve(),
+    })),
+  ];
+
+  const initialResults = await Promise.allSettled(initialBuildPromises.map((item) => item.promise));
+
+  initialResults.forEach((result, index) => {
+    const taskName = initialBuildPromises[index].name;
+    if (result.status === "rejected") {
+      logger.debug(`[${taskName}] 초기 빌드 실패:`, result.reason);
+    } else {
+      logger.debug(`[${taskName}] 초기 빌드 완료`);
+    }
+  });
 
   // Capacitor 초기화 (client 타겟 중 capacitor 설정이 있는 패키지)
   const capacitorPackages: Array<[string, SdClientPackageConfig]> = [];
@@ -609,39 +614,30 @@ export async function runDev(options: DevOptions): Promise<void> {
   }
 
   if (capacitorPackages.length > 0) {
-    const capacitorListr = new Listr(
-      capacitorPackages.map(([name, config]) => ({
-        title: `${name} (capacitor)`,
-        task: async () => {
-          const pkgDir = path.join(cwd, "packages", name);
-          try {
-            const cap = await Capacitor.create(pkgDir, config.capacitor!);
-            await cap.initialize();
-            results.set(`${name}:capacitor`, {
-              name,
-              target: "client",
-              type: "capacitor",
-              status: "success",
-            });
-          } catch (err) {
-            results.set(`${name}:capacitor`, {
-              name,
-              target: "client",
-              type: "capacitor",
-              status: "error",
-              message: err instanceof Error ? err.message : String(err),
-            });
-            throw err;
-          }
-        },
-      })),
-      { concurrent: false, exitOnError: false },
-    );
-
-    try {
-      await capacitorListr.run();
-    } catch {
-      // 에러는 results에 이미 기록됨
+    for (const [name, config] of capacitorPackages) {
+      const taskName = `${name} (capacitor)`;
+      logger.start(taskName);
+      const pkgDir = path.join(cwd, "packages", name);
+      try {
+        const cap = await Capacitor.create(pkgDir, config.capacitor!);
+        await cap.initialize();
+        results.set(`${name}:capacitor`, {
+          name,
+          target: "client",
+          type: "capacitor",
+          status: "success",
+        });
+        logger.success(taskName);
+      } catch (err) {
+        results.set(`${name}:capacitor`, {
+          name,
+          target: "client",
+          type: "capacitor",
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+        });
+        logger.fail(taskName);
+      }
     }
   }
 

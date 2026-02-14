@@ -74,6 +74,9 @@ vi.mock("consola", () => {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
+    start: vi.fn(),
+    success: vi.fn(),
+    fail: vi.fn(),
     withTag: vi.fn(() => mockLogger),
     level: 3, // info level
   };
@@ -83,20 +86,6 @@ vi.mock("consola", () => {
     LogLevels: { debug: 4, info: 3, warn: 2, error: 1 },
   };
 });
-
-// listr2 모킹 - 모든 task Promise를 병렬로 실행하여 교착 상태 방지
-vi.mock("listr2", () => ({
-  Listr: class MockListr {
-    private readonly tasks: Array<{ task: () => Promise<void> }>;
-    constructor(tasks: Array<{ task: () => Promise<void> }>) {
-      this.tasks = tasks;
-    }
-    async run() {
-      // 모든 task를 병렬로 시작 (worker가 완료될 때 resolve됨)
-      await Promise.all(this.tasks.map((t) => t.task()));
-    }
-  },
-}));
 
 const mockJitiImport = vi.fn();
 vi.mock("jiti", () => ({

@@ -66,6 +66,9 @@ vi.mock("consola", () => {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
+    start: vi.fn(),
+    success: vi.fn(),
+    fail: vi.fn(),
     withTag: vi.fn(() => mockLogger),
     level: 3, // info level
   };
@@ -75,38 +78,6 @@ vi.mock("consola", () => {
     LogLevels: { debug: 4, info: 3, warn: 2, error: 1 },
   };
 });
-
-// listr2 모킹 - 순차적으로 모든 task를 실행하고 context 반환
-vi.mock("listr2", () => ({
-  Listr: class MockListr {
-    private readonly tasks: Array<{
-      title: string;
-      task: (ctx: Record<string, unknown>, task: { title: string; skip: (msg: string) => void }) => Promise<void>;
-      enabled?: (ctx: Record<string, unknown>) => boolean;
-      skip?: (ctx: Record<string, unknown>) => boolean;
-    }>;
-    constructor(
-      tasks: Array<{
-        title: string;
-        task: (ctx: Record<string, unknown>, task: { title: string; skip: (msg: string) => void }) => Promise<void>;
-        enabled?: (ctx: Record<string, unknown>) => boolean;
-        skip?: (ctx: Record<string, unknown>) => boolean;
-      }>,
-    ) {
-      this.tasks = tasks;
-    }
-    async run() {
-      const ctx: Record<string, unknown> = { files: [], results: [], ignorePatterns: [] };
-      for (const t of this.tasks) {
-        if (t.enabled && !t.enabled(ctx)) continue;
-        if (t.skip && t.skip(ctx)) continue;
-        const mockTask = { title: t.title, skip: () => {} };
-        await t.task(ctx, mockTask);
-      }
-      return ctx;
-    }
-  },
-}));
 
 import { fsExists, fsGlob } from "@simplysm/core-node";
 import { runLint } from "../src/commands/lint";

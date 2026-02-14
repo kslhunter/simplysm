@@ -1,10 +1,9 @@
 import ts from "typescript";
 import path from "path";
 import os from "os";
-import { Listr } from "listr2";
 import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
 import "@simplysm/core-common";
-import { consola, LogLevels } from "consola";
+import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { parseRootTsconfig, type TypecheckEnv } from "../utils/tsconfig";
 import { loadSdConfig } from "../utils/sd-config";
@@ -163,7 +162,7 @@ function createTypecheckTasks(
  * - `sd.config.ts`를 로드하여 패키지별 타겟 정보 확인 (없으면 기본값 사용)
  * - Worker threads를 사용하여 실제 병렬 타입체크 수행
  * - incremental 컴파일 사용 (`.cache/typecheck-{env}.tsbuildinfo`)
- * - listr2를 사용하여 진행 상황 표시
+ * - consola 로깅을 사용하여 진행 상황 표시
  * - 에러 발생 시 `process.exitCode = 1` 설정
  *
  * @param options - 타입체크 실행 옵션
@@ -187,7 +186,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   try {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
-    consola.error(err instanceof Error ? err.message : err);
+    logger.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;
     return;
   }
@@ -233,39 +232,33 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   const concurrency = Math.min(maxConcurrency, tasks.length);
   logger.debug("동시성 설정", { concurrency, maxConcurrency, taskCount: tasks.length });
 
-  // Worker 풀 생성 (작업 수만큼만 생성)
+  // Worker 풀 생성
   const workerPath = import.meta.resolve("../workers/dts.worker");
   const workers: WorkerProxy<typeof DtsWorkerModule>[] = [];
   for (let i = 0; i < concurrency; i++) {
     workers.push(Worker.create<typeof DtsWorkerModule>(workerPath));
   }
 
-  // 결과 수집용
   const allResults: { displayName: string; result: DtsBuildResult }[] = [];
 
-  // listr2-Worker 연동 패턴:
-  // 1. listr2의 각 task는 Promise를 반환하고, 해당 Promise가 resolve되면 task가 완료됨
-  // 2. taskResolvers 맵에 task별 resolve 함수를 저장
-  // 3. Worker가 작업 완료 시 해당 task의 resolver를 호출하여 listr2 UI 업데이트
-  // 4. Worker 풀은 독립적으로 작업 큐에서 task를 가져와 실행
-  const taskResolvers = new Map<string, () => void>();
-
   try {
-    // 작업 큐
     let taskIndex = 0;
 
-    // Worker에서 작업 실행
     async function runNextTask(worker: WorkerProxy<typeof DtsWorkerModule>): Promise<void> {
       while (taskIndex < tasks.length) {
         const currentIndex = taskIndex++;
         const task = tasks[currentIndex];
 
+        logger.debug(`[${task.displayName}] 타입체크 시작`);
         try {
           const result = await worker.buildDts(task.buildInfo);
-
           allResults.push({ displayName: task.displayName, result });
+          if (result.success) {
+            logger.debug(`[${task.displayName}] 타입체크 완료`);
+          } else {
+            logger.debug(`[${task.displayName}] 타입체크 실패`, { errorCount: result.errorCount });
+          }
         } catch (err) {
-          // Worker 오류 로깅 및 결과로 변환
           logger.error(`Worker 오류: ${task.displayName}`, {
             error: err instanceof Error ? err.message : String(err),
           });
@@ -279,40 +272,14 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
               warningCount: 0,
             },
           });
-        } finally {
-          // 성공/실패 모두 task 완료 처리
-          taskResolvers.get(task.displayName)?.();
         }
       }
     }
 
-    // listr2로 진행 상황 표시
-    const listr = new Listr(
-      tasks.map((task) => ({
-        title: task.displayName,
-        task: () =>
-          new Promise<void>((resolve) => {
-            taskResolvers.set(task.displayName, resolve);
-          }),
-      })),
-      {
-        concurrent: concurrency,
-        exitOnError: false,
-        renderer: consola.level >= LogLevels.debug ? "verbose" : "default",
-      },
-    );
-
-    // 병렬로 모든 worker 실행
-    const workerPromises = workers.map((worker) => runNextTask(worker));
-
-    // listr와 worker 동시 실행
-    await Promise.all([listr.run(), ...workerPromises]);
+    logger.start(`타입체크 실행 중... (${tasks.length}개 대상, 동시성: ${concurrency})`);
+    await Promise.all(workers.map((worker) => runNextTask(worker)));
+    logger.success("타입체크 실행 완료");
   } finally {
-    // 미해결 resolver 정리 (타임아웃/비정상 종료 대비)
-    for (const resolver of taskResolvers.values()) {
-      resolver();
-    }
-    // Worker 종료 (성공/실패 모두)
     await Promise.all(workers.map((w) => w.terminate()));
   }
 

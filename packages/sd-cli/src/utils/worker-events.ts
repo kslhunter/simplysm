@@ -1,7 +1,7 @@
 import { consola } from "consola";
 import type { PackageResult } from "./package-utils";
 import type { SdPackageConfig } from "../sd-config.types";
-import type { RebuildListrManager } from "./listr-manager";
+import type { RebuildManager } from "./listr-manager";
 
 const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 
@@ -61,7 +61,7 @@ export function registerWorkerEventHandlers<T extends BaseWorkerInfo>(
   workerInfo: T,
   opts: WorkerEventHandlerOptions,
   results: Map<string, PackageResult>,
-  rebuildManager: RebuildListrManager,
+  rebuildManager: RebuildManager,
 ): (result: PackageResult) => void {
   const completeTask = (result: PackageResult): void => {
     results.set(opts.resultKey, result);

@@ -10,7 +10,6 @@ type ErrorResult = PackageResult | BuildResult;
 
 /**
  * 에러만 출력한다.
- * 성공한 빌드는 listr의 체크마크로 이미 표시되므로 별도 출력하지 않음.
  * @param results 패키지별 빌드 결과 상태
  */
 export function printErrors(results: Map<string, ErrorResult>): void {
