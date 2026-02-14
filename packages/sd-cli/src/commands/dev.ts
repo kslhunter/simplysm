@@ -12,7 +12,7 @@ import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worke
 import { Capacitor } from "../capacitor/capacitor";
 import { filterPackagesByTargets, getWatchScopes, type PackageResult } from "../utils/package-utils";
 import { printErrors, printServers } from "../utils/output-utils";
-import { RebuildManager } from "../utils/listr-manager";
+import { RebuildManager } from "../utils/rebuild-manager";
 import {
   registerWorkerEventHandlers,
   type ServerReadyEventData,

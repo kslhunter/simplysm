@@ -1,6 +1,6 @@
 import { WorkerManager } from "../infra/WorkerManager";
 import type { ResultCollector } from "../infra/ResultCollector";
-import type { RebuildManager } from "../utils/listr-manager";
+import type { RebuildManager } from "../utils/rebuild-manager";
 import type { IBuilder, PackageInfo } from "./types";
 
 /**
