@@ -51,7 +51,7 @@ export default defineConfig({
             // node 전용 패키지 제외
             "packages/sd-cli/tests/**/*.spec.{ts,tsx,js}",
             "packages/core-node/tests/**/*.spec.{ts,tsx,js}",
-            "packages/eslint-plugin/tests/**/*.spec.{ts,tsx,js}",
+            "packages/lint/tests/**/*.spec.{ts,tsx,js}",
             "packages/orm-node/tests/**/*.spec.{ts,tsx,js}",
             "packages/service-server/tests/**/*.spec.{ts,tsx,js}",
             "packages/storage/tests/**/*.spec.{ts,tsx,js}",
