@@ -1,6 +1,7 @@
 import { WorkerManager } from "../infra/WorkerManager";
-import type { ResultCollector } from "../infra/ResultCollector";
+import type { BuildResult, ResultCollector } from "../infra/ResultCollector";
 import type { RebuildManager } from "../utils/rebuild-manager";
+import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
 import type { IBuilder, PackageInfo } from "./types";
 
 /**
@@ -112,6 +113,72 @@ export abstract class BaseBuilder implements IBuilder {
       resolver();
       this.buildResolvers.delete(key);
     }
+  }
+
+  /**
+   * 공통 Worker 이벤트 핸들러 등록 (buildStart, build, error)
+   *
+   * LibraryBuilder와 DtsBuilder에서 동일한 패턴의 이벤트 핸들러를
+   * 중복 없이 등록할 수 있도록 공통 로직을 제공한다.
+   *
+   * @param workerKey Worker 식별자 (예: "core-common:build")
+   * @param resultType BuildResult의 type 필드 값
+   * @param listrTitle 리빌드 시 표시할 제목
+   */
+  protected registerEventHandlersForWorker(
+    pkg: PackageInfo,
+    workerKey: string,
+    resultType: BuildResult["type"],
+    listrTitle: string,
+  ): void {
+    const worker = this.workerManager.get(workerKey)!;
+
+    // 초기 빌드 여부 추적
+    let isInitialBuild = true;
+
+    // 빌드 시작 (리빌드 시)
+    worker.on("buildStart", () => {
+      if (!isInitialBuild && this.rebuildManager != null) {
+        const resolver = this.rebuildManager.registerBuild(workerKey, listrTitle);
+        this.buildResolvers.set(workerKey, resolver);
+      }
+    });
+
+    // 빌드 완료
+    worker.on("build", (data) => {
+      const event = data as BuildEventData;
+      const result: BuildResult = {
+        name: pkg.name,
+        target: pkg.config.target,
+        type: resultType,
+        status: event.success ? "success" : "error",
+        message: event.errors?.join("\n"),
+      };
+      this.resultCollector.add(result);
+
+      if (isInitialBuild) {
+        isInitialBuild = false;
+      }
+      this.completeBuild(pkg);
+    });
+
+    // 에러
+    worker.on("error", (data) => {
+      const event = data as ErrorEventData;
+      const result: BuildResult = {
+        name: pkg.name,
+        target: pkg.config.target,
+        type: resultType,
+        status: "error",
+        message: event.message,
+      };
+      this.resultCollector.add(result);
+
+      if (isInitialBuild) {
+        isInitialBuild = false;
+      }
+      this.completeBuild(pkg);
+    });
   }
 
   /**

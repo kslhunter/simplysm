@@ -1,7 +1,6 @@
 import type * as LibraryWorkerModule from "../workers/library.worker";
 import type { BuildResult } from "../infra/ResultCollector";
 import type { SdBuildPackageConfig } from "../sd-config.types";
-import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
 
@@ -31,57 +30,9 @@ export class LibraryBuilder extends BaseBuilder {
 
   protected registerEventHandlers(): void {
     for (const pkg of this.packages) {
-      const worker = this.workerManager.get<typeof LibraryWorkerModule>(`${pkg.name}:build`)!;
-      const resultKey = `${pkg.name}:build`;
+      const workerKey = `${pkg.name}:build`;
       const listrTitle = `${pkg.name} (${pkg.config.target})`;
-
-      // 초기 빌드 여부 추적
-      let isInitialBuild = true;
-
-      // 빌드 시작 (리빌드 시)
-      worker.on("buildStart", () => {
-        if (!isInitialBuild && this.rebuildManager != null) {
-          // 리빌드 시 RebuildListrManager에 등록
-          const resolver = this.rebuildManager.registerBuild(resultKey, listrTitle);
-          this.buildResolvers.set(resultKey, resolver);
-        }
-      });
-
-      // 빌드 완료
-      worker.on("build", (data) => {
-        const event = data as BuildEventData;
-        const result: BuildResult = {
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "build",
-          status: event.success ? "success" : "error",
-          message: event.errors?.join("\n"),
-        };
-        this.resultCollector.add(result);
-
-        if (isInitialBuild) {
-          isInitialBuild = false;
-        }
-        this.completeBuild(pkg);
-      });
-
-      // 에러
-      worker.on("error", (data) => {
-        const event = data as ErrorEventData;
-        const result: BuildResult = {
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "build",
-          status: "error",
-          message: event.message,
-        };
-        this.resultCollector.add(result);
-
-        if (isInitialBuild) {
-          isInitialBuild = false;
-        }
-        this.completeBuild(pkg);
-      });
+      this.registerEventHandlersForWorker(pkg, workerKey, "build", listrTitle);
     }
   }
 
