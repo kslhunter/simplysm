@@ -14,9 +14,10 @@ export const textPlaceholder = "placeholder:text-base-400 dark:placeholder:text-
 export const disabledOpacity = "cursor-default opacity-50 pointer-events-none";
 
 // ── 사이즈 ──
-export type ComponentSize = "sm" | "lg";
+export type ComponentSize = "sm" | "lg" | "xl";
 export const paddingSm = "px-1.5 py-0.5";
 export const paddingLg = "px-3 py-2";
+export const paddingXl = "px-4 py-3";
 
 // ── 테마 ──
 export type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";

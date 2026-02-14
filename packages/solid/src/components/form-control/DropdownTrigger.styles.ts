@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { borderDefault, type ComponentSize, paddingLg, paddingSm } from "../../styles/tokens.styles";
+import { borderDefault, type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../styles/patterns.styles";
 
 export const triggerBaseClass = clsx(
@@ -25,6 +25,7 @@ export const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOut
 export const triggerSizeClasses: Record<ComponentSize, string> = {
   sm: clsx("gap-1.5", paddingSm),
   lg: clsx("gap-3", paddingLg),
+  xl: clsx("gap-3.5", paddingXl),
 };
 
 export const chevronWrapperClass = clsx("opacity-30", "hover:opacity-100");

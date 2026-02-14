@@ -63,6 +63,7 @@ const editorContentClass = clsx(
 const editorContentSizeClasses: Record<FieldSize, string> = {
   sm: clsx("px-3 py-2", "min-h-24"),
   lg: clsx("px-5 py-4", "min-h-48"),
+  xl: clsx("px-6 py-5", "min-h-64"),
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {

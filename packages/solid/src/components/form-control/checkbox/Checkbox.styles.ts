@@ -6,6 +6,7 @@ import {
   disabledOpacity,
   paddingLg,
   paddingSm,
+  paddingXl,
 } from "../../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
 
@@ -48,6 +49,7 @@ export const themeCheckedClasses: Record<CheckboxTheme, string> = {
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {
   sm: clsx("h-field-sm", paddingSm),
   lg: clsx("h-field-lg", paddingLg),
+  xl: clsx("h-field-xl", paddingXl),
 };
 
 // inset 스타일
@@ -57,6 +59,7 @@ export const checkboxInsetClass = clsx("h-field-inset justify-center bg-transpar
 export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
   sm: "h-field-inset-sm",
   lg: "h-field-inset-lg",
+  xl: "h-field-inset-xl",
 };
 
 // inline 스타일

@@ -45,6 +45,7 @@ const chipDefaultClass = "px-3 py-1";
 const chipSizeClasses: Record<StatePresetSize, string> = {
   sm: "px-2 py-0.5 text-sm",
   lg: "px-4 py-2",
+  xl: "px-5 py-3 text-lg",
 };
 
 const chipNameBtnClass = clsx("cursor-pointer", "hover:underline", "focus:outline-none");
@@ -63,6 +64,7 @@ const iconBtnDefaultClass = "p-0.5";
 const iconBtnSizeClasses: Record<StatePresetSize, string> = {
   sm: "p-px",
   lg: "p-1",
+  xl: "p-1.5",
 };
 
 const starBtnClass = clsx(
@@ -80,6 +82,7 @@ const starBtnDefaultClass = "p-1";
 const starBtnSizeClasses: Record<StatePresetSize, string> = {
   sm: "p-0.5",
   lg: "p-1.5",
+  xl: "p-2",
 };
 
 const inputClass = clsx(
@@ -97,6 +100,7 @@ const inputDefaultClass = "px-3 py-1 w-24";
 const inputSizeClasses: Record<StatePresetSize, string> = {
   sm: "px-2 py-0.5 w-20 text-sm",
   lg: "px-4 py-2 w-32",
+  xl: "px-5 py-3 w-36 text-lg",
 };
 
 const iconSize = "0.85em";

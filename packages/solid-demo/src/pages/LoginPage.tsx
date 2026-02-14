@@ -65,7 +65,7 @@ export default function LoginPage() {
 
           {/* Login Button */}
           <div class="mt-5">
-            <Button theme="primary" variant="solid" class="w-full" type="submit" size="lg">
+            <Button theme="primary" variant="solid" class="w-full" type="submit" size="xl">
               로그인
             </Button>
           </div>

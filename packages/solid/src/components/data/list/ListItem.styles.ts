@@ -21,6 +21,7 @@ export const listItemBaseClass = clsx(
 export const listItemSizeClasses: Record<ComponentSize, string> = {
   sm: clsx("px-1 py-0.5"),
   lg: clsx("px-2 py-1.5"),
+  xl: clsx("px-3 py-2"),
 };
 
 // 선택된 상태

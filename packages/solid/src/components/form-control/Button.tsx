@@ -40,6 +40,7 @@ const themeClasses = Object.fromEntries(
 const sizeClasses: Record<ButtonSize, string> = {
   sm: clsx("min-w-6 px-1 py-0"),
   lg: clsx("min-w-9 px-3 py-1.5"),
+  xl: clsx("min-w-10 px-4 py-2 text-lg"),
 };
 
 export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

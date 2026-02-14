@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type ComponentSize, paddingLg, paddingSm } from "../../../styles/tokens.styles";
+import { type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../../styles/tokens.styles";
 import { fieldSurface, insetBase, insetFocusOutline, inputBase } from "../../../styles/patterns.styles";
 
 export type FieldSize = ComponentSize;
@@ -11,6 +11,7 @@ export const fieldBaseClass = clsx("inline-flex items-center", fieldSurface, "px
 export const fieldSizeClasses: Record<FieldSize, string> = {
   sm: clsx("h-field-sm", paddingSm),
   lg: clsx("h-field-lg", paddingLg),
+  xl: clsx("h-field-xl", paddingXl),
 };
 
 // inset 스타일
@@ -21,6 +22,7 @@ export const fieldInsetHeightClass = "h-field-inset";
 export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
   sm: "h-field-inset-sm",
   lg: "h-field-inset-lg",
+  xl: "h-field-inset-xl",
 };
 
 // disabled 스타일
@@ -33,6 +35,7 @@ export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface, "px-2 p
 export const textAreaSizeClasses: Record<FieldSize, string> = {
   sm: paddingSm,
   lg: paddingLg,
+  xl: paddingXl,
 };
 
 // input 스타일
