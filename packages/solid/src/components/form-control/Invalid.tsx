@@ -10,12 +10,14 @@ export interface InvalidProps {
   class?: string;
 }
 
-const indicatorClass = clsx(
-  "absolute left-0.5 top-0.5",
-  "size-1.5 rounded-full",
-  "bg-danger-500",
+const anchorClass = clsx(
+  "relative inline-block",
+  "w-0 h-0 align-top",
+  "overflow-visible",
   "pointer-events-none select-none",
 );
+
+const indicatorClass = clsx("absolute left-0.5 top-0.5", "size-1.5 rounded-full", "bg-danger-500");
 
 const hiddenInputClass = clsx(
   "absolute bottom-0 left-0.5",
@@ -45,9 +47,11 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
   };
 
   return (
-    <div {...rest} class={twMerge("relative inline", local.class)}>
+    <div {...rest} class={twMerge("inline", local.class)}>
+      <span class={anchorClass}>
+        <span class={indicatorClass} style={{ display: (local.message ?? "") !== "" ? "block" : "none" }} />
+      </span>
       {local.children}
-      <div class={indicatorClass} style={{ display: (local.message ?? "") !== "" ? "block" : "none" }} />
       <input
         ref={hiddenInputEl}
         type="text"
