@@ -52,20 +52,29 @@ Design complete! Here's how to proceed:
 1. /sd-worktree add <name>  — Create a worktree branch
 2. /sd-plan                 — Break into detailed tasks
 3. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-4. /sd-commit               — Commit
-5. /sd-worktree merge       — Merge back to main
-6. /sd-worktree clean       — Remove worktree
+4. /sd-check                — Verify All (typecheck + lint + tests)
+5. /sd-commit               — Commit
+6. /sd-worktree merge       — Merge back to main
+7. /sd-worktree clean       — Remove worktree
 
 --- Path B: Direct on current branch (quick fixes/small changes) ---
 
 1. /sd-plan                 — Break into detailed tasks
 2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-3. /sd-commit               — Commit
+3. /sd-check                — Verify All (typecheck + lint + tests)
+4. /sd-commit               — Commit
 
 You can start from any step or skip steps as needed.
+
+💡 "Path A: yolo" or "Path B: yolo" to auto-run all steps
 ```
 
-- Do NOT auto-proceed to any step. Present the overview and wait for the user's choice.
+- After presenting both paths, **recommend one** based on the design's scope:
+  - Path A recommended: new features, multi-file changes, architectural changes, anything that benefits from isolation
+  - Path B recommended: small bug fixes, single-file changes, config tweaks, minor adjustments
+  - Briefly explain why (1 sentence)
+- Do NOT auto-proceed to any step. Present the overview with recommendation and wait for the user's choice.
+- **Yolo mode**: If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
 
 ## Key Principles
 

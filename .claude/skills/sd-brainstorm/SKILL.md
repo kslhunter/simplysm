@@ -65,9 +65,16 @@ Design complete! Here's how to proceed:
 4. /sd-commit               — Commit
 
 You can start from any step or skip steps as needed.
+
+💡 "Path A: yolo" or "Path B: yolo" to auto-run all steps
 ```
 
-- Do NOT auto-proceed to any step. Present the overview and wait for the user's choice.
+- After presenting both paths, **recommend one** based on the design's scope:
+  - Path A recommended: new features, multi-file changes, architectural changes, anything that benefits from isolation
+  - Path B recommended: small bug fixes, single-file changes, config tweaks, minor adjustments
+  - Briefly explain why (1 sentence)
+- Do NOT auto-proceed to any step. Present the overview with recommendation and wait for the user's choice.
+- **Yolo mode**: If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
 
 ## Key Principles
 

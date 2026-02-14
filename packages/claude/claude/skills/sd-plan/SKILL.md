@@ -98,7 +98,9 @@ git commit -m "feat: add specific feature"
 
 After saving the plan:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
+- If in **yolo mode** (user chose "yolo" from sd-brainstorm): Immediately proceed to sd-plan-dev without asking. No confirmation needed.
+- Otherwise: Display this message **in the system's configured language** (detect from the language setting and translate accordingly):
+  **"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
 
 - **REQUIRED SUB-SKILL:** Use sd-plan-dev
 - Fresh fork per task + two-stage review (spec compliance → code quality)
