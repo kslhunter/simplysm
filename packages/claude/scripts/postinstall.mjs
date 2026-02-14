@@ -27,6 +27,15 @@ try {
     process.exit(0);
   }
 
+  // simplysm 모노레포 자체에서는 실행하지 않음
+  const projectPkgPath = path.join(projectRoot, "package.json");
+  if (fs.existsSync(projectPkgPath)) {
+    const projectPkg = JSON.parse(fs.readFileSync(projectPkgPath, "utf-8"));
+    if (projectPkg.name === "simplysm") {
+      process.exit(0);
+    }
+  }
+
   // 소스 디렉토리가 없으면 건너뜀 (모노레포 개발 환경에서는 claude/ 미존재)
   if (!fs.existsSync(sourceDir)) {
     process.exit(0);
