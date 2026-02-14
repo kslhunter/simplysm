@@ -1,4 +1,4 @@
-import { DbConnFactory, type DbConnConfig, type DbConn } from "@simplysm/orm-node";
+import { createDbConn, type DbConnConfig, type DbConn } from "@simplysm/orm-node";
 import {
   type ColumnMeta,
   createQueryBuilder,
@@ -89,7 +89,7 @@ export const OrmService = defineService(
         }
 
         const config = await getConf(opt);
-        const dbConn = await DbConnFactory.create(config);
+        const dbConn = await createDbConn(config);
         await dbConn.connect();
 
         const lastConnId = Math.max(0, ...Array.from(myConns.keys()));
