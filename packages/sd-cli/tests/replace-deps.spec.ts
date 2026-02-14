@@ -126,13 +126,13 @@ describe("setupReplaceDeps", () => {
 
     const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
 
-    // 더 이상 symlink가 아님 (복사된 디렉토리)
+    // symlink는 유지됨
     const stat = await fs.promises.lstat(targetPath);
-    expect(stat.isSymbolicLink()).toBe(false);
-    expect(stat.isDirectory()).toBe(true);
+    expect(stat.isSymbolicLink()).toBe(true);
 
-    // 소스 파일이 복사되었는지 확인
-    const indexContent = await fs.promises.readFile(path.join(targetPath, "index.js"), "utf-8");
+    // symlink의 실제 경로(.pnpm 스토어)에 소스 파일이 복사되었는지 확인
+    const realPath = await fs.promises.realpath(targetPath);
+    const indexContent = await fs.promises.readFile(path.join(realPath, "index.js"), "utf-8");
     expect(indexContent).toBe("export default 1;");
 
     const readmeContent = await fs.promises.readFile(path.join(targetPath, "README.md"), "utf-8");
@@ -186,11 +186,10 @@ describe("setupReplaceDeps", () => {
       "@simplysm/*": "../simplysm/packages/*",
     });
 
-    // solid은 복사됨, no-exist는 symlink 그대로
+    // solid은 symlink 유지, no-exist도 symlink 그대로
     const solidPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
     const solidStat = await fs.promises.lstat(solidPath);
-    expect(solidStat.isSymbolicLink()).toBe(false);
-    expect(solidStat.isDirectory()).toBe(true);
+    expect(solidStat.isSymbolicLink()).toBe(true);
 
     const noExistStat = await fs.promises.lstat(noExistSymlink);
     expect(noExistStat.isSymbolicLink()).toBe(true);
@@ -227,12 +226,13 @@ describe("setupReplaceDeps", () => {
       "@simplysm/*": "../simplysm/packages/*",
     });
 
-    // workspace 패키지의 node_modules도 복사됨
+    // workspace 패키지의 node_modules도 symlink 유지
     const stat = await fs.promises.lstat(pkgNodeModulesSymlink);
-    expect(stat.isSymbolicLink()).toBe(false);
-    expect(stat.isDirectory()).toBe(true);
+    expect(stat.isSymbolicLink()).toBe(true);
 
-    const indexContent = await fs.promises.readFile(path.join(pkgNodeModulesSymlink, "index.js"), "utf-8");
+    // symlink의 실제 경로에 소스 파일이 복사되었는지 확인
+    const realPath = await fs.promises.realpath(pkgNodeModulesSymlink);
+    const indexContent = await fs.promises.readFile(path.join(realPath, "index.js"), "utf-8");
     expect(indexContent).toBe("export default 1;");
   });
 });

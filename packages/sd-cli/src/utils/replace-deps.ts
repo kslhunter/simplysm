@@ -186,12 +186,10 @@ export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<
       try {
         // targetPath가 symlink면 realpath로 해석하여 실제 .pnpm 스토어 경로 얻기
         let actualTargetPath = targetPath;
-        let isSymlink = false;
         try {
           const stat = await fs.promises.lstat(targetPath);
           if (stat.isSymbolicLink()) {
             actualTargetPath = await fs.promises.realpath(targetPath);
-            isSymlink = true;
           }
         } catch {
           // targetPath가 존재하지 않으면 그대로 사용
