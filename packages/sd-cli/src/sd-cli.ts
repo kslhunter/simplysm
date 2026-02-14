@@ -10,6 +10,7 @@ import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
 import { runPublish } from "./commands/publish";
+import { runReplaceDeps } from "./commands/replace-deps";
 import { runDevice } from "./commands/device";
 import path from "path";
 import fs from "fs";
@@ -291,6 +292,28 @@ export function createCliParser(argv: string[]): Argv {
           targets: args.targets,
           noBuild: !args.build,
           dryRun: args.dryRun,
+          options: args.options,
+        });
+      },
+    )
+    .command(
+      "replace-deps",
+      "sd.config.ts의 replaceDeps 설정에 따라 node_modules 패키지를 로컬 소스로 symlink 교체한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .options({
+            options: {
+              type: "string",
+              array: true,
+              alias: "o",
+              description: "sd.config.ts에 전달할 옵션 (예: -o key=value)",
+              default: [] as string[],
+            },
+          }),
+      async (args) => {
+        await runReplaceDeps({
           options: args.options,
         });
       },
