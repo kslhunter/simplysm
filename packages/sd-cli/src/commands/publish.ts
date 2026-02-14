@@ -9,6 +9,7 @@ import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { spawn } from "../utils/spawn";
 import { runBuild } from "./build";
+import { parseWorkspaceGlobs } from "../utils/replace-deps";
 import os from "os";
 import fs from "fs";
 import ssh2 from "ssh2";
