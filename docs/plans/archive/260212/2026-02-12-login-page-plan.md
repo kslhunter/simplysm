@@ -43,7 +43,7 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div class="mb-8 flex justify-center">
-          <img src="logo-landscape.png" alt="SIMPLYSM" class="h-10 w-auto" />
+          <img src="../../../../packages/solid-demo/public/logo-landscape.png" alt="SIMPLYSM" class="h-10 w-auto" />
         </div>
 
         {/* Form */}
