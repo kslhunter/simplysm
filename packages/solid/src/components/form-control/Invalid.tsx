@@ -12,7 +12,7 @@ export interface InvalidProps {
 
 const anchorClass = clsx(
   "relative inline-block",
-  "w-0 h-0 align-top",
+  "size-0 align-top",
   "overflow-visible",
   "pointer-events-none select-none",
 );
