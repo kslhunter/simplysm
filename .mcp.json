@@ -6,7 +6,7 @@
     },
     "playwright": {
       "command": "npx",
-      "args": ["@anthropic-ai/mcp-server-playwright@latest"],
+      "args": ["@playwright/mcp@latest"],
       "env": {
         "PLAYWRIGHT_OUTPUT_DIR": ".playwright-mcp"
       }
