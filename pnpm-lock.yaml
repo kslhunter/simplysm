@@ -98,8 +98,8 @@ importers:
         version: 7.7.4
     devDependencies:
       '@capacitor/core':
-        specifier: ^8.1.0
-        version: 8.1.0
+        specifier: ^7.5.0
+        version: 7.5.0
       '@types/semver':
         specifier: ^7.7.1
         version: 7.7.1
@@ -107,8 +107,8 @@ importers:
   packages/capacitor-plugin-broadcast:
     devDependencies:
       '@capacitor/core':
-        specifier: ^8.1.0
-        version: 8.1.0
+        specifier: ^7.5.0
+        version: 7.5.0
 
   packages/capacitor-plugin-file-system:
     dependencies:
@@ -117,8 +117,8 @@ importers:
         version: link:../core-common
     devDependencies:
       '@capacitor/core':
-        specifier: ^8.1.0
-        version: 8.1.0
+        specifier: ^7.5.0
+        version: 7.5.0
 
   packages/capacitor-plugin-usb-storage:
     dependencies:
@@ -127,8 +127,8 @@ importers:
         version: link:../core-common
     devDependencies:
       '@capacitor/core':
-        specifier: ^8.1.0
-        version: 8.1.0
+        specifier: ^7.5.0
+        version: 7.5.0
 
   packages/claude: {}
 
@@ -1296,8 +1296,8 @@ packages:
   '@cacheable/utils@2.3.4':
     resolution: {integrity: sha512-knwKUJEYgIfwShABS1BX6JyJJTglAFcEU7EXqzTdiGCXur4voqkiJkdgZIQtWNFhynzDWERcTYv/sETMu3uJWA==}
 
-  '@capacitor/core@8.1.0':
-    resolution: {integrity: sha512-UfMBMWc1v7J+14AhH03QmeNwV3HZx3qnOWhpwnHfzALEwAwlV/itQOQqcasMQYhOHWL0tiymc5ByaLTn7KKQxw==}
+  '@capacitor/core@7.5.0':
+    resolution: {integrity: sha512-4Y4trISe2Bp3lwsoGFoQIvgX4hiZO8S1Slmbz6oFaMxAuEc4noipQGCQx974PF4glwVVe/8+H3P9iEmCXtrUgA==}
 
   '@csstools/css-parser-algorithms@3.0.5':
     resolution: {integrity: sha512-DaDeUkXZKjdGhgYaHNJTV9pV7Y9B3b644jCLs9Upc3VeNGg6LWARAT6O+Q+/COo+2gg/bM5rhpMAtf70WqfBdQ==}
@@ -6790,7 +6790,7 @@ snapshots:
       hashery: 1.4.0
       keyv: 5.6.0
 
-  '@capacitor/core@8.1.0':
+  '@capacitor/core@7.5.0':
     dependencies:
       tslib: 2.8.1
 
