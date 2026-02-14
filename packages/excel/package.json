@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/excel",
   "sideEffects": false,
-  "version": "13.0.0-beta.51",
+  "version": "13.0.1",
   "description": "Excel 파일 처리 라이브러리",
   "author": "김석래",
   "repository": {
