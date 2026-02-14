@@ -2,45 +2,42 @@ import path from "path";
 import { readFileSync, existsSync } from "fs";
 import fs from "fs/promises";
 import { createRequire } from "module";
-import { glob } from "glob";
 import type esbuild from "esbuild";
 import { solidPlugin } from "esbuild-plugin-solid";
 import type { TypecheckEnv } from "./tsconfig";
 
 /**
- * ESM 상대 import 경로에 .js 확장자를 추가하는 esbuild 플러그인.
+ * esbuild outputFiles 중 실제로 변경된 파일만 디스크에 쓴다.
  *
- * bundle: false 모드에서 esbuild는 import 경로를 그대로 유지하므로,
- * Node.js ESM에서 직접 실행 시 확장자 누락으로 모듈을 찾지 못하는 문제를 해결한다.
+ * - .js 파일: ESM 상대 import 경로에 .js 확장자를 추가한 후 비교
+ * - 그 외 파일(.js.map 등): 원본 그대로 비교
+ * - 기존 파일과 내용이 동일하면 쓰기를 건너뛰어 타임스탬프를 유지한다.
  */
-function esmRelativeImportPlugin(outdir: string): esbuild.Plugin {
-  return {
-    name: "esm-relative-import",
-    setup(build) {
-      build.onEnd(async () => {
-        const files = await glob("**/*.js", { cwd: outdir });
+export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<void> {
+  await Promise.all(
+    outputFiles.map(async (file) => {
+      const finalText = file.path.endsWith(".js")
+        ? file.text.replace(
+            /((?:from|import)\s*["'])(\.\.?\/[^"']*?)(["'])/g,
+            (_match, prefix: string, importPath: string, suffix: string) => {
+              if (/\.(js|mjs|cjs|json|css|wasm|node)$/i.test(importPath)) return _match;
+              return `${prefix}${importPath}.js${suffix}`;
+            },
+          )
+        : file.text;
 
-        await Promise.all(
-          files.map(async (file) => {
-            const filePath = path.join(outdir, file);
-            const content = await fs.readFile(filePath, "utf-8");
+      // Compare with existing file — skip write if unchanged
+      try {
+        const existing = await fs.readFile(file.path, "utf-8");
+        if (existing === finalText) return;
+      } catch {
+        // File doesn't exist yet
+      }
 
-            const rewritten = content.replace(
-              /((?:from|import)\s*["'])(\.\.?\/[^"']*?)(["'])/g,
-              (_match, prefix: string, importPath: string, suffix: string) => {
-                if (/\.(js|mjs|cjs|json|css|wasm|node)$/i.test(importPath)) return _match;
-                return `${prefix}${importPath}.js${suffix}`;
-              },
-            );
-
-            if (rewritten !== content) {
-              await fs.writeFile(filePath, rewritten);
-            }
-          }),
-        );
-      });
-    },
-  };
+      await fs.mkdir(path.dirname(file.path), { recursive: true });
+      await fs.writeFile(file.path, finalText);
+    }),
+  );
 }
 
 /**
@@ -86,7 +83,7 @@ function hasSolidDependency(pkgDir: string): boolean {
  * - target: node면 node20, 그 외는 chrome84
  */
 export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esbuild.BuildOptions {
-  const plugins: esbuild.Plugin[] = [esmRelativeImportPlugin(path.join(options.pkgDir, "dist"))];
+  const plugins: esbuild.Plugin[] = [];
 
   if (hasSolidDependency(options.pkgDir)) {
     plugins.unshift(solidPlugin());
@@ -101,6 +98,7 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     platform: options.target === "node" ? "node" : "browser",
     target: options.target === "node" ? "node20" : "chrome84",
     bundle: false,
+    write: false,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
     plugins,
   };
