@@ -1,5 +1,6 @@
+import path from "path";
 import esbuild from "esbuild";
-import { createWorker } from "@simplysm/core-node";
+import { createWorker, FsWatcher } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
@@ -68,6 +69,9 @@ const logger = consola.withTag("sd:cli:library:worker");
 /** esbuild build context (정리 대상) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
+/** FsWatcher (정리 대상) */
+let fsWatcher: FsWatcher | undefined;
+
 /**
  * 리소스 정리
  */
@@ -77,9 +81,10 @@ async function cleanup(): Promise<void> {
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
 
-  if (contextToDispose != null) {
-    await contextToDispose.dispose();
-  }
+  const watcherToClose = fsWatcher;
+  fsWatcher = undefined;
+
+  await Promise.all([contextToDispose?.dispose(), watcherToClose?.close()]);
 }
 
 // 프로세스 종료 전 리소스 정리 (SIGTERM/SIGINT)
@@ -149,6 +154,68 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
 let isWatchStarted = false;
 
 /**
+ * esbuild context 생성 및 초기 빌드 수행
+ */
+async function createAndBuildContext(
+  pkgDir: string,
+  cwd: string,
+  config: SdBuildPackageConfig,
+  isFirstBuild: boolean,
+  resolveFirstBuild?: () => void,
+): Promise<esbuild.BuildContext> {
+  // tsconfig 파싱
+  const parsedConfig = parseRootTsconfig(cwd);
+  const entryPoints = getPackageSourceFiles(pkgDir, parsedConfig);
+
+  // 타겟별 compilerOptions 생성
+  const env = getTypecheckEnvFromTarget(config.target);
+  const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, env, pkgDir);
+
+  // esbuild 옵션 생성
+  const baseOptions = createLibraryEsbuildOptions({
+    pkgDir,
+    entryPoints,
+    target: config.target,
+    compilerOptions,
+  });
+
+  let isBuildFirstTime = isFirstBuild;
+
+  // context 생성 + watch-notify 플러그인 추가
+  const context = await esbuild.context({
+    ...baseOptions,
+    plugins: [
+      ...(baseOptions.plugins ?? []),
+      {
+        name: "watch-notify",
+        setup(pluginBuild) {
+          pluginBuild.onStart(() => {
+            sender.send("buildStart", {});
+          });
+
+          pluginBuild.onEnd((result) => {
+            const errors = result.errors.map((e) => e.text);
+            const success = result.errors.length === 0;
+
+            sender.send("build", { success, errors: errors.length > 0 ? errors : undefined });
+
+            if (isBuildFirstTime) {
+              isBuildFirstTime = false;
+              resolveFirstBuild?.();
+            }
+          });
+        },
+      },
+    ],
+  });
+
+  // 초기 빌드
+  await context.rebuild();
+
+  return context;
+}
+
+/**
  * watch 시작
  * @remarks 이 함수는 Worker당 한 번만 호출되어야 합니다.
  * @throws 이미 watch가 시작된 경우
@@ -160,62 +227,50 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
   isWatchStarted = true;
 
   try {
-    // tsconfig 파싱
-    const parsedConfig = parseRootTsconfig(info.cwd);
-    const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
-
-    // 타겟별 compilerOptions 생성
-    const env = getTypecheckEnvFromTarget(info.config.target);
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, env, info.pkgDir);
-
     // 첫 번째 빌드 완료 대기를 위한 Promise
     let resolveFirstBuild!: () => void;
     const firstBuildPromise = new Promise<void>((resolve) => {
       resolveFirstBuild = resolve;
     });
 
-    let isFirstBuild = true;
-
-    // esbuild 기본 옵션 생성
-    const baseOptions = createLibraryEsbuildOptions({
-      pkgDir: info.pkgDir,
-      entryPoints,
-      target: info.config.target,
-      compilerOptions,
-    });
-
-    // watch용 플러그인 추가
-    esbuildContext = await esbuild.context({
-      ...baseOptions,
-      plugins: [
-        ...(baseOptions.plugins ?? []),
-        {
-          name: "watch-notify",
-          setup(pluginBuild) {
-            pluginBuild.onStart(() => {
-              sender.send("buildStart", {});
-            });
-
-            pluginBuild.onEnd((result) => {
-              const errors = result.errors.map((e) => e.text);
-              const success = result.errors.length === 0;
-
-              sender.send("build", { success, errors: errors.length > 0 ? errors : undefined });
-
-              if (isFirstBuild) {
-                isFirstBuild = false;
-                resolveFirstBuild();
-              }
-            });
-          },
-        },
-      ],
-    });
-
-    await esbuildContext.watch();
+    // 초기 esbuild context 생성 및 빌드
+    esbuildContext = await createAndBuildContext(info.pkgDir, info.cwd, info.config, true, resolveFirstBuild);
 
     // 첫 번째 빌드 완료 대기
     await firstBuildPromise;
+
+    // FsWatcher 시작 (src/**/*.{ts,tsx} 감시)
+    const srcPattern = path.join(info.pkgDir, "src", "**", "*.{ts,tsx}");
+    fsWatcher = await FsWatcher.watch([srcPattern]);
+
+    // 파일 변경 감지 시 처리
+    fsWatcher.onChange({ delay: 300 }, async (changes) => {
+      try {
+        // add 또는 unlink 이벤트가 있는지 확인
+        const hasAddOrUnlink = changes.some((c) => c.event === "add" || c.event === "unlink");
+
+        if (hasAddOrUnlink) {
+          // entry points 변경이 있으므로 context 재생성
+          logger.debug("파일 추가/삭제 감지, context 재생성");
+
+          const oldContext = esbuildContext;
+          esbuildContext = await createAndBuildContext(info.pkgDir, info.cwd, info.config, false);
+
+          if (oldContext != null) {
+            await oldContext.dispose();
+          }
+        } else {
+          // 파일 내용만 변경 (change 이벤트)
+          if (esbuildContext != null) {
+            await esbuildContext.rebuild();
+          }
+        }
+      } catch (err) {
+        sender.send("error", {
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    });
   } catch (err) {
     sender.send("error", {
       message: err instanceof Error ? err.message : String(err),
