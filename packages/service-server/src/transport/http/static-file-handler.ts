@@ -19,8 +19,13 @@ export async function handleStaticFile(
     throw new Error("Access denied");
   }
 
-  // 디렉토리면 index.html로
+  // 디렉토리면 trailing slash 리다이렉트 (표준 웹 서버 동작)
   if ((await fsExists(targetFilePath)) && (await fsStat(targetFilePath)).isDirectory()) {
+    if (!urlPath.endsWith("/")) {
+      const urlObj = new URL(req.raw.url!, "http://localhost");
+      reply.redirect(urlObj.pathname + "/" + urlObj.search);
+      return;
+    }
     targetFilePath = path.resolve(targetFilePath, "index.html");
   }
 
