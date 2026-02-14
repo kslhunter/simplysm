@@ -11,7 +11,7 @@ import type {
 import { createQueryBuilder, parseQueryResult } from "@simplysm/orm-common";
 import type { DbConn, DbConnConfig } from "./types/db-conn";
 import { DB_CONN_ERRORS, getDialectFromConfig } from "./types/db-conn";
-import { DbConnFactory } from "./db-conn-factory";
+import { createDbConn } from "./create-db-conn";
 
 /**
  * Node.js 환경용 DbContextExecutor
@@ -32,7 +32,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * 커넥션 풀에서 연결을 획득하고 연결 상태를 활성화한다.
    */
   async connect(): Promise<void> {
-    this._conn = await DbConnFactory.create(this._config);
+    this._conn = await createDbConn(this._config);
     await this._conn.connect();
   }
 
