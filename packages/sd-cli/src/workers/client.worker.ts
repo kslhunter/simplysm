@@ -192,13 +192,6 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     const address = viteServer.httpServer?.address();
     const actualPort = typeof address === "object" && address != null ? address.port : viteServer.config.server.port;
 
-    if (actualPort == null) {
-      sender.send("error", {
-        message: "Failed to determine Vite dev server port",
-      });
-      return;
-    }
-
     sender.send("serverReady", { port: actualPort });
   } catch (err) {
     sender.send("error", {

@@ -69,15 +69,15 @@ export class DevOrchestrator {
   private _watchScopes: string[] = [];
 
   // Package classification
-  private _serverPackages: Array<{ name: string; config: SdServerPackageConfig }> = [];
-  private _clientPackages: Array<{ name: string; config: SdClientPackageConfig }> = [];
-  private _serverClientsMap = new Map<string, string[]>();
+  private readonly _serverPackages: Array<{ name: string; config: SdServerPackageConfig }> = [];
+  private readonly _clientPackages: Array<{ name: string; config: SdClientPackageConfig }> = [];
+  private readonly _serverClientsMap = new Map<string, string[]>();
   private _hasPackages = false;
 
   // Workers
   private _standaloneClientWorkers: ClientWorkerInfo[] = [];
   private _viteClientWorkers: ClientWorkerInfo[] = [];
-  private _serverBuildWorkers = new Map<
+  private readonly _serverBuildWorkers = new Map<
     string,
     {
       worker: WorkerProxy<typeof ServerWorkerModule>;
@@ -86,10 +86,10 @@ export class DevOrchestrator {
       mainJsPath?: string;
     }
   >();
-  private _serverRuntimeWorkers = new Map<string, WorkerProxy<typeof ServerRuntimeWorkerModule>>();
+  private readonly _serverRuntimeWorkers = new Map<string, WorkerProxy<typeof ServerRuntimeWorkerModule>>();
 
   // State
-  private _results = new Map<string, PackageResult>();
+  private readonly _results = new Map<string, PackageResult>();
   private _clientPorts: Record<string, number> = {};
   private _rebuildManager!: RebuildManager;
   private _signalHandler!: SignalHandler;
@@ -141,9 +141,9 @@ export class DevOrchestrator {
     // client/server 패키지만 필터링
     for (const [name, config] of Object.entries(allPackages)) {
       if (config.target === "server") {
-        this._serverPackages.push({ name, config: config as SdServerPackageConfig });
+        this._serverPackages.push({ name, config });
       } else if (config.target === "client") {
-        this._clientPackages.push({ name, config: config as SdClientPackageConfig });
+        this._clientPackages.push({ name, config });
       }
     }
 
