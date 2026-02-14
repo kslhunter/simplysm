@@ -279,7 +279,7 @@ export function createCliParser(argv: string[]): Argv {
               describe: "실제 배포 없이 시뮬레이션",
               default: false,
             },
-            "options": {
+            "configOpt": {
               type: "string",
               array: true,
               alias: "o",
@@ -292,7 +292,7 @@ export function createCliParser(argv: string[]): Argv {
           targets: args.targets,
           noBuild: !args.build,
           dryRun: args.dryRun,
-          options: args.options,
+          options: args.configOpt,
         });
       },
     )
@@ -304,7 +304,7 @@ export function createCliParser(argv: string[]): Argv {
           .version(false)
           .hide("help")
           .options({
-            options: {
+            configOpt: {
               type: "string",
               array: true,
               alias: "o",
@@ -314,7 +314,7 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runReplaceDeps({
-          options: args.options,
+          options: args.configOpt,
         });
       },
     )
