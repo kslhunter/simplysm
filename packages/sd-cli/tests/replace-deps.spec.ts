@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { parseWorkspaceGlobs, resolveReplaceDepEntries, setupReplaceDeps } from "../src/utils/replace-deps";
+import {
+  parseWorkspaceGlobs,
+  resolveReplaceDepEntries,
+  setupReplaceDeps,
+  watchReplaceDeps,
+} from "../src/utils/replace-deps";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -73,19 +78,46 @@ describe("setupReplaceDeps", () => {
     const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
     await fs.promises.mkdir(sourceDir, { recursive: true });
     await fs.promises.writeFile(path.join(sourceDir, "index.js"), "export default 1;");
+    await fs.promises.writeFile(path.join(sourceDir, "README.md"), "readme");
+
+    // 제외되어야 할 항목들 생성
+    await fs.promises.mkdir(path.join(sourceDir, "node_modules"), { recursive: true });
+    await fs.promises.writeFile(path.join(sourceDir, "node_modules", "dep.js"), "dep");
+    await fs.promises.writeFile(path.join(sourceDir, "package.json"), '{"name":"solid"}');
+    await fs.promises.mkdir(path.join(sourceDir, ".cache"), { recursive: true });
+    await fs.promises.writeFile(path.join(sourceDir, ".cache", "file.txt"), "cache");
+    await fs.promises.mkdir(path.join(sourceDir, "tests"), { recursive: true });
+    await fs.promises.writeFile(path.join(sourceDir, "tests", "test.spec.ts"), "test");
 
     // 대상 프로젝트 (app/node_modules/@simplysm/solid)
+    // pnpm 스타일: app/node_modules/@simplysm/solid → .pnpm 스토어로 symlink
     const appRoot = path.join(tmpDir, "app");
-    const nodeModulesTarget = path.join(appRoot, "node_modules", "@simplysm", "solid");
-    await fs.promises.mkdir(nodeModulesTarget, { recursive: true });
-    await fs.promises.writeFile(path.join(nodeModulesTarget, "index.js"), "old");
+
+    // .pnpm 스토어 디렉토리 (실제 내용이 있는 곳)
+    const pnpmStoreTarget = path.join(
+      appRoot,
+      "node_modules",
+      ".pnpm",
+      "@simplysm+solid@1.0.0",
+      "node_modules",
+      "@simplysm",
+      "solid",
+    );
+    await fs.promises.mkdir(pnpmStoreTarget, { recursive: true });
+    await fs.promises.writeFile(path.join(pnpmStoreTarget, "index.js"), "old");
+
+    // node_modules/@simplysm/solid → .pnpm 스토어로 symlink
+    const nodeModulesSymlink = path.join(appRoot, "node_modules", "@simplysm", "solid");
+    await fs.promises.mkdir(path.dirname(nodeModulesSymlink), { recursive: true });
+    const relativeToStore = path.relative(path.dirname(nodeModulesSymlink), pnpmStoreTarget);
+    await fs.promises.symlink(relativeToStore, nodeModulesSymlink, "dir");
   });
 
   afterEach(async () => {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   });
 
-  test("node_modules 내 패키지를 소스 디렉토리로 symlink 교체한다", async () => {
+  test("node_modules 내 패키지를 소스 디렉토리로 복사 교체한다", async () => {
     const appRoot = path.join(tmpDir, "app");
 
     await setupReplaceDeps(appRoot, {
@@ -93,42 +125,100 @@ describe("setupReplaceDeps", () => {
     });
 
     const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
-    const stat = await fs.promises.lstat(targetPath);
-    expect(stat.isSymbolicLink()).toBe(true);
 
-    const linkTarget = await fs.promises.readlink(targetPath);
-    const resolved = path.resolve(path.dirname(targetPath), linkTarget);
-    expect(resolved).toBe(path.join(tmpDir, "simplysm", "packages", "solid"));
+    // 더 이상 symlink가 아님 (복사된 디렉토리)
+    const stat = await fs.promises.lstat(targetPath);
+    expect(stat.isSymbolicLink()).toBe(false);
+    expect(stat.isDirectory()).toBe(true);
+
+    // 소스 파일이 복사되었는지 확인
+    const indexContent = await fs.promises.readFile(path.join(targetPath, "index.js"), "utf-8");
+    expect(indexContent).toBe("export default 1;");
+
+    const readmeContent = await fs.promises.readFile(path.join(targetPath, "README.md"), "utf-8");
+    expect(readmeContent).toBe("readme");
+  });
+
+  test("복사 시 node_modules, package.json, .cache, tests를 제외한다", async () => {
+    const appRoot = path.join(tmpDir, "app");
+
+    await setupReplaceDeps(appRoot, {
+      "@simplysm/*": "../simplysm/packages/*",
+    });
+
+    const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
+
+    // 복사되어야 할 파일
+    expect(fs.existsSync(path.join(targetPath, "index.js"))).toBe(true);
+    expect(fs.existsSync(path.join(targetPath, "README.md"))).toBe(true);
+
+    // 제외되어야 할 항목들
+    expect(fs.existsSync(path.join(targetPath, "node_modules"))).toBe(false);
+    expect(fs.existsSync(path.join(targetPath, "package.json"))).toBe(false);
+    expect(fs.existsSync(path.join(targetPath, ".cache"))).toBe(false);
+    expect(fs.existsSync(path.join(targetPath, "tests"))).toBe(false);
   });
 
   test("소스 경로가 없으면 해당 패키지를 스킵한다", async () => {
     const appRoot = path.join(tmpDir, "app");
 
-    // no-exist 패키지의 node_modules 생성
-    const noExistTarget = path.join(appRoot, "node_modules", "@simplysm", "no-exist");
-    await fs.promises.mkdir(noExistTarget, { recursive: true });
+    // no-exist 패키지의 .pnpm 스토어 생성
+    const pnpmStoreNoExist = path.join(
+      appRoot,
+      "node_modules",
+      ".pnpm",
+      "@simplysm+no-exist@1.0.0",
+      "node_modules",
+      "@simplysm",
+      "no-exist",
+    );
+    await fs.promises.mkdir(pnpmStoreNoExist, { recursive: true });
+    await fs.promises.writeFile(path.join(pnpmStoreNoExist, "index.js"), "no-exist-old");
+
+    // node_modules/@simplysm/no-exist → .pnpm 스토어로 symlink
+    const noExistSymlink = path.join(appRoot, "node_modules", "@simplysm", "no-exist");
+    await fs.promises.mkdir(path.dirname(noExistSymlink), { recursive: true });
+    const relativeToStore = path.relative(path.dirname(noExistSymlink), pnpmStoreNoExist);
+    await fs.promises.symlink(relativeToStore, noExistSymlink, "dir");
 
     // 에러 없이 완료되어야 함
     await setupReplaceDeps(appRoot, {
       "@simplysm/*": "../simplysm/packages/*",
     });
 
-    // solid은 symlink, no-exist는 그대로
-    const solidStat = await fs.promises.lstat(path.join(appRoot, "node_modules", "@simplysm", "solid"));
-    expect(solidStat.isSymbolicLink()).toBe(true);
+    // solid은 복사됨, no-exist는 symlink 그대로
+    const solidPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
+    const solidStat = await fs.promises.lstat(solidPath);
+    expect(solidStat.isSymbolicLink()).toBe(false);
+    expect(solidStat.isDirectory()).toBe(true);
 
-    const noExistStat = await fs.promises.lstat(noExistTarget);
-    expect(noExistStat.isDirectory()).toBe(true);
-    expect(noExistStat.isSymbolicLink()).toBe(false);
+    const noExistStat = await fs.promises.lstat(noExistSymlink);
+    expect(noExistStat.isSymbolicLink()).toBe(true);
   });
 
   test("workspace 패키지의 node_modules도 처리한다", async () => {
     const appRoot = path.join(tmpDir, "app");
 
-    // workspace 패키지 구조 생성
-    const pkgNodeModules = path.join(appRoot, "packages", "client", "node_modules", "@simplysm", "solid");
-    await fs.promises.mkdir(pkgNodeModules, { recursive: true });
-    await fs.promises.writeFile(path.join(pkgNodeModules, "index.js"), "old");
+    // workspace 패키지 구조 생성 (.pnpm 스토어 방식)
+    const pkgPnpmStore = path.join(
+      appRoot,
+      "packages",
+      "client",
+      "node_modules",
+      ".pnpm",
+      "@simplysm+solid@1.0.0",
+      "node_modules",
+      "@simplysm",
+      "solid",
+    );
+    await fs.promises.mkdir(pkgPnpmStore, { recursive: true });
+    await fs.promises.writeFile(path.join(pkgPnpmStore, "index.js"), "old");
+
+    // node_modules/@simplysm/solid → .pnpm 스토어로 symlink
+    const pkgNodeModulesSymlink = path.join(appRoot, "packages", "client", "node_modules", "@simplysm", "solid");
+    await fs.promises.mkdir(path.dirname(pkgNodeModulesSymlink), { recursive: true });
+    const relativeToStore = path.relative(path.dirname(pkgNodeModulesSymlink), pkgPnpmStore);
+    await fs.promises.symlink(relativeToStore, pkgNodeModulesSymlink, "dir");
 
     // pnpm-workspace.yaml 생성
     await fs.promises.writeFile(path.join(appRoot, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
@@ -137,8 +227,65 @@ describe("setupReplaceDeps", () => {
       "@simplysm/*": "../simplysm/packages/*",
     });
 
-    // workspace 패키지의 node_modules도 symlink 교체 확인
-    const stat = await fs.promises.lstat(pkgNodeModules);
-    expect(stat.isSymbolicLink()).toBe(true);
+    // workspace 패키지의 node_modules도 복사됨
+    const stat = await fs.promises.lstat(pkgNodeModulesSymlink);
+    expect(stat.isSymbolicLink()).toBe(false);
+    expect(stat.isDirectory()).toBe(true);
+
+    const indexContent = await fs.promises.readFile(path.join(pkgNodeModulesSymlink, "index.js"), "utf-8");
+    expect(indexContent).toBe("export default 1;");
+  });
+});
+
+describe("watchReplaceDeps", () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-watch-replace-"));
+
+    // 소스 패키지 (simplysm/packages/solid)
+    const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
+    await fs.promises.mkdir(sourceDir, { recursive: true });
+    await fs.promises.writeFile(path.join(sourceDir, "index.js"), "export default 1;");
+
+    // 대상 프로젝트 (.pnpm 스토어 방식)
+    const appRoot = path.join(tmpDir, "app");
+    const pnpmStoreTarget = path.join(
+      appRoot,
+      "node_modules",
+      ".pnpm",
+      "@simplysm+solid@1.0.0",
+      "node_modules",
+      "@simplysm",
+      "solid",
+    );
+    await fs.promises.mkdir(pnpmStoreTarget, { recursive: true });
+    await fs.promises.writeFile(path.join(pnpmStoreTarget, "index.js"), "old");
+
+    const nodeModulesSymlink = path.join(appRoot, "node_modules", "@simplysm", "solid");
+    await fs.promises.mkdir(path.dirname(nodeModulesSymlink), { recursive: true });
+    const relativeToStore = path.relative(path.dirname(nodeModulesSymlink), pnpmStoreTarget);
+    await fs.promises.symlink(relativeToStore, nodeModulesSymlink, "dir");
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  test("watch 시작 후 소스 파일 변경 시 대상 경로로 복사된다", async () => {
+    const appRoot = path.join(tmpDir, "app");
+    const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
+    const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
+
+    const { dispose } = await watchReplaceDeps(appRoot, { "@simplysm/*": "../simplysm/packages/*" });
+
+    // 소스 파일 변경
+    await fs.promises.writeFile(path.join(sourceDir, "index.js"), "export default 2;");
+    await new Promise((resolve) => setTimeout(resolve, 500)); // 300ms delay + buffer
+
+    const indexContent = await fs.promises.readFile(path.join(targetPath, "index.js"), "utf-8");
+    expect(indexContent).toBe("export default 2;");
+
+    dispose();
   });
 });

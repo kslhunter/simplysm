@@ -6,7 +6,7 @@ import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
-import { setupReplaceDeps } from "../utils/replace-deps";
+import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
@@ -79,8 +79,10 @@ export async function runDev(options: DevOptions): Promise<void> {
   }
 
   // replaceDeps 설정이 있으면 symlink 교체
+  let replaceDepWatcher: WatchReplaceDepResult | undefined;
   if (sdConfig.replaceDeps != null) {
     await setupReplaceDeps(cwd, sdConfig.replaceDeps);
+    replaceDepWatcher = await watchReplaceDeps(cwd, sdConfig.replaceDeps);
   }
 
   // VER, DEV 환경변수 준비
@@ -596,6 +598,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     ...[...serverBuildWorkers.values()].map(({ worker }) => worker.terminate()),
     ...[...serverRuntimeWorkers.values()].map((worker) => worker.terminate()),
   ]);
+  replaceDepWatcher?.dispose();
   process.stdout.write("✔ 완료\n");
 }
 

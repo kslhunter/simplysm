@@ -4,7 +4,7 @@ import { consola } from "consola";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
-import { setupReplaceDeps } from "../utils/replace-deps";
+import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
 import { RebuildListrManager } from "../utils/listr-manager";
 import { ResultCollector } from "../infra/ResultCollector";
@@ -43,6 +43,7 @@ export class WatchOrchestrator {
   private _dtsBuilder!: DtsBuilder;
   private _packages: PackageInfo[] = [];
   private _copySrcWatchers: FsWatcher[] = [];
+  private _replaceDepWatcher: WatchReplaceDepResult | undefined;
 
   constructor(options: WatchOrchestratorOptions) {
     this._cwd = process.cwd();
@@ -76,6 +77,7 @@ export class WatchOrchestrator {
     // replaceDeps 설정이 있으면 symlink 교체
     if (sdConfig.replaceDeps != null) {
       await setupReplaceDeps(this._cwd, sdConfig.replaceDeps);
+      this._replaceDepWatcher = await watchReplaceDeps(this._cwd, sdConfig.replaceDeps);
     }
 
     // targets 필터링
@@ -205,6 +207,7 @@ export class WatchOrchestrator {
       ...this._copySrcWatchers.map((w) => w.close()),
     ]);
     this._copySrcWatchers = [];
+    this._replaceDepWatcher?.dispose();
 
     process.stdout.write("✔ 완료\n");
   }
