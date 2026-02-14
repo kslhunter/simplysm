@@ -111,9 +111,9 @@ await server.broadcastReload("my-app", new Set(["main.js"]));
 Handles encoding/decoding of WebSocket messages. Automatically branches between main thread and worker thread based on message size.
 
 ```typescript
-import { ProtocolWrapper } from "@simplysm/service-server";
+import { createProtocolWrapper } from "@simplysm/service-server";
 
-const protocol = new ProtocolWrapper();
+const protocol = createProtocolWrapper();
 
 // Encode a message into chunks
 const { chunks, totalSize } = await protocol.encode(uuid, message);

@@ -1,105 +1,71 @@
 import type { WebSocket } from "ws";
 import { Uuid } from "@simplysm/core-common";
 import type { ServiceEventDef, ServiceClientMessage } from "@simplysm/service-common";
-import type { ServiceExecutor } from "../../core/service-executor";
-import { ServiceSocket } from "./service-socket";
-import type { JwtManager } from "../../auth/jwt-manager";
+import { createServiceSocket, type ServiceSocket } from "./service-socket";
+import { verifyJwt } from "../../auth/jwt-manager";
 import type { FastifyRequest } from "fastify";
 import consola from "consola";
 
 const logger = consola.withTag("service-server:WebSocketHandler");
 
-export class WebSocketHandler {
-  private readonly _socketMap = new Map<string, ServiceSocket>();
+/**
+ * WebSocket handler interface
+ *
+ * Manages multiple WebSocket connections, routes messages to services,
+ * and handles event broadcasting.
+ */
+export interface WebSocketHandler {
+  /**
+   * Add a new WebSocket connection
+   */
+  addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest): void;
 
-  constructor(
-    private readonly _executor: ServiceExecutor,
-    private readonly _jwt: JwtManager,
-  ) {}
+  /**
+   * Close all active connections
+   */
+  closeAll(): void;
 
-  addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest) {
-    try {
-      const serviceSocket = new ServiceSocket(socket, clientId, clientName, connReq);
+  /**
+   * Broadcast reload message to all clients
+   */
+  broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void>;
 
-      // 기존 연결 끊기
-      const prevServiceSocket = this._socketMap.get(clientId);
-      if (prevServiceSocket != null) {
-        prevServiceSocket.close();
-
-        const connectionDateTimeText = prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-        logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
-      }
-
-      this._socketMap.set(clientId, serviceSocket);
-
-      serviceSocket.on("close", (code) => {
-        logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
-
-        if (this._socketMap.get(clientId) !== serviceSocket) return;
-        this._socketMap.delete(clientId);
-      });
-
-      serviceSocket.on("message", async ({ uuid, msg }) => {
-        logger.debug("요청 수신", msg);
-        const sentSize = await this._processRequest(serviceSocket, uuid, msg);
-        logger.debug(`응답 전송 (size: ${sentSize})`);
-      });
-
-      logger.debug("클라이언트 연결됨", {
-        clientId,
-        remoteAddress: connReq.socket.remoteAddress,
-        socketSize: this._socketMap.size,
-      });
-    } catch (err) {
-      logger.error("연결 처리 중 오류 발생", err);
-      socket.terminate();
-    }
-  }
-
-  closeAll() {
-    for (const serviceSocket of this._socketMap.values()) {
-      serviceSocket.close();
-    }
-  }
-
-  async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    for (const serviceSocket of this._socketMap.values()) {
-      await serviceSocket.send(Uuid.new().toString(), {
-        name: "reload",
-        body: {
-          clientName,
-          changedFileSet,
-        },
-      });
-    }
-  }
-
-  async emitToServer<TInfo, TData>(
+  /**
+   * Emit event to server with info filtering
+   */
+  emitToServer<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
-  ) {
-    const eventName = eventDef.eventName;
-    const targetKeys = Array.from(this._socketMap.values())
-      .flatMap((subSock) => subSock.getEventListeners(eventName))
-      .filter((item) => infoSelector(item.info as TInfo))
-      .map((item) => item.key);
+  ): Promise<void>;
+}
 
-    for (const subSock of this._socketMap.values()) {
-      const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
-      if (subTargetKeys.length > 0) {
-        await subSock.send(Uuid.new().toString(), {
-          name: "evt:on",
-          body: {
-            keys: subTargetKeys,
-            data,
-          },
-        });
-      }
-    }
-  }
+/**
+ * Create a WebSocket handler instance
+ *
+ * Manages multiple WebSocket connections, routes messages to services,
+ * and handles event broadcasting.
+ */
+export function createWebSocketHandler(
+  runMethod: (def: {
+    serviceName: string;
+    methodName: string;
+    params: unknown[];
+    socket?: ServiceSocket;
+  }) => Promise<unknown>,
+  jwtSecret: string | undefined,
+): WebSocketHandler {
+  // -------------------------------------------------------------------
+  // State
+  // -------------------------------------------------------------------
 
-  private async _processRequest(
+  const socketMap = new Map<string, ServiceSocket>();
+
+  // -------------------------------------------------------------------
+  // Helpers
+  // -------------------------------------------------------------------
+
+  async function processRequest(
     serviceSocket: ServiceSocket,
     uuid: string,
     message: ServiceClientMessage,
@@ -108,7 +74,7 @@ export class WebSocketHandler {
       if (message.name.includes(".") && Array.isArray(message.body)) {
         const [serviceName, methodName] = message.name.split(".");
 
-        const result = await this._executor.runMethod({
+        const result = await runMethod({
           serviceName,
           methodName,
           params: message.body,
@@ -126,12 +92,12 @@ export class WebSocketHandler {
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body as { name: string };
-        const infos = Array.from(this._socketMap.values()).flatMap((subSock) => subSock.getEventListeners(name));
+        const infos = Array.from(socketMap.values()).flatMap((subSock) => subSock.getEventListeners(name));
         return await serviceSocket.send(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body as { keys: string[]; data: unknown };
 
-        for (const subSock of this._socketMap.values()) {
+        for (const subSock of socketMap.values()) {
           const targetKeys = subSock.filterEventTargetKeys(keys);
           if (targetKeys.length > 0) {
             await subSock.send(uuid, {
@@ -146,8 +112,10 @@ export class WebSocketHandler {
 
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "auth") {
+        if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+
         const token = message.body;
-        serviceSocket.authTokenPayload = await this._jwt.verify(token);
+        serviceSocket.authTokenPayload = await verifyJwt(jwtSecret, token);
         return await serviceSocket.send(uuid, { name: "response" });
       } else {
         const err = new Error("요청이 잘못되었습니다.");
@@ -177,4 +145,93 @@ export class WebSocketHandler {
       });
     }
   }
+
+  // -------------------------------------------------------------------
+  // Public API
+  // -------------------------------------------------------------------
+
+  return {
+    addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest): void {
+      try {
+        const serviceSocket = createServiceSocket(socket, clientId, clientName, connReq);
+
+        // 기존 연결 끊기
+        const prevServiceSocket = socketMap.get(clientId);
+        if (prevServiceSocket != null) {
+          prevServiceSocket.close();
+
+          const connectionDateTimeText =
+            prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+          logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
+        }
+
+        socketMap.set(clientId, serviceSocket);
+
+        serviceSocket.on("close", (code) => {
+          logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
+
+          if (socketMap.get(clientId) !== serviceSocket) return;
+          socketMap.delete(clientId);
+        });
+
+        serviceSocket.on("message", async ({ uuid, msg }) => {
+          logger.debug("요청 수신", msg);
+          const sentSize = await processRequest(serviceSocket, uuid, msg);
+          logger.debug(`응답 전송 (size: ${sentSize})`);
+        });
+
+        logger.debug("클라이언트 연결됨", {
+          clientId,
+          remoteAddress: connReq.socket.remoteAddress,
+          socketSize: socketMap.size,
+        });
+      } catch (err) {
+        logger.error("연결 처리 중 오류 발생", err);
+        socket.terminate();
+      }
+    },
+
+    closeAll(): void {
+      for (const serviceSocket of socketMap.values()) {
+        serviceSocket.close();
+      }
+    },
+
+    async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void> {
+      for (const serviceSocket of socketMap.values()) {
+        await serviceSocket.send(Uuid.new().toString(), {
+          name: "reload",
+          body: {
+            clientName,
+            changedFileSet,
+          },
+        });
+      }
+    },
+
+    async emitToServer<TInfo, TData>(
+      eventDef: ServiceEventDef<TInfo, TData>,
+      infoSelector: (item: TInfo) => boolean,
+      data: TData,
+    ): Promise<void> {
+      const eventName = eventDef.eventName;
+      const targetKeys = Array.from(socketMap.values())
+        .flatMap((subSock) => subSock.getEventListeners(eventName))
+        .filter((item) => infoSelector(item.info as TInfo))
+        .map((item) => item.key);
+
+      for (const subSock of socketMap.values()) {
+        const subTargetKeys = subSock.filterEventTargetKeys(targetKeys);
+        if (subTargetKeys.length > 0) {
+          await subSock.send(Uuid.new().toString(), {
+            name: "evt:on",
+            body: {
+              keys: subTargetKeys,
+              data,
+            },
+          });
+        }
+      }
+    },
+  };
 }

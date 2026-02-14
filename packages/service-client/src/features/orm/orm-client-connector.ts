@@ -3,14 +3,23 @@ import type { OrmConnectConfig } from "./orm-connect-config";
 import { createDbContext, type DbContextDef, type DbContextInstance } from "@simplysm/orm-common";
 import type { ServiceClient } from "../../service-client";
 
-export class OrmClientConnector {
-  constructor(private readonly _serviceClient: ServiceClient) {}
+export interface OrmClientConnector {
+  connect<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
+  ): Promise<R>;
+  connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
+  ): Promise<R>;
+}
 
-  async connect<TDef extends DbContextDef<any, any, any>, R>(
+export function createOrmClientConnector(serviceClient: ServiceClient): OrmClientConnector {
+  async function connect<TDef extends DbContextDef<any, any, any>, R>(
     config: OrmConnectConfig<TDef>,
     callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R> {
-    const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
+    const executor = new OrmClientDbContextExecutor(serviceClient, config.connOpt);
     const info = await executor.getInfo();
     const database = config.dbContextOpt?.database ?? info.database;
     if (database == null || database === "") {
@@ -37,11 +46,11 @@ export class OrmClientConnector {
     });
   }
 
-  async connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
+  async function connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
     config: OrmConnectConfig<TDef>,
     callback: (conn: DbContextInstance<TDef>) => Promise<R> | R,
   ): Promise<R> {
-    const executor = new OrmClientDbContextExecutor(this._serviceClient, config.connOpt);
+    const executor = new OrmClientDbContextExecutor(serviceClient, config.connOpt);
     const info = await executor.getInfo();
     const database = config.dbContextOpt?.database ?? info.database;
     if (database == null || database === "") {
@@ -53,4 +62,9 @@ export class OrmClientConnector {
     });
     return db.connectWithoutTransaction(async () => callback(db));
   }
+
+  return {
+    connect,
+    connectWithoutTransaction,
+  };
 }

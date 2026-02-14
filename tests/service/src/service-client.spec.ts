@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { ServiceClient } from "@simplysm/service-client";
+import { createServiceClient, type ServiceClient } from "@simplysm/service-client";
 import { defineEvent } from "@simplysm/service-common";
 import type { TestServiceMethods, TestAuthInfo } from "./test-service";
 import * as jose from "jose";
@@ -29,7 +29,7 @@ describe("ServiceClient 브라우저 테스트", () => {
     expect(typeof Worker).toBe("function");
     expect(typeof window).toBe("object");
 
-    client = new ServiceClient("test-client", {
+    client = createServiceClient("test-client", {
       host: "localhost",
       port: TEST_PORT,
       ssl: false,

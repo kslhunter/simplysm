@@ -1,9 +1,9 @@
 /// <reference lib="webworker" />
 
-import { ServiceProtocol } from "@simplysm/service-common";
+import { createServiceProtocol } from "@simplysm/service-common";
 import { transferableEncode } from "@simplysm/core-common";
 
-const protocol = new ServiceProtocol();
+const protocol = createServiceProtocol();
 
 self.onmessage = (event: MessageEvent) => {
   const { id, type, data } = event.data as {
@@ -21,7 +21,7 @@ self.onmessage = (event: MessageEvent) => {
       // message는 이미 Plain Object로 넘어옴 (Structured Clone)
       const { uuid, message } = data as {
         uuid: string;
-        message: Parameters<ServiceProtocol["encode"]>[1];
+        message: Parameters<typeof protocol.encode>[1];
       };
       const { chunks } = protocol.encode(uuid, message);
 

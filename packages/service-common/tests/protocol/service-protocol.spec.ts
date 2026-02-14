@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { ServiceProtocol } from "../../src/protocol/service-protocol";
+import { createServiceProtocol, type ServiceProtocol } from "../../src/protocol/service-protocol";
 import type { ServiceMessage } from "../../src/protocol/protocol.types";
 import { Uuid } from "@simplysm/core-common";
 
@@ -7,7 +7,7 @@ describe("ServiceProtocol", () => {
   let protocol: ServiceProtocol;
 
   beforeEach(() => {
-    protocol = new ServiceProtocol();
+    protocol = createServiceProtocol();
   });
 
   afterEach(() => {

@@ -1,15 +1,18 @@
 import type { Bytes } from "@simplysm/core-common";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 
-export class FileClient {
-  constructor(
-    private readonly _hostUrl: string,
-    private readonly _clientName: string,
-  ) {}
+export interface FileClient {
+  download(relPath: string): Promise<Bytes>;
+  upload(
+    files: File[] | FileList | { name: string; data: BlobPart }[],
+    authToken: string,
+  ): Promise<ServiceUploadResult[]>;
+}
 
-  async download(relPath: string): Promise<Bytes> {
+export function createFileClient(hostUrl: string, clientName: string): FileClient {
+  async function download(relPath: string): Promise<Bytes> {
     // URL 구성
-    const url = `${this._hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
+    const url = `${hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
     const res = await fetch(url);
     if (!res.ok) {
@@ -20,7 +23,7 @@ export class FileClient {
     return new Uint8Array(await res.arrayBuffer());
   }
 
-  async upload(
+  async function upload(
     files: File[] | FileList | { name: string; data: BlobPart }[],
     authToken: string,
   ): Promise<ServiceUploadResult[]> {
@@ -38,10 +41,10 @@ export class FileClient {
       }
     }
 
-    const res = await fetch(`${this._hostUrl}/upload`, {
+    const res = await fetch(`${hostUrl}/upload`, {
       method: "POST",
       headers: {
-        "x-sd-client-name": this._clientName,
+        "x-sd-client-name": clientName,
         "Authorization": `Bearer ${authToken}`,
       },
       body: formData,
@@ -53,4 +56,9 @@ export class FileClient {
 
     return res.json();
   }
+
+  return {
+    download,
+    upload,
+  };
 }
