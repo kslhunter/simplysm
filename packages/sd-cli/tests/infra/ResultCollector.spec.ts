@@ -30,7 +30,7 @@ describe("ResultCollector", () => {
   it("서버 상태인 결과만 필터링할 수 있다", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
-    collector.add({ name: "pkg2", target: "server", type: "server", status: "server", port: 3000 });
+    collector.add({ name: "pkg2", target: "server", type: "server", status: "running", port: 3000 });
 
     const servers = collector.getServers();
 
