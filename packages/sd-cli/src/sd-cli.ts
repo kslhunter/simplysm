@@ -12,15 +12,16 @@ import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const cliEntryUrl = import.meta.resolve("./sd-cli-entry");
-const cliEntryFilePath = fileURLToPath(cliEntryUrl);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const isDev = path.extname(__filename) === ".ts";
 
-if (path.extname(cliEntryFilePath) === ".ts") {
+if (isDev) {
   // 개발 모드 (.ts): affinity 적용 후 직접 실행
   // import만으로는 메인 모듈 감지가 실패하므로 (process.argv[1] ≠ sd-cli-entry)
   // createCliParser를 명시적으로 호출한다.
   configureAffinityAndPriority(process.pid);
-  const { createCliParser } = await import(cliEntryUrl);
+  const { createCliParser } = await import("./sd-cli-entry.js");
   await createCliParser(process.argv.slice(2)).parse();
 } else {
   // 배포 모드 (.js): 2단계 실행
@@ -38,6 +39,7 @@ if (path.extname(cliEntryFilePath) === ".ts") {
   }
 
   // Phase 2: 새 프로세스로 실제 CLI 실행 (모듈 캐시 초기화)
+  const cliEntryFilePath = path.join(__dirname, "sd-cli-entry.js");
   const child = spawn(
     "node",
     ["--max-old-space-size=8192", "--max-semi-space-size=16", cliEntryFilePath, ...process.argv.slice(2)],
