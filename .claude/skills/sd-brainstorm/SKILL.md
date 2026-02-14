@@ -52,15 +52,17 @@ Design complete! Here's how to proceed:
 1. /sd-worktree add <name>  — Create a worktree branch
 2. /sd-plan                 — Break into detailed tasks
 3. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-4. /sd-commit               — Commit
-5. /sd-worktree merge       — Merge back to main
-6. /sd-worktree clean       — Remove worktree
+4. /sd-check                — Verify All (typecheck + lint + tests)
+5. /sd-commit               — Commit
+6. /sd-worktree merge       — Merge back to main
+7. /sd-worktree clean       — Remove worktree
 
 --- Path B: Direct on current branch (quick fixes/small changes) ---
 
 1. /sd-plan                 — Break into detailed tasks
 2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-3. /sd-commit               — Commit
+3. /sd-check                — Verify All (typecheck + lint + tests)
+4. /sd-commit               — Commit
 
 You can start from any step or skip steps as needed.
 ```
