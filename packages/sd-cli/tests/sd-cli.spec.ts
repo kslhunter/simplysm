@@ -22,7 +22,7 @@ vi.mock("../src/commands/publish", () => ({
   runPublish: vi.fn(),
 }));
 
-import { createCliParser } from "../src/sd-cli";
+import { createCliParser } from "../src/sd-cli-entry";
 import { runLint } from "../src/commands/lint";
 import { runTypecheck } from "../src/commands/typecheck";
 import { runWatch } from "../src/commands/watch";
