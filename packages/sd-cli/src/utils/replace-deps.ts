@@ -195,8 +195,7 @@ export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<
           // targetPath가 존재하지 않으면 그대로 사용
         }
 
-        // actualTargetPath의 기존 내용 제거 후 소스 복사 (symlink는 유지)
-        await fs.promises.rm(actualTargetPath, { recursive: true, force: true });
+        // 소스 파일을 actualTargetPath에 덮어쓰기 복사 (기존 디렉토리 유지, symlink 보존)
         await fsCopy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
 
         logger.info(`${targetName} → ${sourcePath}`);
