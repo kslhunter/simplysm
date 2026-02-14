@@ -17,8 +17,11 @@ const cliEntryFilePath = fileURLToPath(cliEntryUrl);
 
 if (path.extname(cliEntryFilePath) === ".ts") {
   // 개발 모드 (.ts): affinity 적용 후 직접 실행
+  // import만으로는 메인 모듈 감지가 실패하므로 (process.argv[1] ≠ sd-cli-entry)
+  // createCliParser를 명시적으로 호출한다.
   configureAffinityAndPriority(process.pid);
-  await import(cliEntryUrl);
+  const { createCliParser } = await import(cliEntryUrl);
+  await createCliParser(process.argv.slice(2)).parse();
 } else {
   // 배포 모드 (.js): 2단계 실행
 
