@@ -1,0 +1,52 @@
+{
+  "name": "@simplysm/lint",
+  "sideEffects": false,
+  "version": "13.0.1",
+  "description": "심플리즘 패키지 - Lint 설정 (ESLint + Stylelint)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/lint"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./eslint-plugin": {
+      "types": "./dist/eslint-plugin.d.ts",
+      "default": "./dist/eslint-plugin.js"
+    },
+    "./eslint-recommended": {
+      "types": "./dist/eslint-recommended.d.ts",
+      "default": "./dist/eslint-recommended.js"
+    },
+    "./stylelint-recommended": {
+      "types": "./dist/stylelint-recommended.d.ts",
+      "default": "./dist/stylelint-recommended.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.55.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-solid": "^0.14.5",
+    "eslint-plugin-tailwindcss": "^3.18.2",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "globals": "^17.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-config-tailwindcss": "^1.0.1",
+    "stylelint-no-unsupported-browser-features": "^8.1.1",
+    "stylelint-no-unresolved-module": "^2.5.2"
+  },
+  "devDependencies": {
+    "@types/eslint-plugin-tailwindcss": "^3.17.0",
+    "@typescript-eslint/rule-tester": "^8.55.0"
+  }
+}
