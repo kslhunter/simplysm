@@ -72,14 +72,72 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
   return {
     name: "sd-scope-watch",
     config() {
+      const excluded: string[] = [];
+      const nestedDepsToInclude: string[] = [];
+
+      for (const scope of scopes) {
+        // scope 패키지를 pre-bundling에서 제외하여 소스 코드로 취급
+        const scopeDir = path.join(pkgDir, "node_modules", scope);
+        if (!fs.existsSync(scopeDir)) continue;
+
+        for (const name of fs.readdirSync(scopeDir)) {
+          excluded.push(`${scope}/${name}`);
+
+          // excluded 패키지의 dependencies를 nested include로 추가하여 pre-bundling 보장
+          // Vite nested dependency 구문: "excluded-pkg > dep"
+          // (pnpm strict 모듈 격리에서 transitive dep을 resolve하기 위해 필요)
+          const depPkgJsonPath = path.join(scopeDir, name, "package.json");
+          try {
+            const depPkgJson = JSON.parse(fs.readFileSync(depPkgJsonPath, "utf-8")) as {
+              dependencies?: Record<string, string>;
+            };
+            const excludedPkg = `${scope}/${name}`;
+            for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
+              // 같은 scope 내 패키지는 이미 excluded이므로 제외
+              if (scopes.some((s) => dep.startsWith(`${s}/`))) continue;
+              // SolidJS 관련 패키지는 solid 플러그인 transform이 필요하므로 pre-bundling 불가
+              if (dep === "solid-js" || dep.startsWith("@solidjs/") || dep.startsWith("solid-")) continue;
+              // PostCSS/빌드 도구는 브라우저 pre-bundling 대상 아님
+              if (dep === "tailwindcss") continue;
+
+              // subpath-only 패키지 필터링 (exports에 "."이 없는 패키지는 pre-bundling 불가)
+              // 예: @tiptap/pm은 "./state", "./view" 등 subpath만 export
+              // pnpm 구조: realpath 따라가서 sibling node_modules에서 dep 찾기
+              try {
+                const realPkgPath = fs.realpathSync(path.join(scopeDir, name));
+                // @scope/name → 2단계 위 = .pnpm/.../node_modules/
+                const pnpmNodeModules = path.resolve(realPkgPath, "../..");
+                const depPkgJsonResolved = path.join(pnpmNodeModules, dep, "package.json");
+                const depPkg = JSON.parse(fs.readFileSync(depPkgJsonResolved, "utf-8")) as {
+                  exports?: Record<string, unknown> | string;
+                  main?: string;
+                  module?: string;
+                };
+                if (
+                  depPkg.exports != null &&
+                  typeof depPkg.exports === "object" &&
+                  !("." in depPkg.exports) &&
+                  depPkg.main == null &&
+                  depPkg.module == null
+                ) {
+                  continue;
+                }
+              } catch {
+                // dep package.json을 읽을 수 없으면 일단 포함 (Vite가 알아서 처리)
+              }
+
+              nestedDepsToInclude.push(`${excludedPkg} > ${dep}`);
+            }
+          } catch {
+            // package.json 읽기 실패 시 스킵
+          }
+        }
+      }
+
       return {
         optimizeDeps: {
-          exclude: scopes.flatMap((s) => {
-            // scope 패키지를 pre-bundling에서 제외하여 소스 코드로 취급
-            const scopeDir = path.join(pkgDir, "node_modules", s);
-            if (!fs.existsSync(scopeDir)) return [];
-            return fs.readdirSync(scopeDir).map((name) => `${s}/${name}`);
-          }),
+          exclude: excluded,
+          include: [...new Set(nestedDepsToInclude)],
         },
       };
     },
