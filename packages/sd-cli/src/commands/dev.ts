@@ -296,6 +296,7 @@ export async function runDev(options: DevOptions): Promise<void> {
     // serverReady - Vite 포트를 clientPorts에 저장 (URL은 서버를 통해 출력)
     workerInfo.worker.on("serverReady", (data) => {
       const event = data as ServerReadyEventData;
+      logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(event.port)})`);
       clientPorts[workerInfo.name] = event.port;
       // Vite 서버 준비 완료 알림 (서버가 프록시 설정을 위해 대기 중)
       viteClientReadyPromises.get(workerInfo.name)?.resolver();
@@ -306,6 +307,12 @@ export async function runDev(options: DevOptions): Promise<void> {
         type: "build",
         status: "success",
       });
+    });
+
+    // Vite client error 시에도 viteClientReadyPromises resolve
+    // (서버가 await Promise.all(clientReadyPromises)에서 무한 대기하지 않도록)
+    workerInfo.worker.on("error", () => {
+      viteClientReadyPromises.get(workerInfo.name)?.resolver();
     });
   }
 
@@ -325,84 +332,11 @@ export async function runDev(options: DevOptions): Promise<void> {
       }
     });
 
-    serverBuild.worker.on("build", async (data) => {
+    serverBuild.worker.on("build", (data) => {
       const event = data as ServerBuildEventData;
+      logger.debug(`[${name}] server build: success=${String(event.success)}`);
 
-      if (event.success) {
-        // mainJsPath 저장
-        const updatedBuild = serverBuildWorkers.get(name)!;
-        updatedBuild.mainJsPath = event.mainJsPath;
-
-        // 기존 Server Runtime Worker 종료
-        const existingRuntime = serverRuntimeWorkers.get(name);
-        if (existingRuntime != null) {
-          // 서버 재시작 중 메시지 출력
-          consola.info(`[${name}] 서버 재시작 중...`);
-          await existingRuntime.terminate();
-        }
-
-        // 새 Server Runtime Worker 생성 및 시작
-        const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
-        serverRuntimeWorkers.set(name, runtimeWorker);
-
-        // 이 서버에 연결된 클라이언트들의 Vite 서버가 준비될 때까지 대기
-        const connectedClients = serverClientsMap.get(name) ?? [];
-        const clientReadyPromises = connectedClients
-          .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
-          .filter((p): p is Promise<void> => p != null);
-        if (clientReadyPromises.length > 0) {
-          await Promise.all(clientReadyPromises);
-        }
-
-        // 이 서버에 연결된 클라이언트 포트 수집
-        const serverClientPorts: Record<string, number> = {};
-        for (const clientName of connectedClients) {
-          if (clientName in clientPorts) {
-            serverClientPorts[clientName] = clientPorts[clientName];
-          }
-        }
-
-        // Server Runtime 이벤트 핸들러
-        runtimeWorker.on("serverReady", (readyData) => {
-          const readyEvent = readyData as ServerReadyEventData;
-          results.set(`${name}:server`, {
-            name,
-            target: "server",
-            type: "server",
-            status: "server",
-            port: readyEvent.port,
-          });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(name)?.resolver();
-          }
-          updatedBuild.buildResolver();
-        });
-
-        runtimeWorker.on("error", (errorData) => {
-          const errorEvent = errorData as ErrorEventData;
-          results.set(`${name}:server`, {
-            name,
-            target: "server",
-            type: "server",
-            status: "error",
-            message: errorEvent.message,
-          });
-
-          if (isFirstBuild) {
-            isFirstBuild = false;
-            serverRuntimePromises.get(name)?.resolver();
-          }
-          updatedBuild.buildResolver();
-        });
-
-        // Server Runtime 시작
-        void runtimeWorker.start({
-          mainJsPath: event.mainJsPath,
-          clientPorts: serverClientPorts,
-        });
-      } else {
+      if (!event.success) {
         results.set(`${name}:build`, {
           name,
           target: "server",
@@ -416,8 +350,131 @@ export async function runDev(options: DevOptions): Promise<void> {
           serverRuntimePromises.get(name)?.resolver();
         }
         serverBuild.buildResolver();
+        return;
       }
+
+      // 빌드 성공 시 런타임 워커 시작 (async 로직은 별도 함수로 분리하여 에러 전파 방지)
+      void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        consola.error(`[${name}] Server Runtime 시작 중 오류:`, message);
+
+        results.set(`${name}:server`, {
+          name,
+          target: "server",
+          type: "server",
+          status: "error",
+          message,
+        });
+
+        if (isFirstBuild) {
+          isFirstBuild = false;
+          serverRuntimePromises.get(name)?.resolver();
+        }
+        const updatedBuild = serverBuildWorkers.get(name)!;
+        updatedBuild.buildResolver();
+      });
     });
+
+    /**
+     * 서버 런타임 워커 시작.
+     * async 이벤트 핸들러의 에러를 catch할 수 있도록 별도 함수로 분리.
+     */
+    async function startServerRuntime(serverName: string, mainJsPath: string): Promise<void> {
+      logger.debug(`[${serverName}] startServerRuntime: ${mainJsPath}`);
+      const updatedBuild = serverBuildWorkers.get(serverName)!;
+      updatedBuild.mainJsPath = mainJsPath;
+
+      // 기존 Server Runtime Worker 종료
+      const existingRuntime = serverRuntimeWorkers.get(serverName);
+      if (existingRuntime != null) {
+        consola.info(`[${serverName}] 서버 재시작 중...`);
+        await existingRuntime.terminate();
+      }
+
+      // 새 Server Runtime Worker 생성 및 시작
+      const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
+      serverRuntimeWorkers.set(serverName, runtimeWorker);
+
+      // 이 서버에 연결된 클라이언트들의 Vite 서버가 준비될 때까지 대기
+      const connectedClients = serverClientsMap.get(serverName) ?? [];
+      const clientReadyPromises = connectedClients
+        .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
+        .filter((p): p is Promise<void> => p != null);
+      logger.debug(`[${serverName}] 클라이언트 대기: ${String(clientReadyPromises.length)}개`);
+      if (clientReadyPromises.length > 0) {
+        await Promise.all(clientReadyPromises);
+      }
+
+      // 이 서버에 연결된 클라이언트 포트 수집
+      const serverClientPorts: Record<string, number> = {};
+      for (const clientName of connectedClients) {
+        if (clientName in clientPorts) {
+          serverClientPorts[clientName] = clientPorts[clientName];
+        }
+      }
+
+      // Server Runtime 이벤트 핸들러
+      runtimeWorker.on("serverReady", (readyData) => {
+        const readyEvent = readyData as ServerReadyEventData;
+        results.set(`${serverName}:server`, {
+          name: serverName,
+          target: "server",
+          type: "server",
+          status: "server",
+          port: readyEvent.port,
+        });
+
+        if (isFirstBuild) {
+          isFirstBuild = false;
+          serverRuntimePromises.get(serverName)?.resolver();
+        }
+        updatedBuild.buildResolver();
+      });
+
+      runtimeWorker.on("error", (errorData) => {
+        const errorEvent = errorData as ErrorEventData;
+        results.set(`${serverName}:server`, {
+          name: serverName,
+          target: "server",
+          type: "server",
+          status: "error",
+          message: errorEvent.message,
+        });
+
+        if (isFirstBuild) {
+          isFirstBuild = false;
+          serverRuntimePromises.get(serverName)?.resolver();
+        }
+        updatedBuild.buildResolver();
+      });
+
+      // Server Runtime 시작
+      // Worker가 크래시하면 "serverReady"/"error" 이벤트 없이 종료되므로
+      // promise rejection을 catch하여 listr 무한 대기를 방지
+      runtimeWorker
+        .start({
+          mainJsPath,
+          clientPorts: serverClientPorts,
+        })
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : String(err);
+          consola.error(`[${serverName}] Server Runtime Worker 크래시:`, message);
+
+          results.set(`${serverName}:server`, {
+            name: serverName,
+            target: "server",
+            type: "server",
+            status: "error",
+            message,
+          });
+
+          if (isFirstBuild) {
+            isFirstBuild = false;
+            serverRuntimePromises.get(serverName)?.resolver();
+          }
+          updatedBuild.buildResolver();
+        });
+    }
 
     serverBuild.worker.on("error", (data) => {
       const event = data as ErrorEventData;

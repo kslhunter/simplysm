@@ -53,6 +53,22 @@ async function cleanup(): Promise<void> {
   serverInstance = undefined;
 }
 
+// 서버 listen() 이후 발생하는 런타임 에러를 잡아서 custom "error" 이벤트로 전송
+// (이 핸들러가 없으면 worker가 crash만 하고, dev.ts의 buildResolver가 호출되지 않아 listr가 멈춤)
+process.on("uncaughtException", (err) => {
+  logger.error("Server Runtime 미처리 오류", err);
+  sender.send("error", {
+    message: err instanceof Error ? err.message : String(err),
+  });
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.error("Server Runtime 미처리 Promise 거부", reason);
+  sender.send("error", {
+    message: reason instanceof Error ? reason.message : String(reason),
+  });
+});
+
 process.on("SIGTERM", () => {
   cleanup()
     .catch((err) => {

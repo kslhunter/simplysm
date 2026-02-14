@@ -1,6 +1,9 @@
+import { consola } from "consola";
 import type { PackageResult } from "./package-utils";
 import type { SdPackageConfig } from "../sd-config.types";
 import type { RebuildListrManager } from "./listr-manager";
+
+const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 
 /** Worker 빌드 완료 이벤트 데이터 */
 export interface BuildEventData {
@@ -77,6 +80,7 @@ export function registerWorkerEventHandlers<T extends BaseWorkerInfo>(
   // 빌드 완료
   workerInfo.worker.on("build", (data) => {
     const event = data as BuildEventData;
+    workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(event.success)}`);
     completeTask({
       name: workerInfo.name,
       target: workerInfo.config.target,
@@ -89,6 +93,7 @@ export function registerWorkerEventHandlers<T extends BaseWorkerInfo>(
   // 에러
   workerInfo.worker.on("error", (data) => {
     const event = data as ErrorEventData;
+    workerEventsLogger.debug(`[${workerInfo.name}] error: ${event.message}`);
     completeTask({
       name: workerInfo.name,
       target: workerInfo.config.target,
