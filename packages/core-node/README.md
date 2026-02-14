@@ -220,11 +220,11 @@ const configs = await fsFindAllParentChildPaths(
 
 ### FsWatcher (`features/fs-watcher`)
 
-A chokidar-based file system change detection wrapper. It merges events that occur within a short time and invokes callbacks.
+A chokidar-based file system change detection wrapper with glob pattern support. It merges events that occur within a short time and invokes callbacks.
 
 | API | Description |
 |-----|-------------|
-| `FsWatcher.watch(paths, options?)` | Starts file watching (static, async). Waits until chokidar's `ready` event and returns an `FsWatcher` instance. |
+| `FsWatcher.watch(paths, options?)` | Starts file watching (static, async). `paths` can be file paths or glob patterns (e.g., `"src/**/*.ts"`). Waits until chokidar's `ready` event and returns an `FsWatcher` instance. |
 | `watcher.onChange(opt, cb)` | Registers a file change event handler. Set event merge wait time (ms) with `opt.delay`. Supports chaining. |
 | `watcher.close()` | Stops file watching. |
 | `FsWatcherEvent` | Event type: `"add"` \| `"addDir"` \| `"change"` \| `"unlink"` \| `"unlinkDir"` |
@@ -245,8 +245,8 @@ When multiple events occur for the same file within a short time, only the final
 ```typescript
 import { FsWatcher } from "@simplysm/core-node";
 
-// Start file watching
-const watcher = await FsWatcher.watch(["src/**/*.ts"]);
+// Start file watching with glob patterns
+const watcher = await FsWatcher.watch(["src/**/*.ts", "tests/**/*.spec.ts"]);
 
 // Register change event handler (merge events within 300ms)
 watcher.onChange({ delay: 300 }, (changes) => {
@@ -356,6 +356,7 @@ await worker.terminate();
 - All functions throw errors wrapped in `SdError` to include path information.
 - `fsRm` (async) retries up to 6 times (500ms intervals) for transient errors like file locks, but `fsRmSync` (sync) fails immediately without retries.
 - In `fsCopy`/`fsCopySync`, the `filter` function is not applied to the top-level `sourcePath`, and returning `false` for a directory skips that directory and all its children.
+- `FsWatcher` supports glob patterns (e.g., `"src/**/*.ts"`) by extracting the base directory and filtering matched files. The glob matching is performed using minimatch pattern matching.
 - `FsWatcher` internally enforces `ignoreInitial: true`. If you pass `ignoreInitial: false`, the callback will be called with an empty array on the first `onChange` call, but the actual initial file list will not be included.
 - Worker automatically runs TypeScript worker files through `tsx` in development environment (`.ts` files). In production environment (`.js`), it creates Workers directly.
 - This package depends on `@simplysm/core-common` and uses `jsonParse`/`jsonStringify` for JSON processing.
@@ -368,6 +369,7 @@ await worker.terminate();
 | `chokidar` | File system change detection (`FsWatcher`) |
 | `consola` | Logging |
 | `glob` | Glob pattern file search (`fsGlob`, `fsGlobSync`) |
+| `minimatch` | Glob pattern matching for `FsWatcher` |
 | `tsx` | Running TypeScript worker files in development environment |
 
 ## License

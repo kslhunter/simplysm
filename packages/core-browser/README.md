@@ -54,17 +54,18 @@ Instance methods automatically added to `HTMLElement.prototype`.
 | `pasteToElement(event)` | `void` | Paste clipboard content into element |
 | `getBounds(els, timeout?)` | `Promise<ElementBounds[]>` | Query element bounds using IntersectionObserver |
 
-### BlobUtils
-
-| Method | Return Type | Description |
-|--------|-----------|------|
-| `BlobUtils.download(blob, fileName)` | `void` | Download Blob as file |
-
-### downloadBytes
+### Download Utilities
 
 | Function | Return Type | Description |
 |------|-----------|------|
-| `downloadBytes(url, options?)` | `Promise<Uint8Array>` | Download binary data from URL (with progress callback support) |
+| `downloadBlob(blob, fileName)` | `void` | Download Blob as file |
+| `fetchUrlBytes(url, options?)` | `Promise<Uint8Array>` | Download binary data from URL (with progress callback support) |
+
+### File Dialog
+
+| Function | Return Type | Description |
+|------|-----------|------|
+| `openFileDialog(options?)` | `Promise<File[] \| undefined>` | Open file selection dialog (supports single/multiple file selection) |
 
 ### Types
 
@@ -173,30 +174,30 @@ const bounds2 = await getBounds([el1], 3000);
 ### Blob Download
 
 ```typescript
-import { BlobUtils } from "@simplysm/core-browser";
+import { downloadBlob } from "@simplysm/core-browser";
 
 // Download Blob object as file
 const blob = new Blob(["Hello, World!"], { type: "text/plain" });
-BlobUtils.download(blob, "hello.txt");
+downloadBlob(blob, "hello.txt");
 
 // Download binary data such as Excel files
 const excelBlob = new Blob([excelData], {
   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 });
-BlobUtils.download(excelBlob, "report.xlsx");
+downloadBlob(excelBlob, "report.xlsx");
 ```
 
 ### Binary Download (with Progress Support)
 
 ```typescript
-import { downloadBytes } from "@simplysm/core-browser";
+import { fetchUrlBytes } from "@simplysm/core-browser";
 import type { DownloadProgress } from "@simplysm/core-browser";
 
 // Basic usage
-const data: Uint8Array = await downloadBytes("https://example.com/file.bin");
+const data: Uint8Array = await fetchUrlBytes("https://example.com/file.bin");
 
 // Using progress callback
-const data2 = await downloadBytes("https://example.com/large-file.zip", {
+const data2 = await fetchUrlBytes("https://example.com/large-file.zip", {
   onProgress: (progress: DownloadProgress) => {
     const percent = progress.contentLength > 0
       ? Math.round((progress.receivedLength / progress.contentLength) * 100)
@@ -206,6 +207,31 @@ const data2 = await downloadBytes("https://example.com/large-file.zip", {
 });
 ```
 
+### File Selection Dialog
+
+```typescript
+import { openFileDialog } from "@simplysm/core-browser";
+
+// Open file selection dialog (single file)
+const files = await openFileDialog({
+  accept: "image/*", // Optional: specify accepted file types
+});
+if (files) {
+  console.log("Selected file:", files[0].name);
+}
+
+// Open file selection dialog (multiple files)
+const selectedFiles = await openFileDialog({
+  accept: ".pdf,.doc,.docx",
+  multiple: true,
+});
+if (selectedFiles) {
+  selectedFiles.forEach((file) => {
+    console.log("File:", file.name, "Size:", file.size);
+  });
+}
+```
+
 ## Caveats
 
 - This package is **browser-only**. It cannot be used in Node.js environments.
@@ -213,7 +239,7 @@ const data2 = await downloadBytes("https://example.com/large-file.zip", {
 - The `getBounds()` function uses `IntersectionObserver` and works asynchronously. If all elements are not observed within the specified timeout (default 5000ms), a `TimeoutError` is thrown.
 - The `getRelativeOffset()` method correctly handles elements with CSS `transform` applied. Border thickness and scroll position of intermediate elements are also included in the calculation.
 - The `scrollIntoViewIfNeeded()` method only handles cases where the target is beyond the top/left boundaries. The bottom/right directions rely on the browser's default focus scrolling.
-- The `downloadBytes()` function improves memory efficiency by pre-allocating when the `Content-Length` header is available, and collects and merges chunks for chunked encoding.
+- The `fetchUrlBytes()` function improves memory efficiency by pre-allocating when the `Content-Length` header is available, and collects and merges chunks for chunked encoding.
 - The `pasteToElement()` function replaces the entire value of the target input/textarea. It does not consider cursor position or selection range.
 
 ## License

@@ -123,21 +123,16 @@ await db.connect(async () => {
 | `DbContextInstance<TDef>` | Full DbContext instance with queryable accessors and DDL methods |
 | `DbContextBase` | Core interface used internally (status, executeDefs, etc.) |
 
-### Class-based API (Deprecated)
+### Class-based API (Removed)
 
-The old class-based API is deprecated. Migrate to the functional API for better type safety.
+The old class-based API has been removed. You must migrate to the functional API for better type safety and composability.
 
 ```typescript
-// Old (deprecated):
-import { DbContext, queryable } from "@simplysm/orm-common";
+// Old (no longer available):
+// import { DbContext, queryable } from "@simplysm/orm-common";
+// class MyDb extends DbContext { ... }  // This is no longer supported
 
-class MyDb extends DbContext {
-  readonly user = queryable(this, User);
-  readonly migrations = [...];
-}
-const db = new MyDb(executor, { database: "mydb" });
-
-// New (recommended):
+// New (required):
 const MyDbDef = defineDbContext({
   tables: { user: User },
   migrations: [...],

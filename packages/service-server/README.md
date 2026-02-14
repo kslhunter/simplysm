@@ -262,6 +262,7 @@ const server = createServiceServer({
 - **CORS**: `@fastify/cors` plugin configures CORS
 - **Path Traversal Prevention**: Static file handler and client name validation block `..`, `/`, `\` characters
 - **Hidden File Blocking**: Files starting with `.` return a 403 response
+- **Directory Trailing Slash Redirect**: Directory requests without a trailing slash are redirected to the same path with a trailing slash (standard web server behavior)
 - **Graceful Shutdown**: Detects `SIGINT`/`SIGTERM` signals to safely close WebSocket connections and server (10-second timeout)
 
 See [Security](docs/server.md#security) for more details.

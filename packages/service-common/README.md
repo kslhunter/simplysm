@@ -36,7 +36,7 @@ pnpm add @simplysm/service-common
 
 ## ServiceProtocol
 
-The core class for encoding/decoding messages into binary format. Messages exceeding 3MB are automatically split into 300KB chunks, and the receiving side automatically assembles the chunks to restore the original message.
+The core interface for encoding/decoding messages into binary format. Created via the `createServiceProtocol()` factory function. Messages exceeding 3MB are automatically split into 300KB chunks, and the receiving side automatically assembles the chunks to restore the original message.
 
 ### Binary Header Structure
 
@@ -68,10 +68,10 @@ Each chunk consists of a 28-byte header and body (Big Endian).
 ### Usage Example
 
 ```typescript
-import { ServiceProtocol } from "@simplysm/service-common";
+import { createServiceProtocol } from "@simplysm/service-common";
 import { Uuid } from "@simplysm/core-common";
 
-const protocol = new ServiceProtocol();
+const protocol = createServiceProtocol();
 
 // Encoding: Convert message to binary chunks
 const uuid = Uuid.new().toString();
@@ -334,7 +334,7 @@ Pass values like `"win32"`, `"darwin"`, `"linux"` to `platform`.
 
 ## Caveats
 
-- `ServiceProtocol` instances internally use `LazyGcMap` to manage incomplete split messages. After use, you must call `dispose()` to release the GC timer.
+- `ServiceProtocol` instances are created via `createServiceProtocol()` factory function and internally use `LazyGcMap` to manage incomplete split messages. After use, you must call `dispose()` to release the GC timer.
 - Encoding or decoding messages exceeding `PROTOCOL_CONFIG.MAX_TOTAL_SIZE` (100MB) will throw an `ArgumentError`.
 - Passing binary data less than 28 bytes during decoding will throw an `ArgumentError`.
 - Service interfaces (`OrmService`, `CryptoService`, etc.) only provide type definitions. Actual implementations are handled by the `@simplysm/service-server` package.

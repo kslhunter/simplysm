@@ -272,6 +272,25 @@ After collecting inputs, it:
 sd-cli add server
 ```
 
+### replace-deps
+
+Sets up local dependency replacement according to `replaceDeps` configuration in `sd.config.ts`. Useful for local development of dependent packages across separate repositories.
+
+```bash
+# Set up replacements (symlink or copy mode based on config)
+sd-cli replace-deps
+
+# With additional options
+sd-cli replace-deps -o key=value
+```
+
+**Options:**
+
+| Option            | Description                                                | Default |
+| ----------------- | ---------------------------------------------------------- | ------- |
+| `--options`, `-o` | Additional options to pass to sd.config.ts (multi-use)     | `[]`    |
+| `--debug`         | Output debug logs                                          | `false` |
+
 ### device
 
 Runs Capacitor app on Android device. Only available for `client` target packages with `capacitor` config in `sd.config.ts`.
@@ -293,9 +312,9 @@ sd-cli device -p my-app -u http://192.168.0.10:3000
 | `--options`, `-o` | Additional options to pass to sd.config.ts (multi-use)                    | `[]`    |
 | `--debug`         | Output debug logs                                                         | `false` |
 
-## Exported Types
+## Exported Types and Utilities
 
-This package exports configuration types for `sd.config.ts`. All types are importable from `@simplysm/sd-cli`.
+This package exports configuration types for `sd.config.ts` and Vite utilities. All are importable from `@simplysm/sd-cli`.
 
 ```typescript
 import type {
@@ -318,7 +337,9 @@ import type {
   SdCapacitorPermission,
   SdCapacitorIntentFilter,
   SdElectronConfig,
+  ViteConfigOptions,
 } from "@simplysm/sd-cli";
+import { createViteConfig } from "@simplysm/sd-cli";
 ```
 
 | Type | Description |
@@ -342,6 +363,25 @@ import type {
 | `SdCapacitorPermission` | Android permission entry (`name`, `maxSdkVersion?`, `ignore?`) |
 | `SdCapacitorIntentFilter` | Android intent filter entry (`action?`, `category?`) |
 | `SdElectronConfig` | Electron desktop app build config |
+| `ViteConfigOptions` | Vite config options for `createViteConfig()` utility function |
+
+## Vite Utilities
+
+The package exports `createViteConfig()` utility function for creating Vite configuration in client packages:
+
+```typescript
+import { createViteConfig, type ViteConfigOptions } from "@simplysm/sd-cli";
+
+export default createViteConfig({
+  // Vite config options
+});
+```
+
+The `createViteConfig()` function creates a pre-configured Vite config for Simplysm client packages, including:
+- Development server configuration
+- Production build optimization
+- Asset handling
+- Environment variable substitution support
 
 ## Configuration (sd.config.ts)
 

@@ -73,6 +73,8 @@ Collaborative design exploration before implementation. Helps turn ideas into fu
 - Proposes 2-3 approaches with trade-offs
 - Presents design in 200-300 word sections with validation
 - Saves validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- Recommends implementation path (A: worktree isolation, B: direct on current branch)
+- Supports yolo mode for auto-execution of all implementation steps
 
 ### sd-plan
 
@@ -87,7 +89,7 @@ Creates comprehensive implementation plans with TDD, assuming the implementer ha
 - Creates bite-sized tasks (2-5 minutes each)
 - Each task includes: exact file paths, complete code, test commands with expected output
 - Saves plan to `docs/plans/YYYY-MM-DD-<feature-name>.md`
-- Hands off to `sd-plan-dev` for execution
+- Auto-executes `sd-plan-dev` in yolo mode; otherwise waits for confirmation
 
 **Task structure:**
 1. Write the failing test
@@ -135,6 +137,7 @@ Verifies code via typecheck, lint, and tests. Fixes errors automatically.
 
 ```
 /sd-check
+/sd-check all
 /sd-check packages/core-common
 ```
 
@@ -311,6 +314,18 @@ Instructs Claude to read `@simplysm/*` package documentation from local `node_mo
 # Claude automatically reads when needing @simplysm/* docs:
 node_modules/@simplysm/{package-name}/README.md
 ```
+
+### sd-language
+
+Instructs Claude to respond in the system's configured language setting, while keeping technical terms, code identifiers, and library names unchanged. English error messages and logs are preserved in their original form.
+
+### sd-naming-conventions
+
+Enforces function naming conventions including prohibition of `Async` suffix (async is the default) and use of `Sync` suffix for synchronous versions when both exist.
+
+### sd-workflow-rules
+
+Defines workflow behavior including the rule to not auto-proceed after skill completion—report results and stop, waiting for explicit user instructions before the next step.
 
 ## Status Line
 

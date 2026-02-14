@@ -45,9 +45,15 @@ interface StorageConnConfig {
   host: string;   // Server host
   port?: number;  // Port (FTP default: 21, SFTP default: 22)
   user?: string;  // Username
-  pass?: string;  // Password
+  pass?: string;  // Password (required for FTP/FTPS; optional for SFTP)
 }
 ```
+
+**SFTP SSH Key Authentication:**
+- If `pass` is omitted for SFTP connections, the client automatically attempts authentication using:
+  1. SSH key file at `~/.ssh/id_ed25519`
+  2. SSH agent (if `SSH_AUTH_SOCK` environment variable is set)
+  - Both methods are tried in order; if the key file authentication fails (e.g., encrypted keys), the client falls back to agent-only authentication.
 
 ### FileInfo
 
@@ -134,7 +140,7 @@ await StorageFactory.connect("ftps", {
 ```
 
 ```typescript
-// SFTP connection
+// SFTP connection with password
 await StorageFactory.connect("sftp", {
   host: "sftp.example.com",
   port: 22,
@@ -148,6 +154,19 @@ await StorageFactory.connect("sftp", {
   }
 
   // Upload entire directory
+  await client.uploadDir("/local/dir", "/remote/dir");
+});
+```
+
+```typescript
+// SFTP connection with SSH key (if pass is omitted, uses ~/.ssh/id_ed25519 or SSH agent)
+await StorageFactory.connect("sftp", {
+  host: "sftp.example.com",
+  port: 22,
+  user: "username",
+  // No password provided - uses SSH key authentication
+}, async (client) => {
+  const files = await client.readdir("/remote/path");
   await client.uploadDir("/local/dir", "/remote/dir");
 });
 ```
@@ -216,6 +235,7 @@ import { SftpStorageClient } from "@simplysm/storage";
 
 const client = new SftpStorageClient();
 
+// Connection with password
 await client.connect({
   host: "sftp.example.com",
   port: 22,
@@ -233,6 +253,25 @@ try {
   await client.rename("/remote/old.txt", "/remote/new.txt");
   await client.remove("/remote/path/file.txt");
   await client.uploadDir("/local/dir", "/remote/dir");
+} finally {
+  await client.close();
+}
+```
+
+```typescript
+// Connection with SSH key (password omitted)
+const client = new SftpStorageClient();
+
+await client.connect({
+  host: "sftp.example.com",
+  port: 22,
+  user: "username",
+  // Uses ~/.ssh/id_ed25519 or SSH agent for authentication
+});
+
+try {
+  await client.put("/local/path/file.txt", "/remote/path/file.txt");
+  // ... other operations
 } finally {
   await client.close();
 }
