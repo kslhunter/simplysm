@@ -15,6 +15,7 @@ import { printErrors, printServers } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import {
   registerWorkerEventHandlers,
+  type BaseWorkerInfo,
   type ServerReadyEventData,
   type ServerBuildEventData,
   type ErrorEventData,
@@ -254,7 +255,7 @@ export async function runDev(options: DevOptions): Promise<void> {
   const clientCompleteTasks = new Map<string, (result: PackageResult) => void>();
   for (const workerInfo of standaloneClientWorkers) {
     const completeTask = registerWorkerEventHandlers(
-      workerInfo,
+      workerInfo as unknown as BaseWorkerInfo,
       {
         resultKey: `${workerInfo.name}:build`,
         listrTitle: `${workerInfo.name} (client)`,
@@ -281,7 +282,7 @@ export async function runDev(options: DevOptions): Promise<void> {
   // Vite client (서버 연결) 이벤트 핸들러 등록
   for (const workerInfo of viteClientWorkers) {
     const completeTask = registerWorkerEventHandlers(
-      workerInfo,
+      workerInfo as unknown as BaseWorkerInfo,
       {
         resultKey: `${workerInfo.name}:build`,
         listrTitle: `${workerInfo.name} (client)`,
