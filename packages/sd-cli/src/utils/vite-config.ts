@@ -61,6 +61,36 @@ function sdTailwindConfigDepsPlugin(pkgDir: string): Plugin {
 }
 
 /**
+ * 패키지가 subpath-only export인지 확인 (exports에 "."이 없는 패키지)
+ *
+ * 예: @tiptap/pm은 "./state", "./view" 등 subpath만 export하므로 pre-bundling 불가
+ * pnpm 구조에서 두 경로를 시도:
+ * 1. realpath를 따라 .pnpm node_modules에서 찾기
+ * 2. symlink된 workspace 패키지의 node_modules에서 fallback
+ */
+function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
+  try {
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as {
+      exports?: Record<string, unknown> | string;
+      main?: string;
+      module?: string;
+    };
+    if (
+      pkgJson.exports != null &&
+      typeof pkgJson.exports === "object" &&
+      !("." in pkgJson.exports) &&
+      pkgJson.main == null &&
+      pkgJson.module == null
+    ) {
+      return true;
+    }
+  } catch {
+    // 읽기 실패 시 false 반환 (pre-bundling 포함)
+  }
+  return false;
+}
+
+/**
  * scope 패키지의 dist 디렉토리 변경을 감지하는 Vite 플러그인.
  *
  * Vite는 node_modules를 기본적으로 watch에서 제외하므로,
@@ -100,50 +130,20 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
               // PostCSS/빌드 도구는 브라우저 pre-bundling 대상 아님
               if (dep === "tailwindcss") continue;
 
-              // subpath-only 패키지 필터링 (exports에 "."이 없는 패키지는 pre-bundling 불가)
-              // 예: @tiptap/pm은 "./state", "./view" 등 subpath만 export
-              // pnpm 구조: realpath 따라가서 sibling node_modules에서 dep 찾기
-              try {
-                const realPkgPath = fs.realpathSync(path.join(scopeDir, name));
-                // @scope/name → 2단계 위 = .pnpm/.../node_modules/
-                const pnpmNodeModules = path.resolve(realPkgPath, "../..");
-                const depPkgJsonResolved = path.join(pnpmNodeModules, dep, "package.json");
-                const depPkg = JSON.parse(fs.readFileSync(depPkgJsonResolved, "utf-8")) as {
-                  exports?: Record<string, unknown> | string;
-                  main?: string;
-                  module?: string;
-                };
-                if (
-                  depPkg.exports != null &&
-                  typeof depPkg.exports === "object" &&
-                  !("." in depPkg.exports) &&
-                  depPkg.main == null &&
-                  depPkg.module == null
-                ) {
-                  continue;
-                }
-              } catch {
-                // workspace 패키지는 realpath가 소스 디렉토리로 해석되어 .pnpm 구조가 아님
-                // symlink 경로의 node_modules에서 fallback 시도
-                try {
-                  const depPkgJsonFallback = path.join(scopeDir, name, "node_modules", dep, "package.json");
-                  const depPkg = JSON.parse(fs.readFileSync(depPkgJsonFallback, "utf-8")) as {
-                    exports?: Record<string, unknown> | string;
-                    main?: string;
-                    module?: string;
-                  };
-                  if (
-                    depPkg.exports != null &&
-                    typeof depPkg.exports === "object" &&
-                    !("." in depPkg.exports) &&
-                    depPkg.main == null &&
-                    depPkg.module == null
-                  ) {
-                    continue;
-                  }
-                } catch {
-                  // 둘 다 실패하면 일단 포함 (Vite가 알아서 처리)
-                }
+              // subpath-only 패키지 필터링: 두 경로를 시도하여 확인
+              // pnpm 구조에서 realpath를 따라 .pnpm node_modules에서 먼저 찾기
+              const realPkgPath = fs.realpathSync(path.join(scopeDir, name));
+              const pnpmNodeModules = path.resolve(realPkgPath, "../..");
+              const depPkgJsonResolved = path.join(pnpmNodeModules, dep, "package.json");
+              if (isSubpathOnlyPackage(depPkgJsonResolved)) {
+                continue;
+              }
+
+              // workspace 패키지는 realpath가 소스 디렉토리로 해석되어 .pnpm 구조가 아님
+              // symlink 경로의 node_modules에서 fallback 시도
+              const depPkgJsonFallback = path.join(scopeDir, name, "node_modules", dep, "package.json");
+              if (isSubpathOnlyPackage(depPkgJsonFallback)) {
+                continue;
               }
 
               nestedDepsToInclude.push(`${excludedPkg} > ${dep}`);

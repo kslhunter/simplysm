@@ -5,7 +5,7 @@ import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
 import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
-import { RebuildManager } from "../utils/listr-manager";
+import { RebuildManager } from "../utils/rebuild-manager";
 import { ResultCollector } from "../infra/ResultCollector";
 import { SignalHandler } from "../infra/SignalHandler";
 import { LibraryBuilder } from "../builders/LibraryBuilder";

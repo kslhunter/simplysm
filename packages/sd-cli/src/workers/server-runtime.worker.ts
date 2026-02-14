@@ -2,6 +2,7 @@ import proxy from "@fastify/http-proxy";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import net from "net";
+import { registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
 
@@ -69,25 +70,7 @@ process.on("unhandledRejection", (reason) => {
   });
 });
 
-process.on("SIGTERM", () => {
-  cleanup()
-    .catch((err) => {
-      logger.error("cleanup 실패", err);
-    })
-    .finally(() => {
-      process.exit(0);
-    });
-});
-
-process.on("SIGINT", () => {
-  cleanup()
-    .catch((err) => {
-      logger.error("cleanup 실패", err);
-    })
-    .finally(() => {
-      process.exit(0);
-    });
-});
+registerCleanupHandlers(cleanup, logger);
 
 /**
  * 포트가 사용 가능한지 확인
@@ -113,7 +96,7 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
       return port;
     }
   }
-  return startPort;
+  throw new Error(`포트 ${startPort}부터 ${startPort + maxRetries - 1}까지 사용 가능한 포트가 없습니다.`);
 }
 
 /**

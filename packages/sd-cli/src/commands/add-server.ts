@@ -5,6 +5,7 @@ import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
 import { addPackageToSdConfig, setClientServerInSdConfig } from "../utils/config-editor";
 import { spawn } from "../utils/spawn";
+import { findPackageRoot } from "../utils/package-utils";
 
 //#region Types
 
@@ -16,19 +17,6 @@ export interface AddServerOptions {}
 //#endregion
 
 //#region Utilities
-
-/**
- * import.meta.dirname에서 상위로 올라가며 package.json을 찾아 패키지 루트를 반환한다.
- */
-function findPackageRoot(startDir: string): string {
-  let dir = startDir;
-  while (!fs.existsSync(path.join(dir, "package.json"))) {
-    const parent = path.dirname(dir);
-    if (parent === dir) throw new Error("package.json을 찾을 수 없습니다.");
-    dir = parent;
-  }
-  return dir;
-}
 
 /**
  * sd.config.ts를 읽어서 target이 "client"인 패키지명 목록을 반환한다.

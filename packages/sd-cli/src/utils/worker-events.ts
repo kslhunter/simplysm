@@ -1,7 +1,7 @@
 import { consola } from "consola";
 import type { PackageResult } from "./package-utils";
 import type { SdPackageConfig } from "../sd-config.types";
-import type { RebuildManager } from "./listr-manager";
+import type { RebuildManager } from "./rebuild-manager";
 
 const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 
@@ -31,10 +31,13 @@ export interface ServerBuildEventData {
 /**
  * 기본 Worker 정보 타입
  */
-export interface BaseWorkerInfo {
+export interface BaseWorkerInfo<TEvents extends Record<string, any[]> = Record<string, any[]>> {
   name: string;
   config: SdPackageConfig;
-  worker: { on: (event: string, handler: (data: unknown) => void) => void };
+  worker: {
+    on<K extends keyof TEvents>(event: K, handler: (data: TEvents[K][0]) => void): void;
+    send<K extends keyof TEvents>(event: K, data: TEvents[K][0]): void;
+  };
   isInitialBuild: boolean;
   buildResolver: (() => void) | undefined;
 }
@@ -57,7 +60,7 @@ export interface WorkerEventHandlerOptions {
  * @param rebuildManager 리빌드 매니저
  * @returns completeTask 함수 (결과를 저장하고 빌드 완료를 알림)
  */
-export function registerWorkerEventHandlers<T extends BaseWorkerInfo>(
+export function registerWorkerEventHandlers<TEvents extends Record<string, any[]>, T extends BaseWorkerInfo<TEvents>>(
   workerInfo: T,
   opts: WorkerEventHandlerOptions,
   results: Map<string, PackageResult>,

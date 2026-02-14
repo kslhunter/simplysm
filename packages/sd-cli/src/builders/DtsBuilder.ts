@@ -1,7 +1,6 @@
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import type { BuildResult } from "../infra/ResultCollector";
 import type { TypecheckEnv } from "../utils/tsconfig";
-import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
 
@@ -40,55 +39,9 @@ export class DtsBuilder extends BaseBuilder {
 
   protected registerEventHandlers(): void {
     for (const pkg of this.packages) {
-      const worker = this.workerManager.get<typeof DtsWorkerModule>(`${pkg.name}:dts`)!;
-      const resultKey = `${pkg.name}:dts`;
+      const workerKey = `${pkg.name}:dts`;
       const listrTitle = `${pkg.name} (dts)`;
-
-      let isInitialBuild = true;
-
-      // 빌드 시작 (리빌드 시)
-      worker.on("buildStart", () => {
-        if (!isInitialBuild && this.rebuildManager != null) {
-          const resolver = this.rebuildManager.registerBuild(resultKey, listrTitle);
-          this.buildResolvers.set(resultKey, resolver);
-        }
-      });
-
-      // 빌드 완료
-      worker.on("build", (data) => {
-        const event = data as BuildEventData;
-        const result: BuildResult = {
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "dts",
-          status: event.success ? "success" : "error",
-          message: event.errors?.join("\n"),
-        };
-        this.resultCollector.add(result);
-
-        if (isInitialBuild) {
-          isInitialBuild = false;
-        }
-        this.completeBuild(pkg);
-      });
-
-      // 에러
-      worker.on("error", (data) => {
-        const event = data as ErrorEventData;
-        const result: BuildResult = {
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "dts",
-          status: "error",
-          message: event.message,
-        };
-        this.resultCollector.add(result);
-
-        if (isInitialBuild) {
-          isInitialBuild = false;
-        }
-        this.completeBuild(pkg);
-      });
+      this.registerEventHandlersForWorker(pkg, workerKey, "dts", listrTitle);
     }
   }
 

@@ -5,7 +5,7 @@ export interface BuildResult {
   name: string;
   target: string;
   type: "build" | "dts" | "server" | "capacitor";
-  status: "pending" | "building" | "success" | "error" | "server";
+  status: "pending" | "building" | "success" | "error" | "running";
   message?: string;
   port?: number;
 }
@@ -54,7 +54,7 @@ export class ResultCollector {
    * 서버 상태인 결과만 조회
    */
   getServers(): BuildResult[] {
-    return this.getAll().filter((r) => r.type === "server" && r.status === "server");
+    return this.getAll().filter((r) => r.type === "server" && r.status === "running");
   }
 
   /**

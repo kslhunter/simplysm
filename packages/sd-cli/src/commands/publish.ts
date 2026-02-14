@@ -9,6 +9,7 @@ import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { spawn } from "../utils/spawn";
 import { runBuild } from "./build";
+import { parseWorkspaceGlobs } from "../utils/replace-deps";
 import os from "os";
 import fs from "fs";
 import ssh2 from "ssh2";
@@ -213,10 +214,11 @@ function registerSshPublicKey(
     const conn = new SshClient();
     conn.on("ready", () => {
       // authorized_keys에 공개키 추가
+      const escapedKey = publicKey.replace(/'/g, "'\\''");
       const cmd = [
         "mkdir -p ~/.ssh",
         "chmod 700 ~/.ssh",
-        `echo '${publicKey}' >> ~/.ssh/authorized_keys`,
+        `echo '${escapedKey}' >> ~/.ssh/authorized_keys`,
         "chmod 600 ~/.ssh/authorized_keys",
       ].join(" && ");
 
@@ -494,26 +496,12 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const workspaceGlobs: string[] = [];
   if (await fsExists(workspaceYamlPath)) {
     const yamlContent = await fsRead(workspaceYamlPath);
-    let inPackages = false;
-    for (const line of yamlContent.split("\n")) {
-      if (/^packages:\s*$/.test(line)) {
-        inPackages = true;
-        continue;
-      }
-      if (inPackages) {
-        const match = /^\s+-\s+(.+)$/.exec(line);
-        if (match != null) {
-          workspaceGlobs.push(match[1].trim());
-        } else {
-          break;
-        }
-      }
-    }
+    workspaceGlobs.push(...parseWorkspaceGlobs(yamlContent));
   }
 
   const allPkgPaths = (await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item)))))
     .flat()
-    .filter((item) => !item.includes("."));
+    .filter((item) => !path.basename(item).includes("."));
 
   // publish 설정이 있는 패키지 필터링
   const publishPackages: Array<{
