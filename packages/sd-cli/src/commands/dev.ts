@@ -428,6 +428,10 @@ export async function runDev(options: DevOptions): Promise<void> {
         status: "error",
         message: event.message,
       });
+      if (isFirstBuild) {
+        isFirstBuild = false;
+        serverRuntimePromises.get(name)?.resolver();
+      }
       serverBuild.buildResolver();
     });
   }
@@ -531,6 +535,7 @@ export async function runDev(options: DevOptions): Promise<void> {
           status: "error",
           message: err instanceof Error ? err.message : String(err),
         });
+        serverRuntimePromises.get(name)?.resolver();
         serverBuild.buildResolver();
       });
   }
