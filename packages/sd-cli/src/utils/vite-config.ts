@@ -8,6 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
+import { FsWatcher } from "@simplysm/core-node";
 
 /**
  * Tailwind config의 scope 패키지 의존성을 watch하는 Vite 플러그인.
@@ -95,7 +96,8 @@ function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
  *
  * Vite는 node_modules를 기본적으로 watch에서 제외하므로,
  * scope 패키지의 dist 파일이 변경되어도 HMR/리빌드가 트리거되지 않는다.
- * 이 플러그인은 scope 패키지의 dist 디렉토리를 watcher에 명시적으로 추가하고,
+ * 이 플러그인은 별도의 FsWatcher로 scope 패키지의 dist 디렉토리를 감시하고,
+ * 변경 시 Vite의 내부 HMR 파이프라인을 트리거한다.
  * optimizeDeps에서 제외하여 pre-bundled 캐시로 인한 변경 무시를 방지한다.
  */
 function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
@@ -161,7 +163,9 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
         },
       };
     },
-    configureServer(server) {
+    async configureServer(server) {
+      const distDirs: string[] = [];
+
       for (const scope of scopes) {
         const scopeDir = path.join(pkgDir, "node_modules", scope);
         if (!fs.existsSync(scopeDir)) continue;
@@ -169,10 +173,34 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
         for (const pkgName of fs.readdirSync(scopeDir)) {
           const distDir = path.join(scopeDir, pkgName, "dist");
           if (fs.existsSync(distDir)) {
-            server.watcher.add(distDir);
+            distDirs.push(distDir);
           }
         }
       }
+
+      if (distDirs.length === 0) return;
+
+      // Vite의 기본 watcher는 **/node_modules/**를 ignore하고
+      // server.watcher.add()로는 이 패턴을 override할 수 없다.
+      // 별도의 FsWatcher로 scope 패키지의 dist 디렉토리를 감시한다.
+      const scopeWatcher = await FsWatcher.watch(distDirs);
+      scopeWatcher.onChange({ delay: 300 }, (changeInfos) => {
+        for (const { path: changedPath } of changeInfos) {
+          // pnpm symlink → real path 변환 (Vite module graph은 real path 사용)
+          let realPath: string;
+          try {
+            realPath = fs.realpathSync(changedPath);
+          } catch {
+            continue; // 삭제된 파일
+          }
+
+          // Vite의 내부 HMR 파이프라인 트리거
+          server.watcher.emit("change", realPath);
+        }
+      });
+
+      // 서버 종료 시 watcher 정리
+      server.httpServer?.on("close", () => void scopeWatcher.close());
     },
   };
 }
