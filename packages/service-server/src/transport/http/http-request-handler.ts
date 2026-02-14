@@ -1,69 +1,72 @@
 import { jsonParse } from "@simplysm/core-common";
-import type { ServiceServer } from "../../service-server";
-import type { ServiceExecutor } from "../../core/service-executor";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { JwtManager } from "../../auth/jwt-manager";
+import { verifyJwt } from "../../auth/jwt-manager";
+import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 
-export class HttpRequestHandler {
-  constructor(
-    private readonly _server: ServiceServer,
-    private readonly _executor: ServiceExecutor,
-    private readonly _jwt: JwtManager,
-  ) {}
+export async function handleHttpRequest<TAuthInfo = unknown>(
+  req: FastifyRequest,
+  reply: FastifyReply,
+  jwtSecret: string | undefined,
+  runMethod: (def: {
+    serviceName: string;
+    methodName: string;
+    params: unknown[];
+    http: { clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> };
+  }) => Promise<unknown>,
+): Promise<void> {
+  const { service, method } = req.params as { service: string; method: string };
 
-  async handle(req: FastifyRequest, reply: FastifyReply) {
-    const { service, method } = req.params as { service: string; method: string };
+  // ClientName 헤더
+  const clientName = req.headers["x-sd-client-name"] as string | undefined;
+  if (clientName == null) throw new Error("ClientName header is required");
 
-    // ClientName 헤더
-    const clientName = req.headers["x-sd-client-name"] as string | undefined;
-    if (clientName == null) throw new Error("ClientName header is required");
+  // Authorization 헤더 파싱 및 검증
+  let authTokenPayload: AuthTokenPayload<TAuthInfo> | undefined;
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader != null) {
+      if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
 
-    // Authorization 헤더 파싱 및 검증
-    let authTokenPayload;
-    try {
-      const authHeader = req.headers.authorization;
-      if (authHeader != null) {
-        const token = authHeader.split(" ")[1]; // "Bearer <token>"
-        authTokenPayload = await this._jwt.verify(token);
-      }
-    } catch (err) {
-      reply.status(401).send({
-        error: "Unauthorized",
-        message: err instanceof Error ? err.message : String(err),
+      const token = authHeader.split(" ")[1]; // "Bearer <token>"
+      authTokenPayload = await verifyJwt<TAuthInfo>(jwtSecret, token);
+    }
+  } catch (err) {
+    reply.status(401).send({
+      error: "Unauthorized",
+      message: err instanceof Error ? err.message : String(err),
+    });
+    return;
+  }
+
+  // 파라미터 파싱
+  let params: unknown[] | undefined;
+  if (req.method === "GET") {
+    const query = req.query as { json?: string };
+    if (typeof query.json !== "string") {
+      throw new Error("JSON query parameter required");
+    }
+    params = jsonParse(query.json);
+  } else if (req.method === "POST") {
+    if (!Array.isArray(req.body)) {
+      reply.status(400).send({
+        error: "Bad Request",
+        message: "Request body must be an array.",
       });
       return;
     }
 
-    // 파라미터 파싱
-    let params: unknown[] | undefined;
-    if (req.method === "GET") {
-      const query = req.query as { json?: string };
-      if (typeof query.json !== "string") {
-        throw new Error("JSON query parameter required");
-      }
-      params = jsonParse(query.json);
-    } else if (req.method === "POST") {
-      if (!Array.isArray(req.body)) {
-        reply.status(400).send({
-          error: "Bad Request",
-          message: "Request body must be an array.",
-        });
-        return;
-      }
+    params = req.body as unknown[];
+  }
 
-      params = req.body as unknown[];
-    }
+  // 서비스 실행 및 응답
+  if (params != null) {
+    const serviceResult = await runMethod({
+      serviceName: service,
+      methodName: method,
+      params,
+      http: { clientName, authTokenPayload },
+    });
 
-    // 서비스 실행 및 응답
-    if (params != null) {
-      const serviceResult = await this._executor.runMethod({
-        serviceName: service,
-        methodName: method,
-        params,
-        http: { clientName, authTokenPayload },
-      });
-
-      reply.send(serviceResult);
-    }
+    reply.send(serviceResult);
   }
 }

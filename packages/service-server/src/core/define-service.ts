@@ -2,7 +2,7 @@ import type { ServiceServer } from "../service-server";
 import type { ServiceSocket } from "../transport/socket/service-socket";
 import type { AuthTokenPayload } from "../auth/auth-token-payload";
 import { objMerge } from "@simplysm/core-common";
-import { ConfigManager } from "../utils/config-manager";
+import { getConfig } from "../utils/config-manager";
 import path from "path";
 
 // ── Context ──
@@ -62,7 +62,7 @@ export function createServiceContext<TAuthInfo = unknown>(
       let configParent: Record<string, T | undefined> = {};
 
       const rootFilePath = path.resolve(server.options.rootPath, ".config.json");
-      const rootConfig = await ConfigManager.getConfig<Record<string, T>>(rootFilePath);
+      const rootConfig = await getConfig<Record<string, T>>(rootFilePath);
       if (rootConfig != null) {
         configParent = rootConfig;
       }
@@ -70,7 +70,7 @@ export function createServiceContext<TAuthInfo = unknown>(
       const targetPath = this.clientPath;
       if (targetPath != null) {
         const clientFilePath = path.resolve(targetPath, ".config.json");
-        const clientConfig = await ConfigManager.getConfig<Record<string, T>>(clientFilePath);
+        const clientConfig = await getConfig<Record<string, T>>(clientFilePath);
         if (clientConfig != null) {
           configParent = objMerge(configParent, clientConfig);
         }

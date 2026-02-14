@@ -22,21 +22,28 @@ pnpm add @simplysm/service-client
 
 ## Main Modules
 
-### Core Classes
+### Core Functions and Classes
 
-| Class | Description |
+| Function/Class | Description |
 |--------|------|
-| `ServiceClient` | Main service client. Provides integrated connection management, RPC calls, events, files, and authentication. |
+| `createServiceClient` | Factory function for creating a ServiceClient instance. **Recommended over using the class constructor directly.** |
+| `ServiceClient` | Main service client class. Provides integrated connection management, RPC calls, events, files, and authentication. |
+| `createServiceTransport` | Factory function for creating a ServiceTransport instance |
 | `ServiceTransport` | Message transport layer. Handles request/response matching, progress tracking, and protocol encoding/decoding. |
+| `createSocketProvider` | Factory function for creating a SocketProvider instance |
 | `SocketProvider` | WebSocket connection management. Handles heartbeat, auto-reconnection, and connection state events. |
+| `createClientProtocolWrapper` | Factory function for creating a ClientProtocolWrapper instance |
 | `ClientProtocolWrapper` | Protocol wrapper. Automatically selects main thread/Web Worker for encoding/decoding based on data size. |
 
-### Feature Classes
+### Feature Functions and Classes
 
-| Class | Description |
+| Function/Class | Description |
 |--------|------|
+| `createEventClient` | Factory function for creating an EventClient instance |
 | `EventClient` | Server event subscription/publishing. Supports automatic listener recovery on reconnection. |
+| `createFileClient` | Factory function for creating a FileClient instance |
 | `FileClient` | Handles HTTP-based file upload/download. |
+| `createOrmClientConnector` | Factory function for creating an OrmClientConnector instance |
 | `OrmClientConnector` | ORM remote connection connector. Supports transaction/non-transaction connections. |
 | `OrmClientDbContextExecutor` | ORM DbContext remote executor. Calls server's `OrmService` via RPC. |
 
@@ -55,10 +62,10 @@ pnpm add @simplysm/service-client
 ### Basic Connection and Service Call
 
 ```typescript
-import { ServiceClient } from "@simplysm/service-client";
+import { createServiceClient } from "@simplysm/service-client";
 
-// Create client
-const client = new ServiceClient("my-app", {
+// Create client (recommended: use factory function)
+const client = createServiceClient("my-app", {
   host: "localhost",
   port: 8080,
   ssl: false,
@@ -261,11 +268,11 @@ const buffer = await client.downloadFileBuffer("/uploads/2024/file.pdf");
 Access the database through the server's ORM service. Transactions are automatically managed.
 
 ```typescript
-import { OrmClientConnector } from "@simplysm/service-client";
+import { createOrmClientConnector } from "@simplysm/service-client";
 import type { OrmConnectConfig } from "@simplysm/service-client";
 import { DbContext } from "@simplysm/orm-common";
 
-const connector = new OrmClientConnector(client);
+const connector = createOrmClientConnector(client);
 
 // Connect with transaction (auto rollback on error)
 await connector.connect(
@@ -307,11 +314,34 @@ Server connection configuration interface.
 | `ssl` | `boolean` | No | SSL usage. If `true`, uses `wss://` / `https://` |
 | `maxReconnectCount` | `number` | No | Max reconnection attempts (default: 10). 0 means no reconnection |
 
+### createServiceClient
+
+Factory function for creating a ServiceClient instance.
+
+```typescript
+function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient
+```
+
+**Parameters:**
+- `name` - Client identifier (used for server-side logging and connection management)
+- `options` - Server connection configuration
+
+**Returns:** ServiceClient instance
+
+**Example:**
+```typescript
+const client = createServiceClient("my-app", {
+  host: "localhost",
+  port: 8080,
+  ssl: false,
+});
+```
+
 ### ServiceClient
 
 | Method/Property | Return Type | Description |
 |-------------|----------|------|
-| `constructor(name, options)` | - | Create client instance. `name` is the client identifier |
+| `constructor(name, options)` | - | Create client instance. `name` is the client identifier. **Note: Prefer using `createServiceClient()` factory function.** |
 | `connected` | `boolean` | WebSocket connection status |
 | `hostUrl` | `string` | HTTP URL (e.g., `http://localhost:8080`) |
 | `connect()` | `Promise<void>` | Connect to server via WebSocket |

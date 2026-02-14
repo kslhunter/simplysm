@@ -144,7 +144,7 @@ The main server instance (`server`) is exported from `main.ts` and configured wi
 The server is configured through `main.ts`:
 
 ```typescript
-const server = new ServiceServer({
+const server = createServiceServer({
   rootPath: process.cwd(),
   port: 40081,
   services: [EchoService, HealthService, SharedDataDemoService],

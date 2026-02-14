@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ServiceExecutor } from "../src/core/service-executor";
+import { runServiceMethod } from "../src/core/service-executor";
 import { defineService, auth } from "../src/core/define-service";
 
 // Minimal mock server
@@ -7,14 +7,14 @@ function createMockServer(services: any[]) {
   return { options: { services, auth: { jwtSecret: "test" } } } as any;
 }
 
-describe("ServiceExecutor with ServiceDefinition", () => {
+describe("runServiceMethod with ServiceDefinition", () => {
   it("executes a basic service method", async () => {
     const EchoService = defineService("Echo", (_ctx) => ({
       echo: (msg: string) => `Echo: ${msg}`,
     }));
 
-    const executor = new ServiceExecutor(createMockServer([EchoService]));
-    const result = await executor.runMethod({
+    const server = createMockServer([EchoService]);
+    const result = await runServiceMethod(server, {
       serviceName: "Echo",
       methodName: "echo",
       params: ["hello"],
@@ -24,9 +24,9 @@ describe("ServiceExecutor with ServiceDefinition", () => {
   });
 
   it("throws when service not found", async () => {
-    const executor = new ServiceExecutor(createMockServer([]));
+    const server = createMockServer([]);
 
-    await expect(executor.runMethod({ serviceName: "Unknown", methodName: "test", params: [] })).rejects.toThrow(
+    await expect(runServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] })).rejects.toThrow(
       "서비스[Unknown]를 찾을 수 없습니다.",
     );
   });
@@ -35,11 +35,11 @@ describe("ServiceExecutor with ServiceDefinition", () => {
     const svc = defineService("Test", (_ctx) => ({
       existing: () => "ok",
     }));
-    const executor = new ServiceExecutor(createMockServer([svc]));
+    const server = createMockServer([svc]);
 
-    await expect(executor.runMethod({ serviceName: "Test", methodName: "nonexistent", params: [] })).rejects.toThrow(
-      "메소드[Test.nonexistent]를 찾을 수 없습니다.",
-    );
+    await expect(
+      runServiceMethod(server, { serviceName: "Test", methodName: "nonexistent", params: [] }),
+    ).rejects.toThrow("메소드[Test.nonexistent]를 찾을 수 없습니다.");
   });
 
   it("blocks unauthenticated access to auth-required service", async () => {
@@ -49,11 +49,11 @@ describe("ServiceExecutor with ServiceDefinition", () => {
         secret: () => "secret",
       })),
     );
-    const executor = new ServiceExecutor(createMockServer([svc]));
+    const server = createMockServer([svc]);
 
-    await expect(executor.runMethod({ serviceName: "Protected", methodName: "secret", params: [] })).rejects.toThrow(
-      "로그인이 필요합니다.",
-    );
+    await expect(
+      runServiceMethod(server, { serviceName: "Protected", methodName: "secret", params: [] }),
+    ).rejects.toThrow("로그인이 필요합니다.");
   });
 
   it("blocks unauthorized role access", async () => {
@@ -64,11 +64,11 @@ describe("ServiceExecutor with ServiceDefinition", () => {
         view: () => "viewed",
       })),
     );
-    const executor = new ServiceExecutor(createMockServer([svc]));
+    const server = createMockServer([svc]);
 
     // Has auth but wrong role
     await expect(
-      executor.runMethod({
+      runServiceMethod(server, {
         serviceName: "Admin",
         methodName: "manage",
         params: [],
@@ -84,9 +84,9 @@ describe("ServiceExecutor with ServiceDefinition", () => {
         manage: auth(["admin"], () => "managed"),
       })),
     );
-    const executor = new ServiceExecutor(createMockServer([svc]));
+    const server = createMockServer([svc]);
 
-    const result = await executor.runMethod({
+    const result = await runServiceMethod(server, {
       serviceName: "Admin",
       methodName: "manage",
       params: [],
@@ -100,9 +100,9 @@ describe("ServiceExecutor with ServiceDefinition", () => {
     const svc = defineService("Ctx", (ctx) => ({
       getClientName: () => ctx.clientName,
     }));
-    const executor = new ServiceExecutor(createMockServer([svc]));
+    const server = createMockServer([svc]);
 
-    const result = await executor.runMethod({
+    const result = await runServiceMethod(server, {
       serviceName: "Ctx",
       methodName: "getClientName",
       params: [],

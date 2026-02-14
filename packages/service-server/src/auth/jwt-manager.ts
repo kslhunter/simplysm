@@ -1,44 +1,36 @@
-import type { ServiceServer } from "../service-server";
 import * as jose from "jose";
 import type { AuthTokenPayload } from "./auth-token-payload";
 
-export class JwtManager<TAuthInfo = unknown> {
-  constructor(private readonly _server: ServiceServer<TAuthInfo>) {}
+export async function signJwt<TAuthInfo = unknown>(
+  jwtSecret: string,
+  payload: AuthTokenPayload<TAuthInfo>,
+): Promise<string> {
+  const secret = new TextEncoder().encode(jwtSecret);
 
-  async sign(payload: AuthTokenPayload<TAuthInfo>): Promise<string> {
-    const jwtSecret = this._server.options.auth?.jwtSecret;
-    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+  return new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("12h")
+    .sign(secret);
+}
 
-    const secret = new TextEncoder().encode(jwtSecret);
+export async function verifyJwt<TAuthInfo = unknown>(
+  jwtSecret: string,
+  token: string,
+): Promise<AuthTokenPayload<TAuthInfo>> {
+  const secret = new TextEncoder().encode(jwtSecret);
 
-    return new jose.SignJWT(payload)
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("12h")
-      .sign(secret);
-  }
-
-  async verify(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
-    const jwtSecret = this._server.options.auth?.jwtSecret;
-    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
-
-    const secret = new TextEncoder().encode(jwtSecret);
-
-    try {
-      const { payload } = await jose.jwtVerify(token, secret);
-      return payload as AuthTokenPayload<TAuthInfo>;
-    } catch (err) {
-      if (err != null && typeof err === "object" && "code" in err && err.code === "ERR_JWT_EXPIRED") {
-        throw new Error("토큰이 만료되었습니다.");
-      }
-      throw new Error("유효하지 않은 토큰입니다.");
+  try {
+    const { payload } = await jose.jwtVerify(token, secret);
+    return payload as AuthTokenPayload<TAuthInfo>;
+  } catch (err) {
+    if (err != null && typeof err === "object" && "code" in err && err.code === "ERR_JWT_EXPIRED") {
+      throw new Error("토큰이 만료되었습니다.");
     }
+    throw new Error("유효하지 않은 토큰입니다.");
   }
+}
 
-  decode(token: string): AuthTokenPayload<TAuthInfo> {
-    const jwtSecret = this._server.options.auth?.jwtSecret;
-    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
-
-    return jose.decodeJwt(token) as AuthTokenPayload<TAuthInfo>;
-  }
+export function decodeJwt<TAuthInfo = unknown>(token: string): AuthTokenPayload<TAuthInfo> {
+  return jose.decodeJwt(token) as AuthTokenPayload<TAuthInfo>;
 }

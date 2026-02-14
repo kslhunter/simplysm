@@ -1,5 +1,5 @@
 import { type ParentComponent, onCleanup } from "solid-js";
-import { ServiceClient, type ServiceConnectionConfig } from "@simplysm/service-client";
+import { createServiceClient, type ServiceClient, type ServiceConnectionConfig } from "@simplysm/service-client";
 import { ServiceClientContext, type ServiceClientContextValue } from "./ServiceClientContext";
 import { useConfig } from "./ConfigContext";
 import { useNotification } from "../components/feedback/notification/NotificationContext";
@@ -35,7 +35,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       ssl: location.protocol.startsWith("https"),
     };
 
-    const client = new ServiceClient(config.clientName, {
+    const client = createServiceClient(config.clientName, {
       ...defaultConfig,
       ...options,
     });

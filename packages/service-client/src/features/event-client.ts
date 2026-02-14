@@ -5,19 +5,32 @@ import consola from "consola";
 
 const logger = consola.withTag("service-client:EventClient");
 
-export class EventClient {
-  private readonly _listenerMap = new Map<
+export interface EventClient {
+  addListener<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    info: TInfo,
+    cb: (data: TData) => PromiseLike<void>,
+  ): Promise<string>;
+  removeListener(key: string): Promise<void>;
+  emitToServer<TInfo, TData>(
+    eventDef: ServiceEventDef<TInfo, TData>,
+    infoSelector: (item: TInfo) => boolean,
+    data: TData,
+  ): Promise<void>;
+  reRegisterAll(): Promise<void>;
+}
+
+export function createEventClient(transport: ServiceTransport): EventClient {
+  const listenerMap = new Map<
     string,
     { eventName: string; info: unknown; cb: (data: unknown) => PromiseLike<void> | void }
   >();
 
-  constructor(private readonly _transport: ServiceTransport) {
-    this._transport.on("event", async ({ keys, data }) => {
-      await this._executeByKey(keys, data);
-    });
-  }
+  transport.on("event", async ({ keys, data }) => {
+    await executeByKey(keys, data);
+  });
 
-  async addListener<TInfo, TData>(
+  async function addListener<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     info: TInfo,
     cb: (data: TData) => PromiseLike<void>,
@@ -26,13 +39,13 @@ export class EventClient {
     const eventName = eventDef.eventName;
 
     // 서버에 등록 요청
-    await this._transport.send({
+    await transport.send({
       name: "evt:add",
       body: { key, name: eventName, info },
     });
 
     // 로컬 맵에 저장 (재연결 시 복구용)
-    this._listenerMap.set(key, {
+    listenerMap.set(key, {
       eventName,
       info,
       cb: cb as (data: unknown) => PromiseLike<void>,
@@ -41,12 +54,12 @@ export class EventClient {
     return key;
   }
 
-  async removeListener(key: string): Promise<void> {
-    await this._transport.send({ name: "evt:remove", body: { key } });
-    this._listenerMap.delete(key);
+  async function removeListener(key: string): Promise<void> {
+    await transport.send({ name: "evt:remove", body: { key } });
+    listenerMap.delete(key);
   }
 
-  async emitToServer<TInfo, TData>(
+  async function emitToServer<TInfo, TData>(
     eventDef: ServiceEventDef<TInfo, TData>,
     infoSelector: (item: TInfo) => boolean,
     data: TData,
@@ -54,7 +67,7 @@ export class EventClient {
     const eventName = eventDef.eventName;
 
     // 서버에 'gets' 요청을 보내 타겟을 확보
-    const listenerInfos = (await this._transport.send({
+    const listenerInfos = (await transport.send({
       name: "evt:gets",
       body: { name: eventName },
     })) as { key: string; info: TInfo }[];
@@ -62,7 +75,7 @@ export class EventClient {
     const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
 
     if (targetKeys.length > 0) {
-      await this._transport.send({
+      await transport.send({
         name: "evt:emit",
         body: { keys: targetKeys, data },
       });
@@ -70,10 +83,10 @@ export class EventClient {
   }
 
   // 재연결 시 호출됨
-  async reRegisterAll(): Promise<void> {
-    for (const [key, value] of this._listenerMap.entries()) {
+  async function reRegisterAll(): Promise<void> {
+    for (const [key, value] of listenerMap.entries()) {
       try {
-        await this._transport.send({
+        await transport.send({
           name: "evt:add",
           body: { key, name: value.eventName, info: value.info },
         });
@@ -84,9 +97,9 @@ export class EventClient {
   }
 
   // 서버에서 온 이벤트를 로컬 리스너에게 분배
-  private async _executeByKey(keys: string[], data: unknown): Promise<void> {
+  async function executeByKey(keys: string[], data: unknown): Promise<void> {
     for (const key of keys) {
-      const entry = this._listenerMap.get(key);
+      const entry = listenerMap.get(key);
       if (entry != null) {
         try {
           await entry.cb(data);
@@ -96,4 +109,11 @@ export class EventClient {
       }
     }
   }
+
+  return {
+    addListener,
+    removeListener,
+    emitToServer,
+    reRegisterAll,
+  };
 }

@@ -102,9 +102,13 @@ The most common usage method for checking and updating to the latest APK deploye
 
 ```typescript
 import { AutoUpdate } from "@simplysm/capacitor-plugin-auto-update";
-import { ServiceClient } from "@simplysm/service-client";
+import { createServiceClient } from "@simplysm/service-client";
 
-const serviceClient = new ServiceClient("wss://your-server.example.com");
+const serviceClient = createServiceClient("my-app", {
+  host: "your-server.example.com",
+  port: 443,
+  ssl: true,
+});
 
 await AutoUpdate.run({
   log: (messageHtml: string) => {

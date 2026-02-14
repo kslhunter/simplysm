@@ -10,8 +10,8 @@ export * from "./core/define-service";
 export * from "./core/service-executor";
 
 // Transport - Socket
-export * from "./transport/socket/websocket-handler";
-export * from "./transport/socket/service-socket";
+export { createWebSocketHandler, type WebSocketHandler } from "./transport/socket/websocket-handler";
+export { createServiceSocket, type ServiceSocket } from "./transport/socket/service-socket";
 
 // Transport - HTTP
 export * from "./transport/http/http-request-handler";
@@ -19,7 +19,7 @@ export * from "./transport/http/upload-handler";
 export * from "./transport/http/static-file-handler";
 
 // Protocol
-export * from "./protocol/protocol-wrapper";
+export { createProtocolWrapper, type ProtocolWrapper } from "./protocol/protocol-wrapper";
 
 // Services
 export * from "./services/orm-service";

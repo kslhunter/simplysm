@@ -1,13 +1,15 @@
 import consola from "consola";
 import { EventEmitter } from "@simplysm/core-common";
 import type { ServiceEventDef } from "@simplysm/service-common";
+import { createServiceProtocol } from "@simplysm/service-common";
 
 import type { ServiceConnectionConfig } from "./types/connection-config";
 import type { ServiceProgress, ServiceProgressState } from "./types/progress.types";
-import { ServiceTransport } from "./transport/service-transport";
-import { SocketProvider } from "./transport/socket-provider";
-import { EventClient } from "./features/event-client";
-import { FileClient } from "./features/file-client";
+import { createServiceTransport, type ServiceTransport } from "./transport/service-transport";
+import { createSocketProvider, type SocketProvider } from "./transport/socket-provider";
+import { createEventClient, type EventClient } from "./features/event-client";
+import { createFileClient, type FileClient } from "./features/file-client";
+import { createClientProtocolWrapper } from "./protocol/client-protocol-wrapper";
 
 const logger = consola.withTag("service-client:ServiceClient");
 
@@ -46,10 +48,12 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;
 
     // 모듈 초기화
-    this._socket = new SocketProvider(wsUrl, this.name, this.options.maxReconnectCount ?? 10);
-    this._transport = new ServiceTransport(this._socket);
-    this._eventClient = new EventClient(this._transport);
-    this._fileClient = new FileClient(this.hostUrl, this.name);
+    this._socket = createSocketProvider(wsUrl, this.name, this.options.maxReconnectCount ?? 10);
+    const protocol = createServiceProtocol();
+    const protocolWrapper = createClientProtocolWrapper(protocol);
+    this._transport = createServiceTransport(this._socket, protocolWrapper);
+    this._eventClient = createEventClient(this._transport);
+    this._fileClient = createFileClient(this.hostUrl, this.name);
 
     // 이벤트 바인딩
     this._socket.on("state", async (state) => {
@@ -154,3 +158,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 export type RemoteService<T> = {
   [K in keyof T]: T[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never; // 함수가 아닌 프로퍼티는 안씀
 };
+
+export function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient {
+  return new ServiceClient(name, options);
+}

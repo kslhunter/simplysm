@@ -1,124 +1,149 @@
 import type { Bytes } from "@simplysm/core-common";
-import { DateTime, EventEmitter } from "@simplysm/core-common";
+import { DateTime } from "@simplysm/core-common";
 import type { FastifyRequest } from "fastify";
 import { clearInterval } from "node:timers";
 import consola from "consola";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
-import { ProtocolWrapper } from "../../protocol/protocol-wrapper";
+import { createProtocolWrapper } from "../../protocol/protocol-wrapper";
 import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
 
 const logger = consola.withTag("service-server:ServiceSocket");
 
-export class ServiceSocket extends EventEmitter<{
-  error: Error;
-  close: number;
-  message: { uuid: string; msg: ServiceClientMessage };
-}> {
-  private readonly _PING_INTERVAL = 5000; // 5초마다 핑 전송
-  private readonly _PONG_PACKET = new Uint8Array([0x02]);
-
-  private readonly _protocol = new ProtocolWrapper();
-  private readonly _listenerInfos: { eventName: string; key: string; info: unknown }[] = [];
-
-  private _isAlive = true;
-  private readonly _pingTimer: NodeJS.Timeout;
-
-  readonly connectedAtDateTime = new DateTime();
-
+/**
+ * Service socket interface
+ *
+ * Manages a single WebSocket connection with protocol encoding/decoding,
+ * ping/pong keep-alive, and event listener tracking.
+ */
+export interface ServiceSocket {
+  readonly connectedAtDateTime: DateTime;
+  readonly clientName: string;
+  readonly connReq: FastifyRequest;
   authTokenPayload?: AuthTokenPayload;
 
-  constructor(
-    private readonly _socket: WebSocket,
-    private readonly _clientId: string,
-    public readonly clientName: string,
-    public readonly connReq: FastifyRequest,
-  ) {
-    super();
+  /**
+   * Close the WebSocket connection
+   */
+  close(): void;
 
-    this._socket.on("close", this._onClose.bind(this));
-    this._socket.on("error", this._onError.bind(this));
-    this._socket.on("message", this._onMessage.bind(this));
+  /**
+   * Send a message to the client
+   */
+  send(uuid: string, msg: ServiceServerMessage): Promise<number>;
 
-    this._socket.on("pong", () => {
-      this._isAlive = true;
-    });
+  /**
+   * Register an event listener with key/name/info
+   */
+  addEventListener(key: string, eventName: string, info: unknown): void;
 
-    this._pingTimer = setInterval(() => {
-      if (!this._isAlive) {
-        this.close();
-        return;
-      }
+  /**
+   * Remove an event listener by key
+   */
+  removeEventListener(key: string): void;
 
-      this._isAlive = false;
-      this._socket.ping();
-    }, this._PING_INTERVAL);
-  }
+  /**
+   * Get all event listeners for a specific event name
+   */
+  getEventListeners(eventName: string): Array<{ key: string; info: unknown }>;
 
-  close() {
-    this._socket.terminate();
-  }
+  /**
+   * Filter target keys that exist in this socket's listeners
+   */
+  filterEventTargetKeys(targetKeys: string[]): string[];
 
-  async send(uuid: string, msg: ServiceServerMessage) {
-    return this._send(uuid, msg);
-  }
+  /**
+   * Register event handlers
+   */
+  on(event: "error", handler: (err: Error) => void): void;
+  on(event: "close", handler: (code: number) => void): void;
+  on(event: "message", handler: (data: { uuid: string; msg: ServiceClientMessage }) => void): void;
+}
 
-  private async _send(uuid: string, msg: ServiceServerRawMessage) {
-    if (this._socket.readyState !== WebSocket.OPEN) return 0;
+/**
+ * Create a service socket instance
+ *
+ * Manages a single WebSocket connection with protocol encoding/decoding,
+ * ping/pong keep-alive, and event listener tracking.
+ */
+export function createServiceSocket(
+  socket: WebSocket,
+  clientId: string,
+  clientName: string,
+  connReq: FastifyRequest,
+): ServiceSocket {
+  // -------------------------------------------------------------------
+  // State
+  // -------------------------------------------------------------------
 
-    const { chunks } = await this._protocol.encode(uuid, msg);
+  const PING_INTERVAL = 5000; // 5초마다 핑 전송
+  const PONG_PACKET = new Uint8Array([0x02]);
+
+  const protocol = createProtocolWrapper();
+  const listenerInfos: Array<{ eventName: string; key: string; info: unknown }> = [];
+  const eventHandlers = {
+    error: [] as Array<(err: Error) => void>,
+    close: [] as Array<(code: number) => void>,
+    message: [] as Array<(data: { uuid: string; msg: ServiceClientMessage }) => void>,
+  };
+
+  let isAlive = true;
+  let authTokenPayload: AuthTokenPayload | undefined;
+
+  const connectedAtDateTime = new DateTime();
+
+  // -------------------------------------------------------------------
+  // Helpers
+  // -------------------------------------------------------------------
+
+  async function sendInternal(uuid: string, msg: ServiceServerRawMessage): Promise<number> {
+    if (socket.readyState !== WebSocket.OPEN) return 0;
+
+    const { chunks } = await protocol.encode(uuid, msg);
     for (const chunk of chunks) {
-      this._socket.send(chunk);
+      socket.send(chunk);
     }
 
     return chunks.reduce((acc, item) => acc + item.length, 0);
   }
 
-  addEventListener(key: string, eventName: string, info: unknown) {
-    this._listenerInfos.push({ key, eventName, info });
-  }
-
-  removeEventListener(key: string) {
-    const idx = this._listenerInfos.findIndex((item) => item.key === key);
-    if (idx >= 0) {
-      this._listenerInfos.splice(idx, 1);
+  function emitEvent<K extends keyof typeof eventHandlers>(
+    event: K,
+    ...args: Parameters<(typeof eventHandlers)[K][number]>
+  ): void {
+    for (const handler of eventHandlers[event]) {
+      (handler as (...args: unknown[]) => void)(...args);
     }
   }
 
-  getEventListeners(eventName: string) {
-    return this._listenerInfos
-      .filter((item) => item.eventName === eventName)
-      .map((item) => ({ key: item.key, info: item.info }));
-  }
+  // -------------------------------------------------------------------
+  // Event Handlers
+  // -------------------------------------------------------------------
 
-  filterEventTargetKeys(targetKeys: string[]) {
-    return this._listenerInfos.filter((item) => targetKeys.includes(item.key)).map((item) => item.key);
-  }
-
-  private _onError(err: Error) {
+  function onError(err: Error): void {
     logger.error("WebSocket 클라이언트 오류 발생", err);
-    this.emit("error", err);
+    emitEvent("error", err);
   }
 
-  private _onClose(code: number) {
-    clearInterval(this._pingTimer);
-    this._protocol.dispose();
-    this.emit("close", code);
+  function onClose(code: number): void {
+    clearInterval(pingTimer);
+    protocol.dispose();
+    emitEvent("close", code);
   }
 
-  private async _onMessage(msgBuffer: Bytes) {
+  async function onMessage(msgBuffer: Bytes): Promise<void> {
     try {
       // ping에 대한 pong처리
       if (msgBuffer.length === 1 && msgBuffer[0] === 0x01) {
-        if (this._socket.readyState === WebSocket.OPEN) {
-          this._socket.send(this._PONG_PACKET);
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(PONG_PACKET);
         }
         return;
       }
 
-      const decodeResult = await this._protocol.decode(msgBuffer);
+      const decodeResult = await protocol.decode(msgBuffer);
       if (decodeResult.type === "progress") {
-        await this._send(decodeResult.uuid, {
+        await sendInternal(decodeResult.uuid, {
           name: "progress",
           body: {
             totalSize: decodeResult.totalSize,
@@ -127,10 +152,83 @@ export class ServiceSocket extends EventEmitter<{
         });
       } else {
         const msg = decodeResult.message as ServiceClientMessage;
-        this.emit("message", { uuid: decodeResult.uuid, msg });
+        emitEvent("message", { uuid: decodeResult.uuid, msg });
       }
     } catch (err) {
       logger.error("WebSocket 메시지 처리 중 오류 발생", err);
     }
   }
+
+  // -------------------------------------------------------------------
+  // Setup
+  // -------------------------------------------------------------------
+
+  socket.on("close", onClose);
+  socket.on("error", onError);
+  socket.on("message", onMessage);
+
+  socket.on("pong", () => {
+    isAlive = true;
+  });
+
+  const pingTimer = setInterval(() => {
+    if (!isAlive) {
+      socket.terminate();
+      return;
+    }
+
+    isAlive = false;
+    socket.ping();
+  }, PING_INTERVAL);
+
+  // -------------------------------------------------------------------
+  // Public API
+  // -------------------------------------------------------------------
+
+  return {
+    connectedAtDateTime,
+    clientName,
+    connReq,
+
+    get authTokenPayload(): AuthTokenPayload | undefined {
+      return authTokenPayload;
+    },
+
+    set authTokenPayload(value: AuthTokenPayload | undefined) {
+      authTokenPayload = value;
+    },
+
+    close(): void {
+      socket.terminate();
+    },
+
+    async send(uuid: string, msg: ServiceServerMessage): Promise<number> {
+      return sendInternal(uuid, msg);
+    },
+
+    addEventListener(key: string, eventName: string, info: unknown): void {
+      listenerInfos.push({ key, eventName, info });
+    },
+
+    removeEventListener(key: string): void {
+      const idx = listenerInfos.findIndex((item) => item.key === key);
+      if (idx >= 0) {
+        listenerInfos.splice(idx, 1);
+      }
+    },
+
+    getEventListeners(eventName: string): Array<{ key: string; info: unknown }> {
+      return listenerInfos
+        .filter((item) => item.eventName === eventName)
+        .map((item) => ({ key: item.key, info: item.info }));
+    },
+
+    filterEventTargetKeys(targetKeys: string[]): string[] {
+      return listenerInfos.filter((item) => targetKeys.includes(item.key)).map((item) => item.key);
+    },
+
+    on(event: "error" | "close" | "message", handler: (...args: any[]) => void): void {
+      eventHandlers[event].push(handler as any);
+    },
+  };
 }

@@ -1,7 +1,7 @@
 import type { ServiceEventDef } from "@simplysm/service-common";
-import { StaticFileHandler } from "./transport/http/static-file-handler";
-import { HttpRequestHandler } from "./transport/http/http-request-handler";
-import { ServiceExecutor } from "./core/service-executor";
+import { handleStaticFile } from "./transport/http/static-file-handler";
+import { handleHttpRequest } from "./transport/http/http-request-handler";
+import { runServiceMethod } from "./core/service-executor";
 import { jsonStringify, jsonParse, EventEmitter, env } from "@simplysm/core-common";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fastify from "fastify";
@@ -12,10 +12,10 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import path from "path";
 import { Buffer } from "node:buffer";
-import { UploadHandler } from "./transport/http/upload-handler";
-import { WebSocketHandler } from "./transport/socket/websocket-handler";
+import { handleUpload } from "./transport/http/upload-handler";
+import { createWebSocketHandler } from "./transport/socket/websocket-handler";
 import type { WebSocket } from "ws";
-import { JwtManager } from "./auth/jwt-manager";
+import { signJwt, verifyJwt } from "./auth/jwt-manager";
 import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection } from "./legacy/v1-auto-update-handler";
@@ -30,14 +30,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 }> {
   isOpen = false;
 
-  private readonly _serviceExecutor = new ServiceExecutor(this);
-  private readonly _jwt = new JwtManager<TAuthInfo>(this);
-
-  private readonly _httpRequestHandler = new HttpRequestHandler(this, this._serviceExecutor, this._jwt);
-  private readonly _staticFileHandler = new StaticFileHandler(this);
-  private readonly _uploadHandler = new UploadHandler(this, this._jwt);
-
-  private readonly _wsHandler = new WebSocketHandler(this._serviceExecutor, this._jwt);
+  private readonly _wsHandler: ReturnType<typeof createWebSocketHandler>;
 
   readonly fastify: FastifyInstance;
 
@@ -51,6 +44,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       : null;
 
     this.fastify = fastify({ https: httpsConf });
+
+    this._wsHandler = createWebSocketHandler((def) => runServiceMethod(this, def), options.auth?.jwtSecret);
   }
 
   async listen(): Promise<void> {
@@ -116,12 +111,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
     // API 라우트
     this.fastify.all("/api/:service/:method", async (req, reply) => {
-      await this._httpRequestHandler.handle(req, reply);
+      await handleHttpRequest(req, reply, this.options.auth?.jwtSecret, (def) => runServiceMethod(this, def));
     });
 
     // 업로드 라우트
     this.fastify.all("/upload", async (req, reply) => {
-      await this._uploadHandler.handle(req, reply);
+      await handleUpload(req, reply, this.options.rootPath, this.options.auth?.jwtSecret);
     });
 
     // WebSocket 라우트
@@ -167,7 +162,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         const urlObj = new URL(req.raw.url!, "http://localhost");
         const urlPath = decodeURI(urlObj.pathname.slice(1));
 
-        await this._staticFileHandler.handle(req, reply, urlPath);
+        await handleStaticFile(req, reply, this.options.rootPath, urlPath);
       },
     });
 
@@ -210,11 +205,17 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async generateAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
-    return this._jwt.sign(payload);
+    const jwtSecret = this.options.auth?.jwtSecret;
+    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+
+    return signJwt(jwtSecret, payload);
   }
 
   async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
-    return this._jwt.verify(token);
+    const jwtSecret = this.options.auth?.jwtSecret;
+    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+
+    return verifyJwt(jwtSecret, token);
   }
 
   private _registerGracefulShutdown() {
