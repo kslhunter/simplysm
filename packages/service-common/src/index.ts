@@ -4,7 +4,6 @@ export * from "./protocol/service-protocol";
 
 // Service Types
 export * from "./service-types/orm-service.types";
-export * from "./service-types/crypto-service.types";
 export * from "./service-types/auto-update-service.types";
 export * from "./service-types/smtp-service.types";
 
