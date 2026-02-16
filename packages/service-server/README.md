@@ -47,7 +47,6 @@ pnpm add @simplysm/service-server
 
 - [`OrmService`](docs/built-in-services.md#ormservice) - DB connection/transaction/query execution (WebSocket only, auth required)
 - [`CryptoService`](docs/built-in-services.md#cryptoservice) - SHA256 hash and AES-256-CBC encryption/decryption
-- [`SmtpService`](docs/built-in-services.md#smtpservice) - nodemailer-based email sending
 - [`AutoUpdateService`](docs/built-in-services.md#autoupdateservice) - App auto-update (provides latest version query and download path)
 
 ### Utilities
@@ -240,19 +239,18 @@ The package provides several built-in services:
 
 - [`OrmService`](docs/built-in-services.md#ormservice) - Database operations (MySQL, MSSQL, PostgreSQL)
 - [`CryptoService`](docs/built-in-services.md#cryptoservice) - Hashing and encryption
-- [`SmtpService`](docs/built-in-services.md#smtpservice) - Email sending
 - [`AutoUpdateService`](docs/built-in-services.md#autoupdateservice) - Client app auto-updates
 
 Register them like any other service:
 
 ```typescript
-import { createServiceServer, OrmService, CryptoService, SmtpService } from "@simplysm/service-server";
+import { createServiceServer, OrmService, CryptoService } from "@simplysm/service-server";
 
 const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "secret" },
-  services: [OrmService, CryptoService, SmtpService],
+  services: [OrmService, CryptoService],
 });
 ```
 

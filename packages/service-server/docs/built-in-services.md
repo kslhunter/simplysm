@@ -78,62 +78,6 @@ const server = createServiceServer({
 | `encryptAes(data)` | `Promise<string>` | AES-256-CBC encryption. `data` is `Uint8Array`. Returns hex string in `iv:encrypted` format |
 | `decryptAes(encText)` | `Promise<Uint8Array>` | AES-256-CBC decryption. Returns original binary |
 
-## SmtpService
-
-A nodemailer-based email sending service. Can pass SMTP config directly or reference server config file.
-
-```typescript
-import { createServiceServer, SmtpService } from "@simplysm/service-server";
-
-const server = createServiceServer({
-  port: 8080,
-  rootPath: "/app/data",
-  services: [SmtpService],
-});
-```
-
-`.config.json` config (when using config reference method):
-
-```json
-{
-  "smtp": {
-    "default": {
-      "host": "smtp.example.com",
-      "port": 587,
-      "secure": false,
-      "user": "user@example.com",
-      "pass": "password",
-      "senderName": "My App",
-      "senderEmail": "noreply@example.com"
-    }
-  }
-}
-```
-
-| Method | Returns | Description |
-|--------|---------|------|
-| `send(options)` | `Promise<string>` | Send email by directly passing SMTP config. Returns message ID |
-| `sendByConfig(configName, options)` | `Promise<string>` | Send email by referencing SMTP config in config file. Returns message ID |
-
-`send()` options:
-
-```typescript
-interface SmtpSendOption {
-  host: string;
-  port?: number;
-  secure?: boolean;
-  user?: string;
-  pass?: string;
-  from: string;
-  to: string;
-  cc?: string;
-  bcc?: string;
-  subject: string;
-  html: string;
-  attachments?: SmtpSendAttachment[];
-}
-```
-
 ## AutoUpdateService
 
 Supports auto-update for client apps. Searches for latest version files by platform in the client directory.

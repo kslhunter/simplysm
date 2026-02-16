@@ -23,7 +23,6 @@ export { createProtocolWrapper, type ProtocolWrapper } from "./protocol/protocol
 
 // Services
 export * from "./services/orm-service";
-export * from "./services/smtp-service";
 export * from "./services/auto-update-service";
 
 // Utils
