@@ -25,6 +25,13 @@ export default {
   darkMode: "class",
   theme: {
     extend: {
+      spacing: {
+        xs: "0.125rem",
+        sm: "0.25rem",
+        md: "0.5rem",
+        lg: "0.75rem",
+        xl: "1rem",
+      },
       colors: {
         primary: colors.blue,
         info: colors.sky,
