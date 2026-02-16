@@ -6,7 +6,7 @@ import { ThemeProvider } from "./ThemeContext";
 import { NotificationProvider } from "../components/feedback/notification/NotificationProvider";
 import { NotificationBanner } from "../components/feedback/notification/NotificationBanner";
 import { LoadingProvider } from "../components/feedback/loading/LoadingProvider";
-import { DialogProvider } from "../components/disclosure/DialogProvider";
+
 import { createPwaUpdate } from "../hooks/createPwaUpdate";
 import { useLogger } from "../hooks/useLogger";
 
@@ -50,7 +50,6 @@ function GlobalErrorLogger() {
  * - 알림 시스템 + 배너
  * - 전역 에러 캡처 (window.onerror, unhandledrejection)
  * - 루트 로딩 오버레이
- * - 프로그래매틱 다이얼로그
  *
  * @example
  * ```tsx
@@ -71,9 +70,7 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
           <NotificationBanner />
           <GlobalErrorLogger />
           <PwaUpdater />
-          <LoadingProvider variant={props.config.loadingVariant}>
-            <DialogProvider>{props.children}</DialogProvider>
-          </LoadingProvider>
+          <LoadingProvider variant={props.config.loadingVariant}>{props.children}</LoadingProvider>
         </NotificationProvider>
       </ThemeProvider>
     </ConfigContext.Provider>
