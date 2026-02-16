@@ -70,6 +70,7 @@ export interface ClientWorkerEvents extends Record<string, unknown> {
   build: ClientBuildEvent;
   serverReady: ClientServerReadyEvent;
   error: ClientErrorEvent;
+  scopeRebuild: Record<string, never>;
 }
 
 //#endregion
@@ -177,6 +178,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
       mode: "dev",
       serverPort,
       watchScopes: info.watchScopes,
+      onScopeRebuild: () => sender.send("scopeRebuild", {}),
     });
 
     // Vite dev server 시작

@@ -94,10 +94,23 @@ export class DevOrchestrator {
   private _rebuildManager!: RebuildManager;
   private _signalHandler!: SignalHandler;
   private _replaceDepWatcher: WatchReplaceDepResult | undefined;
+  private _printServersTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(options: DevOrchestratorOptions) {
     this._cwd = process.cwd();
     this._options = options;
+  }
+
+  /**
+   * 서버 URL 출력 (debounce 300ms)
+   *
+   * 서버 리빌드와 scope 리빌드가 동시에 발생할 때 중복 출력을 방지한다.
+   */
+  private _schedulePrintServers(): void {
+    if (this._printServersTimer != null) clearTimeout(this._printServersTimer);
+    this._printServersTimer = setTimeout(() => {
+      printServers(this._results, this._serverClientsMap);
+    }, 300);
   }
 
   /**
@@ -171,7 +184,7 @@ export class DevOrchestrator {
     // 배치 완료 시 에러와 서버 URL 출력
     this._rebuildManager.on("batchComplete", () => {
       printErrors(this._results);
-      printServers(this._results, this._serverClientsMap);
+      this._schedulePrintServers();
     });
   }
 
@@ -299,6 +312,11 @@ export class DevOrchestrator {
           port: event.port,
         });
       });
+
+      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      workerInfo.worker.on("scopeRebuild", () => {
+        this._schedulePrintServers();
+      });
     }
 
     // Vite client (서버 연결) 이벤트 핸들러 등록
@@ -335,6 +353,11 @@ export class DevOrchestrator {
       // (서버가 await Promise.all(clientReadyPromises)에서 무한 대기하지 않도록)
       workerInfo.worker.on("error", () => {
         viteClientReadyPromises.get(workerInfo.name)?.resolver();
+      });
+
+      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      workerInfo.worker.on("scopeRebuild", () => {
+        this._schedulePrintServers();
       });
     }
 
@@ -382,7 +405,7 @@ export class DevOrchestrator {
             isFirstBuild = false;
             serverRuntimePromises.get(name)?.resolver();
           }
-          serverBuild.buildResolver();
+          this._serverBuildWorkers.get(name)!.buildResolver();
           return;
         }
 
@@ -522,7 +545,7 @@ export class DevOrchestrator {
           isFirstBuild = false;
           serverRuntimePromises.get(name)?.resolver();
         }
-        serverBuild.buildResolver();
+        this._serverBuildWorkers.get(name)!.buildResolver();
       });
     }
 
