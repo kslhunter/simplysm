@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/solid-demo-server",
-  "version": "13.0.16",
+  "version": "13.0.17",
   "description": "심플리즘 패키지 - SolidJS 데모 서버",
   "author": "김석래",
   "license": "Apache-2.0",
