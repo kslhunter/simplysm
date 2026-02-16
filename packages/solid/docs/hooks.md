@@ -311,3 +311,22 @@ interface AppStructureLeafItem<TModule> {
 
 type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
 ```
+
+#### getTitleChainByHref
+
+Retrieves the breadcrumb title chain for a given href path. Works on raw items (including `isNotMenu` items).
+
+```tsx
+import { createAppStructure } from "@simplysm/solid";
+
+const appStructure = createAppStructure({ items });
+
+// Returns ["Sales", "Invoice"] for /home/sales/invoice
+const titles = appStructure.getTitleChainByHref("/home/sales/invoice");
+
+// Use with router for dynamic breadcrumb
+import { useLocation } from "@solidjs/router";
+
+const location = useLocation();
+const breadcrumb = () => appStructure.getTitleChainByHref(location.pathname);
+```
