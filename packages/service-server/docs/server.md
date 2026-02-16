@@ -179,27 +179,27 @@ export const MyService = defineService("MyService", (ctx) => ({
 }
 ```
 
-`ConfigManager` caches config files and automatically refreshes the cache on file changes (LazyGcMap-based, auto expires after 1 hour).
+Config files are cached and automatically refreshed on file changes (LazyGcMap-based, auto expires after 1 hour).
 
-## ConfigManager
+## getConfig
 
-A static utility class that manages loading, caching, and real-time monitoring of JSON config files. Used internally by `ctx.getConfig()`.
+A standalone function that loads, caches, and watches JSON config files. Used internally by `ctx.getConfig()`.
 
 ```typescript
-import { ConfigManager } from "@simplysm/service-server";
+import { getConfig } from "@simplysm/service-server";
 
 // Returns undefined if the file does not exist
-const config = await ConfigManager.getConfig<MyConfig>("/path/to/.config.json");
+const config = await getConfig<MyConfig>("/path/to/.config.json");
 ```
 
-| Method | Returns | Description |
-|--------|---------|------|
-| `ConfigManager.getConfig<T>(filePath)` | `Promise<T \| undefined>` | Load and cache a JSON config file. Returns `undefined` if file not found |
+| Signature | Returns | Description |
+|-----------|---------|------|
+| `getConfig<T>(filePath: string)` | `Promise<T \| undefined>` | Load and cache a JSON config file. Returns `undefined` if file not found |
 
 Behavior:
 - Caches file in `LazyGcMap` on first load.
 - Registers file change watch (`FsWatcher`) to auto-refresh cache on changes.
-- Cache auto-expires after 1 hour of no access, and associated watch is released.
+- Cache auto-expires after 1 hour of no access, and associated watcher is released.
 - GC runs every 10 minutes to check for expired entries.
 
 ## Server Route Structure

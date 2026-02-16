@@ -51,7 +51,7 @@ pnpm add @simplysm/service-server
 
 ### Utilities
 
-- [`ConfigManager`](docs/server.md#configmanager) - JSON config file loading/caching/real-time monitoring (auto expiration based on LazyGcMap)
+- [`getConfig`](docs/server.md#getconfig) - JSON config file loading with caching and real-time file watching (auto expiration based on LazyGcMap)
 
 ### Legacy
 
