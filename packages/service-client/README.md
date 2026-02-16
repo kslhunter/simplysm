@@ -269,7 +269,7 @@ const connector = createOrmClientConnector(client);
 // Connect with transaction (auto rollback on error)
 await connector.connect(
   {
-    dbContextType: MyDbContext,
+    dbContextDef: MyDbContext,
     connOpt: { configName: "default" },
     dbContextOpt: { database: "mydb", schema: "dbo" }, // Optional
   },
@@ -283,7 +283,7 @@ await connector.connect(
 // Connect without transaction (suitable for read-only operations)
 await connector.connectWithoutTransaction(
   {
-    dbContextType: MyDbContext,
+    dbContextDef: MyDbContext,
     connOpt: { configName: "default" },
   },
   async (db) => {
@@ -370,7 +370,7 @@ ORM remote connection configuration interface.
 
 | Property | Type | Required | Description |
 |------|------|------|------|
-| `dbContextType` | `Type<T>` | Yes | DbContext class |
+| `dbContextDef` | `TDef` | Yes | DbContext class |
 | `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options. `configName` identifies the server-side DB config; `config` can pass additional connection settings |
 | `dbContextOpt` | `{ database: string; schema: string }` | No | Database/schema override |
 
