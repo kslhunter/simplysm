@@ -96,7 +96,7 @@ Services are defined using the `defineService` function. Service methods are cal
 ```typescript
 import { defineService } from "@simplysm/service-server";
 
-export const MyService = defineService("MyService", (ctx) => ({
+export const MyService = defineService("My", (ctx) => ({
   hello: async (name: string): Promise<string> => {
     return `Hello, ${name}!`;
   },
@@ -134,7 +134,7 @@ interface UserAuthInfo {
 }
 
 // Service-level auth: all methods require authentication
-export const UserService = defineService("UserService", auth((ctx) => ({
+export const UserService = defineService("User", auth((ctx) => ({
   getProfile: async (): Promise<unknown> => {
     const userId = (ctx.authInfo as UserAuthInfo)?.userId;
     // ...
@@ -152,7 +152,7 @@ export type UserServiceMethods = import("@simplysm/service-server").ServiceMetho
 
 **Method-level auth only:**
 ```typescript
-export const MyService = defineService("MyService", (ctx) => ({
+export const MyService = defineService("My", (ctx) => ({
   publicMethod: async (): Promise<void> => {
     // No auth required
   },
@@ -170,7 +170,7 @@ export const MyService = defineService("MyService", (ctx) => ({
 **Service-level auth with method override:**
 ```typescript
 // All methods require authentication by default
-export const SecureService = defineService("SecureService", auth((ctx) => ({
+export const SecureService = defineService("Secure", auth((ctx) => ({
   normalMethod: async (): Promise<void> => {
     // Auth required (inherited from service level)
   },
@@ -188,8 +188,8 @@ See [Authentication](docs/authentication.md) for JWT token management and permis
 Service methods can be called via HTTP or WebSocket:
 
 ```
-GET /api/MyService/hello?json=["World"]
-POST /api/MyService/hello
+GET /api/My/hello?json=["World"]
+POST /api/My/hello
 ```
 
 See [HTTP API Call](docs/transport.md#http-api-call) and [ServiceSocket](docs/transport.md#servicesocket) for transport layer details.

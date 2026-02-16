@@ -8,7 +8,7 @@ Use the `auth()` wrapper to set authentication requirements on services or metho
 import { defineService, auth } from "@simplysm/service-server";
 
 // Service-level auth: all methods require login
-export const UserService = defineService("UserService", auth((ctx) => ({
+export const UserService = defineService("User", auth((ctx) => ({
   // Login only required (inherits from service level)
   getProfile: async (): Promise<unknown> => {
     const userId = (ctx.authInfo as { userId: number; role: string })?.userId;
@@ -22,7 +22,7 @@ export const UserService = defineService("UserService", auth((ctx) => ({
 })));
 
 // No authentication required (no auth wrapper)
-export const PublicService = defineService("PublicService", (ctx) => ({
+export const PublicService = defineService("Public", (ctx) => ({
   healthCheck: async (): Promise<string> => {
     return "OK";
   },

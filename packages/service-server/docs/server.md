@@ -110,7 +110,7 @@ Define services using the `defineService` function. Service methods are called v
 ```typescript
 import { defineService } from "@simplysm/service-server";
 
-export const MyService = defineService("MyService", (ctx) => ({
+export const MyService = defineService("My", (ctx) => ({
   hello: async (name: string): Promise<string> => {
     return `Hello, ${name}!`;
   },
@@ -150,7 +150,7 @@ Read sections from `.config.json` files using `ctx.getConfig()`. Root and per-cl
 ```typescript
 import { defineService } from "@simplysm/service-server";
 
-export const MyService = defineService("MyService", (ctx) => ({
+export const MyService = defineService("My", (ctx) => ({
   getDbHost: async (): Promise<string> => {
     // Read "mySection" key from rootPath/.config.json or clientPath/.config.json
     const config = await ctx.getConfig<{ host: string }>("mySection");
@@ -221,7 +221,7 @@ import { createServiceServer, defineService, auth, OrmService, CryptoService } f
 import { defineEvent } from "@simplysm/service-common";
 
 // Define a custom service with auth
-export const UserService = defineService("UserService", auth((ctx) => ({
+export const UserService = defineService("User", auth((ctx) => ({
   getProfile: async (): Promise<{ name: string }> => {
     const userId = (ctx.authInfo as { userId: number; role: string })?.userId;
     // Use ctx.getConfig(), ctx.socket, ctx.server, etc.
@@ -233,7 +233,7 @@ export const UserService = defineService("UserService", auth((ctx) => ({
   }),
 })));
 
-export const PublicService = defineService("PublicService", (ctx) => ({
+export const PublicService = defineService("Public", (ctx) => ({
   healthCheck: async (): Promise<string> => {
     return "OK";
   },
