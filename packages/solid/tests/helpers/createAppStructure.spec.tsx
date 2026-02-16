@@ -335,4 +335,38 @@ describe("createAppStructure", () => {
       });
     });
   });
+
+  describe("getTitleChainByHref", () => {
+    it("href에서 title 체인을 반환한다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({ items: createTestItems() });
+
+        expect(result.getTitleChainByHref("/home/sales/invoice")).toEqual(["홈", "영업", "송장"]);
+        expect(result.getTitleChainByHref("/home/admin/users")).toEqual(["홈", "관리", "사용자"]);
+
+        dispose();
+      });
+    });
+
+    it("isNotMenu 아이템도 찾는다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({ items: createTestItems() });
+
+        expect(result.getTitleChainByHref("/home/admin/hidden")).toEqual(["홈", "관리", "숨김"]);
+
+        dispose();
+      });
+    });
+
+    it("존재하지 않는 href는 빈 배열을 반환한다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({ items: createTestItems() });
+
+        expect(result.getTitleChainByHref("/home/nonexistent")).toEqual(["홈"]);
+        expect(result.getTitleChainByHref("/totally/wrong")).toEqual([]);
+
+        dispose();
+      });
+    });
+  });
 });
