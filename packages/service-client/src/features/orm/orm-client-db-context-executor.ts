@@ -17,8 +17,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     private readonly _client: ServiceClient,
     private readonly _opt: DbConnOptions & { configName: string },
   ) {
-    // "SdOrmService" → "OrmService" 변경
-    this._ormService = _client.getService<OrmService>("OrmService");
+    this._ormService = _client.getService<OrmService>("Orm");
   }
 
   async getInfo(): Promise<{
