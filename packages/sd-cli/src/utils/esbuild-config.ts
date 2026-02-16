@@ -100,6 +100,9 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     bundle: false,
     write: false,
     tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
+    logOverride: {
+      "ignored-bare-import": "error",
+    },
     plugins,
   };
 }
