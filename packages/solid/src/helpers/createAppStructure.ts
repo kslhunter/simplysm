@@ -54,6 +54,7 @@ export interface AppStructure<TModule> {
   usableMenus: Accessor<SidebarMenuItem[]>;
   usableFlatMenus: Accessor<AppFlatMenu[]>;
   permRecord: Accessor<Record<string, boolean>>;
+  getTitleChainByHref(href: string): string[];
 }
 
 // ── 내부 헬퍼 ──
@@ -150,6 +151,23 @@ function flattenMenus(menus: SidebarMenuItem[], titleChain: string[] = []): AppF
   return result;
 }
 
+function findItemChainByCodes<TModule>(
+  items: AppStructureItem<TModule>[],
+  codes: string[],
+): AppStructureItem<TModule>[] {
+  const result: AppStructureItem<TModule>[] = [];
+
+  let currentItems = items;
+  for (const code of codes) {
+    const found = currentItems.find((item) => item.code === code);
+    if (found === undefined) break;
+    result.push(found);
+    currentItems = isGroupItem(found) ? found.children : [];
+  }
+
+  return result;
+}
+
 // ── 메인 함수 ──
 
 export function createAppStructure<TModule>(opts: {
@@ -179,5 +197,9 @@ export function createAppStructure<TModule>(opts: {
     usableMenus,
     usableFlatMenus,
     permRecord,
+    getTitleChainByHref(href: string): string[] {
+      const codes = href.split("/").filter(Boolean);
+      return findItemChainByCodes(opts.items, codes).map((item) => item.title);
+    },
   };
 }
