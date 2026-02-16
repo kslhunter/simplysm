@@ -124,6 +124,7 @@ export const SidebarUser: Component<SidebarUserProps> = (props) => {
       </button>
       <Show when={hasMenus()}>
         <Collapse open={open()}>
+          <hr class={clsx("border-base-200 dark:border-base-700")} />
           <List inset>
             <For each={local.menus}>
               {(menu) => <ListItem onClick={() => handleMenuClick(menu)}>{menu.title}</ListItem>}
