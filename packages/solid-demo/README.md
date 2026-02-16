@@ -20,7 +20,7 @@ The demo runs in Vite dev server mode with hot module replacement. Navigate betw
 ## Components Demonstrated
 
 ### Form Control
-- **Button** -- Interactive buttons with Material Design ripple effect
+- **Button** -- Interactive buttons with Material Design ripple effect (sm, lg, xl sizes)
 - **TextInput** -- Text fields with format masking and IME composition support
 - **NumberInput** -- Number input with thousand separators
 - **DatePicker / DateTimePicker / TimePicker** -- Date and time selection
@@ -31,6 +31,7 @@ The demo runs in Vite dev server mode with hot module replacement. Navigate betw
 - **Checkbox / Radio** -- Individual toggle controls
 - **CheckboxGroup / RadioGroup** -- Multi-item selection
 - **ColorPicker** -- Color selection component
+- **Invalid** -- Error state wrapper for form inputs
 - **ThemeToggle** -- Dark/light/system mode toggle
 - **RichTextEditor** -- Tiptap-based HTML editor
 - **Numpad** -- Touch-friendly numeric keypad
@@ -90,6 +91,7 @@ The demo runs in Vite dev server mode with hot module replacement. Navigate betw
 
 - **Dark/Light Mode Toggle** -- Full theme switching support
 - **Responsive Design** -- Mobile layout below 520px with sidebar overlay
+- **Form Validation** -- Invalid component wrapper for error messaging
 - **Form State Management** -- Preset save/load functionality
 - **Real-time Interactions** -- Live component behavior demonstration
 - **Service Integration** -- WebSocket client examples

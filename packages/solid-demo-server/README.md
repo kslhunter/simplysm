@@ -123,12 +123,11 @@ The server is built with the following structure:
 
 ```
 src/
-  ├── index.ts              # Public exports (all services)
   ├── main.ts               # Server bootstrap and configuration
   └── services/
-      ├── index.ts          # Service exports
-      ├── echo-service.ts       # EchoService definition
-      ├── health-service.ts     # HealthService definition
+      ├── index.ts          # Service re-exports
+      ├── echo-service.ts   # EchoService definition
+      ├── health-service.ts # HealthService definition
       └── shared-data-demo-service.ts  # SharedDataDemoService definition
 ```
 

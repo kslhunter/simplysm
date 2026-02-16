@@ -137,7 +137,6 @@ Verifies code via typecheck, lint, and tests. Fixes errors automatically.
 
 ```
 /sd-check
-/sd-check all
 /sd-check packages/core-common
 ```
 

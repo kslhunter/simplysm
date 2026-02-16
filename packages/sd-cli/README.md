@@ -131,6 +131,10 @@ sd-cli dev solid-demo my-server
 - Client packages with Electron config launch Electron in dev mode after build completes
 - Terminates on SIGINT/SIGTERM signals
 
+**Scope Package HMR:**
+
+When using `replaceDeps` to develop scope packages locally, the Vite dev server automatically watches scope package dist files and triggers HMR when they change. This allows changes to `@simplysm/*` packages to be reflected in the dev app without manual reload.
+
 ### build
 
 Runs production build. Performs lint, dist folder cleanup, and build sequentially.
@@ -367,7 +371,9 @@ import { createViteConfig } from "@simplysm/sd-cli";
 
 ## Vite Utilities
 
-The package exports `createViteConfig()` utility function for creating Vite configuration in client packages:
+### createViteConfig
+
+Creates pre-configured Vite configuration for Simplysm client packages:
 
 ```typescript
 import { createViteConfig, type ViteConfigOptions } from "@simplysm/sd-cli";
@@ -377,11 +383,12 @@ export default createViteConfig({
 });
 ```
 
-The `createViteConfig()` function creates a pre-configured Vite config for Simplysm client packages, including:
+The `createViteConfig()` function provides:
 - Development server configuration
 - Production build optimization
 - Asset handling
 - Environment variable substitution support
+- Scope package watch/HMR (automatically watches scope package dist files and triggers HMR on changes via `replaceDeps`)
 
 ## Configuration (sd.config.ts)
 
