@@ -142,7 +142,7 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
  * 변경 시 Vite의 내부 HMR 파이프라인을 트리거한다.
  * optimizeDeps에서 제외하여 pre-bundled 캐시로 인한 변경 무시를 방지한다.
  */
-function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
+function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: () => void): Plugin {
   return {
     name: "sd-scope-watch",
     config() {
@@ -239,6 +239,8 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[]): Plugin {
           // Vite의 내부 HMR 파이프라인 트리거
           server.watcher.emit("change", realPath);
         }
+
+        onScopeRebuild?.();
       });
 
       // 서버 종료 시 watcher 정리
@@ -261,6 +263,8 @@ export interface ViteConfigOptions {
   serverPort?: number;
   /** watch 대상 scope 목록 (예: ["@myapp", "@simplysm"]) */
   watchScopes?: string[];
+  /** scope 패키지 dist 변경 감지 시 콜백 */
+  onScopeRebuild?: () => void;
 }
 
 /**
@@ -305,7 +309,9 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
         },
       }),
       sdTailwindConfigDepsPlugin(pkgDir),
-      ...(watchScopes != null && watchScopes.length > 0 ? [sdScopeWatchPlugin(pkgDir, watchScopes)] : []),
+      ...(watchScopes != null && watchScopes.length > 0
+        ? [sdScopeWatchPlugin(pkgDir, watchScopes, options.onScopeRebuild)]
+        : []),
       ...(mode === "dev" ? [sdPublicDevPlugin(pkgDir)] : []),
     ],
     css: {
