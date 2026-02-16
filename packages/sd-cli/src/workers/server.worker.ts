@@ -45,6 +45,7 @@ export interface ServerBuildResult {
   success: boolean;
   mainJsPath: string;
   errors?: string[];
+  warnings?: string[];
 }
 
 /**
@@ -69,6 +70,7 @@ export interface ServerBuildEvent {
   success: boolean;
   mainJsPath: string;
   errors?: string[];
+  warnings?: string[];
 }
 
 /**
@@ -309,10 +311,12 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     generateProductionFiles(info, external);
 
     const errors = result.errors.map((e) => e.text);
+    const warnings = result.warnings.map((w) => w.text);
     return {
       success: result.errors.length === 0,
       mainJsPath,
       errors: errors.length > 0 ? errors : undefined,
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   } catch (err) {
     return {
@@ -380,6 +384,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 
             pluginBuild.onEnd((result) => {
               const errors = result.errors.map((e) => e.text);
+              const warnings = result.warnings.map((w) => w.text);
               const success = result.errors.length === 0;
 
               // Generate .config.json on first successful build
@@ -388,7 +393,12 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
                 fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
               }
 
-              sender.send("build", { success, mainJsPath, errors: errors.length > 0 ? errors : undefined });
+              sender.send("build", {
+                success,
+                mainJsPath,
+                errors: errors.length > 0 ? errors : undefined,
+                warnings: warnings.length > 0 ? warnings : undefined,
+              });
 
               if (isFirstBuild) {
                 isFirstBuild = false;

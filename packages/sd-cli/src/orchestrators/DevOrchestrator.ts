@@ -358,6 +358,17 @@ export class DevOrchestrator {
         const event = data as ServerBuildEventData;
         this._logger.debug(`[${name}] server build: success=${String(event.success)}`);
 
+        // warnings 출력
+        if (event.warnings != null && event.warnings.length > 0) {
+          const warnLines: string[] = [`${name} (server)`];
+          for (const warning of event.warnings) {
+            for (const line of warning.split("\n")) {
+              warnLines.push(`  → ${line}`);
+            }
+          }
+          this._logger.warn(warnLines.join("\n"));
+        }
+
         if (!event.success) {
           this._results.set(`${name}:build`, {
             name,

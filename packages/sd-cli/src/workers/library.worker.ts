@@ -29,6 +29,7 @@ export interface LibraryBuildInfo {
 export interface LibraryBuildResult {
   success: boolean;
   errors?: string[];
+  warnings?: string[];
 }
 
 /**
@@ -47,6 +48,7 @@ export interface LibraryWatchInfo {
 export interface LibraryBuildEvent {
   success: boolean;
   errors?: string[];
+  warnings?: string[];
 }
 
 /**
@@ -127,9 +129,11 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
       await writeChangedOutputFiles(result.outputFiles);
     }
     const errors = result.errors.map((e) => e.text);
+    const warnings = result.warnings.map((w) => w.text);
     return {
       success: result.errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   } catch (err) {
     return {
@@ -189,9 +193,14 @@ async function createAndBuildContext(
             }
 
             const errors = result.errors.map((e) => e.text);
+            const warnings = result.warnings.map((w) => w.text);
             const success = result.errors.length === 0;
 
-            sender.send("build", { success, errors: errors.length > 0 ? errors : undefined });
+            sender.send("build", {
+              success,
+              errors: errors.length > 0 ? errors : undefined,
+              warnings: warnings.length > 0 ? warnings : undefined,
+            });
 
             if (isBuildFirstTime) {
               isBuildFirstTime = false;

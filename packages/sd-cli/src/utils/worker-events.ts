@@ -9,6 +9,7 @@ const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 export interface BuildEventData {
   success: boolean;
   errors?: string[];
+  warnings?: string[];
 }
 
 /** Worker 에러 이벤트 데이터 */
@@ -26,6 +27,7 @@ export interface ServerBuildEventData {
   success: boolean;
   mainJsPath: string;
   errors?: string[];
+  warnings?: string[];
 }
 
 /**
@@ -84,6 +86,18 @@ export function registerWorkerEventHandlers<TEvents extends Record<string, any[]
   workerInfo.worker.on("build", (data) => {
     const event = data as BuildEventData;
     workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(event.success)}`);
+
+    // warnings 출력
+    if (event.warnings != null && event.warnings.length > 0) {
+      const warnLines: string[] = [`${workerInfo.name} (${workerInfo.config.target})`];
+      for (const warning of event.warnings) {
+        for (const line of warning.split("\n")) {
+          warnLines.push(`  → ${line}`);
+        }
+      }
+      workerEventsLogger.warn(warnLines.join("\n"));
+    }
+
     completeTask({
       name: workerInfo.name,
       target: workerInfo.config.target,

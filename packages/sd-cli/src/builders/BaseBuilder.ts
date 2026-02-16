@@ -1,8 +1,11 @@
+import { consola } from "consola";
 import { WorkerManager } from "../infra/WorkerManager";
 import type { BuildResult, ResultCollector } from "../infra/ResultCollector";
 import type { RebuildManager } from "../utils/rebuild-manager";
 import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
 import type { IBuilder, PackageInfo } from "./types";
+
+const baseBuilderLogger = consola.withTag("sd:cli:build");
 
 /**
  * Builder 추상 베이스 클래스
@@ -147,6 +150,18 @@ export abstract class BaseBuilder implements IBuilder {
     // 빌드 완료
     worker.on("build", (data) => {
       const event = data as BuildEventData;
+
+      // warnings 출력
+      if (event.warnings != null && event.warnings.length > 0) {
+        const warnLines: string[] = [`${pkg.name} (${pkg.config.target})`];
+        for (const warning of event.warnings) {
+          for (const line of warning.split("\n")) {
+            warnLines.push(`  → ${line}`);
+          }
+        }
+        baseBuilderLogger.warn(warnLines.join("\n"));
+      }
+
       const result: BuildResult = {
         name: pkg.name,
         target: pkg.config.target,

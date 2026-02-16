@@ -39,6 +39,7 @@ interface BuildResult {
   type: "js" | "dts" | "vite" | "capacitor" | "electron";
   success: boolean;
   errors?: string[];
+  warnings?: string[];
   diagnostics?: ts.Diagnostic[];
 }
 
@@ -276,6 +277,7 @@ export class BuildOrchestrator {
             type: "js",
             success: buildResult.success,
             errors: buildResult.errors,
+            warnings: buildResult.warnings,
           });
           if (!buildResult.success) state.hasError = true;
 
@@ -436,6 +438,7 @@ export class BuildOrchestrator {
             type: "js",
             success: buildResult.success,
             errors: buildResult.errors,
+            warnings: buildResult.warnings,
           });
           if (!buildResult.success) state.hasError = true;
         } finally {
@@ -452,8 +455,21 @@ export class BuildOrchestrator {
     // 결과 출력
     const allDiagnostics: ts.Diagnostic[] = [];
     for (const result of results) {
+      const typeLabel = result.type === "dts" ? "dts" : result.target;
+
+      // warnings 출력
+      if (result.warnings != null) {
+        const warnLines: string[] = [`${result.name} (${typeLabel})`];
+        for (const warning of result.warnings) {
+          for (const line of warning.split("\n")) {
+            warnLines.push(`  → ${line}`);
+          }
+        }
+        this._logger.warn(warnLines.join("\n"));
+      }
+
+      // errors 출력
       if (!result.success) {
-        const typeLabel = result.type === "dts" ? "dts" : result.target;
         const errorLines: string[] = [`${result.name} (${typeLabel})`];
         if (result.errors != null) {
           for (const error of result.errors) {
