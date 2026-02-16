@@ -111,6 +111,7 @@ If any errors are found:
      - Run `git diff` to check for intentional code changes
      - If intentional changes not reflected in tests: Update test code
      - If source code bug: Fix source code
+     - **If root cause is unclear or multiple fix attempts failed**: Recommend the user invoke `/sd-debug` for systematic root cause investigation
 4. Proceed to Step 3
 
 If all checks passed: Proceed to Completion.

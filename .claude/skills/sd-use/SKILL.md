@@ -22,6 +22,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-* skill or agen
 | Skill | When to select |
 |-------|----------------|
 | `sd-brainstorm` | New feature, component, or behavior change — **creative work before implementation** |
+| `sd-debug` | Bug, test failure, unexpected behavior — **systematic root cause investigation** |
 | `sd-tdd` | Implementing a feature or fixing a bug — **before writing code** |
 | `sd-plan` | Multi-step task with spec/requirements — **planning before code** |
 | `sd-plan-dev` | Already have a plan — **executing implementation plan** |
