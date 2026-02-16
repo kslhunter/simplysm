@@ -131,7 +131,7 @@ try {
   if (!mcpConfig.mcpServers.playwright) {
     mcpConfig.mcpServers.playwright = {
       command: "npx",
-      args: ["@anthropic-ai/mcp-server-playwright@latest"],
+      args: ["@playwright/mcp@latest", "--headless"],
       env: {
         PLAYWRIGHT_OUTPUT_DIR: ".playwright-mcp",
       },
