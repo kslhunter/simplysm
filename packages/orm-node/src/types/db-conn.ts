@@ -6,7 +6,12 @@ import type { ColumnMeta, Dialect, IsolationLevel } from "@simplysm/orm-common";
 // ============================================
 
 /**
- * DB 연결 기본 타임아웃 (10분)
+ * DB 연결 수립 타임아웃 (10초)
+ */
+export const DB_CONN_CONNECT_TIMEOUT = 10 * 1000;
+
+/**
+ * DB 쿼리 기본 타임아웃 (10분)
  */
 export const DB_CONN_DEFAULT_TIMEOUT = 10 * 60 * 1000;
 

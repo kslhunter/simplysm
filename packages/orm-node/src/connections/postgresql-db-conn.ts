@@ -11,7 +11,13 @@ import {
   Uuid,
 } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
-import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type PostgresqlDbConnConfig } from "../types/db-conn";
+import {
+  DB_CONN_CONNECT_TIMEOUT,
+  DB_CONN_DEFAULT_TIMEOUT,
+  DB_CONN_ERRORS,
+  type DbConn,
+  type PostgresqlDbConnConfig,
+} from "../types/db-conn";
 import type { Client } from "pg";
 import type { CopyStreamQuery } from "pg-copy-streams";
 
@@ -50,7 +56,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
       user: this.config.username,
       password: this.config.password,
       database: this.config.database,
-      connectionTimeoutMillis: this._timeout,
+      connectionTimeoutMillis: DB_CONN_CONNECT_TIMEOUT,
       query_timeout: this._timeout,
     });
 

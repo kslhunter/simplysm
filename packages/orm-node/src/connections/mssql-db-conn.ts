@@ -11,7 +11,13 @@ import {
   waitUntil,
 } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
-import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type MssqlDbConnConfig } from "../types/db-conn";
+import {
+  DB_CONN_CONNECT_TIMEOUT,
+  DB_CONN_DEFAULT_TIMEOUT,
+  DB_CONN_ERRORS,
+  type DbConn,
+  type MssqlDbConnConfig,
+} from "../types/db-conn";
 import type tediousType from "tedious";
 import type { DataType as TediousDataType } from "tedious/lib/data-type";
 
@@ -61,7 +67,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         encrypt: this.config.dialect === "mssql-azure",
         requestTimeout: this._timeout,
         trustServerCertificate: true,
-        connectTimeout: this._timeout * 5,
+        connectTimeout: DB_CONN_CONNECT_TIMEOUT,
       } as tediousType.ConnectionOptions,
     });
 
