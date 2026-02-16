@@ -41,9 +41,8 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
     this._pendingBuilds.clear();
 
     const tasks = Array.from(batchBuilds.entries());
-    for (const [, { title }] of tasks) {
-      this._logger.debug(`리빌드 시작: ${title}`);
-    }
+    const titles = tasks.map(([, { title }]) => title).join(", ");
+    this._logger.start(`리빌드 진행 중... (${titles})`);
 
     const results = await Promise.allSettled(tasks.map(([, { promise }]) => promise));
 
@@ -53,6 +52,8 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
         this._logger.error("리빌드 중 오류 발생", { error: String(result.reason) });
       }
     }
+
+    this._logger.success(`리빌드 완료 (${titles})`);
 
     this.emit("batchComplete");
 
