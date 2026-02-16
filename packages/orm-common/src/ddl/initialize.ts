@@ -31,11 +31,11 @@ import { getClearSchemaQueryDef, getSchemaExistsQueryDef } from "./schema-ddl";
  * 동작 방식:
  * - **force=true**: clearSchema → 전체 생성 → 모든 migration "적용됨" 등록
  * - **force=false** (기본):
- *   - SystemMigration 테이블 없음: 전체 생성 + 모든 migration 등록
- *   - SystemMigration 테이블 있음: 미적용 migration만 실행
+ *   - _Migration 테이블 없음: 전체 생성 + 모든 migration 등록
+ *   - _Migration 테이블 있음: 미적용 migration만 실행
  */
 export async function initialize(
-  db: DbContextBase & DbContextDdlMethods & { systemMigration: () => Queryable<{ code: string }, any> },
+  db: DbContextBase & DbContextDdlMethods & { _migration: () => Queryable<{ code: string }, any> },
   def: DbContextDef<any, any, any>,
   options?: { dbs?: string[]; force?: boolean },
 ): Promise<void> {
@@ -66,13 +66,13 @@ export async function initialize(
 
     // 모든 migration을 "적용됨"으로 등록
     if (def.meta.migrations.length > 0) {
-      await db.systemMigration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
+      await db._migration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
     }
   } else {
     // 3. Migration 기반 초기화
     let appliedMigrations: { code: string }[] | undefined;
     try {
-      appliedMigrations = await db.systemMigration().result();
+      appliedMigrations = await db._migration().result();
     } catch (err) {
       // 테이블 없음 = 신규 환경
       if (!isTableNotExistsError(err)) {
@@ -86,7 +86,7 @@ export async function initialize(
 
       // 모든 migration을 "적용됨"으로 등록
       if (def.meta.migrations.length > 0) {
-        await db.systemMigration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
+        await db._migration().insert(def.meta.migrations.map((m) => ({ code: m.name })));
       }
     } else {
       // 기존 환경: 미적용 migration만 실행
@@ -95,7 +95,7 @@ export async function initialize(
 
       for (const migration of pendingMigrations) {
         await migration.up(db);
-        await db.systemMigration().insert([{ code: migration.name }]);
+        await db._migration().insert([{ code: migration.name }]);
       }
     }
   }

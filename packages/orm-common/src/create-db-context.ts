@@ -9,7 +9,6 @@ import type { ProcedureBuilder } from "./schema/procedure-builder";
 import { queryable } from "./exec/queryable";
 import { executable } from "./exec/executable";
 import { objClearUndefined } from "@simplysm/core-common";
-import { SystemMigration } from "./models/system-migration";
 
 // DDL imports
 import * as tableDdl from "./ddl/table-ddl";
@@ -360,9 +359,6 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
   for (const [key, proc] of Object.entries(def.meta.procedures)) {
     (db as any)[key] = executable(base, proc as ProcedureBuilder<any, any>);
   }
-
-  // ── Add System table ──
-  (db as any).systemMigration = queryable(db as any, SystemMigration);
 
   return db as DbContextInstance<TDef>;
 }

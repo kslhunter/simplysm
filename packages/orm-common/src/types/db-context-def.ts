@@ -73,7 +73,7 @@ export type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbCont
     >;
   } & {
     // System table
-    systemMigration: () => import("../exec/queryable").Queryable<{ code: string }, any>;
+    _migration: () => import("../exec/queryable").Queryable<{ code: string }, any>;
     // Initialization
     initialize(options?: { dbs?: string[]; force?: boolean }): Promise<void>;
   };

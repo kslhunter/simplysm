@@ -192,12 +192,12 @@ describe("createDbContext", () => {
     });
   });
 
-  it("systemMigration accessor exists", () => {
+  it("_migration accessor exists", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
     });
 
-    expect(typeof db.systemMigration).toBe("function");
+    expect(typeof db._migration).toBe("function");
   });
 
   it("initialize method exists", () => {
