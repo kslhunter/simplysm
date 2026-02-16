@@ -97,6 +97,8 @@ import "@simplysm/solid/tailwind.css";
 - [`TextInput`](docs/form-controls.md#textinput) - Text input with format mask and IME composition support
 - [`NumberInput`](docs/form-controls.md#numberinput) - Number input with thousand separators and decimal places
 - [`DatePicker`](docs/form-controls.md#datepicker) - Date input supporting year, month, and date units (`DateOnly` type)
+- [`DateTimePicker`](docs/form-controls.md#datetimepicker) - Date-time input supporting minute and second units (`DateTime` type)
+- [`TimePicker`](docs/form-controls.md#timepicker) - Time input supporting minute and second units (`Time` type)
 - [`DateRangePicker`](docs/form-controls.md#daterangepicker) - Date range input with period type selection (day/month/range)
 - [`Textarea`](docs/form-controls.md#textarea) - Multi-line text input with auto-height and IME support
 - [`Select`](docs/form-controls.md#select) - Dropdown selection with single/multiple, hierarchical items, and compound components
