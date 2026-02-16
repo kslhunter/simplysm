@@ -12,8 +12,7 @@ const baseClass = clsx(
   "right-4",
   "z-50",
   "flex",
-  "items-center",
-  "justify-between",
+  "items-start",
   "gap-4",
   "px-3",
   "py-2",
@@ -21,7 +20,7 @@ const baseClass = clsx(
   "shadow-lg",
   "dark:shadow-black/30",
   "rounded-lg",
-  "max-w-sm",
+  "max-w-[calc(100vw-2rem)]",
 );
 
 const themeClasses: Record<string, string> = {
@@ -31,9 +30,9 @@ const themeClasses: Record<string, string> = {
   danger: themeTokens.danger.solid,
 };
 
-const contentClass = clsx("flex flex-col", "gap-0.5");
-const messageClass = clsx("text-sm", "opacity-90");
-const actionsClass = clsx("flex items-center", "gap-2");
+const contentClass = clsx("flex flex-col", "gap-0.5", "min-w-0");
+const messageClass = clsx("text-sm", "opacity-90", "overflow-auto");
+const actionsClass = clsx("flex items-center", "gap-2", "shrink-0");
 const actionButtonClass = clsx("rounded", "bg-white/20", "px-3 py-1", "text-sm", "hover:bg-white/30");
 const dismissButtonClass = clsx("rounded", "p-1", "hover:bg-white/20");
 
@@ -62,7 +61,7 @@ export const NotificationBanner: Component = () => {
             <div class={contentClass}>
               <span class="font-semibold">{item().title}</span>
               <Show when={item().message}>
-                <span class={messageClass}>{item().message}</span>
+                <pre class={messageClass}>{item().message}</pre>
               </Show>
             </div>
             <div class={actionsClass}>

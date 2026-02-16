@@ -117,7 +117,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                   <div class={clsx(itemBaseClass, themeStyles[item.theme])}>
                     <div class="font-medium">{item.title}</div>
                     <Show when={item.message}>
-                      <div class={itemMessageClass}>{item.message}</div>
+                      <pre class={itemMessageClass}>{item.message}</pre>
                     </Show>
                     <div class={itemTimeClass}>{item.createdAt.toLocaleTimeString()}</div>
                   </div>

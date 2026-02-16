@@ -7,10 +7,12 @@ import {
   type NotificationTheme,
   type NotificationUpdateOptions,
 } from "./NotificationContext";
+import { useLogger } from "../../../hooks/useLogger";
 
 const MAX_ITEMS = 50;
 
 export const NotificationProvider: ParentComponent = (props) => {
+  const logger = useLogger();
   const [items, setItems] = createSignal<NotificationItem[]>([]);
   const [dismissedBannerId, setDismissedBannerId] = createSignal<string | null>(null);
 
@@ -68,6 +70,22 @@ export const NotificationProvider: ParentComponent = (props) => {
     return addNotification("danger", title, message, options);
   };
 
+  const tryFn = async <TResult,>(
+    fn: () => Promise<TResult> | TResult,
+    header?: string,
+  ): Promise<TResult | undefined> => {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err instanceof Error) {
+        danger(header ?? err.message, header ? err.message : undefined);
+        logger.error(err.stack ?? err.message);
+        return undefined;
+      }
+      throw err;
+    }
+  };
+
   const update = (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
@@ -123,6 +141,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     success,
     warning,
     danger,
+    try: tryFn,
     update,
     remove,
     markAsRead,

@@ -37,6 +37,9 @@ export interface NotificationContextValue {
   warning: (title: string, message?: string, options?: NotificationOptions) => string;
   danger: (title: string, message?: string, options?: NotificationOptions) => string;
 
+  // 에러 처리 (danger 알림 + 로깅)
+  try: <TResult>(fn: () => Promise<TResult> | TResult, header?: string) => Promise<TResult | undefined>;
+
   // 알림 수정
   update: (
     id: string,
