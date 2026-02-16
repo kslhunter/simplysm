@@ -1,15 +1,18 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationBanner } from "../../../../src/components/feedback/notification/NotificationBanner";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
 describe("NotificationBanner", () => {
   it("알림이 없으면 배너가 표시되지 않는다", () => {
     const { container } = render(() => (
-      <NotificationProvider>
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     expect(container.querySelector("[data-notification-banner]")).toBeNull();
@@ -19,13 +22,15 @@ describe("NotificationBanner", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트 제목", "테스트 메시지");
@@ -42,13 +47,15 @@ describe("NotificationBanner", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트");
@@ -69,13 +76,15 @@ describe("NotificationBanner", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트");
@@ -90,13 +99,15 @@ describe("NotificationBanner", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.danger("에러");
@@ -112,13 +123,15 @@ describe("NotificationBanner", () => {
     const handleAction = vi.fn();
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트", "메시지", {
@@ -140,13 +153,15 @@ describe("NotificationBanner", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBanner />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBanner />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("첫 번째");

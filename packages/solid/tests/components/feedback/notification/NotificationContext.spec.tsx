@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
 import { render, waitFor } from "@solidjs/testing-library";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import {
   useNotification,
   type NotificationContextValue,
@@ -23,12 +24,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     expect(notification!.items()).toEqual([]);
@@ -39,12 +42,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트 제목", "테스트 메시지");
@@ -62,12 +67,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.success("성공", "성공 메시지");
@@ -86,12 +93,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트", "메시지");
@@ -113,12 +122,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("알림1");
@@ -139,12 +150,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     // 51개 알림 추가
@@ -163,12 +176,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("첫 번째");
@@ -183,12 +198,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트");
@@ -210,12 +227,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const id = notification!.info("테스트 제목");
@@ -230,12 +249,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const id = notification!.info("원래 제목", "원래 메시지");
@@ -253,12 +274,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const id = notification!.info("삭제될 알림");
@@ -280,12 +303,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const id = notification!.info("알림");
@@ -307,12 +332,14 @@ describe("NotificationProvider", () => {
     let notification: NotificationContextValue;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const id = notification!.info("알림");

@@ -1,6 +1,7 @@
 import { render, fireEvent, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationBell } from "../../../../src/components/feedback/notification/NotificationBell";
 import { useNotification } from "../../../../src/components/feedback/notification/NotificationContext";
 
@@ -16,9 +17,11 @@ describe("NotificationBell", () => {
 
   it("버튼이 렌더링된다", () => {
     const { container } = render(() => (
-      <NotificationProvider>
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     expect(container.querySelector("[data-notification-bell]")).not.toBeNull();
@@ -26,9 +29,11 @@ describe("NotificationBell", () => {
 
   it("알림이 없으면 뱃지가 표시되지 않는다", () => {
     render(() => (
-      <NotificationProvider>
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const badge = document.querySelector("[data-notification-badge]");
@@ -39,13 +44,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("알림1");
@@ -61,13 +68,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트");
@@ -85,13 +94,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("알림1", "메시지1");
@@ -111,13 +122,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("알림");
@@ -130,9 +143,11 @@ describe("NotificationBell", () => {
 
   it("aria-haspopup과 aria-expanded가 올바르게 설정된다", async () => {
     render(() => (
-      <NotificationProvider>
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     const button = document.querySelector("[data-notification-bell]");
@@ -150,13 +165,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("테스트1");
@@ -178,13 +195,15 @@ describe("NotificationBell", () => {
     let notification: ReturnType<typeof useNotification>;
 
     render(() => (
-      <NotificationProvider>
-        {(() => {
-          notification = useNotification();
-          return null;
-        })()}
-        <NotificationBell />
-      </NotificationProvider>
+      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+        <NotificationProvider>
+          {(() => {
+            notification = useNotification();
+            return null;
+          })()}
+          <NotificationBell />
+        </NotificationProvider>
+      </ConfigContext.Provider>
     ));
 
     notification!.info("알림1");

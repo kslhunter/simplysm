@@ -78,7 +78,7 @@ export const NotificationProvider: ParentComponent = (props) => {
       return await fn();
     } catch (err) {
       if (err instanceof Error) {
-        danger(header ?? err.message, header ? err.message : undefined);
+        danger(header ?? err.message, header != null ? err.message : undefined);
         logger.error(err.stack ?? err.message);
         return undefined;
       }
