@@ -22,18 +22,6 @@ import consola from "consola";
 export class LazyGcMap<K, V> {
   private static readonly _logger = consola.withTag("LazyGcMap");
 
-  /**
-   * dispose() 미호출 감지용 registry
-   * @note FinalizationRegistry는 Chrome 84+, Node 14.6+ 지원
-   *       미지원 환경에서는 경고 없이 동작하지만, dispose() 미호출 시 메모리 누수 가능
-   */
-  private static readonly _registry =
-    typeof FinalizationRegistry !== "undefined"
-      ? new FinalizationRegistry<string>((id) => {
-          LazyGcMap._logger.warn(`LazyGcMap(${id})이 dispose() 없이 가비지 수집됨. 메모리 누수 가능성 있음.`);
-        })
-      : undefined;
-
   // 실제 데이터와 마지막 접근 시간을 함께 저장
   private readonly _map = new Map<K, { value: V; lastAccess: number }>();
 
@@ -43,8 +31,6 @@ export class LazyGcMap<K, V> {
   private _isGcRunning = false;
   // destroy 호출 여부
   private _isDestroyed = false;
-  // 인스턴스 식별자 (경고 메시지용)
-  private readonly _instanceId = Math.random().toString(36).slice(2);
 
   /**
    * @param _options 설정 옵션
@@ -58,9 +44,7 @@ export class LazyGcMap<K, V> {
       expireTime: number;
       onExpire?: (key: K, value: V) => void | Promise<void>;
     },
-  ) {
-    LazyGcMap._registry?.register(this, this._instanceId);
-  }
+  ) {}
 
   /** 저장된 항목 수 */
   get size(): number {
@@ -107,8 +91,6 @@ export class LazyGcMap<K, V> {
   dispose(): void {
     if (this._isDestroyed) return;
     this._isDestroyed = true;
-    LazyGcMap._registry?.unregister(this);
-
     this._map.clear();
     this._stopGc();
   }
