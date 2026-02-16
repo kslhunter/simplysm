@@ -17,10 +17,12 @@ const headerClass = clsx(
   "flex",
   "items-center",
   "p-2",
+  "m-1",
+  "rounded-md",
   "text-left",
   "cursor-pointer",
   "transition-colors",
-  "hover:bg-base-100",
+  "hover:bg-base-500/10",
   "dark:hover:bg-base-700",
 );
 
@@ -95,8 +97,7 @@ export const SidebarUser: Component<SidebarUserProps> = (props) => {
     menu.onClick();
   };
 
-  const getHeaderClassName = () =>
-    twMerge(headerClass, !hasMenus() && headerReadonlyClass, open() && "border-b border-b-base-50");
+  const getHeaderClassName = () => twMerge(headerClass, !hasMenus() && headerReadonlyClass);
 
   const getContainerClassName = () => twMerge(containerClass, local.class);
 
