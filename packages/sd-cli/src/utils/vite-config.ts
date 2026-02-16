@@ -278,7 +278,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string };
   const appName = pkgJson.name.replace(/^@[^/]+\//, "");
 
-  // process.env 치환 (dev 모드에서만 사용, build 모드는 inline으로 처리됨)
+  // process.env 치환 (build/dev 모두 적용)
   const envDefine: Record<string, string> = {};
   if (env != null) {
     envDefine["process.env"] = JSON.stringify(env);
@@ -318,11 +318,13 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
     },
   };
 
+  // process.env 치환 (build/dev 모두 적용)
+  config.define = envDefine;
+
   if (mode === "build") {
     config.logLevel = "silent";
   } else {
     // dev 모드
-    config.define = envDefine;
     config.server = {
       port: serverPort === 0 ? undefined : serverPort,
       strictPort: serverPort !== 0 && serverPort !== undefined,

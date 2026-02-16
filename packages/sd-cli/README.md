@@ -163,6 +163,33 @@ sd-cli build solid core-common
 | `server`                   | esbuild         | X                | X          | Server app                            |
 | `scripts`                  | Excluded        | Excluded         | Excluded   | -                                     |
 
+**Public Files & Assets:**
+
+Both client and server packages support serving static files from a `public/` directory:
+
+- **Client packages** (`dev` mode): Vite serves `public/` at the configured base path (`/{name}/`)
+- **Server packages** (`dev` mode): Copies `public/` to `dist/`, watches for changes, and automatically rebuilds
+- **Server packages** (`build` mode): Copies `public/` to `dist/` (production deployment)
+- **Client packages** (`dev` mode only): Optional `public-dev/` directory files are served with priority over `public/` files, allowing dev-specific overrides without affecting production builds
+
+Directory structure:
+```
+packages/my-server/
+├── public/              # Static files (both dev and build)
+│   ├── index.html
+│   ├── style.css
+│   └── assets/
+└── public-dev/          # Dev-only overrides (dev mode only, ignored in build)
+    └── index.html       # Overrides public/index.html in dev
+```
+
+**How it works:**
+
+- In `dev` mode, both `public/` and `public-dev/` are copied to `dist/`, with `public-dev/` changes taking priority
+- If a `public-dev/` file is deleted, the corresponding `public/` file is served as fallback
+- In `build` mode, only `public/` is copied to `dist/` (no `public-dev/`)
+- The copy operation preserves directory structure
+
 **Runtime Configuration File (.config.json):**
 
 If a `server` or `client` package defines a `configs` field in `sd.config.ts`, the build automatically generates `dist/.config.json` containing that configuration. This is useful for storing environment-specific settings (database config, API endpoints, etc.) that are read at runtime via `ctx.getConfig()` in `service-server`.
@@ -315,6 +342,26 @@ sd-cli device -p my-app -u http://192.168.0.10:3000
 | `--url`, `-u`     | Dev server URL (uses server port from sd.config.ts if not specified)      | -       |
 | `--options`, `-o` | Additional options to pass to sd.config.ts (multi-use)                    | `[]`    |
 | `--debug`         | Output debug logs                                                         | `false` |
+
+## Public File Utilities
+
+This package provides utilities for managing static files in server packages:
+
+```typescript
+import { copyPublicFiles, watchPublicFiles } from "@simplysm/sd-cli";
+
+// Copy public/ to dist/ (production build)
+await copyPublicFiles("/path/to/package", false);
+
+// Copy public/ and public-dev/ to dist/ and watch for changes (dev mode)
+const watcher = await watchPublicFiles("/path/to/package", true);
+// Later: await watcher.close();
+```
+
+| Function | Parameters | Description |
+|----------|-----------|-------------|
+| `copyPublicFiles(pkgDir, includeDev)` | `pkgDir`: string, `includeDev`: boolean | Copies `public/` (and optionally `public-dev/`) from source to `dist/`. In dev mode with `includeDev=true`, `public-dev/` files take priority over `public/` files. |
+| `watchPublicFiles(pkgDir, includeDev)` | `pkgDir`: string, `includeDev`: boolean | Returns a watcher that watches both `public/` and (if `includeDev=true`) `public-dev/` for changes and re-copies files to `dist/`. Call `.close()` on the returned watcher to stop watching. |
 
 ## Exported Types and Utilities
 

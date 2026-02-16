@@ -111,13 +111,13 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
  * - bundle: true (모든 의존성 포함한 단일 번들)
  * - minify: true (코드 보호를 위한 압축)
  * - banner: CJS 패키지의 require() 지원을 위한 createRequire shim
- * - env를 define 옵션으로 치환 (process.env["KEY"] 형태)
+ * - env를 define 옵션으로 치환 (process.env.KEY 형태)
  */
 export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbuild.BuildOptions {
   const define: Record<string, string> = {};
   if (options.env != null) {
     for (const [key, value] of Object.entries(options.env)) {
-      define[`process.env["${key}"]`] = JSON.stringify(value);
+      define[`process.env.${key}`] = JSON.stringify(value);
     }
   }
 

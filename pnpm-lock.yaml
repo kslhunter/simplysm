@@ -53,6 +53,9 @@ importers:
       solid-js:
         specifier: ^1.9.11
         version: 1.9.11
+      stylelint:
+        specifier: ^16.26.1
+        version: 16.26.1(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
