@@ -11,6 +11,7 @@ import {
   collectNativeModuleExternals,
 } from "../utils/esbuild-config";
 import { registerCleanupHandlers } from "../utils/worker-utils";
+import { copyPublicFiles } from "../utils/copy-public";
 
 //#region Types
 
@@ -289,6 +290,9 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     // Generate .config.json
     const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
     fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
+
+    // Copy public/ to dist/ (production build: no public-dev)
+    await copyPublicFiles(info.pkgDir, false);
 
     // Generate production files (package.json, mise.toml, openssl.cnf, pm2.config.cjs)
     generateProductionFiles(info, external);
