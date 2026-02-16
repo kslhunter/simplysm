@@ -29,7 +29,7 @@ describe("OrmService.executeDefs", () => {
   ];
 
   beforeEach(async () => {
-    mockExecute = vi.fn(async (queries: string[]) => queries.map(() => []));
+    mockExecute = vi.fn((queries: string[]) => Promise.resolve(queries.map(() => [])));
 
     const mockConn = {
       config: { dialect: "postgresql" as const },
@@ -49,9 +49,11 @@ describe("OrmService.executeDefs", () => {
 
     const ctx = {
       socket: { on: vi.fn() },
-      getConfig: vi.fn(async () => ({
-        test: { dialect: "postgresql", host: "localhost", database: "db" },
-      })),
+      getConfig: vi.fn(() =>
+        Promise.resolve({
+          test: { dialect: "postgresql", host: "localhost", database: "db" },
+        }),
+      ),
       clientName: "test",
     };
 
