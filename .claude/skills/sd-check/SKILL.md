@@ -17,7 +17,14 @@ If an argument is provided, run against that path. Otherwise, run against the en
 Before running any verification, confirm the project environment is properly set up.
 Run these checks **in parallel** and report results before proceeding.
 
-### 1. pnpm workspace
+### 1. Root package.json version
+
+Read the root `package.json` and check the `version` field.
+The major version must be `13` (e.g., `13.x.x`). If the major version is not `13`, stop and report:
+
+> "This skill requires simplysm v13. Current version: {version}"
+
+### 2. pnpm workspace
 
 Verify this is a pnpm project:
 
@@ -27,7 +34,7 @@ ls pnpm-workspace.yaml pnpm-lock.yaml
 
 Both files must exist. If missing, stop and report to the user.
 
-### 2. package.json scripts
+### 3. package.json scripts
 
 Read the root `package.json` and confirm these scripts are defined:
 
@@ -36,7 +43,7 @@ Read the root `package.json` and confirm these scripts are defined:
 
 If either is missing, stop and report to the user.
 
-### 3. Vitest config
+### 4. Vitest config
 
 Verify vitest is configured:
 
