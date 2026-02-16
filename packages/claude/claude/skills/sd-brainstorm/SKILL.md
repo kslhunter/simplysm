@@ -41,15 +41,10 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Next Steps Guide:**
 
-Before presenting the workflow paths, check git status for uncommitted changes. If there are any uncommitted changes (staged, unstaged, or untracked files), prepend the following warning before the workflow guide:
-
-```
-⚠️ You have uncommitted changes.
-To use Path A (worktree branch isolation), run `/sd-commit all` first to commit your current changes.
-```
-
 Present the following two workflow paths so the user can see the full process and choose.
 Display the guide in the **user's configured language** (follow the language settings from CLAUDE.md or system instructions).
+
+Before presenting, check git status for uncommitted changes. If there are any uncommitted changes (staged, unstaged, or untracked files), append the warning line (shown below) at the end of the guide block.
 
 ```
 Design complete! Here's how to proceed:
@@ -74,7 +69,11 @@ Design complete! Here's how to proceed:
 You can start from any step or skip steps as needed.
 
 💡 "Path A: yolo" or "Path B: yolo" to auto-run all steps
+
+⚠️ You have uncommitted changes. To use Path A, run `/sd-commit all` first.
 ```
+
+- The last `⚠️` line is only shown when uncommitted changes exist. Omit it when working tree is clean.
 
 - After presenting both paths, **recommend one** based on the design's scope:
   - Path A recommended: new features, multi-file changes, architectural changes, anything that benefits from isolation
