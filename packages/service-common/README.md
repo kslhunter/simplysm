@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-A package that provides shared communication protocols, message types, and service interface definitions between the service client (`service-client`) and server (`service-server`). It includes binary protocol-based message encoding/decoding, automatic message chunking for large payloads, event system types, and service interfaces for ORM/encryption/SMTP/auto-update.
+A package that provides shared communication protocols, message types, and service interface definitions between the service client (`service-client`) and server (`service-server`). It includes binary protocol-based message encoding/decoding, automatic message chunking for large payloads, event system types, and service interfaces for ORM/encryption/auto-update.
 
 ## Installation
 
@@ -27,7 +27,6 @@ pnpm add @simplysm/service-common
 | `protocol/service-protocol` | Message encoding/decoding class |
 | `service-types/orm-service.types` | ORM service interface and DB connection options |
 | `service-types/crypto-service.types` | Crypto service interface and config |
-| `service-types/smtp-service.types` | SMTP service interface and email options |
 | `service-types/auto-update-service.types` | Auto-update service interface |
 | `types` | `ServiceUploadResult` |
 | `define-event` | `defineEvent`, `ServiceEventDef` |
@@ -264,61 +263,6 @@ Defines SHA256 hash generation and AES symmetric key encryption/decryption capab
 | Field | Type | Description |
 |------|------|------|
 | `key` | `string` | AES encryption key |
-
-### SmtpService
-
-Defines email sending capabilities. Can send by directly passing SMTP settings or by referencing server config.
-
-| Method | Parameters | Return Type | Description |
-|--------|---------|-----------|------|
-| `send` | `options: SmtpSendOption` | `Promise<string>` | Send email with direct SMTP settings |
-| `sendByConfig` | `configName, options: SmtpSendByConfigOption` | `Promise<string>` | Send email by referencing server config |
-
-#### SmtpSendOption
-
-A type combining `SmtpConnectionOptions` and `SmtpEmailContentOptions`, with an additional `from` field.
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `host` | `string` | Y | SMTP host |
-| `port` | `number` | N | SMTP port |
-| `secure` | `boolean` | N | TLS usage |
-| `user` | `string` | N | SMTP auth user |
-| `pass` | `string` | N | SMTP auth password |
-| `from` | `string` | Y | Sender address |
-| `to` | `string` | Y | Recipient address |
-| `cc` | `string` | N | CC |
-| `bcc` | `string` | N | BCC |
-| `subject` | `string` | Y | Subject |
-| `html` | `string` | Y | Body (HTML) |
-| `attachments` | `SmtpSendAttachment[]` | N | Attachment list |
-
-#### SmtpSendByConfigOption
-
-Same as `SmtpEmailContentOptions`. SMTP connection info is referenced from server config (`configName`).
-
-#### SmtpSendAttachment
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `filename` | `string` | Y | Attachment filename |
-| `content` | `Bytes` | N | File content (binary). Specify one of `path` or `content` |
-| `path` | `string` | N | File path on server. Specify one of `path` or `content` |
-| `contentType` | `string` | N | MIME type (e.g., `"application/pdf"`) |
-
-#### SmtpConfig
-
-Server-side SMTP configuration type.
-
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `host` | `string` | Y | SMTP host |
-| `port` | `number` | N | SMTP port |
-| `secure` | `boolean` | N | TLS usage |
-| `user` | `string` | N | SMTP auth user |
-| `pass` | `string` | N | SMTP auth password |
-| `senderName` | `string` | Y | Sender display name |
-| `senderEmail` | `string` | N | Sender email address |
 
 ### AutoUpdateService
 
