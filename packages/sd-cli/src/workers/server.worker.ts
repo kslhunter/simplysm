@@ -3,6 +3,7 @@ import fs from "fs";
 import cp from "child_process";
 import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
+import type { FsWatcher } from "@simplysm/core-node";
 import { consola } from "consola";
 import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import {
@@ -11,7 +12,7 @@ import {
   collectNativeModuleExternals,
 } from "../utils/esbuild-config";
 import { registerCleanupHandlers } from "../utils/worker-utils";
-import { copyPublicFiles } from "../utils/copy-public";
+import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 
 //#region Types
 
@@ -95,6 +96,9 @@ const logger = consola.withTag("sd:cli:server:worker");
 /** esbuild build context (정리 대상) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
+/** public 파일 watcher (정리 대상) */
+let publicWatcher: FsWatcher | undefined;
+
 /**
  * 리소스 정리
  */
@@ -104,8 +108,15 @@ async function cleanup(): Promise<void> {
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
 
+  const watcherToClose = publicWatcher;
+  publicWatcher = undefined;
+
   if (contextToDispose != null) {
     await contextToDispose.dispose();
+  }
+
+  if (watcherToClose != null) {
+    await watcherToClose.close();
   }
 }
 
@@ -390,6 +401,9 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     });
 
     await esbuildContext.watch();
+
+    // Watch public/ and public-dev/ (dev mode includes public-dev)
+    publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
     // 첫 번째 빌드 완료 대기
     await firstBuildPromise;
