@@ -13,7 +13,7 @@ npm install @simplysm/lint
 pnpm add @simplysm/lint
 ```
 
-### Required Peer Dependencies
+### Peer Dependencies
 
 This plugin depends on the following packages:
 
@@ -71,8 +71,6 @@ export default [
 ];
 ```
 
----
-
 ### Stylelint Config (.stylelintrc.json)
 
 #### Using recommended config (recommended)
@@ -122,8 +120,6 @@ Add overrides to disable rules for specific files:
 }
 ```
 
----
-
 ## Stylelint Rules
 
 The `stylelint-recommended` config includes:
@@ -147,8 +143,6 @@ Unsupported features will trigger errors:
 
 Use overrides to disable checks for files using modern features intentionally (e.g., Tailwind's built-in nesting).
 
----
-
 ## Custom Rules
 
 This plugin provides 3 custom rules.
@@ -158,8 +152,6 @@ This plugin provides 3 custom rules.
 | [`no-hard-private`](#no-hard-private) | problem | Supported | error | Enforces TypeScript `private` instead of ECMAScript `#field` |
 | [`no-subpath-imports-from-simplysm`](#no-subpath-imports-from-simplysm) | problem | Supported | error | Prohibits importing from `@simplysm/*/src/` paths |
 | [`ts-no-throw-not-implemented-error`](#ts-no-throw-not-implemented-error) | suggestion | Not supported | warn | Warns about usage of `NotImplementedError` |
-
----
 
 ### no-hard-private
 
@@ -229,8 +221,6 @@ class Foo {
 }
 ```
 
----
-
 ### no-subpath-imports-from-simplysm
 
 Prohibits importing from `@simplysm/*` packages through `/src/` paths. Only import through the official entry point (package root).
@@ -276,8 +266,6 @@ Subpaths other than `/src/` are allowed.
 // Allowed: not a /src/ path
 import { Foo } from "@simplysm/core-common/utils";
 ```
-
----
 
 ### ts-no-throw-not-implemented-error
 
@@ -325,8 +313,6 @@ throw new CC.NotImplementedError(); // Warning
 
 - Calling `new NotImplementedError()` without arguments outputs a warning with the Korean default message "미구현".
 - If a string argument is passed, that string is used as the warning message.
-
----
 
 ## recommended Config Details
 
@@ -382,8 +368,6 @@ Restrict Node.js-specific API usage for code consistency across all packages.
 - JS files: `**/lib/**`, `**/eslint.config.js`, `**/simplysm.js`, `**/vitest.config.js`
 - TS files: `**/lib/**`, `**/eslint.config.ts`, `**/simplysm.ts`, `**/vitest.config.ts`, `**/vitest.setup.ts`
 
----
-
 ### JS-only Rules (.js, .jsx)
 
 Rules applied only to JS files. Not applied to TS files as the TypeScript compiler performs the same checks.
@@ -395,8 +379,6 @@ Rules applied only to JS files. Not applied to TS files as the TypeScript compil
 | `no-duplicate-imports` | error | Prohibit duplicate imports |
 | `no-unused-expressions` | error | Prohibit unused expressions |
 | `no-undef` | error | Prohibit using undefined variables |
-
----
 
 ### TypeScript Rules (.ts, .tsx)
 
@@ -438,8 +420,6 @@ Rules applied based on `@typescript-eslint`. Performs precise checks using type 
 |------|----------|-------------|
 | `@typescript-eslint/ban-ts-comment` | error | Require 3+ character description for `@ts-expect-error` |
 
----
-
 ### SolidJS Rules (.ts, .tsx)
 
 Rules applied based on `eslint-plugin-solid`. Applied to both `.ts` and `.tsx` files.
@@ -479,8 +459,6 @@ Rules applied based on `eslint-plugin-solid`. Applied to both `.ts` and `.tsx` f
 | `solid/style-prop` | error | Enforce `style` prop format |
 | `solid/self-closing-comp` | error | Enforce self-closing tags |
 
----
-
 ### Tailwind CSS Rules (.ts, .tsx)
 
 Rules applied based on `eslint-plugin-tailwindcss`. Recognizes `clsx` template literal tags.
@@ -494,8 +472,6 @@ Rules applied based on `eslint-plugin-tailwindcss`. Recognizes `clsx` template l
 | `tailwindcss/no-custom-classname` | error | Prohibit custom classes not defined in Tailwind |
 | `tailwindcss/no-unnecessary-arbitrary-value` | error | Prohibit unnecessary arbitrary values |
 
----
-
 ### Test File Exception Rules
 
 The following rules are relaxed for test files in `**/tests/**/*.ts`, `**/tests/**/*.tsx` paths:
@@ -506,8 +482,6 @@ The following rules are relaxed for test files in `**/tests/**/*.ts`, `**/tests/
 | `import/no-extraneous-dependencies` | off | Allow using root `devDependencies` (vitest, etc.) |
 | `@simplysm/ts-no-throw-not-implemented-error` | off | Allow using not-implemented errors in test code |
 | `solid/reactivity` | off | Accessing signals inside async callbacks like `waitFor` in tests is intentional |
-
----
 
 ## Configuration Summary by File Type
 

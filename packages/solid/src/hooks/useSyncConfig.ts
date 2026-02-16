@@ -22,10 +22,13 @@ import { useConfig } from "../providers/ConfigContext";
  * </Show>
  * ```
  */
-export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Setter<T>, Accessor<boolean>] {
+export function useSyncConfig<TValue>(
+  key: string,
+  defaultValue: TValue,
+): [Accessor<TValue>, Setter<TValue>, Accessor<boolean>] {
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
-  const [value, setValue] = createSignal<T>(defaultValue);
+  const [value, setValue] = createSignal<TValue>(defaultValue);
   const [loading, setLoading] = createSignal(false);
 
   // Initialize from storage
@@ -35,7 +38,7 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
       try {
         const stored = localStorage.getItem(prefixedKey);
         if (stored !== null) {
-          setValue(() => JSON.parse(stored) as T);
+          setValue(() => JSON.parse(stored) as TValue);
         }
       } catch {
         // Ignore parse errors, keep default value
@@ -48,14 +51,14 @@ export function useSyncConfig<T>(key: string, defaultValue: T): [Accessor<T>, Se
     try {
       const stored = await config.syncStorage.getItem(prefixedKey);
       if (stored !== null) {
-        setValue(() => JSON.parse(stored) as T);
+        setValue(() => JSON.parse(stored) as TValue);
       }
     } catch {
       // Fall back to localStorage on error
       try {
         const stored = localStorage.getItem(prefixedKey);
         if (stored !== null) {
-          setValue(() => JSON.parse(stored) as T);
+          setValue(() => JSON.parse(stored) as TValue);
         }
       } catch {
         // Ignore parse errors

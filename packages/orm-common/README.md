@@ -11,12 +11,6 @@ npm install @simplysm/orm-common
 pnpm add @simplysm/orm-common
 ```
 
-### Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities, `DateTime`, `DateOnly`, `Time`, `Uuid` types |
-
 ## Supported Databases
 
 | Database | Dialect | Minimum Version |
@@ -25,7 +19,7 @@ pnpm add @simplysm/orm-common
 | SQL Server | `mssql` | 2012+ |
 | PostgreSQL | `postgresql` | 9.0+ |
 
-## Core Modules
+## Main Modules
 
 ### Schema Definition
 

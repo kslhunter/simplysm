@@ -16,8 +16,8 @@ import { ArgumentError } from "../errors/argument-error";
  * @note 프로토타입 체인은 유지됨 (Object.setPrototypeOf 사용)
  * @note getter/setter는 현재 값으로 평가되어 복사됨 (접근자 속성 자체는 복사되지 않음)
  */
-export function objClone<T>(source: T): T {
-  return objCloneImpl(source) as T;
+export function objClone<TSource>(source: TSource): TSource {
+  return objCloneImpl(source) as TSource;
 }
 
 function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {
@@ -433,21 +433,25 @@ export interface ObjMergeOptions {
  *       객체 배열의 경우 참조(주소) 비교로 중복을 판단함
  * @note 타입이 다른 경우 target 값으로 덮어씀
  */
-export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T & P {
+export function objMerge<TSource, TMergeTarget>(
+  source: TSource,
+  target: TMergeTarget,
+  opt?: ObjMergeOptions,
+): TSource & TMergeTarget {
   if (source == null) {
-    return objClone(target) as T & P;
+    return objClone(target) as TSource & TMergeTarget;
   }
 
   if (target === undefined) {
-    return objClone(source) as T & P;
+    return objClone(source) as TSource & TMergeTarget;
   }
 
   if (target === null) {
-    return opt?.useDelTargetNull ? (undefined as T & P) : (objClone(source) as T & P);
+    return opt?.useDelTargetNull ? (undefined as TSource & TMergeTarget) : (objClone(source) as TSource & TMergeTarget);
   }
 
   if (typeof target !== "object") {
-    return target as T & P;
+    return target as TSource & TMergeTarget;
   }
 
   if (
@@ -459,12 +463,12 @@ export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T &
     target instanceof Uint8Array ||
     (opt?.arrayProcess === "replace" && target instanceof Array)
   ) {
-    return objClone(target) as T & P;
+    return objClone(target) as TSource & TMergeTarget;
   }
 
   // source가 object가 아니거나, source와 target이 다른 종류의 object면 target으로 덮어씀
   if (typeof source !== "object" || source.constructor !== target.constructor) {
-    return objClone(target) as T & P;
+    return objClone(target) as TSource & TMergeTarget;
   }
 
   if (source instanceof Map && target instanceof Map) {
@@ -476,7 +480,7 @@ export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T &
         result.set(key, objClone(target.get(key)));
       }
     }
-    return result as T & P;
+    return result as TSource & TMergeTarget;
   }
 
   if (opt?.arrayProcess === "concat" && source instanceof Array && target instanceof Array) {
@@ -484,7 +488,7 @@ export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T &
     if (opt.useDelTargetNull) {
       result = result.filter((item) => item !== null);
     }
-    return result as T & P;
+    return result as TSource & TMergeTarget;
   }
 
   const sourceRec = source as Record<string, unknown>;
@@ -497,7 +501,7 @@ export function objMerge<T, P>(source: T, target: P, opt?: ObjMergeOptions): T &
     }
   }
 
-  return resultRec as T & P;
+  return resultRec as TSource & TMergeTarget;
 }
 
 /** merge3 옵션 타입 */
@@ -688,19 +692,23 @@ export function objGetChainValue(obj: unknown, chain: string, optional?: true): 
  * @throws ArgumentError depth가 1 미만일 경우
  * @example objGetChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
  */
-export function objGetChainValueByDepth<T, K extends keyof T>(
-  obj: T,
-  key: K,
+export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+  obj: TObject,
+  key: TKey,
   depth: number,
   optional: true,
-): T[K] | undefined;
-export function objGetChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
-export function objGetChainValueByDepth<T, K extends keyof T>(
-  obj: T,
-  key: K,
+): TObject[TKey] | undefined;
+export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+  obj: TObject,
+  key: TKey,
+  depth: number,
+): TObject[TKey];
+export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
+  obj: TObject,
+  key: TKey,
   depth: number,
   optional?: true,
-): T[K] | undefined {
+): TObject[TKey] | undefined {
   if (depth < 1) {
     throw new ArgumentError("depth는 1 이상이어야 합니다.", { depth });
   }
@@ -712,7 +720,7 @@ export function objGetChainValueByDepth<T, K extends keyof T>(
       result = (result as Record<string, unknown>)[key as string];
     }
   }
-  return result as T[K] | undefined;
+  return result as TObject[TKey] | undefined;
 }
 
 /**
@@ -798,11 +806,11 @@ export function objClear<T extends Record<string, unknown>>(obj: T): Record<stri
  *
  * @mutates 원본 배열/객체를 직접 수정함
  */
-export function objNullToUndefined<T>(obj: T): T | undefined {
+export function objNullToUndefined<TObject>(obj: TObject): TObject | undefined {
   return objNullToUndefinedImpl(obj, new WeakSet());
 }
 
-function objNullToUndefinedImpl<T>(obj: T, seen: WeakSet<object>): T | undefined {
+function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): TObject | undefined {
   if (obj == null) {
     return undefined;
   }
@@ -877,16 +885,16 @@ export function objUnflatten(flatObj: Record<string, unknown>): Record<string, u
  * undefined를 가진 프로퍼티를 optional로 변환
  * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
-export type ObjUndefToOptional<T> = {
-  [K in keyof T as undefined extends T[K] ? K : never]?: T[K];
-} & { [K in keyof T as undefined extends T[K] ? never : K]: T[K] };
+export type ObjUndefToOptional<TObject> = {
+  [K in keyof TObject as undefined extends TObject[K] ? K : never]?: TObject[K];
+} & { [K in keyof TObject as undefined extends TObject[K] ? never : K]: TObject[K] };
 
 /**
  * optional 프로퍼티를 required + undefined 유니온으로 변환
  * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
-export type ObjOptionalToUndef<T> = {
-  [K in keyof T]-?: {} extends Pick<T, K> ? T[K] | undefined : T[K];
+export type ObjOptionalToUndef<TObject> = {
+  [K in keyof TObject]-?: {} extends Pick<TObject, K> ? TObject[K] | undefined : TObject[K];
 };
 
 //#endregion
@@ -918,7 +926,7 @@ export function objFromEntries<T extends [string, unknown]>(entries: T[]): { [K 
   return Object.fromEntries(entries) as { [K in T[0]]: T[1] };
 }
 
-type ObjEntries<T> = { [K in keyof T]: [K, T[K]] }[keyof T][];
+type ObjEntries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObject][];
 
 /**
  * 객체의 각 엔트리를 변환하여 새 객체 반환
@@ -936,20 +944,20 @@ type ObjEntries<T> = { [K in keyof T]: [K, T[K]] }[keyof T][];
  * objMap(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
  * // { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
  */
-export function objMap<T extends object, NK extends string, NV>(
-  obj: T,
-  fn: (key: keyof T, value: T[keyof T]) => [NK | null, NV],
-): Record<NK | Extract<keyof T, string>, NV> {
+export function objMap<TSource extends object, TNewKey extends string, TNewValue>(
+  obj: TSource,
+  fn: (key: keyof TSource, value: TSource[keyof TSource]) => [TNewKey | null, TNewValue],
+): Record<TNewKey | Extract<keyof TSource, string>, TNewValue> {
   return objMapImpl(obj, fn);
 }
 
-function objMapImpl<T extends object, NK extends string, NV>(
-  obj: T,
-  fn: (key: keyof T, value: T[keyof T]) => [NK | null, NV],
-): Record<string, NV> {
-  const result: Record<string, NV> = {};
+function objMapImpl<TSource extends object, TNewKey extends string, TNewValue>(
+  obj: TSource,
+  fn: (key: keyof TSource, value: TSource[keyof TSource]) => [TNewKey | null, TNewValue],
+): Record<string, TNewValue> {
+  const result: Record<string, TNewValue> = {};
   for (const key of Object.keys(obj)) {
-    const [newKey, newValue] = fn(key as keyof T, (obj as Record<string, T[keyof T]>)[key]);
+    const [newKey, newValue] = fn(key as keyof TSource, (obj as Record<string, TSource[keyof TSource]>)[key]);
     result[newKey ?? key] = newValue;
   }
   return result;

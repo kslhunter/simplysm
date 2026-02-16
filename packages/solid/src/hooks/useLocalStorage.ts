@@ -27,28 +27,31 @@ import { useConfig } from "../providers/ConfigContext";
  * setToken(undefined);
  * ```
  */
-export function useLocalStorage<T>(key: string, initialValue?: T): [Accessor<T | undefined>, Setter<T | undefined>] {
+export function useLocalStorage<TValue>(
+  key: string,
+  initialValue?: TValue,
+): [Accessor<TValue | undefined>, Setter<TValue | undefined>] {
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
 
   // localStorage에서 초기값 읽기
-  let storedValue: T | undefined = initialValue;
+  let storedValue: TValue | undefined = initialValue;
   try {
     const item = localStorage.getItem(prefixedKey);
     if (item !== null) {
-      storedValue = JSON.parse(item) as T;
+      storedValue = JSON.parse(item) as TValue;
     }
   } catch {
     // JSON 파싱 실패 시 초기값 사용
   }
 
-  const [value, setValue] = createSignal<T | undefined>(storedValue);
+  const [value, setValue] = createSignal<TValue | undefined>(storedValue);
 
-  const setAndStore = (newValue: T | undefined | ((prev: T | undefined) => T | undefined)) => {
-    let resolved: T | undefined;
+  const setAndStore = (newValue: TValue | undefined | ((prev: TValue | undefined) => TValue | undefined)) => {
+    let resolved: TValue | undefined;
 
     if (typeof newValue === "function") {
-      resolved = (newValue as (prev: T | undefined) => T | undefined)(value());
+      resolved = (newValue as (prev: TValue | undefined) => TValue | undefined)(value());
       setValue(() => resolved);
     } else {
       resolved = newValue;
@@ -64,5 +67,5 @@ export function useLocalStorage<T>(key: string, initialValue?: T): [Accessor<T |
     return resolved;
   };
 
-  return [value, setAndStore as Setter<T | undefined>];
+  return [value, setAndStore as Setter<TValue | undefined>];
 }

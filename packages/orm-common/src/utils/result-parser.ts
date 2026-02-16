@@ -151,10 +151,10 @@ const YIELD_INTERVAL = 100;
  * // [{ id: 1, name: "User1", posts: [{ id: 10, title: "Post1" }, { id: 11, title: "Post2" }] }]
  * ```
  */
-export async function parseQueryResult<T>(
+export async function parseQueryResult<TRecord>(
   rawResults: Record<string, unknown>[],
   meta: ResultMeta,
-): Promise<T[] | undefined> {
+): Promise<TRecord[] | undefined> {
   // 빈 입력 처리
   if (rawResults.length === 0) {
     return undefined;
@@ -164,20 +164,20 @@ export async function parseQueryResult<T>(
 
   // JOIN이 없는 경우: 단순 타입 파싱만
   if (joinKeys.length === 0) {
-    return parseSimpleRecords<T>(rawResults, meta.columns);
+    return parseSimpleRecords<TRecord>(rawResults, meta.columns);
   }
 
   // JOIN이 있는 경우: 그룹핑 + 중첩화
-  return parseJoinedRecords<T>(rawResults, meta);
+  return parseJoinedRecords<TRecord>(rawResults, meta);
 }
 
 /**
  * JOIN 없는 단순 레코드 파싱
  */
-async function parseSimpleRecords<T>(
+async function parseSimpleRecords<TRecord>(
   rawResults: Record<string, unknown>[],
   columns: Record<string, ColumnPrimitiveStr>,
-): Promise<T[] | undefined> {
+): Promise<TRecord[] | undefined> {
   const results: Record<string, unknown>[] = [];
 
   for (let i = 0; i < rawResults.length; i++) {
@@ -195,7 +195,7 @@ async function parseSimpleRecords<T>(
   }
 
   // 빈 배열은 undefined 반환
-  return results.length > 0 ? (results as T[]) : undefined;
+  return results.length > 0 ? (results as TRecord[]) : undefined;
 }
 
 /**
@@ -213,10 +213,10 @@ function sortJoinKeysByDepth(joinKeys: string[]): string[] {
 /**
  * JOIN 있는 레코드 파싱 (재귀적 그룹핑)
  */
-async function parseJoinedRecords<T>(
+async function parseJoinedRecords<TRecord>(
   rawResults: Record<string, unknown>[],
   meta: ResultMeta,
-): Promise<T[] | undefined> {
+): Promise<TRecord[] | undefined> {
   // 1. 모든 레코드를 중첩 구조로 변환
   const nestedRecords: Record<string, unknown>[] = [];
   for (let i = 0; i < rawResults.length; i++) {
@@ -235,7 +235,7 @@ async function parseJoinedRecords<T>(
   // 4. 빈 결과 필터링
   const filteredResults = results.filter((r) => !isEmptyObject(r));
 
-  return filteredResults.length > 0 ? (filteredResults as T[]) : undefined;
+  return filteredResults.length > 0 ? (filteredResults as TRecord[]) : undefined;
 }
 
 /**

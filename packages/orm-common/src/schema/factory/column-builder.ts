@@ -327,8 +327,8 @@ export type ColumnBuilderRecord = Record<string, ColumnBuilder<ColumnPrimitive, 
  * // { id: number; name: string; email: string | undefined; }
  * ```
  */
-export type InferColumns<T extends ColumnBuilderRecord> = {
-  [K in keyof T]: T[K] extends ColumnBuilder<infer V, any> ? V : never;
+export type InferColumns<TBuilders extends ColumnBuilderRecord> = {
+  [K in keyof TBuilders]: TBuilders[K] extends ColumnBuilder<infer V, any> ? V : never;
 };
 
 /**
@@ -336,8 +336,8 @@ export type InferColumns<T extends ColumnBuilderRecord> = {
  *
  * @template T - 컬럼 빌더 레코드 타입
  */
-export type InferColumnExprs<T extends ColumnBuilderRecord> = {
-  [K in keyof T]: T[K] extends ColumnBuilder<infer V, any> ? ExprInput<V> : never;
+export type InferColumnExprs<TBuilders extends ColumnBuilderRecord> = {
+  [K in keyof TBuilders]: TBuilders[K] extends ColumnBuilder<infer V, any> ? ExprInput<V> : never;
 };
 
 /**
@@ -347,8 +347,8 @@ export type InferColumnExprs<T extends ColumnBuilderRecord> = {
  *
  * @template T - 컬럼 빌더 레코드 타입
  */
-export type RequiredInsertKeys<T extends ColumnBuilderRecord> = {
-  [K in keyof T]: T[K]["meta"] extends infer M extends ColumnMeta
+export type RequiredInsertKeys<TBuilders extends ColumnBuilderRecord> = {
+  [K in keyof TBuilders]: TBuilders[K]["meta"] extends infer M extends ColumnMeta
     ? M["autoIncrement"] extends true
       ? never
       : M["nullable"] extends true
@@ -357,7 +357,7 @@ export type RequiredInsertKeys<T extends ColumnBuilderRecord> = {
           ? K
           : never
     : never;
-}[keyof T];
+}[keyof TBuilders];
 
 /**
  * INSERT 시 선택적 컬럼 키 추출
@@ -366,7 +366,10 @@ export type RequiredInsertKeys<T extends ColumnBuilderRecord> = {
  *
  * @template T - 컬럼 빌더 레코드 타입
  */
-export type OptionalInsertKeys<T extends ColumnBuilderRecord> = Exclude<keyof T, RequiredInsertKeys<T>>;
+export type OptionalInsertKeys<TBuilders extends ColumnBuilderRecord> = Exclude<
+  keyof TBuilders,
+  RequiredInsertKeys<TBuilders>
+>;
 
 /**
  * INSERT용 타입 추론
@@ -381,8 +384,11 @@ export type OptionalInsertKeys<T extends ColumnBuilderRecord> = Exclude<keyof T,
  * // { name: string; } & { id?: number; email?: string; status?: string; }
  * ```
  */
-export type InferInsertColumns<T extends ColumnBuilderRecord> = Pick<InferColumns<T>, RequiredInsertKeys<T>> &
-  Partial<Pick<InferColumns<T>, OptionalInsertKeys<T>>>;
+export type InferInsertColumns<TBuilders extends ColumnBuilderRecord> = Pick<
+  InferColumns<TBuilders>,
+  RequiredInsertKeys<TBuilders>
+> &
+  Partial<Pick<InferColumns<TBuilders>, OptionalInsertKeys<TBuilders>>>;
 
 /**
  * UPDATE용 타입 추론
@@ -391,7 +397,7 @@ export type InferInsertColumns<T extends ColumnBuilderRecord> = Pick<InferColumn
  *
  * @template T - 컬럼 빌더 레코드 타입
  */
-export type InferUpdateColumns<T extends ColumnBuilderRecord> = Partial<InferColumns<T>>;
+export type InferUpdateColumns<TBuilders extends ColumnBuilderRecord> = Partial<InferColumns<TBuilders>>;
 
 /**
  * 데이터 레코드에서 컬럼 빌더 레코드로 변환

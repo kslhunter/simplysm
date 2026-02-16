@@ -5,11 +5,11 @@ import type { Expr, WhereExpr } from "../types/expr";
  * 타입 안전한 표현식 래퍼
  * TypeScript 제네릭으로 표현식의 반환 타입을 추적
  */
-export class ExprUnit<T extends ColumnPrimitive> {
-  readonly $infer!: T;
+export class ExprUnit<TPrimitive extends ColumnPrimitive> {
+  readonly $infer!: TPrimitive;
 
-  get n(): ExprUnit<NonNullable<T>> {
-    return this as unknown as ExprUnit<NonNullable<T>>;
+  get n(): ExprUnit<NonNullable<TPrimitive>> {
+    return this as unknown as ExprUnit<NonNullable<TPrimitive>>;
   }
 
   constructor(
@@ -28,4 +28,4 @@ export class WhereExprUnit {
 /**
  * ExprUnit 또는 리터럴 값을 받을 수 있는 입력 타입
  */
-export type ExprInput<T extends ColumnPrimitive> = ExprUnit<T> | T;
+export type ExprInput<TPrimitive extends ColumnPrimitive> = ExprUnit<TPrimitive> | TPrimitive;

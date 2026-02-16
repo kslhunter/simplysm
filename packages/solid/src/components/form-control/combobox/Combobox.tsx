@@ -28,8 +28,8 @@ const noResultsClass = clsx("px-3 py-2", textMuted);
 /**
  * Combobox 아이템 렌더링 템플릿
  */
-interface ComboboxItemTemplateProps<T> {
-  children: (item: T, index: number) => JSX.Element;
+interface ComboboxItemTemplateProps<TItem> {
+  children: (item: TItem, index: number) => JSX.Element;
 }
 
 // 템플릿 함수를 저장하는 전역 WeakMap
@@ -46,15 +46,15 @@ const ComboboxItemTemplate = <T,>(props: ComboboxItemTemplateProps<T>) => (
 );
 
 // Props 정의
-export interface ComboboxProps<T = unknown> {
+export interface ComboboxProps<TValue = unknown> {
   /** 현재 선택된 값 */
-  value?: T;
+  value?: TValue;
 
   /** 값 변경 콜백 */
-  onValueChange?: (value: T) => void;
+  onValueChange?: (value: TValue) => void;
 
   /** 아이템 로드 함수 (필수) */
-  loadItems: (query: string) => Promise<T[]>;
+  loadItems: (query: string) => Promise<TValue[]>;
 
   /** 디바운스 딜레이 (기본값: 300ms) */
   debounceMs?: number;
@@ -63,10 +63,10 @@ export interface ComboboxProps<T = unknown> {
   allowCustomValue?: boolean;
 
   /** 커스텀 값 파싱 함수 */
-  parseCustomValue?: (text: string) => T;
+  parseCustomValue?: (text: string) => TValue;
 
   /** 선택된 값을 렌더링하는 함수 (필수) */
-  renderValue: (value: T) => JSX.Element;
+  renderValue: (value: TValue) => JSX.Element;
 
   /** 비활성화 */
   disabled?: boolean;
@@ -94,7 +94,7 @@ export interface ComboboxProps<T = unknown> {
 }
 
 interface ComboboxComponent {
-  <T = unknown>(props: ComboboxProps<T>): JSX.Element;
+  <TValue = unknown>(props: ComboboxProps<TValue>): JSX.Element;
   Item: typeof ComboboxItem;
   ItemTemplate: typeof ComboboxItemTemplate;
 }

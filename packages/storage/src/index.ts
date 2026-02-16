@@ -1,14 +1,11 @@
-//#region Types
+// Types
 export * from "./types/storage-conn-config";
 export * from "./types/storage";
 export * from "./types/storage-type";
-//#endregion
 
-//#region Clients
+// Clients
 export * from "./clients/ftp-storage-client";
 export * from "./clients/sftp-storage-client";
-//#endregion
 
-//#region Factory
+// Factory
 export * from "./storage-factory";
-//#endregion

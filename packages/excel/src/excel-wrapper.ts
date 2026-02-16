@@ -9,20 +9,20 @@ import type { ExcelValueType } from "./types";
  *
  * 스키마에서 타입 정보를 추론하여 타입 안전한 읽기/쓰기 제공
  */
-export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
+export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   /**
    * @param _schema Zod 스키마 (레코드 구조 정의)
    * @param _displayNameMap 필드명-표시명 매핑 (Excel 헤더로 사용)
    */
   constructor(
-    private readonly _schema: T,
-    private readonly _displayNameMap: Record<keyof z.infer<T>, string>,
+    private readonly _schema: TSchema,
+    private readonly _displayNameMap: Record<keyof z.infer<TSchema>, string>,
   ) {}
 
   /**
    * Excel 파일 읽기 → 레코드 배열
    */
-  async read(file: Bytes | Blob, wsNameOrIndex: string | number = 0): Promise<z.infer<T>[]> {
+  async read(file: Bytes | Blob, wsNameOrIndex: string | number = 0): Promise<z.infer<TSchema>[]> {
     await using wb = new ExcelWorkbook(file);
 
     const ws = await wb.getWorksheet(wsNameOrIndex);
@@ -39,7 +39,7 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
 
     const reverseMap = this._getReverseDisplayNameMap();
     const shape = this._schema.shape;
-    const result: z.infer<T>[] = [];
+    const result: z.infer<TSchema>[] = [];
 
     for (const row of rawData) {
       const record: Record<string, unknown> = {};
@@ -86,11 +86,11 @@ export class ExcelWrapper<T extends z.ZodObject<z.ZodRawShape>> {
    * const bytes = await wb.getBytes();
    * ```
    */
-  async write(wsName: string, records: Partial<z.infer<T>>[]): Promise<ExcelWorkbook> {
+  async write(wsName: string, records: Partial<z.infer<TSchema>>[]): Promise<ExcelWorkbook> {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet(wsName);
 
-    const keys = Object.keys(this._displayNameMap) as (keyof z.infer<T>)[];
+    const keys = Object.keys(this._displayNameMap) as (keyof z.infer<TSchema>)[];
     const headers = keys.map((key) => this._displayNameMap[key]);
 
     // 헤더 행 작성

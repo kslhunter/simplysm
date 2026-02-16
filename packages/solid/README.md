@@ -87,8 +87,6 @@ Import the base CSS in your entry point:
 import "@simplysm/solid/tailwind.css";
 ```
 
----
-
 ## Components
 
 ### Form Controls
@@ -152,8 +150,6 @@ import "@simplysm/solid/tailwind.css";
 - [`Loading`](docs/feedback.md#loading) - Loading overlay with spinner/bar variants (`useLoading`)
 - [`Print`](docs/feedback.md#print--useprint) - Browser printing and PDF generation (`usePrint`)
 
----
-
 ## Hooks
 
 - [`useTheme`](docs/hooks.md#usetheme) - Dark/light/system theme state access
@@ -171,15 +167,11 @@ import "@simplysm/solid/tailwind.css";
 - [`createAppStructure`](docs/hooks.md#createappstructure) - Declarative app structure (routing, menus, permissions)
 - [`createPwaUpdate`](docs/hooks.md#createpwaupdate) - PWA Service Worker update detection
 
----
-
 ## Providers
 
 - [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, loading, dialog, error capturing)
 - [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider
 - [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider
-
----
 
 ## Styling
 
@@ -188,8 +180,6 @@ import "@simplysm/solid/tailwind.css";
 - [z-index Layers](docs/styling.md#z-index-layers) - Sidebar, dropdown, modal z-index values
 - [Dark Mode](docs/styling.md#dark-mode) - Class-based dark mode with auto-toggle
 - [Styling Patterns](docs/styling.md#styling-patterns) - clsx + twMerge usage patterns
-
----
 
 ## Helpers & Directives
 

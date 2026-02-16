@@ -4,10 +4,10 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 
-export interface CalendarProps<T> extends Omit<JSX.HTMLAttributes<HTMLTableElement>, "children"> {
-  items: T[];
-  getItemDate: (item: T, index: number) => DateOnly;
-  renderItem: (item: T, index: number) => JSX.Element;
+export interface CalendarProps<TValue> extends Omit<JSX.HTMLAttributes<HTMLTableElement>, "children"> {
+  items: TValue[];
+  getItemDate: (item: TValue, index: number) => DateOnly;
+  renderItem: (item: TValue, index: number) => JSX.Element;
   yearMonth?: DateOnly;
   onYearMonthChange?: (value: DateOnly) => void;
   weekStartDay?: number;
@@ -40,7 +40,7 @@ const notCurrentDayClass = clsx("text-base-300", "dark:text-base-600");
 
 const contentClass = clsx("flex flex-col gap-1");
 
-function CalendarBase<T>(props: CalendarProps<T>) {
+function CalendarBase<TValue>(props: CalendarProps<TValue>) {
   const [local, rest] = splitProps(props, [
     "class",
     "items",
@@ -71,7 +71,7 @@ function CalendarBase<T>(props: CalendarProps<T>) {
     const getDate = local.getItemDate;
 
     // 아이템을 날짜별로 그룹핑 (O(N))
-    const itemMap = new Map<number, { item: T; index: number }[]>();
+    const itemMap = new Map<number, { item: TValue; index: number }[]>();
     for (let i = 0; i < items.length; i++) {
       const date = getDate(items[i], i);
       const key = date.tick;
@@ -84,10 +84,10 @@ function CalendarBase<T>(props: CalendarProps<T>) {
     }
 
     const firstDate = ym.getWeekSeqStartDate(weekStartDay(), minDaysInFirstWeek());
-    const result: { date: DateOnly; items: { item: T; index: number }[] }[][] = [];
+    const result: { date: DateOnly; items: { item: TValue; index: number }[] }[][] = [];
 
     for (let r = 0; r < 6; r++) {
-      const row: { date: DateOnly; items: { item: T; index: number }[] }[] = [];
+      const row: { date: DateOnly; items: { item: TValue; index: number }[] }[] = [];
       for (let c = 0; c < 7; c++) {
         const date = firstDate.addDays(r * 7 + c);
         row.push({

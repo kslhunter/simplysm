@@ -933,7 +933,7 @@ To reset cache, delete the `.cache` directory:
 rm -rf .cache packages/*/.cache
 ```
 
-## Notes
+## Caveats
 
 - `sd.config.ts` is required for `watch`, `dev`, `build`, `publish`, and `device` commands. `typecheck` and `lint` work without a config file.
 - The `publish` command automatically increments version and performs Git commit/tag/push. Execution is rejected if there are uncommitted changes.

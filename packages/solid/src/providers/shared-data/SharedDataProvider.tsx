@@ -11,8 +11,8 @@ import { useServiceClient } from "../ServiceClientContext";
 import { useNotification } from "../../components/feedback/notification/NotificationContext";
 import { useLogger } from "../../hooks/useLogger";
 
-export function SharedDataProvider<T extends Record<string, unknown>>(props: {
-  definitions: { [K in keyof T]: SharedDataDefinition<T[K]> };
+export function SharedDataProvider<TSharedData extends Record<string, unknown>>(props: {
+  definitions: { [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]> };
   children: JSX.Element;
 }): JSX.Element {
   const serviceClient = useServiceClient();

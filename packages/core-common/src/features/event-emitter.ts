@@ -4,7 +4,7 @@
  * 브라우저와 Node.js 모두에서 사용 가능한 타입 안전한 이벤트 에미터이다.
  * 내부적으로 EventTarget을 사용하여 구현되어 있다.
  *
- * @typeParam T 이벤트 타입 맵. 키는 이벤트 이름, 값은 이벤트 데이터 타입
+ * @typeParam TEvents 이벤트 타입 맵. 키는 이벤트 이름, 값은 이벤트 데이터 타입
  *
  * @example
  * interface MyEvents {
@@ -20,7 +20,7 @@
  * emitter.emit("data", "hello");
  * emitter.emit("done"); // void 타입은 인자 없이 호출
  */
-export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string, unknown>> {
+export class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>> {
   private readonly _target = new EventTarget();
   // 이벤트 타입별로 리스너 맵 관리 (같은 리스너를 다른 이벤트에 등록 가능)
   // 다형적 리스너 관리를 위해 Function 타입 사용
@@ -33,7 +33,7 @@ export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string,
    * @param listener 이벤트 핸들러
    * @note 같은 리스너를 같은 이벤트에 중복 등록하면 무시됨
    */
-  on<K extends keyof T & string>(type: K, listener: (data: T[K]) => void): void {
+  on<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
     // 이벤트 타입별 맵 가져오거나 생성
     let typeMap = this._listenerMap.get(type);
     if (!typeMap) {
@@ -55,7 +55,7 @@ export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string,
    * @param type 이벤트 타입
    * @param listener 제거할 이벤트 핸들러
    */
-  off<K extends keyof T & string>(type: K, listener: (data: T[K]) => void): void {
+  off<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
     const typeMap = this._listenerMap.get(type);
     if (!typeMap) return;
 
@@ -77,7 +77,7 @@ export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string,
    * @param type 이벤트 타입
    * @param args 이벤트 데이터 (void 타입이면 생략)
    */
-  emit<K extends keyof T & string>(type: K, ...args: T[K] extends void ? [] : [data: T[K]]): void {
+  emit<K extends keyof TEvents & string>(type: K, ...args: TEvents[K] extends void ? [] : [data: TEvents[K]]): void {
     this._target.dispatchEvent(new CustomEvent(type, { detail: args[0] }));
   }
 
@@ -87,7 +87,7 @@ export class EventEmitter<T extends { [K in keyof T]: unknown } = Record<string,
    * @param type 이벤트 타입
    * @returns 등록된 리스너 수
    */
-  listenerCount<K extends keyof T & string>(type: K): number {
+  listenerCount<K extends keyof TEvents & string>(type: K): number {
     return this._listenerMap.get(type)?.size ?? 0;
   }
 

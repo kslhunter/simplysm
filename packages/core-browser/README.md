@@ -12,13 +12,6 @@ npm install @simplysm/core-browser
 pnpm add @simplysm/core-browser
 ```
 
-### Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities (error classes, etc.) |
-| `tabbable` | Focusable element detection |
-
 ## Main Modules
 
 ### Element Extension Methods

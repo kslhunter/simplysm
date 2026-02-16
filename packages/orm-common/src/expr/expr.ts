@@ -23,9 +23,9 @@ interface WinSpecInput {
 /**
  * Switch 표현식 빌더 인터페이스
  */
-export interface SwitchExprBuilder<T extends ColumnPrimitive> {
-  case(condition: WhereExprUnit, then: ExprInput<T>): SwitchExprBuilder<T>;
-  default(value: ExprInput<T>): ExprUnit<T>;
+export interface SwitchExprBuilder<TPrimitive extends ColumnPrimitive> {
+  case(condition: WhereExprUnit, then: ExprInput<TPrimitive>): SwitchExprBuilder<TPrimitive>;
+  default(value: ExprInput<TPrimitive>): ExprUnit<TPrimitive>;
 }
 
 /**
@@ -2015,23 +2015,27 @@ export const expr = {
 //#region ========== Internal Helpers ==========
 
 // 여러 값 중 첫 번째 non-null 반환 (COALESCE)
-function ifNull<T extends ColumnPrimitive>(
-  ...args: [ExprInput<T | undefined>, ...ExprInput<T | undefined>[], ExprInput<NonNullable<T>>]
-): ExprUnit<NonNullable<T>>;
-function ifNull<T extends ColumnPrimitive>(...args: ExprInput<T>[]): ExprUnit<T>;
-function ifNull<T extends ColumnPrimitive>(...args: ExprInput<T>[]): ExprUnit<T> {
+function ifNull<TPrimitive extends ColumnPrimitive>(
+  ...args: [
+    ExprInput<TPrimitive | undefined>,
+    ...ExprInput<TPrimitive | undefined>[],
+    ExprInput<NonNullable<TPrimitive>>,
+  ]
+): ExprUnit<NonNullable<TPrimitive>>;
+function ifNull<TPrimitive extends ColumnPrimitive>(...args: ExprInput<TPrimitive>[]): ExprUnit<TPrimitive>;
+function ifNull<TPrimitive extends ColumnPrimitive>(...args: ExprInput<TPrimitive>[]): ExprUnit<TPrimitive> {
   return new ExprUnit(findDataType(args), {
     type: "ifNull",
     args: args.map((a) => toExpr(a)),
   });
 }
 
-function createSwitchBuilder<T extends ColumnPrimitive>(): SwitchExprBuilder<T> {
+function createSwitchBuilder<TPrimitive extends ColumnPrimitive>(): SwitchExprBuilder<TPrimitive> {
   const cases: { when: WhereExpr; then: Expr }[] = [];
-  const thenValues: ExprInput<T>[] = []; // then 값들 저장
+  const thenValues: ExprInput<TPrimitive>[] = []; // then 값들 저장
 
   return {
-    case(condition: WhereExprUnit, then: ExprInput<T>): typeof this {
+    case(condition: WhereExprUnit, then: ExprInput<TPrimitive>): typeof this {
       cases.push({
         when: condition.expr,
         then: toExpr(then),
@@ -2039,10 +2043,10 @@ function createSwitchBuilder<T extends ColumnPrimitive>(): SwitchExprBuilder<T> 
       thenValues.push(then);
       return this;
     },
-    default(value: ExprInput<T>): ExprUnit<T> {
+    default(value: ExprInput<TPrimitive>): ExprUnit<TPrimitive> {
       const allValues = [...thenValues, value];
       // 1. ExprUnit에서 dataType 찾기
-      const exprUnit = allValues.find((v): v is ExprUnit<T> => v instanceof ExprUnit);
+      const exprUnit = allValues.find((v): v is ExprUnit<TPrimitive> => v instanceof ExprUnit);
       if (exprUnit) {
         return new ExprUnit(exprUnit.dataType, {
           type: "switch",
@@ -2073,8 +2077,8 @@ export function toExpr(value: ExprInput<ColumnPrimitive>): Expr {
   return { type: "value", value };
 }
 
-function findDataType<T extends ColumnPrimitive>(args: ExprInput<T>[]): ColumnPrimitiveStr {
-  const exprUnit = args.find((a): a is ExprUnit<T> => a instanceof ExprUnit);
+function findDataType<TPrimitive extends ColumnPrimitive>(args: ExprInput<TPrimitive>[]): ColumnPrimitiveStr {
+  const exprUnit = args.find((a): a is ExprUnit<TPrimitive> => a instanceof ExprUnit);
   if (!exprUnit) {
     throw new Error("args중 적어도 하나는 ExprUnit이어야 합니다.");
   }

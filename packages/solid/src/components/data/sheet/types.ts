@@ -1,8 +1,8 @@
 import type { JSX } from "solid-js";
 
-export interface DataSheetProps<T> {
+export interface DataSheetProps<TItem> {
   // 데이터
-  items?: T[];
+  items?: TItem[];
   // 설정
   persistKey?: string;
   hideConfigBar?: boolean;
@@ -23,29 +23,29 @@ export interface DataSheetProps<T> {
 
   // 선택
   selectMode?: "single" | "multiple";
-  selectedItems?: T[];
-  onSelectedItemsChange?: (items: T[]) => void;
+  selectedItems?: TItem[];
+  onSelectedItemsChange?: (items: TItem[]) => void;
   autoSelect?: "click";
-  isItemSelectable?: (item: T) => boolean | string;
+  isItemSelectable?: (item: TItem) => boolean | string;
 
   // 트리 확장
-  expandedItems?: T[];
-  onExpandedItemsChange?: (items: T[]) => void;
-  getChildren?: (item: T, index: number) => T[] | undefined;
+  expandedItems?: TItem[];
+  onExpandedItemsChange?: (items: TItem[]) => void;
+  getChildren?: (item: TItem, index: number) => TItem[] | undefined;
 
   // 셀 스타일
-  cellClass?: (item: T, colKey: string) => string | undefined;
-  cellStyle?: (item: T, colKey: string) => string | undefined;
+  cellClass?: (item: TItem, colKey: string) => string | undefined;
+  cellStyle?: (item: TItem, colKey: string) => string | undefined;
 
   // 재정렬
-  onItemsReorder?: (event: DataSheetReorderEvent<T>) => void;
+  onItemsReorder?: (event: DataSheetReorderEvent<TItem>) => void;
 
   // 기타
   class?: string;
   children: JSX.Element;
 }
 
-export interface DataSheetColumnProps<T> {
+export interface DataSheetColumnProps<TItem> {
   key: string;
   header?: string | string[];
   headerContent?: () => JSX.Element;
@@ -59,11 +59,11 @@ export interface DataSheetColumnProps<T> {
   class?: string;
   sortable?: boolean;
   resizable?: boolean;
-  children: (ctx: DataSheetCellContext<T>) => JSX.Element;
+  children: (ctx: DataSheetCellContext<TItem>) => JSX.Element;
 }
 
-export interface DataSheetCellContext<T> {
-  item: T;
+export interface DataSheetCellContext<TItem> {
+  item: TItem;
   index: number;
   depth: number;
 }
@@ -84,7 +84,7 @@ export interface DataSheetConfigColumn {
   hidden?: boolean;
 }
 
-export interface DataSheetColumnDef<T> {
+export interface DataSheetColumnDef<TItem> {
   __type: "sheet-column";
   key: string;
   header: string[];
@@ -99,7 +99,7 @@ export interface DataSheetColumnDef<T> {
   class?: string;
   sortable: boolean;
   resizable: boolean;
-  cell: (ctx: DataSheetCellContext<T>) => JSX.Element;
+  cell: (ctx: DataSheetCellContext<TItem>) => JSX.Element;
 }
 
 export interface HeaderDef {
@@ -114,21 +114,21 @@ export interface HeaderDef {
   headerContent?: () => JSX.Element;
 }
 
-export interface FlatItem<T> {
-  item: T;
+export interface FlatItem<TItem> {
+  item: TItem;
   index: number;
   depth: number;
   hasChildren: boolean;
-  parent?: T;
+  parent?: TItem;
 }
 
 // 드래그 앤 드롭 위치
 export type DataSheetDragPosition = "before" | "after" | "inside";
 
 // 재정렬 이벤트
-export interface DataSheetReorderEvent<T> {
-  item: T;
-  targetItem: T;
+export interface DataSheetReorderEvent<TItem> {
+  item: TItem;
+  targetItem: TItem;
   position: DataSheetDragPosition;
 }
 

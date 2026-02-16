@@ -19,11 +19,11 @@ import consola from "consola";
  *   map.dispose();
  * }
  */
-export class LazyGcMap<K, V> {
+export class LazyGcMap<TKey, TValue> {
   private static readonly _logger = consola.withTag("LazyGcMap");
 
   // 실제 데이터와 마지막 접근 시간을 함께 저장
-  private readonly _map = new Map<K, { value: V; lastAccess: number }>();
+  private readonly _map = new Map<TKey, { value: TValue; lastAccess: number }>();
 
   // GC 타이머
   private _gcTimer?: ReturnType<typeof setInterval>;
@@ -42,7 +42,7 @@ export class LazyGcMap<K, V> {
     private readonly _options: {
       gcInterval?: number;
       expireTime: number;
-      onExpire?: (key: K, value: V) => void | Promise<void>;
+      onExpire?: (key: TKey, value: TValue) => void | Promise<void>;
     },
   ) {}
 
@@ -52,13 +52,13 @@ export class LazyGcMap<K, V> {
   }
 
   /** 키 존재 여부 확인 (접근 시간 갱신 안함) */
-  has(key: K): boolean {
+  has(key: TKey): boolean {
     if (this._isDestroyed) return false;
     return this._map.has(key);
   }
 
   /** 값 조회 (접근 시간 갱신됨) */
-  get(key: K): V | undefined {
+  get(key: TKey): TValue | undefined {
     if (this._isDestroyed) return undefined;
     const item = this._map.get(key);
     if (item == null) return undefined;
@@ -69,7 +69,7 @@ export class LazyGcMap<K, V> {
   }
 
   /** 값 저장 (접근 시간 설정 및 GC 타이머 시작) */
-  set(key: K, value: V): void {
+  set(key: TKey, value: TValue): void {
     if (this._isDestroyed) return;
     this._map.set(key, { value, lastAccess: Date.now() });
     // 데이터가 들어왔으므로 GC 타이머 가동
@@ -77,7 +77,7 @@ export class LazyGcMap<K, V> {
   }
 
   /** 항목 삭제 (비었으면 GC 타이머 중지) */
-  delete(key: K): boolean {
+  delete(key: TKey): boolean {
     if (this._isDestroyed) return false;
     const result = this._map.delete(key);
     // 비었으면 타이머 중지
@@ -115,7 +115,7 @@ export class LazyGcMap<K, V> {
    * @param factory 키가 없을 때 값을 생성하는 함수
    * @returns 기존 값 또는 새로 생성된 값
    */
-  getOrCreate(key: K, factory: () => V): V {
+  getOrCreate(key: TKey, factory: () => TValue): TValue {
     if (this._isDestroyed) {
       throw new Error("LazyGcMap이 이미 dispose되었습니다.");
     }
@@ -131,7 +131,7 @@ export class LazyGcMap<K, V> {
   }
 
   /** 값들만 순회 (Iterator) */
-  *values(): IterableIterator<V> {
+  *values(): IterableIterator<TValue> {
     if (this._isDestroyed) return;
     for (const item of this._map.values()) {
       yield item.value;
@@ -139,13 +139,13 @@ export class LazyGcMap<K, V> {
   }
 
   /** 키들만 순회 (Iterator) */
-  *keys(): IterableIterator<K> {
+  *keys(): IterableIterator<TKey> {
     if (this._isDestroyed) return;
     yield* this._map.keys();
   }
 
   /** 엔트리 순회 (Iterator) */
-  *entries(): IterableIterator<[K, V]> {
+  *entries(): IterableIterator<[TKey, TValue]> {
     if (this._isDestroyed) return;
     for (const [key, item] of this._map.entries()) {
       yield [key, item.value];
@@ -173,7 +173,7 @@ export class LazyGcMap<K, V> {
       const now = Date.now();
 
       // 1. 만료된 항목 수집 (삭제 전)
-      const expiredEntries: { key: K; item: { value: V; lastAccess: number } }[] = [];
+      const expiredEntries: { key: TKey; item: { value: TValue; lastAccess: number } }[] = [];
       for (const [key, item] of this._map) {
         if (now - item.lastAccess > this._options.expireTime) {
           expiredEntries.push({ key, item });

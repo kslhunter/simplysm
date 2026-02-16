@@ -9,18 +9,6 @@ pnpm add @simplysm/capacitor-plugin-usb-storage
 npx cap sync
 ```
 
-### Peer Dependencies
-
-| Package | Version |
-|--------|------|
-| `@capacitor/core` | `^7.4.4` |
-
-### Internal Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities such as Base64 conversion, `Bytes` type |
-
 ## Supported Platforms
 
 | Platform | Supported | Implementation |
@@ -35,7 +23,7 @@ npx cap sync
 - `minSdk`: 23 (Android 6.0 or higher)
 - Maximum file read size: 100MB
 
-## Main API
+## Main Modules
 
 ### UsbStorage (Static Class)
 
@@ -259,6 +247,20 @@ The Android native layer uses the `libaums` library to directly handle the USB M
 - **Permission Management**: Requests and verifies USB device access permission through Android's `UsbManager`. On Android 12 (API 31) and above, it uses `PendingIntent.FLAG_MUTABLE`, and on Android 13 (API 33) and above, it applies the `RECEIVER_NOT_EXPORTED` flag.
 - **File System Access**: Mounts the file system of the first partition to perform directory navigation and file reading.
 - **Data Transfer**: File data is Base64-encoded for transmission to the JavaScript layer.
+
+## Dependencies
+
+### Peer Dependencies
+
+| Package | Version |
+|--------|------|
+| `@capacitor/core` | `^7.4.4` |
+
+### Internal Dependencies
+
+| Package | Description |
+|--------|------|
+| `@simplysm/core-common` | Common utilities such as Base64 conversion, `Bytes` type |
 
 ## License
 

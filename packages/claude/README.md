@@ -358,7 +358,7 @@ Runs automatically on `pnpm install` / `npm install`. Copies `sd-*` assets from 
 
 Runs before `npm pack` / `npm publish` (via `prepack` script). Syncs `sd-*` assets from the project root's `.claude/` directory into the package's `claude/` directory for distribution.
 
-## Notes
+## Caveats
 
 - If using `pnpm install --ignore-scripts`, the postinstall won't run
 - If using `onlyBuiltDependencies` in `pnpm-workspace.yaml`, add `@simplysm/claude` to the list

@@ -7,7 +7,7 @@ export function normalizeHeader(header?: string | string[]): string[] {
   return header;
 }
 
-export function buildHeaderTable<T>(columns: DataSheetColumnDef<T>[]): (HeaderDef | null)[][] {
+export function buildHeaderTable<TItem>(columns: DataSheetColumnDef<TItem>[]): (HeaderDef | null)[][] {
   if (columns.length === 0) return [];
 
   const maxDepth = Math.max(...columns.map((c) => c.header.length));
@@ -91,11 +91,11 @@ function isSameGroup(padded: string[][], colA: number, colB: number, startRow: n
   return true;
 }
 
-export function flattenTree<T>(
-  items: T[],
-  expandedItems: T[],
-  getChildren?: (item: T, index: number) => T[] | undefined,
-): FlatItem<T>[] {
+export function flattenTree<TNode>(
+  items: TNode[],
+  expandedItems: TNode[],
+  getChildren?: (item: TNode, index: number) => TNode[] | undefined,
+): FlatItem<TNode>[] {
   if (!getChildren) {
     return items.map((item, i) => ({
       item,
@@ -105,10 +105,10 @@ export function flattenTree<T>(
     }));
   }
 
-  const result: FlatItem<T>[] = [];
+  const result: FlatItem<TNode>[] = [];
   let index = 0;
 
-  function walk(list: T[], depth: number, parent?: T): void {
+  function walk(list: TNode[], depth: number, parent?: TNode): void {
     for (const item of list) {
       const children = getChildren!(item, index);
       const hasChildren = children != null && children.length > 0;
@@ -125,11 +125,14 @@ export function flattenTree<T>(
   return result;
 }
 
-export function collectAllExpandable<T>(items: T[], getChildren: (item: T, index: number) => T[] | undefined): T[] {
-  const result: T[] = [];
+export function collectAllExpandable<TItem>(
+  items: TItem[],
+  getChildren: (item: TItem, index: number) => TItem[] | undefined,
+): TItem[] {
+  const result: TItem[] = [];
   let index = 0;
 
-  function walk(list: T[]): void {
+  function walk(list: TItem[]): void {
     for (const item of list) {
       const children = getChildren(item, index);
       index++;
@@ -144,12 +147,12 @@ export function collectAllExpandable<T>(items: T[], getChildren: (item: T, index
   return result;
 }
 
-export function applySorting<T>(items: T[], sorts: SortingDef[]): T[] {
+export function applySorting<TItem>(items: TItem[], sorts: SortingDef[]): TItem[] {
   if (sorts.length === 0) return items;
 
   let result = [...items];
   for (const sort of [...sorts].reverse()) {
-    const selector = (item: T) => objGetChainValue(item, sort.key) as string | number | undefined;
+    const selector = (item: TItem) => objGetChainValue(item, sort.key) as string | number | undefined;
     result = sort.desc ? result.orderByDesc(selector) : result.orderBy(selector);
   }
   return result;

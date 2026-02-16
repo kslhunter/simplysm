@@ -257,7 +257,7 @@ export async function fsReadBuffer(targetPath: string): Promise<Buffer> {
  * JSON 파일 읽기 (JsonConvert 사용).
  * @param targetPath - 읽을 JSON 파일 경로
  */
-export function fsReadJsonSync<T = unknown>(targetPath: string): T {
+export function fsReadJsonSync<TData = unknown>(targetPath: string): TData {
   const contents = fsReadSync(targetPath);
   try {
     return jsonParse(contents);
@@ -271,10 +271,10 @@ export function fsReadJsonSync<T = unknown>(targetPath: string): T {
  * JSON 파일 읽기 (JsonConvert 사용, 비동기).
  * @param targetPath - 읽을 JSON 파일 경로
  */
-export async function fsReadJson<T = unknown>(targetPath: string): Promise<T> {
+export async function fsReadJson<TData = unknown>(targetPath: string): Promise<TData> {
   const contents = await fsRead(targetPath);
   try {
-    return jsonParse<T>(contents);
+    return jsonParse<TData>(contents);
   } catch (err) {
     const preview = contents.length > 500 ? contents.slice(0, 500) + "...(truncated)" : contents;
     throw new SdError(err, targetPath + os.EOL + preview);

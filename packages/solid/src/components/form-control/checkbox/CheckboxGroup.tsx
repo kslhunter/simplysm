@@ -4,9 +4,9 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { Checkbox } from "./Checkbox";
 import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
 
-interface CheckboxGroupContextValue<T> {
-  value: () => T[];
-  toggle: (item: T) => void;
+interface CheckboxGroupContextValue<TValue> {
+  value: () => TValue[];
+  toggle: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
   theme: () => CheckboxTheme | undefined;
@@ -18,13 +18,13 @@ const CheckboxGroupContext = createContext<CheckboxGroupContextValue<any>>();
 
 // --- CheckboxGroup.Item ---
 
-interface CheckboxGroupItemProps<T> {
-  value: T;
+interface CheckboxGroupItemProps<TValue> {
+  value: TValue;
   disabled?: boolean;
   children?: JSX.Element;
 }
 
-function CheckboxGroupItemInner<T>(props: CheckboxGroupItemProps<T>) {
+function CheckboxGroupItemInner<TValue>(props: CheckboxGroupItemProps<TValue>) {
   const ctx = useContext(CheckboxGroupContext);
   if (!ctx) throw new Error("CheckboxGroup.Item은 CheckboxGroup 내부에서만 사용할 수 있습니다");
 
@@ -47,9 +47,9 @@ function CheckboxGroupItemInner<T>(props: CheckboxGroupItemProps<T>) {
 
 // --- CheckboxGroup ---
 
-interface CheckboxGroupProps<T> {
-  value?: T[];
-  onValueChange?: (value: T[]) => void;
+interface CheckboxGroupProps<TValue> {
+  value?: TValue[];
+  onValueChange?: (value: TValue[]) => void;
   disabled?: boolean;
   size?: CheckboxSize;
   theme?: CheckboxTheme;
@@ -61,7 +61,7 @@ interface CheckboxGroupProps<T> {
 }
 
 interface CheckboxGroupComponent {
-  <T = unknown>(props: CheckboxGroupProps<T>): JSX.Element;
+  <TValue = unknown>(props: CheckboxGroupProps<TValue>): JSX.Element;
   Item: typeof CheckboxGroupItemInner;
 }
 

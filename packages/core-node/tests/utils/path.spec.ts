@@ -5,7 +5,7 @@ import {
   pathNorm,
   pathIsChildPath,
   pathChangeFileDirectory,
-  pathGetBasenameWithoutExt,
+  pathBasenameWithoutExt,
   pathFilterByTargets,
   type NormPath,
 } from "../../src/utils/path";
@@ -130,26 +130,26 @@ describe("path 함수들", () => {
 
   //#endregion
 
-  //#region getBasenameWithoutExt
+  //#region basenameWithoutExt
 
-  describe("pathGetBasenameWithoutExt", () => {
+  describe("pathBasenameWithoutExt", () => {
     it("단일 확장자 제거 (basename만 반환)", () => {
-      const result = pathGetBasenameWithoutExt("/path/to/file.txt");
+      const result = pathBasenameWithoutExt("/path/to/file.txt");
       expect(result).toBe("file");
     });
 
     it("다중 확장자에서 마지막 확장자만 제거", () => {
-      const result = pathGetBasenameWithoutExt("/path/to/file.spec.ts");
+      const result = pathBasenameWithoutExt("/path/to/file.spec.ts");
       expect(result).toBe("file.spec");
     });
 
     it("확장자가 없는 파일은 basename 반환", () => {
-      const result = pathGetBasenameWithoutExt("/path/to/file");
+      const result = pathBasenameWithoutExt("/path/to/file");
       expect(result).toBe("file");
     });
 
     it("숨김 파일(점으로 시작)은 그대로 반환", () => {
-      const result = pathGetBasenameWithoutExt("/path/to/.gitignore");
+      const result = pathBasenameWithoutExt("/path/to/.gitignore");
       expect(result).toBe(".gitignore");
     });
   });

@@ -12,15 +12,7 @@ npm install @simplysm/storage
 pnpm add @simplysm/storage
 ```
 
-### Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities (`Bytes` type, etc.) |
-| `basic-ftp` | FTP/FTPS protocol implementation |
-| `ssh2-sftp-client` | SFTP protocol implementation |
-
-## Core Modules
+## Main Modules
 
 ### Export List
 
@@ -277,7 +269,7 @@ try {
 }
 ```
 
-## Important Notes
+## Caveats
 
 ### Connection Management
 

@@ -10,13 +10,6 @@ npm install @simplysm/service-common
 pnpm add @simplysm/service-common
 ```
 
-### Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities (`Uuid`, `LazyGcMap`, `jsonStringify`, `jsonParse`, etc.) |
-| `@simplysm/orm-common` | ORM types (`Dialect`, `IsolationLevel`, `QueryDef`, `ColumnMeta`, `ResultMeta`, etc.) |
-
 ## Main Modules
 
 ### Module Structure
@@ -26,12 +19,9 @@ pnpm add @simplysm/service-common
 | `protocol/protocol.types` | Protocol constants, message type definitions |
 | `protocol/service-protocol` | Message encoding/decoding class |
 | `service-types/orm-service.types` | ORM service interface and DB connection options |
-| `service-types/crypto-service.types` | Crypto service interface and config |
 | `service-types/auto-update-service.types` | Auto-update service interface |
 | `types` | `ServiceUploadResult` |
 | `define-event` | `defineEvent`, `ServiceEventDef` |
-
----
 
 ## ServiceProtocol
 
@@ -96,8 +86,6 @@ for (const chunk of chunks) {
 protocol.dispose();
 ```
 
----
-
 ## Protocol Constants (PROTOCOL_CONFIG)
 
 A constant object that controls protocol behavior.
@@ -113,8 +101,6 @@ import { PROTOCOL_CONFIG } from "@simplysm/service-common";
 | `CHUNK_SIZE` | 300KB (307,200 bytes) | Body size of each chunk when split |
 | `GC_INTERVAL` | 10s (10,000ms) | Garbage collection cycle for incomplete messages |
 | `EXPIRE_TIME` | 60s (60,000ms) | Expiration time for incomplete messages. Removed from memory if exceeded |
-
----
 
 ## Message Types
 
@@ -156,8 +142,6 @@ Type definitions for messages exchanged between client and server. `ServiceMessa
 | `ServiceGetEventListenerInfosMessage` | `"evt:gets"` | Client -> Server | `{ name }` | Event listener info list query |
 | `ServiceEmitEventMessage` | `"evt:emit"` | Client -> Server | `{ keys, data }` | Event emission |
 | `ServiceEventMessage` | `"evt:on"` | Server -> Client | `{ keys, data }` | Event notification |
-
----
 
 ## defineEvent / ServiceEventDef
 
@@ -207,8 +191,6 @@ await client.addEventListener(
 );
 ```
 
----
-
 ## ServiceUploadResult
 
 An interface representing file upload results.
@@ -218,8 +200,6 @@ An interface representing file upload results.
 | `path` | `string` | Storage path on server |
 | `filename` | `string` | Original filename |
 | `size` | `number` | File size (bytes) |
-
----
 
 ## Service Interfaces
 
@@ -248,22 +228,6 @@ Defines database connection, transaction management, and query execution capabil
 | `configName?` | `string` | Config name to reference in server settings |
 | `config?` | `Record<string, unknown>` | Directly passed connection config |
 
-### CryptoService
-
-Defines SHA256 hash generation and AES symmetric key encryption/decryption capabilities.
-
-| Method | Parameters | Return Type | Description |
-|--------|---------|-----------|------|
-| `encrypt` | `data: string \| Bytes` | `Promise<string>` | Generate SHA256 hash |
-| `encryptAes` | `data: Bytes` | `Promise<string>` | AES encryption |
-| `decryptAes` | `encText: string` | `Promise<Bytes>` | AES decryption |
-
-#### CryptoConfig
-
-| Field | Type | Description |
-|------|------|------|
-| `key` | `string` | AES encryption key |
-
 ### AutoUpdateService
 
 Defines a service for querying the latest version information of a client application.
@@ -274,14 +238,12 @@ Defines a service for querying the latest version information of a client applic
 
 Pass values like `"win32"`, `"darwin"`, `"linux"` to `platform`.
 
----
-
 ## Caveats
 
 - `ServiceProtocol` instances are created via `createServiceProtocol()` factory function and internally use `LazyGcMap` to manage incomplete split messages. After use, you must call `dispose()` to release the GC timer.
 - Encoding or decoding messages exceeding `PROTOCOL_CONFIG.MAX_TOTAL_SIZE` (100MB) will throw an `ArgumentError`.
 - Passing binary data less than 28 bytes during decoding will throw an `ArgumentError`.
-- Service interfaces (`OrmService`, `CryptoService`, etc.) only provide type definitions. Actual implementations are handled by the `@simplysm/service-server` package.
+- Service interfaces (`OrmService`, `AutoUpdateService`, etc.) only provide type definitions. Actual implementations are handled by the `@simplysm/service-server` package.
 - The `$info` and `$data` properties of `ServiceEventDef` are declared with `declare` and do not exist at runtime; they are only used for TypeScript type extraction.
 
 ## License

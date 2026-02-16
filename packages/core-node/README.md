@@ -2,10 +2,6 @@
 
 A Node.js-specific utility package for the Simplysm framework. It provides path handling, file system operations, file change detection, and type-safe Worker thread wrappers.
 
-## Requirements
-
-- Node.js 20.11+ (requires `import.meta.filename`/`import.meta.dirname` support)
-
 ## Installation
 
 ```bash
@@ -13,6 +9,10 @@ npm install @simplysm/core-node
 # or
 pnpm add @simplysm/core-node
 ```
+
+### Requirements
+
+- Node.js 20.11+ (requires `import.meta.filename`/`import.meta.dirname` support)
 
 ## Main Modules
 
@@ -27,7 +27,7 @@ Provides path conversion, normalization, comparison, and filtering functions.
 | `pathNorm(...paths)` | Normalizes paths and returns as `NormPath`. Converts to absolute path and normalizes with platform-specific separators. |
 | `pathIsChildPath(childPath, parentPath)` | Checks if `childPath` is a child path of `parentPath`. Returns `false` for identical paths. |
 | `pathChangeFileDirectory(filePath, fromDir, toDir)` | Changes the directory of a file path. Throws an error if the file is not within `fromDir`. |
-| `pathGetBasenameWithoutExt(filePath)` | Returns the filename (basename) without extension. |
+| `pathBasenameWithoutExt(filePath)` | Returns the filename (basename) without extension. |
 | `pathFilterByTargets(files, targets, cwd)` | Filters files based on target path list. Returns `files` as-is if `targets` is an empty array. |
 
 ```typescript
@@ -36,7 +36,7 @@ import {
   pathNorm,
   pathIsChildPath,
   pathChangeFileDirectory,
-  pathGetBasenameWithoutExt,
+  pathBasenameWithoutExt,
   pathFilterByTargets,
 } from "@simplysm/core-node";
 
@@ -56,16 +56,14 @@ pathIsChildPath("/a/b", "/a/b");   // false (same path)
 pathChangeFileDirectory("/a/b/c.txt", "/a", "/x"); // "/x/b/c.txt"
 
 // Return filename without extension
-pathGetBasenameWithoutExt("file.txt");             // "file"
-pathGetBasenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
+pathBasenameWithoutExt("file.txt");             // "file"
+pathBasenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
 
 // Filter files by target paths
 const files = ["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts"];
 pathFilterByTargets(files, ["src"], "/proj");
 // ["/proj/src/a.ts", "/proj/src/b.ts"]
 ```
-
----
 
 ### File System Utilities (`utils/fs`)
 
@@ -216,8 +214,6 @@ const configs = await fsFindAllParentChildPaths(
 
 > It's recommended to use async functions except when async cannot be used (e.g., in constructors). Sync functions block the event loop and can cause performance degradation.
 
----
-
 ### FsWatcher (`features/fs-watcher`)
 
 A chokidar-based file system change detection wrapper with glob pattern support. It merges events that occur within a short time and invokes callbacks.
@@ -259,8 +255,6 @@ watcher.onChange({ delay: 300 }, (changes) => {
 // Stop watching
 await watcher.close();
 ```
-
----
 
 ### Worker (`worker/`)
 
@@ -349,9 +343,7 @@ worker.off("progress", listener);
 await worker.terminate();
 ```
 
----
-
-## Important Notes
+## Caveats
 
 - All functions throw errors wrapped in `SdError` to include path information.
 - `fsRm` (async) retries up to 6 times (500ms intervals) for transient errors like file locks, but `fsRmSync` (sync) fails immediately without retries.

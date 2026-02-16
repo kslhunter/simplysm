@@ -19,8 +19,10 @@ export interface WorkerModule {
  * 워커 메서드는 postMessage 기반으로 동작하여 항상 비동기이므로,
  * 동기 메서드 타입도 `Promise<Awaited<R>>`로 변환한다.
  */
-export type PromisifyMethods<T> = {
-  [K in keyof T]: T[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never;
+export type PromisifyMethods<TMethods> = {
+  [K in keyof TMethods]: TMethods[K] extends (...args: infer P) => infer R
+    ? (...args: P) => Promise<Awaited<R>>
+    : never;
 };
 
 /**

@@ -1,22 +1,22 @@
 {
   "name": "@simplysm/claude",
-  "sideEffects": false,
   "version": "13.0.16",
   "description": "Simplysm Claude Code skills/agents — auto-installs via postinstall",
   "author": "김석래",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/claude"
   },
-  "license": "Apache-2.0",
+  "type": "module",
   "files": [
     "scripts",
     "claude"
   ],
+  "sideEffects": false,
   "scripts": {
     "postinstall": "node scripts/postinstall.mjs",
     "prepack": "node scripts/sync-claude-assets.mjs"
-  },
-  "type": "module"
+  }
 }

@@ -11,12 +11,12 @@ import {
 
 void ripple;
 
-export interface ComboboxItemProps<T = unknown> extends Omit<
+export interface ComboboxItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "value" | "onClick"
 > {
   /** 아이템의 값 */
-  value: T;
+  value: TValue;
 
   /** 비활성화 */
   disabled?: boolean;

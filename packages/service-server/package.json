@@ -1,15 +1,14 @@
 {
   "name": "@simplysm/service-server",
-  "sideEffects": false,
   "version": "13.0.16",
   "description": "심플리즘 패키지 - 서비스 모듈 (server)",
   "author": "김석래",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/service-server"
   },
-  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,6 +17,7 @@
     "src",
     "docs"
   ],
+  "sideEffects": false,
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",

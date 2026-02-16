@@ -1,2 +1,5 @@
+// Config
 export * from "./sd-config.types";
-export { createViteConfig, type ViteConfigOptions } from "./utils/vite-config";
+
+// Vite
+export * from "./utils/vite-config";

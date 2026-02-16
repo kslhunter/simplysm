@@ -54,10 +54,10 @@ export function pathChangeFileDirectory(filePath: string, fromDirectory: string,
  * 확장자를 제거한 파일명(basename)을 반환.
  *
  * @example
- * pathGetBasenameWithoutExt("file.txt"); // "file"
- * pathGetBasenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
+ * pathBasenameWithoutExt("file.txt"); // "file"
+ * pathBasenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
  */
-export function pathGetBasenameWithoutExt(filePath: string): string {
+export function pathBasenameWithoutExt(filePath: string): string {
   return path.basename(filePath, path.extname(filePath));
 }
 

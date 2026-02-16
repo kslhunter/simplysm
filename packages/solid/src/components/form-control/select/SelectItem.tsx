@@ -30,18 +30,18 @@ const SelectItemChildren: ParentComponent = (props) => (
   </div>
 );
 
-export interface SelectItemProps<T = unknown> extends Omit<
+export interface SelectItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
   "value" | "onClick"
 > {
   /** 아이템의 값 */
-  value: T;
+  value: TValue;
 
   /** 비활성화 */
   disabled?: boolean;
 }
 
-interface SelectItemComponent<T = unknown> extends ParentComponent<SelectItemProps<T>> {
+interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectItemProps<TValue>> {
   Children: typeof SelectItemChildren;
 }
 

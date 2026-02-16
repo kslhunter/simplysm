@@ -7,7 +7,7 @@ import { createSignal, createEffect } from "solid-js";
  * @remarks
  * 함수를 저장해야 할 경우 객체로 감싸기: `createControllableSignal<{ fn: () => void }>(...)`
  */
-type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
+type NotFunction<TValue> = TValue extends (...args: unknown[]) => unknown ? never : TValue;
 
 /**
  * Controlled/Uncontrolled 패턴을 지원하는 signal hook
@@ -35,11 +35,11 @@ type NotFunction<T> = T extends (...args: unknown[]) => unknown ? never : T;
  * setOpen(prev => !prev);
  * ```
  */
-export function createControllableSignal<T>(options: {
-  value: () => T & NotFunction<T>;
-  onChange: () => ((value: T) => void) | undefined;
+export function createControllableSignal<TValue>(options: {
+  value: () => TValue & NotFunction<TValue>;
+  onChange: () => ((value: TValue) => void) | undefined;
 }) {
-  const [internalValue, setInternalValue] = createSignal<T>(options.value());
+  const [internalValue, setInternalValue] = createSignal<TValue>(options.value());
 
   // props 변경 시 내부 상태 동기화 (props 우선)
   createEffect(() => {
@@ -49,8 +49,8 @@ export function createControllableSignal<T>(options: {
 
   const isControlled = () => options.onChange() !== undefined;
   const value = () => (isControlled() ? options.value() : internalValue());
-  const setValue = (newValue: T | ((prev: T) => T)) => {
-    const resolved = typeof newValue === "function" ? (newValue as (prev: T) => T)(value()) : newValue;
+  const setValue = (newValue: TValue | ((prev: TValue) => TValue)) => {
+    const resolved = typeof newValue === "function" ? (newValue as (prev: TValue) => TValue)(value()) : newValue;
 
     if (isControlled()) {
       options.onChange()?.(resolved);

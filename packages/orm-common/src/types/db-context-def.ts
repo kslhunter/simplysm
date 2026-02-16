@@ -79,9 +79,9 @@ export type DbContextInstance<TDef extends DbContextDef<any, any, any>> = DbCont
   };
 
 export interface DbContextConnectionMethods {
-  connect<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>;
-  connectWithoutTransaction<R>(callback: () => Promise<R>): Promise<R>;
-  trans<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>;
+  connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
+  connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult>;
+  trans<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult>;
 }
 
 export interface DbContextDdlMethods {

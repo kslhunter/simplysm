@@ -78,8 +78,8 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 
   // 타입 안전성을 위한 Proxy 생성 메소드
-  getService<T>(serviceName: string): RemoteService<T> {
-    return new Proxy({} as RemoteService<T>, {
+  getService<TService>(serviceName: string): RemoteService<TService> {
+    return new Proxy({} as RemoteService<TService>, {
       get: (_target, prop) => {
         const methodName = String(prop);
         return async (...params: unknown[]) => {
@@ -154,9 +154,11 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 }
 
-// T의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
-export type RemoteService<T> = {
-  [K in keyof T]: T[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never; // 함수가 아닌 프로퍼티는 안씀
+// TService의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
+export type RemoteService<TService> = {
+  [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
+    ? (...args: P) => Promise<Awaited<R>>
+    : never; // 함수가 아닌 프로퍼티는 안씀
 };
 
 export function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient {

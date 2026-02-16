@@ -393,7 +393,7 @@ export type RelationBuilderRecord = Record<
  *
  * @template T - FK 또는 RelationKey 빌더 타입
  */
-export type ExtractRelationTarget<T> = T extends
+export type ExtractRelationTarget<TRelation> = TRelation extends
   | ForeignKeyBuilder<any, infer TTargetFn>
   | RelationKeyBuilder<any, infer TTargetFn>
   ? ReturnType<TTargetFn> extends TableBuilder<infer TCols, infer TRels>
@@ -411,7 +411,7 @@ export type ExtractRelationTarget<T> = T extends
  *
  * @template T - FKTarget 또는 RelationKeyTarget 빌더 타입
  */
-export type ExtractRelationTargetResult<T> = T extends
+export type ExtractRelationTargetResult<TRelation> = TRelation extends
   | ForeignKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
   | RelationKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
   ? ReturnType<TTargetTableFn> extends TableBuilder<infer TCols, infer TRels>

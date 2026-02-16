@@ -194,6 +194,41 @@ Importing `core-common` adds extension methods to Array, Map, Set:
 
 → Before using extension methods: Verify actual existence in `core-common/src/extensions/` source. Do not guess methods that don't exist.
 
+### index.ts Export Pattern
+
+- Large packages (many exports): Use `#region`/`#endregion` for major sections + `//` comments for sub-groups
+- Small packages (≤10 exports): Use `//` comments only
+- Always use `export *` (wildcard) — avoid explicit `export type { ... } from "..."`
+
+```typescript
+// Large package example
+//#region ========== Schema ==========
+
+// Table
+export * from "./schema/table-builder";
+export * from "./schema/view-builder";
+
+// Factory
+export * from "./schema/factory/column-builder";
+
+//#endregion
+
+// Small package example
+// Core
+export * from "./excel-workbook";
+export * from "./excel-worksheet";
+```
+
+### Generic Type Parameters
+
+- Always use descriptive names — single-letter `T` alone is not allowed
+- Use `T` prefix + descriptive name: `TItem`, `TData`, `TResult`, `TKey`, `TValue`, `TAuthInfo`
+
+### JSDoc Convention
+
+- Not enforced — omit when code is self-explanatory
+- When written, use Korean
+
 ### SolidJS Rules
 
 **SolidJS is NOT React! Do not infer SolidJS behavior from React knowledge.**
@@ -355,3 +390,21 @@ When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-si
 - Document the package's **public API, key functions/classes, props, configuration options** with code examples
 - Code examples must include **import paths** (helps Claude understand which package to import from)
 - Before writing/modifying, Read existing README patterns to maintain consistent structure
+
+**Standard README Structure:**
+```markdown
+# @simplysm/{package-name}
+
+{One-line description}
+
+## Installation
+
+## Main Modules
+### {Module Category}
+- Class/function description + code examples
+
+## Types
+
+## Dependencies (only when peer deps exist)
+```
+- Unify heading levels: `##` for major sections, `###` for sub-sections

@@ -1,4 +1,4 @@
-export type { IBuilder, PackageInfo, BuilderOptions } from "./types";
-export { BaseBuilder } from "./BaseBuilder";
-export { LibraryBuilder } from "./LibraryBuilder";
-export { DtsBuilder } from "./DtsBuilder";
+export * from "./types";
+export * from "./BaseBuilder";
+export * from "./LibraryBuilder";
+export * from "./DtsBuilder";

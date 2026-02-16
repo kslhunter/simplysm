@@ -9,18 +9,6 @@ npm install @simplysm/capacitor-plugin-file-system
 npx cap sync
 ```
 
-### Peer Dependencies
-
-| Package | Version |
-|--------|------|
-| `@capacitor/core` | `^7.4.4` |
-
-### Internal Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities such as base64 conversion, `Bytes` type |
-
 ## Supported Platforms
 
 | Platform | Supported | Implementation |
@@ -40,7 +28,7 @@ Different permission models are used depending on the Android version.
 
 The plugin automatically declares the necessary permissions in `AndroidManifest.xml`, so you don't need to add them separately in your app's manifest.
 
-## Main API
+## Main Modules
 
 All APIs are provided as static methods of the `FileSystem` class.
 
@@ -233,6 +221,20 @@ In web environments, it operates as an IndexedDB-based virtual file system (`Vir
 - `getStoragePath()` returns virtual paths in the format `/webfs/{type}`.
 - `getFileUri()` returns a Blob URL, which must be released with `URL.revokeObjectURL()` after use.
 - File data is base64-encoded and stored in IndexedDB.
+
+## Dependencies
+
+### Peer Dependencies
+
+| Package | Version |
+|--------|------|
+| `@capacitor/core` | `^7.4.4` |
+
+### Internal Dependencies
+
+| Package | Description |
+|--------|------|
+| `@simplysm/core-common` | Common utilities such as base64 conversion, `Bytes` type |
 
 ## License
 

@@ -12,14 +12,6 @@ npm install @simplysm/service-client
 pnpm add @simplysm/service-client
 ```
 
-### Dependencies
-
-| Package | Description |
-|--------|------|
-| `@simplysm/core-common` | Common utilities (EventEmitter, Uuid, etc.) |
-| `@simplysm/orm-common` | ORM query builder, schema definitions |
-| `@simplysm/service-common` | Service protocol, type definitions |
-
 ## Main Modules
 
 ### Core Functions and Classes

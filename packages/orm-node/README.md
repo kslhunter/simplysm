@@ -41,7 +41,7 @@ createOrm() (top-level entry point)
 - `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
 - Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers.
 
-## Core Modules
+## Main Modules
 
 ### Functions
 
@@ -389,7 +389,7 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 | Azure SQL Database | `tedious` | `"mssql-azure"` | - |
 | PostgreSQL | `pg`, `pg-copy-streams` | `"postgresql"` | 9.0+ |
 
-## Notes
+## Caveats
 
 ### Timeouts
 
@@ -409,7 +409,7 @@ DBMS-specific drivers (`mysql2`, `tedious`, `pg`) are lazy-loaded within `create
 
 `PooledDbConn.close()` returns the connection to the pool instead of closing the actual physical connection. If `close()` is called while a transaction is in progress, it automatically attempts to rollback before returning to the pool.
 
-## Optional Peer Dependencies
+## Dependencies
 
 | Package | Purpose |
 |--------|------|

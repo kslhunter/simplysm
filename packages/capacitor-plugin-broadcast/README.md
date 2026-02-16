@@ -11,14 +11,6 @@ npm install @simplysm/capacitor-plugin-broadcast
 npx cap sync
 ```
 
-### Requirements
-
-| Item | Version |
-|------|------|
-| `@capacitor/core` | `^7.4.4` |
-| Android `minSdk` | 23 |
-| Android `compileSdk` | 35 |
-
 ## Supported Platforms
 
 | Platform | Supported | Notes |
@@ -27,7 +19,7 @@ npx cap sync
 | iOS | No | Not supported |
 | Web | Partial | Stub implementation (outputs warning messages, no actual functionality) |
 
-## Main API
+## Main Modules
 
 ### `Broadcast` Class
 
@@ -244,6 +236,14 @@ The types of values that can be included in `extras` when calling `send()`, and 
 - The plugin automatically unregisters all BroadcastReceivers when the Activity is destroyed (`handleOnDestroy`).
 - On Android 13 (API 33, Tiramisu) and above, receivers are registered using the `RECEIVER_EXPORTED` flag.
 - To prevent memory leaks, it is recommended to unregister receivers that are no longer needed using the returned unsubscribe function or `unsubscribeAll()`.
+
+## Dependencies
+
+### Peer Dependencies
+
+| Package | Version |
+|--------|------|
+| `@capacitor/core` | `^7.4.4` |
 
 ## License
 

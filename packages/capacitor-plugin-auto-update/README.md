@@ -16,24 +16,6 @@ A Capacitor plugin that supports automatic updates for Android apps. It provides
 pnpm add @simplysm/capacitor-plugin-auto-update
 ```
 
-### Peer Dependencies
-
-```bash
-pnpm add @capacitor/core@^7.4.4
-```
-
-### Internal Dependencies
-
-This package depends on the following `@simplysm` packages.
-
-| Package | Purpose |
-|--------|------|
-| `@simplysm/core-common` | Path utilities, HTML templates, `waitUntil`, etc. |
-| `@simplysm/core-browser` | `downloadBytes` (file download) |
-| `@simplysm/capacitor-plugin-file-system` | File read/write, URI conversion, storage paths |
-| `@simplysm/service-client` | `ServiceClient` (server communication) |
-| `@simplysm/service-common` | `AutoUpdateService` interface definition |
-
 ## Android Configuration
 
 ### AndroidManifest.xml
@@ -48,7 +30,7 @@ The plugin requires `REQUEST_INSTALL_PACKAGES` permission for APK installation. 
 
 The plugin is automatically registered in `capacitor.config.ts` or in the Android project. The Android source path is specified in the `capacitor` field of `package.json`.
 
-## Main API
+## Main Modules
 
 This package exports two main classes.
 
@@ -205,6 +187,24 @@ interface AutoUpdateService {
 - `platform`: The string `"android"` is passed
 - `version`: Version string in semver format (e.g., `"1.2.3"`)
 - `downloadPath`: Download path for the APK file (combined with server host URL)
+
+## Dependencies
+
+### Peer Dependencies
+
+| Package | Version |
+|--------|------|
+| `@capacitor/core` | `^7.4.4` |
+
+### Internal Dependencies
+
+| Package | Purpose |
+|--------|------|
+| `@simplysm/core-common` | Path utilities, HTML templates, `waitUntil`, etc. |
+| `@simplysm/core-browser` | `downloadBytes` (file download) |
+| `@simplysm/capacitor-plugin-file-system` | File read/write, URI conversion, storage paths |
+| `@simplysm/service-client` | `ServiceClient` (server communication) |
+| `@simplysm/service-common` | `AutoUpdateService` interface definition |
 
 ## License
 

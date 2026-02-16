@@ -131,8 +131,8 @@ export const dataTypeStrToColumnPrimitiveStr = {
  * type VarcharType = InferColumnPrimitiveFromDataType<{ type: "varchar"; length: 100 }>;  // string
  * ```
  */
-export type InferColumnPrimitiveFromDataType<T extends DataType> =
-  ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[T["type"]]];
+export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
+  ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[TDataType["type"]]];
 
 /**
  * 런타임 값에서 ColumnPrimitiveStr 추론

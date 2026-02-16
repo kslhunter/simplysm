@@ -172,7 +172,7 @@ export function jsonStringify(
  * @security 개발 모드(`__DEV__`)에서만 에러 메시지에 JSON 문자열 전체가 포함된다.
  * 프로덕션 모드에서는 JSON 길이만 포함된다.
  */
-export function jsonParse<T = unknown>(json: string): T {
+export function jsonParse<TResult = unknown>(json: string): TResult {
   try {
     return objNullToUndefined(
       JSON.parse(json, (_key, value: unknown) => {
@@ -218,7 +218,7 @@ export function jsonParse<T = unknown>(json: string): T {
 
         return value;
       }),
-    ) as T;
+    ) as TResult;
   } catch (err) {
     if (env.DEV) {
       throw new SdError(err, "JSON 파싱 에러: \n" + json);

@@ -1,16 +1,20 @@
 {
   "name": "@simplysm/lint",
-  "sideEffects": false,
   "version": "13.0.16",
   "description": "심플리즘 패키지 - Lint 설정 (ESLint + Stylelint)",
   "author": "김석래",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/lint"
   },
-  "license": "Apache-2.0",
   "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
   "exports": {
     "./eslint-plugin": {
       "types": "./dist/eslint-plugin.d.ts",
@@ -25,10 +29,6 @@
       "default": "./dist/stylelint-recommended.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
   "dependencies": {
     "@typescript-eslint/utils": "^8.55.0",
     "eslint": "^9.39.2",

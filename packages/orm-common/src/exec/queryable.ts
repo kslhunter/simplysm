@@ -1735,11 +1735,11 @@ export function getMatchedPrimaryKeys(fkCols: string[], targetTable: TableBuilde
  * @param keyPrefix - 현재 중첩 경로 (재귀 호출용, 기본값 "")
  * @returns 변환된 컬럼 레코드
  */
-function transformColumnsAlias<T extends DataRecord>(
-  columns: QueryableRecord<T>,
+function transformColumnsAlias<TRecord extends DataRecord>(
+  columns: QueryableRecord<TRecord>,
   alias: string,
   keyPrefix: string = "",
-): QueryableRecord<T> {
+): QueryableRecord<TRecord> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(columns as Record<string, unknown>)) {
@@ -1758,7 +1758,7 @@ function transformColumnsAlias<T extends DataRecord>(
     }
   }
 
-  return result as QueryableRecord<T>;
+  return result as QueryableRecord<TRecord>;
 }
 
 //#endregion
@@ -1827,23 +1827,23 @@ export type QueryableRecord<TData extends DataRecord> = {
 /**
  * 배열이면 요소 타입 추출
  */
-type UnwrapArray<T> = T extends (infer U)[] ? U : T;
+type UnwrapArray<TArray> = TArray extends (infer TElement)[] ? TElement : TArray;
 
 const PATH_SYMBOL = Symbol("path");
 
 /**
  * include()용 타입 안전 경로 프록시
  */
-export type PathProxy<T> = {
-  [K in keyof T as T[K] extends ColumnPrimitive ? never : K]-?: PathProxy<UnwrapArray<T[K]>>;
+export type PathProxy<TObject> = {
+  [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<UnwrapArray<TObject[K]>>;
 } & { readonly [PATH_SYMBOL]: string[] };
 
 /**
  * PathProxy 인스턴스 생성
  * Proxy를 사용하여 프로퍼티 접근을 가로채고 경로를 수집
  */
-function createPathProxy<T>(path: string[] = []): PathProxy<T> {
-  return new Proxy({} as PathProxy<T>, {
+function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
+  return new Proxy({} as PathProxy<TObject>, {
     get(_, prop: string | symbol) {
       if (prop === PATH_SYMBOL) return path;
       if (typeof prop === "symbol") return undefined;
@@ -1879,11 +1879,11 @@ function createPathProxy<T>(path: string[] = []): PathProxy<T> {
  * }
  * ```
  */
-export function queryable<T extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
+export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
   db: DbContextBase,
-  tableOrView: T,
+  tableOrView: TBuilder,
   as?: string,
-): () => Queryable<T["$infer"], T extends TableBuilder<any, any> ? T : never> {
+): () => Queryable<TBuilder["$infer"], TBuilder extends TableBuilder<any, any> ? TBuilder : never> {
   return () => {
     // as가 명시되지 않으면 db.getNextAlias() 사용 (카운터 증가)
     // as가 명시되면 그대로 사용 (카운터 증가 안함)

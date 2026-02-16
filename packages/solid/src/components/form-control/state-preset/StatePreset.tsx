@@ -12,17 +12,17 @@ import type { ComponentSize } from "../../../styles/tokens.styles";
 
 // ── Types ──
 
-interface StatePresetItem<T> {
+interface StatePresetItem<TValue> {
   name: string;
-  state: T;
+  state: TValue;
 }
 
 type StatePresetSize = ComponentSize;
 
-export interface StatePresetProps<T> {
+export interface StatePresetProps<TValue> {
   presetKey: string;
-  value: T;
-  onValueChange: (value: T) => void;
+  value: TValue;
+  onValueChange: (value: TValue) => void;
   size?: StatePresetSize;
   class?: string;
   style?: JSX.CSSProperties;
@@ -107,14 +107,14 @@ const iconSize = "0.85em";
 
 // ── Component ──
 
-function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
+function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element {
   const [local] = splitProps(props, ["presetKey", "value", "onValueChange", "size", "class", "style"]);
 
   const notification = useNotification();
 
   // presetKey는 마운트 시 한 번만 설정되는 식별자이므로 즉시 평가하여 캡처
   /* eslint-disable solid/reactivity */
-  const [presets, setPresets] = useSyncConfig<StatePresetItem<T>[]>(`state-preset.${local.presetKey}`, []);
+  const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(`state-preset.${local.presetKey}`, []);
   /* eslint-enable solid/reactivity */
   const [adding, setAdding] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
@@ -143,7 +143,7 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
       return;
     }
 
-    const newPreset: StatePresetItem<T> = {
+    const newPreset: StatePresetItem<TValue> = {
       name,
       state: objClone(local.value),
     };
@@ -153,7 +153,7 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
     setInputValue("");
   }
 
-  function handleRestore(preset: StatePresetItem<T>): void {
+  function handleRestore(preset: StatePresetItem<TValue>): void {
     if (!objEqual(local.value, preset.state)) {
       local.onValueChange(objClone(preset.state));
     }
@@ -278,4 +278,4 @@ function StatePresetInner<T>(props: StatePresetProps<T>): JSX.Element {
   );
 }
 
-export const StatePreset = StatePresetInner as <T>(props: StatePresetProps<T>) => JSX.Element;
+export const StatePreset = StatePresetInner as <TValue>(props: StatePresetProps<TValue>) => JSX.Element;

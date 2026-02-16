@@ -17,10 +17,10 @@ const _cache = new LazyGcMap<string, unknown>({
 
 const _watchers = new Map<string, FsWatcher>();
 
-export async function getConfig<T>(filePath: string): Promise<T | undefined> {
+export async function getConfig<TConfig>(filePath: string): Promise<TConfig | undefined> {
   // 1. 캐시 적중 (시간 자동 갱신)
   if (_cache.has(filePath)) {
-    return _cache.get(filePath) as T;
+    return _cache.get(filePath) as TConfig;
   }
 
   if (!(await fsExists(filePath))) return undefined;
@@ -56,7 +56,7 @@ export async function getConfig<T>(filePath: string): Promise<T | undefined> {
     }
   }
 
-  return config as T;
+  return config as TConfig;
 }
 
 async function closeWatcher(filePath: string) {

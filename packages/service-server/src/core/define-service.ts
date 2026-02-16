@@ -100,8 +100,8 @@ export function getServiceAuthPermissions(fn: Function): string[] | undefined {
  * - Method-level: `auth(() => result)` — this method requires login
  * - Method-level with roles: `auth(["admin"], () => result)`
  */
-export function auth<T extends (...args: any[]) => any>(fn: T): T;
-export function auth<T extends (...args: any[]) => any>(permissions: string[], fn: T): T;
+export function auth<TFunction extends (...args: any[]) => any>(fn: TFunction): TFunction;
+export function auth<TFunction extends (...args: any[]) => any>(permissions: string[], fn: TFunction): TFunction;
 export function auth(permissionsOrFn: string[] | Function, maybeFn?: Function): Function {
   const permissions = Array.isArray(permissionsOrFn) ? permissionsOrFn : [];
   const fn = Array.isArray(permissionsOrFn) ? maybeFn! : permissionsOrFn;
@@ -156,4 +156,4 @@ export function defineService<TMethods extends Record<string, (...args: any[]) =
  * export type UserServiceType = ServiceMethods<typeof UserService>;
  * // Client: client.getService<UserServiceType>("User");
  */
-export type ServiceMethods<T> = T extends ServiceDefinition<infer M> ? M : never;
+export type ServiceMethods<TDefinition> = TDefinition extends ServiceDefinition<infer M> ? M : never;

@@ -12,15 +12,7 @@ yarn add @simplysm/excel
 pnpm add @simplysm/excel
 ```
 
-### Dependencies
-
-| Package | Purpose |
-|--------|------|
-| `@simplysm/core-common` | Date/time types (`DateOnly`, `DateTime`, `Time`), utilities |
-| `zod` | Schema-based data validation for `ExcelWrapper` |
-| `mime` | MIME type determination for image insertion |
-
-## Core Modules
+## Main Modules
 
 ### Core Classes
 
@@ -443,7 +435,7 @@ Behavior of the `read()` method:
 | `getBlob()` | `Promise<Blob>` | Export as Blob |
 | `close()` | `Promise<void>` | Release resources |
 
-## Important Notes
+## Caveats
 
 ### All Cell Methods are Asynchronous
 

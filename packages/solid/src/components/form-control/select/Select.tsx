@@ -65,8 +65,8 @@ const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.
  *
  * 함수 참조를 저장하기 위해 전역 Map 사용
  */
-interface SelectItemTemplateProps<T> {
-  children: (item: T, index: number, depth: number) => JSX.Element;
+interface SelectItemTemplateProps<TValue> {
+  children: (item: TValue, index: number, depth: number) => JSX.Element;
 }
 
 // 템플릿 함수를 저장하는 전역 Map (WeakMap 사용하여 메모리 누수 방지)
@@ -109,15 +109,15 @@ interface SelectCommonProps {
 }
 
 // 단일 선택 Props
-interface SelectSingleBaseProps<T> extends SelectCommonProps {
+interface SelectSingleBaseProps<TValue> extends SelectCommonProps {
   /** 다중 선택 모드 */
   multiple?: false;
 
   /** 현재 선택된 값 */
-  value?: T;
+  value?: TValue;
 
   /** 값 변경 콜백 */
-  onValueChange?: (value: T) => void;
+  onValueChange?: (value: TValue) => void;
 
   /** 다중 선택 시 표시 방향 (단일 선택에서는 사용 안 함) */
   multiDisplayDirection?: never;
@@ -127,15 +127,15 @@ interface SelectSingleBaseProps<T> extends SelectCommonProps {
 }
 
 // 다중 선택 Props
-interface SelectMultipleBaseProps<T> extends SelectCommonProps {
+interface SelectMultipleBaseProps<TValue> extends SelectCommonProps {
   /** 다중 선택 모드 */
   multiple: true;
 
   /** 현재 선택된 값 */
-  value?: T[];
+  value?: TValue[];
 
   /** 값 변경 콜백 */
-  onValueChange?: (value: T[]) => void;
+  onValueChange?: (value: TValue[]) => void;
 
   /** 다중 선택 시 표시 방향 */
   multiDisplayDirection?: "horizontal" | "vertical";
@@ -145,29 +145,29 @@ interface SelectMultipleBaseProps<T> extends SelectCommonProps {
 }
 
 // items 방식
-interface SelectWithItemsPropsBase<T> {
-  items: T[];
-  getChildren?: (item: T, index: number, depth: number) => T[] | undefined;
-  renderValue?: (value: T) => JSX.Element;
+interface SelectWithItemsPropsBase<TValue> {
+  items: TValue[];
+  getChildren?: (item: TValue, index: number, depth: number) => TValue[] | undefined;
+  renderValue?: (value: TValue) => JSX.Element;
   children?: JSX.Element;
 }
 
 // children 방식
-interface SelectWithChildrenPropsBase<T> {
+interface SelectWithChildrenPropsBase<TValue> {
   items?: never;
   getChildren?: never;
-  renderValue: (value: T) => JSX.Element;
+  renderValue: (value: TValue) => JSX.Element;
   children: JSX.Element;
 }
 
-export type SelectProps<T = unknown> =
-  | (SelectSingleBaseProps<T> & SelectWithItemsPropsBase<T>)
-  | (SelectSingleBaseProps<T> & SelectWithChildrenPropsBase<T>)
-  | (SelectMultipleBaseProps<T> & SelectWithItemsPropsBase<T>)
-  | (SelectMultipleBaseProps<T> & SelectWithChildrenPropsBase<T>);
+export type SelectProps<TValue = unknown> =
+  | (SelectSingleBaseProps<TValue> & SelectWithItemsPropsBase<TValue>)
+  | (SelectSingleBaseProps<TValue> & SelectWithChildrenPropsBase<TValue>)
+  | (SelectMultipleBaseProps<TValue> & SelectWithItemsPropsBase<TValue>)
+  | (SelectMultipleBaseProps<TValue> & SelectWithChildrenPropsBase<TValue>);
 
 interface SelectComponent {
-  <T = unknown>(props: SelectProps<T>): JSX.Element;
+  <TValue = unknown>(props: SelectProps<TValue>): JSX.Element;
   Item: typeof SelectItem;
   Action: typeof SelectAction;
   Header: typeof SelectHeader;

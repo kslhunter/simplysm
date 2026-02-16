@@ -66,8 +66,8 @@ export type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
  * };
  * ```
  */
-export type DeepPartial<T> = Partial<{
-  [K in keyof T]: T[K] extends PrimitiveType ? T[K] : DeepPartial<T[K]>;
+export type DeepPartial<TObject> = Partial<{
+  [K in keyof TObject]: TObject[K] extends PrimitiveType ? TObject[K] : DeepPartial<TObject[K]>;
 }>;
 
 /**
@@ -84,8 +84,8 @@ export type DeepPartial<T> = Partial<{
  * class MyClass { name = "test"; }
  * const instance = create(MyClass); // MyClass 인스턴스
  */
-export interface Type<T> extends Function {
-  new (...args: unknown[]): T;
+export interface Type<TInstance> extends Function {
+  new (...args: unknown[]): TInstance;
 }
 
 //#endregion

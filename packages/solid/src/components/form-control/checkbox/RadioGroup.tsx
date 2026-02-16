@@ -4,9 +4,9 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { Radio } from "./Radio";
 import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
 
-interface RadioGroupContextValue<T> {
-  value: () => T | undefined;
-  select: (item: T) => void;
+interface RadioGroupContextValue<TValue> {
+  value: () => TValue | undefined;
+  select: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
   theme: () => CheckboxTheme | undefined;
@@ -18,13 +18,13 @@ const RadioGroupContext = createContext<RadioGroupContextValue<any>>();
 
 // --- RadioGroup.Item ---
 
-interface RadioGroupItemProps<T> {
-  value: T;
+interface RadioGroupItemProps<TValue> {
+  value: TValue;
   disabled?: boolean;
   children?: JSX.Element;
 }
 
-function RadioGroupItemInner<T>(props: RadioGroupItemProps<T>) {
+function RadioGroupItemInner<TValue>(props: RadioGroupItemProps<TValue>) {
   const ctx = useContext(RadioGroupContext);
   if (!ctx) throw new Error("RadioGroup.Item은 RadioGroup 내부에서만 사용할 수 있습니다");
 
@@ -47,9 +47,9 @@ function RadioGroupItemInner<T>(props: RadioGroupItemProps<T>) {
 
 // --- RadioGroup ---
 
-interface RadioGroupProps<T> {
-  value?: T;
-  onValueChange?: (value: T) => void;
+interface RadioGroupProps<TValue> {
+  value?: TValue;
+  onValueChange?: (value: TValue) => void;
   disabled?: boolean;
   size?: CheckboxSize;
   theme?: CheckboxTheme;
@@ -61,7 +61,7 @@ interface RadioGroupProps<T> {
 }
 
 interface RadioGroupComponent {
-  <T = unknown>(props: RadioGroupProps<T>): JSX.Element;
+  <TValue = unknown>(props: RadioGroupProps<TValue>): JSX.Element;
   Item: typeof RadioGroupItemInner;
 }
 

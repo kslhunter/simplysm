@@ -38,8 +38,8 @@ export interface ServiceProtocol {
  * - `type: "complete"`: 모든 청크가 수신되어 메시지 조립이 완료됨
  * - `type: "progress"`: 분할 메시지 수신 중 (일부 청크만 도착)
  */
-export type ServiceMessageDecodeResult<T extends ServiceMessage> =
-  | { type: "complete"; uuid: string; message: T }
+export type ServiceMessageDecodeResult<TMessage extends ServiceMessage> =
+  | { type: "complete"; uuid: string; message: TMessage }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
 
 /**

@@ -124,7 +124,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      * 연결 -> 트랜잭션 시작 -> 콜백 실행 -> 커밋 -> 연결 종료
      * 에러 발생 시 자동 롤백 후 연결 종료
      */
-    async connect<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
+    async connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult> {
       validateRelationsImpl(def);
       base.resetAliasCounter();
 
@@ -134,7 +134,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
       await executor.beginTransaction(isolationLevel);
       status = "transact";
 
-      let result: R;
+      let result: TResult;
       try {
         result = await fn();
 
@@ -173,14 +173,14 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      *
      * DDL 작업이나 트랜잭션이 필요 없는 조회 작업에 사용
      */
-    async connectWithoutTransaction<R>(callback: () => Promise<R>): Promise<R> {
+    async connectWithoutTransaction<TResult>(callback: () => Promise<TResult>): Promise<TResult> {
       validateRelationsImpl(def);
       base.resetAliasCounter();
 
       await executor.connect();
       status = "connect";
 
-      let result: R;
+      let result: TResult;
       try {
         result = await callback();
       } catch (err) {
@@ -199,7 +199,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      *
      * connectWithoutTransaction 내에서 부분적으로 트랜잭션이 필요할 때 사용
      */
-    async trans<R>(fn: () => Promise<R>, isolationLevel?: IsolationLevel): Promise<R> {
+    async trans<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult> {
       if (status === "transact") {
         throw new Error("이미 TRANSACTION 상태입니다.");
       }
@@ -207,7 +207,7 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
       await executor.beginTransaction(isolationLevel);
       status = "transact";
 
-      let result: R;
+      let result: TResult;
       try {
         result = await fn();
 
