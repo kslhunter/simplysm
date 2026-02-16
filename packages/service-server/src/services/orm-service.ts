@@ -137,24 +137,24 @@ export const OrmService = defineService(
         const dialect: Dialect = conn.config.dialect === "mssql-azure" ? "mssql" : conn.config.dialect;
         const queryBuilder = createQueryBuilder(dialect);
 
-        if (options == null || options.every((item) => item == null)) {
+        if (options != null && options.every((item) => item == null)) {
           return conn.execute([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
-        } else {
-          const queries = defs.map((def) => queryBuilder.build(def).sql);
-          const result = await conn.execute(queries);
-
-          const parsed: unknown[][] = [];
-          for (let i = 0; i < result.length; i++) {
-            const opt = options[i];
-            if (opt != null) {
-              const parsedResult = await parseQueryResult(result[i] as Record<string, unknown>[], opt);
-              parsed.push(parsedResult ?? []);
-            } else {
-              parsed.push(result[i]);
-            }
-          }
-          return parsed;
         }
+
+        const queries = defs.map((def) => queryBuilder.build(def).sql);
+        const result = await conn.execute(queries);
+
+        const parsed: unknown[][] = [];
+        for (let i = 0; i < result.length; i++) {
+          const opt = options?.[i];
+          if (opt != null) {
+            const parsedResult = await parseQueryResult(result[i] as Record<string, unknown>[], opt);
+            parsed.push(parsedResult ?? []);
+          } else {
+            parsed.push(result[i]);
+          }
+        }
+        return parsed;
       },
 
       async bulkInsert(
