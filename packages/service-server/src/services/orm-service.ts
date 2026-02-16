@@ -140,10 +140,7 @@ export const OrmService = defineService(
         if (options == null || options.every((item) => item == null)) {
           return conn.execute([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
         } else {
-          const queries = defs.flatMap((def) => {
-            const query = queryBuilder.build(def);
-            return Array.isArray(query) ? query : [query];
-          });
+          const queries = defs.map((def) => queryBuilder.build(def).sql);
           const result = await conn.execute(queries);
 
           const parsed: unknown[][] = [];
