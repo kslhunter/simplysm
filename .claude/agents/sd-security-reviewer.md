@@ -1,7 +1,7 @@
 ---
 name: sd-security-reviewer
 description: Reviews ORM queries and service endpoints for SQL injection and input validation vulnerabilities in simplysm's string-escaping ORM
-model: inherit
+model: opus
 ---
 
 You are a security-focused code reviewer for the simplysm framework.

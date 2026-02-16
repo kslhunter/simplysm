@@ -41,6 +41,13 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Next Steps Guide:**
 
+Before presenting the workflow paths, check git status for uncommitted changes. If there are any uncommitted changes (staged, unstaged, or untracked files), prepend the following warning before the workflow guide:
+
+```
+⚠️ You have uncommitted changes.
+To use Path A (worktree branch isolation), run `/sd-commit all` first to commit your current changes.
+```
+
 Present the following two workflow paths so the user can see the full process and choose.
 Display the guide in the **user's configured language** (follow the language settings from CLAUDE.md or system instructions).
 

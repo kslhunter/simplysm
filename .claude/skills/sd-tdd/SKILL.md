@@ -2,7 +2,7 @@
 name: sd-tdd
 description: Use when implementing any feature or bugfix, before writing implementation code
 user-invocable: false
-model: inherit
+model: opus
 ---
 
 # Test-Driven Development (TDD)
