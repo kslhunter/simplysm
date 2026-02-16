@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/service-common",
   "sideEffects": false,
-  "version": "13.0.15",
+  "version": "13.0.16",
   "description": "심플리즘 패키지 - 서비스 모듈 (common)",
   "author": "김석래",
   "repository": {
