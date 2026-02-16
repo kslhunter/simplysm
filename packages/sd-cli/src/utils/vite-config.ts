@@ -92,6 +92,48 @@ function isSubpathOnlyPackage(pkgJsonPath: string): boolean {
 }
 
 /**
+ * public-dev/ 디렉토리의 파일을 dev 모드에서 public/보다 우선하여 서빙하는 Vite 플러그인.
+ * Vite의 기본 publicDir(public/)은 그대로 유지하면서, public-dev/의 파일이 같은 경로에 있으면 우선한다.
+ */
+function sdPublicDevPlugin(pkgDir: string): Plugin {
+  const publicDevDir = path.join(pkgDir, "public-dev");
+
+  return {
+    name: "sd-public-dev",
+    configureServer(server) {
+      if (!fs.existsSync(publicDevDir)) return;
+
+      // Vite의 기본 static 서빙보다 먼저 public-dev/ 파일을 체크
+      server.middlewares.use((req, res, next) => {
+        if (req.url == null) {
+          next();
+          return;
+        }
+
+        // base path 제거
+        const base = server.config.base || "/";
+        let urlPath = req.url.split("?")[0];
+        if (urlPath.startsWith(base)) {
+          urlPath = urlPath.slice(base.length);
+        }
+        if (urlPath.startsWith("/")) {
+          urlPath = urlPath.slice(1);
+        }
+
+        const filePath = path.join(publicDevDir, urlPath);
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          // sirv 대신 간단히 파일 스트림으로 응답
+          const stream = fs.createReadStream(filePath);
+          stream.pipe(res);
+        } else {
+          next();
+        }
+      });
+    },
+  };
+}
+
+/**
  * scope 패키지의 dist 디렉토리 변경을 감지하는 Vite 플러그인.
  *
  * Vite는 node_modules를 기본적으로 watch에서 제외하므로,
@@ -264,6 +306,7 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
       }),
       sdTailwindConfigDepsPlugin(pkgDir),
       ...(watchScopes != null && watchScopes.length > 0 ? [sdScopeWatchPlugin(pkgDir, watchScopes)] : []),
+      ...(mode === "dev" ? [sdPublicDevPlugin(pkgDir)] : []),
     ],
     css: {
       postcss: {
