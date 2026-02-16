@@ -91,6 +91,15 @@ export async function watchPublicFiles(pkgDir: string, includeDev: boolean): Pro
             continue;
           }
         }
+        // public-dev에서 삭제 시, public에 같은 파일이 있으면 복사 (fallback 복원)
+        if (sourceDir === publicDevDir && includeDev) {
+          const publicFallback = path.join(publicDir, relPath);
+          if (await fsExists(publicFallback)) {
+            await fsMkdir(path.dirname(distPath));
+            await fsCopy(publicFallback, distPath);
+            continue;
+          }
+        }
         await fsRm(distPath);
       } else if (event === "add" || event === "change") {
         // public에서 변경 시, public-dev에 같은 파일이 있으면 overlay 우선이므로 스킵
