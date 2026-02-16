@@ -19,6 +19,7 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   constructor(
     private readonly _pool: Pool<DbConn>,
     private readonly _initialConfig: DbConnConfig,
+    private readonly _getLastCreateError?: () => Error | undefined,
   ) {
     super();
   }
@@ -49,7 +50,16 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
     }
 
     // 1. 풀에서 커넥션 획득
-    this._rawConn = await this._pool.acquire();
+    try {
+      this._rawConn = await this._pool.acquire();
+    } catch (err) {
+      const { dialect, host, port, database } = this._initialConfig;
+      const cause = this._getLastCreateError?.() ?? (err instanceof Error ? err : undefined);
+      throw new SdError(
+        ...(cause != null ? [cause] : []),
+        `DB 연결 실패 [${dialect}://${host}:${port ?? ""}/${database ?? ""}]`,
+      );
+    }
 
     // 2. 물리 연결이 (타임아웃 등으로) 끊어질 경우를 대비해 리스너 등록
     //    만약 사용 중에 끊기면 PooledDbConn도 close 이벤트를 발생시켜야 함

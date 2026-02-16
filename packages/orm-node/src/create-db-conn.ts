@@ -16,6 +16,9 @@ import { PostgresqlDbConn } from "./connections/postgresql-db-conn";
 // 설정별 커넥션 풀 캐싱
 const poolMap = new Map<string, Pool<DbConn>>();
 
+// 풀 생성 실패 시 마지막 에러 캐싱 (configKey 기준)
+const poolLastErrorMap = new Map<string, Error>();
+
 // 지연 로딩 모듈 캐시
 const modules: {
   tedious?: typeof import("tedious");
@@ -35,13 +38,13 @@ const modules: {
  */
 export function createDbConn(config: DbConnConfig): Promise<DbConn> {
   // 1. 풀 가져오기 (없으면 생성)
-  const pool = getOrCreatePool(config);
+  const { pool, getLastCreateError } = getOrCreatePool(config);
 
   // 2. 래퍼 객체 반환
-  return Promise.resolve(new PooledDbConn(pool, config));
+  return Promise.resolve(new PooledDbConn(pool, config, getLastCreateError));
 }
 
-function getOrCreatePool(config: DbConnConfig): Pool<DbConn> {
+function getOrCreatePool(config: DbConnConfig): { pool: Pool<DbConn>; getLastCreateError: () => Error | undefined } {
   // 객체를 키로 쓰기 위해 문자열 변환 (중첩 객체도 정렬하여 동일 설정의 일관된 키 보장)
   const configKey = JSON.stringify(config, (_, value: unknown) =>
     value != null && typeof value === "object" && !Array.isArray(value)
@@ -74,10 +77,17 @@ function getOrCreatePool(config: DbConnConfig): Pool<DbConn> {
       },
     );
 
+    pool.on("factoryCreateError", (err: Error) => {
+      poolLastErrorMap.set(configKey, err);
+    });
+
     poolMap.set(configKey, pool);
   }
 
-  return poolMap.get(configKey)!;
+  return {
+    pool: poolMap.get(configKey)!,
+    getLastCreateError: () => poolLastErrorMap.get(configKey),
+  };
 }
 
 async function createRawConnection(config: DbConnConfig): Promise<DbConn> {
