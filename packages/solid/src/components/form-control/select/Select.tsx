@@ -42,23 +42,23 @@ const SelectAction: ParentComponent<SelectActionProps> = (props) => {
       {...rest}
       type="button"
       data-select-action
+      use:ripple
       class={twMerge(
         clsx(
           "border",
           borderDefault,
           "px-1.5",
-          "rounded-r",
           "font-bold text-primary-500",
           "hover:bg-base-100 dark:hover:bg-base-700",
+          "group-focus-within:border-y-primary-400",
+          "last:group-focus-within:border-r-primary-400",
+          "dark:group-focus-within:border-y-primary-400",
+          "dark:last:group-focus-within:border-r-primary-400",
+          "focus:relative focus:z-10 focus:border-primary-400",
+          "dark:focus:border-primary-400",
         ),
         local.class,
       )}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (typeof rest.onClick === "function") {
-          rest.onClick(e);
-        }
-      }}
     >
       {local.children}
     </button>
@@ -397,7 +397,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     };
 
     return (
-      <div {...rest} data-select class={local.inset ? "flex" : "inline-flex"}>
+      <div {...rest} data-select class={clsx("group", local.inset ? "flex" : "inline-flex")}>
         <div
           ref={triggerRef}
           use:ripple={!local.disabled}
@@ -409,7 +409,11 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           tabIndex={local.disabled ? -1 : 0}
           class={twMerge(
             getTriggerClassName(),
-            slots().selectAction.length > 0 && "rounded-r-none border-r-0",
+            slots().selectAction.length > 0 &&
+              clsx(
+                "rounded-r-none border-r-0",
+                "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400",
+              ),
           )}
           style={local.style}
           onClick={handleTriggerClick}
@@ -420,7 +424,17 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             <Icon icon={IconChevronDown} size="1em" />
           </div>
         </div>
-        <Show when={slots().selectAction.length > 0}>{slots().selectAction}</Show>
+        <Show when={slots().selectAction.length > 0}>
+          <div
+            class={clsx(
+              "contents",
+              "[&>[data-select-action]:last-child]:rounded-r",
+              "[&>[data-select-action]+[data-select-action]]:-ml-px",
+            )}
+          >
+            {slots().selectAction}
+          </div>
+        </Show>
 
         <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
           <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>

@@ -179,7 +179,7 @@ describe("TextInput 컴포넌트", () => {
       expect(contentDiv).toBeTruthy();
       expect(contentDiv.textContent).toBe("Hello");
 
-      const input = outer.querySelector("input");
+      const input = outer.querySelector("input:not([aria-hidden])");
       expect(input).toBeFalsy();
     });
 
@@ -210,7 +210,7 @@ describe("TextInput 컴포넌트", () => {
 
       let contentDiv = outer.querySelector("[data-text-field-content]");
       expect(contentDiv).toBeTruthy();
-      expect(outer.querySelector("input")).toBeFalsy();
+      expect(outer.querySelector("input:not([aria-hidden])")).toBeFalsy();
 
       setReadonly(false);
       contentDiv = outer.querySelector("[data-text-field-content]");

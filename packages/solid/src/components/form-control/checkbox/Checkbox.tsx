@@ -90,26 +90,28 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <label
-        {...rest}
-        use:ripple={!local.disabled}
-        role="checkbox"
-        aria-checked={value()}
-        tabIndex={local.disabled ? -1 : 0}
-        class={getWrapperClass()}
-        style={local.style}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-      >
-        <div class={getIndicatorClass()}>
-          <Show when={value()}>
-            <Icon icon={IconCheck} size="1em" />
+      <div class="inline-flex">
+        <label
+          {...rest}
+          use:ripple={!local.disabled}
+          role="checkbox"
+          aria-checked={value()}
+          tabIndex={local.disabled ? -1 : 0}
+          class={getWrapperClass()}
+          style={local.style}
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+        >
+          <div class={getIndicatorClass()}>
+            <Show when={value()}>
+              <Icon icon={IconCheck} size="1em" />
+            </Show>
+          </div>
+          <Show when={local.children}>
+            <span>{local.children}</span>
           </Show>
-        </div>
-        <Show when={local.children}>
-          <span>{local.children}</span>
-        </Show>
-      </label>
+        </label>
+      </div>
     </Invalid>
   );
 };

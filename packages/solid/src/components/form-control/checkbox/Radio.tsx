@@ -91,26 +91,28 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
-      <label
-        {...rest}
-        use:ripple={!local.disabled}
-        role="radio"
-        aria-checked={value()}
-        tabIndex={local.disabled ? -1 : 0}
-        class={getWrapperClass()}
-        style={local.style}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-      >
-        <div class={getIndicatorClass()}>
-          <Show when={value()}>
-            <div class={radioDotClass} />
+      <div class="inline-flex">
+        <label
+          {...rest}
+          use:ripple={!local.disabled}
+          role="radio"
+          aria-checked={value()}
+          tabIndex={local.disabled ? -1 : 0}
+          class={getWrapperClass()}
+          style={local.style}
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+        >
+          <div class={getIndicatorClass()}>
+            <Show when={value()}>
+              <div class={radioDotClass} />
+            </Show>
+          </div>
+          <Show when={local.children}>
+            <span>{local.children}</span>
           </Show>
-        </div>
-        <Show when={local.children}>
-          <span>{local.children}</span>
-        </Show>
-      </label>
+        </label>
+      </div>
     </Invalid>
   );
 };

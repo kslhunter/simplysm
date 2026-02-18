@@ -183,10 +183,12 @@ export const Textarea: Component<TextareaProps> = (props) => {
   const errorMsg = createMemo(() => {
     const v = local.value ?? "";
     if (local.required && !v) return "필수 입력 항목입니다";
-    if (local.minLength != null && v.length < local.minLength)
-      return `최소 ${local.minLength}자 이상 입력하세요`;
-    if (local.maxLength != null && v.length > local.maxLength)
-      return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+    if (v) {
+      if (local.minLength != null && v.length < local.minLength)
+        return `최소 ${local.minLength}자 이상 입력하세요`;
+      if (local.maxLength != null && v.length > local.maxLength)
+        return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+    }
     return local.validate?.(v);
   });
 

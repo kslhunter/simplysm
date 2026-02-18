@@ -196,7 +196,7 @@ describe("TimePicker 컴포넌트", () => {
       expect(contentDiv).toBeTruthy();
       expect(contentDiv.textContent).toBe("14:30");
 
-      expect(outer.querySelector("input")).toBeFalsy();
+      expect(outer.querySelector("input:not([aria-hidden])")).toBeFalsy();
     });
 
     it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {

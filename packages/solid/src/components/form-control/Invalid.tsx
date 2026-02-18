@@ -11,7 +11,13 @@ export interface InvalidProps {
 }
 
 export const Invalid: ParentComponent<InvalidProps> = (props) => {
-  let hiddenInputEl!: HTMLInputElement;
+  const hiddenInputEl = document.createElement("input");
+  hiddenInputEl.type = "text";
+  hiddenInputEl.style.cssText =
+    "position:absolute; bottom:0; left:50%; width:1px; height:1px; opacity:0; pointer-events:none; z-index:-10;";
+  hiddenInputEl.autocomplete = "off";
+  hiddenInputEl.tabIndex = -1;
+  hiddenInputEl.setAttribute("aria-hidden", "true");
 
   const [touched, setTouched] = createSignal(false);
 
@@ -21,6 +27,25 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
   createEffect(() => {
     const msg = props.message ?? "";
     hiddenInputEl.setCustomValidity(msg);
+  });
+
+  // target에 relative 설정 + hidden input을 target 내부에 삽입
+  createEffect(() => {
+    const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
+    if (!targetEl) return;
+
+    const computedPosition = getComputedStyle(targetEl).position;
+    if (computedPosition === "static") {
+      targetEl.style.position = "relative";
+    }
+
+    targetEl.appendChild(hiddenInputEl);
+
+    onCleanup(() => {
+      if (hiddenInputEl.parentElement === targetEl) {
+        targetEl.removeChild(hiddenInputEl);
+      }
+    });
   });
 
   // 시각적 표시 처리
@@ -54,11 +79,6 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
       }
 
       if (shouldShow) {
-        const computedPosition = getComputedStyle(targetEl).position;
-        if (computedPosition === "static") {
-          targetEl.style.position = "relative";
-        }
-
         const dot = document.createElement("span");
         dot.setAttribute("data-invalid-dot", "");
         dot.style.cssText =
@@ -94,40 +114,18 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     });
   });
 
-  const handleHiddenInputFocus = (e: FocusEvent) => {
-    const hiddenInput = e.currentTarget as HTMLElement;
+  // hidden input 포커스 시 target의 focusable child로 리디렉션
+  hiddenInputEl.addEventListener("focus", () => {
     const targetEl = resolved.toArray().find((el): el is HTMLElement => el instanceof HTMLElement);
 
     if (targetEl) {
       const focusable =
         targetEl.findFirstFocusableChild() ?? (targetEl.tabIndex >= 0 ? targetEl : undefined);
-      if (focusable && focusable !== hiddenInput) {
+      if (focusable && focusable !== hiddenInputEl) {
         focusable.focus();
       }
     }
-  };
+  });
 
-  return (
-    <>
-      {resolved()}
-      <input
-        ref={hiddenInputEl}
-        type="text"
-        style={{
-          "width": "0",
-          "height": "0",
-          "padding": "0",
-          "margin": "0",
-          "border": "0",
-          "overflow": "hidden",
-          "opacity": "0",
-          "pointer-events": "none",
-        }}
-        autocomplete="off"
-        tabIndex={-1}
-        aria-hidden="true"
-        onFocus={handleHiddenInputFocus}
-      />
-    </>
-  );
+  return <>{resolved()}</>;
 };
