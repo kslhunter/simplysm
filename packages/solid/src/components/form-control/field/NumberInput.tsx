@@ -13,16 +13,12 @@ import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import {
   type FieldSize,
-  fieldBaseClass,
-  fieldSizeClasses,
-  fieldInsetClass,
-  fieldInsetHeightClass,
-  fieldInsetSizeHeightClasses,
-  fieldDisabledClass,
   fieldInputClass,
+  fieldGapClasses,
+  getFieldWrapperClass,
 } from "./Field.styles";
-import { textMuted } from "../../../styles/tokens.styles";
 import { Icon } from "../../display/Icon";
+import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
 
 // NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
@@ -268,23 +264,13 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
   // wrapper 클래스 (inset 분기에서는 local.class 제외)
   const getWrapperClass = (includeCustomClass: boolean) =>
-    twMerge(
-      fieldBaseClass,
-      local.prefixIcon &&
-        (local.size === "sm"
-          ? "gap-1.5"
-          : local.size === "lg"
-            ? "gap-3"
-            : local.size === "xl"
-              ? "gap-4"
-              : "gap-2"),
-      local.size && fieldSizeClasses[local.size],
-      local.disabled && fieldDisabledClass,
-      local.inset && fieldInsetClass,
-      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
-
-      includeCustomClass && local.class,
-    );
+    getFieldWrapperClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      includeCustomClass: includeCustomClass && local.class,
+      extra: local.prefixIcon && fieldGapClasses[local.size ?? "default"],
+    });
 
   const isEditable = () => !local.disabled && !local.readonly;
 
@@ -326,12 +312,10 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 title={local.title}
               >
                 {prefixIconEl()}
-                {formatNumber(value(), local.comma ?? true, local.minDigits) ||
-                  (local.placeholder != null && local.placeholder !== "" ? (
-                    <span class={textMuted}>{local.placeholder}</span>
-                  ) : (
-                    "\u00A0"
-                  ))}
+                <PlaceholderFallback
+                  value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+                  placeholder={local.placeholder}
+                />
               </div>
             }
           >
@@ -361,12 +345,10 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
             title={local.title}
           >
             {prefixIconEl()}
-            {formatNumber(value(), local.comma ?? true, local.minDigits) ||
-              (local.placeholder != null && local.placeholder !== "" ? (
-                <span class={textMuted}>{local.placeholder}</span>
-              ) : (
-                "\u00A0"
-              ))}
+            <PlaceholderFallback
+              value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+              placeholder={local.placeholder}
+            />
           </div>
 
           <Show when={isEditable()}>
