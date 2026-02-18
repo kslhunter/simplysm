@@ -115,7 +115,16 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
       <input
         ref={hiddenInputEl}
         type="text"
-        style="position:absolute; bottom:0; left:2px; width:1px; height:1px; opacity:0; pointer-events:none; z-index:-10;"
+        style={{
+          "position": "absolute",
+          "bottom": "0",
+          "left": "2px",
+          "width": "1px",
+          "height": "1px",
+          "opacity": "0",
+          "pointer-events": "none",
+          "z-index": "-10",
+        }}
         autocomplete="off"
         tabIndex={-1}
         aria-hidden="true"

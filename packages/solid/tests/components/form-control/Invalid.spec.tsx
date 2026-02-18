@@ -1,4 +1,4 @@
-import { render, fireEvent } from "@solidjs/testing-library";
+import { render } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
 import { createSignal } from "solid-js";
 import { Invalid } from "../../../src/components/form-control/Invalid";
