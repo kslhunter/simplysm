@@ -109,7 +109,7 @@ const [open, setOpen] = createSignal(false);
   open={open()}
   onOpenChange={setOpen}
   closeOnBackdrop
-  widthPx={600}
+  width={600}
 >
   <div class="p-4">
     Dialog content
@@ -156,7 +156,7 @@ function MyPage() {
   const handleOpen = async () => {
     const result = await dialog.show<string>(
       () => <EditDialog />,
-      { title: "Edit Name", widthPx: 400, closeOnBackdrop: true },
+      { title: "Edit Name", width: 400, closeOnBackdrop: true },
     );
     if (result != null) {
       // result is the value passed to dialogInstance.close()
@@ -183,10 +183,10 @@ function MyPage() {
 | `movable` | `boolean` | `true` | Draggable |
 | `float` | `boolean` | - | Floating mode (no backdrop) |
 | `fill` | `boolean` | - | Fullscreen mode |
-| `widthPx` | `number` | - | Width (px) |
-| `heightPx` | `number` | - | Height (px) |
-| `minWidthPx` | `number` | - | Minimum width (px) |
-| `minHeightPx` | `number` | - | Minimum height (px) |
+| `width` | `number` | - | Width (px) |
+| `height` | `number` | - | Height (px) |
+| `minWidth` | `number` | - | Minimum width (px) |
+| `minHeight` | `number` | - | Minimum height (px) |
 | `position` | `"bottom-right" \| "top-right"` | - | Fixed position |
 | `headerAction` | `JSX.Element` | - | Header action area |
 | `headerStyle` | `JSX.CSSProperties \| string` | - | Header style |

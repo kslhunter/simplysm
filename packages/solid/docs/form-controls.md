@@ -17,7 +17,7 @@ import { Button } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | Color theme |
 | `variant` | `"solid" \| "outline" \| "ghost"` | `"outline"` | Style variant |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style (removes border/rounded corners) |
 | `disabled` | `boolean` | - | Disabled state |
 
@@ -59,7 +59,7 @@ import { TextInput } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
@@ -99,7 +99,7 @@ import { NumberInput } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `min` | `number` | - | Minimum value (error: "최솟값은 N입니다") |
@@ -148,7 +148,7 @@ import { DateOnly } from "@simplysm/core-common";
 | `max` | `DateOnly` | - | Maximum date (error: "{max}보다 작거나 같아야 합니다") |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: DateOnly \| undefined) => string \| undefined` | - | Custom validation function |
@@ -192,7 +192,7 @@ import { DateTime } from "@simplysm/core-common";
 | `max` | `DateTime` | - | Maximum date-time (error: "{max}보다 작거나 같아야 합니다") |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: DateTime \| undefined) => string \| undefined` | - | Custom validation function |
@@ -236,7 +236,7 @@ import { Time } from "@simplysm/core-common";
 | `max` | `Time` | - | Maximum time (error: "{max}보다 작거나 같아야 합니다") |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: Time \| undefined) => string \| undefined` | - | Custom validation function |
@@ -276,7 +276,7 @@ const [to, setTo] = createSignal<DateOnly>();
 | `to` | `DateOnly` | - | End date |
 | `onToChange` | `(value: DateOnly \| undefined) => void` | - | End date change callback |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "Day", month: "Month", range: "Range" }` | Period type labels |
 
 ---
@@ -305,7 +305,7 @@ import { Textarea } from "@simplysm/solid";
 | `minRows` | `number` | `1` | Minimum number of rows |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
@@ -381,7 +381,7 @@ import { Select } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `validate` | `(value: unknown) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
@@ -432,7 +432,7 @@ import { Combobox } from "@simplysm/solid";
 | `parseCustomValue` | `(text: string) => T` | - | Custom value parsing function |
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: T \| undefined) => string \| undefined` | - | Custom validation function |
@@ -464,7 +464,7 @@ import { Checkbox, Radio } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `boolean` | `false` | Checked state |
 | `onValueChange` | `(value: boolean) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `inset` | `boolean` | - | Inset style |
 | `inline` | `boolean` | - | Inline style |
@@ -507,7 +507,7 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T[]` | `[]` | Selected values array |
 | `onValueChange` | `(value: T[]) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
@@ -521,7 +521,7 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T` | - | Selected value |
 | `onValueChange` | `(value: T) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
@@ -549,7 +549,7 @@ import { ColorPicker } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `string` | `"#000000"` | Color value (#RRGGBB format) |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: string \| undefined) => string \| undefined` | - | Custom validation function |
@@ -592,7 +592,7 @@ import { RichTextEditor } from "@simplysm/solid";
 | `value` | `string` | - | HTML string value |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 
 ---
 
@@ -735,7 +735,7 @@ import { Numpad } from "@simplysm/solid";
 | `useEnterButton` | `boolean` | - | Show ENT button |
 | `useMinusButton` | `boolean` | - | Show minus button |
 | `onEnterButtonClick` | `() => void` | - | ENT click callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 
 ---
 
@@ -758,4 +758,4 @@ import { StatePreset } from "@simplysm/solid";
 | `presetKey` | `string` | **(required)** | Preset storage key |
 | `value` | `T` | **(required)** | Current state value |
 | `onValueChange` | `(value: T) => void` | **(required)** | State restore callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |

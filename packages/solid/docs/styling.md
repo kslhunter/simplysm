@@ -22,9 +22,11 @@
 | `h-field` / `size-field` | Default field height (based on `py-1`) |
 | `h-field-sm` / `size-field-sm` | Small field height (based on `py-0.5`) |
 | `h-field-lg` / `size-field-lg` | Large field height (based on `py-2`) |
+| `h-field-xl` / `size-field-xl` | Extra-large field height (based on `py-3`) |
 | `h-field-inset` / `size-field-inset` | Inset field height (excludes border) |
 | `h-field-inset-sm` / `size-field-inset-sm` | Small inset field height |
 | `h-field-inset-lg` / `size-field-inset-lg` | Large inset field height |
+| `h-field-inset-xl` / `size-field-inset-xl` | Extra-large inset field height |
 
 ## z-index Layers
 

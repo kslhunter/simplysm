@@ -92,6 +92,26 @@ function MyComponent() {
 | `hide` | `() => void` | Hide busy overlay |
 | `setProgress` | `(percent: number \| undefined) => void` | Set progress |
 
+**BusyContainer Props:**
+
+`BusyContainer` can also be used directly to wrap content with busy state control:
+
+```tsx
+import { BusyContainer } from "@simplysm/solid";
+
+<BusyContainer busy={isLoading()} message="Loading...">
+  {/* wrapped content */}
+</BusyContainer>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `busy` | `boolean` | - | Show busy overlay |
+| `ready` | `boolean` | `true` | When `false`, shows busy and hides children; when `true`, shows children (controls rendering) |
+| `variant` | `"spinner" \| "bar"` | - | Busy overlay variant |
+| `message` | `string` | - | Message to display |
+| `progressPercent` | `number` | - | Progress percentage (0-100) |
+
 ---
 
 ## Print / usePrint

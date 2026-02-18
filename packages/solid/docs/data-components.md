@@ -51,8 +51,8 @@ import { DataSheet } from "@simplysm/solid";
 <DataSheet
   items={data()}
   persistKey="data-table"
-  pageIndex={pageIndex()}
-  onPageIndexChange={setPageIndex}
+  page={page()}
+  onPageChange={setPage}
   itemsPerPage={20}
   totalPageCount={totalPages()}
   sorts={sorts()}
@@ -105,8 +105,8 @@ import { DataSheet } from "@simplysm/solid";
 | `sorts` | `SortingDef[]` | - | Sort state (`{ key: string; desc: boolean }[]`) |
 | `onSortsChange` | `(sorts: SortingDef[]) => void` | - | Sort change callback |
 | `autoSort` | `boolean` | - | Client-side auto-sorting |
-| `pageIndex` | `number` | - | Current page index (0-based) |
-| `onPageIndexChange` | `(pageIndex: number) => void` | - | Page change callback |
+| `page` | `number` | - | Current page (1-based) |
+| `onPageChange` | `(page: number) => void` | - | Page change callback |
 | `totalPageCount` | `number` | - | Total page count |
 | `itemsPerPage` | `number` | - | Items per page |
 | `displayPageCount` | `number` | - | Number of page buttons to display |
@@ -200,7 +200,7 @@ import { Pagination } from "@simplysm/solid";
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `page` | `number` | **(required)** | Current page (0-based) |
+| `page` | `number` | **(required)** | Current page (1-based) |
 | `onPageChange` | `(page: number) => void` | - | Page change callback |
 | `totalPageCount` | `number` | **(required)** | Total page count |
 | `displayPageCount` | `number` | `10` | Number of pages to display at once |
