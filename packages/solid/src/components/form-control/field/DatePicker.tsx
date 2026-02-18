@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
@@ -13,6 +13,7 @@ import {
   fieldDisabledClass,
   fieldInputClass,
 } from "./Field.styles";
+import { Invalid } from "../../form-control/Invalid";
 
 type DatePickerUnit = "year" | "month" | "date";
 
@@ -52,6 +53,15 @@ export interface DatePickerProps {
 
   /** 커스텀 style */
   style?: JSX.CSSProperties;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: DateOnly | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 }
 
 /**
@@ -165,6 +175,9 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
     "inset",
     "class",
     "style",
+    "required",
+    "validate",
+    "touchMode",
   ]);
 
   // 기본 단위는 date
@@ -201,66 +214,85 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
 
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value;
+    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (v !== undefined) {
+      if (local.min !== undefined && v.tick < local.min.tick)
+        return `${local.min}보다 크거나 같아야 합니다`;
+      if (local.max !== undefined && v.tick > local.max.tick)
+        return `${local.max}보다 작거나 같아야 합니다`;
+    }
+    return local.validate?.(v);
+  });
+
   return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드: 기존 Show 패턴 유지
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              {...rest}
-              data-date-field
-              class={twMerge(getWrapperClass(true), "sd-date-field")}
-              style={local.style}
-              title={local.title}
-            >
-              {displayValue() || "\u00A0"}
+    <Invalid
+      message={errorMsg()}
+      variant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+    >
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드: 기존 Show 패턴 유지
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-date-field
+                class={twMerge(getWrapperClass(true), "sd-date-field")}
+                style={local.style}
+                title={local.title}
+              >
+                {displayValue() || "\u00A0"}
+              </div>
+            }
+          >
+            <div {...rest} data-date-field class={getWrapperClass(true)} style={local.style}>
+              <input
+                type={getInputType(fieldType())}
+                class={fieldInputClass}
+                value={displayValue()}
+                title={local.title}
+                min={formatMinMax(local.min, fieldType())}
+                max={formatMinMax(local.max, fieldType())}
+                onChange={handleChange}
+              />
             </div>
-          }
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div
+          {...rest}
+          data-date-field
+          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          style={local.style}
         >
-          <div {...rest} data-date-field class={getWrapperClass(true)} style={local.style}>
+          <div
+            data-date-field-content
+            style={{ visibility: isEditable() ? "hidden" : undefined }}
+            title={local.title}
+          >
+            {displayValue() || "\u00A0"}
+          </div>
+
+          <Show when={isEditable()}>
             <input
               type={getInputType(fieldType())}
-              class={fieldInputClass}
+              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
               value={displayValue()}
               title={local.title}
               min={formatMinMax(local.min, fieldType())}
               max={formatMinMax(local.max, fieldType())}
               onChange={handleChange}
             />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div
-        {...rest}
-        data-date-field
-        class={twMerge(getWrapperClass(false), "relative", local.class)}
-        style={local.style}
-      >
-        <div
-          data-date-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
+          </Show>
         </div>
-
-        <Show when={isEditable()}>
-          <input
-            type={getInputType(fieldType())}
-            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-            value={displayValue()}
-            title={local.title}
-            min={formatMinMax(local.min, fieldType())}
-            max={formatMinMax(local.max, fieldType())}
-            onChange={handleChange}
-          />
-        </Show>
-      </div>
-    </Show>
+      </Show>
+    </Invalid>
   );
 };

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
@@ -13,6 +13,7 @@ import {
   fieldDisabledClass,
   fieldInputClass,
 } from "./Field.styles";
+import { Invalid } from "../../form-control/Invalid";
 
 type TimePickerUnit = "minute" | "second";
 
@@ -46,6 +47,21 @@ export interface TimePickerProps {
 
   /** 커스텀 style */
   style?: JSX.CSSProperties;
+
+  /** 최소 시간 */
+  min?: Time;
+
+  /** 최대 시간 */
+  max?: Time;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: Time | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 }
 
 /**
@@ -111,6 +127,11 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
     "inset",
     "class",
     "style",
+    "min",
+    "max",
+    "required",
+    "validate",
+    "touchMode",
   ]);
 
   // 기본 단위는 minute
@@ -150,64 +171,83 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
   // step 속성 (second일 때 1)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value;
+    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (v !== undefined) {
+      if (local.min !== undefined && v.tick < local.min.tick)
+        return `${local.min.toFormatString("HH:mm:ss")}보다 크거나 같아야 합니다`;
+      if (local.max !== undefined && v.tick > local.max.tick)
+        return `${local.max.toFormatString("HH:mm:ss")}보다 작거나 같아야 합니다`;
+    }
+    return local.validate?.(v);
+  });
+
   return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              {...rest}
-              data-time-field
-              class={twMerge(getWrapperClass(true), "sd-time-field")}
-              style={local.style}
-              title={local.title}
-            >
-              {displayValue() || "\u00A0"}
+    <Invalid
+      message={errorMsg()}
+      variant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+    >
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-time-field
+                class={twMerge(getWrapperClass(true), "sd-time-field")}
+                style={local.style}
+                title={local.title}
+              >
+                {displayValue() || "\u00A0"}
+              </div>
+            }
+          >
+            <div {...rest} data-time-field class={getWrapperClass(true)} style={local.style}>
+              <input
+                type="time"
+                class={fieldInputClass}
+                value={displayValue()}
+                title={local.title}
+                step={getStep()}
+                onChange={handleChange}
+              />
             </div>
-          }
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div
+          {...rest}
+          data-time-field
+          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          style={local.style}
         >
-          <div {...rest} data-time-field class={getWrapperClass(true)} style={local.style}>
+          <div
+            data-time-field-content
+            style={{ visibility: isEditable() ? "hidden" : undefined }}
+            title={local.title}
+          >
+            {displayValue() || "\u00A0"}
+          </div>
+
+          <Show when={isEditable()}>
             <input
               type="time"
-              class={fieldInputClass}
+              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
               value={displayValue()}
               title={local.title}
               step={getStep()}
               onChange={handleChange}
             />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div
-        {...rest}
-        data-time-field
-        class={twMerge(getWrapperClass(false), "relative", local.class)}
-        style={local.style}
-      >
-        <div
-          data-time-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
+          </Show>
         </div>
-
-        <Show when={isEditable()}>
-          <input
-            type="time"
-            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-            value={displayValue()}
-            title={local.title}
-            step={getStep()}
-            onChange={handleChange}
-          />
-        </Show>
-      </div>
-    </Show>
+      </Show>
+    </Invalid>
   );
 };
