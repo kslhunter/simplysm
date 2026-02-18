@@ -25,7 +25,7 @@ export const fieldSurface = clsx(
   "border",
   borderDefault,
   "rounded",
-  "focus-within:border-primary-500",
+  "focus-within:border-primary-500 dark:focus-within:border-primary-400",
 );
 
 // ── 입력 요소 공통 ──

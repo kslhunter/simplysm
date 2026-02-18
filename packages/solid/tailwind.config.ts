@@ -35,6 +35,15 @@ export default {
       },
       height: fieldSizes,
       size: fieldSizes,
+      keyframes: {
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(-1rem)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 0.6s ease-out both",
+      },
       zIndex: {
         "sidebar": "100",
         "sidebar-backdrop": "99",

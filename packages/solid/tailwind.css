@@ -8,7 +8,7 @@
   }
 
   html.dark {
-    @apply bg-base-950 text-base-100;
+    @apply bg-base-900 text-base-100;
   }
 
   html,

@@ -200,32 +200,43 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: (
 
       return {
         optimizeDeps: {
+          force: true,
           exclude: excluded,
           include: [...new Set(nestedDepsToInclude)],
         },
       };
     },
     async configureServer(server) {
-      const distDirs: string[] = [];
+      const watchPaths: string[] = [];
 
       for (const scope of scopes) {
         const scopeDir = path.join(pkgDir, "node_modules", scope);
         if (!fs.existsSync(scopeDir)) continue;
 
         for (const pkgName of fs.readdirSync(scopeDir)) {
-          const distDir = path.join(scopeDir, pkgName, "dist");
+          const pkgRoot = path.join(scopeDir, pkgName);
+
+          // dist 디렉토리 watch (JS/TS 빌드 결과물)
+          const distDir = path.join(pkgRoot, "dist");
           if (fs.existsSync(distDir)) {
-            distDirs.push(distDir);
+            watchPaths.push(distDir);
+          }
+
+          // 패키지 루트의 CSS/config 파일 watch (tailwind.css, tailwind.config.ts 등)
+          for (const file of fs.readdirSync(pkgRoot)) {
+            if (file.endsWith(".css") || file === "tailwind.config.ts" || file === "tailwind.config.js") {
+              watchPaths.push(path.join(pkgRoot, file));
+            }
           }
         }
       }
 
-      if (distDirs.length === 0) return;
+      if (watchPaths.length === 0) return;
 
       // Vite의 기본 watcher는 **/node_modules/**를 ignore하고
       // server.watcher.add()로는 이 패턴을 override할 수 없다.
       // 별도의 FsWatcher로 scope 패키지의 dist 디렉토리를 감시한다.
-      const scopeWatcher = await FsWatcher.watch(distDirs);
+      const scopeWatcher = await FsWatcher.watch(watchPaths);
       scopeWatcher.onChange({ delay: 300 }, (changeInfos) => {
         for (const { path: changedPath } of changeInfos) {
           // pnpm symlink → real path 변환 (Vite module graph은 real path 사용)

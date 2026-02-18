@@ -241,7 +241,8 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
   const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
-      local.prefixIcon && "gap-1.5",
+      local.prefixIcon &&
+        (local.size === "sm" ? "gap-1.5" : local.size === "lg" ? "gap-3" : local.size === "xl" ? "gap-4" : "gap-2"),
       local.size && fieldSizeClasses[local.size],
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
@@ -254,7 +255,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
   const prefixIconEl = () => (
     <Show when={local.prefixIcon}>
-      <Icon icon={local.prefixIcon!} class={clsx(textMuted, "shrink-0")} />
+      <Icon icon={local.prefixIcon!} class="shrink-0 opacity-70" />
     </Show>
   );
 

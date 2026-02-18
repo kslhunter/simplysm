@@ -54,7 +54,6 @@ export const Collapse: ParentComponent<CollapseProps> = (props) => {
       data-collapse
       class={twMerge("block", local.class)}
       style={mergeStyles(local.style, { overflow: "hidden" })}
-      aria-hidden={!isOpen()}
     >
       <div
         ref={setContentRef}

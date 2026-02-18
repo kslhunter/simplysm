@@ -24,7 +24,7 @@ const baseClass = clsx(
   "px-2",
   // 배경/테두리
   "bg-white",
-  "dark:bg-base-950",
+  "dark:bg-base-900",
   "border-b",
   "border-base-200",
   "dark:border-base-700",

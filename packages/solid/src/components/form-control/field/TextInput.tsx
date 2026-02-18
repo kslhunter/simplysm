@@ -5,14 +5,14 @@ import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
-  type FieldSize,
   fieldBaseClass,
-  fieldSizeClasses,
+  fieldDisabledClass,
+  fieldInputClass,
   fieldInsetClass,
   fieldInsetHeightClass,
   fieldInsetSizeHeightClasses,
-  fieldDisabledClass,
-  fieldInputClass,
+  type FieldSize,
+  fieldSizeClasses,
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
 import { Icon } from "../../display/Icon";
@@ -36,7 +36,7 @@ export interface TextInputProps {
   title?: string;
 
   /** 자동완성 */
-  autocomplete?: string;
+  autocomplete?: JSX.HTMLAutocomplete;
 
   /** 비활성화 */
   disabled?: boolean;
@@ -194,7 +194,8 @@ export const TextInput: Component<TextInputProps> = (props) => {
   const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
-      local.prefixIcon && "gap-1.5",
+      local.prefixIcon &&
+        (local.size === "sm" ? "gap-1.5" : local.size === "lg" ? "gap-3" : local.size === "xl" ? "gap-4" : "gap-2"),
       local.size && fieldSizeClasses[local.size],
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
@@ -208,7 +209,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
 
   const prefixIconEl = () => (
     <Show when={local.prefixIcon}>
-      <Icon icon={local.prefixIcon!} class={clsx(textMuted, "shrink-0")} />
+      <Icon icon={local.prefixIcon!} class="shrink-0 opacity-70" />
     </Show>
   );
 

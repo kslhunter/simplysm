@@ -1,7 +1,6 @@
 import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import "./Card.css";
 
 export interface CardProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 
@@ -12,7 +11,7 @@ const baseClass = clsx(
   "shadow focus-within:shadow-md hover:shadow-md",
   "dark:shadow-black/20 dark:focus-within:shadow-black/30 dark:hover:shadow-black/30",
   "transition-shadow duration-300",
-  "animate-card-in",
+  "animate-fade-in",
 );
 
 export const Card: ParentComponent<CardProps> = (props) => {

@@ -18,7 +18,7 @@ const baseClass = clsx(
   "justify-center",
   "text-center",
   "cursor-pointer",
-  "transition-colors",
+  "transition",
   "rounded",
   "focus:outline-none",
   "focus-visible:ring-2",
@@ -30,7 +30,7 @@ const themeClasses = Object.fromEntries(
   Object.entries(themeTokens).map(([theme, t]) => [
     theme,
     {
-      solid: clsx(t.solid, t.solidHover),
+      solid: clsx(t.solid, t.solidHover, "shadow-md hover:shadow-lg"),
       outline: clsx("bg-transparent", t.hoverBg, t.text, t.border),
       ghost: clsx("bg-transparent", t.hoverBg, t.text),
     },

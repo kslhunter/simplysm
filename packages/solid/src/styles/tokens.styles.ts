@@ -1,6 +1,6 @@
 // ── 테두리 ──
 export const borderDefault = "border-base-300 dark:border-base-700";
-export const borderSubtle = "border-base-200 dark:border-base-800";
+export const borderSubtle = "border-base-200 dark:border-base-700";
 
 // ── 표면 배경 ──
 export const bgSurface = "bg-white dark:bg-base-900";

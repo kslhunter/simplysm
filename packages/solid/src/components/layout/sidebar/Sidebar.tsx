@@ -22,7 +22,7 @@ const baseClass = clsx(
   "flex",
   "flex-col",
   "bg-base-100",
-  "dark:bg-base-900",
+  "dark:bg-base-800",
   "border-r",
   "border-base-200",
   "dark:border-base-700",

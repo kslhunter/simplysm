@@ -56,6 +56,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
         ref={hiddenInputEl}
         type="text"
         class={hiddenInputClass}
+        autocomplete="off"
         tabIndex={-1}
         aria-hidden="true"
         onFocus={handleHiddenInputFocus}

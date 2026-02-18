@@ -11,7 +11,7 @@ import { Icon } from "../../display/Icon";
 
 void ripple;
 
-const containerClass = clsx("m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-800");
+const containerClass = clsx("m-2 flex flex-col overflow-hidden rounded bg-white dark:bg-base-900");
 
 const headerClass = clsx(
   "flex",
@@ -23,7 +23,7 @@ const headerClass = clsx(
   "cursor-pointer",
   "transition-colors",
   "hover:bg-base-500/10",
-  "dark:hover:bg-base-700",
+  "dark:hover:bg-base-800",
 );
 
 const headerReadonlyClass = clsx("cursor-default hover:bg-transparent dark:hover:bg-transparent");

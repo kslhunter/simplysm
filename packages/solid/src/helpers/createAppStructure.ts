@@ -1,4 +1,4 @@
-import { type Accessor, createMemo } from "solid-js";
+import { type Accessor, createMemo, createRoot } from "solid-js";
 import type { Component } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 import type { SidebarMenuItem } from "../components/layout/sidebar/SidebarMenu";
@@ -179,23 +179,27 @@ export function createAppStructure<TModule>(opts: {
 
   const routes = extractRoutes(opts.items);
 
-  const usableMenus = createMemo(() => {
-    const menus: SidebarMenuItem[] = [];
-    for (const top of opts.items) {
-      if (isGroupItem(top)) {
-        menus.push(...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()));
+  const memos = createRoot(() => {
+    const usableMenus = createMemo(() => {
+      const menus: SidebarMenuItem[] = [];
+      for (const top of opts.items) {
+        if (isGroupItem(top)) {
+          menus.push(...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()));
+        }
       }
-    }
-    return menus;
-  });
+      return menus;
+    });
 
-  const usableFlatMenus = createMemo(() => flattenMenus(usableMenus()));
+    const usableFlatMenus = createMemo(() => flattenMenus(usableMenus()));
+
+    return { usableMenus, usableFlatMenus };
+  });
 
   return {
     items: opts.items,
     routes,
-    usableMenus,
-    usableFlatMenus,
+    usableMenus: memos.usableMenus,
+    usableFlatMenus: memos.usableFlatMenus,
     permRecord,
     getTitleChainByHref(href: string): string[] {
       const codes = href.split("/").filter(Boolean);
