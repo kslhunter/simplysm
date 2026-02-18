@@ -3,14 +3,8 @@ import { type Component, createEffect, createMemo, type JSX, Show, splitProps } 
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
-import {
-  type FieldSize,
-  textAreaBaseClass as fieldTextAreaBaseClass,
-  textAreaSizeClasses,
-  fieldInsetClass,
-  fieldDisabledClass,
-} from "./Field.styles";
-import { textMuted } from "../../../styles/tokens.styles";
+import { type FieldSize, textAreaSizeClasses, getTextareaWrapperClass } from "./Field.styles";
+import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
 
 export interface TextareaProps {
@@ -157,14 +151,12 @@ export const Textarea: Component<TextareaProps> = (props) => {
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
-    twMerge(
-      fieldTextAreaBaseClass,
-      local.size && textAreaSizeClasses[local.size],
-      local.disabled && fieldDisabledClass,
-      local.inset && fieldInsetClass,
-
-      includeCustomClass && local.class,
-    );
+    getTextareaWrapperClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      includeCustomClass: includeCustomClass && local.class,
+    });
 
   const getTextareaClass = () =>
     twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size], local.inset && "p-0");
@@ -208,12 +200,7 @@ export const Textarea: Component<TextareaProps> = (props) => {
                 style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
                 title={local.title}
               >
-                {value() ||
-                  (local.placeholder != null && local.placeholder !== "" ? (
-                    <span class={textMuted}>{local.placeholder}</span>
-                  ) : (
-                    "\u00A0"
-                  ))}
+                <PlaceholderFallback value={value()} placeholder={local.placeholder} />
               </div>
             }
           >
@@ -252,11 +239,12 @@ export const Textarea: Component<TextareaProps> = (props) => {
         <div
           {...rest}
           data-textarea-field
-          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          class={clsx("relative", local.class)}
           style={local.style}
         >
           <div
             data-textarea-field-content
+            class={getWrapperClass(false)}
             style={{
               "visibility": isEditable() ? "hidden" : undefined,
               "white-space": "pre-wrap",
@@ -264,27 +252,29 @@ export const Textarea: Component<TextareaProps> = (props) => {
             }}
             title={local.title}
           >
-            {isEditable()
-              ? contentForHeight()
-              : value() ||
-                (local.placeholder != null && local.placeholder !== "" ? (
-                  <span class={textMuted}>{local.placeholder}</span>
-                ) : (
-                  "\u00A0"
-                ))}
+            {isEditable() ? (
+              contentForHeight()
+            ) : (
+              <PlaceholderFallback value={value()} placeholder={local.placeholder} />
+            )}
           </div>
 
           <Show when={isEditable()}>
-            <textarea
-              class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
-              value={value()}
-              placeholder={local.placeholder}
-              title={local.title}
-              onKeyDown={handleKeyDown}
-              onInput={handleInput}
-              onCompositionStart={handleCompositionStart}
-              onCompositionEnd={handleCompositionEnd}
-            />
+            <div
+              class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}
+              style={{ position: "relative" }}
+            >
+              <textarea
+                class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
+                value={value()}
+                placeholder={local.placeholder}
+                title={local.title}
+                onKeyDown={handleKeyDown}
+                onInput={handleInput}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
+              />
+            </div>
           </Show>
         </div>
       </Show>
