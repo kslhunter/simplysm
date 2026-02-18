@@ -1,13 +1,13 @@
 import { type ParentComponent, type JSX, splitProps, createEffect, onCleanup, Show, useContext } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LoadingContext, type LoadingVariant } from "./LoadingContext";
+import { BusyContext, type BusyVariant } from "./BusyContext";
 import { createMountTransition } from "../../../hooks/createMountTransition";
-import "./LoadingContainer.css";
+import "./BusyContainer.css";
 
-export interface LoadingContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   busy?: boolean;
-  variant?: LoadingVariant;
+  variant?: BusyVariant;
   message?: string;
   progressPercent?: number;
   children?: JSX.Element;
@@ -46,11 +46,11 @@ const progressBarClass = clsx(
 
 const barIndicatorClass = clsx("absolute left-0 top-0", "h-1 w-full", "bg-white dark:bg-base-800");
 
-export const LoadingContainer: ParentComponent<LoadingContainerProps> = (props) => {
+export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const [local, rest] = splitProps(props, ["busy", "variant", "message", "progressPercent", "class", "children"]);
 
-  const loadingCtx = useContext(LoadingContext);
-  const currVariant = (): LoadingVariant => local.variant ?? loadingCtx?.variant() ?? "spinner";
+  const busyCtx = useContext(BusyContext);
+  const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
 
   // 애니메이션 상태 (mount transition)
   const { mounted, animating, unmount } = createMountTransition(() => !!local.busy);

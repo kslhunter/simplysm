@@ -1,21 +1,21 @@
 import { type ParentComponent, createSignal } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
-import { LoadingContext, type LoadingContextValue, type LoadingVariant } from "./LoadingContext";
-import { LoadingContainer } from "./LoadingContainer";
+import { BusyContext, type BusyContextValue, type BusyVariant } from "./BusyContext";
+import { BusyContainer } from "./BusyContainer";
 
 const overlayClass = clsx("fixed left-0 top-0", "h-screen w-screen", "overflow-hidden");
 
-export interface LoadingProviderProps {
-  variant?: LoadingVariant;
+export interface BusyProviderProps {
+  variant?: BusyVariant;
 }
 
-export const LoadingProvider: ParentComponent<LoadingProviderProps> = (props) => {
+export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
   const [busyCount, setBusyCount] = createSignal(0);
   const [message, setMessage] = createSignal<string | undefined>();
   const [progress, setProgress] = createSignal<number | undefined>();
 
-  const variant = (): LoadingVariant => props.variant ?? "spinner";
+  const variant = (): BusyVariant => props.variant ?? "spinner";
 
   const show = (msg?: string): void => {
     setBusyCount((c) => c + 1);
@@ -33,7 +33,7 @@ export const LoadingProvider: ParentComponent<LoadingProviderProps> = (props) =>
     }
   };
 
-  const contextValue: LoadingContextValue = {
+  const contextValue: BusyContextValue = {
     variant,
     show,
     hide,
@@ -41,10 +41,10 @@ export const LoadingProvider: ParentComponent<LoadingProviderProps> = (props) =>
   };
 
   return (
-    <LoadingContext.Provider value={contextValue}>
+    <BusyContext.Provider value={contextValue}>
       {props.children}
       <Portal>
-        <LoadingContainer
+        <BusyContainer
           busy={busyCount() > 0}
           variant={variant()}
           message={message()}
@@ -53,6 +53,6 @@ export const LoadingProvider: ParentComponent<LoadingProviderProps> = (props) =>
           style={{ "pointer-events": busyCount() > 0 ? "auto" : "none" }}
         />
       </Portal>
-    </LoadingContext.Provider>
+    </BusyContext.Provider>
   );
 };

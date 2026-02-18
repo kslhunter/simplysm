@@ -126,9 +126,9 @@ Hook to access notification system. Must be used inside `InitializeProvider`. Se
 
 ---
 
-## useLoading
+## useBusy
 
-Hook to access loading overlay. Must be used inside `InitializeProvider`. See [Loading](feedback.md#loading) for detailed API.
+Hook to access busy overlay. Must be used inside `InitializeProvider`. See [Busy](feedback.md#busy) for detailed API.
 
 ---
 

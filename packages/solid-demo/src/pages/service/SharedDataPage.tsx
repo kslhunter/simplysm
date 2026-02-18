@@ -10,7 +10,7 @@ import {
   type SharedDataDefinition,
   Topbar,
   Table,
-  LoadingContainer,
+  BusyContainer,
   Tag,
 } from "@simplysm/solid";
 
@@ -169,9 +169,9 @@ const ConnectedSharedDataDemo: Component = () => {
     <Show
       when={connected()}
       fallback={
-        <LoadingContainer busy={true}>
+        <BusyContainer busy={true}>
           <div class="h-32" />
-        </LoadingContainer>
+        </BusyContainer>
       }
     >
       <SharedDataProvider<DemoSharedData> definitions={definitions}>

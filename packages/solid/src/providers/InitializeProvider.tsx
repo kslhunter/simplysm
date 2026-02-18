@@ -5,7 +5,7 @@ import { useClipboardValueCopy } from "../hooks/useClipboardValueCopy";
 import { ThemeProvider } from "./ThemeContext";
 import { NotificationProvider } from "../components/feedback/notification/NotificationProvider";
 import { NotificationBanner } from "../components/feedback/notification/NotificationBanner";
-import { LoadingProvider } from "../components/feedback/loading/LoadingProvider";
+import { BusyProvider } from "../components/feedback/busy/BusyProvider";
 
 import { createPwaUpdate } from "../hooks/createPwaUpdate";
 import { useLogger } from "../hooks/useLogger";
@@ -70,7 +70,7 @@ export const InitializeProvider: ParentComponent<{ config: AppConfig }> = (props
           <NotificationBanner />
           <GlobalErrorLogger />
           <PwaUpdater />
-          <LoadingProvider variant={props.config.loadingVariant}>{props.children}</LoadingProvider>
+          <BusyProvider variant={props.config.busyVariant}>{props.children}</BusyProvider>
         </NotificationProvider>
       </ThemeProvider>
     </ConfigContext.Provider>

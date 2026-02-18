@@ -96,10 +96,10 @@ export * from "./components/feedback/notification/NotificationBell";
 export * from "./components/feedback/notification/NotificationProvider";
 export * from "./components/feedback/notification/NotificationBanner";
 
-// Loading
-export * from "./components/feedback/loading/LoadingContext";
-export * from "./components/feedback/loading/LoadingContainer";
-export * from "./components/feedback/loading/LoadingProvider";
+// Busy
+export * from "./components/feedback/busy/BusyContext";
+export * from "./components/feedback/busy/BusyContainer";
+export * from "./components/feedback/busy/BusyProvider";
 
 // Print
 export * from "./components/feedback/print/Print";
