@@ -1,26 +1,18 @@
 import { type Component, createSignal, For, Show } from "solid-js";
 import { IconBell } from "@tabler/icons-solidjs";
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 import { useNotification } from "./NotificationContext";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { Icon } from "../../display/Icon";
 import { NotificationBanner } from "./NotificationBanner";
+import { iconButtonBase } from "../../../styles/patterns.styles";
 
 export interface NotificationBellProps {
   showBanner?: boolean;
 }
 
-const buttonClass = clsx(
-  "relative",
-  "p-2",
-  "rounded-full",
-  "hover:bg-base-100",
-  "dark:hover:bg-base-700",
-  "transition-colors",
-  "focus:outline-none",
-  "focus-visible:ring-2",
-  "focus-visible:ring-primary-500",
-);
+const buttonClass = twMerge(iconButtonBase, "relative", "p-2", "rounded-full");
 
 const badgeClass = clsx(
   "absolute",
@@ -108,7 +100,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
       >
         <div class="p-2">
           <div class={dropdownHeaderClass}>
-            <span class="font-semibold">알림</span>
+            <span class="font-bold">알림</span>
             <Show when={notification.items().length > 0}>
               <button
                 type="button"

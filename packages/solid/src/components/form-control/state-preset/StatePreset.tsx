@@ -9,6 +9,7 @@ import { useNotification } from "../../feedback/notification/NotificationContext
 import { Icon } from "../../display/Icon";
 import { textPlaceholder } from "../../../styles/tokens.styles";
 import type { ComponentSize } from "../../../styles/tokens.styles";
+import { iconButtonBase } from "../../../styles/patterns.styles";
 
 // ── Types ──
 
@@ -50,14 +51,7 @@ const chipSizeClasses: Record<StatePresetSize, string> = {
 
 const chipNameBtnClass = clsx("cursor-pointer", "hover:underline", "focus:outline-none");
 
-const iconBtnClass = clsx(
-  "inline-flex items-center justify-center",
-  "rounded-full",
-  "cursor-pointer",
-  "transition-colors",
-  "focus:outline-none",
-  "hover:bg-base-300 dark:hover:bg-base-600",
-);
+const iconBtnClass = twMerge(iconButtonBase, "rounded-full");
 
 const iconBtnDefaultClass = "p-0.5";
 

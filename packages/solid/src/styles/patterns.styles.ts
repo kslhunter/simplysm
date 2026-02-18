@@ -1,6 +1,18 @@
 import clsx from "clsx";
 import { bgSurface, borderDefault, textDefault, textPlaceholder } from "./tokens.styles";
 
+// ── 아이콘 버튼 공통 ──
+export const iconButtonBase = clsx(
+  "inline-flex items-center justify-center",
+  "cursor-pointer",
+  "rounded",
+  "transition-colors",
+  "text-base-600 dark:text-base-300",
+  "hover:bg-base-200 dark:hover:bg-base-700",
+  "focus:outline-none",
+  "focus-visible:ring-2",
+);
+
 // ── inset 포커스 아웃라인 (focus-within 버전: Field, TextArea) ──
 export const insetFocusOutline = clsx(
   "focus-within:[outline-style:solid]",

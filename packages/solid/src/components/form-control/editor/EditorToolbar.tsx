@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { Editor } from "@tiptap/core";
 import { createEditorTransaction } from "solid-tiptap";
+import { iconButtonBase } from "../../../styles/patterns.styles";
 import {
   IconBold,
   IconItalic,
@@ -39,13 +40,7 @@ const toolbarClass = clsx(
 );
 
 // 툴바 버튼 기본 스타일
-const toolbarBtnClass = clsx(
-  "inline-flex items-center justify-center",
-  "size-7 rounded",
-  "text-base-600 dark:text-base-400",
-  "hover:bg-base-100 dark:hover:bg-base-800",
-  "transition-colors",
-);
+const toolbarBtnClass = twMerge(iconButtonBase, "size-7");
 
 // 툴바 버튼 활성 스타일
 const toolbarBtnActiveClass = clsx(
@@ -57,13 +52,7 @@ const toolbarBtnActiveClass = clsx(
 const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
 
 // 색상 선택 label 스타일
-const colorLabelClass = clsx(
-  "relative inline-flex items-center justify-center",
-  "size-7 cursor-pointer rounded",
-  "text-base-600 dark:text-base-400",
-  "hover:bg-base-100 dark:hover:bg-base-800",
-  "transition-colors",
-);
+const colorLabelClass = twMerge(iconButtonBase, "relative", "size-7");
 
 // 색상 input 숨기기 스타일
 const colorInputClass = clsx("absolute opacity-0", "size-0");

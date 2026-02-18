@@ -20,6 +20,7 @@ import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { splitSlots } from "../../../helpers/splitSlots";
 import "./Kanban.css";
+import { iconButtonBase } from "../../../styles/patterns.styles";
 import {
   KanbanContext,
   KanbanLaneContext,
@@ -248,20 +249,12 @@ const laneDragOverClass = clsx("bg-primary-50 dark:bg-primary-950");
 const laneHeaderBaseClass = clsx(
   "flex items-center gap-2",
   "px-3 py-2",
-  "font-semibold",
+  "font-bold",
   "text-base-700 dark:text-base-200",
   "select-none",
 );
 
-const collapseButtonClass = clsx(
-  "flex items-center justify-center",
-  "size-6 rounded",
-  "text-base-500",
-  "hover:bg-base-200 hover:text-primary-500",
-  "dark:hover:bg-base-800",
-  "transition-colors duration-150",
-  "cursor-pointer",
-);
+const collapseButtonClass = twMerge(iconButtonBase, "size-6", "hover:text-primary-500");
 
 const laneToolsClass = clsx("flex items-center", "gap-1");
 
