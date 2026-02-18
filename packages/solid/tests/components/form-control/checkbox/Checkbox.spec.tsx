@@ -81,15 +81,6 @@ describe("Checkbox 컴포넌트", () => {
   });
 
   describe("스타일 변형", () => {
-    it("theme prop에 따라 스타일이 달라진다", () => {
-      const { getByRole: getDefault } = render(() => <Checkbox value={true} />);
-      const { getByRole: getDanger } = render(() => <Checkbox value={true} theme="danger" />);
-
-      const defaultIndicator = getDefault("checkbox").querySelector("div") as HTMLElement;
-      const dangerIndicator = getDanger("checkbox").querySelector("div") as HTMLElement;
-      expect(defaultIndicator.className).not.toBe(dangerIndicator.className);
-    });
-
     it("size prop에 따라 스타일이 달라진다", () => {
       const { getByRole: getDefault } = render(() => <Checkbox />);
       const { getByRole: getSm } = render(() => <Checkbox size="sm" />);
@@ -115,6 +106,32 @@ describe("Checkbox 컴포넌트", () => {
       // eslint-disable-next-line tailwindcss/no-custom-classname
       const { getByRole } = render(() => <Checkbox class="my-custom-class" />);
       expect(getByRole("checkbox").classList.contains("my-custom-class")).toBe(true);
+    });
+  });
+
+  describe("validation", () => {
+    it("required일 때 체크되지 않으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <Checkbox required value={false} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 선택 항목입니다");
+    });
+
+    it("required일 때 체크되면 유효하다", () => {
+      const { container } = render(() => <Checkbox required value={true} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러 메시지를 반환하면 설정된다", () => {
+      const { container } = render(() => <Checkbox value={true} validate={() => "커스텀 에러"} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("커스텀 에러");
+    });
+
+    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+      const { container } = render(() => <Checkbox value={true} validate={() => undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
     });
   });
 });

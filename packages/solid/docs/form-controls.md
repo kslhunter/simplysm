@@ -40,6 +40,14 @@ import { TextInput } from "@simplysm/solid";
 
 // Format mask (e.g., phone number)
 <TextInput format="XXX-XXXX-XXXX" value={phone()} onValueChange={setPhone} />
+
+// With validation
+<TextInput required minLength={3} value={name()} onValueChange={setName} />
+<TextInput
+  validate={(v) => v.includes("@") ? undefined : "이메일 형식이 아닙니다"}
+  value={email()}
+  onValueChange={setEmail}
+/>
 ```
 
 | Prop | Type | Default | Description |
@@ -53,6 +61,12 @@ import { TextInput } from "@simplysm/solid";
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
+| `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
+| `pattern` | `string` | - | Regex pattern string (error: "입력 형식이 올바르지 않습니다") |
+| `validate` | `(value: string) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -71,6 +85,9 @@ import { NumberInput } from "@simplysm/solid";
 
 // Minimum 2 decimal places
 <NumberInput value={price()} minDigits={2} />
+
+// With validation
+<NumberInput required min={0} max={100} value={score()} onValueChange={setScore} />
 ```
 
 | Prop | Type | Default | Description |
@@ -84,6 +101,11 @@ import { NumberInput } from "@simplysm/solid";
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `min` | `number` | - | Minimum value (error: "최솟값은 N입니다") |
+| `max` | `number` | - | Maximum value (error: "최댓값은 N입니다") |
+| `validate` | `(value: number \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -112,6 +134,9 @@ import { DateOnly } from "@simplysm/core-common";
   min={new DateOnly(2025, 1, 1)}
   max={new DateOnly(2025, 12, 31)}
 />
+
+// With validation
+<DatePicker required value={date()} onValueChange={setDate} />
 ```
 
 | Prop | Type | Default | Description |
@@ -119,14 +144,103 @@ import { DateOnly } from "@simplysm/core-common";
 | `value` | `DateOnly` | - | Input value |
 | `onValueChange` | `(value: DateOnly \| undefined) => void` | - | Value change callback |
 | `unit` | `"year" \| "month" \| "date"` | `"date"` | Date unit |
-| `min` | `DateOnly` | - | Minimum date |
-| `max` | `DateOnly` | - | Maximum date |
+| `min` | `DateOnly` | - | Minimum date (error: "{min}보다 크거나 같아야 합니다") |
+| `max` | `DateOnly` | - | Maximum date (error: "{max}보다 작거나 같아야 합니다") |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `validate` | `(value: DateOnly \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
-> `DateTimePicker` and `TimePicker` follow the same pattern for datetime (`DateTime`) and time (`Time`) input.
+---
+
+## DateTimePicker
+
+Date-time input field supporting minute and second units. Values are handled using the `DateTime` type.
+
+```tsx
+import { DateTimePicker } from "@simplysm/solid";
+import { DateTime } from "@simplysm/core-common";
+
+// Date-time input (minute precision)
+<DateTimePicker unit="minute" value={dateTime()} onValueChange={setDateTime} />
+
+// Date-time input (second precision)
+<DateTimePicker unit="second" value={dateTime()} onValueChange={setDateTime} />
+
+// min/max constraints
+<DateTimePicker
+  unit="minute"
+  value={dateTime()}
+  onValueChange={setDateTime}
+  min={new DateTime(2025, 1, 1, 0, 0, 0)}
+  max={new DateTime(2025, 12, 31, 23, 59, 0)}
+/>
+
+// With validation
+<DateTimePicker required value={dateTime()} onValueChange={setDateTime} />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `DateTime` | - | Input value |
+| `onValueChange` | `(value: DateTime \| undefined) => void` | - | Value change callback |
+| `unit` | `"minute" \| "second"` | `"minute"` | Date-time unit |
+| `min` | `DateTime` | - | Minimum date-time (error: "{min}보다 크거나 같아야 합니다") |
+| `max` | `DateTime` | - | Maximum date-time (error: "{max}보다 작거나 같아야 합니다") |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `validate` | `(value: DateTime \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
+
+---
+
+## TimePicker
+
+Time input field supporting minute and second units. Values are handled using the `Time` type.
+
+```tsx
+import { TimePicker } from "@simplysm/solid";
+import { Time } from "@simplysm/core-common";
+
+// Time input (minute precision)
+<TimePicker unit="minute" value={time()} onValueChange={setTime} />
+
+// Time input (second precision)
+<TimePicker unit="second" value={time()} onValueChange={setTime} />
+
+// min/max constraints
+<TimePicker
+  unit="minute"
+  value={time()}
+  onValueChange={setTime}
+  min={new Time(9, 0, 0)}
+  max={new Time(18, 0, 0)}
+/>
+
+// With validation
+<TimePicker required value={time()} onValueChange={setTime} />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Time` | - | Input value |
+| `onValueChange` | `(value: Time \| undefined) => void` | - | Value change callback |
+| `unit` | `"minute" \| "second"` | `"minute"` | Time unit |
+| `min` | `Time` | - | Minimum time (error: "{min}보다 크거나 같아야 합니다") |
+| `max` | `Time` | - | Maximum time (error: "{max}보다 작거나 같아야 합니다") |
+| `disabled` | `boolean` | - | Disabled state |
+| `readonly` | `boolean` | - | Read-only state |
+| `size` | `"sm" \| "lg"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `validate` | `(value: Time \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -178,6 +292,9 @@ import { Textarea } from "@simplysm/solid";
 
 // Minimum 3 rows height
 <Textarea minRows={3} value={text()} onValueChange={setText} />
+
+// With validation
+<Textarea required minLength={10} value={text()} onValueChange={setText} />
 ```
 
 | Prop | Type | Default | Description |
@@ -190,6 +307,11 @@ import { Textarea } from "@simplysm/solid";
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
+| `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
+| `validate` | `(value: string) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -241,6 +363,9 @@ import { Select } from "@simplysm/solid";
   <Select.Action onClick={handleAdd}>+</Select.Action>
   <Select.Item value={item1}>{item1.name}</Select.Item>
 </Select>
+
+// With validation
+<Select required value={selected()} onValueChange={setSelected} items={options} />
 ```
 
 | Prop | Type | Default | Description |
@@ -255,9 +380,11 @@ import { Select } from "@simplysm/solid";
 | `hideSelectAll` | `boolean` | - | Hide select all button (multiple selection) |
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
-| `required` | `boolean` | - | Required field |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `validate` | `(value: unknown) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 **Sub-components:**
 - `Select.Item` -- Selection item
@@ -289,6 +416,9 @@ import { Combobox } from "@simplysm/solid";
     {(item) => <>{item.name}</>}
   </Combobox.ItemTemplate>
 </Combobox>
+
+// With validation
+<Combobox required loadItems={loadItems} renderValue={(v) => v.name} value={selected()} onValueChange={setSelected} />
 ```
 
 | Prop | Type | Default | Description |
@@ -304,6 +434,9 @@ import { Combobox } from "@simplysm/solid";
 | `disabled` | `boolean` | - | Disabled state |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `validate` | `(value: T \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 **Sub-components:**
 - `Combobox.Item` -- Selection item
@@ -313,27 +446,31 @@ import { Combobox } from "@simplysm/solid";
 
 ## Checkbox / Radio
 
-Checkbox and radio button components.
+Checkbox and radio button components. Always uses primary color.
 
 ```tsx
 import { Checkbox, Radio } from "@simplysm/solid";
 
 <Checkbox value={checked()} onValueChange={setChecked}>I agree</Checkbox>
-<Checkbox theme="success" value={active()} onValueChange={setActive}>Activate</Checkbox>
 
 <Radio value={option() === "a"} onValueChange={() => setOption("a")}>Option A</Radio>
 <Radio value={option() === "b"} onValueChange={() => setOption("b")}>Option B</Radio>
+
+// With validation
+<Checkbox required value={agreed()} onValueChange={setAgreed}>I agree to the terms</Checkbox>
 ```
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `value` | `boolean` | `false` | Checked state |
 | `onValueChange` | `(value: boolean) => void` | - | Value change callback |
-| `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"primary"` | Color theme |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `inset` | `boolean` | - | Inset style |
 | `inline` | `boolean` | - | Inline style |
+| `required` | `boolean` | - | Required field (error: "필수 선택 항목입니다") |
+| `validate` | `(value: boolean) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -357,6 +494,11 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
   <RadioGroup.Item value="md">Medium</RadioGroup.Item>
   <RadioGroup.Item value="lg">Large</RadioGroup.Item>
 </RadioGroup>
+
+// With validation
+<CheckboxGroup required value={selected()} onValueChange={setSelected}>
+  <CheckboxGroup.Item value="a">Option A</CheckboxGroup.Item>
+</CheckboxGroup>
 ```
 
 **CheckboxGroup Props:**
@@ -365,11 +507,13 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T[]` | `[]` | Selected values array |
 | `onValueChange` | `(value: T[]) => void` | - | Value change callback |
-| `theme` | `SemanticTheme` | `"primary"` | Color theme |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "항목을 선택해 주세요") |
+| `validate` | `(value: T[]) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 **RadioGroup Props:**
 
@@ -377,11 +521,13 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T` | - | Selected value |
 | `onValueChange` | `(value: T) => void` | - | Value change callback |
-| `theme` | `SemanticTheme` | `"primary"` | Color theme |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
+| `required` | `boolean` | - | Required field (error: "항목을 선택해 주세요") |
+| `validate` | `(value: T \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -394,6 +540,9 @@ import { ColorPicker } from "@simplysm/solid";
 
 <ColorPicker value={color()} onValueChange={setColor} />
 <ColorPicker value={color()} size="sm" disabled />
+
+// With validation
+<ColorPicker required value={color()} onValueChange={setColor} />
 ```
 
 | Prop | Type | Default | Description |
@@ -402,6 +551,9 @@ import { ColorPicker } from "@simplysm/solid";
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
+| `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
+| `validate` | `(value: string \| undefined) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after field loses focus |
 
 ---
 
@@ -446,7 +598,7 @@ import { RichTextEditor } from "@simplysm/solid";
 
 ## Invalid
 
-Wrapper component for form validation using native browser `setCustomValidity` API. Displays a red indicator dot and manages validation state for form fields. Useful for integrating with native form validation or custom validation frameworks.
+Wrapper component for form validation using native browser `setCustomValidity` API. Renders as a Fragment (no wrapper element). Manages both native form validity and visual error indicators.
 
 ```tsx
 import { Invalid, TextInput } from "@simplysm/solid";
@@ -460,23 +612,97 @@ const handleChange = (val: string) => {
   setError(val.length < 3 ? "Must be at least 3 characters" : "");
 };
 
+// variant="dot" — injects a red dot inside the first child element (default)
 <Invalid message={error()}>
+  <TextInput value={value()} onValueChange={handleChange} />
+</Invalid>
+
+// variant="border" — adds danger border class to the first child element
+<Invalid variant="border" message={error()}>
+  <div class="border rounded-lg p-2">Content</div>
+</Invalid>
+
+// touchMode — show visual feedback only after the field loses focus
+<Invalid variant="border" message={error()} touchMode>
   <TextInput value={value()} onValueChange={handleChange} />
 </Invalid>
 ```
 
-The `Invalid` component wraps any form field and displays a validation state using the browser's native validation API. A red indicator dot appears when a message is present.
-
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `message` | `string` | - | Validation error message (non-empty = invalid state) |
-| `class` | `string` | - | Custom CSS class |
+| `variant` | `"border" \| "dot"` | `"dot"` | Visual indicator style |
+| `touchMode` | `boolean` | - | Show visual indicator only after the target element loses focus |
 
 **Key features:**
-- Uses native `setCustomValidity` for browser validation integration
-- Red indicator dot displayed when error message is present
-- Reactively updates validation state when message changes
-- Works with any form field component
+- Renders as a Fragment — does not add a wrapper DOM element
+- Uses native `setCustomValidity` for browser form validation integration (always set, regardless of `touchMode`)
+- `variant="dot"`: injects a small red dot (`position: absolute`) inside the first child element
+- `variant="border"`: adds `border-danger-500` CSS class to the first child element
+- `touchMode`: visual display is deferred until the target element fires a `focusout` event
+- Works with any form field component or custom element
+
+> Most form controls (`TextInput`, `NumberInput`, `Textarea`, `Select`, etc.) use `Invalid` internally and expose `validate` / `touchMode` props directly. Direct use of `Invalid` is for custom validation scenarios.
+
+---
+
+## Form Validation
+
+All form controls integrate with native browser form validation via the `setCustomValidity` API. Use `form.reportValidity()` to trigger validation and show error messages.
+
+```tsx
+import { Button, TextInput, NumberInput } from "@simplysm/solid";
+
+<form onSubmit={(e) => {
+  e.preventDefault();
+  if (e.currentTarget.reportValidity()) {
+    // All fields are valid — proceed with submit
+  }
+}}>
+  <TextInput required placeholder="이름" value={name()} onValueChange={setName} />
+  <TextInput required minLength={3} placeholder="최소 3자" value={nick()} onValueChange={setNick} />
+  <TextInput
+    validate={(v) => v.includes("@") ? undefined : "이메일 형식이 아닙니다"}
+    placeholder="이메일"
+    value={email()}
+    onValueChange={setEmail}
+  />
+  <NumberInput required min={0} max={100} value={score()} onValueChange={setScore} />
+  <Button type="submit">Submit</Button>
+</form>
+```
+
+**`validate` prop type:**
+
+```typescript
+validate?: (value: T) => string | undefined
+// T is the component's value type (string, number, boolean, DateOnly, etc.)
+// Return a string for an error message, or undefined when valid
+```
+
+**Built-in error messages (Korean):**
+
+| Condition | Message |
+|-----------|---------|
+| `required` empty (text/number/date) | "필수 입력 항목입니다" |
+| `required` unchecked (Checkbox/Radio) | "필수 선택 항목입니다" |
+| `required` empty (CheckboxGroup/RadioGroup) | "항목을 선택해 주세요" |
+| `minLength` not met | "최소 N자 이상 입력하세요" |
+| `maxLength` exceeded | "최대 N자까지 입력 가능합니다" |
+| `pattern` mismatch | "입력 형식이 올바르지 않습니다" |
+| `min` underflow (NumberInput) | "최솟값은 N입니다" |
+| `max` overflow (NumberInput) | "최댓값은 N입니다" |
+| `min` underflow (DatePicker/DateTimePicker/TimePicker) | "{min}보다 크거나 같아야 합니다" |
+| `max` overflow (DatePicker/DateTimePicker/TimePicker) | "{max}보다 작거나 같아야 합니다" |
+
+**`touchMode` behavior:**
+
+When `touchMode` is set, the visual error indicator (red dot or border) is shown only after the user has interacted with the field (i.e., after `focusout`). The native `setCustomValidity` is always set immediately, so `form.reportValidity()` works correctly regardless of `touchMode`.
+
+```tsx
+// Error indicator appears only after the user leaves the field
+<TextInput required touchMode value={name()} onValueChange={setName} />
+```
 
 ---
 

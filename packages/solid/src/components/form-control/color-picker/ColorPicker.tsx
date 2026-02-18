@@ -1,7 +1,8 @@
-import { type Component, type JSX, splitProps } from "solid-js";
+import { type Component, createMemo, type JSX, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { Invalid } from "../Invalid";
 
 type ColorPickerSize = "sm" | "lg";
 
@@ -50,6 +51,15 @@ export interface ColorPickerProps {
   /** 사이즈 */
   size?: ColorPickerSize;
 
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: string | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
+
   /** 커스텀 class */
   class?: string;
 
@@ -72,6 +82,9 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     "title",
     "disabled",
     "size",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
   ]);
@@ -93,17 +106,25 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
       local.class,
     );
 
+  const errorMsg = createMemo(() => {
+    const v = props.value;
+    if (local.required && (v === undefined || v === "")) return "필수 입력 항목입니다";
+    return local.validate?.(v);
+  });
+
   return (
-    <input
-      {...rest}
-      data-color-picker
-      type="color"
-      class={getClassName()}
-      style={local.style}
-      value={value()}
-      title={local.title}
-      disabled={local.disabled}
-      onInput={handleInput}
-    />
+    <Invalid variant="border" message={errorMsg()} touchMode={local.touchMode}>
+      <input
+        {...rest}
+        data-color-picker
+        type="color"
+        class={getClassName()}
+        style={local.style}
+        value={value()}
+        title={local.title}
+        disabled={local.disabled}
+        onInput={handleInput}
+      />
+    </Invalid>
   );
 };

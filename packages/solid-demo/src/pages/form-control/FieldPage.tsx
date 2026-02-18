@@ -298,6 +298,39 @@ export default function FieldPage() {
             </div>
           </section>
 
+          {/* Validation */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">Validation</h2>
+            <div class="space-y-6">
+              {/* TextInput Validation */}
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">TextInput</h3>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.reportValidity();
+                  }}
+                >
+                  <div class="flex flex-col items-start gap-3">
+                    <TextInput required placeholder="필수 입력" />
+                    <TextInput required minLength={3} placeholder="최소 3자" />
+                    <TextInput pattern="^[0-9]+$" placeholder="숫자만 입력" />
+                    <TextInput
+                      validate={(v) => (v.includes("@") ? undefined : "@ 문자가 필요합니다")}
+                      placeholder="커스텀 검증"
+                    />
+                    <TextInput required touchMode placeholder="touchMode (blur 후 표시)" />
+                    <NumberInput required min={0} max={100} placeholder="0~100" />
+                    <Textarea required minLength={10} placeholder="최소 10자" />
+                    <Button type="submit" theme="primary" variant="solid">
+                      Submit
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+
           {/* Controlled */}
           <section>
             <h2 class="mb-6 text-2xl font-bold">Controlled</h2>

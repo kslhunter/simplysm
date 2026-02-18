@@ -188,7 +188,7 @@ describe("DatePicker 컴포넌트", () => {
   describe("disabled 상태", () => {
     it("disabled=true일 때 div로 렌더링된다", () => {
       const { container } = render(() => <DatePicker disabled value={new DateOnly(2025, 3, 15)} />);
-      const input = container.querySelector("input");
+      const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-date-field");
 
       expect(input).toBeFalsy();
@@ -212,7 +212,7 @@ describe("DatePicker 컴포넌트", () => {
   describe("readonly 상태", () => {
     it("readonly=true일 때 div로 렌더링된다", () => {
       const { container } = render(() => <DatePicker readonly value={new DateOnly(2025, 3, 15)} />);
-      const input = container.querySelector("input");
+      const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-date-field");
 
       expect(input).toBeFalsy();
@@ -304,6 +304,68 @@ describe("DatePicker 컴포넌트", () => {
       const { container } = render(() => <DatePicker class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("my-custom-class")).toBe(true);
+    });
+  });
+
+  describe("validation", () => {
+    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <DatePicker required value={undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => <DatePicker required value={new DateOnly(2024, 1, 1)} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("min 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <DatePicker min={new DateOnly(2024, 6, 1)} value={new DateOnly(2024, 1, 1)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).not.toBe("");
+    });
+
+    it("min 충족 시 유효하다", () => {
+      const { container } = render(() => (
+        <DatePicker min={new DateOnly(2024, 1, 1)} value={new DateOnly(2024, 6, 1)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("max 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <DatePicker max={new DateOnly(2024, 6, 1)} value={new DateOnly(2024, 12, 1)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).not.toBe("");
+    });
+
+    it("max 충족 시 유효하다", () => {
+      const { container } = render(() => (
+        <DatePicker max={new DateOnly(2024, 12, 31)} value={new DateOnly(2024, 6, 1)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러를 반환하면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <DatePicker value={new DateOnly(2024, 1, 1)} validate={() => "커스텀 에러"} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("커스텀 에러");
+    });
+
+    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+      const { container } = render(() => (
+        <DatePicker value={new DateOnly(2024, 1, 1)} validate={() => undefined} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
     });
   });
 });

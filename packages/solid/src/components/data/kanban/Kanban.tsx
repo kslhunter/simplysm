@@ -455,12 +455,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
                 </button>
               </Show>
               <Show when={hasSelectableCards()}>
-                <Checkbox
-                  value={isAllSelected()}
-                  onValueChange={handleSelectAll}
-                  inline
-                  theme="primary"
-                />
+                <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline />
               </Show>
               <div class="flex-1">{slots().kanbanLaneTitle}</div>
               <Show when={slots().kanbanLaneTools.length > 0}>

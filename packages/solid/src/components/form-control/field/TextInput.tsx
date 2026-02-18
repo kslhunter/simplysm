@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
@@ -16,6 +16,7 @@ import {
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
 import { Icon } from "../../display/Icon";
+import { Invalid } from "../../form-control/Invalid";
 
 type TextInputType = "text" | "password" | "email";
 
@@ -55,6 +56,24 @@ export interface TextInputProps {
 
   /** 접두 아이콘 */
   prefixIcon?: Component<TablerIconProps>;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 최소 길이 */
+  minLength?: number;
+
+  /** 최대 길이 */
+  maxLength?: number;
+
+  /** 입력 패턴 (정규식 문자열) */
+  pattern?: string;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: string) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 
   /** 커스텀 class */
   class?: string;
@@ -138,6 +157,12 @@ export const TextInput: Component<TextInputProps> = (props) => {
     "inset",
     "format",
     "prefixIcon",
+    "required",
+    "minLength",
+    "maxLength",
+    "pattern",
+    "validate",
+    "touchMode",
     "class",
     "style",
   ]);
@@ -226,36 +251,87 @@ export const TextInput: Component<TextInputProps> = (props) => {
     }
   });
 
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? "";
+    if (local.required && !v) return "필수 입력 항목입니다";
+    if (local.minLength != null && v.length < local.minLength)
+      return `최소 ${local.minLength}자 이상 입력하세요`;
+    if (local.maxLength != null && v.length > local.maxLength)
+      return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+    if (local.pattern != null && !new RegExp(local.pattern).test(v))
+      return "입력 형식이 올바르지 않습니다";
+    return local.validate?.(v);
+  });
+
   return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드: 기존 Show 패턴 유지
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              {...rest}
-              data-text-field
-              class={twMerge(getWrapperClass(true), "sd-text-field")}
-              style={local.style}
-              title={local.title}
-            >
+    <Invalid
+      message={errorMsg()}
+      variant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+    >
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드: 기존 Show 패턴 유지
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-text-field
+                class={twMerge(getWrapperClass(true), "sd-text-field")}
+                style={local.style}
+                title={local.title}
+              >
+                {prefixIconEl()}
+                {displayValue() ||
+                  (local.placeholder != null && local.placeholder !== "" ? (
+                    <span class={textMuted}>{local.placeholder}</span>
+                  ) : (
+                    "\u00A0"
+                  ))}
+              </div>
+            }
+          >
+            <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
               {prefixIconEl()}
-              {displayValue() ||
-                (local.placeholder != null && local.placeholder !== "" ? (
-                  <span class={textMuted}>{local.placeholder}</span>
-                ) : (
-                  "\u00A0"
-                ))}
+              <input
+                type={local.type ?? "text"}
+                class={fieldInputClass}
+                value={inputValue()}
+                placeholder={local.placeholder}
+                title={local.title}
+                autocomplete={local.autocomplete}
+                onInput={handleInput}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
+              />
             </div>
-          }
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div
+          {...rest}
+          data-text-field
+          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          style={local.style}
         >
-          <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
+          <div data-text-field-content style={{ visibility: isEditable() ? "hidden" : undefined }}>
             {prefixIconEl()}
+            {displayValue() ||
+              (local.placeholder != null && local.placeholder !== "" ? (
+                <span class={textMuted}>{local.placeholder}</span>
+              ) : (
+                "\u00A0"
+              ))}
+          </div>
+
+          <Show when={isEditable()}>
             <input
               type={local.type ?? "text"}
-              class={fieldInputClass}
+              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
               value={inputValue()}
               placeholder={local.placeholder}
               title={local.title}
@@ -264,41 +340,9 @@ export const TextInput: Component<TextInputProps> = (props) => {
               onCompositionStart={handleCompositionStart}
               onCompositionEnd={handleCompositionEnd}
             />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div
-        {...rest}
-        data-text-field
-        class={twMerge(getWrapperClass(false), "relative", local.class)}
-        style={local.style}
-      >
-        <div data-text-field-content style={{ visibility: isEditable() ? "hidden" : undefined }}>
-          {prefixIconEl()}
-          {displayValue() ||
-            (local.placeholder != null && local.placeholder !== "" ? (
-              <span class={textMuted}>{local.placeholder}</span>
-            ) : (
-              "\u00A0"
-            ))}
+          </Show>
         </div>
-
-        <Show when={isEditable()}>
-          <input
-            type={local.type ?? "text"}
-            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-            value={inputValue()}
-            placeholder={local.placeholder}
-            title={local.title}
-            autocomplete={local.autocomplete}
-            onInput={handleInput}
-            onCompositionStart={handleCompositionStart}
-            onCompositionEnd={handleCompositionEnd}
-          />
-        </Show>
-      </div>
-    </Show>
+      </Show>
+    </Invalid>
   );
 };

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { DateTime } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
@@ -13,6 +13,7 @@ import {
   fieldDisabledClass,
   fieldInputClass,
 } from "./Field.styles";
+import { Invalid } from "../../form-control/Invalid";
 
 type DateTimePickerUnit = "minute" | "second";
 
@@ -52,6 +53,15 @@ export interface DateTimePickerProps {
 
   /** 커스텀 style */
   style?: JSX.CSSProperties;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: DateTime | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 }
 
 /**
@@ -155,6 +165,9 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
     "inset",
     "class",
     "style",
+    "required",
+    "validate",
+    "touchMode",
   ]);
 
   // 기본 단위는 minute
@@ -194,29 +207,77 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
   // step 속성 (second일 때 1)
   const getStep = () => (fieldType() === "second" ? "1" : undefined);
 
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value;
+    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (v !== undefined) {
+      if (local.min !== undefined && v.tick < local.min.tick)
+        return `${local.min.toFormatString("yyyy-MM-dd HH:mm:ss")}보다 크거나 같아야 합니다`;
+      if (local.max !== undefined && v.tick > local.max.tick)
+        return `${local.max.toFormatString("yyyy-MM-dd HH:mm:ss")}보다 작거나 같아야 합니다`;
+    }
+    return local.validate?.(v);
+  });
+
   return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              {...rest}
-              data-datetime-field
-              class={twMerge(getWrapperClass(true), "sd-datetime-field")}
-              style={local.style}
-              title={local.title}
-            >
-              {displayValue() || "\u00A0"}
+    <Invalid
+      message={errorMsg()}
+      variant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+    >
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-datetime-field
+                class={twMerge(getWrapperClass(true), "sd-datetime-field")}
+                style={local.style}
+                title={local.title}
+              >
+                {displayValue() || "\u00A0"}
+              </div>
+            }
+          >
+            <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
+              <input
+                type="datetime-local"
+                class={fieldInputClass}
+                value={displayValue()}
+                title={local.title}
+                min={formatMinMax(local.min, fieldType())}
+                max={formatMinMax(local.max, fieldType())}
+                step={getStep()}
+                onChange={handleChange}
+              />
             </div>
-          }
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div
+          {...rest}
+          data-datetime-field
+          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          style={local.style}
         >
-          <div {...rest} data-datetime-field class={getWrapperClass(true)} style={local.style}>
+          <div
+            data-datetime-field-content
+            style={{ visibility: isEditable() ? "hidden" : undefined }}
+            title={local.title}
+          >
+            {displayValue() || "\u00A0"}
+          </div>
+
+          <Show when={isEditable()}>
             <input
               type="datetime-local"
-              class={fieldInputClass}
+              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
               value={displayValue()}
               title={local.title}
               min={formatMinMax(local.min, fieldType())}
@@ -224,38 +285,9 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
               step={getStep()}
               onChange={handleChange}
             />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div
-        {...rest}
-        data-datetime-field
-        class={twMerge(getWrapperClass(false), "relative", local.class)}
-        style={local.style}
-      >
-        <div
-          data-datetime-field-content
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {displayValue() || "\u00A0"}
+          </Show>
         </div>
-
-        <Show when={isEditable()}>
-          <input
-            type="datetime-local"
-            class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-            value={displayValue()}
-            title={local.title}
-            min={formatMinMax(local.min, fieldType())}
-            max={formatMinMax(local.max, fieldType())}
-            step={getStep()}
-            onChange={handleChange}
-          />
-        </Show>
-      </div>
-    </Show>
+      </Show>
+    </Invalid>
   );
 };

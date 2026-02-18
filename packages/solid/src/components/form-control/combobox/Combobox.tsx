@@ -1,4 +1,13 @@
-import { children, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
+import {
+  children,
+  createMemo,
+  createSignal,
+  For,
+  type JSX,
+  onCleanup,
+  Show,
+  splitProps,
+} from "solid-js";
 import clsx from "clsx";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
 import { DebounceQueue } from "@simplysm/core-common";
@@ -12,6 +21,7 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { splitSlots } from "../../../helpers/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
+import { Invalid } from "../Invalid";
 
 void ripple;
 
@@ -73,6 +83,12 @@ export interface ComboboxProps<TValue = unknown> {
 
   /** 필수 입력 */
   required?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: TValue | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 
   /** 플레이스홀더 */
   placeholder?: string;
@@ -146,6 +162,8 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     "placeholder",
     "size",
     "inset",
+    "validate",
+    "touchMode",
   ]);
 
   let triggerRef!: HTMLDivElement;
@@ -260,6 +278,14 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       selectValue(customValue);
     }
   };
+
+  // 유효성 검사 메시지
+  const errorMsg = createMemo(() => {
+    const v = getValue();
+    if (local.required && (v === undefined || v === null || v === ""))
+      return "필수 입력 항목입니다";
+    return local.validate?.(v);
+  });
 
   // 트리거 클래스
   const getTriggerClassName = () =>
@@ -388,9 +414,11 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   };
 
   return (
-    <ComboboxContext.Provider value={contextValue as ComboboxContextValue}>
-      <ComboboxInner>{local.children}</ComboboxInner>
-    </ComboboxContext.Provider>
+    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+      <ComboboxContext.Provider value={contextValue as ComboboxContextValue}>
+        <ComboboxInner>{local.children}</ComboboxInner>
+      </ComboboxContext.Provider>
+    </Invalid>
   );
 };
 

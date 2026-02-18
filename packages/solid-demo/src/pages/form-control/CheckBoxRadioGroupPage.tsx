@@ -52,12 +52,12 @@ export default function CheckboxRadioGroupPage() {
                 </CheckboxGroup>
               </div>
 
-              {/* 테마/사이즈 */}
+              {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <CheckboxGroup theme="success" size="sm" value={["x"]}>
-                  <CheckboxGroup.Item value="x">Small Success A</CheckboxGroup.Item>
-                  <CheckboxGroup.Item value="y">Small Success B</CheckboxGroup.Item>
+                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <CheckboxGroup size="sm" value={["x"]}>
+                  <CheckboxGroup.Item value="x">Small A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Small B</CheckboxGroup.Item>
                 </CheckboxGroup>
               </div>
 
@@ -76,6 +76,35 @@ export default function CheckboxRadioGroupPage() {
                 <CheckboxGroup inset value={["a"]}>
                   <CheckboxGroup.Item value="a">Inset A</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="b">Inset B</CheckboxGroup.Item>
+                </CheckboxGroup>
+              </div>
+            </div>
+          </section>
+
+          {/* Validation */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">Validation</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">CheckboxGroup Required</h3>
+                <CheckboxGroup required value={[]}>
+                  <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="c">옵션 C</CheckboxGroup.Item>
+                </CheckboxGroup>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">RadioGroup Required</h3>
+                <RadioGroup required>
+                  <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
+                  <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <CheckboxGroup required touchMode value={[]}>
+                  <CheckboxGroup.Item value="x">X</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Y</CheckboxGroup.Item>
                 </CheckboxGroup>
               </div>
             </div>
@@ -119,12 +148,12 @@ export default function CheckboxRadioGroupPage() {
                 </RadioGroup>
               </div>
 
-              {/* 테마/사이즈 */}
+              {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <RadioGroup theme="danger" size="lg" value="x">
-                  <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
-                  <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
+                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <RadioGroup size="lg" value="x">
+                  <RadioGroup.Item value="x">Large A</RadioGroup.Item>
+                  <RadioGroup.Item value="y">Large B</RadioGroup.Item>
                 </RadioGroup>
               </div>
 

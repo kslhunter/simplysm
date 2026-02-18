@@ -10,7 +10,6 @@ import {
 } from "../../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
 
-export type CheckboxTheme = "primary" | "info" | "success" | "warning" | "danger";
 export type CheckboxSize = ComponentSize;
 
 // wrapper 기본 스타일
@@ -36,14 +35,8 @@ export const indicatorBaseClass = clsx(
   "transition-colors",
 );
 
-// 테마별 체크 상태
-export const themeCheckedClasses: Record<CheckboxTheme, string> = {
-  primary: clsx("border-primary-500 bg-primary-500", "text-white"),
-  info: clsx("border-info-500 bg-info-500", "text-white"),
-  success: clsx("border-success-500 bg-success-500", "text-white"),
-  warning: clsx("border-warning-500 bg-warning-500", "text-white"),
-  danger: clsx("border-danger-500 bg-danger-500", "text-white"),
-};
+// 체크 상태 스타일 (primary 고정)
+export const checkedClass = clsx("border-primary-500 bg-primary-500", "text-white");
 
 // 사이즈별 스타일
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {

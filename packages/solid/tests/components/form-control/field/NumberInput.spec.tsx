@@ -266,4 +266,41 @@ describe("NumberInput", () => {
       expect(input).toHaveAttribute("placeholder", "숫자를 입력하세요");
     });
   });
+
+  describe("validation", () => {
+    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <NumberInput required value={undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => <NumberInput required value={42} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("min 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <NumberInput min={10} value={5} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("최솟값은 10입니다");
+    });
+
+    it("max 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <NumberInput max={100} value={150} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("최댓값은 100입니다");
+    });
+
+    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <NumberInput
+          validate={(v) => (v !== undefined && v % 2 === 0 ? undefined : "짝수만 입력하세요")}
+          value={3}
+        />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("짝수만 입력하세요");
+    });
+  });
 });

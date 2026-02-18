@@ -1,15 +1,22 @@
-import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  createContext,
+  createMemo,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Checkbox } from "./Checkbox";
-import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
+import type { CheckboxSize } from "./Checkbox.styles";
+import { Invalid } from "../Invalid";
 
 interface CheckboxGroupContextValue<TValue> {
   value: () => TValue[];
   toggle: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
-  theme: () => CheckboxTheme | undefined;
   inline: () => boolean;
   inset: () => boolean;
 }
@@ -36,7 +43,6 @@ function CheckboxGroupItemInner<TValue>(props: CheckboxGroupItemProps<TValue>) {
       onValueChange={() => ctx.toggle(props.value)}
       disabled={props.disabled ?? ctx.disabled()}
       size={ctx.size()}
-      theme={ctx.theme()}
       inline={ctx.inline()}
       inset={ctx.inset()}
     >
@@ -52,9 +58,11 @@ interface CheckboxGroupProps<TValue> {
   onValueChange?: (value: TValue[]) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inline?: boolean;
   inset?: boolean;
+  required?: boolean;
+  validate?: (value: TValue[]) => string | undefined;
+  touchMode?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -71,9 +79,11 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inline",
     "inset",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
     "children",
@@ -98,17 +108,24 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     toggle,
     disabled: () => local.disabled ?? false,
     size: () => local.size,
-    theme: () => local.theme,
     inline: () => local.inline ?? false,
     inset: () => local.inset ?? false,
   };
 
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? [];
+    if (local.required && v.length === 0) return "항목을 선택해 주세요";
+    return local.validate?.(v);
+  });
+
   return (
-    <CheckboxGroupContext.Provider value={contextValue}>
-      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
-        {local.children}
-      </div>
-    </CheckboxGroupContext.Provider>
+    <Invalid message={errorMsg()} variant="dot" touchMode={local.touchMode}>
+      <CheckboxGroupContext.Provider value={contextValue}>
+        <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
+          {local.children}
+        </div>
+      </CheckboxGroupContext.Provider>
+    </Invalid>
   );
 };
 

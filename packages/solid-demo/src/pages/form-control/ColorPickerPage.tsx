@@ -38,6 +38,21 @@ export default function ColorPickerPage() {
               </div>
             </div>
           </section>
+
+          {/* Validation */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">Validation</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Required</h3>
+                <ColorPicker required value={undefined} />
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <ColorPicker required touchMode value={undefined} />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </Topbar.Container>

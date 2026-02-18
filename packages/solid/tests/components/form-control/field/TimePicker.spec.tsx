@@ -126,7 +126,7 @@ describe("TimePicker 컴포넌트", () => {
   describe("disabled 상태", () => {
     it("disabled=true일 때 div로 렌더링된다", () => {
       const { container } = render(() => <TimePicker disabled value={new Time(10, 30, 0)} />);
-      const input = container.querySelector("input");
+      const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-time-field");
 
       expect(input).toBeFalsy();
@@ -150,7 +150,7 @@ describe("TimePicker 컴포넌트", () => {
   describe("readonly 상태", () => {
     it("readonly=true일 때 div로 렌더링된다", () => {
       const { container } = render(() => <TimePicker readonly value={new Time(10, 30, 0)} />);
-      const input = container.querySelector("input");
+      const input = container.querySelector("input:not([aria-hidden])");
       const div = container.querySelector("div.sd-time-field");
 
       expect(input).toBeFalsy();
@@ -238,6 +238,68 @@ describe("TimePicker 컴포넌트", () => {
       const { container } = render(() => <TimePicker class="my-custom-class" />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("my-custom-class")).toBe(true);
+    });
+  });
+
+  describe("validation", () => {
+    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <TimePicker required value={undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => <TimePicker required value={new Time(10, 0, 0)} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("min 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <TimePicker min={new Time(12, 0, 0)} value={new Time(8, 0, 0)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).not.toBe("");
+    });
+
+    it("min 충족 시 유효하다", () => {
+      const { container } = render(() => (
+        <TimePicker min={new Time(8, 0, 0)} value={new Time(12, 0, 0)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("max 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <TimePicker max={new Time(12, 0, 0)} value={new Time(18, 0, 0)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).not.toBe("");
+    });
+
+    it("max 충족 시 유효하다", () => {
+      const { container } = render(() => (
+        <TimePicker max={new Time(23, 59, 59)} value={new Time(12, 0, 0)} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러를 반환하면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <TimePicker value={new Time(10, 0, 0)} validate={() => "커스텀 에러"} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("커스텀 에러");
+    });
+
+    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+      const { container } = render(() => (
+        <TimePicker value={new Time(10, 0, 0)} validate={() => undefined} />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
     });
   });
 });

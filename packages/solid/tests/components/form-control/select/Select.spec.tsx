@@ -241,4 +241,54 @@ describe("Select 컴포넌트", () => {
       });
     });
   });
+
+  describe("validation", () => {
+    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <Select required value={undefined} renderValue={(v) => <>{v}</>}>
+          <Select.Item value="a">Option A</Select.Item>
+        </Select>
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => (
+        <Select required value="a" renderValue={(v) => <>{v}</>}>
+          <Select.Item value="a">Option A</Select.Item>
+        </Select>
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <Select
+          validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
+          value="invalid-val"
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.Item value="invalid-val">Invalid</Select.Item>
+        </Select>
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("허용되지 않는 값입니다");
+    });
+
+    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+      const { container } = render(() => (
+        <Select
+          validate={(v) => (v === "invalid-val" ? "허용되지 않는 값입니다" : undefined)}
+          value="valid-val"
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.Item value="valid-val">Valid</Select.Item>
+        </Select>
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+  });
 });

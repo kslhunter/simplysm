@@ -256,6 +256,56 @@ export default function ComboboxPage() {
             </div>
           </section>
 
+          {/* Validation */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">Validation</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Required</h3>
+                <Combobox
+                  required
+                  loadItems={filterFruits}
+                  placeholder="필수 선택"
+                  renderValue={(v: Fruit) => (
+                    <>
+                      {v.emoji} {v.name}
+                    </>
+                  )}
+                >
+                  <Combobox.ItemTemplate>
+                    {(item: Fruit) => (
+                      <>
+                        {item.emoji} {item.name}
+                      </>
+                    )}
+                  </Combobox.ItemTemplate>
+                </Combobox>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <Combobox
+                  required
+                  touchMode
+                  loadItems={filterFruits}
+                  placeholder="touchMode 필수 선택"
+                  renderValue={(v: Fruit) => (
+                    <>
+                      {v.emoji} {v.name}
+                    </>
+                  )}
+                >
+                  <Combobox.ItemTemplate>
+                    {(item: Fruit) => (
+                      <>
+                        {item.emoji} {item.name}
+                      </>
+                    )}
+                  </Combobox.ItemTemplate>
+                </Combobox>
+              </div>
+            </div>
+          </section>
+
           {/* Controlled */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Controlled</h2>

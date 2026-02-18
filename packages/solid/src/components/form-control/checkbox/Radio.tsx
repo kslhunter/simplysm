@@ -1,20 +1,20 @@
-import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import { type JSX, type ParentComponent, Show, splitProps, createMemo } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
 import clsx from "clsx";
 import {
-  type CheckboxTheme,
   type CheckboxSize,
   checkboxBaseClass,
   indicatorBaseClass,
-  themeCheckedClasses,
+  checkedClass,
   checkboxSizeClasses,
   checkboxInsetClass,
   checkboxInsetSizeHeightClasses,
   checkboxInlineClass,
   checkboxDisabledClass,
 } from "./Checkbox.styles";
+import { Invalid } from "../Invalid";
 
 const radioDotClass = clsx("size-2", "rounded-full", "bg-current");
 
@@ -26,9 +26,11 @@ export interface RadioProps {
   onValueChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inset?: boolean;
   inline?: boolean;
+  required?: boolean;
+  validate?: (value: boolean) => string | undefined;
+  touchMode?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -40,9 +42,11 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inset",
     "inline",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
     "children",
@@ -76,32 +80,37 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
       local.class,
     );
 
-  const getIndicatorClass = () => {
-    const theme = local.theme ?? "primary";
+  const getIndicatorClass = () =>
+    twMerge(indicatorBaseClass, "rounded-full", value() && checkedClass);
 
-    return twMerge(indicatorBaseClass, "rounded-full", value() && themeCheckedClasses[theme]);
-  };
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? false;
+    if (local.required && !v) return "필수 선택 항목입니다";
+    return local.validate?.(v);
+  });
 
   return (
-    <label
-      {...rest}
-      use:ripple={!local.disabled}
-      role="radio"
-      aria-checked={value()}
-      tabIndex={local.disabled ? -1 : 0}
-      class={getWrapperClass()}
-      style={local.style}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div class={getIndicatorClass()}>
-        <Show when={value()}>
-          <div class={radioDotClass} />
+    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+      <label
+        {...rest}
+        use:ripple={!local.disabled}
+        role="radio"
+        aria-checked={value()}
+        tabIndex={local.disabled ? -1 : 0}
+        class={getWrapperClass()}
+        style={local.style}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+      >
+        <div class={getIndicatorClass()}>
+          <Show when={value()}>
+            <div class={radioDotClass} />
+          </Show>
+        </div>
+        <Show when={local.children}>
+          <span>{local.children}</span>
         </Show>
-      </div>
-      <Show when={local.children}>
-        <span>{local.children}</span>
-      </Show>
-    </label>
+      </label>
+    </Invalid>
   );
 };

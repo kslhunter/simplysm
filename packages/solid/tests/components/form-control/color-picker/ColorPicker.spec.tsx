@@ -66,4 +66,29 @@ describe("ColorPicker 컴포넌트", () => {
       expect(input.classList.contains("my-custom-class")).toBe(true);
     });
   });
+
+  describe("validation", () => {
+    it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <ColorPicker required value={undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => <ColorPicker required value="#ff0000" />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <ColorPicker
+          validate={(v) => (v === "#000000" ? "검정색은 사용할 수 없습니다" : undefined)}
+          value="#000000"
+        />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("검정색은 사용할 수 없습니다");
+    });
+  });
 });

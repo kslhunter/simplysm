@@ -1,5 +1,6 @@
 import {
   children,
+  createMemo,
   createSignal,
   For,
   type JSX,
@@ -20,6 +21,7 @@ import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
+import { Invalid } from "../Invalid";
 
 void ripple;
 
@@ -114,6 +116,12 @@ interface SelectCommonProps {
 
   /** 테두리 없는 스타일 */
   inset?: boolean;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: unknown) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 
   /** 커스텀 class */
   class?: string;
@@ -225,6 +233,8 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "items",
     "getChildren",
     "renderValue",
+    "validate",
+    "touchMode",
   ]);
 
   let triggerRef!: HTMLDivElement;
@@ -292,6 +302,14 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       setOpen(true);
     }
   };
+
+  // 유효성 검사 메시지
+  const errorMsg = createMemo(() => {
+    const v = getValue();
+    if (local.required && (v === undefined || v === null || v === ""))
+      return "필수 입력 항목입니다";
+    return local.validate?.(v);
+  });
 
   // 트리거 클래스
   const getTriggerClassName = () =>
@@ -417,9 +435,11 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   };
 
   return (
-    <SelectContext.Provider value={contextValue as SelectContextValue}>
-      <SelectInner>{local.children}</SelectInner>
-    </SelectContext.Provider>
+    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+      <SelectContext.Provider value={contextValue as SelectContextValue}>
+        <SelectInner>{local.children}</SelectInner>
+      </SelectContext.Provider>
+    </Invalid>
   );
 };
 
