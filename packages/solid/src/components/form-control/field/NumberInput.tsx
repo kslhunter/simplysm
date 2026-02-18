@@ -1,4 +1,12 @@
-import { type Component, type JSX, Show, splitProps, createSignal, createEffect } from "solid-js";
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  type JSX,
+  Show,
+  splitProps,
+  createSignal,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
@@ -15,6 +23,7 @@ import {
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
 import { Icon } from "../../display/Icon";
+import { Invalid } from "../../form-control/Invalid";
 
 // NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
@@ -63,6 +72,21 @@ export interface NumberInputProps {
 
   /** 접두 아이콘 */
   prefixIcon?: Component<TablerIconProps>;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 최솟값 */
+  min?: number;
+
+  /** 최댓값 */
+  max?: number;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: number | undefined) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 }
 
 /**
@@ -169,6 +193,11 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     "size",
     "inset",
     "prefixIcon",
+    "required",
+    "min",
+    "max",
+    "validate",
+    "touchMode",
     "class",
     "style",
   ]);
@@ -265,82 +294,99 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     </Show>
   );
 
-  return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드: 기존 Show 패턴 유지
-        <Show
-          when={isEditable()}
-          fallback={
-            <div
-              {...rest}
-              data-number-field
-              class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
-              style={local.style}
-              title={local.title}
-            >
-              {prefixIconEl()}
-              {formatNumber(value(), local.comma ?? true, local.minDigits) ||
-                (local.placeholder != null && local.placeholder !== "" ? (
-                  <span class={textMuted}>{local.placeholder}</span>
-                ) : (
-                  "\u00A0"
-                ))}
-            </div>
-          }
-        >
-          <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
-            {prefixIconEl()}
-            <input
-              type="text"
-              inputmode="numeric"
-              class={numberInputClass}
-              value={displayValue()}
-              placeholder={local.placeholder}
-              title={local.title}
-              onInput={handleInput}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div {...rest} data-number-field class={clsx("relative", local.class)} style={local.style}>
-        <div
-          data-number-field-content
-          class={twMerge(getWrapperClass(false), "justify-end")}
-          style={{ visibility: isEditable() ? "hidden" : undefined }}
-          title={local.title}
-        >
-          {prefixIconEl()}
-          {formatNumber(value(), local.comma ?? true, local.minDigits) ||
-            (local.placeholder != null && local.placeholder !== "" ? (
-              <span class={textMuted}>{local.placeholder}</span>
-            ) : (
-              "\u00A0"
-            ))}
-        </div>
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value;
+    if (local.required && v === undefined) return "필수 입력 항목입니다";
+    if (v !== undefined) {
+      if (local.min !== undefined && v < local.min) return `최솟값은 ${local.min}입니다`;
+      if (local.max !== undefined && v > local.max) return `최댓값은 ${local.max}입니다`;
+    }
+    return local.validate?.(v);
+  });
 
-        <Show when={isEditable()}>
-          <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+  return (
+    <Invalid
+      message={errorMsg()}
+      variant={local.inset ? "dot" : "border"}
+      touchMode={local.touchMode}
+    >
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드: 기존 Show 패턴 유지
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-number-field
+                class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
+                style={local.style}
+                title={local.title}
+              >
+                {prefixIconEl()}
+                {formatNumber(value(), local.comma ?? true, local.minDigits) ||
+                  (local.placeholder != null && local.placeholder !== "" ? (
+                    <span class={textMuted}>{local.placeholder}</span>
+                  ) : (
+                    "\u00A0"
+                  ))}
+              </div>
+            }
+          >
+            <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
+              {prefixIconEl()}
+              <input
+                type="text"
+                inputmode="numeric"
+                class={numberInputClass}
+                value={displayValue()}
+                placeholder={local.placeholder}
+                title={local.title}
+                onInput={handleInput}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
+            </div>
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div {...rest} data-number-field class={clsx("relative", local.class)} style={local.style}>
+          <div
+            data-number-field-content
+            class={twMerge(getWrapperClass(false), "justify-end")}
+            style={{ visibility: isEditable() ? "hidden" : undefined }}
+            title={local.title}
+          >
             {prefixIconEl()}
-            <input
-              type="text"
-              inputmode="numeric"
-              class={numberInputClass}
-              value={displayValue()}
-              placeholder={local.placeholder}
-              title={local.title}
-              onInput={handleInput}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
+            {formatNumber(value(), local.comma ?? true, local.minDigits) ||
+              (local.placeholder != null && local.placeholder !== "" ? (
+                <span class={textMuted}>{local.placeholder}</span>
+              ) : (
+                "\u00A0"
+              ))}
           </div>
-        </Show>
-      </div>
-    </Show>
+
+          <Show when={isEditable()}>
+            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+              {prefixIconEl()}
+              <input
+                type="text"
+                inputmode="numeric"
+                class={numberInputClass}
+                value={displayValue()}
+                placeholder={local.placeholder}
+                title={local.title}
+                onInput={handleInput}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
+            </div>
+          </Show>
+        </div>
+      </Show>
+    </Invalid>
   );
 };
