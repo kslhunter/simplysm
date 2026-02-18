@@ -73,6 +73,7 @@ export function useSyncConfig<TValue>(
 
   // Save to storage whenever value changes
   createEffect(() => {
+    if (!ready()) return; // Don't save until storage has been read
     const currentValue = value();
     const serialized = JSON.stringify(currentValue);
 

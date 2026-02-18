@@ -238,7 +238,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
 
   // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
   const errorMsg = createMemo(() => {
-    const v = local.value ?? "";
+    const v = value();
     if (local.required && !v) return "필수 입력 항목입니다";
     if (v) {
       if (local.minLength != null && v.length < local.minLength)

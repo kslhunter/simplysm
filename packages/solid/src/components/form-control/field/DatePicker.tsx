@@ -56,10 +56,10 @@ export interface DatePickerProps {
 }
 
 /**
- * DateOnly 값을 input value용 문자열로 변환 (ISO 형식)
+ * DateOnly 값을 타입에 맞는 문자열로 변환
  */
-function formatValue(value: DateOnly | undefined, type: DatePickerUnit): string {
-  if (value == null) return "";
+function formatDateValue(value: DateOnly | undefined, type: DatePickerUnit): string | undefined {
+  if (value == null) return undefined;
 
   switch (type) {
     case "year":
@@ -107,22 +107,6 @@ function getInputType(type: DatePickerUnit): string {
       return "month";
     case "date":
       return "date";
-  }
-}
-
-/**
- * min/max 속성을 타입에 맞는 문자열로 변환
- */
-function formatMinMax(value: DateOnly | undefined, type: DatePickerUnit): string | undefined {
-  if (value == null) return undefined;
-
-  switch (type) {
-    case "year":
-      return value.toFormatString("yyyy");
-    case "month":
-      return value.toFormatString("yyyy-MM");
-    case "date":
-      return value.toFormatString("yyyy-MM-dd");
   }
 }
 
@@ -181,7 +165,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
   });
 
   // 표시 값
-  const displayValue = () => formatValue(value(), fieldType());
+  const displayValue = () => formatDateValue(value(), fieldType()) ?? "";
 
   // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
   const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
@@ -204,7 +188,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
 
   // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
   const errorMsg = createMemo(() => {
-    const v = local.value;
+    const v = value();
     if (local.required && v === undefined) return "필수 입력 항목입니다";
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
@@ -245,8 +229,8 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
                 class={fieldInputClass}
                 value={displayValue()}
                 title={local.title}
-                min={formatMinMax(local.min, fieldType())}
-                max={formatMinMax(local.max, fieldType())}
+                min={formatDateValue(local.min, fieldType())}
+                max={formatDateValue(local.max, fieldType())}
                 onChange={handleChange}
               />
             </div>
@@ -271,8 +255,8 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
                 class={fieldInputClass}
                 value={displayValue()}
                 title={local.title}
-                min={formatMinMax(local.min, fieldType())}
-                max={formatMinMax(local.max, fieldType())}
+                min={formatDateValue(local.min, fieldType())}
+                max={formatDateValue(local.max, fieldType())}
                 onChange={handleChange}
               />
             </div>

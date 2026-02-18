@@ -1,16 +1,19 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type SemanticTheme, themeTokens } from "../../styles/tokens.styles";
+import {
+  type ComponentSizeCompact,
+  type SemanticTheme,
+  themeTokens,
+} from "../../styles/tokens.styles";
 
 export type ProgressTheme = SemanticTheme;
-export type ProgressSize = "sm" | "lg";
 
 export interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /** 진행률 (0~1 범위, 0 = 0%, 1 = 100%) */
   value: number;
   theme?: ProgressTheme;
-  size?: ProgressSize;
+  size?: ComponentSizeCompact;
   inset?: boolean;
 }
 
@@ -22,7 +25,7 @@ const baseClass = clsx(
   "border border-base-200 dark:border-base-700",
 );
 
-const sizeClasses: Record<"default" | ProgressSize, string> = {
+const sizeClasses: Record<"default" | ComponentSizeCompact, string> = {
   default: "py-1 px-2",
   sm: "py-0.5 px-2",
   lg: "py-2 px-3",

@@ -282,7 +282,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
   // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
   const errorMsg = createMemo(() => {
-    const v = local.value;
+    const v = value();
     if (local.required && v === undefined) return "필수 입력 항목입니다";
     if (v !== undefined) {
       if (local.min !== undefined && v < local.min) return `최솟값은 ${local.min}입니다`;

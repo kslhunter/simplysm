@@ -18,6 +18,7 @@ import { ComboboxContext, type ComboboxContextValue } from "./ComboboxContext";
 import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createItemTemplate } from "../../../hooks/createItemTemplate";
 import { splitSlots } from "../../../helpers/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
@@ -35,25 +36,8 @@ const inputClass = clsx(
 
 const noResultsClass = clsx("px-3 py-2", textMuted);
 
-/**
- * Combobox 아이템 렌더링 템플릿
- */
-interface ComboboxItemTemplateProps<TItem> {
-  children: (item: TItem, index: number) => JSX.Element;
-}
-
-// 템플릿 함수를 저장하는 전역 WeakMap
-const templateFnMap = new WeakMap<HTMLElement, (item: unknown, index: number) => JSX.Element>();
-
-const ComboboxItemTemplate = <T,>(props: ComboboxItemTemplateProps<T>) => (
-  <span
-    ref={(el) => {
-      templateFnMap.set(el, props.children as (item: unknown, index: number) => JSX.Element);
-    }}
-    data-combobox-item-template
-    style={{ display: "none" }}
-  />
-);
+const { TemplateSlot: ComboboxItemTemplate, getTemplate: getComboboxItemTemplate } =
+  createItemTemplate<[item: unknown, index: number]>("data-combobox-item-template");
 
 // Props 정의
 export interface ComboboxProps<TValue = unknown> {
@@ -64,7 +48,7 @@ export interface ComboboxProps<TValue = unknown> {
   onValueChange?: (value: TValue) => void;
 
   /** 아이템 로드 함수 (필수) */
-  loadItems: (query: string) => Promise<TValue[]>;
+  loadItems: (query: string) => TValue[] | Promise<TValue[]>;
 
   /** 디바운스 딜레이 (기본값: 300ms) */
   debounceMs?: number;
@@ -220,7 +204,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     debounceQueue.run(async () => {
       setBusyCount((c) => c + 1);
       try {
-        const result = await loadItemsFn(searchQuery);
+        const result = await Promise.resolve(loadItemsFn(searchQuery));
         setItems(result);
       } finally {
         setBusyCount((c) => c - 1);
@@ -306,9 +290,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
     // itemTemplate 함수 추출
     const getItemTemplate = (): ((item: T, index: number) => JSX.Element) | undefined => {
-      const templateSlots = slots().comboboxItemTemplate;
-      if (templateSlots.length === 0) return undefined;
-      return templateFnMap.get(templateSlots[0]) as
+      return getComboboxItemTemplate(slots().comboboxItemTemplate) as
         | ((item: T, index: number) => JSX.Element)
         | undefined;
     };
