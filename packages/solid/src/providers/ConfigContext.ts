@@ -44,9 +44,9 @@ export interface AppConfig {
   logger?: LogAdapter;
 
   /**
-   * 루트 로딩 오버레이 변형 (기본값: "spinner")
+   * 루트 busy 오버레이 변형 (기본값: "spinner")
    */
-  loadingVariant?: "spinner" | "bar";
+  busyVariant?: "spinner" | "bar";
 }
 
 /**

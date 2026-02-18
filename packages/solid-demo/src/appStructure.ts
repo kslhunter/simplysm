@@ -139,7 +139,7 @@ export const appStructure = createAppStructure({
               title: "Notification",
               component: lazy(() => import("./pages/feedback/NotificationPage")),
             },
-            { code: "busy", title: "Loading", component: lazy(() => import("./pages/feedback/LoadingPage")) },
+            { code: "busy", title: "Busy", component: lazy(() => import("./pages/feedback/BusyPage")) },
             { code: "progress", title: "Progress", component: lazy(() => import("./pages/feedback/ProgressPage")) },
             { code: "print", title: "Print", component: lazy(() => import("./pages/feedback/PrintPage")) },
           ],

@@ -16,7 +16,7 @@ import { IconEye, IconEyeOff } from "@tabler/icons-solidjs";
 import { Card } from "../../display/Card";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
-import { LoadingContainer } from "../../feedback/loading/LoadingContainer";
+import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { splitSlots } from "../../../helpers/splitSlots";
 import "./Kanban.css";
@@ -414,7 +414,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     });
 
     return (
-      <LoadingContainer busy={local.busy} variant="bar">
+      <BusyContainer busy={local.busy} variant="bar">
         <div
           {...rest}
           data-kanban-lane
@@ -446,7 +446,7 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
             </div>
           </Show>
         </div>
-      </LoadingContainer>
+      </BusyContainer>
     );
   };
 

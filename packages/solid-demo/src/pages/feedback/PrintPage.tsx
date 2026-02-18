@@ -1,5 +1,5 @@
 import { type Component, createSignal, onMount } from "solid-js";
-import { LoadingProvider, Button, Print, Topbar, usePrint, usePrintInstance } from "@simplysm/solid";
+import { BusyProvider, Button, Print, Topbar, usePrint, usePrintInstance } from "@simplysm/solid";
 
 function AsyncReadyContent() {
   const print = usePrintInstance();
@@ -299,7 +299,7 @@ function downloadPdf(buf: Uint8Array, filename: string) {
 
 export default function PrintPage() {
   return (
-    <LoadingProvider>
+    <BusyProvider>
       <Topbar.Container>
         <Topbar>
           <h1 class="m-0 text-base">Print</h1>
@@ -308,6 +308,6 @@ export default function PrintPage() {
           <PrintDemo />
         </div>
       </Topbar.Container>
-    </LoadingProvider>
+    </BusyProvider>
   );
 }

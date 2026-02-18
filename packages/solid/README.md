@@ -58,7 +58,7 @@ function App() {
 | `clientName` | `string` | **(required)** | Client identifier (used as storage key prefix) |
 | `syncStorage` | `StorageAdapter` | `localStorage` | Custom sync storage adapter (used by `useSyncConfig`) |
 | `logger` | `LogAdapter` | - | Log adapter for remote logging (used by `useLogger`) |
-| `loadingVariant` | `"spinner" \| "bar"` | `"spinner"` | Root loading overlay variant |
+| `busyVariant` | `"spinner" \| "bar"` | `"spinner"` | Root busy overlay variant |
 
 **StorageAdapter interface:**
 
@@ -147,7 +147,7 @@ import "@simplysm/solid/tailwind.css";
 ### Feedback
 
 - [`Notification`](docs/feedback.md#notification) - Notification system with banner and bell (`useNotification`)
-- [`Loading`](docs/feedback.md#loading) - Loading overlay with spinner/bar variants (`useLoading`)
+- [`Busy`](docs/feedback.md#busy) - Busy overlay with spinner/bar variants (`useBusy`)
 - [`Print`](docs/feedback.md#print--useprint) - Browser printing and PDF generation (`usePrint`)
 
 ## Hooks
@@ -158,7 +158,7 @@ import "@simplysm/solid/tailwind.css";
 - [`useLogger`](docs/hooks.md#uselogger) - Logging with optional remote adapter
 - [`useConfig`](docs/hooks.md#useconfig) - App-wide configuration access
 - [`useNotification`](docs/hooks.md#usenotification) - Notification system access
-- [`useLoading`](docs/hooks.md#useloading) - Loading overlay control
+- [`useBusy`](docs/hooks.md#usebusy) - Busy overlay control
 - [`usePrint`](docs/hooks.md#useprint) - Printing and PDF generation
 - [`createControllableSignal`](docs/hooks.md#createcontrollablesignal) - Controlled/Uncontrolled signal pattern
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook

@@ -60,23 +60,23 @@ function MyComponent() {
 
 ---
 
-## Loading
+## Busy
 
-Loading overlay system. `InitializeProvider` automatically sets up `LoadingProvider` and `LoadingContainer`. Use the `loadingVariant` option in `AppConfig` to choose between `"spinner"` (default) and `"bar"` variants. Control the loading state using the `useLoading` hook.
+Busy overlay system. `InitializeProvider` automatically sets up `BusyProvider` and `BusyContainer`. Use the `busyVariant` option in `AppConfig` to choose between `"spinner"` (default) and `"bar"` variants. Control the busy state using the `useBusy` hook.
 
 ```tsx
-import { useLoading } from "@simplysm/solid";
+import { useBusy } from "@simplysm/solid";
 
-// Control loading within components
+// Control busy within components
 function MyComponent() {
-  const loading = useLoading();
+  const busy = useBusy();
 
   const fetchData = async () => {
-    loading.show("Loading data...");
+    busy.show("Loading data...");
     try {
       await fetch("/api/data");
     } finally {
-      loading.hide();
+      busy.hide();
     }
   };
 
@@ -84,7 +84,7 @@ function MyComponent() {
 }
 ```
 
-**useLoading API:**
+**useBusy API:**
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
