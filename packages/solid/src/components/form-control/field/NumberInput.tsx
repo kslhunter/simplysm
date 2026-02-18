@@ -1,6 +1,7 @@
 import { type Component, type JSX, Show, splitProps, createSignal, createEffect } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import {
   type FieldSize,
@@ -13,6 +14,7 @@ import {
   fieldInputClass,
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
+import { Icon } from "../../display/Icon";
 
 // NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
@@ -58,6 +60,9 @@ export interface NumberInputProps {
 
   /** 커스텀 style */
   style?: JSX.CSSProperties;
+
+  /** 접두 아이콘 */
+  prefixIcon?: Component<TablerIconProps>;
 }
 
 /**
@@ -163,6 +168,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     "readonly",
     "size",
     "inset",
+    "prefixIcon",
     "class",
     "style",
   ]);
@@ -235,6 +241,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
   const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
+      local.prefixIcon && "gap-1.5",
       local.size && fieldSizeClasses[local.size],
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
@@ -244,6 +251,12 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     );
 
   const isEditable = () => !local.disabled && !local.readonly;
+
+  const prefixIconEl = () => (
+    <Show when={local.prefixIcon}>
+      <Icon icon={local.prefixIcon!} class={clsx(textMuted, "shrink-0")} />
+    </Show>
+  );
 
   return (
     <Show
@@ -260,6 +273,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
               style={local.style}
               title={local.title}
             >
+              {prefixIconEl()}
               {formatNumber(value(), local.comma ?? true, local.minDigits) ||
                 (local.placeholder != null && local.placeholder !== "" ? (
                   <span class={textMuted}>{local.placeholder}</span>
@@ -270,6 +284,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
           }
         >
           <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
+            {prefixIconEl()}
             <input
               type="text"
               inputmode="numeric"
@@ -293,6 +308,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
           style={{ visibility: isEditable() ? "hidden" : undefined }}
           title={local.title}
         >
+          {prefixIconEl()}
           {formatNumber(value(), local.comma ?? true, local.minDigits) ||
             (local.placeholder != null && local.placeholder !== "" ? (
               <span class={textMuted}>{local.placeholder}</span>
@@ -303,6 +319,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
         <Show when={isEditable()}>
           <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+            {prefixIconEl()}
             <input
               type="text"
               inputmode="numeric"

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
+import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
@@ -14,6 +15,7 @@ import {
   fieldInputClass,
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
+import { Icon } from "../../display/Icon";
 
 type TextInputType = "text" | "password" | "email";
 
@@ -50,6 +52,9 @@ export interface TextInputProps {
 
   /** 입력 포맷 (예: XXX-XXXX-XXXX) */
   format?: string;
+
+  /** 접두 아이콘 */
+  prefixIcon?: Component<TablerIconProps>;
 
   /** 커스텀 class */
   class?: string;
@@ -132,6 +137,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
     "size",
     "inset",
     "format",
+    "prefixIcon",
     "class",
     "style",
   ]);
@@ -188,6 +194,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
   const getWrapperClass = (includeCustomClass: boolean) =>
     twMerge(
       fieldBaseClass,
+      local.prefixIcon && "gap-1.5",
       local.size && fieldSizeClasses[local.size],
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,
@@ -198,6 +205,12 @@ export const TextInput: Component<TextInputProps> = (props) => {
 
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
+
+  const prefixIconEl = () => (
+    <Show when={local.prefixIcon}>
+      <Icon icon={local.prefixIcon!} class={clsx(textMuted, "shrink-0")} />
+    </Show>
+  );
 
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
@@ -221,6 +234,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
               style={local.style}
               title={local.title}
             >
+              {prefixIconEl()}
               {displayValue() ||
                 (local.placeholder != null && local.placeholder !== "" ? (
                   <span class={textMuted}>{local.placeholder}</span>
@@ -231,6 +245,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
           }
         >
           <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
+            {prefixIconEl()}
             <input
               type={local.type ?? "text"}
               class={fieldInputClass}
@@ -254,6 +269,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
         style={local.style}
       >
         <div data-text-field-content style={{ visibility: isEditable() ? "hidden" : undefined }}>
+          {prefixIconEl()}
           {displayValue() ||
             (local.placeholder != null && local.placeholder !== "" ? (
               <span class={textMuted}>{local.placeholder}</span>
