@@ -343,26 +343,6 @@ sd-cli device -p my-app -u http://192.168.0.10:3000
 | `--options`, `-o` | Additional options to pass to sd.config.ts (multi-use)                    | `[]`    |
 | `--debug`         | Output debug logs                                                         | `false` |
 
-## Public File Utilities
-
-This package provides utilities for managing static files in server packages:
-
-```typescript
-import { copyPublicFiles, watchPublicFiles } from "@simplysm/sd-cli";
-
-// Copy public/ to dist/ (production build)
-await copyPublicFiles("/path/to/package", false);
-
-// Copy public/ and public-dev/ to dist/ and watch for changes (dev mode)
-const watcher = await watchPublicFiles("/path/to/package", true);
-// Later: await watcher.close();
-```
-
-| Function | Parameters | Description |
-|----------|-----------|-------------|
-| `copyPublicFiles(pkgDir, includeDev)` | `pkgDir`: string, `includeDev`: boolean | Copies `public/` (and optionally `public-dev/`) from source to `dist/`. In dev mode with `includeDev=true`, `public-dev/` files take priority over `public/` files. |
-| `watchPublicFiles(pkgDir, includeDev)` | `pkgDir`: string, `includeDev`: boolean | Returns a watcher that watches both `public/` and (if `includeDev=true`) `public-dev/` for changes and re-copies files to `dist/`. Call `.close()` on the returned watcher to stop watching. |
-
 ## Exported Types and Utilities
 
 This package exports configuration types for `sd.config.ts` and Vite utilities. All are importable from `@simplysm/sd-cli`.
@@ -410,30 +390,51 @@ import { createViteConfig } from "@simplysm/sd-cli";
 | `SdPostPublishScriptConfig` | Post-publish script config (`type: "script"`, `cmd`, `args`) |
 | `SdCapacitorConfig` | Capacitor config for Android app builds |
 | `SdCapacitorAndroidConfig` | Android platform-specific Capacitor config |
-| `SdCapacitorSignConfig` | APK/AAB signing config (`keystore`, `storePassword`, `alias`, `password`) |
+| `SdCapacitorSignConfig` | APK/AAB signing config (`keystore`, `storePassword`, `alias`, `password`, `keystoreType?`) |
 | `SdCapacitorPermission` | Android permission entry (`name`, `maxSdkVersion?`, `ignore?`) |
 | `SdCapacitorIntentFilter` | Android intent filter entry (`action?`, `category?`) |
 | `SdElectronConfig` | Electron desktop app build config |
-| `ViteConfigOptions` | Vite config options for `createViteConfig()` utility function |
+| `ViteConfigOptions` | Options passed to `createViteConfig()` — see fields below |
 
 ## Vite Utilities
 
 ### createViteConfig
 
-Creates pre-configured Vite configuration for Simplysm client packages:
+Creates pre-configured Vite configuration for Simplysm client packages.
 
 ```typescript
 import { createViteConfig, type ViteConfigOptions } from "@simplysm/sd-cli";
 
-export default createViteConfig({
-  // Vite config options
-});
+const options: ViteConfigOptions = {
+  pkgDir: "/path/to/package",
+  name: "my-app",
+  tsconfigPath: "/path/to/tsconfig.json",
+  compilerOptions: {},
+  mode: "build",
+};
+
+export default createViteConfig(options);
 ```
 
-The `createViteConfig()` function provides:
+**`ViteConfigOptions` fields:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `pkgDir` | `string` | Yes | Absolute path to the package directory |
+| `name` | `string` | Yes | Package name used as Vite base path (`/{name}/`) |
+| `tsconfigPath` | `string` | Yes | Absolute path to `tsconfig.json` |
+| `compilerOptions` | `Record<string, unknown>` | Yes | TypeScript compiler options passed to esbuild |
+| `env` | `Record<string, string>` | No | Environment variables to substitute for `process.env` at build time |
+| `mode` | `"build" \| "dev"` | Yes | Build mode: `"build"` for production, `"dev"` for development server |
+| `serverPort` | `number` | No | Dev server port (`0` for auto-assign). Only used in `"dev"` mode |
+| `watchScopes` | `string[]` | No | Scope package prefixes to watch for HMR (e.g., `["@simplysm"]`) |
+| `onScopeRebuild` | `() => void` | No | Callback invoked when a watched scope package dist file changes |
+
+The `createViteConfig()` function configures:
 - Development server configuration
 - Production build optimization
-- Asset handling
+- SolidJS + TailwindCSS plugin integration
+- PWA (service worker + web app manifest) generation
 - Environment variable substitution support
 - Scope package watch/HMR (automatically watches scope package dist files and triggers HMR on changes via `replaceDeps`)
 
@@ -772,6 +773,7 @@ Capacitor configuration for Android app builds in `client` target packages.
           storePassword: "password",
           alias: "key0",
           password: "password",
+          keystoreType: "jks",              // Keystore type (optional, defaults to "jks")
         },
       },
     },

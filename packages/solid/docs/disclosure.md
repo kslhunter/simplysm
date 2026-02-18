@@ -18,10 +18,12 @@ import { Tabs } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `string` | - | Selected tab value |
 | `onValueChange` | `(value: string) => void` | - | Tab change callback |
-| `size` | `"sm" \| "lg"` | - | Size |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 
 **Sub-components:**
-- `Tabs.Tab` -- Individual tab (`value: string`, `disabled?: boolean`)
+- `Tabs.Tab` -- Individual tab (`value: string`, `disabled?: boolean`, `class?: string`)
 
 ---
 
@@ -192,6 +194,7 @@ function MyPage() {
 | `headerStyle` | `JSX.CSSProperties \| string` | - | Header style |
 | `canDeactivate` | `() => boolean` | - | Pre-close confirmation function |
 | `onCloseComplete` | `() => void` | - | Post-close animation callback |
+| `class` | `string` | - | Additional CSS class applied to the dialog element |
 
 **useDialog API:**
 
@@ -206,3 +209,20 @@ function MyPage() {
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `close` | `(result?: T) => void` | Close dialog with optional return value |
+
+**DialogProvider:**
+
+`DialogProvider` is the provider component that enables `useDialog`. It is automatically included by `InitializeProvider`. Use `DialogProvider` directly only when building a custom provider tree.
+
+```tsx
+import { DialogProvider } from "@simplysm/solid";
+
+<DialogProvider closeOnEscape closeOnBackdrop>
+  <App />
+</DialogProvider>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `closeOnEscape` | `boolean` | - | Default `closeOnEscape` for all dialogs opened via `useDialog` |
+| `closeOnBackdrop` | `boolean` | - | Default `closeOnBackdrop` for all dialogs opened via `useDialog` |

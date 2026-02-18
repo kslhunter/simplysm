@@ -41,7 +41,7 @@ Method-level `auth()` overrides service-level settings.
 
 ## getServiceAuthPermissions
 
-Query auth permissions for a given service definition or method. Primarily used internally by `ServiceExecutor`, but exported for advanced use cases.
+Read auth permissions from an `auth()`-wrapped function. Returns `undefined` if the function is not wrapped with `auth()`. Primarily used internally by `runServiceMethod`, but exported for advanced use cases.
 
 ```typescript
 import { defineService, auth, getServiceAuthPermissions } from "@simplysm/service-server";
@@ -55,43 +55,52 @@ const servicePerms = someServiceDef.authPermissions;
 // string[] if service-level auth is set, or undefined for public
 ```
 
-## JWT Token Management
+| Signature | Returns | Description |
+|-----------|---------|------|
+| `getServiceAuthPermissions(fn: Function)` | `string[] \| undefined` | Returns the permission array attached by `auth()`, or `undefined` if not wrapped |
 
-### JwtManager
+## JWT Functions
 
-`JwtManager<TAuthInfo>` handles JWT operations internally. Access its functionality through `ServiceServer` methods.
-
-| Method | Returns | Description |
-|--------|---------|------|
-| `sign(payload)` | `Promise<string>` | Generate a JWT token (HS256, 12-hour expiration) |
-| `verify(token)` | `Promise<AuthTokenPayload<TAuthInfo>>` | Verify token signature and expiration, return payload |
-| `decode(token)` | `AuthTokenPayload<TAuthInfo>` | Decode token without verification (synchronous) |
-
-Generate and verify JWT tokens through the `ServiceServer` instance:
+Standalone functions for JWT token generation and verification using the `jose` library (HS256 algorithm, 12-hour expiration).
 
 ```typescript
-import { createServiceServer } from "@simplysm/service-server";
-
-const server = createServiceServer({
-  port: 8080,
-  rootPath: "/app/data",
-  auth: { jwtSecret: "my-secret-key" },
-  services: [],
-});
+import { signJwt, verifyJwt, decodeJwt } from "@simplysm/service-server";
 
 // Generate token (12-hour expiration, HS256 algorithm)
-const token = await server.generateAuthToken({
+const token = await signJwt("my-secret-key", {
   roles: ["admin", "user"],
   data: { userId: 1, name: "John" },
 });
 
-// Verify token
-const payload = await server.verifyAuthToken(token);
+// Verify token (throws on expiry or invalid signature)
+const payload = await verifyJwt("my-secret-key", token);
 // payload.roles: ["admin", "user"]
 // payload.data: { userId: 1, name: "John" }
+
+// Decode token without verification (synchronous, no secret needed)
+const decoded = decodeJwt(token);
 ```
 
-### AuthTokenPayload
+| Function | Returns | Description |
+|----------|---------|------|
+| `signJwt<TAuthInfo>(jwtSecret, payload)` | `Promise<string>` | Generate a JWT token (HS256, 12-hour expiration) |
+| `verifyJwt<TAuthInfo>(jwtSecret, token)` | `Promise<AuthTokenPayload<TAuthInfo>>` | Verify token signature and expiration, return payload. Throws on invalid or expired tokens |
+| `decodeJwt<TAuthInfo>(token)` | `AuthTokenPayload<TAuthInfo>` | Decode token without verification (synchronous) |
+
+In most cases, use `ServiceServer` methods instead of calling these functions directly:
+
+```typescript
+// Generate token via server (preferred)
+const token = await server.generateAuthToken({
+  roles: ["admin"],
+  data: { userId: 1 },
+});
+
+// Verify token via server (preferred)
+const payload = await server.verifyAuthToken(token);
+```
+
+## AuthTokenPayload
 
 ```typescript
 import type { AuthTokenPayload } from "@simplysm/service-server";

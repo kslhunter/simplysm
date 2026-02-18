@@ -2,7 +2,7 @@
 
 ## OrmService
 
-Provides database connection/query/transaction via WebSocket. `auth()` wrapper is applied, requiring login.
+Provides database connection/query/transaction via WebSocket. The `auth()` wrapper is applied, requiring login.
 
 ```typescript
 import { createServiceServer, OrmService } from "@simplysm/service-server";
@@ -48,39 +48,16 @@ Methods provided by `OrmService`:
 
 When a WebSocket connection is closed, all DB connections opened from that socket are automatically cleaned up.
 
-## CryptoService
-
-Provides SHA256 hash and AES-256-CBC symmetric key encryption/decryption.
+Use `OrmServiceType` to share method signatures with the client:
 
 ```typescript
-import { createServiceServer, CryptoService } from "@simplysm/service-server";
-
-const server = createServiceServer({
-  port: 8080,
-  rootPath: "/app/data",
-  services: [CryptoService],
-});
+import type { OrmServiceType } from "@simplysm/service-server";
+// OrmServiceType = ServiceMethods<typeof OrmService>
 ```
-
-`.config.json` config:
-
-```json
-{
-  "crypto": {
-    "key": "your-32-byte-secret-key-here!!"
-  }
-}
-```
-
-| Method | Returns | Description |
-|--------|---------|------|
-| `encrypt(data)` | `Promise<string>` | Generate SHA256 HMAC hash (one-way). `data` is `string \| Uint8Array` |
-| `encryptAes(data)` | `Promise<string>` | AES-256-CBC encryption. `data` is `Uint8Array`. Returns hex string in `iv:encrypted` format |
-| `decryptAes(encText)` | `Promise<Uint8Array>` | AES-256-CBC decryption. Returns original binary |
 
 ## AutoUpdateService
 
-Supports auto-update for client apps. Searches for latest version files by platform in the client directory.
+Supports auto-update for client apps. Searches for the latest version files by platform in the client directory. No auth is required.
 
 ```typescript
 import { createServiceServer, AutoUpdateService } from "@simplysm/service-server";
@@ -104,7 +81,7 @@ rootPath/www/{clientName}/{platform}/updates/
 
 | Method | Returns | Description |
 |--------|---------|------|
-| `getLastVersion(platform)` | `Promise<{ version: string; downloadPath: string } \| undefined>` | Returns latest version and download path for the platform. Returns `undefined` if no update |
+| `getLastVersion(platform)` | `Promise<{ version: string; downloadPath: string } \| undefined>` | Returns the latest version and download path for the platform. Returns `undefined` if no update files exist |
 
 Return value example:
 
@@ -113,4 +90,11 @@ Return value example:
   version: "1.0.1",
   downloadPath: "/my-app/android/updates/1.0.1.apk",
 }
+```
+
+Use `AutoUpdateServiceType` to share method signatures with the client:
+
+```typescript
+import type { AutoUpdateServiceType } from "@simplysm/service-server";
+// AutoUpdateServiceType = ServiceMethods<typeof AutoUpdateService>
 ```

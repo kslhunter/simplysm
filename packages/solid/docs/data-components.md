@@ -177,9 +177,38 @@ import { List } from "@simplysm/solid";
 - `ArrowLeft` -- Collapse if expanded, focus parent if collapsed
 - `Home` / `End` -- Focus first/last item
 
+**List Props:**
+
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `inset` | `boolean` | - | Transparent background style |
+
+**List.Item Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | - | Nested list open state (controlled mode) |
+| `onOpenChange` | `(open: boolean) => void` | - | Open state change callback |
+| `selected` | `boolean` | - | Selected state |
+| `readonly` | `boolean` | - | Read-only (click disabled, normal color) |
+| `disabled` | `boolean` | - | Disabled state (click disabled, dimmed) |
+| `selectedIcon` | `Component<IconProps>` | - | Selected state icon (shown when no nested list) |
+| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `onClick` | `(e: MouseEvent) => void` | - | Click handler (called when no nested list) |
+
+**Sub-components:**
+- `List.Item` -- Individual list item
+- `List.Item.Children` -- Nested child items container
+
+**ListContext:**
+
+`ListContext` and `useListContext` are exported for building custom List item sub-components. Provides the current nesting `level` (starts at 1 for the root List).
+
+```typescript
+import { useListContext } from "@simplysm/solid";
+
+const { level } = useListContext();
+```
 
 ---
 

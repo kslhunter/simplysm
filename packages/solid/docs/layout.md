@@ -287,3 +287,15 @@ const handleDrop = (info: KanbanDropInfo) => {
 - `Kanban.Card` -- Draggable card
 
 **Selection:** Shift+Click for multi-select, long press for single select. Lane header checkbox toggles all cards in the lane.
+
+**KanbanContext:**
+
+`KanbanContext` and `useKanbanContext` are exported for building custom Kanban card/lane sub-components. `useKanbanLaneContext` provides lane-scoped context. These are low-level APIs for advanced customization.
+
+```typescript
+import { useKanbanContext, useKanbanLaneContext } from "@simplysm/solid";
+
+// inside a custom card component
+const kanban = useKanbanContext();
+const lane = useKanbanLaneContext();
+```

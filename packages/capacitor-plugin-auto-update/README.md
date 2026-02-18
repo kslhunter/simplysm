@@ -201,7 +201,7 @@ interface AutoUpdateService {
 | Package | Purpose |
 |--------|------|
 | `@simplysm/core-common` | Path utilities, HTML templates, `waitUntil`, etc. |
-| `@simplysm/core-browser` | `downloadBytes` (file download) |
+| `@simplysm/core-browser` | `fetchUrlBytes` (file download) |
 | `@simplysm/capacitor-plugin-file-system` | File read/write, URI conversion, storage paths |
 | `@simplysm/service-client` | `ServiceClient` (server communication) |
 | `@simplysm/service-common` | `AutoUpdateService` interface definition |

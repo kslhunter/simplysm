@@ -35,7 +35,7 @@ createOrm() (top-level entry point)
                     └── MysqlDbConn / MssqlDbConn / PostgresqlDbConn (DBMS-specific low-level connections)
 ```
 
-- `createOrm()` is the top-level factory function that takes a `DbContext` type and connection settings to manage transactions.
+- `createOrm()` is the top-level factory function that takes a `DbContextDef` and connection settings to manage transactions.
 - `NodeDbContextExecutor` is the executor used by `DbContext`, converting `QueryDef` to SQL and executing it.
 - `createDbConn()` is a factory function that acquires connections from the connection pool.
 - `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
@@ -47,7 +47,7 @@ createOrm() (top-level entry point)
 
 | Function | Description |
 |----------|-------------|
-| `createOrm()` | ORM factory function. Takes `DbContext` type and connection settings to manage transaction-based connections. |
+| `createOrm()` | ORM factory function. Takes a `DbContextDef` and connection settings to manage transaction-based connections. |
 | `createDbConn()` | Connection factory function. Caches connection pools by configuration and returns `PooledDbConn`. |
 
 ### Classes
@@ -65,18 +65,20 @@ createOrm() (top-level entry point)
 | Type | Description |
 |------|------|
 | `DbConn` | Low-level DB connection interface. Implemented by all DBMS-specific connection classes. |
+| `Orm<TDef>` | Return type of `createOrm()`. Exposes `connect()` and `connectWithoutTransaction()` methods. |
+| `OrmOptions` | `createOrm()` options. `database`, `schema` settings that override `DbConnConfig`. |
 | `DbConnConfig` | DB connection config union type (`MysqlDbConnConfig \| MssqlDbConnConfig \| PostgresqlDbConnConfig`). |
 | `MysqlDbConnConfig` | MySQL connection config. `dialect: "mysql"`. |
 | `MssqlDbConnConfig` | MSSQL connection config. `dialect: "mssql" \| "mssql-azure"`. |
 | `PostgresqlDbConnConfig` | PostgreSQL connection config. `dialect: "postgresql"`. |
 | `DbPoolConfig` | Connection pool config (`min`, `max`, `acquireTimeoutMillis`, `idleTimeoutMillis`). |
-| `OrmOptions` | `createOrm()` options. `database`, `schema` settings that override `DbConnConfig`. |
 
 ### Constants and Utility Functions
 
 | Name | Description |
 |------|------|
-| `DB_CONN_DEFAULT_TIMEOUT` | DB connection default timeout (10 minutes, 600000ms). |
+| `DB_CONN_CONNECT_TIMEOUT` | DB connection establishment timeout (10 seconds, 10000ms). |
+| `DB_CONN_DEFAULT_TIMEOUT` | DB query default timeout (10 minutes, 600000ms). |
 | `DB_CONN_ERRORS` | DB connection error message constants (`NOT_CONNECTED`, `ALREADY_CONNECTED`). |
 | `getDialectFromConfig(config)` | Extract `Dialect` from `DbConnConfig`. `"mssql-azure"` is converted to `"mssql"`. |
 
@@ -84,11 +86,11 @@ createOrm() (top-level entry point)
 
 ### Basic Usage with createOrm
 
-`createOrm()` is the top-level factory function used with `DbContext`. It automatically handles transaction management.
+`createOrm()` is the top-level factory function used with `defineDbContext`. It automatically handles transaction management.
 
 ```typescript
 import { createOrm } from "@simplysm/orm-node";
-import { DbContext, queryable, Table } from "@simplysm/orm-common";
+import { defineDbContext, Table } from "@simplysm/orm-common";
 
 // 1. Define table
 const User = Table("User")
@@ -101,9 +103,9 @@ const User = Table("User")
   .primaryKey("id");
 
 // 2. Define DbContext
-class MyDb extends DbContext {
-  readonly user = queryable(this, User);
-}
+const MyDb = defineDbContext({
+  tables: { user: User },
+});
 
 // 3. Create ORM instance
 const orm = createOrm(MyDb, {
@@ -380,6 +382,18 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 
 `DbConn` extends `EventEmitter<{ close: void }>`, so you can listen for connection close events with `on("close", handler)` / `off("close", handler)`.
 
+## Orm Interface
+
+The return type of `createOrm()`. Provides the `connect()` and `connectWithoutTransaction()` methods.
+
+| Member | Signature | Description |
+|--------|-----------|-------------|
+| `dbContextDef` | `TDef` | The `DbContextDef` passed to `createOrm()` |
+| `config` | `DbConnConfig` | The connection config passed to `createOrm()` |
+| `options` | `OrmOptions \| undefined` | The options passed to `createOrm()` |
+| `connect()` | `(callback, isolationLevel?) => Promise<R>` | Run callback inside a transaction; auto-commits on success, auto-rolls back on error |
+| `connectWithoutTransaction()` | `(callback) => Promise<R>` | Run callback without a transaction |
+
 ## Supported Databases
 
 | Database | Driver Package | dialect Value | Minimum Version |
@@ -393,8 +407,9 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 
 ### Timeouts
 
-- Default connection timeout is 10 minutes (`DB_CONN_DEFAULT_TIMEOUT = 600000ms`).
-- Connections are automatically closed if idle for more than twice the timeout (20 minutes).
+- Connection establishment timeout is 10 seconds (`DB_CONN_CONNECT_TIMEOUT = 10000ms`).
+- Query default timeout is 10 minutes (`DB_CONN_DEFAULT_TIMEOUT = 600000ms`).
+- Connections are automatically closed if idle for more than twice the query timeout (20 minutes).
 - Connection pool's `acquireTimeoutMillis` (default 30s) and `idleTimeoutMillis` (default 30s) operate separately.
 
 ### SQL Injection Security
@@ -417,6 +432,7 @@ DBMS-specific drivers (`mysql2`, `tedious`, `pg`) are lazy-loaded within `create
 | `tedious` | MSSQL driver |
 | `pg` | PostgreSQL driver |
 | `pg-copy-streams` | PostgreSQL bulk COPY support |
+| `generic-pool` | Connection pooling |
 
 ## License
 

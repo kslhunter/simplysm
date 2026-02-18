@@ -35,9 +35,9 @@ Instance methods automatically added to `HTMLElement.prototype`.
 
 | Method | Return Type | Description |
 |--------|-----------|------|
-| `repaint()` | `void` | Trigger forced repaint |
-| `getRelativeOffset(parent)` | `{ top, left }` | Calculate relative position based on parent element |
-| `scrollIntoViewIfNeeded(target, offset?)` | `void` | Adjust scroll if obscured by fixed regions |
+| `repaint()` | `void` | Trigger forced repaint (triggers forced synchronous layout) |
+| `getRelativeOffset(parent: HTMLElement \| string)` | `{ top: number; left: number }` | Calculate relative position based on parent element or CSS selector |
+| `scrollIntoViewIfNeeded(target, offset?)` | `void` | Adjust scroll if target is obscured by fixed regions (top/left only) |
 
 ### Static Functions
 
@@ -230,7 +230,7 @@ if (selectedFiles) {
 - This package is **browser-only**. It cannot be used in Node.js environments.
 - `Element` and `HTMLElement` prototype extensions work as **side-effect imports**. Extensions are automatically applied when importing `"@simplysm/core-browser"` or any item from the package.
 - The `getBounds()` function uses `IntersectionObserver` and works asynchronously. If all elements are not observed within the specified timeout (default 5000ms), a `TimeoutError` is thrown.
-- The `getRelativeOffset()` method correctly handles elements with CSS `transform` applied. Border thickness and scroll position of intermediate elements are also included in the calculation.
+- The `getRelativeOffset()` method accepts either an `HTMLElement` or a CSS selector string as the `parent` parameter. It throws `ArgumentError` if the parent element cannot be found. Border thickness and scroll position of intermediate elements are included in the calculation, and CSS `transform` is correctly handled.
 - The `scrollIntoViewIfNeeded()` method only handles cases where the target is beyond the top/left boundaries. The bottom/right directions rely on the browser's default focus scrolling.
 - The `fetchUrlBytes()` function improves memory efficiency by pre-allocating when the `Content-Length` header is available, and collects and merges chunks for chunked encoding.
 - The `pasteToElement()` function replaces the entire value of the target input/textarea. It does not consider cursor position or selection range.

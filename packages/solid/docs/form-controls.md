@@ -56,11 +56,16 @@ import { TextInput } from "@simplysm/solid";
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `type` | `"text" \| "password" \| "email"` | `"text"` | Input type |
 | `format` | `string` | - | Input format (`X` represents character position, rest are separators) |
+| `prefixIcon` | `Component<TablerIconProps>` | - | Prefix icon (Tabler Icons component) |
 | `placeholder` | `string` | - | Placeholder |
+| `title` | `string` | - | Tooltip title |
+| `autocomplete` | `JSX.HTMLAutocomplete` | - | HTML autocomplete attribute |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
 | `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
@@ -96,11 +101,15 @@ import { NumberInput } from "@simplysm/solid";
 | `onValueChange` | `(value: number \| undefined) => void` | - | Value change callback |
 | `comma` | `boolean` | `true` | Show thousand separators |
 | `minDigits` | `number` | - | Minimum decimal places |
+| `prefixIcon` | `Component<TablerIconProps>` | - | Prefix icon (Tabler Icons component) |
 | `placeholder` | `string` | - | Placeholder |
+| `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `min` | `number` | - | Minimum value (error: "최솟값은 N입니다") |
 | `max` | `number` | - | Maximum value (error: "최댓값은 N입니다") |
@@ -146,10 +155,13 @@ import { DateOnly } from "@simplysm/core-common";
 | `unit` | `"year" \| "month" \| "date"` | `"date"` | Date unit |
 | `min` | `DateOnly` | - | Minimum date (error: "{min}보다 크거나 같아야 합니다") |
 | `max` | `DateOnly` | - | Maximum date (error: "{max}보다 작거나 같아야 합니다") |
+| `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: DateOnly \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
@@ -190,10 +202,13 @@ import { DateTime } from "@simplysm/core-common";
 | `unit` | `"minute" \| "second"` | `"minute"` | Date-time unit |
 | `min` | `DateTime` | - | Minimum date-time (error: "{min}보다 크거나 같아야 합니다") |
 | `max` | `DateTime` | - | Maximum date-time (error: "{max}보다 작거나 같아야 합니다") |
+| `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: DateTime \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
@@ -234,10 +249,13 @@ import { Time } from "@simplysm/core-common";
 | `unit` | `"minute" \| "second"` | `"minute"` | Time unit |
 | `min` | `Time` | - | Minimum time (error: "{min}보다 크거나 같아야 합니다") |
 | `max` | `Time` | - | Maximum time (error: "{max}보다 작거나 같아야 합니다") |
+| `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: Time \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
@@ -275,9 +293,12 @@ const [to, setTo] = createSignal<DateOnly>();
 | `onFromChange` | `(value: DateOnly \| undefined) => void` | - | Start date change callback |
 | `to` | `DateOnly` | - | End date |
 | `onToChange` | `(value: DateOnly \| undefined) => void` | - | End date change callback |
+| `required` | `boolean` | - | Required field |
 | `disabled` | `boolean` | - | Disabled state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
-| `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "Day", month: "Month", range: "Range" }` | Period type labels |
+| `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "일", month: "월", range: "범위" }` | Period type labels (Korean by default) |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 
 ---
 
@@ -302,11 +323,14 @@ import { Textarea } from "@simplysm/solid";
 | `value` | `string` | `""` | Input value |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `placeholder` | `string` | - | Placeholder |
+| `title` | `string` | - | Tooltip title |
 | `minRows` | `number` | `1` | Minimum number of rows |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `minLength` | `number` | - | Minimum character length (error: "최소 N자 이상 입력하세요") |
 | `maxLength` | `number` | - | Maximum character length (error: "최대 N자까지 입력 가능합니다") |
@@ -383,6 +407,8 @@ import { Select } from "@simplysm/solid";
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `validate` | `(value: unknown) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
 
@@ -434,6 +460,8 @@ import { Combobox } from "@simplysm/solid";
 | `disabled` | `boolean` | - | Disabled state |
 | `size` | `"sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: T \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
@@ -468,6 +496,8 @@ import { Checkbox, Radio } from "@simplysm/solid";
 | `disabled` | `boolean` | - | Disabled state |
 | `inset` | `boolean` | - | Inset style |
 | `inline` | `boolean` | - | Inline style |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style object |
 | `required` | `boolean` | - | Required field (error: "필수 선택 항목입니다") |
 | `validate` | `(value: boolean) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |

@@ -326,7 +326,7 @@ const records = [
   { name: "Jane Smith", age: 25, active: false },
 ];
 
-// write() returns ExcelWorkbook, so resource management is required
+// write() accepts Partial records and returns ExcelWorkbook, so resource management is required
 await using wb = await wrapper.write("Users", records);
 const bytes = await wb.getBytes();
 ```
@@ -390,8 +390,9 @@ Behavior of the `read()` method:
 
 ## ExcelCell API
 
-| Method | Return Type | Description |
+| Member | Type / Return Type | Description |
 |--------|-----------|------|
+| `addr` | `ExcelAddressPoint` (readonly) | Cell address as 0-based row/column indices |
 | `getVal()` | `Promise<ExcelValueType>` | Get cell value |
 | `setVal(val)` | `Promise<void>` | Set cell value (deletes cell if undefined) |
 | `getFormula()` | `Promise<string \| undefined>` | Get formula |
@@ -426,7 +427,7 @@ Behavior of the `read()` method:
 
 ## ExcelWorkbook API
 
-| Method | Return Type | Description |
+| Member | Type / Return Type | Description |
 |--------|-----------|------|
 | `getWorksheet(nameOrIndex)` | `Promise<ExcelWorksheet>` | Get worksheet (name or 0-based index) |
 | `createWorksheet(name)` | `Promise<ExcelWorksheet>` | Create new worksheet |
@@ -434,6 +435,14 @@ Behavior of the `read()` method:
 | `getBytes()` | `Promise<Bytes>` | Export as Uint8Array |
 | `getBlob()` | `Promise<Blob>` | Export as Blob |
 | `close()` | `Promise<void>` | Release resources |
+
+## ExcelWrapper API
+
+| Member | Type / Return Type | Description |
+|--------|-----------|------|
+| `constructor(schema, displayNameMap)` | — | Create wrapper with a Zod schema and field-to-display-name map |
+| `read(file, wsNameOrIndex?)` | `Promise<z.infer<TSchema>[]>` | Read records from Excel file (Uint8Array or Blob); defaults to first worksheet |
+| `write(wsName, records)` | `Promise<ExcelWorkbook>` | Write partial records to a new workbook; caller must manage the returned workbook's lifecycle |
 
 ## Caveats
 

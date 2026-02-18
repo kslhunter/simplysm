@@ -22,6 +22,8 @@ import { objEqual } from "@simplysm/core-common";
 objEqual({ a: 1, b: [2] }, { a: 1, b: [2] });                       // true
 objEqual(arr1, arr2, { ignoreArrayIndex: true });                     // Ignore array order
 objEqual(obj1, obj2, { topLevelExcludes: ["updatedAt"] });            // Exclude specific keys
+objEqual(obj1, obj2, { topLevelIncludes: ["id", "name"] });           // Only compare these keys
+objEqual(obj1, obj2, { onlyOneDepth: true });                         // Shallow (reference) comparison
 ```
 
 ### objMerge
@@ -33,6 +35,14 @@ import { objMerge } from "@simplysm/core-common";
 
 objMerge({ a: 1, b: { c: 2 } }, { b: { d: 3 } });
 // { a: 1, b: { c: 2, d: 3 } }
+
+// Concat arrays instead of replacing
+objMerge({ tags: ["a"] }, { tags: ["b"] }, { arrayProcess: "concat" });
+// { tags: ["a", "b"] }
+
+// Delete key when target value is null
+objMerge({ a: 1, b: 2 }, { b: null }, { useDelTargetNull: true });
+// { a: 1 }
 ```
 
 ### objMerge3
@@ -60,6 +70,18 @@ import { objOmit } from "@simplysm/core-common";
 objOmit(user, ["password", "email"]);
 ```
 
+### objOmitByFilter
+
+Exclude keys matching a predicate function.
+
+```typescript
+import { objOmitByFilter } from "@simplysm/core-common";
+
+// Remove all keys starting with "_"
+objOmitByFilter(data, (key) => String(key).startsWith("_"));
+// { name: "Alice", age: 30 }  (private _internal key removed)
+```
+
 ### objPick
 
 Select specific keys.
@@ -78,6 +100,23 @@ Query value by chain path (`"a.b[0].c"`).
 import { objGetChainValue } from "@simplysm/core-common";
 
 objGetChainValue(obj, "a.b[0].c");
+
+// Optional: returns undefined instead of throwing when intermediate path is missing
+objGetChainValue(obj, "a.b[0].c", true);
+```
+
+### objGetChainValueByDepth
+
+Descend the same key repeatedly to a given depth and return the value.
+
+```typescript
+import { objGetChainValueByDepth } from "@simplysm/core-common";
+
+const nested = { parent: { parent: { name: "root" } } };
+objGetChainValueByDepth(nested, "parent", 2); // { name: "root" }
+
+// Optional: returns undefined instead of throwing when path is missing
+objGetChainValueByDepth(nested, "parent", 5, true); // undefined
 ```
 
 ### objSetChainValue
@@ -126,6 +165,9 @@ Type-safe `Object.fromEntries`.
 
 ```typescript
 import { objFromEntries } from "@simplysm/core-common";
+
+const entries: ["a" | "b", number][] = [["a", 1], ["b", 2]];
+objFromEntries(entries); // { a: number; b: number }
 ```
 
 ### objMap
@@ -135,7 +177,11 @@ Transform each entry of object and return new object.
 ```typescript
 import { objMap } from "@simplysm/core-common";
 
-objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]); // Transform values only (keep keys)
+// Transform values only (pass null as new key to keep original key)
+objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]);
+
+// Transform both keys and values
+objMap(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
 ```
 
 ---
@@ -165,6 +211,11 @@ const json = jsonStringify(data, { space: 2 });
 // For logging: hide binary data
 jsonStringify(data, { redactBytes: true });
 // Uint8Array content replaced with "__hidden__"
+
+// Custom replacer (called before built-in type conversion)
+jsonStringify(data, {
+  replacer: (key, value) => (key === "secret" ? undefined : value),
+});
 ```
 
 ### jsonParse
@@ -243,6 +294,9 @@ PascalCase conversion.
 
 ```typescript
 import { strToPascalCase } from "@simplysm/core-common";
+
+strToPascalCase("hello-world"); // "HelloWorld"
+strToPascalCase("hello_world"); // "HelloWorld"
 ```
 
 ### strToCamelCase
@@ -253,6 +307,7 @@ camelCase conversion.
 import { strToCamelCase } from "@simplysm/core-common";
 
 strToCamelCase("hello-world"); // "helloWorld"
+strToCamelCase("HelloWorld");  // "helloWorld"
 ```
 
 ### strToKebabCase
@@ -271,6 +326,8 @@ snake_case conversion.
 
 ```typescript
 import { strToSnakeCase } from "@simplysm/core-common";
+
+strToSnakeCase("HelloWorld"); // "hello_world"
 ```
 
 ### strIsNullOrEmpty
@@ -293,6 +350,10 @@ Insert at specific position in string.
 
 ```typescript
 import { strInsert } from "@simplysm/core-common";
+
+strInsert("Hello World", 5, ","); // "Hello, World"
+strInsert("abc", 0, "X");         // "Xabc"
+strInsert("abc", 3, "X");         // "abcX"
 ```
 
 ---
@@ -307,6 +368,7 @@ Parse string to integer (remove non-digit characters).
 import { numParseInt } from "@simplysm/core-common";
 
 numParseInt("12,345원"); // 12345
+numParseInt(3.7);        // 3 (truncated, not rounded)
 ```
 
 ### numParseFloat
@@ -325,6 +387,9 @@ Round float and return integer.
 
 ```typescript
 import { numParseRoundedInt } from "@simplysm/core-common";
+
+numParseRoundedInt("3.7"); // 4
+numParseRoundedInt("3.2"); // 3
 ```
 
 ### numFormat
@@ -336,6 +401,7 @@ import { numFormat } from "@simplysm/core-common";
 
 numFormat(1234567, { max: 2 });             // "1,234,567"
 numFormat(1234, { min: 2, max: 2 });        // "1,234.00"
+numFormat(undefined);                        // undefined
 ```
 
 ### numIsNullOrEmpty
@@ -368,12 +434,20 @@ Convert date/time to string according to format string. Supports the same format
 | `dd` | 0-padded day | 01~31 |
 | `d` | Day | 1~31 |
 | `tt` | AM/PM | 오전, 오후 |
-| `HH` | 0-padded 24-hour | 00~23 |
 | `hh` | 0-padded 12-hour | 01~12 |
+| `h` | 12-hour | 1~12 |
+| `HH` | 0-padded 24-hour | 00~23 |
+| `H` | 24-hour | 0~23 |
 | `mm` | 0-padded minute | 00~59 |
+| `m` | Minute | 0~59 |
 | `ss` | 0-padded second | 00~59 |
+| `s` | Second | 0~59 |
 | `fff` | Millisecond (3 digits) | 000~999 |
-| `zzz` | Timezone offset | +09:00 |
+| `ff` | Millisecond (2 digits) | 00~99 |
+| `f` | Millisecond (1 digit) | 0~9 |
+| `zzz` | Timezone offset (±HH:mm) | +09:00 |
+| `zz` | Timezone offset (±HH) | +09 |
+| `z` | Timezone offset (±H) | +9 |
 
 ```typescript
 import { formatDate } from "@simplysm/core-common";
@@ -383,17 +457,34 @@ formatDate("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
 
 formatDate("yyyy년 M월 d일 (ddd)", { year: 2024, month: 3, day: 15 });
 // "2024년 3월 15일 (금)"
+
+formatDate("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
+// "오후 2:30:45"
 ```
 
 ### normalizeMonth
 
-Normalize year/month/day when setting month.
+Normalize year/month/day when setting month. Handles month overflow and day clamping.
 
 ```typescript
 import { normalizeMonth } from "@simplysm/core-common";
 
 normalizeMonth(2025, 13, 15); // { year: 2026, month: 1, day: 15 }
 normalizeMonth(2025, 2, 31);  // { year: 2025, month: 2, day: 28 }
+normalizeMonth(2025, 0, 1);   // { year: 2024, month: 12, day: 1 }
+```
+
+### convert12To24
+
+Convert 12-hour (AM/PM) to 24-hour format.
+
+```typescript
+import { convert12To24 } from "@simplysm/core-common";
+
+convert12To24(12, false); // 0  (12 AM = midnight)
+convert12To24(12, true);  // 12 (12 PM = noon)
+convert12To24(1, false);  // 1  (1 AM)
+convert12To24(1, true);   // 13 (1 PM)
 ```
 
 ---
@@ -475,6 +566,9 @@ import { waitUntil } from "@simplysm/core-common";
 // Wait for condition (100ms interval, max 50 attempts = 5 seconds)
 await waitUntil(() => isReady, 100, 50);
 // Throws TimeoutError after 50 attempts
+
+// Unlimited wait (omit maxCount)
+await waitUntil(() => isReady, 200);
 ```
 
 ---
@@ -483,7 +577,7 @@ await waitUntil(() => isReady, 100, 50);
 
 ### transferableEncode
 
-Serialize custom types into Worker-transferable form.
+Serialize custom types into Worker-transferable form. Returns `{ result, transferList }` where `transferList` contains `ArrayBuffer` instances for zero-copy transfer.
 
 ```typescript
 import { transferableEncode } from "@simplysm/core-common";
@@ -518,6 +612,7 @@ Combine paths (`path.join` replacement).
 import { pathJoin } from "@simplysm/core-common";
 
 pathJoin("/home", "user", "file.txt"); // "/home/user/file.txt"
+pathJoin("a/", "/b/", "/c");           // "a/b/c"
 ```
 
 ### pathBasename
@@ -533,19 +628,21 @@ pathBasename("file.txt", ".txt");      // "file"
 
 ### pathExtname
 
-Extract extension (`path.extname` replacement).
+Extract extension (`path.extname` replacement). Returns empty string for hidden files (e.g., `.gitignore`).
 
 ```typescript
 import { pathExtname } from "@simplysm/core-common";
 
-pathExtname("file.txt"); // ".txt"
+pathExtname("file.txt");     // ".txt"
+pathExtname(".gitignore");   // ""
+pathExtname("archive.tar.gz"); // ".gz"
 ```
 
 ---
 
 ## Template literal tags (template-strings)
 
-Tag functions for IDE code highlighting. Actual behavior is string combination + indentation cleanup.
+Tag functions for IDE code highlighting. Actual behavior is string combination + leading/trailing blank line removal + common indentation removal.
 
 ### js
 
@@ -553,6 +650,12 @@ JavaScript code highlighting.
 
 ```typescript
 import { js } from "@simplysm/core-common";
+
+const code = js`
+  function hello() {
+    return "world";
+  }
+`;
 ```
 
 ### ts
@@ -615,6 +718,7 @@ import { getPrimitiveTypeStr } from "@simplysm/core-common";
 getPrimitiveTypeStr("hello");        // "string"
 getPrimitiveTypeStr(123);            // "number"
 getPrimitiveTypeStr(new DateTime()); // "DateTime"
+getPrimitiveTypeStr(new Uint8Array()); // "Bytes"
 ```
 
 ### env

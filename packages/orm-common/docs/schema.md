@@ -139,31 +139,23 @@ await db.connect(async () => {
 });
 ```
 
-### Class-based API (Deprecated)
+### Low-level Utilities (Advanced)
+
+`queryable()` and `executable()` are the underlying factory functions used internally by `createDbContext()`. They can be used directly when implementing a custom `DbContextBase`.
 
 ```typescript
-import { DbContext, queryable, executable, createColumnFactory } from "@simplysm/orm-common";
+import { queryable, executable, type DbContextBase } from "@simplysm/orm-common";
 
-class MyDb extends DbContext {
-  readonly user = queryable(this, User);
-  readonly post = queryable(this, Post);
-  readonly getUserById = executable(this, GetUserById);
+// queryable(db, tableOrView, as?) - creates a () => Queryable factory
+const getUserQueryable = queryable(db, User);
+const userQueryable = getUserQueryable(); // returns Queryable<UserData, typeof User>
 
-  readonly migrations = [
-    {
-      name: "20260101_add_status",
-      up: async (db: MyDb) => {
-        const c = createColumnFactory();
-        await db.addColumn(
-          { database: "mydb", name: "User" },
-          "status",
-          c.varchar(20).nullable(),
-        );
-      },
-    },
-  ];
-}
+// executable(db, procedure) - creates a () => Executable factory
+const getByIdExecutable = executable(db, GetUserById);
+const exec = getByIdExecutable(); // returns Executable<Params, Returns>
 ```
+
+> For most use cases, `createDbContext()` is preferred and manages `queryable`/`executable` automatically.
 
 ## View Definition
 

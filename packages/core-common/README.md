@@ -52,8 +52,10 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 - [`objMerge`](docs/utils.md#objmerge) - Deep merge (source + target)
 - [`objMerge3`](docs/utils.md#objmerge3) - 3-way merge with conflict detection
 - [`objOmit`](docs/utils.md#objomit) - Exclude specific keys
+- [`objOmitByFilter`](docs/utils.md#objomitbyfilter) - Exclude keys matching a predicate
 - [`objPick`](docs/utils.md#objpick) - Select specific keys
 - [`objGetChainValue`](docs/utils.md#objgetchainvalue) - Query value by chain path
+- [`objGetChainValueByDepth`](docs/utils.md#objgetchainvaluebydepth) - Query value by descending the same key repeatedly
 - [`objSetChainValue`](docs/utils.md#objsetchainvalue) - Set value by chain path
 - [`objDeleteChainValue`](docs/utils.md#objdeletechainvalue) - Delete value by chain path
 - [`objKeys`](docs/utils.md#objkeys) - Type-safe `Object.keys`
@@ -94,6 +96,7 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 
 - [`formatDate`](docs/utils.md#formatdate) - Convert date/time to formatted string
 - [`normalizeMonth`](docs/utils.md#normalizemonth) - Normalize year/month/day when setting month
+- [`convert12To24`](docs/utils.md#convert12to24) - Convert 12-hour to 24-hour format
 
 ### Byte Utilities
 
@@ -208,9 +211,15 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 - [`Type`](docs/types.md#type) - Constructor type
 - [`ObjUndefToOptional`](docs/types.md#objundeftooptional) - Convert `undefined` properties to optional
 - [`ObjOptionalToUndef`](docs/types.md#objoptionaltoundef) - Convert optional properties to `required + undefined`
+- [`EqualOptions`](docs/types.md#equaloptions) - Options for `objEqual`
+- [`ObjMergeOptions`](docs/types.md#objmergeoptions) - Options for `objMerge`
+- [`ObjMerge3KeyOptions`](docs/types.md#objmerge3keyoptions) - Per-key options for `objMerge3`
+- [`DtNormalizedMonth`](docs/types.md#dtnormalizedmonth) - Return type of `normalizeMonth`
+- [`ZipArchiveProgress`](docs/types.md#ziparchiveprogress) - Progress info for `ZipArchive.extractAll`
 - [`ArrayDiffsResult`](docs/types.md#arraydiffsresult) - Result type of `Array.diffs()`
 - [`ArrayDiffs2Result`](docs/types.md#arraydiffs2result) - Result type of `Array.oneWayDiffs()`
 - [`TreeArray`](docs/types.md#treearray) - Result type of `Array.toTree()`
+- [`ComparableType`](docs/types.md#comparabletype) - Union of types usable for sorting/comparison
 
 ## Caveats
 

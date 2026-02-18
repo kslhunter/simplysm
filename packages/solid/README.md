@@ -161,18 +161,21 @@ import "@simplysm/solid/tailwind.css";
 - [`useNotification`](docs/hooks.md#usenotification) - Notification system access
 - [`useBusy`](docs/hooks.md#usebusy) - Busy overlay control
 - [`usePrint`](docs/hooks.md#useprint) - Printing and PDF generation
+- [`useServiceClient`](docs/hooks.md#useserviceclient) - WebSocket RPC client access
+- [`useSharedData`](docs/hooks.md#useshareddata) - Shared server-side data access
+- [`useDialog`](docs/disclosure.md#dialog) - Programmatic dialog opening
+- [`useDialogInstance`](docs/disclosure.md#dialog) - Access dialog instance for closing from inside dialog content
 - [`createControllableSignal`](docs/hooks.md#createcontrollablesignal) - Controlled/Uncontrolled signal pattern
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
 - [`useRouterLink`](docs/hooks.md#userouterlink) - Navigation with Ctrl/Shift+click support
-- [`createAppStructure`](docs/hooks.md#createappstructure) - Declarative app structure (routing, menus, permissions)
 - [`usePwaUpdate`](docs/hooks.md#usepwaupdate) - PWA Service Worker update detection
 
 ## Providers
 
-- [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, busy, dialog, error capturing)
-- [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider
-- [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider
+- [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, busy, dialog, clipboard, error capturing)
+- [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider (`useServiceClient`)
+- [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider (`useSharedData`)
 
 ## Styling
 
@@ -181,12 +184,14 @@ import "@simplysm/solid/tailwind.css";
 - [z-index Layers](docs/styling.md#z-index-layers) - Sidebar, dropdown, modal z-index values
 - [Dark Mode](docs/styling.md#dark-mode) - Class-based dark mode with auto-toggle
 - [Styling Patterns](docs/styling.md#styling-patterns) - clsx + twMerge usage patterns
+- [Exported Style Tokens](docs/styling.md#exported-style-tokens) - TypeScript style constants (ComponentSize, SemanticTheme, themeTokens, fieldSurface, etc.)
 
 ## Helpers & Directives
 
 - [`mergeStyles`](docs/helpers.md#mergestyles) - Merge inline style strings and CSSProperties objects
 - [`splitSlots`](docs/helpers.md#splitslots) - Split children into named slots by component type
 - [`ripple`](docs/helpers.md#ripple-directive) - Material Design ripple effect directive
+- [`createAppStructure`](docs/hooks.md#createappstructure) - Declarative app structure (routing, menus, permissions)
 
 ---
 

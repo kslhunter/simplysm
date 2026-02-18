@@ -1,8 +1,23 @@
 # Transport Layer
 
+## WebSocketHandler
+
+`WebSocketHandler` is an interface that manages multiple WebSocket connections, routes messages to services, and handles event broadcasting. Create an instance with `createWebSocketHandler`.
+
+**Methods:**
+
+| Method | Returns | Description |
+|--------|---------|------|
+| `addSocket(socket, clientId, clientName, connReq)` | `void` | Add a new WebSocket connection. If a connection with the same `clientId` already exists, it is closed first |
+| `closeAll()` | `void` | Close all active connections |
+| `broadcastReload(clientName, changedFileSet)` | `Promise<void>` | Send a reload message to all connected clients |
+| `emitToServer(eventDef, infoSelector, data)` | `Promise<void>` | Emit an event to clients whose registered event listeners match the `infoSelector` |
+
+`WebSocketHandler` is created and managed internally by `ServiceServer`. Access its functionality through `ServiceServer` methods (`emitEvent`, `broadcastReload`).
+
 ## ServiceSocket
 
-`ServiceSocket` extends `EventEmitter` and wraps an individual WebSocket connection. It is available in service methods as `ctx.socket` when the request comes via WebSocket.
+`ServiceSocket` is an interface wrapping a single WebSocket connection. It is available in service methods as `ctx.socket` when the request comes via WebSocket. Create an instance with `createServiceSocket`.
 
 **Properties:**
 
@@ -22,6 +37,8 @@
 | `addEventListener(key, eventName, info)` | `void` | Register an event listener for this socket |
 | `removeEventListener(key)` | `void` | Remove an event listener by key |
 | `getEventListeners(eventName)` | `{ key, info }[]` | Get all event listeners for a given event name |
+| `filterEventTargetKeys(targetKeys)` | `string[]` | Filter the given keys to only those registered on this socket |
+| `on(event, handler)` | `void` | Register an event handler (`error`, `close`, or `message`) |
 
 **Events:**
 
@@ -57,6 +74,16 @@ Body: ["World"]
 - Parameters are passed in array form (in the order of method arguments).
 - For GET requests, pass a JSON-serialized array in the `json` query parameter.
 
+### handleHttpRequest
+
+The internal handler function registered at `/api/:service/:method`. Exported for advanced use cases.
+
+```typescript
+import { handleHttpRequest } from "@simplysm/service-server";
+
+await handleHttpRequest(req, reply, jwtSecret, runMethod);
+```
+
 ## File Upload
 
 Upload files via multipart request to the `/upload` endpoint. Auth token is required.
@@ -80,6 +107,31 @@ const results = await response.json();
 ```
 
 Uploaded files are stored in the `rootPath/www/uploads/` directory with UUID-based filenames.
+
+### handleUpload
+
+The internal handler function registered at `/upload`. Exported for advanced use cases.
+
+```typescript
+import { handleUpload } from "@simplysm/service-server";
+
+await handleUpload(req, reply, rootPath, jwtSecret);
+```
+
+### handleStaticFile
+
+The internal handler function for static file serving. Exported for advanced use cases.
+
+```typescript
+import { handleStaticFile } from "@simplysm/service-server";
+
+await handleStaticFile(req, reply, rootPath, urlPath);
+```
+
+Security behavior:
+- Blocks path traversal (`..`, outside `rootPath/www/`)
+- Returns 403 for files starting with `.` (hidden files)
+- Redirects directory paths without trailing slash to path with trailing slash
 
 ## Real-time Event Publishing
 
@@ -108,7 +160,7 @@ await server.broadcastReload("my-app", new Set(["main.js"]));
 
 ## ProtocolWrapper
 
-Handles encoding/decoding of WebSocket messages. Automatically branches between main thread and worker thread based on message size.
+`ProtocolWrapper` is an interface for encoding/decoding WebSocket messages. Create an instance with `createProtocolWrapper`. Automatically branches between main thread and worker thread based on message size.
 
 ```typescript
 import { createProtocolWrapper } from "@simplysm/service-server";
@@ -138,7 +190,7 @@ Worker thread branching:
 | 30KB or less | Processed directly in main thread |
 | Over 30KB | Processed in worker thread (max 4GB memory allocation) |
 
-Messages containing large binary data (Uint8Array) also branch to worker thread.
+Messages containing large binary data (Uint8Array) also branch to worker thread regardless of size.
 
 ## Legacy: handleV1Connection
 
@@ -148,5 +200,11 @@ Handles V1 protocol WebSocket clients. Only supports the `SdAutoUpdateService.ge
 import { handleV1Connection, AutoUpdateService } from "@simplysm/service-server";
 
 // Used internally by ServiceServer for WebSocket connections without ver=2 query parameter
-handleV1Connection(webSocket, autoUpdateService);
+handleV1Connection(webSocket, autoUpdateMethods, clientNameSetter);
 ```
+
+| Parameter | Type | Description |
+|-----------|------|------|
+| `socket` | `WebSocket` | The raw WebSocket connection |
+| `autoUpdateMethods` | `{ getLastVersion: (platform: string) => Promise<any> }` | Auto-update service methods |
+| `clientNameSetter` | `((clientName: string \| undefined) => void) \| undefined` | Optional callback to set the client name from the V1 request |

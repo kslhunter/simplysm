@@ -67,3 +67,91 @@ const baseClass = clsx(
 
 const className = twMerge(baseClass, props.class);
 ```
+
+## Exported Style Tokens
+
+`@simplysm/solid` exports TypeScript style constants and type definitions for use when building custom components that integrate with the library's design system.
+
+### tokens.styles
+
+```typescript
+import {
+  type ComponentSize,    // "sm" | "lg" | "xl"
+  type SemanticTheme,    // "primary" | "info" | "success" | "warning" | "danger" | "base"
+  borderDefault,         // Tailwind classes for default border color
+  borderSubtle,          // Tailwind classes for subtle border color
+  bgSurface,             // Tailwind classes for surface background
+  textDefault,           // Tailwind classes for default text color
+  textMuted,             // Tailwind classes for muted text color
+  textPlaceholder,       // Tailwind classes for placeholder text color
+  disabledOpacity,       // Tailwind classes for disabled state opacity
+  paddingSm,             // Tailwind classes for small padding (px-1.5 py-0.5)
+  paddingLg,             // Tailwind classes for large padding (px-3 py-2)
+  paddingXl,             // Tailwind classes for extra-large padding (px-4 py-3)
+  themeTokens,           // Record<SemanticTheme, { solid, solidHover, light, text, hoverBg, border }>
+} from "@simplysm/solid";
+```
+
+### patterns.styles
+
+```typescript
+import {
+  iconButtonBase,         // Base classes for icon-only buttons
+  insetFocusOutline,      // Focus outline (focus-within) for inset fields
+  insetFocusOutlineSelf,  // Focus outline (focus) for inset trigger elements
+  insetBase,              // Base layout classes for inset mode
+  fieldSurface,           // Field surface (background, border, focus ring)
+  inputBase,              // Base classes for <input> elements
+} from "@simplysm/solid";
+```
+
+### Field.styles
+
+```typescript
+import {
+  type FieldSize,              // "sm" | "lg" | "xl"
+  getFieldWrapperClass,        // Utility to build field wrapper class string
+  getTextareaWrapperClass,     // Utility to build textarea wrapper class string
+  fieldInputClass,             // Base classes for field <input> element
+  fieldGapClasses,             // Gap classes per size (with prefix icon)
+} from "@simplysm/solid";
+```
+
+### Checkbox.styles
+
+```typescript
+import {
+  type CheckboxSize,           // "sm" | "lg" | "xl"
+  checkboxBaseClass,           // Base wrapper classes
+  indicatorBaseClass,          // Base indicator (box) classes
+  checkedClass,                // Checked state classes (primary color)
+  checkboxSizeClasses,         // Size variant classes
+  checkboxInsetClass,          // Inset mode classes
+  checkboxInlineClass,         // Inline display classes
+  checkboxDisabledClass,       // Disabled state classes
+} from "@simplysm/solid";
+```
+
+### DataSheet.styles
+
+```typescript
+import {
+  dataSheetContainerClass, tableClass, thClass, thContentClass, tdClass,
+  summaryThClass, insetContainerClass, insetTableClass, defaultContainerClass,
+  sortableThClass, sortIconClass, toolbarClass, fixedClass, fixedLastClass,
+  resizerClass, resizeIndicatorClass, featureThClass, featureTdClass,
+  expandIndentGuideClass, expandIndentGuideLineClass, expandToggleClass,
+  reorderHandleClass, reorderIndicatorClass, configButtonClass,
+  // etc.
+} from "@simplysm/solid";
+```
+
+### ListItem.styles
+
+```typescript
+import {
+  listItemBaseClass, listItemSizeClasses, listItemSelectedClass,
+  listItemDisabledClass, listItemReadonlyClass, listItemIndentGuideClass,
+  listItemContentClass, getListItemSelectedIconClass,
+} from "@simplysm/solid";
+```

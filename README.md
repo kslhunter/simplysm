@@ -59,6 +59,13 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 | [`@simplysm/capacitor-plugin-file-system`](packages/capacitor-plugin-file-system/README.md) | File system |
 | [`@simplysm/capacitor-plugin-usb-storage`](packages/capacitor-plugin-usb-storage/README.md) | USB storage |
 
+### Demo Apps (private, not published)
+
+| Package | Description |
+|---------|-------------|
+| [`solid-demo`](packages/solid-demo/README.md) | SolidJS component demo app (Vite client, `pnpm dev`) |
+| [`solid-demo-server`](packages/solid-demo-server/README.md) | Server-side companion for the SolidJS demo app |
+
 ## Getting Started
 
 ### Prerequisites

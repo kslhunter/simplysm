@@ -16,41 +16,49 @@ pnpm add @simplysm/service-server
 
 ### Core Functions and Classes
 
-- [`createServiceServer`](#basic-server-configuration) - Factory function for creating a ServiceServer instance
-- [`ServiceServer`](docs/server.md#serviceserver) - Main server class. Creates Fastify instance and configures routes/plugins
+- [`createServiceServer`](#basic-server-configuration) - Factory function for creating a `ServiceServer` instance
+- [`ServiceServer`](docs/server.md#serviceserver) - Main server class. Creates a Fastify instance and configures routes/plugins
 - [`defineService`](#custom-services) - Defines a service with a factory function pattern
-- `ServiceExecutor` - Internal executor that handles service method discovery, auth checks, and execution
+- [`ServiceContext`](docs/server.md#servicecontext) - Context object passed to service factory functions
+- `runServiceMethod` - Internal function that dispatches a service method call (auth checks + execution)
 
 ### Authentication
 
-- [`auth`](#authentication) - Function wrapper that sets authentication permissions at service or method level
-- [`getServiceAuthPermissions`](#authentication) - Queries auth permissions for a service or method (used internally by `ServiceExecutor`)
-- [`JwtManager`](docs/authentication.md#jwtmanager) - JWT token generation/verification/decoding based on jose library (HS256, 12-hour expiration)
+- [`auth`](#authentication) - Wrapper that sets authentication requirements at service or method level
+- [`getServiceAuthPermissions`](docs/authentication.md#getserviceauthpermissions) - Reads auth permissions from an `auth()`-wrapped function
+- [`signJwt`](docs/authentication.md#jwt-functions) - Generate a JWT token (HS256, 12-hour expiration)
+- [`verifyJwt`](docs/authentication.md#jwt-functions) - Verify and decode a JWT token
+- [`decodeJwt`](docs/authentication.md#jwt-functions) - Decode a JWT token without verification (synchronous)
 - [`AuthTokenPayload`](docs/authentication.md#authtokenpayload) - JWT payload interface (includes `roles`, `data`)
 
 ### Transport Layer - WebSocket
 
-- `WebSocketHandler` - Handles WebSocket connection management, message routing, and event distribution
-- [`ServiceSocket`](docs/transport.md#servicesocket) - Wraps individual WebSocket connections. Manages ping/pong, protocol encoding/decoding, event listener management
+- [`WebSocketHandler`](docs/transport.md#websockethandler) - Interface for managing multiple WebSocket connections, routing messages, and broadcasting events
+- `createWebSocketHandler` - Factory function that creates a `WebSocketHandler` instance
+- [`ServiceSocket`](docs/transport.md#servicesocket) - Interface wrapping a single WebSocket connection. Manages ping/pong, protocol encoding/decoding, event listener management
+- `createServiceSocket` - Factory function that creates a `ServiceSocket` instance
 
 ### Transport Layer - HTTP
 
-- `HttpRequestHandler` - Calls service methods via HTTP at `/api/:service/:method` route
-- [`UploadHandler`](docs/transport.md#file-upload) - Handles multipart file upload at `/upload` route (auth required)
-- `StaticFileHandler` - Serves static files. Prevents path traversal and blocks hidden files
+- `handleHttpRequest` - Handles service method calls via HTTP at `/api/:service/:method`
+- `handleUpload` - Handles multipart file upload at `/upload` (auth required)
+- `handleStaticFile` - Serves static files from `rootPath/www/`. Prevents path traversal and blocks hidden files
 
 ### Protocol
 
-- [`ProtocolWrapper`](docs/transport.md#protocolwrapper) - Message encoding/decoding wrapper. Messages over 30KB are processed in worker threads
+- [`ProtocolWrapper`](docs/transport.md#protocolwrapper) - Interface for message encoding/decoding. Messages over 30KB are processed in worker threads
+- `createProtocolWrapper` - Factory function that creates a `ProtocolWrapper` instance
 
 ### Built-in Services
 
 - [`OrmService`](docs/built-in-services.md#ormservice) - DB connection/transaction/query execution (WebSocket only, auth required)
+- `OrmServiceType` - Type alias for `OrmService` method signatures (for client-side type sharing)
 - [`AutoUpdateService`](docs/built-in-services.md#autoupdateservice) - App auto-update (provides latest version query and download path)
+- `AutoUpdateServiceType` - Type alias for `AutoUpdateService` method signatures (for client-side type sharing)
 
 ### Utilities
 
-- [`getConfig`](docs/server.md#getconfig) - JSON config file loading with caching and real-time file watching (auto expiration based on LazyGcMap)
+- [`getConfig`](docs/server.md#getconfig) - JSON config file loading with caching and real-time file watching
 
 ### Legacy
 
@@ -119,7 +127,8 @@ The `ctx` parameter provides access to server resources:
 - `ctx.http` - HTTP request/reply objects (HTTP only, undefined for WebSocket)
 - `ctx.authInfo` - Authentication info (set via JWT token)
 - `ctx.clientName` - Client identifier
-- `ctx.getConfig(name)` - Get server config by name
+- `ctx.clientPath` - Resolved per-client directory path (`rootPath/www/{clientName}`)
+- `ctx.getConfig(section)` - Get server config by section name
 
 ### Authentication
 

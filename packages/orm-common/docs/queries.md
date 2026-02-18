@@ -3,8 +3,10 @@
 ## Connection and Transactions
 
 ```typescript
-// executor is NodeDbContextExecutor from orm-node package, etc.
-const db = new MyDb(executor, { database: "mydb" });
+import { defineDbContext, createDbContext } from "@simplysm/orm-common";
+
+const MyDbDef = defineDbContext({ tables: { user: User } });
+const db = createDbContext(MyDbDef, executor, { database: "mydb" });
 
 // Execute within transaction (auto commit/rollback)
 const users = await db.connect(async () => {
@@ -13,9 +15,17 @@ const users = await db.connect(async () => {
   return result;
 });
 
-// Connect without transaction (for DDL operations)
+// Connect without transaction (for DDL operations or read-only queries)
 await db.connectWithoutTransaction(async () => {
   await db.initialize(); // Code First initialization
+});
+
+// Partial transaction within connectWithoutTransaction
+await db.connectWithoutTransaction(async () => {
+  const report = await db.report().result(); // read without transaction
+  await db.trans(async () => {
+    await db.log().insert([{ message: "accessed" }]); // write with transaction
+  });
 });
 
 // Specify isolation level
@@ -23,6 +33,14 @@ await db.connect(async () => {
   // ...
 }, "SERIALIZABLE");
 ```
+
+### Connection Methods
+
+| Method | Description |
+|--------|-------------|
+| `db.connect(fn, isolationLevel?)` | Open connection, begin transaction, run fn, commit. Auto-rollback on error. |
+| `db.connectWithoutTransaction(fn)` | Open connection without transaction, run fn, close. |
+| `db.trans(fn, isolationLevel?)` | Begin transaction on an already-connected db. Must be called inside `connectWithoutTransaction`. |
 
 ## SELECT Queries
 
@@ -39,6 +57,12 @@ const names = await db.user()
     userName: u.name,
     userEmail: u.email,
   }))
+  .result();
+
+// Distinct rows
+const uniqueNames = await db.user()
+  .select((u) => ({ name: u.name }))
+  .distinct()
   .result();
 
 // Single result (error if 2 or more)
@@ -61,6 +85,22 @@ const hasAdmin = await db.user()
   .where((u) => [expr.eq(u.role, "admin")])
   .exists();
 ```
+
+### Queryable Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `.select(fn)` | Map columns to a new shape |
+| `.distinct()` | Remove duplicate rows |
+| `.where(fn)` | Add WHERE condition (multiple calls = AND) |
+| `.orderBy(fn, dir?)` | Add ORDER BY (`"ASC"` or `"DESC"`, default `"ASC"`) |
+| `.top(n)` | Return at most n rows |
+| `.limit(skip, take)` | Paginate (requires `orderBy` first) |
+| `.result()` | Execute and return all rows |
+| `.single()` | Execute, return first row, error if > 1 row |
+| `.first()` | Execute, return first row only |
+| `.count(fn?)` | Execute COUNT query |
+| `.exists()` | Return true if any row matches |
 
 ## JOIN Queries
 
@@ -277,7 +317,7 @@ await db.connect(async () => {
 
 ## DDL Operations
 
-`DbContext` supports Code First DDL operations.
+`DbContextInstance` supports Code First DDL operations.
 
 ```typescript
 await db.connectWithoutTransaction(async () => {
@@ -296,8 +336,42 @@ await db.connectWithoutTransaction(async () => {
 
   await db.renameTable({ database: "mydb", name: "User" }, "Member");
   await db.truncate({ database: "mydb", name: "User" });
+
+  // Table existence / schema check
+  const exists = await db.schemaExists("mydb");
+
+  // FK management
+  await db.switchFk({ database: "mydb", name: "User" }, "off");
+  await db.switchFk({ database: "mydb", name: "User" }, "on");
 });
 ```
+
+### DDL Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `db.initialize(opts?)` | Create all tables, views, procedures, FKs, indexes per schema. `opts.force` drops before recreating. |
+| `db.createTable(table)` | CREATE TABLE |
+| `db.dropTable(name)` | DROP TABLE |
+| `db.renameTable(name, newName)` | Rename table |
+| `db.createView(view)` | CREATE VIEW |
+| `db.dropView(name)` | DROP VIEW |
+| `db.createProc(proc)` | CREATE PROCEDURE |
+| `db.dropProc(name)` | DROP PROCEDURE |
+| `db.addColumn(table, col, builder)` | ALTER TABLE ADD COLUMN |
+| `db.dropColumn(table, col)` | ALTER TABLE DROP COLUMN |
+| `db.modifyColumn(table, col, builder)` | ALTER TABLE MODIFY COLUMN |
+| `db.renameColumn(table, col, newName)` | Rename column |
+| `db.addPk(table, cols)` | Add primary key constraint |
+| `db.dropPk(table)` | Drop primary key constraint |
+| `db.addFk(table, relName, fkBuilder)` | Add foreign key constraint |
+| `db.dropFk(table, relName)` | Drop foreign key constraint |
+| `db.addIdx(table, idxBuilder)` | Add index |
+| `db.dropIdx(table, cols)` | Drop index |
+| `db.clearSchema(params)` | Drop all objects in schema |
+| `db.schemaExists(database, schema?)` | Check if schema exists |
+| `db.truncate(table)` | TRUNCATE TABLE |
+| `db.switchFk(table, "on"\|"off")` | Enable/disable FK constraints |
 
 ## Query Builder (SQL Generation)
 
@@ -316,6 +390,16 @@ const queryDef = db.user()
   .getSelectQueryDef();
 
 const { sql } = mysqlBuilder.build(queryDef);
+```
+
+`QueryBuilderBase.build(def)` accepts any `QueryDef` and returns `QueryBuildResult`:
+
+```typescript
+interface QueryBuildResult {
+  sql: string;
+  resultSetIndex?: number;   // which result set index to use (for multi-result queries)
+  resultSetStride?: number;  // stride for multi-result queries (MySQL INSERT with OUTPUT)
+}
 ```
 
 ## Error Handling
@@ -345,7 +429,7 @@ try {
 
 | Code | Description |
 |------|------|
-| `NO_ACTIVE_TRANSACTION` | No active transaction |
+| `NO_ACTIVE_TRANSACTION` | No active transaction (e.g. rollback with no transaction open) |
 | `TRANSACTION_ALREADY_STARTED` | Transaction already started |
 | `DEADLOCK` | Deadlock occurred |
 | `LOCK_TIMEOUT` | Lock timeout |

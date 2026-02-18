@@ -40,8 +40,11 @@ function MyComponent() {
 
 **useNotification API:**
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
+| Property/Method | Type/Signature | Description |
+|-----------------|----------------|-------------|
+| `items` | `Accessor<NotificationItem[]>` | Reactive notification list |
+| `unreadCount` | `Accessor<number>` | Unread notification count |
+| `latestUnread` | `Accessor<NotificationItem \| undefined>` | Most recent unread notification |
 | `info` | `(title: string, message?: string, options?: NotificationOptions) => string` | Info notification |
 | `success` | `(title: string, message?: string, options?: NotificationOptions) => string` | Success notification |
 | `warning` | `(title: string, message?: string, options?: NotificationOptions) => string` | Warning notification |

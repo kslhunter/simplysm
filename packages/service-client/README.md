@@ -46,6 +46,8 @@ pnpm add @simplysm/service-client
 | `ServiceConnectionConfig` | Server connection config (host, port, ssl, maxReconnectCount) |
 | `ServiceProgress` | Request/response progress callback |
 | `ServiceProgressState` | Progress state (uuid, totalSize, completedSize) |
+| `SocketProviderEvents` | Event map for SocketProvider (message, state) |
+| `ServiceTransportEvents` | Event map for ServiceTransport (reload, event) |
 | `OrmConnectConfig<T>` | ORM connection config (DbContext type, connection options, DB/schema override) |
 | `RemoteService<T>` | Utility type that wraps all method return types of a service interface with `Promise` |
 
@@ -70,6 +72,7 @@ await client.connect();
 // Check connection status
 console.log(client.connected); // true
 console.log(client.hostUrl);   // "http://localhost:8080"
+console.log(client.name);      // "my-app"
 
 // Direct RPC call
 const result = await client.send("MyService", "getUsers", [{ page: 1 }]);
@@ -299,6 +302,10 @@ await connector.connectWithoutTransaction(
 
 Server connection configuration interface.
 
+```typescript
+import type { ServiceConnectionConfig } from "@simplysm/service-client";
+```
+
 | Property | Type | Required | Description |
 |------|------|------|------|
 | `host` | `string` | Yes | Server host address |
@@ -311,6 +318,8 @@ Server connection configuration interface.
 Factory function for creating a ServiceClient instance.
 
 ```typescript
+import { createServiceClient } from "@simplysm/service-client";
+
 function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient
 ```
 
@@ -331,19 +340,27 @@ const client = createServiceClient("my-app", {
 
 ### ServiceClient
 
-| Method/Property | Return Type | Description |
+```typescript
+import { ServiceClient } from "@simplysm/service-client";
+```
+
+Extends `EventEmitter<ServiceClientEvents>`.
+
+| Method/Property | Type / Return Type | Description |
 |-------------|----------|------|
 | `constructor(name, options)` | - | Create client instance. `name` is the client identifier. **Note: Prefer using `createServiceClient()` factory function.** |
+| `name` | `string` | Client identifier (read-only) |
+| `options` | `ServiceConnectionConfig` | Connection configuration (read-only) |
 | `connected` | `boolean` | WebSocket connection status |
 | `hostUrl` | `string` | HTTP URL (e.g., `http://localhost:8080`) |
 | `connect()` | `Promise<void>` | Connect to server via WebSocket |
 | `close()` | `Promise<void>` | Close connection (Graceful Shutdown) |
 | `send(serviceName, methodName, params, progress?)` | `Promise<unknown>` | Remote call to service method |
-| `getService<T>(serviceName)` | `RemoteService<T>` | Create type-safe service proxy |
+| `getService<TService>(serviceName)` | `RemoteService<TService>` | Create type-safe service proxy |
 | `auth(token)` | `Promise<void>` | Send auth token (auto re-auth on reconnection) |
-| `addEventListener(eventType, info, cb)` | `Promise<string>` | Register event listener. Returns listener key |
+| `addEventListener(eventDef, info, cb)` | `Promise<string>` | Register event listener. Returns listener key |
 | `removeEventListener(key)` | `Promise<void>` | Remove event listener |
-| `emitToServer(eventType, infoSelector, data)` | `Promise<void>` | Publish event to other clients through server |
+| `emitToServer(eventDef, infoSelector, data)` | `Promise<void>` | Publish event to other clients through server |
 | `uploadFile(files)` | `Promise<ServiceUploadResult[]>` | File upload (auth required) |
 | `downloadFileBuffer(relPath)` | `Promise<Uint8Array>` | File download |
 
@@ -352,6 +369,8 @@ const client = createServiceClient("my-app", {
 Interfaces for tracking progress of large message transmissions.
 
 ```typescript
+import type { ServiceProgress, ServiceProgressState } from "@simplysm/service-client";
+
 interface ServiceProgress {
   request?: (s: ServiceProgressState) => void;   // Request transmission progress
   response?: (s: ServiceProgressState) => void;  // Response reception progress
@@ -364,19 +383,51 @@ interface ServiceProgressState {
 }
 ```
 
-### OrmConnectConfig\<T\>
+### RemoteService\<TService\>
 
-ORM remote connection configuration interface.
+Utility type that converts all methods of a service interface so their return types are wrapped with `Promise`. Methods already returning `Promise` are not double-wrapped. Non-function properties become `never`.
 
-| Property | Type | Required | Description |
-|------|------|------|------|
-| `dbContextDef` | `TDef` | Yes | DbContext class |
-| `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options. `configName` identifies the server-side DB config; `config` can pass additional connection settings |
-| `dbContextOpt` | `{ database: string; schema: string }` | No | Database/schema override |
+```typescript
+import type { RemoteService } from "@simplysm/service-client";
 
-### SocketProvider
+type RemoteService<TService> = {
+  [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
+    ? (...args: P) => Promise<Awaited<R>>
+    : never;
+};
+```
 
-Handles low-level management of WebSocket connections. Not typically used directly, but indirectly through `ServiceClient`.
+### SocketProvider / SocketProviderEvents
+
+Low-level WebSocket connection management interface. Not typically used directly — accessed indirectly through `ServiceClient`.
+
+```typescript
+import { createSocketProvider } from "@simplysm/service-client";
+import type { SocketProvider, SocketProviderEvents } from "@simplysm/service-client";
+
+function createSocketProvider(
+  url: string,
+  clientName: string,
+  maxReconnectCount: number,
+): SocketProvider
+```
+
+```typescript
+interface SocketProviderEvents {
+  message: Bytes;
+  state: "connected" | "closed" | "reconnecting";
+}
+
+interface SocketProvider {
+  readonly clientName: string;
+  readonly connected: boolean;
+  on<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  off<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  connect(): Promise<void>;
+  close(): Promise<void>;
+  send(data: Bytes): Promise<void>;
+}
+```
 
 | Constant | Value | Description |
 |------|-----|------|
@@ -384,9 +435,50 @@ Handles low-level management of WebSocket connections. Not typically used direct
 | Heartbeat Interval | 5s | Ping transmission interval |
 | Reconnect Delay | 3s | Reconnection attempt interval |
 
+### ServiceTransport / ServiceTransportEvents
+
+Message transport layer interface. Handles request/response matching, progress tracking, and protocol encoding/decoding. Not typically used directly — accessed indirectly through `ServiceClient`.
+
+```typescript
+import { createServiceTransport } from "@simplysm/service-client";
+import type { ServiceTransport, ServiceTransportEvents } from "@simplysm/service-client";
+
+function createServiceTransport(
+  socket: SocketProvider,
+  protocol: ClientProtocolWrapper,
+): ServiceTransport
+```
+
+```typescript
+interface ServiceTransportEvents {
+  reload: Set<string>;
+  event: { keys: string[]; data: unknown };
+}
+
+interface ServiceTransport {
+  on<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  off<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown>;
+}
+```
+
 ### ClientProtocolWrapper
 
-Handles message encoding/decoding. In browser environments, data exceeding 30KB is automatically processed in a Web Worker to prevent main thread blocking.
+Protocol wrapper interface. Automatically selects main thread/Web Worker for encoding/decoding based on data size. In browser environments, data exceeding 30KB is automatically processed in a Web Worker to prevent main thread blocking.
+
+```typescript
+import { createClientProtocolWrapper } from "@simplysm/service-client";
+import type { ClientProtocolWrapper } from "@simplysm/service-client";
+
+function createClientProtocolWrapper(protocol: ServiceProtocol): ClientProtocolWrapper
+```
+
+```typescript
+interface ClientProtocolWrapper {
+  encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
+  decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>>;
+}
+```
 
 | Threshold | Condition |
 |--------|------|
@@ -397,6 +489,118 @@ Worker delegation conditions (during encoding):
 - `Uint8Array` data
 - Strings exceeding 30KB
 - Arrays exceeding 100 elements or arrays containing `Uint8Array`
+
+### EventClient
+
+Server event subscription/publishing interface. Automatically recovers listeners on reconnection.
+
+```typescript
+import { createEventClient } from "@simplysm/service-client";
+import type { EventClient } from "@simplysm/service-client";
+
+function createEventClient(transport: ServiceTransport): EventClient
+```
+
+```typescript
+interface EventClient {
+  addListener<TInfo, TData>(eventDef: ServiceEventDef<TInfo, TData>, info: TInfo, cb: (data: TData) => PromiseLike<void>): Promise<string>;
+  removeListener(key: string): Promise<void>;
+  emitToServer<TInfo, TData>(eventDef: ServiceEventDef<TInfo, TData>, infoSelector: (item: TInfo) => boolean, data: TData): Promise<void>;
+  reRegisterAll(): Promise<void>;
+}
+```
+
+| Method | Description |
+|--------|------|
+| `addListener(eventDef, info, cb)` | Register event listener on the server. Returns a listener key for later removal. |
+| `removeListener(key)` | Unregister event listener from the server by key. |
+| `emitToServer(eventDef, infoSelector, data)` | Send event to all server-registered listeners matching `infoSelector`. |
+| `reRegisterAll()` | Re-register all listeners (called automatically on reconnection). |
+
+### FileClient
+
+HTTP-based file upload/download interface.
+
+```typescript
+import { createFileClient } from "@simplysm/service-client";
+import type { FileClient } from "@simplysm/service-client";
+
+function createFileClient(hostUrl: string, clientName: string): FileClient
+```
+
+```typescript
+interface FileClient {
+  download(relPath: string): Promise<Bytes>;
+  upload(
+    files: File[] | FileList | { name: string; data: BlobPart }[],
+    authToken: string,
+  ): Promise<ServiceUploadResult[]>;
+}
+```
+
+### OrmConnectConfig\<TDef\>
+
+ORM remote connection configuration interface.
+
+```typescript
+import type { OrmConnectConfig } from "@simplysm/service-client";
+```
+
+| Property | Type | Required | Description |
+|------|------|------|------|
+| `dbContextDef` | `TDef` | Yes | DbContext class |
+| `connOpt` | `DbConnOptions & { configName: string }` | Yes | DB connection options. `configName` identifies the server-side DB config; `config` can pass additional connection settings |
+| `dbContextOpt` | `{ database: string; schema: string }` | No | Database/schema override |
+
+### OrmClientConnector
+
+ORM remote connection connector interface. Manages transaction lifecycle over RPC.
+
+```typescript
+import { createOrmClientConnector } from "@simplysm/service-client";
+import type { OrmClientConnector } from "@simplysm/service-client";
+
+function createOrmClientConnector(serviceClient: ServiceClient): OrmClientConnector
+```
+
+```typescript
+interface OrmClientConnector {
+  connect<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  ): Promise<R>;
+  connectWithoutTransaction<TDef extends DbContextDef<any, any, any>, R>(
+    config: OrmConnectConfig<TDef>,
+    callback: (db: DbContextInstance<TDef>) => Promise<R> | R,
+  ): Promise<R>;
+}
+```
+
+| Method | Description |
+|--------|------|
+| `connect(config, callback)` | Open a transactional DB connection. Commits on success, rolls back on error. Foreign key errors are converted to user-friendly messages. |
+| `connectWithoutTransaction(config, callback)` | Open a non-transactional DB connection. Suitable for read-only operations. |
+
+### OrmClientDbContextExecutor
+
+Implements the `DbContextExecutor` interface from `@simplysm/orm-common`. Delegates all DB operations to the server's `OrmService` via RPC. Not typically used directly — used internally by `OrmClientConnector`.
+
+```typescript
+import { OrmClientDbContextExecutor } from "@simplysm/service-client";
+
+class OrmClientDbContextExecutor implements DbContextExecutor {
+  constructor(client: ServiceClient, opt: DbConnOptions & { configName: string })
+  getInfo(): Promise<{ dialect: Dialect; database?: string; schema?: string }>
+  connect(): Promise<void>
+  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>
+  commitTransaction(): Promise<void>
+  rollbackTransaction(): Promise<void>
+  close(): Promise<void>
+  executeDefs<T>(defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<T[][]>
+  executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>
+  bulkInsert(tableName: string, columnDefs: Record<string, ColumnMeta>, records: Record<string, unknown>[]): Promise<void>
+}
+```
 
 ## Architecture
 

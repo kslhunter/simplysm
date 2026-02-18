@@ -133,6 +133,7 @@ The `ctx` parameter provides access to server resources within service methods.
 | `ctx.server` | `ServiceServer<TAuthInfo>` | Server instance reference |
 | `ctx.socket` | `ServiceSocket \| undefined` | WebSocket connection (`undefined` for HTTP calls) |
 | `ctx.http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> } \| undefined` | HTTP request context |
+| `ctx.legacy` | `{ clientName?: string } \| undefined` | V1 legacy context (auto-update only) |
 | `ctx.authInfo` | `TAuthInfo \| undefined` | Authenticated user's custom data (from JWT `data` field) |
 | `ctx.clientName` | `string \| undefined` | Client app name (validated against path traversal) |
 | `ctx.clientPath` | `string \| undefined` | Resolved per-client directory path (`rootPath/www/{clientName}`) |
@@ -142,6 +143,16 @@ The `ctx` parameter provides access to server resources within service methods.
 | Method | Returns | Description |
 |--------|---------|------|
 | `ctx.getConfig<T>(section)` | `Promise<T>` | Read a section from `.config.json` (root + client configs merged) |
+
+### createServiceContext
+
+Factory function that creates a `ServiceContext` object. Used internally by the server and exported for advanced use cases (e.g., calling services programmatically without an active connection).
+
+```typescript
+import { createServiceContext } from "@simplysm/service-server";
+
+const ctx = createServiceContext(server, socket, httpContext, legacyContext);
+```
 
 ## Config File Reference
 
@@ -217,7 +228,7 @@ The following routes are automatically registered when `ServiceServer.listen()` 
 ## Full Server Example
 
 ```typescript
-import { createServiceServer, defineService, auth, OrmService, CryptoService } from "@simplysm/service-server";
+import { createServiceServer, defineService, auth, OrmService } from "@simplysm/service-server";
 import { defineEvent } from "@simplysm/service-common";
 
 // Define a custom service with auth
@@ -244,7 +255,7 @@ const server = createServiceServer({
   port: 8080,
   rootPath: "/app/data",
   auth: { jwtSecret: "my-secret-key" },
-  services: [UserService, PublicService, OrmService, CryptoService],
+  services: [UserService, PublicService, OrmService],
 });
 
 server.on("ready", () => {

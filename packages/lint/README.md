@@ -13,25 +13,7 @@ npm install @simplysm/lint
 pnpm add @simplysm/lint
 ```
 
-### Peer Dependencies
-
-This plugin depends on the following packages:
-
-| Package | Description |
-|---------|-------------|
-| `eslint` | ESLint core |
-| `typescript` | TypeScript compiler |
-| `typescript-eslint` | TypeScript ESLint parser and plugin |
-| `eslint-plugin-import` | Rules for import/export |
-| `eslint-plugin-unused-imports` | Auto-remove unused imports |
-| `eslint-plugin-solid` | SolidJS-specific rules |
-| `eslint-plugin-tailwindcss` | Tailwind CSS-specific rules |
-| `globals` | Global variable definitions |
-| `stylelint` | Stylelint core |
-| `stylelint-config-standard` | Standard Stylelint rules |
-| `stylelint-config-tailwindcss` | Tailwind CSS-specific Stylelint rules |
-| `stylelint-no-unsupported-browser-features` | Browser compatibility checker |
-| `stylelint-no-unresolved-module` | Import/url() file existence checker |
+All required linting libraries (eslint, typescript-eslint, stylelint, etc.) are included as dependencies and do not need to be installed separately.
 
 ## Configuration
 
@@ -39,20 +21,37 @@ This plugin depends on the following packages:
 
 #### Using recommended config (recommended)
 
-The `recommended` config is a comprehensive setup that includes custom rules, TypeScript rules, SolidJS rules, and Tailwind CSS rules. This is sufficient for most cases.
+The `eslint-recommended` entry point exports a comprehensive flat config array that includes custom rules, TypeScript rules, SolidJS rules, and Tailwind CSS rules. This is sufficient for most cases.
 
 ```javascript
-import simplysm from "@simplysm/lint/eslint-plugin";
+import simplysmConfigs from "@simplysm/lint/eslint-recommended";
 
 export default [
-  // Use recommended config
-  simplysm.configs.recommended,
+  ...simplysmConfigs,
 ];
 ```
 
-#### Using only specific rules
+To extend with additional settings (e.g., specifying a Tailwind config path):
 
-To selectively apply only certain custom rules:
+```javascript
+import simplysmConfigs from "@simplysm/lint/eslint-recommended";
+
+export default [
+  ...simplysmConfigs,
+  {
+    files: ["**/*.{ts,tsx}"],
+    settings: {
+      tailwindcss: {
+        config: "tailwind.config.ts",
+      },
+    },
+  },
+];
+```
+
+#### Using only the ESLint plugin with specific rules
+
+To selectively apply only certain custom rules, import the plugin from `eslint-plugin`:
 
 ```javascript
 import simplysm from "@simplysm/lint/eslint-plugin";
@@ -316,7 +315,7 @@ throw new CC.NotImplementedError(); // Warning
 
 ## recommended Config Details
 
-Full list of rules included in the `recommended` config.
+Full list of rules included in the `eslint-recommended` config.
 
 ### Global Ignore Patterns
 

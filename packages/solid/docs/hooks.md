@@ -151,6 +151,18 @@ console.log(config.clientName); // "my-app"
 
 ---
 
+## useServiceClient
+
+Hook to access the WebSocket service client context. Must be used inside `ServiceClientProvider`. See [ServiceClientProvider](providers.md#serviceclientprovider) for detailed API.
+
+---
+
+## useSharedData
+
+Hook to access shared data managed by `SharedDataProvider`. Must be used inside `SharedDataProvider`. See [SharedDataProvider](providers.md#shareddataprovider) for detailed API.
+
+---
+
 ## createControllableSignal
 
 Signal hook that automatically handles Controlled/Uncontrolled patterns. Operates in controlled mode when `onChange` is provided, uncontrolled mode otherwise.
