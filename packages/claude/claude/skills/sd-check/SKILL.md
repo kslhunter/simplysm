@@ -1,143 +1,205 @@
 ---
 name: sd-check
-description: Verify code via typecheck, lint, and tests
-argument-hint: "[path]"
-model: opus
+description: Use when verifying code quality via typecheck, lint, and tests - before deployment, PR creation, after code changes, or when type errors, lint violations, or test failures are suspected. Applies to whole project or specific paths.
 ---
+
+# sd-check
+
+Verify code quality through parallel execution of typecheck, lint, and test checks.
+
+## Overview
+
+**This skill provides EXACT STEPS you MUST follow - it is NOT a command to invoke.**
+
+**Foundational Principle:** Violating the letter of these steps is violating the spirit of verification.
+
+When the user asks to verify code, YOU will manually execute **EXACTLY THESE 4 STEPS** (no more, no less):
+
+**Step 1:** Environment Pre-check (4 checks in parallel)
+**Step 2:** Launch 3 haiku agents in parallel (typecheck, lint, test ONLY)
+**Step 3:** Collect results, fix errors in priority order
+**Step 4:** Re-verify (go back to Step 2) until all pass
+
+**Core principle:** Always re-run ALL checks after any fix - changes can cascade.
+
+**CRITICAL:**
+- This skill verifies ONLY typecheck, lint, and test
+- **NO BUILD. NO DEV SERVER. NO TEAMS. NO TASK LISTS.**
+- Do NOT create your own "better" workflow - follow these 4 steps EXACTLY
 
 ## Usage
 
-- `/sd-check` — verify the entire project
-- `/sd-check packages/core-common` — verify a specific path only
+- `/sd-check` — verify entire project
+- `/sd-check packages/core-common` — verify specific path only
 
-If an argument is provided, run against that path. Otherwise, run against the entire project.
+**Default:** If no path argument provided, verify entire project.
 
-## Environment Pre-check
+## Quick Reference
 
-Before running any verification, confirm the project environment is properly set up.
-Run these checks **in parallel** and report results before proceeding.
+| Check | Command | Agent Model | Purpose |
+|-------|---------|-------------|---------|
+| Typecheck | `pnpm typecheck [path]` | haiku | Type errors |
+| Lint | `pnpm lint --fix [path]` | haiku | Code quality |
+| Test | `pnpm vitest [path] --run` | haiku | Functionality |
 
-### 1. Root package.json version
+**All 3 run in PARALLEL** (separate haiku agents, single message)
 
-Read the root `package.json` and check the `version` field.
-The major version must be `13` (e.g., `13.x.x`). If the major version is not `13`, stop and report:
+## Workflow
 
-> "This skill requires simplysm v13. Current version: {version}"
+### Step 1: Environment Pre-check
 
-### 2. pnpm workspace
+Before ANY verification, confirm environment setup with these checks **in parallel**:
 
-Verify this is a pnpm project:
+1. **Root package.json version** - Read `package.json`, verify major version is `13` (e.g., `13.x.x`)
+   - If not 13: STOP, report "This skill requires simplysm v13. Current: {version}"
 
-```
-ls pnpm-workspace.yaml pnpm-lock.yaml
-```
+2. **pnpm workspace** - Verify `pnpm-workspace.yaml` and `pnpm-lock.yaml` exist
+   - Command: `ls pnpm-workspace.yaml pnpm-lock.yaml`
+   - If missing: STOP, report to user
 
-Both files must exist. If missing, stop and report to the user.
+3. **package.json scripts** - Read root `package.json`, confirm `typecheck` and `lint` scripts defined
+   - If missing: STOP, report to user
 
-### 3. package.json scripts
+4. **Vitest config** - Verify `vitest.config.ts` exists
+   - Command: `ls vitest.config.ts`
+   - If missing: STOP, report to user
 
-Read the root `package.json` and confirm these scripts are defined:
+**If all pass:** Report "Environment OK", proceed to Step 2.
 
-- `typecheck`
-- `lint`
+### Step 2: Launch 3 Haiku Agents in Parallel
 
-If either is missing, stop and report to the user.
+Launch ALL 3 agents in a **single message** using Task tool.
 
-### 4. Vitest config
-
-Verify vitest is configured:
-
-```
-ls vitest.config.ts
-```
-
-If missing, stop and report to the user.
-
----
-
-If all pre-checks pass, report "Environment OK" and proceed to code verification.
-
-## Code Verification
-
-Run verification checks using haiku agents for command execution, then analyze and fix errors.
-Repeat until all checks pass.
-
-### Step 1: Launch Verification Agents (Parallel)
-
-Launch 3 haiku agents in parallel using the Task tool.
-
-**Important**: Replace `[path]` in the commands below with the actual path argument provided by the user. If no argument was provided, omit the path (runs on entire project).
+**Replace `[path]` with user's argument, or OMIT if no argument (defaults to full project).**
 
 **Agent 1 - Typecheck:**
 ```
-Task tool with:
+Task tool:
   subagent_type: Bash
   model: haiku
   description: "Run typecheck"
-  prompt: "Run `pnpm typecheck [path]` and return the full output. Do NOT analyze or fix errors - just report the raw output."
+  prompt: "Run `pnpm typecheck [path]` and return full output. Do NOT analyze or fix - just report raw output."
 ```
 
 **Agent 2 - Lint:**
 ```
-Task tool with:
+Task tool:
   subagent_type: Bash
   model: haiku
   description: "Run lint with auto-fix"
-  prompt: "Run `pnpm lint --fix [path]` and return the full output. Do NOT analyze or fix errors - just report the raw output."
+  prompt: "Run `pnpm lint --fix [path]` and return full output. Do NOT analyze or fix - just report raw output."
 ```
 
 **Agent 3 - Test:**
 ```
-Task tool with:
+Task tool:
   subagent_type: Bash
   model: haiku
   description: "Run tests"
-  prompt: "Run `pnpm vitest [path] --run` and return the full output. Do NOT analyze or fix errors - just report the raw output."
+  prompt: "Run `pnpm vitest [path] --run` and return full output. Do NOT analyze or fix - just report raw output."
 ```
 
-### Step 2: Collect Results and Fix Errors
+### Step 3: Collect Results and Fix Errors
 
-Wait for all 3 agents to complete. Collect their outputs.
+Wait for ALL 3 agents. Collect outputs.
 
-If any errors are found:
+**If all checks passed:** Complete (see Completion Criteria).
 
-1. **Analyze errors by priority**: typecheck → lint → test
-   - Typecheck errors may cause lint/test errors, so fix them first
-2. **Read failing files** to identify root causes
-3. **Fix with Edit**:
-   - Typecheck errors: Fix type issues
-   - Lint errors: Fix linting issues (most should be auto-fixed by `--fix`)
-   - Test failures:
-     - Run `git diff` to check for intentional code changes
-     - If intentional changes not reflected in tests: Update test code
-     - If source code bug: Fix source code
-4. Proceed to Step 3
+**If any errors found:**
 
-If all checks passed: Proceed to Completion.
+1. **Analyze by priority:** Typecheck → Lint → Test
+   - Typecheck errors may cause lint/test errors (cascade)
 
-### Step 3: Re-verify (Loop)
+2. **Read failing files** to identify root cause
 
-Go back to Step 1 and launch the 3 haiku agents again.
-Repeat until all checks pass with no errors.
+3. **Fix with Edit:**
+   - **Typecheck:** Fix type issues
+   - **Lint:** Fix code quality (most auto-fixed by `--fix`)
+   - **Test:**
+     - Run `git diff` to check intentional changes
+     - If changes not reflected in tests: Update test
+     - If source bug: Fix source
+     - **If root cause unclear OR 2-3 fix attempts failed:** Recommend `/sd-debug`
+
+4. **Proceed to Step 4**
+
+### Step 4: Re-verify (Loop Until All Pass)
+
+**CRITICAL:** After ANY fix, re-run ALL 3 checks.
+
+Go back to Step 2 and launch 3 haiku agents again.
+
+**Do NOT assume:** "I only fixed typecheck → skip lint/test". Fixes cascade.
+
+Repeat Steps 2-4 until all 3 checks pass.
 
 ## Common Mistakes
 
-### Running checks sequentially instead of parallel
-❌ **Wrong**: Launch agent 1, wait, then agent 2, wait, then agent 3
-✅ **Right**: Launch all 3 agents in a single message with multiple Task tool calls
+### ❌ Running checks sequentially
+**Wrong:** Launch agent 1, wait → agent 2, wait → agent 3
+**Right:** Launch ALL 3 in single message (parallel Task calls)
 
-### Fixing before collecting all results
-❌ **Wrong**: Agent 1 returns error → fix immediately → launch agents again
-✅ **Right**: Wait for all 3 agents → collect all errors → fix in priority order → re-verify
+### ❌ Fixing before collecting all results
+**Wrong:** Agent 1 returns error → fix immediately → re-verify
+**Right:** Wait for all 3 → collect all errors → fix in priority order → re-verify
 
-### Skipping re-verification after fixes
-❌ **Wrong**: Fix typecheck error → assume lint/test still pass
-✅ **Right**: Always re-run all 3 checks after any fix (fixes can introduce new errors)
+### ❌ Skipping re-verification after fixes
+**Wrong:** Fix typecheck → assume lint/test still pass
+**Right:** ALWAYS re-run all 3 checks after any fix
 
-### Using wrong model for agents
-❌ **Wrong**: `model: opus` or `model: sonnet` for verification agents
-✅ **Right**: `model: haiku` for command execution (cheaper, faster)
+### ❌ Using wrong model
+**Wrong:** `model: opus` or `model: sonnet` for verification agents
+**Right:** `model: haiku` (cheaper, faster for command execution)
+
+### ❌ Including build/dev steps
+**Wrong:** Run `pnpm build` or `pnpm dev` as part of verification
+**Right:** sd-check is ONLY typecheck, lint, test (no build, no dev)
+
+### ❌ Asking user for path
+**Wrong:** No path provided → ask "which package?"
+**Right:** No path → verify entire project (omit path in commands)
+
+### ❌ Infinite fix loop
+**Wrong:** Keep trying same fix when tests fail repeatedly
+**Right:** After 2-3 failed attempts → recommend `/sd-debug`
+
+## Red Flags - STOP and Follow Workflow
+
+If you find yourself doing ANY of these, you're violating the skill:
+
+- Treating sd-check as a command to invoke (`Skill: sd-check Args: ...`)
+- Including build or dev server in verification
+- Running agents sequentially instead of parallel
+- Not re-verifying after every fix
+- Asking user for path when none provided
+- Continuing past 2-3 failed fix attempts without recommending `/sd-debug`
+- Spawning 4+ agents (only 3: typecheck, lint, test)
+
+**All of these violate the skill's core principles. Go back to Step 1 and follow the workflow exactly.**
 
 ## Completion Criteria
 
-Complete when all 3 checks pass without errors.
+**Complete when:**
+- All 3 checks (typecheck, lint, test) pass without errors
+- Report: "All checks passed - code verified"
+
+**Do NOT complete if:**
+- Any check has errors
+- Haven't re-verified after a fix
+- Environment pre-checks failed
+
+## Rationalization Table
+
+| Excuse | Reality |
+|--------|---------|
+| "I'm following the spirit, not the letter" | Violating the letter IS violating the spirit - follow EXACTLY |
+| "I'll create a better workflow with teams/tasks" | Follow the 4 steps EXACTLY - no teams, no task lists |
+| "I'll split tests into multiple agents" | Only 3 agents total: typecheck, lint, test |
+| "Stratified parallel is faster" | Run ALL 3 in parallel via separate agents - truly parallel |
+| "I only fixed lint, typecheck still passes" | Always re-verify ALL - fixes can cascade |
+| "Build is part of verification" | Build is deployment, not verification - NEVER include it |
+| "Let me ask which path to check" | Default to full project - explicit behavior |
+| "I'll try one more fix approach" | After 2-3 attempts → recommend /sd-debug |
+| "Tests are independent of types" | Type fixes affect tests - always re-run ALL |
+| "I'll invoke sd-check skill with args" | sd-check is EXACT STEPS, not a command |
+| "4 agents: typecheck, lint, test, build" | Only 3 agents - build is FORBIDDEN |
