@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { type Component, createEffect, type JSX, Show, splitProps } from "solid-js";
+import { type Component, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
@@ -11,6 +11,7 @@ import {
   fieldDisabledClass,
 } from "./Field.styles";
 import { textMuted } from "../../../styles/tokens.styles";
+import { Invalid } from "../../form-control/Invalid";
 
 export interface TextareaProps {
   /** 입력 값 */
@@ -39,6 +40,21 @@ export interface TextareaProps {
 
   /** 최소 줄 수 (기본값: 1) */
   minRows?: number;
+
+  /** 필수 입력 여부 */
+  required?: boolean;
+
+  /** 최소 길이 */
+  minLength?: number;
+
+  /** 최대 길이 */
+  maxLength?: number;
+
+  /** 커스텀 유효성 검사 함수 */
+  validate?: (value: string) => string | undefined;
+
+  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  touchMode?: boolean;
 
   /** 커스텀 class */
   class?: string;
@@ -79,6 +95,11 @@ export const Textarea: Component<TextareaProps> = (props) => {
     "size",
     "inset",
     "minRows",
+    "required",
+    "minLength",
+    "maxLength",
+    "validate",
+    "touchMode",
     "class",
     "style",
   ]);
@@ -158,49 +179,102 @@ export const Textarea: Component<TextareaProps> = (props) => {
     }
   });
 
+  // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? "";
+    if (local.required && !v) return "필수 입력 항목입니다";
+    if (local.minLength != null && v.length < local.minLength)
+      return `최소 ${local.minLength}자 이상 입력하세요`;
+    if (local.maxLength != null && v.length > local.maxLength)
+      return `최대 ${local.maxLength}자까지 입력 가능합니다`;
+    return local.validate?.(v);
+  });
+
   return (
-    <Show
-      when={local.inset}
-      fallback={
-        // standalone 모드: 기존 Show 패턴 유지
-        <Show
-          when={isEditable()}
-          fallback={
+    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+      <Show
+        when={local.inset}
+        fallback={
+          // standalone 모드: 기존 Show 패턴 유지
+          <Show
+            when={isEditable()}
+            fallback={
+              <div
+                {...rest}
+                data-textarea-field
+                class={getWrapperClass(true)}
+                style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
+                title={local.title}
+              >
+                {value() ||
+                  (local.placeholder != null && local.placeholder !== "" ? (
+                    <span class={textMuted}>{local.placeholder}</span>
+                  ) : (
+                    "\u00A0"
+                  ))}
+              </div>
+            }
+          >
             <div
               {...rest}
               data-textarea-field
               class={getWrapperClass(true)}
-              style={{ "white-space": "pre-wrap", "word-break": "break-all", ...local.style }}
-              title={local.title}
+              style={{ position: "relative", ...local.style }}
             >
-              {value() ||
+              <div
+                data-hidden-content
+                style={{
+                  "visibility": "hidden",
+                  "white-space": "pre-wrap",
+                  "word-break": "break-all",
+                }}
+              >
+                {contentForHeight()}
+              </div>
+
+              <textarea
+                class={getTextareaClass()}
+                value={value()}
+                placeholder={local.placeholder}
+                title={local.title}
+                onKeyDown={handleKeyDown}
+                onInput={handleInput}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
+              />
+            </div>
+          </Show>
+        }
+      >
+        {/* inset 모드: dual-element overlay 패턴 */}
+        <div
+          {...rest}
+          data-textarea-field
+          class={twMerge(getWrapperClass(false), "relative", local.class)}
+          style={local.style}
+        >
+          <div
+            data-textarea-field-content
+            style={{
+              "visibility": isEditable() ? "hidden" : undefined,
+              "white-space": "pre-wrap",
+              "word-break": "break-all",
+            }}
+            title={local.title}
+          >
+            {isEditable()
+              ? contentForHeight()
+              : value() ||
                 (local.placeholder != null && local.placeholder !== "" ? (
                   <span class={textMuted}>{local.placeholder}</span>
                 ) : (
                   "\u00A0"
                 ))}
-            </div>
-          }
-        >
-          <div
-            {...rest}
-            data-textarea-field
-            class={getWrapperClass(true)}
-            style={{ position: "relative", ...local.style }}
-          >
-            <div
-              data-hidden-content
-              style={{
-                "visibility": "hidden",
-                "white-space": "pre-wrap",
-                "word-break": "break-all",
-              }}
-            >
-              {contentForHeight()}
-            </div>
+          </div>
 
+          <Show when={isEditable()}>
             <textarea
-              class={getTextareaClass()}
+              class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
               value={value()}
               placeholder={local.placeholder}
               title={local.title}
@@ -209,49 +283,9 @@ export const Textarea: Component<TextareaProps> = (props) => {
               onCompositionStart={handleCompositionStart}
               onCompositionEnd={handleCompositionEnd}
             />
-          </div>
-        </Show>
-      }
-    >
-      {/* inset 모드: dual-element overlay 패턴 */}
-      <div
-        {...rest}
-        data-textarea-field
-        class={twMerge(getWrapperClass(false), "relative", local.class)}
-        style={local.style}
-      >
-        <div
-          data-textarea-field-content
-          style={{
-            "visibility": isEditable() ? "hidden" : undefined,
-            "white-space": "pre-wrap",
-            "word-break": "break-all",
-          }}
-          title={local.title}
-        >
-          {isEditable()
-            ? contentForHeight()
-            : value() ||
-              (local.placeholder != null && local.placeholder !== "" ? (
-                <span class={textMuted}>{local.placeholder}</span>
-              ) : (
-                "\u00A0"
-              ))}
+          </Show>
         </div>
-
-        <Show when={isEditable()}>
-          <textarea
-            class={twMerge(textareaBaseClass, local.size && textAreaSizeClasses[local.size])}
-            value={value()}
-            placeholder={local.placeholder}
-            title={local.title}
-            onKeyDown={handleKeyDown}
-            onInput={handleInput}
-            onCompositionStart={handleCompositionStart}
-            onCompositionEnd={handleCompositionEnd}
-          />
-        </Show>
-      </div>
-    </Show>
+      </Show>
+    </Invalid>
   );
 };

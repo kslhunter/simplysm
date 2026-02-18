@@ -170,4 +170,53 @@ describe("Textarea 컴포넌트", () => {
       expect(hiddenDiv.style.visibility).toBe("hidden");
     });
   });
+
+  describe("validation", () => {
+    it("required일 때 빈 값이면 hidden input에 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <Textarea required value="" />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+
+    it("required일 때 값이 있으면 유효하다", () => {
+      const { container } = render(() => <Textarea required value="hello" />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("minLength 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <Textarea minLength={3} value="ab" />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("최소 3자 이상 입력하세요");
+    });
+
+    it("maxLength 위반 시 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <Textarea maxLength={5} value="abcdef" />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("최대 5자까지 입력 가능합니다");
+    });
+
+    it("validate 함수가 에러를 반환하면 해당 메시지가 설정된다", () => {
+      const { container } = render(() => (
+        <Textarea
+          validate={(v) => (v.includes("@") ? undefined : "이메일 형식이 아닙니다")}
+          value="hello"
+        />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("이메일 형식이 아닙니다");
+    });
+
+    it("기본 validator 통과 후 validate 함수가 실행된다", () => {
+      const { container } = render(() => (
+        <Textarea
+          required
+          validate={(v) => (v.includes("@") ? undefined : "이메일 형식이 아닙니다")}
+          value=""
+        />
+      ));
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
+    });
+  });
 });
