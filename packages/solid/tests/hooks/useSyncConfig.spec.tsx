@@ -69,11 +69,11 @@ describe("useSyncConfig", () => {
     expect(localStorage.getItem("testApp.test-key")).toBe(JSON.stringify("new-value"));
   });
 
-  it("should return busy=false when using localStorage", () => {
-    let busy: () => boolean;
+  it("should return ready=true when using localStorage (sync initialization)", () => {
+    let ready: () => boolean;
 
     function TestComponent() {
-      [, , busy] = useSyncConfig("test-key", "default");
+      [, , ready] = useSyncConfig("test-key", "default");
       return <div />;
     }
 
@@ -83,7 +83,7 @@ describe("useSyncConfig", () => {
       </ConfigContext.Provider>
     ));
 
-    expect(busy()).toBe(false);
+    expect(ready()).toBe(true);
   });
 
   it("should use syncStorage when configured in ConfigContext.Provider", async () => {
@@ -95,10 +95,10 @@ describe("useSyncConfig", () => {
 
     let value: () => string;
     let setValue: (v: string) => void;
-    let busy: () => boolean;
+    let ready: () => boolean;
 
     function TestComponent() {
-      [value, setValue, busy] = useSyncConfig("test-key", "default");
+      [value, setValue, ready] = useSyncConfig("test-key", "default");
       return <div>{value()}</div>;
     }
 
@@ -110,7 +110,7 @@ describe("useSyncConfig", () => {
 
     // Wait for async initialization
     await vi.waitFor(() => {
-      expect(busy()).toBe(false);
+      expect(ready()).toBe(true);
     });
 
     expect(value()).toBe("synced-value");
@@ -135,10 +135,10 @@ describe("useSyncConfig", () => {
     };
 
     let value: () => string;
-    let busy: () => boolean;
+    let ready: () => boolean;
 
     function TestComponent() {
-      [value, , busy] = useSyncConfig("test-key", "default");
+      [value, , ready] = useSyncConfig("test-key", "default");
       return <div>{value()}</div>;
     }
 
@@ -149,7 +149,7 @@ describe("useSyncConfig", () => {
     ));
 
     await vi.waitFor(() => {
-      expect(busy()).toBe(false);
+      expect(ready()).toBe(true);
     });
 
     expect(value()).toBe("default");
@@ -166,10 +166,10 @@ describe("useSyncConfig", () => {
 
     let value: () => string;
     let setValue: (v: string) => void;
-    let busy: () => boolean;
+    let ready: () => boolean;
 
     function TestComponent() {
-      [value, setValue, busy] = useSyncConfig("test-key", "default");
+      [value, setValue, ready] = useSyncConfig("test-key", "default");
       return <div>{value()}</div>;
     }
 
@@ -180,7 +180,7 @@ describe("useSyncConfig", () => {
     ));
 
     await vi.waitFor(() => {
-      expect(busy()).toBe(false);
+      expect(ready()).toBe(true);
     });
 
     // Should fall back to localStorage

@@ -81,17 +81,17 @@ Syncable config hook. Uses `syncStorage` if configured, falls back to `localStor
 ```tsx
 import { useSyncConfig } from "@simplysm/solid";
 
-const [theme, setTheme, busy] = useSyncConfig("theme", "light");
+const [theme, setTheme, ready] = useSyncConfig("theme", "light");
 
-// busy state is useful when syncStorage is async (e.g., DB-backed)
-// When syncStorage is not configured, busy is always false
+// ready state indicates initialization is complete
+// When syncStorage is not configured (localStorage), ready is immediately true
 ```
 
 | Return value | Type | Description |
 |--------------|------|-------------|
 | `[0]` | `Accessor<T>` | Value getter |
 | `[1]` | `Setter<T>` | Value setter |
-| `[2]` | `Accessor<boolean>` | Busy state (async storage only) |
+| `[2]` | `Accessor<boolean>` | Ready state (`true` after initialization) |
 
 ---
 

@@ -154,7 +154,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   const [items, setItems] = createSignal<T[]>([]);
-  const [busy, setBusy] = createSignal(false);
+  const [busyCount, setBusyCount] = createSignal(0);
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
   const [getValue, setInternalValue] = createControllableSignal<T | undefined>({
@@ -200,12 +200,12 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     // loadItems 함수 참조를 캡처하여 사용
     const loadItemsFn = local.loadItems;
     debounceQueue.run(async () => {
-      setBusy(true);
+      setBusyCount((c) => c + 1);
       try {
         const result = await loadItemsFn(searchQuery);
         setItems(result);
       } finally {
-        setBusy(false);
+        setBusyCount((c) => c - 1);
       }
     });
   };
@@ -320,7 +320,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       const itemTemplate = getItemTemplate();
 
       // 로딩 중
-      if (busy()) {
+      if (busyCount() > 0) {
         return <div class={noResultsClass}>검색 중...</div>;
       }
 
@@ -372,7 +372,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
         >
           <div class={selectedValueClass}>{renderDisplayContent()}</div>
           <div class={chevronWrapperClass}>
-            <Show when={busy()} fallback={<Icon icon={IconChevronDown} size="1em" />}>
+            <Show when={busyCount() > 0} fallback={<Icon icon={IconChevronDown} size="1em" />}>
               <Icon icon={IconLoader2} size="1em" class="animate-spin" />
             </Show>
           </div>

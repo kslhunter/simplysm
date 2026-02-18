@@ -9,13 +9,13 @@ import { useConfig } from "../providers/ConfigContext";
  *
  * @param key - Storage key for the config value
  * @param defaultValue - Default value if no stored value exists
- * @returns Tuple of [value accessor, value setter, busy state accessor]
+ * @returns Tuple of [value accessor, value setter, ready state accessor]
  *
  * @example
  * ```tsx
- * const [theme, setTheme, busy] = useSyncConfig("user-theme", "light");
+ * const [theme, setTheme, ready] = useSyncConfig("user-theme", "light");
  *
- * <Show when={!busy()}>
+ * <Show when={ready()}>
  *   <button onClick={() => setTheme(theme() === "light" ? "dark" : "light")}>
  *     Toggle theme
  *   </button>
@@ -29,7 +29,7 @@ export function useSyncConfig<TValue>(
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
   const [value, setValue] = createSignal<TValue>(defaultValue);
-  const [busy, setBusy] = createSignal(false);
+  const [ready, setReady] = createSignal(false);
 
   // Initialize from storage
   const initializeFromStorage = async () => {
@@ -43,11 +43,11 @@ export function useSyncConfig<TValue>(
       } catch {
         // Ignore parse errors, keep default value
       }
+      setReady(true);
       return;
     }
 
     // Use syncStorage asynchronously
-    setBusy(true);
     try {
       const stored = await config.syncStorage.getItem(prefixedKey);
       if (stored !== null) {
@@ -64,7 +64,7 @@ export function useSyncConfig<TValue>(
         // Ignore parse errors
       }
     } finally {
-      setBusy(false);
+      setReady(true);
     }
   };
 
@@ -98,5 +98,5 @@ export function useSyncConfig<TValue>(
     // No cleanup needed for storage operations
   });
 
-  return [value, setValue, busy];
+  return [value, setValue, ready];
 }
