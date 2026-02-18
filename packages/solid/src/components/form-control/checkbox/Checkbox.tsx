@@ -5,11 +5,10 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { ripple } from "../../../directives/ripple";
 import { Icon } from "../../display/Icon";
 import {
-  type CheckboxTheme,
   type CheckboxSize,
   checkboxBaseClass,
   indicatorBaseClass,
-  themeCheckedClasses,
+  checkedClass,
   checkboxSizeClasses,
   checkboxInsetClass,
   checkboxInsetSizeHeightClasses,
@@ -25,7 +24,6 @@ export interface CheckboxProps {
   onValueChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inset?: boolean;
   inline?: boolean;
   class?: string;
@@ -39,7 +37,6 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inset",
     "inline",
     "class",
@@ -75,11 +72,8 @@ export const Checkbox: ParentComponent<CheckboxProps> = (props) => {
       local.class,
     );
 
-  const getIndicatorClass = () => {
-    const theme = local.theme ?? "primary";
-
-    return twMerge(indicatorBaseClass, "rounded-sm", value() && themeCheckedClasses[theme]);
-  };
+  const getIndicatorClass = () =>
+    twMerge(indicatorBaseClass, "rounded-sm", value() && checkedClass);
 
   return (
     <label

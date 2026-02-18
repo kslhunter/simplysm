@@ -2,14 +2,13 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Radio } from "./Radio";
-import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
+import type { CheckboxSize } from "./Checkbox.styles";
 
 interface RadioGroupContextValue<TValue> {
   value: () => TValue | undefined;
   select: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
-  theme: () => CheckboxTheme | undefined;
   inline: () => boolean;
   inset: () => boolean;
 }
@@ -36,7 +35,6 @@ function RadioGroupItemInner<TValue>(props: RadioGroupItemProps<TValue>) {
       onValueChange={() => ctx.select(props.value)}
       disabled={props.disabled ?? ctx.disabled()}
       size={ctx.size()}
-      theme={ctx.theme()}
       inline={ctx.inline()}
       inset={ctx.inset()}
     >
@@ -52,7 +50,6 @@ interface RadioGroupProps<TValue> {
   onValueChange?: (value: TValue) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inline?: boolean;
   inset?: boolean;
   class?: string;
@@ -71,7 +68,6 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inline",
     "inset",
     "class",
@@ -93,7 +89,6 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
     select,
     disabled: () => local.disabled ?? false,
     size: () => local.size,
-    theme: () => local.theme,
     inline: () => local.inline ?? false,
     inset: () => local.inset ?? false,
   };

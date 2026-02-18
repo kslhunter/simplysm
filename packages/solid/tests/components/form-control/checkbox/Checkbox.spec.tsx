@@ -81,15 +81,6 @@ describe("Checkbox 컴포넌트", () => {
   });
 
   describe("스타일 변형", () => {
-    it("theme prop에 따라 스타일이 달라진다", () => {
-      const { getByRole: getDefault } = render(() => <Checkbox value={true} />);
-      const { getByRole: getDanger } = render(() => <Checkbox value={true} theme="danger" />);
-
-      const defaultIndicator = getDefault("checkbox").querySelector("div") as HTMLElement;
-      const dangerIndicator = getDanger("checkbox").querySelector("div") as HTMLElement;
-      expect(defaultIndicator.className).not.toBe(dangerIndicator.className);
-    });
-
     it("size prop에 따라 스타일이 달라진다", () => {
       const { getByRole: getDefault } = render(() => <Checkbox />);
       const { getByRole: getSm } = render(() => <Checkbox size="sm" />);

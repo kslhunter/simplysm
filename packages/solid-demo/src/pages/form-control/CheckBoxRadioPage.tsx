@@ -1,8 +1,5 @@
-import { createSignal, For } from "solid-js";
+import { createSignal } from "solid-js";
 import { Checkbox, Radio, Topbar, Button } from "@simplysm/solid";
-import type { CheckboxTheme } from "@simplysm/solid";
-
-const themes: CheckboxTheme[] = ["primary", "info", "success", "warning", "danger"];
 
 export default function CheckboxRadioPage() {
   const [controlledCheck, setControlledCheck] = createSignal(false);
@@ -26,20 +23,6 @@ export default function CheckboxRadioPage() {
                   <Checkbox>이용약관에 동의합니다</Checkbox>
                   <Checkbox>마케팅 수신에 동의합니다</Checkbox>
                   <Checkbox />
-                </div>
-              </div>
-
-              {/* 테마 */}
-              <div>
-                <h3 class="mb-3 text-lg font-semibold">테마</h3>
-                <div class="flex flex-wrap gap-3">
-                  <For each={themes}>
-                    {(theme) => (
-                      <Checkbox theme={theme} value={true}>
-                        {theme}
-                      </Checkbox>
-                    )}
-                  </For>
                 </div>
               </div>
 
@@ -99,20 +82,6 @@ export default function CheckboxRadioPage() {
                   <Radio>옵션 A</Radio>
                   <Radio>옵션 B</Radio>
                   <Radio>옵션 C</Radio>
-                </div>
-              </div>
-
-              {/* 테마 */}
-              <div>
-                <h3 class="mb-3 text-lg font-semibold">테마</h3>
-                <div class="flex flex-wrap gap-3">
-                  <For each={themes}>
-                    {(theme) => (
-                      <Radio theme={theme} value={true}>
-                        {theme}
-                      </Radio>
-                    )}
-                  </For>
                 </div>
               </div>
 

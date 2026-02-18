@@ -2,14 +2,13 @@ import { type JSX, type ParentComponent, createContext, splitProps, useContext }
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Checkbox } from "./Checkbox";
-import type { CheckboxSize, CheckboxTheme } from "./Checkbox.styles";
+import type { CheckboxSize } from "./Checkbox.styles";
 
 interface CheckboxGroupContextValue<TValue> {
   value: () => TValue[];
   toggle: (item: TValue) => void;
   disabled: () => boolean;
   size: () => CheckboxSize | undefined;
-  theme: () => CheckboxTheme | undefined;
   inline: () => boolean;
   inset: () => boolean;
 }
@@ -36,7 +35,6 @@ function CheckboxGroupItemInner<TValue>(props: CheckboxGroupItemProps<TValue>) {
       onValueChange={() => ctx.toggle(props.value)}
       disabled={props.disabled ?? ctx.disabled()}
       size={ctx.size()}
-      theme={ctx.theme()}
       inline={ctx.inline()}
       inset={ctx.inset()}
     >
@@ -52,7 +50,6 @@ interface CheckboxGroupProps<TValue> {
   onValueChange?: (value: TValue[]) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inline?: boolean;
   inset?: boolean;
   class?: string;
@@ -71,7 +68,6 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inline",
     "inset",
     "class",
@@ -98,7 +94,6 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     toggle,
     disabled: () => local.disabled ?? false,
     size: () => local.size,
-    theme: () => local.theme,
     inline: () => local.inline ?? false,
     inset: () => local.inset ?? false,
   };

@@ -52,12 +52,12 @@ export default function CheckboxRadioGroupPage() {
                 </CheckboxGroup>
               </div>
 
-              {/* 테마/사이즈 */}
+              {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <CheckboxGroup theme="success" size="sm" value={["x"]}>
-                  <CheckboxGroup.Item value="x">Small Success A</CheckboxGroup.Item>
-                  <CheckboxGroup.Item value="y">Small Success B</CheckboxGroup.Item>
+                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <CheckboxGroup size="sm" value={["x"]}>
+                  <CheckboxGroup.Item value="x">Small A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Small B</CheckboxGroup.Item>
                 </CheckboxGroup>
               </div>
 
@@ -119,12 +119,12 @@ export default function CheckboxRadioGroupPage() {
                 </RadioGroup>
               </div>
 
-              {/* 테마/사이즈 */}
+              {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">테마 & 사이즈</h3>
-                <RadioGroup theme="danger" size="lg" value="x">
-                  <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
-                  <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
+                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <RadioGroup size="lg" value="x">
+                  <RadioGroup.Item value="x">Large A</RadioGroup.Item>
+                  <RadioGroup.Item value="y">Large B</RadioGroup.Item>
                 </RadioGroup>
               </div>
 

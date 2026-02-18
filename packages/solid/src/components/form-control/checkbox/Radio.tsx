@@ -4,11 +4,10 @@ import { createControllableSignal } from "../../../hooks/createControllableSigna
 import { ripple } from "../../../directives/ripple";
 import clsx from "clsx";
 import {
-  type CheckboxTheme,
   type CheckboxSize,
   checkboxBaseClass,
   indicatorBaseClass,
-  themeCheckedClasses,
+  checkedClass,
   checkboxSizeClasses,
   checkboxInsetClass,
   checkboxInsetSizeHeightClasses,
@@ -26,7 +25,6 @@ export interface RadioProps {
   onValueChange?: (value: boolean) => void;
   disabled?: boolean;
   size?: CheckboxSize;
-  theme?: CheckboxTheme;
   inset?: boolean;
   inline?: boolean;
   class?: string;
@@ -40,7 +38,6 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     "onValueChange",
     "disabled",
     "size",
-    "theme",
     "inset",
     "inline",
     "class",
@@ -76,11 +73,8 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
       local.class,
     );
 
-  const getIndicatorClass = () => {
-    const theme = local.theme ?? "primary";
-
-    return twMerge(indicatorBaseClass, "rounded-full", value() && themeCheckedClasses[theme]);
-  };
+  const getIndicatorClass = () =>
+    twMerge(indicatorBaseClass, "rounded-full", value() && checkedClass);
 
   return (
     <label
