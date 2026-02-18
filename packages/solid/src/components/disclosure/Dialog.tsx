@@ -43,14 +43,14 @@ export interface DialogProps {
   float?: boolean;
   /** 전체 화면 모드 */
   fill?: boolean;
-  /** 너비 (px) */
-  widthPx?: number;
-  /** 높이 (px) */
-  heightPx?: number;
-  /** 최소 너비 (px) */
-  minWidthPx?: number;
-  /** 최소 높이 (px) */
-  minHeightPx?: number;
+  /** 너비 */
+  width?: number;
+  /** 높이 */
+  height?: number;
+  /** 최소 너비 */
+  minWidth?: number;
+  /** 최소 높이 */
+  minHeight?: number;
   /** 고정 위치 */
   position?: "bottom-right" | "top-right";
   /** 헤더 스타일 */
@@ -143,10 +143,10 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     "movable",
     "float",
     "fill",
-    "widthPx",
-    "heightPx",
-    "minWidthPx",
-    "minHeightPx",
+    "width",
+    "height",
+    "minWidth",
+    "minHeight",
     "position",
     "headerStyle",
     "headerAction",
@@ -330,15 +330,15 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
           dialogEl.style.top = startTop + (e.clientY - startY) + "px";
           dialogEl.style.bottom = "auto";
         }
-        dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), local.minHeightPx ?? 0)}px`;
+        dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), local.minHeight ?? 0)}px`;
       }
       if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
-        dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, local.minHeightPx ?? 0)}px`;
+        dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, local.minHeight ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
         dialogEl.style.width = `${Math.max(
           startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
-          local.minWidthPx ?? 0,
+          local.minWidth ?? 0,
         )}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
@@ -347,7 +347,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
         }
         dialogEl.style.width = `${Math.max(
           startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
-          local.minWidthPx ?? 0,
+          local.minWidth ?? 0,
         )}px`;
       }
     };
@@ -372,19 +372,19 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
       style.width = "100%";
       style.height = "100%";
     } else {
-      if (local.widthPx !== undefined) {
-        style.width = `${local.widthPx}px`;
+      if (local.width !== undefined) {
+        style.width = `${local.width}px`;
       }
-      if (local.heightPx !== undefined) {
-        style.height = `${local.heightPx}px`;
+      if (local.height !== undefined) {
+        style.height = `${local.height}px`;
       }
     }
 
-    if (local.minWidthPx !== undefined) {
-      style["min-width"] = `${local.minWidthPx}px`;
+    if (local.minWidth !== undefined) {
+      style["min-width"] = `${local.minWidth}px`;
     }
-    if (local.minHeightPx !== undefined) {
-      style["min-height"] = `${local.minHeightPx}px`;
+    if (local.minHeight !== undefined) {
+      style["min-height"] = `${local.minHeight}px`;
     }
 
     // position 모드
