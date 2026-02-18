@@ -130,7 +130,7 @@ export * from "./hooks/usePrint";
 export { createControllableSignal } from "./hooks/createControllableSignal";
 export { createIMEHandler } from "./hooks/createIMEHandler";
 export { createMountTransition } from "./hooks/createMountTransition";
-export { createPwaUpdate } from "./hooks/createPwaUpdate";
+export { usePwaUpdate } from "./hooks/usePwaUpdate";
 export { useRouterLink } from "./hooks/useRouterLink";
 
 //#endregion

@@ -1,6 +1,6 @@
 # Hooks
 
-## createPwaUpdate
+## usePwaUpdate
 
 PWA Service Worker update detection hook. Automatically polls for Service Worker updates every 5 minutes. When a new version is detected, shows a notification with a reload action button.
 
@@ -9,11 +9,11 @@ PWA Service Worker update detection hook. Automatically polls for Service Worker
 **Manual Usage (Custom Provider Tree):**
 
 ```tsx
-import { createPwaUpdate } from "@simplysm/solid";
+import { usePwaUpdate } from "@simplysm/solid";
 
 function MyProvider(props) {
   // Must be called inside NotificationProvider
-  createPwaUpdate();
+  usePwaUpdate();
 
   return (
     <NotificationProvider>

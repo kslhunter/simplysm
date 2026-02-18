@@ -7,12 +7,12 @@ import { NotificationProvider } from "../components/feedback/notification/Notifi
 import { NotificationBanner } from "../components/feedback/notification/NotificationBanner";
 import { BusyProvider } from "../components/feedback/busy/BusyProvider";
 
-import { createPwaUpdate } from "../hooks/createPwaUpdate";
+import { usePwaUpdate } from "../hooks/usePwaUpdate";
 import { useLogger } from "../hooks/useLogger";
 
 /** Runs PWA update detection inside NotificationProvider context */
 function PwaUpdater() {
-  createPwaUpdate();
+  usePwaUpdate();
   return null;
 }
 
