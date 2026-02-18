@@ -5,11 +5,9 @@ export * from "./components/form-control/Button";
 
 // Select
 export * from "./components/form-control/select/Select";
-export * from "./components/form-control/select/SelectContext";
 
 // Combobox
 export * from "./components/form-control/combobox/Combobox";
-export * from "./components/form-control/combobox/ComboboxContext";
 
 // Field
 export * from "./components/form-control/field/TextInput";
