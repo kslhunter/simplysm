@@ -40,7 +40,7 @@ export default function SidebarPage() {
         <div class="space-y-8">
           {/* 1. 기본 Sidebar */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 Sidebar</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 Sidebar</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               Sidebar + SidebarMenu + SidebarUser 조합. 토글 버튼을 클릭하여 사이드바를 열고 닫을 수
               있습니다.
@@ -77,7 +77,7 @@ export default function SidebarPage() {
 
           {/* 2. Toggled 상태 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Toggled 상태</h2>
+            <h2 class="mb-4 text-xl font-bold">Toggled 상태</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               useSidebarContext().setToggle()을 통해 사이드바 토글 상태를 제어합니다.
             </p>
@@ -104,7 +104,7 @@ export default function SidebarPage() {
 
           {/* 3. SidebarUser 변형 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">SidebarUser 변형</h2>
+            <h2 class="mb-4 text-xl font-bold">SidebarUser 변형</h2>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
               {/* 없음 */}
               <div>
@@ -180,7 +180,7 @@ export default function SidebarPage() {
 
           {/* 4. 모바일 데모 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">모바일 데모</h2>
+            <h2 class="mb-4 text-xl font-bold">모바일 데모</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               375px x 500px iframe으로 모바일 환경 시뮬레이션
             </p>

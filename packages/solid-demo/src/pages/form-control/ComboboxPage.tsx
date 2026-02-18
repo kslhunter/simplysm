@@ -53,7 +53,7 @@ export default function ComboboxPage() {
         <div class="space-y-8">
           {/* 기본 사용 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 사용</h2>
             <p class="mb-3 text-sm text-base-600 dark:text-base-400">
               입력하면 즉시 필터링됩니다. 로딩 없이 빠르게 검색/선택할 수 있습니다.
             </p>
@@ -79,7 +79,7 @@ export default function ComboboxPage() {
 
           {/* allowCustomValue */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">커스텀 값 허용</h2>
+            <h2 class="mb-4 text-xl font-bold">커스텀 값 허용</h2>
             <p class="mb-3 text-sm text-base-600 dark:text-base-400">
               allowCustomValue가 true이면 목록에 없는 값도 Enter로 입력할 수 있습니다.
             </p>
@@ -123,7 +123,7 @@ export default function ComboboxPage() {
 
           {/* parseCustomValue */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">커스텀 값 변환</h2>
+            <h2 class="mb-4 text-xl font-bold">커스텀 값 변환</h2>
             <p class="mb-3 text-sm text-base-600 dark:text-base-400">
               parseCustomValue로 직접 입력한 문자열을 원하는 형태로 변환할 수 있습니다.
             </p>
@@ -150,7 +150,7 @@ export default function ComboboxPage() {
 
           {/* 비동기 로딩 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">비동기 로딩</h2>
+            <h2 class="mb-4 text-xl font-bold">비동기 로딩</h2>
             <p class="mb-3 text-sm text-base-600 dark:text-base-400">
               서버 API 호출 시 로딩 스피너가 표시됩니다. (500ms 딜레이 시뮬레이션)
             </p>
@@ -175,7 +175,7 @@ export default function ComboboxPage() {
 
           {/* 사이즈 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">사이즈</h2>
+            <h2 class="mb-4 text-xl font-bold">사이즈</h2>
             <div class="flex flex-col items-start gap-4">
               <Combobox
                 size="sm"
@@ -223,7 +223,7 @@ export default function ComboboxPage() {
 
           {/* 상태 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">상태</h2>
+            <h2 class="mb-4 text-xl font-bold">상태</h2>
             <div class="flex flex-col items-start gap-4">
               <div>
                 <p class="mb-1 text-sm text-base-600 dark:text-base-400">Disabled</p>
@@ -308,7 +308,7 @@ export default function ComboboxPage() {
 
           {/* Controlled */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <h2 class="mb-4 text-xl font-bold">Controlled</h2>
             <div class="flex flex-col items-start gap-3">
               <Combobox
                 value={controlledSelected()}

@@ -21,11 +21,11 @@ export default function DateRangePickerPage() {
             <h2 class="mb-6 text-2xl font-bold">기본 사용</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 (범위 모드)</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 (범위 모드)</h3>
                 <DateRangePicker />
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">초기값 설정</h3>
+                <h3 class="mb-3 text-lg font-bold">초기값 설정</h3>
                 <DateRangePicker
                   periodType="range"
                   from={new DateOnly(2025, 1, 1)}
@@ -40,15 +40,15 @@ export default function DateRangePickerPage() {
             <h2 class="mb-6 text-2xl font-bold">기간 타입</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">일</h3>
+                <h3 class="mb-3 text-lg font-bold">일</h3>
                 <DateRangePicker periodType="day" from={new DateOnly(2025, 3, 15)} />
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">월</h3>
+                <h3 class="mb-3 text-lg font-bold">월</h3>
                 <DateRangePicker periodType="month" from={new DateOnly(2025, 3, 1)} />
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">범위</h3>
+                <h3 class="mb-3 text-lg font-bold">범위</h3>
                 <DateRangePicker
                   periodType="range"
                   from={new DateOnly(2025, 3, 1)}
@@ -106,7 +106,7 @@ export default function DateRangePickerPage() {
             <h2 class="mb-6 text-2xl font-bold">Controlled</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태 추적</h3>
+                <h3 class="mb-3 text-lg font-bold">상태 추적</h3>
                 <div class="flex flex-col items-start gap-3">
                   <DateRangePicker
                     periodType={periodType()}

@@ -15,7 +15,7 @@ export const thClass = clsx(
   "border-b border-r border-base-300 dark:border-base-800",
   "overflow-hidden whitespace-nowrap",
   "p-0",
-  "text-left font-semibold",
+  "text-left font-bold",
   "align-middle",
 );
 

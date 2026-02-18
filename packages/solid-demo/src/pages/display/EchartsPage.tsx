@@ -28,7 +28,7 @@ export default function EchartsPage() {
         <div class="space-y-8">
           {/* Bar Chart */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Bar Chart</h2>
+            <h2 class="mb-4 text-xl font-bold">Bar Chart</h2>
             <div class="h-80">
               <Echarts option={barOption} busy={busy()} />
             </div>
@@ -36,7 +36,7 @@ export default function EchartsPage() {
 
           {/* Line Chart */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Line Chart</h2>
+            <h2 class="mb-4 text-xl font-bold">Line Chart</h2>
             <div class="h-80">
               <Echarts option={lineOption} busy={busy()} />
             </div>
@@ -44,7 +44,7 @@ export default function EchartsPage() {
 
           {/* Loading 토글 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Busy</h2>
+            <h2 class="mb-4 text-xl font-bold">Busy</h2>
             <Button onClick={() => setBusy((v) => !v)}>{busy() ? "로딩 해제" : "로딩 표시"}</Button>
           </section>
         </div>

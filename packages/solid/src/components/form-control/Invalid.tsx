@@ -48,14 +48,12 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
       });
     } else {
       // variant === "dot"
-      // 기존 dot 제거 후 재삽입 (shouldShow 변경 시 상태 동기화)
       const existingDot = targetEl.querySelector("[data-invalid-dot]");
       if (existingDot) {
         existingDot.remove();
       }
 
       if (shouldShow) {
-        // target position이 static이면 absolute dot이 올바르게 위치하도록 relative로 변경
         const computedPosition = getComputedStyle(targetEl).position;
         if (computedPosition === "static") {
           targetEl.style.position = "relative";
@@ -116,14 +114,14 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
         ref={hiddenInputEl}
         type="text"
         style={{
-          "position": "absolute",
-          "bottom": "0",
-          "left": "2px",
-          "width": "1px",
-          "height": "1px",
+          "width": "0",
+          "height": "0",
+          "padding": "0",
+          "margin": "0",
+          "border": "0",
+          "overflow": "hidden",
           "opacity": "0",
           "pointer-events": "none",
-          "z-index": "-10",
         }}
         autocomplete="off"
         tabIndex={-1}

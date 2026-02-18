@@ -99,7 +99,7 @@ export default function KanbanPage() {
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
           <section>
-            <h2 class="mb-4 text-xl font-semibold">DnD</h2>
+            <h2 class="mb-4 text-xl font-bold">DnD</h2>
             <div class="h-[500px]">
               <Kanban onDrop={handleDrop}>
                 <For each={lanes()}>
@@ -128,7 +128,7 @@ export default function KanbanPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">draggable 제어</h2>
+            <h2 class="mb-4 text-xl font-bold">draggable 제어</h2>
             <div class="h-[300px]">
               <Kanban onDrop={handleDrop}>
                 <Kanban.Lane value="mixed">
@@ -148,7 +148,7 @@ export default function KanbanPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">접기/펼치기 + Busy</h2>
+            <h2 class="mb-4 text-xl font-bold">접기/펼치기 + Busy</h2>
             <div class="h-[400px]">
               <Kanban onDrop={handleDrop}>
                 <Kanban.Lane value="collapsible-lane" collapsible>
@@ -184,7 +184,7 @@ export default function KanbanPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">선택</h2>
+            <h2 class="mb-4 text-xl font-bold">선택</h2>
             <p class="mb-2 text-sm text-base-500">
               Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
             </p>

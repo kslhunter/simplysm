@@ -19,7 +19,7 @@ export default function TablePage() {
         <div class="space-y-8">
           {/* 기본 (inline) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 테이블</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 테이블</h2>
             <Table>
               <thead>
                 <tr>
@@ -42,7 +42,7 @@ export default function TablePage() {
 
           {/* w-full */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">전체 너비 테이블</h2>
+            <h2 class="mb-4 text-xl font-bold">전체 너비 테이블</h2>
             <Table class="w-full">
               <thead>
                 <tr>
@@ -83,7 +83,7 @@ export default function TablePage() {
 
           {/* Inset */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Inset 테이블</h2>
+            <h2 class="mb-4 text-xl font-bold">Inset 테이블</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inset prop을 사용하면 외곽 테두리가 제거됩니다.
             </p>

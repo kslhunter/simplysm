@@ -65,7 +65,7 @@ export const NotificationBanner: Component = () => {
             class={clsx(baseClass, themeClasses[item().theme])}
           >
             <div class={contentClass}>
-              <span class="font-semibold">{item().title}</span>
+              <span class="font-bold">{item().title}</span>
               <Show when={item().message}>
                 <pre class={messageClass}>{item().message}</pre>
               </Show>

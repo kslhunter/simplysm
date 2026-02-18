@@ -497,7 +497,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
                 }
                 onPointerDown={handleHeaderPointerDown}
               >
-                <h5 class={clsx("flex-1", "px-4 py-2", "text-sm font-semibold")}>{local.title}</h5>
+                <h5 class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>{local.title}</h5>
                 {local.headerAction}
                 <Show when={local.closable ?? true}>
                   <button

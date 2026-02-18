@@ -10,7 +10,7 @@ export default function ThemeTogglePage() {
         <div class="space-y-8">
           {/* Basic Usage */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 사용법</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 사용법</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               ThemeToggle 버튼을 클릭하면 라이트 → 시스템 → 다크 순으로 테마가 전환됩니다.
             </p>
@@ -22,7 +22,7 @@ export default function ThemeTogglePage() {
 
           {/* Sizes */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">크기</h2>
+            <h2 class="mb-4 text-xl font-bold">크기</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               size prop으로 버튼 크기를 조절할 수 있습니다.
             </p>
@@ -44,7 +44,7 @@ export default function ThemeTogglePage() {
 
           {/* Theme Modes */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">테마 모드</h2>
+            <h2 class="mb-4 text-xl font-bold">테마 모드</h2>
             <div class="space-y-4">
               <Card>
                 <div class="flex items-center gap-3 p-4">
@@ -52,7 +52,7 @@ export default function ThemeTogglePage() {
                     ☀️
                   </div>
                   <div>
-                    <h3 class="font-semibold">라이트 모드</h3>
+                    <h3 class="font-bold">라이트 모드</h3>
                     <p class="text-sm text-base-500 dark:text-base-400">
                       밝은 배경에 어두운 텍스트
                     </p>
@@ -65,7 +65,7 @@ export default function ThemeTogglePage() {
                     💻
                   </div>
                   <div>
-                    <h3 class="font-semibold">시스템 설정</h3>
+                    <h3 class="font-bold">시스템 설정</h3>
                     <p class="text-sm text-base-500 dark:text-base-400">OS 설정에 따라 자동 전환</p>
                   </div>
                 </div>
@@ -76,7 +76,7 @@ export default function ThemeTogglePage() {
                     🌙
                   </div>
                   <div>
-                    <h3 class="font-semibold">다크 모드</h3>
+                    <h3 class="font-bold">다크 모드</h3>
                     <p class="text-sm text-base-500 dark:text-base-400">
                       어두운 배경에 밝은 텍스트
                     </p>
@@ -88,7 +88,7 @@ export default function ThemeTogglePage() {
 
           {/* Usage Note */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">사용 시 참고사항</h2>
+            <h2 class="mb-4 text-xl font-bold">사용 시 참고사항</h2>
             <Alert theme="info">
               <p class="mb-2">
                 <strong>ThemeProvider 필요:</strong> ThemeToggle은 ThemeProvider 컨텍스트 내에서
@@ -100,13 +100,13 @@ export default function ThemeTogglePage() {
 
           {/* In Header Example */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">헤더에서 사용 예시</h2>
+            <h2 class="mb-4 text-xl font-bold">헤더에서 사용 예시</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               ThemeToggle은 주로 사이드바나 헤더에 배치됩니다.
             </p>
             <Card>
               <div class="flex items-center justify-between border-b border-base-200 bg-base-50 px-4 py-3 dark:border-base-700 dark:bg-base-700/50">
-                <span class="font-semibold">My App</span>
+                <span class="font-bold">My App</span>
                 <ThemeToggle size="sm" />
               </div>
               <div class="p-4">

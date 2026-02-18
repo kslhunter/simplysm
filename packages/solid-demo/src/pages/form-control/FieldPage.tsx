@@ -33,13 +33,13 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
                 <TextInput placeholder="이름을 입력하세요" />
               </div>
 
               {/* 타입 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">타입</h3>
+                <h3 class="mb-3 text-lg font-bold">타입</h3>
                 <div class="flex flex-col items-start gap-3">
                   <TextInput placeholder="text (기본)" />
                   <TextInput type="password" placeholder="password" />
@@ -49,13 +49,13 @@ export default function FieldPage() {
 
               {/* 포맷 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">포맷 (전화번호)</h3>
+                <h3 class="mb-3 text-lg font-bold">포맷 (전화번호)</h3>
                 <TextInput placeholder="전화번호" format="XXX-XXXX-XXXX" />
               </div>
 
               {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <h3 class="mb-3 text-lg font-bold">사이즈</h3>
                 <div class="flex flex-col items-start gap-3">
                   <TextInput size="sm" placeholder="Small" />
                   <TextInput placeholder="Default" />
@@ -65,7 +65,7 @@ export default function FieldPage() {
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -92,13 +92,13 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
                 <Textarea placeholder="내용을 입력하세요" />
               </div>
 
               {/* minRows */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">최소 줄 수 (minRows)</h3>
+                <h3 class="mb-3 text-lg font-bold">최소 줄 수 (minRows)</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">minRows=1 (기본값)</p>
@@ -117,7 +117,7 @@ export default function FieldPage() {
 
               {/* 사이즈 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
+                <h3 class="mb-3 text-lg font-bold">사이즈</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Textarea size="sm" placeholder="Small" />
                   <Textarea placeholder="Default" />
@@ -127,7 +127,7 @@ export default function FieldPage() {
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -154,13 +154,13 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
                 <NumberInput placeholder="숫자를 입력하세요" />
               </div>
 
               {/* 천단위 콤마 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">천단위 콤마</h3>
+                <h3 class="mb-3 text-lg font-bold">천단위 콤마</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">comma=true (기본값)</p>
@@ -175,13 +175,13 @@ export default function FieldPage() {
 
               {/* 소수점 자릿수 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">소수점 자릿수 (minDigits)</h3>
+                <h3 class="mb-3 text-lg font-bold">소수점 자릿수 (minDigits)</h3>
                 <NumberInput value={100} minDigits={2} placeholder="minDigits=2" />
               </div>
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -204,7 +204,7 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 타입별 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">타입</h3>
+                <h3 class="mb-3 text-lg font-bold">타입</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">date (기본값)</p>
@@ -223,7 +223,7 @@ export default function FieldPage() {
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -240,7 +240,7 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 타입별 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">타입</h3>
+                <h3 class="mb-3 text-lg font-bold">타입</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">datetime (기본값)</p>
@@ -255,7 +255,7 @@ export default function FieldPage() {
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -272,7 +272,7 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* 타입별 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">타입</h3>
+                <h3 class="mb-3 text-lg font-bold">타입</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">time (기본값)</p>
@@ -287,7 +287,7 @@ export default function FieldPage() {
 
               {/* 상태 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">상태</h3>
+                <h3 class="mb-3 text-lg font-bold">상태</h3>
                 <div class="flex flex-col items-start gap-3">
                   <div>
                     <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -337,7 +337,7 @@ export default function FieldPage() {
             <div class="space-y-6">
               {/* TextInput Controlled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">TextInput</h3>
+                <h3 class="mb-3 text-lg font-bold">TextInput</h3>
                 <div class="flex flex-col items-start gap-3">
                   <TextInput
                     value={controlledText()}
@@ -363,7 +363,7 @@ export default function FieldPage() {
 
               {/* NumberInput Controlled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">NumberInput</h3>
+                <h3 class="mb-3 text-lg font-bold">NumberInput</h3>
                 <div class="flex flex-col items-start gap-3">
                   <NumberInput
                     value={controlledNumber()}
@@ -406,7 +406,7 @@ export default function FieldPage() {
 
               {/* Textarea Controlled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Textarea</h3>
+                <h3 class="mb-3 text-lg font-bold">Textarea</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Textarea
                     value={controlledTextArea()}

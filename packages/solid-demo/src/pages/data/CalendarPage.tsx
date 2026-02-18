@@ -30,7 +30,7 @@ export default function CalendarPage() {
         <div class="space-y-8">
           {/* Section 1: 기본 사용 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 사용</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               일정 아이템을 날짜별로 표시합니다.
             </p>
@@ -48,7 +48,7 @@ export default function CalendarPage() {
 
           {/* Section 2: 주 시작 요일 변경 (월요일) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">주 시작 요일: 월요일</h2>
+            <h2 class="mb-4 text-xl font-bold">주 시작 요일: 월요일</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               weekStartDay=1로 월요일부터 시작합니다.
             </p>
@@ -67,7 +67,7 @@ export default function CalendarPage() {
 
           {/* Section 3: Controlled 연월 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Controlled 연월</h2>
+            <h2 class="mb-4 text-xl font-bold">Controlled 연월</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               외부에서 연월 상태를 제어합니다.
             </p>
@@ -78,7 +78,7 @@ export default function CalendarPage() {
               >
                 이전 월
               </button>
-              <span class="text-sm font-semibold">
+              <span class="text-sm font-bold">
                 {yearMonth().year}년 {yearMonth().month}월
               </span>
               <button

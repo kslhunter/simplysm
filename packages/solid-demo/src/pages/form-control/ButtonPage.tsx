@@ -14,7 +14,7 @@ export default function ButtonPage() {
         <div class="space-y-8">
           {/* Variants by Theme */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Themes & Variants</h2>
+            <h2 class="mb-4 text-xl font-bold">Themes & Variants</h2>
             <div class="space-y-4">
               <For each={themes}>
                 {(theme) => (
@@ -35,7 +35,7 @@ export default function ButtonPage() {
 
           {/* Sizes */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Sizes</h2>
+            <h2 class="mb-4 text-xl font-bold">Sizes</h2>
             <div class="flex items-center gap-4">
               <Button theme="primary" variant="solid" size="sm">
                 Small
@@ -51,7 +51,7 @@ export default function ButtonPage() {
 
           {/* States */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">States</h2>
+            <h2 class="mb-4 text-xl font-bold">States</h2>
             <div class="flex items-center gap-4">
               <Button theme="primary" variant="solid">
                 Normal
@@ -70,7 +70,7 @@ export default function ButtonPage() {
 
           {/* Click Event */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Click Event</h2>
+            <h2 class="mb-4 text-xl font-bold">Click Event</h2>
             <Button theme="success" variant="solid" onClick={() => alert("Button clicked!")}>
               Click Me
             </Button>
@@ -78,7 +78,7 @@ export default function ButtonPage() {
 
           {/* Default (Gray Outline) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Default Button (base outline)</h2>
+            <h2 class="mb-4 text-xl font-bold">Default Button (base outline)</h2>
             <Button>Default Button</Button>
           </section>
         </div>

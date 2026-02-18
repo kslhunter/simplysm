@@ -39,7 +39,7 @@ export default function DropdownPage() {
         <div class="space-y-8">
           {/* 기본 드롭다운 메뉴 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 드롭다운 메뉴</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 드롭다운 메뉴</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.
             </p>
@@ -92,7 +92,7 @@ export default function DropdownPage() {
 
           {/* 컨텍스트 메뉴 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">컨텍스트 메뉴</h2>
+            <h2 class="mb-4 text-xl font-bold">컨텍스트 메뉴</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">아래 영역에서 우클릭하세요.</p>
             <div
               class="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-300 bg-base-50 dark:border-base-600 dark:bg-base-800"
@@ -137,7 +137,7 @@ export default function DropdownPage() {
 
           {/* 위치 자동 조정 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">위치 자동 조정</h2>
+            <h2 class="mb-4 text-xl font-bold">위치 자동 조정</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               화면 하단에서 열면 위쪽으로 펼쳐집니다. 브라우저 창 크기를 줄여 테스트해 보세요.
             </p>
@@ -179,7 +179,7 @@ export default function DropdownPage() {
 
           {/* 최대 높이 설정 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">최대 높이 설정</h2>
+            <h2 class="mb-4 text-xl font-bold">최대 높이 설정</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               maxHeight prop으로 최대 높이를 설정하면 내용이 넘칠 때 스크롤됩니다.
             </p>

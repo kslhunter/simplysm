@@ -26,7 +26,7 @@ export default function StatePresetPage() {
             <h2 class="mb-6 text-2xl font-bold">기본 사용</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">필터 상태 저장/복원</h3>
+                <h3 class="mb-3 text-lg font-bold">필터 상태 저장/복원</h3>
                 <StatePreset<FilterState>
                   presetKey="demo-filter"
                   value={filter()}
@@ -80,7 +80,7 @@ export default function StatePresetPage() {
             <h2 class="mb-6 text-2xl font-bold">크기</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">sm</h3>
+                <h3 class="mb-3 text-lg font-bold">sm</h3>
                 <StatePreset<FilterState>
                   presetKey="demo-filter-sm"
                   value={filter()}
@@ -89,7 +89,7 @@ export default function StatePresetPage() {
                 />
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 (md)</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 (md)</h3>
                 <StatePreset<FilterState>
                   presetKey="demo-filter-md"
                   value={filter()}
@@ -97,7 +97,7 @@ export default function StatePresetPage() {
                 />
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">lg</h3>
+                <h3 class="mb-3 text-lg font-bold">lg</h3>
                 <StatePreset<FilterState>
                   presetKey="demo-filter-lg"
                   value={filter()}

@@ -56,7 +56,7 @@ export default function IconPage() {
         <div class="space-y-8">
           {/* Basic Usage */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 사용법</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 사용법</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               Icon 컴포넌트는 @tabler/icons-solidjs의 아이콘을 래핑합니다.
             </p>
@@ -69,7 +69,7 @@ export default function IconPage() {
 
           {/* Sizes */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">크기</h2>
+            <h2 class="mb-4 text-xl font-bold">크기</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               size prop으로 아이콘 크기를 조절할 수 있습니다. 기본값은 1.25em입니다.
             </p>
@@ -99,7 +99,7 @@ export default function IconPage() {
 
           {/* Colors */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">색상</h2>
+            <h2 class="mb-4 text-xl font-bold">색상</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               class prop으로 색상을 지정할 수 있습니다.
             </p>
@@ -114,7 +114,7 @@ export default function IconPage() {
 
           {/* Icon Gallery */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">아이콘 갤러리</h2>
+            <h2 class="mb-4 text-xl font-bold">아이콘 갤러리</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               자주 사용되는 아이콘 목록입니다. @tabler/icons-solidjs에서 더 많은 아이콘을 사용할 수
               있습니다.
@@ -133,7 +133,7 @@ export default function IconPage() {
 
           {/* With Text */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">텍스트와 함께</h2>
+            <h2 class="mb-4 text-xl font-bold">텍스트와 함께</h2>
             <div class="flex flex-col gap-2">
               <div class="flex items-center gap-2">
                 <Icon icon={IconMail} class="text-base-500" />

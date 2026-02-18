@@ -43,7 +43,7 @@ const BusyDemo: Component = () => {
     <div class="space-y-8 p-6">
       {/* 전역 Busy */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">전역 Busy (Provider)</h2>
+        <h2 class="mb-4 text-xl font-bold">전역 Busy (Provider)</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           useBusy() 훅으로 전역 로딩 오버레이를 표시합니다.
         </p>
@@ -54,7 +54,7 @@ const BusyDemo: Component = () => {
 
       {/* 로컬 Spinner */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">로컬 BusyContainer (Spinner)</h2>
+        <h2 class="mb-4 text-xl font-bold">로컬 BusyContainer (Spinner)</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           특정 영역에 spinner 타입 로딩을 표시합니다.
         </p>
@@ -73,7 +73,7 @@ const BusyDemo: Component = () => {
 
       {/* 로컬 Bar */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">로컬 BusyContainer (Bar)</h2>
+        <h2 class="mb-4 text-xl font-bold">로컬 BusyContainer (Bar)</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           bar 타입으로 상단에 프로그레스 바를 표시합니다.
         </p>
@@ -91,7 +91,7 @@ const BusyDemo: Component = () => {
 
       {/* Progress */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">진행률 표시</h2>
+        <h2 class="mb-4 text-xl font-bold">진행률 표시</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           progressPercent prop으로 진행률을 표시합니다.
         </p>
@@ -111,7 +111,7 @@ const BusyDemo: Component = () => {
 
       {/* Ready */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">Ready 상태</h2>
+        <h2 class="mb-4 text-xl font-bold">Ready 상태</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           ready가 false이면 children을 숨기고 로딩 오버레이를 표시합니다.
         </p>

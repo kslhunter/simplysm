@@ -38,7 +38,7 @@ const SharedDataDemo: Component = () => {
     <div class="space-y-8">
       {/* busy 상태 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">busy 상태</h2>
+        <h2 class="mb-4 text-xl font-bold">busy 상태</h2>
         <Tag theme={shared.busy() ? "warning" : "success"}>
           {shared.busy() ? "로딩 중..." : "로드 완료"}
         </Tag>
@@ -46,7 +46,7 @@ const SharedDataDemo: Component = () => {
 
       {/* User 목록 - items() */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">User — items()</h2>
+        <h2 class="mb-4 text-xl font-bold">User — items()</h2>
         <Table>
           <thead>
             <tr>
@@ -71,7 +71,7 @@ const SharedDataDemo: Component = () => {
 
       {/* Company 목록 - items() */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">Company — items()</h2>
+        <h2 class="mb-4 text-xl font-bold">Company — items()</h2>
         <Table>
           <thead>
             <tr>
@@ -96,7 +96,7 @@ const SharedDataDemo: Component = () => {
 
       {/* get() 단일 조회 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">get() — O(1) 단일 조회</h2>
+        <h2 class="mb-4 text-xl font-bold">get() — O(1) 단일 조회</h2>
         <div class="space-y-2">
           <div>
             <code class="text-sm">shared.user.get(1)</code>

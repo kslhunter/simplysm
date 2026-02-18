@@ -56,7 +56,7 @@ export default function SelectPage() {
         <div class="space-y-8">
           {/* 기본 사용 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 사용</h2>
             <Select
               placeholder="과일을 선택하세요"
               renderValue={(v: Fruit) => (
@@ -77,7 +77,7 @@ export default function SelectPage() {
 
           {/* 다중 선택 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
+            <h2 class="mb-4 text-xl font-bold">다중 선택</h2>
             <Select
               multiple
               placeholder="여러 개 선택 가능"
@@ -99,7 +99,7 @@ export default function SelectPage() {
 
           {/* 추가 버튼 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">추가 버튼 (Select.Action)</h2>
+            <h2 class="mb-4 text-xl font-bold">추가 버튼 (Select.Action)</h2>
             <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
               <Select.Item value="옵션 1">옵션 1</Select.Item>
               <Select.Item value="옵션 2">옵션 2</Select.Item>
@@ -111,10 +111,10 @@ export default function SelectPage() {
 
           {/* 커스텀 헤더 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">커스텀 헤더 (Select.Header)</h2>
+            <h2 class="mb-4 text-xl font-bold">커스텀 헤더 (Select.Header)</h2>
             <Select placeholder="선택하세요" renderValue={(v: string) => <>{v}</>}>
               <Select.Header>
-                <div class="border-b border-base-200 p-2 text-sm font-semibold text-base-500 dark:border-base-700">
+                <div class="border-b border-base-200 p-2 text-sm font-bold text-base-500 dark:border-base-700">
                   검색 결과
                 </div>
               </Select.Header>
@@ -126,7 +126,7 @@ export default function SelectPage() {
 
           {/* 계층 구조 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">계층 구조 (중첩 아이템)</h2>
+            <h2 class="mb-4 text-xl font-bold">계층 구조 (중첩 아이템)</h2>
             <Select placeholder="카테고리 선택" renderValue={(v: Category) => <>{v.name}</>}>
               <For each={categories}>
                 {(category) => (
@@ -147,7 +147,7 @@ export default function SelectPage() {
 
           {/* 사이즈 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">사이즈</h2>
+            <h2 class="mb-4 text-xl font-bold">사이즈</h2>
             <div class="flex flex-col items-start gap-4">
               <Select size="sm" placeholder="Small" renderValue={(v: string) => <>{v}</>}>
                 <Select.Item value="A">옵션 A</Select.Item>
@@ -166,7 +166,7 @@ export default function SelectPage() {
 
           {/* 상태 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">상태</h2>
+            <h2 class="mb-4 text-xl font-bold">상태</h2>
             <div class="flex flex-col items-start gap-4">
               <div>
                 <p class="mb-1 text-sm text-base-600 dark:text-base-400">Disabled</p>
@@ -212,11 +212,11 @@ export default function SelectPage() {
 
           {/* Controlled */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <h2 class="mb-4 text-xl font-bold">Controlled</h2>
             <div class="space-y-6">
               {/* 단일 선택 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">단일 선택</h3>
+                <h3 class="mb-3 text-lg font-bold">단일 선택</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Select
                     value={controlledSelected()}
@@ -255,7 +255,7 @@ export default function SelectPage() {
 
               {/* 다중 선택 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">다중 선택</h3>
+                <h3 class="mb-3 text-lg font-bold">다중 선택</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Select<Fruit>
                     multiple

@@ -56,7 +56,7 @@ export default function TabPage() {
             <h2 class="mb-6 text-2xl font-bold">사이즈</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Small</h3>
+                <h3 class="mb-3 text-lg font-bold">Small</h3>
                 <Tabs size="sm" value={tab2()} onValueChange={setTab2}>
                   <Tabs.Tab value="a">탭 A</Tabs.Tab>
                   <Tabs.Tab value="b">탭 B</Tabs.Tab>
@@ -64,7 +64,7 @@ export default function TabPage() {
                 </Tabs>
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Default</h3>
+                <h3 class="mb-3 text-lg font-bold">Default</h3>
                 <Tabs value={tab2()} onValueChange={setTab2}>
                   <Tabs.Tab value="a">탭 A</Tabs.Tab>
                   <Tabs.Tab value="b">탭 B</Tabs.Tab>
@@ -72,7 +72,7 @@ export default function TabPage() {
                 </Tabs>
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Large</h3>
+                <h3 class="mb-3 text-lg font-bold">Large</h3>
                 <Tabs size="lg" value={tab2()} onValueChange={setTab2}>
                   <Tabs.Tab value="a">탭 A</Tabs.Tab>
                   <Tabs.Tab value="b">탭 B</Tabs.Tab>

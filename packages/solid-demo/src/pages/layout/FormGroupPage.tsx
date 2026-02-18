@@ -16,7 +16,7 @@ export default function FormGroupPage() {
         <div class="space-y-8">
           {/* Basic FormGroup */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 FormGroup</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 FormGroup</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormGroup은 폼 필드들을 수직으로 배치하는 컨테이너입니다. FormGroup.Item으로 각 필드를
               감쌉니다.
@@ -36,7 +36,7 @@ export default function FormGroupPage() {
 
           {/* Inline FormGroup */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Inline FormGroup</h2>
+            <h2 class="mb-4 text-xl font-bold">Inline FormGroup</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inline prop을 사용하면 필드들이 수평으로 배치됩니다.
             </p>
@@ -67,7 +67,7 @@ export default function FormGroupPage() {
 
           {/* Without Labels */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">라벨 없이</h2>
+            <h2 class="mb-4 text-xl font-bold">라벨 없이</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormGroup.Item의 label을 생략하면 라벨 없이 필드만 표시됩니다.
             </p>
@@ -88,7 +88,7 @@ export default function FormGroupPage() {
 
           {/* Mixed Layout */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">혼합 레이아웃</h2>
+            <h2 class="mb-4 text-xl font-bold">혼합 레이아웃</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormGroup을 중첩하여 복잡한 폼 레이아웃을 구성할 수 있습니다.
             </p>
@@ -121,7 +121,7 @@ export default function FormGroupPage() {
 
           {/* With Validation Message */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">검증 메시지와 함께</h2>
+            <h2 class="mb-4 text-xl font-bold">검증 메시지와 함께</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormGroup.Item 내에서 검증 메시지를 표시할 수 있습니다.
             </p>
@@ -139,7 +139,7 @@ export default function FormGroupPage() {
 
           {/* Controlled */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <h2 class="mb-4 text-xl font-bold">Controlled</h2>
             <div class="space-y-4">
               <FormGroup>
                 <FormGroup.Item label="이름">

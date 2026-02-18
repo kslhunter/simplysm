@@ -84,7 +84,7 @@ export default function TopbarPage() {
         <div class="space-y-8">
           {/* 1. TopbarContainer 기본 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">TopbarContainer 기본</h2>
+            <h2 class="mb-4 text-xl font-bold">TopbarContainer 기본</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다. SidebarContext 없이 단독 사용
               시 토글 버튼이 표시되지 않습니다.
@@ -105,7 +105,7 @@ export default function TopbarPage() {
 
           {/* 2. 토글 버튼 자동 연동 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">토글 버튼 자동 연동</h2>
+            <h2 class="mb-4 text-xl font-bold">토글 버튼 자동 연동</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               SidebarContext 없이 단독 사용 vs SidebarContainer 내부 사용 비교. SidebarContainer
               내부에서 사용하면 토글 버튼이 자동으로 표시됩니다.
@@ -157,7 +157,7 @@ export default function TopbarPage() {
 
           {/* 3. TopbarMenu 변형 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">TopbarMenu 변형</h2>
+            <h2 class="mb-4 text-xl font-bold">TopbarMenu 변형</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               TopbarMenu는 드롭다운 메뉴를 제공합니다. 무제한 중첩을 지원합니다.
             </p>
@@ -201,7 +201,7 @@ export default function TopbarPage() {
 
           {/* 4. TopbarUser 변형 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">TopbarUser 변형</h2>
+            <h2 class="mb-4 text-xl font-bold">TopbarUser 변형</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.
             </p>
@@ -249,7 +249,7 @@ export default function TopbarPage() {
 
           {/* 5. Sidebar + Topbar 통합 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Sidebar + Topbar 통합</h2>
+            <h2 class="mb-4 text-xl font-bold">Sidebar + Topbar 통합</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               SidebarContainer 내부에서 TopbarContainer를 사용하면 토글 버튼이 자동으로 연동됩니다.
             </p>
@@ -321,7 +321,7 @@ export default function TopbarPage() {
 
           {/* 6. 모바일 데모 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">모바일 데모</h2>
+            <h2 class="mb-4 text-xl font-bold">모바일 데모</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               375px x 500px iframe으로 모바일 환경 시뮬레이션
             </p>

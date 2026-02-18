@@ -14,7 +14,7 @@ export default function FormTablePage() {
         <div class="space-y-8">
           {/* 기본 FormTable */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 FormTable</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 FormTable</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               FormTable은 라벨-값 형태의 폼을 테이블 레이아웃으로 정렬할 때 사용합니다.
             </p>
@@ -59,7 +59,7 @@ export default function FormTablePage() {
 
           {/* Colspan */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Colspan 사용</h2>
+            <h2 class="mb-4 text-xl font-bold">Colspan 사용</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               colspan을 사용하여 복잡한 레이아웃을 구성할 수 있습니다.
             </p>
@@ -93,7 +93,7 @@ export default function FormTablePage() {
 
           {/* 읽기 전용 정보 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">읽기 전용 정보</h2>
+            <h2 class="mb-4 text-xl font-bold">읽기 전용 정보</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               입력 필드 없이 정보만 표시할 때도 FormTable을 사용할 수 있습니다.
             </p>
@@ -127,7 +127,7 @@ export default function FormTablePage() {
 
           {/* Controlled */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
+            <h2 class="mb-4 text-xl font-bold">Controlled</h2>
             <div class="space-y-4">
               <FormTable>
                 <tbody>

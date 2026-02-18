@@ -167,7 +167,7 @@ export default function SheetPage() {
         <div class="space-y-8">
           {/* 기본 테이블 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 테이블</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 테이블</h2>
             <DataSheet items={users} persistKey="basic">
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
@@ -183,7 +183,7 @@ export default function SheetPage() {
 
           {/* 다단계 헤더 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">다단계 헤더</h2>
+            <h2 class="mb-4 text-xl font-bold">다단계 헤더</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
             </p>
@@ -205,7 +205,7 @@ export default function SheetPage() {
 
           {/* 합계 행 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">합계 행</h2>
+            <h2 class="mb-4 text-xl font-bold">합계 행</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에
               고정됩니다.
@@ -229,7 +229,7 @@ export default function SheetPage() {
 
           {/* 정렬 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">정렬</h2>
+            <h2 class="mb-4 text-xl font-bold">정렬</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
             </p>
@@ -262,7 +262,7 @@ export default function SheetPage() {
 
           {/* 페이지네이션 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">페이지네이션</h2>
+            <h2 class="mb-4 text-xl font-bold">페이지네이션</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
             </p>
@@ -287,7 +287,7 @@ export default function SheetPage() {
 
           {/* 트리 확장 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">트리 확장</h2>
+            <h2 class="mb-4 text-xl font-bold">트리 확장</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로
               깊이를 표현합니다.
@@ -310,7 +310,7 @@ export default function SheetPage() {
 
           {/* 고정 컬럼 + 리사이징 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">고정 컬럼 + 리사이징</h2>
+            <h2 class="mb-4 text-xl font-bold">고정 컬럼 + 리사이징</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로
               초기화.
@@ -340,7 +340,7 @@ export default function SheetPage() {
 
           {/* 인라인 편집 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">인라인 편집</h2>
+            <h2 class="mb-4 text-xl font-bold">인라인 편집</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
             </p>
@@ -451,7 +451,7 @@ export default function SheetPage() {
 
           {/* 다중 선택 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">다중 선택</h2>
+            <h2 class="mb-4 text-xl font-bold">다중 선택</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               selectMode="multiple"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
             </p>
@@ -482,7 +482,7 @@ export default function SheetPage() {
 
           {/* 단일 선택 + autoSelect */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">단일 선택 + autoSelect</h2>
+            <h2 class="mb-4 text-xl font-bold">단일 선택 + autoSelect</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시
               자동 선택.
@@ -515,7 +515,7 @@ export default function SheetPage() {
 
           {/* 선택 불가 항목 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">선택 불가 항목</h2>
+            <h2 class="mb-4 text-xl font-bold">선택 불가 항목</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로
               표시됩니다.
@@ -550,7 +550,7 @@ export default function SheetPage() {
 
           {/* 드래그 재정렬 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">드래그 재정렬</h2>
+            <h2 class="mb-4 text-xl font-bold">드래그 재정렬</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여
               행 순서를 변경할 수 있습니다.

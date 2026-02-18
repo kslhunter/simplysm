@@ -40,13 +40,13 @@ export default function PermissionTablePage() {
         <div class="space-y-8">
           {/* 기본 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 PermissionTable</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 PermissionTable</h2>
             <PermissionTable items={demoItems} value={value()} onValueChange={setValue} />
           </section>
 
           {/* modules 필터 적용 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">모듈 필터 (admin)</h2>
+            <h2 class="mb-4 text-xl font-bold">모듈 필터 (admin)</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               modules={`["admin"]`}을 전달하면 해당 모듈에 속한 항목만 표시됩니다.
             </p>
@@ -60,13 +60,13 @@ export default function PermissionTablePage() {
 
           {/* disabled */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">비활성 상태</h2>
+            <h2 class="mb-4 text-xl font-bold">비활성 상태</h2>
             <PermissionTable items={demoItems} value={value()} disabled />
           </section>
 
           {/* 현재 값 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">현재 값</h2>
+            <h2 class="mb-4 text-xl font-bold">현재 값</h2>
             <pre class="overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">
               {JSON.stringify(value(), null, 2)}
             </pre>

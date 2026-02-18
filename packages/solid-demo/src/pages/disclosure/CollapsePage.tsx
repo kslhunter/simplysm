@@ -16,7 +16,7 @@ export default function CollapsePage() {
         <div class="space-y-8">
           {/* Basic Toggle */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Basic Toggle</h2>
+            <h2 class="mb-4 text-xl font-bold">Basic Toggle</h2>
             <div class="space-y-2">
               <Button
                 theme="primary"
@@ -40,7 +40,7 @@ export default function CollapsePage() {
 
           {/* Multiple Collapse */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Multiple Collapse (Accordion-like)</h2>
+            <h2 class="mb-4 text-xl font-bold">Multiple Collapse (Accordion-like)</h2>
             <div class="space-y-2">
               <div>
                 <Button
@@ -77,7 +77,7 @@ export default function CollapsePage() {
 
           {/* Initially Open */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Initially Open</h2>
+            <h2 class="mb-4 text-xl font-bold">Initially Open</h2>
             <div class="space-y-2">
               <Button
                 theme="info"

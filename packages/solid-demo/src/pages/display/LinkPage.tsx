@@ -10,7 +10,7 @@ export default function LinkPage() {
         <div class="space-y-8">
           {/* Basic */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 링크</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 링크</h2>
             <p class="text-sm text-base-600 dark:text-base-400">
               텍스트 안에서 <Link href="https://example.com">인라인 링크</Link>를 사용할 수
               있습니다.
@@ -19,7 +19,7 @@ export default function LinkPage() {
 
           {/* External link */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">외부 링크</h2>
+            <h2 class="mb-4 text-xl font-bold">외부 링크</h2>
             <p class="text-sm text-base-600 dark:text-base-400">
               target="_blank"로{" "}
               <Link href="https://example.com" target="_blank" rel="noopener noreferrer">
@@ -31,7 +31,7 @@ export default function LinkPage() {
 
           {/* In paragraph */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">문단 내 사용</h2>
+            <h2 class="mb-4 text-xl font-bold">문단 내 사용</h2>
             <p class="text-sm leading-relaxed text-base-600 dark:text-base-400">
               이 라이브러리에 대한 자세한 내용은{" "}
               <Link href="https://github.com">GitHub 저장소</Link>를 참고하세요. 문제가 발생하면{" "}
@@ -41,7 +41,7 @@ export default function LinkPage() {
 
           {/* Custom styling */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">커스텀 스타일링</h2>
+            <h2 class="mb-4 text-xl font-bold">커스텀 스타일링</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               class prop으로 추가 스타일을 적용할 수 있습니다.
             </p>

@@ -18,7 +18,7 @@ export default function CheckboxRadioGroupPage() {
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
                 <CheckboxGroup value={selectedFruits()} onValueChange={setSelectedFruits}>
                   <CheckboxGroup.Item value="apple">사과</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="banana">바나나</CheckboxGroup.Item>
@@ -34,7 +34,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* disabled 아이템 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
+                <h3 class="mb-3 text-lg font-bold">Disabled</h3>
                 <CheckboxGroup>
                   <CheckboxGroup.Item value="a">활성</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="b" disabled>
@@ -45,7 +45,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* 전체 disabled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
+                <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
                 <CheckboxGroup disabled value={["a"]}>
                   <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
@@ -54,16 +54,23 @@ export default function CheckboxRadioGroupPage() {
 
               {/* 사이즈 */}
               <div>
+<<<<<<< Updated upstream
                 <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
                 <CheckboxGroup size="sm" value={["x"]}>
                   <CheckboxGroup.Item value="x">Small A</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="y">Small B</CheckboxGroup.Item>
+=======
+                <h3 class="mb-3 text-lg font-bold">테마 & 사이즈</h3>
+                <CheckboxGroup theme="success" size="sm" value={["x"]}>
+                  <CheckboxGroup.Item value="x">Small Success A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Small Success B</CheckboxGroup.Item>
+>>>>>>> Stashed changes
                 </CheckboxGroup>
               </div>
 
               {/* inline */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Inline</h3>
+                <h3 class="mb-3 text-lg font-bold">Inline</h3>
                 <CheckboxGroup inline value={["a"]}>
                   <CheckboxGroup.Item value="a">Inline A</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="b">Inline B</CheckboxGroup.Item>
@@ -72,7 +79,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* inset */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Inset</h3>
+                <h3 class="mb-3 text-lg font-bold">Inset</h3>
                 <CheckboxGroup inset value={["a"]}>
                   <CheckboxGroup.Item value="a">Inset A</CheckboxGroup.Item>
                   <CheckboxGroup.Item value="b">Inset B</CheckboxGroup.Item>
@@ -116,7 +123,7 @@ export default function CheckboxRadioGroupPage() {
             <div class="space-y-6">
               {/* 기본 사용 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">기본 사용</h3>
+                <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
                 <RadioGroup value={selectedOption()} onValueChange={setSelectedOption}>
                   <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
                   <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
@@ -130,7 +137,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* disabled 아이템 */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Disabled</h3>
+                <h3 class="mb-3 text-lg font-bold">Disabled</h3>
                 <RadioGroup>
                   <RadioGroup.Item value="a">활성</RadioGroup.Item>
                   <RadioGroup.Item value="b" disabled>
@@ -141,7 +148,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* 전체 disabled */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">전체 Disabled</h3>
+                <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
                 <RadioGroup disabled value="a">
                   <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
                   <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
@@ -150,16 +157,23 @@ export default function CheckboxRadioGroupPage() {
 
               {/* 사이즈 */}
               <div>
+<<<<<<< Updated upstream
                 <h3 class="mb-3 text-lg font-semibold">사이즈</h3>
                 <RadioGroup size="lg" value="x">
                   <RadioGroup.Item value="x">Large A</RadioGroup.Item>
                   <RadioGroup.Item value="y">Large B</RadioGroup.Item>
+=======
+                <h3 class="mb-3 text-lg font-bold">테마 & 사이즈</h3>
+                <RadioGroup theme="danger" size="lg" value="x">
+                  <RadioGroup.Item value="x">Large Danger A</RadioGroup.Item>
+                  <RadioGroup.Item value="y">Large Danger B</RadioGroup.Item>
+>>>>>>> Stashed changes
                 </RadioGroup>
               </div>
 
               {/* inline */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Inline</h3>
+                <h3 class="mb-3 text-lg font-bold">Inline</h3>
                 <RadioGroup inline value="a">
                   <RadioGroup.Item value="a">Inline A</RadioGroup.Item>
                   <RadioGroup.Item value="b">Inline B</RadioGroup.Item>
@@ -168,7 +182,7 @@ export default function CheckboxRadioGroupPage() {
 
               {/* inset */}
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Inset</h3>
+                <h3 class="mb-3 text-lg font-bold">Inset</h3>
                 <RadioGroup inset value="a">
                   <RadioGroup.Item value="a">Inset A</RadioGroup.Item>
                   <RadioGroup.Item value="b">Inset B</RadioGroup.Item>

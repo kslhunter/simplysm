@@ -17,13 +17,13 @@ export default function PaginationPage() {
       <div class="flex-1 overflow-auto p-6">
         <div class="space-y-8">
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본</h2>
+            <h2 class="mb-4 text-xl font-bold">기본</h2>
             <p class="mb-2 text-sm text-base-500">page: {page1()}</p>
             <Pagination pageIndex={page1()} onPageIndexChange={setPage1} totalPageCount={20} />
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Size</h2>
+            <h2 class="mb-4 text-xl font-bold">Size</h2>
             <div class="space-y-4">
               <div>
                 <p class="mb-2 text-sm text-base-500">sm (page: {pageSm()})</p>
@@ -55,7 +55,7 @@ export default function PaginationPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">displayPageCount 커스텀 (5개씩)</h2>
+            <h2 class="mb-4 text-xl font-bold">displayPageCount 커스텀 (5개씩)</h2>
             <p class="mb-2 text-sm text-base-500">page: {pageCustom()}</p>
             <Pagination
               pageIndex={pageCustom()}
@@ -66,7 +66,7 @@ export default function PaginationPage() {
           </section>
 
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Disabled (totalPageCount=0)</h2>
+            <h2 class="mb-4 text-xl font-bold">Disabled (totalPageCount=0)</h2>
             <Pagination
               pageIndex={pageDisabled()}
               onPageIndexChange={setPageDisabled}

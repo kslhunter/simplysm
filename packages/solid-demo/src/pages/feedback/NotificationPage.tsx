@@ -15,7 +15,7 @@ const NotificationDemo: Component = () => {
     <div class="space-y-8">
       {/* 테마별 알림 테스트 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">테마별 알림</h2>
+        <h2 class="mb-4 text-xl font-bold">테마별 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           각 버튼을 클릭하면 해당 테마의 알림이 발생합니다. 상단 배너와 우측 상단의 벨 아이콘에서
           확인할 수 있습니다.
@@ -54,7 +54,7 @@ const NotificationDemo: Component = () => {
 
       {/* 액션 버튼 포함 알림 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">액션 버튼 포함</h2>
+        <h2 class="mb-4 text-xl font-bold">액션 버튼 포함</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           알림에 액션 버튼을 포함할 수 있습니다. 배너에서 버튼을 클릭해 보세요.
         </p>
@@ -76,7 +76,7 @@ const NotificationDemo: Component = () => {
 
       {/* 여러 알림 발생 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">연속 알림</h2>
+        <h2 class="mb-4 text-xl font-bold">연속 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           여러 개의 알림을 연속으로 발생시킵니다. 벨 아이콘을 클릭하면 모든 알림 목록을 확인할 수
           있습니다.
@@ -96,7 +96,7 @@ const NotificationDemo: Component = () => {
 
       {/* 전체 삭제 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">알림 관리</h2>
+        <h2 class="mb-4 text-xl font-bold">알림 관리</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">모든 알림을 삭제합니다.</p>
         <Button theme="danger" variant="outline" onClick={() => notification.clear()}>
           전체 알림 삭제

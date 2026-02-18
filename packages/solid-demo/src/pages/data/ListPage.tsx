@@ -25,7 +25,7 @@ export default function ListPage() {
         <div class="space-y-8">
           {/* Basic List */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Basic List</h2>
+            <h2 class="mb-4 text-xl font-bold">Basic List</h2>
             <List>
               <List.Item>Item 1</List.Item>
               <List.Item>Item 2</List.Item>
@@ -35,7 +35,7 @@ export default function ListPage() {
 
           {/* Selectable List */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Selectable List</h2>
+            <h2 class="mb-4 text-xl font-bold">Selectable List</h2>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">
               Selected: {selectedItem() ?? "None"}
             </p>
@@ -56,7 +56,7 @@ export default function ListPage() {
 
           {/* List with Icons */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">List with Icons</h2>
+            <h2 class="mb-4 text-xl font-bold">List with Icons</h2>
             <List>
               <List.Item onClick={() => alert("Settings clicked")}>
                 <Icon icon={IconSettings} class="mr-2" />
@@ -75,7 +75,7 @@ export default function ListPage() {
 
           {/* Nested List (Tree View) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Nested List (Tree View)</h2>
+            <h2 class="mb-4 text-xl font-bold">Nested List (Tree View)</h2>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">
               Use Arrow keys to navigate, Arrow Right/Left to expand/collapse
             </p>
@@ -123,7 +123,7 @@ export default function ListPage() {
 
           {/* States */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">States</h2>
+            <h2 class="mb-4 text-xl font-bold">States</h2>
             <List>
               <List.Item>Normal item</List.Item>
               <List.Item selected>Selected item</List.Item>
@@ -134,7 +134,7 @@ export default function ListPage() {
 
           {/* Inset Style */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Inset Style</h2>
+            <h2 class="mb-4 text-xl font-bold">Inset Style</h2>
             <List inset>
               <List.Item selectedIcon={IconStar} selected>
                 Starred item

@@ -19,7 +19,7 @@ export default function NotePage() {
         <div class="space-y-8">
           {/* All Themes */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">테마</h2>
+            <h2 class="mb-4 text-xl font-bold">테마</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               Alert 컴포넌트는 6가지 테마를 지원합니다. 기본값은 slate입니다.
             </p>
@@ -36,13 +36,13 @@ export default function NotePage() {
 
           {/* Default (no theme) */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">기본 노트</h2>
+            <h2 class="mb-4 text-xl font-bold">기본 노트</h2>
             <Alert>theme을 지정하지 않으면 slate 테마가 적용됩니다.</Alert>
           </section>
 
           {/* With Icons */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">아이콘과 함께</h2>
+            <h2 class="mb-4 text-xl font-bold">아이콘과 함께</h2>
             <div class="space-y-3">
               <Alert theme="info">
                 <Icon icon={IconInfoCircle} size="1.25em" class="mt-0.5 shrink-0" />
@@ -76,7 +76,7 @@ export default function NotePage() {
 
           {/* Use Cases */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">활용 예시</h2>
+            <h2 class="mb-4 text-xl font-bold">활용 예시</h2>
             <div class="space-y-4">
               <div>
                 <h3 class="mb-2 font-medium">팁 & 힌트</h3>
@@ -102,7 +102,7 @@ export default function NotePage() {
 
           {/* Long Content */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">긴 내용</h2>
+            <h2 class="mb-4 text-xl font-bold">긴 내용</h2>
             <Alert theme="info">
               <p class="mb-2">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor

@@ -117,9 +117,9 @@ export const SidebarUser: Component<SidebarUserProps> = (props) => {
           <div class={avatarClass}>
             <Icon icon={local.icon ?? IconUser} class="size-6" />
           </div>
-          <Show when={local.description} fallback={<span class="font-semibold">{local.name}</span>}>
+          <Show when={local.description} fallback={<span class="font-bold">{local.name}</span>}>
             <div class="flex flex-col">
-              <span class="font-semibold">{local.name}</span>
+              <span class="font-bold">{local.name}</span>
               <span class={clsx("text-sm", "text-base-500 dark:text-base-400")}>
                 {local.description}
               </span>
@@ -129,7 +129,7 @@ export const SidebarUser: Component<SidebarUserProps> = (props) => {
       </button>
       <Show when={hasMenus()}>
         <Collapse open={open()}>
-          <hr class={clsx("border-base-200 dark:border-base-700")} />
+          <hr class={clsx("border-base-100 dark:border-base-800")} />
           <List inset>
             <For each={local.menus}>
               {(menu) => <ListItem onClick={() => handleMenuClick(menu)}>{menu.title}</ListItem>}

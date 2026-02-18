@@ -95,7 +95,7 @@ const ServiceClientDemo: Component = () => {
     <div class="space-y-8">
       {/* 연결 상태 */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">연결 상태</h2>
+        <h2 class="mb-4 text-xl font-bold">연결 상태</h2>
         <Tag theme={connected() ? "success" : "danger"}>
           {connected() ? "연결됨 (port: 40081)" : "연결 안됨"}
         </Tag>
@@ -103,7 +103,7 @@ const ServiceClientDemo: Component = () => {
 
       {/* EchoService */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">EchoService</h2>
+        <h2 class="mb-4 text-xl font-bold">EchoService</h2>
 
         {/* echo */}
         <div class="mb-6">
@@ -156,7 +156,7 @@ const ServiceClientDemo: Component = () => {
 
       {/* HealthService */}
       <section>
-        <h2 class="mb-4 text-xl font-semibold">HealthService</h2>
+        <h2 class="mb-4 text-xl font-bold">HealthService</h2>
 
         <div class="flex flex-wrap gap-4">
           {/* ping */}
