@@ -17,23 +17,14 @@ import { FsWatcher } from "@simplysm/core-node";
  * preset 등으로 참조하는 scope 패키지의 config 변경을 감지하지 못한다.
  * 이 플러그인이 해당 파일들을 watch하고, 변경 시 Tailwind 캐시를 무효화한다.
  */
-function sdTailwindConfigDepsPlugin(pkgDir: string): Plugin {
+function sdTailwindConfigDepsPlugin(pkgDir: string, scopes: string[]): Plugin {
   return {
     name: "sd-tailwind-config-deps",
     configureServer(server) {
       const configPath = path.join(pkgDir, "tailwind.config.ts");
       if (!fs.existsSync(configPath)) return;
 
-      // 현재 패키지의 scope + @simplysm 을 항상 포함
-      const pkgJsonPath = path.join(pkgDir, "package.json");
-      const pkgName = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")).name as string;
-      const pkgScope = pkgName.match(/^(@[^/]+)\//)?.[1];
-      const scopes = new Set(["@simplysm"]);
-      if (pkgScope != null) {
-        scopes.add(pkgScope);
-      }
-
-      const allDeps = getTailwindConfigDeps(configPath, [...scopes]);
+      const allDeps = getTailwindConfigDeps(configPath, scopes);
       const configAbsolute = path.resolve(configPath);
       const externalDeps = allDeps.filter((d) => d !== configAbsolute);
       if (externalDeps.length === 0) return;
@@ -331,7 +322,9 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         },
       }),
-      sdTailwindConfigDepsPlugin(pkgDir),
+      ...(watchScopes != null && watchScopes.length > 0
+        ? [sdTailwindConfigDepsPlugin(pkgDir, watchScopes)]
+        : []),
       ...(watchScopes != null && watchScopes.length > 0
         ? [sdScopeWatchPlugin(pkgDir, watchScopes, options.onScopeRebuild)]
         : []),

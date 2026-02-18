@@ -161,7 +161,7 @@ export class DevOrchestrator {
     // watchScopes 생성 (루트 package.json에서 scope 추출)
     const rootPkgJsonPath = path.join(this._cwd, "package.json");
     const rootPkgName = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")).name as string;
-    this._watchScopes = getWatchScopes(rootPkgName);
+    this._watchScopes = getWatchScopes(rootPkgName, this._sdConfig.replaceDeps);
 
     // targets 필터링
     const allPackages = filterPackagesByTargets(this._sdConfig.packages, targets);

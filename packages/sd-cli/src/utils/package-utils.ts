@@ -16,17 +16,29 @@ export function findPackageRoot(startDir: string): string {
 }
 
 /**
- * 패키지명에서 watch scope 목록을 생성한다.
+ * 패키지명과 replaceDeps 설정에서 watch scope 목록을 생성한다.
  * - 패키지명의 scope (예: "@myapp/root" → "@myapp")
- * - @simplysm (항상 포함)
+ * - replaceDeps 키의 scope (예: "@simplysm/*" → "@simplysm")
  * @param packageName 루트 package.json의 name 필드
+ * @param replaceDeps sd.config.ts의 replaceDeps 설정 (키: glob 패턴, 값: 소스 경로)
  * @returns scope 배열 (중복 제거)
  */
-export function getWatchScopes(packageName: string): string[] {
-  const scopes = new Set(["@simplysm"]);
+export function getWatchScopes(
+  packageName: string,
+  replaceDeps?: Record<string, string>,
+): string[] {
+  const scopes = new Set<string>();
   const match = packageName.match(/^(@[^/]+)\//);
   if (match != null) {
     scopes.add(match[1]);
+  }
+  if (replaceDeps != null) {
+    for (const pattern of Object.keys(replaceDeps)) {
+      const depMatch = pattern.match(/^(@[^/]+)\//);
+      if (depMatch != null) {
+        scopes.add(depMatch[1]);
+      }
+    }
   }
   return [...scopes];
 }
