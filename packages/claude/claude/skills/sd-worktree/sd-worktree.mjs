@@ -14,7 +14,9 @@ function getOutput(command) {
 }
 
 // 메인 working tree 경로 (worktree 안에서 실행해도 정확)
-const mainWorktree = getOutput("git worktree list --porcelain").split("\n")[0].replace("worktree ", "");
+const mainWorktree = getOutput("git worktree list --porcelain")
+  .split("\n")[0]
+  .replace("worktree ", "");
 
 function detectWorktreeName() {
   const cwd = process.cwd();
@@ -109,7 +111,9 @@ switch (cmd) {
     const cwd = process.cwd();
     if (cwd === worktreePath || cwd.startsWith(worktreePath + "/")) {
       console.error(`Error: Cannot clean '${name}' from inside its worktree.`);
-      console.error(`Run: cd "${mainWorktree}" && node .claude/skills/sd-worktree/sd-worktree.mjs clean ${name}`);
+      console.error(
+        `Run: cd "${mainWorktree}" && node .claude/skills/sd-worktree/sd-worktree.mjs clean ${name}`,
+      );
       process.exit(1);
     }
     if (existsSync(worktreePath)) {
