@@ -384,33 +384,13 @@ When modifying code, always review and update related tests and demos:
 
 ## Documentation
 
-### README.md Writing Rules
+### README.md
 
-Each package's `README.md` is used as a **documentation source for consumer apps**.
-When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-simplysm-docs` rule instructs it to read these READMEs from `node_modules/`.
+Each package's `README.md` is the **sole API documentation source for Claude Code**.
+When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-simplysm-docs` rule reads these READMEs from `node_modules/`.
 
-- Write in **English** (for consistent documentation quality)
-- Document the package's **public API, key functions/classes, props, configuration options** with code examples
-- Code examples must include **import paths** (helps Claude understand which package to import from)
-- Before writing/modifying, Read existing README patterns to maintain consistent structure
-
-**Standard README Structure:**
-```markdown
-# @simplysm/{package-name}
-
-{One-line description}
-
-## Installation
-
-## Main Modules
-### {Module Category}
-- Class/function description + code examples
-
-## Types
-
-## Dependencies (only when peer deps exist)
-```
-- Unify heading levels: `##` for major sections, `###` for sub-sections
+- When changing public APIs, update the package's `README.md` to keep code and docs in sync
+- For detailed README writing rules and update workflow, use `/sd-readme`
 
 ## Workflow
 
@@ -425,4 +405,4 @@ When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-si
 1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
 2. When introducing new patterns, search the existing codebase for similar examples
 3. When writing test code, check the project configuration in `vitest.config.ts`
-4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — README.md serves as the documentation source for consumer apps (read by Claude via `sd-simplysm-docs` rule), so code and docs must stay in sync
+4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well
