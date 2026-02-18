@@ -26,23 +26,6 @@ export default function CheckboxRadioPage() {
                 </div>
               </div>
 
-<<<<<<< Updated upstream
-=======
-              {/* 테마 */}
-              <div>
-                <h3 class="mb-3 text-lg font-bold">테마</h3>
-                <div class="flex flex-wrap gap-3">
-                  <For each={themes}>
-                    {(theme) => (
-                      <Checkbox theme={theme} value={true}>
-                        {theme}
-                      </Checkbox>
-                    )}
-                  </For>
-                </div>
-              </div>
-
->>>>>>> Stashed changes
               {/* 사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-bold">사이즈</h3>
@@ -102,23 +85,6 @@ export default function CheckboxRadioPage() {
                 </div>
               </div>
 
-<<<<<<< Updated upstream
-=======
-              {/* 테마 */}
-              <div>
-                <h3 class="mb-3 text-lg font-bold">테마</h3>
-                <div class="flex flex-wrap gap-3">
-                  <For each={themes}>
-                    {(theme) => (
-                      <Radio theme={theme} value={true}>
-                        {theme}
-                      </Radio>
-                    )}
-                  </For>
-                </div>
-              </div>
-
->>>>>>> Stashed changes
               {/* 사이즈 */}
               <div>
                 <h3 class="mb-3 text-lg font-bold">사이즈</h3>
@@ -165,7 +131,7 @@ export default function CheckboxRadioPage() {
             <h2 class="mb-6 text-2xl font-bold">Validation</h2>
             <div class="space-y-6">
               <div>
-                <h3 class="mb-3 text-lg font-semibold">Required</h3>
+                <h3 class="mb-3 text-lg font-bold">Required</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Checkbox required value={false}>
                     필수 체크
@@ -176,7 +142,7 @@ export default function CheckboxRadioPage() {
                 </div>
               </div>
               <div>
-                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <h3 class="mb-3 text-lg font-bold">touchMode (blur 후 표시)</h3>
                 <div class="flex flex-col items-start gap-3">
                   <Checkbox required touchMode value={false}>
                     touchMode 필수 체크
