@@ -156,12 +156,19 @@ export declare function objOmitByFilter<T extends Record<string, unknown>>(
  * objPick(user, ["name", "age"]);
  * // { name: "Alice", age: 30 }
  */
-export declare function objPick<T extends Record<string, unknown>, K extends keyof T>(item: T, keys: K[]): Pick<T, K>;
+export declare function objPick<T extends Record<string, unknown>, K extends keyof T>(
+  item: T,
+  keys: K[],
+): Pick<T, K>;
 /**
  * 체인 경로로 값 가져오기
  * @example objGetChainValue(obj, "a.b[0].c")
  */
-export declare function objGetChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
+export declare function objGetChainValue(
+  obj: unknown,
+  chain: string,
+  optional: true,
+): unknown | undefined;
 export declare function objGetChainValue(obj: unknown, chain: string): unknown;
 /**
  * depth만큼 같은 키로 내려가기
@@ -178,7 +185,11 @@ export declare function objGetChainValueByDepth<T, K extends keyof T>(
   depth: number,
   optional: true,
 ): T[K] | undefined;
-export declare function objGetChainValueByDepth<T, K extends keyof T>(obj: T, key: K, depth: number): T[K];
+export declare function objGetChainValueByDepth<T, K extends keyof T>(
+  obj: T,
+  key: K,
+  depth: number,
+): T[K];
 /**
  * 체인 경로로 값 설정
  * @example objSetChainValue(obj, "a.b[0].c", value)

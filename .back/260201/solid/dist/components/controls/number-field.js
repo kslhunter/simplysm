@@ -1,6 +1,11 @@
 import { Show, createSignal, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import { numberField, numberFieldContainer, numberFieldContent, numberFieldInput } from "./number-field.css";
+import {
+  numberField,
+  numberFieldContainer,
+  numberFieldContent,
+  numberFieldInput,
+} from "./number-field.css";
 import { objPick, numParseFloat } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const NumberField = (props) => {
@@ -85,7 +90,9 @@ const NumberField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [numberField(objPick(local, numberField.variants())), local.class].filterExists().join(" "),
+        class: [numberField(objPick(local, numberField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(

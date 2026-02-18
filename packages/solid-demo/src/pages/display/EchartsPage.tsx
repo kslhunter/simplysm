@@ -3,7 +3,7 @@ import { Button, Echarts, Topbar } from "@simplysm/solid";
 import type { EChartsOption } from "echarts";
 
 export default function EchartsPage() {
-  const [loading, setLoading] = createSignal(false);
+  const [busy, setBusy] = createSignal(false);
 
   const barOption: EChartsOption = {
     title: { text: "Bar Chart" },
@@ -30,7 +30,7 @@ export default function EchartsPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Bar Chart</h2>
             <div class="h-80">
-              <Echarts option={barOption} loading={loading()} />
+              <Echarts option={barOption} busy={busy()} />
             </div>
           </section>
 
@@ -38,14 +38,14 @@ export default function EchartsPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Line Chart</h2>
             <div class="h-80">
-              <Echarts option={lineOption} loading={loading()} />
+              <Echarts option={lineOption} busy={busy()} />
             </div>
           </section>
 
           {/* Loading 토글 */}
           <section>
-            <h2 class="mb-4 text-xl font-semibold">Loading</h2>
-            <Button onClick={() => setLoading((v) => !v)}>{loading() ? "로딩 해제" : "로딩 표시"}</Button>
+            <h2 class="mb-4 text-xl font-semibold">Busy</h2>
+            <Button onClick={() => setBusy((v) => !v)}>{busy() ? "로딩 해제" : "로딩 표시"}</Button>
           </section>
         </div>
       </div>

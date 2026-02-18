@@ -246,7 +246,10 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  toMapValues<T, K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V | T> {
+  toMapValues<T, K, V>(
+    keySelector: (item: T, index: number) => K,
+    valueSelector: (items: T[]) => V,
+  ): Map<K, V | T> {
     const itemsMap = new Map<K, T[]>();
 
     for (let i = 0; i < this.length; i++) {
@@ -304,7 +307,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return fn(rootItems);
   },
 
-  distinct<T>(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[] {
+  distinct<T>(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
+  ): T[] {
     // 옵션 정규화
     const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
@@ -367,7 +372,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  orderBy<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderBy<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -375,7 +382,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDesc<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByDesc<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return [...this].sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -403,7 +412,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     if (keyIndexedTarget) {
       for (const targetItem of uncheckedTarget) {
-        const keyStr = JSON.stringify(options!.keys!.map((k) => (targetItem as Record<string, unknown>)[k]));
+        const keyStr = JSON.stringify(
+          options!.keys!.map((k) => (targetItem as Record<string, unknown>)[k]),
+        );
         const arr = keyIndexedTarget.get(keyStr);
         if (arr) {
           arr.push(targetItem);
@@ -429,7 +440,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
       // 전체 일치가 없고 keys 옵션이 있으면 Map에서 O(1) 조회
       if (sameTarget === undefined && keyIndexedTarget) {
-        const sourceKeyStr = JSON.stringify(options!.keys!.map((k) => (sourceItem as Record<string, unknown>)[k]));
+        const sourceKeyStr = JSON.stringify(
+          options!.keys!.map((k) => (sourceItem as Record<string, unknown>)[k]),
+        );
         const candidates = keyIndexedTarget.get(sourceKeyStr);
         if (candidates && candidates.length > 0) {
           // uncheckedTargetSet에서 O(1) 조회로 아직 남아있는 첫 번째 항목 선택
@@ -467,13 +480,16 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       orgItems instanceof Map
         ? orgItems
         : orgItems.toMap((orgItem) =>
-            typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(orgItem) : orgItem[keyPropNameOrFn],
+            typeof keyPropNameOrFn === "function"
+              ? keyPropNameOrFn(orgItem)
+              : orgItem[keyPropNameOrFn],
           );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: ArrayDiffs2Result<T>[] = [];
     for (const item of this) {
-      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue =
+        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
@@ -542,7 +558,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number") {
-        throw new ArgumentError("sum 은 number 에 대해서만 사용할 수 있습니다.", { type: typeof item });
+        throw new ArgumentError("sum 은 number 에 대해서만 사용할 수 있습니다.", {
+          type: typeof item,
+        });
       }
       result += item;
     }
@@ -555,7 +573,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new ArgumentError("min 은 number/string 에 대해서만 사용할 수 있습니다.", { type: typeof item });
+        throw new ArgumentError("min 은 number/string 에 대해서만 사용할 수 있습니다.", {
+          type: typeof item,
+        });
       }
       if (result === undefined || result > item) {
         result = item;
@@ -570,7 +590,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new ArgumentError("max 은 number/string 에 대해서만 사용할 수 있습니다.", { type: typeof item });
+        throw new ArgumentError("max 은 number/string 에 대해서만 사용할 수 있습니다.", {
+          type: typeof item,
+        });
       }
       if (result === undefined || result < item) {
         result = item;
@@ -595,7 +617,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 };
 
 const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
-  distinctThis<T>(options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number }): T[] {
+  distinctThis<T>(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
+  ): T[] {
     // 옵션 정규화
     const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
@@ -700,7 +724,9 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     return this;
   },
 
-  orderByThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByThis<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;
@@ -708,7 +734,9 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDescThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByDescThis<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;
@@ -774,4 +802,9 @@ declare global {
 
 //#endregion
 
-export type { ArrayDiffsResult, ArrayDiffs2Result, TreeArray, ComparableType } from "./arr-ext.types";
+export type {
+  ArrayDiffsResult,
+  ArrayDiffs2Result,
+  TreeArray,
+  ComparableType,
+} from "./arr-ext.types";

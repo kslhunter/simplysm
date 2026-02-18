@@ -203,7 +203,7 @@ import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
 
 ## Kanban
 
-Kanban board layout component with drag-and-drop cards, lane collapse, multi-select, and loading states.
+Kanban board layout component with drag-and-drop cards, lane collapse, multi-select, and busy states.
 
 ```tsx
 import { createSignal, For } from "solid-js";
@@ -228,7 +228,7 @@ const handleDrop = (info: KanbanDropInfo) => {
   >
     <For each={lanes()}>
       {(lane) => (
-        <Kanban.Lane value={lane.id} collapsible busy={lane.loading}>
+        <Kanban.Lane value={lane.id} collapsible busy={lane.busy}>
           <Kanban.LaneTitle>
             {lane.title} ({lane.cards.length})
           </Kanban.LaneTitle>
@@ -266,7 +266,7 @@ const handleDrop = (info: KanbanDropInfo) => {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `value` | `unknown` | - | Lane identifier |
-| `busy` | `boolean` | - | Show loading bar |
+| `busy` | `boolean` | - | Show busy bar |
 | `collapsible` | `boolean` | - | Allow collapse/expand |
 | `collapsed` | `boolean` | - | Collapsed state (controlled) |
 | `onCollapsedChange` | `(collapsed: boolean) => void` | - | Collapse state callback |

@@ -34,15 +34,22 @@ import {
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-const KanbanLaneTitle: ParentComponent = (props) => <div data-kanban-lane-title>{props.children}</div>;
+const KanbanLaneTitle: ParentComponent = (props) => (
+  <div data-kanban-lane-title>{props.children}</div>
+);
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-const KanbanLaneTools: ParentComponent = (props) => <div data-kanban-lane-tools>{props.children}</div>;
+const KanbanLaneTools: ParentComponent = (props) => (
+  <div data-kanban-lane-tools>{props.children}</div>
+);
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
-export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "draggable"> {
+export interface KanbanCardProps extends Omit<
+  JSX.HTMLAttributes<HTMLDivElement>,
+  "children" | "draggable"
+> {
   value?: unknown;
   draggable?: boolean;
   selectable?: boolean;
@@ -52,14 +59,25 @@ export interface KanbanCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 
 const cardHostClass = clsx("relative block", "transition-opacity duration-200");
 
-const cardContentClass = clsx("select-none whitespace-normal", "animate-none", "transition-shadow duration-200");
+const cardContentClass = clsx(
+  "select-none whitespace-normal",
+  "animate-none",
+  "transition-shadow duration-200",
+);
 
 const cardSelectedClass = clsx("ring-2 ring-primary-500/50", "shadow-md dark:shadow-black/30");
 
 const LONG_PRESS_MS = 500;
 
 const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
-  const [local, rest] = splitProps(props, ["children", "class", "value", "draggable", "selectable", "contentClass"]);
+  const [local, rest] = splitProps(props, [
+    "children",
+    "class",
+    "value",
+    "draggable",
+    "selectable",
+    "contentClass",
+  ]);
 
   const boardCtx = useKanbanContext();
   const laneCtx = useKanbanLaneContext();
@@ -182,7 +200,12 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       ref={hostRef}
       data-kanban-card
       draggable={isDraggable()}
-      class={twMerge(cardHostClass, isDraggable() && "cursor-grab", isDragSource() && "opacity-30", local.class)}
+      class={twMerge(
+        cardHostClass,
+        isDraggable() && "cursor-grab",
+        isDragSource() && "opacity-30",
+        local.class,
+      )}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -191,7 +214,9 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
       onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
-      <Card class={twMerge(cardContentClass, isSelected() && cardSelectedClass, local.contentClass)}>
+      <Card
+        class={twMerge(cardContentClass, isSelected() && cardSelectedClass, local.contentClass)}
+      >
         {local.children}
       </Card>
     </div>
@@ -267,9 +292,9 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
   const boardCtx = useKanbanContext();
 
-  const [registeredCards, setRegisteredCards] = createSignal<Map<string, { value: unknown; selectable: boolean }>>(
-    new Map(),
-  );
+  const [registeredCards, setRegisteredCards] = createSignal<
+    Map<string, { value: unknown; selectable: boolean }>
+  >(new Map());
 
   const registerCard = (id: string, info: { value: unknown; selectable: boolean }) => {
     setRegisteredCards((prev) => new Map(prev).set(id, info));
@@ -396,7 +421,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
       placeholderEl.style.height = `${dc.heightOnDrag}px`;
 
       // 삽입 위치 계산
-      const referenceNode = target.position === "before" ? target.element : target.element.nextElementSibling;
+      const referenceNode =
+        target.position === "before" ? target.element : target.element.nextElementSibling;
 
       // 이미 올바른 위치면 DOM 조작 생략
       if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
@@ -427,12 +453,21 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
           <Show when={hasHeader()}>
             <div class={laneHeaderBaseClass}>
               <Show when={local.collapsible}>
-                <button type="button" class={collapseButtonClass} onClick={() => setCollapsed((prev) => !prev)}>
+                <button
+                  type="button"
+                  class={collapseButtonClass}
+                  onClick={() => setCollapsed((prev) => !prev)}
+                >
                   <Icon icon={collapsed() ? IconEyeOff : IconEye} size="1em" />
                 </button>
               </Show>
               <Show when={hasSelectableCards()}>
-                <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline theme="primary" />
+                <Checkbox
+                  value={isAllSelected()}
+                  onValueChange={handleSelectAll}
+                  inline
+                  theme="primary"
+                />
               </Show>
               <div class="flex-1">{slots().kanbanLaneTitle}</div>
               <Show when={slots().kanbanLaneTools.length > 0}>
@@ -459,7 +494,10 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
 // ─── Kanban (Board) ──────────────────────────────────────────────
 
-export interface KanbanProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children" | "onDrop"> {
+export interface KanbanProps extends Omit<
+  JSX.HTMLAttributes<HTMLDivElement>,
+  "children" | "onDrop"
+> {
   onDrop?: (info: KanbanDropInfo) => void;
   selectedValues?: unknown[];
   onSelectedValuesChange?: (values: unknown[]) => void;
@@ -477,7 +515,13 @@ interface KanbanComponent {
 }
 
 const KanbanBase = (props: KanbanProps) => {
-  const [local, rest] = splitProps(props, ["children", "class", "onDrop", "selectedValues", "onSelectedValuesChange"]);
+  const [local, rest] = splitProps(props, [
+    "children",
+    "class",
+    "onDrop",
+    "selectedValues",
+    "onSelectedValuesChange",
+  ]);
 
   const [dragCard, setDragCard] = createSignal<KanbanCardRef>();
 

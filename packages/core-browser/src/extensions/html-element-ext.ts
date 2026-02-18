@@ -42,7 +42,10 @@ declare global {
      * @param target - 대상의 컨테이너 내 위치 (offsetTop, offsetLeft)
      * @param offset - 가려지면 안 되는 영역 크기 (예: 고정 헤더 높이, 고정 열 너비)
      */
-    scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void;
+    scrollIntoViewIfNeeded(
+      target: { top: number; left: number },
+      offset?: { top: number; left: number },
+    ): void;
   }
 }
 
@@ -52,7 +55,10 @@ HTMLElement.prototype.repaint = function (): void {
   void this.offsetHeight;
 };
 
-HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): { top: number; left: number } {
+HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): {
+  top: number;
+  left: number;
+} {
   const parentEl = typeof parent === "string" ? this.closest(parent) : parent;
 
   if (!(parentEl instanceof HTMLElement)) {

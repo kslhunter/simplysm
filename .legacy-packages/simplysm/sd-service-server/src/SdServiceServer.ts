@@ -34,7 +34,11 @@ export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
   private readonly _jwt = new SdServiceJwtManager<TAuthInfo>(this);
 
   // 핸들러 인스턴스
-  private readonly _httpRequestHandler = new SdHttpRequestHandler(this, this._serviceExecutor, this._jwt);
+  private readonly _httpRequestHandler = new SdHttpRequestHandler(
+    this,
+    this._serviceExecutor,
+    this._jwt,
+  );
   private readonly _staticFileHandler = new SdStaticFileHandler(this);
   private readonly _uploadHandler = new SdUploadHandler(this, this._jwt);
 
@@ -121,15 +125,19 @@ export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
     });
 
     // JSON 파서
-    this._fastify.addContentTypeParser("application/json", { parseAs: "string" }, (req, body, done) => {
-      try {
-        const json = JsonConvert.parse(body as string);
-        done(null, json);
-      } catch (err: any) {
-        err.statusCode = 400;
-        done(err, undefined);
-      }
-    });
+    this._fastify.addContentTypeParser(
+      "application/json",
+      { parseAs: "string" },
+      (req, body, done) => {
+        try {
+          const json = JsonConvert.parse(body as string);
+          done(null, json);
+        } catch (err: any) {
+          err.statusCode = 400;
+          done(err, undefined);
+        }
+      },
+    );
 
     // JSON 생성기
     this._fastify.setSerializerCompiler(() => (data) => JsonConvert.stringify(data));
@@ -176,7 +184,9 @@ export class SdServiceServer<TAuthInfo = any> extends EventEmitter {
 
         // portProxy
         if (this.options.portProxy) {
-          const proxyKey = Object.keys(this.options.portProxy).find((key) => urlPath.startsWith(key));
+          const proxyKey = Object.keys(this.options.portProxy).find((key) =>
+            urlPath.startsWith(key),
+          );
           if (proxyKey != null) {
             const targetPort = this.options.portProxy[proxyKey];
             const target = `http://127.0.0.1:${targetPort}${req.raw.url}`;

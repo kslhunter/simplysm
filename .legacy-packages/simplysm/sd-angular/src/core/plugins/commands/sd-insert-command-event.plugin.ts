@@ -15,7 +15,11 @@ export class SdInsertCommandEventPlugin extends EventManagerPlugin {
     return eventName === "sdInsertCommand";
   }
 
-  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(
+    element: HTMLElement,
+    eventName: string,
+    handler: (event: Event) => void,
+  ): () => void {
     const listener = (event: KeyboardEvent): void => {
       if (event.key === "Insert" && event.ctrlKey && !event.altKey && !event.shiftKey) {
         if (this._sdModal.modalCount() > 0) {

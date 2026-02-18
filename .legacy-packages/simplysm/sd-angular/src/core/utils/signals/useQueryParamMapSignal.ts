@@ -6,7 +6,9 @@ export function useQueryParamMapSignal() {
   const activatedRoute = inject(ActivatedRoute, { optional: true });
 
   if (activatedRoute) {
-    return toSignal(activatedRoute.queryParamMap, { initialValue: activatedRoute.snapshot.queryParamMap });
+    return toSignal(activatedRoute.queryParamMap, {
+      initialValue: activatedRoute.snapshot.queryParamMap,
+    });
   }
 
   return undefined;

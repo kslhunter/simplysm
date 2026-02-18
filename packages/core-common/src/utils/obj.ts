@@ -204,7 +204,11 @@ export function objEqual(source: unknown, target: unknown, options?: EqualOption
   }
 
   if (typeof source === "object" && typeof target === "object") {
-    return objEqualObject(source as Record<string, unknown>, target as Record<string, unknown>, options);
+    return objEqualObject(
+      source as Record<string, unknown>,
+      target as Record<string, unknown>,
+      options,
+    );
   }
 
   return false;
@@ -229,9 +233,14 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
       });
     } else {
       // 재귀 호출 시 topLevelIncludes/topLevelExcludes 옵션은 최상위 레벨에만 적용되므로 제외
-      const recursiveOptions = { ignoreArrayIndex: options.ignoreArrayIndex, onlyOneDepth: options.onlyOneDepth };
+      const recursiveOptions = {
+        ignoreArrayIndex: options.ignoreArrayIndex,
+        onlyOneDepth: options.onlyOneDepth,
+      };
       return source.every((sourceItem) => {
-        const idx = target.findIndex((t, i) => !matchedIndices.has(i) && objEqual(t, sourceItem, recursiveOptions));
+        const idx = target.findIndex(
+          (t, i) => !matchedIndices.has(i) && objEqual(t, sourceItem, recursiveOptions),
+        );
         if (idx !== -1) {
           matchedIndices.add(idx);
           return true;
@@ -269,7 +278,11 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
  * @note 비문자열 키(객체, 배열 등) 처리 시 O(n²) 복잡도 발생
  * @note 대량 데이터의 경우 onlyOneDepth: true 옵션 사용 권장 (참조 비교로 O(n)으로 개선)
  */
-function objEqualMap(source: Map<unknown, unknown>, target: Map<unknown, unknown>, options?: EqualOptions): boolean {
+function objEqualMap(
+  source: Map<unknown, unknown>,
+  target: Map<unknown, unknown>,
+  options?: EqualOptions,
+): boolean {
   // Map 비교 시 topLevelIncludes/topLevelExcludes 옵션은 무시됨 (object 속성 키에만 적용)
   const sourceKeys = Array.from(source.keys()).filter((key) => source.get(key) != null);
   const targetKeys = Array.from(target.keys()).filter((key) => target.get(key) != null);
@@ -392,7 +405,9 @@ function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: Equal
     const targetArr = [...target];
     const matchedIndices = new Set<number>();
     for (const sourceItem of source) {
-      const idx = targetArr.findIndex((t, i) => !matchedIndices.has(i) && objEqual(sourceItem, t, options));
+      const idx = targetArr.findIndex(
+        (t, i) => !matchedIndices.has(i) && objEqual(sourceItem, t, options),
+      );
       if (idx === -1) {
         return false;
       }
@@ -447,7 +462,9 @@ export function objMerge<TSource, TMergeTarget>(
   }
 
   if (target === null) {
-    return opt?.useDelTargetNull ? (undefined as TSource & TMergeTarget) : (objClone(source) as TSource & TMergeTarget);
+    return opt?.useDelTargetNull
+      ? (undefined as TSource & TMergeTarget)
+      : (objClone(source) as TSource & TMergeTarget);
   }
 
   if (typeof target !== "object") {
@@ -588,7 +605,10 @@ export function objMerge3<
  * objOmit(user, ["email"]);
  * // { name: "Alice", age: 30 }
  */
-export function objOmit<T extends Record<string, unknown>, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K> {
+export function objOmit<T extends Record<string, unknown>, K extends keyof T>(
+  item: T,
+  omitKeys: K[],
+): Omit<T, K> {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(item)) {
     if (!omitKeys.includes(key as K)) {
@@ -609,7 +629,10 @@ export function objOmit<T extends Record<string, unknown>, K extends keyof T>(it
  * objOmitByFilter(data, (key) => key.startsWith("_"));
  * // { name: "Alice", age: 30 }
  */
-export function objOmitByFilter<T extends Record<string, unknown>>(item: T, omitKeyFn: (key: keyof T) => boolean): T {
+export function objOmitByFilter<T extends Record<string, unknown>>(
+  item: T,
+  omitKeyFn: (key: keyof T) => boolean,
+): T {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(item)) {
     if (!omitKeyFn(key)) {
@@ -629,7 +652,10 @@ export function objOmitByFilter<T extends Record<string, unknown>>(item: T, omit
  * objPick(user, ["name", "age"]);
  * // { name: "Alice", age: 30 }
  */
-export function objPick<T extends Record<string, unknown>, K extends keyof T>(item: T, keys: K[]): Pick<T, K> {
+export function objPick<T extends Record<string, unknown>, K extends keyof T>(
+  item: T,
+  keys: K[],
+): Pick<T, K> {
   const result: Record<string, unknown> = {};
   for (const key of keys) {
     result[key as string] = item[key];
@@ -669,7 +695,11 @@ function getChainSplits(chain: string): (string | number)[] {
  */
 export function objGetChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
 export function objGetChainValue(obj: unknown, chain: string): unknown;
-export function objGetChainValue(obj: unknown, chain: string, optional?: true): unknown | undefined {
+export function objGetChainValue(
+  obj: unknown,
+  chain: string,
+  optional?: true,
+): unknown | undefined {
   const splits = getChainSplits(chain);
   let result: unknown = obj;
   for (const splitItem of splits) {
@@ -957,7 +987,10 @@ function objMapImpl<TSource extends object, TNewKey extends string, TNewValue>(
 ): Record<string, TNewValue> {
   const result: Record<string, TNewValue> = {};
   for (const key of Object.keys(obj)) {
-    const [newKey, newValue] = fn(key as keyof TSource, (obj as Record<string, TSource[keyof TSource]>)[key]);
+    const [newKey, newValue] = fn(
+      key as keyof TSource,
+      (obj as Record<string, TSource[keyof TSource]>)[key],
+    );
     result[newKey ?? key] = newValue;
   }
   return result;

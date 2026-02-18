@@ -57,9 +57,13 @@ describe("MysqlDbConn", () => {
     });
 
     it("INSERT 및 SELECT", async () => {
-      await conn.execute([`INSERT INTO \`TestDb\`.\`TestTable\` (name, value) VALUES ('test', 123)`]);
+      await conn.execute([
+        `INSERT INTO \`TestDb\`.\`TestTable\` (name, value) VALUES ('test', 123)`,
+      ]);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = 'test'`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = 'test'`,
+      ]);
 
       expect(results).toHaveLength(1);
       expect(results[0]).toHaveLength(1);
@@ -67,14 +71,20 @@ describe("MysqlDbConn", () => {
     });
 
     it("파라미터화된 쿼리", async () => {
-      const results = await conn.executeParametrized(`SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ?`, ["test"]);
+      const results = await conn.executeParametrized(
+        `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE name = ?`,
+        ["test"],
+      );
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ name: "test", value: 123 });
     });
 
     it("파라미터화된 쿼리 - 숫자 타입", async () => {
-      const results = await conn.executeParametrized(`SELECT * FROM \`TestDb\`.\`TestTable\` WHERE value = ?`, [123]);
+      const results = await conn.executeParametrized(
+        `SELECT * FROM \`TestDb\`.\`TestTable\` WHERE value = ?`,
+        [123],
+      );
 
       expect(results).toHaveLength(1);
       expect(results[0][0]).toMatchObject({ value: 123 });
@@ -94,7 +104,9 @@ describe("MysqlDbConn", () => {
   describe("연결 오류 처리", () => {
     it("미연결 상태에서 쿼리 실행 시 에러", async () => {
       const disconnectedConn = new MysqlDbConn(mysql2, mysqlConfig);
-      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow("'Connection'이 연결되어있지 않습니다");
+      await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
+        "'Connection'이 연결되어있지 않습니다",
+      );
     });
 
     it("잘못된 쿼리 실행 시 에러", async () => {
@@ -136,7 +148,9 @@ describe("MysqlDbConn", () => {
       await conn.commitTransaction();
       expect(conn.isOnTransaction).toBe(false);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'commit-test'`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'commit-test'`,
+      ]);
       expect(results[0]).toHaveLength(1);
     });
 
@@ -147,7 +161,9 @@ describe("MysqlDbConn", () => {
       await conn.rollbackTransaction();
       expect(conn.isOnTransaction).toBe(false);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'rollback-test'`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'rollback-test'`,
+      ]);
       expect(results[0]).toHaveLength(0);
     });
   });
@@ -203,7 +219,9 @@ describe("MysqlDbConn", () => {
       };
 
       // 빈 배열로 호출해도 에러 없이 완료되어야 함
-      await expect(conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, [])).resolves.toBeUndefined();
+      await expect(
+        conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, []),
+      ).resolves.toBeUndefined();
     });
 
     it("특수 문자 포함 데이터 INSERT", async () => {
@@ -223,7 +241,9 @@ describe("MysqlDbConn", () => {
 
       await conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, records);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`BulkTable\` WHERE id >= 10 ORDER BY id`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`BulkTable\` WHERE id >= 10 ORDER BY id`,
+      ]);
 
       expect(results[0]).toHaveLength(3);
       expect((results[0][0] as { name: string }).name).toBe("tab\there");
@@ -336,7 +356,9 @@ describe("MysqlDbConn", () => {
 
       await conn.bulkInsert("`TestDb`.`NullableTable`", columnMetas, records);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`NullableTable\` ORDER BY id`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`NullableTable\` ORDER BY id`,
+      ]);
 
       expect(results[0]).toHaveLength(4);
       expect((results[0][0] as Record<string, unknown>)["name"]).toBe("test1");
@@ -446,7 +468,9 @@ describe("MysqlDbConn", () => {
       await conn.beginTransaction("REPEATABLE_READ");
       expect(conn.isOnTransaction).toBe(true);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`,
+      ]);
       expect(results[0]).toHaveLength(1);
 
       await conn.rollbackTransaction();
@@ -457,7 +481,9 @@ describe("MysqlDbConn", () => {
       await conn.beginTransaction("SERIALIZABLE");
       expect(conn.isOnTransaction).toBe(true);
 
-      const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`]);
+      const results = await conn.execute([
+        `SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`,
+      ]);
       expect(results[0]).toHaveLength(1);
 
       await conn.commitTransaction();

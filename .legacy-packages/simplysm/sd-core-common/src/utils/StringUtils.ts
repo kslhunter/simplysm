@@ -59,22 +59,34 @@ export class StringUtils {
   };
 
   // 정규식도 1회만 생성
-  private static readonly _specialCharRegex = new RegExp(`[${Object.keys(StringUtils._specialCharMap).join("")}]`, "g");
+  private static readonly _specialCharRegex = new RegExp(
+    `[${Object.keys(StringUtils._specialCharMap).join("")}]`,
+    "g",
+  );
 
   static replaceSpecialDefaultChar(str: string): string {
-    return str.replace(StringUtils._specialCharRegex, (char) => StringUtils._specialCharMap[char] ?? char);
+    return str.replace(
+      StringUtils._specialCharRegex,
+      (char) => StringUtils._specialCharMap[char] ?? char,
+    );
   }
 
   static toPascalCase(str: string): string {
-    return str.replace(/[-.][a-z]/g, (m) => m[1].toUpperCase()).replace(/^[a-z]/, (m) => m.toUpperCase());
+    return str
+      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/^[a-z]/, (m) => m.toUpperCase());
   }
 
   static toCamelCase(str: string): string {
-    return str.replace(/[-.][a-z]/g, (m) => m[1].toUpperCase()).replace(/^[A-Z]/, (m) => m.toLowerCase());
+    return str
+      .replace(/[-.][a-z]/g, (m) => m[1].toUpperCase())
+      .replace(/^[A-Z]/, (m) => m.toLowerCase());
   }
 
   static toKebabCase(str: string): string {
-    return str.replace(/^[A-Z]/, (m) => m.toLowerCase()).replace(/[-_]?[A-Z]/g, (m) => "-" + m.toLowerCase());
+    return str
+      .replace(/^[A-Z]/, (m) => m.toLowerCase())
+      .replace(/[-_]?[A-Z]/g, (m) => "-" + m.toLowerCase());
   }
 
   static isNullOrEmpty(str: string | null | undefined): str is "" | undefined | null {

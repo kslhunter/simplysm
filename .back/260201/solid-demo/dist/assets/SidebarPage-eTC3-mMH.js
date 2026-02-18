@@ -1,10 +1,23 @@
-import { g as ue, c as r, a as n, b as t, i as d, F as he, s as m, d as v, t as s } from "./index-DaQvuWeP.js";
+import {
+  g as ue,
+  c as r,
+  a as n,
+  b as t,
+  i as d,
+  F as he,
+  s as m,
+  d as v,
+  t as s,
+} from "./index-DaQvuWeP.js";
 import { B as be } from "./IconMenu2-BvvTiCnB.js";
 import { b as u, S as h, a as b, I as $e } from "./sidebar-menu-Cz0ipkzh.js";
 import { S as te } from "./sidebar-user-CUCHQprk.js";
 import { T as ce, a as ge } from "./topbar-DloMbu3D.js";
 import { a as i } from "./atoms.css-WCFmS3R-.js";
-/* empty css                              */ import { I as _e, a as fe } from "./IconSettings-DZK_D65a.js";
+/* empty css                              */ import {
+  I as _e,
+  a as fe,
+} from "./IconSettings-DZK_D65a.js";
 import "./list-item-TR_b4pbw.js";
 import "./token.css-Cwc-7hPJ.js";
 import "./constants-Bbx-VEQM.js";
@@ -116,7 +129,10 @@ function Ge() {
                                   return [
                                     (() => {
                                       var a = g();
-                                      return (n(() => t(a, i({ p: "base", fontWeight: "bold" }))), a);
+                                      return (
+                                        n(() => t(a, i({ p: "base", fontWeight: "bold" }))),
+                                        a
+                                      );
                                     })(),
                                     r(b, { menus: _, layout: "flat" }),
                                   ];
@@ -125,7 +141,11 @@ function Ge() {
                               (() => {
                                 var a = I(),
                                   C = a.firstChild;
-                                return (t(a, c), n((W) => m(C, "color", `rgb(${v.text.muted})`)), a);
+                                return (
+                                  t(a, c),
+                                  n((W) => m(C, "color", `rgb(${v.text.muted})`)),
+                                  a
+                                );
                               })(),
                             ];
                           },
@@ -344,7 +364,17 @@ function Ge() {
                   e
                 );
               },
-              { e: void 0, t: void 0, a: void 0, o: void 0, i: void 0, n: void 0, s: void 0, h: void 0, r: void 0 },
+              {
+                e: void 0,
+                t: void 0,
+                a: void 0,
+                o: void 0,
+                i: void 0,
+                n: void 0,
+                s: void 0,
+                h: void 0,
+                r: void 0,
+              },
             ),
             f
           );

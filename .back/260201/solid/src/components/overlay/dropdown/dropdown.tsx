@@ -10,7 +10,11 @@ import {
 } from "solid-js";
 import { createFieldSignal } from "../../../hooks/createFieldSignal";
 import { tabbable } from "tabbable";
-import { DropdownContext, type DropdownInternalContextValue, useDropdownInternal } from "./dropdown-context";
+import {
+  DropdownContext,
+  type DropdownInternalContextValue,
+  useDropdownInternal,
+} from "./dropdown-context";
 import { dropdown } from "./dropdown.css";
 import { MOBILE_BREAKPOINT_PX } from "../../../constants";
 
@@ -40,7 +44,12 @@ const getScrollableParents = (element: HTMLElement): HTMLElement[] => {
     const overflowY = style.overflowY;
     const overflowX = style.overflowX;
 
-    if (overflowY === "auto" || overflowY === "scroll" || overflowX === "auto" || overflowX === "scroll") {
+    if (
+      overflowY === "auto" ||
+      overflowY === "scroll" ||
+      overflowX === "auto" ||
+      overflowX === "scroll"
+    ) {
       scrollableParents.push(current);
     }
     current = current.parentElement;
@@ -81,7 +90,13 @@ const getScrollableParents = (element: HTMLElement): HTMLElement[] => {
  * ```
  */
 export const Dropdown: ParentComponent<DropdownProps> = (props) => {
-  const [local, rest] = splitProps(props, ["open", "onOpenChange", "disabled", "children", "class"]);
+  const [local, rest] = splitProps(props, [
+    "open",
+    "onOpenChange",
+    "disabled",
+    "children",
+    "class",
+  ]);
 
   const id = createUniqueId();
   const parentCtx = useDropdownInternal();
@@ -290,9 +305,11 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
     // - top 배치: ArrowUp = 팝업 열기/내부 진입, ArrowDown = 팝업 닫기
     // 이는 팝업이 열리는 방향으로 포커스가 이동하는 것이 자연스럽기 때문
     const isOpenKey =
-      (e.key === "ArrowDown" && placement() === "bottom") || (e.key === "ArrowUp" && placement() === "top");
+      (e.key === "ArrowDown" && placement() === "bottom") ||
+      (e.key === "ArrowUp" && placement() === "top");
     const isCloseKey =
-      (e.key === "ArrowUp" && placement() === "bottom") || (e.key === "ArrowDown" && placement() === "top");
+      (e.key === "ArrowUp" && placement() === "bottom") ||
+      (e.key === "ArrowDown" && placement() === "top");
 
     if (isOpenKey) {
       e.preventDefault();

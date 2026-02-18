@@ -15,7 +15,10 @@ import "@simplysm/core-common";
  */
 export interface DateFieldProps
   extends
-    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+    Omit<
+      JSX.InputHTMLAttributes<HTMLInputElement>,
+      "value" | "onChange" | "type" | "min" | "max" | "size"
+    >,
     DateFieldStyles {
   value?: DateOnly | undefined;
   onChange?: (value: DateOnly | undefined) => void;

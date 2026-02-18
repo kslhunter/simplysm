@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, model, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { NumberUtils, StringUtils } from "@simplysm/sd-core-common";
 import { $effect } from "../../../core/utils/bindings/$effect";
 import { $signal } from "../../../core/utils/bindings/$signal";
@@ -51,12 +58,20 @@ import { tablerArrowLeft, tablerEraser } from "@ng-icons/tabler-icons";
             </td>
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
-            <sd-button [size]="'lg'" [buttonClass]="'tx-theme-danger-default'" (click)="onButtonClick('C')">
+            <sd-button
+              [size]="'lg'"
+              [buttonClass]="'tx-theme-danger-default'"
+              (click)="onButtonClick('C')"
+            >
               <ng-icon [svg]="tablerEraser" />
             </sd-button>
           </td>
           <td>
-            <sd-button [size]="'lg'" [buttonClass]="'tx-theme-warning-default'" (click)="onButtonClick('BS')">
+            <sd-button
+              [size]="'lg'"
+              [buttonClass]="'tx-theme-warning-default'"
+              (click)="onButtonClick('BS')"
+            >
               <ng-icon [svg]="tablerArrowLeft" />
             </sd-button>
           </td>

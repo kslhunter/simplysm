@@ -1,5 +1,15 @@
 import path from "path";
-import { fsExists, fsMkdir, fsRead, fsReadJson, fsWrite, fsWriteJson, fsGlob, fsCopy, fsRm } from "@simplysm/core-node";
+import {
+  fsExists,
+  fsMkdir,
+  fsRead,
+  fsReadJson,
+  fsWrite,
+  fsWriteJson,
+  fsGlob,
+  fsCopy,
+  fsRm,
+} from "@simplysm/core-node";
 import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import sharp from "sharp";
@@ -106,7 +116,8 @@ export class Capacitor {
     if (await fsExists(lockPath)) {
       const lockContent = await fsRead(lockPath);
       throw new Error(
-        `다른 Capacitor 작업이 진행 중입니다 (PID: ${lockContent}). ` + `문제가 있다면 ${lockPath} 파일을 삭제하세요.`,
+        `다른 Capacitor 작업이 진행 중입니다 (PID: ${lockContent}). ` +
+          `문제가 있다면 ${lockPath} 파일을 삭제하세요.`,
       );
     }
     await fsMkdir(this._capPath);
@@ -139,7 +150,9 @@ export class Capacitor {
     if (this._platforms.includes("android")) {
       const javaPath = await this._findJava21();
       if (javaPath == null) {
-        Capacitor._logger.warn("Java 21을 찾을 수 없습니다. Gradle이 내장 JDK를 사용하거나 빌드가 실패할 수 있습니다.");
+        Capacitor._logger.warn(
+          "Java 21을 찾을 수 없습니다. Gradle이 내장 JDK를 사용하거나 빌드가 실패할 수 있습니다.",
+        );
       }
     }
   }
@@ -273,13 +286,20 @@ export class Capacitor {
     // F12: cap init 멱등성 - capacitor.config.ts가 없을 때만 실행
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
     if (!(await fsExists(configPath))) {
-      await this._exec("npx", ["cap", "init", this._config.appName, this._config.appId], this._capPath);
+      await this._exec(
+        "npx",
+        ["cap", "init", this._config.appName, this._config.appId],
+        this._capPath,
+      );
     }
 
     // 기본 www/index.html 생성
     const wwwPath = path.resolve(this._capPath, "www");
     await fsMkdir(wwwPath);
-    await fsWrite(path.resolve(wwwPath, "index.html"), "<!DOCTYPE html><html><head></head><body></body></html>");
+    await fsWrite(
+      path.resolve(wwwPath, "index.html"),
+      "<!DOCTYPE html><html><head></head><body></body></html>",
+    );
 
     return true;
   }
@@ -331,7 +351,10 @@ export class Capacitor {
     const usePlugins = Object.keys(this._config.plugins ?? {});
 
     const prevPlugins = Object.keys(capNpmConf.dependencies).filter(
-      (item) => !["@capacitor/core", "@capacitor/android", "@capacitor/ios", "@capacitor/app"].includes(item),
+      (item) =>
+        !["@capacitor/core", "@capacitor/android", "@capacitor/ios", "@capacitor/app"].includes(
+          item,
+        ),
     );
 
     // 사용하지 않는 플러그인 제거
@@ -380,7 +403,9 @@ export class Capacitor {
     }
 
     const pluginsConfigStr =
-      Object.keys(pluginOptions).length > 0 ? JSON.stringify(pluginOptions, null, 2).replace(/^/gm, "  ").trim() : "{}";
+      Object.keys(pluginOptions).length > 0
+        ? JSON.stringify(pluginOptions, null, 2).replace(/^/gm, "  ").trim()
+        : "{}";
 
     const configContent = `import type { CapacitorConfig } from "@capacitor/cli";
 
@@ -427,7 +452,9 @@ export default config;
 
       // F6: 소스 아이콘 존재 확인
       if (!(await fsExists(iconSource))) {
-        Capacitor._logger.warn(`아이콘 파일을 찾을 수 없습니다: ${iconSource}. 기본 아이콘을 사용합니다.`);
+        Capacitor._logger.warn(
+          `아이콘 파일을 찾을 수 없습니다: ${iconSource}. 기본 아이콘을 사용합니다.`,
+        );
         return;
       }
 
@@ -457,7 +484,14 @@ export default config;
 
         await this._exec(
           "npx",
-          ["@capacitor/assets", "generate", "--iconBackgroundColor", "#ffffff", "--splashBackgroundColor", "#ffffff"],
+          [
+            "@capacitor/assets",
+            "generate",
+            "--iconBackgroundColor",
+            "#ffffff",
+            "--splashBackgroundColor",
+            "#ffffff",
+          ],
           this._capPath,
         );
       } catch (err) {
@@ -605,7 +639,8 @@ export default config;
     for (const perm of permissions) {
       const permTag = `<uses-permission android:name="android.permission.${perm.name}"`;
       if (!content.includes(permTag)) {
-        const maxSdkAttr = perm.maxSdkVersion != null ? ` android:maxSdkVersion="${perm.maxSdkVersion}"` : "";
+        const maxSdkAttr =
+          perm.maxSdkVersion != null ? ` android:maxSdkVersion="${perm.maxSdkVersion}"` : "";
         const ignoreAttr = perm.ignore != null ? ` tools:ignore="${perm.ignore}"` : "";
         const permLine = `    ${permTag}${maxSdkAttr}${ignoreAttr} />\n`;
 
@@ -637,7 +672,8 @@ export default config;
       const filterKey = filter.action ?? filter.category ?? "";
       if (filterKey && !content.includes(filterKey)) {
         const actionLine = filter.action != null ? `<action android:name="${filter.action}"/>` : "";
-        const categoryLine = filter.category != null ? `<category android:name="${filter.category}"/>` : "";
+        const categoryLine =
+          filter.category != null ? `<category android:name="${filter.category}"/>` : "";
 
         content = content.replace(
           /(<activity[\s\S]*?android:name="\.MainActivity"[\s\S]*?>)/,
@@ -685,7 +721,10 @@ export default config;
       content = content.replace(/targetSdkVersion .+/, `targetSdkVersion ${sdkVersion}`);
     } else {
       content = content.replace(/minSdkVersion .+/, `minSdkVersion rootProject.ext.minSdkVersion`);
-      content = content.replace(/targetSdkVersion .+/, `targetSdkVersion rootProject.ext.targetSdkVersion`);
+      content = content.replace(
+        /targetSdkVersion .+/,
+        `targetSdkVersion rootProject.ext.targetSdkVersion`,
+      );
     }
 
     // Signing 설정
@@ -700,7 +739,9 @@ export default config;
       await fsCopy(keystoreSource, keystorePath);
 
       // F9: 상대 경로를 forward slash로 변환
-      const keystoreRelativePath = path.relative(path.dirname(buildGradlePath), keystorePath).replace(/\\/g, "/");
+      const keystoreRelativePath = path
+        .relative(path.dirname(buildGradlePath), keystorePath)
+        .replace(/\\/g, "/");
       const keystoreType = signConfig.keystoreType ?? "jks";
 
       if (!content.includes("signingConfigs")) {
@@ -743,7 +784,8 @@ export default config;
     const targetOutPath = path.resolve(outPath, "android");
 
     const isBundle = this._config.platform?.android?.bundle;
-    const gradleTask = buildType === "release" ? (isBundle ? "bundleRelease" : "assembleRelease") : "assembleDebug";
+    const gradleTask =
+      buildType === "release" ? (isBundle ? "bundleRelease" : "assembleRelease") : "assembleDebug";
 
     // Gradle 빌드 실행 (크로스 플랫폼)
     // F9: Windows에서 cmd.exe를 통해 실행 (shell: false 이므로)
@@ -760,7 +802,11 @@ export default config;
   /**
    * Android 빌드 결과물 복사
    */
-  private async _copyAndroidBuildOutput(androidPath: string, targetOutPath: string, buildType: string): Promise<void> {
+  private async _copyAndroidBuildOutput(
+    androidPath: string,
+    targetOutPath: string,
+    buildType: string,
+  ): Promise<void> {
     const isBundle = this._config.platform?.android?.bundle;
     const isSigned = Boolean(this._config.platform?.android?.sign);
 
@@ -768,11 +814,23 @@ export default config;
     const outputType = isBundle ? "bundle" : "apk";
     const fileName = isSigned ? `app-${buildType}.${ext}` : `app-${buildType}-unsigned.${ext}`;
 
-    const sourcePath = path.resolve(androidPath, "app/build/outputs", outputType, buildType, fileName);
+    const sourcePath = path.resolve(
+      androidPath,
+      "app/build/outputs",
+      outputType,
+      buildType,
+      fileName,
+    );
 
     const actualPath = (await fsExists(sourcePath))
       ? sourcePath
-      : path.resolve(androidPath, "app/build/outputs", outputType, buildType, `app-${buildType}.${ext}`);
+      : path.resolve(
+          androidPath,
+          "app/build/outputs",
+          outputType,
+          buildType,
+          `app-${buildType}.${ext}`,
+        );
 
     if (!(await fsExists(actualPath))) {
       Capacitor._logger.warn(`빌드 결과물을 찾을 수 없습니다: ${actualPath}`);
@@ -821,7 +879,9 @@ export default config;
    * 문자열을 PascalCase로 변환
    */
   private _toPascalCase(str: string): string {
-    return str.replace(/[-_](.)/g, (_, c: string) => c.toUpperCase()).replace(/^./, (c) => c.toUpperCase());
+    return str
+      .replace(/[-_](.)/g, (_, c: string) => c.toUpperCase())
+      .replace(/^./, (c) => c.toUpperCase());
   }
 
   //#endregion

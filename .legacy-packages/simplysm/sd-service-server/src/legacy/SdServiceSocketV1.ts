@@ -4,7 +4,11 @@ import { WebSocket } from "ws";
 import { EventEmitter } from "events";
 import { clearInterval } from "node:timers";
 import { SdServiceProtocolV1 } from "./SdServiceProtocolV1";
-import type { ISdServiceRequest, TSdServiceC2SMessage, TSdServiceS2CMessage } from "./protocol-v1.types";
+import type {
+  ISdServiceRequest,
+  TSdServiceC2SMessage,
+  TSdServiceS2CMessage,
+} from "./protocol-v1.types";
 
 /** @deprecated */
 export class SdServiceSocketV1 extends EventEmitter {

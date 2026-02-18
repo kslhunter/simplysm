@@ -53,7 +53,9 @@ import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
   ],
 })
 export class SdNoteControl {
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
   size = input<"sm" | "lg">();
   inset = input(false, { transform: transformBoolean });
 }

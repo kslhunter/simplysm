@@ -36,7 +36,11 @@ describe("DDL - Relation Builder", () => {
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User);
 
     const db = createTestDb();
-    const def = db.getAddFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user", fkBuilder);
+    const def = db.getAddFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Post" },
+      "user",
+      fkBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -72,7 +76,11 @@ describe("DDL - Relation Builder", () => {
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User).description("사용자 관계");
 
     const db = createTestDb();
-    const def = db.getAddFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user", fkBuilder);
+    const def = db.getAddFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Post" },
+      "user",
+      fkBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -211,7 +219,9 @@ describe("DDL - Relation Builder", () => {
       .relations(() => ({}));
 
     const RelationFactory = createRelationFactory(() => User);
-    const targetBuilder = RelationFactory.foreignKeyTarget(() => Post, "posts").description("사용자의 게시물 목록");
+    const targetBuilder = RelationFactory.foreignKeyTarget(() => Post, "posts").description(
+      "사용자의 게시물 목록",
+    );
 
     it("메타 데이터 검증", () => {
       expect(targetBuilder.meta).toEqual({
@@ -265,7 +275,9 @@ describe("DDL - Relation Builder", () => {
       .relations(() => ({}));
 
     const RelationFactory = createRelationFactory(() => Post);
-    const rkBuilder = RelationFactory.relationKey(["authorId"], () => User).description("작성자 관계 (논리적)");
+    const rkBuilder = RelationFactory.relationKey(["authorId"], () => User).description(
+      "작성자 관계 (논리적)",
+    );
 
     it("메타 데이터 검증", () => {
       expect(rkBuilder.meta).toEqual({
@@ -341,9 +353,10 @@ describe("DDL - Relation Builder", () => {
       .relations(() => ({}));
 
     const RelationFactory = createRelationFactory(() => User);
-    const targetBuilder = RelationFactory.relationKeyTarget(() => Post, "authoredPosts").description(
-      "작성한 게시물 목록 (논리적)",
-    );
+    const targetBuilder = RelationFactory.relationKeyTarget(
+      () => Post,
+      "authoredPosts",
+    ).description("작성한 게시물 목록 (논리적)");
 
     it("메타 데이터 검증", () => {
       expect(targetBuilder.meta).toEqual({

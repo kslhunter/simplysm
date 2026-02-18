@@ -141,7 +141,10 @@ describe("DDL - Table", () => {
 
   describe("getSwitchFkQueryDef - on", () => {
     const db = createTestDb();
-    const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "on");
+    const def = db.getSwitchFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "on",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -159,7 +162,10 @@ describe("DDL - Table", () => {
 
   describe("getSwitchFkQueryDef - off", () => {
     const db = createTestDb();
-    const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "off");
+    const def = db.getSwitchFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "off",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -194,7 +200,10 @@ describe("DDL - Table", () => {
 
   describe("getRenameTableQueryDef", () => {
     const db = createTestDb();
-    const def = db.getRenameTableQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "Member");
+    const def = db.getRenameTableQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "Member",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -215,7 +224,11 @@ describe("DDL - Column", () => {
   describe("getAddColumnQueryDef", () => {
     const db = createTestDb();
     const column = Column.varchar(50).nullable();
-    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "nickname", column);
+    const def = db.getAddColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "nickname",
+      column,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -240,7 +253,11 @@ describe("DDL - Column", () => {
   describe("getAddColumnQueryDef - with default", () => {
     const db = createTestDb();
     const column = Column.int().default(0);
-    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
+    const def = db.getAddColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "score",
+      column,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -265,7 +282,11 @@ describe("DDL - Column", () => {
   describe("getAddColumnQueryDef - with autoIncrement", () => {
     const db = createTestDb();
     const column = Column.bigint().autoIncrement();
-    const def = db.getAddColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "seq", column);
+    const def = db.getAddColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "seq",
+      column,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -289,7 +310,10 @@ describe("DDL - Column", () => {
 
   describe("getDropColumnQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "email");
+    const def = db.getDropColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "email",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -308,7 +332,11 @@ describe("DDL - Column", () => {
   describe("getModifyColumnQueryDef", () => {
     const db = createTestDb();
     const column = Column.varchar(200).nullable();
-    const def = db.getModifyColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "name", column);
+    const def = db.getModifyColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "name",
+      column,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -333,7 +361,11 @@ describe("DDL - Column", () => {
   describe("getModifyColumnQueryDef - TYPE + DEFAULT 동시 변경", () => {
     const db = createTestDb();
     const column = Column.int().default(100);
-    const def = db.getModifyColumnQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, "score", column);
+    const def = db.getModifyColumnQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      "score",
+      column,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -399,7 +431,9 @@ describe("DDL - Primary Key", () => {
 
   describe("getAddPkQueryDef", () => {
     const db = createTestDb();
-    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["id"]);
+    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
+      "id",
+    ]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -417,10 +451,10 @@ describe("DDL - Primary Key", () => {
 
   describe("getAddPkQueryDef - composite key", () => {
     const db = createTestDb();
-    const def = db.getAddPkQueryDef({ database: "TestDb", schema: "TestSchema", name: "UserRole" }, [
-      "userId",
-      "roleId",
-    ]);
+    const def = db.getAddPkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "UserRole" },
+      ["userId", "roleId"],
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -445,7 +479,11 @@ describe("DDL - Foreign Key / Index", () => {
       throw new Error("user relation not found");
     }
 
-    const def = db.getAddFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user", userRelation);
+    const def = db.getAddFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Post" },
+      "user",
+      userRelation,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -468,7 +506,10 @@ describe("DDL - Foreign Key / Index", () => {
 
   describe("getDropFkQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Post" }, "user");
+    const def = db.getDropFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Post" },
+      "user",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -488,7 +529,10 @@ describe("DDL - Foreign Key / Index", () => {
     const db = createTestDb();
     const indexBuilder = new IndexBuilder({ columns: ["email"] as string[], unique: true });
 
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -510,7 +554,9 @@ describe("DDL - Foreign Key / Index", () => {
 
   describe("getDropIdxQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["email"]);
+    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
+      "email",
+    ]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -528,7 +574,10 @@ describe("DDL - Foreign Key / Index", () => {
 
   describe("getDropIdxQueryDef - composite", () => {
     const db = createTestDb();
-    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, ["name", "email"]);
+    const def = db.getDropIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, [
+      "name",
+      "email",
+    ]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -578,7 +627,11 @@ describe("DDL - View", () => {
 
   describe("getDropViewQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropViewQueryDef({ database: "TestDb", schema: "TestSchema", name: "ActiveUsers" });
+    const def = db.getDropViewQueryDef({
+      database: "TestDb",
+      schema: "TestSchema",
+      name: "ActiveUsers",
+    });
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -640,7 +693,11 @@ describe("DDL - Procedure", () => {
 
   describe("getDropProcQueryDef", () => {
     const db = createTestDb();
-    const def = db.getDropProcQueryDef({ database: "TestDb", schema: "TestSchema", name: "GetUserById" });
+    const def = db.getDropProcQueryDef({
+      database: "TestDb",
+      schema: "TestSchema",
+      name: "GetUserById",
+    });
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

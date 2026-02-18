@@ -20,7 +20,9 @@
  * emitter.emit("data", "hello");
  * emitter.emit("done"); // void 타입은 인자 없이 호출
  */
-export class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>> {
+export class EventEmitter<
+  TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>,
+> {
   private readonly _target = new EventTarget();
   // 이벤트 타입별로 리스너 맵 관리 (같은 리스너를 다른 이벤트에 등록 가능)
   // 다형적 리스너 관리를 위해 Function 타입 사용
@@ -77,7 +79,10 @@ export class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown } = Re
    * @param type 이벤트 타입
    * @param args 이벤트 데이터 (void 타입이면 생략)
    */
-  emit<K extends keyof TEvents & string>(type: K, ...args: TEvents[K] extends void ? [] : [data: TEvents[K]]): void {
+  emit<K extends keyof TEvents & string>(
+    type: K,
+    ...args: TEvents[K] extends void ? [] : [data: TEvents[K]]
+  ): void {
     this._target.dispatchEvent(new CustomEvent(type, { detail: args[0] }));
   }
 

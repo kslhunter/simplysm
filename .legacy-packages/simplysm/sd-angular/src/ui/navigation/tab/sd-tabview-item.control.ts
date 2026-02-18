@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdTabviewControl } from "./sd-tabview.control";
 import { $computed } from "../../../core/utils/bindings/$computed";
 

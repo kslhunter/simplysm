@@ -113,7 +113,9 @@ describe("Array.prototype 확장", () => {
     });
 
     it("체이닝 후 mapAsync를 사용할 수 있다", async () => {
-      const result = await [1, 2, 3, 4, 5].filter((x) => x > 2).mapAsync(async (x) => Promise.resolve(x * 10));
+      const result = await [1, 2, 3, 4, 5]
+        .filter((x) => x > 2)
+        .mapAsync(async (x) => Promise.resolve(x * 10));
 
       expect(result).toEqual([30, 40, 50]);
     });
@@ -670,7 +672,9 @@ describe("Array.prototype 확장", () => {
     });
 
     it("number/string이 아닌 타입에서 에러를 던진다", () => {
-      expect(() => ([true, false] as unknown as number[]).min()).toThrow("min 은 number/string 에 대해서만");
+      expect(() => ([true, false] as unknown as number[]).min()).toThrow(
+        "min 은 number/string 에 대해서만",
+      );
     });
   });
 
@@ -684,7 +688,9 @@ describe("Array.prototype 확장", () => {
     });
 
     it("number/string이 아닌 타입에서 에러를 던진다", () => {
-      expect(() => ([{}, {}] as unknown as number[]).max()).toThrow("max 은 number/string 에 대해서만");
+      expect(() => ([{}, {}] as unknown as number[]).max()).toThrow(
+        "max 은 number/string 에 대해서만",
+      );
     });
   });
 

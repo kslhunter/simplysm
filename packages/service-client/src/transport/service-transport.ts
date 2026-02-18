@@ -1,6 +1,10 @@
 import type { Bytes } from "@simplysm/core-common";
 import { EventEmitter, Uuid } from "@simplysm/core-common";
-import type { ServiceErrorMessage, ServiceResponseMessage, ServiceClientMessage } from "@simplysm/service-common";
+import type {
+  ServiceErrorMessage,
+  ServiceResponseMessage,
+  ServiceClientMessage,
+} from "@simplysm/service-common";
 import type { ClientProtocolWrapper } from "../protocol/client-protocol-wrapper";
 import type { ServiceProgress } from "../types/progress.types";
 import type { SocketProvider } from "./socket-provider";
@@ -22,7 +26,10 @@ export interface ServiceTransport {
   send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown>;
 }
 
-export function createServiceTransport(socket: SocketProvider, protocol: ClientProtocolWrapper): ServiceTransport {
+export function createServiceTransport(
+  socket: SocketProvider,
+  protocol: ClientProtocolWrapper,
+): ServiceTransport {
   const emitter = new EventEmitter<ServiceTransportEvents>();
 
   const pendingRequests = new Map<

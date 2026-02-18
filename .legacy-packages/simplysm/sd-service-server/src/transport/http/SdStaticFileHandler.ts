@@ -14,11 +14,14 @@ export class SdStaticFileHandler {
 
     // 프록시 및 타겟 파일 경로 결정
     if (this._server.options.pathProxy) {
-      const currPathProxyFrom = Object.keys(this._server.options.pathProxy).single((from) => urlPath.startsWith(from));
+      const currPathProxyFrom = Object.keys(this._server.options.pathProxy).single((from) =>
+        urlPath.startsWith(from),
+      );
 
       if (currPathProxyFrom != null) {
         targetFilePath = path.resolve(
-          this._server.options.pathProxy[currPathProxyFrom] + urlPath.substring(currPathProxyFrom.length),
+          this._server.options.pathProxy[currPathProxyFrom] +
+            urlPath.substring(currPathProxyFrom.length),
         );
         allowedRootPath = path.resolve(this._server.options.pathProxy[currPathProxyFrom]);
       }

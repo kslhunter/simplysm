@@ -31,7 +31,10 @@ export function getAddColumnQueryDef(
 /**
  * DROP COLUMN QueryDef 생성
  */
-export function getDropColumnQueryDef(table: QueryDefObjectName, column: string): DropColumnQueryDef {
+export function getDropColumnQueryDef(
+  table: QueryDefObjectName,
+  column: string,
+): DropColumnQueryDef {
   return { type: "dropColumn", table, column };
 }
 

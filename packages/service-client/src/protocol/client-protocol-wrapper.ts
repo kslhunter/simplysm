@@ -1,6 +1,10 @@
 import type { Bytes } from "@simplysm/core-common";
 import { LazyGcMap, transferableDecode, Uuid } from "@simplysm/core-common";
-import type { ServiceMessageDecodeResult, ServiceMessage, ServiceProtocol } from "@simplysm/service-common";
+import type {
+  ServiceMessageDecodeResult,
+  ServiceMessage,
+  ServiceProtocol,
+} from "@simplysm/service-common";
 
 export interface ClientProtocolWrapper {
   encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
@@ -9,7 +13,10 @@ export interface ClientProtocolWrapper {
 
 // Shared worker state (singleton pattern)
 let worker: Worker | undefined;
-const workerResolvers = new LazyGcMap<string, { resolve: (res: unknown) => void; reject: (err: Error) => void }>({
+const workerResolvers = new LazyGcMap<
+  string,
+  { resolve: (res: unknown) => void; reject: (err: Error) => void }
+>({
   gcInterval: 5 * 1000, // 5초마다 만료 검사
   expireTime: 60 * 1000, // 60초가 지나면 만료 (타임아웃)
   onExpire: (key, item) => {
@@ -67,7 +74,11 @@ function getWorker(): Worker | undefined {
  * Worker에 작업 위임 및 결과 대기
  * 주의: workerAvailable이 true일 때만 호출해야 함
  */
-async function runWorker(type: "encode" | "decode", data: unknown, transfer: Transferable[] = []): Promise<unknown> {
+async function runWorker(
+  type: "encode" | "decode",
+  data: unknown,
+  transfer: Transferable[] = [],
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const id = Uuid.new().toString();
 
@@ -95,7 +106,10 @@ export function createClientProtocolWrapper(protocol: ServiceProtocol): ClientPr
     return false;
   }
 
-  async function encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }> {
+  async function encode(
+    uuid: string,
+    message: ServiceMessage,
+  ): Promise<{ chunks: Bytes[]; totalSize: number }> {
     // Worker가 없거나 작은 데이터는 메인 스레드에서 처리
     if (!isWorkerAvailable() || !shouldUseWorkerForEncode(message)) {
       return protocol.encode(uuid, message);

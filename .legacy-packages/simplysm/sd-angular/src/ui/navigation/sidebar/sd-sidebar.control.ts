@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdSidebarContainerControl } from "./sd-sidebar-container.control";
 import { $computed } from "../../../core/utils/bindings/$computed";
 
@@ -63,7 +69,9 @@ import { $computed } from "../../../core/utils/bindings/$computed";
   ],
 })
 export class SdSidebarControl {
-  private readonly _parentControl = inject<SdSidebarContainerControl>(forwardRef(() => SdSidebarContainerControl));
+  private readonly _parentControl = inject<SdSidebarContainerControl>(
+    forwardRef(() => SdSidebarContainerControl),
+  );
 
   toggle = $computed(() => this._parentControl.toggle());
 }

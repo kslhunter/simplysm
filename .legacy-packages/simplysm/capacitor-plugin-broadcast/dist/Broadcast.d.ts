@@ -19,7 +19,10 @@ export declare abstract class Broadcast {
    * unsub();
    * ```
    */
-  static subscribe(filters: string[], callback: (result: IBroadcastResult) => void): Promise<() => Promise<void>>;
+  static subscribe(
+    filters: string[],
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<() => Promise<void>>;
   /**
    * 모든 Broadcast 수신기 해제
    */

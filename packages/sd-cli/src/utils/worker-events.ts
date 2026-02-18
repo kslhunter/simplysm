@@ -62,7 +62,10 @@ export interface WorkerEventHandlerOptions {
  * @param rebuildManager 리빌드 매니저
  * @returns completeTask 함수 (결과를 저장하고 빌드 완료를 알림)
  */
-export function registerWorkerEventHandlers<TEvents extends Record<string, any[]>, T extends BaseWorkerInfo<TEvents>>(
+export function registerWorkerEventHandlers<
+  TEvents extends Record<string, any[]>,
+  T extends BaseWorkerInfo<TEvents>,
+>(
   workerInfo: T,
   opts: WorkerEventHandlerOptions,
   results: Map<string, PackageResult>,

@@ -145,7 +145,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
           resolve();
         },
         "",
-        this._tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"],
+        this._tedious.ISOLATION_LEVEL[
+          isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_COMMITTED"
+        ],
       );
     });
   }
@@ -227,9 +229,15 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
             if (errRec["lineNumber"] > 0) {
               const splitQuery = query.split("\n");
               splitQuery[errRec["lineNumber"] - 1] = "==> " + splitQuery[errRec["lineNumber"] - 1];
-              reject(new Error(`[${errRec["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
+              reject(
+                new Error(
+                  `[${errRec["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`,
+                ),
+              );
             } else {
-              reject(new Error(`[${errRec["code"] as string}] ${err.message}\n-- query\n${query}\n--`));
+              reject(
+                new Error(`[${errRec["code"] as string}] ${err.message}\n-- query\n${query}\n--`),
+              );
             }
           }
         }
@@ -324,7 +332,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     }
     this._startTimeout();
 
-    const tediousColumnDefs = columnDefs.map((item) => this._convertColumnDefToTediousBulkColumnDef(item));
+    const tediousColumnDefs = columnDefs.map((item) =>
+      this._convertColumnDefToTediousBulkColumnDef(item),
+    );
 
     await new Promise<void>((resolve, reject) => {
       const bulkLoad = this._conn?.newBulkLoad(tableName, (err) => {
@@ -391,7 +401,9 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
     };
   }
 
-  private _convertColumnDataTypeToTediousBulkColumnType(type: Type<TQueryValue> | TSdOrmDataType | string): {
+  private _convertColumnDataTypeToTediousBulkColumnType(
+    type: Type<TQueryValue> | TSdOrmDataType | string,
+  ): {
     type: DataType;
     length?: number;
     precision?: number;
@@ -428,7 +440,11 @@ export class MssqlDbConn extends EventEmitter implements IDbConn {
       const split = type.split(/[(,)]/);
       const typeStr = split[0];
       const length =
-        split[1] === "MAX" ? Infinity : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
+        split[1] === "MAX"
+          ? Infinity
+          : typeof split[1] !== "undefined"
+            ? Number.parseInt(split[1], 10)
+            : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
       const typeKey = Object.keys(this._tedious.TYPES).single(

@@ -14,15 +14,26 @@ export class CaseQueryHelper<T extends TQueryValue> {
     private _type: Type<T> | undefined,
   ) {}
 
-  case(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue, then: TEntityValue<T>): this {
+  case(
+    predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue,
+    then: TEntityValue<T>,
+  ): this {
     this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
 
-    this._cases.push(...[" WHEN ", this._qh.getQueryValue(predicate), " THEN ", this._qh.getQueryValue(then)]);
+    this._cases.push(
+      ...[" WHEN ", this._qh.getQueryValue(predicate), " THEN ", this._qh.getQueryValue(then)],
+    );
     return this;
   }
 
   else(then: TEntityValue<T>): QueryUnit<T> {
     this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
-    return new QueryUnit(this._type, ["CASE ", ...this._cases, " ELSE ", this._qh.getQueryValue(then), " END"]);
+    return new QueryUnit(this._type, [
+      "CASE ",
+      ...this._cases,
+      " ELSE ",
+      this._qh.getQueryValue(then),
+      " END",
+    ]);
   }
 }

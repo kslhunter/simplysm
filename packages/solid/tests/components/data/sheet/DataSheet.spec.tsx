@@ -1,13 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@solidjs/testing-library";
 import { DataSheet } from "../../../../src/components/data/sheet/DataSheet";
-import { applySorting, collectAllExpandable, flattenTree } from "../../../../src/components/data/sheet/sheetUtils";
+import {
+  applySorting,
+  collectAllExpandable,
+  flattenTree,
+} from "../../../../src/components/data/sheet/sheetUtils";
 import type { SortingDef } from "../../../../src/components/data/sheet/types";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import type { JSX } from "solid-js";
 
 function TestWrapper(props: { children: JSX.Element }) {
-  return <ConfigContext.Provider value={{ clientName: "test" }}>{props.children}</ConfigContext.Provider>;
+  return (
+    <ConfigContext.Provider value={{ clientName: "test" }}>{props.children}</ConfigContext.Provider>
+  );
 }
 
 interface TestItem {
@@ -198,7 +204,12 @@ describe("DataSheet", () => {
   it("자동정렬: autoSort가 true면 데이터가 정렬된다", () => {
     const { container } = render(() => (
       <TestWrapper>
-        <DataSheet items={testData} persistKey="test-auto-sort" sorts={[{ key: "name", desc: false }]} autoSort>
+        <DataSheet
+          items={testData}
+          persistKey="test-auto-sort"
+          sorts={[{ key: "name", desc: false }]}
+          autoSort
+        >
           <DataSheet.Column<TestItem> key="name" header="이름">
             {(ctx) => <div data-testid="name">{ctx.item.name}</div>}
           </DataSheet.Column>
@@ -533,7 +544,12 @@ describe("DataSheet 트리 확장", () => {
     expect(rows.length).toBe(4); // 폴더A, 파일A1, 파일A2, 폴더B
 
     const names = container.querySelectorAll("tbody [data-testid='name']");
-    expect(Array.from(names).map((n) => n.textContent)).toEqual(["폴더A", "파일A1", "파일A2", "폴더B"]);
+    expect(Array.from(names).map((n) => n.textContent)).toEqual([
+      "폴더A",
+      "파일A1",
+      "파일A2",
+      "폴더B",
+    ]);
   });
 
   it("자식이 없는 항목은 확장 아이콘이 숨겨진다", () => {

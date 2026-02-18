@@ -223,7 +223,9 @@ describe("ExcelWrapper", () => {
       const buffer = await wb.getBytes();
       await wb.close();
 
-      await expect(wrapper.read(buffer, "Empty")).rejects.toThrow("엑셀파일에서 데이터를 찾을 수 없습니다");
+      await expect(wrapper.read(buffer, "Empty")).rejects.toThrow(
+        "엑셀파일에서 데이터를 찾을 수 없습니다",
+      );
     });
 
     it("존재하지 않는 워크시트 이름으로 읽으면 에러 발생", async () => {

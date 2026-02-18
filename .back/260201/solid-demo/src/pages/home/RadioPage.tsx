@@ -18,7 +18,9 @@ export default function RadioPage() {
 
         <section>
           <h3>Default</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Radio checked={selected() === "a"} onChange={() => setSelected("a")}>
               Option A
             </Radio>
@@ -38,8 +40,14 @@ export default function RadioPage() {
 
         <section>
           <h3>Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
-            <Radio checked={selectedTheme() === "primary"} onChange={() => setSelectedTheme("primary")} theme="primary">
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
+            <Radio
+              checked={selectedTheme() === "primary"}
+              onChange={() => setSelectedTheme("primary")}
+              theme="primary"
+            >
               Primary
             </Radio>
             <Radio
@@ -49,22 +57,46 @@ export default function RadioPage() {
             >
               Secondary
             </Radio>
-            <Radio checked={selectedTheme() === "success"} onChange={() => setSelectedTheme("success")} theme="success">
+            <Radio
+              checked={selectedTheme() === "success"}
+              onChange={() => setSelectedTheme("success")}
+              theme="success"
+            >
               Success
             </Radio>
-            <Radio checked={selectedTheme() === "warning"} onChange={() => setSelectedTheme("warning")} theme="warning">
+            <Radio
+              checked={selectedTheme() === "warning"}
+              onChange={() => setSelectedTheme("warning")}
+              theme="warning"
+            >
               Warning
             </Radio>
-            <Radio checked={selectedTheme() === "danger"} onChange={() => setSelectedTheme("danger")} theme="danger">
+            <Radio
+              checked={selectedTheme() === "danger"}
+              onChange={() => setSelectedTheme("danger")}
+              theme="danger"
+            >
               Danger
             </Radio>
-            <Radio checked={selectedTheme() === "info"} onChange={() => setSelectedTheme("info")} theme="info">
+            <Radio
+              checked={selectedTheme() === "info"}
+              onChange={() => setSelectedTheme("info")}
+              theme="info"
+            >
               Info
             </Radio>
-            <Radio checked={selectedTheme() === "gray"} onChange={() => setSelectedTheme("gray")} theme="gray">
+            <Radio
+              checked={selectedTheme() === "gray"}
+              onChange={() => setSelectedTheme("gray")}
+              theme="gray"
+            >
               Gray
             </Radio>
-            <Radio checked={selectedTheme() === "slate"} onChange={() => setSelectedTheme("slate")} theme="slate">
+            <Radio
+              checked={selectedTheme() === "slate"}
+              onChange={() => setSelectedTheme("slate")}
+              theme="slate"
+            >
               Slate
             </Radio>
           </div>
@@ -72,20 +104,41 @@ export default function RadioPage() {
 
         <section>
           <h3>Size</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
-            <Radio checked={selectedSize() === "xs"} onChange={() => setSelectedSize("xs")} size="xs">
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
+            <Radio
+              checked={selectedSize() === "xs"}
+              onChange={() => setSelectedSize("xs")}
+              size="xs"
+            >
               Extra Small
             </Radio>
-            <Radio checked={selectedSize() === "sm"} onChange={() => setSelectedSize("sm")} size="sm">
+            <Radio
+              checked={selectedSize() === "sm"}
+              onChange={() => setSelectedSize("sm")}
+              size="sm"
+            >
               Small
             </Radio>
-            <Radio checked={selectedSize() === "default"} onChange={() => setSelectedSize("default")}>
+            <Radio
+              checked={selectedSize() === "default"}
+              onChange={() => setSelectedSize("default")}
+            >
               Default
             </Radio>
-            <Radio checked={selectedSize() === "lg"} onChange={() => setSelectedSize("lg")} size="lg">
+            <Radio
+              checked={selectedSize() === "lg"}
+              onChange={() => setSelectedSize("lg")}
+              size="lg"
+            >
               Large
             </Radio>
-            <Radio checked={selectedSize() === "xl"} onChange={() => setSelectedSize("xl")} size="xl">
+            <Radio
+              checked={selectedSize() === "xl"}
+              onChange={() => setSelectedSize("xl")}
+              size="xl"
+            >
               Extra Large
             </Radio>
           </div>
@@ -93,7 +146,9 @@ export default function RadioPage() {
 
         <section>
           <h3>Size + Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Radio checked theme="primary" size="xs">
               XS Primary
             </Radio>
@@ -114,7 +169,9 @@ export default function RadioPage() {
 
         <section>
           <h3>Theme + Disabled</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Radio checked theme="primary" disabled>
               Primary
             </Radio>

@@ -48,7 +48,9 @@ vi.mock("@simplysm/core-node", () => {
       if (targets.length === 0) return files;
       return files.filter((file) => {
         const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some((target) => relativePath === target || isChildPath(relativePath, target));
+        return targets.some(
+          (target) => relativePath === target || isChildPath(relativePath, target),
+        );
       });
     }),
   };

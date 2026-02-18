@@ -26,7 +26,8 @@ export abstract class SdServiceBase<TAuthInfo = any> {
   }
 
   get clientName(): string | undefined {
-    const clientName = this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
+    const clientName =
+      this.v1?.request.clientName ?? this.socket?.clientName ?? this.http?.clientName;
     if (clientName == null) return undefined;
 
     // Path Traversal 방지

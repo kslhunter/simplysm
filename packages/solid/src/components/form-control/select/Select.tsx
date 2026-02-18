@@ -1,4 +1,12 @@
-import { children, createSignal, For, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import {
+  children,
+  createSignal,
+  For,
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconChevronDown } from "@tabler/icons-solidjs";
@@ -70,12 +78,18 @@ interface SelectItemTemplateProps<TValue> {
 }
 
 // 템플릿 함수를 저장하는 전역 Map (WeakMap 사용하여 메모리 누수 방지)
-const templateFnMap = new WeakMap<HTMLElement, (item: unknown, index: number, depth: number) => JSX.Element>();
+const templateFnMap = new WeakMap<
+  HTMLElement,
+  (item: unknown, index: number, depth: number) => JSX.Element
+>();
 
 const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
   <span
     ref={(el) => {
-      templateFnMap.set(el, props.children as (item: unknown, index: number, depth: number) => JSX.Element);
+      templateFnMap.set(
+        el,
+        props.children as (item: unknown, index: number, depth: number) => JSX.Element,
+      );
     }}
     data-select-item-template
     style={{ display: "none" }}
@@ -291,10 +305,16 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   // 내부 컴포넌트: Provider 안에서 children을 resolve
   const SelectInner: ParentComponent = (innerProps) => {
     const resolved = children(() => innerProps.children);
-    const [slots, items] = splitSlots(resolved, ["selectHeader", "selectAction", "selectItemTemplate"] as const);
+    const [slots, items] = splitSlots(resolved, [
+      "selectHeader",
+      "selectAction",
+      "selectItemTemplate",
+    ] as const);
 
     // itemTemplate 함수 추출
-    const getItemTemplate = (): ((item: T, index: number, depth: number) => JSX.Element) | undefined => {
+    const getItemTemplate = ():
+      | ((item: T, index: number, depth: number) => JSX.Element)
+      | undefined => {
       const templateSlots = slots().selectItemTemplate;
       if (templateSlots.length === 0) return undefined;
       // WeakMap에서 함수 참조 가져오기
@@ -314,7 +334,9 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
               <Show when={local.getChildren?.(item, index(), depth)} keyed>
                 {(itemChildren) => (
                   <Show when={itemChildren.length > 0}>
-                    <SelectItem.Children>{renderItems(itemChildren, depth + 1)}</SelectItem.Children>
+                    <SelectItem.Children>
+                      {renderItems(itemChildren, depth + 1)}
+                    </SelectItem.Children>
                   </Show>
                 )}
               </Show>
@@ -367,7 +389,10 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           aria-disabled={local.disabled || undefined}
           aria-required={local.required || undefined}
           tabIndex={local.disabled ? -1 : 0}
-          class={twMerge(getTriggerClassName(), slots().selectAction.length > 0 && "rounded-r-none border-r-0")}
+          class={twMerge(
+            getTriggerClassName(),
+            slots().selectAction.length > 0 && "rounded-r-none border-r-0",
+          )}
           style={local.style}
           onClick={handleTriggerClick}
           onKeyDown={handleTriggerKeyDown}

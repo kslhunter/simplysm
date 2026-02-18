@@ -68,7 +68,10 @@ export class SdLogger {
 
   static setConfig(group: string[], config: DeepPartial<ISdLoggerConfig>): void;
   static setConfig(config: DeepPartial<ISdLoggerConfig>): void;
-  static setConfig(arg1: string[] | DeepPartial<ISdLoggerConfig>, arg2?: DeepPartial<ISdLoggerConfig>): void {
+  static setConfig(
+    arg1: string[] | DeepPartial<ISdLoggerConfig>,
+    arg2?: DeepPartial<ISdLoggerConfig>,
+  ): void {
     const group = (arg2 !== undefined ? arg1 : []) as string[];
     const config = (arg2 ?? arg1) as DeepPartial<ISdLoggerConfig>;
 
@@ -112,7 +115,9 @@ export class SdLogger {
     const now = new DateTime();
 
     const severityIndex = severities.indexOf(severity);
-    const consoleLevelIndex = config.console.level ? severities.indexOf(config.console.level) : 9999;
+    const consoleLevelIndex = config.console.level
+      ? severities.indexOf(config.console.level)
+      : 9999;
     const fileLevelIndex = config.file.level ? severities.indexOf(config.file.level) : 9999;
 
     if (severityIndex >= consoleLevelIndex) {
@@ -131,7 +136,9 @@ export class SdLogger {
       headMessage += loggerStyle;
       headMessage += severity.toUpperCase().padStart(5, " ");
 
-      const logMessages = logs.map((log) => (log instanceof Error && log.stack !== undefined ? log.stack : log));
+      const logMessages = logs.map((log) =>
+        log instanceof Error && log.stack !== undefined ? log.stack : log,
+      );
       const tailMessage = SdLoggerStyle.clear;
 
       // eslint-disable-next-line no-console
@@ -150,7 +157,10 @@ export class SdLogger {
 
         // 색상빼기
         if (typeof log === "string") {
-          logString = log.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+          logString = log.replace(
+            /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+            "",
+          );
         } else if (typeof log.toString === "function" && !/^\[.*]$/.test(log.toString())) {
           logString = log.toString();
         } else {
@@ -194,7 +204,9 @@ export class SdLogger {
     }
 
     if (config.customFn) {
-      const logMessages = logs.map((log) => (log instanceof Error && log.stack !== undefined ? log.stack : log));
+      const logMessages = logs.map((log) =>
+        log instanceof Error && log.stack !== undefined ? log.stack : log,
+      );
 
       const r = config.customFn(severity, logMessages);
       if (r instanceof Promise)

@@ -22,7 +22,9 @@ const ConfigContext = createContext<ConfigContextValue>();
  */
 export const ConfigProvider: ParentComponent<{ staticClientName: string }> = (props) => {
   return (
-    <ConfigContext.Provider value={{ clientName: props.staticClientName }}>{props.children}</ConfigContext.Provider>
+    <ConfigContext.Provider value={{ clientName: props.staticClientName }}>
+      {props.children}
+    </ConfigContext.Provider>
   );
 };
 

@@ -49,5 +49,8 @@ export function compareForOrder(pp: ComparableType, pn: ComparableType, desc: bo
     return cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
   }
 
-  throw new ArgumentError("orderBy를 사용할 수 없는 타입입니다.", { type1: typeof cpp, type2: typeof cpn });
+  throw new ArgumentError("orderBy를 사용할 수 없는 타입입니다.", {
+    type1: typeof cpp,
+    type2: typeof cpn,
+  });
 }

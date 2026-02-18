@@ -6,7 +6,10 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
     // eslint-disable-next-line no-console
     console.warn("[Broadcast] 웹 환경에서는 Broadcast를 지원하지 않습니다.");
 
-  subscribe(_options: { filters: string[] }, _callback: (result: IBroadcastResult) => void): Promise<{ id: string }> {
+  subscribe(
+    _options: { filters: string[] },
+    _callback: (result: IBroadcastResult) => void,
+  ): Promise<{ id: string }> {
     BroadcastWeb._warn();
     return Promise.resolve({ id: "web-stub" });
   }

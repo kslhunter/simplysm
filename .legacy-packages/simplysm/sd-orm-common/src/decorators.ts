@@ -1,4 +1,8 @@
-import type { TClassDecoratorReturn, TPropertyDecoratorReturn, Type } from "@simplysm/sd-core-common";
+import type {
+  TClassDecoratorReturn,
+  TPropertyDecoratorReturn,
+  Type,
+} from "@simplysm/sd-core-common";
 import { DbDefUtils } from "./utils/DbDefUtils";
 import type { DbContext } from "./DbContext";
 import type { Queryable } from "./query/queryable/Queryable";

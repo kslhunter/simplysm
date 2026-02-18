@@ -25,7 +25,10 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         // config
         this._debug("Generating '.config'...");
         const confDistPath = path.resolve(this._opt.pkgPath, "dist/.config.json");
-        await FsUtils.writeFileAsync(confDistPath, JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2));
+        await FsUtils.writeFileAsync(
+          confDistPath,
+          JSON.stringify(this._pkgConf.configs ?? {}, undefined, 2),
+        );
 
         // cordova
         if (this._pkgConf.builder?.cordova) {
@@ -48,14 +51,22 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
         }
 
         // routes
-        const npmConf = (await FsUtils.readJsonAsync(path.resolve(this._opt.pkgPath, "package.json"))) as INpmConfig;
+        const npmConf = (await FsUtils.readJsonAsync(
+          path.resolve(this._opt.pkgPath, "package.json"),
+        )) as INpmConfig;
         if ("@angular/router" in (npmConf.dependencies ?? {})) {
           if (this._opt.watch) {
             this._debug("Starting routes.ts generator (watch mode)...");
-            await new SdCliNgRoutesFileGenerator().watchAsync(this._opt.pkgPath, this._pkgConf.noLazyRoute);
+            await new SdCliNgRoutesFileGenerator().watchAsync(
+              this._opt.pkgPath,
+              this._pkgConf.noLazyRoute,
+            );
           } else {
             this._debug(`Generating 'routes.ts'...`);
-            await new SdCliNgRoutesFileGenerator().runAsync(this._opt.pkgPath, this._pkgConf.noLazyRoute);
+            await new SdCliNgRoutesFileGenerator().runAsync(
+              this._opt.pkgPath,
+              this._pkgConf.noLazyRoute,
+            );
           }
         }
       }
@@ -85,9 +96,13 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
 
     if (this._opt.watch?.noEmit) {
       this._debug(`Building...`);
-      const buildResults = await Promise.all(this._ngBundlers!.map((builder) => builder.bundleAsync()));
+      const buildResults = await Promise.all(
+        this._ngBundlers!.map((builder) => builder.bundleAsync()),
+      );
       const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
-      const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
+      const affectedFileSet = new Set(
+        buildResults.mapMany((item) => Array.from(item.affectedFileSet)),
+      );
       const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
       const buildMessages = buildResults.mapMany((item) => item.buildMessages).distinct();
 
@@ -101,9 +116,13 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
       };
     } else {
       this._debug(`Building...`);
-      const buildResults = await Promise.all(this._ngBundlers!.map((builder) => builder.bundleAsync()));
+      const buildResults = await Promise.all(
+        this._ngBundlers!.map((builder) => builder.bundleAsync()),
+      );
       const watchFileSet = new Set(buildResults.mapMany((item) => Array.from(item.watchFileSet)));
-      const affectedFileSet = new Set(buildResults.mapMany((item) => Array.from(item.affectedFileSet)));
+      const affectedFileSet = new Set(
+        buildResults.mapMany((item) => Array.from(item.affectedFileSet)),
+      );
       const emitFileSet = new Set(buildResults.mapMany((item) => Array.from(item.emitFileSet)));
       const buildMessages = buildResults.mapMany((item) => item.buildMessages).distinct();
 

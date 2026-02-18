@@ -22,7 +22,9 @@ describe("ColorPicker 컴포넌트", () => {
   describe("controlled 패턴", () => {
     it("onValueChange가 색상 변경 시 호출된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <ColorPicker value="#000000" onValueChange={handleChange} />);
+      const { container } = render(() => (
+        <ColorPicker value="#000000" onValueChange={handleChange} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.input(input, { target: { value: "#ff5500" } });

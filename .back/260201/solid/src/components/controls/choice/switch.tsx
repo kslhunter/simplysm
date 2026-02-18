@@ -1,5 +1,11 @@
 import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
-import { switchContents, switchStyle, type SwitchStyles, switchThumb, switchTrack } from "./switch.css";
+import {
+  switchContents,
+  switchStyle,
+  type SwitchStyles,
+  switchThumb,
+  switchTrack,
+} from "./switch.css";
 import { ripple } from "../../../directives/ripple";
 import "@simplysm/core-common";
 import { objPick } from "@simplysm/core-common";
@@ -18,7 +24,8 @@ void ripple;
  * @property inline - 인라인 스타일 적용
  * @property inset - 인셋 스타일 적용
  */
-export interface SwitchProps extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, SwitchStyles {
+export interface SwitchProps
+  extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, SwitchStyles {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;

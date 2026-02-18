@@ -185,10 +185,18 @@ export default function KanbanPage() {
 
           <section>
             <h2 class="mb-4 text-xl font-semibold">선택</h2>
-            <p class="mb-2 text-sm text-base-500">Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.</p>
-            <div class="mb-2 text-sm">선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}</div>
+            <p class="mb-2 text-sm text-base-500">
+              Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
+            </p>
+            <div class="mb-2 text-sm">
+              선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}
+            </div>
             <div class="h-[500px]">
-              <Kanban selectedValues={selected()} onSelectedValuesChange={setSelected} onDrop={handleDrop}>
+              <Kanban
+                selectedValues={selected()}
+                onSelectedValuesChange={setSelected}
+                onDrop={handleDrop}
+              >
                 <For each={lanes()}>
                   {(lane) => (
                     <Kanban.Lane value={lane.id}>

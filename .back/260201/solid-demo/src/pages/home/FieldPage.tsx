@@ -44,14 +44,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField value={textValue()} onChange={setTextValue} placeholder="입력하세요" />
             <span>현재 값: {textValue() ?? "(없음)"}</span>
           </div>
@@ -59,7 +63,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Type</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField type="text" placeholder="text" />
             <TextField type="password" placeholder="password" />
             <TextField type="email" placeholder="email" />
@@ -68,14 +74,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Format</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField format="000-0000-0000" placeholder="전화번호" />
           </div>
         </section>
 
         <section>
           <h3>Size</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField size="sm" placeholder="sm" />
             <TextField placeholder="default" />
             <TextField size="lg" placeholder="lg" />
@@ -113,7 +123,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Disabled / ReadOnly</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField disabled placeholder="Disabled 상태" />
             <TextField readOnly placeholder="ReadOnly 상태" />
           </div>
@@ -121,14 +133,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Placeholder</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TextField placeholder="플레이스홀더 텍스트" />
           </div>
         </section>
 
         <section>
           <h3>Invalid</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <div use:invalid={() => "에러 메시지"}>
               <TextField placeholder="에러 상태" />
             </div>
@@ -140,14 +156,23 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Textarea placeholder="여러 줄 입력" />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea value={textareaValue()} onChange={setTextareaValue} placeholder="내용 입력" />
             <span>현재 값: {textareaValue() ?? "(없음)"}</span>
           </div>
@@ -155,7 +180,14 @@ export default function FieldPage() {
 
         <section>
           <h3>Rows</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea rows={2} placeholder="rows=2" />
             <Textarea rows={5} placeholder="rows=5" />
           </div>
@@ -163,14 +195,28 @@ export default function FieldPage() {
 
         <section>
           <h3>AutoResize</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea autoResize placeholder="내용에 따라 자동 확장" />
           </div>
         </section>
 
         <section>
           <h3>Resize Options</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea resize="none" placeholder="resize=none" />
             <Textarea resize="vertical" placeholder="resize=vertical (기본)" />
             <Textarea resize="horizontal" placeholder="resize=horizontal" />
@@ -180,7 +226,14 @@ export default function FieldPage() {
 
         <section>
           <h3>Size</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea size="sm" placeholder="sm" />
             <Textarea placeholder="default" />
             <Textarea size="lg" placeholder="lg" />
@@ -203,7 +256,14 @@ export default function FieldPage() {
 
         <section>
           <h3>Disabled / ReadOnly</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <Textarea disabled placeholder="Disabled 상태" />
             <Textarea readOnly value="ReadOnly 상태 텍스트" />
           </div>
@@ -211,7 +271,14 @@ export default function FieldPage() {
 
         <section>
           <h3>Invalid</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <div use:invalid={() => "에러 메시지"}>
               <Textarea placeholder="에러 상태" />
             </div>
@@ -223,14 +290,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <NumberField placeholder="숫자 입력" />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <NumberField value={numValue()} onChange={setNumValue} placeholder="숫자 입력" />
             <span>현재 값: {numValue() ?? "(없음)"}</span>
           </div>
@@ -238,14 +309,18 @@ export default function FieldPage() {
 
         <section>
           <h3>useNumberComma</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <NumberField useNumberComma placeholder="1234567 → 1,234,567" />
           </div>
         </section>
 
         <section>
           <h3>minDigits</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <NumberField minDigits={5} placeholder="123 → 00123" />
           </div>
         </section>
@@ -255,14 +330,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateField />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateField value={dateValue()} onChange={setDateValue} />
             <span>현재 값: {dateValue()?.toFormatString("yyyy-MM-dd") ?? "(없음)"}</span>
           </div>
@@ -270,7 +349,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Type</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateField type="date" />
             <DateField type="month" />
             <DateField type="year" />
@@ -279,7 +360,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Min / Max</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateField min={new DateOnly(2024, 1, 1)} max={new DateOnly(2026, 12, 31)} />
           </div>
         </section>
@@ -289,14 +372,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TimeField />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TimeField value={timeValue()} onChange={setTimeValue} />
             <span>현재 값: {timeValue()?.toFormatString("HH:mm") ?? "(없음)"}</span>
           </div>
@@ -304,7 +391,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Type</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TimeField type="time" />
             <TimeField type="time-sec" />
           </div>
@@ -312,7 +401,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Min / Max</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <TimeField min={new Time(9, 0, 0)} max={new Time(18, 0, 0)} />
           </div>
         </section>
@@ -322,14 +413,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateTimeField />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateTimeField value={dtValue()} onChange={setDtValue} />
             <span>현재 값: {dtValue()?.toFormatString("yyyy-MM-dd HH:mm") ?? "(없음)"}</span>
           </div>
@@ -337,7 +432,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Type</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <DateTimeField type="datetime" />
             <DateTimeField type="datetime-sec" />
           </div>
@@ -345,8 +442,13 @@ export default function FieldPage() {
 
         <section>
           <h3>Min / Max</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
-            <DateTimeField min={new DateTime(2024, 1, 1, 0, 0, 0)} max={new DateTime(2026, 12, 31, 23, 59, 59)} />
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
+            <DateTimeField
+              min={new DateTime(2024, 1, 1, 0, 0, 0)}
+              max={new DateTime(2026, 12, 31, 23, 59, 59)}
+            />
           </div>
         </section>
 
@@ -355,14 +457,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <ColorField />
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <ColorField value={colorValue()} onChange={setColorValue} />
             <span>현재 값: {colorValue() ?? "(없음)"}</span>
           </div>
@@ -373,14 +479,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox>동의합니다</Checkbox>
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked={checkboxValue()} onChange={setCheckboxValue}>
               동의합니다 (값: {String(checkboxValue())})
             </Checkbox>
@@ -389,15 +499,32 @@ export default function FieldPage() {
 
         <section>
           <h3>Indeterminate</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox indeterminate>부분 선택</Checkbox>
           </div>
         </section>
 
         <section>
           <h3>Themes</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
-            <For each={["primary", "secondary", "success", "warning", "danger", "info", "gray", "slate"] as const}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
+            <For
+              each={
+                [
+                  "primary",
+                  "secondary",
+                  "success",
+                  "warning",
+                  "danger",
+                  "info",
+                  "gray",
+                  "slate",
+                ] as const
+              }
+            >
               {(theme) => (
                 <Checkbox theme={theme} checked>
                   {theme}
@@ -409,7 +536,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Sizes</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox size="xs">xs 크기</Checkbox>
             <Checkbox size="sm">sm 크기</Checkbox>
             <Checkbox>기본 크기</Checkbox>
@@ -445,7 +574,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Disabled</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox disabled>비활성화됨</Checkbox>
             <Checkbox disabled checked>
               비활성화됨 (체크)
@@ -458,14 +589,18 @@ export default function FieldPage() {
 
         <section>
           <h3>Default (Uncontrolled)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Switch>알림 수신</Switch>
           </div>
         </section>
 
         <section>
           <h3>Controlled (현재 값 표시)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Switch checked={switchValue()} onChange={setSwitchValue}>
               다크 모드 (값: {String(switchValue())})
             </Switch>
@@ -474,8 +609,23 @@ export default function FieldPage() {
 
         <section>
           <h3>Themes</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
-            <For each={["primary", "secondary", "success", "warning", "danger", "info", "gray", "slate"] as const}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
+            <For
+              each={
+                [
+                  "primary",
+                  "secondary",
+                  "success",
+                  "warning",
+                  "danger",
+                  "info",
+                  "gray",
+                  "slate",
+                ] as const
+              }
+            >
               {(theme) => (
                 <Switch theme={theme} checked>
                   {theme}
@@ -487,7 +637,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Sizes</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Switch size="xs">xs 크기</Switch>
             <Switch size="sm">sm 크기</Switch>
             <Switch>기본 크기</Switch>
@@ -523,7 +675,9 @@ export default function FieldPage() {
 
         <section>
           <h3>Disabled</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Switch disabled>비활성화됨</Switch>
             <Switch disabled checked>
               비활성화됨 (켜짐)
@@ -539,31 +693,55 @@ export default function FieldPage() {
           <p class={atoms({ fontSize: "sm", color: "gray" })}>
             입력값이 비어있으면 에러 상태가 표시됩니다. 좌상단에 빨간 점이 나타납니다.
           </p>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <ValidationTextField />
           </div>
         </section>
 
         <section>
           <h3>Textarea + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>내용이 10자 미만이면 에러 상태가 표시됩니다.</p>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start", flexWrap: "wrap" })}>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>
+            내용이 10자 미만이면 에러 상태가 표시됩니다.
+          </p>
+          <div
+            class={atoms({
+              display: "flex",
+              gap: "base",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            })}
+          >
             <ValidationTextarea />
           </div>
         </section>
 
         <section>
           <h3>Checkbox + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>체크하지 않으면 에러 상태가 표시됩니다.</p>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>
+            체크하지 않으면 에러 상태가 표시됩니다.
+          </p>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <ValidationCheckbox />
           </div>
         </section>
 
         <section>
           <h3>Switch + invalid directive</h3>
-          <p class={atoms({ fontSize: "sm", color: "gray" })}>활성화하지 않으면 에러 상태가 표시됩니다.</p>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <p class={atoms({ fontSize: "sm", color: "gray" })}>
+            활성화하지 않으면 에러 상태가 표시됩니다.
+          </p>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <ValidationSwitch />
           </div>
         </section>
@@ -589,7 +767,9 @@ function ValidationTextField() {
       <div use:invalid={() => errorMessage()}>
         <TextField value={name()} onChange={setName} placeholder="이름" />
       </div>
-      <span class={atoms({ fontSize: "sm" })}>상태: {name() != null && name() !== "" ? "✅ Valid" : "❌ Invalid"}</span>
+      <span class={atoms({ fontSize: "sm" })}>
+        상태: {name() != null && name() !== "" ? "✅ Valid" : "❌ Invalid"}
+      </span>
     </div>
   );
 }
@@ -606,7 +786,12 @@ function ValidationTextarea() {
   return (
     <div class={atoms({ display: "flex", gap: "base", alignItems: "flex-start" })}>
       <div use:invalid={() => errorMessage()}>
-        <Textarea value={content()} onChange={setContent} placeholder="최소 10자 이상 입력" rows={3} />
+        <Textarea
+          value={content()}
+          onChange={setContent}
+          placeholder="최소 10자 이상 입력"
+          rows={3}
+        />
       </div>
       <span class={atoms({ fontSize: "sm" })}>
         {content()?.length ?? 0}자 / 상태: {errorMessage() === "" ? "✅ Valid" : "❌ Invalid"}

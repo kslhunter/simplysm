@@ -290,7 +290,11 @@ describe("Element prototype extensions", () => {
     });
 
     it("clipboardData가 null이면 아무것도 안함", () => {
-      const event = { target: container, clipboardData: null, preventDefault: vi.fn() } as unknown as ClipboardEvent;
+      const event = {
+        target: container,
+        clipboardData: null,
+        preventDefault: vi.fn(),
+      } as unknown as ClipboardEvent;
 
       copyElement(event);
 
@@ -388,7 +392,11 @@ describe("Element prototype extensions", () => {
 
     it("clipboardData가 null이면 아무것도 안함", () => {
       container.innerHTML = `<input type="text" />`;
-      const event = { target: container, clipboardData: null, preventDefault: vi.fn() } as unknown as ClipboardEvent;
+      const event = {
+        target: container,
+        clipboardData: null,
+        preventDefault: vi.fn(),
+      } as unknown as ClipboardEvent;
 
       pasteToElement(event);
 

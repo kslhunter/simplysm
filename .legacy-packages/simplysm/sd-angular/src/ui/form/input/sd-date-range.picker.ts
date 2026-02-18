@@ -71,7 +71,12 @@ export class SdDateRangePicker {
       this.to.set(fromDate?.addMonths(1).setDay(1).addDays(-1));
     } else if (this.periodType() === "일") {
       this.to.set(this.from());
-    } else if (this.periodType() === "범위" && this.from() && this.to() && this.from()!.tick > this.to()!.tick) {
+    } else if (
+      this.periodType() === "범위" &&
+      this.from() &&
+      this.to() &&
+      this.from()!.tick > this.to()!.tick
+    ) {
       this.to.set(this.from());
     }
   }

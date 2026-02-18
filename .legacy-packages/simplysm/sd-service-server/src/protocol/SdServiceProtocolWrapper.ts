@@ -8,9 +8,12 @@ export class SdServiceProtocolWrapper {
   private static _worker?: SdWorker<ISdServiceProtocolWorker>;
   private static get worker() {
     if (!this._worker) {
-      this._worker = new SdWorker<ISdServiceProtocolWorker>(import.meta.resolve("../workers/service-protocol.worker"), {
-        resourceLimits: { maxOldGenerationSizeMb: 4096 }, // 대용량 처리를 위해 넉넉히
-      });
+      this._worker = new SdWorker<ISdServiceProtocolWorker>(
+        import.meta.resolve("../workers/service-protocol.worker"),
+        {
+          resourceLimits: { maxOldGenerationSizeMb: 4096 }, // 대용량 처리를 위해 넉넉히
+        },
+      );
     }
     return this._worker;
   }
@@ -24,7 +27,10 @@ export class SdServiceProtocolWrapper {
   /**
    * 메시지 인코딩 (자동 분기 처리)
    */
-  async encodeAsync(uuid: string, message: TSdServiceMessage): Promise<{ chunks: Buffer[]; totalSize: number }> {
+  async encodeAsync(
+    uuid: string,
+    message: TSdServiceMessage,
+  ): Promise<{ chunks: Buffer[]; totalSize: number }> {
     // 1. 휴리스틱: 워커를 태울지 결정 (O(1))
     if (this._shouldUseWorkerForEncode(message)) {
       // [Worker] 대용량 처리

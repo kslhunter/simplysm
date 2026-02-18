@@ -1,6 +1,12 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { borderDefault, type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../styles/tokens.styles";
+import {
+  borderDefault,
+  type ComponentSize,
+  paddingLg,
+  paddingSm,
+  paddingXl,
+} from "../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../styles/patterns.styles";
 
 export const triggerBaseClass = clsx(

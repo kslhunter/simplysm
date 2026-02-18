@@ -37,7 +37,10 @@ const modeLabels: Record<ThemeMode, string> = {
   dark: "다크 모드",
 };
 
-export interface ThemeToggleProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+export interface ThemeToggleProps extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   /** 버튼 크기 */
   size?: "sm" | "lg";
 }
@@ -65,7 +68,8 @@ export const ThemeToggle: Component<ThemeToggleProps> = (props) => {
 
   const { mode, cycleMode } = useTheme();
 
-  const getClassName = () => twMerge(baseClass, "p-1.5", local.size && sizeClasses[local.size], local.class);
+  const getClassName = () =>
+    twMerge(baseClass, "p-1.5", local.size && sizeClasses[local.size], local.class);
 
   const iconSize = () => (local.size ? iconSizes[local.size] : "1.25em");
 

@@ -29,7 +29,9 @@ export type PromisifyMethods<TMethods> = {
  * SdWorker.create()가 반환하는 Proxy 타입.
  * Promisified 메서드들 + on() + terminate() 제공.
  */
-export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<TModule["default"]["__methods"]> & {
+export type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
+  TModule["default"]["__methods"]
+> & {
   /**
    * 워커 이벤트 리스너 등록.
    */

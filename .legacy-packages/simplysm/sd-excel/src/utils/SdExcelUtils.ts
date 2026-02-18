@@ -59,7 +59,10 @@ export class SdExcelUtils {
     };
   }
 
-  static stringifyRangeAddr(point: { s: { r: number; c: number }; e: { r: number; c: number } }): string {
+  static stringifyRangeAddr(point: {
+    s: { r: number; c: number };
+    e: { r: number; c: number };
+  }): string {
     const sAddr = this.stringifyAddr(point.s);
     const eAddr = this.stringifyAddr(point.e);
 

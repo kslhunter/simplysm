@@ -22,7 +22,10 @@ import { c as D, a as l } from "./atoms.css-WCFmS3R-.js";
 import { D as qe, u as Ae, a as Be } from "./dropdown-popup-aAdbNsE4.js";
 import { B as Ge } from "./IconMenu2-BvvTiCnB.js";
 import { L as O, a as He } from "./list-item-TR_b4pbw.js";
-/* empty css                              */ import { a as Re, I as We } from "./IconSettings-DZK_D65a.js";
+/* empty css                              */ import {
+  a as Re,
+  I as We,
+} from "./IconSettings-DZK_D65a.js";
 import "./constants-Bbx-VEQM.js";
 import "./token.css-Cwc-7hPJ.js";
 var st = D("outline", "chevron-down", "ChevronDown", [["path", { d: "M6 9l6 6l6 -6" }]]);
@@ -33,7 +36,10 @@ var ct = D("outline", "database", "Database", [
 ]);
 var ut = D("outline", "server", "Server", [
   ["path", { d: "M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3" }],
-  ["path", { d: "M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2" }],
+  [
+    "path",
+    { d: "M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2" },
+  ],
   ["path", { d: "M7 8l0 .01" }],
   ["path", { d: "M7 16l0 .01" }],
 ]);

@@ -50,7 +50,8 @@ export function createControllableSignal<TValue>(options: {
   const isControlled = () => options.onChange() !== undefined;
   const value = () => (isControlled() ? options.value() : internalValue());
   const setValue = (newValue: TValue | ((prev: TValue) => TValue)) => {
-    const resolved = typeof newValue === "function" ? (newValue as (prev: TValue) => TValue)(value()) : newValue;
+    const resolved =
+      typeof newValue === "function" ? (newValue as (prev: TValue) => TValue)(value()) : newValue;
 
     if (isControlled()) {
       options.onChange()?.(resolved);

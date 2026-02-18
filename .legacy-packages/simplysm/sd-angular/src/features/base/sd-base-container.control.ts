@@ -27,7 +27,13 @@ import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTopbarContainerControl, SdTopbarControl, SdBusyContainerControl, NgTemplateOutlet, NgIcon],
+  imports: [
+    SdTopbarContainerControl,
+    SdTopbarControl,
+    SdBusyContainerControl,
+    NgTemplateOutlet,
+    NgIcon,
+  ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
       @if (initialized() == null || initialized()) {

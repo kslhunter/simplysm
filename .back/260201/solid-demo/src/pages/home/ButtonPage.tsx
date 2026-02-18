@@ -16,7 +16,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Interactive (onClick)</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button theme="primary" onClick={() => setClickCount((c) => c + 1)}>
               클릭하세요
             </Button>
@@ -29,7 +31,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Default</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button>Default</Button>
             <Button disabled>Disabled</Button>
           </div>
@@ -37,7 +41,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button theme="primary">Primary</Button>
             <Button theme="secondary">Secondary</Button>
             <Button theme="success">Success</Button>
@@ -51,7 +57,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Link Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button theme="primary" link>
               Primary
             </Button>
@@ -81,7 +89,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Size</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button size="xs">Extra Small</Button>
             <Button size="sm">Small</Button>
             <Button>Default</Button>
@@ -92,7 +102,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Size + Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button theme="primary" size="xs">
               XS Primary
             </Button>
@@ -111,7 +123,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Theme + Disabled</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Button theme="primary" disabled>
               Primary
             </Button>
@@ -175,7 +189,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>기본 사용법</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <a href="https://example.com" class={anchor()} target="_blank" rel="noreferrer">
               외부 링크
             </a>
@@ -187,7 +203,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Themes</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <a href="#" class={anchor({ theme: "primary" })} onClick={(e) => e.preventDefault()}>
               Primary
             </a>
@@ -217,7 +235,9 @@ export default function ButtonPage() {
 
         <section>
           <h3>Disabled 상태</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <span class={anchor()} data-disabled="true">
               비활성 링크 (primary)
             </span>

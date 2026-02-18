@@ -99,18 +99,32 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         </Show>
       </button>
 
-      <Dropdown triggerRef={() => buttonRef} open={open()} onOpenChange={handleOpenChange} maxHeight={400} class="w-80">
+      <Dropdown
+        triggerRef={() => buttonRef}
+        open={open()}
+        onOpenChange={handleOpenChange}
+        maxHeight={400}
+        class="w-80"
+      >
         <div class="p-2">
           <div class={dropdownHeaderClass}>
             <span class="font-semibold">알림</span>
             <Show when={notification.items().length > 0}>
-              <button type="button" data-notification-clear class={clearButtonClass} onClick={handleClear}>
+              <button
+                type="button"
+                data-notification-clear
+                class={clearButtonClass}
+                onClick={handleClear}
+              >
                 전체 삭제
               </button>
             </Show>
           </div>
 
-          <Show when={notification.items().length > 0} fallback={<div class={emptyClass}>알림이 없습니다</div>}>
+          <Show
+            when={notification.items().length > 0}
+            fallback={<div class={emptyClass}>알림이 없습니다</div>}
+          >
             <div class={listClass}>
               <For each={[...notification.items()].reverse()}>
                 {(item) => (

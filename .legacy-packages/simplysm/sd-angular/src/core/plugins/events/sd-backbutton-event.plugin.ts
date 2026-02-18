@@ -13,7 +13,11 @@ export class SdBackbuttonEventPlugin extends EventManagerPlugin {
     return eventName === "sdBackbutton";
   }
 
-  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(
+    element: HTMLElement,
+    eventName: string,
+    handler: (event: Event) => void,
+  ): () => void {
     const listener = (event: Event): void => {
       event.preventDefault();
       event.stopPropagation();

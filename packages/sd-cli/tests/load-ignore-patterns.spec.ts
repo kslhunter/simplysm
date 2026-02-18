@@ -52,7 +52,10 @@ describe("loadIgnorePatterns", () => {
     });
 
     mockJitiImportFn.mockResolvedValue({
-      default: [{ ignores: ["global/**"] }, { files: ["**/*.ts"], ignores: ["local/**"], rules: {} }],
+      default: [
+        { ignores: ["global/**"] },
+        { files: ["**/*.ts"], ignores: ["local/**"], rules: {} },
+      ],
     });
 
     const patterns = await loadIgnorePatterns(cwd);
@@ -129,7 +132,9 @@ describe("loadIgnorePatterns", () => {
       config: [{ ignores: ["test/**"] }],
     });
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint 설정 파일이 올바른 형식이 아닙니다");
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow(
+      "ESLint 설정 파일이 올바른 형식이 아닙니다",
+    );
   });
 
   it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {

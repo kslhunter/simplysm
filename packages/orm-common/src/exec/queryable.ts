@@ -14,7 +14,10 @@ import type {
   UpsertQueryDef,
 } from "../types/query-def";
 import type { DbContextBase } from "../types/db-context-def";
-import { type ColumnBuilderRecord, type DataToColumnBuilderRecord } from "../schema/factory/column-builder";
+import {
+  type ColumnBuilderRecord,
+  type DataToColumnBuilderRecord,
+} from "../schema/factory/column-builder";
 import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
@@ -110,7 +113,9 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
    * @param table - 재귀할 대상 테이블
    * @returns self 속성이 추가된 Queryable (자기 참조용)
    */
-  from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$infer"] & { self?: TBaseData[] }, T> {
+  from<T extends TableBuilder<any, any>>(
+    table: T,
+  ): Queryable<T["$infer"] & { self?: TBaseData[] }, T> {
     const selfAlias = `${this._cteName}.self`;
 
     return queryable(this._baseQr.meta.db, table, this._cteName)().join(
@@ -132,7 +137,9 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
    * @param columns - 커스텀 컬럼 정의
    * @returns self 속성이 추가된 Queryable
    */
-  select<R extends DataRecord>(columns: QueryableRecord<R>): Queryable<R & { self?: TBaseData[] }, never> {
+  select<R extends DataRecord>(
+    columns: QueryableRecord<R>,
+  ): Queryable<R & { self?: TBaseData[] }, never> {
     const selfAlias = `${this._cteName}.self`;
 
     return new Queryable<R, never>({
@@ -240,7 +247,9 @@ export class Queryable<
    * }))
    * ```
    */
-  select<R extends DataRecord>(fn: (columns: QueryableRecord<TData>) => QueryableRecord<R>): Queryable<R, never> {
+  select<R extends DataRecord>(
+    fn: (columns: QueryableRecord<TData>) => QueryableRecord<R>,
+  ): Queryable<R, never> {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.select(fn));
       return new Queryable({
@@ -507,7 +516,9 @@ export class Queryable<
       conditions.push(expr.or(columnMatches));
     } else if (parsed.or.length > 1) {
       const orConditions = parsed.or.map((pattern) => {
-        const columnMatches = columns.map((col) => expr.like(expr.lower(col), pattern.toLowerCase()));
+        const columnMatches = columns.map((col) =>
+          expr.like(expr.lower(col), pattern.toLowerCase()),
+        );
         return expr.or(columnMatches);
       });
       conditions.push(expr.or(orConditions));
@@ -552,7 +563,9 @@ export class Queryable<
    *   .groupBy((o) => [o.userId])
    * ```
    */
-  groupBy(fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>[]): Queryable<TData, never> {
+  groupBy(
+    fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>[],
+  ): Queryable<TData, never> {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.groupBy(fn));
       return new Queryable({
@@ -677,7 +690,10 @@ export class Queryable<
   joinSingle<A extends string, R extends DataRecord>(
     as: A,
     fwd: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
-  ): Queryable<{ [K in keyof TData as K extends A ? never : K]: TData[K] } & { [K in A]?: R }, TFrom> {
+  ): Queryable<
+    { [K in keyof TData as K extends A ? never : K]: TData[K] } & { [K in A]?: R },
+    TFrom
+  > {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.joinSingle(as, fwd));
       return new Queryable({
@@ -797,7 +813,9 @@ export class Queryable<
 
           // FKT join은 배열로 저장되므로 배열인 경우 첫 번째 요소 사용
           const srcColsRaw = parentChain ? parentCols[parentChain] : parentCols;
-          const srcCols = (Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw) as QueryableRecord<any>;
+          const srcCols = (
+            Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw
+          ) as QueryableRecord<any>;
           const conditions: WhereExprUnit[] = [];
 
           for (let i = 0; i < fkColKeys.length; i++) {
@@ -811,7 +829,10 @@ export class Queryable<
         });
 
         currentTable = targetTable;
-      } else if (relationDef instanceof ForeignKeyTargetBuilder || relationDef instanceof RelationKeyTargetBuilder) {
+      } else if (
+        relationDef instanceof ForeignKeyTargetBuilder ||
+        relationDef instanceof RelationKeyTargetBuilder
+      ) {
         // FKT/RelationKeyTarget (1:N 또는 1:1): User.posts → Post[]
         // 조건: Post.userId = User.id
         const targetTable = relationDef.meta.targetTableFn();
@@ -834,7 +855,9 @@ export class Queryable<
 
           // FKT join은 배열로 저장되므로 배열인 경우 첫 번째 요소 사용
           const srcColsRaw = parentChain ? parentCols[parentChain] : parentCols;
-          const srcCols = (Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw) as QueryableRecord<any>;
+          const srcCols = (
+            Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw
+          ) as QueryableRecord<any>;
           const conditions: WhereExprUnit[] = [];
 
           for (let i = 0; i < fkColKeys.length; i++) {
@@ -905,7 +928,9 @@ export class Queryable<
    * );
    * ```
    */
-  static union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData, never> {
+  static union<TData extends DataRecord>(
+    ...queries: Queryable<TData, any>[]
+  ): Queryable<TData, never> {
     if (queries.length < 2) {
       throw new ArgumentError("union은 최소 2개의 queryable이 필요합니다.", {
         provided: queries.length,
@@ -946,7 +971,9 @@ export class Queryable<
    *   )
    * ```
    */
-  recursive(fwd: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>): Queryable<TData, never> {
+  recursive(
+    fwd: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>,
+  ): Queryable<TData, never> {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.recursive(fwd));
       return new Queryable({
@@ -994,7 +1021,10 @@ export class Queryable<
    * ```
    */
   async result(): Promise<TData[]> {
-    const results = await this.meta.db.executeDefs<TData>([this.getSelectQueryDef()], [this.getResultMeta()]);
+    const results = await this.meta.db.executeDefs<TData>(
+      [this.getSelectQueryDef()],
+      [this.getResultMeta()],
+    );
     return results[0];
   }
 
@@ -1126,7 +1156,12 @@ export class Queryable<
     });
   }
 
-  private _buildFromDef(): QueryDefObjectName | SelectQueryDef | SelectQueryDef[] | string | undefined {
+  private _buildFromDef():
+    | QueryDefObjectName
+    | SelectQueryDef
+    | SelectQueryDef[]
+    | string
+    | undefined {
     const from = this.meta.from;
 
     if (from instanceof TableBuilder || from instanceof ViewBuilder) {
@@ -1440,7 +1475,9 @@ export class Queryable<
    *   }));
    * ```
    */
-  async update(recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>): Promise<void>;
+  async update(
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+  ): Promise<void>;
   async update<K extends keyof TFrom["$columns"] & string>(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
     outputColumns: K[],
@@ -1479,7 +1516,9 @@ export class Queryable<
    * ```
    */
   async delete(): Promise<void>;
-  async delete<K extends keyof TFrom["$columns"] & string>(outputColumns: K[]): Promise<Pick<TFrom["$columns"], K>[]>;
+  async delete<K extends keyof TFrom["$columns"] & string>(
+    outputColumns: K[],
+  ): Promise<Pick<TFrom["$columns"], K>[]>;
   async delete<K extends keyof TFrom["$columns"] & string>(
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$columns"], K>[] | void> {
@@ -1574,7 +1613,9 @@ export class Queryable<
    *   );
    * ```
    */
-  async upsert(updateFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>): Promise<void>;
+  async upsert(
+    updateFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+  ): Promise<void>;
   async upsert<K extends keyof TFrom["$inferColumns"] & string>(
     insertFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
@@ -1583,12 +1624,18 @@ export class Queryable<
     updateFwd: (cols: QueryableRecord<TData>) => U,
     insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
   ): Promise<void>;
-  async upsert<U extends QueryableRecord<TFrom["$inferUpdate"]>, K extends keyof TFrom["$inferColumns"] & string>(
+  async upsert<
+    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    K extends keyof TFrom["$inferColumns"] & string,
+  >(
     updateFwd: (cols: QueryableRecord<TData>) => U,
     insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async upsert<U extends QueryableRecord<TFrom["$inferUpdate"]>, K extends keyof TFrom["$inferColumns"] & string>(
+  async upsert<
+    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    K extends keyof TFrom["$inferColumns"] & string,
+  >(
     updateFwdOrInsertFwd:
       | ((cols: QueryableRecord<TData>) => U)
       | ((cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>),
@@ -1601,7 +1648,8 @@ export class Queryable<
       insertFwdOrOutputColumns instanceof Function ? insertFwdOrOutputColumns : updateFwdOrInsertFwd
     ) as (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>;
 
-    const realOutputColumns = insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
+    const realOutputColumns =
+      insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
 
     const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
       [this.getUpsertQueryDef(updateRecordFwd, insertRecordFwd, realOutputColumns)],
@@ -1662,7 +1710,9 @@ export class Queryable<
   async switchFk(switch_: "on" | "off"): Promise<void> {
     const from = this.meta.from;
     if (!(from instanceof TableBuilder) && !(from instanceof ViewBuilder)) {
-      throw new Error("switchFk는 TableBuilder 또는 ViewBuilder 기반 queryable에서만 사용할 수 있습니다.");
+      throw new Error(
+        "switchFk는 TableBuilder 또는 ViewBuilder 기반 queryable에서만 사용할 수 있습니다.",
+      );
     }
     await this.meta.db.switchFk(this.meta.db.getQueryDefObjectName(from), switch_);
   }
@@ -1711,7 +1761,10 @@ export class Queryable<
  * @returns 매칭된 PK 컬럼명 배열
  * @throws FK/PK 컬럼 수 불일치 시
  */
-export function getMatchedPrimaryKeys(fkCols: string[], targetTable: TableBuilder<any, any>): string[] {
+export function getMatchedPrimaryKeys(
+  fkCols: string[],
+  targetTable: TableBuilder<any, any>,
+): string[] {
   const pk = targetTable.meta.primaryKey;
   if (pk == null || fkCols.length !== pk.length) {
     throw new Error(
@@ -1749,7 +1802,9 @@ function transformColumnsAlias<TRecord extends DataRecord>(
       result[key] = expr.col(value.dataType, alias, fullKey);
     } else if (Array.isArray(value)) {
       if (value.length > 0) {
-        result[key] = [transformColumnsAlias(value[0] as QueryableRecord<DataRecord>, alias, fullKey)];
+        result[key] = [
+          transformColumnsAlias(value[0] as QueryableRecord<DataRecord>, alias, fullKey),
+        ];
       }
     } else if (typeof value === "object" && value != null) {
       result[key] = transformColumnsAlias(value as QueryableRecord<DataRecord>, alias, fullKey);
@@ -1767,7 +1822,12 @@ function transformColumnsAlias<TRecord extends DataRecord>(
 
 interface QueryableMeta<TData extends DataRecord> {
   db: DbContextBase;
-  from?: TableBuilder<any, any> | ViewBuilder<any, any, any> | Queryable<any, any> | Queryable<TData, any>[] | string;
+  from?:
+    | TableBuilder<any, any>
+    | ViewBuilder<any, any, any>
+    | Queryable<any, any>
+    | Queryable<TData, any>[]
+    | string;
   as: string;
   columns: QueryableRecord<TData>;
   isCustomColumns?: boolean;
@@ -1835,7 +1895,9 @@ const PATH_SYMBOL = Symbol("path");
  * include()용 타입 안전 경로 프록시
  */
 export type PathProxy<TObject> = {
-  [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<UnwrapArray<TObject[K]>>;
+  [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<
+    UnwrapArray<TObject[K]>
+  >;
 } & { readonly [PATH_SYMBOL]: string[] };
 
 /**
@@ -1898,7 +1960,10 @@ export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<
         from: tableOrView,
         as: finalAs,
         columns: Object.fromEntries(
-          Object.entries(columnDefs).map(([key, colDef]) => [key, expr.col(colDef.meta.type, finalAs, key)]),
+          Object.entries(columnDefs).map(([key, colDef]) => [
+            key,
+            expr.col(colDef.meta.type, finalAs, key),
+          ]),
         ),
       }) as any;
     }

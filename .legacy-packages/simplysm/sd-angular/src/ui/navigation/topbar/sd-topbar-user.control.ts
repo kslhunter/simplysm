@@ -10,7 +10,13 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDropdownControl, SdDropdownPopupControl, SdButtonControl, SdListControl, SdListItemControl],
+  imports: [
+    SdDropdownControl,
+    SdDropdownPopupControl,
+    SdButtonControl,
+    SdListControl,
+    SdListItemControl,
+  ],
   template: `
     <sd-dropdown #dropdownEl>
       <sd-button [inline]="true" [theme]="'link-gray'">

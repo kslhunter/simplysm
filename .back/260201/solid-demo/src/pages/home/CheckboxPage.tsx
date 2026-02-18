@@ -18,7 +18,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Default</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked={checked()} onChange={setChecked}>
               Default ({checked() ? "checked" : "unchecked"})
             </Checkbox>
@@ -31,7 +33,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Indeterminate</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox
               indeterminate={isIndeterminate()}
               checked={indeterminateChecked()}
@@ -40,7 +44,11 @@ export default function CheckboxPage() {
                 setIsIndeterminate(false);
               }}
             >
-              {isIndeterminate() ? "Indeterminate" : indeterminateChecked() ? "Checked" : "Unchecked"}
+              {isIndeterminate()
+                ? "Indeterminate"
+                : indeterminateChecked()
+                  ? "Checked"
+                  : "Unchecked"}
             </Checkbox>
             <button onClick={() => setIsIndeterminate(true)}>Reset to Indeterminate</button>
           </div>
@@ -48,7 +56,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked theme="primary">
               Primary
             </Checkbox>
@@ -78,7 +88,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Size</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked size="xs">
               Extra Small
             </Checkbox>
@@ -97,7 +109,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Size + Theme</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked theme="primary" size="xs">
               XS Primary
             </Checkbox>
@@ -118,7 +132,9 @@ export default function CheckboxPage() {
 
         <section>
           <h3>Theme + Disabled</h3>
-          <div class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}>
+          <div
+            class={atoms({ display: "flex", gap: "base", alignItems: "center", flexWrap: "wrap" })}
+          >
             <Checkbox checked theme="primary" disabled>
               Primary
             </Checkbox>

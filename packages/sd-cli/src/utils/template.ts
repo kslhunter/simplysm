@@ -31,7 +31,12 @@ export async function renderTemplateDir(
     if (stat.isDirectory()) {
       // 디렉토리 이름 치환 적용
       const destName = dirReplacements?.[entry] ?? entry;
-      await renderTemplateDir(path.join(srcDir, entry), path.join(destDir, destName), context, dirReplacements);
+      await renderTemplateDir(
+        path.join(srcDir, entry),
+        path.join(destDir, destName),
+        context,
+        dirReplacements,
+      );
     } else if (entry.endsWith(".hbs")) {
       // Handlebars 템플릿 렌더링
       const source = await fsRead(srcPath);

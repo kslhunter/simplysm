@@ -68,7 +68,9 @@ export class DbDefUtils {
     if (!prevIndexDef) {
       tableDef.indexes.push(def);
     } else {
-      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, { keys: ["columnPropertyKey"] });
+      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, {
+        keys: ["columnPropertyKey"],
+      });
       tableDef.indexes = tableDef.indexes.merge([prevIndexDef], { keys: ["name"] });
     }
     DbDefUtils.setTableDef(tableType, tableDef);
@@ -82,7 +84,9 @@ export class DbDefUtils {
 
   static addReferenceKeyTargetDef(tableType: Type<any>, def: IReferenceKeyTargetDef): void {
     const tableDef = DbDefUtils.getTableDef(tableType, false);
-    tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], { keys: ["propertyKey"] });
+    tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], {
+      keys: ["propertyKey"],
+    });
     DbDefUtils.setTableDef(tableType, tableDef);
   }
 }

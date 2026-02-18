@@ -1,4 +1,11 @@
-import { type Component, createEffect, createSignal, onCleanup, splitProps, type JSX } from "solid-js";
+import {
+  type Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  splitProps,
+  type JSX,
+} from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import type * as echartsType from "echarts";
 import clsx from "clsx";
@@ -6,13 +13,13 @@ import { twMerge } from "tailwind-merge";
 
 export interface EchartsProps extends JSX.HTMLAttributes<HTMLDivElement> {
   option: echartsType.EChartsOption;
-  loading?: boolean;
+  busy?: boolean;
 }
 
 const baseClass = clsx("block", "size-full");
 
 export const Echarts: Component<EchartsProps> = (props) => {
-  const [local, rest] = splitProps(props, ["option", "loading", "class"]);
+  const [local, rest] = splitProps(props, ["option", "busy", "class"]);
   let containerRef!: HTMLDivElement;
   let chart: echartsType.EChartsType | undefined;
   const [ready, setReady] = createSignal(false);
@@ -33,10 +40,10 @@ export const Echarts: Component<EchartsProps> = (props) => {
     chart!.setOption(local.option);
   });
 
-  // loading 상태 변경 감지
+  // busy 상태 변경 감지
   createEffect(() => {
     if (!ready()) return;
-    if (local.loading) {
+    if (local.busy) {
       chart!.showLoading();
     } else {
       chart!.hideLoading();

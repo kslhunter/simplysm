@@ -17,7 +17,10 @@
  * getSuffix("사과", "을") // "를"
  * getSuffix("책", "이") // "이"
  */
-export declare function strGetSuffix(text: string, type: "을" | "은" | "이" | "와" | "랑" | "로" | "라"): string;
+export declare function strGetSuffix(
+  text: string,
+  type: "을" | "은" | "이" | "와" | "랑" | "로" | "라",
+): string;
 /**
  * 전각(Full-width) 문자를 반각(Half-width) 문자로 변환
  *

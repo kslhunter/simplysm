@@ -17,19 +17,25 @@ describe("Collapse", () => {
   });
 
   describe("렌더링", () => {
-    it("open={false}일 때 aria-hidden=true", () => {
+    it("open={false}일 때 콘텐츠가 visibility:hidden", () => {
       const { container } = render(() => <Collapse open={false}>Content</Collapse>);
-      expect(container.querySelector("[aria-hidden='true']")).toBeTruthy();
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
+      expect(contentDiv.style.visibility).toBe("hidden");
     });
 
-    it("open={true}일 때 aria-hidden=false", () => {
+    it("open={true}일 때 콘텐츠가 visible", () => {
       const { container } = render(() => <Collapse open={true}>Content</Collapse>);
-      expect(container.querySelector("[aria-hidden='false']")).toBeTruthy();
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
+      expect(contentDiv.style.visibility).not.toBe("hidden");
     });
 
-    it("open이 undefined일 때 false로 처리 (aria-hidden=true)", () => {
+    it("open이 undefined일 때 false로 처리 (visibility:hidden)", () => {
       const { container } = render(() => <Collapse>Content</Collapse>);
-      expect(container.querySelector("[aria-hidden='true']")).toBeTruthy();
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
+      expect(contentDiv.style.visibility).toBe("hidden");
     });
 
     it("콘텐츠가 비어있어도 정상 렌더링", () => {
@@ -46,7 +52,7 @@ describe("Collapse", () => {
       ));
       expect(container.querySelector(".my-test-class")).toBeTruthy();
       // overflow: hidden은 inline style로 적용됨
-      const rootDiv = container.querySelector("[aria-hidden]") as HTMLElement;
+      const rootDiv = container.querySelector("[data-collapse]") as HTMLElement;
       expect(rootDiv.style.overflow).toBe("hidden");
     });
   });
@@ -58,7 +64,8 @@ describe("Collapse", () => {
           <div style={{ height: "100px" }}>Content</div>
         </Collapse>
       ));
-      const contentDiv = container.querySelector("[aria-hidden]")?.firstElementChild as HTMLElement;
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
       expect(contentDiv).toBeTruthy();
 
       // ResizeObserver가 측정을 완료할 때까지 대기
@@ -76,7 +83,7 @@ describe("Collapse", () => {
           <div style={{ height: "100px" }}>Content</div>
         </Collapse>
       ));
-      const contentDiv = container.querySelector("[aria-hidden]")?.firstElementChild;
+      const contentDiv = container.querySelector("[data-collapse]")?.firstElementChild;
       const marginTop = (contentDiv as HTMLElement).style.marginTop;
       expect(!marginTop || marginTop === "").toBeTruthy();
     });
@@ -85,7 +92,7 @@ describe("Collapse", () => {
   describe("초기 렌더링 및 transition", () => {
     it("마운트 후 transition 클래스가 적용됨", () => {
       const { container } = render(() => <Collapse open={false}>Content</Collapse>);
-      const contentDiv = container.querySelector("[aria-hidden]")?.firstElementChild;
+      const contentDiv = container.querySelector("[data-collapse]")?.firstElementChild;
       expect(contentDiv?.classList.contains("transition-[margin-top]")).toBeTruthy();
     });
 
@@ -97,7 +104,8 @@ describe("Collapse", () => {
         </Collapse>
       ));
 
-      const contentDiv = container.querySelector("[aria-hidden]")?.firstElementChild as HTMLElement;
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
 
       // 초기 상태: 닫힘, margin-top 음수
       await waitFor(() => {
@@ -119,14 +127,16 @@ describe("Collapse", () => {
   });
 
   describe("동적 상태 변경", () => {
-    it("open 상태 변경 시 aria-hidden 업데이트", () => {
+    it("open 상태 변경 시 visibility 업데이트", () => {
       const [open, setOpen] = createSignal(false);
       const { container } = render(() => <Collapse open={open()}>Content</Collapse>);
 
-      expect(container.querySelector("[aria-hidden='true']")).toBeTruthy();
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
+      expect(contentDiv.style.visibility).toBe("hidden");
 
       setOpen(true);
-      expect(container.querySelector("[aria-hidden='false']")).toBeTruthy();
+      expect(contentDiv.style.visibility).not.toBe("hidden");
     });
 
     it("콘텐츠 높이 변경 시 margin-top 재계산", async () => {
@@ -138,7 +148,8 @@ describe("Collapse", () => {
         </Collapse>
       ));
 
-      const contentDiv = container.querySelector("[aria-hidden]")?.firstElementChild as HTMLElement;
+      const contentDiv = container.querySelector("[data-collapse]")
+        ?.firstElementChild as HTMLElement;
 
       // 초기 높이 측정 대기
       await waitFor(() => {

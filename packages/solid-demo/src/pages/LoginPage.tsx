@@ -72,8 +72,16 @@ export default function LoginPage() {
         </form>
 
         {/* Links */}
-        <div class={clsx("mt-4 flex items-center justify-center gap-3", "text-sm text-base-500 dark:text-base-400")}>
-          <span class="cursor-pointer hover:text-primary-500" onClick={() => alert("비밀번호 변경")}>
+        <div
+          class={clsx(
+            "mt-4 flex items-center justify-center gap-3",
+            "text-sm text-base-500 dark:text-base-400",
+          )}
+        >
+          <span
+            class="cursor-pointer hover:text-primary-500"
+            onClick={() => alert("비밀번호 변경")}
+          >
             비밀번호 변경
           </span>
           <span class="text-base-300 dark:text-base-600">|</span>

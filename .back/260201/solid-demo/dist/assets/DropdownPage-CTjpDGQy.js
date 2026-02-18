@@ -209,9 +209,18 @@ function fe() {
                                             return e(h, {
                                               get children() {
                                                 return [
-                                                  e(n, { onClick: () => alert("서브 1"), children: "서브 아이템 1" }),
-                                                  e(n, { onClick: () => alert("서브 2"), children: "서브 아이템 2" }),
-                                                  e(n, { onClick: () => alert("서브 3"), children: "서브 아이템 3" }),
+                                                  e(n, {
+                                                    onClick: () => alert("서브 1"),
+                                                    children: "서브 아이템 1",
+                                                  }),
+                                                  e(n, {
+                                                    onClick: () => alert("서브 2"),
+                                                    children: "서브 아이템 2",
+                                                  }),
+                                                  e(n, {
+                                                    onClick: () => alert("서브 3"),
+                                                    children: "서브 아이템 3",
+                                                  }),
                                                 ];
                                               },
                                             });
@@ -266,7 +275,12 @@ function fe() {
                       e(c, {
                         get children() {
                           var a = he();
-                          return (a.firstChild, t(a, u + 1, null), _(() => l(a, i({ p: "base" }))), a);
+                          return (
+                            a.firstChild,
+                            t(a, u + 1, null),
+                            _(() => l(a, i({ p: "base" }))),
+                            a
+                          );
                         },
                       }),
                     ];
@@ -330,14 +344,24 @@ function fe() {
                   N = i({ mb: "base", color: "muted" }),
                   z = i({ display: "flex", gap: "base", flexWrap: "wrap" }),
                   E = i({ mb: "base", color: "muted" }),
-                  M = i({ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "base" }),
+                  M = i({
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "base",
+                  }),
                   I = i({ mb: "base", color: "muted" }),
                   K = i({ mb: "base", color: "muted" }),
                   O = i({ mb: "lg", color: "muted" }),
                   R = i({ mb: "base", color: "muted" }),
                   U = i({ display: "flex", gap: "xs", flexWrap: "wrap" }),
                   q = i({ mb: "base", color: "muted" }),
-                  F = i({ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "base" });
+                  F = i({
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "base",
+                  });
                 return (
                   u !== r.e && l(s, (r.e = u)),
                   a !== r.t && l(k, (r.t = a)),

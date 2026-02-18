@@ -50,7 +50,9 @@ export async function runInit(_options: InitOptions): Promise<void> {
   // 2. 프로젝트명 검증
   const projectName = path.basename(cwd);
   if (!isValidScopeName(projectName)) {
-    consola.error(`프로젝트 이름 "${projectName}"이(가) 유효하지 않습니다. 소문자, 숫자, 하이픈만 사용 가능합니다.`);
+    consola.error(
+      `프로젝트 이름 "${projectName}"이(가) 유효하지 않습니다. 소문자, 숫자, 하이픈만 사용 가능합니다.`,
+    );
     process.exitCode = 1;
     return;
   }

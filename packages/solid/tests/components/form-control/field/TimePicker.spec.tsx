@@ -85,7 +85,9 @@ describe("TimePicker 컴포넌트", () => {
     it("빈 값 입력 시 undefined가 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
       const time = new Time(10, 30, 45);
-      const { container } = render(() => <TimePicker unit="minute" value={time} onValueChange={handleChange} />);
+      const { container } = render(() => (
+        <TimePicker unit="minute" value={time} onValueChange={handleChange} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.change(input, { target: { value: "" } });
@@ -97,7 +99,9 @@ describe("TimePicker 컴포넌트", () => {
   describe("controlled 패턴", () => {
     it("외부 상태 변경 시 input 값이 업데이트된다", () => {
       const [value, setValue] = createSignal<Time | undefined>(new Time(10, 0, 0));
-      const { container } = render(() => <TimePicker unit="minute" value={value()} onValueChange={setValue} />);
+      const { container } = render(() => (
+        <TimePicker unit="minute" value={value()} onValueChange={setValue} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       expect(input.value).toBe("10:00");
@@ -130,7 +134,9 @@ describe("TimePicker 컴포넌트", () => {
     });
 
     it("disabled 상태에서 value가 표시된다", () => {
-      const { getByText } = render(() => <TimePicker unit="minute" disabled value={new Time(10, 30, 0)} />);
+      const { getByText } = render(() => (
+        <TimePicker unit="minute" disabled value={new Time(10, 30, 0)} />
+      ));
       expect(getByText("10:30")).toBeTruthy();
     });
 
@@ -152,7 +158,9 @@ describe("TimePicker 컴포넌트", () => {
     });
 
     it("readonly 상태에서 value가 표시된다", () => {
-      const { getByText } = render(() => <TimePicker unit="minute" readonly value={new Time(10, 30, 0)} />);
+      const { getByText } = render(() => (
+        <TimePicker unit="minute" readonly value={new Time(10, 30, 0)} />
+      ));
       expect(getByText("10:30")).toBeTruthy();
     });
   });

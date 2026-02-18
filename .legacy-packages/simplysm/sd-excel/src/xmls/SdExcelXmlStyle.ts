@@ -349,7 +349,9 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   get(id: string): ISdExcelStyle {
-    const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!] as ISdExcelXmlStyleDataXf | undefined;
+    const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtils.parseInt(id)!] as
+      | ISdExcelXmlStyleDataXf
+      | undefined;
 
     const result: ISdExcelStyle = {};
 
@@ -358,7 +360,9 @@ export class SdExcelXmlStyle implements ISdExcelXml {
 
       if (xf.$.fillId !== undefined) {
         result.background =
-          this.data.styleSheet.fills[0].fill[NumberUtils.parseInt(xf.$.fillId)!].patternFill[0].fgColor?.[0].$.rgb;
+          this.data.styleSheet.fills[0].fill[
+            NumberUtils.parseInt(xf.$.fillId)!
+          ].patternFill[0].fgColor?.[0].$.rgb;
       }
 
       if (xf.$.borderId !== undefined) {
@@ -388,13 +392,15 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   getNumFmtCode(numFmtId: string): string | undefined {
-    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId === numFmtId)?.$.formatCode;
+    return this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.numFmtId === numFmtId)
+      ?.$.formatCode;
   }
 
   private _setNumFmtCode(numFmtCode: string): string {
     // 이미 해당 code가 있으면 넘기기
-    const existsNumFmtId = this.data.styleSheet.numFmts?.[0].numFmt?.single((item) => item.$.formatCode === numFmtCode)
-      ?.$.numFmtId;
+    const existsNumFmtId = this.data.styleSheet.numFmts?.[0].numFmt?.single(
+      (item) => item.$.formatCode === numFmtCode,
+    )?.$.numFmtId;
     if (existsNumFmtId != null) {
       return existsNumFmtId;
     }
@@ -409,7 +415,9 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     this.data.styleSheet.numFmts[0].numFmt = this.data.styleSheet.numFmts[0].numFmt ?? [];
 
     const maxId =
-      this.data.styleSheet.numFmts[0].numFmt.max((item) => NumberUtils.parseInt(item.$.numFmtId) ?? 180) ?? 180;
+      this.data.styleSheet.numFmts[0].numFmt.max(
+        (item) => NumberUtils.parseInt(item.$.numFmtId) ?? 180,
+      ) ?? 180;
     const nextNumFmtId = (maxId + 1).toString();
     this.data.styleSheet.numFmts[0].numFmt.push({
       $: {
@@ -445,19 +453,24 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   private _getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
-    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtils.equal(item, xfItem));
+    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) =>
+      ObjectUtils.equal(item, xfItem),
+    );
 
     if (prevSameXf) {
       return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
     } else {
       this.data.styleSheet.cellXfs[0].xf.push(xfItem);
-      this.data.styleSheet.cellXfs[0].$.count = this.data.styleSheet.cellXfs[0].xf.length.toString();
+      this.data.styleSheet.cellXfs[0].$.count =
+        this.data.styleSheet.cellXfs[0].xf.length.toString();
       return (this.data.styleSheet.cellXfs[0].xf.length - 1).toString();
     }
   }
 
   private _getSameOrCreateFill(fillItem: ISdExcelXmlStyleDataFill): string {
-    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) => ObjectUtils.equal(item, fillItem));
+    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) =>
+      ObjectUtils.equal(item, fillItem),
+    );
 
     if (prevSameFill) {
       return this.data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
@@ -469,13 +482,16 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   private _getSameOrCreateBorder(borderItem: ISdExcelXmlStyleDataBorder): string {
-    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) => ObjectUtils.equal(item, borderItem));
+    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) =>
+      ObjectUtils.equal(item, borderItem),
+    );
 
     if (prevSameBorder) {
       return this.data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();
     } else {
       this.data.styleSheet.borders[0].border.push(borderItem);
-      this.data.styleSheet.borders[0].$.count = this.data.styleSheet.borders[0].border.length.toString();
+      this.data.styleSheet.borders[0].$.count =
+        this.data.styleSheet.borders[0].border.length.toString();
       return (this.data.styleSheet.borders[0].border.length - 1).toString();
     }
   }

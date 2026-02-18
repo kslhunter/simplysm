@@ -39,7 +39,9 @@ export interface RouterLinkOptions {
  * </ListItem>
  * ```
  */
-export function useRouterLink(): (options: RouterLinkOptions) => (e: MouseEvent | KeyboardEvent) => void {
+export function useRouterLink(): (
+  options: RouterLinkOptions,
+) => (e: MouseEvent | KeyboardEvent) => void {
   const navigate = useNavigate();
 
   return (options: RouterLinkOptions) => {

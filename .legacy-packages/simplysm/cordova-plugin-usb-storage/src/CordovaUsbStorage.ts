@@ -34,7 +34,10 @@ export abstract class CordovaUsbStorage {
    * @param filter 권한을 요청할 USB 장치의 vendorId와 productId
    * @returns 권한 승인 여부
    */
-  static async requestPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
+  static async requestPermission(filter: {
+    vendorId: number;
+    productId: number;
+  }): Promise<boolean> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -77,7 +80,10 @@ export abstract class CordovaUsbStorage {
    * @param dirPath 읽어올 디렉토리 경로
    * @returns 디렉토리 내 파일/폴더 이름 배열
    */
-  static async readdir(filter: { vendorId: number; productId: number }, dirPath: string): Promise<string[]> {
+  static async readdir(
+    filter: { vendorId: number; productId: number },
+    dirPath: string,
+  ): Promise<string[]> {
     return await new Promise((resolve, reject) => {
       cordova.exec(
         (res) => {
@@ -99,7 +105,10 @@ export abstract class CordovaUsbStorage {
    * @param filePath 읽어올 파일 경로
    * @returns 파일 데이터를 담은 Buffer 또는 undefined
    */
-  static async read(filter: { vendorId: number; productId: number }, filePath: string): Promise<Buffer | undefined> {
+  static async read(
+    filter: { vendorId: number; productId: number },
+    filePath: string,
+  ): Promise<Buffer | undefined> {
     return await new Promise<Buffer | undefined>((resolve, reject) => {
       cordova.exec(
         (res: ArrayBuffer | undefined) => {

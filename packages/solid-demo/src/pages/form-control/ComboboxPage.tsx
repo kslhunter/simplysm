@@ -23,7 +23,9 @@ const filterFruits = (query: string): Promise<Fruit[]> => {
   if (!query.trim()) {
     return Promise.resolve(allFruits);
   }
-  return Promise.resolve(allFruits.filter((fruit) => fruit.name.includes(query) || fruit.emoji.includes(query)));
+  return Promise.resolve(
+    allFruits.filter((fruit) => fruit.name.includes(query) || fruit.emoji.includes(query)),
+  );
 };
 
 // 비동기 검색 시뮬레이션 (로딩 있음)
@@ -189,7 +191,11 @@ export default function ComboboxPage() {
                   )}
                 </Combobox.ItemTemplate>
               </Combobox>
-              <Combobox loadItems={filterFruits} placeholder="Default" renderValue={(v: Fruit) => <>{v.name}</>}>
+              <Combobox
+                loadItems={filterFruits}
+                placeholder="Default"
+                renderValue={(v: Fruit) => <>{v.name}</>}
+              >
                 <Combobox.ItemTemplate>
                   {(item: Fruit) => (
                     <>
@@ -275,10 +281,17 @@ export default function ComboboxPage() {
               </Combobox>
               <p class="text-sm text-base-600 dark:text-base-400">
                 현재 값:{" "}
-                <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSelected()?.name ?? "(없음)"}</code>
+                <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                  {controlledSelected()?.name ?? "(없음)"}
+                </code>
               </p>
               <div class="flex gap-2">
-                <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledSelected(allFruits[2])}>
+                <Button
+                  theme="primary"
+                  variant="solid"
+                  size="sm"
+                  onClick={() => setControlledSelected(allFruits[2])}
+                >
                   포도 선택
                 </Button>
                 <Button variant="solid" size="sm" onClick={() => setControlledSelected(undefined)}>

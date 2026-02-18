@@ -1,4 +1,8 @@
-import type { MysqlDbConnConfig, MssqlDbConnConfig, PostgresqlDbConnConfig } from "@simplysm/orm-node";
+import type {
+  MysqlDbConnConfig,
+  MssqlDbConnConfig,
+  PostgresqlDbConnConfig,
+} from "@simplysm/orm-node";
 
 /**
  * 테스트용 MySQL 연결 설정

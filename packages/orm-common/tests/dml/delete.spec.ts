@@ -10,7 +10,11 @@ describe("TRUNCATE", () => {
   describe("테이블 전체 삭제 (TRUNCATE)", () => {
     const db = createTestDb();
 
-    const def = db.getTruncateQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" });
+    const def = db.getTruncateQueryDef({
+      database: "TestDb",
+      schema: "TestSchema",
+      name: "Employee",
+    });
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

@@ -38,8 +38,12 @@ const DropdownPopup = (props) => {
     if (!e.ctrlKey && !e.altKey) {
       const tabbables = tabbable(popupRef);
       const shouldFocusTrigger =
-        (ctx.placement() === "bottom" && e.key === "ArrowUp" && document.activeElement === tabbables[0]) ||
-        (ctx.placement() === "top" && e.key === "ArrowDown" && document.activeElement === tabbables.at(-1));
+        (ctx.placement() === "bottom" &&
+          e.key === "ArrowUp" &&
+          document.activeElement === tabbables[0]) ||
+        (ctx.placement() === "top" &&
+          e.key === "ArrowDown" &&
+          document.activeElement === tabbables.at(-1));
       if (shouldFocusTrigger) {
         e.preventDefault();
         e.stopPropagation();

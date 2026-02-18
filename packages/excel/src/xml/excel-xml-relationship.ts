@@ -24,7 +24,8 @@ export class ExcelXmlRelationship implements ExcelXml {
   }
 
   getTargetByRelId(rId: number): string | undefined {
-    return (this.data.Relationships.Relationship ?? []).single((rel) => this._getRelId(rel) === rId)?.$.Target;
+    return (this.data.Relationships.Relationship ?? []).single((rel) => this._getRelId(rel) === rId)
+      ?.$.Target;
   }
 
   add(target: string, type: string): this {
@@ -51,7 +52,9 @@ export class ExcelXmlRelationship implements ExcelXml {
   insert(rId: number, target: string, type: string): this {
     this.data.Relationships.Relationship = this.data.Relationships.Relationship ?? [];
 
-    const shiftRels = this.data.Relationships.Relationship.filter((rel) => this._getRelId(rel) >= rId);
+    const shiftRels = this.data.Relationships.Relationship.filter(
+      (rel) => this._getRelId(rel) >= rId,
+    );
     for (const shiftRel of shiftRels) {
       shiftRel.$.Id = `rId${this._getRelId(shiftRel) + 1}`;
     }

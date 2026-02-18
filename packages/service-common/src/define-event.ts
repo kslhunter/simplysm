@@ -24,7 +24,9 @@ export interface ServiceEventDef<TInfo = unknown, TData = unknown> {
  *   console.log(data.status); // typed
  * });
  */
-export function defineEvent<TInfo = unknown, TData = unknown>(eventName: string): ServiceEventDef<TInfo, TData> {
+export function defineEvent<TInfo = unknown, TData = unknown>(
+  eventName: string,
+): ServiceEventDef<TInfo, TData> {
   return {
     eventName,
     $info: undefined as unknown as TInfo,

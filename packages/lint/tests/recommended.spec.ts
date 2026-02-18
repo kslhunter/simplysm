@@ -13,11 +13,15 @@ const hasFiles = (config: ConfigItem): config is ConfigItem & { files: (string |
   return "files" in config && Array.isArray(config.files);
 };
 
-const hasRules = (config: ConfigItem): config is ConfigItem & { rules: Record<string, unknown> } => {
+const hasRules = (
+  config: ConfigItem,
+): config is ConfigItem & { rules: Record<string, unknown> } => {
   return "rules" in config && config.rules != null;
 };
 
-const hasPlugins = (config: ConfigItem): config is ConfigItem & { plugins: Record<string, unknown> } => {
+const hasPlugins = (
+  config: ConfigItem,
+): config is ConfigItem & { plugins: Record<string, unknown> } => {
   return "plugins" in config && config.plugins != null;
 };
 
@@ -90,7 +94,8 @@ describe("recommended 설정", () => {
 
   it("테스트 폴더에서 import/no-extraneous-dependencies가 off 되어야 함", () => {
     const testConfig = recommended.find(
-      (config) => hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("**/tests/**")),
+      (config) =>
+        hasFiles(config) && flattenFiles(config.files).some((f) => f.includes("**/tests/**")),
     );
     expect(testConfig).toBeDefined();
     if (testConfig == null) return;
@@ -110,7 +115,9 @@ describe("recommended 설정", () => {
       const ruleNames = Object.keys(plugin.rules);
       for (const ruleName of ruleNames) {
         const fullRuleName = `@simplysm/${ruleName}`;
-        expect(tsConfig.rules, `규칙 '${fullRuleName}'이 TS 설정에 포함되어야 함`).toHaveProperty(fullRuleName);
+        expect(tsConfig.rules, `규칙 '${fullRuleName}'이 TS 설정에 포함되어야 함`).toHaveProperty(
+          fullRuleName,
+        );
       }
     }
   });

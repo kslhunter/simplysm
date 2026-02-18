@@ -136,7 +136,9 @@ describe("TextInput 컴포넌트", () => {
 
     it("format이 적용된 상태에서 입력 시 원본 값이 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <TextInput format="XXX-XXXX-XXXX" value="" onValueChange={handleChange} />);
+      const { container } = render(() => (
+        <TextInput format="XXX-XXXX-XXXX" value="" onValueChange={handleChange} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.input(input, { target: { value: "010-1234-5678" } });

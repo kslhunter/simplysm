@@ -32,13 +32,17 @@ describe("Numpad", () => {
 
     it("C 버튼이 text-danger-500 클래스로 렌더링된다", () => {
       render(() => <Numpad />);
-      const cButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-danger-500"));
+      const cButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.className.includes("text-danger-500"));
       expect(cButton).toBeTruthy();
     });
 
     it("BS 버튼이 text-warning-500 클래스로 렌더링된다", () => {
       render(() => <Numpad />);
-      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"));
+      const bsButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.className.includes("text-warning-500"));
       expect(bsButton).toBeTruthy();
     });
 
@@ -112,7 +116,9 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("6"));
 
       // C 버튼 클릭
-      const cButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-danger-500"))!;
+      const cButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.className.includes("text-danger-500"))!;
       fireEvent.click(cButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(undefined);
@@ -128,7 +134,9 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("3"));
 
       // BS 버튼 클릭
-      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"))!;
+      const bsButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.className.includes("text-warning-500"))!;
       fireEvent.click(bsButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(12);
@@ -142,7 +150,9 @@ describe("Numpad", () => {
       fireEvent.click(screen.getByText("1"));
 
       // BS 버튼 클릭
-      const bsButton = screen.getAllByRole("button").find((btn) => btn.className.includes("text-warning-500"))!;
+      const bsButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.className.includes("text-warning-500"))!;
       fireEvent.click(bsButton);
 
       expect(handleChange).toHaveBeenLastCalledWith(undefined);

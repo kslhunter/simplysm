@@ -108,7 +108,10 @@ export interface ReadonlyArrayExt<TItem> {
     valueSelector: (item: TItem, index: number) => V,
   ): Map<K, Set<V>>;
 
-  toMapValues<K, V>(keySelector: (item: TItem, index: number) => K, valueSelector: (items: TItem[]) => V): Map<K, V>;
+  toMapValues<K, V>(
+    keySelector: (item: TItem, index: number) => K,
+    valueSelector: (items: TItem[]) => V,
+  ): Map<K, V>;
 
   toObject(keySelector: (item: TItem, index: number) => string): Record<string, TItem>;
 
@@ -153,18 +156,27 @@ export interface ReadonlyArrayExt<TItem> {
    * // ]}]
    * ```
    */
-  toTree<K extends keyof TItem, P extends keyof TItem>(keyProp: K, parentKey: P): TreeArray<TItem>[];
+  toTree<K extends keyof TItem, P extends keyof TItem>(
+    keyProp: K,
+    parentKey: P,
+  ): TreeArray<TItem>[];
 
   /**
    * 중복 제거
    * @param options matchAddress: 주소 비교 (true면 Set 사용), keyFn: 커스텀 키 함수 (O(n) 성능)
    * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
    */
-  distinct(options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number }): TItem[];
+  distinct(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number },
+  ): TItem[];
 
-  orderBy(selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined): TItem[];
+  orderBy(
+    selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
+  ): TItem[];
 
-  orderByDesc(selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined): TItem[];
+  orderByDesc(
+    selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
+  ): TItem[];
 
   /**
    * 두 배열 비교 (INSERT/DELETE/UPDATE)
@@ -221,13 +233,19 @@ export interface MutableArrayExt<TItem> {
    * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
    * @mutates
    */
-  distinctThis(options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number }): TItem[];
+  distinctThis(
+    options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number },
+  ): TItem[];
 
   /** 원본 배열 오름차순 정렬 @mutates */
-  orderByThis(selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined): TItem[];
+  orderByThis(
+    selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
+  ): TItem[];
 
   /** 원본 배열 내림차순 정렬 @mutates */
-  orderByDescThis(selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined): TItem[];
+  orderByDescThis(
+    selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
+  ): TItem[];
 
   /** 원본 배열에 항목 삽입 @mutates */
   insert(index: number, ...items: TItem[]): this;

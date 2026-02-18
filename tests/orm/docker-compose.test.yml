@@ -44,7 +44,11 @@ services:
       SA_PASSWORD: YourStrong@Passw0rd
       MSSQL_COLLATION: SQL_Latin1_General_CP1_CS_AS
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10

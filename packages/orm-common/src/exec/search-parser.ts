@@ -164,7 +164,11 @@ function termToLikePattern(term: string): string {
   let pattern = term.replace(/\*/g, WILDCARD);
 
   // SQL LIKE 특수문자 이스케이프 (\ → \\, % → \%, _ → \_, [ → \[)
-  pattern = pattern.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_").replace(/\[/g, "\\[");
+  pattern = pattern
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_")
+    .replace(/\[/g, "\\[");
 
   // 와일드카드 마커 → % (SQL 와일드카드)
   pattern = pattern.replaceAll(WILDCARD, "%");

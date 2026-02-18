@@ -86,7 +86,10 @@ export function createProtocolWrapper(): ProtocolWrapper {
   // -------------------------------------------------------------------
 
   return {
-    async encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }> {
+    async encode(
+      uuid: string,
+      message: ServiceMessage,
+    ): Promise<{ chunks: Bytes[]; totalSize: number }> {
       if (shouldUseWorkerForEncode(message)) {
         return getWorker().encode(uuid, message);
       } else {

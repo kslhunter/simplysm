@@ -56,7 +56,9 @@ describe("DateTimePicker 컴포넌트", () => {
 
     it("minute 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <DateTimePicker unit="minute" onValueChange={handleChange} />);
+      const { container } = render(() => (
+        <DateTimePicker unit="minute" onValueChange={handleChange} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.change(input, { target: { value: "2025-03-15T10:30" } });
@@ -73,7 +75,9 @@ describe("DateTimePicker 컴포넌트", () => {
 
     it("second 단위 입력 시 DateTime으로 변환되어 onValueChange로 전달된다", () => {
       const handleChange = vi.fn();
-      const { container } = render(() => <DateTimePicker unit="second" onValueChange={handleChange} />);
+      const { container } = render(() => (
+        <DateTimePicker unit="second" onValueChange={handleChange} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       fireEvent.change(input, { target: { value: "2025-03-15T10:30:45" } });
@@ -134,8 +138,12 @@ describe("DateTimePicker 컴포넌트", () => {
 
   describe("controlled 패턴", () => {
     it("외부 상태 변경 시 input 값이 업데이트된다", () => {
-      const [value, setValue] = createSignal<DateTime | undefined>(new DateTime(2025, 1, 1, 10, 0, 0));
-      const { container } = render(() => <DateTimePicker unit="minute" value={value()} onValueChange={setValue} />);
+      const [value, setValue] = createSignal<DateTime | undefined>(
+        new DateTime(2025, 1, 1, 10, 0, 0),
+      );
+      const { container } = render(() => (
+        <DateTimePicker unit="minute" value={value()} onValueChange={setValue} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       expect(input.value).toBe("2025-01-01T10:00");
@@ -147,7 +155,9 @@ describe("DateTimePicker 컴포넌트", () => {
 
   describe("uncontrolled 패턴", () => {
     it("onValueChange 없이 내부 상태로 값이 관리된다", () => {
-      const { container } = render(() => <DateTimePicker unit="minute" value={new DateTime(2025, 1, 1, 10, 0, 0)} />);
+      const { container } = render(() => (
+        <DateTimePicker unit="minute" value={new DateTime(2025, 1, 1, 10, 0, 0)} />
+      ));
       const input = container.querySelector("input") as HTMLInputElement;
 
       expect(input.value).toBe("2025-01-01T10:00");
@@ -159,7 +169,9 @@ describe("DateTimePicker 컴포넌트", () => {
 
   describe("disabled 상태", () => {
     it("disabled=true일 때 div로 렌더링된다", () => {
-      const { container } = render(() => <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />);
+      const { container } = render(() => (
+        <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
+      ));
       const input = container.querySelector("input");
       const div = container.querySelector("div.sd-datetime-field");
 
@@ -175,7 +187,9 @@ describe("DateTimePicker 컴포넌트", () => {
     });
 
     it("disabled 스타일이 적용된다", () => {
-      const { container } = render(() => <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />);
+      const { container } = render(() => (
+        <DateTimePicker disabled value={new DateTime(2025, 3, 15, 10, 30, 0)} />
+      ));
       const div = container.querySelector("div.sd-datetime-field") as HTMLElement;
       expect(div.classList.contains("bg-base-100")).toBe(true);
     });
@@ -183,7 +197,9 @@ describe("DateTimePicker 컴포넌트", () => {
 
   describe("readonly 상태", () => {
     it("readonly=true일 때 div로 렌더링된다", () => {
-      const { container } = render(() => <DateTimePicker readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />);
+      const { container } = render(() => (
+        <DateTimePicker readonly value={new DateTime(2025, 3, 15, 10, 30, 0)} />
+      ));
       const input = container.querySelector("input");
       const div = container.querySelector("div.sd-datetime-field");
 
@@ -236,7 +252,9 @@ describe("DateTimePicker 컴포넌트", () => {
     });
 
     it("inset + editable일 때 content div(hidden)와 input이 모두 존재한다", () => {
-      const { container } = render(() => <DateTimePicker inset value={new DateTime(2025, 3, 15, 14, 30, 0)} />);
+      const { container } = render(() => (
+        <DateTimePicker inset value={new DateTime(2025, 3, 15, 14, 30, 0)} />
+      ));
       const outer = container.firstChild as HTMLElement;
 
       const contentDiv = outer.querySelector("[data-datetime-field-content]") as HTMLElement;

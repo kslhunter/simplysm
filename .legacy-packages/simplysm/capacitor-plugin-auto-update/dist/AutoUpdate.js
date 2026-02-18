@@ -26,7 +26,10 @@ export class AutoUpdate {
                 background: lightgrey;
               }
             </style>
-            <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">
+            <a
+              class="_button"
+              href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end"
+            >
               다운로드
             </a>
           `
@@ -126,18 +129,26 @@ export class AutoUpdate {
         return;
       }
       opt.log(`권한 확인 중...`);
-      await this._checkPermissionAsync(opt.log, opt.serviceClient.hostUrl + serverVersionInfo.downloadPath);
+      await this._checkPermissionAsync(
+        opt.log,
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+      );
       // 최신버전이면 반환
       if (process.env["SD_VERSION"] === serverVersionInfo.version) {
         return;
       }
       opt.log(`최신버전 파일 다운로드중...`);
-      const buffer = await NetUtils.downloadBufferAsync(opt.serviceClient.hostUrl + serverVersionInfo.downloadPath, {
-        progressCallback: (progress) => {
-          const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(2);
-          opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+      const buffer = await NetUtils.downloadBufferAsync(
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+        {
+          progressCallback: (progress) => {
+            const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
+              2,
+            );
+            opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+          },
         },
-      });
+      );
       const storagePath = await FileSystem.getStoragePathAsync("appCache");
       const apkFilePath = path.join(storagePath, `latest.apk`);
       await FileSystem.writeFileAsync(apkFilePath, buffer);

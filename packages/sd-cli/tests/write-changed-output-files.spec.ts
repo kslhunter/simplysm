@@ -66,7 +66,10 @@ describe("writeChangedOutputFiles", () => {
 
   it("does not add .js extension to imports that already have known extensions", async () => {
     const filePath = path.join(tmpDir, "index.js");
-    const outFile = makeOutputFile(filePath, 'import "./styles.css";\nimport data from "./data.json";\n');
+    const outFile = makeOutputFile(
+      filePath,
+      'import "./styles.css";\nimport data from "./data.json";\n',
+    );
     await writeChangedOutputFiles([outFile]);
 
     const result = await fs.readFile(filePath, "utf-8");

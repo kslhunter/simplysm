@@ -75,7 +75,9 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       if (typeof clientConfig.server === "number") {
         serverUrl = `http://localhost:${clientConfig.server}/${packageName}/`;
       } else {
-        logger.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        logger.error(
+          `--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`,
+        );
         process.exitCode = 1;
         return;
       }
@@ -99,7 +101,9 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       if (typeof clientConfig.server === "number") {
         serverUrl = `http://localhost:${clientConfig.server}/${packageName}/capacitor/`;
       } else {
-        logger.error(`--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`);
+        logger.error(
+          `--url 옵션이 필요합니다. server가 패키지명으로 설정되어 있습니다: ${clientConfig.server}`,
+        );
         process.exitCode = 1;
         return;
       }
@@ -111,7 +115,9 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
     const capPath = path.join(pkgDir, ".capacitor");
     if (!(await fsExists(capPath))) {
-      logger.error(`Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`);
+      logger.error(
+        `Capacitor 프로젝트가 초기화되지 않았습니다. 먼저 'pnpm watch ${packageName}'를 실행하세요.`,
+      );
       process.exitCode = 1;
       return;
     }

@@ -19,7 +19,9 @@ import { createFieldSignal } from "../../../hooks/createFieldSignal";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface ColorFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">, ColorFieldStyles {
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">,
+    ColorFieldStyles {
   value?: string | undefined;
   onChange?: (value: string | undefined) => void;
 }
@@ -64,7 +66,9 @@ export const ColorField: Component<ColorFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[colorField(objPick(local, colorField.variants())), local.class].filter(Boolean).join(" ")}
+          class={[colorField(objPick(local, colorField.variants())), local.class]
+            .filter(Boolean)
+            .join(" ")}
         />
       }
     >

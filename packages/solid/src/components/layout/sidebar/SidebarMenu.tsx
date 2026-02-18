@@ -166,7 +166,13 @@ const MenuItem: Component<MenuItemProps> = (props) => {
   };
 
   return (
-    <ListItem selected={isSelected()} open={open()} onOpenChange={setOpen} onClick={handleClick} size={props.size}>
+    <ListItem
+      selected={isSelected()}
+      open={open()}
+      onOpenChange={setOpen}
+      onClick={handleClick}
+      size={props.size}
+    >
       <Show when={props.menu.icon}>
         <Icon icon={props.menu.icon!} />
       </Show>

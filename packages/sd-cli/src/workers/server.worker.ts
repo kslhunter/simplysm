@@ -5,7 +5,11 @@ import esbuild from "esbuild";
 import { createWorker } from "@simplysm/core-node";
 import type { FsWatcher } from "@simplysm/core-node";
 import { consola } from "consola";
-import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
+import {
+  parseRootTsconfig,
+  getPackageSourceFiles,
+  getCompilerOptionsForPackage,
+} from "../utils/tsconfig";
 import {
   createServerEsbuildOptions,
   collectUninstalledOptionalPeerDeps,
@@ -229,7 +233,11 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     logger.debug("GEN pm2.config.cjs...");
 
     const pm2Name = info.pm2.name ?? pkgJson.name.replace(/@/g, "").replace(/[/\\]/g, "-");
-    const ignoreWatch = JSON.stringify(["node_modules", "www", ...(info.pm2.ignoreWatchPaths ?? [])]);
+    const ignoreWatch = JSON.stringify([
+      "node_modules",
+      "www",
+      ...(info.pm2.ignoreWatchPaths ?? []),
+    ]);
     const envObj: Record<string, string> = {
       NODE_ENV: "production",
       TZ: "Asia/Seoul",
@@ -238,7 +246,9 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     const envStr = JSON.stringify(envObj, undefined, 4);
 
     const interpreterLine =
-      info.packageManager === "volta" ? "" : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
+      info.packageManager === "volta"
+        ? ""
+        : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
 
     const pm2Config = [
       `const cp = require("child_process");`,
@@ -284,7 +294,11 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
     // 서버는 node 환경
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "node", info.pkgDir);
+    const compilerOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      "node",
+      info.pkgDir,
+    );
 
     // 모든 external 수집 (optional peer deps + native modules + manual)
     const external = collectAllExternals(info.pkgDir, info.externals);
@@ -347,7 +361,11 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
     // 서버는 node 환경
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "node", info.pkgDir);
+    const compilerOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      "node",
+      info.pkgDir,
+    );
 
     const mainJsPath = path.join(info.pkgDir, "dist", "main.js");
 

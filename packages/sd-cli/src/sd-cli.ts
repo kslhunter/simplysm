@@ -42,7 +42,12 @@ if (isDev) {
   const cliEntryFilePath = path.join(__dirname, "sd-cli-entry.js");
   const child = spawn(
     "node",
-    ["--max-old-space-size=8192", "--max-semi-space-size=16", cliEntryFilePath, ...process.argv.slice(2)],
+    [
+      "--max-old-space-size=8192",
+      "--max-semi-space-size=16",
+      cliEntryFilePath,
+      ...process.argv.slice(2),
+    ],
     { stdio: "inherit" },
   );
   child.on("spawn", () => {

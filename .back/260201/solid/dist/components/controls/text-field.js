@@ -118,7 +118,9 @@ const TextField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [textField(objPick(local, textField.variants())), local.class].filterExists().join(" "),
+        class: [textField(objPick(local, textField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(
@@ -132,7 +134,9 @@ const TextField = (props) => {
       /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [textFieldInput, textField(objPick(local, textField.variants())), local.class].filterExists().join(" "),
+        class: [textFieldInput, textField(objPick(local, textField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     ),
   );

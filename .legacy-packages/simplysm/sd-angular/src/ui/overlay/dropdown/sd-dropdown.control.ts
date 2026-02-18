@@ -63,7 +63,9 @@ export class SdDropdownControl {
             top: isPlaceBottom ? "" : windowOffset.top + contentEl.offsetHeight + 2 + "px",
             bottom: isPlaceBottom ? window.innerHeight - windowOffset.top + "px" : "",
             left: isPlaceRight ? "" : windowOffset.left + "px",
-            right: isPlaceRight ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px" : "",
+            right: isPlaceRight
+              ? window.innerWidth - windowOffset.left - contentEl.offsetWidth + "px"
+              : "",
             minWidth: contentEl.offsetWidth + "px",
             opacity: "1",
             pointerEvents: "auto",

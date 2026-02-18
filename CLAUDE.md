@@ -54,7 +54,7 @@ pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node  # Single
 pnpm vitest -t "DateTime" --project=node   # Filter by test name
 ```
 
-## Package Structure
+## Project Structure
 
 ### Library Packages (`packages/`)
 | Package | Target | Description |
@@ -110,65 +110,6 @@ solid (UI components)
 - `neutral`: Node/browser shared
 - `client`: Developed with Vite dev server
 
-### Key Patterns
-
-**ORM Table Definition:**
-```typescript
-const User = Table("User")
-  .database("mydb")
-  .columns((c) => ({
-    id: c.bigint().autoIncrement(),
-    name: c.varchar(100),
-  }))
-  .primaryKey("id");
-```
-
-**Service Architecture:**
-- `ServiceServer`: Fastify-based HTTP/WebSocket server
-- `ServiceClient`: WebSocket client, RPC calls
-- `ServiceProtocol`: Message split/merge (300KB chunks when >3MB)
-
-## ORM Security Guide
-
-### SQL Injection Prevention
-
-orm-common generates SQL using string escaping.
-Follow these rules:
-
-#### Safe Usage
-- Use ORM after validating values in application code
-- Type-guaranteed values (number, boolean, DateTime, etc.)
-- Trusted internal data
-
-#### Unsafe Usage
-- Using user input directly in WHERE conditions without validation
-- Using external API responses without validation
-- Using file upload content without validation
-
-#### Recommended Patterns
-```typescript
-// Bad: Direct user input
-const userInput = req.query.name; // "'; DROP TABLE users; --"
-await db.user().where((u) => [expr.eq(u.name, userInput)]).result();
-
-// Good: Validate first
-const userName = validateUserName(req.query.name); // Throws on invalid
-await db.user().where((u) => [expr.eq(u.name, userName)]).result();
-
-// Better: Type coercion
-const userId = Number(req.query.id); // NaN check required
-if (Number.isNaN(userId)) throw new Error("Invalid ID");
-await db.user().where((u) => [expr.eq(u.id, userId)]).result();
-```
-
-#### Technical Constraints
-
-orm-common does not use parameter binding due to dynamic query characteristics.
-Instead, it uses enhanced string escaping:
-- MySQL: Escapes backslashes, quotes, NULL bytes, control characters
-- Forces utf8mb4 charset to defend against multi-byte attacks
-- **Application-level input validation is required**
-
 ## Code Conventions
 
 ### ESLint Rules (`@simplysm/lint`)
@@ -185,6 +126,10 @@ Instead, it uses enhanced string escaping:
 - `strict: true`, `verbatimModuleSyntax: true`
 - Path aliases: `@simplysm/*` → `packages/*/src/index.ts`
 - JSX: SolidJS (`jsxImportSource: "solid-js"`)
+
+### Generic Type Parameters
+- Always use descriptive names — single-letter `T` alone is not allowed
+- Use `T` prefix + descriptive name: `TItem`, `TData`, `TResult`, `TKey`, `TValue`, `TAuthInfo`
 
 ### Prototype Extensions
 Importing `core-common` adds extension methods to Array, Map, Set:
@@ -219,19 +164,15 @@ export * from "./excel-workbook";
 export * from "./excel-worksheet";
 ```
 
-### Generic Type Parameters
-
-- Always use descriptive names — single-letter `T` alone is not allowed
-- Use `T` prefix + descriptive name: `TItem`, `TData`, `TResult`, `TKey`, `TValue`, `TAuthInfo`
-
 ### JSDoc Convention
-
 - Not enforced — omit when code is self-explanatory
 - When written, use Korean
 
-### SolidJS Rules
+## SolidJS Guidelines
 
 **SolidJS is NOT React! Do not infer SolidJS behavior from React knowledge.**
+
+### Core Concepts
 - **Component functions run only once at mount** (React re-runs on every state change)
 - **Fine-grained Reactivity**: If a signal doesn't change, the expression itself is not re-evaluated
 - **`createMemo`**: Needed when expensive computations are used in multiple places
@@ -239,7 +180,6 @@ export * from "./excel-worksheet";
   - Simple conditions or lightweight operations are fine as plain functions `() => count() * 2`
 - **Props destructuring prohibited** → Access via `props.label` instead of `{ label }` (preserves reactivity)
 - **Conditionals: `<Show when={...}>`**, Lists: **`<For each={...}>`**
-- **Compound Components pattern**: Complex components explicitly express parent-child relationships
 - **No SSR support**: Browser APIs like `window`, `document` can be used directly
 - Responsive: Mobile UI below 520px
 - Chrome 84+ target
@@ -248,12 +188,19 @@ export * from "./excel-worksheet";
     - Usable: Flexbox gap
     - Prohibited: `aspect-ratio`, `inset`, `:is()`, `:where()` (Chrome 88+)
 
-**Hook Naming Conventions:**
+### Implementation Rules
+- Prefer simple signals/stores over Provider/Context pattern
+- Do not introduce unnecessary abstraction layers — check existing codebase for the same pattern first
+- **Compound Components pattern**: Complex components explicitly express parent-child relationships
+
+→ Before modifying components: Always Read the file to check existing props/patterns
+
+### Hook Naming Conventions
 - `create*`: Reactive hooks that wrap/compose SolidJS primitives (`createControllableSignal`, `createMountTransition`, `createTrackedWidth`)
 - `use*`: Hooks that depend on Provider Context (`useConfig`, `usePersisted`, `useTheme`)
 - General utility functions are named without hook prefixes
 
-**Compound Component Naming Rules:**
+### Compound Component Naming Rules
 
 All sub-components are accessed only via dot notation (`Parent.Child`).
 
@@ -262,17 +209,6 @@ All sub-components are accessed only via dot notation (`Parent.Child`).
 - Do not export sub-components separately in `index.ts` (export parent only)
 - Import only the parent when using: `import { Select } from "@simplysm/solid"`
 - Examples: `Select.Item`, `Select.Action`, `List.Item`, `DataSheet.Column`, `Sidebar.Container`, `Topbar.Menu`, `Tabs.Tab`
-
-→ Before modifying components: Always Read the file to check existing props/patterns
-
-**Implementation Simplification Rules:**
-- Prefer simple signals/stores over Provider/Context pattern
-- Do not introduce unnecessary abstraction layers — check existing codebase for the same pattern first
-
-### Demo Page Rules
-- Do not use raw HTML elements (`<button>`, `<input>`, `<select>`, `<textarea>`) directly → Use `@simplysm/solid` library components
-- No excessive custom inline styles
-- Before writing new demo pages, Read existing demo files to check patterns
 
 ### Tailwind CSS
 
@@ -357,7 +293,70 @@ export default {
 
 → Before modifying styles: Read existing class patterns of the same component
 
-## Test Environment (vitest.config.ts)
+### Demo Page Rules
+- Do not use raw HTML elements (`<button>`, `<input>`, `<select>`, `<textarea>`) directly → Use `@simplysm/solid` library components
+- No excessive custom inline styles
+- Before writing new demo pages, Read existing demo files to check patterns
+
+## ORM Guidelines
+
+### Table Definition
+```typescript
+const User = Table("User")
+  .database("mydb")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    name: c.varchar(100),
+  }))
+  .primaryKey("id");
+```
+
+### SQL Injection Prevention
+
+orm-common generates SQL using string escaping. Follow these rules:
+
+**Safe Usage:**
+- Use ORM after validating values in application code
+- Type-guaranteed values (number, boolean, DateTime, etc.)
+- Trusted internal data
+
+**Unsafe Usage:**
+- Using user input directly in WHERE conditions without validation
+- Using external API responses without validation
+- Using file upload content without validation
+
+**Recommended Patterns:**
+```typescript
+// Bad: Direct user input
+const userInput = req.query.name; // "'; DROP TABLE users; --"
+await db.user().where((u) => [expr.eq(u.name, userInput)]).result();
+
+// Good: Validate first
+const userName = validateUserName(req.query.name); // Throws on invalid
+await db.user().where((u) => [expr.eq(u.name, userName)]).result();
+
+// Better: Type coercion
+const userId = Number(req.query.id); // NaN check required
+if (Number.isNaN(userId)) throw new Error("Invalid ID");
+await db.user().where((u) => [expr.eq(u.id, userId)]).result();
+```
+
+**Technical Constraints:**
+orm-common does not use parameter binding due to dynamic query characteristics.
+Instead, it uses enhanced string escaping:
+- MySQL: Escapes backslashes, quotes, NULL bytes, control characters
+- Forces utf8mb4 charset to defend against multi-byte attacks
+- **Application-level input validation is required**
+
+## Service Guidelines
+
+- `ServiceServer`: Fastify-based HTTP/WebSocket server
+- `ServiceClient`: WebSocket client, RPC calls
+- `ServiceProtocol`: Message split/merge (300KB chunks when >3MB)
+
+## Testing
+
+### Test Environment (vitest.config.ts)
 
 | Project | Environment | Pattern |
 |---------|-------------|---------|
@@ -367,19 +366,23 @@ export default {
 | orm | Node.js + Docker | `tests/orm/**/*.spec.ts` |
 | service | Playwright | `tests/service/**/*.spec.ts` |
 
-## Pre-coding Checklist
+### Test & Demo Review Requirements
 
-- Before creating new files: Glob/Read similar existing files to check structure and patterns
-- Before modifying functions/classes: Read the file to understand existing code style
-- When unsure about API/method usage: Check signatures in source code
-- Before running CLI commands: Refer to the "Key Commands" section of this document (do not use arbitrary flags)
-- **If confidence is low, ask the user instead of writing code**
+When modifying code, always review and update related tests and demos:
 
-### Verification Procedure
-1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
-2. When introducing new patterns, search the existing codebase for similar examples
-3. When writing test code, check the project configuration in `vitest.config.ts`
-4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — README.md serves as the documentation source for consumer apps (read by Claude via `sd-simplysm-docs` rule), so code and docs must stay in sync
+| Change Scope | What to Review | Location |
+|-------------|----------------|----------|
+| Any package code | Unit tests for the modified package | `packages/{pkg}/tests/` |
+| `orm-common`, `orm-node` | ORM integration tests | `tests/orm/` |
+| `service-common`, `service-client`, `service-server` | Service integration tests | `tests/service/` |
+| `solid` (components, hooks, providers) | Demo pages in solid-demo | `packages/solid-demo/src/` |
+
+- **Unit tests**: If the modified function/class has corresponding test files, review them for correctness and update if behavior changed
+- **ORM integration tests**: Changes to query builder, schema definitions, or DB connectors may break integration tests that run against real databases
+- **Service integration tests**: Changes to protocols, client/server communication, or RPC may affect end-to-end service tests
+- **Solid demo**: When component props, behavior, or API changes, ensure demo pages still work correctly and reflect the updated usage
+
+## Documentation
 
 ### README.md Writing Rules
 
@@ -408,3 +411,18 @@ When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-si
 ## Dependencies (only when peer deps exist)
 ```
 - Unify heading levels: `##` for major sections, `###` for sub-sections
+
+## Workflow
+
+### Pre-coding Checklist
+- Before creating new files: Glob/Read similar existing files to check structure and patterns
+- Before modifying functions/classes: Read the file to understand existing code style
+- When unsure about API/method usage: Check signatures in source code
+- Before running CLI commands: Refer to the "Key Commands" section of this document (do not use arbitrary flags)
+- **If confidence is low, ask the user instead of writing code**
+
+### Verification Procedure
+1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
+2. When introducing new patterns, search the existing codebase for similar examples
+3. When writing test code, check the project configuration in `vitest.config.ts`
+4. When changing public APIs (adding/modifying/deleting functions/classes, props changes, export changes), update the package's `README.md` as well — README.md serves as the documentation source for consumer apps (read by Claude via `sd-simplysm-docs` rule), so code and docs must stay in sync

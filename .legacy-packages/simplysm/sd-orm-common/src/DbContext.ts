@@ -152,7 +152,10 @@ export abstract class DbContext {
     return result;
   }
 
-  async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+  async executeDefsAsync(
+    defs: TQueryDef[],
+    options?: (IQueryResultParseOption | undefined)[],
+  ): Promise<any[][]> {
     if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     return await this._executor.executeDefsAsync(defs, options);
   }
@@ -176,7 +179,11 @@ export abstract class DbContext {
     await this._executor.bulkInsertAsync(tableName, columnDefs, records);
   }
 
-  async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]) {
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ) {
     if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     await this._executor.bulkUpsertAsync(tableName, columnDefs, records);
   }
@@ -293,7 +300,11 @@ export abstract class DbContext {
     }));
   }
 
-  async getTablePkColumnNamesAsync(database: string, schema: string, table: string): Promise<string[]> {
+  async getTablePkColumnNamesAsync(
+    database: string,
+    schema: string,
+    table: string,
+  ): Promise<string[]> {
     return (
       await this.executeDefsAsync([
         {
@@ -381,7 +392,10 @@ export abstract class DbContext {
     ]);
   }
 
-  async initializeAsync(dbs?: string[], force?: boolean): Promise<"creation" | "migration" | undefined> {
+  async initializeAsync(
+    dbs?: string[],
+    force?: boolean,
+  ): Promise<"creation" | "migration" | undefined> {
     if (force && this.status === "transact") {
       throw new Error(
         "DB 강제 초기화는 트랜젝션 상에서는 동작하지 못합니다.\nconnect 대신에 connectWithoutTransaction 로 연결하여 시도하세요.",
@@ -396,7 +410,8 @@ export abstract class DbContext {
 
     // 강제 아닐때
     if (!force) {
-      const isDbExists = this.opt.dialect === "sqlite" ? true : await this.getIsDbExistsAsync(this.opt.database);
+      const isDbExists =
+        this.opt.dialect === "sqlite" ? true : await this.getIsDbExistsAsync(this.opt.database);
 
       const isMigrationTableExists = !isDbExists
         ? false
@@ -496,7 +511,11 @@ export abstract class DbContext {
         tableDefInfos.push({
           database: dbName,
           tableDefs: this.tableDefs
-            .filter((item) => (item.database == null && dbName === optDefault.database) || dbName === item.database)
+            .filter(
+              (item) =>
+                (item.database == null && dbName === optDefault.database) ||
+                dbName === item.database,
+            )
             .filterExists(),
         });
       }
@@ -694,7 +713,8 @@ export abstract class DbContext {
           columns: indexDef.columns
             .orderBy((item) => item.order)
             .map((item) => ({
-              name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
+              name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!
+                .name,
               orderBy: item.orderBy,
               unique: item.unique,
             })),
@@ -844,7 +864,8 @@ export abstract class DbContext {
         columns: indexDef.columns
           .orderBy((item) => item.order)
           .map((item) => ({
-            name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
+            name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!
+              .name,
             orderBy: item.orderBy,
             unique: item.unique,
           })),

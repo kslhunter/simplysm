@@ -512,7 +512,12 @@ describe("TransferableConvert", () => {
     it("배열을 재귀적으로 디코딩한다", () => {
       const tick = new DateTime(2025, 1, 6).tick;
       const uuidStr = Uuid.new().toString();
-      const encoded = [{ __type__: "DateTime", data: tick }, { __type__: "Uuid", data: uuidStr }, "string", 123];
+      const encoded = [
+        { __type__: "DateTime", data: tick },
+        { __type__: "Uuid", data: uuidStr },
+        "string",
+        123,
+      ];
       const decoded = transferDecode(encoded);
 
       expect(Array.isArray(decoded)).toBe(true);

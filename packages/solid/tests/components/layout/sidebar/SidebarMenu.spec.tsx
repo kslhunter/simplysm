@@ -92,7 +92,9 @@ describe("SidebarMenu", () => {
     });
 
     it("아이콘이 있는 메뉴를 렌더링", () => {
-      const MockIcon = (props: { class?: string }) => <svg data-testid="mock-icon" class={props.class} />;
+      const MockIcon = (props: { class?: string }) => (
+        <svg data-testid="mock-icon" class={props.class} />
+      );
 
       const menus: SidebarMenuItem[] = [{ title: "대시보드", href: "/dashboard", icon: MockIcon }];
 
@@ -120,7 +122,11 @@ describe("SidebarMenu", () => {
 
       fireEvent.click(getByText("외부 링크"));
 
-      expect(mockWindowOpen).toHaveBeenCalledWith("https://example.com", "_blank", "noopener,noreferrer");
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        "https://example.com",
+        "_blank",
+        "noopener,noreferrer",
+      );
     });
   });
 

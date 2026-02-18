@@ -40,7 +40,9 @@ export class SdCliLocalUpdate {
 
     const watcher = await SdFsWatcher.watchAsync(updatePathInfos.map((item) => item.source));
     watcher.onChange({ delay: 300 }, async (changedInfos) => {
-      const changedFileInfos = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event));
+      const changedFileInfos = changedInfos.filter((item) =>
+        ["add", "change", "unlink"].includes(item.event),
+      );
       if (changedFileInfos.length === 0) return;
 
       logger.log("로컬 라이브러리 변경감지...");

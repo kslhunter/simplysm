@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Sidebar } from "../../../src/components/navigator/sidebar/sidebar";
 import { SidebarContainer } from "../../../src/components/navigator/sidebar/sidebar-container";
-import { SidebarMenu, type SidebarMenuItem } from "../../../src/components/navigator/sidebar/sidebar-menu";
+import {
+  SidebarMenu,
+  type SidebarMenuItem,
+} from "../../../src/components/navigator/sidebar/sidebar-menu";
 import { SidebarUser } from "../../../src/components/navigator/sidebar/sidebar-user";
 import { MemoryRouter, Route } from "@solidjs/router";
 import { IconHome, IconSettings, IconUser } from "@tabler/icons-solidjs";
@@ -255,7 +258,9 @@ describe("Sidebar", () => {
       ));
 
       // 사용자 영역 클릭
-      const userContent = screen.getByText("홍길동").closest("[class*='sidebarUserContent']") as HTMLElement;
+      const userContent = screen
+        .getByText("홍길동")
+        .closest("[class*='sidebarUserContent']") as HTMLElement;
       fireEvent.click(userContent);
 
       // 메뉴가 펼쳐짐
@@ -278,7 +283,9 @@ describe("Sidebar", () => {
       ));
 
       // 사용자 영역 클릭하여 메뉴 펼치기
-      const userContent = screen.getByText("홍길동").closest("[class*='sidebarUserContent']") as HTMLElement;
+      const userContent = screen
+        .getByText("홍길동")
+        .closest("[class*='sidebarUserContent']") as HTMLElement;
       fireEvent.click(userContent);
 
       await new Promise((r) => setTimeout(r, 50));

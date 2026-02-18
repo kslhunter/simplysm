@@ -54,7 +54,10 @@ export function getAddFkQueryDef(
 /**
  * ADD INDEX QueryDef 생성
  */
-export function getAddIdxQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef {
+export function getAddIdxQueryDef(
+  table: QueryDefObjectName,
+  indexBuilder: IndexBuilder<string[]>,
+): QueryDef {
   const indexMeta = indexBuilder.meta;
 
   return {

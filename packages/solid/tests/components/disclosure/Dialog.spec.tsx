@@ -169,7 +169,12 @@ describe("Dialog 컴포넌트", () => {
     it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" onOpenChange={handleOpenChange} canDeactivate={() => false}>
+        <Dialog
+          open={true}
+          title="테스트"
+          onOpenChange={handleOpenChange}
+          canDeactivate={() => false}
+        >
           <div>내용</div>
         </Dialog>
       ));

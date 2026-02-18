@@ -59,7 +59,9 @@ vi.mock("@simplysm/core-node", () => {
       if (targets.length === 0) return files;
       return files.filter((file) => {
         const relativePath = posix(file.replace(cwd + "/", ""));
-        return targets.some((target) => relativePath === target || isChildPath(relativePath, target));
+        return targets.some(
+          (target) => relativePath === target || isChildPath(relativePath, target),
+        );
       });
     }),
     Worker: {
@@ -182,7 +184,9 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     await runTypecheck({
       targets: ["packages/core-common"],
@@ -206,7 +210,9 @@ describe("runTypecheck", () => {
 
     vi.mocked(fsExists).mockResolvedValue(false);
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     // sd.config.ts 로드 실패해도 에러 없이 진행되어야 함
     await runTypecheck({ targets: [], options: [] });
@@ -233,7 +239,9 @@ describe("runTypecheck", () => {
       default: { packages: {} }, // 함수가 아닌 객체
     });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     // 에러 없이 기본값으로 진행되어야 함
     await runTypecheck({ targets: [], options: [] });
@@ -260,7 +268,9 @@ describe("runTypecheck", () => {
       someOtherExport: () => ({}),
     });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     // 에러 없이 기본값으로 진행되어야 함
     await runTypecheck({ targets: [], options: [] });
@@ -286,7 +296,9 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     await runTypecheck({ targets: [], options: [] });
 
@@ -326,7 +338,9 @@ describe("runTypecheck", () => {
       terminate: vi.fn(() => Promise.resolve()),
     } as unknown as ReturnType<typeof Worker.create>);
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
 
     await runTypecheck({ targets: [], options: [] });
@@ -361,7 +375,9 @@ describe("runTypecheck", () => {
       }),
     });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     const { Worker } = await import("@simplysm/core-node");
     const mockBuildDts = vi.fn(() =>
@@ -383,13 +399,17 @@ describe("runTypecheck", () => {
     expect(mockBuildDts).toHaveBeenCalled();
 
     // 기타 task: pkgDir/env 없이 호출
-    const nonPkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "root");
+    const nonPkgCall = mockBuildDts.mock.calls.find(
+      (call) => (call[0] as { name: string }).name === "root",
+    );
     expect(nonPkgCall).toBeDefined();
     expect((nonPkgCall![0] as { pkgDir?: string }).pkgDir).toBeUndefined();
     expect((nonPkgCall![0] as { env?: string }).env).toBeUndefined();
 
     // core-node 패키지 task도 존재
-    const pkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "core-node");
+    const pkgCall = mockBuildDts.mock.calls.find(
+      (call) => (call[0] as { name: string }).name === "core-node",
+    );
     expect(pkgCall).toBeDefined();
   });
 
@@ -405,7 +425,9 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue([] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>);
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
 
     const { Worker } = await import("@simplysm/core-node");
     const mockBuildDts = vi.fn(() =>
@@ -424,7 +446,9 @@ describe("runTypecheck", () => {
     await runTypecheck({ targets: [], options: [] });
 
     // buildDts 호출에 name="root"인 것이 없어야 함
-    const nonPkgCall = mockBuildDts.mock.calls.find((call) => (call[0] as { name: string }).name === "root");
+    const nonPkgCall = mockBuildDts.mock.calls.find(
+      (call) => (call[0] as { name: string }).name === "root",
+    );
     expect(nonPkgCall).toBeUndefined();
   });
 });

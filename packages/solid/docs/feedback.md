@@ -88,8 +88,8 @@ function MyComponent() {
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `show` | `(message?: string) => void` | Show loading |
-| `hide` | `() => void` | Hide loading |
+| `show` | `(message?: string) => void` | Show busy overlay |
+| `hide` | `() => void` | Hide busy overlay |
 | `setProgress` | `(percent: number \| undefined) => void` | Set progress |
 
 ---

@@ -22,11 +22,13 @@ function createMockServiceClient() {
   let listenerCounter = 0;
 
   const mockClient = {
-    addEventListener: vi.fn((_type: unknown, _info: unknown, cb: (data: unknown) => PromiseLike<void>) => {
-      const key = String(listenerCounter++);
-      listeners.set(key, cb);
-      return Promise.resolve(key);
-    }),
+    addEventListener: vi.fn(
+      (_type: unknown, _info: unknown, cb: (data: unknown) => PromiseLike<void>) => {
+        const key = String(listenerCounter++);
+        listeners.set(key, cb);
+        return Promise.resolve(key);
+      },
+    ),
     removeEventListener: vi.fn((_key: string) => Promise.resolve()),
     emitToServer: vi.fn(() => Promise.resolve()),
   };
@@ -69,14 +71,16 @@ function createMockConfig(): ConfigContextValue {
   };
 }
 
-function TestConsumer(props: { onData?: (shared: ReturnType<typeof useSharedData<TestData>>) => void }) {
+function TestConsumer(props: {
+  onData?: (shared: ReturnType<typeof useSharedData<TestData>>) => void;
+}) {
   const shared = useSharedData<TestData>();
   props.onData?.(shared);
 
   return (
     <div>
       <span data-testid="count">{shared.user.items().length}</span>
-      <span data-testid="loading">{shared.loading() ? "true" : "false"}</span>
+      <span data-testid="busy">{shared.busy() ? "true" : "false"}</span>
     </div>
   );
 }
@@ -207,7 +211,7 @@ describe("SharedDataProvider", () => {
     result.unmount();
   });
 
-  it("loading()은 로드 중 true, 완료 후 false", async () => {
+  it("busy()은 로드 중 true, 완료 후 false", async () => {
     const { serviceClientValue } = createMockServiceClient();
 
     let resolveUsers!: (value: { id: number; name: string }[]) => void;
@@ -238,14 +242,14 @@ describe("SharedDataProvider", () => {
 
     // 로딩 중
     await vi.waitFor(() => {
-      expect(result.getByTestId("loading").textContent).toBe("true");
+      expect(result.getByTestId("busy").textContent).toBe("true");
     });
 
     // 로드 완료
     resolveUsers([{ id: 1, name: "Alice" }]);
 
     await vi.waitFor(() => {
-      expect(result.getByTestId("loading").textContent).toBe("false");
+      expect(result.getByTestId("busy").textContent).toBe("false");
     });
 
     result.unmount();

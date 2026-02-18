@@ -29,7 +29,9 @@ function Z(e) {
 function I(e, t, a) {
   return (
     (t = Z(t)),
-    t in e ? Object.defineProperty(e, t, { value: a, enumerable: !0, configurable: !0, writable: !0 }) : (e[t] = a),
+    t in e
+      ? Object.defineProperty(e, t, { value: a, enumerable: !0, configurable: !0, writable: !0 })
+      : (e[t] = a),
     e
   );
 }
@@ -152,7 +154,9 @@ const ve = (e, t) => {
         x = n === void 0 || n === !0 || (typeof n == "object" && n.enabled !== !1),
         l = typeof n == "object" && n.stopPropagation === !0;
       if (!x) return;
-      (l && s.stopPropagation(), oe(e) || (e.style.position = "relative"), (e.style.overflow = "hidden"));
+      (l && s.stopPropagation(),
+        oe(e) || (e.style.position = "relative"),
+        (e.style.overflow = "hidden"));
       const d = e.getBoundingClientRect(),
         u = s.clientX - d.left,
         h = s.clientY - d.top,
@@ -258,14 +262,19 @@ function ue(e) {
           for (const p in i) {
             if (p === "class" && n.length !== 0) {
               const c = n.join(" "),
-                w = typeof i.class.value == "function" ? () => c + " " + i.class.value() : c + " " + o.class;
+                w =
+                  typeof i.class.value == "function"
+                    ? () => c + " " + i.class.value()
+                    : c + " " + o.class;
               (Object.defineProperty(o, "class", { ...i[p], value: w }), (n = []));
             }
             p !== "ref" && p.slice(0, 2) !== "on" && typeof i[p].value == "function"
               ? (e.dynamicProperty(o, p), (r = !0))
               : i[p].get && (r = !0);
           }
-          r ? e.spread(s, o, s instanceof SVGElement, !!a.length) : e.assign(s, o, s instanceof SVGElement, !!a.length);
+          r
+            ? e.spread(s, o, s instanceof SVGElement, !!a.length)
+            : e.assign(s, o, s instanceof SVGElement, !!a.length);
         } else if (f === "function")
           if (s) {
             for (; o[y]; ) o = o();
@@ -273,7 +282,9 @@ function ue(e) {
           } else {
             let r,
               i = a[0];
-            ((i == null || (typeof i == "object" && !Array.isArray(i) && !(i instanceof Element))) && (r = a.shift()),
+            ((i == null ||
+              (typeof i == "object" && !Array.isArray(i) && !(i instanceof Element))) &&
+              (r = a.shift()),
               r || (r = {}),
               a.length && (r.children = a.length > 1 ? a : a[0]));
             const p = Object.getOwnPropertyDescriptors(r);
@@ -285,7 +296,8 @@ function ue(e) {
                   return w;
                 }),
                   e.dynamicProperty(r, c));
-              } else typeof p[c].value == "function" && !p[c].value.length && e.dynamicProperty(r, c);
+              } else
+                typeof p[c].value == "function" && !p[c].value.length && e.dynamicProperty(r, c);
             ((s = e.createComponent(o, r)), (a = []));
           }
       }
@@ -316,7 +328,14 @@ function ue(e) {
   }
   return ((t.Fragment = (a) => a.children), t);
 }
-const O = ue({ spread: X, assign: W, insert: H, createComponent: K, dynamicProperty: M, SVGElements: G });
+const O = ue({
+  spread: X,
+  assign: W,
+  insert: H,
+  createComponent: K,
+  dynamicProperty: M,
+  SVGElements: G,
+});
 const ye = (e, t, a, s) => {
     const n = (x) => {
       const [l, d] = Y(x, ["color", "size", "stroke", "title", "children", "class"]),
@@ -334,7 +353,11 @@ const ye = (e, t, a, s) => {
               }),
           class: () => `tabler-icon tabler-icon-${t} ${l.class != null ? l.class : ""}`,
         };
-      return O("svg", [h, d], [l.title && O("title", {}, l.title), ...s.map(([o, f]) => O(o, f)), l.children]);
+      return O(
+        "svg",
+        [h, d],
+        [l.title && O("title", {}, l.title), ...s.map(([o, f]) => O(o, f)), l.children],
+      );
     };
     return ((n.displayName = `${a}`), n);
   },
@@ -363,7 +386,9 @@ function pe(e) {
 function xe(e, t, a) {
   return (
     (t = pe(t)),
-    t in e ? Object.defineProperty(e, t, { value: a, enumerable: !0, configurable: !0, writable: !0 }) : (e[t] = a),
+    t in e
+      ? Object.defineProperty(e, t, { value: a, enumerable: !0, configurable: !0, writable: !0 })
+      : (e[t] = a),
     e
   );
 }
@@ -749,8 +774,12 @@ var de = (e) =>
           light: { defaultClass: "_1p6wxoh5d" },
         },
       },
-      width: { values: { auto: { defaultClass: "_1p6wxoh5e" }, full: { defaultClass: "_1p6wxoh5f" } } },
-      height: { values: { auto: { defaultClass: "_1p6wxoh5g" }, full: { defaultClass: "_1p6wxoh5h" } } },
+      width: {
+        values: { auto: { defaultClass: "_1p6wxoh5e" }, full: { defaultClass: "_1p6wxoh5f" } },
+      },
+      height: {
+        values: { auto: { defaultClass: "_1p6wxoh5g" }, full: { defaultClass: "_1p6wxoh5h" } },
+      },
       position: {
         values: {
           static: { defaultClass: "_1p6wxoh5i" },
@@ -759,7 +788,9 @@ var de = (e) =>
           fixed: { defaultClass: "_1p6wxoh5l" },
         },
       },
-      fontWeight: { values: { normal: { defaultClass: "_1p6wxoh5m" }, bold: { defaultClass: "_1p6wxoh5n" } } },
+      fontWeight: {
+        values: { normal: { defaultClass: "_1p6wxoh5m" }, bold: { defaultClass: "_1p6wxoh5n" } },
+      },
       color: {
         values: {
           base: { defaultClass: "_1p6wxoh5o" },
@@ -777,4 +808,16 @@ var de = (e) =>
       },
     },
   });
-export { fe as S, je as a, _e as b, ye as c, N as d, D as e, me as f, ge as h, be as o, ve as r, Oe as u };
+export {
+  fe as S,
+  je as a,
+  _e as b,
+  ye as c,
+  N as d,
+  D as e,
+  me as f,
+  ge as h,
+  be as o,
+  ve as r,
+  Oe as u,
+};

@@ -53,7 +53,9 @@ import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
   },
 })
 export class SdLabelControl {
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
   color = input<string>();
   clickable = input(false, { transform: transformBoolean });
 }

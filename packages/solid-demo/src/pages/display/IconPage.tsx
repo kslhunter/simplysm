@@ -100,7 +100,9 @@ export default function IconPage() {
           {/* Colors */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">색상</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">class prop으로 색상을 지정할 수 있습니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              class prop으로 색상을 지정할 수 있습니다.
+            </p>
             <div class="flex items-center gap-4">
               <Icon icon={IconHeart} size="1.5em" class="text-danger-500" />
               <Icon icon={IconStar} size="1.5em" class="text-warning-500" />
@@ -114,7 +116,8 @@ export default function IconPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">아이콘 갤러리</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              자주 사용되는 아이콘 목록입니다. @tabler/icons-solidjs에서 더 많은 아이콘을 사용할 수 있습니다.
+              자주 사용되는 아이콘 목록입니다. @tabler/icons-solidjs에서 더 많은 아이콘을 사용할 수
+              있습니다.
             </p>
             <div class="grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
               <For each={icons}>

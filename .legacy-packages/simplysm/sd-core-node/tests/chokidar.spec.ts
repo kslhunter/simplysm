@@ -6,7 +6,10 @@ describe("test", () => {
   it("test", async () => {
     const watcher = chokidar.watch("D:\\workspaces-12\\simplysm\\packages\\sd-core-node\\tests", {
       ignored: (filePath) => {
-        return path.basename(path.dirname(filePath)) === "tests" && path.basename(filePath) === "routes.txt";
+        return (
+          path.basename(path.dirname(filePath)) === "tests" &&
+          path.basename(filePath) === "routes.txt"
+        );
       },
       ignoreInitial: true,
       persistent: true,

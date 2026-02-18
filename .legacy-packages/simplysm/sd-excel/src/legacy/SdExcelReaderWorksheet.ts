@@ -24,11 +24,26 @@ export class SdExcelReaderWorksheet {
     }
   }
 
-  dataTable(startRow?: number, startCol?: number, endRow?: number, endCol?: number): SdExcelReaderDataTable {
+  dataTable(
+    startRow?: number,
+    startCol?: number,
+    endRow?: number,
+    endCol?: number,
+  ): SdExcelReaderDataTable {
     return new SdExcelReaderDataTable(this, {
       s: {
-        r: startRow === undefined ? this.range.s.r : startRow < 0 ? this.range.s.r + startRow : startRow,
-        c: startCol === undefined ? this.range.s.c : startCol < 0 ? this.range.s.c + startCol : startCol,
+        r:
+          startRow === undefined
+            ? this.range.s.r
+            : startRow < 0
+              ? this.range.s.r + startRow
+              : startRow,
+        c:
+          startCol === undefined
+            ? this.range.s.c
+            : startCol < 0
+              ? this.range.s.c + startCol
+              : startCol,
       },
       e: {
         r: endRow === undefined ? this.range.e.r : endRow < 0 ? this.range.e.r + endRow : endRow,

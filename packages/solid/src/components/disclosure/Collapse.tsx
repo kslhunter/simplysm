@@ -1,4 +1,11 @@
-import { type JSX, type ParentComponent, splitProps, createSignal, onMount, onCleanup } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  splitProps,
+  createSignal,
+  onMount,
+  onCleanup,
+} from "solid-js";
 import { createElementSize } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -23,7 +30,12 @@ export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
 }
 
-const transitionClass = clsx("transition-[margin-top]", "duration-200", "ease-out", "motion-reduce:transition-none");
+const transitionClass = clsx(
+  "transition-[margin-top]",
+  "duration-200",
+  "ease-out",
+  "motion-reduce:transition-none",
+);
 
 export const Collapse: ParentComponent<CollapseProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "style", "open"]);

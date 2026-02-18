@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdBusyProvider } from "./sd-busy.provider";
 import { $computed } from "../../../core/utils/bindings/$computed";
 
@@ -33,7 +39,10 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
       </div>
       @if (progressPercent() != null) {
         <div class="_progress">
-          <div class="_progress-bar" [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"></div>
+          <div
+            class="_progress-bar"
+            [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
+          ></div>
         </div>
       }
     </div>

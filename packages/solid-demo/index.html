@@ -20,7 +20,7 @@
         height: 100%;
       }
 
-      .app-loading {
+      .app-busy {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -32,12 +32,12 @@
         padding-bottom: 256px;
       }
 
-      .app-loading img {
+      .app-busy img {
         width: auto;
         height: 64px;
       }
 
-      .app-loading-spinner {
+      .app-busy-spinner {
         width: 32px;
         height: 32px;
         border: 4px solid #e5e7eb;
@@ -55,9 +55,9 @@
   </head>
   <body>
     <div id="root">
-      <div class="app-loading">
+      <div class="app-busy">
         <img src="logo-landscape.png" alt="logo" />
-        <div class="app-loading-spinner"></div>
+        <div class="app-busy-spinner"></div>
       </div>
     </div>
     <script type="module" src="src/main.tsx"></script>

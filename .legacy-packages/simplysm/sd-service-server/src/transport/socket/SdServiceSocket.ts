@@ -29,7 +29,10 @@ export class SdServiceSocket extends EventEmitter {
   authTokenPayload?: IAuthTokenPayload;
 
   override on(event: "close", listener: (code: number) => void): this;
-  override on(event: "message", listener: (uuid: string, message: TSdServiceClientMessage) => void): this;
+  override on(
+    event: "message",
+    listener: (uuid: string, message: TSdServiceClientMessage) => void,
+  ): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }

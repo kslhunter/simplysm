@@ -259,7 +259,11 @@ export class SdDepCache {
   /**
    * reexport된 경우 importSymbol → exportSymbol로 변환
    */
-  private _convertImportSymbolToExportSymbol(fileNPath: TNormPath, targetNPath: TNormPath, importSymbol: string) {
+  private _convertImportSymbolToExportSymbol(
+    fileNPath: TNormPath,
+    targetNPath: TNormPath,
+    importSymbol: string,
+  ) {
     const symbolInfos = this._reexportCache.get(fileNPath)?.get(targetNPath);
     if (symbolInfos != null && symbolInfos !== 0 && symbolInfos.length > 0) {
       const symbolInfo = symbolInfos.single((item) => item.importSymbol === importSymbol);

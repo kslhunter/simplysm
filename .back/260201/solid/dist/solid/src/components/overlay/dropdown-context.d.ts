@@ -26,7 +26,9 @@ export interface DropdownInternalContextValue extends DropdownContextValue {
   /** popup에서 trigger로 포커스를 이동시키는 함수 (ArrowUp 키 처리용) */
   focusTrigger: () => void;
 }
-export declare const DropdownContext: import("solid-js").Context<DropdownInternalContextValue | undefined>;
+export declare const DropdownContext: import("solid-js").Context<
+  DropdownInternalContextValue | undefined
+>;
 /**
  * Dropdown 상태에 접근하는 훅
  *

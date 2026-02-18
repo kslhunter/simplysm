@@ -16,14 +16,23 @@ import {
   o as P,
   k as y,
 } from "./index-DaQvuWeP.js";
-/* empty css                              */ import { c as $, L as k, a as j } from "./list-item-TR_b4pbw.js";
+/* empty css                              */ import {
+  c as $,
+  L as k,
+  a as j,
+} from "./list-item-TR_b4pbw.js";
 import { M as B } from "./constants-Bbx-VEQM.js";
 var ee = N("outline", "home", "Home", [
     ["path", { d: "M5 12l-2 0l9 -9l9 9l-2 0" }],
     ["path", { d: "M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" }],
     ["path", { d: "M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" }],
   ]),
-  K = m({ defaultClassName: "_16d8tmp0", variantClassNames: {}, defaultVariants: {}, compoundVariants: [] }),
+  K = m({
+    defaultClassName: "_16d8tmp0",
+    variantClassNames: {},
+    defaultVariants: {},
+    compoundVariants: [],
+  }),
   U = m({
     defaultClassName: "_16d8tmp1",
     variantClassNames: { toggled: { true: "_16d8tmp2", false: "_16d8tmp3" } },
@@ -190,7 +199,9 @@ const ne = (e) => {
         return t.pathname === e.menu.path;
       },
       get style() {
-        return { "text-indent": `${e.parentLayout === "accordion" && e.depth !== 0 ? (e.depth + 1) * 0.5 : 0}rem` };
+        return {
+          "text-indent": `${e.parentLayout === "accordion" && e.depth !== 0 ? (e.depth + 1) * 0.5 : 0}rem`,
+        };
       },
       get class() {
         return E({ gap: "xs" });

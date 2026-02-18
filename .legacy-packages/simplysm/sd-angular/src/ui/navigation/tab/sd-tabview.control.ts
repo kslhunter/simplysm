@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, contentChildren, model, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChildren,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdTabItemControl } from "./sd-tab-item.control";
 import { SdTabControl } from "./sd-tab.control";
 import { SdTabviewItemControl } from "./sd-tabview-item.control";

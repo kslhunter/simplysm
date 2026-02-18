@@ -27,7 +27,10 @@ describe("ServiceProtocol", () => {
 
     it("body 없는 메시지 인코딩", () => {
       const uuid = Uuid.new().toString();
-      const message: ServiceMessage = { name: "reload", body: { clientName: undefined, changedFileSet: new Set() } };
+      const message: ServiceMessage = {
+        name: "reload",
+        body: { clientName: undefined, changedFileSet: new Set() },
+      };
 
       const result = protocol.encode(uuid, message);
 
@@ -71,7 +74,11 @@ describe("ServiceProtocol", () => {
       const uuidBytes = new Uuid(Uuid.new().toString()).toBytes();
       headerBytes.set(uuidBytes, 0);
 
-      const headerView = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
+      const headerView = new DataView(
+        headerBytes.buffer,
+        headerBytes.byteOffset,
+        headerBytes.byteLength,
+      );
       headerView.setBigUint64(16, BigInt(101 * 1024 * 1024), false); // 101MB
       headerView.setUint32(24, 0, false);
 
@@ -210,8 +217,15 @@ describe("ServiceProtocol", () => {
 
     it("3개 UUID 무작위 순서 수신", () => {
       const uuids = [Uuid.new().toString(), Uuid.new().toString(), Uuid.new().toString()];
-      const data = ["X".repeat(4 * 1024 * 1024), "Y".repeat(4 * 1024 * 1024), "Z".repeat(4 * 1024 * 1024)];
-      const messages: ServiceMessage[] = data.map((d, i) => ({ name: `test.method${i}`, body: [d] }));
+      const data = [
+        "X".repeat(4 * 1024 * 1024),
+        "Y".repeat(4 * 1024 * 1024),
+        "Z".repeat(4 * 1024 * 1024),
+      ];
+      const messages: ServiceMessage[] = data.map((d, i) => ({
+        name: `test.method${i}`,
+        body: [d],
+      }));
 
       const encodedList = uuids.map((uuid, i) => protocol.encode(uuid, messages[i]));
 

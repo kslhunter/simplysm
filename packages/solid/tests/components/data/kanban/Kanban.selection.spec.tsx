@@ -76,7 +76,9 @@ describe("Kanban 선택 시스템", () => {
         selectedValues: [],
         onSelectedValuesChange: handleChange,
       });
-      const card3 = getByText("Card 3 (not selectable)").closest("[data-kanban-card]") as HTMLElement;
+      const card3 = getByText("Card 3 (not selectable)").closest(
+        "[data-kanban-card]",
+      ) as HTMLElement;
       fireEvent.click(card3, { shiftKey: true });
       expect(handleChange).not.toHaveBeenCalled();
     });
@@ -189,7 +191,9 @@ describe("Kanban 선택 시스템", () => {
         onSelectedValuesChange: handleChange,
       });
 
-      const card3 = getByText("Card 3 (not selectable)").closest("[data-kanban-card]") as HTMLElement;
+      const card3 = getByText("Card 3 (not selectable)").closest(
+        "[data-kanban-card]",
+      ) as HTMLElement;
       fireEvent.pointerDown(card3);
       vi.advanceTimersByTime(500);
 

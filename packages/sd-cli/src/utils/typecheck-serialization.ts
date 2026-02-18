@@ -43,7 +43,8 @@ export function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagno
 function getScriptKind(fileName: string): ts.ScriptKind {
   if (fileName.endsWith(".tsx")) return ts.ScriptKind.TSX;
   if (fileName.endsWith(".jsx")) return ts.ScriptKind.JSX;
-  if (fileName.endsWith(".js") || fileName.endsWith(".mjs") || fileName.endsWith(".cjs")) return ts.ScriptKind.JS;
+  if (fileName.endsWith(".js") || fileName.endsWith(".mjs") || fileName.endsWith(".cjs"))
+    return ts.ScriptKind.JS;
   return ts.ScriptKind.TS;
 }
 
@@ -54,7 +55,10 @@ function getScriptKind(fileName: string): ts.ScriptKind {
  * @param fileCache 파일 내용 캐시 (동일 파일 중복 읽기 방지)
  * @returns 복원된 ts.Diagnostic 객체
  */
-export function deserializeDiagnostic(serialized: SerializedDiagnostic, fileCache: Map<string, string>): ts.Diagnostic {
+export function deserializeDiagnostic(
+  serialized: SerializedDiagnostic,
+  fileCache: Map<string, string>,
+): ts.Diagnostic {
   let file: ts.SourceFile | undefined;
   if (serialized.file != null) {
     const fileName = serialized.file.fileName;

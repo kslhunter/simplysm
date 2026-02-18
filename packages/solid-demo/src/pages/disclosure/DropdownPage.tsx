@@ -44,14 +44,25 @@ export default function DropdownPage() {
               외부 클릭, Escape, Tab, 스크롤 시 자동으로 닫힙니다.
             </p>
             <div class="flex items-center gap-4">
-              <Button ref={basicButtonRef} theme="primary" variant="solid" onClick={() => setBasicOpen(!basicOpen())}>
+              <Button
+                ref={basicButtonRef}
+                theme="primary"
+                variant="solid"
+                onClick={() => setBasicOpen(!basicOpen())}
+              >
                 메뉴 열기
               </Button>
               {basicSelected() != null && (
-                <span class="text-sm text-base-600 dark:text-base-400">선택: {basicSelected()}</span>
+                <span class="text-sm text-base-600 dark:text-base-400">
+                  선택: {basicSelected()}
+                </span>
               )}
             </div>
-            <Dropdown triggerRef={() => basicButtonRef} open={basicOpen()} onOpenChange={setBasicOpen}>
+            <Dropdown
+              triggerRef={() => basicButtonRef}
+              open={basicOpen()}
+              onOpenChange={setBasicOpen}
+            >
               <ul class="py-1">
                 <For each={menuItems}>
                   {(item) => (
@@ -92,7 +103,11 @@ export default function DropdownPage() {
             {contextSelected() != null && (
               <p class="mt-2 text-sm text-base-600 dark:text-base-400">선택: {contextSelected()}</p>
             )}
-            <Dropdown position={contextPosition()} open={contextOpen()} onOpenChange={setContextOpen}>
+            <Dropdown
+              position={contextPosition()}
+              open={contextOpen()}
+              onOpenChange={setContextOpen}
+            >
               <ul class="py-1">
                 <For each={menuItems}>
                   {(item) => (
@@ -178,7 +193,9 @@ export default function DropdownPage() {
                 긴 목록 열기
               </Button>
               {maxHeightSelected() != null && (
-                <span class="text-sm text-base-600 dark:text-base-400">선택: {maxHeightSelected()}</span>
+                <span class="text-sm text-base-600 dark:text-base-400">
+                  선택: {maxHeightSelected()}
+                </span>
               )}
             </div>
             <Dropdown

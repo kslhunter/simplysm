@@ -140,7 +140,9 @@ describe("ExcelUtils", () => {
       const tick = date.getTime();
       const excelNum = ExcelUtils.convertTimeTickToNumber(tick);
       // 12시 = 0.5일 추가
-      const baseNum = ExcelUtils.convertTimeTickToNumber(new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime());
+      const baseNum = ExcelUtils.convertTimeTickToNumber(
+        new Date(Date.UTC(2024, 5, 15, 0, 0, 0)).getTime(),
+      );
       expect(excelNum - baseNum).toBeCloseTo(0.5, 1);
     });
 

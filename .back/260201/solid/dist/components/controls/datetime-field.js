@@ -1,6 +1,11 @@
 import { Show, splitProps } from "solid-js";
 import { createFieldState } from "../../hooks/createFieldState";
-import { dateTimeField, dateTimeFieldContainer, dateTimeFieldContent, dateTimeFieldInput } from "./datetime-field.css";
+import {
+  dateTimeField,
+  dateTimeFieldContainer,
+  dateTimeFieldContent,
+  dateTimeFieldInput,
+} from "./datetime-field.css";
 import { objPick, DateTime } from "@simplysm/core-common";
 import "@simplysm/core-common";
 const DateTimeField = (props) => {
@@ -115,7 +120,9 @@ const DateTimeField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateTimeField(objPick(local, dateTimeField.variants())), local.class].filterExists().join(" "),
+        class: [dateTimeField(objPick(local, dateTimeField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(
@@ -129,7 +136,11 @@ const DateTimeField = (props) => {
       /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateTimeFieldInput, dateTimeField(objPick(local, dateTimeField.variants())), local.class]
+        class: [
+          dateTimeFieldInput,
+          dateTimeField(objPick(local, dateTimeField.variants())),
+          local.class,
+        ]
           .filterExists()
           .join(" "),
       }),

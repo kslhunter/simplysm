@@ -1,4 +1,13 @@
-import { g as M, i as k, c as a, a as d, b as s, s as i, d as o, t as m } from "./index-DaQvuWeP.js";
+import {
+  g as M,
+  i as k,
+  c as a,
+  a as d,
+  b as s,
+  s as i,
+  d as o,
+  t as m,
+} from "./index-DaQvuWeP.js";
 import { B as _, I as P } from "./IconMenu2-BvvTiCnB.js";
 import { S as B, a as O, I as T, b as V } from "./sidebar-menu-Cz0ipkzh.js";
 import { S as W } from "./sidebar-user-CUCHQprk.js";
@@ -98,7 +107,16 @@ function X() {
                         e
                       );
                     },
-                    { e: void 0, t: void 0, a: void 0, o: void 0, i: void 0, n: void 0, s: void 0, h: void 0 },
+                    {
+                      e: void 0,
+                      t: void 0,
+                      a: void 0,
+                      o: void 0,
+                      i: void 0,
+                      n: void 0,
+                      s: void 0,
+                      h: void 0,
+                    },
                   ),
                   t
                 );

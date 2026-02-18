@@ -38,8 +38,15 @@ describe("renderTemplateDir", () => {
     const subDir = path.join(srcDir, "__CLIENT__");
     fs.mkdirSync(subDir, { recursive: true });
     fs.writeFileSync(path.join(subDir, "file.txt.hbs"), "pkg: {{clientName}}");
-    await renderTemplateDir(srcDir, destDir, { clientName: "client-admin" }, { __CLIENT__: "client-admin" });
-    expect(fs.readFileSync(path.join(destDir, "client-admin", "file.txt"), "utf-8")).toBe("pkg: client-admin");
+    await renderTemplateDir(
+      srcDir,
+      destDir,
+      { clientName: "client-admin" },
+      { __CLIENT__: "client-admin" },
+    );
+    expect(fs.readFileSync(path.join(destDir, "client-admin", "file.txt"), "utf-8")).toBe(
+      "pkg: client-admin",
+    );
   });
 
   test("skips file when .hbs renders to empty/whitespace", async () => {

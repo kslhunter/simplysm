@@ -25,5 +25,9 @@ export interface INotifyPropertyChange {
    * @param oldValue 변경 이전 값
    * @param newValue 변경 이후 값
    */
-  onPropertyChange<K extends keyof this>(propertyName: K, oldValue: this[K], newValue: this[K]): void;
+  onPropertyChange<K extends keyof this>(
+    propertyName: K,
+    oldValue: this[K],
+    newValue: this[K],
+  ): void;
 }

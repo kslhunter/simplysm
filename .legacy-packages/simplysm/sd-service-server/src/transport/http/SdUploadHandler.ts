@@ -32,7 +32,9 @@ export class SdUploadHandler {
       const token = authHeader.split(" ")[1];
       await this._jwt.verifyAsync(token);
     } catch (err) {
-      reply.status(401).send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
+      reply
+        .status(401)
+        .send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
       return;
     }
 

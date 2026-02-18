@@ -3,7 +3,11 @@ import { collapse } from "./collapse.css";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { objPick } from "@simplysm/core-common";
 const Collapse = (props) => {
-  const [local, styleProps, rest] = splitProps(props, [...collapse.variants(), "children"], ["class", "style"]);
+  const [local, styleProps, rest] = splitProps(
+    props,
+    [...collapse.variants(), "children"],
+    ["class", "style"],
+  );
   let contentRef;
   const [isMounted, setIsMounted] = createSignal(false);
   const [height, setHeight] = createSignal(local.open ? "auto" : "0px");

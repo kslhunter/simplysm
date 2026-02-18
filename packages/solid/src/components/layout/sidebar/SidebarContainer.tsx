@@ -1,4 +1,11 @@
-import { type JSX, type ParentComponent, Show, splitProps, createMemo, createSignal } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+  createMemo,
+  createSignal,
+} from "solid-js";
 import { useBeforeLeave } from "@solidjs/router";
 import { createMediaQuery } from "@solid-primitives/media";
 import clsx from "clsx";

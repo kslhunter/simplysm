@@ -181,7 +181,10 @@ export class ExcelWorksheet {
     }
 
     for (let r = startRow + 1; r <= range.e.r; r++) {
-      if (opt?.checkEndColIndex !== undefined && (await this.cell(r, opt.checkEndColIndex).getVal()) === undefined) {
+      if (
+        opt?.checkEndColIndex !== undefined &&
+        (await this.cell(r, opt.checkEndColIndex).getVal()) === undefined
+      ) {
         break;
       }
 
@@ -299,7 +302,9 @@ export class ExcelWorksheet {
 
     if (sheetRels != null) {
       const existingDrawingRel = sheetRels.data.Relationships.Relationship?.find(
-        (r) => r.$.Type === "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+        (r) =>
+          r.$.Type ===
+          "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
       );
       if (existingDrawingRel != null) {
         // 기존 drawing 경로에서 인덱스 추출
@@ -308,9 +313,9 @@ export class ExcelWorksheet {
           drawingIndex = parseInt(match[1], 10);
           drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
           drawing = (await this._zipCache.get(drawingPath)) as ExcelXmlDrawing | undefined;
-          drawingRels = (await this._zipCache.get(`xl/drawings/_rels/drawing${drawingIndex}.xml.rels`)) as
-            | ExcelXmlRelationship
-            | undefined;
+          drawingRels = (await this._zipCache.get(
+            `xl/drawings/_rels/drawing${drawingIndex}.xml.rels`,
+          )) as ExcelXmlRelationship | undefined;
         }
       }
     }
@@ -338,7 +343,8 @@ export class ExcelWorksheet {
 
       // worksheet XML에 drawing 추가
       wsXml.data.worksheet.$["xmlns:r"] =
-        wsXml.data.worksheet.$["xmlns:r"] ?? "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+        wsXml.data.worksheet.$["xmlns:r"] ??
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
       wsXml.data.worksheet.drawing = wsXml.data.worksheet.drawing ?? [];
       wsXml.data.worksheet.drawing.push({ $: { "r:id": drawingRelIdOnWorksheet } });
       this._zipCache.set(`xl/worksheets/${this._targetFileName}`, wsXml);

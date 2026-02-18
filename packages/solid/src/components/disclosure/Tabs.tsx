@@ -40,11 +40,18 @@ function TabsTabInner(props: TabsTabProps) {
     }
   };
 
-  const baseClass = clsx("relative cursor-pointer select-none font-medium", "transition-colors", "-mb-px");
+  const baseClass = clsx(
+    "relative cursor-pointer select-none font-medium",
+    "transition-colors",
+    "-mb-px",
+  );
 
   const stateClass = () =>
     isSelected()
-      ? clsx("border-b-2 border-primary-500 text-primary-600", "dark:border-primary-400 dark:text-primary-400")
+      ? clsx(
+          "border-b-2 border-primary-500 text-primary-600",
+          "dark:border-primary-400 dark:text-primary-400",
+        )
       : clsx(
           "border-b-2 border-transparent",
           "text-base-500 hover:border-base-300 hover:text-base-700",
@@ -60,7 +67,13 @@ function TabsTabInner(props: TabsTabProps) {
       aria-selected={isSelected()}
       aria-disabled={props.disabled ?? false}
       tabIndex={props.disabled ? -1 : 0}
-      class={twMerge(baseClass, sizeClasses(), stateClass(), props.disabled && disabledClass, props.class)}
+      class={twMerge(
+        baseClass,
+        sizeClasses(),
+        stateClass(),
+        props.disabled && disabledClass,
+        props.class,
+      )}
       onClick={() => {
         if (!props.disabled) {
           ctx.select(props.value);
@@ -97,7 +110,14 @@ interface TabsComponent {
 }
 
 const TabsInner: ParentComponent<TabsProps> = (props) => {
-  const [local, rest] = splitProps(props, ["value", "onValueChange", "size", "class", "style", "children"]);
+  const [local, rest] = splitProps(props, [
+    "value",
+    "onValueChange",
+    "size",
+    "class",
+    "style",
+    "children",
+  ]);
 
   const [value, setValue] = createControllableSignal<string | undefined>({
     value: () => local.value,
@@ -112,7 +132,11 @@ const TabsInner: ParentComponent<TabsProps> = (props) => {
     size: () => local.size,
   };
 
-  const baseClass = clsx("inline-flex items-center gap-1", "border-b border-base-200", "dark:border-base-700");
+  const baseClass = clsx(
+    "inline-flex items-center gap-1",
+    "border-b border-base-200",
+    "dark:border-base-700",
+  );
 
   return (
     <TabsContext.Provider value={contextValue}>

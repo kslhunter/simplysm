@@ -151,10 +151,12 @@ export function formatDate(
 ): string {
   const { year, month, day, hour, minute, second, millisecond, timezoneOffsetMinutes } = args;
 
-  const absOffsetMinutes = timezoneOffsetMinutes !== undefined ? Math.abs(timezoneOffsetMinutes) : undefined;
+  const absOffsetMinutes =
+    timezoneOffsetMinutes !== undefined ? Math.abs(timezoneOffsetMinutes) : undefined;
   const offsetHour = absOffsetMinutes !== undefined ? Math.floor(absOffsetMinutes / 60) : undefined;
   const offsetMinute = absOffsetMinutes !== undefined ? absOffsetMinutes % 60 : undefined;
-  const offsetSign = timezoneOffsetMinutes !== undefined ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
+  const offsetSign =
+    timezoneOffsetMinutes !== undefined ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
 
   const week =
     year !== undefined && month !== undefined && day !== undefined

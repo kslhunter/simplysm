@@ -128,7 +128,8 @@ export const Textarea: Component<TextareaProps> = (props) => {
   const contentForHeight = () => {
     const rows = local.minRows ?? 1;
     const val = displayValue();
-    const content = val !== "" && val.split("\n").length >= rows ? val : "\n".repeat(rows - 1) + "\u00A0";
+    const content =
+      val !== "" && val.split("\n").length >= rows ? val : "\n".repeat(rows - 1) + "\u00A0";
     // 마지막이 줄바꿈이면 빈 줄 높이 확보를 위해 공백 추가
     return content.endsWith("\n") ? content + "\u00A0" : content;
   };

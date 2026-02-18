@@ -45,7 +45,16 @@ describe("Button", () => {
   });
 
   describe("theme variants (AC#1)", () => {
-    const themes = ["primary", "secondary", "danger", "success", "warning", "info", "gray", "slate"] as const;
+    const themes = [
+      "primary",
+      "secondary",
+      "danger",
+      "success",
+      "warning",
+      "info",
+      "gray",
+      "slate",
+    ] as const;
 
     it.each(themes)("theme='%s'가 올바른 클래스를 적용한다", (theme) => {
       render(() => <Button theme={theme}>{theme}</Button>);
@@ -161,7 +170,15 @@ describe("Button", () => {
       // 이 테스트는 컴파일 타임에 타입 검증을 수행
       // 잘못된 타입은 TypeScript 컴파일 에러 발생
       render(() => (
-        <Button theme="primary" size="lg" link={false} inset={false} disabled={false} type="submit" onClick={() => {}}>
+        <Button
+          theme="primary"
+          size="lg"
+          link={false}
+          inset={false}
+          disabled={false}
+          type="submit"
+          onClick={() => {}}
+        >
           타입 검증
         </Button>
       ));

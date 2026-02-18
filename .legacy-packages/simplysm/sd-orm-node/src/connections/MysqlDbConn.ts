@@ -2,7 +2,12 @@ import { SdLogger } from "@simplysm/sd-core-node";
 import type { Connection } from "mysql2/promise";
 import { EventEmitter } from "events";
 import { SdError, StringUtils } from "@simplysm/sd-core-common";
-import type { IDbConn, IDefaultDbConnConf, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
+import type {
+  IDbConn,
+  IDefaultDbConnConf,
+  IQueryColumnDef,
+  ISOLATION_LEVEL,
+} from "@simplysm/sd-orm-common";
 import { QueryHelper } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConn extends EventEmitter implements IDbConn {
@@ -72,7 +77,11 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
     await conn.beginTransaction();
 
-    const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "REPEATABLE_READ").replace(/_/g, " ");
+    const level = (
+      isolationLevel ??
+      this.config.defaultIsolationLevel ??
+      "REPEATABLE_READ"
+    ).replace(/_/g, " ");
     await conn.query({
       sql: `SET SESSION TRANSACTION ISOLATION LEVEL ${level}`,
       timeout: this._timeout,

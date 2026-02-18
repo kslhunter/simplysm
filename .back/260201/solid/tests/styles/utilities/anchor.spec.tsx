@@ -3,7 +3,16 @@ import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { anchorStyles, type AnchorStyles } from "../../../src/styles/utilities/anchor.css";
 
 // 공통 상수 - 중복 제거
-const THEMES = ["primary", "secondary", "danger", "success", "warning", "info", "gray", "slate"] as const;
+const THEMES = [
+  "primary",
+  "secondary",
+  "danger",
+  "success",
+  "warning",
+  "info",
+  "gray",
+  "slate",
+] as const;
 
 describe("anchorStyles", () => {
   describe("theme variants (AC#1)", () => {

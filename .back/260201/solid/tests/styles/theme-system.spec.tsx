@@ -41,7 +41,16 @@ describe("Theme System Integration", () => {
     });
 
     it("모든 control 테마가 정의되어 있다", () => {
-      const expectedThemes = ["primary", "secondary", "success", "warning", "danger", "info", "gray", "slate"];
+      const expectedThemes = [
+        "primary",
+        "secondary",
+        "success",
+        "warning",
+        "danger",
+        "info",
+        "gray",
+        "slate",
+      ];
 
       for (const theme of expectedThemes) {
         expect(themeVars.control[theme as keyof typeof themeVars.control]).toBeDefined();
@@ -107,7 +116,10 @@ describe("Theme System Integration", () => {
       return (
         <div>
           <span data-testid="current-theme">{theme()}</span>
-          <button data-testid="toggle-theme" onClick={() => setTheme(theme() === "light" ? "dark" : "light")}>
+          <button
+            data-testid="toggle-theme"
+            onClick={() => setTheme(theme() === "light" ? "dark" : "light")}
+          >
             Toggle
           </button>
         </div>

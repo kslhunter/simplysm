@@ -26,9 +26,9 @@ describe("runServiceMethod with ServiceDefinition", () => {
   it("throws when service not found", async () => {
     const server = createMockServer([]);
 
-    await expect(runServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] })).rejects.toThrow(
-      "서비스[Unknown]를 찾을 수 없습니다.",
-    );
+    await expect(
+      runServiceMethod(server, { serviceName: "Unknown", methodName: "test", params: [] }),
+    ).rejects.toThrow("서비스[Unknown]를 찾을 수 없습니다.");
   });
 
   it("throws when method not found", async () => {

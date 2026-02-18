@@ -32,7 +32,10 @@ export abstract class AutoUpdate {
               ._button { ${this._BUTTON_CSS} }
               ._button:active { ${this._BUTTON_ACTIVE_CSS} }
             </style>
-            <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">
+            <a
+              class="_button"
+              href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end"
+            >
               다운로드
             </a>
           `
@@ -80,7 +83,10 @@ export abstract class AutoUpdate {
     }
   }
 
-  private static async _installApk(log: (messageHtml: string) => void, apkFilePath: string): Promise<void> {
+  private static async _installApk(
+    log: (messageHtml: string) => void,
+    apkFilePath: string,
+  ): Promise<void> {
     log(html`
       최신버전을 설치한 후 재시작하세요.
       <style>
@@ -110,7 +116,8 @@ export abstract class AutoUpdate {
       opt.log(`최신버전 확인 중...`);
 
       // 서버의 버전 및 다운로드링크 가져오기
-      const autoUpdateServiceClient = opt.serviceClient.getService<AutoUpdateService>("AutoUpdateService");
+      const autoUpdateServiceClient =
+        opt.serviceClient.getService<AutoUpdateService>("AutoUpdateService");
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
@@ -120,13 +127,19 @@ export abstract class AutoUpdate {
       }
 
       opt.log(`권한 확인 중...`);
-      await this._checkPermission(opt.log, opt.serviceClient.hostUrl + serverVersionInfo.downloadPath);
+      await this._checkPermission(
+        opt.log,
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+      );
 
       // 현재 앱 버전 가져오기
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
       // 최신버전이거나 서버 버전이 낮으면 반환
-      if (semver.valid(currentVersionInfo.versionName) === null || semver.valid(serverVersionInfo.version) === null) {
+      if (
+        semver.valid(currentVersionInfo.versionName) === null ||
+        semver.valid(serverVersionInfo.version) === null
+      ) {
         // eslint-disable-next-line no-console
         console.log("Invalid semver version, skipping update check");
         return;
@@ -136,12 +149,17 @@ export abstract class AutoUpdate {
       }
 
       opt.log(`최신버전 파일 다운로드중...`);
-      const buffer = await fetchUrlBytes(opt.serviceClient.hostUrl + serverVersionInfo.downloadPath, {
-        onProgress: (progress) => {
-          const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(2);
-          opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+      const buffer = await fetchUrlBytes(
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+        {
+          onProgress: (progress) => {
+            const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
+              2,
+            );
+            opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+          },
         },
-      });
+      );
       const storagePath = await FileSystem.getStoragePath("appCache");
       const apkFilePath = pathJoin(storagePath, `latest.apk`);
       await FileSystem.writeFile(apkFilePath, buffer);
@@ -195,7 +213,10 @@ export abstract class AutoUpdate {
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
       // 최신버전이거나 외부 저장소 버전이 낮으면 반환
-      if (semver.valid(currentVersionInfo.versionName) === null || semver.valid(latestVersion) === null) {
+      if (
+        semver.valid(currentVersionInfo.versionName) === null ||
+        semver.valid(latestVersion) === null
+      ) {
         // eslint-disable-next-line no-console
         console.log("Invalid semver version, skipping update check");
         return;

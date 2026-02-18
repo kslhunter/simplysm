@@ -141,12 +141,20 @@ import {
               <div class="flex-row gap-sm p-xs-default">
                 @if (parent.canEdit()) {
                   @if (parent.editMode === "modal" && parent.editItem) {
-                    <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onCreateItemButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-primary'"
+                      (click)="onCreateItemButtonClick()"
+                    >
                       <ng-icon [svg]="tablerCirclePlus" />
                       {{ insertText() ?? "등록" }}
                     </sd-button>
                   } @else if (parent.editMode === "inline" && parent.newItem) {
-                    <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onAddItemButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-primary'"
+                      (click)="onAddItemButtonClick()"
+                    >
                       <ng-icon [svg]="tablerCirclePlus" />
                       행 추가
                     </sd-button>
@@ -167,7 +175,11 @@ import {
                       선택 {{ deleteText() ?? "삭제" }}
                     </sd-button>
                     @if (parent.isSelectedItemsHasDeleted()) {
-                      <sd-button [size]="'sm'" [theme]="'link-warning'" (click)="onToggleDeleteItemsButtonClick(false)">
+                      <sd-button
+                        [size]="'sm'"
+                        [theme]="'link-warning'"
+                        (click)="onToggleDeleteItemsButtonClick(false)"
+                      >
                         <ng-icon [svg]="restoreIcon()" />
                         선택 {{ restoreText() ?? "복구" }}
                       </sd-button>
@@ -175,7 +187,11 @@ import {
                   }
 
                   @if (parent.uploadExcel) {
-                    <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-success'"
+                      (click)="onUploadExcelButtonClick()"
+                    >
                       <ng-icon [svg]="tablerUpload" />
                       엑셀 업로드
                     </sd-button>
@@ -183,7 +199,11 @@ import {
                 }
 
                 @if (parent.downloadExcel) {
-                  <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
+                  <sd-button
+                    [size]="'sm'"
+                    [theme]="'link-success'"
+                    (click)="onDownloadExcelButtonClick()"
+                  >
                     <ng-icon [svg]="tablerFileExcel" />
                     엑셀 다운로드
                   </sd-button>
@@ -208,7 +228,9 @@ import {
               [getItemCellStyleFn]="parent.getItemCellStyleFn"
               [getItemSelectableFn]="parent.getItemSelectableFn"
             >
-              @if (parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted) {
+              @if (
+                parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
+              ) {
                 <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted">
                   <ng-template #headerTpl>
                     <div class="p-xs-sm tx-center">
@@ -222,7 +244,9 @@ import {
                         (click)="onToggleDeleteItemButtonClick(item)"
                         [disabled]="!parent.getItemInfoFn(item).canDelete"
                       >
-                        <ng-icon [svg]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()" />
+                        <ng-icon
+                          [svg]="item[parent.itemPropInfo.isDeleted] ? restoreIcon() : deleteIcon()"
+                        />
                         {{ item[parent.itemPropInfo.isDeleted] ? restoreText() : deleteText() }}
                       </sd-anchor>
                     </div>
@@ -254,14 +278,23 @@ import {
                     </ng-template>
                   }
 
-                  <ng-template [cell]="parent.items()" let-item let-index="index" let-depth="depth" let-edit="edit">
+                  <ng-template
+                    [cell]="parent.items()"
+                    let-item
+                    let-index="index"
+                    let-depth="depth"
+                    let-edit="edit"
+                  >
                     @if (
                       parent.editMode === "modal" &&
                       parent.canEdit() &&
                       columnControl.edit() &&
                       parent.getItemInfoFn(item).canEdit
                     ) {
-                      <sd-anchor (click)="onEditItemButtonClick(item, index, $event)" class="flex-row">
+                      <sd-anchor
+                        (click)="onEditItemButtonClick(item, index, $event)"
+                        class="flex-row"
+                      >
                         <div class="p-xs-sm">
                           <ng-icon [svg]="tablerEdit" />
                         </div>
@@ -295,7 +328,11 @@ import {
               }
 
               @if (parent.itemPropInfo.lastModifiedAt) {
-                <sd-sheet-column [header]="'수정일시'" [key]="parent.itemPropInfo.lastModifiedAt!" [hidden]="true">
+                <sd-sheet-column
+                  [header]="'수정일시'"
+                  [key]="parent.itemPropInfo.lastModifiedAt!"
+                  [hidden]="true"
+                >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedAt!] | format: "yyyy-MM-dd HH:mm" }}
@@ -304,7 +341,11 @@ import {
                 </sd-sheet-column>
               }
               @if (parent.itemPropInfo.lastModifiedBy) {
-                <sd-sheet-column [header]="'수정자'" [key]="parent.itemPropInfo.lastModifiedBy!" [hidden]="true">
+                <sd-sheet-column
+                  [header]="'수정자'"
+                  [key]="parent.itemPropInfo.lastModifiedBy!"
+                  [hidden]="true"
+                >
                   <ng-template [cell]="parent.items()" let-item>
                     <div class="p-xs-sm tx-center">
                       {{ item[parent.itemPropInfo.lastModifiedBy!] }}
@@ -475,7 +516,9 @@ export abstract class AbsSdDataSheet<
 
   prepareRefreshEffect?(): void;
 
-  abstract search(usePagination: boolean): Promise<ISdDataSheetSearchResult<TItem>> | ISdDataSheetSearchResult<TItem>;
+  abstract search(
+    usePagination: boolean,
+  ): Promise<ISdDataSheetSearchResult<TItem>> | ISdDataSheetSearchResult<TItem>;
 
   //-- modal
   // 등록/편집
@@ -517,7 +560,9 @@ export abstract class AbsSdDataSheet<
   actionTplRef?: TemplateRef<any>;
 
   autoSelect = $computed<"click" | undefined>(() =>
-    (!this.canEdit() || this.editMode === "modal") && this.selectMode() === "single" ? "click" : undefined,
+    (!this.canEdit() || this.editMode === "modal") && this.selectMode() === "single"
+      ? "click"
+      : undefined,
   );
 
   items = $signal<TItem[]>([]);
@@ -616,7 +661,9 @@ export abstract class AbsSdDataSheet<
 
     this.selectedItems.set(
       this.items().filter((item) =>
-        this.selectedItems().some((sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key),
+        this.selectedItems().some(
+          (sel) => this.getItemInfoFn(sel).key === this.getItemInfoFn(item).key,
+        ),
       ),
     );
   }
@@ -679,19 +726,23 @@ export abstract class AbsSdDataSheet<
   }
 
   private _getDiffs() {
-    return $arr(this.items).diffs(this.diffsExcludes ? { excludes: this.diffsExcludes } : undefined);
+    return $arr(this.items).diffs(
+      this.diffsExcludes ? { excludes: this.diffsExcludes } : undefined,
+    );
   }
 
   //-- delete
 
   isSelectedItemsHasDeleted = $computed(() =>
     this.selectedItems().some(
-      (item) => this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
+      (item) =>
+        this.itemPropInfo.isDeleted != null && (item[this.itemPropInfo.isDeleted] as boolean),
     ),
   );
   isSelectedItemsHasNotDeleted = $computed(() =>
     this.selectedItems().some(
-      (item) => this.itemPropInfo.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
+      (item) =>
+        this.itemPropInfo.isDeleted == null || !(item[this.itemPropInfo.isDeleted] as boolean),
     ),
   );
 
@@ -731,7 +782,9 @@ export abstract class AbsSdDataSheet<
       return;
     }
 
-    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[this.itemPropInfo.isDeleted] as boolean);
+    (item[this.itemPropInfo.isDeleted] as boolean) = !(item[
+      this.itemPropInfo.isDeleted
+    ] as boolean);
     this.items.$mark();
   }
 

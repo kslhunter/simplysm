@@ -7,7 +7,10 @@ interface RebuildManagerEvents {
 
 export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
   private _isRunning = false;
-  private readonly _pendingBuilds = new Map<string, { title: string; promise: Promise<void>; resolver: () => void }>();
+  private readonly _pendingBuilds = new Map<
+    string,
+    { title: string; promise: Promise<void>; resolver: () => void }
+  >();
   private readonly _logger: ReturnType<typeof consola.withTag>;
 
   constructor(logger: ReturnType<typeof consola.withTag>) {

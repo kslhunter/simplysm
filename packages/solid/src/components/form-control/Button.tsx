@@ -2,7 +2,12 @@ import { type JSX, type ParentComponent, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ripple } from "../../directives/ripple";
-import { themeTokens, type SemanticTheme, type ComponentSize, disabledOpacity } from "../../styles/tokens.styles";
+import {
+  themeTokens,
+  type SemanticTheme,
+  type ComponentSize,
+  disabledOpacity,
+} from "../../styles/tokens.styles";
 
 // Directive 사용 선언 (TypeScript용)
 void ripple;

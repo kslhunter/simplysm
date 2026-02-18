@@ -31,7 +31,9 @@ function findPackagesObject(configPath: string): {
   }
 
   // "packages" 프로퍼티 찾기
-  const packagesProp = returnObj.getPropertyOrThrow("packages").asKindOrThrow(SyntaxKind.PropertyAssignment);
+  const packagesProp = returnObj
+    .getPropertyOrThrow("packages")
+    .asKindOrThrow(SyntaxKind.PropertyAssignment);
   const packagesObj = packagesProp.getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
 
   return { project, packagesObj };
@@ -50,7 +52,8 @@ export function addPackageToSdConfig(
   const { project, packagesObj } = findPackagesObject(configPath);
 
   // 이미 존재하는지 확인 (따옴표 있는 형태와 없는 형태 모두 체크)
-  const existing = packagesObj.getProperty(`"${packageName}"`) ?? packagesObj.getProperty(packageName);
+  const existing =
+    packagesObj.getProperty(`"${packageName}"`) ?? packagesObj.getProperty(packageName);
   if (existing) {
     return false;
   }
@@ -72,10 +75,15 @@ export function addPackageToSdConfig(
 /**
  * sd.config.ts에서 특정 클라이언트의 server 필드를 설정한다.
  */
-export function setClientServerInSdConfig(configPath: string, clientName: string, serverName: string): void {
+export function setClientServerInSdConfig(
+  configPath: string,
+  clientName: string,
+  serverName: string,
+): void {
   const { project, packagesObj } = findPackagesObject(configPath);
 
-  const clientPropNode = packagesObj.getProperty(`"${clientName}"`) ?? packagesObj.getProperty(clientName);
+  const clientPropNode =
+    packagesObj.getProperty(`"${clientName}"`) ?? packagesObj.getProperty(clientName);
   if (clientPropNode == null) {
     throw new Error(`클라이언트 "${clientName}"을(를) sd.config.ts에서 찾을 수 없습니다.`);
   }
@@ -108,7 +116,9 @@ export function addTailwindToEslintConfig(configPath: string, clientName: string
   const sourceFile = project.addSourceFileAtPath(configPath);
 
   // default export 배열 찾기
-  const defaultExport = sourceFile.getFirstDescendantByKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+  const defaultExport = sourceFile.getFirstDescendantByKindOrThrow(
+    SyntaxKind.ArrayLiteralExpression,
+  );
 
   // tailwindcss 설정이 이미 있는지 확인
   const text = defaultExport.getText();

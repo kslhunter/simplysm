@@ -12,7 +12,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - 단일 컬럼 인덱스", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -35,7 +38,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - unique 인덱스", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").unique();
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -58,7 +64,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - 복합 인덱스", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -84,7 +93,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - orderBy 지정", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").orderBy("DESC", "ASC");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -110,7 +122,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - name 지정", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").name("UQ_User_email");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -133,7 +148,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - description 지정", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("email").description("이메일 검색용 인덱스");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -156,7 +174,10 @@ describe("DDL - Index Builder", () => {
   describe("IndexBuilder - 복합 옵션 (unique + orderBy)", () => {
     const db = createTestDb();
     const indexBuilder = IndexFactory.index("name", "email").unique().orderBy("DESC", "ASC");
-    const def = db.getAddIdxQueryDef({ database: "TestDb", schema: "TestSchema", name: "User" }, indexBuilder);
+    const def = db.getAddIdxQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "User" },
+      indexBuilder,
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

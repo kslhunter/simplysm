@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdDropdownControl } from "./sd-dropdown.control";
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
 import { injectElementRef } from "../../../core/utils/injections/injectElementRef";

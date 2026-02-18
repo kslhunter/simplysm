@@ -70,7 +70,9 @@ const MenuItemRenderer = (props) => {
       class: atoms({ gap: "xs" }),
       onClick: (event) => props.onMenuClick(props.menu, event),
     },
-    /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon, keyed: true }, (icon) => icon({})),
+    /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon, keyed: true }, (icon) =>
+      icon({}),
+    ),
     /* @__PURE__ */ React.createElement("div", null, props.menu.title),
     /* @__PURE__ */ React.createElement(
       Show,

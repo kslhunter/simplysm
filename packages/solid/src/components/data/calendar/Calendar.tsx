@@ -4,7 +4,10 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 
-export interface CalendarProps<TValue> extends Omit<JSX.HTMLAttributes<HTMLTableElement>, "children"> {
+export interface CalendarProps<TValue> extends Omit<
+  JSX.HTMLAttributes<HTMLTableElement>,
+  "children"
+> {
   items: TValue[];
   getItemDate: (item: TValue, index: number) => DateOnly;
   renderItem: (item: TValue, index: number) => JSX.Element;
@@ -116,14 +119,25 @@ function CalendarBase<TValue>(props: CalendarProps<TValue>) {
             <tr>
               <For each={row}>
                 {(cell) => (
-                  <td class={twMerge(notCurrentClass, cell.date.month !== yearMonth().month && "not-current")}>
+                  <td
+                    class={twMerge(
+                      notCurrentClass,
+                      cell.date.month !== yearMonth().month && "not-current",
+                    )}
+                  >
                     <div
-                      class={cell.date.month !== yearMonth().month ? twMerge(dayClass, notCurrentDayClass) : dayClass}
+                      class={
+                        cell.date.month !== yearMonth().month
+                          ? twMerge(dayClass, notCurrentDayClass)
+                          : dayClass
+                      }
                     >
                       {cell.date.day}
                     </div>
                     <div class={contentClass}>
-                      <For each={cell.items}>{(entry) => local.renderItem(entry.item, entry.index)}</For>
+                      <For each={cell.items}>
+                        {(entry) => local.renderItem(entry.item, entry.index)}
+                      </For>
                     </div>
                   </td>
                 )}

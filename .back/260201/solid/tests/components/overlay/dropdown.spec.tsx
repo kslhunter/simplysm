@@ -10,7 +10,8 @@ import { Button } from "../../../src/components/controls/button/button";
  * Dropdown wrapper가 role="button"과 aria-haspopup="menu"를 가지므로
  * 이를 사용하여 정확한 요소를 찾음
  */
-const findTriggerByAriaHaspopup = () => document.querySelector('[aria-haspopup="menu"]') as HTMLElement;
+const findTriggerByAriaHaspopup = () =>
+  document.querySelector('[aria-haspopup="menu"]') as HTMLElement;
 
 /**
  * 테스트용 controlled Dropdown 래퍼

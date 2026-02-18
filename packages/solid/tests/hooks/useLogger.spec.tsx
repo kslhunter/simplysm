@@ -6,7 +6,9 @@ import { consola } from "consola";
 
 function configWrapper(logger?: LogAdapter) {
   return (props: { children: any }) => (
-    <ConfigContext.Provider value={{ clientName: "test", logger }}>{props.children}</ConfigContext.Provider>
+    <ConfigContext.Provider value={{ clientName: "test", logger }}>
+      {props.children}
+    </ConfigContext.Provider>
   );
 }
 

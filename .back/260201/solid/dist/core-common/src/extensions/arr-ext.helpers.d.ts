@@ -15,5 +15,9 @@ export declare function toComparable(value: ComparableType): string | number | b
  * @returns 음수: pp가 앞, 0: 같음, 양수: pn이 앞
  * @note null/undefined 값은 오름차순 시 앞으로, 내림차순 시 뒤로 정렬됨
  */
-export declare function compareForOrder(pp: ComparableType, pn: ComparableType, desc: boolean): number;
+export declare function compareForOrder(
+  pp: ComparableType,
+  pn: ComparableType,
+  desc: boolean,
+): number;
 //# sourceMappingURL=arr-ext.helpers.d.ts.map

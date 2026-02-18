@@ -89,7 +89,9 @@ describe("getResultMeta", () => {
       .joinSingle("user", (q, c) =>
         q
           .from(User)
-          .joinSingle("company", (q2, c2) => q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]))
+          .joinSingle("company", (q2, c2) =>
+            q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]),
+          )
           .where((item) => [expr.eq(item.id, c.userId)]),
       )
       .getResultMeta();
@@ -125,7 +127,9 @@ describe("getResultMeta", () => {
     const meta = db
       .user()
       .join("posts", (q, c) => q.from(Post).where((item) => [expr.eq(item.userId, c.id)]))
-      .joinSingle("company", (q, c) => q.from(Company).where((item) => [expr.eq(item.id, c.companyId)]))
+      .joinSingle("company", (q, c) =>
+        q.from(Company).where((item) => [expr.eq(item.id, c.companyId)]),
+      )
       .getResultMeta();
 
     expect(meta).toEqual({

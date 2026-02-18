@@ -43,7 +43,9 @@ export declare class ZipArchive {
    * 모든 파일을 압축 해제
    * @param progressCallback 진행률 콜백
    */
-  extractAllAsync(progressCallback?: (progress: ZipArchiveProgress) => void): Promise<Map<string, Bytes | undefined>>;
+  extractAllAsync(
+    progressCallback?: (progress: ZipArchiveProgress) => void,
+  ): Promise<Map<string, Bytes | undefined>>;
   /**
    * 특정 파일 압축 해제
    * @param fileName 파일 이름

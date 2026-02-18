@@ -93,7 +93,12 @@ import { NgIcon } from "@ng-icons/core";
 
             <div class="flex-fill">
               <ng-template [ngTemplateOutlet]="beforeTplRef() ?? null" />
-              <ng-template #rowOfListTpl [typed]="rowOfListType" let-items="items" let-depth="depth">
+              <ng-template
+                #rowOfListTpl
+                [typed]="rowOfListType"
+                let-items="items"
+                let-depth="depth"
+              >
                 @for (item of items; let index = $index; track trackByFn()(item, index)) {
                   <div class="_sd-select-item">
                     <ng-template
@@ -314,9 +319,12 @@ export class SdSelectControl<M extends "single" | "multi", T> {
 
   headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", { read: TemplateRef });
   beforeTplRef = contentChild<any, TemplateRef<void>>("beforeTpl", { read: TemplateRef });
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
 
   // itemControls = $signal<SdSelectItemControl[]>([]);
   itemControls = contentChildren(SdSelectItemControl);
@@ -333,7 +341,9 @@ export class SdSelectControl<M extends "single" | "multi", T> {
     });
 
     $afterRenderEffect(() => {
-      const selectedItemControls = this.itemControls().filter((itemControl) => itemControl.isSelected());
+      const selectedItemControls = this.itemControls().filter((itemControl) =>
+        itemControl.isSelected(),
+      );
       // const selectedItemEls = selectedItemControls.map((item) => item.elRef.nativeElement);
       // const innerHTML = selectedItemEls
       //   .map((el) => el.findFirst("> ._content")?.innerHTML ?? "")
@@ -342,7 +352,11 @@ export class SdSelectControl<M extends "single" | "multi", T> {
       const innerHTML = selectedItemControls
         .map((ctl) => ctl.contentHTML())
         .map((item) => `<span style="display: inline">${item}</span>`)
-        .join(this.multiSelectionDisplayDirection() === "vertical" ? "<div class='p-sm-0'></div>" : ", ");
+        .join(
+          this.multiSelectionDisplayDirection() === "vertical"
+            ? "<div class='p-sm-0'></div>"
+            : ", ",
+        );
 
       if (innerHTML === "") {
         if (this.placeholder() !== undefined) {

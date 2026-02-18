@@ -26,11 +26,16 @@ export function createSdServerPlugin(
         resultCache.affectedFileSet = tsCompileResult.affectedFileSet;
 
         //-- return err/warn
-        return SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(tsCompileResult.messages, conf.pkgPath);
+        return SdCliConvertMessageUtils.convertToEsbuildFromBuildMessages(
+          tsCompileResult.messages,
+          conf.pkgPath,
+        );
       });
 
       build.onLoad({ filter: /\.ts$/ }, (args) => {
-        const emittedJsFile = tsCompileResult.emittedFilesCacheMap.get(PathUtils.norm(args.path))?.last();
+        const emittedJsFile = tsCompileResult.emittedFilesCacheMap
+          .get(PathUtils.norm(args.path))
+          ?.last();
         /*if (!emittedJsFile) {
           return {
             errors: [

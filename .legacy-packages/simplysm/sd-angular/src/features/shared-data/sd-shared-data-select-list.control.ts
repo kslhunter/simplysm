@@ -23,7 +23,10 @@ import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import type { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
 import { setupModelHook } from "../../core/utils/setups/setupModelHook";
-import type { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
+import type {
+  ISdSelectModal,
+  TSdSelectModalInfo,
+} from "../data-view/sd-data-select-button.control";
 import { SdAnchorControl } from "../../ui/form/button/sd-anchor.control";
 import { SdListControl } from "../../ui/data/list/sd-list.control";
 import { SdListItemControl } from "../../ui/data/list/sd-list-item.control";
@@ -100,7 +103,11 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
             </sd-list-item>
           }
           @for (item of displayItems(); let index = $index; track item.__valueKey) {
-            <sd-list-item [selected]="selectedItem() === item" (click)="toggle(item)" [selectedIcon]="selectedIcon()">
+            <sd-list-item
+              [selected]="selectedItem() === item"
+              (click)="toggle(item)"
+              [selectedIcon]="selectedIcon()"
+            >
               <ng-template
                 [ngTemplateOutlet]="itemTplRef() ?? null"
                 [ngTemplateOutletContext]="{
@@ -137,9 +144,12 @@ export class SdSharedDataSelectListControl<
 
   headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", { read: TemplateRef });
   filterTplRef = contentChild<any, TemplateRef<void>>("filterTpl", { read: TemplateRef });
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
   undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", { read: TemplateRef });
 
   searchText = $signal<string>();
@@ -165,7 +175,10 @@ export class SdSharedDataSelectListControl<
     }
 
     if (Boolean(this.pageItemCount())) {
-      result = result.slice(this.pageItemCount()! * this.page(), this.pageItemCount()! * (this.page() + 1));
+      result = result.slice(
+        this.pageItemCount()! * this.page(),
+        this.pageItemCount()! * (this.page() + 1),
+      );
     }
 
     return result;
@@ -175,7 +188,9 @@ export class SdSharedDataSelectListControl<
     setupModelHook(this.selectedItem, this.canChangeFn);
 
     $effect([this.items], () => {
-      const newSelectedItem = this.items().single((item) => item.__valueKey === this.selectedItem()?.__valueKey);
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === this.selectedItem()?.__valueKey,
+      );
       this.selectedItem.set(newSelectedItem);
     });
   }
@@ -202,7 +217,9 @@ export class SdSharedDataSelectListControl<
     });
 
     if (result) {
-      const newSelectedItem = this.items().single((item) => item.__valueKey === result.selectedItemKeys[0]);
+      const newSelectedItem = this.items().single(
+        (item) => item.__valueKey === result.selectedItemKeys[0],
+      );
       this.selectedItem.set(newSelectedItem);
     }
   }

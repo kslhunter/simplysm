@@ -27,7 +27,9 @@ export class SdExcelCell {
     setHorizontalAlignAsync: async (align: "center" | "left" | "right") => {
       await this._setStyleAsync({ horizontalAlign: align });
     },
-    setFormatPresetAsync: async (format: TSdExcelNumberFormat | "ThousandsSeparator" | "0%" | "0.00%") => {
+    setFormatPresetAsync: async (
+      format: TSdExcelNumberFormat | "ThousandsSeparator" | "0%" | "0.00%",
+    ) => {
       if (format === "ThousandsSeparator") {
         await this._setStyleAsync({ numFmtId: "41" });
       } else if (format === "0%") {
@@ -119,7 +121,9 @@ export class SdExcelCell {
         numFmtId: SdExcelUtils.convertNumFmtNameToId("Time").toString(),
       });
     } else {
-      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${val}`);
+      throw new Error(
+        `[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${val}`,
+      );
     }
   }
 
@@ -187,7 +191,9 @@ export class SdExcelCell {
         throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패 (${numFmt})`);
       }
     } else {
-      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${cellType}`);
+      throw new Error(
+        `[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${cellType}`,
+      );
     }
   }
 
@@ -214,7 +220,9 @@ export class SdExcelCell {
   }
 
   private async _getWsDataAsync() {
-    return (await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`)) as SdExcelXmlWorksheet;
+    return (await this._zipCache.getAsync(
+      `xl/worksheets/${this._targetFileName}`,
+    )) as SdExcelXmlWorksheet;
   }
 
   private async _setStyleAsync(style: ISdExcelStyle) {
@@ -234,7 +242,9 @@ export class SdExcelCell {
   }
 
   private async _getSsDataAsync() {
-    return (await this._zipCache.getAsync("xl/sharedStrings.xml")) as SdExcelXmlSharedString | undefined;
+    return (await this._zipCache.getAsync("xl/sharedStrings.xml")) as
+      | SdExcelXmlSharedString
+      | undefined;
   }
 
   private async _getWbRelDataAsync() {
@@ -279,11 +289,17 @@ export class SdExcelCell {
 
       //-- Content Type
       const typeData = await this._getTypeDataAsync();
-      typeData.add("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+      typeData.add(
+        "/xl/styles.xml",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
+      );
 
       //-- Workbook Rel
       const wbRelData = await this._getWbRelDataAsync();
-      wbRelData.add(`styles.xml`, `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`);
+      wbRelData.add(
+        `styles.xml`,
+        `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`,
+      );
     }
 
     return styleData;

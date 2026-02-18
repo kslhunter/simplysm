@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdCheckboxGroupControl } from "./sd-checkbox-group.control";
 import { SdCheckboxControl } from "./sd-checkbox.control";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
@@ -22,7 +29,9 @@ import { $computed } from "../../../core/utils/bindings/$computed";
   `,
 })
 export class SdCheckboxGroupItemControl<T> {
-  private readonly _parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
+  private readonly _parentControl = inject<SdCheckboxGroupControl<T>>(
+    forwardRef(() => SdCheckboxGroupControl),
+  );
 
   value = input.required<T>();
   inline = input(false, { transform: transformBoolean });

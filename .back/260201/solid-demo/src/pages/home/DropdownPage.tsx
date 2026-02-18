@@ -1,5 +1,13 @@
 import { createSignal } from "solid-js";
-import { Button, Dropdown, DropdownPopup, List, ListItem, Topbar, TopbarContainer } from "@simplysm/solid";
+import {
+  Button,
+  Dropdown,
+  DropdownPopup,
+  List,
+  ListItem,
+  Topbar,
+  TopbarContainer,
+} from "@simplysm/solid";
 import { atoms } from "@simplysm/solid/styles";
 
 export default function DropdownPage() {
@@ -47,7 +55,9 @@ export default function DropdownPage() {
             외부에서 open 상태를 제어합니다. 현재 상태: {controlled() ? "열림" : "닫힘"}
           </p>
           <div class={atoms({ display: "flex", gap: "base", flexWrap: "wrap" })}>
-            <Button onClick={() => setControlled(!controlled())}>{controlled() ? "닫기" : "열기"}</Button>
+            <Button onClick={() => setControlled(!controlled())}>
+              {controlled() ? "닫기" : "열기"}
+            </Button>
 
             <Dropdown open={controlled()} onOpenChange={setControlled}>
               <Button theme="primary">Controlled Dropdown</Button>
@@ -63,8 +73,17 @@ export default function DropdownPage() {
 
         <section>
           <h3>Position Auto-Adjustment</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>뷰포트 위치에 따라 팝업이 상/하, 좌/우로 자동 배치됩니다.</p>
-          <div class={atoms({ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "base" })}>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            뷰포트 위치에 따라 팝업이 상/하, 좌/우로 자동 배치됩니다.
+          </p>
+          <div
+            class={atoms({
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "base",
+            })}
+          >
             <Dropdown>
               <Button>왼쪽 상단</Button>
               <DropdownPopup>
@@ -165,8 +184,17 @@ export default function DropdownPage() {
 
         <section>
           <h3>Bottom Position Test</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>화면 하단에서 열면 팝업이 위로 배치됩니다.</p>
-          <div class={atoms({ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "base" })}>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            화면 하단에서 열면 팝업이 위로 배치됩니다.
+          </p>
+          <div
+            class={atoms({
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "base",
+            })}
+          >
             <Dropdown>
               <Button>왼쪽 하단</Button>
               <DropdownPopup>

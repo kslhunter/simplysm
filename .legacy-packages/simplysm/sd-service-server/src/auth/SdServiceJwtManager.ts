@@ -29,7 +29,12 @@ export class SdServiceJwtManager<TAuthInfo = any> {
       return payload as any;
     } catch (err) {
       // jose 에러 처리
-      if (err != null && typeof err === "object" && "code" in err && err.code === "ERR_JWT_EXPIRED") {
+      if (
+        err != null &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code === "ERR_JWT_EXPIRED"
+      ) {
         throw new Error("토큰이 만료되었습니다.");
       }
       throw new Error("유효하지 않은 토큰입니다.");

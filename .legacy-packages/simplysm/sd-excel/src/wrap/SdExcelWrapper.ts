@@ -22,7 +22,8 @@ type TInferField<T extends Type<any>> = T extends StringConstructor
         ? Date
         : InstanceType<T>;
 
-type TFieldValue<T extends TValidFieldSpec<any>> = T["includes"] extends Array<infer U> ? U : TInferField<T["type"]>;
+type TFieldValue<T extends TValidFieldSpec<any>> =
+  T["includes"] extends Array<infer U> ? U : TInferField<T["type"]>;
 
 export type TExcelValidateObjectRecord<VT extends TExcelValidObject> = {
   [P in keyof VT as VT[P]["notnull"] extends true ? P : never]: TFieldValue<VT[P]>;
@@ -42,11 +43,15 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     },
   ) {}
 
-  async writeAsync(wsName: string, items: Partial<TExcelValidateObjectRecord<VT>>[]): Promise<SdExcelWorkbook> {
+  async writeAsync(
+    wsName: string,
+    items: Partial<TExcelValidateObjectRecord<VT>>[],
+  ): Promise<SdExcelWorkbook> {
     const wb = new SdExcelWorkbook();
     const ws = await wb.createWorksheetAsync(wsName);
 
-    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+    const defaultFieldConf =
+      typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
     const keys = Object.keys(defaultFieldConf);
     const headers = Object.values(defaultFieldConf).map((val) => val.displayName);
 
@@ -73,12 +78,16 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     return wb;
   }
 
-  async readAsync(file: Buffer | Blob, wsNameOrIndex: string | number = 0): Promise<TExcelValidateObjectRecord<VT>[]> {
+  async readAsync(
+    file: Buffer | Blob,
+    wsNameOrIndex: string | number = 0,
+  ): Promise<TExcelValidateObjectRecord<VT>[]> {
     const wb = new SdExcelWorkbook(file);
     const ws = await wb.getWorksheetAsync(wsNameOrIndex);
     const wsName = await ws.getNameAsync();
 
-    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+    const defaultFieldConf =
+      typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
     const headers = Object.keys(defaultFieldConf).map((key) => defaultFieldConf[key].displayName);
     const wsdt = await ws.getDataTableAsync({
       usableHeaderNameFn: (headerName) => headers.includes(headerName),
@@ -88,7 +97,9 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
     for (const item of wsdt) {
       const fieldConf = this._getFieldConf(item as any);
 
-      const firstNotNullFieldKey = Object.keys(fieldConf).first((key) => fieldConf[key].notnull ?? false);
+      const firstNotNullFieldKey = Object.keys(fieldConf).first(
+        (key) => fieldConf[key].notnull ?? false,
+      );
       if (firstNotNullFieldKey == null) throw new Error("Not Null 필드가 없습니다.");
       const firstNotNullFieldDisplayName = fieldConf[firstNotNullFieldKey].displayName;
 
@@ -96,7 +107,11 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
 
       const obj = {} as any;
       for (const key of Object.keys(fieldConf)) {
-        if ("name" in fieldConf[key].type && fieldConf[key].type.name === "Boolean" && fieldConf[key].notnull) {
+        if (
+          "name" in fieldConf[key].type &&
+          fieldConf[key].type.name === "Boolean" &&
+          fieldConf[key].notnull
+        ) {
           ObjectUtils.setChainValue(obj, key, item[fieldConf[key].displayName] ?? false);
         } else if (
           "name" in fieldConf[key].type &&
@@ -109,7 +124,11 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
           fieldConf[key].type.name === "Number" &&
           typeof item[fieldConf[key].displayName] !== "number"
         ) {
-          ObjectUtils.setChainValue(obj, key, NumberUtils.parseInt(item[fieldConf[key].displayName]));
+          ObjectUtils.setChainValue(
+            obj,
+            key,
+            NumberUtils.parseInt(item[fieldConf[key].displayName]),
+          );
         } else if (
           "name" in fieldConf[key].type &&
           fieldConf[key].type.name === "DateOnly" &&
@@ -148,7 +167,8 @@ export class SdExcelWrapper<VT extends TExcelValidObject> {
   }
 
   private _getFieldConf(item: TExcelValidateObjectRecord<VT>) {
-    const defaultFieldConf = typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
+    const defaultFieldConf =
+      typeof this._fieldConf === "function" ? this._fieldConf() : this._fieldConf;
 
     const result = this._additionalFieldConf
       ? ObjectUtils.merge(defaultFieldConf, this._additionalFieldConf(item))

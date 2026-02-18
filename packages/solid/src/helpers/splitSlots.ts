@@ -26,7 +26,10 @@ export function splitSlots<K extends string>(
 ): [Accessor<Record<K, HTMLElement[]>>, Accessor<JSX.Element[]>] {
   const memo = createMemo(() => {
     const arr = resolved.toArray();
-    const result = Object.fromEntries(keys.map((k) => [k, []])) as unknown as Record<K, HTMLElement[]>;
+    const result = Object.fromEntries(keys.map((k) => [k, []])) as unknown as Record<
+      K,
+      HTMLElement[]
+    >;
     const content: JSX.Element[] = [];
 
     for (const c of arr) {

@@ -31,7 +31,9 @@ export default function CalendarPage() {
           {/* Section 1: 기본 사용 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 사용</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">일정 아이템을 날짜별로 표시합니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              일정 아이템을 날짜별로 표시합니다.
+            </p>
             <Calendar<ScheduleItem>
               items={sampleItems}
               getItemDate={(item) => item.date}
@@ -47,7 +49,9 @@ export default function CalendarPage() {
           {/* Section 2: 주 시작 요일 변경 (월요일) */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">주 시작 요일: 월요일</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">weekStartDay=1로 월요일부터 시작합니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              weekStartDay=1로 월요일부터 시작합니다.
+            </p>
             <Calendar<ScheduleItem>
               items={sampleItems}
               getItemDate={(item) => item.date}
@@ -64,7 +68,9 @@ export default function CalendarPage() {
           {/* Section 3: Controlled 연월 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Controlled 연월</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">외부에서 연월 상태를 제어합니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              외부에서 연월 상태를 제어합니다.
+            </p>
             <div class="mb-4 flex items-center gap-2">
               <button
                 class="rounded border border-base-300 px-2 py-1 text-sm dark:border-base-600"

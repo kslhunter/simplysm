@@ -273,7 +273,9 @@ function groupRecordsRecursively(
       return !key.includes(".");
     } else {
       // 하위 레벨: 현재 경로 + "." + 키
-      return key.startsWith(currentPath + ".") && key.slice(currentPath.length + 1).indexOf(".") === -1;
+      return (
+        key.startsWith(currentPath + ".") && key.slice(currentPath.length + 1).indexOf(".") === -1
+      );
     }
   });
 
@@ -375,7 +377,10 @@ function groupRecordsRecursively(
 /**
  * 레코드에서 JOIN 키를 제외한 그룹 키 추출
  */
-function extractGroupKey(record: Record<string, unknown>, joinKeys: string[]): Record<string, unknown> {
+function extractGroupKey(
+  record: Record<string, unknown>,
+  joinKeys: string[],
+): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     // JOIN 키가 아닌 것만 포함
@@ -433,7 +438,9 @@ function mergeJoinData(
         }
       } else {
         // hashSet이 없으면 폴백 (기존 방식)
-        const isDuplicate = existingJoinData.some((item) => objEqual(item as Record<string, unknown>, newJoinData));
+        const isDuplicate = existingJoinData.some((item) =>
+          objEqual(item as Record<string, unknown>, newJoinData),
+        );
         if (!isDuplicate) {
           existingJoinData.push(newJoinData);
         }

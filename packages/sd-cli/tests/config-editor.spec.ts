@@ -2,7 +2,11 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import path from "path";
 import fs from "fs";
 import os from "os";
-import { addPackageToSdConfig, setClientServerInSdConfig, addTailwindToEslintConfig } from "../src/utils/config-editor";
+import {
+  addPackageToSdConfig,
+  setClientServerInSdConfig,
+  addTailwindToEslintConfig,
+} from "../src/utils/config-editor";
 
 describe("config-editor", () => {
   let tmpDir: string;

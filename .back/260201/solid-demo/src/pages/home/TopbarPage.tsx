@@ -1,5 +1,12 @@
 import { createSignal } from "solid-js";
-import { IconDatabase, IconFolder, IconHome, IconServer, IconSettings, IconUsers } from "@tabler/icons-solidjs";
+import {
+  IconDatabase,
+  IconFolder,
+  IconHome,
+  IconServer,
+  IconSettings,
+  IconUsers,
+} from "@tabler/icons-solidjs";
 import {
   Sidebar,
   SidebarContainer,
@@ -91,7 +98,9 @@ export default function TopbarPage() {
         {/* 1. TopbarContainer 기본 */}
         <section>
           <h3>TopbarContainer 기본</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다.</p>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다.
+          </p>
           <div class={demoContainer}>
             <TopbarContainer>
               <Topbar showToggle={false}>
@@ -108,7 +117,8 @@ export default function TopbarPage() {
         <section>
           <h3>Topbar 토글 버튼</h3>
           <p class={atoms({ mb: "base", color: "muted" })}>
-            showToggle prop으로 사이드바 토글 버튼 표시를 제어합니다. SidebarContext 없이는 클릭해도 동작하지 않습니다.
+            showToggle prop으로 사이드바 토글 버튼 표시를 제어합니다. SidebarContext 없이는 클릭해도
+            동작하지 않습니다.
           </p>
           <div class={demoGrid}>
             <div>
@@ -168,7 +178,9 @@ export default function TopbarPage() {
                     <TopbarMenu menus={nestedMenus} />
                   </Topbar>
                   <div class={demoContent}>
-                    <p style={{ color: `rgb(${themeVars.text.muted})` }}>관리 → 시스템 → 고급 설정을 확인해보세요</p>
+                    <p style={{ color: `rgb(${themeVars.text.muted})` }}>
+                      관리 → 시스템 → 고급 설정을 확인해보세요
+                    </p>
                   </div>
                 </TopbarContainer>
               </div>
@@ -179,7 +191,9 @@ export default function TopbarPage() {
         {/* 4. TopbarUser 변형 */}
         <section>
           <h3>TopbarUser 변형</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.</p>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.
+          </p>
           <div class={demoGrid}>
             <div>
               <p class={atoms({ mb: "sm", color: "muted" })}>기본 (이름만)</p>
@@ -206,7 +220,9 @@ export default function TopbarPage() {
                     <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                   </Topbar>
                   <div class={demoContent}>
-                    <p style={{ color: `rgb(${themeVars.text.muted})` }}>클릭하면 프로필/로그아웃 메뉴 표시</p>
+                    <p style={{ color: `rgb(${themeVars.text.muted})` }}>
+                      클릭하면 프로필/로그아웃 메뉴 표시
+                    </p>
                   </div>
                 </TopbarContainer>
               </div>
@@ -236,7 +252,9 @@ export default function TopbarPage() {
                       <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                     </Topbar>
                     <div class={demoContent}>
-                      <p style={{ color: `rgb(${themeVars.text.muted})` }}>토글 버튼을 클릭해보세요</p>
+                      <p style={{ color: `rgb(${themeVars.text.muted})` }}>
+                        토글 버튼을 클릭해보세요
+                      </p>
                     </div>
                   </TopbarContainer>
                 </SidebarContainer>
@@ -257,7 +275,9 @@ export default function TopbarPage() {
                       <TopbarUser menus={userMenus}>홍길동</TopbarUser>
                     </Topbar>
                     <div class={demoContent}>
-                      <p style={{ color: `rgb(${themeVars.text.muted})` }}>토글 버튼을 클릭해보세요</p>
+                      <p style={{ color: `rgb(${themeVars.text.muted})` }}>
+                        토글 버튼을 클릭해보세요
+                      </p>
                     </div>
                   </TopbarContainer>
                 </SidebarContainer>
@@ -269,7 +289,9 @@ export default function TopbarPage() {
         {/* 6. 모바일 데모 */}
         <section>
           <h3>모바일 데모</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            375px x 500px iframe으로 모바일 환경 시뮬레이션
+          </p>
           <div class={mobileIframeContainer}>
             <iframe
               src="#/mobile-layout-demo"

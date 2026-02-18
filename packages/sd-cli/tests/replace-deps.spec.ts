@@ -22,12 +22,17 @@ describe("resolveReplaceDepEntries", () => {
   });
 
   test("* 없는 정확한 패키지명도 매칭된다", () => {
-    const result = resolveReplaceDepEntries({ "@other/lib": "../other-project/lib" }, ["@other/lib", "@other/unused"]);
+    const result = resolveReplaceDepEntries({ "@other/lib": "../other-project/lib" }, [
+      "@other/lib",
+      "@other/unused",
+    ]);
     expect(result).toEqual([{ targetName: "@other/lib", sourcePath: "../other-project/lib" }]);
   });
 
   test("매칭되지 않는 패키지는 결과에 포함되지 않는다", () => {
-    const result = resolveReplaceDepEntries({ "@simplysm/*": "../simplysm/packages/*" }, ["@other/lib"]);
+    const result = resolveReplaceDepEntries({ "@simplysm/*": "../simplysm/packages/*" }, [
+      "@other/lib",
+    ]);
     expect(result).toEqual([]);
   });
 
@@ -214,13 +219,23 @@ describe("setupReplaceDeps", () => {
     await fs.promises.writeFile(path.join(pkgPnpmStore, "index.js"), "old");
 
     // node_modules/@simplysm/solid → .pnpm 스토어로 symlink
-    const pkgNodeModulesSymlink = path.join(appRoot, "packages", "client", "node_modules", "@simplysm", "solid");
+    const pkgNodeModulesSymlink = path.join(
+      appRoot,
+      "packages",
+      "client",
+      "node_modules",
+      "@simplysm",
+      "solid",
+    );
     await fs.promises.mkdir(path.dirname(pkgNodeModulesSymlink), { recursive: true });
     const relativeToStore = path.relative(path.dirname(pkgNodeModulesSymlink), pkgPnpmStore);
     await fs.promises.symlink(relativeToStore, pkgNodeModulesSymlink, "dir");
 
     // pnpm-workspace.yaml 생성
-    await fs.promises.writeFile(path.join(appRoot, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+    await fs.promises.writeFile(
+      path.join(appRoot, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/*\n",
+    );
 
     await setupReplaceDeps(appRoot, {
       "@simplysm/*": "../simplysm/packages/*",
@@ -277,7 +292,9 @@ describe("watchReplaceDeps", () => {
     const sourceDir = path.join(tmpDir, "simplysm", "packages", "solid");
     const targetPath = path.join(appRoot, "node_modules", "@simplysm", "solid");
 
-    const { dispose } = await watchReplaceDeps(appRoot, { "@simplysm/*": "../simplysm/packages/*" });
+    const { dispose } = await watchReplaceDeps(appRoot, {
+      "@simplysm/*": "../simplysm/packages/*",
+    });
 
     // 소스 파일 변경
     await fs.promises.writeFile(path.join(sourceDir, "index.js"), "export default 2;");

@@ -14,5 +14,7 @@ import type { PrimitiveTypeMap, PrimitiveTypeStr } from "../common.types";
  * getPrimitiveTypeStr(new DateTime()) // "DateTime"
  * getPrimitiveTypeStr(new Uint8Array()) // "Bytes"
  */
-export declare function getPrimitiveTypeStr(value: PrimitiveTypeMap[PrimitiveTypeStr]): PrimitiveTypeStr;
+export declare function getPrimitiveTypeStr(
+  value: PrimitiveTypeMap[PrimitiveTypeStr],
+): PrimitiveTypeStr;
 //# sourceMappingURL=primitive.d.ts.map

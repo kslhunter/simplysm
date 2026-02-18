@@ -1,7 +1,7 @@
 import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { onMount } from "solid-js";
-import { LoadingProvider } from "../../src/components/feedback/loading/LoadingProvider";
+import { BusyProvider } from "../../src/components/feedback/busy/BusyProvider";
 import { usePrint } from "../../src/hooks/usePrint";
 import { Print } from "../../src/components/feedback/print/Print";
 import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
@@ -15,12 +15,12 @@ describe("usePrint", () => {
       let result: ReturnType<typeof usePrint> | undefined;
 
       render(() => (
-        <LoadingProvider>
+        <BusyProvider>
           {(() => {
             result = usePrint();
             return <div />;
           })()}
-        </LoadingProvider>
+        </BusyProvider>
       ));
 
       expect(result).toBeDefined();
@@ -34,13 +34,13 @@ describe("usePrint", () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;
 
       render(() => (
-        <LoadingProvider>
+        <BusyProvider>
           {(() => {
             const { toPrinter } = usePrint();
             printFn = toPrinter;
             return <div />;
           })()}
-        </LoadingProvider>
+        </BusyProvider>
       ));
 
       await printFn!(() => <div>테스트 내용</div>);
@@ -51,13 +51,13 @@ describe("usePrint", () => {
       let printFn: ReturnType<typeof usePrint>["toPrinter"] | undefined;
 
       render(() => (
-        <LoadingProvider>
+        <BusyProvider>
           {(() => {
             const { toPrinter } = usePrint();
             printFn = toPrinter;
             return <div />;
           })()}
-        </LoadingProvider>
+        </BusyProvider>
       ));
 
       function AsyncContent() {
@@ -78,13 +78,13 @@ describe("usePrint", () => {
       let pdfFn: ReturnType<typeof usePrint>["toPdf"] | undefined;
 
       render(() => (
-        <LoadingProvider>
+        <BusyProvider>
           {(() => {
             const { toPdf } = usePrint();
             pdfFn = toPdf;
             return <div />;
           })()}
-        </LoadingProvider>
+        </BusyProvider>
       ));
 
       const result = await pdfFn!(() => <div>PDF 내용</div>);
@@ -96,13 +96,13 @@ describe("usePrint", () => {
       let pdfFn: ReturnType<typeof usePrint>["toPdf"] | undefined;
 
       render(() => (
-        <LoadingProvider>
+        <BusyProvider>
           {(() => {
             const { toPdf } = usePrint();
             pdfFn = toPdf;
             return <div />;
           })()}
-        </LoadingProvider>
+        </BusyProvider>
       ));
 
       const result = await pdfFn!(() => (

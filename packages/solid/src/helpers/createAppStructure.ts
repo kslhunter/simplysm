@@ -26,7 +26,9 @@ export interface AppStructureLeafItem<TModule> {
   isNotMenu?: boolean;
 }
 
-export type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;
+export type AppStructureItem<TModule> =
+  | AppStructureGroupItem<TModule>
+  | AppStructureLeafItem<TModule>;
 
 export interface AppStructureSubPerm<TModule> {
   code: string;
@@ -59,7 +61,9 @@ export interface AppStructure<TModule> {
 
 // ── 내부 헬퍼 ──
 
-function isGroupItem<TModule>(item: AppStructureItem<TModule>): item is AppStructureGroupItem<TModule> {
+function isGroupItem<TModule>(
+  item: AppStructureItem<TModule>,
+): item is AppStructureGroupItem<TModule> {
   return "children" in item;
 }
 
@@ -81,7 +85,11 @@ function checkModules<TModule>(
   return true;
 }
 
-function collectRoutes<TModule>(items: AppStructureItem<TModule>[], parentCodes: string[], routes: AppRoute[]): void {
+function collectRoutes<TModule>(
+  items: AppStructureItem<TModule>[],
+  parentCodes: string[],
+  routes: AppRoute[],
+): void {
   for (const item of items) {
     const codes = [...parentCodes, item.code];
 
@@ -184,7 +192,9 @@ export function createAppStructure<TModule>(opts: {
       const menus: SidebarMenuItem[] = [];
       for (const top of opts.items) {
         if (isGroupItem(top)) {
-          menus.push(...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()));
+          menus.push(
+            ...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()),
+          );
         }
       }
       return menus;

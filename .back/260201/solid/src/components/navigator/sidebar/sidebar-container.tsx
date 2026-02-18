@@ -23,7 +23,14 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
 }
 
 export const SidebarContainer: ParentComponent<SidebarContainerProps> = (props) => {
-  const [local, rest] = splitProps(props, ["toggled", "onToggledChange", "width", "class", "style", "children"]);
+  const [local, rest] = splitProps(props, [
+    "toggled",
+    "onToggledChange",
+    "width",
+    "class",
+    "style",
+    "children",
+  ]);
 
   // Controlled/Uncontrolled 혼합 패턴
   // toggled=false가 기본 상태 (데스크톱: 표시, 모바일: 숨김)

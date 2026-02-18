@@ -26,7 +26,8 @@ export class SdWebSocketHandlerV1 {
       if (prevServiceSocket) {
         prevServiceSocket.close();
 
-        const connectionDateTimeText = prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
+        const connectionDateTimeText =
+          prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
         this._logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
       }
 
@@ -88,7 +89,9 @@ export class SdWebSocketHandlerV1 {
   }
 
   private _getListenerInfos(eventName: string): { key: string; info: any }[] {
-    return Array.from(this._socketMap.values()).mapMany((serviceSocket) => serviceSocket.getEventListners(eventName));
+    return Array.from(this._socketMap.values()).mapMany((serviceSocket) =>
+      serviceSocket.getEventListners(eventName),
+    );
   }
 
   private _emitToTargets(targetKeys: string[], data: any) {
@@ -182,7 +185,9 @@ export class SdWebSocketHandlerV1 {
       }
     } catch (err) {
       const error =
-        err instanceof Error ? err : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+        err instanceof Error
+          ? err
+          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
       return {
         name: "response",

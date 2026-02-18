@@ -30,7 +30,10 @@
         var(--trans-lighter); // color-mix(in srgb, var(--background-rev-color) 5%, transparent);
   } @else {
     box-shadow:
-      0 calc(#{$value} * var(--elevation-size)) calc(#{$value} * 4 * var(--elevation-size)) var(--trans-lighter),
+      0
+        calc(#{$value} * var(--elevation-size))
+        calc(#{$value} * 4 * var(--elevation-size))
+        var(--trans-lighter),
       // color-mix(in srgb, var(--background-rev-color) 5%, transparent);
       0
         var(--elevation-size)

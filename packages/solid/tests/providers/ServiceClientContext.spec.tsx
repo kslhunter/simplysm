@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { createRoot } from "solid-js";
 import { render } from "@solidjs/testing-library";
-import { useServiceClient, type ServiceClientContextValue } from "../../src/providers/ServiceClientContext";
+import {
+  useServiceClient,
+  type ServiceClientContextValue,
+} from "../../src/providers/ServiceClientContext";
 import { ServiceClientProvider } from "../../src/providers/ServiceClientProvider";
 import { NotificationProvider } from "../../src/components/feedback/notification/NotificationProvider";
 import { ConfigContext } from "../../src/providers/ConfigContext";
@@ -59,7 +62,9 @@ describe("ServiceClientProvider", () => {
       </ConfigContext.Provider>
     ));
 
-    expect(() => serviceClient!.get("unknown")).toThrow("연결하지 않은 클라이언트 키입니다. unknown");
+    expect(() => serviceClient!.get("unknown")).toThrow(
+      "연결하지 않은 클라이언트 키입니다. unknown",
+    );
   });
 
   it("연결하지 않은 키로 isConnected 호출 시 false를 반환한다", () => {

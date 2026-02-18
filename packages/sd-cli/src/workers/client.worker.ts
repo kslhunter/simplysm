@@ -115,7 +115,11 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const tsconfigPath = path.join(info.cwd, "tsconfig.json");
 
     // browser 타겟용 compilerOptions 생성
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "browser", info.pkgDir);
+    const compilerOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      "browser",
+      info.pkgDir,
+    );
 
     // Vite 설정 생성 및 빌드
     const viteConfig = createViteConfig({
@@ -162,7 +166,11 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     const tsconfigPath = path.join(info.cwd, "tsconfig.json");
 
     // browser 타겟용 compilerOptions 생성
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, "browser", info.pkgDir);
+    const compilerOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      "browser",
+      info.pkgDir,
+    );
 
     // server가 0이면 자동 포트 할당 (서버 연결 클라이언트)
     // server가 숫자면 해당 포트로 고정 (standalone 클라이언트)
@@ -192,7 +200,8 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
 
     // 실제 할당된 포트 반환 (config.server.port는 설정값이므로 httpServer에서 실제 포트를 가져옴)
     const address = viteServer.httpServer?.address();
-    const actualPort = typeof address === "object" && address != null ? address.port : viteServer.config.server.port;
+    const actualPort =
+      typeof address === "object" && address != null ? address.port : viteServer.config.server.port;
 
     sender.send("serverReady", { port: actualPort });
   } catch (err) {

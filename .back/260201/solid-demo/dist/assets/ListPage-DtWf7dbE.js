@@ -1,4 +1,14 @@
-import { g as P, c as e, a as V, b as u, i as n, F as W, s as o, d as S, t as a } from "./index-DaQvuWeP.js";
+import {
+  g as P,
+  c as e,
+  a as V,
+  b as u,
+  i as n,
+  F as W,
+  s as o,
+  d as S,
+  t as a,
+} from "./index-DaQvuWeP.js";
 import { B as x } from "./IconMenu2-BvvTiCnB.js";
 import { T as ie, a as le } from "./topbar-DloMbu3D.js";
 import { L as l, a as t } from "./list-item-TR_b4pbw.js";
@@ -69,7 +79,11 @@ function be() {
               _,
               e(l, {
                 get children() {
-                  return [e(t, { children: "항목 1" }), e(t, { children: "항목 2" }), e(t, { children: "항목 3" })];
+                  return [
+                    e(t, { children: "항목 1" }),
+                    e(t, { children: "항목 2" }),
+                    e(t, { children: "항목 3" }),
+                  ];
                 },
               }),
             ),
@@ -148,7 +162,10 @@ function be() {
                           "폴더 1",
                           e(l, {
                             get children() {
-                              return [e(t, { children: "파일 1-1" }), e(t, { children: "파일 1-2" })];
+                              return [
+                                e(t, { children: "파일 1-1" }),
+                                e(t, { children: "파일 1-2" }),
+                              ];
                             },
                           }),
                         ];
@@ -197,7 +214,10 @@ function be() {
                           "카테고리 A",
                           e(l, {
                             get children() {
-                              return [e(t, { children: "항목 A-1" }), e(t, { children: "항목 A-2" })];
+                              return [
+                                e(t, { children: "항목 A-1" }),
+                                e(t, { children: "항목 A-2" }),
+                              ];
                             },
                           }),
                         ];
@@ -302,7 +322,10 @@ function be() {
                             i,
                             e(l, {
                               get children() {
-                                return [e(t, { children: "하위 항목 1" }), e(t, { children: "하위 항목 2" })];
+                                return [
+                                  e(t, { children: "하위 항목 1" }),
+                                  e(t, { children: "하위 항목 2" }),
+                                ];
                               },
                             }),
                           ];
@@ -334,7 +357,16 @@ function be() {
                   i
                 );
               },
-              { e: void 0, t: void 0, a: void 0, o: void 0, i: void 0, n: void 0, s: void 0, h: void 0 },
+              {
+                e: void 0,
+                t: void 0,
+                a: void 0,
+                o: void 0,
+                i: void 0,
+                n: void 0,
+                s: void 0,
+                h: void 0,
+              },
             ),
             r
           );

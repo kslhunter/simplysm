@@ -72,8 +72,12 @@ describe("ZipArchive", () => {
       const files = await result.extractAll();
 
       expect(files.size).toBe(2);
-      expect(files.get("file1.txt") != null ? decoder.decode(files.get("file1.txt")) : undefined).toBe("content 1");
-      expect(files.get("file2.txt") != null ? decoder.decode(files.get("file2.txt")) : undefined).toBe("content 2");
+      expect(
+        files.get("file1.txt") != null ? decoder.decode(files.get("file1.txt")) : undefined,
+      ).toBe("content 1");
+      expect(
+        files.get("file2.txt") != null ? decoder.decode(files.get("file2.txt")) : undefined,
+      ).toBe("content 2");
     });
 
     it("진행률 콜백을 호출한다", async () => {

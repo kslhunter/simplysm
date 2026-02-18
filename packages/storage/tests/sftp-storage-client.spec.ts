@@ -80,7 +80,9 @@ describe("SftpStorageClient", () => {
     });
 
     it("연결 전 rename 호출 시 에러", async () => {
-      await expect(client.rename("/from", "/to")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
+      await expect(client.rename("/from", "/to")).rejects.toThrow(
+        "SFTP 서버에 연결되어있지 않습니다.",
+      );
     });
 
     it("연결 전 readdir 호출 시 에러", async () => {

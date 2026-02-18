@@ -82,7 +82,8 @@ const SidebarBase: ParentComponent<SidebarProps> = (props) => {
     return isOpen() ? "translateX(0)" : "translateX(-100%)";
   };
 
-  const getClassName = () => twMerge(baseClass, !isDesktop() && isOpen() && mobileOpenClass, local.class);
+  const getClassName = () =>
+    twMerge(baseClass, !isDesktop() && isOpen() && mobileOpenClass, local.class);
 
   return (
     <aside

@@ -42,8 +42,10 @@ export class DateTimeFormatUtils {
   ): string {
     const { year, month, day, hour, minute, second, millisecond, timezoneOffsetMinutes } = args;
 
-    const offsetHour = timezoneOffsetMinutes !== undefined ? Math.floor(timezoneOffsetMinutes / 60) : undefined;
-    const offsetMinute = timezoneOffsetMinutes !== undefined ? timezoneOffsetMinutes % 60 : undefined;
+    const offsetHour =
+      timezoneOffsetMinutes !== undefined ? Math.floor(timezoneOffsetMinutes / 60) : undefined;
+    const offsetMinute =
+      timezoneOffsetMinutes !== undefined ? timezoneOffsetMinutes % 60 : undefined;
 
     const week =
       year !== undefined && month !== undefined && day !== undefined
@@ -68,7 +70,10 @@ export class DateTimeFormatUtils {
 
     // 요일
     if (week !== undefined) {
-      result = result.replace(DateTimeFormatUtils._patterns.ddd, DateTimeFormatUtils._weekStrings[week]);
+      result = result.replace(
+        DateTimeFormatUtils._patterns.ddd,
+        DateTimeFormatUtils._weekStrings[week],
+      );
     }
 
     // 일
@@ -124,7 +129,10 @@ export class DateTimeFormatUtils {
         DateTimeFormatUtils._patterns.zzz,
         `${sign}${absHour.toString().padStart(2, "0")}:${absMinute.toString().padStart(2, "0")}`,
       );
-      result = result.replace(DateTimeFormatUtils._patterns.zz, `${sign}${absHour.toString().padStart(2, "0")}`);
+      result = result.replace(
+        DateTimeFormatUtils._patterns.zz,
+        `${sign}${absHour.toString().padStart(2, "0")}`,
+      );
       result = result.replace(DateTimeFormatUtils._patterns.z, `${sign}${absHour}`);
     }
 

@@ -1,7 +1,15 @@
 import { $effect } from "../bindings/$effect";
 
 export function setupBgTheme(options?: {
-  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray";
+  theme?:
+    | "primary"
+    | "secondary"
+    | "info"
+    | "success"
+    | "warning"
+    | "danger"
+    | "gray"
+    | "blue-gray";
   lightness?: "lightest" | "lighter";
 }): void {
   $effect([], (onCleanup) => {

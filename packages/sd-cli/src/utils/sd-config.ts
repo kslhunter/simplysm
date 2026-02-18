@@ -9,7 +9,11 @@ import type { SdConfig } from "../sd-config.types";
  * @returns SdConfig 객체
  * @throws sd.config.ts가 없거나 형식이 잘못된 경우
  */
-export async function loadSdConfig(params: { cwd: string; dev: boolean; opt: string[] }): Promise<SdConfig> {
+export async function loadSdConfig(params: {
+  cwd: string;
+  dev: boolean;
+  opt: string[];
+}): Promise<SdConfig> {
   const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
 
   if (!(await fsExists(sdConfigPath))) {

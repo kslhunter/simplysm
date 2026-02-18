@@ -134,7 +134,10 @@ export class FsWatcher {
    * @param opt.delay - 이벤트 병합 대기 시간 (ms)
    * @param cb - 변경 이벤트 콜백
    */
-  onChange(opt: { delay?: number }, cb: (changeInfos: FsWatcherChangeInfo[]) => void | Promise<void>): this {
+  onChange(
+    opt: { delay?: number },
+    cb: (changeInfos: FsWatcherChangeInfo[]) => void | Promise<void>,
+  ): this {
     const fnQ = new DebounceQueue(opt.delay);
     this._debounceQueues.push(fnQ);
 
@@ -173,7 +176,10 @@ export class FsWatcher {
       if (prevEvent === "add" && event === "change") {
         // add 후 change → add 유지
         changeInfoMap.set(filePath, "add");
-      } else if ((prevEvent === "add" && event === "unlink") || (prevEvent === "addDir" && event === "unlinkDir")) {
+      } else if (
+        (prevEvent === "add" && event === "unlink") ||
+        (prevEvent === "addDir" && event === "unlinkDir")
+      ) {
         // add 후 unlink → 변경 없음 (삭제)
         changeInfoMap.delete(filePath);
       } else if (prevEvent === "unlink" && (event === "add" || event === "change")) {

@@ -39,7 +39,9 @@ export function createServiceContext<TAuthInfo = unknown>(
     legacy,
 
     get authInfo(): TAuthInfo | undefined {
-      return (socket?.authTokenPayload?.data ?? http?.authTokenPayload?.data) as TAuthInfo | undefined;
+      return (socket?.authTokenPayload?.data ?? http?.authTokenPayload?.data) as
+        | TAuthInfo
+        | undefined;
     },
 
     get clientName(): string | undefined {
@@ -101,7 +103,10 @@ export function getServiceAuthPermissions(fn: Function): string[] | undefined {
  * - Method-level with roles: `auth(["admin"], () => result)`
  */
 export function auth<TFunction extends (...args: any[]) => any>(fn: TFunction): TFunction;
-export function auth<TFunction extends (...args: any[]) => any>(permissions: string[], fn: TFunction): TFunction;
+export function auth<TFunction extends (...args: any[]) => any>(
+  permissions: string[],
+  fn: TFunction,
+): TFunction;
 export function auth(permissionsOrFn: string[] | Function, maybeFn?: Function): Function {
   const permissions = Array.isArray(permissionsOrFn) ? permissionsOrFn : [];
   const fn = Array.isArray(permissionsOrFn) ? maybeFn! : permissionsOrFn;
@@ -156,4 +161,5 @@ export function defineService<TMethods extends Record<string, (...args: any[]) =
  * export type UserServiceType = ServiceMethods<typeof UserService>;
  * // Client: client.getService<UserServiceType>("User");
  */
-export type ServiceMethods<TDefinition> = TDefinition extends ServiceDefinition<infer M> ? M : never;
+export type ServiceMethods<TDefinition> =
+  TDefinition extends ServiceDefinition<infer M> ? M : never;

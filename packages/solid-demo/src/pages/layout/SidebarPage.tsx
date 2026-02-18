@@ -1,4 +1,11 @@
-import { Button, Icon, Sidebar, Topbar, useSidebarContext, type SidebarMenuItem } from "@simplysm/solid";
+import {
+  Button,
+  Icon,
+  Sidebar,
+  Topbar,
+  useSidebarContext,
+  type SidebarMenuItem,
+} from "@simplysm/solid";
 import { IconFolder, IconHome, IconMenu2, IconSettings } from "@tabler/icons-solidjs";
 
 const sampleMenuItems: SidebarMenuItem[] = [
@@ -35,7 +42,8 @@ export default function SidebarPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 Sidebar</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              Sidebar + SidebarMenu + SidebarUser 조합. 토글 버튼을 클릭하여 사이드바를 열고 닫을 수 있습니다.
+              Sidebar + SidebarMenu + SidebarUser 조합. 토글 버튼을 클릭하여 사이드바를 열고 닫을 수
+              있습니다.
             </p>
             <div class="h-96 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Sidebar.Container>
@@ -130,7 +138,9 @@ export default function SidebarPage() {
                     <main class="h-full overflow-auto p-4">
                       <SidebarToggleButton />
                       <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                        <p class="text-sm text-base-600 dark:text-base-400">메뉴 없이 사용자 정보만 표시</p>
+                        <p class="text-sm text-base-600 dark:text-base-400">
+                          메뉴 없이 사용자 정보만 표시
+                        </p>
                       </div>
                     </main>
                   </Sidebar.Container>
@@ -157,7 +167,9 @@ export default function SidebarPage() {
                     <main class="h-full overflow-auto p-4">
                       <SidebarToggleButton />
                       <div class="mt-4 rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                        <p class="text-sm text-base-600 dark:text-base-400">클릭하면 드롭다운 메뉴 표시</p>
+                        <p class="text-sm text-base-600 dark:text-base-400">
+                          클릭하면 드롭다운 메뉴 표시
+                        </p>
                       </div>
                     </main>
                   </Sidebar.Container>
@@ -169,7 +181,9 @@ export default function SidebarPage() {
           {/* 4. 모바일 데모 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">모바일 데모</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              375px x 500px iframe으로 모바일 환경 시뮬레이션
+            </p>
             <div class="h-[500px] w-[375px] overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <iframe
                 src="#/mobile-layout-demo"

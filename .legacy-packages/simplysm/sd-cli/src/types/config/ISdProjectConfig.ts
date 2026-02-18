@@ -9,13 +9,14 @@ export interface ISdProjectConfig {
 
 export type TSdProjectConfigFn = (dev: boolean, opts?: string[]) => ISdProjectConfig;
 
-export type TSdPackageConfig<T extends "server" | "library" | "client" | unknown = unknown> = T extends "library"
-  ? ISdLibPackageConfig
-  : T extends "server"
-    ? ISdServerPackageConfig
-    : T extends "client"
-      ? ISdClientPackageConfig
-      : ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig;
+export type TSdPackageConfig<T extends "server" | "library" | "client" | unknown = unknown> =
+  T extends "library"
+    ? ISdLibPackageConfig
+    : T extends "server"
+      ? ISdServerPackageConfig
+      : T extends "client"
+        ? ISdClientPackageConfig
+        : ISdLibPackageConfig | ISdServerPackageConfig | ISdClientPackageConfig;
 
 export interface ISdLibPackageConfig {
   type: "library";

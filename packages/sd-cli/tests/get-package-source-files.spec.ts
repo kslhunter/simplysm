@@ -54,13 +54,19 @@ describe("getPackageSourceFiles", () => {
 
     const result = getPackageSourceFiles(pkgDir, parsedConfig);
 
-    expect(result).toEqual([`/project/packages/cli/src/index.ts`, `/project/packages/cli/src/commands/lint.ts`]);
+    expect(result).toEqual([
+      `/project/packages/cli/src/index.ts`,
+      `/project/packages/cli/src/commands/lint.ts`,
+    ]);
   });
 
   it("파일이 없으면 빈 배열 반환", () => {
     const pkgDir = `/project/packages/empty`;
     const parsedConfig = {
-      fileNames: [`/project/packages/core/src/index.ts`, `/project/packages/core-common/src/index.ts`],
+      fileNames: [
+        `/project/packages/core/src/index.ts`,
+        `/project/packages/core-common/src/index.ts`,
+      ],
     } as ts.ParsedCommandLine;
 
     const result = getPackageSourceFiles(pkgDir, parsedConfig);

@@ -56,7 +56,11 @@ export interface QueryBuildResult {
  * - `REPEATABLE_READ`: 트랜잭션 내 동일 쿼리 동일 결과 보장
  * - `SERIALIZABLE`: 완전 직렬화 (가장 엄격)
  */
-export type IsolationLevel = "READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE";
+export type IsolationLevel =
+  | "READ_UNCOMMITTED"
+  | "READ_COMMITTED"
+  | "REPEATABLE_READ"
+  | "SERIALIZABLE";
 
 // ============================================
 // DataRecord - 결과 데이터 타입 (재귀적, 중첩 허용)
@@ -144,7 +148,10 @@ export interface DbContextExecutor {
    * @param resultMetas - 결과 변환을 위한 메타데이터 (선택)
    * @returns 각 QueryDef별 결과 배열의 배열
    */
-  executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]>;
+  executeDefs<T = DataRecord>(
+    defs: QueryDef[],
+    resultMetas?: (ResultMeta | undefined)[],
+  ): Promise<T[][]>;
 }
 
 /**

@@ -266,7 +266,8 @@ describe("use:invalid directive", () => {
     it("Textarea 값 입력 후 에러 상태가 해제된다", () => {
       function TestComponent() {
         const [content, setContent] = createSignal<string | undefined>(undefined);
-        const errorMessage = () => (content() == null || content() === "" ? "내용을 입력하세요" : "");
+        const errorMessage = () =>
+          content() == null || content() === "" ? "내용을 입력하세요" : "";
         return (
           <div data-testid="container" use:invalid={errorMessage()}>
             <Textarea value={content()} onChange={setContent} placeholder="내용" />
@@ -473,12 +474,16 @@ describe("use:invalid directive", () => {
       // 첫 번째 필드의 hidden input에 에러 메시지 설정 확인
       // invalid directive가 생성한 hidden input (type="text", 시각적으로 숨김)
       const hiddenInputs1 = field1.querySelectorAll("input");
-      const validationInput1 = Array.from(hiddenInputs1).find((input) => input.validationMessage !== "");
+      const validationInput1 = Array.from(hiddenInputs1).find(
+        (input) => input.validationMessage !== "",
+      );
       expect(validationInput1?.validationMessage).toBe("첫 번째 에러");
 
       // 두 번째 필드도 에러 메시지 설정 확인
       const hiddenInputs2 = field2.querySelectorAll("input");
-      const validationInput2 = Array.from(hiddenInputs2).find((input) => input.validationMessage !== "");
+      const validationInput2 = Array.from(hiddenInputs2).find(
+        (input) => input.validationMessage !== "",
+      );
       expect(validationInput2?.validationMessage).toBe("두 번째 에러");
     });
   });

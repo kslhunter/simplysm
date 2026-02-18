@@ -67,12 +67,19 @@ export class DateOnly {
 
     const match1 = /^[0-9]{8}$/.exec(str);
     if (match1 != null) {
-      return new DateOnly(Number(str.substring(0, 4)), Number(str.substring(4, 6)), Number(str.substring(6, 8)));
+      return new DateOnly(
+        Number(str.substring(0, 4)),
+        Number(str.substring(4, 6)),
+        Number(str.substring(6, 8)),
+      );
     }
 
-    throw new ArgumentError(`날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`, {
-      input: str,
-    });
+    throw new ArgumentError(
+      `날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`,
+      {
+        input: str,
+      },
+    );
   }
 
   /**
@@ -142,10 +149,16 @@ export class DateOnly {
    *    - `year`: 해당 날짜가 속하는 연도
    *    - `weekSeq`: 연도 기준 주차 순서 (1부터 시작)
    */
-  getWeekSeqOfYear(weekStartDay: number = 1, minDaysInFirstWeek: number = 4): { year: number; weekSeq: number } {
+  getWeekSeqOfYear(
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
+  ): { year: number; weekSeq: number } {
     const base = this.getBaseYearMonthSeqForWeekSeq(weekStartDay, minDaysInFirstWeek);
 
-    const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(weekStartDay, minDaysInFirstWeek);
+    const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(
+      weekStartDay,
+      minDaysInFirstWeek,
+    );
 
     const diffDays = (this.tick - firstWeekStart.tick) / (24 * 60 * 60 * 1000);
     return {

@@ -279,7 +279,9 @@ async function upgradeVersion(
 
   // prerelease 여부에 따라 증가 방식 결정
   const newVersion =
-    prereleaseInfo !== null ? semver.inc(currentVersion, "prerelease")! : semver.inc(currentVersion, "patch")!;
+    prereleaseInfo !== null
+      ? semver.inc(currentVersion, "prerelease")!
+      : semver.inc(currentVersion, "patch")!;
 
   if (dryRun) {
     // dry-run: 파일 수정 없이 새 버전만 반환
@@ -368,7 +370,9 @@ async function publishPackage(
     const remotePath = publishConfig.path ?? "/";
 
     if (dryRun) {
-      logger.info(`[DRY-RUN] [${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`);
+      logger.info(
+        `[DRY-RUN] [${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`,
+      );
     } else {
       logger.debug(`[${pkgName}] ${publishConfig.type} 업로드: ${distPath} → ${remotePath}`);
       await StorageFactory.connect(
@@ -499,7 +503,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     workspaceGlobs.push(...parseWorkspaceGlobs(yamlContent));
   }
 
-  const allPkgPaths = (await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item)))))
+  const allPkgPaths = (
+    await Promise.all(workspaceGlobs.map((item) => fsGlob(path.resolve(cwd, item))))
+  )
     .flat()
     .filter((item) => !path.basename(item).includes("."));
 
@@ -587,7 +593,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude 자동 커밋 시도...");
         try {
-          await spawn("claude", ["-p", "/sd-commit all", "--dangerously-skip-permissions", "--model", "haiku"]);
+          await spawn("claude", [
+            "-p",
+            "/sd-commit all",
+            "--dangerously-skip-permissions",
+            "--model",
+            "haiku",
+          ]);
         } catch (e) {
           throw new Error(
             "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도하세요.\n" +
@@ -599,7 +611,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         const recheckDiff = await spawn("git", ["diff", "--name-only"]);
         const recheckStaged = await spawn("git", ["diff", "--cached", "--name-only"]);
         if (recheckDiff.trim() !== "" || recheckStaged.trim() !== "") {
-          throw new Error("자동 커밋 후에도 미커밋 변경사항이 남아있습니다.\n" + recheckDiff + recheckStaged);
+          throw new Error(
+            "자동 커밋 후에도 미커밋 변경사항이 남아있습니다.\n" + recheckDiff + recheckStaged,
+          );
         }
         logger.info("자동 커밋 완료.");
       }
@@ -801,7 +815,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         }
       } catch (err) {
         // postPublish 실패 시 경고만 출력 (배포 롤백 불가)
-        logger.warn(`postPublish 스크립트 실패 (계속 진행): ${err instanceof Error ? err.message : err}`);
+        logger.warn(
+          `postPublish 스크립트 실패 (계속 진행): ${err instanceof Error ? err.message : err}`,
+        );
       }
     }
   }

@@ -5,7 +5,10 @@ declare interface HTMLElement {
 
   getRelativeOffset(parentSelector: string): { top: number; left: number };
 
-  scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void;
+  scrollIntoViewIfNeeded(
+    target: { top: number; left: number },
+    offset?: { top: number; left: number },
+  ): void;
 }
 
 HTMLElement.prototype.repaint = function (this: HTMLElement): void {

@@ -132,7 +132,9 @@ export function bytesFromBase64(base64: string): Bytes {
 
   // 유효성 검사: 문자
   if (!/^[A-Za-z0-9+/]+$/.test(cleanBase64)) {
-    throw new ArgumentError("유효하지 않은 base64 문자가 포함되어 있습니다", { base64: base64.substring(0, 20) });
+    throw new ArgumentError("유효하지 않은 base64 문자가 포함되어 있습니다", {
+      base64: base64.substring(0, 20),
+    });
   }
 
   // 유효성 검사: 길이 (패딩 제거 후 나머지가 1이면 유효하지 않음)

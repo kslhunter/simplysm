@@ -25,7 +25,11 @@ const SidebarUser = (props) => {
       /* @__PURE__ */ React.createElement(
         "div",
         null,
-        /* @__PURE__ */ React.createElement("div", { class: atoms({ fontWeight: "bold" }) }, local.name),
+        /* @__PURE__ */ React.createElement(
+          "div",
+          { class: atoms({ fontWeight: "bold" }) },
+          local.name,
+        ),
         /* @__PURE__ */ React.createElement(
           Show,
           { when: local.description },
@@ -44,7 +48,11 @@ const SidebarUser = (props) => {
         List,
         { inset: true },
         /* @__PURE__ */ React.createElement(For, { each: local.menus }, (menuItem) =>
-          /* @__PURE__ */ React.createElement(ListItem, { onClick: menuItem.onClick }, menuItem.title),
+          /* @__PURE__ */ React.createElement(
+            ListItem,
+            { onClick: menuItem.onClick },
+            menuItem.title,
+          ),
         ),
       ),
     ),

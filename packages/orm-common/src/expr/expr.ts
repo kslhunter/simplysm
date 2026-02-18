@@ -88,7 +88,9 @@ export const expr = {
   val<TStr extends ColumnPrimitiveStr, T extends ColumnPrimitiveMap[TStr] | undefined>(
     dataType: TStr,
     value: T,
-  ): ExprUnit<T extends undefined ? ColumnPrimitiveMap[TStr] | undefined : ColumnPrimitiveMap[TStr]> {
+  ): ExprUnit<
+    T extends undefined ? ColumnPrimitiveMap[TStr] | undefined : ColumnPrimitiveMap[TStr]
+  > {
     return new ExprUnit(dataType, { type: "value", value });
   },
 
@@ -287,7 +289,11 @@ export const expr = {
    * // WHERE age >= 18
    * ```
    */
-  between<T extends ColumnPrimitive>(source: ExprUnit<T>, from?: ExprInput<T>, to?: ExprInput<T>): WhereExprUnit {
+  between<T extends ColumnPrimitive>(
+    source: ExprUnit<T>,
+    from?: ExprInput<T>,
+    to?: ExprInput<T>,
+  ): WhereExprUnit {
     return new WhereExprUnit({
       type: "between",
       source: toExpr(source),
@@ -343,7 +349,10 @@ export const expr = {
    * db.user().where((u) => [expr.like(u.email, "%@gmail.com")])
    * ```
    */
-  like(source: ExprUnit<string | undefined>, pattern: ExprInput<string | undefined>): WhereExprUnit {
+  like(
+    source: ExprUnit<string | undefined>,
+    pattern: ExprInput<string | undefined>,
+  ): WhereExprUnit {
     return new WhereExprUnit({
       type: "like",
       source: toExpr(source),
@@ -366,7 +375,10 @@ export const expr = {
    * // MySQL: WHERE email REGEXP '^[a-z]+@'
    * ```
    */
-  regexp(source: ExprUnit<string | undefined>, pattern: ExprInput<string | undefined>): WhereExprUnit {
+  regexp(
+    source: ExprUnit<string | undefined>,
+    pattern: ExprInput<string | undefined>,
+  ): WhereExprUnit {
     return new WhereExprUnit({
       type: "regexp",
       source: toExpr(source),
@@ -1022,7 +1034,9 @@ export const expr = {
    * // SELECT HOUR(createdAt) AS logHour
    * ```
    */
-  hour<T extends DateTime | Time | undefined>(source: ExprUnit<T>): ExprUnit<T extends undefined ? undefined : number> {
+  hour<T extends DateTime | Time | undefined>(
+    source: ExprUnit<T>,
+  ): ExprUnit<T extends undefined ? undefined : number> {
     return new ExprUnit("number", {
       type: "hour",
       arg: toExpr(source),
@@ -1091,7 +1105,9 @@ export const expr = {
    * // SELECT WEEK(orderDate, 3) AS weekNum (MySQL)
    * ```
    */
-  isoWeek<T extends DateOnly | undefined>(source: ExprUnit<T>): ExprUnit<T extends undefined ? undefined : number> {
+  isoWeek<T extends DateOnly | undefined>(
+    source: ExprUnit<T>,
+  ): ExprUnit<T extends undefined ? undefined : number> {
     return new ExprUnit("number", {
       type: "isoWeek",
       arg: toExpr(source),
@@ -1271,7 +1287,10 @@ export const expr = {
    * // SELECT NULLIF(bio, '') AS bio
    * ```
    */
-  nullIf<T extends ColumnPrimitive>(source: ExprUnit<T>, value: ExprInput<T>): ExprUnit<T | undefined> {
+  nullIf<T extends ColumnPrimitive>(
+    source: ExprUnit<T>,
+    value: ExprInput<T>,
+  ): ExprUnit<T | undefined> {
     return new ExprUnit(source.dataType, {
       type: "nullIf",
       source: toExpr(source),
@@ -1341,7 +1360,11 @@ export const expr = {
    * // SELECT IF(age >= 18, 'adult', 'minor') AS type
    * ```
    */
-  if<T extends ColumnPrimitive>(condition: WhereExprUnit, then: ExprInput<T>, else_: ExprInput<T>): ExprUnit<T> {
+  if<T extends ColumnPrimitive>(
+    condition: WhereExprUnit,
+    then: ExprInput<T>,
+    else_: ExprInput<T>,
+  ): ExprUnit<T> {
     const allValues = [then, else_];
     // 1. ExprUnit에서 dataType 찾기
     const exprUnit = allValues.find((v): v is ExprUnit<T> => v instanceof ExprUnit);
@@ -1832,7 +1855,10 @@ export const expr = {
    * }))
    * ```
    */
-  firstValue<T extends ColumnPrimitive>(column: ExprUnit<T>, spec: WinSpecInput): ExprUnit<T | undefined> {
+  firstValue<T extends ColumnPrimitive>(
+    column: ExprUnit<T>,
+    spec: WinSpecInput,
+  ): ExprUnit<T | undefined> {
     return new ExprUnit(column.dataType, {
       type: "window",
       fn: { type: "firstValue", column: toExpr(column) },
@@ -1858,7 +1884,10 @@ export const expr = {
    * }))
    * ```
    */
-  lastValue<T extends ColumnPrimitive>(column: ExprUnit<T>, spec: WinSpecInput): ExprUnit<T | undefined> {
+  lastValue<T extends ColumnPrimitive>(
+    column: ExprUnit<T>,
+    spec: WinSpecInput,
+  ): ExprUnit<T | undefined> {
     return new ExprUnit(column.dataType, {
       type: "window",
       fn: { type: "lastValue", column: toExpr(column) },
@@ -1962,7 +1991,10 @@ export const expr = {
    * }))
    * ```
    */
-  minOver<T extends ColumnPrimitive>(column: ExprUnit<T>, spec: WinSpecInput): ExprUnit<T | undefined> {
+  minOver<T extends ColumnPrimitive>(
+    column: ExprUnit<T>,
+    spec: WinSpecInput,
+  ): ExprUnit<T | undefined> {
     return new ExprUnit(column.dataType, {
       type: "window",
       fn: { type: "min", column: toExpr(column) },
@@ -1987,7 +2019,10 @@ export const expr = {
    * }))
    * ```
    */
-  maxOver<T extends ColumnPrimitive>(column: ExprUnit<T>, spec: WinSpecInput): ExprUnit<T | undefined> {
+  maxOver<T extends ColumnPrimitive>(
+    column: ExprUnit<T>,
+    spec: WinSpecInput,
+  ): ExprUnit<T | undefined> {
     return new ExprUnit(column.dataType, {
       type: "window",
       fn: { type: "max", column: toExpr(column) },
@@ -2022,8 +2057,12 @@ function ifNull<TPrimitive extends ColumnPrimitive>(
     ExprInput<NonNullable<TPrimitive>>,
   ]
 ): ExprUnit<NonNullable<TPrimitive>>;
-function ifNull<TPrimitive extends ColumnPrimitive>(...args: ExprInput<TPrimitive>[]): ExprUnit<TPrimitive>;
-function ifNull<TPrimitive extends ColumnPrimitive>(...args: ExprInput<TPrimitive>[]): ExprUnit<TPrimitive> {
+function ifNull<TPrimitive extends ColumnPrimitive>(
+  ...args: ExprInput<TPrimitive>[]
+): ExprUnit<TPrimitive>;
+function ifNull<TPrimitive extends ColumnPrimitive>(
+  ...args: ExprInput<TPrimitive>[]
+): ExprUnit<TPrimitive> {
   return new ExprUnit(findDataType(args), {
     type: "ifNull",
     args: args.map((a) => toExpr(a)),
@@ -2077,7 +2116,9 @@ export function toExpr(value: ExprInput<ColumnPrimitive>): Expr {
   return { type: "value", value };
 }
 
-function findDataType<TPrimitive extends ColumnPrimitive>(args: ExprInput<TPrimitive>[]): ColumnPrimitiveStr {
+function findDataType<TPrimitive extends ColumnPrimitive>(
+  args: ExprInput<TPrimitive>[],
+): ColumnPrimitiveStr {
   const exprUnit = args.find((a): a is ExprUnit<TPrimitive> => a instanceof ExprUnit);
   if (!exprUnit) {
     throw new Error("args중 적어도 하나는 ExprUnit이어야 합니다.");

@@ -97,7 +97,12 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     await this._socket.close();
   }
 
-  async send(serviceName: string, methodName: string, params: unknown[], progress?: ServiceProgress): Promise<unknown> {
+  async send(
+    serviceName: string,
+    methodName: string,
+    params: unknown[],
+    progress?: ServiceProgress,
+  ): Promise<unknown> {
     return this._transport.send(
       {
         name: `${serviceName}.${methodName}`,
@@ -144,7 +149,9 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
   async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
-      throw new Error("인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.");
+      throw new Error(
+        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.",
+      );
     }
     return this._fileClient.upload(files, this._authToken);
   }

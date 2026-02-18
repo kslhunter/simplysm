@@ -1,6 +1,14 @@
 import type { Bytes } from "@simplysm/core-common";
 import { DateOnly, DateTime, numParseFloat, Time } from "@simplysm/core-common";
-import { type z, ZodBoolean, ZodDefault, ZodNullable, ZodNumber, ZodOptional, ZodString } from "zod";
+import {
+  type z,
+  ZodBoolean,
+  ZodDefault,
+  ZodNullable,
+  ZodNumber,
+  ZodOptional,
+  ZodString,
+} from "zod";
 import { ExcelWorkbook } from "./excel-workbook";
 import type { ExcelValueType } from "./types";
 
@@ -34,7 +42,9 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     });
 
     if (rawData.length === 0) {
-      throw new Error(`[${wsName}] 엑셀파일에서 데이터를 찾을 수 없습니다. (기대 헤더: ${displayNames.join(", ")})`);
+      throw new Error(
+        `[${wsName}] 엑셀파일에서 데이터를 찾을 수 없습니다. (기대 헤더: ${displayNames.join(", ")})`,
+      );
     }
 
     const reverseMap = this._getReverseDisplayNameMap();
@@ -63,7 +73,9 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       // Zod 스키마로 검증
       const parseResult = this._schema.safeParse(record);
       if (!parseResult.success) {
-        const errors = parseResult.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
+        const errors = parseResult.error.issues
+          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+          .join(", ");
         throw new Error(`[${wsName}] 데이터 검증 실패: ${errors}`);
       }
 
@@ -207,7 +219,11 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   }
 
   private _isRequired(schema: z.ZodType): boolean {
-    return !(schema instanceof ZodOptional) && !(schema instanceof ZodNullable) && !(schema instanceof ZodDefault);
+    return (
+      !(schema instanceof ZodOptional) &&
+      !(schema instanceof ZodNullable) &&
+      !(schema instanceof ZodDefault)
+    );
   }
 
   private _isBoolean(schema: z.ZodType): boolean {

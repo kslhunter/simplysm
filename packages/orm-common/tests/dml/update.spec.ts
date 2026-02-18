@@ -199,7 +199,10 @@ describe("FK 스위치", () => {
   describe("FK off", () => {
     const db = createTestDb();
 
-    const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" }, "off");
+    const def = db.getSwitchFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Employee" },
+      "off",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -218,7 +221,10 @@ describe("FK 스위치", () => {
   describe("FK on", () => {
     const db = createTestDb();
 
-    const def = db.getSwitchFkQueryDef({ database: "TestDb", schema: "TestSchema", name: "Employee" }, "on");
+    const def = db.getSwitchFkQueryDef(
+      { database: "TestDb", schema: "TestSchema", name: "Employee" },
+      "on",
+    );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

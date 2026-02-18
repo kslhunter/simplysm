@@ -123,7 +123,9 @@ export class SdModalInstance<T extends ISdModal<any>> {
           if (options?.noFirstControlFocusing) {
             this._modalRef.instance.dialogElRef().nativeElement.focus();
           } else {
-            (compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement).focus();
+            (
+              compEl.findFocusableFirst() ?? this._modalRef.instance.dialogElRef().nativeElement
+            ).focus();
           }
         });
       }, 100);

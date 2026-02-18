@@ -71,7 +71,10 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const from = this.renderFrom(join.from);
     const alias = this.expr.wrap(join.as);
-    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON TRUE";
+    const where =
+      join.where != null && join.where.length > 0
+        ? ` ON ${this.expr.renderWhere(join.where)}`
+        : " ON TRUE";
 
     // LATERAL JOIN 필요 여부 감지
     if (this.needsLateral(join)) {
@@ -236,7 +239,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const alias = this.expr.wrap(def.as);
 
     // SET
-    const setParts = Object.entries(def.record).map(([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`);
+    const setParts = Object.entries(def.record).map(
+      ([col, e]) => `${this.expr.wrap(col)} = ${this.expr.render(e)}`,
+    );
 
     let sql = `UPDATE ${table} AS ${alias} SET ${setParts.join(", ")}`;
 
@@ -253,8 +258,10 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
       if (joinConditions.length > 0) {
-        const whereCondition = def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
-        const allConditions = whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
+        const whereCondition =
+          def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
+        const allConditions =
+          whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
         sql += ` WHERE ${allConditions.join(" AND ")}`;
       } else {
         sql += this.renderWhere(def.where);
@@ -295,8 +302,10 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         .filter((j) => j.where != null && j.where.length > 0)
         .map((j) => this.expr.renderWhere(j.where!));
       if (joinConditions.length > 0) {
-        const whereCondition = def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
-        const allConditions = whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
+        const whereCondition =
+          def.where != null && def.where.length > 0 ? this.expr.renderWhere(def.where) : null;
+        const allConditions =
+          whereCondition != null ? [whereCondition, ...joinConditions] : joinConditions;
         sql += ` WHERE ${allConditions.join(" AND ")}`;
       } else {
         sql += this.renderWhere(def.where);
@@ -340,7 +349,8 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         : "TRUE";
 
     // OUTPUT 컬럼
-    const outputCols = def.output != null ? def.output.columns.map((c) => this.expr.wrap(c)).join(", ") : "*";
+    const outputCols =
+      def.output != null ? def.output.columns.map((c) => this.expr.wrap(c)).join(", ") : "*";
 
     // CTE 방식 UPSERT
     let sql = `WITH matched AS (\n`;
@@ -405,7 +415,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected renameTable(def: RenameTableQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} RENAME TO ${this.expr.wrap(def.newName)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} RENAME TO ${this.expr.wrap(def.newName)}`,
+    };
   }
 
   protected truncate(def: TruncateQueryDef): QueryBuildResult {
@@ -442,7 +454,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropColumn(def: DropColumnQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}`,
+    };
   }
 
   protected modifyColumn(def: ModifyColumnQueryDef): QueryBuildResult {
@@ -453,7 +467,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const parts: string[] = [];
 
     // TYPE 변경
-    parts.push(`ALTER COLUMN ${this.expr.wrap(col.name)} TYPE ${this.expr.renderDataType(col.dataType)}`);
+    parts.push(
+      `ALTER COLUMN ${this.expr.wrap(col.name)} TYPE ${this.expr.renderDataType(col.dataType)}`,
+    );
 
     // NULL 변경
     if (col.nullable === false) {
@@ -464,7 +480,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
     // DEFAULT 변경
     if (col.default !== undefined) {
-      parts.push(`ALTER COLUMN ${this.expr.wrap(col.name)} SET DEFAULT ${this.expr.escapeValue(col.default)}`);
+      parts.push(
+        `ALTER COLUMN ${this.expr.wrap(col.name)} SET DEFAULT ${this.expr.escapeValue(col.default)}`,
+      );
     }
 
     return { sql: `ALTER TABLE ${table} ${parts.join(", ")}` };
@@ -485,7 +503,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const cols = def.columns.map((c) => this.expr.wrap(c)).join(", ");
     const pkName = `PK_${def.table.name}`;
-    return { sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(pkName)} PRIMARY KEY (${cols})` };
+    return {
+      sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(pkName)} PRIMARY KEY (${cols})`,
+    };
   }
 
   protected dropPk(def: DropPkQueryDef): QueryBuildResult {
@@ -511,7 +531,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropFk(def: DropFkQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}`,
+    };
   }
 
   protected addIdx(def: AddIdxQueryDef): QueryBuildResult {

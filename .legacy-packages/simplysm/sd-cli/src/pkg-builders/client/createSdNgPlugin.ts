@@ -124,7 +124,12 @@ export function createSdNgPlugin(
           const newContents = await perf.run("esbuild transform:js:*.js", async () => {
             const contents = await FsUtils.readFileBufferAsync(args.path);
 
-            return await javascriptTransformer.transformData(args.path, contents.toString(), false, sideEffects);
+            return await javascriptTransformer.transformData(
+              args.path,
+              contents.toString(),
+              false,
+              sideEffects,
+            );
           });
 
           outputContentsCacheMap.set(PathUtils.norm(args.path), newContents);

@@ -1,5 +1,11 @@
 /* eslint-disable no-console */
-import { ApplicationRef, EnvironmentInjector, ErrorHandler, inject, Injectable } from "@angular/core";
+import {
+  ApplicationRef,
+  EnvironmentInjector,
+  ErrorHandler,
+  inject,
+  Injectable,
+} from "@angular/core";
 import { SdSystemLogProvider } from "../providers/app/sd-system-log.provider";
 
 @Injectable({ providedIn: null })

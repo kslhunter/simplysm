@@ -3,7 +3,11 @@ import { consola } from "consola";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
-import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
+import {
+  setupReplaceDeps,
+  watchReplaceDeps,
+  type WatchReplaceDepResult,
+} from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import { ResultCollector } from "../infra/ResultCollector";

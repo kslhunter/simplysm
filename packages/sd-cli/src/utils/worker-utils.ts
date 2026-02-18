@@ -10,7 +10,10 @@ import type { ConsolaInstance } from "consola";
  * @param cleanup - Async cleanup function to execute on shutdown
  * @param logger - Consola logger instance for error logging
  */
-export function registerCleanupHandlers(cleanup: () => Promise<void>, logger: ConsolaInstance): void {
+export function registerCleanupHandlers(
+  cleanup: () => Promise<void>,
+  logger: ConsolaInstance,
+): void {
   const handleSignal = () => {
     cleanup()
       .catch((err) => {

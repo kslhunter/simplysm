@@ -216,7 +216,12 @@ export default function SelectPage() {
                       {controlledSelected()?.name ?? "(없음)"}
                     </code>
                   </p>
-                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledSelected(fruits[2])}>
+                  <Button
+                    theme="primary"
+                    variant="solid"
+                    size="sm"
+                    onClick={() => setControlledSelected(fruits[2])}
+                  >
                     포도 선택
                   </Button>
                 </div>
@@ -262,7 +267,11 @@ export default function SelectPage() {
                     >
                       사과+바나나
                     </Button>
-                    <Button variant="solid" size="sm" onClick={() => setControlledMultiSelected([])}>
+                    <Button
+                      variant="solid"
+                      size="sm"
+                      onClick={() => setControlledMultiSelected([])}
+                    >
                       초기화
                     </Button>
                   </div>

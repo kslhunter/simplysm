@@ -26,7 +26,9 @@ export default function CheckboxRadioGroupPage() {
                 </CheckboxGroup>
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
                   선택:{" "}
-                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(selectedFruits())}</code>
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(selectedFruits())}
+                  </code>
                 </p>
               </div>
 
@@ -92,7 +94,8 @@ export default function CheckboxRadioGroupPage() {
                   <RadioGroup.Item value="C">옵션 C</RadioGroup.Item>
                 </RadioGroup>
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedOption()}</code>
+                  선택:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedOption()}</code>
                 </p>
               </div>
 

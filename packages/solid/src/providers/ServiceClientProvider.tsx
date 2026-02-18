@@ -1,5 +1,9 @@
 import { type ParentComponent, onCleanup } from "solid-js";
-import { createServiceClient, type ServiceClient, type ServiceConnectionConfig } from "@simplysm/service-client";
+import {
+  createServiceClient,
+  type ServiceClient,
+  type ServiceConnectionConfig,
+} from "@simplysm/service-client";
 import { ServiceClientContext, type ServiceClientContextValue } from "./ServiceClientContext";
 import { useConfig } from "./ConfigContext";
 import { useNotification } from "../components/feedback/notification/NotificationContext";
@@ -19,7 +23,10 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     clientMap.clear();
   });
 
-  const connect = async (key: string, options?: Partial<ServiceConnectionConfig>): Promise<void> => {
+  const connect = async (
+    key: string,
+    options?: Partial<ServiceConnectionConfig>,
+  ): Promise<void> => {
     if (clientMap.has(key)) {
       const existing = clientMap.get(key)!;
       if (!existing.connected) {
@@ -128,5 +135,9 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     isConnected,
   };
 
-  return <ServiceClientContext.Provider value={contextValue}>{props.children}</ServiceClientContext.Provider>;
+  return (
+    <ServiceClientContext.Provider value={contextValue}>
+      {props.children}
+    </ServiceClientContext.Provider>
+  );
 };

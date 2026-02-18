@@ -7,7 +7,8 @@ export function createSdWorker<T extends ISdWorkerType>(methods: {
     ...args: T["methods"][P]["params"]
   ) => T["methods"][P]["returnType"] | Promise<T["methods"][P]["returnType"]>;
 }) {
-  if (!parentPort) throw new Error("This script must be run as a worker thread (parentPort required).");
+  if (!parentPort)
+    throw new Error("This script must be run as a worker thread (parentPort required).");
 
   process.stdout.write = (chunk) => {
     const serialized = TransferableConvert.encode({ type: "log", body: chunk });

@@ -27,15 +27,29 @@ export default function PaginationPage() {
             <div class="space-y-4">
               <div>
                 <p class="mb-2 text-sm text-base-500">sm (page: {pageSm()})</p>
-                <Pagination pageIndex={pageSm()} onPageIndexChange={setPageSm} totalPageCount={20} size="sm" />
+                <Pagination
+                  pageIndex={pageSm()}
+                  onPageIndexChange={setPageSm}
+                  totalPageCount={20}
+                  size="sm"
+                />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">기본 (page: {pageMd()})</p>
-                <Pagination pageIndex={pageMd()} onPageIndexChange={setPageMd} totalPageCount={20} />
+                <Pagination
+                  pageIndex={pageMd()}
+                  onPageIndexChange={setPageMd}
+                  totalPageCount={20}
+                />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">lg (page: {pageLg()})</p>
-                <Pagination pageIndex={pageLg()} onPageIndexChange={setPageLg} totalPageCount={20} size="lg" />
+                <Pagination
+                  pageIndex={pageLg()}
+                  onPageIndexChange={setPageLg}
+                  totalPageCount={20}
+                  size="lg"
+                />
               </div>
             </div>
           </section>
@@ -53,7 +67,11 @@ export default function PaginationPage() {
 
           <section>
             <h2 class="mb-4 text-xl font-semibold">Disabled (totalPageCount=0)</h2>
-            <Pagination pageIndex={pageDisabled()} onPageIndexChange={setPageDisabled} totalPageCount={0} />
+            <Pagination
+              pageIndex={pageDisabled()}
+              onPageIndexChange={setPageDisabled}
+              totalPageCount={0}
+            />
           </section>
         </div>
       </div>

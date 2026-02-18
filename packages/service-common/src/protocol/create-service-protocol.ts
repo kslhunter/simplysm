@@ -1,6 +1,13 @@
 import type { Bytes } from "@simplysm/core-common";
 import "@simplysm/core-common";
-import { ArgumentError, jsonStringify, jsonParse, LazyGcMap, Uuid, bytesConcat } from "@simplysm/core-common";
+import {
+  ArgumentError,
+  jsonStringify,
+  jsonParse,
+  LazyGcMap,
+  Uuid,
+  bytesConcat,
+} from "@simplysm/core-common";
 import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
 
 /**
@@ -99,7 +106,11 @@ export function createServiceProtocol(): ServiceProtocol {
     headerBytes.set(uuidBytes, 0);
 
     // TotalSize (16-23), Index (24-27)
-    const headerView = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
+    const headerView = new DataView(
+      headerBytes.buffer,
+      headerBytes.byteOffset,
+      headerBytes.byteLength,
+    );
     headerView.setBigUint64(16, BigInt(header.totalSize), false);
     headerView.setUint32(24, header.index, false);
 

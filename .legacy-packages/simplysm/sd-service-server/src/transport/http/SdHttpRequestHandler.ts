@@ -30,7 +30,9 @@ export class SdHttpRequestHandler {
       }
     } catch (err) {
       // 토큰이 있는데 유효하지 않으면 401
-      reply.status(401).send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
+      reply
+        .status(401)
+        .send({ error: "Unauthorized", message: err instanceof Error ? err.message : String(err) });
       return;
     }
 

@@ -44,7 +44,10 @@ export function createDbConn(config: DbConnConfig): Promise<DbConn> {
   return Promise.resolve(new PooledDbConn(pool, config, getLastCreateError));
 }
 
-function getOrCreatePool(config: DbConnConfig): { pool: Pool<DbConn>; getLastCreateError: () => Error | undefined } {
+function getOrCreatePool(config: DbConnConfig): {
+  pool: Pool<DbConn>;
+  getLastCreateError: () => Error | undefined;
+} {
   // 객체를 키로 쓰기 위해 문자열 변환 (중첩 객체도 정렬하여 동일 설정의 일관된 키 보장)
   const configKey = JSON.stringify(config, (_, value: unknown) =>
     value != null && typeof value === "object" && !Array.isArray(value)
@@ -105,7 +108,9 @@ async function createRawConnection(config: DbConnConfig): Promise<DbConn> {
   }
 }
 
-async function ensureModule<K extends keyof typeof modules>(name: K): Promise<NonNullable<(typeof modules)[K]>> {
+async function ensureModule<K extends keyof typeof modules>(
+  name: K,
+): Promise<NonNullable<(typeof modules)[K]>> {
   if (modules[name] == null) {
     if (name === "mysql") {
       modules.mysql = await import("mysql2/promise");

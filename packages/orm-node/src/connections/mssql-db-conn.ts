@@ -147,7 +147,9 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           resolve();
         },
         "",
-        this._tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED"],
+        this._tedious.ISOLATION_LEVEL[
+          isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED"
+        ],
       );
     });
   }
@@ -224,7 +226,9 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
             if (lineNumber != null && lineNumber > 0) {
               const splitQuery = query.split("\n");
               splitQuery[lineNumber - 1] = "==> " + splitQuery[lineNumber - 1];
-              reject(new SdError(err, `쿼리 수행중 오류발생\n-- query\n${splitQuery.join("\n")}\n--`));
+              reject(
+                new SdError(err, `쿼리 수행중 오류발생\n-- query\n${splitQuery.join("\n")}\n--`),
+              );
             } else {
               reject(new SdError(err, `쿼리 수행중 오류발생\n-- query\n${query}\n--`));
             }

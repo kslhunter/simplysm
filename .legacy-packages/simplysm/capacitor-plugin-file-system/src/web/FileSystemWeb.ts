@@ -67,13 +67,20 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
     return { uri: URL.createObjectURL(blob) };
   }
 
-  async writeFile(options: { path: string; data: string; encoding?: "utf8" | "base64" }): Promise<void> {
+  async writeFile(options: {
+    path: string;
+    data: string;
+    encoding?: "utf8" | "base64";
+  }): Promise<void> {
     await this._fs.ensureDir(path.dirname(options.path));
     const dataBase64 = options.encoding === "base64" ? options.data : btoa(options.data);
     await this._fs.putEntry({ path: options.path, kind: "file", dataBase64 });
   }
 
-  async readFile(options: { path: string; encoding?: "utf8" | "base64" }): Promise<{ data: string }> {
+  async readFile(options: {
+    path: string;
+    encoding?: "utf8" | "base64";
+  }): Promise<{ data: string }> {
     const entry = await this._fs.getEntry(options.path);
     if (!entry || entry.kind !== "file" || entry.dataBase64 == null) {
       throw new Error("File not found: " + options.path);

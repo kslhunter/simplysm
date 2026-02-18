@@ -17,7 +17,10 @@ type RenderResult = BoundFunctions<typeof queries> & {
  * ConfigProvider로 감싸서 렌더링하는 헬퍼
  * useLocalStorage 등 ConfigProvider에 의존하는 컴포넌트 테스트에 사용
  */
-export function renderWithConfig(ui: () => ReturnType<Component>, options?: { clientName?: string }): RenderResult {
+export function renderWithConfig(
+  ui: () => ReturnType<Component>,
+  options?: { clientName?: string },
+): RenderResult {
   const clientName = options?.clientName ?? "test-app";
 
   return solidRender(() => <ConfigProvider staticClientName={clientName}>{ui()}</ConfigProvider>);

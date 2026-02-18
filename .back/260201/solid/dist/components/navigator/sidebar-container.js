@@ -4,7 +4,14 @@ import { combineStyle } from "@solid-primitives/props";
 import { SidebarContext } from "./sidebar-context";
 import { sidebarBackdrop, sidebarContainer } from "./sidebar-container.css";
 const SidebarContainer = (props) => {
-  const [local, rest] = splitProps(props, ["toggled", "onToggledChange", "width", "class", "style", "children"]);
+  const [local, rest] = splitProps(props, [
+    "toggled",
+    "onToggledChange",
+    "width",
+    "class",
+    "style",
+    "children",
+  ]);
   const [internalToggled, setInternalToggled] = createSignal(false);
   const toggled = () => local.toggled ?? internalToggled();
   const setToggled = (value) => {

@@ -655,7 +655,9 @@ describe("object utils", () => {
     it("depth가 0이면 에러를 던진다", () => {
       const obj = { parent: { name: "child" } };
 
-      expect(() => objGetChainValueByDepth(obj, "parent", 0)).toThrow("depth는 1 이상이어야 합니다.");
+      expect(() => objGetChainValueByDepth(obj, "parent", 0)).toThrow(
+        "depth는 1 이상이어야 합니다.",
+      );
     });
 
     it("depth가 1이면 한 단계만 내려간다", () => {

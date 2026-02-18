@@ -8,5 +8,7 @@ if (!workerFile) {
 }
 
 // file:// URL이 이미 전달된 경우 그대로 사용, 일반 경로인 경우 변환
-const workerFileUrl = workerFile.startsWith("file://") ? workerFile : pathToFileURL(workerFile).href;
+const workerFileUrl = workerFile.startsWith("file://")
+  ? workerFile
+  : pathToFileURL(workerFile).href;
 await tsImport(workerFileUrl, import.meta.url);

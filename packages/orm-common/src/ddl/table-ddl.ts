@@ -72,7 +72,10 @@ export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<an
  * @returns CREATE VIEW QueryDef
  * @throws {Error} 뷰에 viewFn이 없을 때
  */
-export function getCreateViewQueryDef(db: DbContextBase, view: ViewBuilder<any, any, any>): QueryDef {
+export function getCreateViewQueryDef(
+  db: DbContextBase,
+  view: ViewBuilder<any, any, any>,
+): QueryDef {
   if (view.meta.viewFn == null) {
     throw new Error(`뷰 '${view.meta.name}'에 viewFn이 없습니다.`);
   }
@@ -99,7 +102,10 @@ export function getCreateViewQueryDef(db: DbContextBase, view: ViewBuilder<any, 
  * @returns CREATE PROCEDURE QueryDef
  * @throws {Error} 프로시저에 본문이 없을 때
  */
-export function getCreateProcQueryDef(db: DbContextBase, procedure: ProcedureBuilder<any, any>): QueryDef {
+export function getCreateProcQueryDef(
+  db: DbContextBase,
+  procedure: ProcedureBuilder<any, any>,
+): QueryDef {
   if (procedure.meta.query == null) {
     throw new Error(`프로시저 '${procedure.meta.name}'에 본문이 없습니다.`);
   }
@@ -143,7 +149,10 @@ export function getDropTableQueryDef(table: QueryDefObjectName): DropTableQueryD
 /**
  * RENAME TABLE QueryDef 생성
  */
-export function getRenameTableQueryDef(table: QueryDefObjectName, newName: string): RenameTableQueryDef {
+export function getRenameTableQueryDef(
+  table: QueryDefObjectName,
+  newName: string,
+): RenameTableQueryDef {
   return { type: "renameTable", table, newName };
 }
 

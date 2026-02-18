@@ -44,8 +44,12 @@ export default function MobileLayoutDemoPage() {
             </Topbar.User>
           </Topbar>
           <div class="flex-1 overflow-auto p-4">
-            <p class="text-sm text-base-600 dark:text-base-400">햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.</p>
-            <p class="mt-4 text-sm text-base-600 dark:text-base-400">사이드바 외부를 클릭하면 사이드바가 닫힙니다.</p>
+            <p class="text-sm text-base-600 dark:text-base-400">
+              햄버거 버튼을 클릭하여 사이드바를 열 수 있습니다.
+            </p>
+            <p class="mt-4 text-sm text-base-600 dark:text-base-400">
+              사이드바 외부를 클릭하면 사이드바가 닫힙니다.
+            </p>
           </div>
         </Topbar.Container>
       </Sidebar.Container>

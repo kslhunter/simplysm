@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { jsonStringify as stringify, jsonParse as parse, DateTime, DateOnly, Time, Uuid } from "@simplysm/core-common";
+import {
+  jsonStringify as stringify,
+  jsonParse as parse,
+  DateTime,
+  DateOnly,
+  Time,
+  Uuid,
+} from "@simplysm/core-common";
 
 describe("JsonConvert", () => {
   //#region stringify
@@ -382,7 +389,11 @@ describe("JsonConvert", () => {
 
     it("Error를 복원한다 (확장 속성 포함)", () => {
       const cause = new Error("원인 에러");
-      const error = new Error("test error") as Error & { code: string; detail: object; cause: Error };
+      const error = new Error("test error") as Error & {
+        code: string;
+        detail: object;
+        cause: Error;
+      };
       error.code = "ERR_CODE";
       error.detail = { key: "value" };
       error.cause = cause;

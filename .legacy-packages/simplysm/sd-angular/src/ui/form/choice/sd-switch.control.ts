@@ -116,7 +116,9 @@ export class SdSwitchControl {
   inset = input(false, { transform: transformBoolean });
 
   size = input<"sm" | "lg">();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
 
   onClick(event: Event) {
     if (this.disabled()) return;

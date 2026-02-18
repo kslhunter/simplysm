@@ -30,7 +30,10 @@ import { NgIcon } from "@ng-icons/core";
     <div class="control-header p-default">MENU</div>
 
     <sd-list class="flex-fill" [inset]="true">
-      <ng-template [ngTemplateOutlet]="itemTpl" [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"></ng-template>
+      <ng-template
+        [ngTemplateOutlet]="itemTpl"
+        [ngTemplateOutletContext]="{ menus: menus(), depth: 0 }"
+      ></ng-template>
     </sd-list>
 
     <ng-template #itemTpl [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">

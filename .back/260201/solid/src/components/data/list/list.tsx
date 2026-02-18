@@ -71,7 +71,9 @@ export const List: ParentComponent<ListProps> = (props) => {
     if (hasChildren && isOpen) {
       current.click();
     } else {
-      const parentItem = current.parentElement?.parentElement?.closest("[data-list-item]") as HTMLElement | null;
+      const parentItem = current.parentElement?.parentElement?.closest(
+        "[data-list-item]",
+      ) as HTMLElement | null;
       parentItem?.focus();
     }
   };
@@ -80,7 +82,9 @@ export const List: ParentComponent<ListProps> = (props) => {
     const current = e.target as HTMLElement;
     if (!current.hasAttribute("data-list-item")) return;
 
-    const allItems = [...listRef.querySelectorAll('[data-list-item]:not([aria-disabled="true"])')] as HTMLElement[];
+    const allItems = [
+      ...listRef.querySelectorAll('[data-list-item]:not([aria-disabled="true"])'),
+    ] as HTMLElement[];
     const visibleItems = allItems.filter((el) => isVisible(el));
     const idx = visibleItems.indexOf(current);
 

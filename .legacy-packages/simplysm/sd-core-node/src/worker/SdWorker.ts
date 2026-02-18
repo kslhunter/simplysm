@@ -19,16 +19,19 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
 
     const ext = path.extname(import.meta.filename);
     if (ext === ".ts") {
-      this._worker = new Worker(path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"), {
-        stdout: true,
-        stderr: true,
-        ...opt,
-        env: {
-          ...process.env,
-          ...(opt?.env as any),
+      this._worker = new Worker(
+        path.resolve(import.meta.dirname, "../../lib/worker-dev-proxy.js"),
+        {
+          stdout: true,
+          stderr: true,
+          ...opt,
+          env: {
+            ...process.env,
+            ...(opt?.env as any),
+          },
+          argv: [filePath, ...(opt?.argv ?? [])],
         },
-        argv: [filePath, ...(opt?.argv ?? [])],
-      });
+      );
     } else {
       this._worker = new Worker(fileURLToPath(filePath), {
         stdout: true,
@@ -66,7 +69,10 @@ export class SdWorker<T extends ISdWorkerType> extends EventEmitter {
     });
   }
 
-  override on<K extends keyof T["events"] & string>(event: K, listener: (args: T["events"][K]) => void): this;
+  override on<K extends keyof T["events"] & string>(
+    event: K,
+    listener: (args: T["events"][K]) => void,
+  ): this;
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     super.on(event, listener);
     return this;

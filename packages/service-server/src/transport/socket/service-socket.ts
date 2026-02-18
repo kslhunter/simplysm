@@ -6,7 +6,11 @@ import consola from "consola";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import { createProtocolWrapper } from "../../protocol/protocol-wrapper";
-import type { ServiceClientMessage, ServiceServerMessage, ServiceServerRawMessage } from "@simplysm/service-common";
+import type {
+  ServiceClientMessage,
+  ServiceServerMessage,
+  ServiceServerRawMessage,
+} from "@simplysm/service-common";
 
 const logger = consola.withTag("service-server:ServiceSocket");
 

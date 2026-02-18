@@ -72,7 +72,9 @@ export function createEventClient(transport: ServiceTransport): EventClient {
       body: { name: eventName },
     })) as { key: string; info: TInfo }[];
 
-    const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
+    const targetKeys = listenerInfos
+      .filter((item) => infoSelector(item.info))
+      .map((item) => item.key);
 
     if (targetKeys.length > 0) {
       await transport.send({

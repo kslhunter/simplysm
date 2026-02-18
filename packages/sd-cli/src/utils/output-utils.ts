@@ -32,7 +32,10 @@ export function printErrors(results: Map<string, ErrorResult>): void {
  * @param results 패키지별 빌드 결과 상태
  * @param serverClientsMap 서버별 연결된 클라이언트 목록
  */
-export function printServers(results: Map<string, PackageResult>, serverClientsMap?: Map<string, string[]>): void {
+export function printServers(
+  results: Map<string, PackageResult>,
+  serverClientsMap?: Map<string, string[]>,
+): void {
   // 서버 정보 수집
   const servers = [...results.values()].filter((r) => r.status === "running" && r.port != null);
 

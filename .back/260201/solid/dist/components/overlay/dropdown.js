@@ -1,5 +1,12 @@
 import "@simplysm/core-common";
-import { createEffect, createMemo, createSignal, createUniqueId, onCleanup, splitProps } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  splitProps,
+} from "solid-js";
 import { tabbable } from "tabbable";
 import { DropdownContext, useDropdownInternal } from "./dropdown-context";
 import { dropdown } from "./dropdown.css";
@@ -11,7 +18,12 @@ const getScrollableParents = (element) => {
     const style = getComputedStyle(current);
     const overflowY = style.overflowY;
     const overflowX = style.overflowX;
-    if (overflowY === "auto" || overflowY === "scroll" || overflowX === "auto" || overflowX === "scroll") {
+    if (
+      overflowY === "auto" ||
+      overflowY === "scroll" ||
+      overflowX === "auto" ||
+      overflowX === "scroll"
+    ) {
       scrollableParents.push(current);
     }
     current = current.parentElement;
@@ -19,7 +31,13 @@ const getScrollableParents = (element) => {
   return scrollableParents;
 };
 const Dropdown = (props) => {
-  const [local, rest] = splitProps(props, ["open", "onOpenChange", "disabled", "children", "class"]);
+  const [local, rest] = splitProps(props, [
+    "open",
+    "onOpenChange",
+    "disabled",
+    "children",
+    "class",
+  ]);
   const id = createUniqueId();
   const parentCtx = useDropdownInternal();
   const [childIds, setChildIds] = createSignal(/* @__PURE__ */ new Set());
@@ -143,7 +161,10 @@ const Dropdown = (props) => {
       }
     }
     if (relatedTarget == null && mouseoverEl) {
-      if (triggerRef.contains(mouseoverEl) || (popupEl == null ? void 0 : popupEl.contains(mouseoverEl))) {
+      if (
+        triggerRef.contains(mouseoverEl) ||
+        (popupEl == null ? void 0 : popupEl.contains(mouseoverEl))
+      ) {
         const focusable = popupEl ? tabbable(popupEl)[0] : void 0;
         (_a = focusable ?? popupEl) == null ? void 0 : _a.focus();
         return;
@@ -154,9 +175,11 @@ const Dropdown = (props) => {
   const handleKeyDown = (e) => {
     if (e.ctrlKey || e.altKey) return;
     const isOpenKey =
-      (e.key === "ArrowDown" && placement() === "bottom") || (e.key === "ArrowUp" && placement() === "top");
+      (e.key === "ArrowDown" && placement() === "bottom") ||
+      (e.key === "ArrowUp" && placement() === "top");
     const isCloseKey =
-      (e.key === "ArrowUp" && placement() === "bottom") || (e.key === "ArrowDown" && placement() === "top");
+      (e.key === "ArrowUp" && placement() === "bottom") ||
+      (e.key === "ArrowDown" && placement() === "top");
     if (isOpenKey) {
       e.preventDefault();
       e.stopPropagation();

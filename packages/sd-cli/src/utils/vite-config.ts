@@ -170,7 +170,8 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: (
               // 같은 scope 내 패키지는 이미 excluded이므로 제외
               if (scopes.some((s) => dep.startsWith(`${s}/`))) continue;
               // SolidJS 관련 패키지는 solid 플러그인 transform이 필요하므로 pre-bundling 불가
-              if (dep === "solid-js" || dep.startsWith("@solidjs/") || dep.startsWith("solid-")) continue;
+              if (dep === "solid-js" || dep.startsWith("@solidjs/") || dep.startsWith("solid-"))
+                continue;
               // PostCSS/빌드 도구는 브라우저 pre-bundling 대상 아님
               if (dep === "tailwindcss") continue;
 
@@ -185,7 +186,13 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: (
 
               // workspace 패키지는 realpath가 소스 디렉토리로 해석되어 .pnpm 구조가 아님
               // symlink 경로의 node_modules에서 fallback 시도
-              const depPkgJsonFallback = path.join(scopeDir, name, "node_modules", dep, "package.json");
+              const depPkgJsonFallback = path.join(
+                scopeDir,
+                name,
+                "node_modules",
+                dep,
+                "package.json",
+              );
               if (isSubpathOnlyPackage(depPkgJsonFallback)) {
                 continue;
               }
@@ -224,7 +231,11 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: (
 
           // 패키지 루트의 CSS/config 파일 watch (tailwind.css, tailwind.config.ts 등)
           for (const file of fs.readdirSync(pkgRoot)) {
-            if (file.endsWith(".css") || file === "tailwind.config.ts" || file === "tailwind.config.js") {
+            if (
+              file.endsWith(".css") ||
+              file === "tailwind.config.ts" ||
+              file === "tailwind.config.js"
+            ) {
               watchPaths.push(path.join(pkgRoot, file));
             }
           }
@@ -286,7 +297,8 @@ export interface ViteConfigOptions {
  * - dev 모드: dev server (define으로 env 치환, server 설정)
  */
 export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
-  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, watchScopes } = options;
+  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, watchScopes } =
+    options;
 
   // Read package.json to extract app name for PWA manifest
   const pkgJsonPath = path.join(pkgDir, "package.json");

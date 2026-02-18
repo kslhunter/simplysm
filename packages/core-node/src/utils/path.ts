@@ -38,13 +38,20 @@ export function pathPosix(...args: string[]): string {
  *
  * @throws 파일이 fromDirectory 안에 없으면 에러
  */
-export function pathChangeFileDirectory(filePath: string, fromDirectory: string, toDirectory: string): string {
+export function pathChangeFileDirectory(
+  filePath: string,
+  fromDirectory: string,
+  toDirectory: string,
+): string {
   if (filePath === fromDirectory) {
     return toDirectory;
   }
 
   if (!pathIsChildPath(filePath, fromDirectory)) {
-    throw new ArgumentError(`'${filePath}'가 ${fromDirectory} 안에 없습니다.`, { filePath, fromDirectory });
+    throw new ArgumentError(`'${filePath}'가 ${fromDirectory} 안에 없습니다.`, {
+      filePath,
+      fromDirectory,
+    });
   }
 
   return path.resolve(toDirectory, path.relative(fromDirectory, filePath));
@@ -83,7 +90,9 @@ export function pathIsChildPath(childPath: string, parentPath: string): boolean 
   }
 
   // 부모 경로 + 구분자로 시작하는지 확인
-  const parentWithSep = normalizedParent.endsWith(path.sep) ? normalizedParent : normalizedParent + path.sep;
+  const parentWithSep = normalizedParent.endsWith(path.sep)
+    ? normalizedParent
+    : normalizedParent + path.sep;
 
   return normalizedChild.startsWith(parentWithSep);
 }
@@ -121,7 +130,9 @@ export function pathFilterByTargets(files: string[], targets: string[], cwd: str
   const normalizedTargets = targets.map((t) => pathPosix(t));
   return files.filter((file) => {
     const relativePath = pathPosix(path.relative(cwd, file));
-    return normalizedTargets.some((target) => relativePath === target || relativePath.startsWith(target + "/"));
+    return normalizedTargets.some(
+      (target) => relativePath === target || relativePath.startsWith(target + "/"),
+    );
   });
 }
 

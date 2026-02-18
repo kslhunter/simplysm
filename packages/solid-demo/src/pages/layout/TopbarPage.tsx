@@ -1,5 +1,18 @@
-import { Sidebar, Topbar, type SidebarMenuItem, type TopbarMenuItem, type TopbarUserMenu } from "@simplysm/solid";
-import { IconDatabase, IconFolder, IconHome, IconServer, IconSettings, IconUsers } from "@tabler/icons-solidjs";
+import {
+  Sidebar,
+  Topbar,
+  type SidebarMenuItem,
+  type TopbarMenuItem,
+  type TopbarUserMenu,
+} from "@simplysm/solid";
+import {
+  IconDatabase,
+  IconFolder,
+  IconHome,
+  IconServer,
+  IconSettings,
+  IconUsers,
+} from "@tabler/icons-solidjs";
 
 // 단순 메뉴 (2단계)
 const simpleMenus: TopbarMenuItem[] = [
@@ -73,8 +86,8 @@ export default function TopbarPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">TopbarContainer 기본</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다. SidebarContext 없이 단독 사용 시 토글 버튼이
-              표시되지 않습니다.
+              TopbarContainer는 Topbar + 콘텐츠를 수직으로 배치합니다. SidebarContext 없이 단독 사용
+              시 토글 버튼이 표시되지 않습니다.
             </p>
             <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <Topbar.Container>
@@ -94,12 +107,14 @@ export default function TopbarPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">토글 버튼 자동 연동</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              SidebarContext 없이 단독 사용 vs SidebarContainer 내부 사용 비교. SidebarContainer 내부에서 사용하면 토글
-              버튼이 자동으로 표시됩니다.
+              SidebarContext 없이 단독 사용 vs SidebarContainer 내부 사용 비교. SidebarContainer
+              내부에서 사용하면 토글 버튼이 자동으로 표시됩니다.
             </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">단독 사용 (토글 버튼 없음)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+                  단독 사용 (토글 버튼 없음)
+                </p>
                 <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Topbar.Container>
                     <Topbar>
@@ -114,7 +129,9 @@ export default function TopbarPage() {
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">SidebarContainer 내부 사용 (토글 버튼 있음)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+                  SidebarContainer 내부 사용 (토글 버튼 있음)
+                </p>
                 <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Sidebar.Container>
                     <Sidebar>
@@ -126,7 +143,9 @@ export default function TopbarPage() {
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
                         <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                          <p class="text-sm text-base-600 dark:text-base-400">SidebarContext 있음</p>
+                          <p class="text-sm text-base-600 dark:text-base-400">
+                            SidebarContext 있음
+                          </p>
                         </div>
                       </div>
                     </Topbar.Container>
@@ -159,7 +178,9 @@ export default function TopbarPage() {
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">중첩 메뉴 (3단계 이상, 아이콘 포함)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+                  중첩 메뉴 (3단계 이상, 아이콘 포함)
+                </p>
                 <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Topbar.Container>
                     <Topbar>
@@ -167,7 +188,9 @@ export default function TopbarPage() {
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
                       <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                        <p class="text-sm text-base-600 dark:text-base-400">관리 → 시스템 → 고급 설정을 확인해보세요</p>
+                        <p class="text-sm text-base-600 dark:text-base-400">
+                          관리 → 시스템 → 고급 설정을 확인해보세요
+                        </p>
                       </div>
                     </div>
                   </Topbar.Container>
@@ -179,7 +202,9 @@ export default function TopbarPage() {
           {/* 4. TopbarUser 변형 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">TopbarUser 변형</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              TopbarUser는 사용자 메뉴 드롭다운을 제공합니다.
+            </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (이름만)</p>
@@ -192,7 +217,9 @@ export default function TopbarPage() {
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
                       <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                        <p class="text-sm text-base-600 dark:text-base-400">메뉴 없이 이름만 표시</p>
+                        <p class="text-sm text-base-600 dark:text-base-400">
+                          메뉴 없이 이름만 표시
+                        </p>
                       </div>
                     </div>
                   </Topbar.Container>
@@ -209,7 +236,9 @@ export default function TopbarPage() {
                     </Topbar>
                     <div class="flex-1 overflow-auto p-4">
                       <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                        <p class="text-sm text-base-600 dark:text-base-400">클릭하면 프로필/로그아웃 메뉴 표시</p>
+                        <p class="text-sm text-base-600 dark:text-base-400">
+                          클릭하면 프로필/로그아웃 메뉴 표시
+                        </p>
                       </div>
                     </div>
                   </Topbar.Container>
@@ -226,7 +255,9 @@ export default function TopbarPage() {
             </p>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">사이드바 열림 (toggled=false)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+                  사이드바 열림 (toggled=false)
+                </p>
                 <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Sidebar.Container>
                     <Sidebar>
@@ -249,7 +280,9 @@ export default function TopbarPage() {
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
                         <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                          <p class="text-sm text-base-600 dark:text-base-400">토글 버튼을 클릭해보세요</p>
+                          <p class="text-sm text-base-600 dark:text-base-400">
+                            토글 버튼을 클릭해보세요
+                          </p>
                         </div>
                       </div>
                     </Topbar.Container>
@@ -257,7 +290,9 @@ export default function TopbarPage() {
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-sm text-base-600 dark:text-base-400">사이드바 닫힘 (toggled=true)</p>
+                <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+                  사이드바 닫힘 (toggled=true)
+                </p>
                 <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
                   <Sidebar.Container>
                     <Sidebar>
@@ -272,7 +307,9 @@ export default function TopbarPage() {
                       </Topbar>
                       <div class="flex-1 overflow-auto p-4">
                         <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
-                          <p class="text-sm text-base-600 dark:text-base-400">토글 버튼을 클릭해보세요</p>
+                          <p class="text-sm text-base-600 dark:text-base-400">
+                            토글 버튼을 클릭해보세요
+                          </p>
                         </div>
                       </div>
                     </Topbar.Container>
@@ -285,7 +322,9 @@ export default function TopbarPage() {
           {/* 6. 모바일 데모 */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">모바일 데모</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
+            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+              375px x 500px iframe으로 모바일 환경 시뮬레이션
+            </p>
             <div class="h-[500px] w-[375px] overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
               <iframe
                 src="#/mobile-layout-demo"

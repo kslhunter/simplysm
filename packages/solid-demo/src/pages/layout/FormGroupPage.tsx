@@ -18,7 +18,8 @@ export default function FormGroupPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">기본 FormGroup</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              FormGroup은 폼 필드들을 수직으로 배치하는 컨테이너입니다. FormGroup.Item으로 각 필드를 감쌉니다.
+              FormGroup은 폼 필드들을 수직으로 배치하는 컨테이너입니다. FormGroup.Item으로 각 필드를
+              감쌉니다.
             </p>
             <FormGroup>
               <FormGroup.Item label="이름">
@@ -49,7 +50,9 @@ export default function FormGroupPage() {
               <FormGroup.Item label="국가">
                 <Select
                   placeholder="선택하세요"
-                  renderValue={(v: string) => <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>}
+                  renderValue={(v: string) => (
+                    <>{v === "kr" ? "한국" : v === "us" ? "미국" : "일본"}</>
+                  )}
                 >
                   <Select.Item value="kr">한국</Select.Item>
                   <Select.Item value="us">미국</Select.Item>
@@ -155,9 +158,15 @@ export default function FormGroupPage() {
                 </FormGroup.Item>
               </FormGroup>
               <p class="text-sm text-base-600 dark:text-base-400">
-                이름: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledName() || "(없음)"}</code>
+                이름:{" "}
+                <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                  {controlledName() || "(없음)"}
+                </code>
                 {" / "}
-                이메일: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledEmail() || "(없음)"}</code>
+                이메일:{" "}
+                <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                  {controlledEmail() || "(없음)"}
+                </code>
               </p>
               <div class="flex gap-2">
                 <Button

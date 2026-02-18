@@ -241,7 +241,11 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        <div data-date-field-content style={{ visibility: isEditable() ? "hidden" : undefined }} title={local.title}>
+        <div
+          data-date-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
 

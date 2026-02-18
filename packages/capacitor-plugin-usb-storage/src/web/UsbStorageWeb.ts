@@ -1,5 +1,10 @@
 import { WebPlugin } from "@capacitor/core";
-import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbFileInfo, IUsbStoragePlugin } from "../IUsbStoragePlugin";
+import type {
+  IUsbDeviceFilter,
+  IUsbDeviceInfo,
+  IUsbFileInfo,
+  IUsbStoragePlugin,
+} from "../IUsbStoragePlugin";
 import { VirtualUsbStorage } from "./VirtualUsbStorage";
 import { bytesToBase64 } from "@simplysm/core-common";
 
@@ -72,7 +77,11 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   /**
    * 가상 USB 장치에 파일을 추가합니다. (테스트/개발용)
    */
-  async addVirtualFile(filter: IUsbDeviceFilter, filePath: string, data: Uint8Array): Promise<void> {
+  async addVirtualFile(
+    filter: IUsbDeviceFilter,
+    filePath: string,
+    data: Uint8Array,
+  ): Promise<void> {
     const deviceKey = `${filter.vendorId}:${filter.productId}`;
     const idx = filePath.lastIndexOf("/");
     const dir = idx === -1 ? "/" : filePath.substring(0, idx) || "/";

@@ -15,5 +15,9 @@ export interface ISdServiceServerOptions {
   pathProxy?: Record<string, string>;
   portProxy?: Record<string, number>;
   services: Type<SdServiceBase>[];
-  middlewares?: ((req: http.IncomingMessage, res: http.ServerResponse, next: (err?: any) => void) => void)[];
+  middlewares?: ((
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    next: (err?: any) => void,
+  ) => void)[];
 }

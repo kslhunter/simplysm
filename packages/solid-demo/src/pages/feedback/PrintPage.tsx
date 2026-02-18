@@ -12,7 +12,14 @@ function AsyncReadyContent() {
         <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
           <h1>비동기 데이터 PDF</h1>
           <p>1초 대기 후 ready()가 호출되어 PDF가 생성됩니다.</p>
-          <div style={{ "margin-top": "20px", "padding": "20px", "background": "#e8eaf6", "border-radius": "8px" }}>
+          <div
+            style={{
+              "margin-top": "20px",
+              "padding": "20px",
+              "background": "#e8eaf6",
+              "border-radius": "8px",
+            }}
+          >
             <p>이 콘텐츠는 데이터 로딩 완료 후 렌더링된 것을 시뮬레이션합니다.</p>
           </div>
         </div>
@@ -73,7 +80,14 @@ const PrintDemo: Component = () => {
         <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
           <h1>단일 페이지 PDF</h1>
           <p>Print 컴포넌트 없이 단순 콘텐츠를 PDF로 변환합니다.</p>
-          <div style={{ "margin-top": "20px", "padding": "20px", "background": "#f0f8ff", "border-radius": "8px" }}>
+          <div
+            style={{
+              "margin-top": "20px",
+              "padding": "20px",
+              "background": "#f0f8ff",
+              "border-radius": "8px",
+            }}
+          >
             <p>자동 분할 테스트: Print.Page 없이 A4 높이 기준으로 자동 슬라이스됩니다.</p>
           </div>
         </div>
@@ -248,7 +262,9 @@ const PrintDemo: Component = () => {
       {/* toPdf - 다중 페이지 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">toPdf - 다중 페이지</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">Print.Page로 명시적으로 3페이지를 분할합니다.</p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          Print.Page로 명시적으로 3페이지를 분할합니다.
+        </p>
         <Button theme="primary" variant="outline" onClick={handlePdfMultiPage}>
           PDF 다운로드 (3페이지)
         </Button>

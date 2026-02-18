@@ -15,7 +15,10 @@ export class SdServiceProtocol {
    * 메시지 인코딩 (필요 시 자동 분할)
    */
   encode(uuid: string, message: TSdServiceMessage): { chunks: Buffer[]; totalSize: number } {
-    const msgJson = JsonConvert.stringify([message.name, ...("body" in message ? [message.body] : [])]);
+    const msgJson = JsonConvert.stringify([
+      message.name,
+      ...("body" in message ? [message.body] : []),
+    ]);
     const msgBuffer = Buffer.from(msgJson);
 
     const totalSize = msgBuffer.length;
@@ -63,7 +66,11 @@ export class SdServiceProtocol {
     headerBuffer.set(uuidBuffer, 0);
 
     // TOTAL_SIZE, INDEX
-    const headerView = new DataView(headerBuffer.buffer, headerBuffer.byteOffset, headerBuffer.byteLength);
+    const headerView = new DataView(
+      headerBuffer.buffer,
+      headerBuffer.byteOffset,
+      headerBuffer.byteLength,
+    );
     headerView.setBigUint64(16, BigInt(header.totalSize), false);
     headerView.setUint32(24, header.index, false);
 

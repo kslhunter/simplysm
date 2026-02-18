@@ -340,7 +340,11 @@ function Re() {
             n(v, e(l, { checked: !0, theme: "info", size: "lg", children: "LG Info" }), null),
             n(v, e(l, { checked: !0, theme: "warning", size: "xl", children: "XL Warning" }), null),
             n(o, e(l, { checked: !0, theme: "primary", disabled: !0, children: "Primary" }), null),
-            n(o, e(l, { checked: !0, theme: "secondary", disabled: !0, children: "Secondary" }), null),
+            n(
+              o,
+              e(l, { checked: !0, theme: "secondary", disabled: !0, children: "Secondary" }),
+              null,
+            ),
             n(o, e(l, { checked: !0, theme: "success", disabled: !0, children: "Success" }), null),
             n(o, e(l, { checked: !0, theme: "warning", disabled: !0, children: "Warning" }), null),
             n(o, e(l, { checked: !0, theme: "danger", disabled: !0, children: "Danger" }), null),

@@ -58,7 +58,11 @@ const q = (h) => {
           },
           get children() {
             var e = O();
-            return (t(e, () => s.description), p(() => n(e, u({ fontSize: "sm", color: "muted" }))), e);
+            return (
+              t(e, () => s.description),
+              p(() => n(e, u({ fontSize: "sm", color: "muted" }))),
+              e
+            );
           },
         }),
         null,

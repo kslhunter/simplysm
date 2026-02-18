@@ -2,9 +2,14 @@ import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
 import type { RuleFix } from "@typescript-eslint/utils/ts-eslint";
 import { createRule } from "../utils/create-rule";
 
-type ClassMemberWithAccessibility = TSESTree.PropertyDefinition | TSESTree.MethodDefinition | TSESTree.AccessorProperty;
+type ClassMemberWithAccessibility =
+  | TSESTree.PropertyDefinition
+  | TSESTree.MethodDefinition
+  | TSESTree.AccessorProperty;
 
-function isClassMemberWithAccessibility(node: TSESTree.Node | undefined): node is ClassMemberWithAccessibility {
+function isClassMemberWithAccessibility(
+  node: TSESTree.Node | undefined,
+): node is ClassMemberWithAccessibility {
   return (
     node?.type === AST_NODE_TYPES.PropertyDefinition ||
     node?.type === AST_NODE_TYPES.MethodDefinition ||
@@ -30,7 +35,8 @@ export default createRule({
       description: '하드 프라이빗 필드(#) 대신 TypeScript "private _" 스타일을 강제한다.',
     },
     messages: {
-      preferSoftPrivate: '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
+      preferSoftPrivate:
+        '하드 프라이빗 필드(#)는 허용되지 않습니다. "private _" 스타일을 사용하세요.',
       nameConflict:
         '하드 프라이빗 필드 "#{{name}}"을 "_{{name}}"으로 변환할 수 없습니다. 동일한 이름의 멤버가 이미 존재합니다.',
     },

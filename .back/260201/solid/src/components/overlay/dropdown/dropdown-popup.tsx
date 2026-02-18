@@ -1,5 +1,13 @@
 import "@simplysm/core-common";
-import { type JSX, type ParentComponent, Show, splitProps, createMemo, createEffect, onCleanup } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+  createMemo,
+  createEffect,
+  onCleanup,
+} from "solid-js";
 import { Portal } from "solid-js/web";
 import { tabbable } from "tabbable";
 import { backdrop, dropdownPopup, dropdownPopupContent, mobileHandle } from "./dropdown-popup.css";
@@ -82,8 +90,12 @@ export const DropdownPopup: ParentComponent<DropdownPopupProps> = (props) => {
     if (!e.ctrlKey && !e.altKey) {
       const tabbables = tabbable(popupRef);
       const shouldFocusTrigger =
-        (ctx.placement() === "bottom" && e.key === "ArrowUp" && document.activeElement === tabbables[0]) ||
-        (ctx.placement() === "top" && e.key === "ArrowDown" && document.activeElement === tabbables.at(-1));
+        (ctx.placement() === "bottom" &&
+          e.key === "ArrowUp" &&
+          document.activeElement === tabbables[0]) ||
+        (ctx.placement() === "top" &&
+          e.key === "ArrowDown" &&
+          document.activeElement === tabbables.at(-1));
 
       if (shouldFocusTrigger) {
         e.preventDefault();

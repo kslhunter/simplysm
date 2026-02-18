@@ -17,7 +17,9 @@ describe("ConfigContext", () => {
 
     it("Provider 없이 사용하면 에러가 발생한다", () => {
       createRoot((dispose) => {
-        expect(() => useConfig()).toThrow("useConfig는 ConfigContext.Provider 내부에서만 사용할 수 있습니다");
+        expect(() => useConfig()).toThrow(
+          "useConfig는 ConfigContext.Provider 내부에서만 사용할 수 있습니다",
+        );
         dispose();
       });
     });
@@ -30,7 +32,11 @@ describe("ConfigContext", () => {
     });
 
     it("다양한 clientName을 지원한다", () => {
-      const configs = [{ clientName: "app1" }, { clientName: "my-app" }, { clientName: "APP_NAME" }];
+      const configs = [
+        { clientName: "app1" },
+        { clientName: "my-app" },
+        { clientName: "APP_NAME" },
+      ];
 
       for (const config of configs) {
         expect(config.clientName).toBeDefined();

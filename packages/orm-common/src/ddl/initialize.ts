@@ -104,7 +104,10 @@ export async function initialize(
 /**
  * 전체 객체 생성 (테이블/뷰/프로시저/FK/Index)
  */
-async function createAllObjects(db: DbContextBase, def: DbContextDef<any, any, any>): Promise<void> {
+async function createAllObjects(
+  db: DbContextBase,
+  def: DbContextDef<any, any, any>,
+): Promise<void> {
   // 1. 테이블/뷰/프로시저 생성
   const builders = getBuilders(def);
   const createDefs: QueryDef[] = [];
@@ -155,7 +158,11 @@ async function createAllObjects(db: DbContextBase, def: DbContextDef<any, any, a
 function getBuilders(
   def: DbContextDef<any, any, any>,
 ): (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
-  const builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] = [];
+  const builders: (
+    | TableBuilder<any, any>
+    | ViewBuilder<any, any, any>
+    | ProcedureBuilder<any, any>
+  )[] = [];
 
   // Tables
   const tables: TableBuilder<any, any>[] = Object.values(def.meta.tables);
@@ -191,7 +198,10 @@ export function validateRelations(def: DbContextDef<any, any, any>): void {
     if (relations == null) continue;
 
     for (const [relName, relDef] of Object.entries(relations)) {
-      if (!(relDef instanceof ForeignKeyTargetBuilder) && !(relDef instanceof RelationKeyTargetBuilder)) {
+      if (
+        !(relDef instanceof ForeignKeyTargetBuilder) &&
+        !(relDef instanceof RelationKeyTargetBuilder)
+      ) {
         continue;
       }
 

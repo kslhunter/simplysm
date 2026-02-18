@@ -98,7 +98,9 @@ const TimeField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" "),
+        class: [timeField(objPick(local, timeField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(
@@ -112,7 +114,9 @@ const TimeField = (props) => {
       /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [timeFieldInput, timeField(objPick(local, timeField.variants())), local.class].filterExists().join(" "),
+        class: [timeFieldInput, timeField(objPick(local, timeField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     ),
   );

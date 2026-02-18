@@ -11,7 +11,13 @@ import { SdListItemControl } from "../../data/list/sd-list-item.control";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIconControl, SdCollapseControl, SdRippleDirective, SdListControl, SdListItemControl],
+  imports: [
+    SdCollapseIconControl,
+    SdCollapseControl,
+    SdRippleDirective,
+    SdListControl,
+    SdListItemControl,
+  ],
   template: `
     <div class="p-lg">
       <ng-content></ng-content>

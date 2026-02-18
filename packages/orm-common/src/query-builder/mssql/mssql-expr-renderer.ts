@@ -457,7 +457,9 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected switch(expr: ExprSwitch): string {
-    const cases = expr.cases.map((c) => `WHEN ${this.render(c.when)} THEN ${this.render(c.then)}`).join(" ");
+    const cases = expr.cases
+      .map((c) => `WHEN ${this.render(c.when)} THEN ${this.render(c.then)}`)
+      .join(" ");
     return `CASE ${cases} ELSE ${this.render(expr.else)} END`;
   }
 
@@ -585,7 +587,9 @@ export class MssqlExprRenderer extends ExprRendererBase {
       parts.push(`PARTITION BY ${spec.partitionBy.map((p) => this.render(p)).join(", ")}`);
     }
     if (spec.orderBy != null && spec.orderBy.length > 0) {
-      const orderParts = spec.orderBy.map(([expr, dir]) => `${this.render(expr)}${dir != null ? ` ${dir}` : ""}`);
+      const orderParts = spec.orderBy.map(
+        ([expr, dir]) => `${this.render(expr)}${dir != null ? ` ${dir}` : ""}`,
+      );
       parts.push(`ORDER BY ${orderParts.join(", ")}`);
     }
     return parts.join(" ");

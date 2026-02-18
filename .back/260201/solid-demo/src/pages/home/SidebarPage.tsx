@@ -112,7 +112,9 @@ export default function SidebarPage() {
             <Button onClick={() => setToggledDemo((v) => !v)}>
               {toggledDemo() ? "사이드바 표시" : "사이드바 숨기기"}
             </Button>
-            <span class={atoms({ ml: "base", color: "muted" })}>toggled: {toggledDemo() ? "true" : "false"}</span>
+            <span class={atoms({ ml: "base", color: "muted" })}>
+              toggled: {toggledDemo() ? "true" : "false"}
+            </span>
           </div>
           <div class={demoContainer}>
             <SidebarContainer toggled={toggledDemo()} onToggledChange={setToggledDemo}>
@@ -121,7 +123,9 @@ export default function SidebarPage() {
                 <SidebarMenu menus={sampleMenus} layout="flat" />
               </Sidebar>
               <div class={demoContent}>
-                <p style={{ color: `rgb(${themeVars.text.muted})` }}>토글 버튼으로 사이드바 숨김/표시 전환</p>
+                <p style={{ color: `rgb(${themeVars.text.muted})` }}>
+                  토글 버튼으로 사이드바 숨김/표시 전환
+                </p>
               </div>
             </SidebarContainer>
           </div>
@@ -188,7 +192,9 @@ export default function SidebarPage() {
         {/* 모바일 데모 */}
         <section>
           <h3>모바일 데모</h3>
-          <p class={atoms({ mb: "base", color: "muted" })}>375px x 500px iframe으로 모바일 환경 시뮬레이션</p>
+          <p class={atoms({ mb: "base", color: "muted" })}>
+            375px x 500px iframe으로 모바일 환경 시뮬레이션
+          </p>
           <div class={mobileIframeContainer}>
             <iframe
               src="#/mobile-layout-demo"

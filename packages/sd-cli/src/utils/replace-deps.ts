@@ -157,7 +157,10 @@ async function collectSearchRoots(projectRoot: string): Promise<string[]> {
  * @param projectRoot - 프로젝트 루트 경로
  * @param replaceDeps - sd.config.ts의 replaceDeps 설정
  */
-export async function setupReplaceDeps(projectRoot: string, replaceDeps: Record<string, string>): Promise<void> {
+export async function setupReplaceDeps(
+  projectRoot: string,
+  replaceDeps: Record<string, string>,
+): Promise<void> {
   const logger = consola.withTag("sd:cli:replace-deps");
 
   // 1. Workspace 패키지 경로 목록 수집
@@ -348,7 +351,9 @@ export async function watchReplaceDeps(
               logger.info(`삭제: ${relativePath} (${e.targetName})`);
             }
           } catch (err) {
-            logger.error(`복사 실패 (${e.targetName}/${relativePath}): ${err instanceof Error ? err.message : err}`);
+            logger.error(
+              `복사 실패 (${e.targetName}/${relativePath}): ${err instanceof Error ? err.message : err}`,
+            );
           }
         }
       }

@@ -23,7 +23,10 @@ import "@simplysm/core-common";
  */
 export interface TimeFieldProps
   extends
-    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+    Omit<
+      JSX.InputHTMLAttributes<HTMLInputElement>,
+      "value" | "onChange" | "type" | "min" | "max" | "size"
+    >,
     TimeFieldStyles {
   value?: Time | undefined;
   onChange?: (value: Time | undefined) => void;
@@ -162,12 +165,16 @@ export const TimeField: Component<TimeFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[timeField(objPick(local, timeField.variants())), local.class].filter(Boolean).join(" ")}
+          class={[timeField(objPick(local, timeField.variants())), local.class]
+            .filter(Boolean)
+            .join(" ")}
         />
       }
     >
       <div class={timeFieldContainer}>
-        <div class={timeFieldContent}>{displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}</div>
+        <div class={timeFieldContent}>
+          {displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}
+        </div>
         <input
           {...rest}
           {...inputProps()}

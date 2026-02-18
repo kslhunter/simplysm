@@ -14,7 +14,9 @@ import "@simplysm/core-common";
  * @property inset - true일 경우 테이블 셀 등에서 사용하기 위한 인셋 스타일 적용
  */
 export interface TextareaProps
-  extends Omit<JSX.TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange">, TextareaStyles {
+  extends
+    Omit<JSX.TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange">,
+    TextareaStyles {
   value?: string | undefined;
   onChange?: (value: string | undefined) => void;
   rows?: number;

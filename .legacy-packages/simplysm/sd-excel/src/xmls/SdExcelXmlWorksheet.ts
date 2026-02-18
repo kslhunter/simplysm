@@ -213,7 +213,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     const colIndexNumber = NumberUtils.parseInt(colIndex)!;
     const col = this.data.worksheet.cols?.[0].col.single(
       (item) =>
-        NumberUtils.parseInt(item.$.min)! <= colIndexNumber && NumberUtils.parseInt(item.$.max)! >= colIndexNumber,
+        NumberUtils.parseInt(item.$.min)! <= colIndexNumber &&
+        NumberUtils.parseInt(item.$.max)! >= colIndexNumber,
     );
 
     if (col) {

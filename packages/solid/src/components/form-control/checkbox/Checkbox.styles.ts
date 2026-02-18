@@ -53,7 +53,11 @@ export const checkboxSizeClasses: Record<CheckboxSize, string> = {
 };
 
 // inset 스타일
-export const checkboxInsetClass = clsx("h-field-inset justify-center bg-transparent", insetBase, insetFocusOutlineSelf);
+export const checkboxInsetClass = clsx(
+  "h-field-inset justify-center bg-transparent",
+  insetBase,
+  insetFocusOutlineSelf,
+);
 
 // inset 사이즈별 높이 (border 2px 제외)
 export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {

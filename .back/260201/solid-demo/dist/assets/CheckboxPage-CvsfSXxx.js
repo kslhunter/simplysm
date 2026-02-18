@@ -87,7 +87,12 @@ const t = (S) => {
         fe(k, {
           get class() {
             return [
-              T({ ...Se(i, T.variants()), checked: m(), indeterminate: i.indeterminate ?? !1, disabled: i.disabled }),
+              T({
+                ...Se(i, T.variants()),
+                checked: m(),
+                indeterminate: i.indeterminate ?? !1,
+                disabled: i.disabled,
+              }),
               i.class,
             ]
               .filter(Boolean)
@@ -247,7 +252,11 @@ function Ae() {
             n(x, e(t, { checked: !0, theme: "info", size: "lg", children: "LG Info" }), null),
             n(x, e(t, { checked: !0, theme: "warning", size: "xl", children: "XL Warning" }), null),
             n(o, e(t, { checked: !0, theme: "primary", disabled: !0, children: "Primary" }), null),
-            n(o, e(t, { checked: !0, theme: "secondary", disabled: !0, children: "Secondary" }), null),
+            n(
+              o,
+              e(t, { checked: !0, theme: "secondary", disabled: !0, children: "Secondary" }),
+              null,
+            ),
             n(o, e(t, { checked: !0, theme: "success", disabled: !0, children: "Success" }), null),
             n(o, e(t, { checked: !0, theme: "warning", disabled: !0, children: "Warning" }), null),
             n(o, e(t, { checked: !0, theme: "danger", disabled: !0, children: "Danger" }), null),

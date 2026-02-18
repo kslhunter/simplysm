@@ -1,7 +1,9 @@
 export class FnUtils {
   static parse(fn: (...args: any[]) => any): { params: string[]; returnContent: string } {
     let matches: RegExpMatchArray | null =
-      /function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/.exec(fn.toString());
+      /function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/.exec(
+        fn.toString(),
+      );
 
     if (matches == null) {
       matches = /^\(?([^)]*)\)?(\s?)=>(\s?)(.*)$/.exec(fn.toString());

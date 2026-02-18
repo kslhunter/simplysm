@@ -53,4 +53,6 @@ export const TestService = defineService("TestService", (ctx) => ({
   },
 }));
 
-export type TestServiceMethods = import("@simplysm/service-server").ServiceMethods<typeof TestService>;
+export type TestServiceMethods = import("@simplysm/service-server").ServiceMethods<
+  typeof TestService
+>;

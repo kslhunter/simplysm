@@ -64,7 +64,11 @@ export class DateOnly {
     // yyyyMMdd 형식 (타임존 영향 없음)
     const matchCompact = /^(\d{4})(\d{2})(\d{2})$/.exec(str);
     if (matchCompact != null) {
-      return new DateOnly(Number(matchCompact[1]), Number(matchCompact[2]), Number(matchCompact[3]));
+      return new DateOnly(
+        Number(matchCompact[1]),
+        Number(matchCompact[2]),
+        Number(matchCompact[3]),
+      );
     }
 
     // ISO 8601 등 기타 형식 (Date.parse 사용, 타임존 변환 적용)
@@ -80,9 +84,12 @@ export class DateOnly {
       return new DateOnly(localTick);
     }
 
-    throw new ArgumentError(`날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`, {
-      input: str,
-    });
+    throw new ArgumentError(
+      `날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`,
+      {
+        input: str,
+      },
+    );
   }
 
   //#region 주차 계산
@@ -156,10 +163,16 @@ export class DateOnly {
    * // 미국식 (일요일 시작, 첫 주 1일 이상)
    * new DateOnly(2025, 1, 1).getWeekSeqOfYear(0, 1); // { year: 2025, weekSeq: 1 }
    */
-  getWeekSeqOfYear(weekStartDay: number = 1, minDaysInFirstWeek: number = 4): { year: number; weekSeq: number } {
+  getWeekSeqOfYear(
+    weekStartDay: number = 1,
+    minDaysInFirstWeek: number = 4,
+  ): { year: number; weekSeq: number } {
     const base = this.getBaseYearMonthSeqForWeekSeq(weekStartDay, minDaysInFirstWeek);
 
-    const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(weekStartDay, minDaysInFirstWeek);
+    const firstWeekStart = new DateOnly(base.year, 1, 1).getWeekSeqStartDate(
+      weekStartDay,
+      minDaysInFirstWeek,
+    );
 
     const diffDays = (this.tick - firstWeekStart.tick) / DateOnly.MS_PER_DAY;
     return {

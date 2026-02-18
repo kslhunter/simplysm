@@ -15,7 +15,12 @@ import {
   Uuid,
 } from "@simplysm/core-common";
 import type { ColumnMeta, DataType, IsolationLevel } from "@simplysm/orm-common";
-import { DB_CONN_DEFAULT_TIMEOUT, DB_CONN_ERRORS, type DbConn, type MysqlDbConnConfig } from "../types/db-conn";
+import {
+  DB_CONN_DEFAULT_TIMEOUT,
+  DB_CONN_ERRORS,
+  type DbConn,
+  type MysqlDbConnConfig,
+} from "../types/db-conn";
 
 const logger = consola.withTag("mysql-db-conn");
 
@@ -89,7 +94,11 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     const conn = this._assertConnected();
 
-    const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(/_/g, " ");
+    const level = (
+      isolationLevel ??
+      this.config.defaultIsolationLevel ??
+      "READ_UNCOMMITTED"
+    ).replace(/_/g, " ");
 
     // 격리 수준을 먼저 설정 (다음 트랜잭션에 적용됨)
     await conn.query({
@@ -145,7 +154,12 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       if (queryResults instanceof Array) {
         for (const queryResult of queryResults.filter(
           (item: unknown) =>
-            !(typeof item === "object" && item !== null && "affectedRows" in item && "fieldCount" in item),
+            !(
+              typeof item === "object" &&
+              item !== null &&
+              "affectedRows" in item &&
+              "fieldCount" in item
+            ),
         )) {
           result.push(queryResult);
         }
@@ -157,7 +171,8 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       const error = err as Error & { sql?: string };
       throw new SdError(
         error,
-        "쿼리 수행중 오류발생" + (error.sql != null ? "\n-- query\n" + error.sql.trim() + "\n--" : ""),
+        "쿼리 수행중 오류발생" +
+          (error.sql != null ? "\n-- query\n" + error.sql.trim() + "\n--" : ""),
       );
     }
   }
@@ -181,7 +196,9 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       // CSV 데이터 생성
       const csvLines: string[] = [];
       for (const record of records) {
-        const row = colNames.map((colName) => this._escapeForCsv(record[colName], columnMetas[colName].dataType));
+        const row = colNames.map((colName) =>
+          this._escapeForCsv(record[colName], columnMetas[colName].dataType),
+        );
         csvLines.push(row.join("\t"));
       }
       const csvContent = csvLines.join("\n");
@@ -245,7 +262,11 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       case "text": {
         const str = value as string;
         // 탭, 줄바꿈, 백슬래시 이스케이프
-        return str.replace(/\\/g, "\\\\").replace(/\t/g, "\\t").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+        return str
+          .replace(/\\/g, "\\\\")
+          .replace(/\t/g, "\\t")
+          .replace(/\n/g, "\\n")
+          .replace(/\r/g, "\\r");
       }
 
       case "datetime":

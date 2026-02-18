@@ -27,7 +27,10 @@ export interface DialogShowOptions {
 }
 
 export interface DialogContextValue {
-  show<T = undefined>(factory: () => JSX.Element, options: DialogShowOptions): Promise<T | undefined>;
+  show<T = undefined>(
+    factory: () => JSX.Element,
+    options: DialogShowOptions,
+  ): Promise<T | undefined>;
 }
 
 export const DialogContext = createContext<DialogContextValue>();

@@ -1,5 +1,10 @@
 import { recipe, type RecipeVariants } from "@vanilla-extract/recipes";
-import { fieldBaseStyles, fieldBaseSelectors, fieldBaseVariants, fieldHeight } from "./field-base.css";
+import {
+  fieldBaseStyles,
+  fieldBaseSelectors,
+  fieldBaseVariants,
+  fieldHeight,
+} from "./field-base.css";
 
 /**
  * Textarea 스타일 recipe

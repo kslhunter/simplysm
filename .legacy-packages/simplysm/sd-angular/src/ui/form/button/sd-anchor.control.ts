@@ -66,5 +66,7 @@ export class SdAnchorControl {
   disabled = input(false, { transform: transformBoolean });
 
   /** 테마 - 컴포넌트의 색상 테마를 설정 */
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">("primary");
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >("primary");
 }

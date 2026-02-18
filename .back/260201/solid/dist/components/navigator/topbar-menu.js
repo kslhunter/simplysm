@@ -65,7 +65,9 @@ const TopbarMenuTrigger = (props) => {
   return /* @__PURE__ */ React.createElement(
     Button,
     { link: true },
-    /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon }, (icon) => icon()({ size: 18 })),
+    /* @__PURE__ */ React.createElement(Show, { when: props.menu.icon }, (icon) =>
+      icon()({ size: 18 }),
+    ),
     props.menu.title,
     /* @__PURE__ */ React.createElement(IconChevronDown, { size: 16 }),
   );
@@ -100,7 +102,9 @@ const MenuItemRenderer = (props) => {
         class: atoms({ gap: "xs" }),
         onClick: (e) => props.onMenuClick(menu, e, props.closeDropdown),
       },
-      /* @__PURE__ */ React.createElement(Show, { when: menu.icon }, (icon) => icon()({ size: 16 })),
+      /* @__PURE__ */ React.createElement(Show, { when: menu.icon }, (icon) =>
+        icon()({ size: 16 }),
+      ),
       /* @__PURE__ */ React.createElement("span", null, menu.title),
       /* @__PURE__ */ React.createElement(
         Show,

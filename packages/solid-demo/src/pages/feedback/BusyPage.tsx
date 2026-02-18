@@ -43,7 +43,9 @@ const BusyDemo: Component = () => {
       {/* 전역 Busy */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">전역 Busy (Provider)</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">useBusy() 훅으로 전역 로딩 오버레이를 표시합니다.</p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          useBusy() 훅으로 전역 로딩 오버레이를 표시합니다.
+        </p>
         <Button theme="primary" variant="solid" onClick={handleGlobalBusy}>
           전역 Busy 2초
         </Button>
@@ -52,7 +54,9 @@ const BusyDemo: Component = () => {
       {/* 로컬 Spinner */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">로컬 BusyContainer (Spinner)</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">특정 영역에 spinner 타입 로딩을 표시합니다.</p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          특정 영역에 spinner 타입 로딩을 표시합니다.
+        </p>
         <Button theme="base" variant="outline" onClick={handleLocalBusy}>
           로컬 Spinner 2초
         </Button>
@@ -69,7 +73,9 @@ const BusyDemo: Component = () => {
       {/* 로컬 Bar */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">로컬 BusyContainer (Bar)</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">bar 타입으로 상단에 프로그레스 바를 표시합니다.</p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          bar 타입으로 상단에 프로그레스 바를 표시합니다.
+        </p>
         <Button theme="base" variant="outline" onClick={handleBarBusy}>
           로컬 Bar 2초
         </Button>
@@ -85,7 +91,9 @@ const BusyDemo: Component = () => {
       {/* Progress */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">진행률 표시</h2>
-        <p class="mb-4 text-sm text-base-600 dark:text-base-400">progressPercent prop으로 진행률을 표시합니다.</p>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          progressPercent prop으로 진행률을 표시합니다.
+        </p>
         <Button theme="base" variant="outline" onClick={handleProgressBusy}>
           진행률 테스트
         </Button>

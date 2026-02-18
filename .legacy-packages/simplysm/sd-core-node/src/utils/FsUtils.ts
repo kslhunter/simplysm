@@ -34,11 +34,15 @@ export class FsUtils {
   }
 
   static async globAsync(pattern: string, options?: glob.GlobOptions): Promise<string[]> {
-    return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(item.toString()));
+    return (await glob.glob(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
+      path.resolve(item.toString()),
+    );
   }
 
   static glob(pattern: string, options?: glob.GlobOptions): string[] {
-    return glob.globSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) => path.resolve(item.toString()));
+    return glob
+      .globSync(pattern.replace(/\\/g, "/"), options ?? {})
+      .map((item) => path.resolve(item.toString()));
   }
 
   static async readdirAsync(targetPath: string): Promise<string[]> {
@@ -86,7 +90,11 @@ export class FsUtils {
     }
   }
 
-  static async copyAsync(sourcePath: string, targetPath: string, filter?: (subPath: string) => boolean): Promise<void> {
+  static async copyAsync(
+    sourcePath: string,
+    targetPath: string,
+    filter?: (subPath: string) => boolean,
+  ): Promise<void> {
     if (!FsUtils.exists(sourcePath)) {
       return;
     }
@@ -347,7 +355,10 @@ export class FsUtils {
     }
   }
 
-  static async openAsync(targetPath: string, flags: string | number): Promise<fs.promises.FileHandle> {
+  static async openAsync(
+    targetPath: string,
+    flags: string | number,
+  ): Promise<fs.promises.FileHandle> {
     try {
       return await fs.promises.open(targetPath, flags);
     } catch (err) {
@@ -410,7 +421,11 @@ export class FsUtils {
     return resultPaths;
   }
 
-  static async findAllParentChildPathsAsync(childGlob: string, fromPath: string, rootPath?: string): Promise<string[]> {
+  static async findAllParentChildPathsAsync(
+    childGlob: string,
+    fromPath: string,
+    rootPath?: string,
+  ): Promise<string[]> {
     const resultPaths: string[] = [];
 
     let current = fromPath;

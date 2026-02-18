@@ -157,7 +157,11 @@ describe("SELECT - Window Functions", () => {
       .select((e) => ({
         id: e.id,
         name: e.name,
-        prevId: expr.lag(e.id, { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }, { offset: 1 }),
+        prevId: expr.lag(
+          e.id,
+          { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] },
+          { offset: 1 },
+        ),
       }))
       .getSelectQueryDef();
 
@@ -484,7 +488,11 @@ describe("SELECT - Window Functions", () => {
         name: e.name,
         rowNum: expr.rowNumber({ partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }),
         rank: expr.rank({ partitionBy: [e.departmentId], orderBy: [[e.id, "DESC"]] }),
-        prevName: expr.lag(e.name, { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] }, { offset: 1 }),
+        prevName: expr.lag(
+          e.name,
+          { partitionBy: [e.departmentId], orderBy: [[e.id, "ASC"]] },
+          { offset: 1 },
+        ),
       }))
       .getSelectQueryDef();
 

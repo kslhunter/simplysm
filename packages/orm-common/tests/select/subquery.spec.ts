@@ -214,7 +214,11 @@ describe("SELECT - WRAP (서브쿼리)", () => {
           from: { database: "TestDb", schema: "TestSchema", name: "User" },
           select: {
             name: { type: "column", path: ["T1", "name"] },
-            cnt: { type: "count", arg: { type: "column", path: ["T1", "id"] }, distinct: undefined },
+            cnt: {
+              type: "count",
+              arg: { type: "column", path: ["T1", "id"] },
+              distinct: undefined,
+            },
           },
           groupBy: [{ type: "column", path: ["T1", "name"] }],
         },

@@ -1,4 +1,12 @@
-import { children, type Component, createMemo, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import {
+  children,
+  type Component,
+  createMemo,
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+} from "solid-js";
 import { IconChevronLeft, type IconProps } from "@tabler/icons-solidjs";
 import { Collapse } from "../../navigator/collapse/collapse";
 import { CollapseIcon } from "../../navigator/collapse/collapse-icon";
@@ -133,10 +141,14 @@ export const ListItem: ParentComponent<ListItemProps> = (props) => {
           e.currentTarget.tabIndex = 0;
         }}
       >
-        <Show when={local.selectedIcon && !hasChildren()}>{local.selectedIcon?.({ style: selectedIconStyle() })}</Show>
+        <Show when={local.selectedIcon && !hasChildren()}>
+          {local.selectedIcon?.({ style: selectedIconStyle() })}
+        </Show>
         <Show when={local.icon}>{local.icon?.({})}</Show>
         <div
-          class={[atoms({ display: "flex", alignItems: "center" }), styleProps.class].filter(Boolean).join(" ")}
+          class={[atoms({ display: "flex", alignItems: "center" }), styleProps.class]
+            .filter(Boolean)
+            .join(" ")}
           style={combineStyle(styleProps.style, { flex: 1 })}
         >
           {content()}

@@ -9,7 +9,10 @@ export interface IBroadcastPlugin {
   /**
    * Broadcast 수신기 등록
    */
-  subscribe(options: { filters: string[] }, callback: (result: IBroadcastResult) => void): Promise<{ id: string }>;
+  subscribe(
+    options: { filters: string[] },
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<{ id: string }>;
 
   /**
    * 특정 Broadcast 수신기 해제

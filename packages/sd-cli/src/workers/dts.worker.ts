@@ -78,7 +78,9 @@ export interface DtsWorkerEvents extends Record<string, unknown> {
 const logger = consola.withTag("sd:cli:dts:worker");
 
 /** tsc watch program (정리 대상) */
-let tscWatchProgram: ts.WatchOfFilesAndCompilerOptions<ts.EmitAndSemanticDiagnosticsBuilderProgram> | undefined;
+let tscWatchProgram:
+  | ts.WatchOfFilesAndCompilerOptions<ts.EmitAndSemanticDiagnosticsBuilderProgram>
+  | undefined;
 
 /**
  * 리소스 정리
@@ -141,7 +143,9 @@ function adjustDtsMapSources(content: string, originalDir: string, newDir: strin
  *
  * @returns (fileName, content) => [newPath, newContent] | null (null이면 쓰기 무시)
  */
-function createDtsPathRewriter(pkgDir: string): (fileName: string, content: string) => [string, string] | null {
+function createDtsPathRewriter(
+  pkgDir: string,
+): (fileName: string, content: string) => [string, string] | null {
   const pkgName = path.basename(pkgDir);
   const distDir = path.join(pkgDir, "dist");
   const distPrefix = distDir + path.sep;
@@ -276,8 +280,12 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     const filteredDiagnostics = allDiagnostics.filter(diagnosticFilter);
 
     const serializedDiagnostics = filteredDiagnostics.map(serializeDiagnostic);
-    const errorCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error).length;
-    const warningCount = filteredDiagnostics.filter((d) => d.category === ts.DiagnosticCategory.Warning).length;
+    const errorCount = filteredDiagnostics.filter(
+      (d) => d.category === ts.DiagnosticCategory.Error,
+    ).length;
+    const warningCount = filteredDiagnostics.filter(
+      (d) => d.category === ts.DiagnosticCategory.Warning,
+    ).length;
 
     // 에러 메시지 문자열 배열 (하위 호환용)
     const errors = filteredDiagnostics
@@ -330,7 +338,11 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
   try {
     const parsedConfig = parseRootTsconfig(info.cwd);
     const rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
-    const baseOptions = await getCompilerOptionsForPackage(parsedConfig.options, info.env, info.pkgDir);
+    const baseOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      info.env,
+      info.pkgDir,
+    );
 
     // 해당 패키지 경로 (필터링용)
     const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
@@ -362,7 +374,9 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
 
         // 파일 위치 정보가 있으면 포함 (절대경로:라인:컬럼 형식 - IDE 링크 지원)
         if (diagnostic.file != null && diagnostic.start != null) {
-          const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
+            diagnostic.start,
+          );
           collectedErrors.push(
             `${diagnostic.file.fileName}:${line + 1}:${character + 1}: TS${diagnostic.code}: ${message}`,
           );
@@ -424,7 +438,10 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
   }
 }
 
-const sender = createWorker<{ startDtsWatch: typeof startDtsWatch; buildDts: typeof buildDts }, DtsWorkerEvents>({
+const sender = createWorker<
+  { startDtsWatch: typeof startDtsWatch; buildDts: typeof buildDts },
+  DtsWorkerEvents
+>({
   startDtsWatch,
   buildDts,
 });

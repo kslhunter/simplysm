@@ -83,7 +83,7 @@ The demo runs in Vite dev server mode with hot module replacement. Navigate betw
 - **Data** -- Data table and list components
 - **Navigation** -- Tab and menu navigation
 - **Disclosure** -- Dropdown, dialog, and collapse
-- **Feedback** -- Notification, loading, and print
+- **Feedback** -- Notification, busy, and print
 - **Service** -- API client and data sharing examples
 - **Mobile Layout** -- Responsive design demonstration
 

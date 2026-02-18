@@ -5,7 +5,14 @@ import type { ExcelXmlStyle, ExcelStyle } from "./xml/excel-xml-style";
 import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelAddressPoint, ExcelStyleOptions, ExcelValueType } from "./types";
-import { DateOnly, DateTime, numParseFloat, numParseInt, strIsNullOrEmpty, Time } from "@simplysm/core-common";
+import {
+  DateOnly,
+  DateTime,
+  numParseFloat,
+  numParseInt,
+  strIsNullOrEmpty,
+  Time,
+} from "@simplysm/core-common";
 import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
 import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
@@ -88,10 +95,15 @@ export class ExcelCell {
       wsData.setCellType(this.addr, undefined);
       wsData.setCellVal(this.addr, ExcelUtils.convertTimeTickToNumber(val.tick).toString());
 
-      const numFmtName = val instanceof DateOnly ? "DateOnly" : val instanceof DateTime ? "DateTime" : "Time";
-      await this._setStyleInternal({ numFmtId: ExcelUtils.convertNumFmtNameToId(numFmtName).toString() });
+      const numFmtName =
+        val instanceof DateOnly ? "DateOnly" : val instanceof DateTime ? "DateTime" : "Time";
+      await this._setStyleInternal({
+        numFmtId: ExcelUtils.convertNumFmtNameToId(numFmtName).toString(),
+      });
     } else {
-      throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${typeof val}`);
+      throw new Error(
+        `[${ExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${typeof val}`,
+      );
     }
   }
 
@@ -108,7 +120,9 @@ export class ExcelCell {
       const ssData = await this._getOrCreateSsData();
       const ssId = numParseInt(cellVal);
       if (ssId == null) {
-        throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] SharedString ID 파싱 실패: ${cellVal}`);
+        throw new Error(
+          `[${ExcelUtils.stringifyAddr(this.addr)}] SharedString ID 파싱 실패: ${cellVal}`,
+        );
       }
       return ssData.getStringById(ssId);
     } else if (cellType === "str") {
@@ -147,7 +161,9 @@ export class ExcelCell {
       } else {
         const numFmtIdNum = numParseInt(numFmtId);
         if (numFmtIdNum == null) {
-          throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] numFmtId 파싱 실패: ${numFmtId}`);
+          throw new Error(
+            `[${ExcelUtils.stringifyAddr(this.addr)}] numFmtId 파싱 실패: ${numFmtId}`,
+          );
         }
         numFmt = ExcelUtils.convertNumFmtIdToName(numFmtIdNum);
       }
@@ -160,7 +176,9 @@ export class ExcelCell {
         // DateOnly, DateTime, Time
         const dateNum = numParseFloat(cellVal);
         if (dateNum == null) {
-          throw new Error(`[${ExcelUtils.stringifyAddr(this.addr)}] 날짜 숫자 파싱 실패: ${cellVal}`);
+          throw new Error(
+            `[${ExcelUtils.stringifyAddr(this.addr)}] 날짜 숫자 파싱 실패: ${cellVal}`,
+          );
         }
         const tick = ExcelUtils.convertNumberToTimeTick(dateNum);
         if (numFmt === "DateOnly") {
@@ -314,10 +332,16 @@ export class ExcelCell {
       this._zipCache.set("xl/styles.xml", styleData);
 
       const typeData = await this._getTypeData();
-      typeData.add("/xl/styles.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml");
+      typeData.add(
+        "/xl/styles.xml",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
+      );
 
       const wbRelData = await this._getWbRelData();
-      wbRelData.add("styles.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles");
+      wbRelData.add(
+        "styles.xml",
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+      );
     }
     return styleData;
   }

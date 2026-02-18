@@ -3,7 +3,12 @@ import ts from "typescript";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import { consola } from "consola";
-import type { SdConfig, SdBuildPackageConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
+import type {
+  SdConfig,
+  SdBuildPackageConfig,
+  SdClientPackageConfig,
+  SdServerPackageConfig,
+} from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
 import { setupReplaceDeps } from "../utils/replace-deps";
@@ -69,7 +74,11 @@ interface ClassifiedPackages {
 function classifyPackages(
   packages: Record<
     string,
-    SdBuildPackageConfig | SdClientPackageConfig | SdServerPackageConfig | { target: "scripts" } | undefined
+    | SdBuildPackageConfig
+    | SdClientPackageConfig
+    | SdServerPackageConfig
+    | { target: "scripts" }
+    | undefined
   >,
   targets: string[],
 ): ClassifiedPackages {
@@ -260,7 +269,8 @@ export class BuildOrchestrator {
         // JS 빌드와 DTS 생성을 병렬 실행
         const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> =
           Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
-        const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
+        const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
+          Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
         try {
           const [buildResult, dtsResult] = await Promise.all([
@@ -313,7 +323,8 @@ export class BuildOrchestrator {
         // Vite 빌드와 타입체크를 병렬 실행
         const clientWorker: WorkerProxy<typeof ClientWorkerModule> =
           Worker.create<typeof ClientWorkerModule>(clientWorkerPath);
-        const dtsWorker: WorkerProxy<typeof DtsWorkerModule> = Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
+        const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
+          Worker.create<typeof DtsWorkerModule>(dtsWorkerPath);
 
         try {
           const clientConfig: SdClientPackageConfig = {

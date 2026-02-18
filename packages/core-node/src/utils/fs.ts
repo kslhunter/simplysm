@@ -109,7 +109,11 @@ export async function fsRm(targetPath: string): Promise<void> {
  *               모든 하위 항목(자식, 손자 등)에 재귀적으로 filter 함수가 적용된다.
  *               디렉토리에 false를 반환하면 해당 디렉토리와 모든 하위 항목이 건너뛰어짐.
  */
-export function fsCopySync(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): void {
+export function fsCopySync(
+  sourcePath: string,
+  targetPath: string,
+  filter?: (absolutePath: string) => boolean,
+): void {
   if (!fsExistsSync(sourcePath)) {
     return;
   }
@@ -442,7 +446,9 @@ export async function fsLstat(targetPath: string): Promise<fs.Stats> {
  * @returns 매칭된 파일들의 절대 경로 배열
  */
 export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
-  return globRawSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) => path.resolve(item.toString()));
+  return globRawSync(pattern.replace(/\\/g, "/"), options ?? {}).map((item) =>
+    path.resolve(item.toString()),
+  );
 }
 
 /**
@@ -452,7 +458,9 @@ export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
  * @returns 매칭된 파일들의 절대 경로 배열
  */
 export async function fsGlob(pattern: string, options?: GlobOptions): Promise<string[]> {
-  return (await globRaw(pattern.replace(/\\/g, "/"), options ?? {})).map((item) => path.resolve(item.toString()));
+  return (await globRaw(pattern.replace(/\\/g, "/"), options ?? {})).map((item) =>
+    path.resolve(item.toString()),
+  );
 }
 
 //#endregion
@@ -496,7 +504,11 @@ export async function fsClearEmptyDirectory(dirPath: string): Promise<void> {
  *                   **주의**: fromPath가 rootPath의 자식 경로여야 함.
  *                   그렇지 않으면 파일시스템 루트까지 검색함.
  */
-export function fsFindAllParentChildPathsSync(childGlob: string, fromPath: string, rootPath?: string): string[] {
+export function fsFindAllParentChildPathsSync(
+  childGlob: string,
+  fromPath: string,
+  rootPath?: string,
+): string[] {
   const resultPaths: string[] = [];
 
   let current = fromPath;

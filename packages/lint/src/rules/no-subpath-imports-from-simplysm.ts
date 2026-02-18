@@ -15,12 +15,14 @@ export default createRule({
   meta: {
     type: "problem",
     docs: {
-      description: "@simplysm 패키지에서 'src' 서브경로 import를 금지한다. (ex: @simplysm/pkg/src/x → 금지)",
+      description:
+        "@simplysm 패키지에서 'src' 서브경로 import를 금지한다. (ex: @simplysm/pkg/src/x → 금지)",
     },
     fixable: "code",
     schema: [],
     messages: {
-      noSubpathImport: "'@simplysm/{{pkg}}' 패키지는 'src' 서브경로를 import할 수 없습니다: '{{importPath}}'",
+      noSubpathImport:
+        "'@simplysm/{{pkg}}' 패키지는 'src' 서브경로를 import할 수 없습니다: '{{importPath}}'",
     },
   },
   defaultOptions: [],

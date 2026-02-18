@@ -227,7 +227,9 @@ describe("Checkbox", () => {
       // 기본 IconCheck는 svg로 렌더링됨
       expect(valueContainer.querySelector("svg")).toBeInTheDocument();
 
-      const { container: indeterminateContainer } = render(() => <Checkbox value="-">부분 선택</Checkbox>);
+      const { container: indeterminateContainer } = render(() => (
+        <Checkbox value="-">부분 선택</Checkbox>
+      ));
 
       // 기본 IconMinus도 svg로 렌더링됨
       expect(indeterminateContainer.querySelector("svg")).toBeInTheDocument();
@@ -285,7 +287,16 @@ describe("Checkbox", () => {
   });
 
   describe("theme variants (AC5)", () => {
-    const themes = ["primary", "secondary", "success", "warning", "danger", "info", "gray", "slate"] as const;
+    const themes = [
+      "primary",
+      "secondary",
+      "success",
+      "warning",
+      "danger",
+      "info",
+      "gray",
+      "slate",
+    ] as const;
 
     it.each(themes)("theme=%s가 에러 없이 렌더링된다", (theme) => {
       render(() => (

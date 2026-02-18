@@ -50,7 +50,11 @@ export class SdGapControl {
     $effect(() => {
       if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
         this._elRef.nativeElement.style.display = "none";
-      } else if (this.width() !== undefined || this.widthPx() !== undefined || this.widthEm() !== undefined) {
+      } else if (
+        this.width() !== undefined ||
+        this.widthPx() !== undefined ||
+        this.widthEm() !== undefined
+      ) {
         this._elRef.nativeElement.style.display = "inline-block";
       } else if (this.height() !== undefined || this.heightPx() !== undefined) {
         this._elRef.nativeElement.style.display = "block";

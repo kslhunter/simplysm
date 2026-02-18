@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { topbarContainer } from "../../../src/components/navigator/topbar/topbar-container.css";
 import { topbar, topbarTitle } from "../../../src/components/navigator/topbar/topbar.css";
-import { topbarMenu, topbarMenuNestedList } from "../../../src/components/navigator/topbar/topbar-menu.css";
+import {
+  topbarMenu,
+  topbarMenuNestedList,
+} from "../../../src/components/navigator/topbar/topbar-menu.css";
 import { topbarUser } from "../../../src/components/navigator/topbar/topbar-user.css";
 
 describe("topbar CSS", () => {

@@ -133,7 +133,9 @@ const DateField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" "),
+        class: [dateField(objPick(local, dateField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(
@@ -147,7 +149,9 @@ const DateField = (props) => {
       /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [dateFieldInput, dateField(objPick(local, dateField.variants())), local.class].filterExists().join(" "),
+        class: [dateFieldInput, dateField(objPick(local, dateField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     ),
   );

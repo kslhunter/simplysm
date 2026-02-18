@@ -64,7 +64,9 @@ describe("NotificationBanner", () => {
       expect(document.querySelector("[data-notification-banner]")).not.toBeNull();
     });
 
-    const closeButton = document.querySelector("[data-notification-banner] [aria-label='알림 닫기']");
+    const closeButton = document.querySelector(
+      "[data-notification-banner] [aria-label='알림 닫기']",
+    );
     fireEvent.click(closeButton!);
 
     await waitFor(() => {
@@ -139,11 +141,15 @@ describe("NotificationBanner", () => {
     });
 
     await waitFor(() => {
-      const actionButton = document.querySelector("[data-notification-banner] button:not([aria-label])");
+      const actionButton = document.querySelector(
+        "[data-notification-banner] button:not([aria-label])",
+      );
       expect(actionButton?.textContent).toBe("확인");
     });
 
-    const actionButton = document.querySelector("[data-notification-banner] button:not([aria-label])");
+    const actionButton = document.querySelector(
+      "[data-notification-banner] button:not([aria-label])",
+    );
     fireEvent.click(actionButton!);
 
     expect(handleAction).toHaveBeenCalled();
@@ -167,13 +173,17 @@ describe("NotificationBanner", () => {
     notification!.info("첫 번째");
 
     await waitFor(() => {
-      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain("첫 번째");
+      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain(
+        "첫 번째",
+      );
     });
 
     notification!.info("두 번째");
 
     await waitFor(() => {
-      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain("두 번째");
+      expect(document.querySelector("[data-notification-banner]")?.textContent).toContain(
+        "두 번째",
+      );
     });
   });
 });

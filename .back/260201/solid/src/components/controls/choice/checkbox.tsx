@@ -17,7 +17,8 @@ import { Dynamic } from "solid-js/web";
 void ripple;
 void invalid;
 
-export interface CheckboxProps extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, CheckboxStyles {
+export interface CheckboxProps
+  extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, CheckboxStyles {
   onChange?: (checked: boolean | "-" | undefined) => void;
   icon?: Component<IconProps>;
   required?: boolean;

@@ -81,7 +81,11 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   getWsRelIdByName(name: string): number | undefined {
-    return numParseInt((this.data.workbook.sheets?.[0].sheet ?? []).single((item) => item.$.name === name)?.$["r:id"]);
+    return numParseInt(
+      (this.data.workbook.sheets?.[0].sheet ?? []).single((item) => item.$.name === name)?.$[
+        "r:id"
+      ],
+    );
   }
 
   getWsRelIdByIndex(index: number): number | undefined {
@@ -102,7 +106,9 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   private _getSheetDataById(id: number) {
-    return (this.data.workbook.sheets?.[0].sheet ?? []).single((item) => numParseInt(item.$["r:id"]) === id);
+    return (this.data.workbook.sheets?.[0].sheet ?? []).single(
+      (item) => numParseInt(item.$["r:id"]) === id,
+    );
   }
 
   private _getReplacedName(name: string): string {

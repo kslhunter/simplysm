@@ -86,7 +86,8 @@ function encodeImpl(
     if (obj instanceof Uint8Array) {
       // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
       // ArrayBuffer만 transferList에 추가
-      const isSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
+      const isSharedArrayBuffer =
+        typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
       const buffer = obj.buffer as ArrayBuffer;
       if (!isSharedArrayBuffer && !transferList.includes(buffer)) {
         transferList.push(buffer);
@@ -119,17 +120,29 @@ function encodeImpl(
           stack: errObj.stack,
           ...(errObj.code !== undefined ? { code: errObj.code } : {}),
           ...(errObj.detail !== undefined
-            ? { detail: encodeImpl(errObj.detail, transferList, [...path, "detail"], ancestors, cache) }
+            ? {
+                detail: encodeImpl(
+                  errObj.detail,
+                  transferList,
+                  [...path, "detail"],
+                  ancestors,
+                  cache,
+                ),
+              }
             : {}),
           ...(errObj.cause !== undefined
-            ? { cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache) }
+            ? {
+                cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache),
+              }
             : {}),
         },
       };
     }
     // 3. 배열 재귀 순회
     else if (Array.isArray(obj)) {
-      result = obj.map((item, idx) => encodeImpl(item, transferList, [...path, idx], ancestors, cache));
+      result = obj.map((item, idx) =>
+        encodeImpl(item, transferList, [...path, idx], ancestors, cache),
+      );
     }
     // 4. Map 재귀 순회
     else if (obj instanceof Map) {
@@ -150,7 +163,9 @@ function encodeImpl(
     else if (obj instanceof Set) {
       let idx = 0;
       result = new Set(
-        Array.from(obj).map((v) => encodeImpl(v, transferList, [...path, `Set[${idx++}]`], ancestors, cache)),
+        Array.from(obj).map((v) =>
+          encodeImpl(v, transferList, [...path, `Set[${idx++}]`], ancestors, cache),
+        ),
       );
     }
     // 6. 일반 객체 재귀 순회

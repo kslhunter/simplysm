@@ -1,5 +1,10 @@
 import { Show, splitProps } from "solid-js";
-import { colorField, colorFieldContainer, colorFieldContent, colorFieldInput } from "./color-field.css";
+import {
+  colorField,
+  colorFieldContainer,
+  colorFieldContent,
+  colorFieldInput,
+} from "./color-field.css";
 import { objPick } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import { createFieldState } from "../../hooks/createFieldState";
@@ -29,13 +34,18 @@ const ColorField = (props) => {
       fallback: /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),
-        class: [colorField(objPick(local, colorField.variants())), local.class].filterExists().join(" "),
+        class: [colorField(objPick(local, colorField.variants())), local.class]
+          .filterExists()
+          .join(" "),
       }),
     },
     /* @__PURE__ */ React.createElement(
       "div",
       { class: colorFieldContainer },
-      /* @__PURE__ */ React.createElement("div", { class: colorFieldContent, style: { background: inputValue() } }),
+      /* @__PURE__ */ React.createElement("div", {
+        class: colorFieldContent,
+        style: { background: inputValue() },
+      }),
       /* @__PURE__ */ React.createElement("input", {
         ...rest,
         ...inputProps(),

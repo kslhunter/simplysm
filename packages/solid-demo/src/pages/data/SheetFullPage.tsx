@@ -59,7 +59,18 @@ const firstNames = [
   "우진",
   "은서",
 ];
-const departments = ["개발", "개발", "개발", "마케팅", "마케팅", "영업", "영업", "인사", "재무", "디자인"];
+const departments = [
+  "개발",
+  "개발",
+  "개발",
+  "마케팅",
+  "마케팅",
+  "영업",
+  "영업",
+  "인사",
+  "재무",
+  "디자인",
+];
 const teams = [
   "프론트엔드",
   "백엔드",
@@ -128,19 +139,38 @@ export default function SheetFullPage() {
           pageIndex={page()}
           onPageIndexChange={setPage}
         >
-          <DataSheet.Column<Employee> key="id" header="No." class="px-2 py-1 text-right text-base-500" fixed>
+          <DataSheet.Column<Employee>
+            key="id"
+            header="No."
+            class="px-2 py-1 text-right text-base-500"
+            fixed
+          >
             {(ctx) => ctx.item.id}
           </DataSheet.Column>
-          <DataSheet.Column<Employee> key="name" header={["인사정보", "이름"]} class="px-2 py-1 font-medium" fixed>
+          <DataSheet.Column<Employee>
+            key="name"
+            header={["인사정보", "이름"]}
+            class="px-2 py-1 font-medium"
+            fixed
+          >
             {(ctx) => ctx.item.name}
           </DataSheet.Column>
-          <DataSheet.Column<Employee> key="department" header={["인사정보", "부서"]} class="px-2 py-1" fixed>
+          <DataSheet.Column<Employee>
+            key="department"
+            header={["인사정보", "부서"]}
+            class="px-2 py-1"
+            fixed
+          >
             {(ctx) => ctx.item.department}
           </DataSheet.Column>
           <DataSheet.Column<Employee> key="team" header={["인사정보", "팀"]} class="px-2 py-1">
             {(ctx) => ctx.item.team}
           </DataSheet.Column>
-          <DataSheet.Column<Employee> key="position" header={["인사정보", "직급"]} class="px-2 py-1">
+          <DataSheet.Column<Employee>
+            key="position"
+            header={["인사정보", "직급"]}
+            class="px-2 py-1"
+          >
             {(ctx) => ctx.item.position}
           </DataSheet.Column>
           <DataSheet.Column<Employee> key="email" header={["연락처", "이메일"]} class="px-2 py-1">

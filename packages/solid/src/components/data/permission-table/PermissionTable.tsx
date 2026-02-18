@@ -1,5 +1,14 @@
 import type { JSX } from "solid-js";
-import { type Component, createEffect, createMemo, createSignal, For, on, Show, splitProps } from "solid-js";
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  on,
+  Show,
+  splitProps,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DataSheet } from "../sheet/DataSheet";
@@ -113,7 +122,10 @@ export function changePermCheck<TModule>(
 // --- 내부 헬퍼 ---
 
 /** 모듈 필터에 의해 보이는지 확인 (객체 참조 유지) */
-function isItemVisible<TModule>(item: PermissionItem<TModule>, modules: TModule[] | undefined): boolean {
+function isItemVisible<TModule>(
+  item: PermissionItem<TModule>,
+  modules: TModule[] | undefined,
+): boolean {
   if (!modules || modules.length === 0) return true;
   if (item.modules && !item.modules.some((m) => modules.includes(m))) return false;
   if (!item.perms && item.children) {
@@ -123,7 +135,10 @@ function isItemVisible<TModule>(item: PermissionItem<TModule>, modules: TModule[
 }
 
 /** 보이는 아이템에서만 고유 perm 타입 수집 */
-function collectVisiblePerms<TModule>(items: PermissionItem<TModule>[], modules: TModule[] | undefined): string[] {
+function collectVisiblePerms<TModule>(
+  items: PermissionItem<TModule>[],
+  modules: TModule[] | undefined,
+): string[] {
   const set = new Set<string>();
 
   function walk(list: PermissionItem<TModule>[]) {
@@ -165,7 +180,11 @@ function hasPermInTree<TModule>(item: PermissionItem<TModule>, perm: string): bo
 }
 
 /** 기본 권한(perms[0])이 꺼져 있어서 비활성화해야 하는지 */
-function isPermDisabled<TModule>(item: PermissionItem<TModule>, perm: string, value: Record<string, boolean>): boolean {
+function isPermDisabled<TModule>(
+  item: PermissionItem<TModule>,
+  perm: string,
+  value: Record<string, boolean>,
+): boolean {
   if (!item.perms || item.href == null || item.href === "") return false;
   const basePerm = item.perms[0];
   if (perm === basePerm) return false;
@@ -196,7 +215,15 @@ function collectExpandable<TModule>(
 // --- 컴포넌트 ---
 
 export const PermissionTable: Component<PermissionTableProps> = (props) => {
-  const [local] = splitProps(props, ["items", "value", "onValueChange", "modules", "disabled", "class", "style"]);
+  const [local] = splitProps(props, [
+    "items",
+    "value",
+    "onValueChange",
+    "modules",
+    "disabled",
+    "class",
+    "style",
+  ]);
 
   // 보이는 최상위 아이템 (객체 참조 유지)
   const visibleItems = createMemo(() => {

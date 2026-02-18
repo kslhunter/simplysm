@@ -79,7 +79,14 @@ function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined
       // yyyy-MM-ddTHH:mm 형식
       const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(str);
       if (match == null) return undefined;
-      return new DateTime(Number(match[1]), Number(match[2]), Number(match[3]), Number(match[4]), Number(match[5]), 0);
+      return new DateTime(
+        Number(match[1]),
+        Number(match[2]),
+        Number(match[3]),
+        Number(match[4]),
+        Number(match[5]),
+        0,
+      );
     }
     case "second": {
       // yyyy-MM-ddTHH:mm:ss 형식

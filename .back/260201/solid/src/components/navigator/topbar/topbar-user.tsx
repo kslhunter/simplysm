@@ -1,5 +1,12 @@
 import "@simplysm/core-common";
-import { type Component, createSignal, For, type JSX, type ParentComponent, splitProps } from "solid-js";
+import {
+  type Component,
+  createSignal,
+  For,
+  type JSX,
+  type ParentComponent,
+  splitProps,
+} from "solid-js";
 import { topbarUser } from "./topbar-user.css";
 import { Dropdown } from "../../overlay/dropdown/dropdown";
 import { DropdownPopup } from "../../overlay/dropdown/dropdown-popup";

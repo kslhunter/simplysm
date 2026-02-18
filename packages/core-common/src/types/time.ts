@@ -36,7 +36,8 @@ export class Time {
         Time.MS_PER_DAY;
     } else if (arg2 !== undefined) {
       let tick =
-        ((arg4 ?? 0) + (arg3 ?? 0) * 1000 + arg2 * 60 * 1000 + (arg1 as number) * 60 * 60 * 1000) % Time.MS_PER_DAY;
+        ((arg4 ?? 0) + (arg3 ?? 0) * 1000 + arg2 * 60 * 1000 + (arg1 as number) * 60 * 60 * 1000) %
+        Time.MS_PER_DAY;
       if (tick < 0) tick += Time.MS_PER_DAY;
       this._tick = tick;
     } else if (arg1 instanceof Date) {
@@ -72,7 +73,12 @@ export class Time {
       const rawHour = Number(match1[2]);
       const isPM = match1[1] === "오후";
       const hour = convert12To24(rawHour, isPM);
-      return new Time(hour, Number(match1[3]), Number(match1[4]), Number(match1[6] ? match1[6].padEnd(3, "0") : "0"));
+      return new Time(
+        hour,
+        Number(match1[3]),
+        Number(match1[4]),
+        Number(match1[6] ? match1[6].padEnd(3, "0") : "0"),
+      );
     }
 
     const match2 = /([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
@@ -91,7 +97,12 @@ export class Time {
     if (isoMatch != null) {
       const date = new Date(str);
       if (!Number.isNaN(date.getTime())) {
-        return new Time(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+        return new Time(
+          date.getHours(),
+          date.getMinutes(),
+          date.getSeconds(),
+          date.getMilliseconds(),
+        );
       }
     }
 

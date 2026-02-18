@@ -79,7 +79,11 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
       >
         {local.children}
         <Show when={hasMenus()}>
-          <Icon icon={IconChevronDown} size="1em" class={clsx("transition-transform", open() && "rotate-180")} />
+          <Icon
+            icon={IconChevronDown}
+            size="1em"
+            class={clsx("transition-transform", open() && "rotate-180")}
+          />
         </Show>
       </Button>
       <Show when={hasMenus()}>

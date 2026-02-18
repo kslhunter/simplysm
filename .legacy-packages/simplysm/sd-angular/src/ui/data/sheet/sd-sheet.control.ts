@@ -16,7 +16,10 @@ import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
 import { $computed } from "../../../core/utils/bindings/$computed";
 import { SdExpandingManager } from "../../../core/utils/managers/SdExpandingManager";
 import { SdSelectionManager } from "../../../core/utils/managers/SdSelectionManager";
-import { type ISdSortingDef, SdSortingManager } from "../../../core/utils/managers/SdSortingManager";
+import {
+  type ISdSortingDef,
+  SdSortingManager,
+} from "../../../core/utils/managers/SdSortingManager";
 import { useSdSystemConfigResource } from "../../../core/utils/signals/useSdSystemConfigResource";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { SdCheckboxControl } from "../../form/choice/sd-checkbox.control";
@@ -70,7 +73,11 @@ import {
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
-          <sd-button [buttonClass]="'p-xs-sm'" [theme]="'link-primary'" (click)="onConfigButtonClick()">
+          <sd-button
+            [buttonClass]="'p-xs-sm'"
+            [theme]="'link-primary'"
+            (click)="onConfigButtonClick()"
+          >
             <ng-icon [svg]="tablerSettings" />
           </sd-button>
         }
@@ -85,7 +92,11 @@ import {
       </div>
     }
 
-    <div class="_sheet-container flex-fill" (scroll.passive)="onContainerScroll()" [style]="contentStyle()">
+    <div
+      class="_sheet-container flex-fill"
+      (scroll.passive)="onContainerScroll()"
+      [style]="contentStyle()"
+    >
       <table (sdResize)="onSheetResize($event)">
         <thead>
           @for (headerRow of layoutEngine.headerDefTable(); let r = $index; track r) {
@@ -122,7 +133,9 @@ import {
                     <ng-icon
                       [svg]="tablerCaretRight"
                       [class.tx-theme-primary-default]="expandingManager.isAllExpanded()"
-                      [style.transform]="expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined"
+                      [style.transform]="
+                        expandingManager.isAllExpanded() ? 'rotate(90deg)' : undefined
+                      "
                       (click)="expandingManager.toggleAll()"
                     />
                   </th>
@@ -164,7 +177,11 @@ import {
                     >
                       <div class="_headerContent flex-row">
                         @let _tempRef = headerCell.control.headerTplRef();
-                        <div class="flex-fill" [class._p-sheet]="!_tempRef" [attr.style]="headerCell.style">
+                        <div
+                          class="flex-fill"
+                          [class._p-sheet]="!_tempRef"
+                          [attr.style]="headerCell.style"
+                        >
                           @if (_tempRef) {
                             <ng-template [ngTemplateOutlet]="_tempRef" />
                           } @else {
@@ -272,19 +289,28 @@ import {
                 >
                   @let itemExpDef = expandingManager.getDef(item);
                   @if (itemExpDef.depth > 0) {
-                    <div class="_depth-indicator" [style.margin-left.em]="itemExpDef.depth - 0.5"></div>
+                    <div
+                      class="_depth-indicator"
+                      [style.margin-left.em]="itemExpDef.depth - 0.5"
+                    ></div>
                   }
                   @if (itemExpDef.hasChildren) {
                     <ng-icon
                       [svg]="tablerCaretRight"
-                      [style.transform]="expandedItems().includes(item) ? 'rotate(90deg)' : undefined"
+                      [style.transform]="
+                        expandedItems().includes(item) ? 'rotate(90deg)' : undefined
+                      "
                       [class.tx-theme-primary-default]="expandedItems().includes(item)"
                       (click)="expandingManager.toggle(item)"
                     />
                   }
                 </td>
               }
-              @for (columnDef of layoutEngine.columnDefs(); let c = $index; track columnDef.control.key()) {
+              @for (
+                columnDef of layoutEngine.columnDefs();
+                let c = $index;
+                track columnDef.control.key()
+              ) {
                 <td
                   tabindex="0"
                   [class._fixed]="columnDef.fixed"
@@ -638,7 +664,9 @@ export class SdSheetControl<T> {
   //region Column fixing
 
   columnFixingManager = new SdSheetColumnFixingManager({
-    fixedLength: $computed(() => this.layoutEngine.columnDefs().filter((item) => item.fixed).length),
+    fixedLength: $computed(
+      () => this.layoutEngine.columnDefs().filter((item) => item.fixed).length,
+    ),
   });
 
   onHeaderLastRowCellResize(event: ISdResizeEvent, c: number) {
@@ -795,7 +823,8 @@ export class SdSheetControl<T> {
     event.stopPropagation();
 
     const focusedEl = document.activeElement as HTMLElement;
-    const focusedTrEl = focusedEl.tagName.toLowerCase() === "tr" ? focusedEl : focusedEl.findParent("tr");
+    const focusedTrEl =
+      focusedEl.tagName.toLowerCase() === "tr" ? focusedEl : focusedEl.findParent("tr");
     if (focusedTrEl instanceof HTMLTableRowElement) {
       const fr = NumberUtils.parseInt(focusedTrEl.getAttribute("data-r"));
       if (fr != null) {
@@ -825,7 +854,8 @@ export class SdSheetControl<T> {
 
     if (!(event.target instanceof HTMLElement)) return;
 
-    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
 
     const addr = this.cellAgent.getCellAddr(tdEl);
@@ -865,7 +895,8 @@ export class SdSheetControl<T> {
     const theadEl = this.domAccessor.getTHead();
     const fixedHeaderLastDepthEls = this.domAccessor.getLastDepthFixedHeaders();
 
-    const tdEl = event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
+    const tdEl =
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.findParent("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
     if (tdEl.classList.contains("_fixed")) return;
 

@@ -18,7 +18,9 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
       const externalModules = this._getExternalModules();
 
       if (!this._opt.watch?.dev) {
-        this._generateProductionFiles(externalModules.filter((item) => item.exists).map((item) => item.name));
+        this._generateProductionFiles(
+          externalModules.filter((item) => item.exists).map((item) => item.name),
+        );
       }
 
       if (!this._opt.watch?.noEmit) {
@@ -45,7 +47,9 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
 
     this._debug("GEN package.json...");
     {
-      const projNpmConf = FsUtils.readJson(path.resolve(process.cwd(), "package.json")) as INpmConfig;
+      const projNpmConf = FsUtils.readJson(
+        path.resolve(process.cwd(), "package.json"),
+      ) as INpmConfig;
 
       const distNpmConfig: INpmConfig = {
         name: npmConf.name,
@@ -66,7 +70,10 @@ export class SdServerBuildRunner extends SdBuildRunnerBase<"server"> {
 
     this._debug("GEN .yarnrc.yml...");
     {
-      FsUtils.writeFile(path.resolve(this._opt.pkgPath, "dist/.yarnrc.yml"), "nodeLinker: node-modules");
+      FsUtils.writeFile(
+        path.resolve(this._opt.pkgPath, "dist/.yarnrc.yml"),
+        "nodeLinker: node-modules",
+      );
     }
 
     this._debug("GEN openssl.cnf...");
@@ -192,7 +199,10 @@ Options = UnsafeLegacyRenegotiation`.trim(),
     const npmConfigMap = new Map<string, INpmConfig>();
 
     const fn = (currPath: string) => {
-      const npmConfig = npmConfigMap.getOrCreate(currPath, FsUtils.readJson(path.resolve(currPath, "package.json")));
+      const npmConfig = npmConfigMap.getOrCreate(
+        currPath,
+        FsUtils.readJson(path.resolve(currPath, "package.json")),
+      );
 
       const deps = {
         defaults: [

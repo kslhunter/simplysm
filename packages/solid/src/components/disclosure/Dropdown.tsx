@@ -1,4 +1,12 @@
-import { type JSX, type ParentComponent, createSignal, createEffect, onCleanup, Show, splitProps } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  createSignal,
+  createEffect,
+  onCleanup,
+  Show,
+  splitProps,
+} from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { Portal } from "solid-js/web";
@@ -261,7 +269,9 @@ export const Dropdown: ParentComponent<DropdownProps> = (props) => {
 
     const dir = direction();
     const focusables = [
-      ...popup.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, [data-list-item]'),
+      ...popup.querySelectorAll<HTMLElement>(
+        '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
+      ),
     ];
 
     if (dir === "down") {

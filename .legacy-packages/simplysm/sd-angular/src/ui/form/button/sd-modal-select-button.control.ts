@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  model,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdAdditionalButtonControl } from "./sd-additional-button.control";
 import type { TSelectModeValue } from "../select/sd-select.control";
 import { SdModalProvider } from "../../overlay/modal/sd-modal.provider";
@@ -7,7 +14,10 @@ import { $computed } from "../../../core/utils/bindings/$computed";
 import { setupInvalid } from "../../../core/utils/setups/setupInvalid";
 import { SdAnchorControl } from "./sd-anchor.control";
 import { SdButtonControl } from "./sd-button.control";
-import type { ISdSelectModal, TSdSelectModalInfo } from "../../../features/data-view/sd-data-select-button.control";
+import type {
+  ISdSelectModal,
+  TSdSelectModalInfo,
+} from "../../../features/data-view/sd-data-select-button.control";
 import { NgIcon } from "@ng-icons/core";
 import { tablerEraser, tablerSearch } from "@ng-icons/tabler-icons";
 
@@ -67,7 +77,10 @@ export class SdModalSelectButtonControl<
   searchIcon = input(tablerSearch);
 
   isNoValue = $computed(() => {
-    return this.value() == null || (this.selectMode() === "multi" && (this.value() as any[]).length === 0);
+    return (
+      this.value() == null ||
+      (this.selectMode() === "multi" && (this.value() as any[]).length === 0)
+    );
   });
 
   selectedItems = model<T[]>([]);
@@ -85,13 +98,17 @@ export class SdModalSelectButtonControl<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi" ? (this.value() as any[]) : [this.value()]).filterExists(),
+        selectedItemKeys: (this.selectMode() === "multi"
+          ? (this.value() as any[])
+          : [this.value()]
+        ).filterExists(),
         ...modal.inputs,
       },
     });
 
     if (result) {
-      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue =
+        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
       this.selectedItems.set(result.selectedItems);
     }

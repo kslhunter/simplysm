@@ -133,7 +133,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
 
     if (this._opt.watch?.noEmit) {
       return {
-        buildMessages: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(esbuildResult, this._opt.pkgPath),
+        buildMessages: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
+          esbuildResult,
+          this._opt.pkgPath,
+        ),
 
         watchFileSet: this._resultCache.watchFileSet!,
         affectedFileSet: this._resultCache.affectedFileSet!,
@@ -144,7 +147,9 @@ const __dirname = __path__.dirname(__filename);`.trim(),
 
       try {
         const outputFiles: BuildOutputFile[] =
-          esbuildResult.outputFiles?.map((file) => convertOutputFile(file, BuildOutputFileType.Root)) ?? [];
+          esbuildResult.outputFiles?.map((file) =>
+            convertOutputFile(file, BuildOutputFileType.Root),
+          ) ?? [];
 
         for (const outputFile of outputFiles) {
           const distFilePath = PathUtils.norm(this._opt.pkgPath, outputFile.path);
@@ -170,7 +175,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
           const prevHash = this._outputHashCache.get(PathUtils.norm(assetFile.source));
           const currHash = HashUtils.get(FsUtils.readFileBuffer(assetFile.source));
           if (prevHash !== currHash) {
-            FsUtils.copy(assetFile.source, path.resolve(this._opt.pkgPath, "dist", assetFile.destination));
+            FsUtils.copy(
+              assetFile.source,
+              path.resolve(this._opt.pkgPath, "dist", assetFile.destination),
+            );
             this._outputHashCache.set(PathUtils.norm(assetFile.source), currHash);
             emitFileSet.add(PathUtils.norm(this._opt.pkgPath, "dist", assetFile.destination));
           }
@@ -189,7 +197,10 @@ const __dirname = __path__.dirname(__filename);`.trim(),
       }
 
       return {
-        buildMessages: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(esbuildResult, this._opt.pkgPath),
+        buildMessages: SdCliConvertMessageUtils.convertToBuildMessagesFromEsbuild(
+          esbuildResult,
+          this._opt.pkgPath,
+        ),
 
         watchFileSet: this._resultCache.watchFileSet!,
         affectedFileSet: this._resultCache.affectedFileSet!,

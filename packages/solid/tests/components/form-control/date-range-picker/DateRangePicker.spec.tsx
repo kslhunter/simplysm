@@ -140,7 +140,8 @@ describe("DateRangePicker 컴포넌트", () => {
       const combobox = select?.querySelector("[role='combobox']") ?? select;
 
       expect(
-        combobox?.getAttribute("aria-disabled") === "true" || select?.getAttribute("aria-disabled") === "true",
+        combobox?.getAttribute("aria-disabled") === "true" ||
+          select?.getAttribute("aria-disabled") === "true",
       ).toBe(true);
     });
   });

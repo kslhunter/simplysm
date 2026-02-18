@@ -17,12 +17,19 @@ import {
   type SdItemOfTemplateContext,
   SdItemOfTemplateDirective,
 } from "../../core/directives/sd-item-of-template.directive";
-import { type ISdModal, type ISdModalInfo, SdModalProvider } from "../../ui/overlay/modal/sd-modal.provider";
+import {
+  type ISdModal,
+  type ISdModalInfo,
+  SdModalProvider,
+} from "../../ui/overlay/modal/sd-modal.provider";
 import { $computed } from "../../core/utils/bindings/$computed";
 import { $signal } from "../../core/utils/bindings/$signal";
 import { transformBoolean } from "../../core/utils/transforms/transformBoolean";
 import type { ISharedDataBase } from "../../core/providers/storage/sd-shared-data.provider";
-import type { ISdSelectModal, TSdSelectModalInfo } from "../data-view/sd-data-select-button.control";
+import type {
+  ISdSelectModal,
+  TSdSelectModalInfo,
+} from "../data-view/sd-data-select-button.control";
 import { SdSelectControl, type TSelectModeValue } from "../../ui/form/select/sd-select.control";
 import { NgIcon } from "@ng-icons/core";
 import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
@@ -72,12 +79,19 @@ import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
 
       <ng-template #headerTpl>
         <div class="p-xs">
-          <sd-textfield [type]="'text'" [(value)]="searchText" [placeholder]="'검색어'" [size]="size()" />
+          <sd-textfield
+            [type]="'text'"
+            [(value)]="searchText"
+            [placeholder]="'검색어'"
+            [size]="size()"
+          />
         </div>
       </ng-template>
 
       <ng-template #beforeTpl>
-        @if ((!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")) {
+        @if (
+          (!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")
+        ) {
           <sd-select-item>
             @if (undefinedTplRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
@@ -88,12 +102,20 @@ import { tablerEdit, tablerSearch } from "@ng-icons/tabler-icons";
         }
       </ng-template>
 
-      <ng-template [itemOf]="rootDisplayItems()" let-item="item" let-index="index" let-depth="depth">
+      <ng-template
+        [itemOf]="rootDisplayItems()"
+        let-item="item"
+        let-index="index"
+        let-depth="depth"
+      >
         @if (
-          getItemSelectable(item, index, depth) && (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
+          getItemSelectable(item, index, depth) &&
+          (selectCtrl.open() || this.selectedKeys().includes(item.__valueKey))
         ) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index)">
-            <span [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined">
+            <span
+              [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined"
+            >
               <ng-template
                 [ngTemplateOutlet]="itemTplRef() ?? null"
                 [ngTemplateOutletContext]="{
@@ -143,9 +165,12 @@ export class SdSharedDataSelectControl<
   parentKeyProp = input<string>();
   displayOrderKeyProp = input<string>();
 
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(SdItemOfTemplateDirective, {
-    read: TemplateRef,
-  });
+  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+    SdItemOfTemplateDirective,
+    {
+      read: TemplateRef,
+    },
+  );
   undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", {
     read: TemplateRef,
   });
@@ -173,7 +198,8 @@ export class SdSharedDataSelectControl<
     let result = this.items().filter(
       (item, index) =>
         (!this.filterFn() || this.filterFn()!(item, index, ...(this.filterFnParams() ?? []))) &&
-        (this.parentKeyProp() === undefined || (item as Record<string, any>)[this.parentKeyProp()!] === undefined),
+        (this.parentKeyProp() === undefined ||
+          (item as Record<string, any>)[this.parentKeyProp()!] === undefined),
     );
 
     if (this.displayOrderKeyProp() !== undefined) {
@@ -189,7 +215,9 @@ export class SdSharedDataSelectControl<
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   getItemSelectable(item: any, index: number, depth: number) {
-    return this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined;
+    return (
+      this.parentKeyProp() === undefined || depth !== 0 || item[this.parentKeyProp()!] === undefined
+    );
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -260,7 +288,8 @@ export class SdSharedDataSelectControl<
     });
 
     if (result) {
-      const newValue = this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
+      const newValue =
+        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
       this.value.set(newValue);
     }
   }

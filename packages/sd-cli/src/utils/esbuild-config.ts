@@ -99,7 +99,9 @@ export function createLibraryEsbuildOptions(options: LibraryEsbuildOptions): esb
     target: options.target === "node" ? "node20" : "chrome84",
     bundle: false,
     write: false,
-    tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
+    tsconfigRaw: {
+      compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"],
+    },
     logLevel: "silent",
     plugins,
   };
@@ -135,7 +137,9 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     },
     external: options.external,
     define,
-    tsconfigRaw: { compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"] },
+    tsconfigRaw: {
+      compilerOptions: options.compilerOptions as esbuild.TsconfigRaw["compilerOptions"],
+    },
     logLevel: "silent",
   };
 }
@@ -176,7 +180,12 @@ export function collectUninstalledOptionalPeerDeps(pkgDir: string): string[] {
   return [...external];
 }
 
-function scanOptionalPeerDeps(pkgName: string, resolveDir: string, external: Set<string>, visited: Set<string>): void {
+function scanOptionalPeerDeps(
+  pkgName: string,
+  resolveDir: string,
+  external: Set<string>,
+  visited: Set<string>,
+): void {
   if (visited.has(pkgName)) return;
   visited.add(pkgName);
 
@@ -233,7 +242,12 @@ export function collectNativeModuleExternals(pkgDir: string): string[] {
   return [...external];
 }
 
-function scanNativeModules(pkgName: string, resolveDir: string, external: Set<string>, visited: Set<string>): void {
+function scanNativeModules(
+  pkgName: string,
+  resolveDir: string,
+  external: Set<string>,
+  visited: Set<string>,
+): void {
   if (visited.has(pkgName)) return;
   visited.add(pkgName);
 

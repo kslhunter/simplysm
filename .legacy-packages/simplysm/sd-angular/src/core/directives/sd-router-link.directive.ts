@@ -64,7 +64,10 @@ export class SdRouterLinkDirective {
       );
     } else {
       await this._router.navigate(
-        [{ outlets: { [option.outletName]: option.link } }, ...(option.params ? [option.params] : [])],
+        [
+          { outlets: { [option.outletName]: option.link } },
+          ...(option.params ? [option.params] : []),
+        ],
         option.queryParams ? { queryParams: option.queryParams } : undefined,
       );
     }

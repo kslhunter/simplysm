@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, model, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  model,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { $signal } from "../../../core/utils/bindings/$signal";
 import { SdKanbanLaneControl } from "./sd-kanban-lane.control";
 import { SdKanbanControl } from "./sd-kanban.control";

@@ -16,7 +16,9 @@ const ripple = (el, value) => {
   createEventListener(el, "pointerdown", (e) => {
     const options = value == null ? void 0 : value();
     const enabled =
-      options === void 0 || options === true || (typeof options === "object" && options.enabled !== false);
+      options === void 0 ||
+      options === true ||
+      (typeof options === "object" && options.enabled !== false);
     const shouldStopPropagation = typeof options === "object" && options.stopPropagation === true;
     if (!enabled) return;
     if (shouldStopPropagation) {

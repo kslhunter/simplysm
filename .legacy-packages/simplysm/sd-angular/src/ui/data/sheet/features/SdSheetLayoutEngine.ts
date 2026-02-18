@@ -14,7 +14,8 @@ export class SdSheetLayoutEngine<T> {
   ) {}
 
   columnDefs = $computed<ISdSheetColumnDef<T>[]>(() => {
-    if (this._options.config.status() !== "resolved" && this._options.config.status() !== "local") return [];
+    if (this._options.config.status() !== "resolved" && this._options.config.status() !== "local")
+      return [];
 
     const conf = this._options.config.value();
 
@@ -127,9 +128,13 @@ export class SdSheetLayoutEngine<T> {
     return result;
   });
 
-  hasSummary = $computed<boolean>(() => this._options.columnControls().some((item) => item.summaryTplRef()));
+  hasSummary = $computed<boolean>(() =>
+    this._options.columnControls().some((item) => item.summaryTplRef()),
+  );
 
-  headerFeatureRowSpan = $computed<number>(() => this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0));
+  headerFeatureRowSpan = $computed<number>(
+    () => this._rawHeaderDefTable().length + (this.hasSummary() ? 1 : 0),
+  );
 }
 
 interface IRawHeaderDef {

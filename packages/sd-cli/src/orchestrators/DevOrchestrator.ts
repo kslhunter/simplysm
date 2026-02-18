@@ -5,12 +5,20 @@ import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
-import { setupReplaceDeps, watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
+import {
+  setupReplaceDeps,
+  watchReplaceDeps,
+  type WatchReplaceDepResult,
+} from "../utils/replace-deps";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import { Capacitor } from "../capacitor/capacitor";
-import { filterPackagesByTargets, getWatchScopes, type PackageResult } from "../utils/package-utils";
+import {
+  filterPackagesByTargets,
+  getWatchScopes,
+  type PackageResult,
+} from "../utils/package-utils";
 import { printErrors, printServers } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import {
@@ -86,7 +94,10 @@ export class DevOrchestrator {
       mainJsPath?: string;
     }
   >();
-  private readonly _serverRuntimeWorkers = new Map<string, WorkerProxy<typeof ServerRuntimeWorkerModule>>();
+  private readonly _serverRuntimeWorkers = new Map<
+    string,
+    WorkerProxy<typeof ServerRuntimeWorkerModule>
+  >();
 
   // State
   private readonly _results = new Map<string, PackageResult>();
@@ -125,7 +136,11 @@ export class DevOrchestrator {
 
     // sd.config.ts 로드 (dev는 패키지 빌드 정보가 필요하므로 필수)
     try {
-      this._sdConfig = await loadSdConfig({ cwd: this._cwd, dev: true, opt: this._options.options });
+      this._sdConfig = await loadSdConfig({
+        cwd: this._cwd,
+        dev: true,
+        opt: this._options.options,
+      });
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
       this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
@@ -213,7 +228,8 @@ export class DevOrchestrator {
     this._standaloneClientWorkers = this._clientPackages
       .filter(
         ({ config }) =>
-          typeof config.server === "number" || (typeof config.server === "string" && !serverNames.has(config.server)),
+          typeof config.server === "number" ||
+          (typeof config.server === "string" && !serverNames.has(config.server)),
       )
       .map(({ name, config }) => ({
         name,
@@ -247,7 +263,10 @@ export class DevOrchestrator {
 
     // Vite client 빌드 Promise 미리 생성 (서버 연결 클라이언트)
     const viteClientBuildPromises = new Map<string, Promise<void>>();
-    const viteClientReadyPromises = new Map<string, { promise: Promise<void>; resolver: () => void }>();
+    const viteClientReadyPromises = new Map<
+      string,
+      { promise: Promise<void>; resolver: () => void }
+    >();
     for (const workerInfo of this._viteClientWorkers) {
       viteClientBuildPromises.set(
         workerInfo.name,
@@ -260,7 +279,10 @@ export class DevOrchestrator {
       const readyPromise = new Promise<void>((resolve) => {
         readyResolver = resolve;
       });
-      viteClientReadyPromises.set(workerInfo.name, { promise: readyPromise, resolver: readyResolver });
+      viteClientReadyPromises.set(workerInfo.name, {
+        promise: readyPromise,
+        resolver: readyResolver,
+      });
     }
 
     // Server Build Worker 및 Promise 생성
@@ -277,7 +299,10 @@ export class DevOrchestrator {
     }
 
     // Server Runtime Promise (초기 서버 시작 완료 대기용)
-    const serverRuntimePromises = new Map<string, { promise: Promise<void>; resolver: () => void }>();
+    const serverRuntimePromises = new Map<
+      string,
+      { promise: Promise<void>; resolver: () => void }
+    >();
     for (const { name } of this._serverPackages) {
       let resolver!: () => void;
       const promise = new Promise<void>((resolve) => {
@@ -448,7 +473,8 @@ export class DevOrchestrator {
         }
 
         // 새 Server Runtime Worker 생성 및 시작
-        const runtimeWorker = Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
+        const runtimeWorker =
+          Worker.create<typeof ServerRuntimeWorkerModule>(serverRuntimeWorkerPath);
         this._serverRuntimeWorkers.set(serverName, runtimeWorker);
 
         // 이 서버에 연결된 클라이언트들의 Vite 서버가 준비될 때까지 대기
@@ -456,7 +482,9 @@ export class DevOrchestrator {
         const clientReadyPromises = connectedClients
           .map((clientName) => viteClientReadyPromises.get(clientName)?.promise)
           .filter((p): p is Promise<void> => p != null);
-        this._logger.debug(`[${serverName}] 클라이언트 대기: ${String(clientReadyPromises.length)}개`);
+        this._logger.debug(
+          `[${serverName}] 클라이언트 대기: ${String(clientReadyPromises.length)}개`,
+        );
         if (clientReadyPromises.length > 0) {
           await Promise.all(clientReadyPromises);
         }
@@ -651,7 +679,9 @@ export class DevOrchestrator {
       })),
     ];
 
-    const initialResults = await Promise.allSettled(initialBuildPromises.map((item) => item.promise));
+    const initialResults = await Promise.allSettled(
+      initialBuildPromises.map((item) => item.promise),
+    );
 
     initialResults.forEach((result, index) => {
       const taskName = initialBuildPromises[index].name;

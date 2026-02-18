@@ -72,7 +72,9 @@ export async function spawn(cmd: string, args: string[], options?: SpawnOptions)
       if (code === 0) {
         resolve(output);
       } else {
-        reject(new Error(`명령어 실패 (${cmd} ${args.join(" ")})\n종료 코드: ${code}\n출력:\n${output}`));
+        reject(
+          new Error(`명령어 실패 (${cmd} ${args.join(" ")})\n종료 코드: ${code}\n출력:\n${output}`),
+        );
       }
     });
   });

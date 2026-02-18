@@ -83,7 +83,9 @@ export class ColumnBuilder<TValue extends ColumnPrimitive, TMeta extends ColumnM
    * createdAt: c.datetime().default("CURRENT_TIMESTAMP")
    * ```
    */
-  default(value: TValue): ColumnBuilder<TValue, Omit<TMeta, "default"> & { default: typeof value }> {
+  default(
+    value: TValue,
+  ): ColumnBuilder<TValue, Omit<TMeta, "default"> & { default: typeof value }> {
     return new ColumnBuilder({ ...this.meta, default: value });
   }
 
@@ -196,7 +198,10 @@ export function createColumnFactory() {
     decimal(
       precision: number,
       scale?: number,
-    ): ColumnBuilder<number, { type: "number"; dataType: { type: "decimal"; precision: number; scale?: number } }> {
+    ): ColumnBuilder<
+      number,
+      { type: "number"; dataType: { type: "decimal"; precision: number; scale?: number } }
+    > {
       return new ColumnBuilder({ type: "number", dataType: { type: "decimal", precision, scale } });
     },
 
@@ -211,7 +216,9 @@ export function createColumnFactory() {
      * name: c.varchar(100)  // VARCHAR(100)
      * ```
      */
-    varchar(length: number): ColumnBuilder<string, { type: "string"; dataType: { type: "varchar"; length: number } }> {
+    varchar(
+      length: number,
+    ): ColumnBuilder<string, { type: "string"; dataType: { type: "varchar"; length: number } }> {
       return new ColumnBuilder({ type: "string", dataType: { type: "varchar", length } });
     },
 
@@ -226,7 +233,9 @@ export function createColumnFactory() {
      * countryCode: c.char(2)  // CHAR(2)
      * ```
      */
-    char(length: number): ColumnBuilder<string, { type: "string"; dataType: { type: "char"; length: number } }> {
+    char(
+      length: number,
+    ): ColumnBuilder<string, { type: "string"; dataType: { type: "char"; length: number } }> {
       return new ColumnBuilder({ type: "string", dataType: { type: "char" as const, length } });
     },
 
@@ -397,7 +406,9 @@ export type InferInsertColumns<TBuilders extends ColumnBuilderRecord> = Pick<
  *
  * @template T - 컬럼 빌더 레코드 타입
  */
-export type InferUpdateColumns<TBuilders extends ColumnBuilderRecord> = Partial<InferColumns<TBuilders>>;
+export type InferUpdateColumns<TBuilders extends ColumnBuilderRecord> = Partial<
+  InferColumns<TBuilders>
+>;
 
 /**
  * 데이터 레코드에서 컬럼 빌더 레코드로 변환

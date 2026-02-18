@@ -129,7 +129,10 @@ export function jsonStringify(
       seen.add(currValue);
 
       // toJSON 메서드가 있으면 호출 (Date, DateTime 등 커스텀 타입은 이미 위에서 처리됨)
-      if ("toJSON" in currValue && typeof (currValue as { toJSON: unknown }).toJSON === "function") {
+      if (
+        "toJSON" in currValue &&
+        typeof (currValue as { toJSON: unknown }).toJSON === "function"
+      ) {
         const toJsonResult = (currValue as { toJSON: (key?: string) => unknown }).toJSON(key);
         seen.delete(currValue);
         return convertSpecialTypes(key, toJsonResult);
@@ -209,7 +212,9 @@ export function jsonParse<TResult = unknown>(json: string): TResult {
             }
             if (typed.__type__ === "Uint8Array" && typeof typed.data === "string") {
               if (typed.data === "__hidden__") {
-                throw new SdError("redactBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다");
+                throw new SdError(
+                  "redactBytes 옵션으로 직렬화된 Uint8Array는 parse로 복원할 수 없습니다",
+                );
               }
               return bytesFromHex(typed.data);
             }

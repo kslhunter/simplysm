@@ -1,4 +1,11 @@
-import { type Accessor, type ParentComponent, createSignal, For, splitProps, type JSX } from "solid-js";
+import {
+  type Accessor,
+  type ParentComponent,
+  createSignal,
+  For,
+  splitProps,
+  type JSX,
+} from "solid-js";
 import {
   DialogContext,
   DialogDefaultsContext,
@@ -46,7 +53,10 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
 
   const [entries, setEntries] = createSignal<DialogEntry[]>([]);
 
-  const show = <T,>(factory: () => JSX.Element, options: DialogShowOptions): Promise<T | undefined> => {
+  const show = <T,>(
+    factory: () => JSX.Element,
+    options: DialogShowOptions,
+  ): Promise<T | undefined> => {
     return new Promise<T | undefined>((resolve) => {
       const id = String(nextId++);
       const [open, setOpen] = createSignal(true);
@@ -122,7 +132,9 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
                 headerStyle={entry.options.headerStyle}
                 canDeactivate={entry.options.canDeactivate}
               >
-                <DialogInstanceContext.Provider value={instance}>{entry.factory()}</DialogInstanceContext.Provider>
+                <DialogInstanceContext.Provider value={instance}>
+                  {entry.factory()}
+                </DialogInstanceContext.Provider>
               </Dialog>
             );
           }}

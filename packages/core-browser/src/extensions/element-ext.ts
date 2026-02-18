@@ -89,7 +89,9 @@ Element.prototype.findAll = function <T extends Element = Element>(selector: str
   return Array.from(this.querySelectorAll<T>(trimmed));
 };
 
-Element.prototype.findFirst = function <T extends Element = Element>(selector: string): T | undefined {
+Element.prototype.findFirst = function <T extends Element = Element>(
+  selector: string,
+): T | undefined {
   const trimmed = selector.trim();
   if (trimmed === "") return undefined;
   return this.querySelector<T>(trimmed) ?? undefined;
@@ -155,7 +157,9 @@ export function copyElement(event: ClipboardEvent): void {
   const target = event.target;
   if (clipboardData == null || !(target instanceof Element)) return;
 
-  const firstInputEl = target.querySelector<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
+  const firstInputEl = target.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+    "input, textarea",
+  );
   if (firstInputEl != null) {
     clipboardData.setData("text/plain", firstInputEl.value);
     event.preventDefault();
@@ -228,7 +232,9 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
           if (indexMap.size === 0) {
             observer?.disconnect();
             // 입력 순서대로 정렬
-            resolve(results.sort((a, b) => sortIndexMap.get(a.target)! - sortIndexMap.get(b.target)!));
+            resolve(
+              results.sort((a, b) => sortIndexMap.get(a.target)! - sortIndexMap.get(b.target)!),
+            );
           }
         });
 

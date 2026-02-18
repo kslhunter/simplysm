@@ -37,7 +37,11 @@ describe("StorageFactory", () => {
 
   describe("connect", () => {
     it("FTP 타입으로 연결해야 함", async () => {
-      const result = await StorageFactory.connect("ftp", { host: "ftp.example.com" }, () => "result");
+      const result = await StorageFactory.connect(
+        "ftp",
+        { host: "ftp.example.com" },
+        () => "result",
+      );
 
       expect(result).toBe("result");
       expect(mockFtpAccess).toHaveBeenCalledWith(
@@ -49,7 +53,11 @@ describe("StorageFactory", () => {
     });
 
     it("FTPS 타입으로 연결해야 함", async () => {
-      const result = await StorageFactory.connect("ftps", { host: "ftps.example.com" }, () => "result");
+      const result = await StorageFactory.connect(
+        "ftps",
+        { host: "ftps.example.com" },
+        () => "result",
+      );
 
       expect(result).toBe("result");
       expect(mockFtpAccess).toHaveBeenCalledWith(
@@ -61,7 +69,11 @@ describe("StorageFactory", () => {
     });
 
     it("SFTP 타입으로 연결해야 함", async () => {
-      const result = await StorageFactory.connect("sftp", { host: "sftp.example.com" }, () => "result");
+      const result = await StorageFactory.connect(
+        "sftp",
+        { host: "sftp.example.com" },
+        () => "result",
+      );
 
       expect(result).toBe("result");
       expect(mockSftpConnect).toHaveBeenCalledWith(

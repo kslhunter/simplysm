@@ -75,7 +75,10 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   protected renderJoin(join: SelectQueryDefJoin): string {
     const alias = this.expr.wrap(join.as);
     const from = this.renderFrom(join.from);
-    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON TRUE";
+    const where =
+      join.where != null && join.where.length > 0
+        ? ` ON ${this.expr.renderWhere(join.where)}`
+        : " ON TRUE";
 
     // LATERAL JOIN 필요 여부 감지
     if (this.needsLateral(join)) {
@@ -287,7 +290,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // recordsSelectQuery에서 PK 컬럼만 추출한 SELECT 생성
     const pkSelectDef: SelectQueryDef = {
       ...def.recordsSelectQuery,
-      select: Object.fromEntries(def.output.pkColNames.map((pk) => [pk, def.recordsSelectQuery.select![pk]])),
+      select: Object.fromEntries(
+        def.output.pkColNames.map((pk) => [pk, def.recordsSelectQuery.select![pk]]),
+      ),
     };
     const pkSelectSql = this.select(pkSelectDef).sql;
 
@@ -569,7 +574,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropColumn(def: DropColumnQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}`,
+    };
   }
 
   protected modifyColumn(def: ModifyColumnQueryDef): QueryBuildResult {
@@ -632,7 +639,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropFk(def: DropFkQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP FOREIGN KEY ${this.expr.wrap(def.foreignKey)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP FOREIGN KEY ${this.expr.wrap(def.foreignKey)}`,
+    };
   }
 
   protected addIdx(def: AddIdxQueryDef): QueryBuildResult {
@@ -731,12 +740,16 @@ SET FOREIGN_KEY_CHECKS = 1`,
   protected schemaExists(def: SchemaExistsQueryDef): QueryBuildResult {
     // MySQL: database와 schema는 동의어
     const dbName = this.expr.escapeString(def.database);
-    return { sql: `SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'` };
+    return {
+      sql: `SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'`,
+    };
   }
 
   /** MySQL은 전역 설정만 지원 (테이블 파라미터 무시됨) */
   protected switchFk(def: SwitchFkQueryDef): QueryBuildResult {
-    return def.switch === "on" ? { sql: "SET FOREIGN_KEY_CHECKS = 1" } : { sql: "SET FOREIGN_KEY_CHECKS = 0" };
+    return def.switch === "on"
+      ? { sql: "SET FOREIGN_KEY_CHECKS = 1" }
+      : { sql: "SET FOREIGN_KEY_CHECKS = 0" };
   }
 
   //#endregion

@@ -28,7 +28,10 @@ const headerClass = clsx(
 
 const headerReadonlyClass = clsx("cursor-default hover:bg-transparent dark:hover:bg-transparent");
 
-const avatarClass = clsx("flex size-10 items-center justify-center rounded-full", "bg-primary-500 text-white");
+const avatarClass = clsx(
+  "flex size-10 items-center justify-center rounded-full",
+  "bg-primary-500 text-white",
+);
 
 export interface SidebarUserMenu {
   title: string;
@@ -117,7 +120,9 @@ export const SidebarUser: Component<SidebarUserProps> = (props) => {
           <Show when={local.description} fallback={<span class="font-semibold">{local.name}</span>}>
             <div class="flex flex-col">
               <span class="font-semibold">{local.name}</span>
-              <span class={clsx("text-sm", "text-base-500 dark:text-base-400")}>{local.description}</span>
+              <span class={clsx("text-sm", "text-base-500 dark:text-base-400")}>
+                {local.description}
+              </span>
             </div>
           </Show>
         </div>

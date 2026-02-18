@@ -62,7 +62,9 @@ export default function CardPage() {
             <Card onClick={() => alert("카드 클릭!")}>
               <div class="p-4">
                 <h3 class="mb-2 font-semibold">클릭 가능한 카드</h3>
-                <p class="text-sm text-base-600 dark:text-base-400">이 카드를 클릭하면 알림이 표시됩니다.</p>
+                <p class="text-sm text-base-600 dark:text-base-400">
+                  이 카드를 클릭하면 알림이 표시됩니다.
+                </p>
               </div>
             </Card>
           </section>
@@ -74,7 +76,9 @@ export default function CardPage() {
               <div class="h-40 bg-gradient-to-br from-primary-400 to-primary-600" />
               <div class="p-4">
                 <h3 class="mb-2 font-semibold">이미지가 있는 카드</h3>
-                <p class="text-sm text-base-600 dark:text-base-400">상단에 이미지 영역이 있는 카드 레이아웃입니다.</p>
+                <p class="text-sm text-base-600 dark:text-base-400">
+                  상단에 이미지 영역이 있는 카드 레이아웃입니다.
+                </p>
               </div>
             </Card>
           </section>

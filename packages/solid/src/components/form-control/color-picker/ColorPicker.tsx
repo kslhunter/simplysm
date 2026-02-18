@@ -66,7 +66,15 @@ export interface ColorPickerProps {
  * ```
  */
 export const ColorPicker: Component<ColorPickerProps> = (props) => {
-  const [local, rest] = splitProps(props, ["value", "onValueChange", "title", "disabled", "size", "class", "style"]);
+  const [local, rest] = splitProps(props, [
+    "value",
+    "onValueChange",
+    "title",
+    "disabled",
+    "size",
+    "class",
+    "style",
+  ]);
 
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "#000000",
@@ -78,7 +86,12 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
   };
 
   const getClassName = () =>
-    twMerge(baseClass, local.size && sizeClasses[local.size], local.disabled && disabledClass, local.class);
+    twMerge(
+      baseClass,
+      local.size && sizeClasses[local.size],
+      local.disabled && disabledClass,
+      local.class,
+    );
 
   return (
     <input

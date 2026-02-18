@@ -1,4 +1,11 @@
-import { createContext, useContext, type ParentComponent, createMemo, createEffect, onCleanup } from "solid-js";
+import {
+  createContext,
+  useContext,
+  type ParentComponent,
+  createMemo,
+  createEffect,
+  onCleanup,
+} from "solid-js";
 import { createMediaQuery } from "@solid-primitives/media";
 import { useSyncConfig } from "../hooks/useSyncConfig";
 
@@ -95,7 +102,8 @@ export const ThemeProvider: ParentComponent = (props) => {
   // 다음 모드로 순환
   const cycleMode = () => {
     const current = mode();
-    const next: ThemeMode = current === "light" ? "system" : current === "system" ? "dark" : "light";
+    const next: ThemeMode =
+      current === "light" ? "system" : current === "system" ? "dark" : "light";
     setMode(next);
   };
 

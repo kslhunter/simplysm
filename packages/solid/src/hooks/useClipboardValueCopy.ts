@@ -46,8 +46,11 @@ function extractTextFromRange(range: Range): string | null {
   if (!root) return null;
 
   // 선택 범위에 폼 컨트롤이 없으면 브라우저 기본 동작 사용
-  const formSelector = 'input:not([type=hidden]), textarea, select, [role="checkbox"], [role="radio"]';
-  const hasFormElements = [...root.querySelectorAll(formSelector)].some((el) => range.intersectsNode(el));
+  const formSelector =
+    'input:not([type=hidden]), textarea, select, [role="checkbox"], [role="radio"]';
+  const hasFormElements = [...root.querySelectorAll(formSelector)].some((el) =>
+    range.intersectsNode(el),
+  );
   if (!hasFormElements) return null;
 
   const parts: string[] = [];

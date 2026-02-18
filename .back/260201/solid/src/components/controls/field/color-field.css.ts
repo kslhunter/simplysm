@@ -9,7 +9,11 @@ import {
   fieldInput,
 } from "./field-base.css";
 
-export { fieldContainer as colorFieldContainer, fieldContent as colorFieldContent, fieldInput as colorFieldInput };
+export {
+  fieldContainer as colorFieldContainer,
+  fieldContent as colorFieldContent,
+  fieldInput as colorFieldInput,
+};
 
 /**
  * ColorField 스타일 (fieldBase 확장 - cursor: pointer, color swatch 스타일)

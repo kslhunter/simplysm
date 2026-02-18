@@ -32,7 +32,8 @@ export class ExcelXmlContentType implements ExcelXml {
             {
               $: {
                 PartName: "/xl/workbook.xml",
-                ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+                ContentType:
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
               },
             },
           ],

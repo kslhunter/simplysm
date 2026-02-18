@@ -74,7 +74,10 @@ export default function FormTablePage() {
                 <tr>
                   <th>카테고리</th>
                   <td>
-                    <Select placeholder="선택" renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}>
+                    <Select
+                      placeholder="선택"
+                      renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}
+                    >
                       <Select.Item value="notice">공지사항</Select.Item>
                       <Select.Item value="news">뉴스</Select.Item>
                     </Select>
@@ -151,9 +154,15 @@ export default function FormTablePage() {
                 </tbody>
               </FormTable>
               <p class="text-sm text-base-600 dark:text-base-400">
-                이름: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledName() || "(없음)"}</code>
+                이름:{" "}
+                <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                  {controlledName() || "(없음)"}
+                </code>
                 {" / "}
-                급여: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledSalary() ?? "(없음)"}</code>
+                급여:{" "}
+                <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                  {controlledSalary() ?? "(없음)"}
+                </code>
               </p>
               <div class="flex gap-2">
                 <Button

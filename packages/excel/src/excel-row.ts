@@ -15,7 +15,10 @@ export class ExcelRow {
 
   /** 열 인덱스에 해당하는 셀 반환 (0-based) */
   cell(c: number): ExcelCell {
-    return this._cellMap.getOrCreate(c, new ExcelCell(this._zipCache, this._targetFileName, this._r, c));
+    return this._cellMap.getOrCreate(
+      c,
+      new ExcelCell(this._zipCache, this._targetFileName, this._r, c),
+    );
   }
 
   /** 행의 모든 셀 반환 */

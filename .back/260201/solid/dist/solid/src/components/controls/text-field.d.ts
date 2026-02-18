@@ -12,7 +12,9 @@ import "@simplysm/core-common";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface TextFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">, TextFieldStyles {
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">,
+    TextFieldStyles {
   value?: string | undefined;
   onChange?: (value: string | undefined) => void;
   type?: "text" | "password" | "email";

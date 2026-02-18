@@ -1,4 +1,11 @@
-import { type JSX, type ParentComponent, Show, splitProps, createContext, useContext } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+  createContext,
+  useContext,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -26,7 +33,9 @@ const FormGroupItem: ParentComponent<FormGroupItemProps> = (props) => {
   return (
     <div class={getClassName()} data-form-group-item {...rest}>
       <Show when={local.label}>
-        <label class={ctx.inline ? clsx("whitespace-nowrap font-bold", "pr-2") : "mb-1 block font-bold"}>
+        <label
+          class={ctx.inline ? clsx("whitespace-nowrap font-bold", "pr-2") : "mb-1 block font-bold"}
+        >
           {local.label}
         </label>
       </Show>

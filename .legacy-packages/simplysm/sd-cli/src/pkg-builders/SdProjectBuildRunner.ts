@@ -1,4 +1,11 @@
-import { FsUtils, PathUtils, SdFsWatcher, SdLogger, SdWorker, type TNormPath } from "@simplysm/sd-core-node";
+import {
+  FsUtils,
+  PathUtils,
+  SdFsWatcher,
+  SdLogger,
+  SdWorker,
+  type TNormPath,
+} from "@simplysm/sd-core-node";
 import type { ISdProjectConfig, ISdServerPackageConfig } from "../types/config/ISdProjectConfig";
 import path from "path";
 import type { ISdBuildMessage } from "../types/build/ISdBuildMessage";
@@ -62,7 +69,9 @@ export class SdProjectBuildRunner {
 
           const modifiedFileSet = new Set(
             changeFiles.filter(
-              (item) => buildInfo.watchFileSet.has(item) || PathUtils.isChildPath(item, path.resolve(pkgPath, "src")),
+              (item) =>
+                buildInfo.watchFileSet.has(item) ||
+                PathUtils.isChildPath(item, path.resolve(pkgPath, "src")),
             ),
           );
 
@@ -123,7 +132,9 @@ export class SdProjectBuildRunner {
         }
         // changed
         else {
-          const result = await changedPkgInfo.buildInfo.buildWorker.run("rebuild", [changedPkgInfo.modifiedFileSet]);
+          const result = await changedPkgInfo.buildInfo.buildWorker.run("rebuild", [
+            changedPkgInfo.modifiedFileSet,
+          ]);
           changedPkgInfo.buildInfo.watchFileSet = result.watchFileSet;
 
           return {
@@ -148,7 +159,11 @@ export class SdProjectBuildRunner {
             this._logger.debug(`서버 '${serverName}' 재시작...`);
 
             const serverInfo = this._serverInfoMap.getOrCreate(serverName, {});
-            const restartServerResult = await this._restartServerAsync(serverInfo.worker, buildResult.pkgPath, pkgConf);
+            const restartServerResult = await this._restartServerAsync(
+              serverInfo.worker,
+              buildResult.pkgPath,
+              pkgConf,
+            );
             serverInfo.worker = restartServerResult.worker;
             serverInfo.port = restartServerResult.port;
 
@@ -215,7 +230,10 @@ export class SdProjectBuildRunner {
                 Array.from(buildResult.emitFileSet)
                   .filter((item) => !item.endsWith(".map"))
                   .map((item) =>
-                    path.relative(distPath, item.replace(/cordova[\\\/]/, "").replace(/electron[\\\/]/, "")),
+                    path.relative(
+                      distPath,
+                      item.replace(/cordova[\\\/]/, "").replace(/electron[\\\/]/, ""),
+                    ),
                   ),
               ),
             ]);
@@ -266,7 +284,10 @@ export class SdProjectBuildRunner {
 
       for (const buildResult of buildResults) {
         for (const buildMessage of buildResult.buildMessages) {
-          const cacheItem = this._resultCache.getOrCreate(buildMessage.filePath ?? buildResult.pkgPath, []);
+          const cacheItem = this._resultCache.getOrCreate(
+            buildMessage.filePath ?? buildResult.pkgPath,
+            [],
+          );
           cacheItem.push(buildMessage);
         }
       }
@@ -275,7 +296,11 @@ export class SdProjectBuildRunner {
     });
   }
 
-  static async buildAsync(opt: { allPkgPaths: TNormPath[]; pkgPaths: TNormPath[]; projConf: ISdProjectConfig }) {
+  static async buildAsync(opt: {
+    allPkgPaths: TNormPath[];
+    pkgPaths: TNormPath[];
+    projConf: ISdProjectConfig;
+  }) {
     const scopePathSet = await this._getScopePathSetAsync(
       opt.allPkgPaths,
       Object.keys(opt.projConf.localUpdates ?? {}),
@@ -284,13 +309,16 @@ export class SdProjectBuildRunner {
     const buildResults = await opt.pkgPaths.parallelAsync(async (pkgPath) => {
       const pkgConf = opt.projConf.packages[path.basename(pkgPath)]!;
 
-      const worker = new SdWorker<ISdBuildRunnerWorkerType>(import.meta.resolve("../workers/build-runner.worker"), {
-        resourceLimits: {
-          maxOldGenerationSizeMb: 2048,
-          maxYoungGenerationSizeMb: 8,
-          stackSizeMb: 2,
+      const worker = new SdWorker<ISdBuildRunnerWorkerType>(
+        import.meta.resolve("../workers/build-runner.worker"),
+        {
+          resourceLimits: {
+            maxOldGenerationSizeMb: 2048,
+            maxYoungGenerationSizeMb: 8,
+            stackSizeMb: 2,
+          },
         },
-      });
+      );
 
       await worker.run("initialize", [
         {
@@ -340,20 +368,25 @@ export class SdProjectBuildRunner {
 
       const npmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
 
-      const worker = new SdWorker<IServerWorkerType>(import.meta.resolve("../workers/server.worker"), {
-        env: {
-          NODE_ENV: "development",
-          TZ: "Asia/Seoul",
-          SD_VERSION: npmConf.version,
-          ...(typeof pkgConfOrPort === "number" ? {} : pkgConfOrPort.env),
+      const worker = new SdWorker<IServerWorkerType>(
+        import.meta.resolve("../workers/server.worker"),
+        {
+          env: {
+            NODE_ENV: "development",
+            TZ: "Asia/Seoul",
+            SD_VERSION: npmConf.version,
+            ...(typeof pkgConfOrPort === "number" ? {} : pkgConfOrPort.env),
+          },
+          resourceLimits: {
+            maxOldGenerationSizeMb: 2048,
+            maxYoungGenerationSizeMb: 8,
+            stackSizeMb: 2,
+          },
         },
-        resourceLimits: {
-          maxOldGenerationSizeMb: 2048,
-          maxYoungGenerationSizeMb: 8,
-          stackSizeMb: 2,
-        },
-      });
-      const port = await worker.run("listen", [typeof pkgConfOrPort === "number" ? pkgConfOrPort : pkgPath]);
+      );
+      const port = await worker.run("listen", [
+        typeof pkgConfOrPort === "number" ? pkgConfOrPort : pkgPath,
+      ]);
       this._logger.debug("서버가 시작되었습니다.");
 
       return { worker, port };

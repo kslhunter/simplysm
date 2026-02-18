@@ -27,7 +27,11 @@ export default function StatePresetPage() {
             <div class="space-y-6">
               <div>
                 <h3 class="mb-3 text-lg font-semibold">필터 상태 저장/복원</h3>
-                <StatePreset<FilterState> presetKey="demo-filter" value={filter()} onValueChange={setFilter} />
+                <StatePreset<FilterState>
+                  presetKey="demo-filter"
+                  value={filter()}
+                  onValueChange={setFilter}
+                />
                 <div class="mt-4 space-y-2">
                   <div class="flex items-center gap-2">
                     <label class="text-sm font-medium">검색:</label>
@@ -62,7 +66,10 @@ export default function StatePresetPage() {
                   </div>
                 </div>
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  현재 상태: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(filter())}</code>
+                  현재 상태:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(filter())}
+                  </code>
                 </p>
               </div>
             </div>
@@ -83,7 +90,11 @@ export default function StatePresetPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">기본 (md)</h3>
-                <StatePreset<FilterState> presetKey="demo-filter-md" value={filter()} onValueChange={setFilter} />
+                <StatePreset<FilterState>
+                  presetKey="demo-filter-md"
+                  value={filter()}
+                  onValueChange={setFilter}
+                />
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">lg</h3>

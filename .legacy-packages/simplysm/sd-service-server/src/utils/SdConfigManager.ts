@@ -3,7 +3,11 @@ import { FsUtils, SdFsWatcher, SdLogger } from "@simplysm/sd-core-node";
 import path from "path";
 
 export class SdConfigManager {
-  private static readonly _logger = SdLogger.get(["simplysm", "sd-service-server", "SdConfigManager"]);
+  private static readonly _logger = SdLogger.get([
+    "simplysm",
+    "sd-service-server",
+    "SdConfigManager",
+  ]);
 
   // 값: Config 객체, 키: 파일 경로
   private static readonly _cache = new LazyGcMap<string, any>({

@@ -1,4 +1,11 @@
-import { children, type Component, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import {
+  children,
+  type Component,
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+} from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import clsx from "clsx";
@@ -52,7 +59,10 @@ const ListItemChildren: ParentComponent = (props) => (
   </div>
 );
 
-export interface ListItemProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> {
+export interface ListItemProps extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onClick"
+> {
   /**
    * 중첩 리스트의 열림 상태 (controlled 모드)
    */

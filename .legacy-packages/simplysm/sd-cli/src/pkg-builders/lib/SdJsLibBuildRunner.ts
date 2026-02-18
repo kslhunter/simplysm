@@ -22,7 +22,11 @@ export class SdJsLibBuildRunner extends SdBuildRunnerBase<"library"> {
 
     const filePathSet =
       modifiedFileSet ??
-      new Set(FsUtils.glob(path.resolve(this._opt.pkgPath, "src/**/*.js")).map((item) => PathUtils.norm(item)));
+      new Set(
+        FsUtils.glob(path.resolve(this._opt.pkgPath, "src/**/*.js")).map((item) =>
+          PathUtils.norm(item),
+        ),
+      );
 
     this._debug("LINT...");
 

@@ -13,7 +13,10 @@ export function setupCanDeactivate(fn: () => boolean): void {
     activatedModal.canDeactivefn = fn;
   } else if (activatedRoute) {
     if (!activatedRoute.routeConfig) return;
-    if (reflectComponentType(activatedRoute.component as any)?.selector !== elRef.nativeElement.tagName.toLowerCase()) {
+    if (
+      reflectComponentType(activatedRoute.component as any)?.selector !==
+      elRef.nativeElement.tagName.toLowerCase()
+    ) {
       return;
     }
 

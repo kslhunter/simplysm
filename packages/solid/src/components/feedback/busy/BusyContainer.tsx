@@ -1,4 +1,12 @@
-import { type ParentComponent, type JSX, splitProps, createEffect, onCleanup, Show, useContext } from "solid-js";
+import {
+  type ParentComponent,
+  type JSX,
+  splitProps,
+  createEffect,
+  onCleanup,
+  Show,
+  useContext,
+} from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { BusyContext, type BusyVariant } from "./BusyContext";
@@ -47,7 +55,14 @@ const progressBarClass = clsx(
 const barIndicatorClass = clsx("absolute left-0 top-0", "h-1 w-full", "bg-white dark:bg-base-800");
 
 export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
-  const [local, rest] = splitProps(props, ["busy", "variant", "message", "progressPercent", "class", "children"]);
+  const [local, rest] = splitProps(props, [
+    "busy",
+    "variant",
+    "message",
+    "progressPercent",
+    "class",
+    "children",
+  ]);
 
   const busyCtx = useContext(BusyContext);
   const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
@@ -74,11 +89,16 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     };
 
     containerRef.addEventListener("keydown", handleKeyDownCapture, { capture: true });
-    onCleanup(() => containerRef.removeEventListener("keydown", handleKeyDownCapture, { capture: true }));
+    onCleanup(() =>
+      containerRef.removeEventListener("keydown", handleKeyDownCapture, { capture: true }),
+    );
   });
 
   const screenClass = () =>
-    clsx(screenBaseClass, animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0");
+    clsx(
+      screenBaseClass,
+      animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+    );
 
   // spinner: 슬라이드 다운 애니메이션
   const rectClass = () => {
@@ -100,13 +120,19 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
             <Show when={currVariant() === "bar" && local.busy}>
               <div class={barIndicatorClass}>
                 <div
-                  class={clsx("absolute left-0 top-0 h-1 w-full origin-left", "bg-primary-500 dark:bg-primary-400")}
+                  class={clsx(
+                    "absolute left-0 top-0 h-1 w-full origin-left",
+                    "bg-primary-500 dark:bg-primary-400",
+                  )}
                   style={{
                     animation: "sd-busy-bar-before 2s infinite ease-in",
                   }}
                 />
                 <div
-                  class={clsx("absolute left-0 top-0 h-1 w-full origin-left", "bg-white dark:bg-base-800")}
+                  class={clsx(
+                    "absolute left-0 top-0 h-1 w-full origin-left",
+                    "bg-white dark:bg-base-800",
+                  )}
                   style={{
                     animation: "sd-busy-bar-after 2s infinite ease-out",
                   }}
@@ -121,7 +147,10 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
           </div>
           <Show when={local.progressPercent != null}>
             <div class={progressTrackClass}>
-              <div class={progressBarClass} style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }} />
+              <div
+                class={progressBarClass}
+                style={{ transform: `scaleX(${(local.progressPercent ?? 0) / 100})` }}
+              />
             </div>
           </Show>
         </div>

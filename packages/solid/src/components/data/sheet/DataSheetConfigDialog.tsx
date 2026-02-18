@@ -2,7 +2,12 @@ import { type Component } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
 import clsx from "clsx";
 import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
-import type { DataSheetConfig, DataSheetConfigColumn, DataSheetConfigColumnInfo, DataSheetReorderEvent } from "./types";
+import type {
+  DataSheetConfig,
+  DataSheetConfigColumn,
+  DataSheetConfigColumnInfo,
+  DataSheetReorderEvent,
+} from "./types";
 import { DataSheet } from "./DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { TextInput } from "../../form-control/field/TextInput";
@@ -66,7 +71,11 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
     setEditItems(reconcile(items));
   }
 
-  function updateItem(key: string, field: keyof EditColumnItem, value: EditColumnItem[keyof EditColumnItem]): void {
+  function updateItem(
+    key: string,
+    field: keyof EditColumnItem,
+    value: EditColumnItem[keyof EditColumnItem],
+  ): void {
     const index = editItems.findIndex((item) => item.key === key);
     if (index >= 0) {
       setEditItems(index, { [field]: value } as Partial<EditColumnItem>);
@@ -104,17 +113,30 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
     <div class={containerClass}>
       <div class={sheetWrapperClass}>
         <DataSheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
-          <DataSheet.Column<EditColumnItem> key="header" header="컬럼" class="px-2 py-1" sortable={false}>
+          <DataSheet.Column<EditColumnItem>
+            key="header"
+            header="컬럼"
+            class="px-2 py-1"
+            sortable={false}
+          >
             {(ctx) => ctx.item.headerText}
           </DataSheet.Column>
           <DataSheet.Column<EditColumnItem> key="fixed" header="고정" sortable={false}>
             {(ctx) => (
-              <Checkbox inset value={ctx.item.fixed} onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)} />
+              <Checkbox
+                inset
+                value={ctx.item.fixed}
+                onValueChange={(v) => updateItem(ctx.item.key, "fixed", v)}
+              />
             )}
           </DataSheet.Column>
           <DataSheet.Column<EditColumnItem> key="hidden" header="숨김" sortable={false}>
             {(ctx) => (
-              <Checkbox inset value={ctx.item.hidden} onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)} />
+              <Checkbox
+                inset
+                value={ctx.item.hidden}
+                onValueChange={(v) => updateItem(ctx.item.key, "hidden", v)}
+              />
             )}
           </DataSheet.Column>
           <DataSheet.Column<EditColumnItem> key="width" header="너비" sortable={false}>

@@ -1,7 +1,12 @@
 import { type Component, For, type JSX, splitProps } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from "@tabler/icons-solidjs";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
+} from "@tabler/icons-solidjs";
 import { Button } from "../form-control/Button";
 import { Icon } from "../display/Icon";
 

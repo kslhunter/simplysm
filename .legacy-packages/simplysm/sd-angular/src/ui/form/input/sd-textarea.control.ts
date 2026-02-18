@@ -179,7 +179,9 @@ export class SdTextareaControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
   inputStyle = input<string>();
   inputClass = input<string>();
 

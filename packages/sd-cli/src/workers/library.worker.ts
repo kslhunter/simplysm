@@ -3,7 +3,11 @@ import esbuild from "esbuild";
 import { createWorker, FsWatcher } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdBuildPackageConfig } from "../sd-config.types";
-import { parseRootTsconfig, getPackageSourceFiles, getCompilerOptionsForPackage } from "../utils/tsconfig";
+import {
+  parseRootTsconfig,
+  getPackageSourceFiles,
+  getCompilerOptionsForPackage,
+} from "../utils/tsconfig";
 import {
   createLibraryEsbuildOptions,
   getTypecheckEnvFromTarget,
@@ -114,7 +118,11 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
 
     // 타겟별 compilerOptions 생성
     const env = getTypecheckEnvFromTarget(info.config.target);
-    const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, env, info.pkgDir);
+    const compilerOptions = await getCompilerOptionsForPackage(
+      parsedConfig.options,
+      env,
+      info.pkgDir,
+    );
 
     // esbuild 일회성 빌드
     const esbuildOptions = createLibraryEsbuildOptions({
@@ -237,7 +245,13 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
     });
 
     // 초기 esbuild context 생성 및 빌드
-    esbuildContext = await createAndBuildContext(info.pkgDir, info.cwd, info.config, true, resolveFirstBuild);
+    esbuildContext = await createAndBuildContext(
+      info.pkgDir,
+      info.cwd,
+      info.config,
+      true,
+      resolveFirstBuild,
+    );
 
     // 첫 번째 빌드 완료 대기
     await firstBuildPromise;

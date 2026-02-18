@@ -57,7 +57,10 @@ export abstract class TransferableConvert {
     // 4. Map 재귀 순회
     if (obj instanceof Map) {
       return new Map(
-        Array.from(obj.entries()).map(([k, v]) => [this._encode(k, transferList), this._encode(v, transferList)]),
+        Array.from(obj.entries()).map(([k, v]) => [
+          this._encode(k, transferList),
+          this._encode(v, transferList),
+        ]),
       );
     }
 

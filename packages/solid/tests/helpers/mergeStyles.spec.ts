@@ -16,7 +16,10 @@ describe("mergeStyles", () => {
     });
 
     it("여러 속성을 가진 object 병합", () => {
-      const result = mergeStyles({ "color": "red", "font-size": "14px" }, { background: "blue", padding: "10px" });
+      const result = mergeStyles(
+        { "color": "red", "font-size": "14px" },
+        { background: "blue", padding: "10px" },
+      );
 
       expect(result).toEqual({
         "color": "red",
@@ -101,7 +104,13 @@ describe("mergeStyles", () => {
     });
 
     it("여러 undefined가 있어도 정상 동작", () => {
-      const result = mergeStyles(undefined, { color: "red" }, undefined, "background: blue;", undefined);
+      const result = mergeStyles(
+        undefined,
+        { color: "red" },
+        undefined,
+        "background: blue;",
+        undefined,
+      );
 
       expect(result).toEqual({ color: "red", background: "blue" });
     });

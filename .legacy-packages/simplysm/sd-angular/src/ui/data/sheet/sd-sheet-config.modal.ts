@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, forwardRef, input, output, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  input,
+  output,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdBusyContainerControl } from "../../overlay/busy/sd-busy-container.control";
 import { SdButtonControl } from "../../form/button/sd-button.control";
 import { SdCheckboxControl } from "../../form/choice/sd-checkbox.control";
@@ -34,15 +41,35 @@ import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-ic
     <sd-busy-container [busy]="!initialized()">
       @if (initialized()) {
         <div class="flex-fill p-default">
-          <sd-sheet [key]="sheetKey() + '-config'" [items]="items()" [trackByFn]="trackByFn" [hideConfigBar]="true">
-            <sd-sheet-column [key]="'fixed'" [header]="'Fix'" [disableSorting]="true" [disableResizing]="true">
+          <sd-sheet
+            [key]="sheetKey() + '-config'"
+            [items]="items()"
+            [trackByFn]="trackByFn"
+            [hideConfigBar]="true"
+          >
+            <sd-sheet-column
+              [key]="'fixed'"
+              [header]="'Fix'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
-                  <sd-checkbox [size]="'sm'" [inset]="true" [(value)]="item.fixed" (valueChange)="items.$mark()" />
+                  <sd-checkbox
+                    [size]="'sm'"
+                    [inset]="true"
+                    [(value)]="item.fixed"
+                    (valueChange)="items.$mark()"
+                  />
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column [key]="'ordering'" [header]="'Order'" [disableSorting]="true" [disableResizing]="true">
+            <sd-sheet-column
+              [key]="'ordering'"
+              [header]="'Order'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               <ng-template [cell]="items()" let-item="item" let-index="index">
                 <div class="p-xs-sm" style="text-align: center">
                   <sd-anchor
@@ -52,7 +79,9 @@ import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-ic
                     <ng-icon [svg]="tablerChevronUp" />
                   </sd-anchor>
                   <sd-anchor
-                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    [disabled]="
+                      index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)
+                    "
                     (click)="onDisplayOrderDownButtonClick(item)"
                   >
                     <ng-icon [svg]="tablerChevronDown" />
@@ -67,7 +96,12 @@ import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-ic
                 </div>
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column [key]="'width'" [header]="'Width'" [disableSorting]="true" [width]="'60px'">
+            <sd-sheet-column
+              [key]="'width'"
+              [header]="'Width'"
+              [disableSorting]="true"
+              [width]="'60px'"
+            >
               <ng-template [cell]="items()" let-item="item">
                 @if (!item.disableResizing) {
                   <sd-textfield
@@ -80,7 +114,12 @@ import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-ic
                 }
               </ng-template>
             </sd-sheet-column>
-            <sd-sheet-column [key]="'hidden'" [header]="'Hidden'" [disableSorting]="true" [disableResizing]="true">
+            <sd-sheet-column
+              [key]="'hidden'"
+              [header]="'Hidden'"
+              [disableSorting]="true"
+              [disableResizing]="true"
+            >
               .
               <ng-template [cell]="items()" let-item="item">
                 <div style="text-align: center">
@@ -110,10 +149,21 @@ import { tablerChevronDown, tablerChevronUp, tablerX } from "@ng-icons/tabler-ic
               Reset
             </sd-button>
           </div>
-          <sd-button [size]="'sm'" [theme]="'success'" (click)="onOkButtonClick()" [buttonStyle]="'min-width: 60px;'">
+          <sd-button
+            [size]="'sm'"
+            [theme]="'success'"
+            (click)="onOkButtonClick()"
+            [buttonStyle]="'min-width: 60px;'"
+          >
             OK
           </sd-button>
-          <sd-button [size]="'sm'" (click)="onCancelButtonClick()" [buttonStyle]="'min-width: 60px;'">Cancel</sd-button>
+          <sd-button
+            [size]="'sm'"
+            (click)="onCancelButtonClick()"
+            [buttonStyle]="'min-width: 60px;'"
+          >
+            Cancel
+          </sd-button>
         </div>
       }
     </sd-busy-container>
@@ -151,7 +201,9 @@ export class SdSheetConfigModal<T> implements ISdModal<ISdSheetConfig> {
         });
       }
 
-      this.items.set(items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)));
+      this.items.set(
+        items.orderBy((item) => item.displayOrder).orderBy((item) => (item.fixed ? -1 : 0)),
+      );
 
       this.initialized.set(true);
     });

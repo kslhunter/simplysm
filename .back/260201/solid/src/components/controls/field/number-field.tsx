@@ -21,7 +21,9 @@ import "@simplysm/core-common";
  * @property inline - true일 경우 inline-block으로 표시
  */
 export interface NumberFieldProps
-  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">, NumberFieldStyles {
+  extends
+    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "size">,
+    NumberFieldStyles {
   value?: number | undefined;
   onChange?: (value: number | undefined) => void;
   useNumberComma?: boolean;
@@ -152,16 +154,24 @@ export const NumberField: Component<NumberFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[numberField(objPick(local, numberField.variants())), local.class].filter(Boolean).join(" ")}
+          class={[numberField(objPick(local, numberField.variants())), local.class]
+            .filter(Boolean)
+            .join(" ")}
         />
       }
     >
       <div class={numberFieldContainer}>
-        <div class={numberFieldContent}>{displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}</div>
+        <div class={numberFieldContent}>
+          {displayValue() !== "" ? displayValue() : (local.placeholder ?? "\u00A0")}
+        </div>
         <input
           {...rest}
           {...inputProps()}
-          class={[numberFieldInput, numberField(objPick(local, numberField.variants())), local.class]
+          class={[
+            numberFieldInput,
+            numberField(objPick(local, numberField.variants())),
+            local.class,
+          ]
             .filter(Boolean)
             .join(" ")}
         />

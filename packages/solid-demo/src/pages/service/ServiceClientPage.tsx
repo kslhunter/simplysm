@@ -96,7 +96,9 @@ const ServiceClientDemo: Component = () => {
       {/* 연결 상태 */}
       <section>
         <h2 class="mb-4 text-xl font-semibold">연결 상태</h2>
-        <Tag theme={connected() ? "success" : "danger"}>{connected() ? "연결됨 (port: 40081)" : "연결 안됨"}</Tag>
+        <Tag theme={connected() ? "success" : "danger"}>
+          {connected() ? "연결됨 (port: 40081)" : "연결 안됨"}
+        </Tag>
       </section>
 
       {/* EchoService */}
@@ -116,7 +118,9 @@ const ServiceClientDemo: Component = () => {
             <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{echoResult()}</pre>
           </Show>
           <Show when={echoError()}>
-            <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">{echoError()}</pre>
+            <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">
+              {echoError()}
+            </pre>
           </Show>
         </div>
 
@@ -130,7 +134,12 @@ const ServiceClientDemo: Component = () => {
               minRows={3}
               class="flex-1 font-mono text-sm"
             />
-            <Button theme="primary" variant="solid" onClick={handleEchoJson} disabled={!connected()}>
+            <Button
+              theme="primary"
+              variant="solid"
+              onClick={handleEchoJson}
+              disabled={!connected()}
+            >
               Echo JSON
             </Button>
           </div>
@@ -138,7 +147,9 @@ const ServiceClientDemo: Component = () => {
             <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{jsonResult()}</pre>
           </Show>
           <Show when={jsonError()}>
-            <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">{jsonError()}</pre>
+            <pre class="mt-2 rounded bg-red-100 p-3 text-sm text-red-600 dark:bg-red-900/30">
+              {jsonError()}
+            </pre>
           </Show>
         </div>
       </section>
@@ -155,18 +166,27 @@ const ServiceClientDemo: Component = () => {
               Ping
             </Button>
             <Show when={pingResult()}>
-              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{pingResult()}</pre>
+              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">
+                {pingResult()}
+              </pre>
             </Show>
           </div>
 
           {/* check */}
           <div class="flex-1">
             <h3 class="mb-2 font-medium">check()</h3>
-            <Button theme="base" variant="outline" onClick={handleHealthCheck} disabled={!connected()}>
+            <Button
+              theme="base"
+              variant="outline"
+              onClick={handleHealthCheck}
+              disabled={!connected()}
+            >
               Health Check
             </Button>
             <Show when={healthResult()}>
-              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">{healthResult()}</pre>
+              <pre class="mt-2 rounded bg-base-100 p-3 text-sm dark:bg-base-800">
+                {healthResult()}
+              </pre>
             </Show>
           </div>
         </div>

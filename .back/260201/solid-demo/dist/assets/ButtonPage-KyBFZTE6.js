@@ -2,7 +2,8 @@ import { c as e, a as E, b as t, i as l, t as X } from "./index-DaQvuWeP.js";
 import { B as n } from "./IconMenu2-BvvTiCnB.js";
 import { T as Q, a as U } from "./topbar-DloMbu3D.js";
 import { a as r } from "./atoms.css-WCFmS3R-.js";
-/* empty css                              */ /* empty css                              */ var Y = "_186k25m0",
+/* empty css                              */ /* empty css                              */ var Y =
+    "_186k25m0",
   Z = X("<h1>Button"),
   ee = X(
     "<div style=overflow:auto;flex:1><h2>Button Demo</h2><section><h3>Default</h3><div></div></section><section><h3>Theme</h3><div></div></section><section><h3>Link Theme</h3><div></div></section><section><h3>Size</h3><div></div></section><section><h3>Size + Theme</h3><div></div></section><section><h3>Theme + Disabled</h3><div></div></section><section><h3>Inset Variant (in Table)</h3><table><tbody><tr><td></td><td>-</td><td></td><td>-</td><td></td><td>-</td><td>",

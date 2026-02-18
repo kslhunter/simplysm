@@ -28,7 +28,8 @@ export class SdExcelXmlContentType implements ISdExcelXml {
             {
               $: {
                 PartName: "/xl/workbook.xml",
-                ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+                ContentType:
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
               },
             },
           ],

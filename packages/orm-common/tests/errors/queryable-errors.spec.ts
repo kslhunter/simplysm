@@ -124,7 +124,9 @@ describe("Queryable 에러 케이스", () => {
           .select((u) => ({ name: u.name }))
           .distinct()
           .count(),
-      ).rejects.toThrow("distinct() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.");
+      ).rejects.toThrow(
+        "distinct() 후에는 count()를 사용할 수 없습니다. wrap()을 먼저 사용하세요.",
+      );
     });
 
     it("groupBy() 후 직접 호출하면 에러", async () => {
@@ -166,7 +168,9 @@ describe("Queryable 에러 케이스", () => {
       const db = createTestDb();
 
       expect(() => {
-        db.user().join("posts", (j, u) => j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])));
+        db.user().join("posts", (j, u) =>
+          j.union(db.post().where((p) => [expr.eq(p.userId, u.id)])),
+        );
       }).toThrow("union은 최소 2개의 queryable이 필요합니다.");
     });
   });

@@ -19,7 +19,13 @@ describe("ResultCollector", () => {
   it("에러 상태인 결과만 필터링할 수 있다", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
-    collector.add({ name: "pkg2", target: "node", type: "build", status: "error", message: "fail" });
+    collector.add({
+      name: "pkg2",
+      target: "node",
+      type: "build",
+      status: "error",
+      message: "fail",
+    });
 
     const errors = collector.getErrors();
 
@@ -30,7 +36,13 @@ describe("ResultCollector", () => {
   it("서버 상태인 결과만 필터링할 수 있다", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
-    collector.add({ name: "pkg2", target: "server", type: "server", status: "running", port: 3000 });
+    collector.add({
+      name: "pkg2",
+      target: "server",
+      type: "server",
+      status: "running",
+      port: 3000,
+    });
 
     const servers = collector.getServers();
 
@@ -52,7 +64,13 @@ describe("ResultCollector", () => {
     const collector = new ResultCollector();
     collector.add({ name: "pkg1", target: "node", type: "build", status: "success" });
     collector.add({ name: "pkg2", target: "node", type: "dts", status: "success" });
-    collector.add({ name: "pkg3", target: "node", type: "build", status: "error", message: "fail" });
+    collector.add({
+      name: "pkg3",
+      target: "node",
+      type: "build",
+      status: "error",
+      message: "fail",
+    });
 
     const builds = collector.getByType("build");
 

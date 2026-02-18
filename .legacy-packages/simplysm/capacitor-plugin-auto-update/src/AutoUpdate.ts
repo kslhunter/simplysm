@@ -29,7 +29,10 @@ export abstract class AutoUpdate {
                 background: lightgrey;
               }
             </style>
-            <a class="_button" href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end">
+            <a
+              class="_button"
+              href="intent://${targetHref.replace(/^https?:\/\//, "")}#Intent;scheme=http;end"
+            >
               다운로드
             </a>
           `
@@ -40,7 +43,10 @@ export abstract class AutoUpdate {
     `);
   }
 
-  private static async _checkPermissionAsync(log: (messageHtml: string) => void, targetHref?: string) {
+  private static async _checkPermissionAsync(
+    log: (messageHtml: string) => void,
+    targetHref?: string,
+  ) {
     if (!navigator.userAgent.toLowerCase().includes("android")) {
       throw new Error("안드로이드만 지원합니다.");
     }
@@ -124,12 +130,16 @@ export abstract class AutoUpdate {
     await new Promise(() => {}); // 무한대기
   }
 
-  static async runAsync(opt: { log: (messageHtml: string) => void; serviceClient: SdServiceClient }) {
+  static async runAsync(opt: {
+    log: (messageHtml: string) => void;
+    serviceClient: SdServiceClient;
+  }) {
     try {
       opt.log(`최신버전 확인 중...`);
 
       // 서버의 버전 및 다운로드링크 가져오기
-      const autoUpdateServiceClient = opt.serviceClient.getService<ISdAutoUpdateService>("SdAutoUpdateService");
+      const autoUpdateServiceClient =
+        opt.serviceClient.getService<ISdAutoUpdateService>("SdAutoUpdateService");
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
@@ -140,7 +150,10 @@ export abstract class AutoUpdate {
       }
 
       opt.log(`권한 확인 중...`);
-      await this._checkPermissionAsync(opt.log, opt.serviceClient.hostUrl + serverVersionInfo.downloadPath);
+      await this._checkPermissionAsync(
+        opt.log,
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+      );
 
       // 최신버전이면 반환
       if (process.env["SD_VERSION"] === serverVersionInfo.version) {
@@ -148,12 +161,17 @@ export abstract class AutoUpdate {
       }
 
       opt.log(`최신버전 파일 다운로드중...`);
-      const buffer = await NetUtils.downloadBufferAsync(opt.serviceClient.hostUrl + serverVersionInfo.downloadPath, {
-        progressCallback: (progress) => {
-          const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(2);
-          opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+      const buffer = await NetUtils.downloadBufferAsync(
+        opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
+        {
+          progressCallback: (progress) => {
+            const progressText = ((progress.receivedLength * 100) / progress.contentLength).toFixed(
+              2,
+            );
+            opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
+          },
         },
-      });
+      );
       const storagePath = await FileSystem.getStoragePathAsync("appCache");
       const apkFilePath = path.join(storagePath, `latest.apk`);
       await FileSystem.writeFileAsync(apkFilePath, buffer);
@@ -166,7 +184,10 @@ export abstract class AutoUpdate {
     }
   }
 
-  static async runByExternalStorageAsync(opt: { log: (messageHtml: string) => void; dirPath: string }) {
+  static async runByExternalStorageAsync(opt: {
+    log: (messageHtml: string) => void;
+    dirPath: string;
+  }) {
     try {
       opt.log(`권한 확인 중...`);
       await this._checkPermissionAsync(opt.log);

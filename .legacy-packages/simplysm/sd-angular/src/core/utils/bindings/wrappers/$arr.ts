@@ -53,18 +53,27 @@ export function $arr<T>(sig: Signal<T[]> | WritableSignal<T[]>) {
     changed(item: T) {
       if (mySig[ORIGIN_SNAPSHOT] == null) return false;
       const orgItemMap = mySig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
+      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as
+        | keyof T
+        | ((item: T) => any);
 
-      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue =
+        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
 
       if (keyValue == null) return true;
       const orgItem = orgItemMap.get(keyValue);
       return !ObjectUtils.equal(orgItem, item);
     },
-    diffs(options?: { includeSame?: boolean; excludes?: string[]; includes?: string[] }): TArrayDiffs2Result<T>[] {
+    diffs(options?: {
+      includeSame?: boolean;
+      excludes?: string[];
+      includes?: string[];
+    }): TArrayDiffs2Result<T>[] {
       if (mySig[ORIGIN_SNAPSHOT] == null) return [];
       const orgItemMap = mySig[ORIGIN_SNAPSHOT].snapshot as Map<any, any>;
-      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as keyof T | ((item: T) => any);
+      const keyPropNameOrFn = mySig[ORIGIN_SNAPSHOT].keyPropNameOrFn as
+        | keyof T
+        | ((item: T) => any);
 
       return mySig().oneWayDiffs(orgItemMap, keyPropNameOrFn, options);
     },

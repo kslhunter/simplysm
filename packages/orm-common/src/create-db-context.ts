@@ -1,4 +1,9 @@
-import type { DbContextDef, DbContextBase, DbContextStatus, DbContextInstance } from "./types/db-context-def";
+import type {
+  DbContextDef,
+  DbContextBase,
+  DbContextStatus,
+  DbContextInstance,
+} from "./types/db-context-def";
 import type { DataRecord, DbContextExecutor, IsolationLevel, ResultMeta } from "./types/db";
 import type { QueryDef, QueryDefObjectName } from "./types/query-def";
 import { DDL_TYPES } from "./types/query-def";
@@ -15,7 +20,10 @@ import * as tableDdl from "./ddl/table-ddl";
 import * as columnDdl from "./ddl/column-ddl";
 import * as relationDdl from "./ddl/relation-ddl";
 import * as schemaDdl from "./ddl/schema-ddl";
-import { initialize as initializeImpl, validateRelations as validateRelationsImpl } from "./ddl/initialize";
+import {
+  initialize as initializeImpl,
+  validateRelations as validateRelationsImpl,
+} from "./ddl/initialize";
 
 import type { ColumnBuilder } from "./schema/factory/column-builder";
 import type { ForeignKeyBuilder } from "./schema/factory/relation-builder";
@@ -77,13 +85,21 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     resetAliasCounter() {
       aliasCounter = 0;
     },
-    executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]> {
-      if (status === "transact" && defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))) {
+    executeDefs<T = DataRecord>(
+      defs: QueryDef[],
+      resultMetas?: (ResultMeta | undefined)[],
+    ): Promise<T[][]> {
+      if (
+        status === "transact" &&
+        defs.some((d) => (DDL_TYPES as readonly string[]).includes(d.type))
+      ) {
         throw new Error("TRANSACTION 상태에서는 DDL을 실행할 수 없습니다.");
       }
       return executor.executeDefs(defs, resultMetas);
     },
-    getQueryDefObjectName(tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>): QueryDefObjectName {
+    getQueryDefObjectName(
+      tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
+    ): QueryDefObjectName {
       return objClearUndefined({
         database: tableOrView.meta.database ?? opt.database,
         schema: tableOrView.meta.schema ?? opt.schema,
@@ -123,7 +139,10 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      * 연결 -> 트랜잭션 시작 -> 콜백 실행 -> 커밋 -> 연결 종료
      * 에러 발생 시 자동 롤백 후 연결 종료
      */
-    async connect<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult> {
+    async connect<TResult>(
+      fn: () => Promise<TResult>,
+      isolationLevel?: IsolationLevel,
+    ): Promise<TResult> {
       validateRelationsImpl(def);
       base.resetAliasCounter();
 
@@ -198,7 +217,10 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
      *
      * connectWithoutTransaction 내에서 부분적으로 트랜잭션이 필요할 때 사용
      */
-    async trans<TResult>(fn: () => Promise<TResult>, isolationLevel?: IsolationLevel): Promise<TResult> {
+    async trans<TResult>(
+      fn: () => Promise<TResult>,
+      isolationLevel?: IsolationLevel,
+    ): Promise<TResult> {
       if (status === "transact") {
         throw new Error("이미 TRANSACTION 상태입니다.");
       }
@@ -258,13 +280,21 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     async dropProc(procedure: QueryDefObjectName): Promise<void> {
       await base.executeDefs([tableDdl.getDropProcQueryDef(procedure)]);
     },
-    async addColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void> {
+    async addColumn(
+      table: QueryDefObjectName,
+      columnName: string,
+      column: ColumnBuilder<any, any>,
+    ): Promise<void> {
       await base.executeDefs([columnDdl.getAddColumnQueryDef(table, columnName, column)]);
     },
     async dropColumn(table: QueryDefObjectName, column: string): Promise<void> {
       await base.executeDefs([columnDdl.getDropColumnQueryDef(table, column)]);
     },
-    async modifyColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void> {
+    async modifyColumn(
+      table: QueryDefObjectName,
+      columnName: string,
+      column: ColumnBuilder<any, any>,
+    ): Promise<void> {
       await base.executeDefs([columnDdl.getModifyColumnQueryDef(table, columnName, column)]);
     },
     async renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void> {
@@ -281,7 +311,9 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
       relationName: string,
       relationDef: ForeignKeyBuilder<any, any>,
     ): Promise<void> {
-      await base.executeDefs([relationDdl.getAddFkQueryDef(base, table, relationName, relationDef)]);
+      await base.executeDefs([
+        relationDdl.getAddFkQueryDef(base, table, relationName, relationDef),
+      ]);
     },
     async addIdx(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void> {
       await base.executeDefs([relationDdl.getAddIdxQueryDef(table, indexBuilder)]);
@@ -310,9 +342,12 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
 
     //#region ========== DDL QueryDef generators ==========
 
-    getCreateTableQueryDef: (table: TableBuilder<any, any>) => tableDdl.getCreateTableQueryDef(base, table),
-    getCreateViewQueryDef: (view: ViewBuilder<any, any, any>) => tableDdl.getCreateViewQueryDef(db as any, view),
-    getCreateProcQueryDef: (procedure: ProcedureBuilder<any, any>) => tableDdl.getCreateProcQueryDef(base, procedure),
+    getCreateTableQueryDef: (table: TableBuilder<any, any>) =>
+      tableDdl.getCreateTableQueryDef(base, table),
+    getCreateViewQueryDef: (view: ViewBuilder<any, any, any>) =>
+      tableDdl.getCreateViewQueryDef(db as any, view),
+    getCreateProcQueryDef: (procedure: ProcedureBuilder<any, any>) =>
+      tableDdl.getCreateProcQueryDef(base, procedure),
     getCreateObjectQueryDef: (
       builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
     ) => tableDdl.getCreateObjectQueryDef(db as any, builder),
@@ -326,8 +361,11 @@ export function createDbContext<TDef extends DbContextDef<any, any, any>>(
     getRenameColumnQueryDef: columnDdl.getRenameColumnQueryDef,
     getAddPkQueryDef: relationDdl.getAddPkQueryDef,
     getDropPkQueryDef: relationDdl.getDropPkQueryDef,
-    getAddFkQueryDef: (table: QueryDefObjectName, relationName: string, relationDef: ForeignKeyBuilder<any, any>) =>
-      relationDdl.getAddFkQueryDef(base, table, relationName, relationDef),
+    getAddFkQueryDef: (
+      table: QueryDefObjectName,
+      relationName: string,
+      relationDef: ForeignKeyBuilder<any, any>,
+    ) => relationDdl.getAddFkQueryDef(base, table, relationName, relationDef),
     getAddIdxQueryDef: relationDdl.getAddIdxQueryDef,
     getDropFkQueryDef: relationDdl.getDropFkQueryDef,
     getDropIdxQueryDef: relationDdl.getDropIdxQueryDef,

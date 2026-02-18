@@ -66,7 +66,9 @@ describe("SdExcelWorksheet.addImageAsync integration", () => {
     const sheetRels = await (ws as any)._zipCache.getAsync(sheetRelsPath);
     expect(sheetRels).toBeDefined();
     const sheetRelsArr = sheetRels?.data?.Relationships?.Relationship ?? [];
-    expect(sheetRelsArr.some((r: any) => r.$.Target && r.$.Target.indexOf("/drawings/drawing") !== -1)).toBeTruthy();
+    expect(
+      sheetRelsArr.some((r: any) => r.$.Target && r.$.Target.indexOf("/drawings/drawing") !== -1),
+    ).toBeTruthy();
 
     const wsXml = await (ws as any)._zipCache.getAsync(`xl/worksheets/${sheetFileName}`);
     expect(wsXml).toBeDefined();

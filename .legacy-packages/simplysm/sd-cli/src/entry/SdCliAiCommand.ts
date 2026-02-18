@@ -34,7 +34,12 @@ export class SdCliAiCommand {
     ]);
 
     // 삭제된 파일 목록만 따로
-    const deleted = await SdProcess.spawnAsync("git", ["diff", "--staged", "--name-only", "--diff-filter=D"]);
+    const deleted = await SdProcess.spawnAsync("git", [
+      "diff",
+      "--staged",
+      "--name-only",
+      "--diff-filter=D",
+    ]);
 
     if (StringUtils.isNullOrEmpty(diff.trim())) {
       throw new Error("변경사항이 없습니다.");
@@ -87,10 +92,14 @@ ${deleted.trim() || "없음"}
     }
 
     process.stdout.write(
-      "\n\n-------------------------\n" + message.content[0].text + "\n-------------------------\n\n",
+      "\n\n-------------------------\n" +
+        message.content[0].text +
+        "\n-------------------------\n\n",
     );
 
     await SdProcess.spawnAsync("git", ["commit", "-m", message.content[0].text]);
-    process.stdout.write("커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n");
+    process.stdout.write(
+      "커밋이 완료되었습니다. 위 커밋메시지가 맘에들지 않을경우, 직접 커밋을 취소하세요.\n",
+    );
   }
 }

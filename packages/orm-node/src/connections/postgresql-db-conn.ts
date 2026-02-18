@@ -92,7 +92,11 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     this._assertConnected();
 
-    const level = (isolationLevel ?? this.config.defaultIsolationLevel ?? "READ_UNCOMMITTED").replace(/_/g, " ");
+    const level = (
+      isolationLevel ??
+      this.config.defaultIsolationLevel ??
+      "READ_UNCOMMITTED"
+    ).replace(/_/g, " ");
 
     await this._client!.query("BEGIN");
     await this._client!.query(`SET TRANSACTION ISOLATION LEVEL ${level}`);
@@ -159,7 +163,9 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     // CSV 데이터 생성
     const csvLines: string[] = [];
     for (const record of records) {
-      const row = colNames.map((colName) => this._escapeForCsv(record[colName], columnMetas[colName].dataType));
+      const row = colNames.map((colName) =>
+        this._escapeForCsv(record[colName], columnMetas[colName].dataType),
+      );
       csvLines.push(row.join(","));
     }
     const csvContent = csvLines.join("\n") + "\n";

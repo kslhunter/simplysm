@@ -220,7 +220,9 @@ describe("SELECT - JOIN", () => {
       .joinSingle("user", (q, c) =>
         q
           .from(User)
-          .joinSingle("company", (q2, c2) => q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]))
+          .joinSingle("company", (q2, c2) =>
+            q2.from(Company).where((item) => [expr.eq(item.id, c2.companyId)]),
+          )
           .where((item) => [expr.eq(item.id, c.userId)]),
       )
       .getSelectQueryDef();

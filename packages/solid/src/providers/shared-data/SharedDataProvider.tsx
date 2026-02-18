@@ -19,8 +19,8 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
   const notification = useNotification();
   const logger = useLogger();
 
-  const [loadingCount, setLoadingCount] = createSignal(0);
-  const loading: Accessor<boolean> = () => loadingCount() > 0;
+  const [busyCount, setBusyCount] = createSignal(0);
+  const busy: Accessor<boolean> = () => busyCount() > 0;
 
   const signalMap = new Map<string, ReturnType<typeof createSignal<unknown[]>>>();
   const memoMap = new Map<string, Accessor<Map<string | number, unknown>>>();
@@ -49,7 +49,7 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
     const currentVersion = (versionMap.get(name) ?? 0) + 1;
     versionMap.set(name, currentVersion);
 
-    setLoadingCount((c) => c + 1);
+    setBusyCount((c) => c + 1);
     try {
       const signal = signalMap.get(name);
       if (!signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
@@ -77,19 +77,22 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
         err instanceof Error ? err.message : `'${name}' 데이터를 불러오는 중 오류가 발생했습니다.`,
       );
     } finally {
-      setLoadingCount((c) => c - 1);
+      setBusyCount((c) => c - 1);
     }
   }
 
   async function wait(): Promise<void> {
     // eslint-disable-next-line solid/reactivity -- waitUntil은 폴링 기반이므로 tracked scope 불필요
-    await waitUntil(() => loadingCount() <= 0);
+    await waitUntil(() => busyCount() <= 0);
   }
 
   const accessors: Record<string, SharedDataAccessor<unknown>> = {};
 
   // eslint-disable-next-line solid/reactivity -- definitions는 초기 설정용으로 마운트 시 1회만 읽음
-  for (const [name, def] of Object.entries(props.definitions) as [string, SharedDataDefinition<unknown>][]) {
+  for (const [name, def] of Object.entries(props.definitions) as [
+    string,
+    SharedDataDefinition<unknown>,
+  ][]) {
     const [items, setItems] = createSignal<unknown[]>([]);
     // eslint-disable-next-line solid/reactivity -- signal 참조를 Map에 저장하는 것은 반응성 접근이 아님
     signalMap.set(name, [items, setItems]);
@@ -145,8 +148,10 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
   const contextValue = {
     ...accessors,
     wait,
-    loading,
+    busy,
   } as SharedDataValue<Record<string, unknown>>;
 
-  return <SharedDataContext.Provider value={contextValue}>{props.children}</SharedDataContext.Provider>;
+  return (
+    <SharedDataContext.Provider value={contextValue}>{props.children}</SharedDataContext.Provider>
+  );
 }

@@ -90,7 +90,9 @@ describe("ExcelWorksheet.addImage integration", () => {
     expect(sheetRels).toBeDefined();
     const sheetRelsArr = sheetRels?.data?.Relationships?.Relationship ?? [];
     expect(
-      sheetRelsArr.some((r: any) => r.$.Target != null && r.$.Target.indexOf("/drawings/drawing") !== -1),
+      sheetRelsArr.some(
+        (r: any) => r.$.Target != null && r.$.Target.indexOf("/drawings/drawing") !== -1,
+      ),
     ).toBeTruthy();
 
     const wsXml = await (ws as any)._zipCache.get(`xl/worksheets/${sheetFileName}`);

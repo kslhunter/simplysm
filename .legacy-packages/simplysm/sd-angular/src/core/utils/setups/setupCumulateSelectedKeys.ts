@@ -14,7 +14,12 @@ export function setupCumulateSelectedKeys<T, K>(options: {
     const newSelectedItems = options.items().filter((item, i) => {
       return options.selectedItemKeys().includes(options.keySelectorFn(item, i));
     });
-    if (!ObjectUtils.equal(options.selectedItems(), newSelectedItems, { onlyOneDepth: true, ignoreArrayIndex: true })) {
+    if (
+      !ObjectUtils.equal(options.selectedItems(), newSelectedItems, {
+        onlyOneDepth: true,
+        ignoreArrayIndex: true,
+      })
+    ) {
       options.selectedItems.set(newSelectedItems);
     }
   });
@@ -29,7 +34,9 @@ export function setupCumulateSelectedKeys<T, K>(options: {
       if (options.selectedItems().includes(item)) {
         newSelectedItemKeys = [...newSelectedItemKeys, options.keySelectorFn(item, i)].distinct();
       } else {
-        newSelectedItemKeys = newSelectedItemKeys.filter((v1) => v1 !== options.keySelectorFn(item, i));
+        newSelectedItemKeys = newSelectedItemKeys.filter(
+          (v1) => v1 !== options.keySelectorFn(item, i),
+        );
       }
     }
 

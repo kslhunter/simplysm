@@ -82,7 +82,9 @@ export class VirtualFileSystem {
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
-            resolve(Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })));
+            resolve(
+              Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })),
+            );
             return;
           }
           const key = String(cursor.key);

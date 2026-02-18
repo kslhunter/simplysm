@@ -75,7 +75,10 @@ export class SdSheetFocusIndicatorRenderer {
       left: cellIndicatorEl.offsetLeft - containerEl.scrollLeft + 2,
     };
 
-    if (indicatorPosition.top < noneFixedPosition.top || indicatorPosition.left < noneFixedPosition.left - 1) {
+    if (
+      indicatorPosition.top < noneFixedPosition.top ||
+      indicatorPosition.left < noneFixedPosition.left - 1
+    ) {
       cellIndicatorEl.style.opacity = ".3";
     } else {
       cellIndicatorEl.style.opacity = "1";

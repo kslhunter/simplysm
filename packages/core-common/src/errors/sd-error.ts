@@ -26,7 +26,13 @@ export class SdError extends Error {
   constructor(arg1?: unknown, ...messages: string[]);
   constructor(arg1?: unknown, ...messages: string[]) {
     const arg1Message =
-      arg1 instanceof Error ? arg1.message : typeof arg1 === "string" ? arg1 : arg1 != null ? String(arg1) : undefined;
+      arg1 instanceof Error
+        ? arg1.message
+        : typeof arg1 === "string"
+          ? arg1
+          : arg1 != null
+            ? String(arg1)
+            : undefined;
 
     const fullMessage = [arg1Message, ...messages]
       .filter((m) => m != null)
@@ -42,7 +48,10 @@ export class SdError extends Error {
 
     // V8 엔진(Node.js, Chrome)에서만 사용 가능한 captureStackTrace
     if ("captureStackTrace" in Error) {
-      (Error.captureStackTrace as (targetObject: object, constructorOpt?: Function) => void)(this, new.target);
+      (Error.captureStackTrace as (targetObject: object, constructorOpt?: Function) => void)(
+        this,
+        new.target,
+      );
     }
 
     // cause 체인의 stack을 현재 stack에 추가

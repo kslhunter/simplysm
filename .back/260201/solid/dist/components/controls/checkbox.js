@@ -1,5 +1,10 @@
 import { createSignal, Show, splitProps } from "solid-js";
-import { checkbox, checkboxIndicator, checkboxIndicatorIcon, checkboxContents } from "./checkbox.css";
+import {
+  checkbox,
+  checkboxIndicator,
+  checkboxIndicatorIcon,
+  checkboxContents,
+} from "./checkbox.css";
 import { ripple } from "../../directives/ripple";
 import "@simplysm/core-common";
 import { objPick } from "@simplysm/core-common";

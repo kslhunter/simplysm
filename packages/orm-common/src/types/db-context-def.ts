@@ -20,8 +20,13 @@ export interface DbContextBase {
   readonly schema: string | undefined;
   getNextAlias(): string;
   resetAliasCounter(): void;
-  executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]>;
-  getQueryDefObjectName(tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>): QueryDefObjectName;
+  executeDefs<T = DataRecord>(
+    defs: QueryDef[],
+    resultMetas?: (ResultMeta | undefined)[],
+  ): Promise<T[][]>;
+  getQueryDefObjectName(
+    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  ): QueryDefObjectName;
   switchFk(table: QueryDefObjectName, switch_: "on" | "off"): Promise<void>;
 }
 
@@ -92,13 +97,25 @@ export interface DbContextDdlMethods {
   dropView(view: QueryDefObjectName): Promise<void>;
   createProc(procedure: ProcedureBuilder<any, any>): Promise<void>;
   dropProc(procedure: QueryDefObjectName): Promise<void>;
-  addColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void>;
+  addColumn(
+    table: QueryDefObjectName,
+    columnName: string,
+    column: ColumnBuilder<any, any>,
+  ): Promise<void>;
   dropColumn(table: QueryDefObjectName, column: string): Promise<void>;
-  modifyColumn(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): Promise<void>;
+  modifyColumn(
+    table: QueryDefObjectName,
+    columnName: string,
+    column: ColumnBuilder<any, any>,
+  ): Promise<void>;
   renameColumn(table: QueryDefObjectName, column: string, newName: string): Promise<void>;
   addPk(table: QueryDefObjectName, columns: string[]): Promise<void>;
   dropPk(table: QueryDefObjectName): Promise<void>;
-  addFk(table: QueryDefObjectName, relationName: string, relationDef: ForeignKeyBuilder<any, any>): Promise<void>;
+  addFk(
+    table: QueryDefObjectName,
+    relationName: string,
+    relationDef: ForeignKeyBuilder<any, any>,
+  ): Promise<void>;
   addIdx(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void>;
   dropFk(table: QueryDefObjectName, relationName: string): Promise<void>;
   dropIdx(table: QueryDefObjectName, columns: string[]): Promise<void>;
@@ -117,13 +134,25 @@ export interface DbContextDdlMethods {
   getRenameTableQueryDef(table: QueryDefObjectName, newName: string): QueryDef;
   getDropViewQueryDef(view: QueryDefObjectName): QueryDef;
   getDropProcQueryDef(procedure: QueryDefObjectName): QueryDef;
-  getAddColumnQueryDef(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): QueryDef;
+  getAddColumnQueryDef(
+    table: QueryDefObjectName,
+    columnName: string,
+    column: ColumnBuilder<any, any>,
+  ): QueryDef;
   getDropColumnQueryDef(table: QueryDefObjectName, column: string): QueryDef;
-  getModifyColumnQueryDef(table: QueryDefObjectName, columnName: string, column: ColumnBuilder<any, any>): QueryDef;
+  getModifyColumnQueryDef(
+    table: QueryDefObjectName,
+    columnName: string,
+    column: ColumnBuilder<any, any>,
+  ): QueryDef;
   getRenameColumnQueryDef(table: QueryDefObjectName, column: string, newName: string): QueryDef;
   getAddPkQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;
   getDropPkQueryDef(table: QueryDefObjectName): QueryDef;
-  getAddFkQueryDef(table: QueryDefObjectName, relationName: string, relationDef: ForeignKeyBuilder<any, any>): QueryDef;
+  getAddFkQueryDef(
+    table: QueryDefObjectName,
+    relationName: string,
+    relationDef: ForeignKeyBuilder<any, any>,
+  ): QueryDef;
   getAddIdxQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef;
   getDropFkQueryDef(table: QueryDefObjectName, relationName: string): QueryDef;
   getDropIdxQueryDef(table: QueryDefObjectName, columns: string[]): QueryDef;

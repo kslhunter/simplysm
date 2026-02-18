@@ -43,7 +43,15 @@ export class DateTime {
     if (arg1 === undefined) {
       this.date = new Date();
     } else if (arg2 !== undefined && arg3 !== undefined) {
-      this.date = new Date(arg1 as number, arg2 - 1, arg3, arg4 ?? 0, arg5 ?? 0, arg6 ?? 0, arg7 ?? 0);
+      this.date = new Date(
+        arg1 as number,
+        arg2 - 1,
+        arg3,
+        arg4 ?? 0,
+        arg5 ?? 0,
+        arg6 ?? 0,
+        arg7 ?? 0,
+      );
     } else if (arg1 instanceof Date) {
       this.date = new Date(arg1.getTime());
     } else {
@@ -72,7 +80,9 @@ export class DateTime {
     }
 
     const match1 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(str);
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(
+        str,
+      );
     if (match1 != null) {
       const rawHour = Number(match1[5]);
       const isPM = match1[4] === "오후";
@@ -100,7 +110,10 @@ export class DateTime {
       );
     }
 
-    const match3 = /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(str);
+    const match3 =
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(
+        str,
+      );
     if (match3 != null) {
       return new DateTime(
         Number(match3[1]),
@@ -173,7 +186,15 @@ export class DateTime {
 
   /** 지정된 연도로 새 인스턴스 반환 */
   setYear(year: number): DateTime {
-    return new DateTime(year, this.month, this.day, this.hour, this.minute, this.second, this.millisecond);
+    return new DateTime(
+      year,
+      this.month,
+      this.day,
+      this.hour,
+      this.minute,
+      this.second,
+      this.millisecond,
+    );
   }
 
   /**
@@ -202,27 +223,67 @@ export class DateTime {
    *       자동으로 다음/이전 달로 조정됨 (예: 1월에 day=32 → 2월 1일)
    */
   setDay(day: number): DateTime {
-    return new DateTime(this.year, this.month, day, this.hour, this.minute, this.second, this.millisecond);
+    return new DateTime(
+      this.year,
+      this.month,
+      day,
+      this.hour,
+      this.minute,
+      this.second,
+      this.millisecond,
+    );
   }
 
   /** 지정된 시로 새 인스턴스 반환 */
   setHour(hour: number): DateTime {
-    return new DateTime(this.year, this.month, this.day, hour, this.minute, this.second, this.millisecond);
+    return new DateTime(
+      this.year,
+      this.month,
+      this.day,
+      hour,
+      this.minute,
+      this.second,
+      this.millisecond,
+    );
   }
 
   /** 지정된 분으로 새 인스턴스 반환 */
   setMinute(minute: number): DateTime {
-    return new DateTime(this.year, this.month, this.day, this.hour, minute, this.second, this.millisecond);
+    return new DateTime(
+      this.year,
+      this.month,
+      this.day,
+      this.hour,
+      minute,
+      this.second,
+      this.millisecond,
+    );
   }
 
   /** 지정된 초로 새 인스턴스 반환 */
   setSecond(second: number): DateTime {
-    return new DateTime(this.year, this.month, this.day, this.hour, this.minute, second, this.millisecond);
+    return new DateTime(
+      this.year,
+      this.month,
+      this.day,
+      this.hour,
+      this.minute,
+      second,
+      this.millisecond,
+    );
   }
 
   /** 지정된 밀리초로 새 인스턴스 반환 */
   setMillisecond(millisecond: number): DateTime {
-    return new DateTime(this.year, this.month, this.day, this.hour, this.minute, this.second, millisecond);
+    return new DateTime(
+      this.year,
+      this.month,
+      this.day,
+      this.hour,
+      this.minute,
+      this.second,
+      millisecond,
+    );
   }
 
   //#endregion

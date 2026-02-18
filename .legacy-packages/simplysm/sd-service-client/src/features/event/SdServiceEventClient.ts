@@ -57,7 +57,9 @@ export class SdServiceEventClient {
       body: { name: eventType.name },
     });
 
-    const targetKeys = listenerInfos.filter((item) => infoSelector(item.info)).map((item) => item.key);
+    const targetKeys = listenerInfos
+      .filter((item) => infoSelector(item.info))
+      .map((item) => item.key);
 
     if (targetKeys.length > 0) {
       await this._transport.sendAsync({

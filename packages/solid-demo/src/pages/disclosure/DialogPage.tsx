@@ -65,7 +65,9 @@ export default function ModalPage() {
             <Dialog open={basicOpen()} onOpenChange={setBasicOpen} title="기본 다이얼로그">
               <div class="p-4">
                 <p class="text-sm">이것은 기본 다이얼로그입니다.</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">헤더의 X 버튼으로 닫을 수 있습니다.</p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
+                  헤더의 X 버튼으로 닫을 수 있습니다.
+                </p>
               </div>
             </Dialog>
           </section>
@@ -74,14 +76,17 @@ export default function ModalPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">프로그래매틱 다이얼로그</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              useDialog().show()를 사용하여 코드에서 다이얼로그를 열고, close() 호출 시 결과값을 Promise로 받습니다.
+              useDialog().show()를 사용하여 코드에서 다이얼로그를 열고, close() 호출 시 결과값을
+              Promise로 받습니다.
             </p>
             <div class="flex items-center gap-4">
               <Button theme="primary" variant="solid" onClick={handleProgrammaticOpen}>
                 프로그래매틱 다이얼로그 열기
               </Button>
               {programmaticResult() !== undefined && (
-                <span class="text-sm text-base-600 dark:text-base-400">결과: {programmaticResult()}</span>
+                <span class="text-sm text-base-600 dark:text-base-400">
+                  결과: {programmaticResult()}
+                </span>
               )}
             </div>
           </section>
@@ -90,7 +95,8 @@ export default function ModalPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">닫기 옵션</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              closeOnBackdrop과 closeOnEscape를 활성화하여, 백드롭 클릭이나 Escape 키로 다이얼로그를 닫을 수 있습니다.
+              closeOnBackdrop과 closeOnEscape를 활성화하여, 백드롭 클릭이나 Escape 키로 다이얼로그를
+              닫을 수 있습니다.
             </p>
             <Button theme="info" variant="solid" onClick={() => setCloseOptionOpen(true)}>
               닫기 옵션 다이얼로그 열기
@@ -112,15 +118,24 @@ export default function ModalPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">Float 다이얼로그</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              float=true로 백드롭 없이 플로팅 형태의 다이얼로그를 표시합니다. 뒤의 컨텐츠와 상호작용이 가능합니다.
+              float=true로 백드롭 없이 플로팅 형태의 다이얼로그를 표시합니다. 뒤의 컨텐츠와
+              상호작용이 가능합니다.
             </p>
             <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
               {floatOpen() ? "Float 다이얼로그 닫기" : "Float 다이얼로그 열기"}
             </Button>
-            <Dialog open={floatOpen()} onOpenChange={setFloatOpen} title="Float 다이얼로그" float widthPx={320}>
+            <Dialog
+              open={floatOpen()}
+              onOpenChange={setFloatOpen}
+              title="Float 다이얼로그"
+              float
+              widthPx={320}
+            >
               <div class="p-4">
                 <p class="text-sm">백드롭이 없는 플로팅 다이얼로그입니다.</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">뒤의 페이지와 상호작용할 수 있습니다.</p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
+                  뒤의 페이지와 상호작용할 수 있습니다.
+                </p>
               </div>
             </Dialog>
           </section>
@@ -134,10 +149,18 @@ export default function ModalPage() {
             <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
               Fill 다이얼로그 열기
             </Button>
-            <Dialog open={fillOpen()} onOpenChange={setFillOpen} title="Fill 다이얼로그" fill closeOnEscape>
+            <Dialog
+              open={fillOpen()}
+              onOpenChange={setFillOpen}
+              title="Fill 다이얼로그"
+              fill
+              closeOnEscape
+            >
               <div class="flex flex-1 flex-col items-center justify-center p-4">
                 <p class="text-lg font-semibold">전체 화면 다이얼로그</p>
-                <p class="mt-2 text-sm text-base-500 dark:text-base-400">Escape 키 또는 X 버튼으로 닫을 수 있습니다.</p>
+                <p class="mt-2 text-sm text-base-500 dark:text-base-400">
+                  Escape 키 또는 X 버튼으로 닫을 수 있습니다.
+                </p>
               </div>
             </Dialog>
           </section>
@@ -146,7 +169,8 @@ export default function ModalPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">리사이즈 / 이동</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              resizable과 movable을 활성화하여, 다이얼로그의 크기를 조절하고 헤더를 드래그하여 이동할 수 있습니다.
+              resizable과 movable을 활성화하여, 다이얼로그의 크기를 조절하고 헤더를 드래그하여
+              이동할 수 있습니다.
             </p>
             <Button theme="danger" variant="solid" onClick={() => setResizableOpen(true)}>
               리사이즈 가능 다이얼로그 열기

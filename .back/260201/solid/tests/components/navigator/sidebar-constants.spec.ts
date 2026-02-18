@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { MOBILE_BREAKPOINT, MOBILE_BREAKPOINT_PX } from "../../../src/components/navigator/sidebar/sidebar-constants";
+import {
+  MOBILE_BREAKPOINT,
+  MOBILE_BREAKPOINT_PX,
+} from "../../../src/components/navigator/sidebar/sidebar-constants";
 
 describe("sidebar-constants", () => {
   describe("MOBILE_BREAKPOINT_PX", () => {

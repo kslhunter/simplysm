@@ -151,7 +151,9 @@ describe("DDL - View Builder", () => {
   });
 
   describe("relations 지정", () => {
-    const Company = View("Company").query((db: TestDbContext) => db.company().select((c) => ({ id: c.id })));
+    const Company = View("Company").query((db: TestDbContext) =>
+      db.company().select((c) => ({ id: c.id })),
+    );
 
     const view = View("TestView")
       .query((db: TestDbContext) =>

@@ -36,7 +36,9 @@ export default function ListPage() {
           {/* Selectable List */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Selectable List</h2>
-            <p class="mb-2 text-sm text-base-600 dark:text-base-400">Selected: {selectedItem() ?? "None"}</p>
+            <p class="mb-2 text-sm text-base-600 dark:text-base-400">
+              Selected: {selectedItem() ?? "None"}
+            </p>
             <List>
               <For each={["Apple", "Banana", "Cherry", "Date"]}>
                 {(item) => (

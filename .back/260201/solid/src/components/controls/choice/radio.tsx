@@ -18,7 +18,8 @@ void ripple;
  * @property inline - 인라인 스타일 적용
  * @property inset - 인셋 스타일 적용
  */
-export interface RadioProps extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, RadioStyles {
+export interface RadioProps
+  extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, RadioStyles {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;

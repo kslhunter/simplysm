@@ -12,7 +12,11 @@ const ThemeProvider = (props) => {
     el.classList.remove(lightTheme, darkTheme);
     el.classList.add(themeClassMap[theme()]);
   });
-  return /* @__PURE__ */ React.createElement(ThemeContext.Provider, { value: { theme, setTheme } }, props.children);
+  return /* @__PURE__ */ React.createElement(
+    ThemeContext.Provider,
+    { value: { theme, setTheme } },
+    props.children,
+  );
 };
 function useTheme() {
   const ctx = useContext(ThemeContext);

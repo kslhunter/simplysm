@@ -68,7 +68,11 @@ function toTypecheckEnvs(target: string | undefined): TypecheckEnv[] {
  * scripts 타겟 패키지는 제외합니다.
  * @internal 테스트용으로 export
  */
-export function extractPackages(fileNames: string[], cwd: string, config: SdConfig): Map<string, PackageInfo> {
+export function extractPackages(
+  fileNames: string[],
+  cwd: string,
+  config: SdConfig,
+): Map<string, PackageInfo> {
   const packages = new Map<string, PackageInfo>();
 
   for (const fileName of fileNames) {

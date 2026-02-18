@@ -169,9 +169,17 @@ export default function CheckboxRadioPage() {
                     동의합니다
                   </Checkbox>
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    현재 값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{String(controlledCheck())}</code>
+                    현재 값:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {String(controlledCheck())}
+                    </code>
                   </p>
-                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledCheck((v) => !v)}>
+                  <Button
+                    theme="primary"
+                    variant="solid"
+                    size="sm"
+                    onClick={() => setControlledCheck((v) => !v)}
+                  >
                     토글
                   </Button>
                 </div>
@@ -181,17 +189,27 @@ export default function CheckboxRadioPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">Radio (그룹)</h3>
                 <div class="flex flex-col items-start gap-3">
-                  <Radio value={selectedRadio() === "A"} onValueChange={() => setSelectedRadio("A")}>
+                  <Radio
+                    value={selectedRadio() === "A"}
+                    onValueChange={() => setSelectedRadio("A")}
+                  >
                     옵션 A
                   </Radio>
-                  <Radio value={selectedRadio() === "B"} onValueChange={() => setSelectedRadio("B")}>
+                  <Radio
+                    value={selectedRadio() === "B"}
+                    onValueChange={() => setSelectedRadio("B")}
+                  >
                     옵션 B
                   </Radio>
-                  <Radio value={selectedRadio() === "C"} onValueChange={() => setSelectedRadio("C")}>
+                  <Radio
+                    value={selectedRadio() === "C"}
+                    onValueChange={() => setSelectedRadio("C")}
+                  >
                     옵션 C
                   </Radio>
                   <p class="text-sm text-base-600 dark:text-base-400">
-                    선택: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedRadio()}</code>
+                    선택:{" "}
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedRadio()}</code>
                   </p>
                 </div>
               </div>

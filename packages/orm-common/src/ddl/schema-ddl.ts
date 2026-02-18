@@ -9,7 +9,10 @@ import type {
 /**
  * CLEAR SCHEMA QueryDef 생성
  */
-export function getClearSchemaQueryDef(params: { database: string; schema?: string }): ClearSchemaQueryDef {
+export function getClearSchemaQueryDef(params: {
+  database: string;
+  schema?: string;
+}): ClearSchemaQueryDef {
   return { type: "clearSchema", database: params.database, schema: params.schema };
 }
 
@@ -30,6 +33,9 @@ export function getTruncateQueryDef(table: QueryDefObjectName): TruncateQueryDef
 /**
  * SWITCH FK QueryDef 생성
  */
-export function getSwitchFkQueryDef(table: QueryDefObjectName, switch_: "on" | "off"): SwitchFkQueryDef {
+export function getSwitchFkQueryDef(
+  table: QueryDefObjectName,
+  switch_: "on" | "off",
+): SwitchFkQueryDef {
   return { type: "switchFk", table, switch: switch_ };
 }

@@ -10,7 +10,8 @@ import { combineStyle } from "@solid-primitives/props";
  * @property open - 열림 상태
  * @property openRotate - 열림 상태일 때 회전 각도 (기본값: 90)
  */
-export interface CollapseIconProps extends Omit<JSX.HTMLAttributes<HTMLSpanElement>, "children">, CollapseIconStyles {
+export interface CollapseIconProps
+  extends Omit<JSX.HTMLAttributes<HTMLSpanElement>, "children">, CollapseIconStyles {
   icon: Component;
   openRotate?: number;
 }
@@ -27,14 +28,22 @@ export interface CollapseIconProps extends Omit<JSX.HTMLAttributes<HTMLSpanEleme
  * ```
  */
 export const CollapseIcon: Component<CollapseIconProps> = (props) => {
-  const [local, rest] = splitProps(props, [...collapseIcon.variants(), "icon", "openRotate", "style", "class"]);
+  const [local, rest] = splitProps(props, [
+    ...collapseIcon.variants(),
+    "icon",
+    "openRotate",
+    "style",
+    "class",
+  ]);
 
   const rotate = () => (local.open ? (local.openRotate ?? 90) : 0);
 
   return (
     <span
       {...rest}
-      class={[collapseIcon(objPick(local, collapseIcon.variants())), local.class].filter(Boolean).join(" ")}
+      class={[collapseIcon(objPick(local, collapseIcon.variants())), local.class]
+        .filter(Boolean)
+        .join(" ")}
       style={combineStyle(local.style, { transform: `rotate(${rotate()}deg)` })}
     >
       {local.icon({})}

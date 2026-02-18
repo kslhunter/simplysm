@@ -92,7 +92,9 @@ export function createWebSocketHandler(
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
         const { name } = message.body as { name: string };
-        const infos = Array.from(socketMap.values()).flatMap((subSock) => subSock.getEventListeners(name));
+        const infos = Array.from(socketMap.values()).flatMap((subSock) =>
+          subSock.getEventListeners(name),
+        );
         return await serviceSocket.send(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
         const { keys, data } = message.body as { keys: string[]; data: unknown };
@@ -132,7 +134,9 @@ export function createWebSocketHandler(
       }
     } catch (err) {
       const error =
-        err instanceof Error ? err : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+        err instanceof Error
+          ? err
+          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
 
       return serviceSocket.send(uuid, {
         name: "error",
@@ -151,7 +155,12 @@ export function createWebSocketHandler(
   // -------------------------------------------------------------------
 
   return {
-    addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest): void {
+    addSocket(
+      socket: WebSocket,
+      clientId: string,
+      clientName: string,
+      connReq: FastifyRequest,
+    ): void {
       try {
         const serviceSocket = createServiceSocket(socket, clientId, clientName, connReq);
 
@@ -197,7 +206,10 @@ export function createWebSocketHandler(
       }
     },
 
-    async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>): Promise<void> {
+    async broadcastReload(
+      clientName: string | undefined,
+      changedFileSet: Set<string>,
+    ): Promise<void> {
       for (const serviceSocket of socketMap.values()) {
         await serviceSocket.send(Uuid.new().toString(), {
           name: "reload",

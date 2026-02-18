@@ -4,8 +4,10 @@ import { onMount } from "solid-js";
 
 export function App(props: RouteSectionProps) {
   onMount(() => {
-    document.querySelector(".app-loading")?.remove();
+    document.querySelector(".app-busy")?.remove();
   });
 
-  return <InitializeProvider config={{ clientName: "solid-demo" }}>{props.children}</InitializeProvider>;
+  return (
+    <InitializeProvider config={{ clientName: "solid-demo" }}>{props.children}</InitializeProvider>
+  );
 }

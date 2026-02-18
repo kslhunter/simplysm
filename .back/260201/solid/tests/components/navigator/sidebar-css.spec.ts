@@ -1,8 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { sidebar } from "../../../src/components/navigator/sidebar/sidebar.css";
-import { sidebarContainer, sidebarBackdrop } from "../../../src/components/navigator/sidebar/sidebar-container.css";
-import { sidebarMenu, sidebarMenuHeader } from "../../../src/components/navigator/sidebar/sidebar-menu.css";
-import { sidebarUser, sidebarUserContent } from "../../../src/components/navigator/sidebar/sidebar-user.css";
+import {
+  sidebarContainer,
+  sidebarBackdrop,
+} from "../../../src/components/navigator/sidebar/sidebar-container.css";
+import {
+  sidebarMenu,
+  sidebarMenuHeader,
+} from "../../../src/components/navigator/sidebar/sidebar-menu.css";
+import {
+  sidebarUser,
+  sidebarUserContent,
+} from "../../../src/components/navigator/sidebar/sidebar-user.css";
 
 describe("sidebar CSS", () => {
   describe("sidebar recipe", () => {

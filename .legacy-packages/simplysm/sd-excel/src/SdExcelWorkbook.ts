@@ -58,7 +58,9 @@ export class SdExcelWorkbook {
     );
 
     //-- Workbook Rels
-    const wbRelXml = (await this.zipCache.getAsync("xl/_rels/workbook.xml.rels")) as SdExcelXmlRelationShip;
+    const wbRelXml = (await this.zipCache.getAsync(
+      "xl/_rels/workbook.xml.rels",
+    )) as SdExcelXmlRelationShip;
     wbRelXml.insert(
       newWsRelId,
       `worksheets/sheet${newWsRelId}.xml`,
@@ -77,7 +79,9 @@ export class SdExcelWorkbook {
   async getWorksheetAsync(nameOrIndex: string | number): Promise<SdExcelWorksheet> {
     const wbData = (await this.zipCache.getAsync("xl/workbook.xml")) as SdExcelXmlWorkbook;
     const wsId =
-      typeof nameOrIndex === "string" ? wbData.getWsRelIdByName(nameOrIndex) : wbData.getWsRelIdByIndex(nameOrIndex);
+      typeof nameOrIndex === "string"
+        ? wbData.getWsRelIdByName(nameOrIndex)
+        : wbData.getWsRelIdByIndex(nameOrIndex);
     if (wsId === undefined) {
       if (typeof nameOrIndex === "string") {
         throw new Error(`시트명이 '${nameOrIndex}'인 시트를 찾을 수 없습니다.`);
@@ -89,7 +93,9 @@ export class SdExcelWorkbook {
       return this._wsMap.get(wsId)!;
     }
 
-    const relData = (await this.zipCache.getAsync("xl/_rels/workbook.xml.rels")) as SdExcelXmlRelationShip;
+    const relData = (await this.zipCache.getAsync(
+      "xl/_rels/workbook.xml.rels",
+    )) as SdExcelXmlRelationShip;
     const targetFilePath = relData.getTargetByRelId(wsId)!;
 
     const ws = new SdExcelWorksheet(this.zipCache, wsId, path.basename(targetFilePath));

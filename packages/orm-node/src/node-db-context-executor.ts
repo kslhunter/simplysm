@@ -101,7 +101,11 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @param records - 삽입할 레코드 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async bulkInsert(tableName: string, columnMetas: Record<string, ColumnMeta>, records: DataRecord[]): Promise<void> {
+  async bulkInsert(
+    tableName: string,
+    columnMetas: Record<string, ColumnMeta>,
+    records: DataRecord[],
+  ): Promise<void> {
     const conn = this._requireConn();
     await conn.bulkInsert(tableName, columnMetas, records);
   }
@@ -116,7 +120,10 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @returns 각 QueryDef의 실행 결과 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async executeDefs<T = DataRecord>(defs: QueryDef[], resultMetas?: (ResultMeta | undefined)[]): Promise<T[][]> {
+  async executeDefs<T = DataRecord>(
+    defs: QueryDef[],
+    resultMetas?: (ResultMeta | undefined)[],
+  ): Promise<T[][]> {
     const conn = this._requireConn();
 
     const builder = createQueryBuilder(this._dialect);
@@ -143,7 +150,10 @@ export class NodeDbContextExecutor implements DbContextExecutor {
         buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
 
       if (meta != null) {
-        const parsed = await parseQueryResult<T>(targetResultSet as Record<string, unknown>[], meta);
+        const parsed = await parseQueryResult<T>(
+          targetResultSet as Record<string, unknown>[],
+          meta,
+        );
         results.push(parsed ?? []);
       } else {
         results.push(targetResultSet as T[]);

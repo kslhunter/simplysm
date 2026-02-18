@@ -37,7 +37,9 @@ export const ThemeProvider: ParentComponent = (props) => {
     el.classList.add(themeClassMap[theme()]);
   });
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{props.children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>{props.children}</ThemeContext.Provider>
+  );
 };
 
 /**

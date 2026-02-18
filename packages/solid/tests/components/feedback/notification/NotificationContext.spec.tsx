@@ -12,7 +12,9 @@ describe("NotificationContext", () => {
   describe("useNotification", () => {
     it("Provider 없이 사용하면 에러가 발생한다", () => {
       createRoot((dispose) => {
-        expect(() => useNotification()).toThrow("useNotification은 NotificationProvider 내부에서만 사용할 수 있습니다");
+        expect(() => useNotification()).toThrow(
+          "useNotification은 NotificationProvider 내부에서만 사용할 수 있습니다",
+        );
         dispose();
       });
     });

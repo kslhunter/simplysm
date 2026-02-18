@@ -12,9 +12,12 @@ import { ArgumentError } from "../errors/argument-error";
  */
 export class Uuid {
   // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)
-  private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
+  private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) =>
+    i.toString(16).padStart(2, "0"),
+  );
 
-  private static readonly _uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  private static readonly _uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   /** 16바이트 배열을 UUID 문자열로 변환 */
   private static _bytesToUuidStr(bytes: Uint8Array): string {

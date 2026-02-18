@@ -49,7 +49,10 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
   return (
     <div {...rest} class={twMerge("inline", local.class)}>
       <span class={anchorClass}>
-        <span class={indicatorClass} style={{ display: (local.message ?? "") !== "" ? "block" : "none" }} />
+        <span
+          class={indicatorClass}
+          style={{ display: (local.message ?? "") !== "" ? "block" : "none" }}
+        />
       </span>
       {local.children}
       <input

@@ -2,8 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Topbar } from "../../../src/components/navigator/topbar/topbar";
 import { TopbarContainer } from "../../../src/components/navigator/topbar/topbar-container";
-import { TopbarMenu, type TopbarMenuItem } from "../../../src/components/navigator/topbar/topbar-menu";
-import { TopbarUser, type TopbarUserMenuItem } from "../../../src/components/navigator/topbar/topbar-user";
+import {
+  TopbarMenu,
+  type TopbarMenuItem,
+} from "../../../src/components/navigator/topbar/topbar-menu";
+import {
+  TopbarUser,
+  type TopbarUserMenuItem,
+} from "../../../src/components/navigator/topbar/topbar-user";
 import { SidebarContainer } from "../../../src/components/navigator/sidebar/sidebar-container";
 import { MemoryRouter, Route } from "@solidjs/router";
 import { IconHome, IconSettings, IconUser } from "@tabler/icons-solidjs";

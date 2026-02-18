@@ -6,7 +6,9 @@ import type { TQueryValue } from "../../types";
 import type { IJoinQueryDef, ISelectQueryDef, TQueryBuilderValue } from "../query-builder/types";
 
 export type TEntityValue<T extends TQueryValue> = T | QueryUnit<T>;
-export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> = TEntityValue<T> | Queryable<D, T>;
+export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> =
+  | TEntityValue<T>
+  | Queryable<D, T>;
 export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQueryValue> =
   | TEntityValueOrQueryable<D, T>
   | TEntityValueOrQueryableOrArray<D, T>[];
@@ -20,7 +22,11 @@ export type TEntity<T> = {
 };
 
 export type TSelectEntity<T> = {
-  [K in keyof T]: T[K] extends TQueryValue ? QueryUnit<T[K]> : T[K] extends (infer A)[] ? TEntity<A>[] : TEntity<T[K]>;
+  [K in keyof T]: T[K] extends TQueryValue
+    ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[]
+      ? TEntity<A>[]
+      : TEntity<T[K]>;
 };
 
 export type TEntityUnwrap<T> = {

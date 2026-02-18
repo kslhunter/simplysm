@@ -306,12 +306,23 @@ export default function FieldPage() {
               <div>
                 <h3 class="mb-3 text-lg font-semibold">TextInput</h3>
                 <div class="flex flex-col items-start gap-3">
-                  <TextInput value={controlledText()} onValueChange={setControlledText} placeholder="값을 입력하세요" />
+                  <TextInput
+                    value={controlledText()}
+                    onValueChange={setControlledText}
+                    placeholder="값을 입력하세요"
+                  />
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값:{" "}
-                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledText() ?? "(없음)"}</code>
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {controlledText() ?? "(없음)"}
+                    </code>
                   </p>
-                  <Button theme="primary" variant="solid" size="sm" onClick={() => setControlledText("새로운 값!")}>
+                  <Button
+                    theme="primary"
+                    variant="solid"
+                    size="sm"
+                    onClick={() => setControlledText("새로운 값!")}
+                  >
                     값 변경
                   </Button>
                 </div>
@@ -328,7 +339,9 @@ export default function FieldPage() {
                   />
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값:{" "}
-                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledNumber() ?? "(없음)"}</code>
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {controlledNumber() ?? "(없음)"}
+                    </code>
                   </p>
                   <div class="flex gap-2">
                     <Button
@@ -347,7 +360,11 @@ export default function FieldPage() {
                     >
                       -100
                     </Button>
-                    <Button variant="solid" size="sm" onClick={() => setControlledNumber(undefined)}>
+                    <Button
+                      variant="solid"
+                      size="sm"
+                      onClick={() => setControlledNumber(undefined)}
+                    >
                       초기화
                     </Button>
                   </div>
@@ -366,7 +383,9 @@ export default function FieldPage() {
                   />
                   <p class="text-sm text-base-600 dark:text-base-400">
                     현재 값:{" "}
-                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">{controlledTextArea() ?? "(없음)"}</code>
+                    <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                      {controlledTextArea() ?? "(없음)"}
+                    </code>
                   </p>
                   <Button
                     theme="primary"

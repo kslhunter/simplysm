@@ -18,7 +18,7 @@ export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   [K in keyof TSharedData]: SharedDataAccessor<TSharedData[K]>;
 } & {
   wait: () => Promise<void>;
-  loading: Accessor<boolean>;
+  busy: Accessor<boolean>;
 };
 
 export const SharedDataContext = createContext<SharedDataValue<Record<string, unknown>>>();

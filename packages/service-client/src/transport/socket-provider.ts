@@ -12,14 +12,24 @@ export interface SocketProviderEvents {
 export interface SocketProvider {
   readonly clientName: string;
   readonly connected: boolean;
-  on<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
-  off<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  on<K extends keyof SocketProviderEvents & string>(
+    type: K,
+    listener: (data: SocketProviderEvents[K]) => void,
+  ): void;
+  off<K extends keyof SocketProviderEvents & string>(
+    type: K,
+    listener: (data: SocketProviderEvents[K]) => void,
+  ): void;
   connect(): Promise<void>;
   close(): Promise<void>;
   send(data: Bytes): Promise<void>;
 }
 
-export function createSocketProvider(url: string, clientName: string, maxReconnectCount: number): SocketProvider {
+export function createSocketProvider(
+  url: string,
+  clientName: string,
+  maxReconnectCount: number,
+): SocketProvider {
   // 설정상수
   const HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
   const HEARTBEAT_INTERVAL = 5000; // 5초마다 핑 전송

@@ -2,7 +2,13 @@
  * ZIP 파일 처리 유틸리티
  */
 import type { FileEntry } from "@zip.js/zip.js";
-import { BlobReader, Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
+import {
+  BlobReader,
+  Uint8ArrayReader,
+  Uint8ArrayWriter,
+  ZipReader,
+  ZipWriter,
+} from "@zip.js/zip.js";
 import type { Bytes } from "../common.types";
 
 export interface ZipArchiveProgress {
@@ -67,12 +73,16 @@ export class ZipArchive {
    * 모든 파일을 압축 해제
    * @param progressCallback 진행률 콜백
    */
-  async extractAll(progressCallback?: (progress: ZipArchiveProgress) => void): Promise<Map<string, Bytes | undefined>> {
+  async extractAll(
+    progressCallback?: (progress: ZipArchiveProgress) => void,
+  ): Promise<Map<string, Bytes | undefined>> {
     const entries = await this._getEntries();
     if (entries == null) return this._cache;
 
     // 압축 해제 대상 크기 총합 계산
-    const totalSize = entries.filter((e) => !e.directory).reduce((acc, e) => acc + e.uncompressedSize, 0);
+    const totalSize = entries
+      .filter((e) => !e.directory)
+      .reduce((acc, e) => acc + e.uncompressedSize, 0);
 
     let totalExtracted = 0;
     for (const entry of entries) {

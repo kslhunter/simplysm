@@ -17,7 +17,9 @@ export function defineDbContext<
 }): DbContextDef<TTables & { _migration: typeof _Migration }, TViews, TProcedures> {
   return {
     meta: {
-      tables: { ...(config.tables ?? {}), _migration: _Migration } as TTables & { _migration: typeof _Migration },
+      tables: { ...(config.tables ?? {}), _migration: _Migration } as TTables & {
+        _migration: typeof _Migration;
+      },
       views: (config.views ?? {}) as TViews,
       procedures: (config.procedures ?? {}) as TProcedures,
       migrations: config.migrations ?? [],

@@ -14,7 +14,9 @@ export abstract class SdAppStructureProvider<TModule = unknown> {
   abstract usableModules: Signal<TModule[] | undefined>;
   abstract permRecord: Signal<Record<string, boolean> | undefined>;
 
-  usableMenus = $computed(() => SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()));
+  usableMenus = $computed(() =>
+    SdAppStructureUtils.getMenus(this.items, [], this.usableModules(), this.permRecord()),
+  );
   usableFlatMenus = $computed<ISdFlatMenu<TModule>[]>(() =>
     SdAppStructureUtils.getFlatMenus(this.items, this.usableModules(), this.permRecord()),
   );
@@ -32,7 +34,12 @@ export abstract class SdAppStructureProvider<TModule = unknown> {
   }
 
   getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[] {
-    return SdAppStructureUtils.getPermsByFullCode(this.items, fullCodes, permKeys, this.permRecord());
+    return SdAppStructureUtils.getPermsByFullCode(
+      this.items,
+      fullCodes,
+      permKeys,
+      this.permRecord(),
+    );
   }
 }
 
@@ -183,7 +190,8 @@ export abstract class SdAppStructureUtils {
         ? [...requiredModulesChain, item.requiredModules]
         : requiredModulesChain;
 
-      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules)) continue;
+      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules))
+        continue;
 
       if ("children" in item) {
         for (const child of item.children) {
@@ -254,7 +262,10 @@ export abstract class SdAppStructureUtils {
     return results;
   }
 
-  static getFlatPermissions<TModule>(items: TSdAppStructureItem<TModule>[], usableModules: TModule[] | undefined) {
+  static getFlatPermissions<TModule>(
+    items: TSdAppStructureItem<TModule>[],
+    usableModules: TModule[] | undefined,
+  ) {
     const results: ISdFlatPermission<TModule>[] = [];
 
     type QueueItem = {
@@ -283,7 +294,8 @@ export abstract class SdAppStructureUtils {
         ? [...requiredModulesChain, item.requiredModules]
         : requiredModulesChain;
 
-      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules)) continue;
+      if (!this._isUsableModulesChain(currModulesChain, currRequiredModulesChain, usableModules))
+        continue;
 
       // 1. 자식 enqueue
       if ("children" in item) {
@@ -313,7 +325,8 @@ export abstract class SdAppStructureUtils {
       if ("subPerms" in item) {
         for (const subPerm of item.subPerms ?? []) {
           // subPerm도 모듈 체크
-          if (!this._isUsableModules(subPerm.modules, subPerm.requiredModules, usableModules)) continue;
+          if (!this._isUsableModules(subPerm.modules, subPerm.requiredModules, usableModules))
+            continue;
 
           for (const perm of subPerm.perms) {
             results.push({
@@ -366,7 +379,9 @@ export abstract class SdAppStructureUtils {
     }
 
     // 2. modules: 하나라도 있으면 됨 (OR)
-    return modules == null || modules.length === 0 || modules.some((m) => usableModules?.includes(m));
+    return (
+      modules == null || modules.length === 0 || modules.some((m) => usableModules?.includes(m))
+    );
   }
 }
 

@@ -1,4 +1,13 @@
-import { type JSX, type ParentComponent, createEffect, onCleanup, Show, splitProps, For, useContext } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  createEffect,
+  onCleanup,
+  Show,
+  splitProps,
+  For,
+  useContext,
+} from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -58,7 +67,15 @@ export interface DialogProps {
   children: JSX.Element;
 }
 
-type ResizeDirection = "left" | "right" | "top" | "bottom" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
+type ResizeDirection =
+  | "left"
+  | "right"
+  | "top"
+  | "bottom"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 const RESIZE_DIRECTIONS: ResizeDirection[] = [
   "left",
@@ -171,7 +188,8 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   let wrapperRef: HTMLDivElement | undefined;
 
   const closeOnEscape = () => local.closeOnEscape ?? dialogDefaults?.().closeOnEscape ?? true;
-  const closeOnBackdrop = () => local.closeOnBackdrop ?? dialogDefaults?.().closeOnBackdrop ?? false;
+  const closeOnBackdrop = () =>
+    local.closeOnBackdrop ?? dialogDefaults?.().closeOnBackdrop ?? false;
 
   // Escape 키 감지
   createEffect(() => {
@@ -423,7 +441,9 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
       "mx-auto",
       "w-fit min-w-[200px]",
       "bg-white dark:bg-base-800",
-      local.float ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle) : "shadow-2xl dark:shadow-black/40",
+      local.float
+        ? clsx("shadow-md dark:shadow-black/30", "border", borderSubtle)
+        : "shadow-2xl dark:shadow-black/40",
       local.fill ? "rounded-none border-none" : "rounded-lg",
       "overflow-hidden",
       "flex flex-col",
@@ -470,7 +490,11 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
               <div
                 data-modal-header
                 class={clsx(headerClass(), "touch-none")}
-                style={typeof local.headerStyle === "string" ? mergeStyles(local.headerStyle) : local.headerStyle}
+                style={
+                  typeof local.headerStyle === "string"
+                    ? mergeStyles(local.headerStyle)
+                    : local.headerStyle
+                }
                 onPointerDown={handleHeaderPointerDown}
               >
                 <h5 class={clsx("flex-1", "px-4 py-2", "text-sm font-semibold")}>{local.title}</h5>
@@ -506,7 +530,12 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
                 {(direction) => (
                   <div
                     data-resize-bar={direction}
-                    class={clsx("absolute", "touch-none", resizePositionMap[direction], resizeCursorMap[direction])}
+                    class={clsx(
+                      "absolute",
+                      "touch-none",
+                      resizePositionMap[direction],
+                      resizeCursorMap[direction],
+                    )}
                     onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
                   />
                 )}

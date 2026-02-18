@@ -1,4 +1,13 @@
-import { type Component, type JSX, Show, createEffect, on, onCleanup, splitProps, untrack } from "solid-js";
+import {
+  type Component,
+  type JSX,
+  Show,
+  createEffect,
+  on,
+  onCleanup,
+  splitProps,
+  untrack,
+} from "solid-js";
 import clsx from "clsx";
 import "./editor.css";
 import { twMerge } from "tailwind-merge";
@@ -67,7 +76,14 @@ const editorContentSizeClasses: Record<FieldSize, string> = {
 };
 
 export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
-  const [local, rest] = splitProps(props, ["value", "onValueChange", "disabled", "size", "class", "style"]);
+  const [local, rest] = splitProps(props, [
+    "value",
+    "onValueChange",
+    "disabled",
+    "size",
+    "class",
+    "style",
+  ]);
 
   const [value, setValue] = createControllableSignal({
     value: () => local.value ?? "",
@@ -148,9 +164,11 @@ export const RichTextEditor: Component<RichTextEditorProps> = (props) => {
     editor()?.destroy();
   });
 
-  const getWrapperClass = () => twMerge(editorWrapperClass, local.disabled && editorDisabledClass, local.class);
+  const getWrapperClass = () =>
+    twMerge(editorWrapperClass, local.disabled && editorDisabledClass, local.class);
 
-  const getContentClass = () => twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
+  const getContentClass = () =>
+    twMerge(editorContentClass, local.size && editorContentSizeClasses[local.size]);
 
   return (
     <div {...rest} data-rich-text-editor class={getWrapperClass()} style={local.style}>

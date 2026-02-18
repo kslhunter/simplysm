@@ -17,7 +17,11 @@ export class SdStorage {
     fn: (storage: T extends "sftp" ? SdSftpStorage : SdFtpStorage) => Promise<R>,
   ): Promise<R> {
     const storage =
-      type === "sftp" ? new SdSftpStorage() : type === "ftps" ? new SdFtpStorage(true) : new SdFtpStorage(false);
+      type === "sftp"
+        ? new SdSftpStorage()
+        : type === "ftps"
+          ? new SdFtpStorage(true)
+          : new SdFtpStorage(false);
 
     try {
       await storage.connectAsync(conf);

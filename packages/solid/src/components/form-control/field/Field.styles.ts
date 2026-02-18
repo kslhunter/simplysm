@@ -1,11 +1,21 @@
 import clsx from "clsx";
 import { type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../../styles/tokens.styles";
-import { fieldSurface, insetBase, insetFocusOutline, inputBase } from "../../../styles/patterns.styles";
+import {
+  fieldSurface,
+  insetBase,
+  insetFocusOutline,
+  inputBase,
+} from "../../../styles/patterns.styles";
 
 export type FieldSize = ComponentSize;
 
 // 기본 wrapper 스타일
-export const fieldBaseClass = clsx("inline-flex items-center", fieldSurface, "px-2 py-1", "h-field");
+export const fieldBaseClass = clsx(
+  "inline-flex items-center",
+  fieldSurface,
+  "px-2 py-1",
+  "h-field",
+);
 
 // 사이즈별 스타일
 export const fieldSizeClasses: Record<FieldSize, string> = {
@@ -15,7 +25,11 @@ export const fieldSizeClasses: Record<FieldSize, string> = {
 };
 
 // inset 스타일
-export const fieldInsetClass = clsx(insetBase, "bg-primary-50 dark:bg-primary-950/30", insetFocusOutline);
+export const fieldInsetClass = clsx(
+  insetBase,
+  "bg-primary-50 dark:bg-primary-950/30",
+  insetFocusOutline,
+);
 
 // inset 높이 (border 2px 제외)
 export const fieldInsetHeightClass = "h-field-inset";

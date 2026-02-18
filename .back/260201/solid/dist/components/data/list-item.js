@@ -97,7 +97,9 @@ const ListItem = (props) => {
       /* @__PURE__ */ React.createElement(
         "div",
         {
-          class: [atoms({ display: "flex", alignItems: "center" }), styleProps.class].filterExists().join(" "),
+          class: [atoms({ display: "flex", alignItems: "center" }), styleProps.class]
+            .filterExists()
+            .join(" "),
           style: combineStyle(styleProps.style, { flex: 1 }),
         },
         content(),
@@ -105,7 +107,11 @@ const ListItem = (props) => {
       /* @__PURE__ */ React.createElement(
         Show,
         { when: hasChildren() && local.layout !== "flat" },
-        /* @__PURE__ */ React.createElement(CollapseIcon, { icon: IconChevronLeft, open: open(), openRotate: -90 }),
+        /* @__PURE__ */ React.createElement(CollapseIcon, {
+          icon: IconChevronLeft,
+          open: open(),
+          openRotate: -90,
+        }),
       ),
     ),
     /* @__PURE__ */ React.createElement(

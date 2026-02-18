@@ -48,12 +48,20 @@ export class SdProcess {
 
       ps.on("exit", (code) => {
         if (code !== 0) {
-          const message = options?.messageConvert ? options.messageConvert(messageBuffer) : messageBuffer.toString();
-          reject(new Error(`'${cmd + " " + args.join(" ")}' 명령이 오류와 함께 닫힘 (${code})\n${message}`));
+          const message = options?.messageConvert
+            ? options.messageConvert(messageBuffer)
+            : messageBuffer.toString();
+          reject(
+            new Error(
+              `'${cmd + " " + args.join(" ")}' 명령이 오류와 함께 닫힘 (${code})\n${message}`,
+            ),
+          );
           return;
         }
 
-        const message = options?.messageConvert ? options.messageConvert(messageBuffer) : messageBuffer.toString();
+        const message = options?.messageConvert
+          ? options.messageConvert(messageBuffer)
+          : messageBuffer.toString();
         resolve(message);
       });
     });

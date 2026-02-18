@@ -8,7 +8,9 @@ export default function ListPage() {
   const [openAccordion, setOpenAccordion] = createSignal<string | null>(null);
 
   const toggleFavorite = (item: string) => {
-    setFavoriteItems((prev) => (prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]));
+    setFavoriteItems((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
+    );
   };
 
   return (
@@ -31,7 +33,9 @@ export default function ListPage() {
         <h3>Selected State</h3>
         <div style={{ width: "300px" }}>
           <List>
-            <ListItem style={{ "justify-content": "flex-start", "align-items": "center" }}>일반 항목</ListItem>
+            <ListItem style={{ "justify-content": "flex-start", "align-items": "center" }}>
+              일반 항목
+            </ListItem>
             <ListItem selected>선택 항목</ListItem>
             <ListItem>일반 항목</ListItem>
           </List>

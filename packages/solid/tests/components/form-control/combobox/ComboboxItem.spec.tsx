@@ -6,7 +6,9 @@ import {
 } from "../../../../src/components/form-control/combobox/ComboboxContext";
 import { ComboboxItem } from "../../../../src/components/form-control/combobox/ComboboxItem";
 
-const createMockContext = (overrides: Partial<ComboboxContextValue> = {}): ComboboxContextValue => ({
+const createMockContext = (
+  overrides: Partial<ComboboxContextValue> = {},
+): ComboboxContextValue => ({
   isSelected: () => false,
   selectValue: vi.fn(),
   closeDropdown: vi.fn(),

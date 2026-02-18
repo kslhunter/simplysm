@@ -18,57 +18,64 @@ export function SdWorkerPathPlugin(outdir: string): esbuild.Plugin {
         }
 
         // 매칭되는 모든 import.meta.resolve를 찾아서 처리
-        const newSource = await replaceAsync(originalSource, regex, async (match, quote, relPath) => {
-          // 1. 실제 워커 파일 경로 계산
-          const workerSourcePath = path.resolve(path.dirname(args.path), relPath);
+        const newSource = await replaceAsync(
+          originalSource,
+          regex,
+          async (match, quote, relPath) => {
+            // 1. 실제 워커 파일 경로 계산
+            const workerSourcePath = path.resolve(path.dirname(args.path), relPath);
 
-          // 확장자가 없을 경우 자동 탐색 (js, ts 등)
-          const resolvedWorkerPath = resolveFile(workerSourcePath);
-          if (resolvedWorkerPath == null) {
-            // 파일이 없으면 건드리지 않음 (런타임 에러로 넘김)
-            return match;
-          }
+            // 확장자가 없을 경우 자동 탐색 (js, ts 등)
+            const resolvedWorkerPath = resolveFile(workerSourcePath);
+            if (resolvedWorkerPath == null) {
+              // 파일이 없으면 건드리지 않음 (런타임 에러로 넘김)
+              return match;
+            }
 
-          // 2. 출력될 워커 파일명 결정 (캐싱 및 중복 방지를 위해 해시 사용 권장)
-          const fileContent = await FsUtils.readFileBufferAsync(resolvedWorkerPath);
-          const hash = HashUtils.get(fileContent).substring(0, 8);
-          const workerBaseName = path.basename(resolvedWorkerPath, path.extname(resolvedWorkerPath));
-          const outputFileName = `${workerBaseName}-${hash}.js`;
-          const outputFilePath = path.join(outdir, "workers", outputFileName);
+            // 2. 출력될 워커 파일명 결정 (캐싱 및 중복 방지를 위해 해시 사용 권장)
+            const fileContent = await FsUtils.readFileBufferAsync(resolvedWorkerPath);
+            const hash = HashUtils.get(fileContent).substring(0, 8);
+            const workerBaseName = path.basename(
+              resolvedWorkerPath,
+              path.extname(resolvedWorkerPath),
+            );
+            const outputFileName = `${workerBaseName}-${hash}.js`;
+            const outputFilePath = path.join(outdir, "workers", outputFileName);
 
-          // 3. 워커 파일 빌드 (존재하지 않거나 변경되었을 때만)
-          // (간단하게 하기 위해 매번 빌드 시도하거나, 해시로 체크 가능. 여기선 esbuild 증분 빌드에 맡김)
-          // *중요*: 워커도 번들링해야 함.
-          await esbuild.build({
-            ...build.initialOptions,
-            plugins:
-              build.initialOptions.plugins?.filter(
-                (item) =>
-                  item.name !== "sd-worker-path-plugin" &&
-                  item.name !== "sd-ng-plugin" &&
-                  item.name !== "sd-server-plugin",
-              ) ?? [],
-            outdir: undefined,
+            // 3. 워커 파일 빌드 (존재하지 않거나 변경되었을 때만)
+            // (간단하게 하기 위해 매번 빌드 시도하거나, 해시로 체크 가능. 여기선 esbuild 증분 빌드에 맡김)
+            // *중요*: 워커도 번들링해야 함.
+            await esbuild.build({
+              ...build.initialOptions,
+              plugins:
+                build.initialOptions.plugins?.filter(
+                  (item) =>
+                    item.name !== "sd-worker-path-plugin" &&
+                    item.name !== "sd-ng-plugin" &&
+                    item.name !== "sd-server-plugin",
+                ) ?? [],
+              outdir: undefined,
 
-            entryPoints: [resolvedWorkerPath],
-            bundle: true,
-            write: true,
-            splitting: false,
-            outfile: outputFilePath,
-            // platform: build.initialOptions.platform,
-            // target: build.initialOptions.target,
-            // format: build.initialOptions.format,
-            // minify: build.initialOptions.minify,
-            // banner: build.initialOptions.banner,
-            // sourcemap: build.initialOptions.sourcemap,
-            // external: build.initialOptions.external, // 외부 의존성 설정 상속
-            // 플러그인 상속 주의: 무한 루프 방지를 위해 이 플러그인은 제외해야 함
-          });
+              entryPoints: [resolvedWorkerPath],
+              bundle: true,
+              write: true,
+              splitting: false,
+              outfile: outputFilePath,
+              // platform: build.initialOptions.platform,
+              // target: build.initialOptions.target,
+              // format: build.initialOptions.format,
+              // minify: build.initialOptions.minify,
+              // banner: build.initialOptions.banner,
+              // sourcemap: build.initialOptions.sourcemap,
+              // external: build.initialOptions.external, // 외부 의존성 설정 상속
+              // 플러그인 상속 주의: 무한 루프 방지를 위해 이 플러그인은 제외해야 함
+            });
 
-          // 4. 경로 치환
-          // 번들링된 메인 파일(dist/main.js) 기준으로 workers 폴더는 ./workers/ 임
-          return `import.meta.resolve(${quote}./workers/${outputFileName}${quote})`;
-        });
+            // 4. 경로 치환
+            // 번들링된 메인 파일(dist/main.js) 기준으로 workers 폴더는 ./workers/ 임
+            return `import.meta.resolve(${quote}./workers/${outputFileName}${quote})`;
+          },
+        );
 
         return {
           contents: newSource,
@@ -83,7 +90,11 @@ export function SdWorkerPathPlugin(outdir: string): esbuild.Plugin {
 }
 
 // 정규식 비동기 replace 헬퍼
-async function replaceAsync(str: string, regex: RegExp, asyncFn: (match: string, ...args: any[]) => Promise<string>) {
+async function replaceAsync(
+  str: string,
+  regex: RegExp,
+  asyncFn: (match: string, ...args: any[]) => Promise<string>,
+) {
   const promises: Promise<string>[] = [];
   str.replace(regex, (match, ...args) => {
     promises.push(asyncFn(match, ...args));

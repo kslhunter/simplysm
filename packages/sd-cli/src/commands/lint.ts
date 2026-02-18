@@ -26,7 +26,12 @@ export interface LintOptions {
 //#region Utilities
 
 /** ESLint 설정 파일 탐색 순서 */
-const ESLINT_CONFIG_FILES = ["eslint.config.ts", "eslint.config.mts", "eslint.config.js", "eslint.config.mjs"] as const;
+const ESLINT_CONFIG_FILES = [
+  "eslint.config.ts",
+  "eslint.config.mts",
+  "eslint.config.js",
+  "eslint.config.mjs",
+] as const;
 
 /** Stylelint 설정 파일 탐색 순서 */
 const STYLELINT_CONFIG_FILES = [
@@ -66,7 +71,9 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   }
 
   if (configPath == null) {
-    throw new SdError(`ESLint 설정 파일을 찾을 수 없습니다 (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`);
+    throw new SdError(
+      `ESLint 설정 파일을 찾을 수 없습니다 (cwd: ${cwd}): ${ESLINT_CONFIG_FILES.join(", ")}`,
+    );
   }
 
   const jiti = createJiti(import.meta.url);
@@ -75,7 +82,11 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   let configs: unknown;
   if (Array.isArray(configModule)) {
     configs = configModule;
-  } else if (configModule != null && typeof configModule === "object" && "default" in configModule) {
+  } else if (
+    configModule != null &&
+    typeof configModule === "object" &&
+    "default" in configModule
+  ) {
     configs = configModule.default;
   } else {
     throw new SdError(`ESLint 설정 파일이 올바른 형식이 아닙니다: ${configPath}`);
@@ -240,14 +251,20 @@ export async function runLint(options: LintOptions): Promise<void> {
     );
 
     if (stylelintErrorCount > 0) {
-      logger.error("Stylelint 에러 발생", { errorCount: stylelintErrorCount, warningCount: stylelintWarningCount });
+      logger.error("Stylelint 에러 발생", {
+        errorCount: stylelintErrorCount,
+        warningCount: stylelintWarningCount,
+      });
     } else if (stylelintWarningCount > 0) {
       logger.info("Stylelint 완료 (경고 있음)", {
         errorCount: stylelintErrorCount,
         warningCount: stylelintWarningCount,
       });
     } else {
-      logger.info("Stylelint 완료", { errorCount: stylelintErrorCount, warningCount: stylelintWarningCount });
+      logger.info("Stylelint 완료", {
+        errorCount: stylelintErrorCount,
+        warningCount: stylelintWarningCount,
+      });
     }
 
     // Stylelint formatter 출력

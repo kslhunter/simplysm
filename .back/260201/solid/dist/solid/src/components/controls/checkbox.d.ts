@@ -15,7 +15,8 @@ import { type IconProps } from "@tabler/icons-solidjs";
  * @property inline - 인라인 스타일 적용
  * @property inset - 인셋 스타일 적용
  */
-export interface CheckboxProps extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, CheckboxStyles {
+export interface CheckboxProps
+  extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "onChange">, CheckboxStyles {
   checked?: boolean;
   indeterminate?: boolean;
   onChange?: (checked: boolean) => void;

@@ -32,13 +32,17 @@ export class SdCliProject {
     }
 
     logger.debug("프로젝트 package.json 가져오기...");
-    const projNpmConf = (await FsUtils.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
+    const projNpmConf = (await FsUtils.readJsonAsync(
+      path.resolve(process.cwd(), "package.json"),
+    )) as INpmConfig;
 
     logger.debug("패키지 목록 구성...");
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = (await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtils.globAsync(item)))
+    const allPkgPaths = (
+      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtils.globAsync(item))
+    )
       .filter((item) => !item.includes("."))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
@@ -69,20 +73,28 @@ export class SdCliProject {
     });
   }
 
-  static async buildAsync(opt: { config: string; options?: string[]; packages?: string[] }): Promise<void> {
+  static async buildAsync(opt: {
+    config: string;
+    options?: string[];
+    packages?: string[];
+  }): Promise<void> {
     const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "watchAsync"]);
 
     logger.debug("프로젝트 설정 가져오기...");
     const projConf = await loadProjConfAsync(process.cwd(), false, opt);
 
     logger.debug("프로젝트 package.json 가져오기...");
-    const projNpmConf = (await FsUtils.readJsonAsync(path.resolve(process.cwd(), "package.json"))) as INpmConfig;
+    const projNpmConf = (await FsUtils.readJsonAsync(
+      path.resolve(process.cwd(), "package.json"),
+    )) as INpmConfig;
 
     logger.debug("패키지 목록 구성...");
     if (!projNpmConf.workspaces) {
       throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
     }
-    const allPkgPaths = (await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtils.globAsync(item)))
+    const allPkgPaths = (
+      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtils.globAsync(item))
+    )
       .filter((item) => !item.includes("."))
       .map((item) => PathUtils.norm(item));
     let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
@@ -218,7 +230,13 @@ export class SdCliProject {
         logger.debug("새 버전 커밋 및 TAG 생성...");
         await SdProcess.spawnAsync("git", ["add", "."]);
         await SdProcess.spawnAsync("git", ["commit", "-m", `v${projNpmConf.version}`]);
-        await SdProcess.spawnAsync("git", ["tag", "-a", `v${projNpmConf.version}`, "-m", `v${projNpmConf.version}`]);
+        await SdProcess.spawnAsync("git", [
+          "tag",
+          "-a",
+          `v${projNpmConf.version}`,
+          "-m",
+          `v${projNpmConf.version}`,
+        ]);
 
         logger.debug("새 버전 푸쉬...");
         await SdProcess.spawnAsync("git", ["push"]);
@@ -266,7 +284,10 @@ export class SdCliProject {
     logger.info(`모든 배포가 완료되었습니다. (v${projNpmConf.version})`);
   }
 
-  private static async _publishPkgAsync(pkgPath: string, pkgPubConf: TSdPackageConfig["publish"]): Promise<void> {
+  private static async _publishPkgAsync(
+    pkgPath: string,
+    pkgPubConf: TSdPackageConfig["publish"],
+  ): Promise<void> {
     if (pkgPubConf === "npm") {
       const pkgNpmConf = FsUtils.readJson(path.resolve(pkgPath, "package.json")) as INpmConfig;
       const prereleaseInfo = semver.prerelease(pkgNpmConf.version);
@@ -301,7 +322,11 @@ export class SdCliProject {
         const targetPath = PathUtils.posix(targetRootPath, relativeFilePath);
         await FsUtils.copyAsync(filePath, targetPath);
       });
-    } else if (pkgPubConf?.type === "ftp" || pkgPubConf?.type === "ftps" || pkgPubConf?.type === "sftp") {
+    } else if (
+      pkgPubConf?.type === "ftp" ||
+      pkgPubConf?.type === "ftps" ||
+      pkgPubConf?.type === "sftp"
+    ) {
       await SdStorage.connectAsync(
         pkgPubConf.type,
         {
@@ -339,7 +364,9 @@ export class SdCliProject {
 
     // prerelease 여부에 따라 증가 방식 결정
     const newVersion =
-      prereleaseInfo !== null ? semver.inc(currentVersion, "prerelease")! : semver.inc(currentVersion, "patch")!;
+      prereleaseInfo !== null
+        ? semver.inc(currentVersion, "prerelease")!
+        : semver.inc(currentVersion, "patch")!;
 
     projNpmConf.version = newVersion;
 

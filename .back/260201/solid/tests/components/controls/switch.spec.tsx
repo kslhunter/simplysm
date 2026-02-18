@@ -106,7 +106,16 @@ describe("Switch", () => {
   });
 
   describe("theme variants (AC5)", () => {
-    const themes = ["primary", "secondary", "success", "warning", "danger", "info", "gray", "slate"] as const;
+    const themes = [
+      "primary",
+      "secondary",
+      "success",
+      "warning",
+      "danger",
+      "info",
+      "gray",
+      "slate",
+    ] as const;
 
     it.each(themes)("theme=%s가 에러 없이 렌더링된다", (theme) => {
       render(() => (

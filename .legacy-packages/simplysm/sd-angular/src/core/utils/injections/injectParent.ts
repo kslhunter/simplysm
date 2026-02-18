@@ -2,9 +2,18 @@ import type { AbstractType } from "@angular/core";
 import { inject, Injector, ViewContainerRef } from "@angular/core";
 
 export function injectParent<T = any>(type?: AbstractType<T>): T;
-export function injectParent<T = any>(type: AbstractType<T>, options: { optional: true }): T | undefined;
-export function injectParent<T = any>(type: AbstractType<T> | undefined, options: { optional: true }): T | undefined;
-export function injectParent<T = any>(type?: AbstractType<T>, options?: { optional: true }): T | undefined {
+export function injectParent<T = any>(
+  type: AbstractType<T>,
+  options: { optional: true },
+): T | undefined;
+export function injectParent<T = any>(
+  type: AbstractType<T> | undefined,
+  options: { optional: true },
+): T | undefined;
+export function injectParent<T = any>(
+  type?: AbstractType<T>,
+  options?: { optional: true },
+): T | undefined {
   let currentInjector: Injector | null = inject(ViewContainerRef).injector;
   while (true) {
     if (!currentInjector) {

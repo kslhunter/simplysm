@@ -36,7 +36,8 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
     "error",
     {
       name: "Buffer",
-      message: "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+      message:
+        "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
     },
   ],
   "no-restricted-imports": [
@@ -45,7 +46,8 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
       paths: [
         {
           name: "buffer",
-          message: "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
+          message:
+            "Uint8Array를 사용하세요. 복잡한 연산은 @simplysm/core-common의 BytesUtils를 사용하세요.",
         },
         {
           name: "events",
@@ -120,7 +122,12 @@ export default defineConfig([
       "import/no-extraneous-dependencies": [
         "error",
         {
-          devDependencies: ["**/lib/**", "**/eslint.config.js", "**/simplysm.js", "**/vitest.config.js"],
+          devDependencies: [
+            "**/lib/**",
+            "**/eslint.config.js",
+            "**/simplysm.js",
+            "**/vitest.config.js",
+          ],
         },
       ],
 
@@ -153,7 +160,10 @@ export default defineConfig([
       "@typescript-eslint/return-await": ["error", "in-try-catch"],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-shadow": "error",
-      "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
+      "@typescript-eslint/no-unnecessary-condition": [
+        "error",
+        { allowConstantLoopConditions: true },
+      ],
       "@typescript-eslint/no-unnecessary-type-assertion": "error",
       // "@typescript-eslint/non-nullable-type-assertion-style": "error",
       "@typescript-eslint/prefer-reduce-type-parameter": "error",

@@ -1,4 +1,12 @@
-import { type Component, type JSX, For, Show, splitProps, createSignal, createMemo } from "solid-js";
+import {
+  type Component,
+  type JSX,
+  For,
+  Show,
+  splitProps,
+  createSignal,
+  createMemo,
+} from "solid-js";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { IconChevronDown, IconDotsVertical, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -76,10 +84,16 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
         >
           <Icon icon={IconDotsVertical} size="1.25em" />
         </Button>
-        <Dropdown triggerRef={() => mobileButtonRef} open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
+        <Dropdown
+          triggerRef={() => mobileButtonRef}
+          open={mobileMenuOpen()}
+          onOpenChange={setMobileMenuOpen}
+        >
           <List inset>
             <For each={local.menus}>
-              {(menu) => <TopbarMenuDropdownItem menu={menu} onClose={() => setMobileMenuOpen(false)} />}
+              {(menu) => (
+                <TopbarMenuDropdownItem menu={menu} onClose={() => setMobileMenuOpen(false)} />
+              )}
             </For>
           </List>
         </Dropdown>
@@ -147,7 +161,11 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
         </Show>
         <span>{props.menu.title}</span>
         <Show when={hasChildren()}>
-          <Icon icon={IconChevronDown} size="1em" class={clsx("transition-transform", open() && "rotate-180")} />
+          <Icon
+            icon={IconChevronDown}
+            size="1em"
+            class={clsx("transition-transform", open() && "rotate-180")}
+          />
         </Show>
       </Button>
       <Show when={hasChildren()}>
@@ -189,7 +207,11 @@ const TopbarMenuDropdownItem: Component<TopbarMenuDropdownItemProps> = (props) =
   };
 
   return (
-    <ListItem selected={isSelected()} readonly={props.menu.href === undefined && hasChildren()} onClick={handleClick}>
+    <ListItem
+      selected={isSelected()}
+      readonly={props.menu.href === undefined && hasChildren()}
+      onClick={handleClick}
+    >
       <Show when={props.menu.icon}>
         <Icon icon={props.menu.icon!} />
       </Show>

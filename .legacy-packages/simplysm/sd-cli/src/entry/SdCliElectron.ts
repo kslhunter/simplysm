@@ -33,7 +33,10 @@ export class SdCliElectron {
     await this._buildAsync({ pkgPath, electronPath, electronDistPath, npmConfig, electronConfig });
   }
 
-  static async buildAsync(opt: { pkgPath: string; electronConfig: ISdClientBuilderElectronConfig }) {
+  static async buildAsync(opt: {
+    pkgPath: string;
+    electronConfig: ISdClientBuilderElectronConfig;
+  }) {
     this._logger.log("준비...");
     const electronPath = path.resolve(opt.pkgPath, ".electron/src");
     const { npmConfig } = await this._prepareAsync({ ...opt, electronPath });
@@ -49,7 +52,11 @@ export class SdCliElectron {
     });
   }
 
-  private static async _loadDevConfig(opt: { package: string; config: string; options?: string[] }) {
+  private static async _loadDevConfig(opt: {
+    package: string;
+    config: string;
+    options?: string[];
+  }) {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {

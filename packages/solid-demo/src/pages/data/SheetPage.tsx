@@ -207,7 +207,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">합계 행</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에 고정됩니다.
+              summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에
+              고정됩니다.
             </p>
             <DataSheet items={users} persistKey="summary">
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
@@ -217,7 +218,9 @@ export default function SheetPage() {
                 key="salary"
                 header="급여"
                 class="px-2 py-1 text-right"
-                summary={() => <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>}
+                summary={() => (
+                  <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>
+                )}
               >
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </DataSheet.Column>
@@ -230,7 +233,13 @@ export default function SheetPage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
             </p>
-            <DataSheet items={users} persistKey="sorting" sorts={sorts()} onSortsChange={setSorts} autoSort>
+            <DataSheet
+              items={users}
+              persistKey="sorting"
+              sorts={sorts()}
+              onSortsChange={setSorts}
+              autoSort
+            >
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
               </DataSheet.Column>
@@ -240,7 +249,12 @@ export default function SheetPage() {
               <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
                 {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
               </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header="이메일 (정렬 불가)" class="px-2 py-1" sortable={false}>
+              <DataSheet.Column<User>
+                key="email"
+                header="이메일 (정렬 불가)"
+                class="px-2 py-1"
+                sortable={false}
+              >
                 {(ctx) => ctx.item.email}
               </DataSheet.Column>
             </DataSheet>
@@ -275,7 +289,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">트리 확장</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를 표현합니다.
+              getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로
+              깊이를 표현합니다.
             </p>
             <DataSheet
               items={categories}
@@ -297,11 +312,17 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">고정 컬럼 + 리사이징</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로 초기화.
+              fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로
+              초기화.
             </p>
             <div>
               <DataSheet items={users} persistKey="fixed-resize">
-                <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
+                <DataSheet.Column<User>
+                  key="name"
+                  header="이름"
+                  class="px-2 py-1 font-medium"
+                  fixed
+                >
                   {(ctx) => ctx.item.name}
                 </DataSheet.Column>
                 <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
@@ -463,7 +484,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">단일 선택 + autoSelect</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시 자동 선택.
+              selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시
+              자동 선택.
             </p>
             <DataSheet
               items={users}
@@ -495,7 +517,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">선택 불가 항목</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로 표시됩니다.
+              isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로
+              표시됩니다.
             </p>
             <DataSheet
               items={users}
@@ -503,7 +526,9 @@ export default function SheetPage() {
               selectMode="multiple"
               selectedItems={disabledSelected()}
               onSelectedItemsChange={setDisabledSelected}
-              isItemSelectable={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
+              isItemSelectable={(item) =>
+                item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가"
+              }
             >
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}
@@ -527,8 +552,8 @@ export default function SheetPage() {
           <section>
             <h2 class="mb-4 text-xl font-semibold">드래그 재정렬</h2>
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여 행 순서를 변경할 수
-              있습니다.
+              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여
+              행 순서를 변경할 수 있습니다.
             </p>
             <DataSheet
               items={reorderItems()}

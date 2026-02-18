@@ -3,20 +3,183 @@ export declare const atoms: ((props: {
   flexDirection?: "column" | "column-reverse" | "row" | "row-reverse" | undefined;
   flexWrap?: "nowrap" | "wrap" | "wrap-reverse" | undefined;
   alignItems?: "center" | "flex-end" | "flex-start" | "baseline" | "stretch" | undefined;
-  justifyContent?: "center" | "flex-end" | "flex-start" | "space-around" | "space-between" | "space-evenly" | undefined;
-  gap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  rowGap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  columnGap?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  padding?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  paddingTop?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  paddingRight?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  paddingBottom?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  paddingLeft?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  margin?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  marginTop?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  marginRight?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  marginBottom?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  marginLeft?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+  justifyContent?:
+    | "center"
+    | "flex-end"
+    | "flex-start"
+    | "space-around"
+    | "space-between"
+    | "space-evenly"
+    | undefined;
+  gap?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  rowGap?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  columnGap?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  padding?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  paddingTop?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  paddingRight?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  paddingBottom?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  paddingLeft?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  margin?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  marginTop?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  marginRight?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  marginBottom?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  marginLeft?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
   fontSize?: "sm" | "base" | "lg" | "h6" | "h5" | "h4" | "h3" | "h2" | "h1" | undefined;
   lineHeight?: "tight" | "normal" | "relaxed" | undefined;
   borderRadius?: "sm" | "base" | "lg" | "none" | "xs" | "xl" | "xxl" | "full" | undefined;
@@ -39,20 +202,188 @@ export declare const atoms: ((props: {
     | "slate"
     | "inverted"
     | undefined;
-  p?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  pt?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  pr?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  pb?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  pl?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  px?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  py?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  m?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  mt?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  mr?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  mb?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  ml?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  mx?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
-  my?: "sm" | "base" | "lg" | "auto" | "none" | "xxs" | "xs" | "xl" | "xxl" | "xxxl" | "xxxxl" | undefined;
+  p?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  pt?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  pr?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  pb?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  pl?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  px?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  py?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  m?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  mt?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  mr?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  mb?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  ml?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  mx?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
+  my?:
+    | "sm"
+    | "base"
+    | "lg"
+    | "auto"
+    | "none"
+    | "xxs"
+    | "xs"
+    | "xl"
+    | "xxl"
+    | "xxxl"
+    | "xxxxl"
+    | undefined;
 }) => string) & {
   properties: Set<
     | "lineHeight"

@@ -102,7 +102,12 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
       <List inset class={sidebarMenuList}>
         <For each={local.menus}>
           {(menu) => (
-            <MenuItemRenderer menu={menu} depth={0} layout={effectiveLayout()} onMenuClick={handleMenuClick} />
+            <MenuItemRenderer
+              menu={menu}
+              depth={0}
+              layout={effectiveLayout()}
+              onMenuClick={handleMenuClick}
+            />
           )}
         </For>
       </List>

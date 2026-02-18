@@ -50,7 +50,12 @@ export default function PermissionTablePage() {
             <p class="mb-4 text-sm text-base-600 dark:text-base-400">
               modules={`["admin"]`}을 전달하면 해당 모듈에 속한 항목만 표시됩니다.
             </p>
-            <PermissionTable items={demoItems} value={value()} onValueChange={setValue} modules={["admin"]} />
+            <PermissionTable
+              items={demoItems}
+              value={value()}
+              onValueChange={setValue}
+              modules={["admin"]}
+            />
           </section>
 
           {/* disabled */}

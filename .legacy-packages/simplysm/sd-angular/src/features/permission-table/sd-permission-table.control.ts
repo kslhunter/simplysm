@@ -31,7 +31,13 @@ import { tablerChevronRight } from "@ng-icons/tabler-icons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdTypedTemplateDirective, NgTemplateOutlet, SdCollapseIconControl, SdCheckboxControl, SdAnchorControl],
+  imports: [
+    SdTypedTemplateDirective,
+    NgTemplateOutlet,
+    SdCollapseIconControl,
+    SdCheckboxControl,
+    SdAnchorControl,
+  ],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -138,7 +144,13 @@ import { tablerChevronRight } from "@ng-icons/tabler-icons";
         <tr
           [attr.data-sd-collapse]="!!parent && getIsPermCollapsed(parent)"
           [attr.data-sd-theme]="
-            depth === 0 ? 'first' : depth % 3 === 0 ? 'success' : depth % 3 === 1 ? 'info' : 'warning'
+            depth === 0
+              ? 'first'
+              : depth % 3 === 0
+                ? 'success'
+                : depth % 3 === 1
+                  ? 'info'
+                  : 'warning'
           "
         >
           @for (i of arr(depth + 1); track i) {
@@ -241,7 +253,11 @@ export class SdPermissionTableControl<TModule> {
         return true;
       }
     } else {
-      if (item.children?.every((child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child))) {
+      if (
+        item.children?.every(
+          (child) => !this.getIsPermExists(child, "edit") || this.getEditDisabled(child),
+        )
+      ) {
         return true;
       }
     }
@@ -317,7 +333,12 @@ export class SdPermissionTableControl<TModule> {
     if (item.perms) {
       const permCode = item.codeChain.join(".");
 
-      if (type === "edit" && val && this.getIsPermExists(item, "use") && !this.getIsPermChecked(item, "use")) {
+      if (
+        type === "edit" &&
+        val &&
+        this.getIsPermExists(item, "use") &&
+        !this.getIsPermChecked(item, "use")
+      ) {
       } else {
         if (this.getIsPermExists(item, type) && value[permCode + "." + type] !== val) {
           value[permCode + "." + type] = val;
@@ -326,7 +347,12 @@ export class SdPermissionTableControl<TModule> {
       }
 
       // USE권한 지우면 EDIT권한도 자동으로 지움
-      if (type === "use" && !val && this.getIsPermExists(item, "edit") && !value[permCode + ".edit"]) {
+      if (
+        type === "use" &&
+        !val &&
+        this.getIsPermExists(item, "edit") &&
+        !value[permCode + ".edit"]
+      ) {
         value[permCode + ".edit"] = false;
         changed = true;
       }

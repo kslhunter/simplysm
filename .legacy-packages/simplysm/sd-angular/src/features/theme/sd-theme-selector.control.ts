@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, viewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdThemeProvider } from "../../core/providers/sd-theme-provider";
 import { $effect } from "../../core/utils/bindings/$effect";
 import { SdDropdownControl } from "../../ui/overlay/dropdown/sd-dropdown.control";
@@ -14,7 +20,14 @@ import { tablerCheck, tablerColorSwatch } from "@ng-icons/tabler-icons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDropdownControl, SdButtonControl, SdDropdownPopupControl, SdListControl, SdListItemControl, NgIcon],
+  imports: [
+    SdDropdownControl,
+    SdButtonControl,
+    SdDropdownPopupControl,
+    SdListControl,
+    SdListItemControl,
+    NgIcon,
+  ],
   template: `
     <sd-dropdown>
       <sd-button [theme]="'link-gray'">

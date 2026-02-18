@@ -106,7 +106,9 @@ export class ExcelWorkbook {
     );
 
     // Workbook Rels
-    const wbRelXml = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
+    const wbRelXml = (await this.zipCache.get(
+      "xl/_rels/workbook.xml.rels",
+    )) as ExcelXmlRelationship;
     wbRelXml.insert(
       newWsRelId,
       `worksheets/sheet${newWsRelId}.xml`,
@@ -127,7 +129,9 @@ export class ExcelWorkbook {
     this._ensureNotClosed();
     const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
     const wsId =
-      typeof nameOrIndex === "string" ? wbData.getWsRelIdByName(nameOrIndex) : wbData.getWsRelIdByIndex(nameOrIndex);
+      typeof nameOrIndex === "string"
+        ? wbData.getWsRelIdByName(nameOrIndex)
+        : wbData.getWsRelIdByIndex(nameOrIndex);
 
     if (wsId === undefined) {
       if (typeof nameOrIndex === "string") {

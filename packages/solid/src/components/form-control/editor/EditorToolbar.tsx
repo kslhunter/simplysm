@@ -48,7 +48,10 @@ const toolbarBtnClass = clsx(
 );
 
 // 툴바 버튼 활성 스타일
-const toolbarBtnActiveClass = clsx("bg-primary-100 text-primary-700", "dark:bg-primary-900/40 dark:text-primary-300");
+const toolbarBtnActiveClass = clsx(
+  "bg-primary-100 text-primary-700",
+  "dark:bg-primary-900/40 dark:text-primary-300",
+);
 
 // 구분선 스타일
 const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
@@ -107,7 +110,8 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
     (editor) => (editor.getAttributes("highlight")["color"] as string | undefined) ?? "#ffff00",
   );
 
-  const btnClass = (active: () => boolean) => twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
+  const btnClass = (active: () => boolean) =>
+    twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
 
   // 이미지 삽입 핸들러
   const handleImageInsert = () => {
@@ -202,14 +206,19 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         />
       </label>
       <label class={colorLabelClass} title="배경색">
-        <span class={clsx("rounded px-0.5 text-sm font-bold")} style={{ "background-color": currentHighlight() }}>
+        <span
+          class={clsx("rounded px-0.5 text-sm font-bold")}
+          style={{ "background-color": currentHighlight() }}
+        >
           A
         </span>
         <input
           type="color"
           class={colorInputClass}
           value={currentHighlight()}
-          onInput={(ev) => props.editor.chain().focus().toggleHighlight({ color: ev.currentTarget.value }).run()}
+          onInput={(ev) =>
+            props.editor.chain().focus().toggleHighlight({ color: ev.currentTarget.value }).run()
+          }
         />
       </label>
 
@@ -321,7 +330,9 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         type="button"
         class={toolbarBtnClass}
         title="테이블 삽입"
-        onClick={() => props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        onClick={() =>
+          props.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        }
       >
         <Icon icon={IconTablePlus} size="1em" />
       </button>

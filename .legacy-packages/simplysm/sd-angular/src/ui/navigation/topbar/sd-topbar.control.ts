@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.control";
 
 import { $computed } from "../../../core/utils/bindings/$computed";
@@ -17,7 +23,11 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
   },
   template: `
     @if (hasSidebar()) {
-      <sd-button [theme]="'link-primary'" [buttonClass]="'p-sm-default'" (click)="onSidebarToggleButtonClick()">
+      <sd-button
+        [theme]="'link-primary'"
+        [buttonClass]="'p-sm-default'"
+        (click)="onSidebarToggleButtonClick()"
+      >
         <ng-icon [svg]="tablerMenu2" />
       </sd-button>
     }

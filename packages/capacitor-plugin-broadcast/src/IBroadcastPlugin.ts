@@ -11,7 +11,10 @@ export interface IBroadcastPlugin {
   /**
    * Broadcast 수신기 등록
    */
-  subscribe(options: { filters: string[] }, callback: (result: IBroadcastResult) => void): Promise<{ id: string }>;
+  subscribe(
+    options: { filters: string[] },
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<{ id: string }>;
 
   /**
    * 특정 Broadcast 수신기 해제
@@ -36,5 +39,8 @@ export interface IBroadcastPlugin {
   /**
    * 앱 실행 중 새 Intent 수신 리스너 등록
    */
-  addListener(eventName: "onNewIntent", listenerFunc: (data: IBroadcastResult) => void): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: "onNewIntent",
+    listenerFunc: (data: IBroadcastResult) => void,
+  ): Promise<PluginListenerHandle>;
 }

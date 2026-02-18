@@ -45,7 +45,10 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
     this.fastify = fastify({ https: httpsConf });
 
-    this._wsHandler = createWebSocketHandler((def) => runServiceMethod(this, def), options.auth?.jwtSecret);
+    this._wsHandler = createWebSocketHandler(
+      (def) => runServiceMethod(this, def),
+      options.auth?.jwtSecret,
+    );
   }
 
   async listen(): Promise<void> {
@@ -95,23 +98,29 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     });
 
     // JSON 파서
-    this.fastify.addContentTypeParser("application/json", { parseAs: "string" }, (req, body, done) => {
-      try {
-        const json = jsonParse(body as string);
-        done(null, json);
-      } catch (err: unknown) {
-        const error = err as Error & { statusCode?: number };
-        error.statusCode = 400;
-        done(error, undefined);
-      }
-    });
+    this.fastify.addContentTypeParser(
+      "application/json",
+      { parseAs: "string" },
+      (req, body, done) => {
+        try {
+          const json = jsonParse(body as string);
+          done(null, json);
+        } catch (err: unknown) {
+          const error = err as Error & { statusCode?: number };
+          error.statusCode = 400;
+          done(error, undefined);
+        }
+      },
+    );
 
     // JSON 생성기
     this.fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
 
     // API 라우트
     this.fastify.all("/api/:service/:method", async (req, reply) => {
-      await handleHttpRequest(req, reply, this.options.auth?.jwtSecret, (def) => runServiceMethod(this, def));
+      await handleHttpRequest(req, reply, this.options.auth?.jwtSecret, (def) =>
+        runServiceMethod(this, def),
+      );
     });
 
     // 업로드 라우트
@@ -245,6 +254,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 }
 
-export function createServiceServer<TAuthInfo = unknown>(options: ServiceServerOptions): ServiceServer<TAuthInfo> {
+export function createServiceServer<TAuthInfo = unknown>(
+  options: ServiceServerOptions,
+): ServiceServer<TAuthInfo> {
   return new ServiceServer<TAuthInfo>(options);
 }

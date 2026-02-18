@@ -196,7 +196,8 @@ END`.trim();
 
       return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.table.schema}' AND TABLE_NAME='${def.table.name}'`.trim();
     } else {
-      if (def.table.database === undefined || def.table.schema === undefined) throw new NeverEntryError();
+      if (def.table.database === undefined || def.table.schema === undefined)
+        throw new NeverEntryError();
 
       return `SELECT * FROM ${this.wrap(def.table.database)}.[INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.table.schema}' AND TABLE_NAME='${def.table.name}'`.trim();
     }
@@ -305,12 +306,18 @@ ORDER BY i.index_id, ic.key_ordinal;
       query += ",\n";
       if (this._dialect === "mysql") {
         query += `  PRIMARY KEY (${def.primaryKeys
-          .map((item) => `${this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`)
+          .map(
+            (item) =>
+              `${this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`,
+          )
           .join(", ")})\n`;
       } else {
         const pkName = this.wrap(`PK_${def.table.name}`);
         query += `  CONSTRAINT ${pkName} PRIMARY KEY (${def.primaryKeys
-          .map((item) => this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`))
+          .map(
+            (item) =>
+              this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`),
+          )
           .join(", ")})\n`;
       }
     } else {
@@ -457,7 +464,8 @@ EXEC ${procedureName}
       if (def.table.schema === undefined) throw new NeverEntryError();
       return `EXECUTE sp_rename N'${def.table.schema}.${def.table.name}.${this.wrap(def.prevName)}', N'${def.nextName}', 'COLUMN'`;
     } else {
-      if (def.table.database === undefined || def.table.schema === undefined) throw new NeverEntryError();
+      if (def.table.database === undefined || def.table.schema === undefined)
+        throw new NeverEntryError();
       return `EXECUTE ${def.table.database}..sp_rename N'${def.table.schema}.${def.table.name}.${this.wrap(
         def.prevName,
       )}', N'${def.nextName}', 'COLUMN'`;
@@ -559,7 +567,9 @@ pragma writable_schema=0;`.trim();
   createIndex(def: ICreateIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain =
-      this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
+      this._dialect === "mysql"
+        ? this.getTableNameChain(def.table)
+        : this.getTableNameChain(def.table).slice(-2);
     const tableKey =
       this._dialect === "mysql" && tableNameChain.join("_").length > 30
         ? tableNameChain.join("_").replace(/[a-z]/g, "")
@@ -581,7 +591,9 @@ pragma writable_schema=0;`.trim();
   dropIndex(def: IDropIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain =
-      this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
+      this._dialect === "mysql"
+        ? this.getTableNameChain(def.table)
+        : this.getTableNameChain(def.table).slice(-2);
     const tableKey =
       this._dialect === "mysql" && tableNameChain.join("_").length > 30
         ? tableNameChain.join("_").replace(/[a-z]/g, "")
@@ -645,7 +657,9 @@ pragma writable_schema=0;`.trim();
           subQuery += `  ) as ${selectKey}`;
           selectFieldQueryStrings.push(subQuery);
         } else {
-          selectFieldQueryStrings.push(`  ${this.getQueryOfQueryValue(def.select[selectKey])} as ${selectKey}`);
+          selectFieldQueryStrings.push(
+            `  ${this.getQueryOfQueryValue(def.select[selectKey])} as ${selectKey}`,
+          );
         }
       }
       q += selectFieldQueryStrings.join(",\n");
@@ -686,7 +700,8 @@ pragma writable_schema=0;`.trim();
     if (this._dialect !== "mysql") {
       if (def.pivot) {
         let valueCol = this.getQueryOfQueryValue(def.pivot.valueColumn);
-        valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+        valueCol =
+          valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
         q += `PIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
         q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${
           def.as !== undefined ? ` as ${def.as}` : ""
@@ -699,7 +714,8 @@ pragma writable_schema=0;`.trim();
 
     if (def.unpivot) {
       let valueCol = this.getQueryOfQueryValue(def.unpivot.valueColumn);
-      valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+      valueCol =
+        valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
       q += `UNPIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.unpivot.pivotColumn)}`;
       q += ` IN (${def.unpivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${
         def.as !== undefined ? ` as ${def.as}` : ""
@@ -994,7 +1010,11 @@ ${
         where: def.pkColNames.map((pkColName) =>
           pkColName === def.aiKeyName
             ? [this.wrap(def.aiKeyName), " = ", "LAST_INSERT_ID()"]
-            : [this.wrap(pkColName), " = ", this.getQueryOfQueryValue(def.insertRecord[this.wrap(pkColName)])],
+            : [
+                this.wrap(pkColName),
+                " = ",
+                this.getQueryOfQueryValue(def.insertRecord[this.wrap(pkColName)]),
+              ],
         ),
       }) + ";"
     : ""
@@ -1195,7 +1215,9 @@ DEALLOCATE PREPARE stmt;
     } else {
       if (def.database !== undefined) {
         if (def.schema === undefined) {
-          throw new Error(`SCHEMA가 지정되어있지 않습니다. (DB: ${def.database}, TABLE: ${def.name})`);
+          throw new Error(
+            `SCHEMA가 지정되어있지 않습니다. (DB: ${def.database}, TABLE: ${def.name})`,
+          );
         }
 
         return [def.database, def.schema, def.name];
@@ -1272,7 +1294,9 @@ DEALLOCATE PREPARE stmt;
     const defRec = def as Record<string, any>;
     if (
       Object.keys(def).every(
-        (key) => defRec[key] === undefined || ["from", "as", "where", "select", "isCustomSelect"].includes(key),
+        (key) =>
+          defRec[key] === undefined ||
+          ["from", "as", "where", "select", "isCustomSelect"].includes(key),
       ) &&
       !def.isCustomSelect
     ) {

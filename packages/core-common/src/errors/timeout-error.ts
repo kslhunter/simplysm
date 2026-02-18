@@ -29,7 +29,9 @@ export class TimeoutError extends SdError {
    */
   constructor(count?: number, message?: string) {
     super(
-      "대기 시간이 초과되었습니다" + (count != null ? `(${count}회)` : "") + (message != null ? `: ${message}` : ""),
+      "대기 시간이 초과되었습니다" +
+        (count != null ? `(${count}회)` : "") +
+        (message != null ? `: ${message}` : ""),
     );
     this.name = "TimeoutError";
   }

@@ -11,7 +11,9 @@ describe("INSERT - 기본", () => {
 
   describe("단일 레코드 INSERT", () => {
     const db = createTestDb();
-    const def = db.employee().getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }]);
+    const def = db
+      .employee()
+      .getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -57,7 +59,10 @@ describe("INSERT - 기본", () => {
     const db = createTestDb();
     const def = db
       .employee()
-      .getInsertQueryDef([{ name: "홍길동", managerId: undefined, departmentId: 1 }], ["id", "name"]);
+      .getInsertQueryDef(
+        [{ name: "홍길동", managerId: undefined, departmentId: 1 }],
+        ["id", "name"],
+      );
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({
@@ -98,7 +103,9 @@ describe("INSERT - 기본", () => {
 
   describe("AI 컬럼 명시적 지정", () => {
     const db = createTestDb();
-    const def = db.employee().getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
+    const def = db
+      .employee()
+      .getInsertQueryDef([{ id: 100, name: "홍길동", managerId: undefined, departmentId: 1 }]);
 
     it("QueryDef 검증", () => {
       expect(def).toEqual({

@@ -23,7 +23,10 @@ import "@simplysm/core-common";
  */
 export interface DateTimeFieldProps
   extends
-    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+    Omit<
+      JSX.InputHTMLAttributes<HTMLInputElement>,
+      "value" | "onChange" | "type" | "min" | "max" | "size"
+    >,
     DateTimeFieldStyles {
   value?: DateTime | undefined;
   onChange?: (value: DateTime | undefined) => void;
@@ -180,7 +183,9 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[dateTimeField(objPick(local, dateTimeField.variants())), local.class].filter(Boolean).join(" ")}
+          class={[dateTimeField(objPick(local, dateTimeField.variants())), local.class]
+            .filter(Boolean)
+            .join(" ")}
         />
       }
     >
@@ -191,7 +196,11 @@ export const DateTimeField: Component<DateTimeFieldProps> = (props) => {
         <input
           {...rest}
           {...inputProps()}
-          class={[dateTimeFieldInput, dateTimeField(objPick(local, dateTimeField.variants())), local.class]
+          class={[
+            dateTimeFieldInput,
+            dateTimeField(objPick(local, dateTimeField.variants())),
+            local.class,
+          ]
             .filter(Boolean)
             .join(" ")}
         />

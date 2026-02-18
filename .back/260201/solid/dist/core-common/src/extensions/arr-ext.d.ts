@@ -9,5 +9,10 @@ declare global {
   interface ReadonlyArray<T> extends ReadonlyArrayExt<T> {}
   interface Array<T> extends ReadonlyArrayExt<T>, MutableArrayExt<T> {}
 }
-export type { ArrayDiffsResult, ArrayDiffs2Result, TreeArray, ComparableType } from "./arr-ext.types";
+export type {
+  ArrayDiffsResult,
+  ArrayDiffs2Result,
+  TreeArray,
+  ComparableType,
+} from "./arr-ext.types";
 //# sourceMappingURL=arr-ext.d.ts.map

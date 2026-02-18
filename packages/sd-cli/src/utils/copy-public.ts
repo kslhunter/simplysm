@@ -47,7 +47,10 @@ export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Prom
  * @param includeDev public-dev/ 포함 여부 (dev 모드에서만 true)
  * @returns FsWatcher 인스턴스 (shutdown 시 close() 호출 필요) 또는 watch할 대상이 없으면 undefined
  */
-export async function watchPublicFiles(pkgDir: string, includeDev: boolean): Promise<FsWatcher | undefined> {
+export async function watchPublicFiles(
+  pkgDir: string,
+  includeDev: boolean,
+): Promise<FsWatcher | undefined> {
   const distDir = path.join(pkgDir, "dist");
   const publicDir = path.join(pkgDir, "public");
   const publicDevDir = path.join(pkgDir, "public-dev");

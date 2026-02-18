@@ -1,6 +1,11 @@
 import { For } from "solid-js";
 import { Alert, type AlertTheme, Topbar, Icon } from "@simplysm/solid";
-import { IconInfoCircle, IconCircleCheck, IconAlertTriangle, IconAlertCircle } from "@tabler/icons-solidjs";
+import {
+  IconInfoCircle,
+  IconCircleCheck,
+  IconAlertTriangle,
+  IconAlertCircle,
+} from "@tabler/icons-solidjs";
 
 const themes: AlertTheme[] = ["primary", "info", "success", "warning", "danger", "base"];
 
@@ -55,7 +60,8 @@ export default function NotePage() {
               <Alert theme="warning">
                 <Icon icon={IconAlertTriangle} size="1.25em" class="mt-0.5 shrink-0" />
                 <div>
-                  <strong class="block">주의</strong>이 작업은 되돌릴 수 없습니다. 진행하기 전에 확인해 주세요.
+                  <strong class="block">주의</strong>이 작업은 되돌릴 수 없습니다. 진행하기 전에
+                  확인해 주세요.
                 </div>
               </Alert>
               <Alert theme="danger">
@@ -81,7 +87,8 @@ export default function NotePage() {
               <div>
                 <h3 class="mb-2 font-medium">사용 중단 안내</h3>
                 <Alert theme="warning">
-                  <strong>Deprecated:</strong> 이 API는 v2.0에서 제거될 예정입니다. 새로운 API로 마이그레이션하세요.
+                  <strong>Deprecated:</strong> 이 API는 v2.0에서 제거될 예정입니다. 새로운 API로
+                  마이그레이션하세요.
                 </Alert>
               </div>
               <div>
@@ -98,12 +105,12 @@ export default function NotePage() {
             <h2 class="mb-4 text-xl font-semibold">긴 내용</h2>
             <Alert theme="info">
               <p class="mb-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua.
               </p>
               <p>
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                consequat.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                ex ea commodo consequat.
               </p>
             </Alert>
           </section>

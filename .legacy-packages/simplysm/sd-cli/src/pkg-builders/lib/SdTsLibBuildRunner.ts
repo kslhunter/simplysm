@@ -27,7 +27,10 @@ export class SdTsLibBuildRunner extends SdBuildRunnerBase<"library"> {
         // db-context
         if (this._pkgConf.dbContext != null) {
           this._debug(`GEN ${this._pkgConf.dbContext}.ts...`);
-          await new SdCliDbContextFileGenerator().watchAsync(this._opt.pkgPath, this._pkgConf.dbContext);
+          await new SdCliDbContextFileGenerator().watchAsync(
+            this._opt.pkgPath,
+            this._pkgConf.dbContext,
+          );
         }
       }
 

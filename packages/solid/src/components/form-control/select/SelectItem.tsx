@@ -61,7 +61,9 @@ interface SelectItemComponent<TValue = unknown> extends ParentComponent<SelectIt
  * </Select.Item>
  * ```
  */
-export const SelectItem: SelectItemComponent = <T,>(props: SelectItemProps<T> & { children?: JSX.Element }) => {
+export const SelectItem: SelectItemComponent = <T,>(
+  props: SelectItemProps<T> & { children?: JSX.Element },
+) => {
   const [local, rest] = splitProps(props, ["children", "class", "value", "disabled"]);
 
   const context = useSelectContext<T>();

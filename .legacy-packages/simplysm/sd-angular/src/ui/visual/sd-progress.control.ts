@@ -72,7 +72,9 @@ import { PercentPipe } from "@angular/common";
 export class SdProgressControl {
   inset = input(false, { transform: transformBoolean });
   size = input<"sm" | "lg">();
-  theme = input.required<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
+  theme = input.required<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >();
 
   value = input.required<number>();
 }

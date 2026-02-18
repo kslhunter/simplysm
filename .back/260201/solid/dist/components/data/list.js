@@ -25,7 +25,9 @@ const List = (props) => {
       const nestedItem =
         (_a = current.parentElement) == null
           ? void 0
-          : _a.querySelector(":scope > [data-collapsed] [data-list-item], :scope > * > [data-list-item]");
+          : _a.querySelector(
+              ":scope > [data-collapsed] [data-list-item], :scope > * > [data-list-item]",
+            );
       nestedItem == null ? void 0 : nestedItem.focus();
     }
   };

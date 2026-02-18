@@ -108,13 +108,23 @@ const iconSize = "0.85em";
 // ── Component ──
 
 function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element {
-  const [local] = splitProps(props, ["presetKey", "value", "onValueChange", "size", "class", "style"]);
+  const [local] = splitProps(props, [
+    "presetKey",
+    "value",
+    "onValueChange",
+    "size",
+    "class",
+    "style",
+  ]);
 
   const notification = useNotification();
 
   // presetKey는 마운트 시 한 번만 설정되는 식별자이므로 즉시 평가하여 캡처
   /* eslint-disable solid/reactivity */
-  const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(`state-preset.${local.presetKey}`, []);
+  const [presets, setPresets] = useSyncConfig<StatePresetItem<TValue>[]>(
+    `state-preset.${local.presetKey}`,
+    [],
+  );
   /* eslint-enable solid/reactivity */
   const [adding, setAdding] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
@@ -163,18 +173,24 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     const snapshot = [...presets()];
     const presetName = snapshot[index].name;
 
-    const updated = snapshot.map((p, i) => (i === index ? { ...p, state: objClone(local.value) } : p));
+    const updated = snapshot.map((p, i) =>
+      i === index ? { ...p, state: objClone(local.value) } : p,
+    );
     setPresets(updated);
 
-    const notiId = notification.info("프리셋 덮어쓰기", `"${presetName}" 프리셋이 현재 상태로 업데이트되었습니다.`, {
-      action: {
-        label: "실행 취소",
-        onClick: () => {
-          setPresets(snapshot);
-          notification.remove(notiId);
+    const notiId = notification.info(
+      "프리셋 덮어쓰기",
+      `"${presetName}" 프리셋이 현재 상태로 업데이트되었습니다.`,
+      {
+        action: {
+          label: "실행 취소",
+          onClick: () => {
+            setPresets(snapshot);
+            notification.remove(notiId);
+          },
         },
       },
-    });
+    );
   }
 
   function handleDelete(index: number): void {
@@ -209,7 +225,8 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
 
   const containerClass = () => twMerge(baseClass, local.class);
 
-  const resolvedChipClass = () => twMerge(chipClass, local.size ? chipSizeClasses[local.size] : chipDefaultClass);
+  const resolvedChipClass = () =>
+    twMerge(chipClass, local.size ? chipSizeClasses[local.size] : chipDefaultClass);
 
   const resolvedIconBtnClass = () =>
     twMerge(iconBtnClass, local.size ? iconBtnSizeClasses[local.size] : iconBtnDefaultClass);
@@ -217,12 +234,18 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   const resolvedStarBtnClass = () =>
     twMerge(starBtnClass, local.size ? starBtnSizeClasses[local.size] : starBtnDefaultClass);
 
-  const resolvedInputClass = () => twMerge(inputClass, local.size ? inputSizeClasses[local.size] : inputDefaultClass);
+  const resolvedInputClass = () =>
+    twMerge(inputClass, local.size ? inputSizeClasses[local.size] : inputDefaultClass);
 
   return (
     <div class={containerClass()} style={local.style}>
       {/* Star button - add preset */}
-      <button type="button" class={resolvedStarBtnClass()} onClick={handleStartAdd} title="프리셋 추가">
+      <button
+        type="button"
+        class={resolvedStarBtnClass()}
+        onClick={handleStartAdd}
+        title="프리셋 추가"
+      >
         <Icon icon={IconStar} size={iconSize} />
       </button>
 
@@ -278,4 +301,6 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
   );
 }
 
-export const StatePreset = StatePresetInner as <TValue>(props: StatePresetProps<TValue>) => JSX.Element;
+export const StatePreset = StatePresetInner as <TValue>(
+  props: StatePresetProps<TValue>,
+) => JSX.Element;

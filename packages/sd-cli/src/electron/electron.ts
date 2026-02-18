@@ -61,7 +61,12 @@ export class Electron {
   /**
    * 명령어 실행 (로깅 포함)
    */
-  private async _exec(cmd: string, args: string[], cwd: string, env?: Record<string, string>): Promise<string> {
+  private async _exec(
+    cmd: string,
+    args: string[],
+    cwd: string,
+    env?: Record<string, string>,
+  ): Promise<string> {
     Electron._logger.debug(`실행 명령: ${cmd} ${args.join(" ")}`);
     const result = await spawn(cmd, args, { cwd, env });
     Electron._logger.debug(`실행 결과: ${result}`);
@@ -263,7 +268,9 @@ export class Electron {
    */
   private async _runElectronBuilder(srcPath: string): Promise<void> {
     if (!Electron._canCreateSymlink()) {
-      throw new Error("Electron 빌드를 위해서는 Symlink 생성 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.");
+      throw new Error(
+        "Electron 빌드를 위해서는 Symlink 생성 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.",
+      );
     }
 
     const distPath = path.resolve(this._electronPath, "dist");
@@ -292,7 +299,11 @@ export class Electron {
     const configFilePath = path.resolve(this._electronPath, "builder-config.json");
     await fsWriteJson(configFilePath, builderConfig, { space: 2 });
 
-    await this._exec("npx", ["electron-builder", "--win", "--config", configFilePath], this._pkgPath);
+    await this._exec(
+      "npx",
+      ["electron-builder", "--win", "--config", configFilePath],
+      this._pkgPath,
+    );
   }
 
   /**

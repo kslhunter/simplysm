@@ -242,7 +242,13 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     twMerge(
       fieldBaseClass,
       local.prefixIcon &&
-        (local.size === "sm" ? "gap-1.5" : local.size === "lg" ? "gap-3" : local.size === "xl" ? "gap-4" : "gap-2"),
+        (local.size === "sm"
+          ? "gap-1.5"
+          : local.size === "lg"
+            ? "gap-3"
+            : local.size === "xl"
+              ? "gap-4"
+              : "gap-2"),
       local.size && fieldSizeClasses[local.size],
       local.disabled && fieldDisabledClass,
       local.inset && fieldInsetClass,

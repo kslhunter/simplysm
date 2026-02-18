@@ -21,10 +21,15 @@ import { Authorize } from "../auth/auth.decorators";
 export class SdOrmService extends SdServiceBase implements ISdOrmService {
   private readonly _logger = SdLogger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
-  private static readonly _socketConns = new WeakMap<SdServiceSocketV1 | SdServiceSocket, Map<number, IDbConn>>();
+  private static readonly _socketConns = new WeakMap<
+    SdServiceSocketV1 | SdServiceSocket,
+    Map<number, IDbConn>
+  >();
 
   private async _getConf(opt: TDbConnOptions & { configName: string }): Promise<TDbConnConf> {
-    const config = (await this.getConfigAsync<Record<string, TDbConnConf | undefined>>("orm"))[opt.configName];
+    const config = (await this.getConfigAsync<Record<string, TDbConnConf | undefined>>("orm"))[
+      opt.configName
+    ];
     if (config == null) {
       throw new Error(`ORM 설정을 찾을 수 없습니다: ${opt.configName}`);
     }
@@ -158,7 +163,9 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
 
     // 가져올데이터가 없는것으로 옵션 설정을 했을때, 하나의 쿼리로 한번의 요청보냄
     if (options && options.every((item) => item == null)) {
-      return await conn.executeAsync([defs.map((def) => new QueryBuilder(conn.config.dialect).query(def)).join("\n")]);
+      return await conn.executeAsync([
+        defs.map((def) => new QueryBuilder(conn.config.dialect).query(def)).join("\n"),
+      ]);
     } else {
       const queries = defs.mapMany((def) => {
         const query = new QueryBuilder(conn.config.dialect).query(def);
@@ -169,7 +176,9 @@ export class SdOrmService extends SdServiceBase implements ISdOrmService {
       // parseQueryResultAsync를 사용하여 주기적으로 이벤트 루프에 양보
       const parsed: any[][] = [];
       for (let i = 0; i < result.length; i++) {
-        parsed.push(await SdOrmUtils.parseQueryResultAsync(result[i], options ? options[i] : undefined));
+        parsed.push(
+          await SdOrmUtils.parseQueryResultAsync(result[i], options ? options[i] : undefined),
+        );
       }
       return parsed;
     }

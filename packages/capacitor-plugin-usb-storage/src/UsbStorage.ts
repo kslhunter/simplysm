@@ -1,5 +1,10 @@
 import { registerPlugin } from "@capacitor/core";
-import type { IUsbDeviceFilter, IUsbDeviceInfo, IUsbFileInfo, IUsbStoragePlugin } from "./IUsbStoragePlugin";
+import type {
+  IUsbDeviceFilter,
+  IUsbDeviceInfo,
+  IUsbFileInfo,
+  IUsbStoragePlugin,
+} from "./IUsbStoragePlugin";
 import type { Bytes } from "@simplysm/core-common";
 import { bytesFromBase64 } from "@simplysm/core-common";
 

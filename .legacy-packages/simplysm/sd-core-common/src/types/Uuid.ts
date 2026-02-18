@@ -1,6 +1,8 @@
 export class Uuid {
   // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)
-  private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
+  private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) =>
+    i.toString(16).padStart(2, "0"),
+  );
 
   static new(): Uuid {
     if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {

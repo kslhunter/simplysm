@@ -15,9 +15,18 @@ export class SdRefreshCommandEventPlugin extends EventManagerPlugin {
     return eventName === "sdRefreshCommand";
   }
 
-  override addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
+  override addEventListener(
+    element: HTMLElement,
+    eventName: string,
+    handler: (event: Event) => void,
+  ): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey && !event.shiftKey) {
+      if (
+        (event.key === "l" || event.key === "L") &&
+        event.ctrlKey &&
+        event.altKey &&
+        !event.shiftKey
+      ) {
         if (this._sdModal.modalCount() > 0) {
           if ((event.target as Element).findParent("sd-modal") === element.findParent("sd-modal")) {
             event.preventDefault();

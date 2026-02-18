@@ -3,7 +3,11 @@ import type { DataSheetColumnDef, DataSheetColumnProps } from "./types";
 import { normalizeHeader } from "./sheetUtils";
 
 export function isDataSheetColumnDef(value: unknown): value is DataSheetColumnDef<unknown> {
-  return value != null && typeof value === "object" && (value as Record<string, unknown>)["__type"] === "sheet-column";
+  return (
+    value != null &&
+    typeof value === "object" &&
+    (value as Record<string, unknown>)["__type"] === "sheet-column"
+  );
 }
 
 /* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */

@@ -189,7 +189,11 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
         class={twMerge(getWrapperClass(false), "relative", local.class)}
         style={local.style}
       >
-        <div data-time-field-content style={{ visibility: isEditable() ? "hidden" : undefined }} title={local.title}>
+        <div
+          data-time-field-content
+          style={{ visibility: isEditable() ? "hidden" : undefined }}
+          title={local.title}
+        >
           {displayValue() || "\u00A0"}
         </div>
 

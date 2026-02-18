@@ -381,8 +381,10 @@ describe("List.Item 컴포넌트", () => {
         </List>
       ));
 
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
-      const selectedClass = (selectedContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
+      const selectedClass = (selectedContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
 
       expect(defaultClass).not.toBe(selectedClass);
     });
@@ -428,8 +430,10 @@ describe("List.Item 컴포넌트", () => {
         </List>
       ));
 
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
-      const readonlyClass = (readonlyContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
+      const readonlyClass = (readonlyContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
 
       expect(defaultClass).not.toBe(readonlyClass);
     });
@@ -448,8 +452,10 @@ describe("List.Item 컴포넌트", () => {
         </List>
       ));
 
-      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement).className;
-      const disabledClass = (disabledContainer.querySelector("[data-list-item]") as HTMLElement).className;
+      const defaultClass = (defaultContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
+      const disabledClass = (disabledContainer.querySelector("[data-list-item]") as HTMLElement)
+        .className;
 
       expect(defaultClass).not.toBe(disabledClass);
     });

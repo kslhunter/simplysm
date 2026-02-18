@@ -110,15 +110,14 @@ Element.prototype.isFocusable = function (): boolean {
 };
 
 Element.prototype.findFocusableAll = function (): TFocusableElement[] {
-  return Array.from(this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(","))).ofType(
-    Element,
-  ) as TFocusableElement[];
+  return Array.from(
+    this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(",")),
+  ).ofType(Element) as TFocusableElement[];
 };
 
 Element.prototype.findFocusableFirst = function (): TFocusableElement | undefined {
-  return (this.querySelector(focusableSelectorList.map((item) => `:scope ${item}`).join(",")) ?? undefined) as
-    | TFocusableElement
-    | undefined;
+  return (this.querySelector(focusableSelectorList.map((item) => `:scope ${item}`).join(",")) ??
+    undefined) as TFocusableElement | undefined;
 };
 
 Element.prototype.findFocusableParent = function (): TFocusableElement | undefined {

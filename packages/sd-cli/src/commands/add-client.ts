@@ -115,7 +115,11 @@ export async function runAddClient(_options: AddClientOptions): Promise<void> {
 
   // 완료
   consola.box(
-    [`클라이언트 "${clientName}"이(가) 추가되었습니다!`, "", `  pnpm dev ${clientName}    개발 서버 실행`].join("\n"),
+    [
+      `클라이언트 "${clientName}"이(가) 추가되었습니다!`,
+      "",
+      `  pnpm dev ${clientName}    개발 서버 실행`,
+    ].join("\n"),
   );
 }
 

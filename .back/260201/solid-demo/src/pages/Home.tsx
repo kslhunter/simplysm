@@ -1,6 +1,12 @@
 import { type ParentProps, Suspense } from "solid-js";
 import { IconComponents, IconHome } from "@tabler/icons-solidjs";
-import { Sidebar, SidebarContainer, SidebarMenu, type SidebarMenuItem, SidebarUser } from "@simplysm/solid";
+import {
+  Sidebar,
+  SidebarContainer,
+  SidebarMenu,
+  type SidebarMenuItem,
+  SidebarUser,
+} from "@simplysm/solid";
 import { atoms } from "@simplysm/solid/styles";
 
 const menus: SidebarMenuItem[] = [
@@ -52,8 +58,18 @@ export default function Home(props: ParentProps) {
         <SidebarMenu layout={"accordion"} menus={menus} />
       </Sidebar>
 
-      <div style={{ "flex": 1, "overflow": "hidden", "height": "100%", "display": "flex", "flex-direction": "column" }}>
-        <Suspense fallback={<div class={atoms({ p: "xxl" })}>로딩 중...</div>}>{props.children}</Suspense>
+      <div
+        style={{
+          "flex": 1,
+          "overflow": "hidden",
+          "height": "100%",
+          "display": "flex",
+          "flex-direction": "column",
+        }}
+      >
+        <Suspense fallback={<div class={atoms({ p: "xxl" })}>로딩 중...</div>}>
+          {props.children}
+        </Suspense>
       </div>
     </SidebarContainer>
   );

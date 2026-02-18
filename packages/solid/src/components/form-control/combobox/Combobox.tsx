@@ -154,7 +154,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
   const [items, setItems] = createSignal<T[]>([]);
-  const [loading, setLoading] = createSignal(false);
+  const [busy, setBusy] = createSignal(false);
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
   const [getValue, setInternalValue] = createControllableSignal<T | undefined>({
@@ -200,12 +200,12 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     // loadItems 함수 참조를 캡처하여 사용
     const loadItemsFn = local.loadItems;
     debounceQueue.run(async () => {
-      setLoading(true);
+      setBusy(true);
       try {
         const result = await loadItemsFn(searchQuery);
         setItems(result);
       } finally {
-        setLoading(false);
+        setBusy(false);
       }
     });
   };
@@ -282,7 +282,9 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     const getItemTemplate = (): ((item: T, index: number) => JSX.Element) | undefined => {
       const templateSlots = slots().comboboxItemTemplate;
       if (templateSlots.length === 0) return undefined;
-      return templateFnMap.get(templateSlots[0]) as ((item: T, index: number) => JSX.Element) | undefined;
+      return templateFnMap.get(templateSlots[0]) as
+        | ((item: T, index: number) => JSX.Element)
+        | undefined;
     };
 
     // 선택된 값 또는 입력 표시
@@ -318,7 +320,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       const itemTemplate = getItemTemplate();
 
       // 로딩 중
-      if (loading()) {
+      if (busy()) {
         return <div class={noResultsClass}>검색 중...</div>;
       }
 
@@ -337,13 +339,19 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       if (itemTemplate) {
         return (
           <For each={items()}>
-            {(item, index) => <ComboboxItem value={item}>{itemTemplate(item, index())}</ComboboxItem>}
+            {(item, index) => (
+              <ComboboxItem value={item}>{itemTemplate(item, index())}</ComboboxItem>
+            )}
           </For>
         );
       }
 
       // 기본 렌더링
-      return <For each={items()}>{(item) => <ComboboxItem value={item}>{String(item)}</ComboboxItem>}</For>;
+      return (
+        <For each={items()}>
+          {(item) => <ComboboxItem value={item}>{String(item)}</ComboboxItem>}
+        </For>
+      );
     };
 
     return (
@@ -364,7 +372,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
         >
           <div class={selectedValueClass}>{renderDisplayContent()}</div>
           <div class={chevronWrapperClass}>
-            <Show when={loading()} fallback={<Icon icon={IconChevronDown} size="1em" />}>
+            <Show when={busy()} fallback={<Icon icon={IconChevronDown} size="1em" />}>
               <Icon icon={IconLoader2} size="1em" class="animate-spin" />
             </Show>
           </div>

@@ -30,7 +30,9 @@ export const OrmService = defineService(
     };
 
     const getConf = async (opt: DbConnOptions & { configName: string }): Promise<DbConnConfig> => {
-      const config = (await ctx.getConfig<Record<string, DbConnConfig | undefined>>("orm"))[opt.configName];
+      const config = (await ctx.getConfig<Record<string, DbConnConfig | undefined>>("orm"))[
+        opt.configName
+      ];
       if (config == null) {
         throw new Error(`ORM 설정을 찾을 수 없습니다: ${opt.configName}`);
       }
@@ -127,14 +129,23 @@ export const OrmService = defineService(
         await conn.rollbackTransaction();
       },
 
-      async executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]> {
+      async executeParametrized(
+        connId: number,
+        query: string,
+        params?: unknown[],
+      ): Promise<unknown[][]> {
         const conn = getConn(connId);
         return conn.executeParametrized(query, params);
       },
 
-      async executeDefs(connId: number, defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<unknown[][]> {
+      async executeDefs(
+        connId: number,
+        defs: QueryDef[],
+        options?: (ResultMeta | undefined)[],
+      ): Promise<unknown[][]> {
         const conn = getConn(connId);
-        const dialect: Dialect = conn.config.dialect === "mssql-azure" ? "mssql" : conn.config.dialect;
+        const dialect: Dialect =
+          conn.config.dialect === "mssql-azure" ? "mssql" : conn.config.dialect;
         const queryBuilder = createQueryBuilder(dialect);
 
         if (options != null && options.every((item) => item == null)) {
@@ -148,7 +159,10 @@ export const OrmService = defineService(
         for (let i = 0; i < result.length; i++) {
           const opt = options?.[i];
           if (opt != null) {
-            const parsedResult = await parseQueryResult(result[i] as Record<string, unknown>[], opt);
+            const parsedResult = await parseQueryResult(
+              result[i] as Record<string, unknown>[],
+              opt,
+            );
             parsed.push(parsedResult ?? []);
           } else {
             parsed.push(result[i]);

@@ -93,7 +93,9 @@ export class SdTsCompiler {
       sourceMap: !!this._opt.watch?.dev,
     });
 
-    const distPath = PathUtils.norm(parsedTsconfig.options.outDir ?? path.resolve(this._opt.pkgPath, "dist"));
+    const distPath = PathUtils.norm(
+      parsedTsconfig.options.outDir ?? path.resolve(this._opt.pkgPath, "dist"),
+    );
 
     return {
       fileNames: parsedTsconfig.fileNames,
@@ -102,7 +104,10 @@ export class SdTsCompiler {
     };
   }
 
-  private _createCompilerHost(compilerOptions: ts.CompilerOptions, modifiedFileSet: Set<TNormPath>) {
+  private _createCompilerHost(
+    compilerOptions: ts.CompilerOptions,
+    modifiedFileSet: Set<TNormPath>,
+  ) {
     // 지식: SourceFile은 하나의 파일에만 국한된 정적 정보객체임, 변경된 파일의 SourceFile만 다시 생성하면됨
 
     const compilerHost = ts.createCompilerHost(compilerOptions);
@@ -168,7 +173,9 @@ export class SdTsCompiler {
             context.resourceFile != null ? PathUtils.norm(context.resourceFile) : undefined,
           );
 
-          return StringUtils.isNullOrEmpty(styleBundleResult.contents) ? null : { content: styleBundleResult.contents };
+          return StringUtils.isNullOrEmpty(styleBundleResult.contents)
+            ? null
+            : { content: styleBundleResult.contents };
         };
       }
 
@@ -207,10 +214,16 @@ export class SdTsCompiler {
       ...prepareResult.affectedFileSet,
       ...(this._styleBundler?.getAffectedFileSet(modifiedFileSet) ?? []),
     ]);
-    const watchFileSet = new Set([...prepareResult.watchFileSet, ...(this._styleBundler?.getAllStyleFileSet() ?? [])]);
+    const watchFileSet = new Set([
+      ...prepareResult.watchFileSet,
+      ...(this._styleBundler?.getAllStyleFileSet() ?? []),
+    ]);
 
     this._debug(`빌드 완료됨`, this._perf.toString());
-    this._debug(`영향 받은 파일: ${affectedFileSet.size}개`, ...(modifiedFileSet.size > 0 ? [affectedFileSet] : []));
+    this._debug(
+      `영향 받은 파일: ${affectedFileSet.size}개`,
+      ...(modifiedFileSet.size > 0 ? [affectedFileSet] : []),
+    );
     this._debug(`감시 중인 파일: ${watchFileSet.size}개`);
 
     return {
@@ -269,10 +282,20 @@ export class SdTsCompiler {
 
     this._perf.run("ts.Program 생성", () => {
       if (this._isForAngular) {
-        this._ngProgram = new NgtscProgram(tsconfig.fileNames, tsconfig.options, compilerHost, this._ngProgram);
+        this._ngProgram = new NgtscProgram(
+          tsconfig.fileNames,
+          tsconfig.options,
+          compilerHost,
+          this._ngProgram,
+        );
         this._program = this._ngProgram.getTsProgram();
       } else {
-        this._program = ts.createProgram(tsconfig.fileNames, tsconfig.options, compilerHost, this._program);
+        this._program = ts.createProgram(
+          tsconfig.fileNames,
+          tsconfig.options,
+          compilerHost,
+          this._program,
+        );
       }
     });
 
@@ -297,14 +320,20 @@ export class SdTsCompiler {
         this._debug(`새 의존성 분석(Angular) 중...`);
 
         this._perf.run("새 의존성 분석(Angular)", () => {
-          SdDepAnalyzer.analyzeAngularResources(this._ngProgram!, this._scopePathSet, this._cache.dep);
+          SdDepAnalyzer.analyzeAngularResources(
+            this._ngProgram!,
+            this._scopePathSet,
+            this._cache.dep,
+          );
         });
       }
     }
 
     const allTsFiles = this._program!.getSourceFiles().mapMany((item) => [
       PathUtils.norm(item.fileName),
-      ...(item.fileName.endsWith(".d.ts") ? [PathUtils.norm(item.fileName.replace(/\.d\.ts$/, "") + ".js")] : []),
+      ...(item.fileName.endsWith(".d.ts")
+        ? [PathUtils.norm(item.fileName.replace(/\.d\.ts$/, "") + ".js")]
+        : []),
     ]);
     const watchFileSet = new Set(allTsFiles.filter((item) => this._scopePathSet.inScope(item)));
 
@@ -313,7 +342,9 @@ export class SdTsCompiler {
       affectedFileSet = new Set(allTsFiles.filter((item) => this._scopePathSet.inScope(item)));
     } else {
       const affectedFileMap = this._cache.dep.getAffectedFileMap(modifiedFileSet);
-      affectedFileSet = new Set(Array.from(affectedFileMap.values()).mapMany((item) => Array.from(item)));
+      affectedFileSet = new Set(
+        Array.from(affectedFileMap.values()).mapMany((item) => Array.from(item)),
+      );
     }
 
     return {
@@ -386,7 +417,9 @@ export class SdTsCompiler {
       emitFileInfos.push({
         outAbsPath: PathUtils.norm(
           this._opt.pkgPath,
-          path.relative(path.resolve(this._opt.pkgPath, "scss"), globalStyleFilePath).replace(/\.scss$/, ".css"),
+          path
+            .relative(path.resolve(this._opt.pkgPath, "scss"), globalStyleFilePath)
+            .replace(/\.scss$/, ".css"),
         ),
         text: stylesheetBundlingResult.contents ?? "",
       });
@@ -439,7 +472,10 @@ export class SdTsCompiler {
             if (affectedSourceFile.isDeclarationFile) return;
 
             diagnostics.push(
-              ...this._ngProgram!.compiler.getDiagnosticsForFile(affectedSourceFile, OptimizeFor.WholeProgram),
+              ...this._ngProgram!.compiler.getDiagnosticsForFile(
+                affectedSourceFile,
+                OptimizeFor.WholeProgram,
+              ),
             );
           });
         }
@@ -456,9 +492,13 @@ export class SdTsCompiler {
           const angularTransfomers = this._ngProgram.compiler.prepareEmit().transformers;
           (transformers.before ??= []).push(...(angularTransfomers.before ?? []));
           (transformers.after ??= []).push(...(angularTransfomers.after ?? []));
-          (transformers.afterDeclarations ??= []).push(...(angularTransfomers.afterDeclarations ?? []));
+          (transformers.afterDeclarations ??= []).push(
+            ...(angularTransfomers.afterDeclarations ?? []),
+          );
 
-          (transformers.before ??= []).push(replaceBootstrap(() => this._program!.getTypeChecker()));
+          (transformers.before ??= []).push(
+            replaceBootstrap(() => this._program!.getTypeChecker()),
+          );
           (transformers.before ??= []).push(
             createWorkerTransformer((file, importer) => {
               const fullPath = path.resolve(path.dirname(importer), file);
@@ -473,9 +513,16 @@ export class SdTsCompiler {
         // affected에 새로 추가된 파일은 포함되지 않는 현상이 있어 sourceFileSet으로 바꿈
         // 비교해보니, 딱히 getSourceFiles라서 더 느려지는것 같지는 않음
         // 그래도 affected로 다시 테스트 (조금이라도 더 빠르게)
-        for (const affectedFile of [...prepareResult.affectedFileSet, ...prepareResult.styleAffectedFileSet]) {
+        for (const affectedFile of [
+          ...prepareResult.affectedFileSet,
+          ...prepareResult.styleAffectedFileSet,
+        ]) {
           if (affectedFile.endsWith(".scss")) continue;
-          if (this._emittedFilesCacheMap.get(affectedFile)?.some((item) => !item.outAbsPath?.endsWith(".css")))
+          if (
+            this._emittedFilesCacheMap
+              .get(affectedFile)
+              ?.some((item) => !item.outAbsPath?.endsWith(".css"))
+          )
             continue;
 
           const sf = this._program!.getSourceFile(affectedFile);
@@ -493,7 +540,14 @@ export class SdTsCompiler {
             sf,
             (fileName, text, writeByteOrderMark, onError, sourceFiles, data) => {
               if (!sourceFiles || sourceFiles.length === 0) {
-                prepareResult.compilerHost.writeFile(fileName, text, writeByteOrderMark, onError, sourceFiles, data);
+                prepareResult.compilerHost.writeFile(
+                  fileName,
+                  text,
+                  writeByteOrderMark,
+                  onError,
+                  sourceFiles,
+                  data,
+                );
                 return;
               }
 
@@ -509,7 +563,11 @@ export class SdTsCompiler {
               );
 
               if (PathUtils.isChildPath(sourceFile.fileName, this._opt.pkgPath)) {
-                const real = this._convertOutputToReal(fileName, prepareResult.tsconfig.distPath, text);
+                const real = this._convertOutputToReal(
+                  fileName,
+                  prepareResult.tsconfig.distPath,
+                  text,
+                );
 
                 emitFileInfoCaches.push({
                   outAbsPath: real.filePath,

@@ -15,7 +15,11 @@ export function useViewTypeSignal(getComp: () => any) {
   return $computed<TSdViewType>(() => {
     let comp = getComp();
 
-    if (_activatedRoute && _activatedRoute.component === comp.constructor && _fullPageCode() === _currPageCode?.()) {
+    if (
+      _activatedRoute &&
+      _activatedRoute.component === comp.constructor &&
+      _fullPageCode() === _currPageCode?.()
+    ) {
       return "page";
     } else if (_sdActivatedModal && _sdActivatedModal.contentComponent() === comp) {
       return "modal";

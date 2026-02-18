@@ -17,15 +17,26 @@ export interface IDbContextExecutor {
 
   rollbackTransactionAsync(): Promise<void>;
 
-  executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]>;
+  executeDefsAsync(
+    defs: TQueryDef[],
+    options?: (IQueryResultParseOption | undefined)[],
+  ): Promise<any[][]>;
 
   // executeAsync(queries: string[]): Promise<any[][]>;
 
   executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>;
 
-  bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
+  bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
 
-  bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
+  bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void>;
 
   closeAsync(): Promise<void>;
 }

@@ -9,7 +9,14 @@ const layoutProperties = defineProperties({
     flexDirection: ["row", "column", "row-reverse", "column-reverse"],
     flexWrap: ["nowrap", "wrap", "wrap-reverse"],
     alignItems: ["stretch", "flex-start", "center", "flex-end", "baseline"],
-    justifyContent: ["flex-start", "center", "flex-end", "space-between", "space-around", "space-evenly"],
+    justifyContent: [
+      "flex-start",
+      "center",
+      "flex-end",
+      "space-between",
+      "space-around",
+      "space-evenly",
+    ],
     // Gap
     gap: tokenVars.spacing,
     rowGap: tokenVars.spacing,

@@ -3,7 +3,10 @@ import { render } from "solid-js/web";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
 import { useBusy } from "../components/feedback/busy/BusyContext";
-import { PrintInstanceContext, type PrintInstance } from "../components/feedback/print/PrintInstanceContext";
+import {
+  PrintInstanceContext,
+  type PrintInstance,
+} from "../components/feedback/print/PrintInstanceContext";
 
 // --- Types ---
 
@@ -74,7 +77,9 @@ function waitForImages(container: HTMLElement): Promise<void> {
   ).then(() => undefined);
 }
 
-async function renderAndWait(factory: () => JSX.Element): Promise<{ container: HTMLElement; dispose: () => void }> {
+async function renderAndWait(
+  factory: () => JSX.Element,
+): Promise<{ container: HTMLElement; dispose: () => void }> {
   const container = document.createElement("div");
   container.style.position = "fixed";
   container.style.left = "-9999px";

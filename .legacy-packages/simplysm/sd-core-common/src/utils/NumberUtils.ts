@@ -27,8 +27,14 @@ export class NumberUtils {
   }
 
   static format(val: number, digit?: { max?: number; min?: number }): string;
-  static format(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined;
-  static format(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined {
+  static format(
+    val: number | undefined,
+    digit?: { max?: number; min?: number },
+  ): string | undefined;
+  static format(
+    val: number | undefined,
+    digit?: { max?: number; min?: number },
+  ): string | undefined {
     return val?.toLocaleString(undefined, {
       maximumFractionDigits: digit?.max,
       minimumFractionDigits: digit?.min,

@@ -86,8 +86,14 @@ export function numIsNullOrEmpty(val: number | undefined): val is 0 | undefined 
  * numFormat(1234, { min: 2 }) // "1,234.00"
  */
 export function numFormat(val: number, digit?: { max?: number; min?: number }): string;
-export function numFormat(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined;
-export function numFormat(val: number | undefined, digit?: { max?: number; min?: number }): string | undefined {
+export function numFormat(
+  val: number | undefined,
+  digit?: { max?: number; min?: number },
+): string | undefined;
+export function numFormat(
+  val: number | undefined,
+  digit?: { max?: number; min?: number },
+): string | undefined {
   return val?.toLocaleString(undefined, {
     maximumFractionDigits: digit?.max,
     minimumFractionDigits: digit?.min,

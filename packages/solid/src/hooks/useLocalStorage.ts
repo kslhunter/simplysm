@@ -47,7 +47,9 @@ export function useLocalStorage<TValue>(
 
   const [value, setValue] = createSignal<TValue | undefined>(storedValue);
 
-  const setAndStore = (newValue: TValue | undefined | ((prev: TValue | undefined) => TValue | undefined)) => {
+  const setAndStore = (
+    newValue: TValue | undefined | ((prev: TValue | undefined) => TValue | undefined),
+  ) => {
     let resolved: TValue | undefined;
 
     if (typeof newValue === "function") {

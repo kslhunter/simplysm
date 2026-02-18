@@ -24,7 +24,9 @@ import { type JSX } from "solid-js";
  * // => { color: "red", background: "blue" }
  * ```
  */
-export function mergeStyles(...styles: (JSX.CSSProperties | string | undefined)[]): JSX.CSSProperties {
+export function mergeStyles(
+  ...styles: (JSX.CSSProperties | string | undefined)[]
+): JSX.CSSProperties {
   const result: Record<string, string> = {};
 
   for (const style of styles) {
@@ -41,7 +43,9 @@ export function mergeStyles(...styles: (JSX.CSSProperties | string | undefined)[
         const value = declaration.slice(colonIndex + 1).trim();
         if (property && value) {
           // kebab-case를 camelCase로 변환
-          const camelProperty = property.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+          const camelProperty = property.replace(/-([a-z])/g, (_, letter: string) =>
+            letter.toUpperCase(),
+          );
           result[camelProperty] = value;
         }
       }

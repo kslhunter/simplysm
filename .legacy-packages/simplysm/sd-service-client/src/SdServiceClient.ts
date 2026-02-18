@@ -21,7 +21,10 @@ export class SdServiceClient extends EventEmitter {
 
   override on(event: "request-progress", listener: (state: ISdServiceProgressState) => void): this;
   override on(event: "response-progress", listener: (state: ISdServiceProgressState) => void): this;
-  override on(event: "state", listener: (state: "connected" | "closed" | "reconnecting") => void): this;
+  override on(
+    event: "state",
+    listener: (state: "connected" | "closed" | "reconnecting") => void,
+  ): this;
   override on(event: "reload", listener: (changedFileSet: Set<string>) => void): this; // 추가됨
   override on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
@@ -93,7 +96,12 @@ export class SdServiceClient extends EventEmitter {
     await this._socket.closeAsync();
   }
 
-  async sendAsync(serviceName: string, methodName: string, params: any[], progress?: ISdServiceProgress): Promise<any> {
+  async sendAsync(
+    serviceName: string,
+    methodName: string,
+    params: any[],
+    progress?: ISdServiceProgress,
+  ): Promise<any> {
     return await this._transport.sendAsync(
       {
         name: `${serviceName}.${methodName}`,
@@ -140,7 +148,9 @@ export class SdServiceClient extends EventEmitter {
 
   async uploadFileAsync(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
-      throw new Error("인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.");
+      throw new Error(
+        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 authAsync()를 호출하여 인증해야 합니다.",
+      );
     }
     return await this._fileClient.uploadAsync(files, this._authToken);
   }

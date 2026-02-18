@@ -7,7 +7,9 @@ export function normalizeHeader(header?: string | string[]): string[] {
   return header;
 }
 
-export function buildHeaderTable<TItem>(columns: DataSheetColumnDef<TItem>[]): (HeaderDef | null)[][] {
+export function buildHeaderTable<TItem>(
+  columns: DataSheetColumnDef<TItem>[],
+): (HeaderDef | null)[][] {
   if (columns.length === 0) return [];
 
   const maxDepth = Math.max(...columns.map((c) => c.header.length));
@@ -84,7 +86,13 @@ export function buildHeaderTable<TItem>(columns: DataSheetColumnDef<TItem>[]): (
 }
 
 // 같은 병합 그룹에 속하는지 확인 (행 0~endRow까지 같은 텍스트 시퀀스)
-function isSameGroup(padded: string[][], colA: number, colB: number, startRow: number, endRow: number): boolean {
+function isSameGroup(
+  padded: string[][],
+  colA: number,
+  colB: number,
+  startRow: number,
+  endRow: number,
+): boolean {
   for (let r = startRow; r < endRow; r++) {
     if (padded[colA][r] !== padded[colB][r]) return false;
   }
@@ -152,7 +160,8 @@ export function applySorting<TItem>(items: TItem[], sorts: SortingDef[]): TItem[
 
   let result = [...items];
   for (const sort of [...sorts].reverse()) {
-    const selector = (item: TItem) => objGetChainValue(item, sort.key) as string | number | undefined;
+    const selector = (item: TItem) =>
+      objGetChainValue(item, sort.key) as string | number | undefined;
     result = sort.desc ? result.orderByDesc(selector) : result.orderBy(selector);
   }
   return result;

@@ -75,7 +75,10 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     }
 
     // 일반 JOIN
-    const where = join.where != null && join.where.length > 0 ? ` ON ${this.expr.renderWhere(join.where)}` : " ON 1=1";
+    const where =
+      join.where != null && join.where.length > 0
+        ? ` ON ${this.expr.renderWhere(join.where)}`
+        : " ON 1=1";
     return ` LEFT OUTER JOIN ${from} AS ${alias}${where}`;
   }
 
@@ -321,7 +324,8 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
 
     let sql = `MERGE ${table} AS ${alias}\n`;
     sql += `USING (SELECT 1 AS [_]) AS [_src] ON `;
-    sql += existsWhere != null && existsWhere.length > 0 ? this.expr.renderWhere(existsWhere) : "1=0";
+    sql +=
+      existsWhere != null && existsWhere.length > 0 ? this.expr.renderWhere(existsWhere) : "1=0";
 
     if (updateSetParts.length > 0) {
       sql += `\nWHEN MATCHED THEN UPDATE SET ${updateSetParts.join(", ")}`;
@@ -422,7 +426,9 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropColumn(def: DropColumnQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP COLUMN ${this.expr.wrap(def.column)}`,
+    };
   }
 
   protected modifyColumn(def: ModifyColumnQueryDef): QueryBuildResult {
@@ -458,7 +464,9 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
     const table = this.tableName(def.table);
     const cols = def.columns.map((c) => this.expr.wrap(c)).join(", ");
     const pkName = `PK_${def.table.name}`;
-    return { sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(pkName)} PRIMARY KEY (${cols})` };
+    return {
+      sql: `ALTER TABLE ${table} ADD CONSTRAINT ${this.expr.wrap(pkName)} PRIMARY KEY (${cols})`,
+    };
   }
 
   protected dropPk(def: DropPkQueryDef): QueryBuildResult {
@@ -484,7 +492,9 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
   }
 
   protected dropFk(def: DropFkQueryDef): QueryBuildResult {
-    return { sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}` };
+    return {
+      sql: `ALTER TABLE ${this.tableName(def.table)} DROP CONSTRAINT ${this.expr.wrap(def.foreignKey)}`,
+    };
   }
 
   protected addIdx(def: AddIdxQueryDef): QueryBuildResult {

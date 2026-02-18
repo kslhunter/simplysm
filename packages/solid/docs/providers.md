@@ -2,7 +2,7 @@
 
 ## InitializeProvider
 
-Root provider that wraps the entire application. Automatically sets up all required providers: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), loading overlay, and programmatic dialog support.
+Root provider that wraps the entire application. Automatically sets up all required providers: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), busy overlay, and programmatic dialog support.
 
 See [Getting Started](getting-started.md#provider-setup) for setup instructions and `AppConfig` options.
 

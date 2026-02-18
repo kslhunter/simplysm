@@ -23,7 +23,9 @@ export class SdCliConvertMessageUtils {
 
       const filePath = diag.file ? PathUtils.norm(path.resolve(diag.file.fileName)) : undefined;
       const position =
-        diag.file && diag.start !== undefined ? diag.file.getLineAndCharacterOfPosition(diag.start) : undefined;
+        diag.file && diag.start !== undefined
+          ? diag.file.getLineAndCharacterOfPosition(diag.start)
+          : undefined;
       const line = position ? position.line + 1 : undefined;
       const char = position ? position.character + 1 : undefined;
 
@@ -47,7 +49,8 @@ export class SdCliConvertMessageUtils {
     orgPath: string,
   ): ISdBuildMessage[] {
     const convertFn = (msg: PartialMessage, severity: "error" | "warning") => {
-      const filePath = msg.location?.file != null ? PathUtils.norm(orgPath, msg.location.file) : undefined;
+      const filePath =
+        msg.location?.file != null ? PathUtils.norm(orgPath, msg.location.file) : undefined;
       const line = msg.location?.line;
       const char = msg.location?.column;
       const code = msg.text!.slice(0, msg.text!.indexOf(":"));

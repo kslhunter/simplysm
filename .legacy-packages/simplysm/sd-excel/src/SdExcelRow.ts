@@ -12,7 +12,10 @@ export class SdExcelRow {
   ) {}
 
   cell(c: number): SdExcelCell {
-    return this._cellMap.getOrCreate(c, new SdExcelCell(this._zipCache, this._targetFileName, this._r, c));
+    return this._cellMap.getOrCreate(
+      c,
+      new SdExcelCell(this._zipCache, this._targetFileName, this._r, c),
+    );
   }
 
   async getCellsAsync(): Promise<SdExcelCell[]> {
@@ -29,6 +32,8 @@ export class SdExcelRow {
   }
 
   private async _getWsDataAsync() {
-    return (await this._zipCache.getAsync(`xl/worksheets/${this._targetFileName}`)) as SdExcelXmlWorksheet;
+    return (await this._zipCache.getAsync(
+      `xl/worksheets/${this._targetFileName}`,
+    )) as SdExcelXmlWorksheet;
   }
 }

@@ -46,7 +46,10 @@ interface IReadonlyArrayExt<T> {
 
   toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
-  toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
+  toMap<K, V>(
+    keySelector: (item: T, index: number) => K,
+    valueSelector: (item: T, index: number) => V,
+  ): Map<K, V>;
 
   toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
@@ -68,7 +71,10 @@ interface IReadonlyArrayExt<T> {
     valueSelector: (item: T, index: number) => V,
   ): Map<K, Set<V>>;
 
-  toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
+  toMapValues<K, V>(
+    keySelector: (item: T, index: number) => K,
+    valueSelector: (items: T[]) => V,
+  ): Map<K, V>;
 
   toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -83,9 +89,14 @@ interface IReadonlyArrayExt<T> {
 
   orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-  orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+  orderByDesc(
+    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+  ): T[];
 
-  diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
+  diffs<P>(
+    target: P[],
+    options?: { keys?: string[]; excludes?: string[] },
+  ): TArrayDiffsResult<T, P>[];
 
   oneWayDiffs<K extends keyof T>(
     orgItems: T[] | Map<T[K], T>,
@@ -115,9 +126,13 @@ interface IReadonlyArrayExt<T> {
 interface IMutableArrayExt<T> {
   distinctThis(matchAddress?: boolean): T[];
 
-  orderByThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+  orderByThis(
+    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+  ): T[];
 
-  orderByDescThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+  orderByDescThis(
+    selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined,
+  ): T[];
 
   insert(index: number, ...items: T[]): this;
 
@@ -336,7 +351,10 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  toMapValues<T, K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V | T> {
+  toMapValues<T, K, V>(
+    keySelector: (item: T, index: number) => K,
+    valueSelector: (items: T[]) => V,
+  ): Map<K, V | T> {
     const itemsMap = new Map<K, T[]>();
 
     for (let i = 0; i < this.length; i++) {
@@ -432,7 +450,9 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     return result;
   },
 
-  orderBy<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderBy<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.concat().sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -440,7 +460,9 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDesc<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByDesc<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.concat().sort((p, n) => {
       const pp = selector == null ? p : selector(p);
       const pn = selector == null ? n : selector(n);
@@ -511,13 +533,16 @@ const arrayReadonlyExtensions: IReadonlyArrayExt<any> & ThisType<any[]> = {
       orgItems instanceof Map
         ? orgItems
         : orgItems.toMap((orgItem) =>
-            typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(orgItem) : orgItem[keyPropNameOrFn],
+            typeof keyPropNameOrFn === "function"
+              ? keyPropNameOrFn(orgItem)
+              : orgItem[keyPropNameOrFn],
           );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: TArrayDiffs2Result<T>[] = [];
     for (const item of this) {
-      const keyValue = typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+      const keyValue =
+        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;
@@ -650,7 +675,9 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
     return this;
   },
 
-  orderByThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByThis<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;
@@ -658,7 +685,9 @@ const arrayMutableExtensions: IMutableArrayExt<any> & ThisType<any[]> = {
     });
   },
 
-  orderByDescThis<T>(selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+  orderByDescThis<T>(
+    selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined,
+  ): T[] {
     return this.sort((p, n) => {
       const pp = selector?.(p) ?? p;
       const pn = selector?.(n) ?? n;

@@ -26,7 +26,11 @@ export default function DateRangePickerPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">초기값 설정</h3>
-                <DateRangePicker periodType="range" from={new DateOnly(2025, 1, 1)} to={new DateOnly(2025, 12, 31)} />
+                <DateRangePicker
+                  periodType="range"
+                  from={new DateOnly(2025, 1, 1)}
+                  to={new DateOnly(2025, 12, 31)}
+                />
               </div>
             </div>
           </section>
@@ -45,7 +49,11 @@ export default function DateRangePickerPage() {
               </div>
               <div>
                 <h3 class="mb-3 text-lg font-semibold">범위</h3>
-                <DateRangePicker periodType="range" from={new DateOnly(2025, 3, 1)} to={new DateOnly(2025, 3, 31)} />
+                <DateRangePicker
+                  periodType="range"
+                  from={new DateOnly(2025, 3, 1)}
+                  to={new DateOnly(2025, 3, 31)}
+                />
               </div>
             </div>
           </section>
@@ -72,7 +80,11 @@ export default function DateRangePickerPage() {
             <div class="space-y-6">
               <div>
                 <p class="mb-1 text-sm text-base-500">Small</p>
-                <DateRangePicker size="sm" from={new DateOnly(2025, 3, 1)} to={new DateOnly(2025, 3, 31)} />
+                <DateRangePicker
+                  size="sm"
+                  from={new DateOnly(2025, 3, 1)}
+                  to={new DateOnly(2025, 3, 31)}
+                />
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Default</p>
@@ -80,7 +92,11 @@ export default function DateRangePickerPage() {
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Large</p>
-                <DateRangePicker size="lg" from={new DateOnly(2025, 3, 1)} to={new DateOnly(2025, 3, 31)} />
+                <DateRangePicker
+                  size="lg"
+                  from={new DateOnly(2025, 3, 1)}
+                  to={new DateOnly(2025, 3, 31)}
+                />
               </div>
             </div>
           </section>
@@ -102,7 +118,8 @@ export default function DateRangePickerPage() {
                   />
                   <div class="text-sm text-base-600 dark:text-base-400">
                     <p>
-                      기간 타입: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{periodType()}</code>
+                      기간 타입:{" "}
+                      <code class="rounded bg-base-200 px-1 dark:bg-base-700">{periodType()}</code>
                     </p>
                     <p>
                       From:{" "}

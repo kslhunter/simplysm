@@ -40,7 +40,10 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  * @see {@link Procedure} 팩토리 함수
  * @see {@link executable} Executable 생성
  */
-export class ProcedureBuilder<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord> {
+export class ProcedureBuilder<
+  TParams extends ColumnBuilderRecord,
+  TReturns extends ColumnBuilderRecord,
+> {
   /** 파라미터 정의 (타입 추론용) */
   readonly $params!: TParams;
   /** 반환 타입 정의 (타입 추론용) */

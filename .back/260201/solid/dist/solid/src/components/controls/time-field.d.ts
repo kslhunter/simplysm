@@ -15,7 +15,10 @@ import "@simplysm/core-common";
  */
 export interface TimeFieldProps
   extends
-    Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "min" | "max" | "size">,
+    Omit<
+      JSX.InputHTMLAttributes<HTMLInputElement>,
+      "value" | "onChange" | "type" | "min" | "max" | "size"
+    >,
     TimeFieldStyles {
   value?: Time | undefined;
   onChange?: (value: Time | undefined) => void;

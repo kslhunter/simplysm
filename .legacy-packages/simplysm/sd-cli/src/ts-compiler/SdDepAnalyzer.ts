@@ -25,7 +25,13 @@ export class SdDepAnalyzer {
     const moduleResolutionCache = compilerHost.getModuleResolutionCache!();
 
     const resolveModule = (text: string, base: string): TNormPath[] => {
-      const res = ts.resolveModuleName(text, base, compilerOpts, compilerHost, moduleResolutionCache);
+      const res = ts.resolveModuleName(
+        text,
+        base,
+        compilerOpts,
+        compilerHost,
+        moduleResolutionCache,
+      );
 
       if (res.resolvedModule) {
         return [PathUtils.norm(res.resolvedModule.resolvedFileName)];
@@ -157,7 +163,9 @@ export class SdDepAnalyzer {
       if (!sym) return [];
       const c = cache.declFiles.get(sym);
       if (c) return c;
-      const paths = (sym.getDeclarations() ?? []).map((d) => PathUtils.norm(d.getSourceFile().fileName));
+      const paths = (sym.getDeclarations() ?? []).map((d) =>
+        PathUtils.norm(d.getSourceFile().fileName),
+      );
       cache.declFiles.set(sym, paths);
       return paths;
     };
@@ -182,7 +190,11 @@ export class SdDepAnalyzer {
             ) {
               // import ... from '...'
               for (const element of node.importClause.namedBindings.elements) {
-                cache.dep.addImport(sfNPath, resolvedNPath, element.propertyName?.text ?? element.name.text);
+                cache.dep.addImport(
+                  sfNPath,
+                  resolvedNPath,
+                  element.propertyName?.text ?? element.name.text,
+                );
               }
             } else {
               cache.dep.addImport(sfNPath, resolvedNPath, 0);
@@ -257,7 +269,11 @@ export class SdDepAnalyzer {
           node.name
         ) {
           cache.dep.addExport(sfNPath, node.name.text);
-        } else if (ts.isIdentifier(node) && isDeclarationIdentifier(node) && !isInImportOrExport(node)) {
+        } else if (
+          ts.isIdentifier(node) &&
+          isDeclarationIdentifier(node) &&
+          !isInImportOrExport(node)
+        ) {
           const orgValSymbol = typeChecker.getSymbolAtLocation(node);
           let valSymbol = orgValSymbol;
           if (orgValSymbol && orgValSymbol.flags & ts.SymbolFlags.Alias) {
@@ -285,7 +301,10 @@ export class SdDepAnalyzer {
               }
             }
           }
-        } else if (ts.isElementAccessExpression(node) && ts.isStringLiteral(node.argumentExpression)) {
+        } else if (
+          ts.isElementAccessExpression(node) &&
+          ts.isStringLiteral(node.argumentExpression)
+        ) {
           const type = getCachedType(node.expression);
           const propSymbol = getCachedProp(type, node.argumentExpression.text);
 
@@ -333,7 +352,11 @@ export class SdDepAnalyzer {
     }
   }
 
-  static analyzeAngularResources(ngProgram: NgtscProgram, scopePathSet: ScopePathSet, depCache: SdDepCache) {
+  static analyzeAngularResources(
+    ngProgram: NgtscProgram,
+    scopePathSet: ScopePathSet,
+    depCache: SdDepCache,
+  ) {
     for (const sf of ngProgram.getTsProgram().getSourceFiles()) {
       const fileNPath = PathUtils.norm(sf.fileName);
       if (!scopePathSet.inScope(fileNPath)) continue;

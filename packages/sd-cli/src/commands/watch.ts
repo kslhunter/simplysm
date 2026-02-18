@@ -1,5 +1,8 @@
 // packages/cli/src/commands/watch.ts
-import { WatchOrchestrator, type WatchOrchestratorOptions } from "../orchestrators/WatchOrchestrator";
+import {
+  WatchOrchestrator,
+  type WatchOrchestratorOptions,
+} from "../orchestrators/WatchOrchestrator";
 
 /**
  * Watch 명령 옵션 (하위 호환성)

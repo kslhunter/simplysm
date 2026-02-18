@@ -76,7 +76,10 @@ export class ZipCache {
       const content = this._cache.get(filePath)!;
       if ("cleanup" in content) {
         content.cleanup();
-        this._zip.write(filePath, Buffer.from(new TextEncoder().encode(XmlConvert.stringify(content.data))));
+        this._zip.write(
+          filePath,
+          Buffer.from(new TextEncoder().encode(XmlConvert.stringify(content.data))),
+        );
       } else {
         this._zip.write(filePath, content);
       }

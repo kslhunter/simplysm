@@ -50,7 +50,10 @@ export class VirtualUsbStorage {
     return this._db.put(this._FILES_STORE, fullEntry);
   }
 
-  async listChildren(deviceKey: string, dirPath: string): Promise<{ name: string; isDirectory: boolean }[]> {
+  async listChildren(
+    deviceKey: string,
+    dirPath: string,
+  ): Promise<{ name: string; isDirectory: boolean }[]> {
     const prefix = `${deviceKey}:${dirPath === "/" ? "/" : dirPath + "/"}`;
     return this._db.withStore(this._FILES_STORE, "readonly", async (store) => {
       return new Promise((resolve, reject) => {
@@ -59,7 +62,9 @@ export class VirtualUsbStorage {
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
-            resolve(Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })));
+            resolve(
+              Array.from(map.entries()).map(([name, isDirectory]) => ({ name, isDirectory })),
+            );
             return;
           }
           const key = String(cursor.key);
@@ -70,7 +75,8 @@ export class VirtualUsbStorage {
               if (segments.length > 0) {
                 const firstName = segments[0];
                 if (!map.has(firstName)) {
-                  const isDir = segments.length > 1 || (cursor.value as VirtualEntry).kind === "dir";
+                  const isDir =
+                    segments.length > 1 || (cursor.value as VirtualEntry).kind === "dir";
                   map.set(firstName, isDir);
                 }
               }

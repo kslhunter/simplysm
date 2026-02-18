@@ -605,7 +605,9 @@ describe("SELECT - WHERE - EXISTS / IN subquery", () => {
     const db = createTestDb();
     const def = db
       .user()
-      .where((item) => [expr.not(expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)])))])
+      .where((item) => [
+        expr.not(expr.exists(db.post().where((p) => [expr.eq(p.userId, item.id)]))),
+      ])
       .getSelectQueryDef();
 
     expect(def).toEqual({

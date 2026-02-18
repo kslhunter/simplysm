@@ -64,7 +64,10 @@ export class SdOrmServiceClientDbContextExecutor implements IDbContextExecutor {
     await this._ormService.close(this._connId);
   }
 
-  async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+  async executeDefsAsync(
+    defs: TQueryDef[],
+    options?: (IQueryResultParseOption | undefined)[],
+  ): Promise<any[][]> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, viewChild, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdEventsDirective } from "../../../core/directives/sd-events.directive";
 import { transformBoolean } from "../../../core/utils/transforms/transformBoolean";
 import { $signal } from "../../../core/utils/bindings/$signal";
@@ -28,7 +35,12 @@ import { $effect } from "../../../core/utils/bindings/$effect";
     `,
   ],
   template: `
-    <div #contentEl class="_content" (sdResize)="onContentResize()" [style.margin-top]="marginTop()">
+    <div
+      #contentEl
+      class="_content"
+      (sdResize)="onContentResize()"
+      [style.margin-top]="marginTop()"
+    >
       <ng-content></ng-content>
     </div>
   `,

@@ -223,7 +223,10 @@ describe("Expr - 조건 함수", () => {
       expect(() => {
         db.user()
           .select((item) => ({
-            result: expr.switch<string | undefined>().case(expr.gt(item.age, 20), undefined).default(undefined),
+            result: expr
+              .switch<string | undefined>()
+              .case(expr.gt(item.age, 20), undefined)
+              .default(undefined),
           }))
           .getSelectQueryDef();
       }).toThrow("switch의 case/default 중 적어도 하나는 non-null이어야 합니다.");

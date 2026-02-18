@@ -308,7 +308,8 @@ describe("fs 함수들", () => {
       const data = { name: "test", secret: "hidden" };
 
       fsWriteJsonSync(filePath, data, {
-        replacer: (_key, value) => (typeof value === "string" && value === "hidden" ? undefined : value),
+        replacer: (_key, value) =>
+          typeof value === "string" && value === "hidden" ? undefined : value,
       });
 
       const content = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;

@@ -64,7 +64,9 @@ export const SidebarUser: ParentComponent<SidebarUserProps> = (props) => {
 
       <Collapse open={menuOpen()}>
         <List inset>
-          <For each={local.menus}>{(menuItem) => <ListItem onClick={menuItem.onClick}>{menuItem.title}</ListItem>}</For>
+          <For each={local.menus}>
+            {(menuItem) => <ListItem onClick={menuItem.onClick}>{menuItem.title}</ListItem>}
+          </For>
         </List>
       </Collapse>
     </div>

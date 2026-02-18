@@ -79,7 +79,9 @@ export abstract class Broadcast {
    * 앱 실행 중 새 Intent 수신 리스너 등록
    * @returns 리스너 핸들 (remove()로 해제)
    */
-  static async addNewIntentListener(callback: (result: IBroadcastResult) => void): Promise<PluginListenerHandle> {
+  static async addNewIntentListener(
+    callback: (result: IBroadcastResult) => void,
+  ): Promise<PluginListenerHandle> {
     return BroadcastPlugin.addListener("onNewIntent", callback);
   }
 }

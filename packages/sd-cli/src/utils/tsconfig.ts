@@ -18,7 +18,9 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
     return [];
   }
 
-  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(packageJsonPath);
+  const packageJson = await fsReadJson<{ devDependencies?: Record<string, string> }>(
+    packageJsonPath,
+  );
   const devDeps = packageJson.devDependencies ?? {};
 
   return Object.keys(devDeps)
@@ -104,7 +106,10 @@ export function parseRootTsconfig(cwd: string): ts.ParsedCommandLine {
 /**
  * 패키지의 소스 파일 목록 가져오기 (tsconfig 기반)
  */
-export function getPackageSourceFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
+export function getPackageSourceFiles(
+  pkgDir: string,
+  parsedConfig: ts.ParsedCommandLine,
+): string[] {
   // 경로 구분자까지 포함하여 비교 (packages/core와 packages/core-common 구분)
   const pkgSrcPrefix = path.join(pkgDir, "src") + path.sep;
   return parsedConfig.fileNames.filter((f) => f.startsWith(pkgSrcPrefix));

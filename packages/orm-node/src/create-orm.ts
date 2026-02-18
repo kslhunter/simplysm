@@ -1,4 +1,9 @@
-import { createDbContext, type DbContextDef, type DbContextInstance, type IsolationLevel } from "@simplysm/orm-common";
+import {
+  createDbContext,
+  type DbContextDef,
+  type DbContextInstance,
+  type IsolationLevel,
+} from "@simplysm/orm-common";
 import type { DbConnConfig } from "./types/db-conn";
 import { NodeDbContextExecutor } from "./node-db-context-executor";
 
@@ -36,7 +41,10 @@ export interface Orm<TDef extends DbContextDef<any, any, any>> {
    * @param isolationLevel - 트랜잭션 격리 수준
    * @returns 콜백 결과
    */
-  connect<R>(callback: (conn: DbContextInstance<TDef>) => Promise<R>, isolationLevel?: IsolationLevel): Promise<R>;
+  connect<R>(
+    callback: (conn: DbContextInstance<TDef>) => Promise<R>,
+    isolationLevel?: IsolationLevel,
+  ): Promise<R>;
 
   /**
    * 트랜잭션 없이 콜백 실행

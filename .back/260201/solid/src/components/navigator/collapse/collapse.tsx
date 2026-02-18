@@ -1,4 +1,12 @@
-import { createEffect, createSignal, type JSX, onCleanup, onMount, type ParentComponent, splitProps } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  type JSX,
+  onCleanup,
+  onMount,
+  type ParentComponent,
+  splitProps,
+} from "solid-js";
 import { collapse, type CollapseStyles } from "./collapse.css";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { objPick } from "@simplysm/core-common";
@@ -32,7 +40,11 @@ export interface CollapseProps extends JSX.HTMLAttributes<HTMLDivElement>, Colla
  * ```
  */
 export const Collapse: ParentComponent<CollapseProps> = (props) => {
-  const [local, styleProps, rest] = splitProps(props, [...collapse.variants(), "children", "open"], ["class", "style"]);
+  const [local, styleProps, rest] = splitProps(
+    props,
+    [...collapse.variants(), "children", "open"],
+    ["class", "style"],
+  );
 
   let contentRef!: HTMLDivElement;
 

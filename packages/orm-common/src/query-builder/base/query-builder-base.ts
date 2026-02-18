@@ -78,7 +78,9 @@ export abstract class QueryBuilderBase {
   /** ORDER BY 절 렌더링 */
   protected renderOrderBy(orderBy: [Expr, ("ASC" | "DESC")?][] | undefined): string {
     if (orderBy == null || orderBy.length === 0) return "";
-    const parts = orderBy.map(([e, dir]) => `${this.expr.render(e)}${dir != null ? ` ${dir}` : ""}`);
+    const parts = orderBy.map(
+      ([e, dir]) => `${this.expr.render(e)}${dir != null ? ` ${dir}` : ""}`,
+    );
     return ` ORDER BY ${parts.join(", ")}`;
   }
 

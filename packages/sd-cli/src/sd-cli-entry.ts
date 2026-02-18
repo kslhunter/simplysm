@@ -325,6 +325,9 @@ export function createCliParser(argv: string[]): Argv {
 // CLI로 직접 실행될 때만 파싱 수행
 // ESM에서 메인 모듈 판별: import.meta.url과 process.argv[1]을 정규화하여 비교
 const cliEntryPath = process.argv.at(1);
-if (cliEntryPath != null && fileURLToPath(import.meta.url) === fs.realpathSync(path.resolve(cliEntryPath))) {
+if (
+  cliEntryPath != null &&
+  fileURLToPath(import.meta.url) === fs.realpathSync(path.resolve(cliEntryPath))
+) {
   await createCliParser(hideBin(process.argv)).parse();
 }

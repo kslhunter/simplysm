@@ -19,9 +19,16 @@ export default function NumpadPage() {
             <h2 class="mb-6 text-2xl font-bold">기본 사용</h2>
             <div class="space-y-6">
               <div>
-                <Numpad value={basicValue()} onValueChange={setBasicValue} placeholder="숫자를 입력하세요" />
+                <Numpad
+                  value={basicValue()}
+                  onValueChange={setBasicValue}
+                  placeholder="숫자를 입력하세요"
+                />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(basicValue())}</code>
+                  값:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(basicValue())}
+                  </code>
                 </p>
               </div>
             </div>
@@ -34,7 +41,10 @@ export default function NumpadPage() {
               <div>
                 <Numpad value={initialValue()} onValueChange={setInitialValue} />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(initialValue())}</code>
+                  값:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(initialValue())}
+                  </code>
                 </p>
               </div>
             </div>
@@ -53,7 +63,10 @@ export default function NumpadPage() {
                   onEnterButtonClick={() => alert(`입력 값: ${enterValue()}`)}
                 />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(enterValue())}</code>
+                  값:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(enterValue())}
+                  </code>
                 </p>
               </div>
             </div>
@@ -73,7 +86,10 @@ export default function NumpadPage() {
                   onEnterButtonClick={() => alert(`입력 값: ${disabledValue()}`)}
                 />
                 <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-                  값: <code class="rounded bg-base-200 px-1 dark:bg-base-700">{JSON.stringify(disabledValue())}</code>
+                  값:{" "}
+                  <code class="rounded bg-base-200 px-1 dark:bg-base-700">
+                    {JSON.stringify(disabledValue())}
+                  </code>
                 </p>
                 <p class="mt-1 text-sm text-base-500 dark:text-base-400">
                   텍스트 필드 직접 입력 비활성화, 값이 없으면 ENT 버튼 비활성화

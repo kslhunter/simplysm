@@ -83,7 +83,9 @@ import { $signal } from "../../../core/utils/bindings/$signal";
   ],
 })
 export class SdSelectItemControl {
-  private readonly _selectControl: SdSelectControl<any, any> = inject(forwardRef(() => SdSelectControl));
+  private readonly _selectControl: SdSelectControl<any, any> = inject(
+    forwardRef(() => SdSelectControl),
+  );
 
   elRef = injectElementRef<HTMLElement>();
 

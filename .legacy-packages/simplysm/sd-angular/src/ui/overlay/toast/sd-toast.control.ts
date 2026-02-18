@@ -128,7 +128,9 @@ import { transformBoolean } from "../../../core/utils/transforms/transformBoolea
 export class SdToastControl {
   open = input(false, { transform: transformBoolean });
   useProgress = input(false, { transform: transformBoolean });
-  theme = input<"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">("info");
+  theme = input<
+    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+  >("info");
 
   progress = input<number>(0);
   message = input<string>();

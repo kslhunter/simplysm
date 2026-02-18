@@ -1,4 +1,13 @@
-import { children, createMemo, createSignal, For, type JSX, Show, splitProps, useContext } from "solid-js";
+import {
+  children,
+  createMemo,
+  createSignal,
+  For,
+  type JSX,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -157,7 +166,9 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
     const { DataSheetConfigDialog } = await import("./DataSheetConfigDialog");
 
-    const allCols = resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[];
+    const allCols = resolved
+      .toArray()
+      .filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[];
 
     const columnInfos: DataSheetConfigColumnInfo[] = allCols
       .filter((col) => !col.collapse)
@@ -359,7 +370,9 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     target.setPointerCapture(event.pointerId);
 
     const th = target.closest("th")!;
-    const container = th.closest("[data-sheet]")!.querySelector("[data-sheet-scroll]") as HTMLElement;
+    const container = th
+      .closest("[data-sheet]")!
+      .querySelector("[data-sheet-scroll]") as HTMLElement;
     const startX = event.clientX;
     const startWidth = th.offsetWidth;
 
@@ -484,7 +497,9 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     if (local.selectMode === "single") {
       setSelectedItems(isSelected ? [] : [item]);
     } else {
-      setSelectedItems(isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item]);
+      setSelectedItems(
+        isSelected ? selectedItems().filter((i) => i !== item) : [...selectedItems(), item],
+      );
     }
   }
 
@@ -584,7 +599,11 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
         } else if (relY > third * 2) {
           foundPosition = "after";
         } else {
-          foundPosition = local.getChildren ? "inside" : relY < rect.height / 2 ? "before" : "after";
+          foundPosition = local.getChildren
+            ? "inside"
+            : relY < rect.height / 2
+              ? "before"
+              : "after";
         }
         foundTarget = flat.item;
         break;
@@ -707,7 +726,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
   // 선택 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
-  const isSelectColLastFixed = () => hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
+  const isSelectColLastFixed = () =>
+    hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
   const isReorderColLastFixed = () => hasReorderFeature() && lastFixedIndex() < 0;
 
@@ -722,13 +742,19 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   const isAllExpanded = createMemo(() => {
     if (!local.getChildren) return false;
     const allExpandable = collectAllExpandable(pagedItems(), local.getChildren);
-    return allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item));
+    return (
+      allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item))
+    );
   });
 
   return (
     <div
       data-sheet={local.persistKey ?? ""}
-      class={twMerge("flex flex-col", local.inset ? insetContainerClass : defaultContainerClass, local.class)}
+      class={twMerge(
+        "flex flex-col",
+        local.inset ? insetContainerClass : defaultContainerClass,
+        local.class,
+      )}
     >
       <Show when={!local.hideConfigBar && (modal != null || effectivePageCount() > 1)}>
         <div class={toolbarClass}>
@@ -743,13 +769,22 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
           </Show>
           <div class="flex-1" />
           <Show when={modal != null}>
-            <button class={configButtonClass} onClick={openConfigModal} title="시트 설정" type="button">
+            <button
+              class={configButtonClass}
+              onClick={openConfigModal}
+              title="시트 설정"
+              type="button"
+            >
               <Icon icon={IconSettings} size="1em" />
             </button>
           </Show>
         </div>
       </Show>
-      <div data-sheet-scroll class={twMerge(dataSheetContainerClass, "flex-1 min-h-0")} style={local.contentStyle}>
+      <div
+        data-sheet-scroll
+        class={twMerge(dataSheetContainerClass, "flex-1 min-h-0")}
+        style={local.contentStyle}
+      >
         <table
           class={twMerge(tableClass, local.inset ? insetTableClass : undefined)}
           onKeyDown={onTableKeyDown}
@@ -800,7 +835,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                           <Icon
                             icon={IconChevronDown}
                             size="1em"
-                            class={clsx("transition-transform", isAllExpanded() ? "rotate-0" : "-rotate-90")}
+                            class={clsx(
+                              "transition-transform",
+                              isAllExpanded() ? "rotate-0" : "-rotate-90",
+                            )}
                           />
                         </button>
                       </div>
@@ -863,9 +901,13 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                       <Show when={cell}>
                         {(c) => {
                           const isSortable = () =>
-                            c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].sortable;
+                            c().isLastRow &&
+                            c().colIndex != null &&
+                            effectiveColumns()[c().colIndex!].sortable;
                           const colKey = () =>
-                            c().colIndex != null ? effectiveColumns()[c().colIndex!].key : undefined;
+                            c().colIndex != null
+                              ? effectiveColumns()[c().colIndex!].key
+                              : undefined;
 
                           // 그룹 헤더의 고정 여부: colspan 범위 내 모든 컬럼이 fixed인지
                           const isGroupFixed = (): boolean => {
@@ -881,12 +923,15 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
                           // 셀의 고정 컬럼 여부 (마지막 행이면 colIndex 기반, 그 외 그룹 기반)
                           const isCellFixed = () =>
-                            (c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].fixed) ||
+                            (c().isLastRow &&
+                              c().colIndex != null &&
+                              effectiveColumns()[c().colIndex!].fixed) ||
                             isGroupFixed();
 
                           // 셀의 마지막 고정 여부
                           const isCellLastFixed = () => {
-                            if (c().isLastRow && c().colIndex != null) return isLastFixed(c().colIndex!);
+                            if (c().isLastRow && c().colIndex != null)
+                              return isLastFixed(c().colIndex!);
                             if (isGroupFixed()) {
                               const lastCol = cellColIndex() + c().colspan - 1;
                               return isLastFixed(lastCol);
@@ -932,7 +977,11 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                                   : c().text
                               }
                               ref={(el: HTMLElement) => {
-                                if (c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].fixed) {
+                                if (
+                                  c().isLastRow &&
+                                  c().colIndex != null &&
+                                  effectiveColumns()[c().colIndex!].fixed
+                                ) {
                                   registerColumnRef(c().colIndex!, el);
                                 }
                               }}
@@ -958,9 +1007,15 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                                           <Icon icon={IconSortDescending} size="1em" />
                                         </Show>
                                         <Show when={sortDef() == null}>
-                                          <Icon icon={IconArrowsSort} size="1em" class="opacity-30" />
+                                          <Icon
+                                            icon={IconArrowsSort}
+                                            size="1em"
+                                            class="opacity-30"
+                                          />
                                         </Show>
-                                        <Show when={sortIndex()}>{(idx) => <sub>{idx()}</sub>}</Show>
+                                        <Show when={sortIndex()}>
+                                          {(idx) => <sub>{idx()}</sub>}
+                                        </Show>
                                       </div>
                                     );
                                   }}
@@ -968,13 +1023,17 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                               </div>
                               <Show
                                 when={
-                                  c().isLastRow && c().colIndex != null && effectiveColumns()[c().colIndex!].resizable
+                                  c().isLastRow &&
+                                  c().colIndex != null &&
+                                  effectiveColumns()[c().colIndex!].resizable
                                 }
                               >
                                 <div
                                   class={resizerClass}
                                   onClick={(e) => e.stopPropagation()}
-                                  onPointerDown={(e) => onResizerPointerdown(e, effectiveColumns()[c().colIndex!].key)}
+                                  onPointerDown={(e) =>
+                                    onResizerPointerdown(e, effectiveColumns()[c().colIndex!].key)
+                                  }
                                   onDblClick={(e) => {
                                     e.stopPropagation();
                                     onResizerDoubleClick(effectiveColumns()[c().colIndex!].key);
@@ -1054,7 +1113,11 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                           )}
                         </For>
                         <Show when={flat.hasChildren}>
-                          <button type="button" class={expandToggleClass} onClick={() => toggleExpand(flat.item)}>
+                          <button
+                            type="button"
+                            class={expandToggleClass}
+                            onClick={() => toggleExpand(flat.item)}
+                          >
                             <Icon
                               icon={IconChevronDown}
                               size="1em"
@@ -1092,11 +1155,16 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                             fallback={
                               /* single 모드 */
                               <Show when={selectable() === true}>
-                                <div class={featureCellBodyClickableClass} onClick={() => toggleSelect(flat.item)}>
+                                <div
+                                  class={featureCellBodyClickableClass}
+                                  onClick={() => toggleSelect(flat.item)}
+                                >
                                   <div
                                     class={twMerge(
                                       selectSingleClass,
-                                      isSelected() ? selectSingleSelectedClass : selectSingleUnselectedClass,
+                                      isSelected()
+                                        ? selectSingleSelectedClass
+                                        : selectSingleUnselectedClass,
                                     )}
                                   >
                                     <Icon icon={IconChevronRight} size="1em" />
@@ -1116,7 +1184,11 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                                 }
                                 setLastClickedRow(rowIndex());
                               }}
-                              title={typeof selectable() === "string" ? (selectable() as string) : undefined}
+                              title={
+                                typeof selectable() === "string"
+                                  ? (selectable() as string)
+                                  : undefined
+                              }
                             >
                               <Checkbox
                                 value={isSelected()}
@@ -1148,7 +1220,10 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                         left: reorderColLeft(),
                       }}
                     >
-                      <div class={reorderCellWrapperClass} onPointerDown={(e) => onReorderPointerDown(e, flat.item)}>
+                      <div
+                        class={reorderCellWrapperClass}
+                        onPointerDown={(e) => onReorderPointerDown(e, flat.item)}
+                      >
                         <div class={reorderHandleClass}>
                           <Icon icon={IconGripVertical} size="1em" />
                         </div>
