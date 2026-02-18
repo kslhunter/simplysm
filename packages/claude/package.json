@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/claude",
-  "version": "13.0.28",
+  "version": "13.0.29",
   "description": "Simplysm Claude Code skills/agents — auto-installs via postinstall",
   "author": "김석래",
   "license": "Apache-2.0",
