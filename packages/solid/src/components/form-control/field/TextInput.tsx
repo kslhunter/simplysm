@@ -114,8 +114,7 @@ function removeFormat(formattedValue: string, format: string): string {
   let result = "";
 
   for (let i = 0; i < formattedValue.length; i++) {
-    const formatChar = format[i];
-    if (formatChar === "X" || formatChar === undefined) {
+    if (i >= format.length || format[i] === "X") {
       result += formattedValue[i];
     }
     // 포맷 문자가 아닌 경우 (구분자) 스킵
