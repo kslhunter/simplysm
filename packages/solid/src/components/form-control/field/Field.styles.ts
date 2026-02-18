@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 import { type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../../styles/tokens.styles";
 import {
   fieldSurface,
@@ -54,3 +55,47 @@ export const textAreaSizeClasses: Record<FieldSize, string> = {
 
 // input 스타일
 export const fieldInputClass = inputBase;
+
+// prefixIcon gap 클래스 (nested ternary 대체)
+export const fieldGapClasses: Record<FieldSize | "default", string> = {
+  default: "gap-2",
+  sm: "gap-1.5",
+  lg: "gap-3",
+  xl: "gap-4",
+};
+
+// 공유 wrapper 클래스 생성 함수
+export function getFieldWrapperClass(options: {
+  size?: FieldSize;
+  disabled?: boolean;
+  inset?: boolean;
+  includeCustomClass?: string | false;
+  extra?: string | false;
+}): string {
+  return twMerge(
+    fieldBaseClass,
+    options.extra,
+    options.size && fieldSizeClasses[options.size],
+    options.disabled && fieldDisabledClass,
+    options.inset && fieldInsetClass,
+    options.inset &&
+      (options.size ? fieldInsetSizeHeightClasses[options.size] : fieldInsetHeightClass),
+    options.includeCustomClass,
+  );
+}
+
+// Textarea 전용 wrapper 클래스 생성 함수
+export function getTextareaWrapperClass(options: {
+  size?: FieldSize;
+  disabled?: boolean;
+  inset?: boolean;
+  includeCustomClass?: string | false;
+}): string {
+  return twMerge(
+    textAreaBaseClass,
+    options.size && textAreaSizeClasses[options.size],
+    options.disabled && fieldDisabledClass,
+    options.inset && fieldInsetClass,
+    options.includeCustomClass,
+  );
+}
