@@ -196,7 +196,7 @@ describe("NotificationProvider", () => {
     });
   });
 
-  it("dismissBanner 호출 시 latestUnread가 undefined가 된다", async () => {
+  it("dismissBanner 호출 시 latestUnread가 undefined가 되고 읽음 처리된다", async () => {
     let notification: NotificationContextValue;
 
     render(() => (
@@ -220,8 +220,10 @@ describe("NotificationProvider", () => {
 
     await waitFor(() => {
       expect(notification!.latestUnread()).toBeUndefined();
-      // items에는 여전히 존재
+      // items에는 여전히 존재하지만 읽음 처리됨
       expect(notification!.items().length).toBe(1);
+      expect(notification!.items()[0].read).toBe(true);
+      expect(notification!.unreadCount()).toBe(0);
     });
   });
 

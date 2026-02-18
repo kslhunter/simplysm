@@ -7,6 +7,7 @@ const BusyDemo: Component = () => {
   const [barBusy, setBarBusy] = createSignal(false);
   const [progressBusy, setProgressBusy] = createSignal(false);
   const [progressPercent, setProgressPercent] = createSignal(0);
+  const [readyState, setReadyState] = createSignal(false);
 
   const handleGlobalBusy = () => {
     busy.show("전역 로딩 중...");
@@ -105,6 +106,27 @@ const BusyDemo: Component = () => {
           class="mt-4 h-40 rounded border border-base-200 dark:border-base-700"
         >
           <div class="flex h-full items-center justify-center text-base-500">콘텐츠 영역</div>
+        </BusyContainer>
+      </section>
+
+      {/* Ready */}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">Ready 상태</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          ready가 false이면 children을 숨기고 로딩 오버레이를 표시합니다.
+        </p>
+        <Button theme="base" variant="outline" onClick={() => setReadyState((v) => !v)}>
+          {readyState() ? "ready=false로 변경" : "ready=true로 변경"}
+        </Button>
+        <BusyContainer
+          ready={readyState()}
+          variant="spinner"
+          message="데이터 준비 중..."
+          class="mt-4 h-40 rounded border border-base-200 dark:border-base-700"
+        >
+          <div class="flex h-full items-center justify-center text-base-500">
+            준비 완료된 콘텐츠
+          </div>
         </BusyContainer>
       </section>
     </div>

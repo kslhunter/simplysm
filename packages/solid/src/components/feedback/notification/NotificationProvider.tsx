@@ -125,6 +125,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     const latest = latestUnread();
     if (latest) {
       setDismissedBannerId(latest.id);
+      markAsRead(latest.id);
     }
   };
 

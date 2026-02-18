@@ -15,6 +15,7 @@ import "./BusyContainer.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   busy?: boolean;
+  ready?: boolean;
   variant?: BusyVariant;
   message?: string;
   progressPercent?: number;
@@ -57,6 +58,7 @@ const barIndicatorClass = clsx("absolute left-0 top-0", "h-1 w-full", "bg-white 
 export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const [local, rest] = splitProps(props, [
     "busy",
+    "ready",
     "variant",
     "message",
     "progressPercent",
@@ -68,11 +70,13 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
 
   // 애니메이션 상태 (mount transition)
-  const { mounted, animating, unmount } = createMountTransition(() => !!local.busy);
+  const { mounted, animating, unmount } = createMountTransition(
+    () => local.ready === false || !!local.busy,
+  );
 
   const handleTransitionEnd = (e: TransitionEvent) => {
     if (e.propertyName !== "opacity") return;
-    if (!local.busy) {
+    if (local.ready !== false && !local.busy) {
       unmount();
     }
   };
@@ -82,7 +86,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
 
   createEffect(() => {
     const handleKeyDownCapture = (e: KeyboardEvent) => {
-      if (local.busy) {
+      if (local.ready === false || local.busy) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -117,7 +121,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
             <Show when={currVariant() === "spinner"}>
               <div class={spinnerClass} />
             </Show>
-            <Show when={currVariant() === "bar" && local.busy}>
+            <Show when={currVariant() === "bar" && (local.ready === false || local.busy)}>
               <div class={barIndicatorClass}>
                 <div
                   class={clsx(
@@ -155,7 +159,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
           </Show>
         </div>
       </Show>
-      {local.children}
+      <Show when={local.ready !== false}>{local.children}</Show>
     </div>
   );
 };
