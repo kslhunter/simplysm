@@ -2,12 +2,12 @@ import { createSignal } from "solid-js";
 import { Pagination, Topbar } from "@simplysm/solid";
 
 export default function PaginationPage() {
-  const [page1, setPage1] = createSignal(0);
-  const [pageSm, setPageSm] = createSignal(0);
-  const [pageMd, setPageMd] = createSignal(0);
-  const [pageLg, setPageLg] = createSignal(0);
-  const [pageCustom, setPageCustom] = createSignal(0);
-  const [pageDisabled, setPageDisabled] = createSignal(0);
+  const [page1, setPage1] = createSignal(1);
+  const [pageSm, setPageSm] = createSignal(1);
+  const [pageMd, setPageMd] = createSignal(1);
+  const [pageLg, setPageLg] = createSignal(1);
+  const [pageCustom, setPageCustom] = createSignal(1);
+  const [pageDisabled, setPageDisabled] = createSignal(1);
 
   return (
     <Topbar.Container>
@@ -19,7 +19,7 @@ export default function PaginationPage() {
           <section>
             <h2 class="mb-4 text-xl font-bold">기본</h2>
             <p class="mb-2 text-sm text-base-500">page: {page1()}</p>
-            <Pagination pageIndex={page1()} onPageIndexChange={setPage1} totalPageCount={20} />
+            <Pagination page={page1()} onPageChange={setPage1} totalPageCount={20} />
           </section>
 
           <section>
@@ -28,25 +28,21 @@ export default function PaginationPage() {
               <div>
                 <p class="mb-2 text-sm text-base-500">sm (page: {pageSm()})</p>
                 <Pagination
-                  pageIndex={pageSm()}
-                  onPageIndexChange={setPageSm}
+                  page={pageSm()}
+                  onPageChange={setPageSm}
                   totalPageCount={20}
                   size="sm"
                 />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">기본 (page: {pageMd()})</p>
-                <Pagination
-                  pageIndex={pageMd()}
-                  onPageIndexChange={setPageMd}
-                  totalPageCount={20}
-                />
+                <Pagination page={pageMd()} onPageChange={setPageMd} totalPageCount={20} />
               </div>
               <div>
                 <p class="mb-2 text-sm text-base-500">lg (page: {pageLg()})</p>
                 <Pagination
-                  pageIndex={pageLg()}
-                  onPageIndexChange={setPageLg}
+                  page={pageLg()}
+                  onPageChange={setPageLg}
                   totalPageCount={20}
                   size="lg"
                 />
@@ -58,8 +54,8 @@ export default function PaginationPage() {
             <h2 class="mb-4 text-xl font-bold">displayPageCount 커스텀 (5개씩)</h2>
             <p class="mb-2 text-sm text-base-500">page: {pageCustom()}</p>
             <Pagination
-              pageIndex={pageCustom()}
-              onPageIndexChange={setPageCustom}
+              page={pageCustom()}
+              onPageChange={setPageCustom}
               totalPageCount={25}
               displayPageCount={5}
             />
@@ -67,11 +63,7 @@ export default function PaginationPage() {
 
           <section>
             <h2 class="mb-4 text-xl font-bold">Disabled (totalPageCount=0)</h2>
-            <Pagination
-              pageIndex={pageDisabled()}
-              onPageIndexChange={setPageDisabled}
-              totalPageCount={0}
-            />
+            <Pagination page={pageDisabled()} onPageChange={setPageDisabled} totalPageCount={0} />
           </section>
         </div>
       </div>

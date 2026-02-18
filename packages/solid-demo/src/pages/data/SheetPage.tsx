@@ -83,7 +83,7 @@ const categories: Category[] = [
 export default function SheetPage() {
   const totalSalary = () => users.reduce((sum, u) => sum + u.salary, 0);
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
-  const [page, setPage] = createSignal(0);
+  const [page, setPage] = createSignal(1);
   const [expanded, setExpanded] = createSignal<Category[]>([]);
   const [multiSelected, setMultiSelected] = createSignal<User[]>([]);
   const [singleSelected, setSingleSelected] = createSignal<User[]>([]);
@@ -270,8 +270,8 @@ export default function SheetPage() {
               items={users}
               persistKey="paging"
               itemsPerPage={2}
-              pageIndex={page()}
-              onPageIndexChange={setPage}
+              page={page()}
+              onPageChange={setPage}
             >
               <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
                 {(ctx) => ctx.item.name}

@@ -17,10 +17,10 @@ export interface DialogShowOptions {
   movable?: boolean;
   float?: boolean;
   fill?: boolean;
-  widthPx?: number;
-  heightPx?: number;
-  minWidthPx?: number;
-  minHeightPx?: number;
+  width?: number;
+  height?: number;
+  minWidth?: number;
+  minHeight?: number;
   position?: "bottom-right" | "top-right";
   headerStyle?: JSX.CSSProperties | string;
   canDeactivate?: () => boolean;

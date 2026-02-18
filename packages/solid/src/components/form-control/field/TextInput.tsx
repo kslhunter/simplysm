@@ -5,16 +5,12 @@ import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
-  fieldBaseClass,
-  fieldDisabledClass,
+  fieldGapClasses,
   fieldInputClass,
-  fieldInsetClass,
-  fieldInsetHeightClass,
-  fieldInsetSizeHeightClasses,
   type FieldSize,
-  fieldSizeClasses,
+  getFieldWrapperClass,
 } from "./Field.styles";
-import { textMuted } from "../../../styles/tokens.styles";
+import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
 
@@ -118,8 +114,7 @@ function removeFormat(formattedValue: string, format: string): string {
   let result = "";
 
   for (let i = 0; i < formattedValue.length; i++) {
-    const formatChar = format[i];
-    if (formatChar === "X") {
+    if (i >= format.length || format[i] === "X") {
       result += formattedValue[i];
     }
     // 포맷 문자가 아닌 경우 (구분자) 스킵
@@ -217,23 +212,13 @@ export const TextInput: Component<TextInputProps> = (props) => {
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
-    twMerge(
-      fieldBaseClass,
-      local.prefixIcon &&
-        (local.size === "sm"
-          ? "gap-1.5"
-          : local.size === "lg"
-            ? "gap-3"
-            : local.size === "xl"
-              ? "gap-4"
-              : "gap-2"),
-      local.size && fieldSizeClasses[local.size],
-      local.disabled && fieldDisabledClass,
-      local.inset && fieldInsetClass,
-      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
-
-      includeCustomClass && local.class,
-    );
+    getFieldWrapperClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      includeCustomClass: includeCustomClass && local.class,
+      extra: local.prefixIcon && fieldGapClasses[local.size ?? "default"],
+    });
 
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
@@ -287,12 +272,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
                 title={local.title}
               >
                 {prefixIconEl()}
-                {displayValue() ||
-                  (local.placeholder != null && local.placeholder !== "" ? (
-                    <span class={textMuted}>{local.placeholder}</span>
-                  ) : (
-                    "\u00A0"
-                  ))}
+                <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
               </div>
             }
           >
@@ -322,12 +302,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
             title={local.title}
           >
             {prefixIconEl()}
-            {displayValue() ||
-              (local.placeholder != null && local.placeholder !== "" ? (
-                <span class={textMuted}>{local.placeholder}</span>
-              ) : (
-                "\u00A0"
-              ))}
+            <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
           </div>
 
           <Show when={isEditable()}>

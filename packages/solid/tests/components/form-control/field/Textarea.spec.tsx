@@ -115,8 +115,10 @@ describe("Textarea 컴포넌트", () => {
     it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
       const { container } = render(() => <Textarea inset />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-none")).toBe(true);
-      expect(wrapper.classList.contains("bg-primary-50")).toBe(true);
+      expect(wrapper.classList.contains("relative")).toBe(true);
+      const content = wrapper.querySelector("[data-textarea-field-content]") as HTMLElement;
+      expect(content.classList.contains("border-none")).toBe(true);
+      expect(content.classList.contains("bg-primary-50")).toBe(true);
     });
 
     it("inset + readonly일 때 content div가 보이고 textarea가 없다", () => {

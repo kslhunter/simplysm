@@ -124,10 +124,10 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
                 movable={entry.options.movable}
                 float={entry.options.float}
                 fill={entry.options.fill}
-                widthPx={entry.options.widthPx}
-                heightPx={entry.options.heightPx}
-                minWidthPx={entry.options.minWidthPx}
-                minHeightPx={entry.options.minHeightPx}
+                width={entry.options.width}
+                height={entry.options.height}
+                minWidth={entry.options.minWidth}
+                minHeight={entry.options.minHeight}
                 position={entry.options.position}
                 headerStyle={entry.options.headerStyle}
                 canDeactivate={entry.options.canDeactivate}

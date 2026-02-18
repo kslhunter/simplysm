@@ -166,7 +166,7 @@ import "@simplysm/solid/tailwind.css";
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
 - [`useRouterLink`](docs/hooks.md#userouterlink) - Navigation with Ctrl/Shift+click support
 - [`createAppStructure`](docs/hooks.md#createappstructure) - Declarative app structure (routing, menus, permissions)
-- [`createPwaUpdate`](docs/hooks.md#createpwaupdate) - PWA Service Worker update detection
+- [`usePwaUpdate`](docs/hooks.md#usepwaupdate) - PWA Service Worker update detection
 
 ## Providers
 

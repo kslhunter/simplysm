@@ -118,7 +118,7 @@ export default function SheetFullPage() {
   const totalSalary = () => employees.reduce((sum, e) => sum + e.salary, 0);
   const totalBonus = () => employees.reduce((sum, e) => sum + e.bonus, 0);
   const [sorts, setSorts] = createSignal<SortingDef[]>([]);
-  const [page, setPage] = createSignal(0);
+  const [page, setPage] = createSignal(1);
 
   return (
     <Topbar.Container>
@@ -136,8 +136,8 @@ export default function SheetFullPage() {
           onSortsChange={setSorts}
           autoSort
           itemsPerPage={20}
-          pageIndex={page()}
-          onPageIndexChange={setPage}
+          page={page()}
+          onPageChange={setPage}
         >
           <DataSheet.Column<Employee>
             key="id"

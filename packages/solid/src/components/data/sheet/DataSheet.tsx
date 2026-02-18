@@ -89,8 +89,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     "sorts",
     "onSortsChange",
     "autoSort",
-    "pageIndex",
-    "onPageIndexChange",
+    "page",
+    "onPageChange",
     "totalPageCount",
     "itemsPerPage",
     "displayPageCount",
@@ -245,8 +245,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   // #region Paging
   const [currentPage, setCurrentPage] = createControllableSignal({
-    value: () => local.pageIndex ?? 0,
-    onChange: () => local.onPageIndexChange,
+    value: () => local.page ?? 1,
+    onChange: () => local.onPageChange,
   });
 
   const effectivePageCount = createMemo(() => {
@@ -263,7 +263,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     if ((local.items ?? []).length <= 0) return sortedItems();
 
     const page = currentPage();
-    return sortedItems().slice(page * ipp, (page + 1) * ipp);
+    return sortedItems().slice((page - 1) * ipp, page * ipp);
   });
 
   // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
@@ -760,8 +760,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
         <div class={toolbarClass}>
           <Show when={effectivePageCount() > 1}>
             <Pagination
-              pageIndex={currentPage()}
-              onPageIndexChange={setCurrentPage}
+              page={currentPage()}
+              onPageChange={setCurrentPage}
               totalPageCount={effectivePageCount()}
               displayPageCount={local.displayPageCount}
               size="sm"

@@ -180,11 +180,15 @@ describe("TimePicker 컴포넌트", () => {
   });
 
   describe("inset 스타일", () => {
-    it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
+    it("inset=true일 때 outer div에는 relative만, content div에 inset 스타일이 적용된다", () => {
       const { container } = render(() => <TimePicker inset />);
       const outer = container.firstChild as HTMLElement;
-      expect(outer.classList.contains("border-none")).toBe(true);
-      expect(outer.classList.contains("bg-primary-50")).toBe(true);
+      expect(outer.classList.contains("relative")).toBe(true);
+      expect(outer.classList.contains("border-none")).toBe(false);
+
+      const contentDiv = outer.querySelector("[data-time-field-content]") as HTMLElement;
+      expect(contentDiv.classList.contains("border-none")).toBe(true);
+      expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
     });
 
     it("inset + readonly일 때 content div가 보이고 input이 없다", () => {

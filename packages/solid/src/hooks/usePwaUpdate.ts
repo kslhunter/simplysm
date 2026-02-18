@@ -15,7 +15,7 @@ const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes
  *
  * Must be called inside NotificationProvider.
  */
-export function createPwaUpdate(): void {
+export function usePwaUpdate(): void {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
   const notification = useNotification();

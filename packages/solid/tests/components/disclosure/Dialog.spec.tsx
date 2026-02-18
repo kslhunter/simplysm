@@ -250,9 +250,9 @@ describe("Dialog 컴포넌트", () => {
   });
 
   describe("크기 제어", () => {
-    it("widthPx, heightPx가 적용된다", async () => {
+    it("width, height가 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" widthPx={400} heightPx={300}>
+        <Dialog open={true} title="테스트" width={400} height={300}>
           <div>내용</div>
         </Dialog>
       ));
@@ -264,9 +264,9 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("minWidthPx, minHeightPx가 적용된다", async () => {
+    it("minWidth, minHeight가 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" minWidthPx={300} minHeightPx={200}>
+        <Dialog open={true} title="테스트" minWidth={300} minHeight={200}>
           <div>내용</div>
         </Dialog>
       ));

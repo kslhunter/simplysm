@@ -1,4 +1,4 @@
-import { type Accessor, type Setter, createEffect, createSignal, onCleanup } from "solid-js";
+import { type Accessor, type Setter, createEffect, createSignal } from "solid-js";
 import { useConfig } from "../providers/ConfigContext";
 
 /**
@@ -91,11 +91,6 @@ export function useSyncConfig<TValue>(
         localStorage.setItem(prefixedKey, serialized);
       }
     })();
-  });
-
-  // Clean up (optional, for consistency)
-  onCleanup(() => {
-    // No cleanup needed for storage operations
   });
 
   return [value, setValue, ready];

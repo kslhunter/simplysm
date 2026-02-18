@@ -1,5 +1,9 @@
-import { type Accessor, type Setter, createSignal } from "solid-js";
+import { type Accessor, createSignal } from "solid-js";
 import { useConfig } from "../providers/ConfigContext";
+
+type StorageSetter<TValue> = (
+  value: TValue | undefined | ((prev: TValue | undefined) => TValue | undefined),
+) => TValue | undefined;
 
 /**
  * localStorage 기반 저장소 훅.
@@ -11,7 +15,7 @@ import { useConfig } from "../providers/ConfigContext";
  * @template T - 저장할 값의 타입
  * @param key - localStorage 키
  * @param initialValue - 초기값 (옵셔널)
- * @returns [Accessor<T | undefined>, Setter<T | undefined>] 튜플
+ * @returns [Accessor<T | undefined>, StorageSetter<T>] 튜플
  *
  * @example
  * ```tsx
@@ -30,7 +34,7 @@ import { useConfig } from "../providers/ConfigContext";
 export function useLocalStorage<TValue>(
   key: string,
   initialValue?: TValue,
-): [Accessor<TValue | undefined>, Setter<TValue | undefined>] {
+): [Accessor<TValue | undefined>, StorageSetter<TValue>] {
   const config = useConfig();
   const prefixedKey = `${config.clientName}.${key}`;
 
@@ -69,5 +73,5 @@ export function useLocalStorage<TValue>(
     return resolved;
   };
 
-  return [value, setAndStore as Setter<TValue | undefined>];
+  return [value, setAndStore];
 }

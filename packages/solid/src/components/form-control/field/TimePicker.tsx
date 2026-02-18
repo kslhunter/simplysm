@@ -3,16 +3,7 @@ import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js
 import { twMerge } from "tailwind-merge";
 import { Time } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import {
-  type FieldSize,
-  fieldBaseClass,
-  fieldSizeClasses,
-  fieldInsetClass,
-  fieldInsetHeightClass,
-  fieldInsetSizeHeightClasses,
-  fieldDisabledClass,
-  fieldInputClass,
-} from "./Field.styles";
+import { type FieldSize, fieldInputClass, getFieldWrapperClass } from "./Field.styles";
 import { Invalid } from "../../form-control/Invalid";
 
 type TimePickerUnit = "minute" | "second";
@@ -155,15 +146,12 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
 
   // wrapper 클래스
   const getWrapperClass = (includeCustomClass: boolean) =>
-    twMerge(
-      fieldBaseClass,
-      local.size && fieldSizeClasses[local.size],
-      local.disabled && fieldDisabledClass,
-      local.inset && fieldInsetClass + " block",
-      local.inset && (local.size ? fieldInsetSizeHeightClasses[local.size] : fieldInsetHeightClass),
-
-      includeCustomClass && local.class,
-    );
+    getFieldWrapperClass({
+      size: local.size,
+      disabled: local.disabled,
+      inset: local.inset,
+      includeCustomClass: includeCustomClass && local.class,
+    });
 
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
@@ -222,14 +210,10 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
         }
       >
         {/* inset 모드: dual-element overlay 패턴 */}
-        <div
-          {...rest}
-          data-time-field
-          class={twMerge(getWrapperClass(false), "relative", local.class)}
-          style={local.style}
-        >
+        <div {...rest} data-time-field class={clsx("relative", local.class)} style={local.style}>
           <div
             data-time-field-content
+            class={getWrapperClass(false)}
             style={{ visibility: isEditable() ? "hidden" : undefined }}
             title={local.title}
           >
@@ -237,14 +221,16 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
           </div>
 
           <Show when={isEditable()}>
-            <input
-              type="time"
-              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-              value={displayValue()}
-              title={local.title}
-              step={getStep()}
-              onChange={handleChange}
-            />
+            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+              <input
+                type="time"
+                class={fieldInputClass}
+                value={displayValue()}
+                title={local.title}
+                step={getStep()}
+                onChange={handleChange}
+              />
+            </div>
           </Show>
         </div>
       </Show>

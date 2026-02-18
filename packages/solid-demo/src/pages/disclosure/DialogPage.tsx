@@ -129,7 +129,7 @@ export default function ModalPage() {
               onOpenChange={setFloatOpen}
               title="Float 다이얼로그"
               float
-              widthPx={320}
+              width={320}
             >
               <div class="p-4">
                 <p class="text-sm">백드롭이 없는 플로팅 다이얼로그입니다.</p>
@@ -181,10 +181,10 @@ export default function ModalPage() {
               title="리사이즈 / 이동"
               resizable
               movable
-              widthPx={400}
-              heightPx={300}
-              minWidthPx={250}
-              minHeightPx={200}
+              width={400}
+              height={300}
+              minWidth={250}
+              minHeight={200}
               closeOnEscape
             >
               <div class="p-4">

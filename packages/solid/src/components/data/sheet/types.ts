@@ -15,8 +15,8 @@ export interface DataSheetProps<TItem> {
   autoSort?: boolean;
 
   // 페이지네이션
-  pageIndex?: number;
-  onPageIndexChange?: (pageIndex: number) => void;
+  page?: number;
+  onPageChange?: (page: number) => void;
   totalPageCount?: number;
   itemsPerPage?: number;
   displayPageCount?: number;
