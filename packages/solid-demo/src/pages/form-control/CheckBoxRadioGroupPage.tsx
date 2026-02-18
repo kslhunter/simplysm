@@ -81,6 +81,35 @@ export default function CheckboxRadioGroupPage() {
             </div>
           </section>
 
+          {/* Validation */}
+          <section>
+            <h2 class="mb-6 text-2xl font-bold">Validation</h2>
+            <div class="space-y-6">
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">CheckboxGroup Required</h3>
+                <CheckboxGroup required value={[]}>
+                  <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="c">옵션 C</CheckboxGroup.Item>
+                </CheckboxGroup>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">RadioGroup Required</h3>
+                <RadioGroup required>
+                  <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
+                  <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
+                </RadioGroup>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <CheckboxGroup required touchMode value={[]}>
+                  <CheckboxGroup.Item value="x">X</CheckboxGroup.Item>
+                  <CheckboxGroup.Item value="y">Y</CheckboxGroup.Item>
+                </CheckboxGroup>
+              </div>
+            </div>
+          </section>
+
           {/* RadioGroup */}
           <section>
             <h2 class="mb-6 text-2xl font-bold">RadioGroup</h2>

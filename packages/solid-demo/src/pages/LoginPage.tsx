@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { TextInput, Button, ThemeToggle, FormGroup, Invalid } from "@simplysm/solid";
+import { TextInput, Button, ThemeToggle, FormGroup } from "@simplysm/solid";
 import clsx from "clsx";
 
 export default function LoginPage() {
@@ -39,27 +39,27 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <FormGroup class="w-full">
             <FormGroup.Item label="아이디">
-              <Invalid message={id().trim() === "" ? "아이디를 입력하세요" : ""}>
-                <TextInput
-                  class="w-full"
-                  placeholder="아이디를 입력하세요"
-                  size="lg"
-                  value={id()}
-                  onValueChange={setId}
-                />
-              </Invalid>
+              <TextInput
+                class="w-full"
+                placeholder="아이디를 입력하세요"
+                size="lg"
+                required
+                touchMode
+                value={id()}
+                onValueChange={setId}
+              />
             </FormGroup.Item>
             <FormGroup.Item label="비밀번호">
-              <Invalid message={pw().trim() === "" ? "비밀번호를 입력하세요" : ""}>
-                <TextInput
-                  class="w-full"
-                  type="password"
-                  placeholder="비밀번호를 입력하세요"
-                  size="lg"
-                  value={pw()}
-                  onValueChange={setPw}
-                />
-              </Invalid>
+              <TextInput
+                class="w-full"
+                type="password"
+                placeholder="비밀번호를 입력하세요"
+                size="lg"
+                required
+                touchMode
+                value={pw()}
+                onValueChange={setPw}
+              />
             </FormGroup.Item>
           </FormGroup>
 

@@ -184,6 +184,32 @@ export default function SelectPage() {
             </div>
           </section>
 
+          {/* Validation */}
+          <section>
+            <h2 class="mb-4 text-xl font-semibold">Validation</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">Required</h3>
+                <Select required placeholder="필수 선택" renderValue={(v: string) => <>{v}</>}>
+                  <Select.Item value="A">옵션 A</Select.Item>
+                  <Select.Item value="B">옵션 B</Select.Item>
+                </Select>
+              </div>
+              <div>
+                <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+                <Select
+                  required
+                  touchMode
+                  placeholder="touchMode 필수 선택"
+                  renderValue={(v: string) => <>{v}</>}
+                >
+                  <Select.Item value="A">옵션 A</Select.Item>
+                  <Select.Item value="B">옵션 B</Select.Item>
+                </Select>
+              </div>
+            </div>
+          </section>
+
           {/* Controlled */}
           <section>
             <h2 class="mb-4 text-xl font-semibold">Controlled</h2>
