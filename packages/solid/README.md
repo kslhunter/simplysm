@@ -37,7 +37,7 @@ export default {
 
 ### Provider Setup
 
-Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), loading overlay, and programmatic dialog support.
+Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), busy overlay, and programmatic dialog support.
 
 ```tsx
 import { InitializeProvider } from "@simplysm/solid";
@@ -131,6 +131,7 @@ import "@simplysm/solid/tailwind.css";
 
 - [`Card`](docs/display.md#card) - Container with shadow effect
 - [`Tag`](docs/display.md#tag) - Inline tag/badge component
+- [`Link`](docs/display.md#link) - Inline text link
 - [`Alert`](docs/display.md#alert) - Block-level alert/notice component
 - [`Icon`](docs/display.md#icon) - Tabler Icons wrapper (scales with surrounding text)
 - [`Progress`](docs/display.md#progress) - Progress indicator
@@ -169,7 +170,7 @@ import "@simplysm/solid/tailwind.css";
 
 ## Providers
 
-- [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, loading, dialog, error capturing)
+- [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, busy, dialog, error capturing)
 - [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider
 - [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider
 

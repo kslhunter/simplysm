@@ -31,6 +31,23 @@ import { Tag } from "@simplysm/solid";
 
 ---
 
+## Link
+
+Inline text link component. Renders an `<a>` element with primary color and hover underline.
+
+```tsx
+import { Link } from "@simplysm/solid";
+
+<Link href="https://example.com">Visit site</Link>
+<Link href="https://example.com" target="_blank" rel="noopener noreferrer">
+  Open in new tab
+</Link>
+```
+
+Accepts all standard HTML `<a>` attributes (`href`, `target`, `rel`, etc.).
+
+---
+
 ## Alert
 
 Block-level alert/notice component.
@@ -127,10 +144,10 @@ import { Echarts } from "@simplysm/solid";
   }}
 />
 
-<Echarts option={chartOption()} loading={isLoading()} />
+<Echarts option={chartOption()} busy={isBusy()} />
 ```
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `option` | `echarts.EChartsOption` | **(required)** | ECharts option object |
-| `loading` | `boolean` | - | Show loading state |
+| `busy` | `boolean` | - | Show busy state |

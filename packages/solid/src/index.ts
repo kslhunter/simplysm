@@ -72,6 +72,7 @@ export * from "./components/display/Card";
 export * from "./components/display/Echarts";
 export * from "./components/display/Icon";
 export * from "./components/display/Tag";
+export * from "./components/display/Link";
 export * from "./components/display/Alert";
 
 //#endregion
