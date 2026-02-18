@@ -1,8 +1,16 @@
-import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  createContext,
+  createMemo,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Radio } from "./Radio";
 import type { CheckboxSize } from "./Checkbox.styles";
+import { Invalid } from "../Invalid";
 
 interface RadioGroupContextValue<TValue> {
   value: () => TValue | undefined;
@@ -52,6 +60,9 @@ interface RadioGroupProps<TValue> {
   size?: CheckboxSize;
   inline?: boolean;
   inset?: boolean;
+  required?: boolean;
+  validate?: (value: TValue | undefined) => string | undefined;
+  touchMode?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -70,6 +81,9 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
     "size",
     "inline",
     "inset",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
     "children",
@@ -93,12 +107,20 @@ const RadioGroupInner: ParentComponent<RadioGroupProps<unknown>> = (props) => {
     inset: () => local.inset ?? false,
   };
 
+  const errorMsg = createMemo(() => {
+    const v = local.value;
+    if (local.required && (v === undefined || v === null)) return "항목을 선택해 주세요";
+    return local.validate?.(v);
+  });
+
   return (
-    <RadioGroupContext.Provider value={contextValue}>
-      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
-        {local.children}
-      </div>
-    </RadioGroupContext.Provider>
+    <Invalid message={errorMsg()} variant="dot" touchMode={local.touchMode}>
+      <RadioGroupContext.Provider value={contextValue}>
+        <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
+          {local.children}
+        </div>
+      </RadioGroupContext.Provider>
+    </Invalid>
   );
 };
 

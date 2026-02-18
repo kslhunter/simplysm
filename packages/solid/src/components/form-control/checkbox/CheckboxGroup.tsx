@@ -1,8 +1,16 @@
-import { type JSX, type ParentComponent, createContext, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  type ParentComponent,
+  createContext,
+  createMemo,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Checkbox } from "./Checkbox";
 import type { CheckboxSize } from "./Checkbox.styles";
+import { Invalid } from "../Invalid";
 
 interface CheckboxGroupContextValue<TValue> {
   value: () => TValue[];
@@ -52,6 +60,9 @@ interface CheckboxGroupProps<TValue> {
   size?: CheckboxSize;
   inline?: boolean;
   inset?: boolean;
+  required?: boolean;
+  validate?: (value: TValue[]) => string | undefined;
+  touchMode?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -70,6 +81,9 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     "size",
     "inline",
     "inset",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
     "children",
@@ -98,12 +112,20 @@ const CheckboxGroupInner: ParentComponent<CheckboxGroupProps<unknown>> = (props)
     inset: () => local.inset ?? false,
   };
 
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? [];
+    if (local.required && v.length === 0) return "항목을 선택해 주세요";
+    return local.validate?.(v);
+  });
+
   return (
-    <CheckboxGroupContext.Provider value={contextValue}>
-      <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
-        {local.children}
-      </div>
-    </CheckboxGroupContext.Provider>
+    <Invalid message={errorMsg()} variant="dot" touchMode={local.touchMode}>
+      <CheckboxGroupContext.Provider value={contextValue}>
+        <div {...rest} class={twMerge("inline-flex", local.class)} style={local.style}>
+          {local.children}
+        </div>
+      </CheckboxGroupContext.Provider>
+    </Invalid>
   );
 };
 

@@ -1,4 +1,4 @@
-import { type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import { type JSX, type ParentComponent, Show, splitProps, createMemo } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { ripple } from "../../../directives/ripple";
@@ -14,6 +14,7 @@ import {
   checkboxInlineClass,
   checkboxDisabledClass,
 } from "./Checkbox.styles";
+import { Invalid } from "../Invalid";
 
 const radioDotClass = clsx("size-2", "rounded-full", "bg-current");
 
@@ -27,6 +28,9 @@ export interface RadioProps {
   size?: CheckboxSize;
   inset?: boolean;
   inline?: boolean;
+  required?: boolean;
+  validate?: (value: boolean) => string | undefined;
+  touchMode?: boolean;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -40,6 +44,9 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
     "size",
     "inset",
     "inline",
+    "required",
+    "validate",
+    "touchMode",
     "class",
     "style",
     "children",
@@ -76,26 +83,34 @@ export const Radio: ParentComponent<RadioProps> = (props) => {
   const getIndicatorClass = () =>
     twMerge(indicatorBaseClass, "rounded-full", value() && checkedClass);
 
+  const errorMsg = createMemo(() => {
+    const v = local.value ?? false;
+    if (local.required && !v) return "필수 선택 항목입니다";
+    return local.validate?.(v);
+  });
+
   return (
-    <label
-      {...rest}
-      use:ripple={!local.disabled}
-      role="radio"
-      aria-checked={value()}
-      tabIndex={local.disabled ? -1 : 0}
-      class={getWrapperClass()}
-      style={local.style}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div class={getIndicatorClass()}>
-        <Show when={value()}>
-          <div class={radioDotClass} />
+    <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
+      <label
+        {...rest}
+        use:ripple={!local.disabled}
+        role="radio"
+        aria-checked={value()}
+        tabIndex={local.disabled ? -1 : 0}
+        class={getWrapperClass()}
+        style={local.style}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+      >
+        <div class={getIndicatorClass()}>
+          <Show when={value()}>
+            <div class={radioDotClass} />
+          </Show>
+        </div>
+        <Show when={local.children}>
+          <span>{local.children}</span>
         </Show>
-      </div>
-      <Show when={local.children}>
-        <span>{local.children}</span>
-      </Show>
-    </label>
+      </label>
+    </Invalid>
   );
 };

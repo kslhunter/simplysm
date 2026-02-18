@@ -108,4 +108,30 @@ describe("Checkbox 컴포넌트", () => {
       expect(getByRole("checkbox").classList.contains("my-custom-class")).toBe(true);
     });
   });
+
+  describe("validation", () => {
+    it("required일 때 체크되지 않으면 에러 메시지가 설정된다", () => {
+      const { container } = render(() => <Checkbox required value={false} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("필수 선택 항목입니다");
+    });
+
+    it("required일 때 체크되면 유효하다", () => {
+      const { container } = render(() => <Checkbox required value={true} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+
+    it("validate 함수가 에러 메시지를 반환하면 설정된다", () => {
+      const { container } = render(() => <Checkbox value={true} validate={() => "커스텀 에러"} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validationMessage).toBe("커스텀 에러");
+    });
+
+    it("validate 함수가 undefined를 반환하면 유효하다", () => {
+      const { container } = render(() => <Checkbox value={true} validate={() => undefined} />);
+      const hiddenInput = container.querySelector("input[aria-hidden='true']") as HTMLInputElement;
+      expect(hiddenInput.validity.valid).toBe(true);
+    });
+  });
 });
