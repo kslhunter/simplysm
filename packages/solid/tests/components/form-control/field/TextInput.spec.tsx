@@ -165,9 +165,10 @@ describe("TextInput 컴포넌트", () => {
   describe("inset 스타일", () => {
     it("inset=true일 때 테두리가 없고 inset 배경색이 적용된다", () => {
       const { container } = render(() => <TextInput inset />);
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("border-none")).toBe(true);
-      expect(wrapper.classList.contains("bg-primary-50")).toBe(true);
+      const outer = container.firstChild as HTMLElement;
+      const contentDiv = outer.querySelector("[data-text-field-content]") as HTMLElement;
+      expect(contentDiv.classList.contains("border-none")).toBe(true);
+      expect(contentDiv.classList.contains("bg-primary-50")).toBe(true);
     });
 
     it("inset + readonly일 때 content div가 보이고 input이 없다", () => {

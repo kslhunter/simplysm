@@ -314,13 +314,13 @@ export const TextInput: Component<TextInputProps> = (props) => {
         }
       >
         {/* inset 모드: dual-element overlay 패턴 */}
-        <div
-          {...rest}
-          data-text-field
-          class={twMerge(getWrapperClass(false), "relative", local.class)}
-          style={local.style}
-        >
-          <div data-text-field-content style={{ visibility: isEditable() ? "hidden" : undefined }}>
+        <div {...rest} data-text-field class={clsx("relative", local.class)} style={local.style}>
+          <div
+            data-text-field-content
+            class={getWrapperClass(false)}
+            style={{ visibility: isEditable() ? "hidden" : undefined }}
+            title={local.title}
+          >
             {prefixIconEl()}
             {displayValue() ||
               (local.placeholder != null && local.placeholder !== "" ? (
@@ -331,17 +331,20 @@ export const TextInput: Component<TextInputProps> = (props) => {
           </div>
 
           <Show when={isEditable()}>
-            <input
-              type={local.type ?? "text"}
-              class={clsx(fieldInputClass, "absolute left-0 top-0 size-full", "px-2 py-1")}
-              value={inputValue()}
-              placeholder={local.placeholder}
-              title={local.title}
-              autocomplete={local.autocomplete}
-              onInput={handleInput}
-              onCompositionStart={handleCompositionStart}
-              onCompositionEnd={handleCompositionEnd}
-            />
+            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+              {prefixIconEl()}
+              <input
+                type={local.type ?? "text"}
+                class={fieldInputClass}
+                value={inputValue()}
+                placeholder={local.placeholder}
+                title={local.title}
+                autocomplete={local.autocomplete}
+                onInput={handleInput}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
+              />
+            </div>
           </Show>
         </div>
       </Show>
