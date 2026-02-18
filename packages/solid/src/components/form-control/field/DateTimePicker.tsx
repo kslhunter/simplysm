@@ -56,10 +56,13 @@ export interface DateTimePickerProps {
 }
 
 /**
- * DateTime 값을 input value용 문자열로 변환 (ISO 형식)
+ * DateTime 값을 타입에 맞는 문자열로 변환
  */
-function formatValue(value: DateTime | undefined, unit: DateTimePickerUnit): string {
-  if (value == null) return "";
+function formatDateTimeValue(
+  value: DateTime | undefined,
+  unit: DateTimePickerUnit,
+): string | undefined {
+  if (value == null) return undefined;
 
   switch (unit) {
     case "minute":
@@ -102,20 +105,6 @@ function parseValue(str: string, unit: DateTimePickerUnit): DateTime | undefined
         Number(match[6]),
       );
     }
-  }
-}
-
-/**
- * min/max 속성을 타입에 맞는 문자열로 변환
- */
-function formatMinMax(value: DateTime | undefined, unit: DateTimePickerUnit): string | undefined {
-  if (value == null) return undefined;
-
-  switch (unit) {
-    case "minute":
-      return value.toFormatString("yyyy-MM-ddTHH:mm");
-    case "second":
-      return value.toFormatString("yyyy-MM-ddTHH:mm:ss");
   }
 }
 
@@ -171,7 +160,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
   });
 
   // 표시 값
-  const displayValue = () => formatValue(value(), fieldType());
+  const displayValue = () => formatDateTimeValue(value(), fieldType()) ?? "";
 
   // 값 확정 핸들러 (포커스 아웃 또는 Enter 시)
   const handleChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
@@ -197,7 +186,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
 
   // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
   const errorMsg = createMemo(() => {
-    const v = local.value;
+    const v = value();
     if (local.required && v === undefined) return "필수 입력 항목입니다";
     if (v !== undefined) {
       if (local.min !== undefined && v.tick < local.min.tick)
@@ -238,8 +227,8 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
                 class={fieldInputClass}
                 value={displayValue()}
                 title={local.title}
-                min={formatMinMax(local.min, fieldType())}
-                max={formatMinMax(local.max, fieldType())}
+                min={formatDateTimeValue(local.min, fieldType())}
+                max={formatDateTimeValue(local.max, fieldType())}
                 step={getStep()}
                 onChange={handleChange}
               />
@@ -270,8 +259,8 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
                 class={fieldInputClass}
                 value={displayValue()}
                 title={local.title}
-                min={formatMinMax(local.min, fieldType())}
-                max={formatMinMax(local.max, fieldType())}
+                min={formatDateTimeValue(local.min, fieldType())}
+                max={formatDateTimeValue(local.max, fieldType())}
                 step={getStep()}
                 onChange={handleChange}
               />

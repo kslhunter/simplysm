@@ -3,8 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Invalid } from "../Invalid";
-
-type ColorPickerSize = "sm" | "lg";
+import { type ComponentSizeCompact } from "../../../styles/tokens.styles";
 
 // 기본 스타일
 const baseClass = clsx(
@@ -21,7 +20,7 @@ const baseClass = clsx(
 );
 
 // 사이즈별 스타일
-const sizeClasses: Record<ColorPickerSize, string> = {
+const sizeClasses: Record<ComponentSizeCompact, string> = {
   sm: "size-field-sm",
   lg: "size-field-lg",
 };
@@ -49,7 +48,7 @@ export interface ColorPickerProps {
   disabled?: boolean;
 
   /** 사이즈 */
-  size?: ColorPickerSize;
+  size?: ComponentSizeCompact;
 
   /** 필수 입력 여부 */
   required?: boolean;

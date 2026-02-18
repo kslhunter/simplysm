@@ -15,6 +15,7 @@ export const disabledOpacity = "cursor-default opacity-50 pointer-events-none";
 
 // ── 사이즈 ──
 export type ComponentSize = "sm" | "lg" | "xl";
+export type ComponentSizeCompact = "sm" | "lg";
 export const paddingSm = "px-1.5 py-0.5";
 export const paddingLg = "px-3 py-2";
 export const paddingXl = "px-4 py-3";

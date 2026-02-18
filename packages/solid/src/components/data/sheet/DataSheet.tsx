@@ -33,6 +33,7 @@ import type {
 import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createPointerDrag } from "../../../hooks/createPointerDrag";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
@@ -367,7 +368,6 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   function onResizerPointerdown(event: PointerEvent, colKey: string): void {
     event.preventDefault();
     const target = event.target as HTMLElement;
-    target.setPointerCapture(event.pointerId);
 
     const th = target.closest("th")!;
     const container = th
@@ -385,32 +385,28 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
       height: `${container.scrollHeight}px`,
     });
 
-    const onPointerMove = (e: PointerEvent) => {
-      const delta = e.clientX - startX;
-      const newWidth = Math.max(30, startWidth + delta);
-      const currentRect = container.getBoundingClientRect();
-      setResizeIndicatorStyle({
-        display: "block",
-        left: `${th.getBoundingClientRect().left - currentRect.left + container.scrollLeft + newWidth}px`,
-        top: "0",
-        height: `${container.scrollHeight}px`,
-      });
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      const delta = e.clientX - startX;
-      // 실제 드래그가 발생한 경우에만 너비 저장 (더블클릭 시 DOM 재생성으로 dblclick 유실 방지)
-      if (delta !== 0) {
+    createPointerDrag(target, event.pointerId, {
+      onMove(e) {
+        const delta = e.clientX - startX;
         const newWidth = Math.max(30, startWidth + delta);
-        saveColumnWidth(colKey, `${newWidth}px`);
-      }
-      setResizeIndicatorStyle({ display: "none" });
-      target.removeEventListener("pointermove", onPointerMove);
-      target.removeEventListener("pointerup", onPointerUp);
-    };
-
-    target.addEventListener("pointermove", onPointerMove);
-    target.addEventListener("pointerup", onPointerUp);
+        const currentRect = container.getBoundingClientRect();
+        setResizeIndicatorStyle({
+          display: "block",
+          left: `${th.getBoundingClientRect().left - currentRect.left + container.scrollLeft + newWidth}px`,
+          top: "0",
+          height: `${container.scrollHeight}px`,
+        });
+      },
+      onEnd(e) {
+        const delta = e.clientX - startX;
+        // 실제 드래그가 발생한 경우에만 너비 저장 (더블클릭 시 DOM 재생성으로 dblclick 유실 방지)
+        if (delta !== 0) {
+          const newWidth = Math.max(30, startWidth + delta);
+          saveColumnWidth(colKey, `${newWidth}px`);
+        }
+        setResizeIndicatorStyle({ display: "none" });
+      },
+    });
   }
 
   function onResizerDoubleClick(colKey: string): void {
@@ -567,7 +563,6 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   function onReorderPointerDown(e: PointerEvent, item: T): void {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
-    target.setPointerCapture(e.pointerId);
 
     const tableEl = target.closest("table")!;
     const tbody = tableEl.querySelector("tbody")!;
@@ -575,114 +570,110 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
     setDragState({ draggingItem: item, targetItem: null, position: null });
 
-    const onPointerMove = (ev: PointerEvent) => {
-      let foundTarget: T | null = null;
-      let foundPosition: "before" | "after" | "inside" | null = null;
+    createPointerDrag(target, e.pointerId, {
+      onMove(ev) {
+        let foundTarget: T | null = null;
+        let foundPosition: "before" | "after" | "inside" | null = null;
 
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const rect = row.getBoundingClientRect();
-        if (ev.clientY < rect.top || ev.clientY > rect.bottom) continue;
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const rect = row.getBoundingClientRect();
+          if (ev.clientY < rect.top || ev.clientY > rect.bottom) continue;
 
-        if (i >= displayItems().length) break;
-        const flat = displayItems()[i];
-        if (flat.item === item) break;
-
-        // 자기 자신의 하위 항목으로는 드롭 불가
-        if (isDescendant(item, flat.item)) break;
-
-        const relY = ev.clientY - rect.top;
-        const third = rect.height / 3;
-
-        if (relY < third) {
-          foundPosition = "before";
-        } else if (relY > third * 2) {
-          foundPosition = "after";
-        } else {
-          foundPosition = local.getChildren
-            ? "inside"
-            : relY < rect.height / 2
-              ? "before"
-              : "after";
-        }
-        foundTarget = flat.item;
-        break;
-      }
-
-      setDragState({ draggingItem: item, targetItem: foundTarget, position: foundPosition });
-
-      // 인디케이터 DOM 업데이트
-      for (let i = 0; i < rows.length; i++) {
-        rows[i].removeAttribute("data-dragging");
-        rows[i].removeAttribute("data-drag-over");
-
-        if (i < displayItems().length) {
+          if (i >= displayItems().length) break;
           const flat = displayItems()[i];
-          if (flat.item === item) {
-            rows[i].setAttribute("data-dragging", "");
+          if (flat.item === item) break;
+
+          // 자기 자신의 하위 항목으로는 드롭 불가
+          if (isDescendant(item, flat.item)) break;
+
+          const relY = ev.clientY - rect.top;
+          const third = rect.height / 3;
+
+          if (relY < third) {
+            foundPosition = "before";
+          } else if (relY > third * 2) {
+            foundPosition = "after";
+          } else {
+            foundPosition = local.getChildren
+              ? "inside"
+              : relY < rect.height / 2
+                ? "before"
+                : "after";
           }
-          if (flat.item === foundTarget && foundPosition === "inside") {
-            rows[i].setAttribute("data-drag-over", "inside");
+          foundTarget = flat.item;
+          break;
+        }
+
+        setDragState({ draggingItem: item, targetItem: foundTarget, position: foundPosition });
+
+        // 인디케이터 DOM 업데이트
+        for (let i = 0; i < rows.length; i++) {
+          rows[i].removeAttribute("data-dragging");
+          rows[i].removeAttribute("data-drag-over");
+
+          if (i < displayItems().length) {
+            const flat = displayItems()[i];
+            if (flat.item === item) {
+              rows[i].setAttribute("data-dragging", "");
+            }
+            if (flat.item === foundTarget && foundPosition === "inside") {
+              rows[i].setAttribute("data-drag-over", "inside");
+            }
           }
         }
-      }
 
-      // before/after 인디케이터
-      const indicatorEl = tableEl
-        .closest("[data-sheet-scroll]")
-        ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
-      if (indicatorEl) {
-        if (foundTarget != null && foundPosition != null && foundPosition !== "inside") {
-          const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
-          if (targetIdx >= 0) {
-            const targetRow = rows[targetIdx];
-            const containerRect = tableEl.closest("[data-sheet-scroll]")!.getBoundingClientRect();
-            const rowRect = targetRow.getBoundingClientRect();
-            const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
+        // before/after 인디케이터
+        const indicatorEl = tableEl
+          .closest("[data-sheet-scroll]")
+          ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+        if (indicatorEl) {
+          if (foundTarget != null && foundPosition != null && foundPosition !== "inside") {
+            const targetIdx = displayItems().findIndex((f) => f.item === foundTarget);
+            if (targetIdx >= 0) {
+              const targetRow = rows[targetIdx];
+              const containerRect = tableEl.closest("[data-sheet-scroll]")!.getBoundingClientRect();
+              const rowRect = targetRow.getBoundingClientRect();
+              const scrollEl = tableEl.closest("[data-sheet-scroll]") as HTMLElement;
 
-            const top =
-              foundPosition === "before"
-                ? rowRect.top - containerRect.top + scrollEl.scrollTop
-                : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
+              const top =
+                foundPosition === "before"
+                  ? rowRect.top - containerRect.top + scrollEl.scrollTop
+                  : rowRect.bottom - containerRect.top + scrollEl.scrollTop;
 
-            indicatorEl.style.display = "block";
-            indicatorEl.style.top = `${top}px`;
+              indicatorEl.style.display = "block";
+              indicatorEl.style.top = `${top}px`;
+            }
+          } else {
+            indicatorEl.style.display = "none";
           }
-        } else {
+        }
+      },
+      onEnd() {
+        const state = dragState();
+        if (state?.targetItem != null && state.position != null) {
+          local.onItemsReorder?.({
+            item: state.draggingItem,
+            targetItem: state.targetItem,
+            position: state.position,
+          } as DataSheetReorderEvent<T>);
+        }
+
+        // 클린업
+        for (const row of rows) {
+          row.removeAttribute("data-dragging");
+          row.removeAttribute("data-drag-over");
+        }
+        const indicatorEl = tableEl
+          .closest("[data-sheet-scroll]")
+          ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
+        if (indicatorEl) {
           indicatorEl.style.display = "none";
         }
-      }
-    };
 
-    const onPointerUp = () => {
-      const state = dragState();
-      if (state?.targetItem != null && state.position != null) {
-        local.onItemsReorder?.({
-          item: state.draggingItem,
-          targetItem: state.targetItem,
-          position: state.position,
-        } as DataSheetReorderEvent<T>);
-      }
-
-      // 클린업
-      for (const row of rows) {
-        row.removeAttribute("data-dragging");
-        row.removeAttribute("data-drag-over");
-      }
-      const indicatorEl = tableEl
-        .closest("[data-sheet-scroll]")
-        ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
-      if (indicatorEl) {
-        indicatorEl.style.display = "none";
-      }
-
-      setDragState(null);
-      target.removeEventListener("pointermove", onPointerMove);
-      target.removeEventListener("pointerup", onPointerUp);
-    };
-
-    target.addEventListener("pointermove", onPointerMove);
-    target.addEventListener("pointerup", onPointerUp);
+        setDragState(null);
+      },
+    });
   }
 
   // #region Keyboard Navigation (Enter/Shift+Enter로 행 이동)

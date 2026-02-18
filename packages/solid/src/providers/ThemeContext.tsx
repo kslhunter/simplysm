@@ -85,7 +85,7 @@ export function useTheme(): ThemeContextValue {
  * ```
  */
 export const ThemeProvider: ParentComponent = (props) => {
-  const [mode, setMode] = useSyncConfig<ThemeMode>("theme", "system");
+  const [mode, setMode, ready] = useSyncConfig<ThemeMode>("theme", "system");
 
   // OS 다크모드 감지
   const prefersDark = createMediaQuery("(prefers-color-scheme: dark)");
@@ -109,6 +109,7 @@ export const ThemeProvider: ParentComponent = (props) => {
 
   // <html>에 dark 클래스 토글
   createEffect(() => {
+    if (!ready()) return; // Don't apply theme until storage has been read
     const isDark = resolvedTheme() === "dark";
     document.documentElement.classList.toggle("dark", isDark);
   });

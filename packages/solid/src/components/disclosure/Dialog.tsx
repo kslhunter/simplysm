@@ -14,6 +14,7 @@ import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
+import { createPointerDrag } from "../../hooks/createPointerDrag";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
@@ -256,8 +257,6 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     if ((event.target as HTMLElement).closest("button")) return;
 
     const target = event.currentTarget as HTMLElement;
-    target.setPointerCapture(event.pointerId);
-
     const dialogEl = dialogRef;
     const wrapperEl = wrapperRef;
 
@@ -266,42 +265,37 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    const doDrag = (e: PointerEvent): void => {
-      e.stopPropagation();
-      e.preventDefault();
+    createPointerDrag(target, event.pointerId, {
+      onMove(e) {
+        e.stopPropagation();
+        e.preventDefault();
 
-      dialogEl.style.position = "absolute";
-      dialogEl.style.left = `${startLeft + e.clientX - startX}px`;
-      dialogEl.style.top = `${startTop + e.clientY - startY}px`;
-      dialogEl.style.right = "auto";
-      dialogEl.style.bottom = "auto";
-      dialogEl.style.margin = "0";
+        dialogEl.style.position = "absolute";
+        dialogEl.style.left = `${startLeft + e.clientX - startX}px`;
+        dialogEl.style.top = `${startTop + e.clientY - startY}px`;
+        dialogEl.style.right = "auto";
+        dialogEl.style.bottom = "auto";
+        dialogEl.style.margin = "0";
 
-      // 화면 밖 방지
-      if (dialogEl.offsetLeft > wrapperEl.offsetWidth - 100) {
-        dialogEl.style.left = wrapperEl.offsetWidth - 100 + "px";
-      }
-      if (dialogEl.offsetTop > wrapperEl.offsetHeight - 100) {
-        dialogEl.style.top = wrapperEl.offsetHeight - 100 + "px";
-      }
-      if (dialogEl.offsetTop < 0) {
-        dialogEl.style.top = "0";
-      }
-      if (dialogEl.offsetLeft < -dialogEl.offsetWidth + 100) {
-        dialogEl.style.left = -dialogEl.offsetWidth + 100 + "px";
-      }
-    };
-
-    const stopDrag = (e: PointerEvent): void => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      target.removeEventListener("pointermove", doDrag);
-      target.removeEventListener("pointerup", stopDrag);
-    };
-
-    target.addEventListener("pointermove", doDrag);
-    target.addEventListener("pointerup", stopDrag);
+        // 화면 밖 방지
+        if (dialogEl.offsetLeft > wrapperEl.offsetWidth - 100) {
+          dialogEl.style.left = wrapperEl.offsetWidth - 100 + "px";
+        }
+        if (dialogEl.offsetTop > wrapperEl.offsetHeight - 100) {
+          dialogEl.style.top = wrapperEl.offsetHeight - 100 + "px";
+        }
+        if (dialogEl.offsetTop < 0) {
+          dialogEl.style.top = "0";
+        }
+        if (dialogEl.offsetLeft < -dialogEl.offsetWidth + 100) {
+          dialogEl.style.left = -dialogEl.offsetWidth + 100 + "px";
+        }
+      },
+      onEnd(e) {
+        e.stopPropagation();
+        e.preventDefault();
+      },
+    });
   };
 
   // 리사이즈
@@ -310,8 +304,6 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     if (!dialogRef) return;
 
     const target = event.currentTarget as HTMLElement;
-    target.setPointerCapture(event.pointerId);
-
     const dialogEl = dialogRef;
 
     const startX = event.clientX;
@@ -321,47 +313,42 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    const doDrag = (e: PointerEvent): void => {
-      e.stopPropagation();
-      e.preventDefault();
+    createPointerDrag(target, event.pointerId, {
+      onMove(e) {
+        e.stopPropagation();
+        e.preventDefault();
 
-      if (direction === "top" || direction === "top-right" || direction === "top-left") {
-        if (dialogEl.style.position === "absolute") {
-          dialogEl.style.top = startTop + (e.clientY - startY) + "px";
-          dialogEl.style.bottom = "auto";
+        if (direction === "top" || direction === "top-right" || direction === "top-left") {
+          if (dialogEl.style.position === "absolute") {
+            dialogEl.style.top = startTop + (e.clientY - startY) + "px";
+            dialogEl.style.bottom = "auto";
+          }
+          dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), local.minHeight ?? 0)}px`;
         }
-        dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), local.minHeight ?? 0)}px`;
-      }
-      if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
-        dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, local.minHeight ?? 0)}px`;
-      }
-      if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        dialogEl.style.width = `${Math.max(
-          startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
-          local.minWidth ?? 0,
-        )}px`;
-      }
-      if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
-        if (dialogEl.style.position === "absolute") {
-          dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
+        if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
+          dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, local.minHeight ?? 0)}px`;
         }
-        dialogEl.style.width = `${Math.max(
-          startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
-          local.minWidth ?? 0,
-        )}px`;
-      }
-    };
-
-    const stopDrag = (e: PointerEvent): void => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      target.removeEventListener("pointermove", doDrag);
-      target.removeEventListener("pointerup", stopDrag);
-    };
-
-    target.addEventListener("pointermove", doDrag);
-    target.addEventListener("pointerup", stopDrag);
+        if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
+          dialogEl.style.width = `${Math.max(
+            startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+            local.minWidth ?? 0,
+          )}px`;
+        }
+        if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
+          if (dialogEl.style.position === "absolute") {
+            dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
+          }
+          dialogEl.style.width = `${Math.max(
+            startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+            local.minWidth ?? 0,
+          )}px`;
+        }
+      },
+      onEnd(e) {
+        e.stopPropagation();
+        e.preventDefault();
+      },
+    });
   };
 
   // dialog 인라인 스타일 계산

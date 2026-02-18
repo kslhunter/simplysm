@@ -47,11 +47,11 @@ const KanbanLaneTools: ParentComponent = (props) => (
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
-export interface KanbanCardProps extends Omit<
+export interface KanbanCardProps<TCardValue = unknown> extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   "children" | "draggable"
 > {
-  value?: unknown;
+  value?: TCardValue;
   draggable?: boolean;
   selectable?: boolean;
   contentClass?: string;
@@ -226,8 +226,11 @@ const KanbanCard: ParentComponent<KanbanCardProps> = (props) => {
 
 // ─── KanbanLane ──────────────────────────────────────────────────
 
-export interface KanbanLaneProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-  value?: unknown;
+export interface KanbanLaneProps<TLaneValue = unknown> extends Omit<
+  JSX.HTMLAttributes<HTMLDivElement>,
+  "children"
+> {
+  value?: TLaneValue;
   busy?: boolean;
   collapsible?: boolean;
   collapsed?: boolean;
@@ -482,20 +485,22 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
 
 // ─── Kanban (Board) ──────────────────────────────────────────────
 
-export interface KanbanProps extends Omit<
+export interface KanbanProps<TCardValue = unknown, TLaneValue = unknown> extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   "children" | "onDrop"
 > {
-  onDrop?: (info: KanbanDropInfo) => void;
-  selectedValues?: unknown[];
-  onSelectedValuesChange?: (values: unknown[]) => void;
+  onDrop?: (info: KanbanDropInfo<TLaneValue, TCardValue>) => void;
+  selectedValues?: TCardValue[];
+  onSelectedValuesChange?: (values: TCardValue[]) => void;
   children?: JSX.Element;
 }
 
 const boardBaseClass = clsx("inline-flex flex-nowrap", "h-full", "gap-4");
 
 interface KanbanComponent {
-  (props: KanbanProps): JSX.Element;
+  <TCardValue = unknown, TLaneValue = unknown>(
+    props: KanbanProps<TCardValue, TLaneValue>,
+  ): JSX.Element;
   Lane: typeof KanbanLane;
   Card: typeof KanbanCard;
   LaneTitle: typeof KanbanLaneTitle;

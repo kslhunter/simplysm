@@ -20,6 +20,7 @@ import { ripple } from "../../../directives/ripple";
 import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createItemTemplate } from "../../../hooks/createItemTemplate";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 
@@ -70,33 +71,9 @@ const SelectAction: ParentComponent<SelectActionProps> = (props) => {
  */
 const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.children}</div>;
 
-/**
- * items prop 방식일 때 아이템 렌더링 템플릿
- *
- * 함수 참조를 저장하기 위해 전역 Map 사용
- */
-interface SelectItemTemplateProps<TValue> {
-  children: (item: TValue, index: number, depth: number) => JSX.Element;
-}
-
-// 템플릿 함수를 저장하는 전역 Map (WeakMap 사용하여 메모리 누수 방지)
-const templateFnMap = new WeakMap<
-  HTMLElement,
-  (item: unknown, index: number, depth: number) => JSX.Element
->();
-
-const SelectItemTemplate = <T,>(props: SelectItemTemplateProps<T>) => (
-  <span
-    ref={(el) => {
-      templateFnMap.set(
-        el,
-        props.children as (item: unknown, index: number, depth: number) => JSX.Element,
-      );
-    }}
-    data-select-item-template
-    style={{ display: "none" }}
-  />
-);
+const { TemplateSlot: SelectItemTemplate, getTemplate: getSelectItemTemplate } = createItemTemplate<
+  [item: unknown, index: number, depth: number]
+>("data-select-item-template");
 
 // Props 정의
 
@@ -333,10 +310,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     const getItemTemplate = ():
       | ((item: T, index: number, depth: number) => JSX.Element)
       | undefined => {
-      const templateSlots = slots().selectItemTemplate;
-      if (templateSlots.length === 0) return undefined;
-      // WeakMap에서 함수 참조 가져오기
-      return templateFnMap.get(templateSlots[0]) as
+      return getSelectItemTemplate(slots().selectItemTemplate) as
         | ((item: T, index: number, depth: number) => JSX.Element)
         | undefined;
     };
