@@ -20,9 +20,9 @@ function AppRoot() {
 
   onMount(async () => {
     await serviceClient.connect("main", { port: 3000 });
-    useSyncStorage()!.configure(myStorageAdapter);
-    useLogger().configure(myLogAdapter);
-    useSharedData().configure(definitions);
+    useSyncStorage()!.configure((origin) => myStorageAdapter);
+    useLogger().configure((origin) => myLogAdapter);
+    useSharedData().configure((origin) => definitions);
   });
 }
 ```
@@ -124,7 +124,7 @@ interface SharedDataDefinition<TData> {
 |-----------------|------|-------------|
 | `wait` | `() => Promise<void>` | Wait until all initial fetches complete |
 | `busy` | `Accessor<boolean>` | True while any fetch is in progress |
-| `configure` | `(definitions) => void` | Set up data subscriptions (call once after service client connects) |
+| `configure` | `(fn: (origin) => definitions) => void` | Set up data subscriptions via decorator function (call once after service client connects) |
 
 **SharedDataChangeEvent:**
 

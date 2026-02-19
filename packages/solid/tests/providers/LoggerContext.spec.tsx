@@ -6,7 +6,6 @@ import {
   LoggerContext,
   LoggerProvider,
   useLogAdapter,
-  type LogAdapter,
   type LoggerContextValue,
 } from "../../src/providers/LoggerContext";
 import { useContext } from "solid-js";
@@ -41,13 +40,11 @@ describe("LoggerContext", () => {
     expect(received).toBeDefined();
     expect(typeof received!.adapter).toBe("function");
     expect(typeof received!.configure).toBe("function");
-    expect(received!.adapter()).toBeUndefined();
+    expect(received!.adapter()).toBeDefined();
   });
 
-  it("configure()로 adapter를 설정할 수 있다", () => {
-    const mockAdapter: LogAdapter = {
-      write: vi.fn(),
-    };
+  it("configure()로 decorator function을 통해 adapter를 설정할 수 있다", () => {
+    const writeSpy = vi.fn();
 
     let received: LoggerContextValue | undefined;
 
@@ -62,8 +59,19 @@ describe("LoggerContext", () => {
       </LoggerProvider>
     ));
 
-    expect(received!.adapter()).toBeUndefined();
-    received!.configure(mockAdapter);
-    expect(received!.adapter()).toBe(mockAdapter);
+    // Before configure: default adapter exists (consola-based)
+    expect(received!.adapter()).toBeDefined();
+
+    received!.configure((origin) => ({
+      write: (...args) => {
+        writeSpy(...args);
+        void origin.write(...args);
+      },
+    }));
+
+    const adapter = received!.adapter();
+    expect(adapter).toBeDefined();
+    void adapter.write("info", "test");
+    expect(writeSpy).toHaveBeenCalledWith("info", "test");
   });
 });

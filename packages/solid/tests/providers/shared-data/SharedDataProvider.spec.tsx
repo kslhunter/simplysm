@@ -65,7 +65,7 @@ function ConfigureSharedData(props: {
   children: any;
 }) {
   const shared = useSharedData<TestData>();
-  shared.configure(props.definitions);
+  shared.configure(() => props.definitions);
   return <>{props.children}</>;
 }
 

@@ -82,6 +82,21 @@ logger.warn("deprecation notice");
 | `warn` | `(...args: unknown[]) => void` | Log message (warning) |
 | `error` | `(...args: unknown[]) => void` | Log message (error) |
 
+**Configuring a custom adapter (decorator pattern):**
+
+```tsx
+// Replace default consola adapter
+useLogger().configure((origin) => myLogAdapter);
+
+// Wrap default adapter (chaining)
+useLogger().configure((origin) => ({
+  write(severity, ...data) {
+    sendToServer(severity, ...data);
+    origin.write(severity, ...data);  // also log to consola
+  },
+}));
+```
+
 **Global error capturing:** `ErrorLoggerProvider` captures uncaught errors (`window.onerror`) and unhandled promise rejections (`unhandledrejection`) and logs them via `useLogger`.
 
 ---

@@ -30,14 +30,14 @@ import { useLogger } from "../../hooks/useLogger";
  * </SharedDataProvider>
  *
  * // 자식 컴포넌트에서 나중에 설정:
- * useSharedData().configure({
+ * useSharedData().configure(() => ({
  *   users: {
  *     serviceKey: "main",
  *     fetch: async (changeKeys) => fetchUsers(changeKeys),
  *     getKey: (item) => item.id,
  *     orderBy: [[(item) => item.name, "asc"]],
  *   },
- * });
+ * }));
  * ```
  */
 export function SharedDataProvider(props: { children: JSX.Element }): JSX.Element {
@@ -115,11 +115,17 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     await waitUntil(() => busyCount() <= 0);
   }
 
-  function configure(definitions: Record<string, SharedDataDefinition<unknown>>): void {
+  function configure(
+    fn: (
+      origin: Record<string, SharedDataDefinition<unknown>>,
+    ) => Record<string, SharedDataDefinition<unknown>>,
+  ): void {
     if (configured) {
       throw new Error("SharedDataProvider: configure()는 1회만 호출할 수 있습니다");
     }
     configured = true;
+
+    const definitions = fn({});
     currentDefinitions = definitions;
 
     for (const [name, def] of Object.entries(definitions)) {

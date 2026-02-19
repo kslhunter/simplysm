@@ -9,7 +9,7 @@ export interface Logger {
   warn: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
   /** LogAdapter를 나중에 주입. LoggerProvider 내부에서만 사용 가능 */
-  configure: (adapter: LogAdapter) => void;
+  configure: (fn: (origin: LogAdapter) => LogAdapter) => void;
 }
 
 export function useLogger(): Logger {
@@ -32,11 +32,11 @@ export function useLogger(): Logger {
     info: createLogFunction("info"),
     warn: createLogFunction("warn"),
     error: createLogFunction("error"),
-    configure: (adapter: LogAdapter) => {
+    configure: (fn: (origin: LogAdapter) => LogAdapter) => {
       if (!loggerCtx) {
         throw new Error("configure()는 LoggerProvider 내부에서만 사용할 수 있습니다");
       }
-      loggerCtx.configure(adapter);
+      loggerCtx.configure(fn);
     },
   };
 }

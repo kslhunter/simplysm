@@ -34,9 +34,9 @@ export type { BusyVariant };
  *   const serviceClient = useServiceClient();
  *   onMount(async () => {
  *     await serviceClient.connect("main", { port: 3000 });
- *     useSyncStorage()!.configure(myStorageAdapter);
- *     useLogger().configure(myLogAdapter);
- *     useSharedData().configure(definitions);
+ *     useSyncStorage()!.configure((origin) => myStorageAdapter);
+ *     useLogger().configure((origin) => myLogAdapter);
+ *     useSharedData().configure((origin) => definitions);
  *   });
  * }
  * ```

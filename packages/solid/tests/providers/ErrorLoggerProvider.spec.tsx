@@ -6,7 +6,7 @@ import { useLogger } from "../../src/hooks/useLogger";
 
 /** LoggerProvider 안에서 adapter를 configure한 뒤 children을 렌더하는 헬퍼 */
 function ConfigureLogger(props: { adapter: LogAdapter; children: any }) {
-  useLogger().configure(props.adapter);
+  useLogger().configure(() => props.adapter);
   return <>{props.children}</>;
 }
 

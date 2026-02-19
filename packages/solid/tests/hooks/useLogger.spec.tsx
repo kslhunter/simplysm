@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, renderHook } from "@solidjs/testing-library";
 import { useLogger } from "../../src/hooks/useLogger";
-import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerContext";
+import { LoggerProvider } from "../../src/providers/LoggerContext";
 import { consola } from "consola";
 
 function loggerWrapper() {
@@ -58,12 +58,11 @@ describe("useLogger", () => {
 
   it("should use adapter after configure() is called", () => {
     const writeSpy = vi.fn();
-    const adapter: LogAdapter = { write: writeSpy };
     const consolaSpy = vi.spyOn(consola, "info").mockImplementation(() => {});
 
     const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
 
-    result.configure(adapter);
+    result.configure(() => ({ write: writeSpy }));
     result.info("test message", { key: "value" });
 
     expect(writeSpy).toHaveBeenCalledWith("info", "test message", { key: "value" });
@@ -72,10 +71,9 @@ describe("useLogger", () => {
 
   it("should pass all severity levels to adapter after configure()", () => {
     const writeSpy = vi.fn();
-    const adapter: LogAdapter = { write: writeSpy };
 
     const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
-    result.configure(adapter);
+    result.configure(() => ({ write: writeSpy }));
 
     result.log("a");
     result.info("b");
@@ -90,10 +88,29 @@ describe("useLogger", () => {
 
   it("should throw when configure() is called without LoggerProvider", () => {
     const { result } = renderHook(() => useLogger());
-    const adapter: LogAdapter = { write: vi.fn() };
 
-    expect(() => result.configure(adapter)).toThrow(
+    expect(() => result.configure(() => ({ write: vi.fn() }))).toThrow(
       "configure()는 LoggerProvider 내부에서만 사용할 수 있습니다",
     );
+  });
+
+  it("should chain decorators — origin receives the previous adapter", () => {
+    const firstSpy = vi.fn();
+    const secondSpy = vi.fn();
+
+    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
+
+    result.configure(() => ({ write: firstSpy }));
+    result.configure((origin) => ({
+      write: (severity, ...data) => {
+        secondSpy(severity, ...data);
+        void origin.write(severity, ...data);
+      },
+    }));
+
+    result.info("chained");
+
+    expect(secondSpy).toHaveBeenCalledWith("info", "chained");
+    expect(firstSpy).toHaveBeenCalledWith("info", "chained");
   });
 });

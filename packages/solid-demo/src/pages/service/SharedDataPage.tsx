@@ -132,7 +132,7 @@ const ConnectedSharedDataDemo: Component = () => {
     try {
       await serviceClient.connect("main", { port: 40081 });
 
-      sharedData.configure({
+      sharedData.configure(() => ({
         user: {
           serviceKey: "main",
           fetch: async (changeKeys) => {
@@ -155,7 +155,7 @@ const ConnectedSharedDataDemo: Component = () => {
           getKey: (item) => item.id,
           orderBy: [[(item) => item.name, "asc"]],
         },
-      });
+      }));
 
       setConnected(true);
     } catch (err) {

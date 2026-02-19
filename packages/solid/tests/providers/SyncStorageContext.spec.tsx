@@ -6,7 +6,6 @@ import {
   SyncStorageContext,
   SyncStorageProvider,
   useSyncStorage,
-  type StorageAdapter,
   type SyncStorageContextValue,
 } from "../../src/providers/SyncStorageContext";
 import { useContext } from "solid-js";
@@ -41,15 +40,11 @@ describe("SyncStorageContext", () => {
     expect(received).toBeDefined();
     expect(typeof received!.adapter).toBe("function");
     expect(typeof received!.configure).toBe("function");
-    expect(received!.adapter()).toBeUndefined();
+    expect(received!.adapter()).toBeDefined();
   });
 
-  it("configure()로 adapter를 설정할 수 있다", () => {
-    const mockStorage: StorageAdapter = {
-      getItem: vi.fn().mockResolvedValue(null),
-      setItem: vi.fn().mockResolvedValue(undefined),
-      removeItem: vi.fn().mockResolvedValue(undefined),
-    };
+  it("configure()로 decorator function을 통해 adapter를 설정할 수 있다", () => {
+    const mockGetItem = vi.fn().mockResolvedValue(null);
 
     let received: SyncStorageContextValue | undefined;
 
@@ -64,8 +59,19 @@ describe("SyncStorageContext", () => {
       </SyncStorageProvider>
     ));
 
-    expect(received!.adapter()).toBeUndefined();
-    received!.configure(mockStorage);
-    expect(received!.adapter()).toBe(mockStorage);
+    // Default adapter exists (localStorage-based)
+    expect(received!.adapter()).toBeDefined();
+
+    received!.configure((origin) => ({
+      getItem: mockGetItem,
+      setItem: origin.setItem,
+      removeItem: origin.removeItem,
+    }));
+
+    const adapter = received!.adapter();
+    expect(adapter).toBeDefined();
+    // Custom getItem is used
+    void adapter.getItem("test");
+    expect(mockGetItem).toHaveBeenCalledWith("test");
   });
 });

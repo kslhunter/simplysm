@@ -10,7 +10,7 @@ import {
 
 /** SyncStorageProvider 안에서 adapter를 configure한 뒤 children을 렌더하는 헬퍼 */
 function ConfigureStorage(props: { storage: StorageAdapter; children: any }) {
-  useSyncStorage()!.configure(props.storage);
+  useSyncStorage()!.configure(() => props.storage);
   return <>{props.children}</>;
 }
 
@@ -272,7 +272,7 @@ describe("useSyncConfig", () => {
     function TestComponent() {
       [value, , ready] = useSyncConfig("test-key", "default");
       const syncStorage = useSyncStorage()!;
-      doConfiguration = () => syncStorage.configure(mockSyncStorage);
+      doConfiguration = () => syncStorage.configure(() => mockSyncStorage);
       return <div>{value()}</div>;
     }
 
@@ -284,8 +284,10 @@ describe("useSyncConfig", () => {
       </ConfigProvider>
     ));
 
-    // Initially: localStorage fallback, ready=true
-    expect(ready()).toBe(true);
+    // Initially: default adapter (localStorage-based), wait for async read
+    await vi.waitFor(() => {
+      expect(ready()).toBe(true);
+    });
     expect(value()).toBe("default");
 
     // Configure mid-session

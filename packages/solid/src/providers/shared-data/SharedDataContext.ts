@@ -48,10 +48,14 @@ export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   wait: () => Promise<void>;
   /** fetch 진행 중 여부 */
   busy: Accessor<boolean>;
-  /** definitions를 설정하여 데이터 구독 시작 */
-  configure: (definitions: {
-    [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]>;
-  }) => void;
+  /** definitions를 설정하여 데이터 구독 시작 (decorator 패턴) */
+  configure: (
+    fn: (origin: {
+      [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]>;
+    }) => {
+      [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]>;
+    },
+  ) => void;
 };
 
 /** 공유 데이터 Context */
