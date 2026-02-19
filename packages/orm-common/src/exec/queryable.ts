@@ -1850,29 +1850,23 @@ interface QueryableMetaJoin {
   isSingle: boolean;
 }
 
-type IsAny<TType> = 0 extends 1 & TType ? true : false;
-
-export type QueryableRecord<TData extends DataRecord> =
-  IsAny<TData> extends true
-    ? Record<string, any>
-    : {
-        // -? strips optional modifier so query column access never has spurious | undefined
-        [K in keyof TData]-?: TData[K] extends ColumnPrimitive
-          ? ExprUnit<TData[K]>
-          : TData[K] extends (infer U)[]
-            ? U extends DataRecord
-              ? QueryableRecord<U>[]
-              : never
-            : TData[K] extends (infer U)[] | undefined
-              ? U extends DataRecord
-                ? NullableQueryableRecord<U>[] | undefined
-                : never
-              : TData[K] extends DataRecord
-                ? QueryableRecord<TData[K]>
-                : TData[K] extends DataRecord | undefined
-                  ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
-                  : never;
-      };
+export type QueryableRecord<TData extends DataRecord> = {
+  [K in keyof TData]: TData[K] extends ColumnPrimitive
+    ? ExprUnit<TData[K]>
+    : TData[K] extends (infer U)[]
+      ? U extends DataRecord
+        ? QueryableRecord<U>[]
+        : never
+      : TData[K] extends (infer U)[] | undefined
+        ? U extends DataRecord
+          ? NullableQueryableRecord<U>[] | undefined
+          : never
+        : TData[K] extends DataRecord
+          ? QueryableRecord<TData[K]>
+          : TData[K] extends DataRecord | undefined
+            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            : never;
+};
 
 export type QueryableWriteRecord<TData extends DataRecord> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive
@@ -1892,26 +1886,24 @@ export type QueryableWriteRecord<TData extends DataRecord> = {
             : never;
 };
 
-export type NullableQueryableRecord<TData extends DataRecord> =
-  IsAny<TData> extends true
-    ? Record<string, any>
-    : {
-        [K in keyof TData]-?: TData[K] extends ColumnPrimitive
-          ? ExprUnit<TData[K] | undefined>
-          : TData[K] extends (infer U)[]
-            ? U extends DataRecord
-              ? NullableQueryableRecord<U>[]
-              : never
-            : TData[K] extends (infer U)[] | undefined
-              ? U extends DataRecord
-                ? NullableQueryableRecord<U>[] | undefined
-                : never
-              : TData[K] extends DataRecord
-                ? NullableQueryableRecord<TData[K]>
-                : TData[K] extends DataRecord | undefined
-                  ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
-                  : never;
-      };
+export type NullableQueryableRecord<TData extends DataRecord> = {
+  // Primitive — always | undefined (LEFT JOIN NULL propagation)
+  [K in keyof TData]: TData[K] extends ColumnPrimitive
+    ? ExprUnit<TData[K] | undefined>
+    : TData[K] extends (infer U)[]
+      ? U extends DataRecord
+        ? NullableQueryableRecord<U>[]
+        : never
+      : TData[K] extends (infer U)[] | undefined
+        ? U extends DataRecord
+          ? NullableQueryableRecord<U>[] | undefined
+          : never
+        : TData[K] extends DataRecord
+          ? NullableQueryableRecord<TData[K]>
+          : TData[K] extends DataRecord | undefined
+            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            : never;
+};
 
 export type NullableQueryableWriteRecord<TData extends DataRecord> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive

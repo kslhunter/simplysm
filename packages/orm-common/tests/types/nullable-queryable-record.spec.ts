@@ -2,7 +2,11 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { User } from "../setup/models/User";
-import type { NullableQueryableRecord, QueryableRecord } from "../../src/exec/queryable";
+import type {
+  NullableQueryableRecord,
+  QueryableRecord,
+  QueryableWriteRecord,
+} from "../../src/exec/queryable";
 
 describe("NullableQueryableRecord type inference", () => {
   it("optional relation (joinSingle) fields should be ExprUnit<T | undefined>", () => {
@@ -42,14 +46,18 @@ describe("NullableQueryableRecord type inference", () => {
     expect(q).toBeDefined();
   });
 
-  it("QueryableRecord strips optional modifier from source properties", () => {
+  it("QueryableWriteRecord preserves optional modifier from source properties", () => {
     type OptionalData = { id?: number; name: string };
-    type Result = QueryableRecord<OptionalData>;
+    type WriteResult = QueryableWriteRecord<OptionalData>;
 
-    // id was optional in source, but QueryableRecord strips ?
-    // so accessing id always gives ExprUnit, never | undefined from optionality
-    expectTypeOf<Result["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
-    expectTypeOf<Result["name"]>().toMatchTypeOf<{ $infer: string }>();
+    // QueryableWriteRecord preserves optional keys (for update/insert operations)
+    expectTypeOf<Required<WriteResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
+    expectTypeOf<WriteResult["name"]>().toMatchTypeOf<{ $infer: string }>();
+
+    // QueryableRecord also preserves optionality (homomorphic mapped type)
+    type ReadResult = QueryableRecord<OptionalData>;
+    expectTypeOf<Required<ReadResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
+    expectTypeOf<ReadResult["name"]>().toMatchTypeOf<{ $infer: string }>();
 
     expect(true).toBe(true);
   });
