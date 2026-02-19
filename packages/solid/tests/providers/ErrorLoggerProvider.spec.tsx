@@ -2,6 +2,13 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { ErrorLoggerProvider } from "../../src/providers/ErrorLoggerProvider";
 import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerContext";
+import { useLogger } from "../../src/hooks/useLogger";
+
+/** LoggerProvider 안에서 adapter를 configure한 뒤 children을 렌더하는 헬퍼 */
+function ConfigureLogger(props: { adapter: LogAdapter; children: any }) {
+  useLogger().configure(props.adapter);
+  return <>{props.children}</>;
+}
 
 describe("ErrorLoggerProvider", () => {
   afterEach(() => {
@@ -23,10 +30,12 @@ describe("ErrorLoggerProvider", () => {
     const adapter: LogAdapter = { write: writeSpy };
 
     render(() => (
-      <LoggerProvider adapter={adapter}>
-        <ErrorLoggerProvider>
-          <div />
-        </ErrorLoggerProvider>
+      <LoggerProvider>
+        <ConfigureLogger adapter={adapter}>
+          <ErrorLoggerProvider>
+            <div />
+          </ErrorLoggerProvider>
+        </ConfigureLogger>
       </LoggerProvider>
     ));
 
@@ -44,10 +53,12 @@ describe("ErrorLoggerProvider", () => {
     const adapter: LogAdapter = { write: writeSpy };
 
     render(() => (
-      <LoggerProvider adapter={adapter}>
-        <ErrorLoggerProvider>
-          <div />
-        </ErrorLoggerProvider>
+      <LoggerProvider>
+        <ConfigureLogger adapter={adapter}>
+          <ErrorLoggerProvider>
+            <div />
+          </ErrorLoggerProvider>
+        </ConfigureLogger>
       </LoggerProvider>
     ));
 

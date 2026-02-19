@@ -122,6 +122,7 @@ export * from "./providers/ServiceClientProvider";
 export * from "./providers/shared-data/SharedDataContext";
 export * from "./providers/shared-data/SharedDataProvider";
 export * from "./providers/shared-data/SharedDataChangeEvent";
+export * from "./providers/InitializeProvider";
 
 //#endregion
 

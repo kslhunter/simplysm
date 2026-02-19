@@ -9,8 +9,6 @@ import {
   type ServiceClientContextValue,
   NotificationContext,
   type NotificationContextValue,
-  ConfigContext,
-  type ConfigContextValue,
 } from "../../../src";
 
 interface TestData {
@@ -61,14 +59,14 @@ function createMockNotification(): NotificationContextValue {
   };
 }
 
-function createMockConfig(): ConfigContextValue {
-  return {
-    get: () => undefined,
-    set: vi.fn(),
-    localGet: () => undefined,
-    localSet: vi.fn(),
-    logger: { debug: vi.fn(), log: vi.fn(), warn: vi.fn(), error: vi.fn() },
-  };
+/** SharedDataProvider 안에서 configure()를 호출한 뒤 children을 렌더하는 헬퍼 */
+function ConfigureSharedData(props: {
+  definitions: { user: SharedDataDefinition<{ id: number; name: string }> };
+  children: any;
+}) {
+  const shared = useSharedData<TestData>();
+  shared.configure(props.definitions);
+  return <>{props.children}</>;
 }
 
 function TestConsumer(props: {
@@ -103,15 +101,15 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ConfigContext.Provider value={createMockConfig()}>
-        <NotificationContext.Provider value={createMockNotification()}>
-          <ServiceClientContext.Provider value={serviceClientValue}>
-            <SharedDataProvider<TestData> definitions={definitions}>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
               <TestConsumer />
-            </SharedDataProvider>
-          </ServiceClientContext.Provider>
-        </NotificationContext.Provider>
-      </ConfigContext.Provider>
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -140,19 +138,19 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ConfigContext.Provider value={createMockConfig()}>
-        <NotificationContext.Provider value={createMockNotification()}>
-          <ServiceClientContext.Provider value={serviceClientValue}>
-            <SharedDataProvider<TestData> definitions={definitions}>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
               <TestConsumer
                 onData={(s) => {
                   sharedRef = s;
                 }}
               />
-            </SharedDataProvider>
-          </ServiceClientContext.Provider>
-        </NotificationContext.Provider>
-      </ConfigContext.Provider>
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -186,19 +184,19 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ConfigContext.Provider value={createMockConfig()}>
-        <NotificationContext.Provider value={createMockNotification()}>
-          <ServiceClientContext.Provider value={serviceClientValue}>
-            <SharedDataProvider<TestData> definitions={definitions}>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
               <TestConsumer
                 onData={(s) => {
                   sharedRef = s;
                 }}
               />
-            </SharedDataProvider>
-          </ServiceClientContext.Provider>
-        </NotificationContext.Provider>
-      </ConfigContext.Provider>
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     await vi.waitFor(() => {
@@ -229,15 +227,15 @@ describe("SharedDataProvider", () => {
     };
 
     const result = render(() => (
-      <ConfigContext.Provider value={createMockConfig()}>
-        <NotificationContext.Provider value={createMockNotification()}>
-          <ServiceClientContext.Provider value={serviceClientValue}>
-            <SharedDataProvider<TestData> definitions={definitions}>
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
               <TestConsumer />
-            </SharedDataProvider>
-          </ServiceClientContext.Provider>
-        </NotificationContext.Provider>
-      </ConfigContext.Provider>
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
     ));
 
     // 로딩 중

@@ -17,35 +17,35 @@ import { useLogger } from "../../hooks/useLogger";
  * @remarks
  * - ServiceClientProvider와 NotificationProvider 내부에서 사용해야 함
  * - LoggerProvider가 있으면 fetch 실패를 로거에도 기록
- * - definitions의 각 key마다 서버 이벤트 리스너를 등록하여 실시간 동기화
+ * - configure() 호출 전: wait, busy, configure만 접근 가능. 데이터 접근 시 throw
+ * - configure() 호출 후: definitions의 각 key마다 서버 이벤트 리스너를 등록하여 실시간 동기화
  * - 동시 fetch 호출 시 version counter로 데이터 역전 방지
  * - fetch 실패 시 사용자에게 danger 알림 표시
  * - cleanup 시 모든 이벤트 리스너 자동 해제
  *
  * @example
  * ```tsx
- * const definitions = {
+ * <SharedDataProvider>
+ *   <App />
+ * </SharedDataProvider>
+ *
+ * // 자식 컴포넌트에서 나중에 설정:
+ * useSharedData().configure({
  *   users: {
  *     serviceKey: "main",
  *     fetch: async (changeKeys) => fetchUsers(changeKeys),
  *     getKey: (item) => item.id,
  *     orderBy: [[(item) => item.name, "asc"]],
  *   },
- * };
- *
- * <SharedDataProvider definitions={definitions}>
- *   <App />
- * </SharedDataProvider>
+ * });
  * ```
  */
-export function SharedDataProvider<TSharedData extends Record<string, unknown>>(props: {
-  definitions: { [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]> };
-  children: JSX.Element;
-}): JSX.Element {
+export function SharedDataProvider(props: { children: JSX.Element }): JSX.Element {
   const serviceClient = useServiceClient();
   const notification = useNotification();
   const logger = useLogger();
 
+  let configured = false;
   const [busyCount, setBusyCount] = createSignal(0);
   const busy: Accessor<boolean> = () => busyCount() > 0;
 
@@ -53,6 +53,8 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
   const memoMap = new Map<string, Accessor<Map<string | number, unknown>>>();
   const listenerKeyMap = new Map<string, string>();
   const versionMap = new Map<string, number>();
+  const accessors: Record<string, SharedDataAccessor<unknown>> = {};
+  let currentDefinitions: Record<string, SharedDataDefinition<unknown>> | undefined;
 
   function ordering<TT>(data: TT[], orderByList: [(item: TT) => unknown, "asc" | "desc"][]): TT[] {
     let result = [...data];
@@ -113,70 +115,89 @@ export function SharedDataProvider<TSharedData extends Record<string, unknown>>(
     await waitUntil(() => busyCount() <= 0);
   }
 
-  const accessors: Record<string, SharedDataAccessor<unknown>> = {};
+  function configure(definitions: Record<string, SharedDataDefinition<unknown>>): void {
+    if (configured) {
+      throw new Error("SharedDataProvider: configure()는 1회만 호출할 수 있습니다");
+    }
+    configured = true;
+    currentDefinitions = definitions;
 
-  // eslint-disable-next-line solid/reactivity -- definitions는 초기 설정용으로 마운트 시 1회만 읽음
-  for (const [name, def] of Object.entries(props.definitions) as [
-    string,
-    SharedDataDefinition<unknown>,
-  ][]) {
-    const [items, setItems] = createSignal<unknown[]>([]);
-    // eslint-disable-next-line solid/reactivity -- signal 참조를 Map에 저장하는 것은 반응성 접근이 아님
-    signalMap.set(name, [items, setItems]);
+    for (const [name, def] of Object.entries(definitions)) {
+      const [items, setItems] = createSignal<unknown[]>([]);
+      // eslint-disable-next-line solid/reactivity -- signal 참조를 Map에 저장하는 것은 반응성 접근이 아님
+      signalMap.set(name, [items, setItems]);
 
-    const itemMap = createMemo(() => {
-      const map = new Map<string | number, unknown>();
-      for (const item of items()) {
-        map.set(def.getKey(item as never), item);
-      }
-      return map;
-    });
-    // eslint-disable-next-line solid/reactivity -- memo 참조를 Map에 저장하는 것은 반응성 접근이 아님
-    memoMap.set(name, itemMap);
-
-    const client = serviceClient.get(def.serviceKey);
-    void client
-      .addEventListener(SharedDataChangeEvent, { name, filter: def.filter }, async (changeKeys) => {
-        await loadData(name, def, changeKeys);
-      })
-      .then((key) => {
-        listenerKeyMap.set(name, key);
+      const itemMap = createMemo(() => {
+        const map = new Map<string | number, unknown>();
+        for (const item of items()) {
+          map.set(def.getKey(item as never), item);
+        }
+        return map;
       });
+      // eslint-disable-next-line solid/reactivity -- memo 참조를 Map에 저장하는 것은 반응성 접근이 아님
+      memoMap.set(name, itemMap);
 
-    void loadData(name, def);
-
-    accessors[name] = {
-      items,
-      get: (key: string | number | undefined) => {
-        if (key === undefined) return undefined;
-        return itemMap().get(key);
-      },
-      emit: async (changeKeys?: Array<string | number>) => {
-        await client.emitToServer(
+      const client = serviceClient.get(def.serviceKey);
+      void client
+        .addEventListener(
           SharedDataChangeEvent,
-          (info) => info.name === name && objEqual(info.filter, def.filter),
-          changeKeys,
-        );
-      },
-    };
+          { name, filter: def.filter },
+          async (changeKeys) => {
+            await loadData(name, def, changeKeys);
+          },
+        )
+        .then((key) => {
+          listenerKeyMap.set(name, key);
+        });
+
+      void loadData(name, def);
+
+      accessors[name] = {
+        items,
+        get: (key: string | number | undefined) => {
+          if (key === undefined) return undefined;
+          return itemMap().get(key);
+        },
+        emit: async (changeKeys?: Array<string | number>) => {
+          await client.emitToServer(
+            SharedDataChangeEvent,
+            (info) => info.name === name && objEqual(info.filter, def.filter),
+            changeKeys,
+          );
+        },
+      };
+    }
   }
 
   onCleanup(() => {
-    for (const [name] of Object.entries(props.definitions)) {
+    if (!currentDefinitions) return;
+    for (const [name] of Object.entries(currentDefinitions)) {
       const listenerKey = listenerKeyMap.get(name);
       if (listenerKey != null) {
-        const def = (props.definitions as Record<string, SharedDataDefinition<unknown>>)[name];
+        const def = currentDefinitions[name];
         const client = serviceClient.get(def.serviceKey);
         void client.removeEventListener(listenerKey);
       }
     }
   });
 
-  const contextValue = {
-    ...accessors,
-    wait,
-    busy,
-  } as SharedDataValue<Record<string, unknown>>;
+  const KNOWN_KEYS = new Set(["wait", "busy", "configure"]);
+
+  // Proxy: configure 전 데이터 접근 시 throw
+  const contextValue = new Proxy(
+    { wait, busy, configure } as SharedDataValue<Record<string, unknown>>,
+    {
+      get(target, prop: string) {
+        if (KNOWN_KEYS.has(prop)) {
+          return target[prop];
+        }
+        if (!configured) {
+          throw new Error("SharedDataProvider: configure()를 먼저 호출해야 합니다");
+        }
+        return accessors[prop];
+      },
+    },
+  );
 
   return (
     <SharedDataContext.Provider value={contextValue}>{props.children}</SharedDataContext.Provider>

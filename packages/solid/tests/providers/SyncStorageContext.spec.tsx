@@ -7,6 +7,7 @@ import {
   SyncStorageProvider,
   useSyncStorage,
   type StorageAdapter,
+  type SyncStorageContextValue,
 } from "../../src/providers/SyncStorageContext";
 import { useContext } from "solid-js";
 
@@ -23,14 +24,8 @@ describe("SyncStorageContext", () => {
     });
   });
 
-  it("SyncStorageProvider가 StorageAdapter를 정상 제공한다", () => {
-    const mockStorage: StorageAdapter = {
-      getItem: vi.fn().mockResolvedValue(null),
-      setItem: vi.fn().mockResolvedValue(undefined),
-      removeItem: vi.fn().mockResolvedValue(undefined),
-    };
-
-    let received: StorageAdapter | undefined;
+  it("SyncStorageProvider가 SyncStorageContextValue를 정상 제공한다", () => {
+    let received: SyncStorageContextValue | undefined;
 
     function TestComponent() {
       received = useSyncStorage();
@@ -38,11 +33,39 @@ describe("SyncStorageContext", () => {
     }
 
     render(() => (
-      <SyncStorageProvider storage={mockStorage}>
+      <SyncStorageProvider>
         <TestComponent />
       </SyncStorageProvider>
     ));
 
-    expect(received).toBe(mockStorage);
+    expect(received).toBeDefined();
+    expect(typeof received!.adapter).toBe("function");
+    expect(typeof received!.configure).toBe("function");
+    expect(received!.adapter()).toBeUndefined();
+  });
+
+  it("configure()로 adapter를 설정할 수 있다", () => {
+    const mockStorage: StorageAdapter = {
+      getItem: vi.fn().mockResolvedValue(null),
+      setItem: vi.fn().mockResolvedValue(undefined),
+      removeItem: vi.fn().mockResolvedValue(undefined),
+    };
+
+    let received: SyncStorageContextValue | undefined;
+
+    function TestComponent() {
+      received = useSyncStorage();
+      return <div />;
+    }
+
+    render(() => (
+      <SyncStorageProvider>
+        <TestComponent />
+      </SyncStorageProvider>
+    ));
+
+    expect(received!.adapter()).toBeUndefined();
+    received!.configure(mockStorage);
+    expect(received!.adapter()).toBe(mockStorage);
   });
 });
