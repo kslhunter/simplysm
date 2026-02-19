@@ -88,6 +88,25 @@ describe("getPackageSourceFiles", () => {
 
     expect(result).toEqual([`${sep}project${sep}packages${sep}core${sep}src${sep}index.ts`]);
   });
+
+  it("TypeScript API의 forward slash 경로도 올바르게 필터링 (Windows 호환)", () => {
+    // TypeScript API는 Windows에서도 forward slash 경로를 반환
+    // pkgDir은 path.join으로 생성되어 OS-native 구분자 사용
+    const pkgDir = path.resolve("/project/packages/core-common");
+    const parsedConfig = {
+      fileNames: [
+        "/project/packages/core-common/src/index.ts",
+        "/project/packages/core-common/src/utils/string.ts",
+        "/project/packages/core-common/tests/utils.spec.ts",
+        "/project/packages/core-node/src/index.ts",
+      ],
+    } as ts.ParsedCommandLine;
+
+    const result = getPackageSourceFiles(pkgDir, parsedConfig);
+
+    expect(result).toHaveLength(2);
+    expect(result.every((f) => f.includes("core-common") && f.includes("src"))).toBe(true);
+  });
 });
 
 describe("getPackageFiles", () => {
@@ -142,5 +161,21 @@ describe("getPackageFiles", () => {
     const result = getPackageFiles(pkgDir, parsedConfig);
 
     expect(result).toEqual([]);
+  });
+
+  it("TypeScript API의 forward slash 경로도 올바르게 필터링 (Windows 호환)", () => {
+    const pkgDir = path.resolve("/project/packages/core-common");
+    const parsedConfig = {
+      fileNames: [
+        "/project/packages/core-common/src/index.ts",
+        "/project/packages/core-common/tests/utils.spec.ts",
+        "/project/packages/core-node/src/index.ts",
+      ],
+    } as ts.ParsedCommandLine;
+
+    const result = getPackageFiles(pkgDir, parsedConfig);
+
+    expect(result).toHaveLength(2);
+    expect(result.every((f) => f.includes("core-common"))).toBe(true);
   });
 });

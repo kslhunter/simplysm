@@ -8,7 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "tailwindcss";
 import type esbuild from "esbuild";
 import { getTailwindConfigDeps } from "./tailwind-config-deps.js";
-import { FsWatcher } from "@simplysm/core-node";
+import { FsWatcher, pathNorm } from "@simplysm/core-node";
 
 /**
  * Tailwind config의 scope 패키지 의존성을 watch하는 Vite 플러그인.
@@ -34,7 +34,7 @@ function sdTailwindConfigDepsPlugin(pkgDir: string, scopes: string[]): Plugin {
       }
 
       server.watcher.on("change", (changed) => {
-        if (externalDeps.some((d) => path.normalize(d) === path.normalize(changed))) {
+        if (externalDeps.some((d) => pathNorm(d) === pathNorm(changed))) {
           // jiti (Tailwind의 config 로더)가 사용하는 require 캐시를 정리하여
           // config 재로드 시 변경된 파일이 새로 읽히도록 한다
           const _require = createRequire(import.meta.url);

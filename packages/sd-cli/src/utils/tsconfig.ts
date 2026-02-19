@@ -1,6 +1,6 @@
 import ts from "typescript";
 import path from "path";
-import { fsExists, fsReadJson } from "@simplysm/core-node";
+import { fsExists, fsReadJson, pathIsChildPath } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 
 /**
@@ -110,15 +110,13 @@ export function getPackageSourceFiles(
   pkgDir: string,
   parsedConfig: ts.ParsedCommandLine,
 ): string[] {
-  // 경로 구분자까지 포함하여 비교 (packages/core와 packages/core-common 구분)
-  const pkgSrcPrefix = path.join(pkgDir, "src") + path.sep;
-  return parsedConfig.fileNames.filter((f) => f.startsWith(pkgSrcPrefix));
+  const pkgSrcDir = path.join(pkgDir, "src");
+  return parsedConfig.fileNames.filter((f) => pathIsChildPath(f, pkgSrcDir));
 }
 
 /**
  * 패키지의 전체 파일 목록 가져오기 (src + tests 포함)
  */
 export function getPackageFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
-  const pkgPrefix = pkgDir + path.sep;
-  return parsedConfig.fileNames.filter((f) => f.startsWith(pkgPrefix));
+  return parsedConfig.fileNames.filter((f) => pathIsChildPath(f, pkgDir));
 }

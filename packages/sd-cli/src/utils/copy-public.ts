@@ -1,5 +1,13 @@
 import path from "path";
-import { fsCopy, fsMkdir, fsRm, fsGlob, FsWatcher, fsExists } from "@simplysm/core-node";
+import {
+  fsCopy,
+  fsMkdir,
+  fsRm,
+  fsGlob,
+  FsWatcher,
+  fsExists,
+  pathIsChildPath,
+} from "@simplysm/core-node";
 
 /**
  * public/ 및 public-dev/ 디렉토리의 파일을 dist/로 복사한다.
@@ -77,7 +85,7 @@ export async function watchPublicFiles(
     for (const { event, path: filePath } of changes) {
       // 어느 소스 디렉토리에서 온 변경인지 판별
       let sourceDir: string;
-      if (filePath.startsWith(publicDevDir + path.sep) || filePath.startsWith(publicDevDir + "/")) {
+      if (pathIsChildPath(filePath, publicDevDir)) {
         sourceDir = publicDevDir;
       } else {
         sourceDir = publicDir;

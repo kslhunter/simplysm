@@ -1,6 +1,6 @@
 import path from "path";
 import ts from "typescript";
-import { createWorker } from "@simplysm/core-node";
+import { createWorker, pathIsChildPath, pathNorm } from "@simplysm/core-node";
 import { consola } from "consola";
 import {
   getCompilerOptionsForPackage,
@@ -148,12 +148,14 @@ function createDtsPathRewriter(
   pkgDir: string,
 ): (fileName: string, content: string) => [string, string] | null {
   const pkgName = path.basename(pkgDir);
-  const distDir = path.join(pkgDir, "dist");
+  const distDir = pathNorm(path.join(pkgDir, "dist"));
   const distPrefix = distDir + path.sep;
   // 중첩 구조에서 현재 패키지의 접두사: dist/{pkgName}/src/
-  const ownNestedPrefix = path.join(distDir, pkgName, "src") + path.sep;
+  const ownNestedPrefix = pathNorm(path.join(distDir, pkgName, "src")) + path.sep;
 
   return (fileName, content) => {
+    fileName = pathNorm(fileName);
+
     if (!fileName.startsWith(distPrefix)) return null;
 
     if (fileName.startsWith(ownNestedPrefix)) {
@@ -201,13 +203,13 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       if (shouldEmit) {
         // emit 모드: src만 대상 (d.ts 생성)
         rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
-        const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
-        diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix);
+        const pkgSrcDir = path.join(info.pkgDir, "src");
+        diagnosticFilter = (d) => d.file == null || pathIsChildPath(d.file.fileName, pkgSrcDir);
       } else {
         // 타입체크 모드: 패키지 전체 파일 대상 (src + tests)
         rootFiles = getPackageFiles(info.pkgDir, parsedConfig);
-        const pkgPrefix = info.pkgDir + path.sep;
-        diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgPrefix);
+        const pkgDir = info.pkgDir;
+        diagnosticFilter = (d) => d.file == null || pathIsChildPath(d.file.fileName, pkgDir);
       }
 
       tsBuildInfoFile = path.join(
@@ -217,10 +219,10 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
       );
     } else {
       // non-package 모드: packages/ 제외한 나머지 파일 타입체크
-      const packagesPrefix = path.join(info.cwd, "packages") + path.sep;
-      rootFiles = parsedConfig.fileNames.filter((f) => !f.startsWith(packagesPrefix));
+      const packagesDir = path.join(info.cwd, "packages");
+      rootFiles = parsedConfig.fileNames.filter((f) => !pathIsChildPath(f, packagesDir));
       baseOptions = parsedConfig.options;
-      diagnosticFilter = (d) => d.file == null || !d.file.fileName.startsWith(packagesPrefix);
+      diagnosticFilter = (d) => d.file == null || !pathIsChildPath(d.file.fileName, packagesDir);
       tsBuildInfoFile = path.join(info.cwd, ".cache", "typecheck-root.tsbuildinfo");
     }
 
@@ -355,7 +357,7 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
     );
 
     // 해당 패키지 경로 (필터링용)
-    const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
+    const pkgSrcDir = path.join(info.pkgDir, "src");
 
     const options: ts.CompilerOptions = {
       ...baseOptions,
@@ -376,7 +378,7 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
     const reportDiagnostic: ts.DiagnosticReporter = (diagnostic) => {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         // 해당 패키지 src 폴더 내 파일만 에러 수집 (다른 패키지 에러 무시)
-        if (diagnostic.file != null && !diagnostic.file.fileName.startsWith(pkgSrcPrefix)) {
+        if (diagnostic.file != null && !pathIsChildPath(diagnostic.file.fileName, pkgSrcDir)) {
           return;
         }
 
