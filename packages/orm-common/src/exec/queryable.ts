@@ -1859,13 +1859,34 @@ export type QueryableRecord<TData extends DataRecord> = {
         : never
       : TData[K] extends (infer U)[] | undefined
         ? U extends DataRecord
-          ? QueryableRecord<U>[] | undefined
+          ? NullableQueryableRecord<U>[] | undefined
           : never
         : // 3. 단일 객체 처리 (옵셔널 포함)
           TData[K] extends DataRecord
           ? QueryableRecord<TData[K]>
           : TData[K] extends DataRecord | undefined
-            ? QueryableRecord<Exclude<TData[K], undefined>> | undefined
+            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            : never;
+};
+
+export type NullableQueryableRecord<TData extends DataRecord> = {
+  // 1. Primitive — always | undefined (LEFT JOIN NULL propagation)
+  [K in keyof TData]: TData[K] extends ColumnPrimitive
+    ? ExprUnit<TData[K] | undefined>
+    : // 2. Array (optional included)
+      TData[K] extends (infer U)[]
+      ? U extends DataRecord
+        ? NullableQueryableRecord<U>[]
+        : never
+      : TData[K] extends (infer U)[] | undefined
+        ? U extends DataRecord
+          ? NullableQueryableRecord<U>[] | undefined
+          : never
+        : // 3. Single object (optional included)
+          TData[K] extends DataRecord
+          ? NullableQueryableRecord<TData[K]>
+          : TData[K] extends DataRecord | undefined
+            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
             : never;
 };
 
