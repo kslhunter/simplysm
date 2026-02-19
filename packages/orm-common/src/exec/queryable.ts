@@ -1476,14 +1476,14 @@ export class Queryable<
    * ```
    */
   async update(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
   async update<K extends keyof TFrom["$columns"] & string>(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns: K[],
   ): Promise<Pick<TFrom["$columns"], K>[]>;
   async update<K extends keyof TFrom["$columns"] & string>(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$columns"], K>[] | void> {
     const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
@@ -1533,7 +1533,7 @@ export class Queryable<
   }
 
   getUpdateQueryDef(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpdateQueryDef {
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
@@ -1614,39 +1614,41 @@ export class Queryable<
    * ```
    */
   async upsert(
-    updateFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    updateFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
   async upsert<K extends keyof TFrom["$inferColumns"] & string>(
-    insertFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async upsert<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
+  async upsert<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
     updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
   ): Promise<void>;
   async upsert<
-    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
     updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
   async upsert<
-    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
     updateFwdOrInsertFwd:
       | ((cols: QueryableRecord<TData>) => U)
-      | ((cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>),
-    insertFwdOrOutputColumns?: ((updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>) | K[],
+      | ((cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>),
+    insertFwdOrOutputColumns?:
+      | ((updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>)
+      | K[],
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
     const updateRecordFwd = updateFwdOrInsertFwd as (cols: QueryableRecord<TData>) => U;
 
     const insertRecordFwd = (
       insertFwdOrOutputColumns instanceof Function ? insertFwdOrOutputColumns : updateFwdOrInsertFwd
-    ) as (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>;
+    ) as (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>;
 
     const realOutputColumns =
       insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
@@ -1661,9 +1663,9 @@ export class Queryable<
     }
   }
 
-  getUpsertQueryDef<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
+  getUpsertQueryDef<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
     updateRecordFwd: (cols: QueryableRecord<TData>) => U,
-    insertRecordFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertRecordFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpsertQueryDef {
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
@@ -1848,45 +1850,84 @@ interface QueryableMetaJoin {
   isSingle: boolean;
 }
 
-export type QueryableRecord<TData extends DataRecord> = {
-  // 1. Primitive 처리
+type IsAny<TType> = 0 extends 1 & TType ? true : false;
+
+export type QueryableRecord<TData extends DataRecord> =
+  IsAny<TData> extends true
+    ? Record<string, any>
+    : {
+        // -? strips optional modifier so query column access never has spurious | undefined
+        [K in keyof TData]-?: TData[K] extends ColumnPrimitive
+          ? ExprUnit<TData[K]>
+          : TData[K] extends (infer U)[]
+            ? U extends DataRecord
+              ? QueryableRecord<U>[]
+              : never
+            : TData[K] extends (infer U)[] | undefined
+              ? U extends DataRecord
+                ? NullableQueryableRecord<U>[] | undefined
+                : never
+              : TData[K] extends DataRecord
+                ? QueryableRecord<TData[K]>
+                : TData[K] extends DataRecord | undefined
+                  ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+                  : never;
+      };
+
+export type QueryableWriteRecord<TData extends DataRecord> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive
     ? ExprUnit<TData[K]>
-    : // 2. 배열 처리 (옵셔널 포함)
-      TData[K] extends (infer U)[]
+    : TData[K] extends (infer U)[]
       ? U extends DataRecord
-        ? QueryableRecord<U>[]
+        ? QueryableWriteRecord<U>[]
         : never
       : TData[K] extends (infer U)[] | undefined
         ? U extends DataRecord
-          ? NullableQueryableRecord<U>[] | undefined
+          ? NullableQueryableWriteRecord<U>[] | undefined
           : never
-        : // 3. 단일 객체 처리 (옵셔널 포함)
-          TData[K] extends DataRecord
-          ? QueryableRecord<TData[K]>
+        : TData[K] extends DataRecord
+          ? QueryableWriteRecord<TData[K]>
           : TData[K] extends DataRecord | undefined
-            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            ? NullableQueryableWriteRecord<Exclude<TData[K], undefined>> | undefined
             : never;
 };
 
-export type NullableQueryableRecord<TData extends DataRecord> = {
-  // 1. Primitive — always | undefined (LEFT JOIN NULL propagation)
+export type NullableQueryableRecord<TData extends DataRecord> =
+  IsAny<TData> extends true
+    ? Record<string, any>
+    : {
+        [K in keyof TData]-?: TData[K] extends ColumnPrimitive
+          ? ExprUnit<TData[K] | undefined>
+          : TData[K] extends (infer U)[]
+            ? U extends DataRecord
+              ? NullableQueryableRecord<U>[]
+              : never
+            : TData[K] extends (infer U)[] | undefined
+              ? U extends DataRecord
+                ? NullableQueryableRecord<U>[] | undefined
+                : never
+              : TData[K] extends DataRecord
+                ? NullableQueryableRecord<TData[K]>
+                : TData[K] extends DataRecord | undefined
+                  ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+                  : never;
+      };
+
+export type NullableQueryableWriteRecord<TData extends DataRecord> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive
     ? ExprUnit<TData[K] | undefined>
-    : // 2. Array (optional included)
-      TData[K] extends (infer U)[]
+    : TData[K] extends (infer U)[]
       ? U extends DataRecord
-        ? NullableQueryableRecord<U>[]
+        ? NullableQueryableWriteRecord<U>[]
         : never
       : TData[K] extends (infer U)[] | undefined
         ? U extends DataRecord
-          ? NullableQueryableRecord<U>[] | undefined
+          ? NullableQueryableWriteRecord<U>[] | undefined
           : never
-        : // 3. Single object (optional included)
-          TData[K] extends DataRecord
-          ? NullableQueryableRecord<TData[K]>
+        : TData[K] extends DataRecord
+          ? NullableQueryableWriteRecord<TData[K]>
           : TData[K] extends DataRecord | undefined
-            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            ? NullableQueryableWriteRecord<Exclude<TData[K], undefined>> | undefined
             : never;
 };
 
