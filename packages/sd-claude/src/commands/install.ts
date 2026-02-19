@@ -20,8 +20,8 @@ export function runInstall(): void {
       return;
     }
 
-    // simplysm 모노레포 자체에서는 실행하지 않음
-    if (isSimplysmMonorepo(projectRoot)) {
+    // simplysm 모노레포이면서 같은 major 버전이면 실행하지 않음
+    if (isSimplysmMonorepoSameMajor(projectRoot, pkgRoot)) {
       return;
     }
 
@@ -63,14 +63,27 @@ function findProjectRoot(dirname: string): string | undefined {
   return idx !== -1 ? dirname.substring(0, idx) : undefined;
 }
 
-/** simplysm 모노레포인지 확인한다. */
-function isSimplysmMonorepo(projectRoot: string): boolean {
+/** simplysm 모노레포이면서 major 버전이 같은지 확인한다. */
+function isSimplysmMonorepoSameMajor(projectRoot: string, pkgRoot: string): boolean {
   const projectPkgPath = path.join(projectRoot, "package.json");
-  if (fs.existsSync(projectPkgPath)) {
-    const projectPkg = JSON.parse(fs.readFileSync(projectPkgPath, "utf-8")) as { name?: string };
-    return projectPkg.name === "simplysm";
-  }
-  return false;
+  if (!fs.existsSync(projectPkgPath)) return false;
+
+  const projectPkg = JSON.parse(fs.readFileSync(projectPkgPath, "utf-8")) as {
+    name?: string;
+    version?: string;
+  };
+  if (projectPkg.name !== "simplysm") return false;
+
+  const sdClaudePkgPath = path.join(pkgRoot, "package.json");
+  if (!fs.existsSync(sdClaudePkgPath)) return false;
+
+  const sdClaudePkg = JSON.parse(fs.readFileSync(sdClaudePkgPath, "utf-8")) as {
+    version?: string;
+  };
+
+  const projectMajor = projectPkg.version?.split(".")[0];
+  const sdClaudeMajor = sdClaudePkg.version?.split(".")[0];
+  return projectMajor != null && projectMajor === sdClaudeMajor;
 }
 
 /** sd-* 항목을 재귀적으로 수집한다. */
