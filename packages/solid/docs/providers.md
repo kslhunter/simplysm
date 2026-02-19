@@ -1,6 +1,48 @@
 # Providers
 
-Providers are composable and independent. Compose them at your app root in the recommended order:
+Compose providers at the app root. Some providers depend on others and **must** be nested inside them. If the nesting order violates a required dependency, the dependent provider will throw a runtime error or malfunction.
+
+### Dependency Graph
+
+```
+ConfigProvider ─────────────────────┐ (no deps, must be outermost)
+  SyncStorageProvider ──────────────┤ (no deps, optional)
+    LoggerProvider ─────────────────┤ (no deps, optional)
+      │                             │
+      ├─ ThemeProvider              │ ← requires ConfigProvider
+      │                             │   (uses SyncStorageProvider if present)
+      ├─ NotificationProvider       │ ← uses LoggerProvider if present
+      │    └─ PwaUpdateProvider     │ ← requires NotificationProvider
+      │                             │
+      ├─ ErrorLoggerProvider        │ ← uses LoggerProvider if present
+      │                             │
+      ├─ ServiceClientProvider      │ ← requires ConfigProvider + NotificationProvider
+      │    └─ SharedDataProvider    │ ← requires ServiceClientProvider + NotificationProvider
+      │                             │   (uses LoggerProvider if present)
+      │                             │
+      ├─ ClipboardProvider          │ (no deps, independent)
+      ├─ BusyProvider               │ (no deps, independent)
+      └─ DialogProvider             │ (no deps, independent)
+```
+
+**Required** = will break if missing. **Optional** = graceful fallback (e.g., `consola` instead of remote logger).
+
+| Provider | Required Parents | Optional Parents |
+|----------|-----------------|-----------------|
+| `ConfigProvider` | (none — root) | |
+| `SyncStorageProvider` | (none) | |
+| `LoggerProvider` | (none) | |
+| `ThemeProvider` | `ConfigProvider` | `SyncStorageProvider` |
+| `NotificationProvider` | (none) | `LoggerProvider` |
+| `ErrorLoggerProvider` | (none) | `LoggerProvider` |
+| `PwaUpdateProvider` | `NotificationProvider` | |
+| `ServiceClientProvider` | `ConfigProvider`, `NotificationProvider` | |
+| `SharedDataProvider` | `ServiceClientProvider`, `NotificationProvider` | `LoggerProvider` |
+| `ClipboardProvider` | (none) | |
+| `BusyProvider` | (none) | |
+| `DialogProvider` | (none) | |
+
+### Recommended Nesting Order
 
 ```tsx
 <ConfigProvider clientName="my-app">

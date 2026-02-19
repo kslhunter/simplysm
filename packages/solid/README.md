@@ -37,7 +37,7 @@ export default {
 
 ### Provider Setup
 
-Compose individual providers at the app root. Each provider is independent and optional (except `ConfigProvider` which is required).
+Compose providers at the app root. Some providers depend on others and **must** be nested in the correct order — see [Provider dependency graph](docs/providers.md#dependency-graph) for details.
 
 ```tsx
 import {
@@ -77,8 +77,8 @@ function App() {
 |----------|---------|
 | `SyncStorageProvider` | Custom sync storage adapter for `useSyncConfig` (wraps above `ConfigProvider`) |
 | `LoggerProvider` | Remote log adapter for `useLogger` (wraps above `ErrorLoggerProvider`) |
-| `ServiceClientProvider` | WebSocket RPC client |
-| `SharedDataProvider` | Server-side data subscriptions |
+| `ServiceClientProvider` | WebSocket RPC client (requires `ConfigProvider` + `NotificationProvider`) |
+| `SharedDataProvider` | Server-side data subscriptions (requires `ServiceClientProvider` + `NotificationProvider`) |
 
 **StorageAdapter interface:**
 
