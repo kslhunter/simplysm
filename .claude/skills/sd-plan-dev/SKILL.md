@@ -140,7 +140,7 @@ Example: Task 1 creates types.ts, Task 2 uses types.ts, Task 3 independent
 - Quality review: `./code-quality-reviewer-prompt.md` -- fill in report + changed files
 - Launch both in a single message (2 Task calls per completed task)
 
-**Final review:** `./final-review-prompt.md` -- fill in full plan + all task results
+**Final review:** `./final-review-prompt.md` -- fill in the design doc that corresponds to the current plan (match by topic/date in `docs/plans/`, if exists) + full plan + all task results
 
 ### Fix-Review Cycle
 
