@@ -1,6 +1,6 @@
 import path from "path";
 import semver from "semver";
-import { fsExists, fsReaddir } from "@simplysm/core-node";
+import { fsExists, fsReaddir, pathPosix } from "@simplysm/core-node";
 import { defineService, type ServiceMethods } from "../core/define-service";
 
 export const AutoUpdateService = defineService("AutoUpdate", (ctx) => ({
@@ -42,7 +42,7 @@ export const AutoUpdateService = defineService("AutoUpdate", (ctx) => ({
     if (versionItem == null) return undefined;
 
     const downloadPath =
-      "/" + path.join(ctx.clientName ?? "", platform, "updates", versionItem.fileName);
+      "/" + pathPosix(ctx.clientName ?? "", platform, "updates", versionItem.fileName);
 
     return {
       version: version.toString(),

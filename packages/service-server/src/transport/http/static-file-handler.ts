@@ -1,5 +1,5 @@
 import path from "path";
-import { fsExists, fsStat } from "@simplysm/core-node";
+import { fsExists, fsStat, pathIsChildPath } from "@simplysm/core-node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import consola from "consola";
 
@@ -15,7 +15,7 @@ export async function handleStaticFile(
   const allowedRootPath = path.resolve(rootPath, "www");
 
   // targetPath 보안 방어 (Path Traversal 방지)
-  if (!targetFilePath.startsWith(allowedRootPath)) {
+  if (targetFilePath !== allowedRootPath && !pathIsChildPath(targetFilePath, allowedRootPath)) {
     throw new Error("Access denied");
   }
 
