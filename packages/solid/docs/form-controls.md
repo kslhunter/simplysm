@@ -579,7 +579,7 @@ import { ColorPicker } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `string` | `"#000000"` | Color value (#RRGGBB format) |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
 | `validate` | `(value: string \| undefined) => string \| undefined` | - | Custom validation function |

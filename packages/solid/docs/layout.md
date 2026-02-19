@@ -67,14 +67,28 @@ interface SidebarMenuItem {
 }
 ```
 
-**useSidebarContext hook:**
+**useSidebarContext / useSidebarContextOptional hooks:**
 
 ```tsx
-import { useSidebarContext } from "@simplysm/solid";
+import { useSidebarContext, useSidebarContextOptional } from "@simplysm/solid";
 
+// Throws if not inside Sidebar.Container
 const sidebar = useSidebarContext();
 sidebar.toggle();          // current open/closed state
 sidebar.setToggle(false);  // programmatically close
+
+// Returns undefined if not inside Sidebar.Container (no error)
+const sidebarOpt = useSidebarContextOptional();
+```
+
+**SM_MEDIA_QUERY constant:**
+
+Exported media query string matching the Tailwind `sm:` breakpoint (640px). Use this to align custom responsive logic with sidebar behavior.
+
+```typescript
+import { SM_MEDIA_QUERY } from "@simplysm/solid";
+
+const mql = window.matchMedia(SM_MEDIA_QUERY); // "(min-width: 640px)"
 ```
 
 ---

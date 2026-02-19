@@ -76,8 +76,9 @@ const className = twMerge(baseClass, props.class);
 
 ```typescript
 import {
-  type ComponentSize,    // "sm" | "lg" | "xl"
-  type SemanticTheme,    // "primary" | "info" | "success" | "warning" | "danger" | "base"
+  type ComponentSize,         // "sm" | "lg" | "xl"
+  type ComponentSizeCompact,  // "sm" | "lg" (used by ColorPicker, Progress)
+  type SemanticTheme,         // "primary" | "info" | "success" | "warning" | "danger" | "base"
   borderDefault,         // Tailwind classes for default border color
   borderSubtle,          // Tailwind classes for subtle border color
   bgSurface,             // Tailwind classes for surface background

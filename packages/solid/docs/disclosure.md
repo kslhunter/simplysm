@@ -210,19 +210,15 @@ function MyPage() {
 |--------|-----------|-------------|
 | `close` | `(result?: T) => void` | Close dialog with optional return value |
 
-**DialogProvider:**
+**Dialog Defaults:**
 
-`DialogProvider` is the provider component that enables `useDialog`. Use it in your provider tree to enable programmatic dialogs.
+`DialogDefaultsContext` and `DialogDefaults` are exported for advanced use cases such as providing default dialog options to a subtree. `InitializeProvider` already sets up the dialog system internally — most apps do not need these directly.
 
-```tsx
-import { DialogProvider } from "@simplysm/solid";
-
-<DialogProvider closeOnEscape closeOnBackdrop>
-  <App />
-</DialogProvider>
+```typescript
+import { DialogDefaultsContext, type DialogDefaults } from "@simplysm/solid";
 ```
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `closeOnEscape` | `boolean` | - | Default `closeOnEscape` for all dialogs opened via `useDialog` |
-| `closeOnBackdrop` | `boolean` | - | Default `closeOnBackdrop` for all dialogs opened via `useDialog` |
+| Export | Kind | Description |
+|--------|------|-------------|
+| `DialogDefaultsContext` | context | Context for providing default dialog options |
+| `DialogDefaults` | interface | `{ closeOnEscape?: boolean; closeOnBackdrop?: boolean }` |
