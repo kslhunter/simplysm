@@ -1,7 +1,7 @@
-import { onCleanup, onMount } from "solid-js";
+import { onCleanup, onMount, type ParentComponent } from "solid-js";
 
 /**
- * 폼 컨트롤의 value를 클립보드 복사에 포함시키는 초기화 훅
+ * 폼 컨트롤의 value를 클립보드 복사에 포함시키는 Provider
  *
  * @remarks
  * 브라우저 기본 동작에서는 드래그 선택 후 복사 시 `<input>`, `<textarea>`, `<select>`의
@@ -13,7 +13,7 @@ import { onCleanup, onMount } from "solid-js";
  * - `<input type="checkbox|radio">` → `.checked` ? "Y" : ""
  * - 테이블 내에서는 셀 간 탭(`\t`), 행 간 개행(`\n`) 구분 (Excel 호환)
  */
-export function useClipboardValueCopy(): void {
+export const ClipboardProvider: ParentComponent = (props) => {
   onMount(() => {
     const handler = (e: ClipboardEvent) => {
       const sel = window.getSelection();
@@ -30,7 +30,9 @@ export function useClipboardValueCopy(): void {
     document.addEventListener("copy", handler);
     onCleanup(() => document.removeEventListener("copy", handler));
   });
-}
+
+  return <>{props.children}</>;
+};
 
 /**
  * Selection Range 내의 텍스트를 추출한다.

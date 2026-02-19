@@ -1,10 +1,123 @@
 # Providers
 
-## InitializeProvider
+Providers are composable and independent. Compose them at your app root in the recommended order:
 
-Root provider that wraps the entire application. Automatically sets up all required providers: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), busy overlay, programmatic dialog support, and form control clipboard value copy.
+```tsx
+<ConfigProvider clientName="my-app">
+  <SyncStorageProvider storage={...}>     {/* optional */}
+    <LoggerProvider adapter={...}>        {/* optional */}
+      <NotificationProvider>
+        <NotificationBanner />
+        <ErrorLoggerProvider>
+          <PwaUpdateProvider>
+            <ClipboardProvider>
+              <ThemeProvider>
+                <BusyProvider>{/* app content */}</BusyProvider>
+              </ThemeProvider>
+            </ClipboardProvider>
+          </PwaUpdateProvider>
+        </ErrorLoggerProvider>
+      </NotificationProvider>
+    </LoggerProvider>
+  </SyncStorageProvider>
+</ConfigProvider>
+```
 
-See the [Configuration](../README.md#configuration) section in the main README for setup instructions and `AppConfig` options.
+## ConfigProvider
+
+Required root provider. Provides `clientName` used as storage key prefix.
+
+```tsx
+<ConfigProvider clientName="my-app">
+  {/* app content */}
+</ConfigProvider>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `clientName` | `string` | Client identifier (used as storage key prefix) |
+
+---
+
+## SyncStorageProvider
+
+Optional provider for custom sync storage (cross-device sync). When present, `useSyncConfig` uses this storage instead of `localStorage`.
+
+```tsx
+<SyncStorageProvider storage={myStorageAdapter}>
+  {/* children */}
+</SyncStorageProvider>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `storage` | `StorageAdapter` | Storage adapter implementation |
+
+---
+
+## LoggerProvider
+
+Optional provider for remote logging. When present, `useLogger` sends logs to the adapter instead of `consola`.
+
+```tsx
+<LoggerProvider adapter={myLogAdapter}>
+  {/* children */}
+</LoggerProvider>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `adapter` | `LogAdapter` | Log adapter implementation |
+
+---
+
+## ErrorLoggerProvider
+
+Captures uncaught errors (`window.onerror`) and unhandled promise rejections (`unhandledrejection`) and logs them via `useLogger`.
+
+```tsx
+<ErrorLoggerProvider>
+  {/* children */}
+</ErrorLoggerProvider>
+```
+
+---
+
+## PwaUpdateProvider
+
+PWA Service Worker update detection. Polls for SW updates every 5 minutes. When a new version is detected, shows a notification with a reload action. Must be inside `NotificationProvider`.
+
+Graceful no-op when `navigator.serviceWorker` is unavailable (HTTP, unsupported browser, dev mode).
+
+```tsx
+<PwaUpdateProvider>
+  {/* children */}
+</PwaUpdateProvider>
+```
+
+---
+
+## ClipboardProvider
+
+Intercepts `Ctrl+C` to copy form control values (input, textarea, select, checkbox) as plain text. Handles table structures as TSV format.
+
+```tsx
+<ClipboardProvider>
+  {/* children */}
+</ClipboardProvider>
+```
+
+---
+
+## ThemeProvider
+
+Dark/light/system theme provider. Toggles the `dark` class on `<html>` and manages theme persistence via `useSyncConfig`.
+
+```tsx
+<ThemeProvider>
+  {/* children */}
+</ThemeProvider>
+```
 
 ---
 

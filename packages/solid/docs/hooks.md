@@ -1,42 +1,8 @@
 # Hooks
 
-## usePwaUpdate
-
-PWA Service Worker update detection hook. Automatically polls for Service Worker updates every 5 minutes. When a new version is detected, shows a notification with a reload action button.
-
-**Automatic Integration:** Already integrated into `InitializeProvider` -- no manual setup required for most applications. The hook runs automatically inside the notification system.
-
-**Manual Usage (Custom Provider Tree):**
-
-```tsx
-import { usePwaUpdate } from "@simplysm/solid";
-
-function MyProvider(props) {
-  // Must be called inside NotificationProvider
-  usePwaUpdate();
-
-  return (
-    <NotificationProvider>
-      {props.children}
-    </NotificationProvider>
-  );
-}
-```
-
-**Graceful No-ops:** Works safely in the following scenarios where Service Workers are unavailable:
-- HTTP protocol (non-HTTPS dev servers)
-- Browsers that don't support Service Workers
-- Development/test environments without SW registration
-
-**Requirements:**
-- Must be called inside `NotificationProvider` (to display the update notification)
-- `InitializeProvider` already includes both, so manual setup only needed for custom provider trees
-
----
-
 ## useTheme
 
-Hook to access theme (dark/light/system) state. Must be used inside `InitializeProvider`.
+Hook to access theme (dark/light/system) state. Must be used inside `ThemeProvider`.
 
 ```tsx
 import { useTheme } from "@simplysm/solid";
@@ -76,7 +42,7 @@ const [token, setToken] = useLocalStorage<string | undefined>("auth-token", unde
 
 ## useSyncConfig
 
-Syncable config hook. Uses `syncStorage` if configured, falls back to `localStorage` otherwise. Keys are automatically prefixed as `{clientName}.{key}`. Use for user preferences that should sync across devices (theme, DataSheet column configs, filter presets).
+Syncable config hook. Uses `SyncStorageProvider` storage if present, falls back to `localStorage` otherwise. Keys are automatically prefixed as `{clientName}.{key}`. Use for user preferences that should sync across devices (theme, DataSheet column configs, filter presets).
 
 ```tsx
 import { useSyncConfig } from "@simplysm/solid";
@@ -97,7 +63,7 @@ const [theme, setTheme, ready] = useSyncConfig("theme", "light");
 
 ## useLogger
 
-Logging hook. If `logger` adapter is configured in `AppConfig`, logs are sent to the adapter only. Otherwise, logs fall back to `consola`. Must be used inside `InitializeProvider`.
+Logging hook. If `LoggerProvider` is present, logs are sent to the adapter only. Otherwise, logs fall back to `consola`.
 
 ```tsx
 import { useLogger } from "@simplysm/solid";
@@ -116,31 +82,31 @@ logger.warn("deprecation notice");
 | `warn` | `(...args: unknown[]) => void` | Log message (warning) |
 | `error` | `(...args: unknown[]) => void` | Log message (error) |
 
-**Global error capturing:** `InitializeProvider` automatically captures uncaught errors (`window.onerror`) and unhandled promise rejections (`unhandledrejection`) and logs them via `useLogger`. No additional setup required.
+**Global error capturing:** `ErrorLoggerProvider` captures uncaught errors (`window.onerror`) and unhandled promise rejections (`unhandledrejection`) and logs them via `useLogger`.
 
 ---
 
 ## useNotification
 
-Hook to access notification system. Must be used inside `InitializeProvider`. See [Notification](feedback.md#notification) for detailed API.
+Hook to access notification system. Must be used inside `NotificationProvider`. See [Notification](feedback.md#notification) for detailed API.
 
 ---
 
 ## useBusy
 
-Hook to access busy overlay. Must be used inside `InitializeProvider`. See [Busy](feedback.md#busy) for detailed API.
+Hook to access busy overlay. Must be used inside `BusyProvider`. See [Busy](feedback.md#busy) for detailed API.
 
 ---
 
 ## usePrint
 
-Hook for printing and PDF generation. Must be used inside `InitializeProvider`. See [Print / usePrint](feedback.md#print--useprint) for detailed API.
+Hook for printing and PDF generation. See [Print / usePrint](feedback.md#print--useprint) for detailed API.
 
 ---
 
 ## useConfig
 
-Hook to access app-wide configuration. Must be used inside `InitializeProvider`.
+Hook to access app-wide configuration. Must be used inside `ConfigProvider`.
 
 ```tsx
 import { useConfig } from "@simplysm/solid";

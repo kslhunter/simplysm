@@ -41,7 +41,7 @@
 
 ## Dark Mode
 
-Uses Tailwind's `class` strategy. `InitializeProvider` automatically toggles the `dark` class on the `<html>` element via the built-in theme provider.
+Uses Tailwind's `class` strategy. `ThemeProvider` automatically toggles the `dark` class on the `<html>` element.
 
 ```html
 <!-- Light mode -->

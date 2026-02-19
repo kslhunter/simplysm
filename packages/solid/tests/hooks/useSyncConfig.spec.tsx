@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { useSyncConfig } from "../../src/hooks/useSyncConfig";
-import { ConfigContext } from "../../src/providers/ConfigContext";
+import { ConfigProvider } from "../../src/providers/ConfigContext";
+import { SyncStorageProvider } from "../../src/providers/SyncStorageContext";
 
 describe("useSyncConfig", () => {
   beforeEach(() => {
@@ -23,15 +24,15 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     expect(value()).toBe("default");
   });
 
-  it("should load value from localStorage when no syncStorage is configured", () => {
+  it("should load value from localStorage when no SyncStorageProvider", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
     let value: () => string;
@@ -42,9 +43,9 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     expect(value()).toBe("stored");
@@ -60,9 +61,9 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     setValue("new-value");
@@ -78,15 +79,15 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     expect(ready()).toBe(true);
   });
 
-  it("should use syncStorage when configured in ConfigContext.Provider", async () => {
+  it("should use syncStorage when SyncStorageProvider is present", async () => {
     const mockSyncStorage = {
       getItem: vi.fn().mockResolvedValue(JSON.stringify("synced-value")),
       setItem: vi.fn().mockResolvedValue(undefined),
@@ -103,12 +104,13 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp", syncStorage: mockSyncStorage }}>
-        <TestComponent />
-      </ConfigContext.Provider>
+      <ConfigProvider clientName="testApp">
+        <SyncStorageProvider storage={mockSyncStorage}>
+          <TestComponent />
+        </SyncStorageProvider>
+      </ConfigProvider>
     ));
 
-    // Wait for async initialization
     await vi.waitFor(() => {
       expect(ready()).toBe(true);
     });
@@ -116,7 +118,6 @@ describe("useSyncConfig", () => {
     expect(value()).toBe("synced-value");
     expect(mockSyncStorage.getItem).toHaveBeenCalledWith("testApp.test-key");
 
-    // Test setting value
     setValue("new-synced");
     expect(value()).toBe("new-synced");
     await vi.waitFor(() => {
@@ -143,9 +144,11 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp", syncStorage: mockSyncStorage }}>
-        <TestComponent />
-      </ConfigContext.Provider>
+      <ConfigProvider clientName="testApp">
+        <SyncStorageProvider storage={mockSyncStorage}>
+          <TestComponent />
+        </SyncStorageProvider>
+      </ConfigProvider>
     ));
 
     await vi.waitFor(() => {
@@ -174,19 +177,19 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp", syncStorage: mockSyncStorage }}>
-        <TestComponent />
-      </ConfigContext.Provider>
+      <ConfigProvider clientName="testApp">
+        <SyncStorageProvider storage={mockSyncStorage}>
+          <TestComponent />
+        </SyncStorageProvider>
+      </ConfigProvider>
     ));
 
     await vi.waitFor(() => {
       expect(ready()).toBe(true);
     });
 
-    // Should fall back to localStorage
     expect(value()).toBe("local-fallback");
 
-    // Setting should fall back to localStorage too
     setValue("new-local");
     expect(value()).toBe("new-local");
     await vi.waitFor(() => {
@@ -205,9 +208,9 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     expect(value()).toBe("default");
@@ -225,9 +228,9 @@ describe("useSyncConfig", () => {
     }
 
     render(() => (
-      <ConfigContext.Provider value={{ clientName: "testApp" }}>
+      <ConfigProvider clientName="testApp">
         <TestComponent />
-      </ConfigContext.Provider>
+      </ConfigProvider>
     ));
 
     expect(value()).toEqual(defaultObj);

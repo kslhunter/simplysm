@@ -212,7 +212,7 @@ function MyPage() {
 
 **DialogProvider:**
 
-`DialogProvider` is the provider component that enables `useDialog`. It is automatically included by `InitializeProvider`. Use `DialogProvider` directly only when building a custom provider tree.
+`DialogProvider` is the provider component that enables `useDialog`. Use it in your provider tree to enable programmatic dialogs.
 
 ```tsx
 import { DialogProvider } from "@simplysm/solid";

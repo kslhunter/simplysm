@@ -1,10 +1,11 @@
 import { type Accessor, type Setter, createEffect, createSignal } from "solid-js";
 import { useConfig } from "../providers/ConfigContext";
+import { useSyncStorage } from "../providers/SyncStorageContext";
 
 /**
  * Creates a reactive signal that syncs configuration data to storage.
  *
- * Uses `syncStorage` from ConfigProvider if available, otherwise falls back to `localStorage`.
+ * Uses `SyncStorageProvider` storage if available, otherwise falls back to `localStorage`.
  * Designed for data that should persist and sync across devices (e.g., theme, user preferences, DataSheet configs).
  *
  * @param key - Storage key for the config value
@@ -27,13 +28,14 @@ export function useSyncConfig<TValue>(
   defaultValue: TValue,
 ): [Accessor<TValue>, Setter<TValue>, Accessor<boolean>] {
   const config = useConfig();
+  const syncStorage = useSyncStorage();
   const prefixedKey = `${config.clientName}.${key}`;
   const [value, setValue] = createSignal<TValue>(defaultValue);
   const [ready, setReady] = createSignal(false);
 
   // Initialize from storage
   const initializeFromStorage = async () => {
-    if (!config.syncStorage) {
+    if (!syncStorage) {
       // Use localStorage synchronously
       try {
         const stored = localStorage.getItem(prefixedKey);
@@ -49,7 +51,7 @@ export function useSyncConfig<TValue>(
 
     // Use syncStorage asynchronously
     try {
-      const stored = await config.syncStorage.getItem(prefixedKey);
+      const stored = await syncStorage.getItem(prefixedKey);
       if (stored !== null) {
         setValue(() => JSON.parse(stored) as TValue);
       }
@@ -77,7 +79,7 @@ export function useSyncConfig<TValue>(
     const currentValue = value();
     const serialized = JSON.stringify(currentValue);
 
-    if (!config.syncStorage) {
+    if (!syncStorage) {
       // Use localStorage synchronously
       localStorage.setItem(prefixedKey, serialized);
       return;
@@ -86,7 +88,7 @@ export function useSyncConfig<TValue>(
     // Use syncStorage asynchronously
     void (async () => {
       try {
-        await config.syncStorage!.setItem(prefixedKey, serialized);
+        await syncStorage.setItem(prefixedKey, serialized);
       } catch {
         // Fall back to localStorage on error
         localStorage.setItem(prefixedKey, serialized);

@@ -1,5 +1,14 @@
 import type { RouteSectionProps } from "@solidjs/router";
-import { InitializeProvider } from "@simplysm/solid";
+import {
+  BusyProvider,
+  ClipboardProvider,
+  ConfigProvider,
+  ErrorLoggerProvider,
+  NotificationBanner,
+  NotificationProvider,
+  PwaUpdateProvider,
+  ThemeProvider,
+} from "@simplysm/solid";
 import { onMount } from "solid-js";
 
 export function App(props: RouteSectionProps) {
@@ -8,6 +17,19 @@ export function App(props: RouteSectionProps) {
   });
 
   return (
-    <InitializeProvider config={{ clientName: "solid-demo" }}>{props.children}</InitializeProvider>
+    <ConfigProvider clientName="solid-demo">
+      <NotificationProvider>
+        <NotificationBanner />
+        <ErrorLoggerProvider>
+          <PwaUpdateProvider>
+            <ClipboardProvider>
+              <ThemeProvider>
+                <BusyProvider>{props.children}</BusyProvider>
+              </ThemeProvider>
+            </ClipboardProvider>
+          </PwaUpdateProvider>
+        </ErrorLoggerProvider>
+      </NotificationProvider>
+    </ConfigProvider>
   );
 }

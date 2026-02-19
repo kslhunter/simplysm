@@ -60,9 +60,7 @@ const ThemeContext = createContext<ThemeContextValue>();
 export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error(
-      "useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다. ThemeProvider는 InitializeProvider 아래에 위치해야 합니다",
-    );
+    throw new Error("useTheme는 ThemeProvider 내부에서만 사용할 수 있습니다");
   }
   return context;
 }

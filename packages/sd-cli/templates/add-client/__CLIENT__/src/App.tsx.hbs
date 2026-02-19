@@ -1,23 +1,65 @@
 {{#if router}}
 import type { RouteSectionProps } from "@solidjs/router";
-import { InitializeProvider } from "@simplysm/solid";
+import {
+  BusyProvider,
+  ClipboardProvider,
+  ConfigProvider,
+  ErrorLoggerProvider,
+  NotificationBanner,
+  NotificationProvider,
+  PwaUpdateProvider,
+  ThemeProvider,
+} from "@simplysm/solid";
 
 export function App(props: RouteSectionProps) {
   return (
-    <InitializeProvider config=\{{ clientName: "{{clientName}}" }}>
-      {props.children}
-    </InitializeProvider>
+    <ConfigProvider clientName="{{clientName}}">
+      <NotificationProvider>
+        <NotificationBanner />
+        <ErrorLoggerProvider>
+          <PwaUpdateProvider>
+            <ClipboardProvider>
+              <ThemeProvider>
+                <BusyProvider>{props.children}</BusyProvider>
+              </ThemeProvider>
+            </ClipboardProvider>
+          </PwaUpdateProvider>
+        </ErrorLoggerProvider>
+      </NotificationProvider>
+    </ConfigProvider>
   );
 }
 {{else}}
-import { InitializeProvider } from "@simplysm/solid";
+import {
+  BusyProvider,
+  ClipboardProvider,
+  ConfigProvider,
+  ErrorLoggerProvider,
+  NotificationBanner,
+  NotificationProvider,
+  PwaUpdateProvider,
+  ThemeProvider,
+} from "@simplysm/solid";
 import { HomePage } from "./pages/HomePage";
 
 export function App() {
   return (
-    <InitializeProvider config=\{{ clientName: "{{clientName}}" }}>
-      <HomePage />
-    </InitializeProvider>
+    <ConfigProvider clientName="{{clientName}}">
+      <NotificationProvider>
+        <NotificationBanner />
+        <ErrorLoggerProvider>
+          <PwaUpdateProvider>
+            <ClipboardProvider>
+              <ThemeProvider>
+                <BusyProvider>
+                  <HomePage />
+                </BusyProvider>
+              </ThemeProvider>
+            </ClipboardProvider>
+          </PwaUpdateProvider>
+        </ErrorLoggerProvider>
+      </NotificationProvider>
+    </ConfigProvider>
   );
 }
 {{/if}}
