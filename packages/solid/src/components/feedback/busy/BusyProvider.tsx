@@ -6,10 +6,20 @@ import { BusyContainer } from "./BusyContainer";
 
 const overlayClass = clsx("fixed left-0 top-0", "h-screen w-screen", "overflow-hidden");
 
+/** BusyProvider 설정 */
 export interface BusyProviderProps {
+  /** 표시 방식 (기본값: `"spinner"`) */
   variant?: BusyVariant;
 }
 
+/**
+ * Busy 오버레이 Provider
+ *
+ * @remarks
+ * - show/hide는 중첩 호출 가능 (내부 카운터로 관리)
+ * - Portal로 렌더링하여 항상 최상위에 표시
+ * - 독립적으로 동작 (다른 Provider 의존성 없음)
+ */
 export const BusyProvider: ParentComponent<BusyProviderProps> = (props) => {
   const [busyCount, setBusyCount] = createSignal(0);
   const [message, setMessage] = createSignal<string | undefined>();

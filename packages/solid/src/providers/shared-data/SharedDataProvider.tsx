@@ -11,6 +11,33 @@ import { useServiceClient } from "../ServiceClientContext";
 import { useNotification } from "../../components/feedback/notification/NotificationContext";
 import { useLogger } from "../../hooks/useLogger";
 
+/**
+ * 공유 데이터 Provider
+ *
+ * @remarks
+ * - ServiceClientProvider와 NotificationProvider 내부에서 사용해야 함
+ * - LoggerProvider가 있으면 fetch 실패를 로거에도 기록
+ * - definitions의 각 key마다 서버 이벤트 리스너를 등록하여 실시간 동기화
+ * - 동시 fetch 호출 시 version counter로 데이터 역전 방지
+ * - fetch 실패 시 사용자에게 danger 알림 표시
+ * - cleanup 시 모든 이벤트 리스너 자동 해제
+ *
+ * @example
+ * ```tsx
+ * const definitions = {
+ *   users: {
+ *     serviceKey: "main",
+ *     fetch: async (changeKeys) => fetchUsers(changeKeys),
+ *     getKey: (item) => item.id,
+ *     orderBy: [[(item) => item.name, "asc"]],
+ *   },
+ * };
+ *
+ * <SharedDataProvider definitions={definitions}>
+ *   <App />
+ * </SharedDataProvider>
+ * ```
+ */
 export function SharedDataProvider<TSharedData extends Record<string, unknown>>(props: {
   definitions: { [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]> };
   children: JSX.Element;

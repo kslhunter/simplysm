@@ -8,6 +8,27 @@ import { ServiceClientContext, type ServiceClientContextValue } from "./ServiceC
 import { useConfig } from "./ConfigContext";
 import { useNotification } from "../components/feedback/notification/NotificationContext";
 
+/**
+ * WebSocket 서비스 클라이언트 Provider
+ *
+ * @remarks
+ * - ConfigProvider와 NotificationProvider 내부에서 사용해야 함
+ * - key 기반 다중 연결 관리
+ * - 요청/응답 진행률을 NotificationProvider 알림으로 표시
+ * - host, port, ssl 미지정 시 window.location에서 자동 추론
+ * - cleanup 시 모든 연결 자동 종료
+ *
+ * @example
+ * ```tsx
+ * <ConfigProvider clientName="my-app">
+ *   <NotificationProvider>
+ *     <ServiceClientProvider>
+ *       <App />
+ *     </ServiceClientProvider>
+ *   </NotificationProvider>
+ * </ConfigProvider>
+ * ```
+ */
 export const ServiceClientProvider: ParentComponent = (props) => {
   const config = useConfig();
   const notification = useNotification();
