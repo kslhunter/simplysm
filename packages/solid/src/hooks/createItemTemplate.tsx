@@ -12,12 +12,12 @@ import type { JSX } from "solid-js";
 export function createItemTemplate<TArgs extends unknown[]>(
   dataAttr: string,
 ): {
-  TemplateSlot: (props: { children: (...args: TArgs) => JSX.Element }) => JSX.Element;
+  TemplateSlot: (props: { children(...args: TArgs): JSX.Element }) => JSX.Element;
   getTemplate: (slotElements: Element[]) => ((...args: TArgs) => JSX.Element) | undefined;
 } {
   const templateFnMap = new WeakMap<HTMLElement, (...args: TArgs) => JSX.Element>();
 
-  function TemplateSlot(props: { children: (...args: TArgs) => JSX.Element }): JSX.Element {
+  function TemplateSlot(props: { children(...args: TArgs): JSX.Element }): JSX.Element {
     return (
       <span
         ref={(el) => {
