@@ -17,18 +17,25 @@ No plan? Use sd-plan or sd-brainstorm first.
 
 ## Mode Selection
 
+**Default is Agent Mode.** Only use Direct Mode when ALL "Small" criteria are met.
+
 ```dot
 digraph mode {
-    "Tasks ≤ 3 AND\nsource files ≤ 5?" [shape=diamond];
+    "Small?" [shape=diamond];
     "Direct Mode\n(no agents)" [shape=box];
-    "Agent Mode\n(parallel agents)" [shape=box];
+    "Agent Mode\n(parallel agents)" [shape=box, style=bold];
 
-    "Tasks ≤ 3 AND\nsource files ≤ 5?" -> "Direct Mode\n(no agents)" [label="yes"];
-    "Tasks ≤ 3 AND\nsource files ≤ 5?" -> "Agent Mode\n(parallel agents)" [label="no"];
+    "Small?" -> "Direct Mode\n(no agents)" [label="yes (all 3 criteria)"];
+    "Small?" -> "Agent Mode\n(parallel agents)" [label="no (default)"];
 }
 ```
 
-Count **source files** only (test files excluded) that will be created or modified across all tasks.
+**"Small" criteria (ALL must be true):**
+1. Tasks ≤ 2
+2. Source files ≤ 3 (test files excluded, count across all tasks)
+3. Every task is a simple addition or modification — NOT refactoring, structural changes, or cross-cutting concerns
+
+**When in doubt, choose Agent Mode.**
 
 ---
 
@@ -46,7 +53,10 @@ No agents, no batching -- implement directly in main context.
 3. After all tasks: `pnpm typecheck` + `pnpm lint` + `pnpm vitest` on affected packages
 4. Done
 
-**Escalation:** If complexity grows beyond expectations during execution, switch to Agent Mode.
+**Escalation:** Switch to Agent Mode immediately if any of these occur during execution:
+- A task turns out to touch more files than expected
+- You find yourself doing structural changes or refactoring
+- The total change set exceeds ~100 lines of source code
 
 ---
 
