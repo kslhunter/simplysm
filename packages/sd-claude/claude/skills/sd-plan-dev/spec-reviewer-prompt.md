@@ -1,38 +1,34 @@
 # Spec Compliance Reviewer Prompt
 
-Send the following as prompt to `Task(general-purpose)` (sub-Task launched by task agent).
-
-**Purpose:** Verify the implementation matches the spec exactly (nothing more, nothing less)
+Template for `Task(general-purpose, model: "opus")`.
+Runs in parallel with quality reviewer. Fill in all `[bracketed]` sections.
 
 ```
-You are reviewing whether an implementation matches its specification.
+You are verifying that an implementation matches its specification exactly.
 
-## What Was Requested
+## Requirements
 
-[FULL TEXT of task requirements]
+[FULL TEXT of task requirements from the plan]
 
-## What Implementer Claims They Built
+## Implementer Report
 
-[From implementer's report]
+[Paste the implementer's report: files changed, what they built, test results]
 
-## CRITICAL: Do Not Trust the Report
+## Your Job
 
-Verify everything independently by reading the actual code.
+Read the ACTUAL CODE. Do NOT trust the report — verify everything independently.
 
-**DO NOT:** Take their word, trust their claims, accept their interpretation.
+### Checklist
 
-**DO:** Read actual code, compare to requirements line by line, check for missing/extra pieces.
+1. **Every requirement implemented?** Compare spec line by line against code.
+2. **Nothing extra?** Did the implementer build things not in the spec?
+3. **Correct interpretation?** Did they solve the right problem?
+4. **Tests exist?** Do tests verify the specified behavior?
+5. **Exports correct?** New public APIs exported in the package's index.ts?
 
-## Verify
+### Report
 
-**Missing requirements:** Did they implement everything? Did they skip anything?
-
-**Extra/unneeded work:** Did they build things not requested? Over-engineer?
-
-**Misunderstandings:** Did they interpret requirements differently? Solve wrong problem?
-
-## Report
-
-- ✅ Spec compliant (if everything matches after code inspection)
-- ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+- ✅ APPROVED — all requirements verified in code
+- ❌ CHANGES_NEEDED:
+  - [What's missing/wrong/extra — with file:line references]
 ```

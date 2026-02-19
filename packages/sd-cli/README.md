@@ -265,7 +265,7 @@ sd-cli init
 
 After initialization, use `sd-cli add client` and `sd-cli add server` to add packages.
 
-> **Note**: Claude Code skills/agents are automatically installed via `@simplysm/claude` postinstall.
+> **Note**: Claude Code skills/agents are automatically installed via `@simplysm/sd-claude` postinstall.
 
 ### add client
 

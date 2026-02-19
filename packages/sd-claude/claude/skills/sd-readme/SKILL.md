@@ -1,131 +1,184 @@
 ---
 name: sd-readme
-description: Use when updating a package README.md to reflect recent code changes, or when asked to sync README with current implementation
+description: Use when updating a package README.md to reflect recent code changes, or when asked to sync README with current implementation, or when creating a new package README from scratch
 argument-hint: "<package-name or path> (optional - omit to update all)"
-model: sonnet
 ---
 
 # sd-readme
 
-Update README.md files based on git commits since their last modification.
+Sync package README.md with current source code by comparing exports against documentation.
 
-## Step 0: Check for Batch Mode
+## Purpose
 
-If `$ARGUMENTS` is **empty or blank**:
+README.md is the **sole API documentation source for Claude Code**. When Claude Code works in a consumer app using `@simplysm/*` packages, it reads README.md from `node_modules/` to understand the library API. Claude Code does NOT read JSDoc from source files.
 
-1. Use `Glob` with pattern `packages/*/package.json` to discover all packages.
-2. Launch **parallel subagents** via the `Task` tool (`subagent_type: "general-purpose"`, `model: "haiku"`):
-   - One subagent for **project root README.md** with prompt:
-     ```
-     Update the project root README.md at /home/kslhunter/projects/simplysm/README.md based on recent git changes.
-     - Run: git log -1 --format="%H %ai %s" -- README.md
-     - If no output, treat all commits as relevant: git log --oneline -30
-     - Otherwise: git log <hash>..HEAD --oneline
-     - If no commits since last update, report "already up to date" and stop.
-     - Read the current README.md, read CLAUDE.md for project context, then edit only affected sections.
-     - README content must be in English.
-     - Preserve existing structure. Match existing style. Do not add changelog sections.
-     ```
-   - One subagent **per package** with prompt:
-     ```
-     Update the README.md for package <pkg-name> at <pkg-path>/README.md based on recent git changes.
-     Follow these steps:
-     1. Run: git log -1 --format="%H %ai %s" -- <pkg-path>/README.md
-     2. If no output, all commits are relevant: git log --oneline -- <pkg-path>/
-        Otherwise: git log <hash>..HEAD --oneline -- <pkg-path>/
-     3. If no commits since last update, report "already up to date" and stop.
-     4. Read <pkg-path>/src/index.ts to verify all public exports are documented.
-     5. Read the current README.md, then edit only affected sections.
-     6. README content must be in English.
-     7. Preserve existing structure. Match existing style. Do not add changelog sections.
-     8. If README.md does not exist, create it following the style of other package READMEs in this repo.
-     ```
-3. Collect all subagent results and **report a summary** to the user: which READMEs were updated, which were already up to date.
-4. **Stop here** — do not proceed to the single-package steps below.
+**Therefore: every exported symbol must be documented in README.**
 
----
+## Modes
 
-## Step 1: Resolve Package Path (Single Package Mode)
+- **Single package** (`$ARGUMENTS` = package name or path): Update one package's README
+- **Batch** (`$ARGUMENTS` empty): Discover and update all packages in parallel
 
-`$ARGUMENTS` is the package name or path (e.g., `sd-cli`, `packages/sd-cli`, `packages/core-common`).
+## README Writing Rules
 
-- If it doesn't start with `packages/`, prepend `packages/`.
-- Verify `<pkg-path>/README.md` exists. If not, stop and report.
+- Written in **English**
+- All code examples must include **import paths**: `import { ... } from "@simplysm/..."`
+- **Every export** from `index.ts` must be documented — including those with `@internal` JSDoc
+- No changelog, version history, or "recently updated" sections
+- Section organization follows `index.ts` `#region` structure
+- Heading levels: `##` for major sections, `###` for sub-sections
 
-## Step 2: Gather Change Context
+### Standard Structure
 
-Run these git commands **in sequence** (second depends on first):
+```markdown
+# @simplysm/{package-name}
 
-```bash
-# 1. Last commit that modified the README
-git log -1 --format="%H %ai %s" -- <pkg-path>/README.md
+{One-line description}
+
+## Installation
+
+## Main Modules
+### {Category matching index.ts #region}
+- Description + code examples per export
+
+## Types
+
+## Dependencies (only when peer deps exist)
 ```
 
-If git log returns **no output** (README was never committed), treat all package commits as relevant:
+### docs/ Subfolder Rules
 
-```bash
-git log --oneline -- <pkg-path>/
+When README exceeds ~500 lines, split detailed documentation into `docs/`:
+- README.md becomes an **overview/index** with links: `[functionName](docs/category.md#anchor)`
+- docs/ files contain detailed descriptions, full code examples, parameter tables
+- File organization follows index.ts `#region` (e.g., `docs/types.md`, `docs/utils.md`)
+
+When README is under ~500 lines, keep everything inline.
+
+**If docs/ already exists, maintain and update it. Do not remove an existing docs/ structure.**
+
+## Single Package Mode
+
+### Step 1: Resolve Path
+
+`$ARGUMENTS` may be a package name or path (e.g., `core-common`, `packages/core-common`).
+If not starting with `packages/`, prepend it.
+
+### Step 2: Build Export Map (Source of Truth)
+
+1. Read `<pkg-path>/src/index.ts` — get all exports and their `#region` grouping
+2. For each exported module, read the source file to extract:
+   - Function signatures (params, return type, overloads)
+   - Class public API (constructor, methods, properties)
+   - Type/interface definitions
+   - Default values, options objects
+
+### Step 3: Build Documentation Map
+
+Read `<pkg-path>/README.md` (if exists). If docs/ exists, read those files too.
+Map each documented item to its current documentation content.
+
+### Step 4: Diff and Report
+
+Compare export map (Step 2) against documentation map (Step 3):
+
+| Status | Meaning |
+|--------|---------|
+| **ADDED** | Exported in source but not in README |
+| **REMOVED** | In README but no longer exported |
+| **CHANGED** | Both exist but API signature differs |
+| **OK** | Documentation matches source |
+
+**Report to user before editing:**
+```
+ADDED (3):
+  - strToCamelCase (from utils/str.ts)
+  - objGetChainValueByDepth (from utils/obj.ts)
+  - ZipArchiveProgress type (from zip/sd-zip.ts)
+
+REMOVED (1):
+  - oldFunction (no longer exported)
+
+CHANGED (2):
+  - objMerge: added `deep` parameter
+  - Set.toggle: added `addOrDel` optional parameter
+
+OK: 45 items unchanged
 ```
 
-Otherwise, take the commit hash from above, then:
+**Wait for user confirmation before proceeding to edit.**
 
-```bash
-# 2. All commits to the package since that hash
-git log <hash>..HEAD --oneline -- <pkg-path>/
+### Step 5: Apply Updates
+
+- **ADDED**: Write documentation matching existing style. Place in the section matching the item's `#region` in index.ts. Include description + code example with import path.
+- **REMOVED**: Delete the documentation entry.
+- **CHANGED**: Update existing entry to match current API. Preserve code examples if still valid.
+- **OK**: Do not touch.
+
+**If README uses docs/ links**: update the corresponding docs/ file, not just README.
+
+### Step 6: Size Check
+
+After updates, if README exceeds ~500 lines and no docs/ exists:
+suggest splitting to the user (do not auto-split without confirmation).
+
+## Batch Mode
+
+When `$ARGUMENTS` is empty:
+
+1. Discover all packages: Glob `packages/*/package.json`
+2. Launch **parallel subagents** (`subagent_type: "general-purpose"`, `model: "sonnet"`) — one per package + one for project root:
+
+**Per-package subagent prompt template:**
+```
+Update README.md for package {pkg-name} at {pkg-path}.
+
+PURPOSE: README.md is the sole API documentation source for Claude Code.
+Every exported symbol must be documented. Claude Code does NOT read JSDoc.
+
+STEPS:
+1. Read {pkg-path}/src/index.ts — get all exports and #region grouping.
+2. For each export, read the source file for signatures, classes, types.
+3. Read {pkg-path}/README.md (and docs/ if exists).
+4. Compare exports vs documentation:
+   - ADDED (in source, not in README): add documentation with description + code example.
+     Include import path: import { X } from "@simplysm/{pkg-name}"
+   - REMOVED (in README, not in source): delete documentation.
+   - CHANGED (both exist, API differs): update to match current API.
+   - OK: don't touch.
+5. Section organization follows index.ts #region structure.
+6. Write in English. No changelog sections.
+7. If README doesn't exist, create with standard structure:
+   # @simplysm/{pkg-name}
+   {description from package.json}
+   ## Installation
+   ## Main Modules (sections per #region)
+   ## Types
+8. If docs/ subfolder exists, update those files too.
+9. Report: list of ADDED/REMOVED/CHANGED items.
 ```
 
-If **no commits** exist since the last README update → report "README is already up to date" and **stop**.
-
-## Step 3: Categorize Changes
-
-For each commit, assess README impact:
-
-| Category | Impact | README Action |
-|----------|--------|---------------|
-| New public export (function, class, type) | **High** | Add documentation |
-| Changed API signature (params, return type) | **High** | Update existing docs |
-| Removed/renamed public API | **High** | Remove or update |
-| New feature (user-visible behavior) | **Medium** | Add description/example |
-| Bug fix | **Low** | Skip unless it changes documented behavior |
-| Refactoring (internal) | **None** | Skip |
-| Build/config/dependency change | **None** | Skip |
-| Version bump | **None** | Skip |
-
-For commits with **unclear impact**, inspect the actual diff:
-
-```bash
-git show <hash> -- <pkg-path>/src/
+**Project root subagent prompt:**
+```
+Update the project root README.md at {project-root}/README.md.
+Read CLAUDE.md for project context.
+Compare current README against project structure and packages.
+Edit only sections that are outdated. Write in English.
+Report what was changed.
 ```
 
-## Step 4: Cross-Check Exports
+3. Collect all results. Report summary: which READMEs were updated, which had no changes.
 
-Read `<pkg-path>/src/index.ts` to verify:
+## Common Mistakes
 
-- All **current public exports** are documented in the README
-- No **removed exports** are still documented
-- Any **new exports** not yet in README are identified
-
-This catches changes that might have been missed in commit analysis.
-
-## Step 5: Present Findings
-
-Before editing, report to the user:
-
-1. **Commits analyzed**: total count and date range
-2. **Changes requiring README updates**: list each with category and what to add/modify
-3. **No-action commits**: briefly note what was skipped and why
-4. **Export mismatches**: any undocumented or stale exports found
-
-Wait for user confirmation before proceeding to edit.
-
-## Step 6: Update README
-
-Read the current README, then edit **only** the affected sections.
-
-**Rules:**
-- README content is written in **English**
-- **Preserve existing structure** — do not reorganize or rewrite unchanged sections
-- **Match style** — follow the same documentation depth, table format, and code example style as existing entries
-- For new APIs: include description, usage example, and parameter/option table if the existing style uses them
-- Remove documentation for APIs that no longer exist
-- Do not add version history, changelog, or "recently updated" sections
+| Mistake | Fix |
+|---------|-----|
+| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc |
+| Rewriting OK sections | Only touch ADDED/REMOVED/CHANGED items |
+| Ignoring existing docs/ structure | If docs/ exists, update those files too |
+| Arbitrary section reorganization | Follow index.ts `#region` structure |
+| Missing import paths in examples | Always: `import { X } from "@simplysm/..."` |
+| Writing in Korean | README must be in English |
+| Adding changelog sections | Never add version history |
+| Editing before reporting diff | Always report ADDED/REMOVED/CHANGED and wait for confirmation |
+| Destroying docs/ link format | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |

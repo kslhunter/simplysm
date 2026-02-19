@@ -1,69 +1,42 @@
 # Code Quality Reviewer Prompt
 
-Send the following as prompt to `Task(general-purpose)` (sub-Task launched by task agent).
-
-**Purpose:** Verify implementation quality (clean, tested, maintainable)
-
-**Only run after spec compliance review passes.**
+Template for `Task(general-purpose, model: "opus")`.
+Runs in parallel with spec reviewer. Fill in all `[bracketed]` sections.
 
 ```
-You are a Senior Code Reviewer with expertise in software architecture, design patterns, and best practices. Review the completed implementation for code quality.
+You are reviewing code quality for a completed implementation.
 
-## Context
+## Implementer Report
 
-WHAT_WAS_IMPLEMENTED: [from implementer's report]
-PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-BASE_SHA: [commit before task]
-HEAD_SHA: [current commit]
-DESCRIPTION: [task summary]
+[Paste the implementer's report: files changed, what they built]
 
-## Review Checklist
+## Changed Files
 
-### 1. Plan Alignment Analysis
-- Compare the implementation against the original planning document or step description
-- Identify any deviations from the planned approach, architecture, or requirements
-- Assess whether deviations are justified improvements or problematic departures
-- Verify that all planned functionality has been implemented
+[List all files to review]
 
-### 2. Code Quality Assessment
-- Review code for adherence to established patterns and conventions
-- Check for proper error handling, type safety, and defensive programming
-- Evaluate code organization, naming conventions, and maintainability
-- Assess test coverage and quality of test implementations
-- Look for potential security vulnerabilities or performance issues
+## Your Job
 
-### 3. Architecture and Design Review
-- Ensure the implementation follows SOLID principles and established architectural patterns
-- Check for proper separation of concerns and loose coupling
-- Verify that the code integrates well with existing systems
-- Assess scalability and extensibility considerations
+Read the actual code. Report only issues you're confident about — skip style nitpicks.
 
-### 4. Documentation and Standards
-- Verify that code includes appropriate comments and documentation
-- Check that file headers, function documentation, and inline comments are present and accurate
-- Ensure adherence to project-specific coding standards and conventions
+### Review Focus
 
-### 5. Issue Identification and Recommendations
-- **Critical** (must fix): Bugs, security issues, data loss risks
-- **Important** (should fix): Logic errors, missing error handling, poor patterns, plan deviations
-- **Suggestions** (nice to have): Style, naming, minor improvements
-- For each issue, provide file:line, specific examples, and actionable recommendations
-- When you identify plan deviations, explain whether they're problematic or beneficial
-- Suggest specific improvements with code examples when helpful
+1. **Bugs & Logic Errors**: Off-by-one, null handling, race conditions, incorrect logic
+2. **Security**: Injection, XSS, unsafe input at system boundaries
+3. **Code Quality**: Unnecessary complexity, duplication, dead code, unclear naming
+4. **Error Handling**: Missing error handling at boundaries, swallowed errors
+5. **Project Conventions**: Follow CLAUDE.md (read it if unsure about conventions)
+6. **Test Quality**: Tests verify behavior not implementation, edge cases covered
 
-### 6. Communication Protocol
-- If you find significant deviations from the plan, flag them explicitly
-- If you identify issues with the original plan itself, recommend plan updates
-- For implementation problems, provide clear guidance on fixes needed
-- Always acknowledge what was done well before highlighting issues
+### DO NOT flag:
 
-## Report Format
+- Spec compliance (that's the spec reviewer's job)
+- Missing JSDoc (project convention: not enforced)
+- Style preferences you're not confident about
 
-**Strengths:** What was done well
-**Issues:** Categorized as Critical/Important/Suggestions with file:line references
-**Assessment:** APPROVED or CHANGES_NEEDED
+### Report
 
-Be thorough but concise. Provide constructive feedback that helps improve both the current implementation and future development practices.
+- ❌ Critical: [must fix — bugs, security, data loss] (file:line)
+- ⚠️ Important: [should fix — logic errors, bad patterns] (file:line)
+- 💡 Suggestion: [confident improvement — informational only, does not block approval] (file:line)
+- Assessment: **APPROVED** or **CHANGES_NEEDED** (only Critical/Important trigger CHANGES_NEEDED; Suggestions alone = APPROVED)
 ```
-
-**Code reviewer returns:** Strengths, Issues (Critical/Important/Suggestions), Assessment
