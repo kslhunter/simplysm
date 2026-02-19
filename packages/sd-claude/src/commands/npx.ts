@@ -10,6 +10,7 @@ export function runNpx(args: string[]): void {
   const child = spawn(command, args, {
     stdio: "inherit",
     env: process.env,
+    shell: true,
   });
 
   child.on("exit", (code) => {
