@@ -4,6 +4,7 @@ import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import {
   getCompilerOptionsForPackage,
+  getPackageFiles,
   getPackageSourceFiles,
   parseRootTsconfig,
   type TypecheckEnv,
@@ -193,13 +194,22 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
     let tsBuildInfoFile: string;
 
     if (info.pkgDir != null && info.env != null) {
-      // 패키지 모드 (기존 동작)
-      rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
+      // 패키지 모드
       baseOptions = await getCompilerOptionsForPackage(parsedConfig.options, info.env, info.pkgDir);
-      const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
-      diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix);
 
       const shouldEmit = info.emit !== false;
+      if (shouldEmit) {
+        // emit 모드: src만 대상 (d.ts 생성)
+        rootFiles = getPackageSourceFiles(info.pkgDir, parsedConfig);
+        const pkgSrcPrefix = path.join(info.pkgDir, "src") + path.sep;
+        diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgSrcPrefix);
+      } else {
+        // 타입체크 모드: 패키지 전체 파일 대상 (src + tests)
+        rootFiles = getPackageFiles(info.pkgDir, parsedConfig);
+        const pkgPrefix = info.pkgDir + path.sep;
+        diagnosticFilter = (d) => d.file == null || d.file.fileName.startsWith(pkgPrefix);
+      }
+
       tsBuildInfoFile = path.join(
         info.pkgDir,
         ".cache",

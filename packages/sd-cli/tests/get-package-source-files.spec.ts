@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import path from "path";
 import type ts from "typescript";
-import { getPackageSourceFiles } from "../src/utils/tsconfig";
+import { getPackageSourceFiles, getPackageFiles } from "../src/utils/tsconfig";
 
 describe("getPackageSourceFiles", () => {
   const sep = path.sep;
@@ -87,5 +87,60 @@ describe("getPackageSourceFiles", () => {
     const result = getPackageSourceFiles(pkgDir, parsedConfig);
 
     expect(result).toEqual([`${sep}project${sep}packages${sep}core${sep}src${sep}index.ts`]);
+  });
+});
+
+describe("getPackageFiles", () => {
+  it("패키지 디렉토리 내 모든 파일 필터링 (src + tests)", () => {
+    const pkgDir = `/project/packages/core-common`;
+    const parsedConfig = {
+      fileNames: [
+        `/project/packages/core-common/src/index.ts`,
+        `/project/packages/core-common/src/utils/string.ts`,
+        `/project/packages/core-common/tests/utils.spec.ts`,
+        `/project/packages/core-common/tests/setup/helpers.ts`,
+        `/project/packages/core-node/src/index.ts`,
+        `/project/packages/core-node/tests/fs.spec.ts`,
+      ],
+    } as ts.ParsedCommandLine;
+
+    const result = getPackageFiles(pkgDir, parsedConfig);
+
+    expect(result).toEqual([
+      `/project/packages/core-common/src/index.ts`,
+      `/project/packages/core-common/src/utils/string.ts`,
+      `/project/packages/core-common/tests/utils.spec.ts`,
+      `/project/packages/core-common/tests/setup/helpers.ts`,
+    ]);
+  });
+
+  it("유사한 이름의 다른 패키지 파일 제외 (core vs core-common)", () => {
+    const pkgDir = `/project/packages/core`;
+    const parsedConfig = {
+      fileNames: [
+        `/project/packages/core/src/index.ts`,
+        `/project/packages/core/tests/utils.spec.ts`,
+        `/project/packages/core-common/src/index.ts`,
+        `/project/packages/core-common/tests/utils.spec.ts`,
+      ],
+    } as ts.ParsedCommandLine;
+
+    const result = getPackageFiles(pkgDir, parsedConfig);
+
+    expect(result).toEqual([
+      `/project/packages/core/src/index.ts`,
+      `/project/packages/core/tests/utils.spec.ts`,
+    ]);
+  });
+
+  it("파일이 없으면 빈 배열 반환", () => {
+    const pkgDir = `/project/packages/empty`;
+    const parsedConfig = {
+      fileNames: [`/project/packages/core/src/index.ts`],
+    } as ts.ParsedCommandLine;
+
+    const result = getPackageFiles(pkgDir, parsedConfig);
+
+    expect(result).toEqual([]);
   });
 });

@@ -114,3 +114,11 @@ export function getPackageSourceFiles(
   const pkgSrcPrefix = path.join(pkgDir, "src") + path.sep;
   return parsedConfig.fileNames.filter((f) => f.startsWith(pkgSrcPrefix));
 }
+
+/**
+ * 패키지의 전체 파일 목록 가져오기 (src + tests 포함)
+ */
+export function getPackageFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
+  const pkgPrefix = pkgDir + path.sep;
+  return parsedConfig.fileNames.filter((f) => f.startsWith(pkgPrefix));
+}
