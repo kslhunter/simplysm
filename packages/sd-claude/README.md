@@ -1,36 +1,42 @@
-# @simplysm/claude
+# @simplysm/sd-claude
 
-A Claude Code skills, agents, and rules package for the Simplysm framework. Automatically installs Claude Code assets via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
+Simplysm Claude Code CLI — asset installer and cross-platform npx wrapper. Automatically installs Claude Code assets (skills, agents, rules) via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
 
 ## Installation
 
 ```bash
-pnpm add -D @simplysm/claude
+pnpm add -D @simplysm/sd-claude
 # or
-npm install --save-dev @simplysm/claude
+npm install --save-dev @simplysm/sd-claude
 ```
 
 Skills, agents, and rules are automatically installed to `.claude/` on `pnpm install` / `npm install`.
 
 ## How It Works
 
-When installed as a dependency, the `postinstall` script (`scripts/postinstall.mjs`):
+When installed as a dependency, the `postinstall` script (`scripts/postinstall.mjs`) invokes the `sd-claude install` CLI command, which:
 
 1. Copies all `sd-*` assets (skills, agents, rules, statusline) to the project's `.claude/` directory
 2. Configures `statusLine` in `.claude/settings.json` to use `sd-statusline.js`
-3. Existing `sd-*` entries are replaced with the latest version on each install
+3. Configures MCP servers in `.mcp.json` (context7 and playwright) using the cross-platform npx wrapper
+4. Existing `sd-*` entries are replaced with the latest version on each install
 
 The `prepack` script (`scripts/sync-claude-assets.mjs`) runs before `npm pack` / `npm publish` to sync assets from the project root `.claude/` directory into the package's `claude/` directory.
 
-Updates also trigger reinstallation (`pnpm up @simplysm/claude`).
+Updates also trigger reinstallation (`pnpm up @simplysm/sd-claude`).
 
 ### Directory Structure (Published Package)
 
 ```
-@simplysm/claude/
+@simplysm/sd-claude/
+  dist/
+    sd-claude.js               # CLI entry point (bin)
+    commands/
+      install.js               # Asset installation logic
+      npx.js                   # Cross-platform npx wrapper
   scripts/
-    postinstall.mjs          # Copies sd-* assets to .claude/ on install
-    sync-claude-assets.mjs   # Syncs assets from .claude/ before publish
+    postinstall.mjs            # Thin wrapper — calls `sd-claude install`
+    sync-claude-assets.mjs     # Syncs assets from .claude/ before publish
   claude/
     sd-statusline.js          # Status line script
     rules/
@@ -59,6 +65,47 @@ Updates also trigger reinstallation (`pnpm up @simplysm/claude`).
       sd-skill/                # Skill authoring skill
       sd-api-name-review/      # API naming review skill
 ```
+
+## CLI Commands
+
+The package provides an `sd-claude` binary with two subcommands:
+
+```bash
+# Install Claude Code assets to the project's .claude/ directory
+sd-claude install
+
+# Cross-platform npx wrapper (uses npx.cmd on Windows, npx elsewhere)
+sd-claude npx -y @upstash/context7-mcp
+```
+
+`sd-claude install` is called automatically by the `postinstall` script. `sd-claude npx` is used in `.mcp.json` to launch MCP servers cross-platform.
+
+## Programmatic API
+
+```typescript
+import { runInstall, runNpx } from "@simplysm/sd-claude";
+```
+
+### runInstall
+
+```typescript
+function runInstall(): void
+```
+
+Installs Claude Code assets to the project's `.claude/` directory. Performs:
+- Finds project root via `INIT_CWD` or `node_modules` path traversal
+- Skips if running inside the simplysm monorepo itself
+- Cleans existing `sd-*` entries, then copies fresh versions from the package's `claude/` directory
+- Configures `statusLine` in `.claude/settings.json`
+- Configures MCP servers (context7, playwright) in `.mcp.json`
+
+### runNpx
+
+```typescript
+function runNpx(args: string[]): void
+```
+
+Cross-platform npx wrapper. Spawns `npx.cmd` on Windows, `npx` on other platforms. Passes all arguments through and forwards the exit code.
 
 ## Skills
 
@@ -138,24 +185,34 @@ Creates comprehensive implementation plans with TDD, assuming the implementer ha
 
 ### sd-plan-dev
 
-Executes implementation plans via parallel Task agents with dependency-aware scheduling.
+Executes implementation plans with right-sized process: direct execution for small plans, parallel agents for large plans.
 
 ```
 /sd-plan-dev
 ```
 
-**Process:**
+**Mode selection:**
+- **Direct Mode** — tasks ≤ 3 AND source files ≤ 5: implement directly in main context, no agents
+- **Agent Mode** — otherwise: parallel Task agents with dependency-aware scheduling
+
+**Direct Mode process:**
+1. Read plan, implement tasks in dependency order
+2. For each task: implement, write tests, self-review
+3. After all tasks: `pnpm typecheck` + `pnpm lint` + `pnpm vitest` on affected packages
+
+**Agent Mode process:**
 - Reads plan, extracts full task text, creates TaskCreate
 - Analyzes file dependencies to build a task graph
 - Groups independent tasks into parallel batches
 - Each task agent: implements, launches parallel spec + quality review sub-Tasks, fixes issues
-- Repeats review cycle until both reviewers approve
+- Repeats review cycle until both reviewers approve (max 3 cycles)
 - Final review Task across entire implementation
 
-**Agents used per task:**
+**Agents used per task (Agent Mode):**
 - **Task agent** (implementer) — implements the task, runs sub-Tasks for review
 - **Spec reviewer** sub-Task (`model: opus`) — verifies spec compliance
 - **Quality reviewer** sub-Task (`model: opus`) — reviews code quality
+- **Final reviewer** sub-Task (`model: opus`) — cross-task integration check
 
 **If task agent returns questions:** orchestrator answers and re-launches that agent; other parallel agents continue unaffected.
 
@@ -262,21 +319,21 @@ Creates a git commit following Conventional Commits style.
 
 ### sd-readme
 
-Updates README.md files based on git commits since their last modification.
+Syncs package README.md with current source code by comparing exports against documentation.
 
 ```
 /sd-readme                     # Update all package READMEs in parallel
 /sd-readme packages/solid      # Update a single package README
 ```
 
-**Batch mode** (no argument): discovers all packages via Glob, launches parallel haiku subagents — one for the project root README and one per package. Reports which READMEs were updated vs. already up to date.
+**Batch mode** (no argument): discovers all packages via Glob, launches parallel sonnet subagents — one for the project root README and one per package. Reports which READMEs were updated vs. already up to date.
 
 **Single package process:**
-1. Finds last commit that modified the README
-2. Gathers all commits since then
-3. Cross-checks exports in `src/index.ts`
-4. Presents findings and waits for confirmation
-5. Edits only affected sections
+1. Reads `src/index.ts` to build the export map (source of truth)
+2. Reads existing README.md to build the documentation map
+3. Diffs: ADDED (exported but not documented), REMOVED (documented but not exported), CHANGED (API signature differs), OK (matches)
+4. Reports findings and waits for user confirmation
+5. Applies updates — only touches ADDED/REMOVED/CHANGED items
 
 ### sd-worktree
 
@@ -329,7 +386,7 @@ Auto skill/agent router. Analyzes the user request and selects the best matching
 # Selects sd-review and executes it
 ```
 
-**Catalog includes:** `sd-brainstorm`, `sd-debug`, `sd-tdd`, `sd-plan`, `sd-plan-dev`, `sd-explore`, `sd-review`, `sd-check`, `sd-commit`, `sd-readme`, `sd-api-name-review`, `sd-worktree`, `sd-skill` (skills), and `sd-code-reviewer`, `sd-code-simplifier`, `sd-api-reviewer` (agents).
+**Catalog includes:** `sd-brainstorm`, `sd-debug`, `sd-tdd`, `sd-plan`, `sd-plan-dev`, `sd-explore`, `sd-review`, `sd-check`, `sd-commit`, `sd-readme`, `sd-api-name-review`, `sd-worktree`, `sd-skill` (skills), and `sd-code-reviewer`, `sd-code-simplifier`, `sd-api-reviewer`, `sd-security-reviewer` (agents).
 
 ### sd-skill
 
@@ -456,16 +513,7 @@ The script reads Claude Code's stdin JSON for context window and model info, and
 
 ### postinstall.mjs
 
-Runs automatically on `pnpm install` / `npm install`. Copies `sd-*` assets from the package to the project's `.claude/` directory.
-
-```javascript
-// Uses INIT_CWD to find the project root
-// Deletes existing sd-* entries, then copies fresh versions
-// Configures statusLine in .claude/settings.json
-```
-
-**Environment variables:**
-- `INIT_CWD` - Set by pnpm/npm, points to the project root where the install command was run
+Thin wrapper that runs automatically on `pnpm install` / `npm install`. If `dist/` exists (i.e., the package is built), it invokes `sd-claude install` CLI command. Skips silently in monorepo development environments where `dist/` has not been built yet.
 
 ### sync-claude-assets.mjs
 
@@ -474,9 +522,13 @@ Runs before `npm pack` / `npm publish` (via `prepack` script). Syncs `sd-*` asse
 ## Caveats
 
 - If using `pnpm install --ignore-scripts`, the postinstall won't run
-- If using `onlyBuiltDependencies` in `pnpm-workspace.yaml`, add `@simplysm/claude` to the list
+- If using `onlyBuiltDependencies` in `pnpm-workspace.yaml`, add `@simplysm/sd-claude` to the list
 - Skills and agents use the `sd-` prefix to distinguish them from user-defined assets
 - Existing `sd-*` entries are always replaced with the latest version on install
+
+## Dependencies
+
+- `yargs` — CLI argument parsing
 
 ## License
 
