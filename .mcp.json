@@ -1,12 +1,17 @@
 {
   "mcpServers": {
     "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
+      "command": "node_modules/.bin/tsx",
+      "args": ["packages/sd-claude/src/sd-claude.ts", "npx", "-y", "@upstash/context7-mcp"]
     },
     "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest", "--headless"],
+      "command": "node_modules/.bin/tsx",
+      "args": [
+        "packages/sd-claude/src/sd-claude.ts",
+        "npx",
+        "@playwright/mcp@latest",
+        "--headless"
+      ],
       "env": {
         "PLAYWRIGHT_OUTPUT_DIR": ".playwright-mcp"
       }
