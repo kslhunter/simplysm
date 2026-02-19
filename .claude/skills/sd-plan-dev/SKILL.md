@@ -1,7 +1,7 @@
 ---
 name: sd-plan-dev
 description: Use when executing implementation plans with independent tasks in the current session
-model: sonnet
+model: opus
 ---
 
 # Plan Execution
