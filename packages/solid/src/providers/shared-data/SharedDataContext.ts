@@ -38,7 +38,8 @@ export interface SharedDataAccessor<TData> {
  * 공유 데이터 Context 값
  *
  * @remarks
- * 각 데이터 key별 SharedDataAccessor와 전체 상태 관리 메서드를 포함한다.
+ * - configure 호출 전: wait, busy, configure만 접근 가능. 데이터 접근 시 throw
+ * - configure 호출 후: 각 데이터 key별 SharedDataAccessor와 전체 상태 관리 메서드 포함
  */
 export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   [K in keyof TSharedData]: SharedDataAccessor<TSharedData[K]>;
@@ -47,6 +48,10 @@ export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   wait: () => Promise<void>;
   /** fetch 진행 중 여부 */
   busy: Accessor<boolean>;
+  /** definitions를 설정하여 데이터 구독 시작 */
+  configure: (definitions: {
+    [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]>;
+  }) => void;
 };
 
 /** 공유 데이터 Context */
@@ -62,9 +67,7 @@ export function useSharedData<
 >(): SharedDataValue<TSharedData> {
   const context = useContext(SharedDataContext);
   if (!context) {
-    throw new Error(
-      "useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다. SharedDataProvider는 ServiceClientProvider 아래에 위치해야 합니다",
-    );
+    throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다");
   }
   return context as unknown as SharedDataValue<TSharedData>;
 }

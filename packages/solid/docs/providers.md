@@ -1,13 +1,59 @@
 # Providers
 
-Compose providers at the app root. Some providers depend on others and **must** be nested inside them. If the nesting order violates a required dependency, the dependent provider will throw a runtime error or malfunction.
+## InitializeProvider (Recommended)
+
+The simplest way to set up `@simplysm/solid`. Wraps all providers in the correct dependency order. Only prop: `clientName`.
+
+```tsx
+import { InitializeProvider } from "@simplysm/solid";
+
+<InitializeProvider clientName="my-app">
+  <AppRoot />
+</InitializeProvider>
+```
+
+Configuration is done via hooks inside child components:
+
+```tsx
+function AppRoot() {
+  const serviceClient = useServiceClient();
+
+  onMount(async () => {
+    await serviceClient.connect("main", { port: 3000 });
+    useSyncStorage()!.configure(myStorageAdapter);
+    useLogger().configure(myLogAdapter);
+    useSharedData().configure(definitions);
+  });
+}
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `clientName` | `string` | Client identifier (used as storage key prefix) |
+
+**Internal nesting order:**
+
+```
+ConfigProvider → SyncStorageProvider → LoggerProvider →
+  NotificationProvider + NotificationBanner →
+    ErrorLoggerProvider → PwaUpdateProvider →
+      ClipboardProvider → ThemeProvider →
+        ServiceClientProvider → SharedDataProvider →
+          BusyProvider → DialogProvider → {children}
+```
+
+---
+
+## Individual Providers
+
+For advanced use cases, individual providers can be composed manually. `InitializeProvider` uses these internally.
 
 ### Dependency Graph
 
 ```
 ConfigProvider ─────────────────────┐ (no deps, must be outermost)
-  SyncStorageProvider ──────────────┤ (no deps, optional)
-    LoggerProvider ─────────────────┤ (no deps, optional)
+  SyncStorageProvider ──────────────┤ (no deps)
+    LoggerProvider ─────────────────┤ (no deps)
       │                             │
       ├─ ThemeProvider              │ ← requires ConfigProvider
       │                             │   (uses SyncStorageProvider if present)
@@ -42,28 +88,7 @@ ConfigProvider ─────────────────────�
 | `BusyProvider` | (none) | |
 | `DialogProvider` | (none) | |
 
-### Recommended Nesting Order
-
-```tsx
-<ConfigProvider clientName="my-app">
-  <SyncStorageProvider storage={...}>     {/* optional */}
-    <LoggerProvider adapter={...}>        {/* optional */}
-      <NotificationProvider>
-        <NotificationBanner />
-        <ErrorLoggerProvider>
-          <PwaUpdateProvider>
-            <ClipboardProvider>
-              <ThemeProvider>
-                <BusyProvider>{/* app content */}</BusyProvider>
-              </ThemeProvider>
-            </ClipboardProvider>
-          </PwaUpdateProvider>
-        </ErrorLoggerProvider>
-      </NotificationProvider>
-    </LoggerProvider>
-  </SyncStorageProvider>
-</ConfigProvider>
-```
+---
 
 ## ConfigProvider
 
@@ -83,33 +108,31 @@ Required root provider. Provides `clientName` used as storage key prefix.
 
 ## SyncStorageProvider
 
-Optional provider for custom sync storage (cross-device sync). When present, `useSyncConfig` uses this storage instead of `localStorage`.
+Provider for custom sync storage (cross-device sync). No props — configure via `useSyncStorage().configure()`. Before configuration, `useSyncConfig` falls back to `localStorage`.
 
 ```tsx
-<SyncStorageProvider storage={myStorageAdapter}>
+<SyncStorageProvider>
   {/* children */}
 </SyncStorageProvider>
-```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `storage` | `StorageAdapter` | Storage adapter implementation |
+// Later in a child component:
+useSyncStorage()!.configure(myStorageAdapter);
+```
 
 ---
 
 ## LoggerProvider
 
-Optional provider for remote logging. When present, `useLogger` sends logs to the adapter instead of `consola`.
+Provider for remote logging. No props — configure via `useLogger().configure()`. Before configuration, `useLogger` falls back to `consola`.
 
 ```tsx
-<LoggerProvider adapter={myLogAdapter}>
+<LoggerProvider>
   {/* children */}
 </LoggerProvider>
-```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `adapter` | `LogAdapter` | Log adapter implementation |
+// Later in a child component:
+useLogger().configure(myLogAdapter);
+```
 
 ---
 
@@ -213,41 +236,23 @@ Defaults for `host`, `port`, and `ssl` are derived from `window.location` when o
 
 ## SharedDataProvider
 
-Shared data provider for managing server-side data subscriptions. Works with `ServiceClientProvider` to provide reactive shared data across components via `useSharedData`.
+Shared data provider for managing server-side data subscriptions. No props — configure via `useSharedData().configure()`. Before configuration, data access throws an error.
 
 ```tsx
-import { SharedDataProvider, type SharedDataDefinition } from "@simplysm/solid";
+<SharedDataProvider>
+  <App />
+</SharedDataProvider>
 
-interface MySharedData {
-  users: UserRecord;
-  products: ProductRecord;
-}
-
-const definitions: { [K in keyof MySharedData]: SharedDataDefinition<MySharedData[K]> } = {
+// After service client connects:
+useSharedData().configure({
   users: {
     serviceKey: "main",
     fetch: async (changeKeys) => fetchUsers(changeKeys),
     getKey: (item) => item.id,
-    orderBy: [(item) => item.name, "asc"],
+    orderBy: [[(item) => item.name, "asc"]],
   },
-  products: {
-    serviceKey: "main",
-    fetch: async (changeKeys) => fetchProducts(changeKeys),
-    getKey: (item) => item.id,
-    orderBy: [(item) => item.name, "asc"],
-  },
-};
-
-<SharedDataProvider definitions={definitions}>
-  <App />
-</SharedDataProvider>
+});
 ```
-
-**SharedDataProvider Props:**
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `definitions` | `{ [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]> }` | Map of data key to fetch definition |
 
 **SharedDataDefinition type:**
 
@@ -292,6 +297,7 @@ function MyComponent() {
 |-----------------|------|-------------|
 | `wait` | `() => Promise<void>` | Wait until all initial fetches complete |
 | `busy` | `Accessor<boolean>` | True while any fetch is in progress |
+| `configure` | `(definitions) => void` | Set up data subscriptions (call once after service client connects) |
 
 **SharedDataChangeEvent:**
 

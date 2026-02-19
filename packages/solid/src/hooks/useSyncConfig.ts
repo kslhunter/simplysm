@@ -1,4 +1,4 @@
-import { type Accessor, type Setter, createEffect, createSignal } from "solid-js";
+import { type Accessor, type Setter, createEffect, createSignal, untrack } from "solid-js";
 import { useConfig } from "../providers/ConfigContext";
 import { useSyncStorage } from "../providers/SyncStorageContext";
 
@@ -7,6 +7,8 @@ import { useSyncStorage } from "../providers/SyncStorageContext";
  *
  * Uses `SyncStorageProvider` storage if available, otherwise falls back to `localStorage`.
  * Designed for data that should persist and sync across devices (e.g., theme, user preferences, DataSheet configs).
+ *
+ * When the adapter changes via `useSyncStorage().configure()`, re-reads from the new adapter.
  *
  * @param key - Storage key for the config value
  * @param defaultValue - Default value if no stored value exists
@@ -28,50 +30,52 @@ export function useSyncConfig<TValue>(
   defaultValue: TValue,
 ): [Accessor<TValue>, Setter<TValue>, Accessor<boolean>] {
   const config = useConfig();
-  const syncStorage = useSyncStorage();
+  const syncStorageCtx = useSyncStorage();
   const prefixedKey = `${config.clientName}.${key}`;
   const [value, setValue] = createSignal<TValue>(defaultValue);
   const [ready, setReady] = createSignal(false);
 
-  // Initialize from storage
-  const initializeFromStorage = async () => {
-    if (!syncStorage) {
-      // Use localStorage synchronously
+  // Initialize from storage (reactive to adapter changes via configure())
+  createEffect(() => {
+    const currentAdapter = syncStorageCtx?.adapter();
+    setReady(false);
+
+    void (async () => {
+      if (!currentAdapter) {
+        // Use localStorage synchronously
+        try {
+          const stored = localStorage.getItem(prefixedKey);
+          if (stored !== null) {
+            setValue(() => JSON.parse(stored) as TValue);
+          }
+        } catch {
+          // Ignore parse errors, keep default value
+        }
+        setReady(true);
+        return;
+      }
+
+      // Use custom adapter asynchronously
       try {
-        const stored = localStorage.getItem(prefixedKey);
+        const stored = await currentAdapter.getItem(prefixedKey);
         if (stored !== null) {
           setValue(() => JSON.parse(stored) as TValue);
         }
       } catch {
-        // Ignore parse errors, keep default value
-      }
-      setReady(true);
-      return;
-    }
-
-    // Use syncStorage asynchronously
-    try {
-      const stored = await syncStorage.getItem(prefixedKey);
-      if (stored !== null) {
-        setValue(() => JSON.parse(stored) as TValue);
-      }
-    } catch {
-      // Fall back to localStorage on error
-      try {
-        const stored = localStorage.getItem(prefixedKey);
-        if (stored !== null) {
-          setValue(() => JSON.parse(stored) as TValue);
+        // Fall back to localStorage on error
+        try {
+          const stored = localStorage.getItem(prefixedKey);
+          if (stored !== null) {
+            setValue(() => JSON.parse(stored) as TValue);
+          }
+        } catch {
+          // Ignore parse errors
         }
-      } catch {
-        // Ignore parse errors
+      } finally {
+        setReady(true);
       }
-    } finally {
-      setReady(true);
-    }
-  };
-
-  // Initialize on mount
-  void initializeFromStorage();
+    })();
+  });
 
   // Save to storage whenever value changes
   createEffect(() => {
@@ -79,16 +83,19 @@ export function useSyncConfig<TValue>(
     const currentValue = value();
     const serialized = JSON.stringify(currentValue);
 
-    if (!syncStorage) {
+    // Read adapter untracked to avoid re-running save effect when adapter changes
+    const currentAdapter = untrack(() => syncStorageCtx?.adapter());
+
+    if (!currentAdapter) {
       // Use localStorage synchronously
       localStorage.setItem(prefixedKey, serialized);
       return;
     }
 
-    // Use syncStorage asynchronously
+    // Use custom adapter asynchronously
     void (async () => {
       try {
-        await syncStorage.setItem(prefixedKey, serialized);
+        await currentAdapter.setItem(prefixedKey, serialized);
       } catch {
         // Fall back to localStorage on error
         localStorage.setItem(prefixedKey, serialized);

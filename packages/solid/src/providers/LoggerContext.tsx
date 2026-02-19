@@ -1,4 +1,10 @@
-import { createContext, useContext, type ParentComponent } from "solid-js";
+import {
+  type Accessor,
+  createContext,
+  createSignal,
+  useContext,
+  type ParentComponent,
+} from "solid-js";
 
 /**
  * 로그 어댑터 인터페이스
@@ -12,35 +18,58 @@ export interface LogAdapter {
 }
 
 /**
+ * 로그 어댑터 Context 값
+ *
+ * @remarks
+ * - `adapter`: 현재 설정된 LogAdapter (signal). configure 전에는 undefined
+ * - `configure`: adapter를 나중에 주입하는 함수
+ */
+export interface LoggerContextValue {
+  adapter: Accessor<LogAdapter | undefined>;
+  configure: (adapter: LogAdapter) => void;
+}
+
+/**
  * 로그 어댑터 Context
  *
  * @remarks
  * Provider가 없으면 `undefined` (useLogger에서 consola로 fallback)
  */
-export const LoggerContext = createContext<LogAdapter | undefined>(undefined);
+export const LoggerContext = createContext<LoggerContextValue>();
 
 /**
  * 로그 어댑터 Context에 접근하는 훅
  *
- * @returns LogAdapter 또는 undefined (Provider가 없으면)
+ * @returns LoggerContextValue 또는 undefined (Provider가 없으면)
  */
-export function useLogAdapter(): LogAdapter | undefined {
+export function useLogAdapter(): LoggerContextValue | undefined {
   return useContext(LoggerContext);
 }
 
 /**
  * 로그 어댑터 Provider
  *
+ * @remarks
+ * - prop 없이 사용. adapter는 `useLogger().configure()`로 나중에 주입
+ * - configure 전에는 useLogger가 consola로 fallback
+ *
  * @example
  * ```tsx
- * <LoggerProvider adapter={myLogAdapter}>
+ * <LoggerProvider>
  *   <App />
  * </LoggerProvider>
+ *
+ * // 자식 컴포넌트에서 나중에 설정:
+ * useLogger().configure(myLogAdapter);
  * ```
  */
-export const LoggerProvider: ParentComponent<{ adapter: LogAdapter }> = (props) => {
-  return (
-    // eslint-disable-next-line solid/reactivity -- adapter는 초기 설정값으로 변경되지 않음
-    <LoggerContext.Provider value={props.adapter}>{props.children}</LoggerContext.Provider>
-  );
+export const LoggerProvider: ParentComponent = (props) => {
+  const [adapter, setAdapter] = createSignal<LogAdapter | undefined>();
+
+  const value: LoggerContextValue = {
+    adapter,
+    configure: (a: LogAdapter) => setAdapter(() => a),
+  };
+
+  return <LoggerContext.Provider value={value}>{props.children}</LoggerContext.Provider>;
 };

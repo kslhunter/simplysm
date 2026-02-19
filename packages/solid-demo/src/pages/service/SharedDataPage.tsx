@@ -7,7 +7,6 @@ import {
   useServiceClient,
   SharedDataProvider,
   useSharedData,
-  type SharedDataDefinition,
   Topbar,
   Table,
   BusyContainer,
@@ -128,12 +127,39 @@ const SharedDataDemo: Component = () => {
 const ConnectedSharedDataDemo: Component = () => {
   const serviceClient = useServiceClient();
   const notification = useNotification();
+  const sharedData = useSharedData<DemoSharedData>();
 
   const [connected, setConnected] = createSignal(false);
 
   onMount(async () => {
     try {
       await serviceClient.connect("main", { port: 40081 });
+
+      sharedData.configure({
+        user: {
+          serviceKey: "main",
+          fetch: async (changeKeys) => {
+            const client = serviceClient.get("main");
+            return (await client.send("SharedDataDemoService", "getUsers", [
+              changeKeys,
+            ])) as IDemoUser[];
+          },
+          getKey: (item) => item.id,
+          orderBy: [[(item) => item.name, "asc"]],
+        },
+        company: {
+          serviceKey: "main",
+          fetch: async (changeKeys) => {
+            const client = serviceClient.get("main");
+            return (await client.send("SharedDataDemoService", "getCompanies", [
+              changeKeys,
+            ])) as IDemoCompany[];
+          },
+          getKey: (item) => item.id,
+          orderBy: [[(item) => item.name, "asc"]],
+        },
+      });
+
       setConnected(true);
     } catch (err) {
       notification.danger("연결 실패", String(err));
@@ -146,34 +172,6 @@ const ConnectedSharedDataDemo: Component = () => {
     }
   });
 
-  const definitions: {
-    user: SharedDataDefinition<IDemoUser>;
-    company: SharedDataDefinition<IDemoCompany>;
-  } = {
-    user: {
-      serviceKey: "main",
-      fetch: async (changeKeys) => {
-        const client = serviceClient.get("main");
-        return (await client.send("SharedDataDemoService", "getUsers", [
-          changeKeys,
-        ])) as IDemoUser[];
-      },
-      getKey: (item) => item.id,
-      orderBy: [[(item) => item.name, "asc"]],
-    },
-    company: {
-      serviceKey: "main",
-      fetch: async (changeKeys) => {
-        const client = serviceClient.get("main");
-        return (await client.send("SharedDataDemoService", "getCompanies", [
-          changeKeys,
-        ])) as IDemoCompany[];
-      },
-      getKey: (item) => item.id,
-      orderBy: [[(item) => item.name, "asc"]],
-    },
-  };
-
   return (
     <Show
       when={connected()}
@@ -183,9 +181,7 @@ const ConnectedSharedDataDemo: Component = () => {
         </BusyContainer>
       }
     >
-      <SharedDataProvider<DemoSharedData> definitions={definitions}>
-        <SharedDataDemo />
-      </SharedDataProvider>
+      <SharedDataDemo />
     </Show>
   );
 };
@@ -194,15 +190,17 @@ export default function SharedDataPage() {
   return (
     <NotificationProvider>
       <ServiceClientProvider>
-        <Topbar.Container>
-          <Topbar>
-            <h1 class="m-0 flex-1 text-base">SharedData</h1>
-            <NotificationBell />
-          </Topbar>
-          <div class="flex-1 overflow-auto p-6">
-            <ConnectedSharedDataDemo />
-          </div>
-        </Topbar.Container>
+        <SharedDataProvider>
+          <Topbar.Container>
+            <Topbar>
+              <h1 class="m-0 flex-1 text-base">SharedData</h1>
+              <NotificationBell />
+            </Topbar>
+            <div class="flex-1 overflow-auto p-6">
+              <ConnectedSharedDataDemo />
+            </div>
+          </Topbar.Container>
+        </SharedDataProvider>
       </ServiceClientProvider>
     </NotificationProvider>
   );

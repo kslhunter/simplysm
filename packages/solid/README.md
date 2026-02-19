@@ -37,48 +37,33 @@ export default {
 
 ### Provider Setup
 
-Compose providers at the app root. Some providers depend on others and **must** be nested in the correct order — see [Provider dependency graph](docs/providers.md#dependency-graph) for details.
+Use `InitializeProvider` to wrap your app. It nests all providers in the correct dependency order. Configuration is done via hooks inside child components.
 
 ```tsx
-import {
-  BusyProvider,
-  ClipboardProvider,
-  ConfigProvider,
-  ErrorLoggerProvider,
-  NotificationBanner,
-  NotificationProvider,
-  PwaUpdateProvider,
-  ThemeProvider,
-} from "@simplysm/solid";
+import { InitializeProvider, useServiceClient, useSyncStorage, useLogger, useSharedData } from "@simplysm/solid";
+import { onMount } from "solid-js";
 
 function App() {
   return (
-    <ConfigProvider clientName="my-app">
-      <NotificationProvider>
-        <NotificationBanner />
-        <ErrorLoggerProvider>
-          <PwaUpdateProvider>
-            <ClipboardProvider>
-              <ThemeProvider>
-                <BusyProvider>{/* app content */}</BusyProvider>
-              </ThemeProvider>
-            </ClipboardProvider>
-          </PwaUpdateProvider>
-        </ErrorLoggerProvider>
-      </NotificationProvider>
-    </ConfigProvider>
+    <InitializeProvider clientName="my-app">
+      <AppRoot />
+    </InitializeProvider>
   );
+}
+
+function AppRoot() {
+  const serviceClient = useServiceClient();
+
+  onMount(async () => {
+    await serviceClient.connect("main", { port: 3000 });
+    useSyncStorage()!.configure(myStorageAdapter);
+    useLogger().configure(myLogAdapter);
+    useSharedData().configure(definitions);
+  });
 }
 ```
 
-**Optional providers** (add when needed):
-
-| Provider | Purpose |
-|----------|---------|
-| `SyncStorageProvider` | Custom sync storage adapter for `useSyncConfig` (wraps above `ConfigProvider`) |
-| `LoggerProvider` | Remote log adapter for `useLogger` (wraps above `ErrorLoggerProvider`) |
-| `ServiceClientProvider` | WebSocket RPC client (requires `ConfigProvider` + `NotificationProvider`) |
-| `SharedDataProvider` | Server-side data subscriptions (requires `ServiceClientProvider` + `NotificationProvider`) |
+For advanced use cases (custom provider composition), see [Provider docs](docs/providers.md#individual-providers).
 
 **StorageAdapter interface:**
 
@@ -192,15 +177,16 @@ import "@simplysm/solid/tailwind.css";
 
 ## Providers
 
+- [`InitializeProvider`](docs/providers.md#initializeprovider-recommended) - Main provider wrapping all providers (recommended)
 - [`ConfigProvider`](docs/providers.md#configprovider) - App configuration (required, topmost)
-- [`SyncStorageProvider`](docs/providers.md#syncstorageprovider) - Custom sync storage adapter (optional)
-- [`LoggerProvider`](docs/providers.md#loggerprovider) - Remote log adapter (optional)
+- [`SyncStorageProvider`](docs/providers.md#syncstorageprovider) - Custom sync storage adapter (configure via `useSyncStorage().configure()`)
+- [`LoggerProvider`](docs/providers.md#loggerprovider) - Remote log adapter (configure via `useLogger().configure()`)
 - [`ErrorLoggerProvider`](docs/providers.md#errorloggerprovider) - Global error capturing (window.onerror, unhandledrejection)
 - [`PwaUpdateProvider`](docs/providers.md#pwaupdateprovider) - PWA Service Worker update detection
 - [`ClipboardProvider`](docs/providers.md#clipboardprovider) - Form control clipboard value copy
 - [`ThemeProvider`](docs/providers.md#themeprovider) - Dark/light/system theme
 - [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider (`useServiceClient`)
-- [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider (`useSharedData`)
+- [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider (configure via `useSharedData().configure()`)
 
 ## Styling
 
