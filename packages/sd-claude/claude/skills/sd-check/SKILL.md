@@ -48,23 +48,16 @@ When the user asks to verify code, YOU will manually execute **EXACTLY THESE 4 S
 
 ### Step 1: Environment Pre-check
 
-Before ANY verification, confirm environment setup with these checks **in parallel**:
+Before ANY verification, run the environment check script:
 
-1. **Root package.json version** - Read `package.json`, verify major version is `13` (e.g., `13.x.x`)
-   - If not 13: STOP, report "This skill requires simplysm v13. Current: {version}"
+```bash
+node .claude/skills/sd-check/env-check.mjs
+```
 
-2. **pnpm workspace** - Verify `pnpm-workspace.yaml` and `pnpm-lock.yaml` exist
-   - Command: `ls pnpm-workspace.yaml pnpm-lock.yaml`
-   - If missing: STOP, report to user
+- **Exit 0 + "Environment OK"**: Proceed to Step 2
+- **Exit 1 + "FAIL"**: STOP, report the listed errors to user
 
-3. **package.json scripts** - Read root `package.json`, confirm `typecheck` and `lint` scripts defined
-   - If missing: STOP, report to user
-
-4. **Vitest config** - Verify `vitest.config.ts` exists
-   - Command: `ls vitest.config.ts`
-   - If missing: STOP, report to user
-
-**If all pass:** Report "Environment OK", proceed to Step 2.
+The script checks: package.json version (v13), pnpm workspace files, typecheck/lint scripts, vitest config.
 
 ### Step 2: Launch 3 Haiku Agents in Parallel
 
