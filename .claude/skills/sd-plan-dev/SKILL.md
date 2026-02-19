@@ -6,59 +6,14 @@ model: opus
 
 # Plan Execution
 
-Execute plan tasks with the right-sized process: direct for small plans, parallel agents for large plans.
+Execute plan tasks using parallel agents with formal reviews.
 
-**Core principle:** Right-size the process to the plan. Small plans get direct execution; large plans get parallel agents with formal reviews.
+**Core principle:** Always use Agent Mode — no exceptions, no conditions.
 
 ## When to Use
 
 Have an implementation plan (from sd-plan or similar)? Use this skill.
 No plan? Use sd-plan or sd-brainstorm first.
-
-## Mode Selection
-
-**Default is Agent Mode.** Only use Direct Mode when ALL "Small" criteria are met.
-
-```dot
-digraph mode {
-    "Small?" [shape=diamond];
-    "Direct Mode\n(no agents)" [shape=box];
-    "Agent Mode\n(parallel agents)" [shape=box, style=bold];
-
-    "Small?" -> "Direct Mode\n(no agents)" [label="yes (all 3 criteria)"];
-    "Small?" -> "Agent Mode\n(parallel agents)" [label="no (default)"];
-}
-```
-
-**"Small" criteria (ALL must be true):**
-1. Tasks ≤ 2
-2. Source files ≤ 3 (test files excluded, count across all tasks)
-3. Every task is a simple addition or modification — NOT refactoring, structural changes, or cross-cutting concerns
-
-**When in doubt, choose Agent Mode.**
-
----
-
-## Direct Mode
-
-No agents, no batching -- implement directly in main context.
-
-1. Read plan, understand all tasks
-2. Implement in dependency order. For each task:
-   - Implement exactly what the spec says
-   - Write tests and run them
-   - Ensure new public APIs are exported in the package's `index.ts`
-   - Self-review: spec complete? overbuilt? clean?
-   - Fix issues found
-3. After all tasks: `pnpm typecheck` + `pnpm lint` + `pnpm vitest` on affected packages
-4. Done
-
-**Escalation:** Switch to Agent Mode immediately if any of these occur during execution:
-- A task turns out to touch more files than expected
-- You find yourself doing structural changes or refactoring
-- The total change set exceeds ~100 lines of source code
-
----
 
 ## Agent Mode
 
