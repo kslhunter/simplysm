@@ -3,6 +3,12 @@
     "type": "command",
     "command": "node .claude/sd-statusline.js"
   },
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright",
+    "postgres"
+  ],
+  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "WebFetch",
