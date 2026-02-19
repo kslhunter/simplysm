@@ -1,3 +1,0 @@
-import simplysmPlugin from "@simplysm/eslint-plugin";
-
-export default [...simplysmPlugin.configs.root];
