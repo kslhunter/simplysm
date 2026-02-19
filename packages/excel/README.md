@@ -299,23 +299,15 @@ await ws.setName("New Sheet Name");
 import { z } from "zod";
 import { ExcelWrapper } from "@simplysm/excel";
 
-// 1. Define schema
+// Define schema (use .describe() for Excel header names; defaults to field key if omitted)
 const schema = z.object({
-  name: z.string(),
-  age: z.number(),
-  email: z.string().optional(),
-  active: z.boolean(),
+  name: z.string().describe("Name"),
+  age: z.number().describe("Age"),
+  email: z.string().optional().describe("Email"),
+  active: z.boolean().describe("Active Status"),
 });
 
-// 2. Field name to display name mapping (names displayed in Excel headers)
-const displayNameMap = {
-  name: "Name",
-  age: "Age",
-  email: "Email",
-  active: "Active Status",
-};
-
-const wrapper = new ExcelWrapper(schema, displayNameMap);
+const wrapper = new ExcelWrapper(schema);
 ```
 
 #### Writing to Excel
@@ -349,7 +341,7 @@ const records3 = await wrapper.read(bytes, 0);
 ```
 
 Behavior of the `read()` method:
-- Only reads headers defined in the schema's `_displayNameMap`
+- Only reads headers defined in the schema (via `.describe()` or field key names)
 - Skips rows where all values are empty
 - Validates each row with the Zod schema, throws error on validation failure
 - Throws error if there is no data
@@ -440,7 +432,7 @@ Behavior of the `read()` method:
 
 | Member | Type / Return Type | Description |
 |--------|-----------|------|
-| `constructor(schema, displayNameMap)` | — | Create wrapper with a Zod schema and field-to-display-name map |
+| `constructor(schema)` | — | Create wrapper with a Zod schema (use `.describe()` on fields for Excel header names; defaults to field key) |
 | `read(file, wsNameOrIndex?)` | `Promise<z.infer<TSchema>[]>` | Read records from Excel file (Uint8Array or Blob); defaults to first worksheet |
 | `write(wsName, records)` | `Promise<ExcelWorkbook>` | Write partial records to a new workbook; caller must manage the returned workbook's lifecycle |
 

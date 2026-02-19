@@ -5,22 +5,15 @@ import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
 describe("ExcelWrapper", () => {
   const testSchema = z.object({
-    name: z.string(),
-    age: z.number(),
-    email: z.string().optional(),
-    active: z.boolean().default(false),
+    name: z.string().describe("이름"),
+    age: z.number().describe("나이"),
+    email: z.string().optional().describe("이메일"),
+    active: z.boolean().default(false).describe("활성화"),
   });
-
-  const displayNameMap = {
-    name: "이름",
-    age: "나이",
-    email: "이메일",
-    active: "활성화",
-  };
 
   describe("write", () => {
     it("레코드를 Excel로 변환할 수 있다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       const records = [
         { name: "홍길동", age: 30, email: "hong@test.com", active: true },
@@ -46,7 +39,7 @@ describe("ExcelWrapper", () => {
     });
 
     it("필수 필드에 노란색 배경이 적용된다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
       const ws = await wb.getWorksheet("Test");
 
@@ -63,7 +56,7 @@ describe("ExcelWrapper", () => {
 
   describe("read", () => {
     it("Excel에서 레코드를 읽을 수 있다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       // 먼저 Excel 생성
       const records = [
@@ -88,7 +81,7 @@ describe("ExcelWrapper", () => {
     });
 
     it("인덱스로 워크시트를 지정할 수 있다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       const records = [{ name: "Test", age: 20 }];
       const wb = await wrapper.write("Sheet1", records);
@@ -103,7 +96,7 @@ describe("ExcelWrapper", () => {
 
   describe("타입 변환", () => {
     it("문자열을 숫자로 변환할 수 있다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       // 수동으로 문자열로 저장된 Excel 시뮬레이션
       const wb = await wrapper.write("Test", [{ name: "Test", age: 25 }]);
@@ -116,7 +109,7 @@ describe("ExcelWrapper", () => {
     });
 
     it("기본값이 적용된다", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       // active 필드 없이 저장
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
@@ -130,17 +123,12 @@ describe("ExcelWrapper", () => {
 
   describe("날짜 타입 지원", () => {
     const dateSchema = z.object({
-      title: z.string(),
-      date: z.instanceof(DateOnly).optional(),
+      title: z.string().describe("제목"),
+      date: z.instanceof(DateOnly).optional().describe("날짜"),
     });
 
-    const dateDisplayMap = {
-      title: "제목",
-      date: "날짜",
-    };
-
     it("DateOnly 타입을 읽고 쓸 수 있다", async () => {
-      const wrapper = new ExcelWrapper(dateSchema, dateDisplayMap);
+      const wrapper = new ExcelWrapper(dateSchema);
 
       const records = [{ title: "Event 1", date: new DateOnly(2024, 6, 15) }, { title: "Event 2" }];
 
@@ -160,16 +148,11 @@ describe("ExcelWrapper", () => {
 
     it("DateTime 타입을 읽고 쓸 수 있다", async () => {
       const dateTimeSchema = z.object({
-        title: z.string(),
-        datetime: z.instanceof(DateTime).optional(),
+        title: z.string().describe("제목"),
+        datetime: z.instanceof(DateTime).optional().describe("일시"),
       });
 
-      const dateTimeDisplayMap = {
-        title: "제목",
-        datetime: "일시",
-      };
-
-      const wrapper = new ExcelWrapper(dateTimeSchema, dateTimeDisplayMap);
+      const wrapper = new ExcelWrapper(dateTimeSchema);
 
       const records = [{ title: "Meeting", datetime: new DateTime(2024, 6, 15, 14, 30, 0) }];
 
@@ -189,16 +172,11 @@ describe("ExcelWrapper", () => {
 
     it("Time 타입을 읽고 쓸 수 있다", async () => {
       const timeSchema = z.object({
-        title: z.string(),
-        time: z.instanceof(Time).optional(),
+        title: z.string().describe("제목"),
+        time: z.instanceof(Time).optional().describe("시간"),
       });
 
-      const timeDisplayMap = {
-        title: "제목",
-        time: "시간",
-      };
-
-      const wrapper = new ExcelWrapper(timeSchema, timeDisplayMap);
+      const wrapper = new ExcelWrapper(timeSchema);
 
       const records = [{ title: "Alarm", time: new Time(9, 30, 0) }];
 
@@ -216,7 +194,7 @@ describe("ExcelWrapper", () => {
 
   describe("에러 처리", () => {
     it("빈 데이터에서 읽으면 에러 발생", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       // 헤더만 있는 빈 Excel 생성
       const wb = await wrapper.write("Empty", []);
@@ -229,7 +207,7 @@ describe("ExcelWrapper", () => {
     });
 
     it("존재하지 않는 워크시트 이름으로 읽으면 에러 발생", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
       const buffer = await wb.getBytes();
@@ -239,7 +217,7 @@ describe("ExcelWrapper", () => {
     });
 
     it("존재하지 않는 워크시트 인덱스로 읽으면 에러 발생", async () => {
-      const wrapper = new ExcelWrapper(testSchema, displayNameMap);
+      const wrapper = new ExcelWrapper(testSchema);
 
       const wb = await wrapper.write("Test", [{ name: "Test", age: 20 }]);
       const buffer = await wb.getBytes();
@@ -250,17 +228,12 @@ describe("ExcelWrapper", () => {
 
     it("스키마 검증 실패 시 워크시트 이름과 상세 오류가 포함된 에러 발생", async () => {
       const strictSchema = z.object({
-        name: z.string().min(5), // 최소 5자 이상
-        age: z.number().min(0).max(150), // 0~150 사이
+        name: z.string().min(5).describe("이름"), // 최소 5자 이상
+        age: z.number().min(0).max(150).describe("나이"), // 0~150 사이
       });
 
-      const strictDisplayMap = {
-        name: "이름",
-        age: "나이",
-      };
-
       // 유효한 데이터로 Excel 생성
-      const wrapper = new ExcelWrapper(strictSchema, strictDisplayMap);
+      const wrapper = new ExcelWrapper(strictSchema);
       const wb = await wrapper.write("Validation", [{ name: "홍길동홍길동", age: 30 }]);
 
       // 데이터를 직접 수정하여 검증 실패 유도

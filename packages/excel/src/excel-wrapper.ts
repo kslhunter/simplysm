@@ -19,13 +19,9 @@ import type { ExcelValueType } from "./types";
  */
 export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   /**
-   * @param _schema Zod 스키마 (레코드 구조 정의)
-   * @param _displayNameMap 필드명-표시명 매핑 (Excel 헤더로 사용)
+   * @param _schema Zod 스키마 (레코드 구조 정의, `.describe()`로 Excel 헤더명 지정)
    */
-  constructor(
-    private readonly _schema: TSchema,
-    private readonly _displayNameMap: Record<keyof z.infer<TSchema>, string>,
-  ) {}
+  constructor(private readonly _schema: TSchema) {}
 
   /**
    * Excel 파일 읽기 → 레코드 배열
@@ -36,7 +32,8 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     const ws = await wb.getWorksheet(wsNameOrIndex);
     const wsName = await ws.getName();
 
-    const displayNames = Object.values(this._displayNameMap);
+    const displayNameMap = this._getDisplayNameMap();
+    const displayNames = Object.values(displayNameMap);
     const rawData = await ws.getDataTable({
       usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
     });
@@ -102,8 +99,9 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet(wsName);
 
-    const keys = Object.keys(this._displayNameMap) as (keyof z.infer<TSchema>)[];
-    const headers = keys.map((key) => this._displayNameMap[key]);
+    const displayNameMap = this._getDisplayNameMap();
+    const keys = Object.keys(displayNameMap) as (keyof z.infer<TSchema>)[];
+    const headers = keys.map((key) => displayNameMap[key as string]);
 
     // 헤더 행 작성
     for (let c = 0; c < headers.length; c++) {
@@ -150,9 +148,17 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
   //#region Private Methods
 
+  private _getDisplayNameMap(): Record<string, string> {
+    const map: Record<string, string> = {};
+    for (const [key, fieldSchema] of Object.entries(this._schema.shape)) {
+      map[key] = (fieldSchema as z.ZodType).description ?? key;
+    }
+    return map;
+  }
+
   private _getReverseDisplayNameMap(): Map<string, string> {
     const map = new Map<string, string>();
-    for (const [fieldKey, displayName] of Object.entries(this._displayNameMap)) {
+    for (const [fieldKey, displayName] of Object.entries(this._getDisplayNameMap())) {
       map.set(displayName, fieldKey);
     }
     return map;
