@@ -82,7 +82,6 @@ export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
 export * from "./components/disclosure/DialogInstanceContext";
-export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
 //#endregion
@@ -92,13 +91,11 @@ export * from "./components/disclosure/Tabs";
 // Notification
 export * from "./components/feedback/notification/NotificationContext";
 export * from "./components/feedback/notification/NotificationBell";
-export * from "./components/feedback/notification/NotificationProvider";
 export * from "./components/feedback/notification/NotificationBanner";
 
 // Busy
 export * from "./components/feedback/busy/BusyContext";
 export * from "./components/feedback/busy/BusyContainer";
-export * from "./components/feedback/busy/BusyProvider";
 
 // Print
 export * from "./components/feedback/print/Print";
@@ -109,19 +106,41 @@ export * from "./components/feedback/Progress";
 
 //#region ========== Providers ==========
 
-export * from "./providers/ConfigContext";
-export * from "./providers/SyncStorageContext";
-export * from "./providers/LoggerContext";
-export * from "./providers/ErrorLoggerProvider";
-export * from "./providers/PwaUpdateProvider";
-export * from "./providers/ClipboardProvider";
-export { useTheme, ThemeProvider } from "./providers/ThemeContext";
+// Config
+export { type AppConfig, ConfigContext, useConfig } from "./providers/ConfigContext";
+
+// SyncStorage
+export {
+  type StorageAdapter,
+  type SyncStorageContextValue,
+  SyncStorageContext,
+  useSyncStorage,
+} from "./providers/SyncStorageContext";
+
+// Logger
+export { type LogAdapter, type LoggerContextValue } from "./providers/LoggerContext";
+
+// Theme
+export { useTheme } from "./providers/ThemeContext";
 export type { ThemeMode, ResolvedTheme } from "./providers/ThemeContext";
-export * from "./providers/ServiceClientContext";
-export * from "./providers/ServiceClientProvider";
-export * from "./providers/shared-data/SharedDataContext";
-export * from "./providers/shared-data/SharedDataProvider";
+
+// ServiceClient
+export {
+  type ServiceClientContextValue,
+  ServiceClientContext,
+  useServiceClient,
+} from "./providers/ServiceClientContext";
+
+// SharedData
+export type {
+  SharedDataDefinition,
+  SharedDataAccessor,
+  SharedDataValue,
+} from "./providers/shared-data/SharedDataContext";
+export { SharedDataContext, useSharedData } from "./providers/shared-data/SharedDataContext";
 export * from "./providers/shared-data/SharedDataChangeEvent";
+
+// InitializeProvider (only exported provider)
 export * from "./providers/InitializeProvider";
 
 //#endregion

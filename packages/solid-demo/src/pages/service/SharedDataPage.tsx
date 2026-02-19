@@ -1,11 +1,8 @@
 import { type Component, createSignal, For, onMount, onCleanup, Show } from "solid-js";
 import {
-  NotificationProvider,
   NotificationBell,
   useNotification,
-  ServiceClientProvider,
   useServiceClient,
-  SharedDataProvider,
   useSharedData,
   Topbar,
   Table,
@@ -188,20 +185,14 @@ const ConnectedSharedDataDemo: Component = () => {
 
 export default function SharedDataPage() {
   return (
-    <NotificationProvider>
-      <ServiceClientProvider>
-        <SharedDataProvider>
-          <Topbar.Container>
-            <Topbar>
-              <h1 class="m-0 flex-1 text-base">SharedData</h1>
-              <NotificationBell />
-            </Topbar>
-            <div class="flex-1 overflow-auto p-6">
-              <ConnectedSharedDataDemo />
-            </div>
-          </Topbar.Container>
-        </SharedDataProvider>
-      </ServiceClientProvider>
-    </NotificationProvider>
+    <Topbar.Container>
+      <Topbar>
+        <h1 class="m-0 flex-1 text-base">SharedData</h1>
+        <NotificationBell />
+      </Topbar>
+      <div class="flex-1 overflow-auto p-6">
+        <ConnectedSharedDataDemo />
+      </div>
+    </Topbar.Container>
   );
 }

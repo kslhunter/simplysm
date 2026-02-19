@@ -1,12 +1,5 @@
 import { type Component } from "solid-js";
-import {
-  NotificationProvider,
-  NotificationBell,
-  NotificationBanner,
-  useNotification,
-  Button,
-  Topbar,
-} from "@simplysm/solid";
+import { NotificationBell, useNotification, Button, Topbar } from "@simplysm/solid";
 
 const NotificationDemo: Component = () => {
   const notification = useNotification();
@@ -108,17 +101,14 @@ const NotificationDemo: Component = () => {
 
 export default function NotificationPage() {
   return (
-    <NotificationProvider>
-      <NotificationBanner />
-      <Topbar.Container>
-        <Topbar>
-          <h1 class="m-0 flex-1 text-base">Notification</h1>
-          <NotificationBell />
-        </Topbar>
-        <div class="flex-1 overflow-auto p-6">
-          <NotificationDemo />
-        </div>
-      </Topbar.Container>
-    </NotificationProvider>
+    <Topbar.Container>
+      <Topbar>
+        <h1 class="m-0 flex-1 text-base">Notification</h1>
+        <NotificationBell />
+      </Topbar>
+      <div class="flex-1 overflow-auto p-6">
+        <NotificationDemo />
+      </div>
+    </Topbar.Container>
   );
 }

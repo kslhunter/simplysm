@@ -1,9 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, Show } from "solid-js";
 import {
-  NotificationProvider,
   NotificationBell,
   useNotification,
-  ServiceClientProvider,
   useServiceClient,
   Button,
   TextInput,
@@ -197,18 +195,14 @@ const ServiceClientDemo: Component = () => {
 
 export default function ServiceClientPage() {
   return (
-    <NotificationProvider>
-      <ServiceClientProvider>
-        <Topbar.Container>
-          <Topbar>
-            <h1 class="m-0 flex-1 text-base">ServiceClient</h1>
-            <NotificationBell />
-          </Topbar>
-          <div class="flex-1 overflow-auto p-6">
-            <ServiceClientDemo />
-          </div>
-        </Topbar.Container>
-      </ServiceClientProvider>
-    </NotificationProvider>
+    <Topbar.Container>
+      <Topbar>
+        <h1 class="m-0 flex-1 text-base">ServiceClient</h1>
+        <NotificationBell />
+      </Topbar>
+      <div class="flex-1 overflow-auto p-6">
+        <ServiceClientDemo />
+      </div>
+    </Topbar.Container>
   );
 }

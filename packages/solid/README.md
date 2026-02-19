@@ -63,7 +63,10 @@ function AppRoot() {
 }
 ```
 
-For advanced use cases (custom provider composition), see [Provider docs](docs/providers.md#individual-providers).
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `clientName` | `string` | (required) | Client identifier (used as storage key prefix) |
+| `busyVariant` | `BusyVariant` | `"spinner"` | Busy overlay display variant (`"spinner"` or `"bar"`) |
 
 **StorageAdapter interface:**
 
@@ -177,16 +180,7 @@ import "@simplysm/solid/tailwind.css";
 
 ## Providers
 
-- [`InitializeProvider`](docs/providers.md#initializeprovider-recommended) - Main provider wrapping all providers (recommended)
-- [`ConfigProvider`](docs/providers.md#configprovider) - App configuration (required, topmost)
-- [`SyncStorageProvider`](docs/providers.md#syncstorageprovider) - Custom sync storage adapter (configure via `useSyncStorage().configure()`)
-- [`LoggerProvider`](docs/providers.md#loggerprovider) - Remote log adapter (configure via `useLogger().configure()`)
-- [`ErrorLoggerProvider`](docs/providers.md#errorloggerprovider) - Global error capturing (window.onerror, unhandledrejection)
-- [`PwaUpdateProvider`](docs/providers.md#pwaupdateprovider) - PWA Service Worker update detection
-- [`ClipboardProvider`](docs/providers.md#clipboardprovider) - Form control clipboard value copy
-- [`ThemeProvider`](docs/providers.md#themeprovider) - Dark/light/system theme
-- [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider (`useServiceClient`)
-- [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider (configure via `useSharedData().configure()`)
+- [`InitializeProvider`](docs/providers.md#initializeprovider) - Main provider wrapping all providers (the only exported provider component)
 
 ## Styling
 

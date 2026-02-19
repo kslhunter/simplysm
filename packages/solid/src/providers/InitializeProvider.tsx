@@ -12,6 +12,9 @@ import { ServiceClientProvider } from "./ServiceClientProvider";
 import { SharedDataProvider } from "./shared-data/SharedDataProvider";
 import { BusyProvider } from "../components/feedback/busy/BusyProvider";
 import { DialogProvider } from "../components/disclosure/DialogProvider";
+import type { BusyVariant } from "../components/feedback/busy/BusyContext";
+
+export type { BusyVariant };
 
 /**
  * @simplysm/solid 메인 Provider
@@ -38,7 +41,10 @@ import { DialogProvider } from "../components/disclosure/DialogProvider";
  * }
  * ```
  */
-export const InitializeProvider: ParentComponent<{ clientName: string }> = (props) => {
+export const InitializeProvider: ParentComponent<{
+  clientName: string;
+  busyVariant?: BusyVariant;
+}> = (props) => {
   return (
     <ConfigProvider clientName={props.clientName}>
       <SyncStorageProvider>
@@ -51,7 +57,7 @@ export const InitializeProvider: ParentComponent<{ clientName: string }> = (prop
                   <ThemeProvider>
                     <ServiceClientProvider>
                       <SharedDataProvider>
-                        <BusyProvider>
+                        <BusyProvider variant={props.busyVariant}>
                           <DialogProvider>{props.children}</DialogProvider>
                         </BusyProvider>
                       </SharedDataProvider>

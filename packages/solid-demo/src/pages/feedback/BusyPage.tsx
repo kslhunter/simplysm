@@ -1,5 +1,5 @@
 import { type Component, createSignal } from "solid-js";
-import { BusyProvider, BusyContainer, useBusy, Button } from "@simplysm/solid";
+import { BusyContainer, useBusy, Button } from "@simplysm/solid";
 
 const BusyDemo: Component = () => {
   const busy = useBusy();
@@ -134,9 +134,5 @@ const BusyDemo: Component = () => {
 };
 
 export default function BusyPage() {
-  return (
-    <BusyProvider variant="spinner">
-      <BusyDemo />
-    </BusyProvider>
-  );
+  return <BusyDemo />;
 }
