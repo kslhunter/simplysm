@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { render } from "@solidjs/testing-library";
 import "@simplysm/core-common";
 import {
-  SharedDataProvider,
   useSharedData,
   type SharedDataDefinition,
   ServiceClientContext,
@@ -10,6 +9,7 @@ import {
   NotificationContext,
   type NotificationContextValue,
 } from "../../../src";
+import { SharedDataProvider } from "../../../src/providers/shared-data/SharedDataProvider";
 
 interface TestData {
   user: { id: number; name: string };
