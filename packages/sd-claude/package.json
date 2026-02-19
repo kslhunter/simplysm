@@ -12,8 +12,10 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "sd-claude": "./dist/sd-claude.js"
+  "publishConfig": {
+    "bin": {
+      "sd-claude": "./dist/sd-claude.js"
+    }
   },
   "files": [
     "dist",

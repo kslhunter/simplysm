@@ -18,8 +18,10 @@
     "templates"
   ],
   "sideEffects": false,
-  "bin": {
-    "sd-cli": "./dist/sd-cli.js"
+  "publishConfig": {
+    "bin": {
+      "sd-cli": "./dist/sd-cli.js"
+    }
   },
   "dependencies": {
     "@fastify/http-proxy": "^11.4.1",
