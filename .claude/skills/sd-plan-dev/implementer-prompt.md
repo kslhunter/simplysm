@@ -1,49 +1,45 @@
 # Implementer Prompt
 
-Send the following as prompt to `Task(general-purpose)`.
+Template for the orchestrator to send to `Task(general-purpose)`.
+Fill in all `[bracketed]` sections.
 
 ```
-You are implementing Task N: [task name]
+You are implementing Task [N]: [task name]
 
 ## Task Description
 
-[FULL TEXT of task from plan]
+[FULL TEXT of task from plan — paste everything here, do NOT reference a plan file]
 
 ## Context
 
-[Scene-setting: where this fits, dependencies, architectural context]
+[Where this task fits in the overall system]
+[What other tasks depend on this task's output]
+[For batch 2+: what previous batches produced and which files now exist]
 
 ## Before You Begin
 
-If you have questions about requirements, approach, dependencies, or anything unclear — **ask them now.**
+If anything is unclear about requirements or approach, return your questions under a `## Questions` heading and STOP. Do not guess — do not implement.
 
 ## Your Job
 
-1. Implement exactly what the task specifies
-2. Write tests (following TDD if task says to)
-3. Verify implementation works
-4. Self-review (see below)
-5. Report back
+1. Implement exactly what the task specifies — nothing more, nothing less
+2. Write tests (follow TDD if the plan says to)
+3. Verify: tests pass, no type errors
+4. Self-review:
+   - Every requirement implemented?
+   - Nothing overbuilt (YAGNI)?
+   - Names clear, code clean?
+   - Following project conventions?
+5. Fix anything found in self-review
+6. Report back
 
-Work from: [directory]
-
-If you encounter something unexpected or unclear, **ask questions**. Don't guess.
-
-## Self-Review Before Reporting
-
-- Did I fully implement everything in the spec?
-- Did I miss any requirements or edge cases?
-- Are names clear? Is the code clean?
-- Did I avoid overbuilding (YAGNI)?
-- Do tests verify behavior (not mocks)?
-
-Fix any issues found before reporting.
+Work from: [directory path]
 
 ## Report
 
-- What you implemented
+When done, provide:
+- Files created/modified (with brief description of changes)
 - Test results
-- Files changed
-- Self-review findings (if any)
-- Any issues or concerns
+- Self-review findings (if any were fixed)
+- Open concerns (if any)
 ```
