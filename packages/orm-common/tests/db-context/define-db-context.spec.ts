@@ -16,6 +16,7 @@ describe("DbContext types", () => {
       resetAliasCounter: () => {},
       executeDefs: () => Promise.resolve([[]]),
       getQueryDefObjectName: () => ({ database: "test", name: "test" }),
+      switchFk: () => Promise.resolve(),
     };
     expect(base.status).toBe("ready");
     expect(base.getNextAlias()).toBe("T1");

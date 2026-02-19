@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { MysqlExprRenderer } from "../src/query-builder/mysql/mysql-expr-renderer";
 
 describe("MysqlExprRenderer.escapeString", () => {
-  const renderer = new MysqlExprRenderer();
+  const renderer = new MysqlExprRenderer(() => "");
 
   //#region ========== 기본 이스케이프 ==========
 
@@ -66,7 +66,7 @@ describe("MysqlExprRenderer.escapeString", () => {
 });
 
 describe("MysqlExprRenderer.escapeValue", () => {
-  const renderer = new MysqlExprRenderer();
+  const renderer = new MysqlExprRenderer(() => "");
 
   it("문자열을 escapeString()으로 이스케이프하고 따옴표로 감싸야 함", () => {
     const result = renderer.escapeValue("O'Reilly");
