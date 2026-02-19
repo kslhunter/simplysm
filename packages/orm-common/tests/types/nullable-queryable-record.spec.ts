@@ -4,6 +4,7 @@ import { expr } from "../../src/expr/expr";
 import { User } from "../setup/models/User";
 import type {
   NullableQueryableRecord,
+  QueryableColumns,
   QueryableRecord,
   QueryableWriteRecord,
 } from "../../src/exec/queryable";
@@ -46,6 +47,32 @@ describe("NullableQueryableRecord type inference", () => {
     expect(q).toBeDefined();
   });
 
+  it("QueryableColumns strips optional modifier from keys", () => {
+    type OptionalData = { id?: number; name: string };
+    type Result = QueryableColumns<OptionalData>;
+
+    // Key is required (no outer | undefined), but ExprUnit preserves inner type
+    expectTypeOf<Result["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
+    expectTypeOf<Result["name"]>().toMatchTypeOf<{ $infer: string }>();
+
+    // Verify key is truly required (not optional)
+    type Keys = keyof Result;
+    expectTypeOf<"id">().toMatchTypeOf<Keys>();
+
+    expect(true).toBe(true);
+  });
+
+  it("QueryableRecord preserves optional modifier (for select output)", () => {
+    type OptionalData = { id?: number; name: string };
+    type Result = QueryableRecord<OptionalData>;
+
+    // Key is optional — Required<> needed to access id
+    expectTypeOf<Required<Result>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
+    expectTypeOf<Result["name"]>().toMatchTypeOf<{ $infer: string }>();
+
+    expect(true).toBe(true);
+  });
+
   it("QueryableWriteRecord preserves optional modifier from source properties", () => {
     type OptionalData = { id?: number; name: string };
     type WriteResult = QueryableWriteRecord<OptionalData>;
@@ -54,12 +81,55 @@ describe("NullableQueryableRecord type inference", () => {
     expectTypeOf<Required<WriteResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
     expectTypeOf<WriteResult["name"]>().toMatchTypeOf<{ $infer: string }>();
 
-    // QueryableRecord also preserves optionality (homomorphic mapped type)
-    type ReadResult = QueryableRecord<OptionalData>;
-    expectTypeOf<Required<ReadResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
-    expectTypeOf<ReadResult["name"]>().toMatchTypeOf<{ $infer: string }>();
-
     expect(true).toBe(true);
+  });
+
+  it("select<ICustom> with optional properties should compile", () => {
+    const db = createTestDb();
+
+    // Custom type with optional properties (like user's real-world pattern)
+    // Note: must use `type` not `interface` — interfaces lack implicit index signatures
+    type IUserItem = {
+      id?: number;
+      name?: string;
+      email?: string;
+      isActive: boolean;
+    };
+
+    // .select<IUserItem>((c) => ({ id: c.id, name: c.name, ... }))
+    const q = db
+      .user()
+      .where((u) => [expr.eq(u.isActive, true)])
+      .select<IUserItem>((c) => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        isActive: c.isActive,
+      }));
+
+    expect(q).toBeDefined();
+  });
+
+  it("select with optional properties then orderBy should compile", () => {
+    const db = createTestDb();
+
+    type IUserItem = {
+      id?: number;
+      name?: string;
+      isActive: boolean;
+    };
+
+    const q = db
+      .user()
+      .where((u) => [expr.eq(u.isActive, true)])
+      .select<IUserItem>((c) => ({
+        id: c.id,
+        name: c.name,
+        isActive: c.isActive,
+      }))
+      .orderBy((c) => c.id, "DESC");
+
+    expect(q).toBeDefined();
   });
 
   it("NullableQueryableRecord wraps primitives with | undefined", () => {
