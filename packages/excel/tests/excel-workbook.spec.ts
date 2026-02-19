@@ -86,7 +86,7 @@ describe("ExcelWorkbook", () => {
       await wb1.close();
 
       // Blob으로 변환
-      const blob = new Blob([bytes], {
+      const blob = new Blob([new Uint8Array(bytes)], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 

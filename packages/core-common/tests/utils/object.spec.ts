@@ -797,10 +797,10 @@ describe("object utils", () => {
 
     it("순환 참조가 있는 객체를 안전하게 처리한다", () => {
       const obj: Record<string, unknown> = { a: null };
-      obj.self = obj;
+      obj["self"] = obj;
       const result = objNullToUndefined(obj);
       expect(result).toBeDefined();
-      expect((result as Record<string, unknown>).a).toBeUndefined();
+      expect((result as Record<string, unknown>)["a"]).toBeUndefined();
     });
 
     it("순환 참조가 있는 배열을 안전하게 처리한다", () => {

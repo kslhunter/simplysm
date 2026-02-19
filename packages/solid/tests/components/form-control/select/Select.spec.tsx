@@ -107,10 +107,10 @@ describe("Select 컴포넌트", () => {
     it("multiple 모드에서 여러 아이템 선택 가능", async () => {
       const [value, setValue] = createSignal<string[]>([]);
       const { getByRole } = render(() => (
-        <Select
+        <Select<string>
           multiple
           value={value()}
-          onValueChange={(v) => setValue(v as string[])}
+          onValueChange={(v) => setValue(v)}
           renderValue={(v) => <>{v}</>}
         >
           <Select.Item value="apple">사과</Select.Item>

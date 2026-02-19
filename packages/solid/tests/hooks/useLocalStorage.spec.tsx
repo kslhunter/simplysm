@@ -14,7 +14,7 @@ describe("useLocalStorage", () => {
   });
 
   it("초기값이 없으면 undefined를 반환한다", () => {
-    let value: () => string | undefined;
+    let value!: () => string | undefined;
 
     function TestComponent() {
       [value] = useLocalStorage<string>("test-key");
@@ -31,7 +31,7 @@ describe("useLocalStorage", () => {
   });
 
   it("초기값을 제공하면 해당 값을 반환한다", () => {
-    let value: () => string | undefined;
+    let value!: () => string | undefined;
 
     function TestComponent() {
       [value] = useLocalStorage("test-key", "default");
@@ -50,7 +50,7 @@ describe("useLocalStorage", () => {
   it("localStorage에 기존 값이 있으면 해당 값을 반환한다", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
-    let value: () => string | undefined;
+    let value!: () => string | undefined;
 
     function TestComponent() {
       [value] = useLocalStorage("test-key", "default");
@@ -67,8 +67,8 @@ describe("useLocalStorage", () => {
   });
 
   it("값을 설정하면 localStorage에 저장된다", () => {
-    let value: () => string | undefined;
-    let setValue: (v: string) => void;
+    let value!: () => string | undefined;
+    let setValue!: (v: string) => void;
 
     function TestComponent() {
       [value, setValue] = useLocalStorage<string>("test-key");
@@ -89,8 +89,8 @@ describe("useLocalStorage", () => {
   it("값을 undefined로 설정하면 localStorage에서 제거된다", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
-    let value: () => string | undefined;
-    let setValue: (v: string | undefined) => void;
+    let value!: () => string | undefined;
+    let setValue!: (v: string | undefined) => void;
 
     function TestComponent() {
       [value, setValue] = useLocalStorage<string>("test-key");
@@ -111,10 +111,10 @@ describe("useLocalStorage", () => {
   });
 
   it("다른 키는 독립적으로 동작한다", () => {
-    let value1: () => string | undefined;
-    let setValue1: (v: string) => void;
-    let value2: () => string | undefined;
-    let setValue2: (v: string) => void;
+    let value1!: () => string | undefined;
+    let setValue1!: (v: string) => void;
+    let value2!: () => string | undefined;
+    let setValue2!: (v: string) => void;
 
     function TestComponent() {
       [value1, setValue1] = useLocalStorage<string>("key1");
@@ -136,8 +136,8 @@ describe("useLocalStorage", () => {
   });
 
   it("복잡한 객체를 저장하고 읽을 수 있다", () => {
-    let value: () => { name: string; count: number } | undefined;
-    let setValue: (v: { name: string; count: number }) => void;
+    let value!: () => { name: string; count: number } | undefined;
+    let setValue!: (v: { name: string; count: number }) => void;
 
     function TestComponent() {
       [value, setValue] = useLocalStorage<{ name: string; count: number }>("test-key");
@@ -159,7 +159,7 @@ describe("useLocalStorage", () => {
   it("잘못된 JSON은 초기값으로 대체된다", () => {
     localStorage.setItem("testApp.test-key", "invalid-json");
 
-    let value: () => string | undefined;
+    let value!: () => string | undefined;
 
     function TestComponent() {
       [value] = useLocalStorage("test-key", "default");
@@ -176,9 +176,9 @@ describe("useLocalStorage", () => {
   });
 
   it("같은 키로 여러 훅을 생성하면 독립적인 시그널을 갖는다", () => {
-    let value1: () => string | undefined;
-    let setValue1: (v: string) => void;
-    let value2: () => string | undefined;
+    let value1!: () => string | undefined;
+    let setValue1!: (v: string) => void;
+    let value2!: () => string | undefined;
 
     function TestComponent() {
       [value1, setValue1] = useLocalStorage("test-key", "initial");
@@ -203,7 +203,7 @@ describe("useLocalStorage", () => {
   });
 
   it("clientName으로 키가 prefix된다", () => {
-    let setValue: (v: string) => void;
+    let setValue!: (v: string) => void;
 
     function TestComponent() {
       [, setValue] = useLocalStorage<string>("my-key");

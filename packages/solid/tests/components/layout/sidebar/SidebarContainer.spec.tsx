@@ -156,10 +156,10 @@ describe("SidebarContainer 컴포넌트", () => {
       setToggle(true); // 열림 상태로 전환
       // setToggle을 감싸서 변경 추적
       const originalSetToggle = setToggle;
-      setToggle = (val: boolean) => {
+      setToggle = ((val: boolean) => {
         toggleValue = val;
         originalSetToggle(val);
-      };
+      }) as Setter<boolean>;
 
       const backdrop = container.querySelector(
         '[role="button"][aria-label="사이드바 닫기"]',
@@ -192,10 +192,10 @@ describe("SidebarContainer 컴포넌트", () => {
       setToggle(true); // 열림 상태로 전환
       // setToggle을 감싸서 변경 추적
       const originalSetToggle = setToggle;
-      setToggle = (val: boolean) => {
+      setToggle = ((val: boolean) => {
         toggleValue = val;
         originalSetToggle(val);
-      };
+      }) as Setter<boolean>;
 
       const backdrop = container.querySelector(
         '[role="button"][aria-label="사이드바 닫기"]',

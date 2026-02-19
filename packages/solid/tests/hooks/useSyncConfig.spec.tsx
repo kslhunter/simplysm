@@ -26,7 +26,7 @@ describe("useSyncConfig", () => {
   });
 
   it("should initialize with default value when no stored value exists", () => {
-    let value: () => string;
+    let value!: () => string;
 
     function TestComponent() {
       [value] = useSyncConfig("test-key", "default");
@@ -45,7 +45,7 @@ describe("useSyncConfig", () => {
   it("should load value from localStorage when no SyncStorageProvider", () => {
     localStorage.setItem("testApp.test-key", JSON.stringify("stored"));
 
-    let value: () => string;
+    let value!: () => string;
 
     function TestComponent() {
       [value] = useSyncConfig("test-key", "default");
@@ -62,7 +62,7 @@ describe("useSyncConfig", () => {
   });
 
   it("should save value to localStorage when updated", () => {
-    let setValue: (v: string) => void;
+    let setValue!: (v: string) => void;
 
     function TestComponent() {
       const [, setVal] = useSyncConfig("test-key", "default");
@@ -81,7 +81,7 @@ describe("useSyncConfig", () => {
   });
 
   it("should return ready=true when using localStorage (sync initialization)", () => {
-    let ready: () => boolean;
+    let ready!: () => boolean;
 
     function TestComponent() {
       [, , ready] = useSyncConfig("test-key", "default");
@@ -104,9 +104,9 @@ describe("useSyncConfig", () => {
       removeItem: vi.fn(),
     };
 
-    let value: () => string;
-    let setValue: (v: string) => void;
-    let ready: () => boolean;
+    let value!: () => string;
+    let setValue!: (v: string) => void;
+    let ready!: () => boolean;
 
     function TestComponent() {
       [value, setValue, ready] = useSyncConfig("test-key", "default");
@@ -147,8 +147,8 @@ describe("useSyncConfig", () => {
       removeItem: vi.fn(),
     };
 
-    let value: () => string;
-    let ready: () => boolean;
+    let value!: () => string;
+    let ready!: () => boolean;
 
     function TestComponent() {
       [value, , ready] = useSyncConfig("test-key", "default");
@@ -181,9 +181,9 @@ describe("useSyncConfig", () => {
 
     localStorage.setItem("testApp.test-key", JSON.stringify("local-fallback"));
 
-    let value: () => string;
-    let setValue: (v: string) => void;
-    let ready: () => boolean;
+    let value!: () => string;
+    let setValue!: (v: string) => void;
+    let ready!: () => boolean;
 
     function TestComponent() {
       [value, setValue, ready] = useSyncConfig("test-key", "default");
@@ -216,7 +216,7 @@ describe("useSyncConfig", () => {
   it("should handle non-JSON values in storage", () => {
     localStorage.setItem("testApp.test-key", "not-json");
 
-    let value: () => string;
+    let value!: () => string;
 
     function TestComponent() {
       [value] = useSyncConfig("test-key", "default");
@@ -235,8 +235,8 @@ describe("useSyncConfig", () => {
   it("should support complex objects", () => {
     const defaultObj = { theme: "light", fontSize: 14 };
 
-    let value: () => { theme: string; fontSize: number };
-    let setValue: (v: { theme: string; fontSize: number }) => void;
+    let value!: () => { theme: string; fontSize: number };
+    let setValue!: (v: { theme: string; fontSize: number }) => void;
 
     function TestComponent() {
       [value, setValue] = useSyncConfig("test-key", defaultObj);
@@ -265,9 +265,9 @@ describe("useSyncConfig", () => {
       removeItem: vi.fn(),
     };
 
-    let value: () => string;
-    let ready: () => boolean;
-    let doConfiguration: () => void;
+    let value!: () => string;
+    let ready!: () => boolean;
+    let doConfiguration!: () => void;
 
     function TestComponent() {
       [value, , ready] = useSyncConfig("test-key", "default");

@@ -1,3 +1,4 @@
+import type { JSX } from "solid-js";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { SelectItem } from "../../../../src/components/form-control/select/SelectItem";
@@ -7,7 +8,7 @@ import {
 } from "../../../../src/components/form-control/select/SelectContext";
 
 // 테스트용 Provider
-function TestProvider(props: { children: unknown; value: SelectContextValue }) {
+function TestProvider(props: { children: JSX.Element; value: SelectContextValue }) {
   return <SelectContext.Provider value={props.value}>{props.children}</SelectContext.Provider>;
 }
 

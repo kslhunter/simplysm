@@ -11,8 +11,13 @@ import {
 } from "../../../src";
 import { SharedDataProvider } from "../../../src/providers/shared-data/SharedDataProvider";
 
-interface TestData {
-  user: { id: number; name: string };
+interface TestUser {
+  id: number;
+  name: string;
+}
+
+function useTestSharedData(): any {
+  return useSharedData();
 }
 
 function createMockServiceClient() {
@@ -50,6 +55,7 @@ function createMockNotification(): NotificationContextValue {
     success: vi.fn(() => ""),
     warning: vi.fn(() => ""),
     danger: vi.fn(() => ""),
+    try: vi.fn(async (fn) => await fn()),
     update: vi.fn(),
     remove: vi.fn(),
     markAsRead: vi.fn(),
@@ -61,24 +67,22 @@ function createMockNotification(): NotificationContextValue {
 
 /** SharedDataProvider 안에서 configure()를 호출한 뒤 children을 렌더하는 헬퍼 */
 function ConfigureSharedData(props: {
-  definitions: { user: SharedDataDefinition<{ id: number; name: string }> };
+  definitions: { user: SharedDataDefinition<TestUser> };
   children: any;
 }) {
-  const shared = useSharedData<TestData>();
+  const shared = useTestSharedData();
   shared.configure(() => props.definitions);
   return <>{props.children}</>;
 }
 
-function TestConsumer(props: {
-  onData?: (shared: ReturnType<typeof useSharedData<TestData>>) => void;
-}) {
-  const shared = useSharedData<TestData>();
+function TestConsumer(props: { onData?: (shared: any) => void }) {
+  const shared = useTestSharedData();
   props.onData?.(shared);
 
   return (
     <div>
       <span data-testid="count">{shared.user.items().length}</span>
-      <span data-testid="busy">{shared.busy() ? "true" : "false"}</span>
+      <span data-testid="busy">{Boolean(shared.busy()) ? "true" : "false"}</span>
     </div>
   );
 }
@@ -86,12 +90,12 @@ function TestConsumer(props: {
 describe("SharedDataProvider", () => {
   it("초기 데이터를 로드하고 items()로 접근할 수 있다", async () => {
     const { serviceClientValue } = createMockServiceClient();
-    const mockUsers = [
+    const mockUsers: TestUser[] = [
       { id: 1, name: "Alice" },
       { id: 2, name: "Bob" },
     ];
 
-    const definitions: { user: SharedDataDefinition<{ id: number; name: string }> } = {
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
         serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
@@ -121,14 +125,14 @@ describe("SharedDataProvider", () => {
 
   it("get()으로 O(1) 단일 항목 조회가 가능하다", async () => {
     const { serviceClientValue } = createMockServiceClient();
-    const mockUsers = [
+    const mockUsers: TestUser[] = [
       { id: 1, name: "Alice" },
       { id: 2, name: "Bob" },
     ];
 
-    let sharedRef: ReturnType<typeof useSharedData<TestData>> | undefined;
+    let sharedRef: any;
 
-    const definitions: { user: SharedDataDefinition<{ id: number; name: string }> } = {
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
         serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
@@ -166,15 +170,15 @@ describe("SharedDataProvider", () => {
 
   it("orderBy에 따라 정렬된 결과를 반환한다", async () => {
     const { serviceClientValue } = createMockServiceClient();
-    const mockUsers = [
+    const mockUsers: TestUser[] = [
       { id: 2, name: "Charlie" },
       { id: 1, name: "Alice" },
       { id: 3, name: "Bob" },
     ];
 
-    let sharedRef: ReturnType<typeof useSharedData<TestData>> | undefined;
+    let sharedRef: any;
 
-    const definitions: { user: SharedDataDefinition<{ id: number; name: string }> } = {
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
         serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
@@ -203,7 +207,7 @@ describe("SharedDataProvider", () => {
       expect(result.getByTestId("count").textContent).toBe("3");
     });
 
-    const names = sharedRef!.user.items().map((u) => u.name);
+    const names = sharedRef!.user.items().map((u: TestUser) => u.name);
     expect(names).toEqual(["Alice", "Bob", "Charlie"]);
 
     result.unmount();
@@ -212,12 +216,12 @@ describe("SharedDataProvider", () => {
   it("busy()은 로드 중 true, 완료 후 false", async () => {
     const { serviceClientValue } = createMockServiceClient();
 
-    let resolveUsers!: (value: { id: number; name: string }[]) => void;
-    const fetchPromise = new Promise<{ id: number; name: string }[]>((resolve) => {
+    let resolveUsers!: (value: TestUser[]) => void;
+    const fetchPromise = new Promise<TestUser[]>((resolve) => {
       resolveUsers = resolve;
     });
 
-    const definitions: { user: SharedDataDefinition<{ id: number; name: string }> } = {
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
         serviceKey: "main",
         fetch: vi.fn(() => fetchPromise),
