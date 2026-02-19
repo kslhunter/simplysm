@@ -6,7 +6,7 @@ ignoredBuiltDependencies:
   - core-js
 
 onlyBuiltDependencies:
-  - "@simplysm/claude"
+  - "@simplysm/sd-claude"
   - bufferutil
   - cpu-features
   - esbuild

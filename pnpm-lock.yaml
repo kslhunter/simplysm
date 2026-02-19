@@ -132,8 +132,6 @@ importers:
         specifier: ^7.5.0
         version: 7.5.0
 
-  packages/claude: {}
-
   packages/core-browser:
     dependencies:
       "@simplysm/core-common":
@@ -286,6 +284,16 @@ importers:
       tedious:
         specifier: ^19.2.1
         version: 19.2.1(@azure/core-client@1.10.1)
+
+  packages/sd-claude:
+    dependencies:
+      yargs:
+        specifier: ^18.0.0
+        version: 18.0.0
+    devDependencies:
+      "@types/yargs":
+        specifier: ^17.0.35
+        version: 17.0.35
 
   packages/sd-cli:
     dependencies:
