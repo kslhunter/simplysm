@@ -4,216 +4,263 @@ description: Use when executing implementation plans with independent tasks in t
 model: opus
 ---
 
-# Plan Execution
+# Parallel Plan Execution
 
-Execute plan tasks with the right-sized process: direct for small plans, parallel agents for large plans.
+Execute plan tasks via parallel Task agents with dependency-aware scheduling.
 
-**Core principle:** Right-size the process to the plan. Small plans get direct execution; large plans get parallel agents with formal reviews.
+**Core principle:** Dependency analysis + parallel Task agents + nested parallel reviews = maximum throughput
 
 ## When to Use
 
-Have an implementation plan (from sd-plan or similar)? Use this skill.
-No plan? Use sd-plan or sd-brainstorm first.
-
-## Mode Selection
-
-**Default is Agent Mode.** Only use Direct Mode when ALL "Small" criteria are met.
-
 ```dot
-digraph mode {
-    "Small?" [shape=diamond];
-    "Direct Mode\n(no agents)" [shape=box];
-    "Agent Mode\n(parallel agents)" [shape=box, style=bold];
+digraph when_to_use {
+    "Have implementation plan?" [shape=diamond];
+    "sd-plan-dev" [shape=box];
+    "Manual execution or brainstorm first" [shape=box];
 
-    "Small?" -> "Direct Mode\n(no agents)" [label="yes (all 3 criteria)"];
-    "Small?" -> "Agent Mode\n(parallel agents)" [label="no (default)"];
+    "Have implementation plan?" -> "sd-plan-dev" [label="yes"];
+    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
 }
 ```
 
-**"Small" criteria (ALL must be true):**
-1. Tasks ≤ 2
-2. Source files ≤ 3 (test files excluded, count across all tasks)
-3. Every task is a simple addition or modification — NOT refactoring, structural changes, or cross-cutting concerns
+## Execution Method
 
-**When in doubt, choose Agent Mode.**
+All execution uses `Task(general-purpose)` for parallel execution.
 
----
+- **task agent**: `Task(general-purpose)` — implements one task, launches sub-Tasks for review, fixes issues
+- **spec reviewer**: `Task(general-purpose, model: "opus")` — sub-Task launched by task agent (read-only)
+- **quality reviewer**: `Task(general-purpose, model: "opus")` — sub-Task launched by task agent (read-only)
 
-## Direct Mode
+Independent tasks run as **parallel Task calls in a single message**. Within each task agent, spec and quality reviews also run as **parallel sub-Task calls**.
 
-No agents, no batching -- implement directly in main context.
-
-1. Read plan, understand all tasks
-2. Implement in dependency order. For each task:
-   - Implement exactly what the spec says
-   - Write tests and run them
-   - Ensure new public APIs are exported in the package's `index.ts`
-   - Self-review: spec complete? overbuilt? clean?
-   - Fix issues found
-3. After all tasks: `pnpm typecheck` + `pnpm lint` + `pnpm vitest` on affected packages
-4. Done
-
-**Escalation:** Switch to Agent Mode immediately if any of these occur during execution:
-- A task turns out to touch more files than expected
-- You find yourself doing structural changes or refactoring
-- The total change set exceeds ~100 lines of source code
-
----
-
-## Agent Mode
-
-Dependency-aware batching with parallel Task agents and formal reviews.
-
-### Architecture
-
-| Role | How | Model | Job |
-|------|-----|-------|-----|
-| Orchestrator | (you) | sonnet | Deps, prompts, lifecycle |
-| Implementer | `Task(general-purpose)` | default | Implement one task |
-| Spec reviewer | `Task(general-purpose)` | opus | Verify spec match |
-| Quality reviewer | `Task(general-purpose)` | opus | Verify code quality |
-| Final reviewer | `Task(general-purpose)` | opus | Cross-task integration |
-
-### Process
+## The Process
 
 ```dot
-digraph agent_mode {
+digraph process {
     rankdir=TB;
 
-    setup [label="1. Read plan, extract tasks, TaskCreate"];
-    deps [label="2. Dependency analysis → batch grouping"];
+    "Read plan, extract tasks, create TaskCreate" [shape=box];
+    "Dependency analysis: identify files per task, build graph, group into batches" [shape=box];
 
     subgraph cluster_batch {
-        label="3. Per Batch";
-        implement [label="Launch parallel implementer Tasks"];
-        questions [label="Questions?" shape=diamond];
-        ask [label="Ask user → re-launch with answers"];
-        reviews [label="Launch parallel reviews\n(spec + quality per task)"];
-        issues [label="Issues?" shape=diamond];
-        fix [label="Re-launch implementer with fix list\n→ re-review (max 3 cycles)"];
-        batch_done [label="Batch complete"];
+        label="Per Batch (independent tasks)";
+
+        subgraph cluster_parallel_tasks {
+            label="Parallel Task calls (single message)";
+            style=dashed;
+
+            subgraph cluster_task_agent {
+                label="Each Task Agent";
+                "Implement the task" [shape=box];
+                "Questions?" [shape=diamond];
+                "Return questions to orchestrator" [shape=box];
+                "Re-launch with answers" [shape=box];
+
+                subgraph cluster_nested_review {
+                    label="Parallel sub-Task calls";
+                    style=dashed;
+                    "sub-Task: spec reviewer" [shape=box];
+                    "sub-Task: quality reviewer" [shape=box];
+                }
+
+                "Any issues?" [shape=diamond];
+                "Fix all issues" [shape=box];
+                "Re-review failed aspects (parallel sub-Task)" [shape=box];
+                "Report results" [shape=box];
+            }
+        }
     }
 
-    more [label="More batches?" shape=diamond];
-    final [label="4. Final review (opus)"];
-    done [label="5. Done" shape=ellipse];
+    "More batches?" [shape=diamond];
+    "Task: final review for entire implementation" [shape=box];
+    "Done" [shape=ellipse];
 
-    setup -> deps -> implement;
-    implement -> questions;
-    questions -> ask [label="yes"];
-    ask -> implement;
-    questions -> reviews [label="no"];
-    reviews -> issues;
-    issues -> fix [label="yes"];
-    fix -> issues;
-    issues -> batch_done [label="no"];
-    batch_done -> more;
-    more -> implement [label="yes"];
-    more -> final [label="no"];
-    final -> done;
+    "Read plan, extract tasks, create TaskCreate" -> "Dependency analysis: identify files per task, build graph, group into batches";
+    "Dependency analysis: identify files per task, build graph, group into batches" -> "Implement the task";
+    "Implement the task" -> "Questions?";
+    "Questions?" -> "Return questions to orchestrator" [label="yes"];
+    "Return questions to orchestrator" -> "Re-launch with answers";
+    "Re-launch with answers" -> "Implement the task";
+    "Questions?" -> "sub-Task: spec reviewer" [label="no"];
+    "Questions?" -> "sub-Task: quality reviewer" [label="no"];
+    "sub-Task: spec reviewer" -> "Any issues?";
+    "sub-Task: quality reviewer" -> "Any issues?";
+    "Any issues?" -> "Fix all issues" [label="yes"];
+    "Fix all issues" -> "Re-review failed aspects (parallel sub-Task)";
+    "Re-review failed aspects (parallel sub-Task)" -> "Any issues?";
+    "Any issues?" -> "Report results" [label="no"];
+    "Report results" -> "More batches?";
+    "More batches?" -> "Implement the task" [label="yes, next batch"];
+    "More batches?" -> "Task: final review for entire implementation" [label="no"];
+    "Task: final review for entire implementation" -> "Done";
 }
 ```
 
-### Dependency Analysis
+## Dependency Analysis
 
-1. Per task: identify files created/modified
-2. File overlap → dependent (same batch is prohibited)
-3. Logical dependency (B uses what A creates) → dependent
-4. No dependencies between each other → same batch (parallel)
+Before launching tasks, analyze the plan to build a dependency graph:
+
+1. **For each task**: identify which files/modules it will create or modify
+2. **Find overlaps**: tasks touching the same files depend on each other
+3. **Respect logical dependencies**: if task B uses what task A creates, B depends on A
+4. **Group into batches**: tasks with no dependencies between them form one batch
 
 ```
-Example: Task 1 creates types.ts, Task 2 uses types.ts, Task 3 independent
-  Batch 1: [Task 1, Task 3]    ← parallel
-  Batch 2: [Task 2]            ← depends on Task 1
+Example: 5 tasks
+  Task 1: creates utils/validator.ts
+  Task 2: creates hooks/useAuth.ts
+  Task 3: creates components/Login.tsx (uses hooks/useAuth.ts)
+  Task 4: modifies utils/validator.ts
+  Task 5: creates api/endpoints.ts
+
+  Batch 1: [Task 1, Task 2, Task 5] — independent, parallel
+  Batch 2: [Task 3] — depends on Task 2
+  Batch 3: [Task 4] — depends on Task 1
 ```
 
-### Prompt Construction
+## Task Agent Prompt
 
-**Implementer:** Use `./implementer-prompt.md` template. Fill in:
-- Task name and full description (paste full text, NOT file reference)
-- Context: where it fits, what depends on it
-- Cross-batch context (for batch 2+): what previous batches produced, files created
-- Working directory
+Each task agent receives a prompt combining implementation + review instructions:
 
-**Reviews:** After **all** implementers in the batch report back (including question resolution), launch in parallel:
-- Spec review: `./spec-reviewer-prompt.md` -- fill in requirements + implementer report
-- Quality review: `./code-quality-reviewer-prompt.md` -- fill in report + changed files
-- Launch both in a single message (2 Task calls per completed task)
+```
+You are implementing and reviewing Task N: [task name]
 
-**Final review:** `./final-review-prompt.md` -- fill in the design doc that corresponds to the current plan (match by topic/date in `docs/plans/`, if exists) + full plan + all task results
+## Task Description
 
-### Fix-Review Cycle
+[FULL TEXT of task from plan]
 
-When reviewers find issues:
-1. Compile all issues from both reviewers
-2. Re-launch the implementer Task with original prompt + fix list
-3. Re-review only failed aspects (re-launch only the reviewer that found issues)
-4. **Max 3 cycles.** After that, report remaining issues to user for decision.
+## Context
 
-### Question Handling
+[Scene-setting: where this fits, dependencies, architectural context]
 
-If an implementer returns questions (output contains `## Questions`):
-1. Present questions to the user
-2. Re-launch that implementer Task with original prompt + answers appended
-3. Other completed tasks in the batch are unaffected
+## Your Job
 
-### Commit Strategy
+1. Implement exactly what the task specifies
+2. Write tests (following TDD if task says to)
+3. Verify implementation works
+4. Self-review: did I implement everything? Did I over-build?
+5. Launch TWO parallel sub-Tasks (spec review + quality review):
+   - Sub-Task 1: spec reviewer — send spec-reviewer-prompt.md based prompt
+   - Sub-Task 2: quality reviewer — send code-quality-reviewer-prompt.md based prompt
+6. If either reviewer finds issues → fix them → re-review only failed aspects (parallel sub-Tasks again)
+7. Repeat until both reviewers approve
+8. Report back with: what you implemented, test results, files changed, review outcomes
 
-- Agents work on filesystem directly -- no commits during implementation
-- After final review passes, commit (use sd-commit or manual)
-- Do NOT commit between batches
+If you have questions about requirements — return them immediately WITHOUT implementing. Don't guess.
+
+Work from: [directory]
+```
+
+## Prompt Templates
+
+- `./implementer-prompt.md` — base implementer instructions (referenced by task agent)
+- `./spec-reviewer-prompt.md` — spec compliance review sub-Task prompt
+- `./code-quality-reviewer-prompt.md` — code quality review sub-Task prompt
+
+## Example Workflow
+
+```
+You: Using sd-plan-dev to execute this plan.
+
+[Read plan file: docs/plans/feature-plan.md]
+[Extract all 5 tasks with full text + create TaskCreate]
+
+[Dependency analysis]
+  Task 1 (validator): no deps
+  Task 2 (auth hook): no deps
+  Task 3 (login component): depends on Task 2
+  Task 4 (validator update): depends on Task 1
+  Task 5 (api endpoints): no deps
+
+  Batch 1: [Task 1, Task 2, Task 5]
+  Batch 2: [Task 3, Task 4]
+
+--- Batch 1: parallel ---
+
+[3 parallel Task calls in single message]
+
+  Task 1 agent:
+    - Implemented validator, tests 5/5 pass
+    - Parallel sub-Tasks: spec ✅, quality ✅
+    → Done
+
+  Task 2 agent:
+    - "Should auth use JWT or session?" (question returned)
+
+  Task 5 agent:
+    - Implemented endpoints, tests 3/3 pass
+    - Parallel sub-Tasks: spec ✅, quality: Issues (magic number)
+    - Fixed magic number
+    - Parallel re-review: quality ✅
+    → Done
+
+[Answer Task 2 question: "JWT"]
+[Re-launch Task 2 agent with answer]
+
+  Task 2 agent:
+    - Implemented auth hook with JWT, tests 4/4 pass
+    - Parallel sub-Tasks: spec ✅, quality ✅
+    → Done
+
+[Batch 1 complete]
+
+--- Batch 2: parallel ---
+
+[2 parallel Task calls in single message]
+
+  Task 3 agent:
+    - Implemented login component using Task 2's auth hook
+    - Parallel sub-Tasks: spec ❌ (missing error state), quality ✅
+    - Fixed error state
+    - spec re-review ✅
+    → Done
+
+  Task 4 agent:
+    - Updated validator with new rules
+    - Parallel sub-Tasks: spec ✅, quality ✅
+    → Done
+
+[Batch 2 complete]
+
+--- Final ---
+
+[Task — final review for entire implementation]
+Final reviewer: All requirements met, ready to merge
+
+Done!
+```
 
 ## Red Flags
 
-- Skip reviews in Agent Mode
-- Put file-overlapping tasks in same parallel batch
+**Never:**
+- Start implementation on main/master without explicit user consent
+- Skip reviews (spec compliance OR code quality)
+- Proceed with unfixed issues
+- Put tasks with file overlap in the same parallel batch
 - Skip dependency analysis
-- Send plan file path to agents instead of full text
+- Make task agent read plan file directly (provide full text instead)
+- Skip scene-setting context
 - Accept "close enough" on spec compliance
-- Exceed 3 fix-review cycles without user input
-- Proceed to next batch before current batch fully passes
+- Skip review loops (issue found → fix → re-review)
 
-## Error Handling
+**If task agent returns questions:**
+- Answer clearly and completely
+- Re-launch that agent with answers included
+- Other parallel agents continue unaffected
 
-- Implementer fails completely → retry once, then report to user
-- Reviewer crashes → re-launch once
-- Fix-review loop at max → report to user for decision
-- File conflicts between parallel agents → stop batch, report to user
-
-## Example (Agent Mode)
-
-```
-[Read plan: 5 tasks]
-[Dep analysis → Batch 1: [T1, T2], Batch 2: [T3, T4, T5]]
-
---- Batch 1 ---
-[2 parallel implementer Tasks]
-  T1: implemented, tests pass → report
-  T2: "Should this use JWT?" → questions returned
-
-[2 parallel reviews for T1]
-  Spec ✅, Quality ⚠️ magic number → CHANGES_NEEDED
-
-[Ask user T2's question → "JWT"]
-[Re-launch T2 with answer] → implemented → report
-[Fix T1 magic number → re-review quality] → ✅
-[2 parallel reviews for T2] → Spec ✅, Quality ✅
-
---- Batch 2 (with batch 1 context) ---
-[3 parallel implementer Tasks] → all pass
-[6 parallel reviews] → all pass
-
---- Final review (opus) ---
-Integration check ✅ → Done!
-```
+**If reviewers find issues:**
+- Task agent fixes all issues from both reviewers at once
+- Re-review only the failed aspects (parallel sub-Tasks)
+- Repeat until both approved
 
 ## After Completion
 
-When all tasks and final review pass:
-- If in a worktree (`.worktrees/`) → guide user to `/sd-worktree merge`
+When all tasks and final review are done, if the current working directory is inside a worktree (`.worktrees/`), guide the user to:
+- `/sd-worktree merge` — Merge the worktree branch back into main
 
 ## Integration
 
-- **sd-plan** -- creates the plan this skill executes
-- **sd-tdd** -- implementers follow TDD when plan specifies it
-- **sd-worktree** -- branch isolation for worktree-based workflows
+**Related skills:**
+- **sd-plan** — creates the plan this skill executes
+- **sd-tdd** — task agents follow TDD
+- **sd-worktree** — branch isolation for worktree-based workflows
