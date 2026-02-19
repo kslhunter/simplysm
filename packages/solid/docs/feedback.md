@@ -2,7 +2,7 @@
 
 ## Notification
 
-Notification system. `InitializeProvider` automatically sets up `NotificationProvider` and `NotificationBanner`, so you only need to use the `useNotification` hook and optionally add `NotificationBell` in your layout.
+Notification system. Set up `NotificationProvider` and `NotificationBanner` in your provider tree. Use the `useNotification` hook to show notifications and optionally add `NotificationBell` in your layout.
 
 ```tsx
 import {
@@ -58,14 +58,14 @@ function MyComponent() {
 | `clear` | `() => void` | Clear all |
 
 **Components:**
-- `NotificationBanner` -- Top-of-screen notification banner (automatically included by `InitializeProvider`)
+- `NotificationBanner` -- Top-of-screen notification banner (add inside `NotificationProvider`)
 - `NotificationBell` -- Notification bell icon (shows unread count, add to your layout as needed)
 
 ---
 
 ## Busy
 
-Busy overlay system. `InitializeProvider` automatically sets up `BusyProvider` and `BusyContainer`. Use the `busyVariant` option in `AppConfig` to choose between `"spinner"` (default) and `"bar"` variants. Control the busy state using the `useBusy` hook.
+Busy overlay system. Set up `BusyProvider` in your provider tree. Pass `variant` prop to choose between `"spinner"` (default) and `"bar"` variants. Control the busy state using the `useBusy` hook.
 
 ```tsx
 import { useBusy } from "@simplysm/solid";
@@ -119,7 +119,7 @@ import { BusyContainer } from "@simplysm/solid";
 
 ## Print / usePrint
 
-Browser printing and PDF generation. Must be used inside `InitializeProvider`.
+Browser printing and PDF generation.
 
 ```tsx
 import { Print, usePrint } from "@simplysm/solid";

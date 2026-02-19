@@ -37,28 +37,48 @@ export default {
 
 ### Provider Setup
 
-Wrap your app root with `InitializeProvider`. It automatically sets up all required providers internally: configuration context, theme (dark/light/system), notification system with banner, global error capturing (window.onerror, unhandledrejection), busy overlay, and programmatic dialog support.
+Compose individual providers at the app root. Each provider is independent and optional (except `ConfigProvider` which is required).
 
 ```tsx
-import { InitializeProvider } from "@simplysm/solid";
+import {
+  BusyProvider,
+  ClipboardProvider,
+  ConfigProvider,
+  ErrorLoggerProvider,
+  NotificationBanner,
+  NotificationProvider,
+  PwaUpdateProvider,
+  ThemeProvider,
+} from "@simplysm/solid";
 
 function App() {
   return (
-    <InitializeProvider config={{ clientName: "my-app" }}>
-      {/* app content */}
-    </InitializeProvider>
+    <ConfigProvider clientName="my-app">
+      <NotificationProvider>
+        <NotificationBanner />
+        <ErrorLoggerProvider>
+          <PwaUpdateProvider>
+            <ClipboardProvider>
+              <ThemeProvider>
+                <BusyProvider>{/* app content */}</BusyProvider>
+              </ThemeProvider>
+            </ClipboardProvider>
+          </PwaUpdateProvider>
+        </ErrorLoggerProvider>
+      </NotificationProvider>
+    </ConfigProvider>
   );
 }
 ```
 
-**AppConfig options:**
+**Optional providers** (add when needed):
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `clientName` | `string` | **(required)** | Client identifier (used as storage key prefix) |
-| `syncStorage` | `StorageAdapter` | `localStorage` | Custom sync storage adapter (used by `useSyncConfig`) |
-| `logger` | `LogAdapter` | - | Log adapter for remote logging (used by `useLogger`) |
-| `busyVariant` | `"spinner" \| "bar"` | `"spinner"` | Root busy overlay variant |
+| Provider | Purpose |
+|----------|---------|
+| `SyncStorageProvider` | Custom sync storage adapter for `useSyncConfig` (wraps above `ConfigProvider`) |
+| `LoggerProvider` | Remote log adapter for `useLogger` (wraps above `ErrorLoggerProvider`) |
+| `ServiceClientProvider` | WebSocket RPC client |
+| `SharedDataProvider` | Server-side data subscriptions |
 
 **StorageAdapter interface:**
 
@@ -169,11 +189,16 @@ import "@simplysm/solid/tailwind.css";
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
 - [`useRouterLink`](docs/hooks.md#userouterlink) - Navigation with Ctrl/Shift+click support
-- [`usePwaUpdate`](docs/hooks.md#usepwaupdate) - PWA Service Worker update detection
 
 ## Providers
 
-- [`InitializeProvider`](docs/providers.md#initializeprovider) - Root provider (theme, notification, busy, dialog, clipboard, error capturing)
+- [`ConfigProvider`](docs/providers.md#configprovider) - App configuration (required, topmost)
+- [`SyncStorageProvider`](docs/providers.md#syncstorageprovider) - Custom sync storage adapter (optional)
+- [`LoggerProvider`](docs/providers.md#loggerprovider) - Remote log adapter (optional)
+- [`ErrorLoggerProvider`](docs/providers.md#errorloggerprovider) - Global error capturing (window.onerror, unhandledrejection)
+- [`PwaUpdateProvider`](docs/providers.md#pwaupdateprovider) - PWA Service Worker update detection
+- [`ClipboardProvider`](docs/providers.md#clipboardprovider) - Form control clipboard value copy
+- [`ThemeProvider`](docs/providers.md#themeprovider) - Dark/light/system theme
 - [`ServiceClientProvider`](docs/providers.md#serviceclientprovider) - WebSocket RPC client provider (`useServiceClient`)
 - [`SharedDataProvider`](docs/providers.md#shareddataprovider) - Server-side data subscription provider (`useSharedData`)
 

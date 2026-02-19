@@ -13,9 +13,7 @@ export const ServiceClientContext = createContext<ServiceClientContextValue>();
 export function useServiceClient(): ServiceClientContextValue {
   const context = useContext(ServiceClientContext);
   if (!context) {
-    throw new Error(
-      "useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다. ServiceClientProvider는 InitializeProvider와 NotificationProvider 아래에 위치해야 합니다",
-    );
+    throw new Error("useServiceClient는 ServiceClientProvider 내부에서만 사용할 수 있습니다");
   }
   return context;
 }

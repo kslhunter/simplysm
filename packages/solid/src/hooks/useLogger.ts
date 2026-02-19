@@ -1,5 +1,5 @@
 import { consola } from "consola";
-import { useConfig, type LogAdapter } from "../providers/ConfigContext";
+import { useLogAdapter, type LogAdapter } from "../providers/LoggerContext";
 
 type LogLevel = Parameters<LogAdapter["write"]>[0];
 
@@ -11,12 +11,12 @@ interface Logger {
 }
 
 export function useLogger(): Logger {
-  const config = useConfig();
+  const logAdapter = useLogAdapter();
 
   const createLogFunction = (level: LogLevel) => {
     return (...args: unknown[]) => {
-      if (config.logger) {
-        void config.logger.write(level, ...args);
+      if (logAdapter) {
+        void logAdapter.write(level, ...args);
       } else {
         (consola as any)[level](...args);
       }

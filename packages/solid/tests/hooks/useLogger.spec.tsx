@@ -1,14 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, renderHook } from "@solidjs/testing-library";
 import { useLogger } from "../../src/hooks/useLogger";
-import { ConfigContext, type LogAdapter } from "../../src/providers/ConfigContext";
+import { LoggerProvider, type LogAdapter } from "../../src/providers/LoggerContext";
 import { consola } from "consola";
 
-function configWrapper(logger?: LogAdapter) {
+function loggerWrapper(adapter?: LogAdapter) {
+  if (!adapter) {
+    return (props: { children: any }) => <>{props.children}</>;
+  }
   return (props: { children: any }) => (
-    <ConfigContext.Provider value={{ clientName: "test", logger }}>
-      {props.children}
-    </ConfigContext.Provider>
+    <LoggerProvider adapter={adapter}>{props.children}</LoggerProvider>
   );
 }
 
@@ -22,14 +23,14 @@ describe("useLogger", () => {
   });
 
   it("should return a logger object with log, info, warn, error methods", () => {
-    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper() });
+    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
     expect(typeof result.log).toBe("function");
     expect(typeof result.info).toBe("function");
     expect(typeof result.warn).toBe("function");
     expect(typeof result.error).toBe("function");
   });
 
-  it("should call consola when no adapter is configured", () => {
+  it("should call consola when no LoggerProvider is present", () => {
     const consolaSpy = {
       log: vi.spyOn(consola, "log").mockImplementation(() => {}),
       info: vi.spyOn(consola, "info").mockImplementation(() => {}),
@@ -37,7 +38,7 @@ describe("useLogger", () => {
       error: vi.spyOn(consola, "error").mockImplementation(() => {}),
     };
 
-    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper() });
+    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper() });
 
     result.log("log message");
     result.info("info message");
@@ -50,12 +51,12 @@ describe("useLogger", () => {
     expect(consolaSpy.error).toHaveBeenCalledWith("error message");
   });
 
-  it("should call adapter only when adapter is configured (no consola)", () => {
+  it("should call adapter only when LoggerProvider is present (no consola)", () => {
     const writeSpy = vi.fn();
     const adapter: LogAdapter = { write: writeSpy };
     const consolaSpy = vi.spyOn(consola, "info").mockImplementation(() => {});
 
-    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper(adapter) });
+    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper(adapter) });
 
     result.info("test message", { key: "value" });
 
@@ -67,7 +68,7 @@ describe("useLogger", () => {
     const writeSpy = vi.fn();
     const adapter: LogAdapter = { write: writeSpy };
 
-    const { result } = renderHook(() => useLogger(), { wrapper: configWrapper(adapter) });
+    const { result } = renderHook(() => useLogger(), { wrapper: loggerWrapper(adapter) });
 
     result.log("a");
     result.info("b");
@@ -90,7 +91,7 @@ describe("useLogger", () => {
       return <div>test</div>;
     }
 
-    render(() => <TestComponent />, { wrapper: configWrapper(adapter) });
+    render(() => <TestComponent />, { wrapper: loggerWrapper(adapter) });
 
     expect(writeSpy).toHaveBeenCalledWith("info", "component log");
   });

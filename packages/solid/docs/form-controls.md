@@ -589,7 +589,7 @@ import { ColorPicker } from "@simplysm/solid";
 
 ## ThemeToggle
 
-Dark/light/system theme cycle toggle button. Must be used inside `InitializeProvider`.
+Dark/light/system theme cycle toggle button. Must be used inside `ThemeProvider`.
 
 ```tsx
 import { ThemeToggle } from "@simplysm/solid";

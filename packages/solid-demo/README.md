@@ -112,14 +112,14 @@ The demo runs in Vite dev server mode with hot module replacement. Navigate betw
 
 ## Configuration
 
-The demo app is configured with `InitializeProvider` which automatically sets up:
-- Configuration context
-- Theme provider (dark/light/system)
-- Notification system with banner
-- Loading overlay
-- Dialog support
-
-See `src/App.tsx` for setup details.
+The demo app composes individual providers in `src/App.tsx`:
+- `ConfigProvider` -- App configuration
+- `NotificationProvider` + `NotificationBanner` -- Notification system
+- `ErrorLoggerProvider` -- Global error capturing
+- `PwaUpdateProvider` -- PWA update detection
+- `ClipboardProvider` -- Form control clipboard copy
+- `ThemeProvider` -- Dark/light/system theme
+- `BusyProvider` -- Loading overlay
 
 ## License
 
