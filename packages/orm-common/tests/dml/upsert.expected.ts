@@ -173,4 +173,43 @@ export const upsertMultiWhere: ExpectedSql = {
   `,
 };
 
+export const upsertPlainValues: ExpectedSql = {
+  mysql: mysql`
+    UPDATE \`TestDb\`.\`Employee\` AS \`T1\`
+    SET \`T1\`.\`name\` = '새이름'
+    WHERE \`T1\`.\`id\` <=> 1;
+    INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`departmentId\`)
+    SELECT '새이름', 1
+    WHERE NOT EXISTS (SELECT * FROM \`TestDb\`.\`Employee\` AS \`T1\` WHERE \`T1\`.\`id\` <=> 1)
+  `,
+  mssql: tsql`
+    MERGE [TestDb].[TestSchema].[Employee] AS [T1]
+    USING (SELECT 1 AS [_]) AS [_src]
+    ON (([T1].[id] IS NULL AND 1 IS NULL) OR [T1].[id] = 1)
+    WHEN MATCHED THEN
+      UPDATE SET [name] = N'새이름'
+    WHEN NOT MATCHED THEN
+      INSERT ([name], [departmentId]) VALUES (N'새이름', 1);
+  `,
+  postgresql: pgsql`
+    WITH matched AS (
+      SELECT "T1".* FROM "TestSchema"."Employee" AS "T1"
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
+    ),
+    updated AS (
+      UPDATE "TestSchema"."Employee" AS "T1"
+      SET "name" = '새이름'
+      WHERE "T1"."id" IS NOT DISTINCT FROM 1
+      RETURNING *
+    ),
+    inserted AS (
+      INSERT INTO "TestSchema"."Employee" ("name", "departmentId")
+      SELECT '새이름', 1
+      WHERE NOT EXISTS (SELECT 1 FROM matched)
+      RETURNING *
+    )
+    SELECT * FROM updated UNION ALL SELECT * FROM inserted
+  `,
+};
+
 //#endregion

@@ -77,6 +77,82 @@ describe("UPDATE - 기본", () => {
     });
   });
 
+  describe("일반 값으로 UPDATE (expr.val 없이)", () => {
+    const db = createTestDb();
+
+    const def = db
+      .employee()
+      .where((e) => [expr.eq(e.id, 1)])
+      .getUpdateQueryDef(() => ({
+        name: "새이름",
+        departmentId: 2,
+      }));
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "update",
+        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        as: "T1",
+        record: {
+          name: { type: "value", value: "새이름" },
+          departmentId: { type: "value", value: 2 },
+        },
+        where: [
+          {
+            type: "eq",
+            source: { type: "column", path: ["T1", "id"] },
+            target: { type: "value", value: 1 },
+          },
+        ],
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.updatePlainValues[dialect]);
+    });
+  });
+
+  describe("일반 값과 expr 혼합 UPDATE", () => {
+    const db = createTestDb();
+
+    const def = db
+      .employee()
+      .where((e) => [expr.eq(e.id, 1)])
+      .getUpdateQueryDef((e) => ({
+        name: "새이름",
+        managerId: expr.raw("number")`${e.managerId} + 1`,
+      }));
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "update",
+        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        as: "T1",
+        record: {
+          name: { type: "value", value: "새이름" },
+          managerId: {
+            type: "raw",
+            sql: "$1 + 1",
+            params: [{ type: "column", path: ["T1", "managerId"] }],
+          },
+        },
+        where: [
+          {
+            type: "eq",
+            source: { type: "column", path: ["T1", "id"] },
+            target: { type: "value", value: 1 },
+          },
+        ],
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.updateMixed[dialect]);
+    });
+  });
+
   describe("현재 값 참조하여 UPDATE (e.g., count = count + 1)", () => {
     const db = createTestDb();
 

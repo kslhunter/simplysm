@@ -19,7 +19,7 @@ import {
   type DataToColumnBuilderRecord,
 } from "../schema/factory/column-builder";
 import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
-import type { WhereExprUnit } from "../expr/expr-unit";
+import type { WhereExprUnit, ExprInput } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
 import { ArgumentError, objClearUndefined } from "@simplysm/core-common";
@@ -1175,7 +1175,10 @@ export class Queryable<
     return from;
   }
 
-  private _buildSelectDef(columns: QueryableRecord<any>, prefix: string): Record<string, Expr> {
+  private _buildSelectDef(
+    columns: QueryableRecord<any> | QueryableWriteRecord<any>,
+    prefix: string,
+  ): Record<string, Expr> {
     const result: Record<string, Expr> = {};
 
     for (const [key, val] of Object.entries(columns)) {
@@ -1187,8 +1190,11 @@ export class Queryable<
         if (val.length > 0) {
           Object.assign(result, this._buildSelectDef(val[0], fullKey));
         }
-      } else if (typeof val === "object") {
+      } else if (typeof val === "object" && val != null) {
         Object.assign(result, this._buildSelectDef(val, fullKey));
+      } else {
+        // Plain value (string, number, boolean, etc.) — convert to Expr
+        result[fullKey] = expr.toExpr(val);
       }
     }
 
@@ -1476,14 +1482,14 @@ export class Queryable<
    * ```
    */
   async update(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
   async update<K extends keyof TFrom["$columns"] & string>(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns: K[],
   ): Promise<Pick<TFrom["$columns"], K>[]>;
   async update<K extends keyof TFrom["$columns"] & string>(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$columns"], K>[] | void> {
     const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
@@ -1533,7 +1539,7 @@ export class Queryable<
   }
 
   getUpdateQueryDef(
-    recordFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpdateQueryDef {
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
@@ -1614,39 +1620,41 @@ export class Queryable<
    * ```
    */
   async upsert(
-    updateFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferUpdate"]>,
+    updateFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
   async upsert<K extends keyof TFrom["$inferColumns"] & string>(
-    insertFwd: (cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
-  async upsert<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
+  async upsert<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
     updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
   ): Promise<void>;
   async upsert<
-    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
     updateFwd: (cols: QueryableRecord<TData>) => U,
-    insertFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
   async upsert<
-    U extends QueryableRecord<TFrom["$inferUpdate"]>,
+    U extends QueryableWriteRecord<TFrom["$inferUpdate"]>,
     K extends keyof TFrom["$inferColumns"] & string,
   >(
     updateFwdOrInsertFwd:
       | ((cols: QueryableRecord<TData>) => U)
-      | ((cols: QueryableRecord<TData>) => QueryableRecord<TFrom["$inferInsert"]>),
-    insertFwdOrOutputColumns?: ((updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>) | K[],
+      | ((cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>),
+    insertFwdOrOutputColumns?:
+      | ((updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>)
+      | K[],
     outputColumns?: K[],
   ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
     const updateRecordFwd = updateFwdOrInsertFwd as (cols: QueryableRecord<TData>) => U;
 
     const insertRecordFwd = (
       insertFwdOrOutputColumns instanceof Function ? insertFwdOrOutputColumns : updateFwdOrInsertFwd
-    ) as (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>;
+    ) as (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>;
 
     const realOutputColumns =
       insertFwdOrOutputColumns instanceof Function ? outputColumns : insertFwdOrOutputColumns;
@@ -1661,9 +1669,9 @@ export class Queryable<
     }
   }
 
-  getUpsertQueryDef<U extends QueryableRecord<TFrom["$inferUpdate"]>>(
+  getUpsertQueryDef<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(
     updateRecordFwd: (cols: QueryableRecord<TData>) => U,
-    insertRecordFwd: (updateRecord: U) => QueryableRecord<TFrom["$inferInsert"]>,
+    insertRecordFwd: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpsertQueryDef {
     const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
@@ -1864,6 +1872,10 @@ export type QueryableRecord<TData extends DataRecord> = {
           : TData[K] extends DataRecord | undefined
             ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
             : never;
+};
+
+export type QueryableWriteRecord<TData> = {
+  [K in keyof TData]: TData[K] extends ColumnPrimitive ? ExprInput<TData[K]> : never;
 };
 
 export type NullableQueryableRecord<TData extends DataRecord> = {

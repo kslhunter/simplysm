@@ -44,6 +44,44 @@ export const updateMultiCol: ExpectedSql = {
   `,
 };
 
+export const updatePlainValues: ExpectedSql = {
+  mysql: mysql`
+    UPDATE \`TestDb\`.\`Employee\` AS \`T1\`
+    SET \`T1\`.\`name\` = '새이름', \`T1\`.\`departmentId\` = 2
+    WHERE \`T1\`.\`id\` <=> 1
+  `,
+  mssql: tsql`
+    UPDATE [T1]
+    SET [T1].[name] = N'새이름', [T1].[departmentId] = 2
+    FROM [TestDb].[TestSchema].[Employee] AS [T1]
+    WHERE (([T1].[id] IS NULL AND 1 IS NULL) OR [T1].[id] = 1)
+  `,
+  postgresql: pgsql`
+    UPDATE "TestSchema"."Employee" AS "T1"
+    SET "name" = '새이름', "departmentId" = 2
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
+  `,
+};
+
+export const updateMixed: ExpectedSql = {
+  mysql: mysql`
+    UPDATE \`TestDb\`.\`Employee\` AS \`T1\`
+    SET \`T1\`.\`name\` = '새이름', \`T1\`.\`managerId\` = \`T1\`.\`managerId\` + 1
+    WHERE \`T1\`.\`id\` <=> 1
+  `,
+  mssql: tsql`
+    UPDATE [T1]
+    SET [T1].[name] = N'새이름', [T1].[managerId] = [T1].[managerId] + 1
+    FROM [TestDb].[TestSchema].[Employee] AS [T1]
+    WHERE (([T1].[id] IS NULL AND 1 IS NULL) OR [T1].[id] = 1)
+  `,
+  postgresql: pgsql`
+    UPDATE "TestSchema"."Employee" AS "T1"
+    SET "name" = '새이름', "managerId" = "T1"."managerId" + 1
+    WHERE "T1"."id" IS NOT DISTINCT FROM 1
+  `,
+};
+
 export const updateWithRef: ExpectedSql = {
   mysql: mysql`
     UPDATE \`TestDb\`.\`Employee\` AS \`T1\`

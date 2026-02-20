@@ -398,6 +398,7 @@ Converts an `ExprInput` to a raw `Expr` JSON AST. Used internally; exposed for c
 | `InferUpdateColumns<T>` | UPDATE type (all optional) |
 | `InferColumnExprs<T>` | Expression input type from a `ColumnBuilderRecord` |
 | `InferDeepRelations<T>` | Infer relation types (all optional) |
+| `QueryableWriteRecord<TData>` | Write-side record type for update/upsert callbacks (accepts `ExprInput<T>` -- both `ExprUnit<T>` and plain values) |
 | `PathProxy<TObject>` | Type-safe path proxy for `.include()` navigation |
 
 ## Security Notes
@@ -459,7 +460,7 @@ await db.connect(async () => {
   // UPDATE
   await db.user()
     .where((u) => [expr.eq(u.id, 1)])
-    .update(() => ({ name: expr.val("string", "Jane") }));
+    .update(() => ({ name: "Jane" }));
 });
 ```
 

@@ -256,17 +256,26 @@ await db.user()
 ## UPDATE
 
 ```typescript
-// Simple update
+// Plain values (recommended)
+await db.user()
+  .where((u) => [expr.eq(u.id, 1)])
+  .update(() => ({
+    name: "새이름",
+    updatedAt: DateTime.now(),
+  }));
+
+// Column reference (use ExprUnit from callback parameter)
+await db.product()
+  .update((p) => ({
+    price: expr.mul(p.price, 1.1),
+  }));
+
+// Mixed: plain values + expressions
 await db.user()
   .where((u) => [expr.eq(u.id, 1)])
   .update((u) => ({
-    name: expr.val("string", "New Name"),
-  }));
-
-// Reference existing value
-await db.product()
-  .update((p) => ({
-    viewCount: expr.val("number", p.viewCount + 1),
+    name: "새이름",
+    loginCount: expr.raw("number")`${u.loginCount} + 1`,
   }));
 ```
 
@@ -291,16 +300,16 @@ const deleted = await db.user()
 await db.user()
   .where((u) => [expr.eq(u.email, "test@test.com")])
   .upsert(() => ({
-    name: expr.val("string", "Test"),
-    email: expr.val("string", "test@test.com"),
+    name: "Test",
+    email: "test@test.com",
   }));
 
 // Different data for UPDATE/INSERT
 await db.user()
   .where((u) => [expr.eq(u.email, "test@test.com")])
   .upsert(
-    () => ({ loginCount: expr.val("number", 1) }),
-    (update) => ({ ...update, email: expr.val("string", "test@test.com") }),
+    () => ({ loginCount: 1 }),
+    (update) => ({ ...update, email: "test@test.com" }),
   );
 ```
 

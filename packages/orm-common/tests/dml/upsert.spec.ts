@@ -197,4 +197,46 @@ describe("UPSERT - 기본", () => {
       expect(builder.build(def)).toMatchSql(expected.upsertMultiWhere[dialect]);
     });
   });
+
+  describe("일반 값으로 UPSERT (expr.val 없이)", () => {
+    const db = createTestDb();
+    const def = db
+      .employee()
+      .where((e) => [expr.eq(e.id, 1)])
+      .getUpsertQueryDef(
+        () => ({ name: "새이름" }),
+        (upd) => ({ name: upd.name, departmentId: 1 }),
+      );
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "upsert",
+        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        existsSelectQuery: {
+          type: "select",
+          as: "T1",
+          from: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1", "id"] },
+              target: { type: "value", value: 1 },
+            },
+          ],
+        },
+        updateRecord: {
+          name: { type: "value", value: "새이름" },
+        },
+        insertRecord: {
+          name: { type: "value", value: "새이름" },
+          departmentId: { type: "value", value: 1 },
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.upsertPlainValues[dialect]);
+    });
+  });
 });
