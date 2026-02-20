@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/orm-common",
-  "version": "13.0.42",
+  "version": "13.0.43",
   "description": "심플리즘 패키지 - ORM 모듈 (common)",
   "author": "김석래",
   "license": "Apache-2.0",
