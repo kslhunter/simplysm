@@ -13,7 +13,7 @@
   "dependencies": {
     "@simplysm/solid": "workspace:*",
     "@solidjs/router": "^0.15.4",
-    "@tabler/icons-solidjs": "^3.36.1",
+    "@tabler/icons-solidjs": "^3.37.1",
     "clsx": "^2.1.1",
     "echarts": "^6.0.0",
     "solid-js": "^1.9.11"
