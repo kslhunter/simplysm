@@ -169,8 +169,8 @@ function defineEvent<TInfo = unknown, TData = unknown>(
 | Property | Type | Description |
 |----------|------|-------------|
 | `eventName` | `string` | Unique event identifier |
-| `$info` | `TInfo` (declare) | For TypeScript type extraction only. Not used at runtime |
-| `$data` | `TData` (declare) | For TypeScript type extraction only. Not used at runtime |
+| `$info` | `readonly TInfo` | For TypeScript type extraction only. Not used at runtime |
+| `$data` | `readonly TData` | For TypeScript type extraction only. Not used at runtime |
 
 ### Usage Example
 

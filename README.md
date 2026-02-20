@@ -7,7 +7,7 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 
 - **Standard patterns first** -- Leverage idiomatic TypeScript/JavaScript/SolidJS patterns to minimize the learning curve.
 - **Explicit and predictable code** -- Favor explicit code over implicit behavior.
-- **Incremental adoption** -- Each package is independently usable; learn and adopt only what you need.
+- **Incremental learning** -- Each package is independently usable; learn and adopt only what you need.
 
 ## Packages
 
@@ -45,7 +45,7 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 | Package                                               | Target | Description |
 |-------------------------------------------------------|--------|-------------|
 | [`@simplysm/sd-cli`](packages/sd-cli/README.md)       | node | Build, lint, typecheck CLI tool |
-| [`@simplysm/sd-claude`](packages/sd-claude/README.md) | - | Claude Code CLI — asset installer and npx wrapper (auto-installs via postinstall) |
+| [`@simplysm/sd-claude`](packages/sd-claude/README.md) | - | Claude Code CLI — asset installer and cross-platform npx wrapper (auto-installs via postinstall) |
 | [`@simplysm/lint`](packages/lint/README.md)           | node | Lint config (ESLint + Stylelint) |
 | [`@simplysm/excel`](packages/excel/README.md)         | neutral | Excel (.xlsx) read/write |
 | [`@simplysm/storage`](packages/storage/README.md)     | node | FTP/SFTP client |
@@ -118,6 +118,9 @@ pnpm vitest --project=browser   # browser environment
 pnpm vitest --project=solid     # SolidJS components
 pnpm vitest --project=orm       # ORM integration tests (requires Docker DB)
 pnpm vitest --project=service   # Service integration tests
+pnpm vitest packages/core-common                                              # package tests
+pnpm vitest packages/core-common/tests/DateTime.spec.ts --project=node       # single file
+pnpm vitest -t "DateTime" --project=node                                      # filter by test name
 ```
 
 ## Architecture
@@ -125,7 +128,7 @@ pnpm vitest --project=service   # Service integration tests
 ### Dependency Layers
 
 ```
-core-common (common utilities)
+core-common (lowest level, common utilities)
     ↑
 core-browser / core-node (environment-specific extensions)
     ↑

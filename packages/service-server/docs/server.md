@@ -154,6 +154,81 @@ import { createServiceContext } from "@simplysm/service-server";
 const ctx = createServiceContext(server, socket, httpContext, legacyContext);
 ```
 
+| Parameter | Type | Description |
+|-----------|------|------|
+| `server` | `ServiceServer<TAuthInfo>` | The server instance |
+| `socket` | `ServiceSocket \| undefined` | WebSocket connection, or `undefined` for HTTP/legacy |
+| `http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> } \| undefined` | HTTP request context |
+| `legacy` | `{ clientName?: string } \| undefined` | V1 legacy context (auto-update only) |
+
+## ServiceDefinition
+
+Type describing a registered service. Created by `defineService()`.
+
+```typescript
+import type { ServiceDefinition } from "@simplysm/service-server";
+
+interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> {
+  /** Service name (used as RPC route prefix, e.g., "User" → "User.getProfile") */
+  name: string;
+  /** Factory function that returns the service's method object */
+  factory: (ctx: ServiceContext) => TMethods;
+  /** Auth permissions required at service level (set by wrapping factory with auth()) */
+  authPermissions?: string[];
+}
+```
+
+Pass `ServiceDefinition[]` to `ServiceServerOptions.services` when creating the server.
+
+## ServiceMethods
+
+Type utility that extracts method signatures from a `ServiceDefinition`. Use this to share method types with the client without exposing implementation details.
+
+```typescript
+import type { ServiceMethods } from "@simplysm/service-server";
+
+export const MyService = defineService("My", (ctx) => ({
+  hello: async (name: string): Promise<string> => `Hello, ${name}!`,
+}));
+
+// Export type for client-side type sharing
+export type MyServiceType = ServiceMethods<typeof MyService>;
+// Equivalent to: { hello: (name: string) => Promise<string> }
+
+// Client usage:
+// const service = client.getService<MyServiceType>("My");
+// const result = await service.hello("World");
+```
+
+## runServiceMethod
+
+Dispatches a single service method call. Performs auth checks and executes the method. Used internally by `ServiceServer` for both WebSocket and HTTP transports, but exported for advanced use cases such as custom transports or testing.
+
+```typescript
+import { runServiceMethod } from "@simplysm/service-server";
+
+const result = await runServiceMethod(server, {
+  serviceName: "My",
+  methodName: "hello",
+  params: ["World"],
+  socket: serviceSocket, // or undefined for HTTP
+  http: undefined,       // or { clientName, authTokenPayload } for HTTP
+});
+```
+
+| Parameter | Type | Description |
+|-----------|------|------|
+| `server` | `ServiceServer` | The server instance |
+| `def.serviceName` | `string` | Name of the service to dispatch to |
+| `def.methodName` | `string` | Name of the method to invoke |
+| `def.params` | `unknown[]` | Positional arguments for the method |
+| `def.socket` | `ServiceSocket \| undefined` | WebSocket context (for WebSocket requests) |
+| `def.http` | `{ clientName: string; authTokenPayload?: AuthTokenPayload } \| undefined` | HTTP context (for HTTP requests) |
+
+Returns: `Promise<unknown>` — the method's return value.
+
+Throws if the service or method is not found, or if the caller lacks required auth permissions.
+
 ## Config File Reference
 
 Read sections from `.config.json` files using `ctx.getConfig()`. Root and per-client configs are automatically merged.

@@ -49,6 +49,7 @@ pnpm add @simplysm/excel
 | `ExcelVerticalAlign` | Vertical alignment (`"center" \| "top" \| "bottom"`) |
 | `ExcelAddressPoint` | Cell coordinates (`{ r: number; c: number }`) |
 | `ExcelAddressRangePoint` | Range coordinates (`{ s: ExcelAddressPoint; e: ExcelAddressPoint }`) |
+| `ExcelXml` | Interface for internal XML data objects (`{ readonly data: unknown; cleanup(): void }`) |
 
 ## Usage
 
@@ -321,6 +322,9 @@ const records = [
 // write() accepts Partial records and returns ExcelWorkbook, so resource management is required
 await using wb = await wrapper.write("Users", records);
 const bytes = await wb.getBytes();
+
+// Exclude specific fields from the output
+await using wb2 = await wrapper.write("Users", records, { excludes: ["email"] });
 ```
 
 The `write()` method automatically applies the following formatting:
@@ -338,6 +342,9 @@ const records = await wrapper.read(bytes);
 // Specify worksheet name or index
 const records2 = await wrapper.read(bytes, "Users");
 const records3 = await wrapper.read(bytes, 0);
+
+// Exclude specific fields when reading
+const records4 = await wrapper.read(bytes, 0, { excludes: ["email"] });
 ```
 
 Behavior of the `read()` method:
@@ -421,10 +428,11 @@ Behavior of the `read()` method:
 
 | Member | Type / Return Type | Description |
 |--------|-----------|------|
+| `constructor(arg?)` | — | Create a new workbook (no arg), or open an existing file from `Uint8Array` or `Blob` |
 | `getWorksheet(nameOrIndex)` | `Promise<ExcelWorksheet>` | Get worksheet (name or 0-based index) |
 | `createWorksheet(name)` | `Promise<ExcelWorksheet>` | Create new worksheet |
 | `getWorksheetNames()` | `Promise<string[]>` | Get all worksheet names |
-| `getBytes()` | `Promise<Bytes>` | Export as Uint8Array |
+| `getBytes()` | `Promise<Uint8Array>` | Export as Uint8Array |
 | `getBlob()` | `Promise<Blob>` | Export as Blob |
 | `close()` | `Promise<void>` | Release resources |
 
@@ -433,8 +441,8 @@ Behavior of the `read()` method:
 | Member | Type / Return Type | Description |
 |--------|-----------|------|
 | `constructor(schema)` | — | Create wrapper with a Zod schema (use `.describe()` on fields for Excel header names; defaults to field key) |
-| `read(file, wsNameOrIndex?)` | `Promise<z.infer<TSchema>[]>` | Read records from Excel file (Uint8Array or Blob); defaults to first worksheet |
-| `write(wsName, records)` | `Promise<ExcelWorkbook>` | Write partial records to a new workbook; caller must manage the returned workbook's lifecycle |
+| `read(file, wsNameOrIndex?, options?)` | `Promise<z.infer<TSchema>[]>` | Read records from Excel file (`Uint8Array` or `Blob`); defaults to first worksheet. `options.excludes` omits specific fields. |
+| `write(wsName, records, options?)` | `Promise<ExcelWorkbook>` | Write partial records to a new workbook; caller must manage the returned workbook's lifecycle. `options.excludes` omits specific fields. |
 
 ## Caveats
 

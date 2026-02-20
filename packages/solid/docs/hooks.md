@@ -238,13 +238,14 @@ const items: AppStructureItem<string>[] = [
 const structure = createAppStructure({
   items,
   usableModules: () => activeModules(),  // optional: filter by active modules
-  permRecord: () => userPermissions(),   // optional: user permission state
+  permRecord: () => userPermissions(),   // optional: Record<string, boolean> permission state
 });
 
-// structure.routes         -- Route array (pass to @solidjs/router)
-// structure.usableMenus()  -- SidebarMenuItem[] for Sidebar.Menu
-// structure.usableFlatMenus() -- Flat menu list
-// structure.permRecord()   -- Record<string, boolean> permission state
+// structure.usableRoutes()    -- Accessor<AppRoute[]> - filtered route array (pass to @solidjs/router)
+// structure.usableMenus()     -- Accessor<AppMenu[]> - filtered menu array for Sidebar.Menu
+// structure.usableFlatMenus() -- Accessor<AppFlatMenu[]> - flat filtered menu list
+// structure.usablePerms()     -- Accessor<AppPerm[]> - filtered permission tree
+// structure.flatPerms          -- AppFlatPerm[] - all flat perm entries (static, not reactive)
 ```
 
 **Routing integration with `@solidjs/router`:**
@@ -261,7 +262,7 @@ render(
       <Route path="/" component={App}>
         <Route path="/home" component={Home}>
           <Route path="/" component={() => <Navigate href="/home/main" />} />
-          <For each={appStructure.routes}>
+          <For each={appStructure.usableRoutes()}>
             {(r) => <Route path={r.path} component={r.component} />}
           </For>
           <Route path="/*" component={NotFoundPage} />
@@ -274,7 +275,52 @@ render(
 );
 ```
 
-Each route object in `structure.routes` has `path` (derived from nested `code` values) and `component` properties, ready to pass directly to `<Route>`.
+Each route object in `structure.usableRoutes()` has `path` (derived from nested `code` values) and `component` properties, ready to pass directly to `<Route>`. Note that `usableRoutes` is a reactive accessor — it re-evaluates when `usableModules` or `permRecord` signals change.
+
+**AppStructure return type:**
+
+```typescript
+interface AppStructure<TModule> {
+  items: AppStructureItem<TModule>[];
+  usableRoutes: Accessor<AppRoute[]>;           // reactive, filtered by modules + permRecord
+  usableMenus: Accessor<AppMenu[]>;             // reactive, filtered by modules + permRecord
+  usableFlatMenus: Accessor<AppFlatMenu[]>;     // reactive, flat version of usableMenus
+  usablePerms: Accessor<AppPerm<TModule>[]>;    // reactive, filtered permission tree
+  flatPerms: AppFlatPerm<TModule>[];            // static, all perm entries (not reactive)
+  getTitleChainByHref(href: string): string[];
+}
+
+interface AppRoute {
+  path: string;
+  component: Component;
+}
+
+interface AppMenu {
+  title: string;
+  href?: string;
+  icon?: Component<IconProps>;
+  children?: AppMenu[];
+}
+
+interface AppFlatMenu {
+  titleChain: string[];
+  href: string;
+}
+
+interface AppPerm<TModule = string> {
+  title: string;
+  href?: string;
+  modules?: TModule[];
+  perms?: string[];
+  children?: AppPerm<TModule>[];
+}
+
+interface AppFlatPerm<TModule = string> {
+  titleChain: string[];
+  code: string;
+  modulesChain: TModule[][];
+}
+```
 
 **AppStructureItem types:**
 
@@ -300,6 +346,15 @@ interface AppStructureLeafItem<TModule> {
   perms?: ("use" | "edit")[];
   subPerms?: AppStructureSubPerm<TModule>[];
   isNotMenu?: boolean;  // exclude from menu but include in routing
+}
+
+// Sub-permission item
+interface AppStructureSubPerm<TModule> {
+  code: string;
+  title: string;
+  modules?: TModule[];
+  requiredModules?: TModule[];
+  perms: ("use" | "edit")[];
 }
 
 type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>;

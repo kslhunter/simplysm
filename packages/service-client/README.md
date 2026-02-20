@@ -596,7 +596,7 @@ class OrmClientDbContextExecutor implements DbContextExecutor {
   commitTransaction(): Promise<void>
   rollbackTransaction(): Promise<void>
   close(): Promise<void>
-  executeDefs<T>(defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<T[][]>
+  executeDefs<T = Record<string, unknown>>(defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<T[][]>
   executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>
   bulkInsert(tableName: string, columnDefs: Record<string, ColumnMeta>, records: Record<string, unknown>[]): Promise<void>
 }

@@ -139,6 +139,51 @@ import { objDeleteChainValue } from "@simplysm/core-common";
 objDeleteChainValue(obj, "a.b[0].c");
 ```
 
+### objClearUndefined
+
+Delete keys with `undefined` values from an object (mutates the original).
+
+```typescript
+import { objClearUndefined } from "@simplysm/core-common";
+
+const obj = { a: 1, b: undefined, c: "hello" };
+objClearUndefined(obj); // { a: 1, c: "hello" }
+```
+
+### objClear
+
+Delete all keys from an object (mutates the original).
+
+```typescript
+import { objClear } from "@simplysm/core-common";
+
+const obj = { a: 1, b: 2 };
+objClear(obj); // {}
+```
+
+### objNullToUndefined
+
+Recursively convert `null` values to `undefined` (mutates the original object/array).
+
+```typescript
+import { objNullToUndefined } from "@simplysm/core-common";
+
+const data = { a: null, b: { c: null }, d: [null, 1] };
+objNullToUndefined(data);
+// { a: undefined, b: { c: undefined }, d: [undefined, 1] }
+```
+
+### objUnflatten
+
+Convert a flat object with dot-notation keys into a nested object.
+
+```typescript
+import { objUnflatten } from "@simplysm/core-common";
+
+objUnflatten({ "a.b.c": 1, "a.b.d": 2, "e": 3 });
+// { a: { b: { c: 1, d: 2 } }, e: 3 }
+```
+
 ### objKeys
 
 Type-safe `Object.keys`.

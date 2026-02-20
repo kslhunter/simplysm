@@ -58,6 +58,10 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 - [`objGetChainValueByDepth`](docs/utils.md#objgetchainvaluebydepth) - Query value by descending the same key repeatedly
 - [`objSetChainValue`](docs/utils.md#objsetchainvalue) - Set value by chain path
 - [`objDeleteChainValue`](docs/utils.md#objdeletechainvalue) - Delete value by chain path
+- [`objClearUndefined`](docs/utils.md#objclearundefined) - Delete keys with `undefined` values (mutates original)
+- [`objClear`](docs/utils.md#objclear) - Delete all keys from an object (mutates original)
+- [`objNullToUndefined`](docs/utils.md#objnulltoundefined) - Recursively convert null to undefined (mutates original)
+- [`objUnflatten`](docs/utils.md#objunflatten) - Convert dot-notation flat object to nested object
 - [`objKeys`](docs/utils.md#objkeys) - Type-safe `Object.keys`
 - [`objEntries`](docs/utils.md#objentries) - Type-safe `Object.entries`
 - [`objFromEntries`](docs/utils.md#objfromentries) - Type-safe `Object.fromEntries`
@@ -206,7 +210,7 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 - [`Bytes`](docs/types.md#bytes) - Alias for `Uint8Array`
 - [`PrimitiveTypeStr`](docs/types.md#primitivetypestr) - Primitive type string keys
 - [`PrimitiveTypeMap`](docs/types.md#primitivetypemap) - Mapping from type string to type
-- [`PrimitiveType`](docs/types.md#primitivetype) - Union of all primitive types
+- [`PrimitiveType`](docs/types.md#primitivetype) - Union of all primitive types (includes `undefined`)
 - [`DeepPartial`](docs/types.md#deeppartial) - Recursively convert properties to optional
 - [`Type`](docs/types.md#type) - Constructor type
 - [`ObjUndefToOptional`](docs/types.md#objundeftooptional) - Convert `undefined` properties to optional

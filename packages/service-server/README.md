@@ -18,9 +18,12 @@ pnpm add @simplysm/service-server
 
 - [`createServiceServer`](#basic-server-configuration) - Factory function for creating a `ServiceServer` instance
 - [`ServiceServer`](docs/server.md#serviceserver) - Main server class. Creates a Fastify instance and configures routes/plugins
-- [`defineService`](#custom-services) - Defines a service with a factory function pattern
+- [`defineService`](#custom-services) - Defines a service with a name and factory function
 - [`ServiceContext`](docs/server.md#servicecontext) - Context object passed to service factory functions
-- `runServiceMethod` - Internal function that dispatches a service method call (auth checks + execution)
+- [`createServiceContext`](docs/server.md#createservicecontext) - Factory function that creates a `ServiceContext` (exported for advanced use)
+- [`runServiceMethod`](docs/server.md#runservicemethod) - Dispatches a service method call with auth checks and execution
+- [`ServiceDefinition`](docs/server.md#servicedefinition) - Type describing a registered service (name + factory + authPermissions)
+- [`ServiceMethods`](docs/server.md#servicemethods) - Type utility that extracts method signatures from a `ServiceDefinition`
 
 ### Authentication
 

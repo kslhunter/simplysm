@@ -37,7 +37,7 @@ createOrm() (top-level entry point)
 
 - `createOrm()` is the top-level factory function that takes a `DbContextDef` and connection settings to manage transactions.
 - `NodeDbContextExecutor` is the executor used by `DbContext`, converting `QueryDef` to SQL and executing it.
-- `createDbConn()` is a factory function that acquires connections from the connection pool.
+- `createDbConn()` is a factory function that acquires connections from the connection pool and returns a `DbConn`.
 - `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
 - Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers.
 
@@ -48,7 +48,7 @@ createOrm() (top-level entry point)
 | Function | Description |
 |----------|-------------|
 | `createOrm()` | ORM factory function. Takes a `DbContextDef` and connection settings to manage transaction-based connections. |
-| `createDbConn()` | Connection factory function. Caches connection pools by configuration and returns `PooledDbConn`. |
+| `createDbConn()` | Connection factory function. Caches connection pools by configuration and returns a `DbConn` (backed by `PooledDbConn`). |
 
 ### Classes
 
@@ -197,7 +197,7 @@ const orm = createOrm(MyDb, {
 
 ### Low-Level Connection with createDbConn
 
-You can connect directly to the DB and execute SQL without `createOrm`/`DbContext`. `createDbConn()` returns `PooledDbConn` from the connection pool.
+You can connect directly to the DB and execute SQL without `createOrm`/`DbContext`. `createDbConn()` returns a `DbConn` (backed by `PooledDbConn`) from the connection pool.
 
 ```typescript
 import { createDbConn } from "@simplysm/orm-node";
@@ -381,6 +381,41 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 | `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | Native bulk INSERT |
 
 `DbConn` extends `EventEmitter<{ close: void }>`, so you can listen for connection close events with `on("close", handler)` / `off("close", handler)`.
+
+## NodeDbContextExecutor
+
+`NodeDbContextExecutor` implements the `DbContextExecutor` interface from `@simplysm/orm-common`. It is used internally by `createOrm()` but can also be instantiated directly when you need fine-grained control over the executor lifecycle.
+
+```typescript
+import { NodeDbContextExecutor } from "@simplysm/orm-node";
+
+const executor = new NodeDbContextExecutor({
+  dialect: "mysql",
+  host: "localhost",
+  port: 3306,
+  username: "root",
+  password: "password",
+  database: "mydb",
+});
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `connect()` | `() => Promise<void>` | Acquire a connection from the pool and activate it |
+| `close()` | `() => Promise<void>` | Return the connection to the pool |
+| `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Begin a transaction |
+| `commitTransaction()` | `() => Promise<void>` | Commit the current transaction |
+| `rollbackTransaction()` | `() => Promise<void>` | Roll back the current transaction |
+| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<unknown[][]>` | Execute a parameterized SQL query |
+| `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: DataRecord[]) => Promise<void>` | Delegate bulk insert to the underlying connection |
+| `executeDefs()` | `(defs: QueryDef[], resultMetas?: (ResultMeta \| undefined)[]) => Promise<T[][]>` | Build SQL from `QueryDef` array, execute, and parse results using `ResultMeta` |
+
+### executeDefs behavior
+
+`executeDefs()` is the core method used by `DbContext`. It:
+- Builds SQL strings from `QueryDef` using the appropriate dialect query builder.
+- If all `resultMetas` entries are `undefined`, combines all SQL into a single batch execution and returns empty arrays (used for write-only operations to minimize round-trips).
+- Otherwise, executes each `QueryDef` individually and parses results through `parseQueryResult()` using the corresponding `ResultMeta`.
 
 ## Orm Interface
 

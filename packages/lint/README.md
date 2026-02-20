@@ -93,7 +93,8 @@ Or use the full configuration directly:
       true,
       {
         "severity": "error",
-        "browsers": ["chrome >= 84"]
+        "browsers": ["chrome >= 84"],
+        "ignore": ["css-cascade-layers", "css-nesting", "css-overflow"]
       }
     ],
     "plugin/no-unresolved-module": true
@@ -134,13 +135,18 @@ The `stylelint-recommended` config includes:
 
 The config enforces Chrome 84+ compatibility by default. This aligns with Simplysm's target browser support.
 
-Unsupported features will trigger errors:
-- CSS nesting (Chrome 112+)
-- `@layer` directive (Chrome 99+)
+The following features are intentionally ignored (allowed despite Chrome 84 not supporting them, because they are used by Tailwind CSS internals):
+
+- `css-cascade-layers` (`@layer` directive)
+- `css-nesting` (CSS nesting syntax)
+- `css-overflow` (overflow shorthand)
+
+Features not in the ignore list will trigger errors if they are unsupported in Chrome 84. Examples:
+
 - `aspect-ratio` property (Chrome 88+)
 - `:is()`, `:where()` selectors (Chrome 88+)
 
-Use overrides to disable checks for files using modern features intentionally (e.g., Tailwind's built-in nesting).
+Use overrides to disable checks for additional files that intentionally use unsupported features.
 
 ## Custom Rules
 

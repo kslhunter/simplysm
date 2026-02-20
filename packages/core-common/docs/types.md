@@ -51,8 +51,18 @@ Timeout error. Thrown automatically by `waitUntil` when max attempts are exceede
 ```typescript
 import { TimeoutError } from "@simplysm/core-common";
 
+// Thrown automatically by waitUntil on timeout
+try {
+  await waitUntil(() => isReady, 100, 50);
+} catch (err) {
+  if (err instanceof TimeoutError) {
+    console.log("Timed out");
+  }
+}
+
+// Throw manually
 throw new TimeoutError(5, "API response wait exceeded");
-// Result message: "Wait time exceeded(5): API response wait exceeded"
+// count: number of attempts, message: additional description (both optional)
 ```
 
 ---
@@ -301,10 +311,10 @@ type PrimitiveTypeMap = {
 
 ### PrimitiveType
 
-Union of all Primitive types.
+Union of all Primitive types (includes `undefined`).
 
 ```typescript
-type PrimitiveType = string | number | boolean | DateTime | DateOnly | Time | Uuid | Bytes;
+type PrimitiveType = string | number | boolean | DateTime | DateOnly | Time | Uuid | Bytes | undefined;
 ```
 
 ### DeepPartial

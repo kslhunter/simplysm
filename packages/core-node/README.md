@@ -25,10 +25,10 @@ Provides path conversion, normalization, comparison, and filtering functions.
 | `NormPath` | A branded type created by `pathNorm()`. Represents a normalized absolute path. |
 | `pathPosix(...args)` | Converts to POSIX-style path (replaces backslashes with slashes). |
 | `pathNorm(...paths)` | Normalizes paths and returns as `NormPath`. Converts to absolute path and normalizes with platform-specific separators. |
-| `pathIsChildPath(childPath, parentPath)` | Checks if `childPath` is a child path of `parentPath`. Returns `false` for identical paths. |
+| `pathIsChildPath(childPath, parentPath)` | Checks if `childPath` is a child path of `parentPath`. Returns `false` for identical paths. Paths are normalized internally before comparison. |
 | `pathChangeFileDirectory(filePath, fromDir, toDir)` | Changes the directory of a file path. Throws an error if the file is not within `fromDir`. |
 | `pathBasenameWithoutExt(filePath)` | Returns the filename (basename) without extension. |
-| `pathFilterByTargets(files, targets, cwd)` | Filters files based on target path list. Returns `files` as-is if `targets` is an empty array. |
+| `pathFilterByTargets(files, targets, cwd)` | Filters files based on target path list. `files` must be absolute paths under `cwd`. `targets` are POSIX-style paths relative to `cwd`. Returns `files` as-is if `targets` is an empty array. |
 
 ```typescript
 import {
@@ -105,8 +105,8 @@ Provides functions for reading, writing, deleting, copying, and searching files 
 | `fsReadSync(targetPath)` | Synchronously reads a file as a UTF-8 string. |
 | `fsReadBuffer(targetPath)` | Asynchronously reads a file as a Buffer. |
 | `fsReadBufferSync(targetPath)` | Synchronously reads a file as a Buffer. |
-| `fsReadJson<T>(targetPath)` | Asynchronously reads a JSON file (uses `jsonParse`). |
-| `fsReadJsonSync<T>(targetPath)` | Synchronously reads a JSON file (uses `jsonParse`). |
+| `fsReadJson<TData>(targetPath)` | Asynchronously reads a JSON file (uses `jsonParse`). |
+| `fsReadJsonSync<TData>(targetPath)` | Synchronously reads a JSON file (uses `jsonParse`). |
 
 #### File Writing
 
@@ -121,8 +121,8 @@ Provides functions for reading, writing, deleting, copying, and searching files 
 
 | Function | Description |
 |----------|-------------|
-| `fsReaddir(targetPath)` | Asynchronously reads directory contents. |
-| `fsReaddirSync(targetPath)` | Synchronously reads directory contents. |
+| `fsReaddir(targetPath)` | Asynchronously reads directory contents. Returns an array of entry names. |
+| `fsReaddirSync(targetPath)` | Synchronously reads directory contents. Returns an array of entry names. |
 
 #### File Information
 
@@ -130,8 +130,8 @@ Provides functions for reading, writing, deleting, copying, and searching files 
 |----------|-------------|
 | `fsStat(targetPath)` | Asynchronously retrieves file/directory information (follows symbolic links). |
 | `fsStatSync(targetPath)` | Synchronously retrieves file/directory information (follows symbolic links). |
-| `fsLstat(targetPath)` | Asynchronously retrieves file/directory information (symbolic link itself). |
-| `fsLstatSync(targetPath)` | Synchronously retrieves file/directory information (symbolic link itself). |
+| `fsLstat(targetPath)` | Asynchronously retrieves file/directory information (symbolic link itself, does not follow). |
+| `fsLstatSync(targetPath)` | Synchronously retrieves file/directory information (symbolic link itself, does not follow). |
 
 #### Glob Search
 
@@ -144,9 +144,9 @@ Provides functions for reading, writing, deleting, copying, and searching files 
 
 | Function | Description |
 |----------|-------------|
-| `fsClearEmptyDirectory(dirPath)` | Recursively deletes empty directories under the specified directory. |
-| `fsFindAllParentChildPaths(childGlob, fromPath, rootPath?)` | Traverses parent directories from the start path toward the root, asynchronously searching with a glob pattern. |
-| `fsFindAllParentChildPathsSync(childGlob, fromPath, rootPath?)` | Synchronous version of the above. |
+| `fsClearEmptyDirectory(dirPath)` | Recursively deletes empty directories under the specified directory. If all children of a directory are deleted, that directory is also deleted. |
+| `fsFindAllParentChildPaths(childGlob, fromPath, rootPath?)` | Traverses parent directories from `fromPath` toward the root (or `rootPath`), asynchronously searching with a glob pattern at each level. Collects all matched paths. **Note**: `fromPath` must be a child of `rootPath`; otherwise, the search continues to the filesystem root. |
+| `fsFindAllParentChildPathsSync(childGlob, fromPath, rootPath?)` | Synchronous version of `fsFindAllParentChildPaths`. Same parameters and behavior, but runs synchronously. |
 
 ```typescript
 import {
@@ -220,8 +220,8 @@ A chokidar-based file system change detection wrapper with glob pattern support.
 
 | API | Description |
 |-----|-------------|
-| `FsWatcher.watch(paths, options?)` | Starts file watching (static, async). `paths` can be file paths or glob patterns (e.g., `"src/**/*.ts"`). Waits until chokidar's `ready` event and returns an `FsWatcher` instance. |
-| `watcher.onChange(opt, cb)` | Registers a file change event handler. Set event merge wait time (ms) with `opt.delay`. Supports chaining. |
+| `FsWatcher.watch(paths, options?)` | Starts file watching (static, async). `paths` can be file paths or glob patterns (e.g., `"src/**/*.ts"`). Waits until chokidar's `ready` event and returns an `FsWatcher` instance. `options` accepts `chokidar.ChokidarOptions`. |
+| `watcher.onChange(opt, cb)` | Registers a file change event handler. `opt` is `{ delay?: number }` (required object, `delay` is optional). Set event merge wait time (ms) with `opt.delay`. Supports chaining. |
 | `watcher.close()` | Stops file watching. |
 | `FsWatcherEvent` | Event type: `"add"` \| `"addDir"` \| `"change"` \| `"unlink"` \| `"unlinkDir"` |
 | `FsWatcherChangeInfo` | Change information interface. Has `event: FsWatcherEvent` and `path: NormPath` fields. |
@@ -234,6 +234,7 @@ When multiple events occur for the same file within a short time, only the final
 |----------------|-----------|--------|
 | `add` | `change` | `add` (modification right after creation is treated as creation) |
 | `add` | `unlink` | Deleted (immediate deletion after creation is treated as no change) |
+| `addDir` | `unlinkDir` | Deleted (same as above, for directories) |
 | `unlink` | `add` / `change` | `add` (recreation after deletion) |
 | `unlinkDir` | `addDir` | `addDir` (directory recreation) |
 | Others | - | Overwritten with the latest event |
@@ -262,13 +263,13 @@ Provides a type-safe Worker wrapper based on Node.js `worker_threads`. Using Pro
 
 | API | Description |
 |-----|-------------|
-| `Worker.create<TModule>(filePath, opt?)` | Creates a type-safe Worker Proxy. `filePath` is a `file://` URL or absolute path. |
-| `createWorker<TMethods, TEvents>(methods)` | Worker factory used inside worker threads. Registers method objects and returns a sender that can send events. |
+| `Worker.create<TModule>(filePath, opt?)` | Creates a type-safe Worker Proxy. `filePath` is a `file://` URL or absolute path. `opt` accepts `Omit<WorkerOptions, "stdout" \| "stderr">` from `worker_threads`. |
+| `createWorker<TMethods, TEvents>(methods)` | Worker factory used inside worker threads. Registers method objects and returns a sender object with a `send(event, data?)` method for emitting events to the main thread. |
 | `WorkerModule` | Module type interface used for type inference in `Worker.create<typeof import("./worker")>()`. |
-| `WorkerProxy<TModule>` | Proxy type returned by `Worker.create()`. Provides promisified methods, `on()`, `off()`, `terminate()`. |
-| `PromisifyMethods<T>` | Utility type that wraps method return values in `Promise`. |
-| `WorkerRequest` | Worker internal request message interface. |
-| `WorkerResponse` | Worker internal response message type (`"return"` \| `"error"` \| `"event"` \| `"log"`). |
+| `WorkerProxy<TModule>` | Proxy type returned by `Worker.create()`. Provides promisified methods, `on(event, listener)`, `off(event, listener)`, and `terminate()`. |
+| `PromisifyMethods<TMethods>` | Utility type that wraps method return values in `Promise<Awaited<R>>`. Used internally by `WorkerProxy`. |
+| `WorkerRequest` | Worker internal request message interface. Has `id`, `method`, and `params` fields. |
+| `WorkerResponse` | Worker internal response message type. Union of `"return"`, `"error"`, `"event"`, and `"log"` response shapes. |
 
 **Basic Usage (without events):**
 
@@ -350,7 +351,8 @@ await worker.terminate();
 - In `fsCopy`/`fsCopySync`, the `filter` function is not applied to the top-level `sourcePath`, and returning `false` for a directory skips that directory and all its children.
 - `FsWatcher` supports glob patterns (e.g., `"src/**/*.ts"`) by extracting the base directory and filtering matched files. The glob matching is performed using minimatch pattern matching.
 - `FsWatcher` internally enforces `ignoreInitial: true`. If you pass `ignoreInitial: false`, the callback will be called with an empty array on the first `onChange` call, but the actual initial file list will not be included.
-- Worker automatically runs TypeScript worker files through `tsx` in development environment (`.ts` files). In production environment (`.js`), it creates Workers directly.
+- `Worker` automatically runs TypeScript worker files through `tsx` in development environment (`.ts` files). In production environment (`.js`), it creates Workers directly.
+- `Worker.create` forwards `stdout`/`stderr` from the worker thread to the main process automatically; these options cannot be overridden.
 - This package depends on `@simplysm/core-common` and uses `jsonParse`/`jsonStringify` for JSON processing.
 
 ## Dependencies

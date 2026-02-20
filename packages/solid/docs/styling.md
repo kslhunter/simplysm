@@ -110,26 +110,45 @@ import {
 
 ```typescript
 import {
-  type FieldSize,              // "sm" | "lg" | "xl"
-  getFieldWrapperClass,        // Utility to build field wrapper class string
-  getTextareaWrapperClass,     // Utility to build textarea wrapper class string
-  fieldInputClass,             // Base classes for field <input> element
-  fieldGapClasses,             // Gap classes per size (with prefix icon)
+  type FieldSize,                    // "sm" | "lg" | "xl"
+  fieldBaseClass,                    // Base wrapper classes (inline-flex, field surface, h-field)
+  fieldSizeClasses,                  // Size variant classes per FieldSize
+  fieldInsetClass,                   // Inset mode wrapper classes
+  fieldInsetHeightClass,             // Inset height class (h-field-inset, excludes border)
+  fieldInsetSizeHeightClasses,       // Inset height classes per size
+  fieldDisabledClass,                // Disabled state classes
+  textAreaBaseClass,                 // Base textarea wrapper classes
+  textAreaSizeClasses,               // Textarea size classes per FieldSize
+  fieldInputClass,                   // Base classes for field <input> element
+  fieldGapClasses,                   // Gap classes per size (with prefix icon)
+  getFieldWrapperClass,              // Utility to build field wrapper class string
+  getTextareaWrapperClass,           // Utility to build textarea wrapper class string
 } from "@simplysm/solid";
 ```
+
+**`getFieldWrapperClass` options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `size` | `FieldSize` | Size variant |
+| `disabled` | `boolean` | Apply disabled styles |
+| `inset` | `boolean` | Apply inset styles |
+| `includeCustomClass` | `string \| false` | Additional CSS class (or `false` to skip) |
+| `extra` | `string \| false` | Extra classes inserted before size/disabled/inset |
 
 ### Checkbox.styles
 
 ```typescript
 import {
-  type CheckboxSize,           // "sm" | "lg" | "xl"
-  checkboxBaseClass,           // Base wrapper classes
-  indicatorBaseClass,          // Base indicator (box) classes
-  checkedClass,                // Checked state classes (primary color)
-  checkboxSizeClasses,         // Size variant classes
-  checkboxInsetClass,          // Inset mode classes
-  checkboxInlineClass,         // Inline display classes
-  checkboxDisabledClass,       // Disabled state classes
+  type CheckboxSize,               // "sm" | "lg" | "xl"
+  checkboxBaseClass,               // Base wrapper classes
+  indicatorBaseClass,              // Base indicator (box) classes
+  checkedClass,                    // Checked state classes (primary color)
+  checkboxSizeClasses,             // Size variant classes
+  checkboxInsetClass,              // Inset mode classes
+  checkboxInsetSizeHeightClasses,  // Inset height classes per size (excludes border)
+  checkboxInlineClass,             // Inline display classes
+  checkboxDisabledClass,           // Disabled state classes
 } from "@simplysm/solid";
 ```
 
@@ -142,8 +161,11 @@ import {
   sortableThClass, sortIconClass, toolbarClass, fixedClass, fixedLastClass,
   resizerClass, resizeIndicatorClass, featureThClass, featureTdClass,
   expandIndentGuideClass, expandIndentGuideLineClass, expandToggleClass,
+  selectSingleClass, selectSingleSelectedClass, selectSingleUnselectedClass,
   reorderHandleClass, reorderIndicatorClass, configButtonClass,
-  // etc.
+  featureCellWrapperClass, featureCellBodyWrapperClass,
+  featureCellClickableClass, featureCellBodyClickableClass,
+  reorderCellWrapperClass,
 } from "@simplysm/solid";
 ```
 
