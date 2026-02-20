@@ -84,11 +84,6 @@ Immutable types provided by `@simplysm/core-common`:
 - `Uuid`: UUID v4
 - `LazyGcMap`: LRU cache (auto-expiry)
 
-### Directory Reference
-- `.cache/`: Build cache (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). Reset: delete `.cache/`
-- `.playwright-mcp/`: Output directory for Playwright MCP tool screenshots, etc.
-  - Screenshots/snapshots must always be saved to the `.playwright-mcp/` directory
-
 ## Architecture
 
 ### Dependency Layers
@@ -127,18 +122,6 @@ solid (UI components)
 - Path aliases: `@simplysm/*` → `packages/*/src/index.ts`
 - JSX: SolidJS (`jsxImportSource: "solid-js"`)
 
-### Generic Type Parameters
-- Always use descriptive names — single-letter `T` alone is not allowed
-- Use `T` prefix + descriptive name: `TItem`, `TData`, `TResult`, `TKey`, `TValue`, `TAuthInfo`
-
-### Prototype Extensions
-Importing `core-common` adds extension methods to Array, Map, Set:
-- `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()`, etc.
-- `Map`: `getOrCreate()`, `update()`
-- `Set`: `adds()`, `toggle()`
-
-→ Before using extension methods: Verify actual existence in `core-common/src/extensions/` source. Do not guess methods that don't exist.
-
 ### index.ts Export Pattern
 
 - Large packages (many exports): Use `#region`/`#endregion` for major sections + `//` comments for sub-groups
@@ -163,10 +146,6 @@ export * from "./schema/factory/column-builder";
 export * from "./excel-workbook";
 export * from "./excel-worksheet";
 ```
-
-### JSDoc Convention
-- Not enforced — omit when code is self-explanatory
-- When written, use Korean
 
 ## SolidJS Guidelines
 
@@ -386,6 +365,8 @@ When modifying code, always review and update related tests and demos:
 
 ### README.md
 
+Files in `.claude/` folder and each package's `README.md` are written in English for consistent documentation.
+
 Each package's `README.md` is the **sole API documentation source for Claude Code**.
 When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-simplysm-docs` rule reads these READMEs from `node_modules/`.
 
@@ -393,13 +374,6 @@ When Claude works in a consumer app that uses `@simplysm/*` packages, the `sd-si
 - For detailed README writing rules and update workflow, use `/sd-readme`
 
 ## Workflow
-
-### Pre-coding Checklist
-- Before creating new files: Glob/Read similar existing files to check structure and patterns
-- Before modifying functions/classes: Read the file to understand existing code style
-- When unsure about API/method usage: Check signatures in source code
-- Before running CLI commands: Refer to the "Key Commands" section of this document (do not use arbitrary flags)
-- **If confidence is low, ask the user instead of writing code**
 
 ### Verification Procedure
 1. After writing code, verify with `pnpm typecheck` or `pnpm lint`
