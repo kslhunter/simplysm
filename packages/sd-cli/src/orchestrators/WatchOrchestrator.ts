@@ -173,9 +173,9 @@ export class WatchOrchestrator {
       allBuildTasks.push({
         name: `${pkg.name}:build`,
         promise: (async () => {
-          this._logger.debug(`${pkg.name} (${pkg.config.target}) 빌드 시작`);
+          this._logger.start(`${pkg.name} (${pkg.config.target}) 빌드 시작`);
           await promise;
-          this._logger.debug(`${pkg.name} (${pkg.config.target}) 빌드 완료`);
+          this._logger.success(`${pkg.name} (${pkg.config.target}) 빌드 완료`);
         })(),
       });
     }
@@ -186,9 +186,9 @@ export class WatchOrchestrator {
       allBuildTasks.push({
         name: `${pkg.name}:dts`,
         promise: (async () => {
-          this._logger.debug(`${pkg.name} (dts) 시작`);
+          this._logger.start(`${pkg.name} (dts) 시작`);
           await promise;
-          this._logger.debug(`${pkg.name} (dts) 완료`);
+          this._logger.success(`${pkg.name} (dts) 완료`);
         })(),
       });
     }
