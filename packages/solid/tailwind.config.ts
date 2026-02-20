@@ -1,12 +1,11 @@
+import { fileURLToPath } from "url";
 import colors from "tailwindcss/colors";
 import defaultTheme from "tailwindcss/defaultTheme";
 
 const lh = defaultTheme.lineHeight.normal; // "1.5"
 const sp = defaultTheme.spacing;
 
-const __dirname = new URL(".", import.meta.url).pathname
-  .replace(/^\/[^/]+\/@fs/, "") // Vite 가상 경로 제거
-  .replace(/index\.ts$/, ""); // re-export 시 index.ts 경로 제거
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 // export const tailwindContent = [`${__dirname}**/*.tsx`];
 

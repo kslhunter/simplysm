@@ -119,7 +119,16 @@ import { BusyContainer } from "@simplysm/solid";
 
 ## Print / usePrint
 
-Browser printing and PDF generation.
+Browser printing and PDF generation. Requires `<PrintProvider>` in the component tree.
+
+```tsx
+// Provider setup:
+<SystemProvider clientName="my-app">
+  <PrintProvider>
+    <App />
+  </PrintProvider>
+</SystemProvider>
+```
 
 ```tsx
 import { Print, usePrint } from "@simplysm/solid";

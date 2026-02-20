@@ -37,19 +37,38 @@ export default {
 
 ### Provider Setup
 
-Use `InitializeProvider` to wrap your app. It nests all providers in the correct dependency order. Configuration is done via hooks inside child components.
+Use `SystemProvider` to wrap your app. It provides all infrastructure providers (config, theme, logger, notification, service client, etc.).
+
+For programmatic dialogs and printing, add `DialogProvider` and/or `PrintProvider` separately. Place them **below your own Providers** if your dialog/print content needs access to them.
 
 ```tsx
-import { InitializeProvider, useServiceClient, useSyncStorage, useLogger, useSharedData } from "@simplysm/solid";
-import { onMount } from "solid-js";
+import { SystemProvider, DialogProvider, PrintProvider } from "@simplysm/solid";
 
 function App() {
   return (
-    <InitializeProvider clientName="my-app">
-      <AppRoot />
-    </InitializeProvider>
+    <SystemProvider clientName="my-app">
+      {/* Your Providers can go here */}
+      <DialogProvider>
+        <PrintProvider>
+          <AppRoot />
+        </PrintProvider>
+      </DialogProvider>
+    </SystemProvider>
   );
 }
+```
+
+> **Why separate?** `DialogProvider` and `PrintProvider` render user-provided components (via `dialog.show(factory)` / `print.toPrinter(factory)`). By placing them below your Providers, the factory content can access your contexts (e.g., auth, data stores). `SystemProvider` provides infrastructure that doesn't render user components.
+
+| Provider | Required | Must be inside | Description |
+|----------|----------|----------------|-------------|
+| `SystemProvider` | Yes | (root) | Infrastructure: config, theme, logger, notification, busy, service client, shared data |
+| `DialogProvider` | If using `useDialog()` | `SystemProvider` | Programmatic dialog management |
+| `PrintProvider` | If using `usePrint()` | `SystemProvider` | Printing and PDF generation |
+
+```tsx
+import { SystemProvider, DialogProvider, PrintProvider, useServiceClient, useSyncStorage, useLogger, useSharedData } from "@simplysm/solid";
+import { onMount } from "solid-js";
 
 function AppRoot() {
   const serviceClient = useServiceClient();
@@ -180,7 +199,9 @@ import "@simplysm/solid/tailwind.css";
 
 ## Providers
 
-- [`InitializeProvider`](docs/providers.md#initializeprovider) - Main provider wrapping all providers (the only exported provider component)
+- [`SystemProvider`](docs/providers.md#systemprovider) - Infrastructure provider (config, theme, logger, notification, busy, service client, shared data)
+- [`DialogProvider`](docs/providers.md#dialogprovider) - Programmatic dialog provider (`useDialog`)
+- [`PrintProvider`](docs/providers.md#printprovider) - Printing and PDF generation provider (`usePrint`)
 
 ## Styling
 

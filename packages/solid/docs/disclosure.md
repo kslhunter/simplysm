@@ -212,7 +212,7 @@ function MyPage() {
 
 **Dialog Defaults:**
 
-`DialogDefaultsContext` and `DialogDefaults` are exported for advanced use cases such as providing default dialog options to a subtree. `InitializeProvider` already sets up the dialog system internally — most apps do not need these directly.
+`DialogDefaultsContext` and `DialogDefaults` are exported for advanced use cases such as providing default dialog options to a subtree. Add `<DialogProvider>` to your provider tree to enable `useDialog()`. See [Provider Placement Guide](providers.md#provider-placement-guide).
 
 ```typescript
 import { DialogDefaultsContext, type DialogDefaults } from "@simplysm/solid";

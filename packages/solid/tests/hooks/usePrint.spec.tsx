@@ -2,6 +2,7 @@ import { render } from "@solidjs/testing-library";
 import { describe, it, expect, vi } from "vitest";
 import { onMount } from "solid-js";
 import { BusyProvider } from "../../src/components/feedback/busy/BusyProvider";
+import { PrintProvider } from "../../src/components/feedback/print/PrintProvider";
 import { usePrint } from "../../src/hooks/usePrint";
 import { Print } from "../../src/components/feedback/print/Print";
 import { usePrintInstance } from "../../src/components/feedback/print/PrintInstanceContext";
@@ -16,10 +17,12 @@ describe("usePrint", () => {
 
       render(() => (
         <BusyProvider>
-          {(() => {
-            result = usePrint();
-            return <div />;
-          })()}
+          <PrintProvider>
+            {(() => {
+              result = usePrint();
+              return <div />;
+            })()}
+          </PrintProvider>
         </BusyProvider>
       ));
 
@@ -35,11 +38,13 @@ describe("usePrint", () => {
 
       render(() => (
         <BusyProvider>
-          {(() => {
-            const { toPrinter } = usePrint();
-            printFn = toPrinter;
-            return <div />;
-          })()}
+          <PrintProvider>
+            {(() => {
+              const { toPrinter } = usePrint();
+              printFn = toPrinter;
+              return <div />;
+            })()}
+          </PrintProvider>
         </BusyProvider>
       ));
 
@@ -52,11 +57,13 @@ describe("usePrint", () => {
 
       render(() => (
         <BusyProvider>
-          {(() => {
-            const { toPrinter } = usePrint();
-            printFn = toPrinter;
-            return <div />;
-          })()}
+          <PrintProvider>
+            {(() => {
+              const { toPrinter } = usePrint();
+              printFn = toPrinter;
+              return <div />;
+            })()}
+          </PrintProvider>
         </BusyProvider>
       ));
 
@@ -79,11 +86,13 @@ describe("usePrint", () => {
 
       render(() => (
         <BusyProvider>
-          {(() => {
-            const { toPdf } = usePrint();
-            pdfFn = toPdf;
-            return <div />;
-          })()}
+          <PrintProvider>
+            {(() => {
+              const { toPdf } = usePrint();
+              pdfFn = toPdf;
+              return <div />;
+            })()}
+          </PrintProvider>
         </BusyProvider>
       ));
 
@@ -97,11 +106,13 @@ describe("usePrint", () => {
 
       render(() => (
         <BusyProvider>
-          {(() => {
-            const { toPdf } = usePrint();
-            pdfFn = toPdf;
-            return <div />;
-          })()}
+          <PrintProvider>
+            {(() => {
+              const { toPdf } = usePrint();
+              pdfFn = toPdf;
+              return <div />;
+            })()}
+          </PrintProvider>
         </BusyProvider>
       ));
 

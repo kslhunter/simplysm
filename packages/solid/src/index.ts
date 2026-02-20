@@ -82,6 +82,7 @@ export * from "./components/disclosure/Dropdown";
 export * from "./components/disclosure/Dialog";
 export * from "./components/disclosure/DialogContext";
 export * from "./components/disclosure/DialogInstanceContext";
+export * from "./components/disclosure/DialogProvider";
 export * from "./components/disclosure/Tabs";
 
 //#endregion
@@ -98,6 +99,8 @@ export * from "./components/feedback/busy/BusyContext";
 export * from "./components/feedback/busy/BusyContainer";
 
 // Print
+export * from "./components/feedback/print/PrintContext";
+export * from "./components/feedback/print/PrintProvider";
 export * from "./components/feedback/print/Print";
 export * from "./components/feedback/print/PrintInstanceContext";
 export * from "./components/feedback/Progress";
@@ -140,8 +143,8 @@ export type {
 export { SharedDataContext, useSharedData } from "./providers/shared-data/SharedDataContext";
 export * from "./providers/shared-data/SharedDataChangeEvent";
 
-// InitializeProvider (only exported provider)
-export * from "./providers/InitializeProvider";
+// SystemProvider
+export * from "./providers/SystemProvider";
 
 //#endregion
 
@@ -150,7 +153,6 @@ export * from "./providers/InitializeProvider";
 export * from "./hooks/useLocalStorage";
 export * from "./hooks/useSyncConfig";
 export * from "./hooks/useLogger";
-export * from "./hooks/usePrint";
 export { createControllableSignal } from "./hooks/createControllableSignal";
 export { createIMEHandler } from "./hooks/createIMEHandler";
 export { createMountTransition } from "./hooks/createMountTransition";

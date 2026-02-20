@@ -115,7 +115,7 @@ Hook to access busy overlay. Must be used inside `BusyProvider`. See [Busy](feed
 
 ## usePrint
 
-Hook for printing and PDF generation. See [Print / usePrint](feedback.md#print--useprint) for detailed API.
+Hook for printing and PDF generation. Must be used inside `<PrintProvider>`. See [Print / usePrint](feedback.md#print--useprint) for detailed API.
 
 ---
 

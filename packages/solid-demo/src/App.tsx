@@ -1,5 +1,5 @@
 import type { RouteSectionProps } from "@solidjs/router";
-import { InitializeProvider } from "@simplysm/solid";
+import { SystemProvider, DialogProvider, PrintProvider } from "@simplysm/solid";
 import { onMount } from "solid-js";
 
 export function App(props: RouteSectionProps) {
@@ -7,5 +7,11 @@ export function App(props: RouteSectionProps) {
     document.querySelector(".app-busy")?.remove();
   });
 
-  return <InitializeProvider clientName="solid-demo">{props.children}</InitializeProvider>;
+  return (
+    <SystemProvider clientName="solid-demo">
+      <DialogProvider>
+        <PrintProvider>{props.children}</PrintProvider>
+      </DialogProvider>
+    </SystemProvider>
+  );
 }

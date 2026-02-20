@@ -1,15 +1,15 @@
 # Providers
 
-## InitializeProvider
+## SystemProvider
 
-The only exported provider component. Wraps all internal providers in the correct dependency order. Use this to set up your app.
+Infrastructure provider. Wraps all internal providers (config, theme, logger, notification, busy, service client, shared data) in the correct dependency order. Use this to set up your app.
 
 ```tsx
-import { InitializeProvider } from "@simplysm/solid";
+import { SystemProvider } from "@simplysm/solid";
 
-<InitializeProvider clientName="my-app">
+<SystemProvider clientName="my-app">
   <AppRoot />
-</InitializeProvider>
+</SystemProvider>
 ```
 
 Configuration is done via hooks inside child components:
@@ -40,16 +40,16 @@ ConfigProvider → SyncStorageProvider → LoggerProvider →
     ErrorLoggerProvider → PwaUpdateProvider →
       ClipboardProvider → ThemeProvider →
         ServiceClientProvider → SharedDataProvider →
-          BusyProvider → DialogProvider → {children}
+          BusyProvider → {children}
 ```
 
-Individual providers are not exported. All provider setup goes through `InitializeProvider`.
+Internal providers are not exported individually. `DialogProvider` and `PrintProvider` are exported separately for flexible placement in your provider tree.
 
 ---
 
 ## Exported Types & Hooks
 
-The following types, context objects, and hooks are exported for use with `InitializeProvider`:
+The following types, context objects, and hooks are exported for use with `SystemProvider`:
 
 | Export | Kind | Description |
 |--------|------|-------------|
@@ -60,7 +60,6 @@ The following types, context objects, and hooks are exported for use with `Initi
 | `useSharedData` | hook | Shared data subscription access |
 | `useNotification` | hook | Notification system access |
 | `useBusy` | hook | Busy overlay control |
-| `useDialog` | hook | Programmatic dialog opening |
 | `ConfigContext` | context | For mock injection in tests |
 | `SyncStorageContext` | context | For mock injection in tests |
 | `ServiceClientContext` | context | For mock injection in tests |
@@ -133,3 +132,73 @@ interface SharedDataDefinition<TData> {
 ```typescript
 import { SharedDataChangeEvent } from "@simplysm/solid";
 ```
+
+---
+
+## DialogProvider
+
+Programmatic dialog management. Must be placed inside `SystemProvider`. See [Dialog](disclosure.md#dialog) for full Dialog component and `useDialog` API.
+
+```tsx
+import { DialogProvider, useDialog } from "@simplysm/solid";
+
+// In your provider tree:
+<SystemProvider clientName="my-app">
+  <DialogProvider>
+    <App />
+  </DialogProvider>
+</SystemProvider>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `closeOnEscape` | `boolean` | `true` | Default: close dialogs on Escape key |
+| `closeOnBackdrop` | `boolean` | - | Default: close dialogs on backdrop click |
+
+---
+
+## PrintProvider
+
+Printing and PDF generation. Must be placed inside `SystemProvider` (depends on `useBusy()`). See [Print / usePrint](feedback.md#print--useprint) for full API.
+
+```tsx
+import { PrintProvider, usePrint } from "@simplysm/solid";
+
+// In your provider tree:
+<SystemProvider clientName="my-app">
+  <PrintProvider>
+    <App />
+  </PrintProvider>
+</SystemProvider>
+```
+
+No additional props.
+
+---
+
+## Provider Placement Guide
+
+`SystemProvider` provides all infrastructure. `DialogProvider` and `PrintProvider` are standalone and should be placed where their factory content needs context access.
+
+**Recommended structure:**
+
+```
+<SystemProvider>          ← Infrastructure (config, theme, logger, etc.)
+  <YourAuthProvider>      ← Your providers
+    <YourDataProvider>
+      <DialogProvider>    ← Dialog factories can access Auth + Data
+        <PrintProvider>   ← Print factories can access Auth + Data
+          <App />
+        </PrintProvider>
+      </DialogProvider>
+    </YourDataProvider>
+  </YourAuthProvider>
+</SystemProvider>
+```
+
+**Why this order?**
+
+- `DialogProvider` and `PrintProvider` accept user components as factory functions (`dialog.show(() => <Form />)`, `print.toPrinter(() => <Report />)`)
+- These factories are rendered inside the Provider's tree, not at the call site
+- To access your app's contexts (auth, data, etc.), place `DialogProvider`/`PrintProvider` **below** those contexts
+- `SystemProvider` must be outermost because `DialogProvider`/`PrintProvider` depend on `useBusy()` and other system hooks
