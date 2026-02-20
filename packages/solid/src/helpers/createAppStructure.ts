@@ -143,7 +143,7 @@ function buildMenus<TModule>(
   items: AppStructureItem<TModule>[],
   basePath: string,
   usableModules: TModule[] | undefined,
-  permRecord: Record<string, boolean>,
+  permRecord: Record<string, boolean> | undefined,
 ): AppMenu[] {
   const result: AppMenu[] = [];
 
@@ -159,7 +159,7 @@ function buildMenus<TModule>(
       }
     } else {
       if (item.isNotMenu) continue;
-      if (item.perms?.includes("use") && !permRecord[href + "/use"]) continue;
+      if (item.perms?.includes("use") && !permRecord?.[href + "/use"]) continue;
 
       result.push({ title: item.title, href, icon: item.icon });
     }
@@ -319,8 +319,6 @@ export function createAppStructure<TModule>(opts: {
   usableModules?: Accessor<TModule[] | undefined>;
   permRecord?: Accessor<Record<string, boolean>>;
 }): AppStructure<TModule> {
-  const permRecord = () => opts.permRecord?.() ?? {};
-
   const routes = extractRoutes(opts.items);
   const flatPerms = collectFlatPerms(opts.items);
 
@@ -330,7 +328,12 @@ export function createAppStructure<TModule>(opts: {
       for (const top of opts.items) {
         if (isGroupItem(top)) {
           menus.push(
-            ...buildMenus(top.children, "/" + top.code, opts.usableModules?.(), permRecord()),
+            ...buildMenus(
+              top.children,
+              "/" + top.code,
+              opts.usableModules?.(),
+              opts.permRecord?.(),
+            ),
           );
         }
       }
