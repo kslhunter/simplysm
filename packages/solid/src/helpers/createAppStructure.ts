@@ -76,8 +76,7 @@ export interface AppStructure<TModule> {
   usableMenus: Accessor<AppMenu[]>;
   usableFlatMenus: Accessor<AppFlatMenu[]>;
   usablePerms: Accessor<AppPerm<TModule>[]>;
-  usableFlatPerms: Accessor<AppFlatPerm<TModule>[]>;
-  usablePermRecord: Accessor<Record<string, boolean>>;
+  flatPerms: AppFlatPerm<TModule>[];
   getTitleChainByHref(href: string): string[];
 }
 
@@ -104,22 +103,6 @@ function checkModules<TModule>(
     if (!requiredModules.every((m) => usableModules.includes(m))) return false;
   }
 
-  return true;
-}
-
-function checkModulesChain<TModule>(
-  modulesChain: TModule[][],
-  requiredModulesChain: TModule[][],
-  usableModules: TModule[] | undefined,
-): boolean {
-  if (usableModules === undefined) return true;
-
-  for (const modules of modulesChain) {
-    if (!checkModules(modules, undefined, usableModules)) return false;
-  }
-  for (const requiredModules of requiredModulesChain) {
-    if (!checkModules(undefined, requiredModules, usableModules)) return false;
-  }
   return true;
 }
 
@@ -243,10 +226,7 @@ function buildPerms<TModule>(
   return result;
 }
 
-function collectFlatPerms<TModule>(
-  items: AppStructureItem<TModule>[],
-  usableModules: TModule[] | undefined,
-): AppFlatPerm<TModule>[] {
+function collectFlatPerms<TModule>(items: AppStructureItem<TModule>[]): AppFlatPerm<TModule>[] {
   const results: AppFlatPerm<TModule>[] = [];
 
   interface QueueItem {
@@ -254,7 +234,6 @@ function collectFlatPerms<TModule>(
     titleChain: string[];
     codePath: string;
     modulesChain: TModule[][];
-    requiredModulesChain: TModule[][];
   }
 
   const queue: QueueItem[] = items.map((item) => ({
@@ -262,22 +241,16 @@ function collectFlatPerms<TModule>(
     titleChain: [],
     codePath: "",
     modulesChain: [],
-    requiredModulesChain: [],
   }));
 
   while (queue.length > 0) {
-    const { item, titleChain, codePath, modulesChain, requiredModulesChain } = queue.shift()!;
+    const { item, titleChain, codePath, modulesChain } = queue.shift()!;
 
     const currTitleChain = [...titleChain, item.title];
     const currCodePath = codePath + "/" + item.code;
     const currModulesChain: TModule[][] = item.modules
       ? [...modulesChain, item.modules]
       : modulesChain;
-    const currRequiredModulesChain: TModule[][] = item.requiredModules
-      ? [...requiredModulesChain, item.requiredModules]
-      : requiredModulesChain;
-
-    if (!checkModulesChain(currModulesChain, currRequiredModulesChain, usableModules)) continue;
 
     if (isGroupItem(item)) {
       for (const child of item.children) {
@@ -286,7 +259,6 @@ function collectFlatPerms<TModule>(
           titleChain: currTitleChain,
           codePath: currCodePath,
           modulesChain: currModulesChain,
-          requiredModulesChain: currRequiredModulesChain,
         });
       }
     } else {
@@ -302,8 +274,6 @@ function collectFlatPerms<TModule>(
 
       if (item.subPerms) {
         for (const subPerm of item.subPerms) {
-          if (!checkModules(subPerm.modules, subPerm.requiredModules, usableModules)) continue;
-
           const subModulesChain: TModule[][] = subPerm.modules
             ? [...currModulesChain, subPerm.modules]
             : currModulesChain;
@@ -321,20 +291,6 @@ function collectFlatPerms<TModule>(
   }
 
   return results;
-}
-
-function filterPermRecord<TModule>(
-  permRecord: Record<string, boolean>,
-  flatPerms: AppFlatPerm<TModule>[],
-): Record<string, boolean> {
-  const validCodes = new Set(flatPerms.map((fp) => fp.code));
-  const result: Record<string, boolean> = {};
-  for (const [key, value] of Object.entries(permRecord)) {
-    if (validCodes.has(key)) {
-      result[key] = value;
-    }
-  }
-  return result;
 }
 
 // ── Info ──
@@ -366,6 +322,7 @@ export function createAppStructure<TModule>(opts: {
   const permRecord = () => opts.permRecord?.() ?? {};
 
   const routes = extractRoutes(opts.items);
+  const flatPerms = collectFlatPerms(opts.items);
 
   const memos = createRoot(() => {
     const usableMenus = createMemo(() => {
@@ -382,19 +339,9 @@ export function createAppStructure<TModule>(opts: {
 
     const usableFlatMenus = createMemo(() => flattenMenus(usableMenus()));
 
-    const usablePerms = createMemo(() =>
-      buildPerms(opts.items, "", opts.usableModules?.()),
-    );
+    const usablePerms = createMemo(() => buildPerms(opts.items, "", opts.usableModules?.()));
 
-    const usableFlatPerms = createMemo(() =>
-      collectFlatPerms(opts.items, opts.usableModules?.()),
-    );
-
-    const usablePermRecord = createMemo(() =>
-      filterPermRecord(permRecord(), usableFlatPerms()),
-    );
-
-    return { usableMenus, usableFlatMenus, usablePerms, usableFlatPerms, usablePermRecord };
+    return { usableMenus, usableFlatMenus, usablePerms };
   });
 
   return {
@@ -403,8 +350,7 @@ export function createAppStructure<TModule>(opts: {
     usableMenus: memos.usableMenus,
     usableFlatMenus: memos.usableFlatMenus,
     usablePerms: memos.usablePerms,
-    usableFlatPerms: memos.usableFlatPerms,
-    usablePermRecord: memos.usablePermRecord,
+    flatPerms,
     getTitleChainByHref(href: string): string[] {
       const codes = href.split("/").filter(Boolean);
       return findItemChainByCodes(opts.items, codes).map((item) => item.title);
