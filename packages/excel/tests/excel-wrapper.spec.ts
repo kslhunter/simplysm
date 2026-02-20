@@ -247,4 +247,50 @@ describe("ExcelWrapper", () => {
       await expect(wrapper.read(buffer, "Validation")).rejects.toThrow();
     });
   });
+
+  describe("excludes 옵션", () => {
+    const fullSchema = z.object({
+      name: z.string().describe("이름"),
+      age: z.number().describe("나이"),
+      email: z.string().optional().describe("이메일"),
+      phone: z.string().optional().describe("전화번호"),
+    });
+
+    it("write 시 excludes된 필드가 컬럼에서 제외된다", async () => {
+      const wrapper = new ExcelWrapper(fullSchema);
+
+      const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
+      const wb = await wrapper.write("Test", records, { excludes: ["email", "phone"] });
+      const ws = await wb.getWorksheet("Test");
+
+      // 헤더: 이름, 나이만 존재
+      expect(await ws.cell(0, 0).getVal()).toBe("이름");
+      expect(await ws.cell(0, 1).getVal()).toBe("나이");
+      expect(await ws.cell(0, 2).getVal()).toBeUndefined();
+
+      // 데이터 확인
+      expect(await ws.cell(1, 0).getVal()).toBe("홍길동");
+      expect(await ws.cell(1, 1).getVal()).toBe(30);
+
+      await wb.close();
+    });
+
+    it("read 시 excludes된 필드가 무시된다", async () => {
+      const wrapper = new ExcelWrapper(fullSchema);
+
+      // 전체 필드로 Excel 생성
+      const records = [{ name: "홍길동", age: 30, email: "hong@test.com", phone: "010-1234-5678" }];
+      const wb = await wrapper.write("Test", records);
+      const buffer = await wb.getBytes();
+      await wb.close();
+
+      // excludes로 읽기
+      const readRecords = await wrapper.read(buffer, "Test", { excludes: ["email", "phone"] });
+
+      expect(readRecords[0].name).toBe("홍길동");
+      expect(readRecords[0].age).toBe(30);
+      expect(readRecords[0].email).toBeUndefined();
+      expect(readRecords[0].phone).toBeUndefined();
+    });
+  });
 });

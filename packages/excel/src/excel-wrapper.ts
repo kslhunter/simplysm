@@ -26,13 +26,19 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   /**
    * Excel 파일 읽기 → 레코드 배열
    */
-  async read(file: Bytes | Blob, wsNameOrIndex: string | number = 0): Promise<z.infer<TSchema>[]> {
+  async read(
+    file: Bytes | Blob,
+    wsNameOrIndex: string | number = 0,
+    options?: { excludes?: (keyof z.infer<TSchema>)[] },
+  ): Promise<z.infer<TSchema>[]> {
     await using wb = new ExcelWorkbook(file);
+
+    const excludes = options?.excludes as string[] | undefined;
 
     const ws = await wb.getWorksheet(wsNameOrIndex);
     const wsName = await ws.getName();
 
-    const displayNameMap = this._getDisplayNameMap();
+    const displayNameMap = this._getDisplayNameMap(excludes);
     const displayNames = Object.values(displayNameMap);
     const rawData = await ws.getDataTable({
       usableHeaderNameFn: (headerName) => displayNames.includes(headerName),
@@ -44,7 +50,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       );
     }
 
-    const reverseMap = this._getReverseDisplayNameMap();
+    const reverseMap = this._getReverseDisplayNameMap(excludes);
     const shape = this._schema.shape;
     const result: z.infer<TSchema>[] = [];
 
@@ -95,11 +101,15 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
    * const bytes = await wb.getBytes();
    * ```
    */
-  async write(wsName: string, records: Partial<z.infer<TSchema>>[]): Promise<ExcelWorkbook> {
+  async write(
+    wsName: string,
+    records: Partial<z.infer<TSchema>>[],
+    options?: { excludes?: (keyof z.infer<TSchema>)[] },
+  ): Promise<ExcelWorkbook> {
     const wb = new ExcelWorkbook();
     const ws = await wb.createWorksheet(wsName);
 
-    const displayNameMap = this._getDisplayNameMap();
+    const displayNameMap = this._getDisplayNameMap(options?.excludes as string[] | undefined);
     const keys = Object.keys(displayNameMap) as (keyof z.infer<TSchema>)[];
     const headers = keys.map((key) => displayNameMap[key as string]);
 
@@ -148,17 +158,18 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
   //#region Private Methods
 
-  private _getDisplayNameMap(): Record<string, string> {
+  private _getDisplayNameMap(excludes?: string[]): Record<string, string> {
     const map: Record<string, string> = {};
     for (const [key, fieldSchema] of Object.entries(this._schema.shape)) {
+      if (excludes?.includes(key)) continue;
       map[key] = (fieldSchema as z.ZodType).description ?? key;
     }
     return map;
   }
 
-  private _getReverseDisplayNameMap(): Map<string, string> {
+  private _getReverseDisplayNameMap(excludes?: string[]): Map<string, string> {
     const map = new Map<string, string>();
-    for (const [fieldKey, displayName] of Object.entries(this._getDisplayNameMap())) {
+    for (const [fieldKey, displayName] of Object.entries(this._getDisplayNameMap(excludes))) {
       map.set(displayName, fieldKey);
     }
     return map;
