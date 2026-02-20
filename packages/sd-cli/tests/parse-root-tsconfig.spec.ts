@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import path from "path";
 import ts from "typescript";
 
 // typescript 모킹
@@ -41,7 +42,10 @@ describe("parseRootTsconfig", () => {
 
     const result = parseRootTsconfig(cwd);
 
-    expect(ts.readConfigFile).toHaveBeenCalledWith("/project/tsconfig.json", ts.sys.readFile);
+    expect(ts.readConfigFile).toHaveBeenCalledWith(
+      path.join("/project", "tsconfig.json"),
+      ts.sys.readFile,
+    );
     expect(result).toEqual(mockParsedConfig);
   });
 

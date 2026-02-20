@@ -278,7 +278,7 @@ describe("sd-cli", () => {
 
       await parser.parse();
 
-      expect(errorMessage).toContain("Unknown argument");
+      expect(errorMessage).toMatch(/Unknown argument|알 수 없는 인수/);
     });
 
     it("명령어 없이 실행 시 에러", async () => {

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { glob } from "glob";
 import { consola } from "consola";
-import { fsCopy, fsMkdir, fsRm, FsWatcher } from "@simplysm/core-node";
+import { fsCopy, fsMkdir, fsRm, FsWatcher, pathIsChildPath } from "@simplysm/core-node";
 
 /**
  * replaceDeps 설정의 glob 패턴과 대상 패키지 목록을 매칭하여
@@ -310,12 +310,20 @@ export async function watchReplaceDeps(
     if (watchedSources.has(entry.resolvedSourcePath)) continue;
     watchedSources.add(entry.resolvedSourcePath);
 
+    const excludedPaths = [...EXCLUDED_NAMES].map((name) =>
+      path.join(entry.resolvedSourcePath, name),
+    );
+
     const watcher = await FsWatcher.watch([entry.resolvedSourcePath], { followSymlinks: false });
     watcher.onChange({ delay: 300 }, async (changeInfos) => {
       for (const { path: changedPath } of changeInfos) {
-        // 제외 항목 필터링
-        const basename = path.basename(changedPath);
-        if (EXCLUDED_NAMES.has(basename)) continue;
+        // 제외 항목 필터링: basename 일치 또는 제외 디렉토리 하위 경로
+        if (
+          EXCLUDED_NAMES.has(path.basename(changedPath)) ||
+          excludedPaths.some((ep) => pathIsChildPath(changedPath, ep))
+        ) {
+          continue;
+        }
 
         // 이 소스 경로를 사용하는 모든 entry에 대해 복사
         for (const e of entries) {

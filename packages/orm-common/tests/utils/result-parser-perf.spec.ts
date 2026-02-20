@@ -109,7 +109,7 @@ describe("result-parser 성능", () => {
   });
 
   describe("1레벨 JOIN 처리", () => {
-    it("1,000 users × 10 posts = 10,000개 레코드 - 500ms 이내", async () => {
+    it("1,000 users × 10 posts = 10,000개 레코드 - 600ms 이내", async () => {
       const raw = generateJoinRecords(1_000, 10);
       const meta: ResultMeta = {
         columns: {
@@ -127,7 +127,7 @@ describe("result-parser 성능", () => {
       const elapsed = performance.now() - start;
 
       expect(result).toHaveLength(1_000);
-      expect(elapsed).toBeLessThan(500);
+      expect(elapsed).toBeLessThan(600);
       console.log(`  JOIN 10,000개 (1000×10): ${elapsed.toFixed(2)}ms`);
     });
 

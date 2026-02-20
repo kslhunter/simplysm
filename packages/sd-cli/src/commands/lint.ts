@@ -77,7 +77,9 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
   }
 
   const jiti = createJiti(import.meta.url);
-  const configModule = await jiti.import(configPath);
+  const configModule = await jiti.import<{ default: Record<string, unknown>[] } | undefined>(
+    configPath,
+  );
 
   let configs: unknown;
   if (Array.isArray(configModule)) {
@@ -200,13 +202,31 @@ export async function runLint(options: LintOptions): Promise<void> {
           break;
         }
       }
-      stylelintResult = await stylelint.lint({
-        files: cssFiles,
-        configFile,
-        fix,
-        cache: true,
-        cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
-      });
+
+      // TypeScript 설정 파일 지원: jiti로 로드 후 config 객체로 전달
+      let stylelintOptions: stylelint.LinterOptions;
+      if (configFile != null && /\.ts$/.test(configFile)) {
+        const jiti = createJiti(import.meta.url);
+        const configModule = await jiti.import<{ default: stylelint.Config }>(configFile);
+        const config = configModule.default;
+        stylelintOptions = {
+          files: cssFiles,
+          config,
+          configBasedir: cwd,
+          fix,
+          cache: true,
+          cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
+        };
+      } else {
+        stylelintOptions = {
+          files: cssFiles,
+          configFile,
+          fix,
+          cache: true,
+          cacheLocation: path.join(cwd, ".cache", "stylelint.cache"),
+        };
+      }
+      stylelintResult = await stylelint.lint(stylelintOptions);
       logger.success("Stylelint 실행 완료");
     }
   }
