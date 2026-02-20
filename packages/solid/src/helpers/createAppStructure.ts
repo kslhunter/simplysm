@@ -72,7 +72,7 @@ export interface AppFlatMenu {
 
 export interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
-  routes: AppRoute[];
+  usableRoutes: Accessor<AppRoute[]>;
   usableMenus: Accessor<AppMenu[]>;
   usableFlatMenus: Accessor<AppFlatMenu[]>;
   usablePerms: Accessor<AppPerm<TModule>[]>;
@@ -108,33 +108,33 @@ function checkModules<TModule>(
 
 // ── Routes ──
 
-function collectRoutes<TModule>(
+function buildUsableRoutes<TModule>(
   items: AppStructureItem<TModule>[],
-  parentCodes: string[],
-  routes: AppRoute[],
-): void {
+  routeBasePath: string,
+  permBasePath: string,
+  usableModules: TModule[] | undefined,
+  permRecord: Record<string, boolean> | undefined,
+): AppRoute[] {
+  const result: AppRoute[] = [];
+
   for (const item of items) {
-    const codes = [...parentCodes, item.code];
+    if (!checkModules(item.modules, item.requiredModules, usableModules)) continue;
+
+    const routePath = routeBasePath + "/" + item.code;
+    const permPath = permBasePath + "/" + item.code;
 
     if (isGroupItem(item)) {
-      collectRoutes(item.children, codes, routes);
+      result.push(
+        ...buildUsableRoutes(item.children, routePath, permPath, usableModules, permRecord),
+      );
     } else if (item.component !== undefined) {
-      routes.push({
-        path: "/" + codes.join("/"),
-        component: item.component,
-      });
+      if (permRecord !== undefined && item.perms?.includes("use") && !permRecord[permPath + "/use"])
+        continue;
+      result.push({ path: routePath, component: item.component });
     }
   }
-}
 
-function extractRoutes<TModule>(items: AppStructureItem<TModule>[]): AppRoute[] {
-  const routes: AppRoute[] = [];
-  for (const top of items) {
-    if (isGroupItem(top)) {
-      collectRoutes(top.children, [], routes);
-    }
-  }
-  return routes;
+  return result;
 }
 
 // ── Menus ──
@@ -319,10 +319,27 @@ export function createAppStructure<TModule>(opts: {
   usableModules?: Accessor<TModule[] | undefined>;
   permRecord?: Accessor<Record<string, boolean>>;
 }): AppStructure<TModule> {
-  const routes = extractRoutes(opts.items);
   const flatPerms = collectFlatPerms(opts.items);
 
   const memos = createRoot(() => {
+    const usableRoutes = createMemo(() => {
+      const routes: AppRoute[] = [];
+      for (const top of opts.items) {
+        if (isGroupItem(top)) {
+          routes.push(
+            ...buildUsableRoutes(
+              top.children,
+              "",
+              "/" + top.code,
+              opts.usableModules?.(),
+              opts.permRecord?.(),
+            ),
+          );
+        }
+      }
+      return routes;
+    });
+
     const usableMenus = createMemo(() => {
       const menus: AppMenu[] = [];
       for (const top of opts.items) {
@@ -344,12 +361,12 @@ export function createAppStructure<TModule>(opts: {
 
     const usablePerms = createMemo(() => buildPerms(opts.items, "", opts.usableModules?.()));
 
-    return { usableMenus, usableFlatMenus, usablePerms };
+    return { usableRoutes, usableMenus, usableFlatMenus, usablePerms };
   });
 
   return {
     items: opts.items,
-    routes,
+    usableRoutes: memos.usableRoutes,
     usableMenus: memos.usableMenus,
     usableFlatMenus: memos.usableFlatMenus,
     usablePerms: memos.usablePerms,

@@ -59,12 +59,12 @@ function createTestItems(): AppStructureItem<string>[] {
 }
 
 describe("createAppStructure", () => {
-  describe("routes", () => {
-    it("리프 아이템의 상대 경로를 추출한다", () => {
+  describe("usableRoutes", () => {
+    it("모듈/권한 필터 없이 모든 리프 아이템의 경로를 추출한다", () => {
       createRoot((dispose) => {
         const result = createAppStructure({ items: createTestItems() });
 
-        expect(result.routes).toEqual([
+        expect(result.usableRoutes()).toEqual([
           { path: "/sales/invoice", component: DummyA },
           { path: "/sales/order", component: DummyB },
           { path: "/admin/users", component: DummyC },
@@ -86,7 +86,99 @@ describe("createAppStructure", () => {
         ];
 
         const result = createAppStructure({ items });
-        expect(result.routes).toEqual([]);
+        expect(result.usableRoutes()).toEqual([]);
+
+        dispose();
+      });
+    });
+
+    it("모듈 필터링: usableModules에 없는 모듈의 route가 제외된다", () => {
+      createRoot((dispose) => {
+        const [modules] = createSignal<string[]>(["erp"]);
+
+        const result = createAppStructure({
+          items: createTestItems(),
+          usableModules: modules,
+        });
+
+        expect(result.usableRoutes()).toEqual([
+          { path: "/admin/users", component: DummyC },
+          { path: "/admin/hidden", component: DummyD },
+        ]);
+
+        dispose();
+      });
+    });
+
+    it("requiredModules 필터링: 모든 필수 모듈이 있어야 route에 포함된다", () => {
+      createRoot((dispose) => {
+        const [modules] = createSignal<string[]>(["sales"]);
+
+        const result = createAppStructure({
+          items: createTestItems(),
+          usableModules: modules,
+        });
+
+        expect(result.usableRoutes()).toEqual([
+          { path: "/sales/invoice", component: DummyA },
+          { path: "/admin/users", component: DummyC },
+          { path: "/admin/hidden", component: DummyD },
+        ]);
+
+        dispose();
+      });
+    });
+
+    it("perm 필터링: use 권한이 없으면 route에서 제외된다", () => {
+      createRoot((dispose) => {
+        const [modules] = createSignal<string[]>(["sales", "erp"]);
+        const [perms] = createSignal<Record<string, boolean>>({
+          "/home/sales/invoice/use": true,
+          "/home/sales/order/use": false,
+        });
+
+        const result = createAppStructure({
+          items: createTestItems(),
+          usableModules: modules,
+          permRecord: perms,
+        });
+
+        expect(result.usableRoutes()).toEqual([
+          { path: "/sales/invoice", component: DummyA },
+          { path: "/admin/users", component: DummyC },
+          { path: "/admin/hidden", component: DummyD },
+        ]);
+
+        dispose();
+      });
+    });
+
+    it("isNotMenu 아이템도 route에는 포함된다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({ items: createTestItems() });
+
+        const hiddenRoute = result.usableRoutes().find((r) => r.path === "/admin/hidden");
+        expect(hiddenRoute).toBeDefined();
+        expect(hiddenRoute!.component).toBe(DummyD);
+
+        dispose();
+      });
+    });
+
+    it("usableModules가 변경되면 routes가 재계산된다", () => {
+      createRoot((dispose) => {
+        const [modules, setModules] = createSignal<string[] | undefined>(undefined);
+
+        const result = createAppStructure({
+          items: createTestItems(),
+          usableModules: modules,
+        });
+
+        expect(result.usableRoutes()).toHaveLength(4);
+
+        setModules(["erp"]);
+        expect(result.usableRoutes()).toHaveLength(2);
+        expect(result.usableRoutes().map((r) => r.path)).toEqual(["/admin/users", "/admin/hidden"]);
 
         dispose();
       });

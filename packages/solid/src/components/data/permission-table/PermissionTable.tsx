@@ -115,10 +115,7 @@ export function changePermCheck<TModule>(
 // --- 내부 헬퍼 ---
 
 /** 모듈 필터에 의해 보이는지 확인 (객체 참조 유지) */
-function isItemVisible<TModule>(
-  item: AppPerm<TModule>,
-  modules: TModule[] | undefined,
-): boolean {
+function isItemVisible<TModule>(item: AppPerm<TModule>, modules: TModule[] | undefined): boolean {
   if (!modules || modules.length === 0) return true;
   if (item.modules && !item.modules.some((m) => modules.includes(m))) return false;
   if (!item.perms && item.children) {

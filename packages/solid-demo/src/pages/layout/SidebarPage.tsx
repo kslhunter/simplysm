@@ -1,11 +1,4 @@
-import {
-  Button,
-  Icon,
-  Sidebar,
-  Topbar,
-  useSidebarContext,
-  type AppMenu,
-} from "@simplysm/solid";
+import { Button, Icon, Sidebar, Topbar, useSidebarContext, type AppMenu } from "@simplysm/solid";
 import { IconFolder, IconHome, IconMenu2, IconSettings } from "@tabler/icons-solidjs";
 
 const sampleMenuItems: AppMenu[] = [
