@@ -12,7 +12,21 @@ Importing `@simplysm/core-common` adds extension methods to Array, Map, Set:
 - `Map`: `getOrCreate()`, `update()`
 - `Set`: `adds()`, `toggle()`
 
-Before using extension methods: Verify actual existence in `core-common/src/extensions/` source (or README). Do not guess methods that don't exist.
+Before using extension methods: Verify actual existence in `@simplysm/core-common` extensions (check README or source). Do not guess methods that don't exist.
+
+## Function Naming Conventions
+
+- Do not use `Async` suffix on function names — Async is the default
+- When both sync and async versions exist, use `Sync` suffix on the sync function
+
+```typescript
+// Good
+async function readFile() { ... }      // Async (default)
+function readFileSync() { ... }        // Sync version
+
+// Bad
+async function readFileAsync() { ... } // Async suffix prohibited
+```
 
 ## JSDoc Convention
 

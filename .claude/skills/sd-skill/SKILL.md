@@ -1,7 +1,7 @@
 ---
 name: sd-skill
 description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
-model: sonnet
+model: opus
 ---
 
 # Writing Skills
@@ -401,6 +401,15 @@ Different skill types need different test approaches:
 - Variation scenarios: Do they handle edge cases?
 - Missing information tests: Do instructions have gaps?
 
+**How to test:** Give a subagent a problem the technique solves, WITHOUT the skill. Observe what approach they use naturally. Then give the SAME problem WITH the skill and verify they apply the technique correctly.
+
+```
+Example: Testing a "condition-based-waiting" skill
+1. Ask subagent: "Fix this flaky test that uses setTimeout(500)"
+2. WITHOUT skill: Agent increases timeout to 2000ms (wrong approach)
+3. WITH skill: Agent replaces with polling/condition check (correct)
+```
+
 **Success criteria:** Agent successfully applies technique to new scenario
 
 ### Pattern Skills (mental models)
@@ -437,6 +446,7 @@ Different skill types need different test approaches:
 | "I'm confident it's good" | Overconfidence guarantees issues. Test anyway. |
 | "Academic review is enough" | Reading ≠ using. Test application scenarios. |
 | "No time to test" | Deploying untested skill wastes more time fixing it later. |
+| "I already know the baseline failures" | You know what YOU think the failures are. Run a subagent to see what ACTUALLY happens. Knowledge ≠ observation. |
 
 **All of these mean: Test before deploying. No exceptions.**
 
@@ -526,6 +536,8 @@ Run pressure scenario with subagent WITHOUT the skill. Document exact behavior:
 - Which pressures triggered violations?
 
 This is "watch the test fail" - you must see what agents naturally do before writing the skill.
+
+**You MUST actually run a subagent.** Do not substitute your own knowledge of "what agents would probably do." Your prediction of baseline behavior ≠ observed baseline behavior. Run the subagent, read the output, document what actually happened.
 
 ### GREEN: Write Minimal Skill
 
