@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-auto-update",
-  "version": "13.0.38",
+  "version": "13.0.39",
   "description": "심플리즘 패키지 - Capacitor Auto Update Plugin",
   "author": "김석래",
   "license": "MIT",
