@@ -8,6 +8,7 @@ export default {
       {
         severity: "error",
         browsers: ["chrome >= 84"],
+        ignore: ["css-cascade-layers", "css-nesting", "css-overflow"],
       },
     ],
     // @import, url() 파일 존재 체크

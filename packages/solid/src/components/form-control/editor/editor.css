@@ -46,6 +46,7 @@
   height: auto;
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- ProseMirror library class */
 [data-rich-text-editor] .tiptap img.ProseMirror-selectednode {
   outline: 2px solid #3b82f6;
 }
