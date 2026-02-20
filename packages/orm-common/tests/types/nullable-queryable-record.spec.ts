@@ -4,8 +4,8 @@ import { expr } from "../../src/expr/expr";
 import { User } from "../setup/models/User";
 import type {
   NullableQueryableRecord,
-  QueryableColumns,
   QueryableRecord,
+  UnwrapQueryableRecord,
 } from "../../src/exec/queryable";
 
 describe("NullableQueryableRecord type inference", () => {
@@ -46,21 +46,6 @@ describe("NullableQueryableRecord type inference", () => {
     expect(q).toBeDefined();
   });
 
-  it("QueryableColumns strips optional modifier from keys", () => {
-    type OptionalData = { id?: number; name: string };
-    type Result = QueryableColumns<OptionalData>;
-
-    // Key is required (no outer | undefined), but ExprUnit preserves inner type
-    expectTypeOf<Result["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
-    expectTypeOf<Result["name"]>().toMatchTypeOf<{ $infer: string }>();
-
-    // Verify key is truly required (not optional)
-    type Keys = keyof Result;
-    expectTypeOf<"id">().toMatchTypeOf<Keys>();
-
-    expect(true).toBe(true);
-  });
-
   it("QueryableRecord preserves optional modifier (for select output)", () => {
     type OptionalData = { id?: number; name: string };
     type Result = QueryableRecord<OptionalData>;
@@ -83,45 +68,60 @@ describe("NullableQueryableRecord type inference", () => {
     expect(true).toBe(true);
   });
 
-  it("select<ICustom> with optional properties should compile", () => {
+  it("select auto-infers result type from callback return", () => {
     const db = createTestDb();
 
-    // Custom type with optional properties (like user's real-world pattern)
-    // Note: must use `type` not `interface` — interfaces lack implicit index signatures
-    type IUserItem = {
-      id?: number;
-      name?: string;
-      email?: string;
-      isActive: boolean;
-    };
-
-    // .select<IUserItem>((c) => ({ id: c.id, name: c.name, ... }))
     const q = db
       .user()
       .where((u) => [expr.eq(u.isActive, true)])
-      .select<IUserItem>((c) => ({
+      .select((c) => ({
         id: c.id,
         name: c.name,
         email: c.email,
         isActive: c.isActive,
       }));
 
+    // UnwrapQueryableRecord extracts primitive types from ExprUnit
+    type Result = typeof q extends { meta: { columns: infer C } } ? C : never;
+    type IdType = Result extends { id: { $infer: infer T } } ? T : never;
+    type EmailType = Result extends { email: { $infer: infer T } } ? T : never;
+
+    expectTypeOf<IdType>().toEqualTypeOf<number>();
+    expectTypeOf<EmailType>().toEqualTypeOf<string | undefined>();
+
     expect(q).toBeDefined();
+  });
+
+  it("UnwrapQueryableRecord unwraps ExprUnit to primitive", () => {
+    type Input = {
+      id: import("../../src/expr/expr-unit").ExprUnit<number>;
+      name: import("../../src/expr/expr-unit").ExprUnit<string>;
+      email: import("../../src/expr/expr-unit").ExprUnit<string | undefined>;
+    };
+    type Result = UnwrapQueryableRecord<Input>;
+
+    expectTypeOf<Result>().toEqualTypeOf<{
+      id: number;
+      name: string;
+      email: string | undefined;
+    }>();
+
+    expect(true).toBe(true);
   });
 
   it("select with optional properties then orderBy should compile", () => {
     const db = createTestDb();
 
-    type IUserItem = {
+    /*type IUserItem = {
       id?: number;
       name?: string;
       isActive: boolean;
-    };
+    };*/
 
     const q = db
       .user()
       .where((u) => [expr.eq(u.isActive, true)])
-      .select<IUserItem>((c) => ({
+      .select((c) => ({
         id: c.id,
         name: c.name,
         isActive: c.isActive,

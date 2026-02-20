@@ -128,7 +128,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
           columns: transformColumnsAlias(this._baseQr.meta.columns, selfAlias, ""),
           isCustomColumns: false,
         }),
-    );
+    ) as any;
   }
 
   /**
@@ -247,16 +247,16 @@ export class Queryable<
    * }))
    * ```
    */
-  select<R extends DataRecord>(
-    fn: (columns: QueryableRecord<TData>) => QueryableRecord<R>,
-  ): Queryable<R, never> {
+  select<R extends Record<string, any>>(
+    fn: (columns: QueryableRecord<TData>) => R,
+  ): Queryable<UnwrapQueryableRecord<R>, never> {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.select(fn));
       return new Queryable({
         ...this.meta,
         from: newFroms,
-        columns: transformColumnsAlias<R>(newFroms[0].meta.columns, this.meta.as, ""),
-      });
+        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
+      }) as any;
     }
 
     const newColumns = fn(this.meta.columns);
@@ -1883,6 +1883,23 @@ export type NullableQueryableRecord<TData extends DataRecord> = {
           : TData[K] extends DataRecord | undefined
             ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
             : never;
+};
+
+/**
+ * QueryableRecord에서 DataRecord로 역변환
+ *
+ * ExprUnit<T>를 T로, 중첩 객체/배열을 재귀적으로 풀어냄
+ */
+export type UnwrapQueryableRecord<R> = {
+  [K in keyof R]: R[K] extends ExprUnit<infer T>
+    ? T
+    : NonNullable<R[K]> extends (infer U)[]
+      ? U extends Record<string, any>
+        ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>
+        : never
+      : NonNullable<R[K]> extends Record<string, any>
+        ? UnwrapQueryableRecord<NonNullable<R[K]>> | Extract<R[K], undefined>
+        : never;
 };
 
 //#region ========== PathProxy - include용 타입 안전 경로 빌더 ==========
