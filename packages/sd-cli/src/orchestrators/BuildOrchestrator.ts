@@ -120,8 +120,8 @@ async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<vo
  * 프로덕션 빌드를 조율하는 Orchestrator
  *
  * sd.config.ts 기반으로 패키지를 분류하고, 빌드를 실행한다.
- * - lint 실행
  * - dist 폴더 정리 (clean build)
+ * - lint + 빌드 병렬 실행
  * - node/browser/neutral 타겟: esbuild JS 빌드 + dts 생성
  * - client 타겟: Vite production 빌드 + typecheck + Capacitor/Electron 빌드
  * - server 타겟: esbuild JS 빌드
@@ -196,9 +196,8 @@ export class BuildOrchestrator {
 
   /**
    * 빌드 실행
-   * - Lint
    * - Clean
-   * - Build (concurrent)
+   * - Lint + Build (concurrent)
    * - 결과 출력
    *
    * @returns 에러 여부 (true: 에러 있음)
@@ -239,22 +238,13 @@ export class BuildOrchestrator {
       timing: false,
     };
 
-    // Phase 1: Lint
-    this._logger.start("Lint");
-    await runLint(lintOptions);
-    // lint 에러가 있으면 process.exitCode가 1로 설정됨
-    if (process.exitCode === 1) {
-      state.hasError = true;
-    }
-    this._logger.success("Lint");
-
-    // Phase 2: Clean
+    // Phase 1: Clean (must complete before build writes to dist)
     this._logger.start("Clean");
     await cleanDistFolders(this._cwd, this._allPackageNames);
     this._logger.success("Clean");
 
-    // Phase 3: Build (concurrent)
-    this._logger.start("Build");
+    // Phase 2: Lint + Build (concurrent)
+    this._logger.start("Lint + Build");
 
     // 빌드 작업 목록 생성
     const buildTasks: Array<() => Promise<void>> = [];
@@ -459,9 +449,16 @@ export class BuildOrchestrator {
       });
     }
 
-    // 모든 빌드를 병렬 실행
-    await Promise.allSettled(buildTasks.map((task) => task()));
-    this._logger.success("Build");
+    // Lint + 모든 빌드를 병렬 실행
+    const lintTask = async (): Promise<void> => {
+      await runLint(lintOptions);
+      // lint 에러가 있으면 process.exitCode가 1로 설정됨
+      if (process.exitCode === 1) {
+        state.hasError = true;
+      }
+    };
+    await Promise.allSettled([lintTask(), ...buildTasks.map((task) => task())]);
+    this._logger.success("Lint + Build");
 
     // 결과 출력
     const allDiagnostics: ts.Diagnostic[] = [];
