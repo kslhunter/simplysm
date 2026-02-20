@@ -1,7 +1,6 @@
 import { type Accessor, createMemo, createRoot } from "solid-js";
 import type { Component } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
-import type { SidebarMenuItem } from "../components/layout/sidebar/SidebarMenu";
 
 // ── 입력 타입 ──
 
@@ -40,6 +39,27 @@ export interface AppStructureSubPerm<TModule> {
 
 // ── 출력 타입 ──
 
+export interface AppMenu {
+  title: string;
+  href?: string;
+  icon?: Component<IconProps>;
+  children?: AppMenu[];
+}
+
+export interface AppPerm<TModule = string> {
+  title: string;
+  href?: string;
+  modules?: TModule[];
+  perms?: string[];
+  children?: AppPerm<TModule>[];
+}
+
+export interface AppFlatPerm<TModule = string> {
+  titleChain: string[];
+  code: string;
+  modulesChain: TModule[][];
+}
+
 export interface AppRoute {
   path: string;
   component: Component;
@@ -53,9 +73,11 @@ export interface AppFlatMenu {
 export interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
   routes: AppRoute[];
-  usableMenus: Accessor<SidebarMenuItem[]>;
+  usableMenus: Accessor<AppMenu[]>;
   usableFlatMenus: Accessor<AppFlatMenu[]>;
-  permRecord: Accessor<Record<string, boolean>>;
+  usablePerms: Accessor<AppPerm<TModule>[]>;
+  usableFlatPerms: Accessor<AppFlatPerm<TModule>[]>;
+  usablePermRecord: Accessor<Record<string, boolean>>;
   getTitleChainByHref(href: string): string[];
 }
 
@@ -84,6 +106,24 @@ function checkModules<TModule>(
 
   return true;
 }
+
+function checkModulesChain<TModule>(
+  modulesChain: TModule[][],
+  requiredModulesChain: TModule[][],
+  usableModules: TModule[] | undefined,
+): boolean {
+  if (usableModules === undefined) return true;
+
+  for (const modules of modulesChain) {
+    if (!checkModules(modules, undefined, usableModules)) return false;
+  }
+  for (const requiredModules of requiredModulesChain) {
+    if (!checkModules(undefined, requiredModules, usableModules)) return false;
+  }
+  return true;
+}
+
+// ── Routes ──
 
 function collectRoutes<TModule>(
   items: AppStructureItem<TModule>[],
@@ -114,13 +154,15 @@ function extractRoutes<TModule>(items: AppStructureItem<TModule>[]): AppRoute[] 
   return routes;
 }
 
+// ── Menus ──
+
 function buildMenus<TModule>(
   items: AppStructureItem<TModule>[],
   basePath: string,
   usableModules: TModule[] | undefined,
   permRecord: Record<string, boolean>,
-): SidebarMenuItem[] {
-  const result: SidebarMenuItem[] = [];
+): AppMenu[] {
+  const result: AppMenu[] = [];
 
   for (const item of items) {
     if (!checkModules(item.modules, item.requiredModules, usableModules)) continue;
@@ -143,7 +185,7 @@ function buildMenus<TModule>(
   return result;
 }
 
-function flattenMenus(menus: SidebarMenuItem[], titleChain: string[] = []): AppFlatMenu[] {
+function flattenMenus(menus: AppMenu[], titleChain: string[] = []): AppFlatMenu[] {
   const result: AppFlatMenu[] = [];
 
   for (const menu of menus) {
@@ -158,6 +200,144 @@ function flattenMenus(menus: SidebarMenuItem[], titleChain: string[] = []): AppF
 
   return result;
 }
+
+// ── Perms ──
+
+function buildPerms<TModule>(
+  items: AppStructureItem<TModule>[],
+  basePath: string,
+  usableModules: TModule[] | undefined,
+): AppPerm<TModule>[] {
+  const result: AppPerm<TModule>[] = [];
+
+  for (const item of items) {
+    if (!checkModules(item.modules, item.requiredModules, usableModules)) continue;
+
+    const href = basePath + "/" + item.code;
+
+    if (isGroupItem(item)) {
+      const children = buildPerms(item.children, href, usableModules);
+      result.push({
+        title: item.title,
+        modules: item.modules,
+        children,
+      });
+    } else {
+      result.push({
+        title: item.title,
+        href,
+        modules: item.modules,
+        perms: item.perms,
+        children: item.subPerms
+          ?.filter((sp) => checkModules(sp.modules, sp.requiredModules, usableModules))
+          .map((sp) => ({
+            title: sp.title,
+            href: href + "/" + sp.code,
+            modules: sp.modules,
+            perms: sp.perms as string[],
+          })),
+      });
+    }
+  }
+
+  return result;
+}
+
+function collectFlatPerms<TModule>(
+  items: AppStructureItem<TModule>[],
+  usableModules: TModule[] | undefined,
+): AppFlatPerm<TModule>[] {
+  const results: AppFlatPerm<TModule>[] = [];
+
+  interface QueueItem {
+    item: AppStructureItem<TModule>;
+    titleChain: string[];
+    codePath: string;
+    modulesChain: TModule[][];
+    requiredModulesChain: TModule[][];
+  }
+
+  const queue: QueueItem[] = items.map((item) => ({
+    item,
+    titleChain: [],
+    codePath: "",
+    modulesChain: [],
+    requiredModulesChain: [],
+  }));
+
+  while (queue.length > 0) {
+    const { item, titleChain, codePath, modulesChain, requiredModulesChain } = queue.shift()!;
+
+    const currTitleChain = [...titleChain, item.title];
+    const currCodePath = codePath + "/" + item.code;
+    const currModulesChain: TModule[][] = item.modules
+      ? [...modulesChain, item.modules]
+      : modulesChain;
+    const currRequiredModulesChain: TModule[][] = item.requiredModules
+      ? [...requiredModulesChain, item.requiredModules]
+      : requiredModulesChain;
+
+    if (!checkModulesChain(currModulesChain, currRequiredModulesChain, usableModules)) continue;
+
+    if (isGroupItem(item)) {
+      for (const child of item.children) {
+        queue.push({
+          item: child,
+          titleChain: currTitleChain,
+          codePath: currCodePath,
+          modulesChain: currModulesChain,
+          requiredModulesChain: currRequiredModulesChain,
+        });
+      }
+    } else {
+      if (item.perms) {
+        for (const perm of item.perms) {
+          results.push({
+            titleChain: currTitleChain,
+            code: currCodePath + "/" + perm,
+            modulesChain: currModulesChain,
+          });
+        }
+      }
+
+      if (item.subPerms) {
+        for (const subPerm of item.subPerms) {
+          if (!checkModules(subPerm.modules, subPerm.requiredModules, usableModules)) continue;
+
+          const subModulesChain: TModule[][] = subPerm.modules
+            ? [...currModulesChain, subPerm.modules]
+            : currModulesChain;
+
+          for (const perm of subPerm.perms) {
+            results.push({
+              titleChain: currTitleChain,
+              code: currCodePath + "/" + subPerm.code + "/" + perm,
+              modulesChain: subModulesChain,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
+function filterPermRecord<TModule>(
+  permRecord: Record<string, boolean>,
+  flatPerms: AppFlatPerm<TModule>[],
+): Record<string, boolean> {
+  const validCodes = new Set(flatPerms.map((fp) => fp.code));
+  const result: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(permRecord)) {
+    if (validCodes.has(key)) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+// ── Info ──
 
 function findItemChainByCodes<TModule>(
   items: AppStructureItem<TModule>[],
@@ -189,7 +369,7 @@ export function createAppStructure<TModule>(opts: {
 
   const memos = createRoot(() => {
     const usableMenus = createMemo(() => {
-      const menus: SidebarMenuItem[] = [];
+      const menus: AppMenu[] = [];
       for (const top of opts.items) {
         if (isGroupItem(top)) {
           menus.push(
@@ -202,7 +382,19 @@ export function createAppStructure<TModule>(opts: {
 
     const usableFlatMenus = createMemo(() => flattenMenus(usableMenus()));
 
-    return { usableMenus, usableFlatMenus };
+    const usablePerms = createMemo(() =>
+      buildPerms(opts.items, "", opts.usableModules?.()),
+    );
+
+    const usableFlatPerms = createMemo(() =>
+      collectFlatPerms(opts.items, opts.usableModules?.()),
+    );
+
+    const usablePermRecord = createMemo(() =>
+      filterPermRecord(permRecord(), usableFlatPerms()),
+    );
+
+    return { usableMenus, usableFlatMenus, usablePerms, usableFlatPerms, usablePermRecord };
   });
 
   return {
@@ -210,7 +402,9 @@ export function createAppStructure<TModule>(opts: {
     routes,
     usableMenus: memos.usableMenus,
     usableFlatMenus: memos.usableFlatMenus,
-    permRecord,
+    usablePerms: memos.usablePerms,
+    usableFlatPerms: memos.usableFlatPerms,
+    usablePermRecord: memos.usablePermRecord,
     getTitleChainByHref(href: string): string[] {
       const codes = href.split("/").filter(Boolean);
       return findItemChainByCodes(opts.items, codes).map((item) => item.title);

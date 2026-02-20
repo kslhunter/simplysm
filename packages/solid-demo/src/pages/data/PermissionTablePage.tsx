@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
-import { type PermissionItem, PermissionTable, Topbar } from "@simplysm/solid";
+import { type AppPerm, PermissionTable, Topbar } from "@simplysm/solid";
 
-const demoItems: PermissionItem[] = [
+const demoItems: AppPerm[] = [
   {
     title: "사용자 관리",
     href: "/user",
