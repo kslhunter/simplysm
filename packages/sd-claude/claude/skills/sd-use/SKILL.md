@@ -31,6 +31,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-* skill or agen
 | `sd-check` | Verify code — typecheck, lint, tests |
 | `sd-commit` | Create a git commit |
 | `sd-readme` | Update a package README.md |
+| `sd-discuss` | Evaluate code design decisions against industry standards and project conventions |
 | `sd-api-name-review` | Review public API naming consistency |
 | `sd-worktree` | Start new work in branch isolation |
 | `sd-skill` | Create or edit skills |
