@@ -6,7 +6,6 @@ import type {
   NullableQueryableRecord,
   QueryableColumns,
   QueryableRecord,
-  QueryableWriteRecord,
 } from "../../src/exec/queryable";
 
 describe("NullableQueryableRecord type inference", () => {
@@ -73,11 +72,11 @@ describe("NullableQueryableRecord type inference", () => {
     expect(true).toBe(true);
   });
 
-  it("QueryableWriteRecord preserves optional modifier from source properties", () => {
+  it("QueryableRecord preserves optional modifier for write operations", () => {
     type OptionalData = { id?: number; name: string };
-    type WriteResult = QueryableWriteRecord<OptionalData>;
+    type WriteResult = QueryableRecord<OptionalData>;
 
-    // QueryableWriteRecord preserves optional keys (for update/insert operations)
+    // QueryableRecord preserves optional keys (for update/insert operations)
     expectTypeOf<Required<WriteResult>["id"]>().toMatchTypeOf<{ $infer: number | undefined }>();
     expectTypeOf<WriteResult["name"]>().toMatchTypeOf<{ $infer: string }>();
 
