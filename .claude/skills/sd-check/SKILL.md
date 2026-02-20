@@ -1,7 +1,7 @@
 ---
 name: sd-check
 description: Use when verifying code quality via typecheck, lint, and tests - before deployment, PR creation, after code changes, or when type errors, lint violations, or test failures are suspected. Applies to whole project or specific paths.
-allowed-tools: Bash(node .claude/skills/sd-check/env-check.mjs)
+allowed-tools: Bash(node .claude/skills/sd-check/env-check.mjs), Bash(pnpm lint:fix)
 ---
 
 # sd-check
