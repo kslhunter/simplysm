@@ -213,7 +213,7 @@ describe("SELECT - JOIN", () => {
     });
   });
 
-  it("다단계 join(Single)", () => {
+  describe("다단계 join(Single)", () => {
     const db = createTestDb();
     const def = db
       .post()
@@ -227,70 +227,129 @@ describe("SELECT - JOIN", () => {
       )
       .getSelectQueryDef();
 
-    expect(def).toEqual({
-      type: "select",
-      as: "T1",
-      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
-      select: {
-        "id": { type: "column", path: ["T1", "id"] },
-        "userId": { type: "column", path: ["T1", "userId"] },
-        "title": { type: "column", path: ["T1", "title"] },
-        "content": { type: "column", path: ["T1", "content"] },
-        "viewCount": { type: "column", path: ["T1", "viewCount"] },
-        "publishedAt": { type: "column", path: ["T1", "publishedAt"] },
-        "user.id": { type: "column", path: ["T1.user", "id"] },
-        "user.name": { type: "column", path: ["T1.user", "name"] },
-        "user.email": { type: "column", path: ["T1.user", "email"] },
-        "user.age": { type: "column", path: ["T1.user", "age"] },
-        "user.isActive": { type: "column", path: ["T1.user", "isActive"] },
-        "user.companyId": { type: "column", path: ["T1.user", "companyId"] },
-        "user.createdAt": { type: "column", path: ["T1.user", "createdAt"] },
-        "user.company.id": { type: "column", path: ["T1.user", "company.id"] },
-        "user.company.name": { type: "column", path: ["T1.user", "company.name"] },
-        "user.company.foundedAt": { type: "column", path: ["T1.user", "company.foundedAt"] },
-      },
-      joins: [
-        {
-          type: "select",
-          as: "T1.user",
-          from: { database: "TestDb", schema: "TestSchema", name: "User" },
-          isSingle: true,
-          select: {
-            "id": { type: "column", path: ["T1.user", "id"] },
-            "name": { type: "column", path: ["T1.user", "name"] },
-            "email": { type: "column", path: ["T1.user", "email"] },
-            "age": { type: "column", path: ["T1.user", "age"] },
-            "isActive": { type: "column", path: ["T1.user", "isActive"] },
-            "companyId": { type: "column", path: ["T1.user", "companyId"] },
-            "createdAt": { type: "column", path: ["T1.user", "createdAt"] },
-            "company.id": { type: "column", path: ["T1.user.company", "id"] },
-            "company.name": { type: "column", path: ["T1.user.company", "name"] },
-            "company.foundedAt": { type: "column", path: ["T1.user.company", "foundedAt"] },
-          },
-          where: [
-            {
-              type: "eq",
-              source: { type: "column", path: ["T1.user", "id"] },
-              target: { type: "column", path: ["T1", "userId"] },
-            },
-          ],
-          joins: [
-            {
-              type: "select",
-              as: "T1.user.company",
-              from: { database: "TestDb", schema: "TestSchema", name: "Company" },
-              isSingle: true,
-              where: [
-                {
-                  type: "eq",
-                  source: { type: "column", path: ["T1.user.company", "id"] },
-                  target: { type: "column", path: ["T1.user", "companyId"] },
-                },
-              ],
-            },
-          ],
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "select",
+        as: "T1",
+        from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+        select: {
+          "id": { type: "column", path: ["T1", "id"] },
+          "userId": { type: "column", path: ["T1", "userId"] },
+          "title": { type: "column", path: ["T1", "title"] },
+          "content": { type: "column", path: ["T1", "content"] },
+          "viewCount": { type: "column", path: ["T1", "viewCount"] },
+          "publishedAt": { type: "column", path: ["T1", "publishedAt"] },
+          "user.id": { type: "column", path: ["T1.user", "id"] },
+          "user.name": { type: "column", path: ["T1.user", "name"] },
+          "user.email": { type: "column", path: ["T1.user", "email"] },
+          "user.age": { type: "column", path: ["T1.user", "age"] },
+          "user.isActive": { type: "column", path: ["T1.user", "isActive"] },
+          "user.companyId": { type: "column", path: ["T1.user", "companyId"] },
+          "user.createdAt": { type: "column", path: ["T1.user", "createdAt"] },
+          "user.company.id": { type: "column", path: ["T1.user", "company.id"] },
+          "user.company.name": { type: "column", path: ["T1.user", "company.name"] },
+          "user.company.foundedAt": { type: "column", path: ["T1.user", "company.foundedAt"] },
         },
-      ],
+        joins: [
+          {
+            type: "select",
+            as: "T1.user",
+            from: { database: "TestDb", schema: "TestSchema", name: "User" },
+            isSingle: true,
+            select: {
+              "id": { type: "column", path: ["T1.user", "id"] },
+              "name": { type: "column", path: ["T1.user", "name"] },
+              "email": { type: "column", path: ["T1.user", "email"] },
+              "age": { type: "column", path: ["T1.user", "age"] },
+              "isActive": { type: "column", path: ["T1.user", "isActive"] },
+              "companyId": { type: "column", path: ["T1.user", "companyId"] },
+              "createdAt": { type: "column", path: ["T1.user", "createdAt"] },
+              "company.id": { type: "column", path: ["T1.user.company", "id"] },
+              "company.name": { type: "column", path: ["T1.user.company", "name"] },
+              "company.foundedAt": { type: "column", path: ["T1.user.company", "foundedAt"] },
+            },
+            where: [
+              {
+                type: "eq",
+                source: { type: "column", path: ["T1.user", "id"] },
+                target: { type: "column", path: ["T1", "userId"] },
+              },
+            ],
+            joins: [
+              {
+                type: "select",
+                as: "T1.user.company",
+                from: { database: "TestDb", schema: "TestSchema", name: "Company" },
+                isSingle: true,
+                where: [
+                  {
+                    type: "eq",
+                    source: { type: "column", path: ["T1.user.company", "id"] },
+                    target: { type: "column", path: ["T1.user", "companyId"] },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.joinSingleMultiLevel[dialect]);
+    });
+  });
+
+  describe("joinSingle + LATERAL (orderBy + top)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .joinSingle("latestPost", (qr, c) =>
+        qr
+          .from(Post)
+          .where((item) => [expr.eq(item.userId, c.id)])
+          .orderBy((item) => item.publishedAt, "DESC")
+          .top(1),
+      )
+      .getSelectQueryDef();
+
+    it("QueryDef 검증 - orderBy, top 포함", () => {
+      const join = def.joins![0];
+      expect(join.orderBy).toEqual([
+        [{ type: "column", path: ["T1.latestPost", "publishedAt"] }, "DESC"],
+      ]);
+      expect(join.top).toBe(1);
+      expect(join.isSingle).toBe(true);
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.joinSingleLateral[dialect]);
+    });
+  });
+
+  describe("joinSingle + LATERAL (select 집계)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .joinSingle("postStats", (qr, c) =>
+        qr
+          .from(Post)
+          .where((item) => [expr.eq(item.userId, c.id)])
+          .select(() => ({ cnt: expr.count() })),
+      )
+      .getSelectQueryDef();
+
+    it("QueryDef 검증 - select 포함", () => {
+      const join = def.joins![0];
+      expect(join.select).toBeDefined();
+      expect(join.select!["cnt"]).toEqual({ type: "count" });
+    });
+
+    it.each(dialects)("[%s] SQL 검증", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.joinSingleLateralAgg[dialect]);
     });
   });
 

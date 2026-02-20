@@ -74,18 +74,21 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
   protected renderJoin(join: SelectQueryDefJoin): string {
     const alias = this.expr.wrap(join.as);
+
+    // LATERAL JOIN 필요 여부 감지
+    if (this.needsLateral(join)) {
+      // from이 배열(UNION ALL)이면 renderFrom(join.from),
+      // 그 외(orderBy, top, select 등)면 renderFrom(join)으로 서브쿼리 생성
+      const from = Array.isArray(join.from) ? this.renderFrom(join.from) : this.renderFrom(join);
+      return ` LEFT OUTER JOIN LATERAL ${from} AS ${alias} ON TRUE`;
+    }
+
+    // 일반 JOIN
     const from = this.renderFrom(join.from);
     const where =
       join.where != null && join.where.length > 0
         ? ` ON ${this.expr.renderWhere(join.where)}`
         : " ON TRUE";
-
-    // LATERAL JOIN 필요 여부 감지
-    if (this.needsLateral(join)) {
-      return ` LEFT OUTER JOIN LATERAL ${from} AS ${alias}${where}`;
-    }
-
-    // 일반 JOIN
     return ` LEFT OUTER JOIN ${from} AS ${alias}${where}`;
   }
 

@@ -105,7 +105,23 @@ export abstract class QueryBuilderBase {
   /** 단일 JOIN 렌더링 (dialect별로 다르므로 abstract) */
   protected abstract renderJoin(join: SelectQueryDefJoin): string;
 
-  /** JOIN이 LATERAL/CROSS APPLY가 필요한지 감지 */
+  /**
+   * JOIN이 LATERAL/CROSS APPLY가 필요한지 감지
+   *
+   * 기본 JOIN 속성(type, from, as, where, isSingle)만 있으면 일반 JOIN으로 처리.
+   * 그 외 속성이 있으면 서브쿼리가 필요하므로 LATERAL JOIN 사용:
+   *
+   * - select: 컬럼 가공/집계가 필요 (일반 JOIN은 테이블 전체를 참조)
+   * - joins: 중첩 JOIN을 서브쿼리 내부에서 처리
+   * - orderBy, top, limit: 정렬/제한을 서브쿼리 내부에서 적용
+   * - groupBy, having: 집계를 서브쿼리 내부에서 수행
+   * - distinct: 중복 제거를 서브쿼리 내부에서 적용
+   * - from (배열): UNION ALL 패턴
+   *
+   * 주의: select와 joins는 중첩 join 시 자동 생성되므로 basicJoinProps에 포함하지 않음.
+   * 사용자가 직접 .select()를 호출하지 않아도 내부 .joinSingle() 호출로 인해
+   * select/joins가 추가될 수 있으며, 이 경우에도 서브쿼리가 필요함.
+   */
   protected needsLateral(join: SelectQueryDefJoin): boolean {
     // from이 배열이면 무조건 LATERAL (UNION ALL 패턴)
     if (Array.isArray(join.from)) {
