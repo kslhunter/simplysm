@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { Router } from "@solidjs/router";
-import { Sidebar, type SidebarMenuItem } from "../../../../src";
+import { Sidebar, type AppMenu } from "../../../../src";
 
 // Mock pathname signal
 import { createSignal } from "solid-js";
@@ -41,7 +41,7 @@ describe("SidebarMenu", () => {
     vi.restoreAllMocks();
   });
 
-  const renderWithRouter = (menus: SidebarMenuItem[]) => {
+  const renderWithRouter = (menus: AppMenu[]) => {
     return render(() => (
       <Router base="" root={(props) => props.children}>
         {[
@@ -56,7 +56,7 @@ describe("SidebarMenu", () => {
 
   describe("렌더링", () => {
     it("메뉴 아이템을 렌더링", () => {
-      const menus: SidebarMenuItem[] = [
+      const menus: AppMenu[] = [
         { title: "대시보드", href: "/dashboard" },
         { title: "설정", href: "/settings" },
       ];
@@ -68,7 +68,7 @@ describe("SidebarMenu", () => {
     });
 
     it("MENU 헤더를 표시", () => {
-      const menus: SidebarMenuItem[] = [{ title: "홈", href: "/" }];
+      const menus: AppMenu[] = [{ title: "홈", href: "/" }];
 
       const { getByText } = renderWithRouter(menus);
 
@@ -76,7 +76,7 @@ describe("SidebarMenu", () => {
     });
 
     it("중첩 메뉴를 렌더링", () => {
-      const menus: SidebarMenuItem[] = [
+      const menus: AppMenu[] = [
         {
           title: "설정",
           children: [
@@ -96,7 +96,7 @@ describe("SidebarMenu", () => {
         <svg data-testid="mock-icon" class={props.class} />
       );
 
-      const menus: SidebarMenuItem[] = [{ title: "대시보드", href: "/dashboard", icon: MockIcon }];
+      const menus: AppMenu[] = [{ title: "대시보드", href: "/dashboard", icon: MockIcon }];
 
       const { container } = renderWithRouter(menus);
 
@@ -106,7 +106,7 @@ describe("SidebarMenu", () => {
 
   describe("링크 동작", () => {
     it("내부 링크 클릭 시 SPA 라우팅", () => {
-      const menus: SidebarMenuItem[] = [{ title: "대시보드", href: "/dashboard" }];
+      const menus: AppMenu[] = [{ title: "대시보드", href: "/dashboard" }];
 
       const { getByText } = renderWithRouter(menus);
 
@@ -116,7 +116,7 @@ describe("SidebarMenu", () => {
     });
 
     it("외부 링크 클릭 시 새 탭에서 열기", () => {
-      const menus: SidebarMenuItem[] = [{ title: "외부 링크", href: "https://example.com" }];
+      const menus: AppMenu[] = [{ title: "외부 링크", href: "https://example.com" }];
 
       const { getByText } = renderWithRouter(menus);
 
@@ -132,7 +132,7 @@ describe("SidebarMenu", () => {
 
   describe("펼침/접힘 동작", () => {
     it("자식 있는 메뉴 클릭 시 펼침 토글", () => {
-      const menus: SidebarMenuItem[] = [
+      const menus: AppMenu[] = [
         {
           title: "설정",
           children: [{ title: "프로필", href: "/settings/profile" }],
@@ -156,7 +156,7 @@ describe("SidebarMenu", () => {
       // 초기 pathname을 중첩 메뉴 경로로 설정
       setMockPathname("/settings/profile");
 
-      const menus: SidebarMenuItem[] = [
+      const menus: AppMenu[] = [
         { title: "대시보드", href: "/dashboard" },
         {
           title: "설정",
@@ -175,7 +175,7 @@ describe("SidebarMenu", () => {
     });
 
     it("pathname 변경 시 해당 경로의 부모 메뉴가 펼쳐짐", () => {
-      const menus: SidebarMenuItem[] = [
+      const menus: AppMenu[] = [
         { title: "대시보드", href: "/dashboard" },
         {
           title: "설정",
@@ -199,7 +199,7 @@ describe("SidebarMenu", () => {
 
   describe("스타일 병합", () => {
     it("사용자 정의 class가 병합된다", () => {
-      const menus: SidebarMenuItem[] = [{ title: "홈", href: "/" }];
+      const menus: AppMenu[] = [{ title: "홈", href: "/" }];
 
       const { container } = render(() => (
         <Router base="" root={(props) => props.children}>

@@ -9,7 +9,7 @@ import { SidebarMenu } from "./SidebarMenu";
 import { SidebarUser } from "./SidebarUser";
 
 export type { SidebarContainerProps } from "./SidebarContainer";
-export type { SidebarMenuItem, SidebarMenuProps } from "./SidebarMenu";
+export type { SidebarMenuProps } from "./SidebarMenu";
 export type { SidebarUserMenu, SidebarUserProps } from "./SidebarUser";
 
 const baseClass = clsx(

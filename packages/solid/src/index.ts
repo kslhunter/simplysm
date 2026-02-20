@@ -185,6 +185,9 @@ export type {
   AppStructureSubPerm,
   AppRoute,
   AppFlatMenu,
+  AppMenu,
+  AppPerm,
+  AppFlatPerm,
   AppStructure,
 } from "./helpers/createAppStructure";
 

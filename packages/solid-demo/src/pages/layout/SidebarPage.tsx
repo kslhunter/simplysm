@@ -4,11 +4,11 @@ import {
   Sidebar,
   Topbar,
   useSidebarContext,
-  type SidebarMenuItem,
+  type AppMenu,
 } from "@simplysm/solid";
 import { IconFolder, IconHome, IconMenu2, IconSettings } from "@tabler/icons-solidjs";
 
-const sampleMenuItems: SidebarMenuItem[] = [
+const sampleMenuItems: AppMenu[] = [
   { title: "홈", href: "#", icon: IconHome },
   {
     title: "문서",

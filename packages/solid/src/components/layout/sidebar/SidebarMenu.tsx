@@ -14,8 +14,8 @@ import {
 import { useLocation, useNavigate } from "@solidjs/router";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { IconProps } from "@tabler/icons-solidjs";
 import type { ComponentSize } from "../../../styles/tokens.styles";
+import type { AppMenu } from "../../../helpers/createAppStructure";
 import { Icon } from "../../display/Icon";
 import { List } from "../../data/list/List";
 import { ListItem } from "../../data/list/ListItem";
@@ -31,23 +31,16 @@ const headerClass = clsx(
   "tracking-wider",
 );
 
-export interface SidebarMenuItem {
-  title: string;
-  href?: string;
-  icon?: Component<IconProps>;
-  children?: SidebarMenuItem[];
-}
-
 export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   /**
    * 메뉴 아이템 배열
    */
-  menus: SidebarMenuItem[];
+  menus: AppMenu[];
 }
 
 // 내부 Context: 초기 펼침 상태 공유
 interface MenuContextValue {
-  initialOpenItems: Accessor<Set<SidebarMenuItem>>;
+  initialOpenItems: Accessor<Set<AppMenu>>;
 }
 
 const MenuContext = createContext<MenuContextValue>();
@@ -84,10 +77,10 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
 
   // 현재 pathname과 일치하는 메뉴의 부모들을 찾아 펼침 상태 계산
   const findSelectedPath = (
-    menus: SidebarMenuItem[],
+    menus: AppMenu[],
     pathname: string,
-    path: SidebarMenuItem[] = [],
-  ): SidebarMenuItem[] | null => {
+    path: AppMenu[] = [],
+  ): AppMenu[] | null => {
     for (const menu of menus) {
       const currentPath = [...path, menu];
       if (menu.href === pathname) {
@@ -106,7 +99,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
     const selectedPath = findSelectedPath(local.menus, location.pathname);
     return selectedPath
       ? new Set(selectedPath.slice(0, -1)) // 마지막 항목(선택된 메뉴)은 제외하고 부모들만 펼침
-      : new Set<SidebarMenuItem>();
+      : new Set<AppMenu>();
   });
 
   const getClassName = () => twMerge("flex-1 overflow-y-auto", local.class);
@@ -124,7 +117,7 @@ export const SidebarMenu: Component<SidebarMenuProps> = (props) => {
 };
 
 interface MenuItemProps {
-  menu: SidebarMenuItem;
+  menu: AppMenu;
   size?: ComponentSize;
 }
 

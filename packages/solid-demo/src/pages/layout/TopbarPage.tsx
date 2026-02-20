@@ -1,7 +1,7 @@
 import {
   Sidebar,
   Topbar,
-  type SidebarMenuItem,
+  type AppMenu,
   type TopbarMenuItem,
   type TopbarUserMenu,
 } from "@simplysm/solid";
@@ -61,7 +61,7 @@ const userMenus: TopbarUserMenu[] = [
 ];
 
 // Sidebar + Topbar 통합용 메뉴
-const sidebarMenus: SidebarMenuItem[] = [
+const sidebarMenus: AppMenu[] = [
   { title: "홈", href: "#", icon: IconHome },
   {
     title: "문서",

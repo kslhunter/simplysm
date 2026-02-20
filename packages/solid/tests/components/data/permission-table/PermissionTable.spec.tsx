@@ -6,12 +6,12 @@ import {
   collectAllPerms,
   filterByModules,
   changePermCheck,
-  type PermissionItem,
 } from "../../../../src/components/data/permission-table/PermissionTable";
+import type { AppPerm } from "../../../../src/helpers/createAppStructure";
 
 // --- 테스트 데이터 ---
 
-const sampleItems: PermissionItem[] = [
+const sampleItems: AppPerm[] = [
   {
     title: "사용자 관리",
     href: "/user",
@@ -48,7 +48,7 @@ describe("collectAllPerms", () => {
   });
 
   it("중첩된 아이템의 perms도 수집한다", () => {
-    const items: PermissionItem[] = [
+    const items: AppPerm[] = [
       {
         title: "루트",
         children: [
@@ -91,7 +91,7 @@ describe("filterByModules", () => {
   });
 
   it("자식이 전부 필터링된 그룹 노드(perms 없음)도 제거된다", () => {
-    const items: PermissionItem[] = [
+    const items: AppPerm[] = [
       {
         title: "그룹",
         // perms 없음 → 그룹 노드
