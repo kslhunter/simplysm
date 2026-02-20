@@ -104,7 +104,9 @@ export function extractPackages(
 function hasNonPackageFiles(fileNames: string[], cwd: string): boolean {
   return fileNames.some((f) => {
     const relativePath = pathPosix(path.relative(cwd, f));
-    return !relativePath.startsWith("packages/");
+    if (!relativePath.startsWith("packages/")) return true;
+    // 패키지 루트 직속 파일(설정 파일)도 non-package로 처리
+    return relativePath.split("/").length === 3;
   });
 }
 

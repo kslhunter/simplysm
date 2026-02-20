@@ -118,5 +118,10 @@ export function getPackageSourceFiles(
  * 패키지의 전체 파일 목록 가져오기 (src + tests 포함)
  */
 export function getPackageFiles(pkgDir: string, parsedConfig: ts.ParsedCommandLine): string[] {
-  return parsedConfig.fileNames.filter((f) => pathIsChildPath(f, pkgDir));
+  return parsedConfig.fileNames.filter((f) => {
+    if (!pathIsChildPath(f, pkgDir)) return false;
+    // 패키지 루트 직속 파일(설정 파일)은 제외 — 기타 태스크에서 프로젝트 루트 파일과 동일하게 처리
+    const relative = path.relative(pkgDir, f);
+    return path.dirname(relative) !== ".";
+  });
 }

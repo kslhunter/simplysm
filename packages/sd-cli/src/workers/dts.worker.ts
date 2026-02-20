@@ -218,11 +218,17 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
         shouldEmit ? "dts.tsbuildinfo" : `typecheck-${info.env}.tsbuildinfo`,
       );
     } else {
-      // non-package 모드: packages/ 제외한 나머지 파일 타입체크
+      // non-package 모드: 프로젝트 루트 파일 + 패키지 루트 설정 파일 타입체크
       const packagesDir = path.join(info.cwd, "packages");
-      rootFiles = parsedConfig.fileNames.filter((f) => !pathIsChildPath(f, packagesDir));
+      const isNonPackageFile = (fileName: string): boolean => {
+        if (!pathIsChildPath(fileName, packagesDir)) return true;
+        // 패키지 루트 직속 파일(설정 파일) 포함: packages/{pkg}/file.ts
+        const relative = path.relative(packagesDir, fileName);
+        return relative.split(path.sep).length === 2;
+      };
+      rootFiles = parsedConfig.fileNames.filter(isNonPackageFile);
       baseOptions = parsedConfig.options;
-      diagnosticFilter = (d) => d.file == null || !pathIsChildPath(d.file.fileName, packagesDir);
+      diagnosticFilter = (d) => d.file == null || isNonPackageFile(d.file.fileName);
       tsBuildInfoFile = path.join(info.cwd, ".cache", "typecheck-root.tsbuildinfo");
     }
 
