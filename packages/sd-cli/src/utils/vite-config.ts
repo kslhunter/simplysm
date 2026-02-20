@@ -348,6 +348,10 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
   } else {
     // dev 모드
     config.server = {
+      // serverPort === 0: 서버 연결 클라이언트 (proxy 대상)
+      // → host를 127.0.0.1로 명시하여 IPv4 바인딩 보장
+      //   (Windows에서 localhost가 ::1(IPv6)로 해석되면 proxy가 127.0.0.1로 연결 시 ECONNREFUSED 발생)
+      host: serverPort === 0 ? "127.0.0.1" : undefined,
       port: serverPort === 0 ? undefined : serverPort,
       strictPort: serverPort !== 0 && serverPort !== undefined,
     };

@@ -2,6 +2,7 @@ import proxy from "@fastify/http-proxy";
 import { createWorker } from "@simplysm/core-node";
 import { consola } from "consola";
 import net from "net";
+import { pathToFileURL } from "url";
 import { registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
@@ -108,7 +109,7 @@ async function findAvailablePort(startPort: number, maxRetries = 20): Promise<nu
 async function start(info: ServerRuntimeStartInfo): Promise<void> {
   try {
     // main.js import (server 인스턴스를 export해야 함)
-    const module = await import(info.mainJsPath);
+    const module = await import(pathToFileURL(info.mainJsPath).href);
     const server = module.server;
 
     if (server == null) {

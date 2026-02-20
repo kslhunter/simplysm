@@ -2,6 +2,8 @@ import { bytesFromHex, DateOnly, DateTime, objEqual, Time, Uuid } from "@simplys
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
 
+declare function setImmediate(callback: () => void): void;
+
 // ============================================
 // Type Parsers
 // ============================================
@@ -116,6 +118,12 @@ function isEmptyObject(obj: Record<string, unknown>): boolean {
 /** yield 간격: N개 처리마다 이벤트 루프 양보 */
 const YIELD_INTERVAL = 100;
 
+/** 이벤트 루프 양보: Node.js에서는 setImmediate, 브라우저에서는 setTimeout 폴백 */
+const yieldToEventLoop: () => Promise<void> =
+  typeof setImmediate !== "undefined"
+    ? () => new Promise<void>((resolve) => setImmediate(resolve))
+    : () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 /**
  * DB 쿼리 결과를 ResultMeta를 통해 TypeScript 객체로 변환
  *
@@ -183,7 +191,7 @@ async function parseSimpleRecords<TRecord>(
   for (let i = 0; i < rawResults.length; i++) {
     // yield 처리
     if (i > 0 && i % YIELD_INTERVAL === 0) {
-      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      await yieldToEventLoop();
     }
 
     const parsed = flatToNested(rawResults[i], columns);
@@ -221,7 +229,7 @@ async function parseJoinedRecords<TRecord>(
   const nestedRecords: Record<string, unknown>[] = [];
   for (let i = 0; i < rawResults.length; i++) {
     if (i > 0 && i % YIELD_INTERVAL === 0) {
-      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      await yieldToEventLoop();
     }
     nestedRecords.push(flatToNested(rawResults[i], meta.columns));
   }
