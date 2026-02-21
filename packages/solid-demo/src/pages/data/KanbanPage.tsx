@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js";
-import { Button, Icon, Kanban, type KanbanDropInfo, Topbar } from "@simplysm/solid";
+import { Button, Icon, Kanban, type KanbanDropInfo } from "@simplysm/solid";
 import { IconPlus } from "@tabler/icons-solidjs";
 
 interface CardData {
@@ -92,137 +92,132 @@ export default function KanbanPage() {
   };
 
   return (
-    <Topbar.Container>
-      <Topbar>
-        <h1 class="m-0 text-base">Kanban</h1>
-      </Topbar>
-      <div class="flex-1 overflow-auto p-6">
-        <div class="space-y-8">
-          <section>
-            <h2 class="mb-4 text-xl font-bold">DnD</h2>
-            <div class="h-[500px]">
-              <Kanban onDrop={handleDrop}>
-                <For each={lanes()}>
-                  {(lane) => (
-                    <Kanban.Lane value={lane.id}>
-                      <Kanban.LaneTitle>
-                        {lane.title} ({lane.cards.length})
-                      </Kanban.LaneTitle>
-                      <Kanban.LaneTools>
-                        <Button size="sm" theme="primary" variant="ghost" class="size-8">
-                          <Icon icon={IconPlus} />
-                        </Button>
-                      </Kanban.LaneTools>
-                      <For each={lane.cards}>
-                        {(card) => (
-                          <Kanban.Card value={card.id} contentClass="p-2">
-                            {card.title}
-                          </Kanban.Card>
-                        )}
-                      </For>
-                    </Kanban.Lane>
-                  )}
-                </For>
-              </Kanban>
-            </div>
-          </section>
-
-          <section>
-            <h2 class="mb-4 text-xl font-bold">draggable 제어</h2>
-            <div class="h-[300px]">
-              <Kanban onDrop={handleDrop}>
-                <Kanban.Lane value="mixed">
-                  <Kanban.LaneTitle>드래그 혼합</Kanban.LaneTitle>
-                  <Kanban.Card value={100} contentClass="p-2">
-                    드래그 가능 (기본)
-                  </Kanban.Card>
-                  <Kanban.Card value={101} draggable={false} contentClass="p-2">
-                    드래그 불가
-                  </Kanban.Card>
-                </Kanban.Lane>
-                <Kanban.Lane value="empty">
-                  <Kanban.LaneTitle>빈 레인</Kanban.LaneTitle>
-                </Kanban.Lane>
-              </Kanban>
-            </div>
-          </section>
-
-          <section>
-            <h2 class="mb-4 text-xl font-bold">접기/펼치기 + Busy</h2>
-            <div class="h-[400px]">
-              <Kanban onDrop={handleDrop}>
-                <Kanban.Lane value="collapsible-lane" collapsible>
-                  <Kanban.LaneTitle>접을 수 있는 레인</Kanban.LaneTitle>
+    <div class="space-y-8 p-6">
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">DnD</h2>
+        <div class="h-[500px]">
+          <Kanban onDrop={handleDrop}>
+            <For each={lanes()}>
+              {(lane) => (
+                <Kanban.Lane value={lane.id}>
+                  <Kanban.LaneTitle>
+                    {lane.title} ({lane.cards.length})
+                  </Kanban.LaneTitle>
                   <Kanban.LaneTools>
                     <Button size="sm" theme="primary" variant="ghost" class="size-8">
                       <Icon icon={IconPlus} />
                     </Button>
                   </Kanban.LaneTools>
-                  <Kanban.Card value={200} contentClass="p-2">
-                    카드 A
-                  </Kanban.Card>
-                  <Kanban.Card value={201} contentClass="p-2">
-                    카드 B
-                  </Kanban.Card>
+                  <For each={lane.cards}>
+                    {(card) => (
+                      <Kanban.Card value={card.id} contentClass="p-2">
+                        {card.title}
+                      </Kanban.Card>
+                    )}
+                  </For>
                 </Kanban.Lane>
-
-                <Kanban.Lane value="busy-lane" busy>
-                  <Kanban.LaneTitle>Busy 레인</Kanban.LaneTitle>
-                  <Kanban.Card value={210} contentClass="p-2">
-                    로딩 중...
-                  </Kanban.Card>
-                </Kanban.Lane>
-
-                <Kanban.Lane value="both-lane" collapsible busy>
-                  <Kanban.LaneTitle>접기 + Busy</Kanban.LaneTitle>
-                  <Kanban.Card value={220} contentClass="p-2">
-                    접어도 로딩 바가 보임
-                  </Kanban.Card>
-                </Kanban.Lane>
-              </Kanban>
-            </div>
-          </section>
-
-          <section>
-            <h2 class="mb-4 text-xl font-bold">선택</h2>
-            <p class="mb-2 text-sm text-base-500">
-              Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
-            </p>
-            <div class="mb-2 text-sm">
-              선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}
-            </div>
-            <div class="h-[500px]">
-              <Kanban
-                selectedValues={selected()}
-                onSelectedValuesChange={setSelected}
-                onDrop={handleDrop}
-              >
-                <For each={lanes()}>
-                  {(lane) => (
-                    <Kanban.Lane value={lane.id}>
-                      <Kanban.LaneTitle>
-                        {lane.title} ({lane.cards.length})
-                      </Kanban.LaneTitle>
-                      <Kanban.LaneTools>
-                        <Button size="sm" theme="primary" variant="ghost" class="size-8">
-                          <Icon icon={IconPlus} />
-                        </Button>
-                      </Kanban.LaneTools>
-                      <For each={lane.cards}>
-                        {(card) => (
-                          <Kanban.Card value={card.id} selectable draggable contentClass="p-2">
-                            {card.title}
-                          </Kanban.Card>
-                        )}
-                      </For>
-                    </Kanban.Lane>
-                  )}
-                </For>
-              </Kanban>
-            </div>
-          </section>
+              )}
+            </For>
+          </Kanban>
         </div>
-      </div>
-    </Topbar.Container>
+      </section>
+
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">draggable 제어</h2>
+        <div class="h-[300px]">
+          <Kanban onDrop={handleDrop}>
+            <Kanban.Lane value="mixed">
+              <Kanban.LaneTitle>드래그 혼합</Kanban.LaneTitle>
+              <Kanban.Card value={100} contentClass="p-2">
+                드래그 가능 (기본)
+              </Kanban.Card>
+              <Kanban.Card value={101} draggable={false} contentClass="p-2">
+                드래그 불가
+              </Kanban.Card>
+            </Kanban.Lane>
+            <Kanban.Lane value="empty">
+              <Kanban.LaneTitle>빈 레인</Kanban.LaneTitle>
+            </Kanban.Lane>
+          </Kanban>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          접기/펼치기 + Busy
+        </h2>
+        <div class="h-[400px]">
+          <Kanban onDrop={handleDrop}>
+            <Kanban.Lane value="collapsible-lane" collapsible>
+              <Kanban.LaneTitle>접을 수 있는 레인</Kanban.LaneTitle>
+              <Kanban.LaneTools>
+                <Button size="sm" theme="primary" variant="ghost" class="size-8">
+                  <Icon icon={IconPlus} />
+                </Button>
+              </Kanban.LaneTools>
+              <Kanban.Card value={200} contentClass="p-2">
+                카드 A
+              </Kanban.Card>
+              <Kanban.Card value={201} contentClass="p-2">
+                카드 B
+              </Kanban.Card>
+            </Kanban.Lane>
+
+            <Kanban.Lane value="busy-lane" busy>
+              <Kanban.LaneTitle>Busy 레인</Kanban.LaneTitle>
+              <Kanban.Card value={210} contentClass="p-2">
+                로딩 중...
+              </Kanban.Card>
+            </Kanban.Lane>
+
+            <Kanban.Lane value="both-lane" collapsible busy>
+              <Kanban.LaneTitle>접기 + Busy</Kanban.LaneTitle>
+              <Kanban.Card value={220} contentClass="p-2">
+                접어도 로딩 바가 보임
+              </Kanban.Card>
+            </Kanban.Lane>
+          </Kanban>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">선택</h2>
+        <p class="mb-2 text-sm text-base-500">
+          Shift+Click으로 카드 선택/해제. 레인 헤더의 체크박스로 전체 선택.
+        </p>
+        <div class="mb-2 text-sm">
+          선택된 카드: {selected().length > 0 ? selected().join(", ") : "(없음)"}
+        </div>
+        <div class="h-[500px]">
+          <Kanban
+            selectedValues={selected()}
+            onSelectedValuesChange={setSelected}
+            onDrop={handleDrop}
+          >
+            <For each={lanes()}>
+              {(lane) => (
+                <Kanban.Lane value={lane.id}>
+                  <Kanban.LaneTitle>
+                    {lane.title} ({lane.cards.length})
+                  </Kanban.LaneTitle>
+                  <Kanban.LaneTools>
+                    <Button size="sm" theme="primary" variant="ghost" class="size-8">
+                      <Icon icon={IconPlus} />
+                    </Button>
+                  </Kanban.LaneTools>
+                  <For each={lane.cards}>
+                    {(card) => (
+                      <Kanban.Card value={card.id} selectable draggable contentClass="p-2">
+                        {card.title}
+                      </Kanban.Card>
+                    )}
+                  </For>
+                </Kanban.Lane>
+              )}
+            </For>
+          </Kanban>
+        </div>
+      </section>
+    </div>
   );
 }
