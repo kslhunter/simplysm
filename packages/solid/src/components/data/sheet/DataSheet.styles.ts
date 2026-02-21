@@ -62,7 +62,7 @@ export const toolbarClass = clsx(
 export const fixedClass = "sticky";
 
 // 고정/비고정 경계 시각 효과 — 고정 컬럼의 마지막 셀에 적용
-export const fixedLastClass = clsx("border-r-2 border-r-base-300", "dark:border-r-base-700");
+export const fixedLastClass = clsx("border-r border-r-base-400", "dark:border-r-base-600");
 
 // 리사이저 핸들 (헤더 셀 우측 드래그 영역)
 export const resizerClass = clsx(

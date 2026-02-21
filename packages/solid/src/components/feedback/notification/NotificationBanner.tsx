@@ -8,7 +8,7 @@ import { themeTokens } from "../../../styles/tokens.styles";
 
 const baseClass = clsx(
   "fixed",
-  "top-4",
+  "top-8",
   "right-4",
   "z-50",
   "flex",
@@ -31,15 +31,9 @@ const themeClasses: Record<string, string> = {
 };
 
 const contentClass = clsx("flex flex-col", "gap-0.5", "min-w-0");
-const messageClass = clsx("text-sm", "opacity-90", "overflow-auto");
+const messageClass = clsx("opacity-90", "overflow-auto");
 const actionsClass = clsx("flex items-center", "gap-2", "shrink-0");
-const actionButtonClass = clsx(
-  "rounded",
-  "bg-white/20",
-  "px-3 py-1",
-  "text-sm",
-  "hover:bg-white/30",
-);
+const actionButtonClass = clsx("rounded", "bg-white/20", "px-3 py-1", "hover:bg-white/30");
 const dismissButtonClass = clsx("rounded", "p-1", "hover:bg-white/20");
 
 export const NotificationBanner: Component = () => {

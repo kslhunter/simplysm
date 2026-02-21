@@ -111,13 +111,16 @@ function applyFormat(value: string, format: string): string {
 function removeFormat(formattedValue: string, format: string): string {
   if (!formattedValue || !format) return formattedValue;
 
-  let result = "";
+  const separators = new Set<string>();
+  for (const ch of format) {
+    if (ch !== "X") separators.add(ch);
+  }
 
-  for (let i = 0; i < formattedValue.length; i++) {
-    if (i >= format.length || format[i] === "X") {
-      result += formattedValue[i];
+  let result = "";
+  for (const ch of formattedValue) {
+    if (!separators.has(ch)) {
+      result += ch;
     }
-    // 포맷 문자가 아닌 경우 (구분자) 스킵
   }
 
   return result;
@@ -294,7 +297,12 @@ export const TextInput: Component<TextInputProps> = (props) => {
         }
       >
         {/* inset 모드: dual-element overlay 패턴 */}
-        <div {...rest} data-text-field class={clsx("relative", local.class)} style={local.style}>
+        <div
+          {...rest}
+          data-text-field
+          class={clsx("relative", "[text-decoration:inherit]", local.class)}
+          style={local.style}
+        >
           <div
             data-text-field-content
             class={getWrapperClass(false)}

@@ -41,4 +41,10 @@ export const fieldSurface = clsx(
 );
 
 // ── 입력 요소 공통 ──
-export const inputBase = clsx("min-w-0 flex-1", "bg-transparent", "outline-none", textPlaceholder);
+export const inputBase = clsx(
+  "min-w-0 flex-1",
+  "bg-transparent",
+  "outline-none",
+  "[text-decoration:inherit]",
+  textPlaceholder,
+);

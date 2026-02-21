@@ -7,6 +7,7 @@ import {
   splitProps,
   For,
   useContext,
+  createSignal,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
@@ -185,8 +186,8 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   // dialog ref
   let dialogRef: HTMLDivElement | undefined;
 
-  // wrapper ref
-  let wrapperRef: HTMLDivElement | undefined;
+  // wrapper ref (signal로 관리하여 Portal ref 타이밍 보장)
+  const [wrapperRef, setWrapperRef] = createSignal<HTMLDivElement>();
 
   const closeOnEscape = () => local.closeOnEscape ?? dialogDefaults?.().closeOnEscape ?? true;
   const closeOnBackdrop = () =>
@@ -210,11 +211,10 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   // 열릴 때 등록, 닫힐 때 해제
   createEffect(() => {
     if (!open()) return;
-    if (!wrapperRef) return;
-    registerDialog(wrapperRef);
-    onCleanup(() => {
-      if (wrapperRef) unregisterDialog(wrapperRef);
-    });
+    const el = wrapperRef();
+    if (!el) return;
+    registerDialog(el);
+    onCleanup(() => unregisterDialog(el));
   });
 
   // 닫기 시도 (canDeactivate 체크)
@@ -244,21 +244,22 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
 
   // z-index 자동 관리
   const handleDialogFocus = () => {
-    if (!wrapperRef) return;
-    bringToFront(wrapperRef);
+    const el = wrapperRef();
+    if (!el) return;
+    bringToFront(el);
   };
 
   // 드래그 이동
   const handleHeaderPointerDown = (event: PointerEvent) => {
     // movable 기본값은 true
     if (local.movable === false) return;
-    if (!dialogRef || !wrapperRef) return;
+    const wrapperEl = wrapperRef();
+    if (!dialogRef || !wrapperEl) return;
     // 닫기 버튼 등 인터랙티브 요소에서 시작된 이벤트는 드래그로 처리하지 않음
     if ((event.target as HTMLElement).closest("button")) return;
 
     const target = event.currentTarget as HTMLElement;
     const dialogEl = dialogRef;
-    const wrapperEl = wrapperRef;
 
     const startX = event.clientX;
     const startY = event.clientY;
@@ -445,13 +446,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   return (
     <Show when={mounted()}>
       <Portal>
-        <div
-          ref={(el) => {
-            wrapperRef = el;
-          }}
-          data-modal
-          class={wrapperClass()}
-        >
+        <div ref={setWrapperRef} data-modal class={wrapperClass()}>
           {/* 백드롭 */}
           <Show when={!local.float}>
             <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />

@@ -22,6 +22,7 @@ export const fieldBaseClass = clsx(
   fieldSurface,
   "px-2 py-1",
   "h-field",
+  "[text-decoration:inherit]",
 );
 
 // 사이즈별 스타일

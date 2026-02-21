@@ -18,6 +18,10 @@
     height: 100%;
   }
 
+  pre {
+    font-family: sans-serif;
+  }
+
   *:focus {
     outline: none;
   }
