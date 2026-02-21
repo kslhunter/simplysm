@@ -54,7 +54,7 @@ Design complete! Here's how to proceed:
 1. /sd-worktree add <name>  — Create a worktree branch
 2. /sd-plan                 — Break into detailed tasks
 3. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-4. /sd-check            — Verify All
+4. /sd-check                — Verify (modified + dependents)
 5. /sd-commit               — Commit
 6. /sd-worktree merge       — Merge back to main
 7. /sd-worktree clean       — Remove worktree
@@ -63,7 +63,7 @@ Design complete! Here's how to proceed:
 
 1. /sd-plan                 — Break into detailed tasks
 2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
-3. /sd-check            — Verify All
+3. /sd-check                — Verify (modified + dependents)
 4. /sd-commit               — Commit
 
 You can start from any step or skip steps as needed.
@@ -81,6 +81,11 @@ You can start from any step or skip steps as needed.
   - Briefly explain why (1 sentence)
 - Do NOT auto-proceed to any step. Present the overview with recommendation and wait for the user's choice.
 - **Yolo mode**: If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
+- **Yolo sd-check — include dependents**: NEVER check only modified packages. Also check all packages that depend on them:
+  1. Identify modified packages from `git diff --name-only`
+  2. Trace reverse dependencies (packages that import from modified packages) using `package.json` or project dependency graph
+  3. Include integration/e2e tests that cover the modified packages
+  4. Run `/sd-check` with all affected paths, or `/sd-check` without path (whole project) when changes are widespread
 
 ## Key Principles
 

@@ -20,15 +20,26 @@ Read the ACTUAL CODE. Do NOT trust the report — verify everything independentl
 
 ### Checklist
 
-1. **Every requirement implemented?** Compare spec line by line against code.
-2. **Nothing extra?** Did the implementer build things not in the spec?
-3. **Correct interpretation?** Did they solve the right problem?
-4. **Tests exist?** Do tests verify the specified behavior?
-5. **Exports correct?** New public APIs exported in the package's index.ts?
+Categorize every finding as:
+
+**MISSING** — requirement in spec but absent from code:
+1. Compare spec line by line against code. Every requirement present?
+2. Tests exist for each specified behavior?
+3. New public APIs exported in the package's index.ts?
+
+**EXTRA** — code present but not in spec:
+4. Did the implementer build things not requested? (Public methods, new exports, "nice to have" features)
+5. Private helpers are OK; public API additions without spec approval are not.
+
+**WRONG** — present but incorrectly implemented:
+6. Did they solve the right problem? Correct interpretation of requirements?
+7. Do test assertions match spec expectations (not just implementation behavior)?
 
 ### Report
 
-- ✅ APPROVED — all requirements verified in code
+- ✅ APPROVED — all requirements verified in code, nothing extra
 - ❌ CHANGES_NEEDED:
-  - [What's missing/wrong/extra — with file:line references]
+  - MISSING: [requirement not implemented] (file:line)
+  - EXTRA: [built but not requested] (file:line)
+  - WRONG: [incorrect interpretation] (file:line)
 ```
