@@ -267,6 +267,12 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     return sortedItems().slice((page - 1) * ipp, page * ipp);
   });
 
+  const originalIndexMap = createMemo(() => {
+    const map = new Map<T, number>();
+    (local.items ?? []).forEach((item, i) => map.set(item, i));
+    return map;
+  });
+
   // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
   const hasExpandFeature = () => local.getChildren != null;
   const hasSelectFeature = () => local.selectMode != null;
@@ -462,13 +468,24 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   function toggleExpandAll(): void {
     if (!local.getChildren) return;
-    const allExpandable = collectAllExpandable(pagedItems(), local.getChildren);
+    const indexMap = originalIndexMap();
+    const allExpandable = collectAllExpandable(
+      pagedItems(),
+      local.getChildren,
+      (item) => indexMap.get(item) ?? -1,
+    );
     const isAllExpanded = allExpandable.every((item) => expandedItems().includes(item));
     setExpandedItems(isAllExpanded ? [] : allExpandable);
   }
 
   const flatItems = createMemo((): FlatItem<T>[] => {
-    return flattenTree(pagedItems(), expandedItems(), local.getChildren);
+    const indexMap = originalIndexMap();
+    return flattenTree(
+      pagedItems(),
+      expandedItems(),
+      local.getChildren,
+      (item) => indexMap.get(item) ?? -1,
+    );
   });
 
   // #region Selection
@@ -732,7 +749,12 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   // 전체 확장 상태인지
   const isAllExpanded = createMemo(() => {
     if (!local.getChildren) return false;
-    const allExpandable = collectAllExpandable(pagedItems(), local.getChildren);
+    const indexMap = originalIndexMap();
+    const allExpandable = collectAllExpandable(
+      pagedItems(),
+      local.getChildren,
+      (item) => indexMap.get(item) ?? -1,
+    );
     return (
       allExpandable.length > 0 && allExpandable.every((item) => expandedItems().includes(item))
     );
@@ -1127,7 +1149,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                     {(() => {
                       const selectable = () => getItemSelectable(flat.item);
                       const isSelected = () => selectedItems().includes(flat.item);
-                      const rowIndex = () => displayItems().indexOf(flat);
+                      const rowIndex = () => flat.row;
 
                       return (
                         <td
@@ -1244,6 +1266,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
                         {col.cell({
                           item: flat.item,
                           index: flat.index,
+                          row: flat.row,
                           depth: flat.depth,
                         })}
                       </td>

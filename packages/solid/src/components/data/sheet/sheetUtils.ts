@@ -103,25 +103,29 @@ export function flattenTree<TNode>(
   items: TNode[],
   expandedItems: TNode[],
   getChildren?: (item: TNode, index: number) => TNode[] | undefined,
+  getOriginalIndex?: (item: TNode) => number,
 ): FlatItem<TNode>[] {
   if (!getChildren) {
     return items.map((item, i) => ({
       item,
-      index: i,
+      index: getOriginalIndex ? getOriginalIndex(item) : i,
+      row: i,
       depth: 0,
       hasChildren: false,
     }));
   }
 
   const result: FlatItem<TNode>[] = [];
-  let index = 0;
+  let row = 0;
 
   function walk(list: TNode[], depth: number, parent?: TNode): void {
-    for (const item of list) {
+    for (let localIdx = 0; localIdx < list.length; localIdx++) {
+      const item = list[localIdx];
+      const index = depth === 0 && getOriginalIndex ? getOriginalIndex(item) : localIdx;
       const children = getChildren!(item, index);
       const hasChildren = children != null && children.length > 0;
-      result.push({ item, index, depth, hasChildren, parent });
-      index++;
+      result.push({ item, index, row, depth, hasChildren, parent });
+      row++;
 
       if (hasChildren && expandedItems.includes(item)) {
         walk(children, depth + 1, item);
@@ -136,22 +140,23 @@ export function flattenTree<TNode>(
 export function collectAllExpandable<TItem>(
   items: TItem[],
   getChildren: (item: TItem, index: number) => TItem[] | undefined,
+  getOriginalIndex?: (item: TItem) => number,
 ): TItem[] {
   const result: TItem[] = [];
-  let index = 0;
 
-  function walk(list: TItem[]): void {
-    for (const item of list) {
+  function walk(list: TItem[], depth: number): void {
+    for (let localIdx = 0; localIdx < list.length; localIdx++) {
+      const item = list[localIdx];
+      const index = depth === 0 && getOriginalIndex ? getOriginalIndex(item) : localIdx;
       const children = getChildren(item, index);
-      index++;
       if (children != null && children.length > 0) {
         result.push(item);
-        walk(children);
+        walk(children, depth + 1);
       }
     }
   }
 
-  walk(items);
+  walk(items, 0);
   return result;
 }
 

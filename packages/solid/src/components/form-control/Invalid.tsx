@@ -1,4 +1,5 @@
-import { type ParentComponent, children, createEffect, createSignal, onCleanup } from "solid-js";
+import { children, createEffect, createSignal, onCleanup, type ParentComponent } from "solid-js";
+import clsx from "clsx";
 import "@simplysm/core-browser";
 
 export interface InvalidProps {
@@ -13,8 +14,11 @@ export interface InvalidProps {
 export const Invalid: ParentComponent<InvalidProps> = (props) => {
   const hiddenInputEl = document.createElement("input");
   hiddenInputEl.type = "text";
-  hiddenInputEl.style.cssText =
-    "position:absolute; bottom:0; left:50%; width:1px; height:1px; opacity:0; pointer-events:none; z-index:-10;";
+  hiddenInputEl.className = clsx(
+    "absolute bottom-0 left-1/2",
+    "size-px opacity-0",
+    "pointer-events-none -z-10",
+  );
   hiddenInputEl.autocomplete = "off";
   hiddenInputEl.tabIndex = -1;
   hiddenInputEl.setAttribute("aria-hidden", "true");
@@ -81,8 +85,11 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
       if (shouldShow) {
         const dot = document.createElement("span");
         dot.setAttribute("data-invalid-dot", "");
-        dot.style.cssText =
-          "position:absolute; top:2px; right:2px; width:6px; height:6px; border-radius:50%; background:red; pointer-events:none;";
+        dot.className = clsx(
+          "absolute left-0.5 top-0.5",
+          "size-1.5 rounded-full",
+          "pointer-events-none bg-danger-500",
+        );
         targetEl.appendChild(dot);
       }
 

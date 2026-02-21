@@ -434,9 +434,37 @@ describe("flattenTree", () => {
     expect(result).toEqual([]);
   });
 
-  it("index는 순서대로 증가한다", () => {
+  it("row는 순서대로 증가한다", () => {
     const result = flattenTree(tree, [tree[0]], getChildren);
-    expect(result.map((r) => r.index)).toEqual([0, 1, 2, 3]);
+    expect(result.map((r) => r.row)).toEqual([0, 1, 2, 3]);
+  });
+
+  it("index는 포함 배열 내 위치를 반환한다", () => {
+    const result = flattenTree(tree, [tree[0]], getChildren);
+    // tree[0]="a" → index 0 (root items[0])
+    // tree[0].children[0]="a1" → index 0 (children[0])
+    // tree[0].children[1]="a2" → index 1 (children[1])
+    // tree[1]="b" → index 1 (root items[1])
+    expect(result.map((r) => r.index)).toEqual([0, 0, 1, 1]);
+  });
+
+  it("getOriginalIndex가 주어지면 root의 index에 원본 인덱스를 사용한다", () => {
+    const items = [tree[1], tree[0]]; // reversed
+    const originalMap = new Map<TreeNode, number>();
+    tree.forEach((item, i) => originalMap.set(item, i));
+
+    const result = flattenTree(
+      items,
+      [tree[0]],
+      getChildren,
+      (item) => originalMap.get(item) ?? -1,
+    );
+    // items[0]=tree[1]="b" → originalIndex 1
+    // items[1]=tree[0]="a" → originalIndex 0
+    // "a".children[0]="a1" → localIdx 0
+    // "a".children[1]="a2" → localIdx 1
+    expect(result.map((r) => r.index)).toEqual([1, 0, 0, 1]);
+    expect(result.map((r) => r.row)).toEqual([0, 1, 2, 3]);
   });
 });
 

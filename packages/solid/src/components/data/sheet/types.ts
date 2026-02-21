@@ -64,7 +64,10 @@ export interface DataSheetColumnProps<TItem> {
 
 export interface DataSheetCellContext<TItem> {
   item: TItem;
+  /** 소속 배열 내 위치 (루트: items[], 자식: parent.children[]) */
   index: number;
+  /** 플랫 표시 행 위치 (현재 페이지 내 순번) */
+  row: number;
   depth: number;
 }
 
@@ -116,7 +119,10 @@ export interface HeaderDef {
 
 export interface FlatItem<TItem> {
   item: TItem;
+  /** 소속 배열 내 위치 (루트: items[], 자식: parent.children[]) */
   index: number;
+  /** 플랫 표시 행 위치 (현재 페이지 내 순번) */
+  row: number;
   depth: number;
   hasChildren: boolean;
   parent?: TItem;
