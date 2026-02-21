@@ -1,5 +1,5 @@
-import { type Accessor, createMemo, createRoot } from "solid-js";
 import type { Component } from "solid-js";
+import { type Accessor, createMemo, createRoot } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 
 // ── 입력 타입 ──
@@ -112,8 +112,8 @@ function buildUsableRoutes<TModule>(
   items: AppStructureItem<TModule>[],
   routeBasePath: string,
   permBasePath: string,
-  usableModules: TModule[] | undefined,
-  permRecord: Record<string, boolean> | undefined,
+  usableModules?: TModule[],
+  permRecord?: Record<string, boolean>,
 ): AppRoute[] {
   const result: AppRoute[] = [];
 
@@ -317,7 +317,7 @@ function findItemChainByCodes<TModule>(
 export function createAppStructure<TModule>(opts: {
   items: AppStructureItem<TModule>[];
   usableModules?: Accessor<TModule[] | undefined>;
-  permRecord?: Accessor<Record<string, boolean>>;
+  permRecord?: Accessor<Record<string, boolean> | undefined>;
 }): AppStructure<TModule> {
   const flatPerms = collectFlatPerms(opts.items);
 
