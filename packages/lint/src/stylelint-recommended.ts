@@ -11,6 +11,8 @@ export default {
         ignore: ["css-cascade-layers", "css-nesting", "css-overflow"],
       },
     ],
+    // inset은 Chrome 87+이므로 shorthand 강제 비활성화
+    "declaration-block-no-redundant-longhand-properties": [true, { ignoreShorthands: ["inset"] }],
     // @import, url() 파일 존재 체크
     "plugin/no-unresolved-module": true,
   },
