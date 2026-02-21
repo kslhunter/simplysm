@@ -32,9 +32,6 @@ cd .worktrees/<name>   # Move into the worktree
 ```
 
 - All subsequent work should be done inside the worktree
-- Suggest next steps:
-  1. **brainstorming** (`/sd-brainstorm`)
-  2. **writing-plans** (`/sd-plan`)
 
 ### rebase — Rebase onto main branch
 

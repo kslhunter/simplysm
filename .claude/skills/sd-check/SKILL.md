@@ -139,7 +139,6 @@ Repeat Steps 1-3 until all 3 checks pass.
 
 If you find yourself doing ANY of these, you're violating the skill:
 
-- Treating sd-check as a command to invoke (`Skill: sd-check Args: ...`)
 - Including build or dev server in verification
 - Using Task/agent instead of background Bash
 - Not re-verifying after every fix
@@ -180,7 +179,6 @@ If you find yourself doing ANY of these, you're violating the skill:
 | "Let me ask which path to check" | Default to full project - explicit behavior |
 | "I'll try one more fix approach" | After 2-3 attempts → recommend /sd-debug |
 | "Tests are independent of types" | Type fixes affect tests - always re-run ALL |
-| "I'll invoke sd-check skill with args" | sd-check is EXACT STEPS, not a command |
 | "I'm confident it passes" | Confidence is not evidence — run the check |
 | "It should work now" | "Should" = no evidence — run the check |
 | "I already verified earlier" | Earlier is not now — re-run after every change |

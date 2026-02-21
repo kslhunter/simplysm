@@ -160,7 +160,7 @@ You can start from any step or skip steps as needed.
   - Briefly explain why (1 sentence)
 - Do NOT auto-proceed. Wait for user's choice.
 
-**Yolo mode:** If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
+**Yolo mode:** If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps. **Each `/sd-*` step MUST be invoked via the Skill tool** (e.g., `Skill("sd-worktree", "add <name>")`, `Skill("sd-plan-dev")`, `Skill("sd-check")`, `Skill("sd-commit")`, `Skill("sd-worktree", "merge")`, `Skill("sd-worktree", "clean")`). Do NOT execute the underlying git/shell commands directly — always delegate to the skill.
 
 **Yolo sd-check — include dependents:** NEVER check only modified packages. Also check all packages that depend on them:
 1. Identify modified packages from `git diff --name-only`
