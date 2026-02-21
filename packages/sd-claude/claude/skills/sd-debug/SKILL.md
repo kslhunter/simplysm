@@ -63,11 +63,12 @@ You MUST complete each phase before proceeding to the next.
    - Does it happen every time?
    - If not reproducible → gather more data, don't guess
 
-3. **Check Recent Changes**
-   - What changed that could cause this?
-   - Git diff, recent commits
-   - New dependencies, config changes
-   - Environmental differences
+3. **Read the Source Code Directly**
+   - Read the actual code where the bug manifests
+   - Understand what the code does line by line
+   - Walk through the logic with the failing input mentally
+   - Do NOT run `git diff` or `git log` — diffs show WHAT changed, not WHY it's broken
+   - The bug is in the code as it exists NOW; analyze the code as-is
 
 4. **Gather Evidence in Multi-Component Systems**
 
@@ -224,6 +225,7 @@ If you catch yourself thinking:
 - "Pattern says X but I'll adapt it differently"
 - "Here are the main problems: [lists fixes without investigation]"
 - Proposing solutions before tracing data flow
+- "Let me check git diff/log to see what changed"
 - **"One more fix attempt" (when already tried 2+)**
 - **Each fix reveals new problem in different place**
 
@@ -253,13 +255,14 @@ If you catch yourself thinking:
 | "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
 | "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
 | "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
+| "Let me check git diff to see what changed" | Diff shows WHAT changed, not WHY it's broken. Read the code as-is. |
 | "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
 
 ## Quick Reference
 
 | Phase | Key Activities | Success Criteria |
 |-------|---------------|------------------|
-| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
+| **1. Root Cause** | Read errors, reproduce, read source code, gather evidence | Understand WHAT and WHY |
 | **2. Pattern** | Find working examples, compare | Identify differences |
 | **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
 | **4. Implementation** | Create test, fix, verify | Bug resolved, tests pass |
