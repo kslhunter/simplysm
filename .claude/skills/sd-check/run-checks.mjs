@@ -3,7 +3,20 @@ import { resolve } from "path";
 import { spawn } from "child_process";
 
 const root = resolve(import.meta.dirname, "../../..");
-const pathArg = process.argv[2];
+
+const validTypes = ["typecheck", "lint", "test"];
+let pathArg;
+let typeArg;
+
+// argv[2] can be path or type, argv[3] can be type
+if (validTypes.includes(process.argv[2])) {
+  typeArg = process.argv[2];
+} else {
+  pathArg = process.argv[2];
+  if (validTypes.includes(process.argv[3])) {
+    typeArg = process.argv[3];
+  }
+}
 
 // ══════════════════════════════════════════
 // Phase 1: Environment Pre-check
@@ -77,11 +90,28 @@ function extractTestCount(output) {
   return match ? match[1] : null;
 }
 
-const checks = [
-  { name: "TYPECHECK", cmd: "pnpm", args: pathArg ? ["typecheck", pathArg] : ["typecheck"] },
-  { name: "LINT", cmd: "pnpm", args: pathArg ? ["lint", "--fix", pathArg] : ["lint", "--fix"] },
-  { name: "TEST", cmd: "pnpm", args: pathArg ? ["vitest", pathArg, "--run"] : ["vitest", "--run"] },
+const allChecks = [
+  {
+    name: "TYPECHECK",
+    type: "typecheck",
+    cmd: "pnpm",
+    args: pathArg ? ["typecheck", pathArg] : ["typecheck"],
+  },
+  {
+    name: "LINT",
+    type: "lint",
+    cmd: "pnpm",
+    args: pathArg ? ["lint", "--fix", pathArg] : ["lint", "--fix"],
+  },
+  {
+    name: "TEST",
+    type: "test",
+    cmd: "pnpm",
+    args: pathArg ? ["vitest", pathArg, "--run"] : ["vitest", "--run"],
+  },
 ];
+
+const checks = typeArg ? allChecks.filter((c) => c.type === typeArg) : allChecks;
 
 const results = await Promise.all(checks.map((c) => runCommand(c.name, c.cmd, c.args)));
 
@@ -112,11 +142,12 @@ for (const r of results) {
 }
 
 console.log();
+const total = checks.length;
 if (failed.length === 0) {
   console.log(`${"=".repeat(6)} SUMMARY: ALL PASSED ${"=".repeat(6)}`);
 } else {
   console.log(
-    `${"=".repeat(6)} SUMMARY: ${failed.length}/3 FAILED (${failed.join(", ")}) ${"=".repeat(6)}`,
+    `${"=".repeat(6)} SUMMARY: ${failed.length}/${total} FAILED (${failed.join(", ")}) ${"=".repeat(6)}`,
   );
 }
 
