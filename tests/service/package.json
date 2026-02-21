@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/service",
   "sideEffects": false,
-  "version": "13.0.52",
+  "version": "13.0.53",
   "description": "심플리즘 패키지 - Service 통합 테스트",
   "author": "김석래",
   "repository": {
