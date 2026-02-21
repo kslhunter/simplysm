@@ -20,7 +20,6 @@ describe("SQL Escape Integration Test", () => {
   beforeAll(async () => {
     mysql2 = await import("mysql2/promise");
 
-    // raw SQL 실행을 위한 직접 연결
     const conn = new MysqlDbConn(mysql2, mysqlConfig);
     await conn.connect();
     await conn.execute([
@@ -32,92 +31,34 @@ describe("SQL Escape Integration Test", () => {
     ]);
     await conn.close();
 
-    // DbContext 실행기 생성
     const executor = new NodeDbContextExecutor(mysqlConfig);
     db = createDbContext(TestDbDef, executor, { database: "TestDb" });
   });
 
   afterAll(async () => {
-    // 테이블 정리
     const cleanupConn = new MysqlDbConn(mysql2, mysqlConfig);
     await cleanupConn.connect();
     await cleanupConn.execute([`DROP TABLE IF EXISTS \`TestDb\`.\`EscapeTest\``]);
     await cleanupConn.close();
   });
 
-  it("따옴표가 포함된 값을 저장하고 조회할 수 있어야 함", async () => {
-    const testValue = "O'Reilly";
-
+  it.each([
+    { id: 1, value: "O'Reilly", desc: "따옴표가 포함된 값" },
+    { id: 2, value: "C:\\path\\to\\file", desc: "백슬래시가 포함된 값" },
+    { id: 3, value: "line1\nline2\ttab\rreturn", desc: "제어 문자가 포함된 값" },
+    { id: 4, value: "'; DROP TABLE users; --", desc: "SQL 인젝션 시도" },
+  ])("$desc을 저장하고 조회할 수 있어야 함", async ({ id, value }) => {
     await db.connectWithoutTransaction(async () => {
-      // 데이터 삽입
       await db.trans(async () => {
-        await db.escapeTest().insert([{ id: 1, value: testValue }]);
+        await db.escapeTest().insert([{ id, value }]);
       });
 
-      // 조회 및 검증
       const result = await db
         .escapeTest()
-        .where((item) => [expr.eq(item.id, 1)])
+        .where((item) => [expr.eq(item.id, id)])
         .result();
       expect(result).toHaveLength(1);
-      expect(result[0].value).toBe(testValue);
-    });
-  });
-
-  it("백슬래시가 포함된 값을 저장하고 조회할 수 있어야 함", async () => {
-    const testValue = "C:\\path\\to\\file";
-
-    await db.connectWithoutTransaction(async () => {
-      // 데이터 삽입
-      await db.trans(async () => {
-        await db.escapeTest().insert([{ id: 2, value: testValue }]);
-      });
-
-      // 조회 및 검증
-      const result = await db
-        .escapeTest()
-        .where((item) => [expr.eq(item.id, 2)])
-        .result();
-      expect(result).toHaveLength(1);
-      expect(result[0].value).toBe(testValue);
-    });
-  });
-
-  it("제어 문자가 포함된 값을 저장하고 조회할 수 있어야 함", async () => {
-    const testValue = "line1\nline2\ttab\rreturn";
-
-    await db.connectWithoutTransaction(async () => {
-      // 데이터 삽입
-      await db.trans(async () => {
-        await db.escapeTest().insert([{ id: 3, value: testValue }]);
-      });
-
-      // 조회 및 검증
-      const result = await db
-        .escapeTest()
-        .where((item) => [expr.eq(item.id, 3)])
-        .result();
-      expect(result).toHaveLength(1);
-      expect(result[0].value).toBe(testValue);
-    });
-  });
-
-  it("SQL 인젝션 시도를 안전하게 저장하고 조회할 수 있어야 함", async () => {
-    const maliciousValue = "'; DROP TABLE users; --";
-
-    await db.connectWithoutTransaction(async () => {
-      // 데이터 삽입
-      await db.trans(async () => {
-        await db.escapeTest().insert([{ id: 4, value: maliciousValue }]);
-      });
-
-      // 조회 및 검증
-      const result = await db
-        .escapeTest()
-        .where((item) => [expr.eq(item.id, 4)])
-        .result();
-      expect(result).toHaveLength(1);
-      expect(result[0].value).toBe(maliciousValue);
+      expect(result[0].value).toBe(value);
     });
   });
 });
