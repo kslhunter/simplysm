@@ -14,7 +14,8 @@ import { getVersion } from "../utils/build-env";
 import { setupReplaceDeps } from "../utils/replace-deps";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
-import { runLint, type LintOptions } from "../commands/lint";
+import type { LintOptions } from "../commands/lint";
+import type * as LintWorkerModule from "../workers/lint.worker";
 import type * as LibraryWorkerModule from "../workers/library.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ClientWorkerModule from "../workers/client.worker";
@@ -220,6 +221,7 @@ export class BuildOrchestrator {
     const serverWorkerPath = import.meta.resolve("../workers/server.worker");
     const clientWorkerPath = import.meta.resolve("../workers/client.worker");
     const dtsWorkerPath = import.meta.resolve("../workers/dts.worker");
+    const lintWorkerPath = import.meta.resolve("../workers/lint.worker");
 
     // 파일 캐시 (diagnostics 출력용)
     const fileCache = new Map<string, string>();
@@ -450,11 +452,13 @@ export class BuildOrchestrator {
     }
 
     // Lint + 모든 빌드를 병렬 실행
+    const lintWorker = Worker.create<typeof LintWorkerModule>(lintWorkerPath);
     const lintTask = async (): Promise<void> => {
-      await runLint(lintOptions);
-      // lint 에러가 있으면 process.exitCode가 1로 설정됨
-      if (process.exitCode === 1) {
-        state.hasError = true;
+      try {
+        const hasError = await lintWorker.lint(lintOptions);
+        if (hasError) state.hasError = true;
+      } finally {
+        await lintWorker.terminate();
       }
     };
     await Promise.allSettled([lintTask(), ...buildTasks.map((task) => task())]);
