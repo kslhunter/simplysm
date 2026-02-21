@@ -23,6 +23,16 @@ export interface TypecheckOptions {
   options: string[];
 }
 
+/**
+ * TypeScript 타입체크 실행 결과
+ */
+export interface TypecheckResult {
+  success: boolean;
+  errorCount: number;
+  warningCount: number;
+  formattedOutput: string;
+}
+
 // 패키지 정보 (packages/* 하위 파일 분류용)
 interface PackageInfo {
   name: string;
@@ -162,19 +172,19 @@ function createTypecheckTasks(
 //#region Main
 
 /**
- * TypeScript 타입체크를 실행한다.
+ * TypeScript 타입체크를 실행하고 결과를 반환한다.
  *
  * - `tsconfig.json`을 로드하여 컴파일러 옵션 적용
  * - `sd.config.ts`를 로드하여 패키지별 타겟 정보 확인 (없으면 기본값 사용)
  * - Worker threads를 사용하여 실제 병렬 타입체크 수행
  * - incremental 컴파일 사용 (`.cache/typecheck-{env}.tsbuildinfo`)
  * - consola 로깅을 사용하여 진행 상황 표시
- * - 에러 발생 시 `process.exitCode = 1` 설정
+ * - stdout 출력이나 exitCode 설정 없이 결과만 반환
  *
  * @param options - 타입체크 실행 옵션
- * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ * @returns 타입체크 결과 (성공 여부, 에러/경고 수, 포맷된 출력 문자열)
  */
-export async function runTypecheck(options: TypecheckOptions): Promise<void> {
+export async function executeTypecheck(options: TypecheckOptions): Promise<TypecheckResult> {
   const { targets } = options;
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:typecheck");
@@ -193,8 +203,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
     logger.error(err instanceof Error ? err.message : String(err));
-    process.exitCode = 1;
-    return;
+    return { success: false, errorCount: 1, warningCount: 0, formattedOutput: "" };
   }
 
   // sd.config.ts 로드
@@ -212,9 +221,13 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   const fileNames = pathFilterByTargets(parsedConfig.fileNames, targets, cwd);
 
   if (fileNames.length === 0) {
-    process.stdout.write("✔ 타입체크할 파일이 없습니다.\n");
     logger.info("타입체크할 파일 없음");
-    return;
+    return {
+      success: true,
+      errorCount: 0,
+      warningCount: 0,
+      formattedOutput: "✔ 타입체크할 파일이 없습니다.\n",
+    };
   }
 
   // 패키지 정보 추출
@@ -229,8 +242,12 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   const tasks = createTypecheckTasks(packages, cwd, nonPackage);
 
   if (tasks.length === 0) {
-    process.stdout.write("✔ 타입체크할 대상이 없습니다.\n");
-    return;
+    return {
+      success: true,
+      errorCount: 0,
+      warningCount: 0,
+      formattedOutput: "✔ 타입체크할 대상이 없습니다.\n",
+    };
   }
 
   // 동시성 설정: CPU 코어의 7/8만 사용 (일반적인 병렬 빌드 도구의 기본값, OS/다른 프로세스 여유분 확보, 최소 1, 작업 수 이하)
@@ -289,7 +306,7 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
     await Promise.all(workers.map((w) => w.terminate()));
   }
 
-  // 결과 출력
+  // 결과 집계
   const allDiagnostics: ts.Diagnostic[] = [];
   let totalErrorCount = 0;
   let totalWarningCount = 0;
@@ -316,13 +333,34 @@ export async function runTypecheck(options: TypecheckOptions): Promise<void> {
     logger.info("타입체크 완료", { errorCount: totalErrorCount, warningCount: totalWarningCount });
   }
 
+  let formattedOutput = "";
   if (allDiagnostics.length > 0) {
     const uniqueDiagnostics = ts.sortAndDeduplicateDiagnostics(allDiagnostics);
-    const message = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
-    process.stdout.write(message);
+    formattedOutput = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
   }
 
-  if (totalErrorCount > 0) {
+  return {
+    success: totalErrorCount === 0,
+    errorCount: totalErrorCount,
+    warningCount: totalWarningCount,
+    formattedOutput,
+  };
+}
+
+/**
+ * TypeScript 타입체크를 실행한다.
+ *
+ * `executeTypecheck()`를 호출하고 결과를 stdout에 출력하며, 에러 발생 시 `process.exitCode`를 설정한다.
+ *
+ * @param options - 타입체크 실행 옵션
+ * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ */
+export async function runTypecheck(options: TypecheckOptions): Promise<void> {
+  const result = await executeTypecheck(options);
+  if (result.formattedOutput) {
+    process.stdout.write(result.formattedOutput);
+  }
+  if (!result.success) {
     process.exitCode = 1;
   }
 }

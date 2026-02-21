@@ -96,6 +96,7 @@ vi.mock("jiti", () => ({
   })),
 }));
 
+import path from "path";
 import ts from "typescript";
 import { fsExists, fsReadJson } from "@simplysm/core-node";
 import { runTypecheck } from "../src/commands/typecheck";
@@ -496,5 +497,118 @@ describe("runTypecheck", () => {
       (call) => (call[0] as { name: string }).name === "root",
     );
     expect(nonPkgCall).toBeUndefined();
+  });
+});
+
+describe("executeTypecheck", () => {
+  const cwd = "/project";
+  let originalExitCode: typeof process.exitCode;
+  let originalCwd: () => string;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    originalExitCode = process.exitCode;
+    originalCwd = process.cwd;
+    process.cwd = vi.fn().mockReturnValue(cwd);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    process.exitCode = originalExitCode;
+    process.cwd = originalCwd;
+  });
+
+  it("에러가 없으면 성공 결과를 반환", async () => {
+    const { executeTypecheck } = await import("../src/commands/typecheck");
+
+    vi.mocked(ts.readConfigFile).mockReturnValue({ config: { compilerOptions: {} } });
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      fileNames: [path.resolve(cwd, "packages/core-common/src/index.ts")],
+      options: {},
+      errors: [],
+    } as never);
+
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
+
+    const result = await executeTypecheck({ targets: [], options: [] });
+
+    expect(result.success).toBe(true);
+    expect(result.errorCount).toBe(0);
+    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("에러가 있으면 실패 결과를 반환하되 exitCode 설정하지 않음", async () => {
+    const { executeTypecheck } = await import("../src/commands/typecheck");
+    const { Worker } = await import("@simplysm/core-node");
+
+    vi.mocked(ts.readConfigFile).mockReturnValue({ config: { compilerOptions: {} } });
+    vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
+      fileNames: [path.resolve(cwd, "packages/core-common/src/index.ts")],
+      options: {},
+      errors: [],
+    } as never);
+
+    vi.mocked(fsExists).mockResolvedValue(false);
+    vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+
+    // Worker가 에러 결과를 반환하도록 모킹
+    vi.mocked(Worker.create).mockReturnValue({
+      buildDts: vi.fn(() =>
+        Promise.resolve({
+          success: false,
+          diagnostics: [
+            {
+              category: 1,
+              code: 2322,
+              messageText: "Type error",
+              fileName: "/project/packages/core-common/src/index.ts",
+            },
+          ],
+          errorCount: 1,
+          warningCount: 0,
+        }),
+      ),
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
+
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
+      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    );
+    vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("error output");
+
+    const result = await executeTypecheck({ targets: [], options: [] });
+
+    expect(result.success).toBe(false);
+    // core-common은 neutral이므로 node + browser 2개 task 생성, 각각 errorCount 1
+    expect(result.errorCount).toBe(2);
+    expect(result.formattedOutput).toBe("error output");
+    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("tsconfig.json 로드 실패 시 실패 결과를 반환", async () => {
+    const { executeTypecheck } = await import("../src/commands/typecheck");
+
+    vi.mocked(ts.readConfigFile).mockReturnValue({
+      error: {
+        category: ts.DiagnosticCategory.Error,
+        messageText: "Failed to read tsconfig.json",
+      } as ts.Diagnostic,
+    });
+
+    vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("");
+
+    const result = await executeTypecheck({ targets: [], options: [] });
+
+    expect(result.success).toBe(false);
+    expect(result.errorCount).toBe(1);
+    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    expect(process.exitCode).toBeUndefined();
   });
 });
