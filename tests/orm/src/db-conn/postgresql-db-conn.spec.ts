@@ -1,8 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PostgresqlDbConn } from "@simplysm/orm-node";
 import { postgresqlConfig } from "../test-configs";
-import type { ColumnMeta } from "@simplysm/orm-common";
-import { DateTime, DateOnly, Uuid } from "@simplysm/core-common";
+import {
+  bulkColumnMetas,
+  bulkRecords,
+  typeColumnMetas,
+  typeRecords,
+  nullableColumnMetas,
+  nullableRecords,
+  uuidBinaryColumnMetas,
+} from "../test-fixtures";
+import { Uuid } from "@simplysm/core-common";
 
 describe("PostgresqlDbConn", () => {
   let pg: typeof import("pg");
@@ -182,19 +190,7 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("대량 INSERT (COPY FROM STDIN)", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
-
-      const records = [
-        { id: 1, name: "bulk1", value: 1.1 },
-        { id: 2, name: "bulk2", value: 2.2 },
-        { id: 3, name: "bulk3", value: 3.3 },
-      ];
-
-      await conn.bulkInsert('"BulkTable"', columnMetas, records);
+      await conn.bulkInsert('"BulkTable"', bulkColumnMetas, bulkRecords);
 
       const results = await conn.execute([`SELECT * FROM "BulkTable" ORDER BY id`]);
 
@@ -205,24 +201,12 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("빈 배열 INSERT 시 아무 동작 없음", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
-
       // 빈 배열로 호출해도 에러 없이 완료되어야 함
-      await expect(conn.bulkInsert('"BulkTable"', columnMetas, [])).resolves.toBeUndefined();
+      await expect(conn.bulkInsert('"BulkTable"', bulkColumnMetas, [])).resolves.toBeUndefined();
     });
 
     it("특수 문자 포함 데이터 INSERT", async () => {
       await conn.execute([`DELETE FROM "BulkTable"`]);
-
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
 
       const records = [
         { id: 10, name: 'quote"here', value: 1.0 },
@@ -230,7 +214,7 @@ describe("PostgresqlDbConn", () => {
         { id: 12, name: "new\nline", value: 3.0 },
       ];
 
-      await conn.bulkInsert('"BulkTable"', columnMetas, records);
+      await conn.bulkInsert('"BulkTable"', bulkColumnMetas, records);
 
       const results = await conn.execute([`SELECT * FROM "BulkTable" WHERE id >= 10 ORDER BY id`]);
 
@@ -266,38 +250,7 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("bulkInsert - 다양한 타입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        bool_val: { type: "boolean", dataType: { type: "boolean" } },
-        int_val: { type: "number", dataType: { type: "int" } },
-        float_val: { type: "number", dataType: { type: "double" } },
-        str_val: { type: "string", dataType: { type: "varchar", length: 100 } },
-        datetime_val: { type: "DateTime", dataType: { type: "datetime" } },
-        date_val: { type: "DateOnly", dataType: { type: "date" } },
-      };
-
-      const testDate = new DateTime(2024, 6, 15, 10, 30, 45);
-      const testDateOnly = new DateOnly(2024, 6, 15);
-
-      const records = [
-        {
-          bool_val: true,
-          int_val: 42,
-          float_val: 3.14159,
-          str_val: "hello",
-          datetime_val: testDate,
-          date_val: testDateOnly,
-        },
-        {
-          bool_val: false,
-          int_val: -100,
-          float_val: -2.5,
-          str_val: "world",
-          datetime_val: testDate,
-          date_val: testDateOnly,
-        },
-      ];
-
-      await conn.bulkInsert('"TypeTable"', columnMetas, records);
+      await conn.bulkInsert('"TypeTable"', typeColumnMetas, typeRecords);
 
       const results = await conn.execute([`SELECT * FROM "TypeTable" ORDER BY id`]);
 
@@ -330,20 +283,7 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("bulkInsert - NULL 값 삽입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 }, nullable: true },
-        value: { type: "number", dataType: { type: "int" }, nullable: true },
-      };
-
-      const records = [
-        { id: 1, name: "test1", value: 100 },
-        { id: 2, name: null, value: 200 },
-        { id: 3, name: "test3", value: null },
-        { id: 4, name: null, value: null },
-      ];
-
-      await conn.bulkInsert('"NullableTable"', columnMetas, records);
+      await conn.bulkInsert('"NullableTable"', nullableColumnMetas, nullableRecords);
 
       const results = await conn.execute([`SELECT * FROM "NullableTable" ORDER BY id`]);
 
@@ -380,12 +320,6 @@ describe("PostgresqlDbConn", () => {
     });
 
     it("bulkInsert - UUID 및 binary 타입 삽입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        uuid_val: { type: "Uuid", dataType: { type: "uuid" } },
-        binary_val: { type: "Bytes", dataType: { type: "binary" } },
-      };
-
       const testUuid1 = Uuid.new();
       const testUuid2 = Uuid.new();
       const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
@@ -396,7 +330,7 @@ describe("PostgresqlDbConn", () => {
         { id: 2, uuid_val: testUuid2, binary_val: testBinary2 },
       ];
 
-      await conn.bulkInsert('"UuidBinaryTable"', columnMetas, records);
+      await conn.bulkInsert('"UuidBinaryTable"', uuidBinaryColumnMetas, records);
 
       const results = await conn.execute([`SELECT * FROM "UuidBinaryTable" ORDER BY id`]);
 

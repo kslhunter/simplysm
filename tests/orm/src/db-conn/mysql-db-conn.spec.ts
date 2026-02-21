@@ -1,8 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { MysqlDbConn } from "@simplysm/orm-node";
 import { mysqlConfig } from "../test-configs";
-import type { ColumnMeta } from "@simplysm/orm-common";
-import { DateTime, DateOnly, Uuid } from "@simplysm/core-common";
+import {
+  bulkColumnMetas,
+  bulkRecords,
+  typeColumnMetas,
+  typeRecords,
+  nullableColumnMetas,
+  nullableRecords,
+  uuidBinaryColumnMetas,
+} from "../test-fixtures";
+import { Uuid } from "@simplysm/core-common";
 
 describe("MysqlDbConn", () => {
   let mysql2: typeof import("mysql2/promise");
@@ -189,19 +197,7 @@ describe("MysqlDbConn", () => {
     });
 
     it("대량 INSERT (LOAD DATA INFILE)", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
-
-      const records = [
-        { id: 1, name: "bulk1", value: 1.1 },
-        { id: 2, name: "bulk2", value: 2.2 },
-        { id: 3, name: "bulk3", value: 3.3 },
-      ];
-
-      await conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, records);
+      await conn.bulkInsert("`TestDb`.`BulkTable`", bulkColumnMetas, bulkRecords);
 
       const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`BulkTable\` ORDER BY id`]);
 
@@ -212,26 +208,14 @@ describe("MysqlDbConn", () => {
     });
 
     it("빈 배열 INSERT 시 아무 동작 없음", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
-
       // 빈 배열로 호출해도 에러 없이 완료되어야 함
       await expect(
-        conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, []),
+        conn.bulkInsert("`TestDb`.`BulkTable`", bulkColumnMetas, []),
       ).resolves.toBeUndefined();
     });
 
     it("특수 문자 포함 데이터 INSERT", async () => {
       await conn.execute([`DELETE FROM \`TestDb\`.\`BulkTable\``]);
-
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 } },
-        value: { type: "number", dataType: { type: "double" } },
-      };
 
       const records = [
         { id: 10, name: "tab\there", value: 1.0 },
@@ -239,7 +223,7 @@ describe("MysqlDbConn", () => {
         { id: 12, name: "back\\slash", value: 3.0 },
       ];
 
-      await conn.bulkInsert("`TestDb`.`BulkTable`", columnMetas, records);
+      await conn.bulkInsert("`TestDb`.`BulkTable`", bulkColumnMetas, records);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`BulkTable\` WHERE id >= 10 ORDER BY id`,
@@ -277,38 +261,7 @@ describe("MysqlDbConn", () => {
     });
 
     it("bulkInsert - 다양한 타입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        bool_val: { type: "boolean", dataType: { type: "boolean" } },
-        int_val: { type: "number", dataType: { type: "int" } },
-        float_val: { type: "number", dataType: { type: "double" } },
-        str_val: { type: "string", dataType: { type: "varchar", length: 100 } },
-        datetime_val: { type: "DateTime", dataType: { type: "datetime" } },
-        date_val: { type: "DateOnly", dataType: { type: "date" } },
-      };
-
-      const testDate = new DateTime(2024, 6, 15, 10, 30, 45);
-      const testDateOnly = new DateOnly(2024, 6, 15);
-
-      const records = [
-        {
-          bool_val: true,
-          int_val: 42,
-          float_val: 3.14159,
-          str_val: "hello",
-          datetime_val: testDate,
-          date_val: testDateOnly,
-        },
-        {
-          bool_val: false,
-          int_val: -100,
-          float_val: -2.5,
-          str_val: "world",
-          datetime_val: testDate,
-          date_val: testDateOnly,
-        },
-      ];
-
-      await conn.bulkInsert("`TestDb`.`TypeTable`", columnMetas, records);
+      await conn.bulkInsert("`TestDb`.`TypeTable`", typeColumnMetas, typeRecords);
 
       const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TypeTable\` ORDER BY id`]);
 
@@ -341,20 +294,7 @@ describe("MysqlDbConn", () => {
     });
 
     it("bulkInsert - NULL 값 삽입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 100 }, nullable: true },
-        value: { type: "number", dataType: { type: "int" }, nullable: true },
-      };
-
-      const records = [
-        { id: 1, name: "test1", value: 100 },
-        { id: 2, name: null, value: 200 },
-        { id: 3, name: "test3", value: null },
-        { id: 4, name: null, value: null },
-      ];
-
-      await conn.bulkInsert("`TestDb`.`NullableTable`", columnMetas, records);
+      await conn.bulkInsert("`TestDb`.`NullableTable`", nullableColumnMetas, nullableRecords);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`NullableTable\` ORDER BY id`,
@@ -393,12 +333,6 @@ describe("MysqlDbConn", () => {
     });
 
     it("bulkInsert - UUID 및 binary 타입 삽입", async () => {
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        uuid_val: { type: "Uuid", dataType: { type: "uuid" } },
-        binary_val: { type: "Bytes", dataType: { type: "binary" } },
-      };
-
       const testUuid1 = Uuid.new();
       const testUuid2 = Uuid.new();
       const testBinary1 = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
@@ -409,7 +343,7 @@ describe("MysqlDbConn", () => {
         { id: 2, uuid_val: testUuid2, binary_val: testBinary2 },
       ];
 
-      await conn.bulkInsert("`TestDb`.`UuidBinaryTable`", columnMetas, records);
+      await conn.bulkInsert("`TestDb`.`UuidBinaryTable`", uuidBinaryColumnMetas, records);
 
       const results = await conn.execute([
         `SELECT *, HEX(uuid_val) as uuid_hex, HEX(binary_val) as binary_hex FROM \`TestDb\`.\`UuidBinaryTable\` ORDER BY id`,
