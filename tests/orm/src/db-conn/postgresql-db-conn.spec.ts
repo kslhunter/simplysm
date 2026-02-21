@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PostgresqlDbConn } from "@simplysm/orm-node";
+import { PostgresqlDbConn, DB_CONN_ERRORS } from "@simplysm/orm-node";
 import { postgresqlConfig } from "../test-configs";
 import {
   bulkColumnMetas,
@@ -31,17 +31,27 @@ describe("PostgresqlDbConn", () => {
 
   describe("연결", () => {
     it("연결 성공", async () => {
-      await conn.connect();
-      expect(conn.isConnected).toBe(true);
+      const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
+      await testConn.connect();
+      expect(testConn.isConnected).toBe(true);
+      await testConn.close();
     });
 
     it("중복 연결 시 에러", async () => {
-      await expect(conn.connect()).rejects.toThrow("이미 'Connection'이 연결되어있습니다.");
+      const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
+      await testConn.connect();
+      try {
+        await expect(testConn.connect()).rejects.toThrow(DB_CONN_ERRORS.ALREADY_CONNECTED);
+      } finally {
+        await testConn.close();
+      }
     });
 
     it("연결 종료", async () => {
-      await conn.close();
-      expect(conn.isConnected).toBe(false);
+      const testConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
+      await testConn.connect();
+      await testConn.close();
+      expect(testConn.isConnected).toBe(false);
     });
   });
 
@@ -110,7 +120,7 @@ describe("PostgresqlDbConn", () => {
     it("미연결 상태에서 쿼리 실행 시 에러", async () => {
       const disconnectedConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
       await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
-        "'Connection'이 연결되어있지 않습니다",
+        DB_CONN_ERRORS.NOT_CONNECTED,
       );
     });
 
