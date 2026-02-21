@@ -5,6 +5,7 @@ import { Icon } from "../../display/Icon";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../../form-control/Button";
 import { useSidebarContextOptional } from "../sidebar/SidebarContext";
+import { TopbarActions } from "./TopbarActions";
 import { TopbarContainer } from "./TopbarContainer";
 import { TopbarMenu } from "./TopbarMenu";
 import { TopbarUser } from "./TopbarUser";
@@ -58,6 +59,7 @@ export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
  * ```
  */
 interface TopbarComponent extends ParentComponent<TopbarProps> {
+  Actions: typeof TopbarActions;
   Container: typeof TopbarContainer;
   Menu: typeof TopbarMenu;
   User: typeof TopbarUser;
@@ -88,6 +90,7 @@ const TopbarBase: ParentComponent<TopbarProps> = (props) => {
 };
 
 export const Topbar = TopbarBase as TopbarComponent;
+Topbar.Actions = TopbarActions;
 Topbar.Container = TopbarContainer;
 Topbar.Menu = TopbarMenu;
 Topbar.User = TopbarUser;

@@ -43,6 +43,7 @@ export * from "./components/layout/FormTable";
 export * from "./components/layout/sidebar/Sidebar";
 export * from "./components/layout/sidebar/SidebarContext";
 export * from "./components/layout/topbar/Topbar";
+export * from "./components/layout/topbar/TopbarContext";
 
 //#endregion
 

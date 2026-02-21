@@ -1,6 +1,7 @@
-import { type JSX, type ParentComponent, splitProps } from "solid-js";
+import { type JSX, type ParentComponent, splitProps, createSignal } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
+import { TopbarContext } from "./TopbarContext";
 
 const containerClass = clsx("flex h-full flex-col");
 
@@ -13,7 +14,7 @@ export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement>
  *
  * @remarks
  * - `flex flex-col h-full` 구조로 Topbar와 콘텐츠를 수직 배치
- * - Context 없이 순수 레이아웃 역할만 수행
+ * - TopbarContext.Provider로 actions 상태 공유
  * - 부모 요소에 높이가 지정되어야 함
  *
  * @example
@@ -29,12 +30,15 @@ export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement>
  */
 export const TopbarContainer: ParentComponent<TopbarContainerProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
+  const [actions, setActions] = createSignal<JSX.Element | undefined>(undefined);
 
   const getClassName = () => twMerge(containerClass, local.class);
 
   return (
-    <div {...rest} data-topbar-container class={getClassName()}>
-      {local.children}
-    </div>
+    <TopbarContext.Provider value={{ actions, setActions }}>
+      <div {...rest} data-topbar-container class={getClassName()}>
+        {local.children}
+      </div>
+    </TopbarContext.Provider>
   );
 };
