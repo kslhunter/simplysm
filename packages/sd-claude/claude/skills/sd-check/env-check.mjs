@@ -10,9 +10,9 @@ if (!existsSync(pkgPath)) {
   errors.push("package.json not found");
 } else {
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-  const major = pkg.version?.split(".")[0];
-  if (major !== "13") {
-    errors.push(`This skill requires simplysm v13. Current: ${pkg.version}`);
+  const major = parseInt(pkg.version?.split(".")[0], 10);
+  if (Number.isNaN(major) || major < 13) {
+    errors.push(`This skill requires simplysm v13+. Current: ${pkg.version}`);
   }
 
   // 3. Scripts check

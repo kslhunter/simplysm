@@ -1,6 +1,6 @@
 ---
 name: sd-use
-description: Use when user doesn't know which sd-* skill or agent to use and wants automatic selection based on their request
+description: MUST invoke FIRST for any coding/implementation task when the user has NOT explicitly used an /sd-* skill. Routes to the best matching skill. Skip for simple questions, confirmations, or follow-ups.
 model: haiku
 ---
 
@@ -35,6 +35,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-* skill or agen
 | `sd-api-name-review` | Review public API naming consistency |
 | `sd-worktree` | Start new work in branch isolation |
 | `sd-skill` | Create or edit skills |
+| `sd-eml-analyze` | Analyze .eml email files — extract content, attachments (PDF, XLSX, PPTX) |
 
 ### Agents (execute via `Task` tool with matching `subagent_type`)
 

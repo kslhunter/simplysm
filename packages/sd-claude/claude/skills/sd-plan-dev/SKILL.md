@@ -90,7 +90,8 @@ digraph process {
     "Re-review failed aspects (parallel sub-Task)" -> "Any issues?";
     "Any issues?" -> "Report results" [label="no"];
     "Report results" -> "More batches?";
-    "More batches?" -> "Implement the task" [label="yes, next batch"];
+    "More batches?" -> "Batch integration check (typecheck + lint)" [label="yes"];
+    "Batch integration check (typecheck + lint)" -> "Implement the task" [label="next batch"];
     "More batches?" -> "Task: final review for entire implementation" [label="no"];
     "Task: final review for entire implementation" -> "Done";
 }
@@ -139,14 +140,16 @@ You are implementing and reviewing Task N: [task name]
 2. Write tests (following TDD if task says to)
 3. Verify implementation works
 4. Self-review: did I implement everything? Did I over-build?
-5. Launch TWO parallel sub-Tasks (spec review + quality review):
+5. Commit your work (record the BASE_SHA before and HEAD_SHA after)
+6. Launch TWO parallel sub-Tasks (spec review + quality review):
    - Sub-Task 1: spec reviewer — send spec-reviewer-prompt.md based prompt
-   - Sub-Task 2: quality reviewer — send code-quality-reviewer-prompt.md based prompt
-6. If either reviewer finds issues → fix them → re-review only failed aspects (parallel sub-Tasks again)
-7. Repeat until both reviewers approve
-8. Report back with: what you implemented, test results, files changed, review outcomes
+   - Sub-Task 2: quality reviewer — send code-quality-reviewer-prompt.md based prompt, include BASE_SHA and HEAD_SHA
+7. If either reviewer finds issues → fix them → re-review only failed aspects (parallel sub-Tasks again)
+8. Repeat until both reviewers approve
+9. Report back with: what you implemented, test results, files changed, commit SHA, review outcomes
 
 If you have questions about requirements — return them immediately WITHOUT implementing. Don't guess.
+If you encounter unexpected issues mid-implementation — ask rather than guess.
 
 Work from: [directory]
 ```
@@ -230,6 +233,17 @@ Final reviewer: All requirements met, ready to merge
 Done!
 ```
 
+## Batch Integration Check
+
+Between batches, run targeted verification on affected packages before starting the next batch:
+
+```bash
+pnpm typecheck [affected packages]
+pnpm lint [affected packages]
+```
+
+This catches cross-task integration issues early — especially when the next batch depends on the current batch's output. Do NOT skip this even if individual task reviews passed.
+
 ## Red Flags
 
 **Never:**
@@ -242,6 +256,7 @@ Done!
 - Skip scene-setting context
 - Accept "close enough" on spec compliance
 - Skip review loops (issue found → fix → re-review)
+- Skip batch integration checks between batches
 
 **If task agent returns questions:**
 - Answer clearly and completely
@@ -252,6 +267,13 @@ Done!
 - Task agent fixes all issues from both reviewers at once
 - Re-review only the failed aspects (parallel sub-Tasks)
 - Repeat until both approved
+
+**If task agent fails or times out:**
+- Do NOT silently proceed — the affected files may be in an indeterminate state
+- Check if other tasks in the same batch depend on the failed task's output
+- Independent tasks' results still stand
+- Escalate to user with specific error details before proceeding
+- Do NOT re-launch on potentially partially-modified files without inspection
 
 ## After Completion
 

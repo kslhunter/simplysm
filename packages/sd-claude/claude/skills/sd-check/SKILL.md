@@ -56,9 +56,10 @@ node .claude/skills/sd-check/env-check.mjs
 ```
 
 - **Exit 0 + "Environment OK"**: Proceed to Step 2
-- **Exit 1 + "FAIL"**: STOP, report the listed errors to user
+- **Exit 1 + version error** (e.g., "simplysm v13+"): Tell the user this project is below v13 so automated checks are unavailable, and they should run typecheck, lint, and test manually. Then STOP — do not proceed to Step 2.
+- **Exit 1 + other errors**: STOP, report the listed errors to user
 
-The script checks: package.json version (v13), pnpm workspace files, typecheck/lint scripts, vitest config.
+The script checks: package.json version (v13+), pnpm workspace files, typecheck/lint scripts, vitest config.
 
 ### Step 2: Launch 3 Background Bash Commands in Parallel
 
@@ -159,6 +160,10 @@ Repeat Steps 2-4 until all 3 checks pass.
 **Wrong:** Keep trying same fix when tests fail repeatedly
 **Right:** After 2-3 failed attempts → recommend `/sd-debug`
 
+### ❌ Claiming success without fresh evidence
+**Wrong:** "All checks should pass now" or "Great, that fixes it!"
+**Right:** Run all 3 → read output → cite results (e.g., "0 errors, 47 tests passed") → THEN claim
+
 ## Red Flags - STOP and Follow Workflow
 
 If you find yourself doing ANY of these, you're violating the skill:
@@ -171,19 +176,28 @@ If you find yourself doing ANY of these, you're violating the skill:
 - Asking user for path when none provided
 - Continuing past 2-3 failed fix attempts without recommending `/sd-debug`
 - Spawning 4+ commands (only 3: typecheck, lint, test)
+- Expressing satisfaction ("Great!", "Perfect!", "Done!") before all 3 checks pass
+- Using vague language: "should work", "probably passes", "seems fine"
+- Claiming completion based on a previous run, not the current one
 
 **All of these violate the skill's core principles. Go back to Step 1 and follow the workflow exactly.**
 
 ## Completion Criteria
 
 **Complete when:**
-- All 3 checks (typecheck, lint, test) pass without errors
-- Report: "All checks passed - code verified"
+- All 3 checks (typecheck, lint, test) pass without errors **in the most recent run**
+- Report with evidence: "All checks passed" + cite actual output (e.g., "0 errors", "47 tests passed")
+
+**Fresh evidence required:**
+- "Passes" = you ran it THIS iteration and saw it pass in the output
+- Previous run results are NOT evidence for current state
+- Confidence is NOT evidence — run the check
 
 **Do NOT complete if:**
 - Any check has errors
 - Haven't re-verified after a fix
 - Environment pre-checks failed
+- Using "should", "probably", or "seems to" instead of actual output
 
 ## Rationalization Table
 
@@ -200,3 +214,6 @@ If you find yourself doing ANY of these, you're violating the skill:
 | "Tests are independent of types" | Type fixes affect tests - always re-run ALL |
 | "I'll invoke sd-check skill with args" | sd-check is EXACT STEPS, not a command |
 | "4 commands: typecheck, lint, test, build" | Only 3 commands - build is FORBIDDEN |
+| "I'm confident it passes" | Confidence ≠ evidence — run the check |
+| "It should work now" | "Should" = no evidence — run the check |
+| "I already verified earlier" | Earlier ≠ now — re-run after every change |

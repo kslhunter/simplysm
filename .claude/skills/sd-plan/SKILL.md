@@ -16,6 +16,34 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Clarification Phase
+
+**Before writing the plan**, read the design doc and explore the codebase. Then identify implementation decisions the design didn't specify.
+
+**Ask the user about:**
+- Core behavior choices (state management approach, error handling strategy, validation UX)
+- User-facing behavior not specified (what the user sees on error, how navigation works)
+- Architectural choices with multiple valid options (which pattern, which abstraction level)
+
+**Don't ask — just decide:**
+- Internal details covered by project conventions (file naming, export patterns)
+- Pure YAGNI decisions (features not mentioned = don't add)
+- Implementation details with only one reasonable option
+
+**Format:** Present all discovered gaps as a single numbered list with your recommended option for each. Wait for user confirmation before writing the plan.
+
+```
+Before writing the plan, I found these implementation decisions not covered in the design:
+
+1. **[Topic]**: [The gap]. I'd recommend [option A] because [reason]. Alternatively, [option B].
+2. **[Topic]**: [The gap]. I'd recommend [option] because [reason].
+...
+
+Should I proceed with these recommendations, or would you like to change any?
+```
+
+If no gaps are found, skip this phase and proceed directly to writing the plan.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
