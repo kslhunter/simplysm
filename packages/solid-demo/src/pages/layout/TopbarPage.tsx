@@ -1,6 +1,8 @@
 import {
+  Button,
   Sidebar,
   Topbar,
+  createTopbarActions,
   type AppMenu,
   type TopbarMenuItem,
   type TopbarUserMenu,
@@ -73,6 +75,27 @@ const sidebarMenus: AppMenu[] = [
   },
   { title: "설정", href: "#", icon: IconSettings },
 ];
+
+// 하위 페이지 시뮬레이션 컴포넌트
+function UserPageSimulation() {
+  createTopbarActions(() => (
+    <div class="flex gap-1">
+      <Button size="sm" theme="success">
+        저장
+      </Button>
+      <Button size="sm" theme="danger" variant="outline">
+        삭제
+      </Button>
+    </div>
+  ));
+  return (
+    <div class="rounded border border-base-200 bg-base-50 p-4 dark:border-base-700 dark:bg-base-800">
+      <p class="text-sm text-base-600 dark:text-base-400">
+        이 페이지는 createTopbarActions로 저장/삭제 버튼을 등록합니다
+      </p>
+    </div>
+  );
+}
 
 export default function TopbarPage() {
   return (
@@ -326,6 +349,30 @@ export default function TopbarPage() {
             style={{ width: "100%", height: "100%", border: "none" }}
             title="Mobile Layout Demo"
           />
+        </div>
+      </section>
+
+      {/* 7. Topbar.Actions slot */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          Topbar.Actions slot
+        </h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          하위 페이지에서 createTopbarActions()로 Topbar에 액션 버튼을 주입합니다. Topbar.Actions가
+          slot outlet 역할을 합니다.
+        </p>
+        <div class="h-48 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
+          <Topbar.Container>
+            <Topbar>
+              <h1 class="m-0 text-base">사용자 관리</h1>
+              <Topbar.Actions />
+              <div class="flex-1" />
+              <Topbar.User>홍길동</Topbar.User>
+            </Topbar>
+            <div class="flex-1 overflow-auto p-4">
+              <UserPageSimulation />
+            </div>
+          </Topbar.Container>
         </div>
       </section>
     </div>
