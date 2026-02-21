@@ -13,7 +13,7 @@
         "--headless"
       ],
       "env": {
-        "PLAYWRIGHT_OUTPUT_DIR": ".playwright-mcp"
+        "PLAYWRIGHT_OUTPUT_DIR": ".tmp/playwright"
       }
     }
   }

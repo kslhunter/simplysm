@@ -189,7 +189,7 @@ function setupMcpConfig(projectRoot: string): void {
       command: "node",
       args: [sdClaudeBin, "npx", "@playwright/mcp@latest", "--headless"],
       env: {
-        PLAYWRIGHT_OUTPUT_DIR: ".playwright-mcp",
+        PLAYWRIGHT_OUTPUT_DIR: ".tmp/playwright",
       },
     };
     changed = true;
