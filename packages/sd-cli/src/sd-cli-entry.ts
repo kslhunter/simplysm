@@ -6,6 +6,7 @@ import yargs, { type Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import { runLint } from "./commands/lint";
 import { runTypecheck } from "./commands/typecheck";
+import { runCheck, type CheckType } from "./commands/check";
 import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
@@ -97,6 +98,33 @@ export function createCliParser(argv: string[]): Argv {
         await runTypecheck({
           targets: args.targets,
           options: args.configOpt,
+        });
+      },
+    )
+    .command(
+      "check [targets..]",
+      "Typecheck, Lint, Test를 병렬로 실행한다.",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .positional("targets", {
+            type: "string",
+            array: true,
+            describe: "체크할 경로 (예: packages/core-common, tests/orm)",
+            default: [],
+          })
+          .options({
+            type: {
+              type: "string",
+              describe: "실행할 체크 타입 (쉼표 구분: typecheck,lint,test)",
+              default: "typecheck,lint,test",
+            },
+          }),
+      async (args) => {
+        await runCheck({
+          targets: args.targets,
+          types: args.type.split(",").map((t) => t.trim()) as CheckType[],
         });
       },
     )

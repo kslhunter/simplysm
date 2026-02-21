@@ -19,6 +19,7 @@
     "---": "",
     "typecheck": "pnpm _sd-cli_ typecheck",
     "lint": "pnpm _sd-cli_ lint",
+    "check": "pnpm _sd-cli_ check",
     "vitest": "cross-env NODE_OPTIONS=--max-old-space-size=16384 vitest",
     "----": "",
     "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",

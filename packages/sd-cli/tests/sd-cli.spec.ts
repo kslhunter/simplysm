@@ -1,13 +1,17 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { consola, LogLevels } from "consola";
 
-// runLint, runTypecheck, runWatch를 모킹
+// runLint, runTypecheck, runWatch, runCheck를 모킹
 vi.mock("../src/commands/lint", () => ({
   runLint: vi.fn(),
 }));
 
 vi.mock("../src/commands/typecheck", () => ({
   runTypecheck: vi.fn(),
+}));
+
+vi.mock("../src/commands/check", () => ({
+  runCheck: vi.fn(),
 }));
 
 vi.mock("../src/commands/watch", () => ({
@@ -25,6 +29,7 @@ vi.mock("../src/commands/publish", () => ({
 import { createCliParser } from "../src/sd-cli-entry";
 import { runLint } from "../src/commands/lint";
 import { runTypecheck } from "../src/commands/typecheck";
+import { runCheck } from "../src/commands/check";
 import { runWatch } from "../src/commands/watch";
 import { runBuild } from "../src/commands/build";
 import { runPublish } from "../src/commands/publish";
@@ -36,6 +41,7 @@ describe("sd-cli", () => {
     vi.clearAllMocks();
     vi.mocked(runLint).mockResolvedValue(undefined);
     vi.mocked(runTypecheck).mockResolvedValue(undefined);
+    vi.mocked(runCheck).mockResolvedValue(undefined);
     vi.mocked(runWatch).mockResolvedValue(undefined);
     vi.mocked(runBuild).mockResolvedValue(undefined);
     vi.mocked(runPublish).mockResolvedValue(undefined);
@@ -104,6 +110,35 @@ describe("sd-cli", () => {
       expect(runTypecheck).toHaveBeenCalledWith({
         targets: [],
         options: ["dev", "test"],
+      });
+    });
+  });
+
+  describe("check 명령어", () => {
+    it("check 명령어가 올바른 옵션으로 runCheck를 호출", async () => {
+      await createCliParser(["check", "packages/core-common", "--type", "typecheck,lint"]).parse();
+
+      expect(runCheck).toHaveBeenCalledWith({
+        targets: ["packages/core-common"],
+        types: ["typecheck", "lint"],
+      });
+    });
+
+    it("check 명령어에 targets 없이 실행 가능", async () => {
+      await createCliParser(["check"]).parse();
+
+      expect(runCheck).toHaveBeenCalledWith({
+        targets: [],
+        types: ["typecheck", "lint", "test"],
+      });
+    });
+
+    it("check 명령어의 --type 옵션으로 단일 타입 지정", async () => {
+      await createCliParser(["check", "--type", "test"]).parse();
+
+      expect(runCheck).toHaveBeenCalledWith({
+        targets: [],
+        types: ["test"],
       });
     });
   });
