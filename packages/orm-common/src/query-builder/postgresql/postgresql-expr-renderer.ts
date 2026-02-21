@@ -75,7 +75,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
 
   /** 식별자 감싸기 */
   wrap(name: string): string {
-    return `"${name}"`;
+    return `"${name.replace(/"/g, '""')}"`;
   }
 
   /** SQL 문자열 리터럴용 이스케이프 (따옴표 없이 반환) */
