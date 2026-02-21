@@ -93,7 +93,7 @@ Total: 3 errors, 1 warnings
 1. **Analyze by priority:** Typecheck → Lint → Test
    - Typecheck errors may cause lint/test errors (cascade)
 
-2. **Read log files** (`.tmp/sd-check/{name}.log`) to see full error output, then **read failing source files** to identify root cause
+2. **Read the error output** from the check result, then **read failing source files** to identify root cause
 
 3. **Fix with Edit:**
    - **Typecheck:** Fix type issues
