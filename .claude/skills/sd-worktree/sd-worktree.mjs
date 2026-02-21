@@ -46,7 +46,7 @@ switch (cmd) {
     const branch = getMainBranch();
     console.log(`Creating worktree: .worktrees/${name} (from ${branch})`);
     run(`git worktree add "${worktreePath}" -b "${name}"`);
-    console.log("Installing dependencies...");/
+    console.log("Installing dependencies...");
     run("pnpm install", { cwd: worktreePath });
     console.log(`\nReady: ${worktreePath}`);
     break;
