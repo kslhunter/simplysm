@@ -20,7 +20,7 @@ render(
         {/* Home 레이아웃 내부 */}
         <Route path="/home" component={Home}>
           <Route path="/" component={() => <Navigate href="/home/main" />} />
-          <For each={appStructure.usableRoutes()}>
+          <For each={appStructure.allRoutes}>
             {(r) => <Route path={r.path} component={r.component} />}
           </For>
           <Route path="/*" component={NotFoundPage} />
