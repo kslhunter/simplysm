@@ -16,3 +16,8 @@
 - Before modifying functions/classes: Read the file to understand existing code style
 - When unsure about API/method usage: Check signatures in source code
 - **If confidence is low, ask the user instead of writing code**
+
+## Memory Policy
+
+- **Do NOT use auto memory** (`~/.claude/projects/.../memory/`). It is environment-specific and does not persist across machines.
+- All persistent knowledge belongs in `.claude/rules/` or project docs (committed to git).
