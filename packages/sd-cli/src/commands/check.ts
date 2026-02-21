@@ -35,12 +35,15 @@ function spawnVitest(targets: string[]): Promise<CheckResult> {
       stdio: "pipe",
     });
 
-    const chunks: Buffer[] = [];
-    child.stdout?.on("data", (d: Buffer) => chunks.push(d));
-    child.stderr?.on("data", (d: Buffer) => chunks.push(d));
+    let output = "";
+    child.stdout.on("data", (d: Uint8Array) => {
+      output += new TextDecoder().decode(d);
+    });
+    child.stderr.on("data", (d: Uint8Array) => {
+      output += new TextDecoder().decode(d);
+    });
 
     child.on("close", (code) => {
-      const output = Buffer.concat(chunks).toString("utf8");
       const failMatch =
         output.match(/(\d+)\s+tests?\s+failed/i) ??
         output.match(/Tests\s+(\d+)\s+failed/i) ??

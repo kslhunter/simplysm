@@ -8,7 +8,7 @@ import { executeLint, type LintOptions, type LintResult } from "../commands/lint
  * check 명령과 BuildOrchestrator에서 lint를 별도 스레드로 실행하기 위한 워커.
  */
 async function lint(options: LintOptions): Promise<LintResult> {
-  return await executeLint(options);
+  return executeLint(options);
 }
 
 export default createWorker({ lint });
