@@ -241,11 +241,12 @@ const structure = createAppStructure({
   permRecord: () => userPermissions(),   // optional: Record<string, boolean> permission state
 });
 
-// structure.usableRoutes()    -- Accessor<AppRoute[]> - filtered route array (pass to @solidjs/router)
-// structure.usableMenus()     -- Accessor<AppMenu[]> - filtered menu array for Sidebar.Menu
-// structure.usableFlatMenus() -- Accessor<AppFlatMenu[]> - flat filtered menu list
-// structure.usablePerms()     -- Accessor<AppPerm[]> - filtered permission tree
-// structure.flatPerms          -- AppFlatPerm[] - all flat perm entries (static, not reactive)
+// structure.allRoutes           -- AppRoute[] - all routes with permCode + module info (static)
+// structure.usableMenus()       -- Accessor<AppMenu[]> - filtered menu array for Sidebar.Menu
+// structure.usableFlatMenus()   -- Accessor<AppFlatMenu[]> - flat filtered menu list
+// structure.usablePerms()       -- Accessor<AppPerm[]> - filtered permission tree
+// structure.allFlatPerms        -- AppFlatPerm[] - all flat perm entries (static)
+// structure.checkRouteAccess(r) -- boolean - check if route is accessible
 ```
 
 **Routing integration with `@solidjs/router`:**
@@ -253,7 +254,6 @@ const structure = createAppStructure({
 ```tsx
 import { render } from "solid-js/web";
 import { HashRouter, Navigate, Route } from "@solidjs/router";
-import { For } from "solid-js";
 import { appStructure } from "./appStructure";
 
 render(
@@ -262,9 +262,17 @@ render(
       <Route path="/" component={App}>
         <Route path="/home" component={Home}>
           <Route path="/" component={() => <Navigate href="/home/main" />} />
-          <For each={appStructure.usableRoutes()}>
-            {(r) => <Route path={r.path} component={r.component} />}
-          </For>
+          {appStructure.allRoutes.map((r) => (
+            <Route
+              path={r.path}
+              component={() => {
+                if (!appStructure.checkRouteAccess(r)) {
+                  return <Navigate href="/login" />;
+                }
+                return <r.component />;
+              }}
+            />
+          ))}
           <Route path="/*" component={NotFoundPage} />
         </Route>
         <Route path="/" component={() => <Navigate href="/home" />} />
@@ -275,25 +283,29 @@ render(
 );
 ```
 
-Each route object in `structure.usableRoutes()` has `path` (derived from nested `code` values) and `component` properties, ready to pass directly to `<Route>`. Note that `usableRoutes` is a reactive accessor — it re-evaluates when `usableModules` or `permRecord` signals change.
+`allRoutes` is a static (non-reactive) array containing all routes with `permCode` and module chain information. Use `checkRouteAccess(route)` to reactively verify access based on `permRecord` and `usableModules` signals.
 
 **AppStructure return type:**
 
 ```typescript
 interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
-  usableRoutes: Accessor<AppRoute[]>;           // reactive, filtered by modules + permRecord
-  usableMenus: Accessor<AppMenu[]>;             // reactive, filtered by modules + permRecord
-  usableFlatMenus: Accessor<AppFlatMenu[]>;     // reactive, flat version of usableMenus
-  usablePerms: Accessor<AppPerm<TModule>[]>;    // reactive, filtered permission tree
-  flatPerms: AppFlatPerm<TModule>[];            // static, all perm entries (not reactive)
+  allRoutes: AppRoute<TModule>[];                // static, all routes with perm/module info
+  usableMenus: Accessor<AppMenu[]>;              // reactive, filtered by modules + permRecord
+  usableFlatMenus: Accessor<AppFlatMenu[]>;      // reactive, flat version of usableMenus
+  usablePerms: Accessor<AppPerm<TModule>[]>;     // reactive, filtered permission tree
+  allFlatPerms: AppFlatPerm<TModule>[];           // static, all perm entries (not reactive)
+  checkRouteAccess(route: AppRoute<TModule>): boolean; // reactive access check
   getTitleChainByHref(href: string): string[];
-  perms: InferPerms<TItems>;                    // typed permission accessor (getter-based reactive booleans)
+  perms: InferPerms<TItems>;                     // typed permission accessor (getter-based reactive booleans)
 }
 
-interface AppRoute {
+interface AppRoute<TModule = string> {
   path: string;
   component: Component;
+  permCode?: string;
+  modulesChain: TModule[][];
+  requiredModulesChain: TModule[][];
 }
 
 interface AppMenu {
@@ -320,6 +332,7 @@ interface AppFlatPerm<TModule = string> {
   titleChain: string[];
   code: string;
   modulesChain: TModule[][];
+  requiredModulesChain: TModule[][];
 }
 ```
 
