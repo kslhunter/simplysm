@@ -25,6 +25,13 @@ describe("NumberInput", () => {
       const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("type", "text");
     });
+
+    it("autocomplete 기본값은 one-time-code이다", () => {
+      render(() => <NumberInput />);
+
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("autocomplete", "one-time-code");
+    });
   });
 
   describe("값 변환", () => {

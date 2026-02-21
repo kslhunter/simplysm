@@ -151,6 +151,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
+      extra: "min-w-24",
     });
 
   // 편집 가능 여부
@@ -203,6 +204,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
                 value={displayValue()}
                 title={local.title}
                 step={getStep()}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>
@@ -228,6 +230,7 @@ export const TimePicker: Component<TimePickerProps> = (props) => {
                 value={displayValue()}
                 title={local.title}
                 step={getStep()}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>

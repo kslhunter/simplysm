@@ -27,6 +27,12 @@ describe("DatePicker 컴포넌트", () => {
       expect(input.type).toBe("date");
     });
 
+    it("autocomplete 기본값은 one-time-code이다", () => {
+      const { container } = render(() => <DatePicker />);
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input.autocomplete).toBe("one-time-code");
+    });
+
     it("기본 unit은 date이다", () => {
       const { container } = render(() => <DatePicker />);
       const input = container.querySelector("input") as HTMLInputElement;

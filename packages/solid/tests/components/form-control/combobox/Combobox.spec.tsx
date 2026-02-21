@@ -29,6 +29,14 @@ describe("Combobox 컴포넌트", () => {
       expect(input?.getAttribute("placeholder")).toBe("검색하세요");
     });
 
+    it("input의 autocomplete 기본값은 one-time-code이다", () => {
+      const { container } = render(() => (
+        <Combobox loadItems={mockLoadItems} renderValue={(v) => <>{v}</>} />
+      ));
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input.autocomplete).toBe("one-time-code");
+    });
+
     it("disabled일 때 aria-disabled가 설정된다", () => {
       const { getByRole } = render(() => (
         <Combobox loadItems={mockLoadItems} disabled renderValue={(v) => <>{v}</>} />

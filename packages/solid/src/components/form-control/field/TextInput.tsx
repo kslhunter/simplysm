@@ -284,7 +284,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
                 value={inputValue()}
                 placeholder={local.placeholder}
                 title={local.title}
-                autocomplete={local.autocomplete}
+                autocomplete={local.autocomplete ?? "one-time-code"}
                 onInput={handleInput}
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={handleCompositionEnd}
@@ -314,7 +314,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
                 value={inputValue()}
                 placeholder={local.placeholder}
                 title={local.title}
-                autocomplete={local.autocomplete}
+                autocomplete={local.autocomplete ?? "one-time-code"}
                 onInput={handleInput}
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={handleCompositionEnd}

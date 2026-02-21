@@ -41,7 +41,13 @@ describe("TextInput 컴포넌트", () => {
       expect(input.title).toBe("Input title");
     });
 
-    it("autocomplete가 input에 적용된다", () => {
+    it("autocomplete 기본값은 one-time-code이다", () => {
+      const { container } = render(() => <TextInput />);
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input.autocomplete).toBe("one-time-code");
+    });
+
+    it("autocomplete를 명시적으로 지정하면 해당 값이 적용된다", () => {
       const { container } = render(() => <TextInput autocomplete="email" />);
       const input = container.querySelector("input") as HTMLInputElement;
       expect(input.autocomplete).toBe("email");

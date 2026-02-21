@@ -176,6 +176,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
+      extra: "min-w-44",
     });
 
   // 편집 가능 여부
@@ -230,6 +231,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
                 min={formatDateTimeValue(local.min, fieldType())}
                 max={formatDateTimeValue(local.max, fieldType())}
                 step={getStep()}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>
@@ -262,6 +264,7 @@ export const DateTimePicker: Component<DateTimePickerProps> = (props) => {
                 min={formatDateTimeValue(local.min, fieldType())}
                 max={formatDateTimeValue(local.max, fieldType())}
                 step={getStep()}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>

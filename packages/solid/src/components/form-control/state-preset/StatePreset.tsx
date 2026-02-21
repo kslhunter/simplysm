@@ -289,6 +289,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
           type="text"
           class={resolvedInputClass()}
           placeholder="이름..."
+          autocomplete="one-time-code"
           value={inputValue()}
           onInput={(e) => setInputValue(e.currentTarget.value)}
           onKeyDown={handleInputKeyDown}

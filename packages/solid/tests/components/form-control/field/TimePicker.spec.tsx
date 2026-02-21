@@ -26,6 +26,12 @@ describe("TimePicker 컴포넌트", () => {
       expect(input.type).toBe("time");
     });
 
+    it("autocomplete 기본값은 one-time-code이다", () => {
+      const { container } = render(() => <TimePicker />);
+      const input = container.querySelector("input") as HTMLInputElement;
+      expect(input.autocomplete).toBe("one-time-code");
+    });
+
     it("unit=second일 때 step=1이 설정된다", () => {
       const { container } = render(() => <TimePicker unit="second" />);
       const input = container.querySelector("input") as HTMLInputElement;

@@ -328,6 +328,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 value={displayValue()}
                 placeholder={local.placeholder}
                 title={local.title}
+                autocomplete="one-time-code"
                 onInput={handleInput}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
@@ -361,6 +362,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 value={displayValue()}
                 placeholder={local.placeholder}
                 title={local.title}
+                autocomplete="one-time-code"
                 onInput={handleInput}
                 onFocus={handleFocus}
                 onBlur={handleBlur}

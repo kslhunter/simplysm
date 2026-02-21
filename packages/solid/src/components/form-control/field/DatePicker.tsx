@@ -3,7 +3,7 @@ import { type Component, createMemo, type JSX, Show, splitProps } from "solid-js
 import { twMerge } from "tailwind-merge";
 import { DateOnly } from "@simplysm/core-common";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { type FieldSize, fieldInputClass, getFieldWrapperClass } from "./Field.styles";
+import { fieldInputClass, type FieldSize, getFieldWrapperClass } from "./Field.styles";
 import { Invalid } from "../../form-control/Invalid";
 
 type DatePickerUnit = "year" | "month" | "date";
@@ -181,6 +181,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
+      extra: "min-w-32",
     });
 
   // 편집 가능 여부
@@ -231,6 +232,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
                 title={local.title}
                 min={formatDateValue(local.min, fieldType())}
                 max={formatDateValue(local.max, fieldType())}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>
@@ -257,6 +259,7 @@ export const DatePicker: Component<DatePickerProps> = (props) => {
                 title={local.title}
                 min={formatDateValue(local.min, fieldType())}
                 max={formatDateValue(local.max, fieldType())}
+                autocomplete="one-time-code"
                 onChange={handleChange}
               />
             </div>

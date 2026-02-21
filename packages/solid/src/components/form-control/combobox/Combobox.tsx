@@ -314,6 +314,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
             value={query()}
             placeholder={currentValue === undefined ? local.placeholder : undefined}
             disabled={local.disabled}
+            autocomplete="one-time-code"
             onInput={handleInput}
           />
         );

@@ -19,7 +19,7 @@ export const Invalid: ParentComponent<InvalidProps> = (props) => {
     "size-px opacity-0",
     "pointer-events-none -z-10",
   );
-  hiddenInputEl.autocomplete = "off";
+  hiddenInputEl.autocomplete = "one-time-code";
   hiddenInputEl.tabIndex = -1;
   hiddenInputEl.setAttribute("aria-hidden", "true");
 

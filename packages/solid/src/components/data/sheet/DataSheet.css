@@ -1,10 +1,24 @@
-[data-sheet] tbody tr:hover > td {
-  box-shadow: inset 0 0 0 9999px rgb(0 0 0 / 3%);
+[data-sheet] tbody tr {
+  position: relative;
+}
+
+/* ::after 공통 — content가 없으면 렌더링되지 않으므로 각 상태에서 content 설정 */
+[data-sheet] tbody tr::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+[data-sheet] tbody tr:hover::after {
+  content: "";
+  background: rgb(0 0 0 / 3%);
 }
 
 /* 선택 행 시각 효과 — 호버보다 약간 더 진하게 */
-[data-sheet] tbody tr[data-selected] > td {
-  box-shadow: inset 0 0 0 9999px rgb(0 0 0 / 5%);
+[data-sheet] tbody tr[data-selected]::after {
+  content: "";
+  background: rgb(0 0 0 / 5%);
 }
 
 /* 드래그 중인 행 */
@@ -13,14 +27,15 @@
 }
 
 /* inside 드롭 대상 행 */
-[data-sheet] tbody tr[data-drag-over="inside"] > td {
-  box-shadow: inset 0 0 0 9999px rgb(59 130 246 / 10%);
+[data-sheet] tbody tr[data-drag-over="inside"]::after {
+  content: "";
+  background: rgb(59 130 246 / 10%);
 }
 
-.dark [data-sheet] tbody tr:hover > td {
-  box-shadow: inset 0 0 0 9999px rgb(255 255 255 / 4%);
+.dark [data-sheet] tbody tr:hover::after {
+  background: rgb(255 255 255 / 4%);
 }
 
-.dark [data-sheet] tbody tr[data-selected] > td {
-  box-shadow: inset 0 0 0 9999px rgb(255 255 255 / 6%);
+.dark [data-sheet] tbody tr[data-selected]::after {
+  background: rgb(255 255 255 / 6%);
 }
