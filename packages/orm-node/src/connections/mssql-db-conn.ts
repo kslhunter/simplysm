@@ -36,7 +36,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   private _requests: tediousType.Request[] = [];
 
   isConnected = false;
-  isOnTransaction = false;
+  isInTransaction = false;
 
   constructor(
     private readonly _tedious: typeof import("tedious"),
@@ -97,7 +97,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
         this._startTimeout();
         this.isConnected = true;
-        this.isOnTransaction = false;
+        this.isInTransaction = false;
         resolve();
       });
     });
@@ -143,7 +143,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
             return;
           }
 
-          this.isOnTransaction = true;
+          this.isInTransaction = true;
           resolve();
         },
         "",
@@ -167,7 +167,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           return;
         }
 
-        this.isOnTransaction = false;
+        this.isInTransaction = false;
         resolve();
       });
     });
@@ -186,14 +186,14 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
           return;
         }
 
-        this.isOnTransaction = false;
+        this.isInTransaction = false;
         resolve();
       });
     });
   }
 
-  async execute(queries: string[]): Promise<unknown[][]> {
-    const results: unknown[][] = [];
+  async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
+    const results: Record<string, unknown>[][] = [];
     for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
@@ -202,13 +202,16 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     return results;
   }
 
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(
+    query: string,
+    params?: unknown[],
+  ): Promise<Record<string, unknown>[][]> {
     this._assertConnected();
     this._startTimeout();
 
     const conn = this._conn!;
 
-    const results: unknown[][] = [];
+    const results: Record<string, unknown>[][] = [];
 
     logger.debug("쿼리 실행", { queryLength: query.length, params });
     await new Promise<void>((resolve, reject) => {
@@ -373,7 +376,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
   private _resetState(): void {
     this.isConnected = false;
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
     this._conn = undefined;
     this._requests = [];
   }

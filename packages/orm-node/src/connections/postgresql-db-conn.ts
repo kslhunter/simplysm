@@ -19,7 +19,6 @@ import {
   type PostgresqlDbConnConfig,
 } from "../types/db-conn";
 import type { Client } from "pg";
-import type { CopyStreamQuery } from "pg-copy-streams";
 
 const logger = consola.withTag("postgresql-db-conn");
 
@@ -35,11 +34,11 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
   private _connTimeout?: ReturnType<typeof setTimeout>;
 
   isConnected = false;
-  isOnTransaction = false;
+  isInTransaction = false;
 
   constructor(
     private readonly _pg: typeof import("pg"),
-    private readonly _pgCopyFrom: (queryText: string) => CopyStreamQuery,
+    private readonly _pgCopyStreams: typeof import("pg-copy-streams"),
     readonly config: PostgresqlDbConnConfig,
   ) {
     super();
@@ -101,23 +100,23 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     await this._client!.query("BEGIN");
     await this._client!.query(`SET TRANSACTION ISOLATION LEVEL ${level}`);
 
-    this.isOnTransaction = true;
+    this.isInTransaction = true;
   }
 
   async commitTransaction(): Promise<void> {
     this._assertConnected();
     await this._client!.query("COMMIT");
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
   }
 
   async rollbackTransaction(): Promise<void> {
     this._assertConnected();
     await this._client!.query("ROLLBACK");
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
   }
 
-  async execute(queries: string[]): Promise<unknown[][]> {
-    const results: unknown[][] = [];
+  async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
+    const results: Record<string, unknown>[][] = [];
     for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
@@ -125,7 +124,10 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
     return results;
   }
 
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(
+    query: string,
+    params?: unknown[],
+  ): Promise<Record<string, unknown>[][]> {
     this._assertConnected();
 
     logger.debug("쿼리 실행", { queryLength: query.length, params });
@@ -158,7 +160,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
 
     // COPY FROM STDIN 스트림 생성
     const copyQuery = `COPY ${tableName} (${wrappedCols}) FROM STDIN WITH (FORMAT csv, NULL '\\N')`;
-    const stream = this._client!.query(this._pgCopyFrom(copyQuery));
+    const stream = this._client!.query(this._pgCopyStreams.from(copyQuery));
 
     // CSV 데이터 생성
     const csvLines: string[] = [];
@@ -245,7 +247,7 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
 
   private _resetState(): void {
     this.isConnected = false;
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
     this._client = undefined;
   }
 

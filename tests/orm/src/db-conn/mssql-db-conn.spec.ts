@@ -137,11 +137,11 @@ describe("MssqlDbConn", () => {
 
     it("커밋", async () => {
       await conn.beginTransaction();
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`INSERT INTO [TxTable] (name) VALUES ('commit-test')`]);
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
 
       const results = await conn.execute([`SELECT * FROM [TxTable] WHERE name = 'commit-test'`]);
       expect(results[0]).toHaveLength(1);
@@ -152,7 +152,7 @@ describe("MssqlDbConn", () => {
 
       await conn.execute([`INSERT INTO [TxTable] (name) VALUES ('rollback-test')`]);
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
 
       const results = await conn.execute([`SELECT * FROM [TxTable] WHERE name = 'rollback-test'`]);
       expect(results[0]).toHaveLength(0);
@@ -275,10 +275,10 @@ describe("MssqlDbConn", () => {
       const results = await conn.execute([`SELECT * FROM [TypeTable] ORDER BY id`]);
 
       expect(results[0]).toHaveLength(2);
-      expect((results[0][0] as Record<string, unknown>)["bool_val"]).toBe(true);
-      expect((results[0][0] as Record<string, unknown>)["int_val"]).toBe(42);
-      expect((results[0][1] as Record<string, unknown>)["bool_val"]).toBe(false);
-      expect((results[0][1] as Record<string, unknown>)["int_val"]).toBe(-100);
+      expect(results[0][0]["bool_val"]).toBe(true);
+      expect(results[0][0]["int_val"]).toBe(42);
+      expect(results[0][1]["bool_val"]).toBe(false);
+      expect(results[0][1]["int_val"]).toBe(-100);
     });
   });
 
@@ -323,14 +323,14 @@ describe("MssqlDbConn", () => {
       const results = await conn.execute([`SELECT * FROM [NullableTable] ORDER BY id`]);
 
       expect(results[0]).toHaveLength(4);
-      expect((results[0][0] as Record<string, unknown>)["name"]).toBe("test1");
-      expect((results[0][0] as Record<string, unknown>)["value"]).toBe(100);
-      expect((results[0][1] as Record<string, unknown>)["name"]).toBeNull();
-      expect((results[0][1] as Record<string, unknown>)["value"]).toBe(200);
-      expect((results[0][2] as Record<string, unknown>)["name"]).toBe("test3");
-      expect((results[0][2] as Record<string, unknown>)["value"]).toBeNull();
-      expect((results[0][3] as Record<string, unknown>)["name"]).toBeNull();
-      expect((results[0][3] as Record<string, unknown>)["value"]).toBeNull();
+      expect(results[0][0]["name"]).toBe("test1");
+      expect(results[0][0]["value"]).toBe(100);
+      expect(results[0][1]["name"]).toBeNull();
+      expect(results[0][1]["value"]).toBe(200);
+      expect(results[0][2]["name"]).toBe("test3");
+      expect(results[0][2]["value"]).toBeNull();
+      expect(results[0][3]["name"]).toBeNull();
+      expect(results[0][3]["value"]).toBeNull();
     });
   });
 
@@ -378,18 +378,10 @@ describe("MssqlDbConn", () => {
       const results = await conn.execute([`SELECT * FROM [UuidBinaryTable] ORDER BY id`]);
 
       expect(results[0]).toHaveLength(2);
-      expect((results[0][0] as Record<string, unknown>)["uuid_val"]).toBe(
-        testUuid1.toString().toUpperCase(),
-      );
-      expect((results[0][1] as Record<string, unknown>)["uuid_val"]).toBe(
-        testUuid2.toString().toUpperCase(),
-      );
-      expect(
-        new Uint8Array((results[0][0] as Record<string, unknown>)["binary_val"] as ArrayBuffer),
-      ).toEqual(testBinary1);
-      expect(
-        new Uint8Array((results[0][1] as Record<string, unknown>)["binary_val"] as ArrayBuffer),
-      ).toEqual(testBinary2);
+      expect(results[0][0]["uuid_val"]).toBe(testUuid1.toString().toUpperCase());
+      expect(results[0][1]["uuid_val"]).toBe(testUuid2.toString().toUpperCase());
+      expect(new Uint8Array(results[0][0]["binary_val"] as ArrayBuffer)).toEqual(testBinary1);
+      expect(new Uint8Array(results[0][1]["binary_val"] as ArrayBuffer)).toEqual(testBinary2);
     });
   });
 
@@ -417,42 +409,42 @@ describe("MssqlDbConn", () => {
 
     it("READ_UNCOMMITTED 격리 수준", async () => {
       await conn.beginTransaction("READ_UNCOMMITTED");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`UPDATE [IsolationTable] SET value = 200 WHERE id = 1`]);
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("READ_COMMITTED 격리 수준", async () => {
       await conn.beginTransaction("READ_COMMITTED");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`UPDATE [IsolationTable] SET value = 300 WHERE id = 1`]);
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("REPEATABLE_READ 격리 수준", async () => {
       await conn.beginTransaction("REPEATABLE_READ");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       const results = await conn.execute([`SELECT * FROM [IsolationTable] WHERE id = 1`]);
       expect(results[0]).toHaveLength(1);
 
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("SERIALIZABLE 격리 수준", async () => {
       await conn.beginTransaction("SERIALIZABLE");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       const results = await conn.execute([`SELECT * FROM [IsolationTable] WHERE id = 1`]);
       expect(results[0]).toHaveLength(1);
 
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
   });
 });

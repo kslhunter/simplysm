@@ -225,7 +225,7 @@ try {
   await conn.execute(["INSERT INTO User (name) VALUES ('Jane Smith')"]);
   await conn.commitTransaction();
 } catch (err) {
-  if (conn.isOnTransaction) {
+  if (conn.isInTransaction) {
     await conn.rollbackTransaction();
   }
   throw err;
@@ -370,7 +370,7 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 |------------|----------|------|
 | `config` | `DbConnConfig` | Connection config (read-only) |
 | `isConnected` | `boolean` | Connection status |
-| `isOnTransaction` | `boolean` | Transaction in progress |
+| `isInTransaction` | `boolean` | Transaction in progress |
 | `connect()` | `() => Promise<void>` | Establish DB connection |
 | `close()` | `() => Promise<void>` | Close DB connection (PooledDbConn returns to pool) |
 | `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Start transaction |

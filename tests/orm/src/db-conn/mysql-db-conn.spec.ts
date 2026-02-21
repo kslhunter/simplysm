@@ -142,11 +142,11 @@ describe("MysqlDbConn", () => {
 
     it("커밋", async () => {
       await conn.beginTransaction();
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`INSERT INTO \`TestDb\`.\`TxTable\` (name) VALUES ('commit-test')`]);
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'commit-test'`,
@@ -159,7 +159,7 @@ describe("MysqlDbConn", () => {
 
       await conn.execute([`INSERT INTO \`TestDb\`.\`TxTable\` (name) VALUES ('rollback-test')`]);
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`TxTable\` WHERE name = 'rollback-test'`,
@@ -246,9 +246,9 @@ describe("MysqlDbConn", () => {
       ]);
 
       expect(results[0]).toHaveLength(3);
-      expect((results[0][0] as { name: string }).name).toBe("tab\there");
-      expect((results[0][1] as { name: string }).name).toBe("new\nline");
-      expect((results[0][2] as { name: string }).name).toBe("back\\slash");
+      expect(results[0][0]["name"]).toBe("tab\there");
+      expect(results[0][1]["name"]).toBe("new\nline");
+      expect(results[0][2]["name"]).toBe("back\\slash");
     });
   });
 
@@ -313,10 +313,10 @@ describe("MysqlDbConn", () => {
       const results = await conn.execute([`SELECT * FROM \`TestDb\`.\`TypeTable\` ORDER BY id`]);
 
       expect(results[0]).toHaveLength(2);
-      expect((results[0][0] as Record<string, unknown>)["bool_val"]).toBe(1);
-      expect((results[0][0] as Record<string, unknown>)["int_val"]).toBe(42);
-      expect((results[0][1] as Record<string, unknown>)["bool_val"]).toBe(0);
-      expect((results[0][1] as Record<string, unknown>)["int_val"]).toBe(-100);
+      expect(results[0][0]["bool_val"]).toBe(1);
+      expect(results[0][0]["int_val"]).toBe(42);
+      expect(results[0][1]["bool_val"]).toBe(0);
+      expect(results[0][1]["int_val"]).toBe(-100);
     });
   });
 
@@ -361,14 +361,14 @@ describe("MysqlDbConn", () => {
       ]);
 
       expect(results[0]).toHaveLength(4);
-      expect((results[0][0] as Record<string, unknown>)["name"]).toBe("test1");
-      expect((results[0][0] as Record<string, unknown>)["value"]).toBe(100);
-      expect((results[0][1] as Record<string, unknown>)["name"]).toBeNull();
-      expect((results[0][1] as Record<string, unknown>)["value"]).toBe(200);
-      expect((results[0][2] as Record<string, unknown>)["name"]).toBe("test3");
-      expect((results[0][2] as Record<string, unknown>)["value"]).toBeNull();
-      expect((results[0][3] as Record<string, unknown>)["name"]).toBeNull();
-      expect((results[0][3] as Record<string, unknown>)["value"]).toBeNull();
+      expect(results[0][0]["name"]).toBe("test1");
+      expect(results[0][0]["value"]).toBe(100);
+      expect(results[0][1]["name"]).toBeNull();
+      expect(results[0][1]["value"]).toBe(200);
+      expect(results[0][2]["name"]).toBe("test3");
+      expect(results[0][2]["value"]).toBeNull();
+      expect(results[0][3]["name"]).toBeNull();
+      expect(results[0][3]["value"]).toBeNull();
     });
   });
 
@@ -419,10 +419,10 @@ describe("MysqlDbConn", () => {
       // MySQL은 UUID를 BINARY(16)으로 저장하므로 HEX 변환 결과와 비교
       const expectedUuid1Hex = testUuid1.toString().replace(/-/g, "").toUpperCase();
       const expectedUuid2Hex = testUuid2.toString().replace(/-/g, "").toUpperCase();
-      expect((results[0][0] as Record<string, unknown>)["uuid_hex"]).toBe(expectedUuid1Hex);
-      expect((results[0][1] as Record<string, unknown>)["uuid_hex"]).toBe(expectedUuid2Hex);
-      expect((results[0][0] as Record<string, unknown>)["binary_hex"]).toBe("01020304");
-      expect((results[0][1] as Record<string, unknown>)["binary_hex"]).toBe("AABBCCDDEEFF");
+      expect(results[0][0]["uuid_hex"]).toBe(expectedUuid1Hex);
+      expect(results[0][1]["uuid_hex"]).toBe(expectedUuid2Hex);
+      expect(results[0][0]["binary_hex"]).toBe("01020304");
+      expect(results[0][1]["binary_hex"]).toBe("AABBCCDDEEFF");
     });
   });
 
@@ -448,25 +448,25 @@ describe("MysqlDbConn", () => {
 
     it("READ_UNCOMMITTED 격리 수준", async () => {
       await conn.beginTransaction("READ_UNCOMMITTED");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`UPDATE \`TestDb\`.\`IsolationTable\` SET value = 200 WHERE id = 1`]);
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("READ_COMMITTED 격리 수준", async () => {
       await conn.beginTransaction("READ_COMMITTED");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       await conn.execute([`UPDATE \`TestDb\`.\`IsolationTable\` SET value = 300 WHERE id = 1`]);
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("REPEATABLE_READ 격리 수준", async () => {
       await conn.beginTransaction("REPEATABLE_READ");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`,
@@ -474,12 +474,12 @@ describe("MysqlDbConn", () => {
       expect(results[0]).toHaveLength(1);
 
       await conn.rollbackTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
 
     it("SERIALIZABLE 격리 수준", async () => {
       await conn.beginTransaction("SERIALIZABLE");
-      expect(conn.isOnTransaction).toBe(true);
+      expect(conn.isInTransaction).toBe(true);
 
       const results = await conn.execute([
         `SELECT * FROM \`TestDb\`.\`IsolationTable\` WHERE id = 1`,
@@ -487,7 +487,7 @@ describe("MysqlDbConn", () => {
       expect(results[0]).toHaveLength(1);
 
       await conn.commitTransaction();
-      expect(conn.isOnTransaction).toBe(false);
+      expect(conn.isInTransaction).toBe(false);
     });
   });
 });

@@ -34,9 +34,9 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
     return this._rawConn?.isConnected ?? false;
   }
 
-  // [Property] isOnTransaction
-  get isOnTransaction(): boolean {
-    return this._rawConn?.isOnTransaction ?? false;
+  // [Property] isInTransaction
+  get isInTransaction(): boolean {
+    return this._rawConn?.isInTransaction ?? false;
   }
 
   /**
@@ -72,7 +72,7 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
   async close(): Promise<void> {
     if (this._rawConn != null) {
       // 1. 트랜잭션 진행 중이면 롤백하여 깨끗한 상태로 풀에 반환
-      if (this._rawConn.isOnTransaction) {
+      if (this._rawConn.isInTransaction) {
         try {
           await this._rawConn.rollbackTransaction();
         } catch (err) {
@@ -141,7 +141,7 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @returns 각 쿼리의 결과 배열
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async execute(queries: string[]): Promise<unknown[][]> {
+  async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
     const conn = this._requireRawConn();
     return conn.execute(queries);
   }
@@ -154,7 +154,10 @@ export class PooledDbConn extends EventEmitter<{ close: void }> implements DbCon
    * @returns 쿼리 결과 배열
    * @throws {SdError} 연결이 획득되지 않은 상태일 때
    */
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(
+    query: string,
+    params?: unknown[],
+  ): Promise<Record<string, unknown>[][]> {
     const conn = this._requireRawConn();
     return conn.executeParametrized(query, params);
   }
