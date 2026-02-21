@@ -153,10 +153,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
         buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
 
       if (meta != null) {
-        const parsed = await parseQueryResult<T>(
-          targetResultSet as Record<string, unknown>[],
-          meta,
-        );
+        const parsed = await parseQueryResult<T>(targetResultSet, meta);
         results.push(parsed ?? []);
       } else {
         results.push(targetResultSet as T[]);
