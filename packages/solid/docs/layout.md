@@ -273,7 +273,7 @@ const handleDrop = (info: KanbanDropInfo) => {
 | `selectedValues` | `unknown[]` | - | Selected card values |
 | `onSelectedValuesChange` | `(values: unknown[]) => void` | - | Selection change callback |
 
-`KanbanDropInfo`: `{ sourceValue: unknown; targetLaneValue: unknown; targetCardValue: unknown | undefined; position: "before" | "after" | undefined }`
+`KanbanDropInfo`: `{ sourceValue?: unknown; targetLaneValue?: unknown; targetCardValue?: unknown; position?: "before" | "after" }`
 
 **Kanban.Lane Props:**
 

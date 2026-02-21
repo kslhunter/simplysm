@@ -206,7 +206,7 @@ import "@simplysm/solid/tailwind.css";
 ## Styling
 
 - [Semantic Colors](docs/styling.md#semantic-colors) - primary, info, success, warning, danger, base
-- [Custom Sizes](docs/styling.md#custom-sizes) - Field height classes (h-field, h-field-sm, h-field-lg, h-field-xl)
+- [Custom Sizes](docs/styling.md#custom-sizes) - Field height classes (h-field, h-field-xs, h-field-sm, h-field-lg, h-field-xl)
 - [z-index Layers](docs/styling.md#z-index-layers) - Sidebar, dropdown, modal z-index values
 - [Dark Mode](docs/styling.md#dark-mode) - Class-based dark mode with auto-toggle
 - [Styling Patterns](docs/styling.md#styling-patterns) - clsx + twMerge usage patterns

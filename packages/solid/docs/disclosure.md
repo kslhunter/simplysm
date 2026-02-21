@@ -18,7 +18,7 @@ import { Tabs } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `string` | - | Selected tab value |
 | `onValueChange` | `(value: string) => void` | - | Tab change callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
 

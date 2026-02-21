@@ -20,10 +20,12 @@
 | Class | Description |
 |-------|-------------|
 | `h-field` / `size-field` | Default field height (based on `py-1`) |
+| `h-field-xs` / `size-field-xs` | Extra-small field height (based on `py-0`) |
 | `h-field-sm` / `size-field-sm` | Small field height (based on `py-0.5`) |
 | `h-field-lg` / `size-field-lg` | Large field height (based on `py-2`) |
 | `h-field-xl` / `size-field-xl` | Extra-large field height (based on `py-3`) |
 | `h-field-inset` / `size-field-inset` | Inset field height (excludes border) |
+| `h-field-inset-xs` / `size-field-inset-xs` | Extra-small inset field height |
 | `h-field-inset-sm` / `size-field-inset-sm` | Small inset field height |
 | `h-field-inset-lg` / `size-field-inset-lg` | Large inset field height |
 | `h-field-inset-xl` / `size-field-inset-xl` | Extra-large inset field height |
@@ -76,7 +78,7 @@ const className = twMerge(baseClass, props.class);
 
 ```typescript
 import {
-  type ComponentSize,         // "sm" | "lg" | "xl"
+  type ComponentSize,         // "xs" | "sm" | "lg" | "xl"
   type ComponentSizeCompact,  // "sm" | "lg" (used by ColorPicker, Progress)
   type SemanticTheme,         // "primary" | "info" | "success" | "warning" | "danger" | "base"
   borderDefault,         // Tailwind classes for default border color
@@ -86,6 +88,7 @@ import {
   textMuted,             // Tailwind classes for muted text color
   textPlaceholder,       // Tailwind classes for placeholder text color
   disabledOpacity,       // Tailwind classes for disabled state opacity
+  paddingXs,             // Tailwind classes for extra-small padding (px-1 py-0)
   paddingSm,             // Tailwind classes for small padding (px-1.5 py-0.5)
   paddingLg,             // Tailwind classes for large padding (px-3 py-2)
   paddingXl,             // Tailwind classes for extra-large padding (px-4 py-3)
@@ -110,7 +113,7 @@ import {
 
 ```typescript
 import {
-  type FieldSize,                    // "sm" | "lg" | "xl"
+  type FieldSize,                    // "xs" | "sm" | "lg" | "xl"
   fieldBaseClass,                    // Base wrapper classes (inline-flex, field surface, h-field)
   fieldSizeClasses,                  // Size variant classes per FieldSize
   fieldInsetClass,                   // Inset mode wrapper classes
@@ -140,7 +143,7 @@ import {
 
 ```typescript
 import {
-  type CheckboxSize,               // "sm" | "lg" | "xl"
+  type CheckboxSize,               // "xs" | "sm" | "lg" | "xl"
   checkboxBaseClass,               // Base wrapper classes
   indicatorBaseClass,              // Base indicator (box) classes
   checkedClass,                    // Checked state classes (primary color)

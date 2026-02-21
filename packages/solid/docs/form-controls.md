@@ -17,7 +17,7 @@ import { Button } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `theme` | `"primary" \| "info" \| "success" \| "warning" \| "danger" \| "base"` | `"base"` | Color theme |
 | `variant` | `"solid" \| "outline" \| "ghost"` | `"outline"` | Style variant |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style (removes border/rounded corners) |
 | `disabled` | `boolean` | - | Disabled state |
 
@@ -62,7 +62,7 @@ import { TextInput } from "@simplysm/solid";
 | `autocomplete` | `JSX.HTMLAutocomplete` | - | HTML autocomplete attribute |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -106,7 +106,7 @@ import { NumberInput } from "@simplysm/solid";
 | `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -158,7 +158,7 @@ import { DateOnly } from "@simplysm/core-common";
 | `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -205,7 +205,7 @@ import { DateTime } from "@simplysm/core-common";
 | `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -252,7 +252,7 @@ import { Time } from "@simplysm/core-common";
 | `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -295,7 +295,7 @@ const [to, setTo] = createSignal<DateOnly>();
 | `onToChange` | `(value: DateOnly \| undefined) => void` | - | End date change callback |
 | `required` | `boolean` | - | Required field |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "일", month: "월", range: "범위" }` | Period type labels (Korean by default) |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -327,7 +327,7 @@ import { Textarea } from "@simplysm/solid";
 | `minRows` | `number` | `1` | Minimum number of rows |
 | `disabled` | `boolean` | - | Disabled state |
 | `readonly` | `boolean` | - | Read-only state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -405,7 +405,7 @@ import { Select } from "@simplysm/solid";
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -458,7 +458,7 @@ import { Combobox } from "@simplysm/solid";
 | `parseCustomValue` | `(text: string) => T` | - | Custom value parsing function |
 | `placeholder` | `string` | - | Placeholder |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `inset` | `boolean` | - | Inset style |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
@@ -492,7 +492,7 @@ import { Checkbox, Radio } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `boolean` | `false` | Checked state |
 | `onValueChange` | `(value: boolean) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `inset` | `boolean` | - | Inset style |
 | `inline` | `boolean` | - | Inline style |
@@ -537,7 +537,7 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T[]` | `[]` | Selected values array |
 | `onValueChange` | `(value: T[]) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
@@ -551,7 +551,7 @@ import { CheckboxGroup, RadioGroup } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `T` | - | Selected value |
 | `onValueChange` | `(value: T) => void` | - | Value change callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 | `disabled` | `boolean` | - | Disable all items |
 | `inline` | `boolean` | - | Inline style |
 | `inset` | `boolean` | - | Inset style |
@@ -579,6 +579,7 @@ import { ColorPicker } from "@simplysm/solid";
 |------|------|---------|-------------|
 | `value` | `string` | `"#000000"` | Color value (#RRGGBB format) |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
+| `title` | `string` | - | Tooltip title |
 | `size` | `"sm" \| "lg"` | - | Size |
 | `disabled` | `boolean` | - | Disabled state |
 | `required` | `boolean` | - | Required field (error: "필수 입력 항목입니다") |
@@ -622,7 +623,7 @@ import { RichTextEditor } from "@simplysm/solid";
 | `value` | `string` | - | HTML string value |
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `disabled` | `boolean` | - | Disabled state |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
 
 ---
 
@@ -765,7 +766,9 @@ import { Numpad } from "@simplysm/solid";
 | `useEnterButton` | `boolean` | - | Show ENT button |
 | `useMinusButton` | `boolean` | - | Show minus button |
 | `onEnterButtonClick` | `() => void` | - | ENT click callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
 
 ---
 
@@ -788,4 +791,6 @@ import { StatePreset } from "@simplysm/solid";
 | `presetKey` | `string` | **(required)** | Preset storage key |
 | `value` | `T` | **(required)** | Current state value |
 | `onValueChange` | `(value: T) => void` | **(required)** | State restore callback |
-| `size` | `"sm" \| "lg" \| "xl"` | - | Size |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
+| `class` | `string` | - | Additional CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
