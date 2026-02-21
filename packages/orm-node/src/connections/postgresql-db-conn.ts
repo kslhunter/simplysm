@@ -212,7 +212,13 @@ export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements D
       case "text": {
         const str = value as string;
         // CSV 형식: 쌍따옴표로 감싸고, 내부 쌍따옴표는 두 번
-        if (str.includes('"') || str.includes(",") || str.includes("\n") || str.includes("\r")) {
+        if (
+          str.includes('"') ||
+          str.includes(",") ||
+          str.includes("\n") ||
+          str.includes("\r") ||
+          str.includes("\\")
+        ) {
           return '"' + str.replace(/"/g, '""') + '"';
         }
         return str;
