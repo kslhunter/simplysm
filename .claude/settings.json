@@ -35,7 +35,15 @@
       "mcp__playwright__browser_network_requests",
       "mcp__plugin_context7_context7__query-docs",
       "mcp__plugin_context7_context7__resolve-library-id"
-    ]
+    ],
+    "defaultMode": "default"
+  },
+  "model": "opus",
+  "respectGitignore": true,
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "github@claude-plugins-official": true
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
@@ -47,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/notify.py"
+            "command": "python3 .claude/hooks/notify.py"
           }
         ]
       }
