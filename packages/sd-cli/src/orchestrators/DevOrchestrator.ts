@@ -5,11 +5,7 @@ import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
-import {
-  setupReplaceDeps,
-  watchReplaceDeps,
-  type WatchReplaceDepResult,
-} from "../utils/replace-deps";
+import { watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
@@ -148,9 +144,8 @@ export class DevOrchestrator {
       throw err;
     }
 
-    // replaceDeps 설정이 있으면 symlink 교체
+    // replaceDeps 설정이 있으면 watch 시작 (초기 교체는 sd-cli.ts에서 처리됨)
     if (this._sdConfig.replaceDeps != null) {
-      await setupReplaceDeps(this._cwd, this._sdConfig.replaceDeps);
       this._replaceDepWatcher = await watchReplaceDeps(this._cwd, this._sdConfig.replaceDeps);
     }
 

@@ -3,11 +3,7 @@ import { consola } from "consola";
 import type { BuildTarget, SdConfig, SdPackageConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { filterPackagesByTargets } from "../utils/package-utils";
-import {
-  setupReplaceDeps,
-  watchReplaceDeps,
-  type WatchReplaceDepResult,
-} from "../utils/replace-deps";
+import { watchReplaceDeps, type WatchReplaceDepResult } from "../utils/replace-deps";
 import { printErrors } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import { ResultCollector } from "../infra/ResultCollector";
@@ -77,9 +73,8 @@ export class WatchOrchestrator {
       throw err;
     }
 
-    // replaceDeps 설정이 있으면 symlink 교체
+    // replaceDeps 설정이 있으면 watch 시작 (초기 교체는 sd-cli.ts에서 처리됨)
     if (sdConfig.replaceDeps != null) {
-      await setupReplaceDeps(this._cwd, sdConfig.replaceDeps);
       this._replaceDepWatcher = await watchReplaceDeps(this._cwd, sdConfig.replaceDeps);
     }
 

@@ -11,7 +11,6 @@ import type {
 } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
-import { setupReplaceDeps } from "../utils/replace-deps";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { deserializeDiagnostic } from "../utils/typecheck-serialization";
 import type { LintOptions } from "../commands/lint";
@@ -164,11 +163,6 @@ export class BuildOrchestrator {
       this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
-    }
-
-    // replaceDeps 설정이 있으면 symlink 교체
-    if (this._sdConfig.replaceDeps != null) {
-      await setupReplaceDeps(this._cwd, this._sdConfig.replaceDeps);
     }
 
     // VER, DEV 환경변수 준비
