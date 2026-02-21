@@ -59,47 +59,23 @@ function createTestItems(): AppStructureItem<string>[] {
 }
 
 describe("createAppStructure", () => {
-  describe("allRoutes", () => {
-    it("모든 리프 아이템의 경로, permCode, modulesChain, requiredModulesChain을 포함한다", () => {
+  describe("usableRoutes", () => {
+    it("모든 리프 아이템의 경로와 컴포넌트를 포함한다", () => {
       createRoot((dispose) => {
         const result = createAppStructure({ items: createTestItems() });
 
-        expect(result.allRoutes).toEqual([
-          {
-            path: "/sales/invoice",
-            component: DummyA,
-            permCode: "/home/sales/invoice/use",
-            modulesChain: [["sales"]],
-            requiredModulesChain: [],
-          },
-          {
-            path: "/sales/order",
-            component: DummyB,
-            permCode: "/home/sales/order/use",
-            modulesChain: [["sales"]],
-            requiredModulesChain: [["sales", "erp"]],
-          },
-          {
-            path: "/admin/users",
-            component: DummyC,
-            permCode: undefined,
-            modulesChain: [],
-            requiredModulesChain: [],
-          },
-          {
-            path: "/admin/hidden",
-            component: DummyD,
-            permCode: undefined,
-            modulesChain: [],
-            requiredModulesChain: [],
-          },
+        expect(result.usableRoutes()).toEqual([
+          { path: "/sales/invoice", component: DummyA },
+          { path: "/sales/order", component: DummyB },
+          { path: "/admin/users", component: DummyC },
+          { path: "/admin/hidden", component: DummyD },
         ]);
 
         dispose();
       });
     });
 
-    it("component가 없는 아이템은 allRoutes에 포함되지 않는다", () => {
+    it("component가 없는 아이템은 usableRoutes에 포함되지 않는다", () => {
       createRoot((dispose) => {
         const items: AppStructureItem<string>[] = [
           {
@@ -110,30 +86,44 @@ describe("createAppStructure", () => {
         ];
 
         const result = createAppStructure({ items });
-        expect(result.allRoutes).toEqual([]);
+        expect(result.usableRoutes()).toEqual([]);
 
         dispose();
       });
     });
 
-    it("allRoutes는 permRecord나 usableModules와 무관하게 항상 모든 route를 포함한다", () => {
+    it("usableModules에 매칭되지 않는 모듈은 필터링된다", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["erp"]);
-        const [perms] = createSignal<Record<string, boolean>>({
-          "/home/sales/invoice/use": false,
-        });
 
         const result = createAppStructure({
           items: createTestItems(),
           usableModules: modules,
-          permRecord: perms,
         });
 
-        // allRoutes는 static — 필터링 없이 모든 route 포함
-        expect(result.allRoutes).toHaveLength(4);
-        expect(result.allRoutes.map((r) => r.path)).toEqual([
+        // sales 그룹은 modules: ["sales"] — "erp"만 있으면 필터링됨
+        // admin은 modules 없음 — 항상 포함
+        const routes = result.usableRoutes();
+        expect(routes.map((r) => r.path)).toEqual(["/admin/users", "/admin/hidden"]);
+
+        dispose();
+      });
+    });
+
+    it("requiredModules가 모두 없으면 필터링된다", () => {
+      createRoot((dispose) => {
+        const [modules] = createSignal<string[]>(["sales"]);
+
+        const result = createAppStructure({
+          items: createTestItems(),
+          usableModules: modules,
+        });
+
+        // order는 requiredModules: ["sales", "erp"] — "erp"가 없으므로 필터링됨
+        // invoice는 requiredModules 없음 — 포함
+        const routes = result.usableRoutes();
+        expect(routes.map((r) => r.path)).toEqual([
           "/sales/invoice",
-          "/sales/order",
           "/admin/users",
           "/admin/hidden",
         ]);
@@ -142,45 +132,7 @@ describe("createAppStructure", () => {
       });
     });
 
-    it("perms에 use가 없으면 permCode가 undefined다", () => {
-      createRoot((dispose) => {
-        const items: AppStructureItem<string>[] = [
-          {
-            code: "home",
-            title: "홈",
-            children: [
-              {
-                code: "page",
-                title: "페이지",
-                component: DummyA,
-                perms: ["edit"] as ("use" | "edit")[],
-              },
-            ],
-          },
-        ];
-
-        const result = createAppStructure({ items });
-        expect(result.allRoutes[0].permCode).toBeUndefined();
-
-        dispose();
-      });
-    });
-  });
-
-  describe("checkRouteAccess", () => {
-    it("permRecord/usableModules가 없으면 모든 route에 true를 반환한다", () => {
-      createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
-
-        for (const route of result.allRoutes) {
-          expect(result.checkRouteAccess(route)).toBe(true);
-        }
-
-        dispose();
-      });
-    });
-
-    it("permCode가 있고 permRecord에서 false이면 접근 불가", () => {
+    it("permRecord에서 use 권한이 없으면 필터링된다", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({
           "/home/sales/invoice/use": false,
@@ -192,61 +144,18 @@ describe("createAppStructure", () => {
           permRecord: perms,
         });
 
-        const invoiceRoute = result.allRoutes.find((r) => r.path === "/sales/invoice")!;
-        const orderRoute = result.allRoutes.find((r) => r.path === "/sales/order")!;
-        const usersRoute = result.allRoutes.find((r) => r.path === "/admin/users")!;
-
-        expect(result.checkRouteAccess(invoiceRoute)).toBe(false);
-        expect(result.checkRouteAccess(orderRoute)).toBe(true);
-        expect(result.checkRouteAccess(usersRoute)).toBe(true); // permCode 없음
-
-        dispose();
-      });
-    });
-
-    it("modulesChain: usableModules에 매칭되는 모듈이 없으면 접근 불가", () => {
-      createRoot((dispose) => {
-        const [modules] = createSignal<string[]>(["erp"]);
-
-        const result = createAppStructure({
-          items: createTestItems(),
-          usableModules: modules,
-        });
-
-        // sales 그룹은 modules: ["sales"] — "erp"만 있으면 접근 불가
-        const invoiceRoute = result.allRoutes.find((r) => r.path === "/sales/invoice")!;
-        expect(result.checkRouteAccess(invoiceRoute)).toBe(false);
-
-        // admin은 modules 없음 — 항상 접근 가능
-        const usersRoute = result.allRoutes.find((r) => r.path === "/admin/users")!;
-        expect(result.checkRouteAccess(usersRoute)).toBe(true);
+        const routes = result.usableRoutes();
+        expect(routes.map((r) => r.path)).toEqual([
+          "/sales/order",
+          "/admin/users",
+          "/admin/hidden",
+        ]);
 
         dispose();
       });
     });
 
-    it("requiredModulesChain: 필수 모듈이 모두 없으면 접근 불가", () => {
-      createRoot((dispose) => {
-        const [modules] = createSignal<string[]>(["sales"]);
-
-        const result = createAppStructure({
-          items: createTestItems(),
-          usableModules: modules,
-        });
-
-        // order는 requiredModules: ["sales", "erp"] — "erp"가 없으므로 접근 불가
-        const orderRoute = result.allRoutes.find((r) => r.path === "/sales/order")!;
-        expect(result.checkRouteAccess(orderRoute)).toBe(false);
-
-        // invoice는 requiredModules 없음 — 접근 가능
-        const invoiceRoute = result.allRoutes.find((r) => r.path === "/sales/invoice")!;
-        expect(result.checkRouteAccess(invoiceRoute)).toBe(true);
-
-        dispose();
-      });
-    });
-
-    it("module과 perm 모두 충족해야 접근 가능", () => {
+    it("module과 perm 모두 충족해야 포함된다", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["sales", "erp"]);
         const [perms] = createSignal<Record<string, boolean>>({
@@ -260,11 +169,23 @@ describe("createAppStructure", () => {
           permRecord: perms,
         });
 
-        const invoiceRoute = result.allRoutes.find((r) => r.path === "/sales/invoice")!;
-        const orderRoute = result.allRoutes.find((r) => r.path === "/sales/order")!;
+        const routes = result.usableRoutes();
+        expect(routes.map((r) => r.path)).toEqual([
+          "/sales/invoice",
+          "/admin/users",
+          "/admin/hidden",
+        ]);
 
-        expect(result.checkRouteAccess(invoiceRoute)).toBe(true);
-        expect(result.checkRouteAccess(orderRoute)).toBe(false); // perm 불충족
+        dispose();
+      });
+    });
+
+    it("isNotMenu 아이템도 route에 포함된다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({ items: createTestItems() });
+
+        const routes = result.usableRoutes();
+        expect(routes.find((r) => r.path === "/admin/hidden")).toBeDefined();
 
         dispose();
       });

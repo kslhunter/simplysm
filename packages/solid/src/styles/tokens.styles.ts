@@ -1,5 +1,5 @@
 // ── 테두리 ──
-export const borderDefault = "border-base-300 dark:border-base-700";
+export const borderDefault = "border-base-200 dark:border-base-700";
 export const borderSubtle = "border-base-200 dark:border-base-700";
 
 // ── 표면 배경 ──
@@ -11,7 +11,7 @@ export const textMuted = "text-base-400 dark:text-base-500";
 export const textPlaceholder = "placeholder:text-base-400 dark:placeholder:text-base-500";
 
 // ── disabled ──
-export const disabledOpacity = "cursor-default opacity-50 pointer-events-none";
+export const disabledOpacity = "cursor-default opacity-30 pointer-events-none";
 
 // ── 사이즈 ──
 export type ComponentSize = "xs" | "sm" | "lg" | "xl";

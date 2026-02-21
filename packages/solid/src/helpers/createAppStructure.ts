@@ -61,12 +61,9 @@ export interface AppFlatPerm<TModule = string> {
   requiredModulesChain: TModule[][];
 }
 
-export interface AppRoute<TModule = string> {
+export interface AppRoute {
   path: string;
   component: Component;
-  permCode?: string;
-  modulesChain: TModule[][];
-  requiredModulesChain: TModule[][];
 }
 
 export interface AppFlatMenu {
@@ -76,12 +73,11 @@ export interface AppFlatMenu {
 
 export interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
-  allRoutes: AppRoute<TModule>[];
+  usableRoutes: Accessor<AppRoute[]>;
   usableMenus: Accessor<AppMenu[]>;
   usableFlatMenus: Accessor<AppFlatMenu[]>;
   usablePerms: Accessor<AppPerm<TModule>[]>;
   allFlatPerms: AppFlatPerm<TModule>[];
-  checkRouteAccess(route: AppRoute<TModule>): boolean;
   getTitleChainByHref(href: string): string[];
 }
 
@@ -146,44 +142,29 @@ function checkModules<TModule>(
 
 // ── Routes ──
 
-function buildAllRoutes<TModule>(
+function buildUsableRoutes<TModule>(
   items: AppStructureItem<TModule>[],
   routeBasePath: string,
   permBasePath: string,
-  modulesChain: TModule[][],
-  requiredModulesChain: TModule[][],
-): AppRoute<TModule>[] {
-  const result: AppRoute<TModule>[] = [];
+  usableModules: TModule[] | undefined,
+  permRecord: Record<string, boolean> | undefined,
+): AppRoute[] {
+  const result: AppRoute[] = [];
 
   for (const item of items) {
-    const currModulesChain: TModule[][] = item.modules
-      ? [...modulesChain, item.modules]
-      : modulesChain;
-    const currRequiredModulesChain: TModule[][] = item.requiredModules
-      ? [...requiredModulesChain, item.requiredModules]
-      : requiredModulesChain;
+    if (!checkModules(item.modules, item.requiredModules, usableModules)) continue;
 
     const routePath = routeBasePath + "/" + item.code;
     const permPath = permBasePath + "/" + item.code;
 
     if (isGroupItem(item)) {
       result.push(
-        ...buildAllRoutes(
-          item.children,
-          routePath,
-          permPath,
-          currModulesChain,
-          currRequiredModulesChain,
-        ),
+        ...buildUsableRoutes(item.children, routePath, permPath, usableModules, permRecord),
       );
     } else if (item.component !== undefined) {
-      result.push({
-        path: routePath,
-        component: item.component,
-        permCode: item.perms?.includes("use") ? permPath + "/use" : undefined,
-        modulesChain: currModulesChain,
-        requiredModulesChain: currRequiredModulesChain,
-      });
+      if (permRecord !== undefined && item.perms?.includes("use") && !permRecord[permPath + "/use"])
+        continue;
+      result.push({ path: routePath, component: item.component });
     }
   }
 
@@ -441,24 +422,25 @@ export function createAppStructure<
 }): AppStructure<TModule> & { perms: InferPerms<TItems> } {
   const allFlatPerms = collectFlatPerms(opts.items);
 
-  const allRoutes: AppRoute<TModule>[] = [];
-  for (const top of opts.items) {
-    if (isGroupItem(top)) {
-      const topModulesChain: TModule[][] = top.modules ? [top.modules] : [];
-      const topRequiredModulesChain: TModule[][] = top.requiredModules ? [top.requiredModules] : [];
-      allRoutes.push(
-        ...buildAllRoutes(
-          top.children,
-          "",
-          "/" + top.code,
-          topModulesChain,
-          topRequiredModulesChain,
-        ),
-      );
-    }
-  }
-
   const memos = createRoot(() => {
+    const usableRoutes = createMemo(() => {
+      const routes: AppRoute[] = [];
+      for (const top of opts.items) {
+        if (isGroupItem(top)) {
+          routes.push(
+            ...buildUsableRoutes(
+              top.children,
+              "",
+              "/" + top.code,
+              opts.usableModules?.(),
+              opts.permRecord?.(),
+            ),
+          );
+        }
+      }
+      return routes;
+    });
+
     const usableMenus = createMemo(() => {
       const menus: AppMenu[] = [];
       for (const top of opts.items) {
@@ -480,42 +462,18 @@ export function createAppStructure<
 
     const usablePerms = createMemo(() => buildPerms(opts.items, "", opts.usableModules?.()));
 
-    return { usableMenus, usableFlatMenus, usablePerms };
+    return { usableRoutes, usableMenus, usableFlatMenus, usablePerms };
   });
 
   const permsObj = buildPermsObject(opts.items, "", opts.permRecord);
 
   return {
     items: opts.items,
-    allRoutes,
+    usableRoutes: memos.usableRoutes,
     usableMenus: memos.usableMenus,
     usableFlatMenus: memos.usableFlatMenus,
     usablePerms: memos.usablePerms,
     allFlatPerms,
-    checkRouteAccess(route: AppRoute<TModule>): boolean {
-      const usableModules = opts.usableModules?.();
-      if (usableModules !== undefined) {
-        for (const modules of route.modulesChain) {
-          if (modules.length > 0 && !modules.some((m) => usableModules.includes(m))) {
-            return false;
-          }
-        }
-        for (const modules of route.requiredModulesChain) {
-          if (modules.length > 0 && !modules.every((m) => usableModules.includes(m))) {
-            return false;
-          }
-        }
-      }
-
-      if (route.permCode !== undefined) {
-        const permRecord = opts.permRecord?.();
-        if (permRecord !== undefined) {
-          return permRecord[route.permCode] ?? false;
-        }
-      }
-
-      return true;
-    },
     perms: permsObj as InferPerms<TItems>,
     getTitleChainByHref(href: string): string[] {
       const codes = href.split("/").filter(Boolean);
