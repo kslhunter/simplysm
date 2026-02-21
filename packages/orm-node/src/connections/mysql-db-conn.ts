@@ -267,6 +267,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         // 탭, 줄바꿈, 백슬래시 이스케이프
         return str
           .replace(/\\/g, "\\\\")
+          .replace(/\0/g, "\\0")
           .replace(/\t/g, "\\t")
           .replace(/\n/g, "\\n")
           .replace(/\r/g, "\\r");
