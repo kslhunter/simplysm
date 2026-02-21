@@ -28,7 +28,7 @@ describe("PostgreSQL DbContext - trans", () => {
     pgCopyStreams = await import("pg-copy-streams");
 
     // raw SQL 실행을 위한 직접 연결
-    conn = new PostgresqlDbConn(pg, pgCopyStreams.from, postgresqlConfig);
+    conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await conn.connect();
     await conn.execute([
       `DROP TABLE IF EXISTS "TestDb"."public"."User"`,
@@ -46,7 +46,7 @@ describe("PostgreSQL DbContext - trans", () => {
 
   afterAll(async () => {
     // 테이블 정리
-    const cleanupConn = new PostgresqlDbConn(pg, pgCopyStreams.from, postgresqlConfig);
+    const cleanupConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await cleanupConn.connect();
     await cleanupConn.execute([`DROP TABLE IF EXISTS "TestDb"."public"."User"`]);
     await cleanupConn.close();

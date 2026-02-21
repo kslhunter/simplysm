@@ -23,7 +23,7 @@ describe("PostgreSQL Escape Integration Test", () => {
     pg = await import("pg");
     pgCopyStreams = await import("pg-copy-streams");
 
-    const conn = new PostgresqlDbConn(pg, pgCopyStreams.from, postgresqlConfig);
+    const conn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await conn.connect();
     await conn.execute([
       `DROP TABLE IF EXISTS "public"."EscapeTest"`,
@@ -39,7 +39,7 @@ describe("PostgreSQL Escape Integration Test", () => {
   });
 
   afterAll(async () => {
-    const cleanupConn = new PostgresqlDbConn(pg, pgCopyStreams.from, postgresqlConfig);
+    const cleanupConn = new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
     await cleanupConn.connect();
     await cleanupConn.execute([`DROP TABLE IF EXISTS "public"."EscapeTest"`]);
     await cleanupConn.close();

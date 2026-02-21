@@ -159,10 +159,7 @@ export const OrmService = defineService(
         for (let i = 0; i < result.length; i++) {
           const opt = options?.[i];
           if (opt != null) {
-            const parsedResult = await parseQueryResult(
-              result[i] as Record<string, unknown>[],
-              opt,
-            );
+            const parsedResult = await parseQueryResult(result[i], opt);
             parsed.push(parsedResult ?? []);
           } else {
             parsed.push(result[i]);

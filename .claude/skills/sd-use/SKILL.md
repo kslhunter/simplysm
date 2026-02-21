@@ -1,6 +1,6 @@
 ---
 name: sd-use
-description: Use when user doesn't know which sd-* skill or agent to use and wants automatic selection based on their request
+description: You MUST invoke this for any user request that does not explicitly use a /sd-* slash command. Do not bypass by selecting other sd-* skills directly, even when the match seems obvious.
 model: haiku
 ---
 

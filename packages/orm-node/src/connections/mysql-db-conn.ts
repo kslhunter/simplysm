@@ -145,7 +145,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       const [queryResults] = await conn.query({
         sql: query,
         timeout: this._timeout,
-        values: params,
+        values: params as ({} | null)[] | undefined,
       });
 
       this._startTimeout();

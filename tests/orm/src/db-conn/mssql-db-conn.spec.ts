@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { MssqlDbConn, DB_CONN_ERRORS } from "@simplysm/orm-node";
-import type { ColumnMeta } from "@simplysm/orm-common";
 import { mssqlConfig } from "../test-configs";
 import {
   bulkColumnMetas,
@@ -215,40 +214,23 @@ describe("MssqlDbConn", () => {
     });
 
     it("특수 문자 포함 데이터 INSERT", async () => {
-      await conn.execute([
-        `IF OBJECT_ID('TestDb.dbo.BulkSpecialTable') IS NOT NULL DROP TABLE [TestDb].[dbo].[BulkSpecialTable]`,
-        `CREATE TABLE [TestDb].[dbo].[BulkSpecialTable] (
-          id INT,
-          name NVARCHAR(200)
-        )`,
-      ]);
-
-      const columnMetas: Record<string, ColumnMeta> = {
-        id: { type: "number", dataType: { type: "int" } },
-        name: { type: "string", dataType: { type: "varchar", length: 200 } },
-      };
+      await conn.execute([`DELETE FROM [BulkTable]`]);
 
       const records = [
-        { id: 1, name: "tab\there" },
-        { id: 2, name: "new\nline" },
-        { id: 3, name: 'quote"here' },
-        { id: 4, name: "back\\slash" },
+        { id: 10, name: "tab\there", value: 1.0 },
+        { id: 11, name: "new\nline", value: 2.0 },
+        { id: 12, name: 'quote"here', value: 3.0 },
+        { id: 13, name: "back\\slash", value: 4.0 },
       ];
 
-      await conn.bulkInsert("[TestDb].[dbo].[BulkSpecialTable]", columnMetas, records);
+      await conn.bulkInsert("[BulkTable]", bulkColumnMetas, records);
 
-      const results = await conn.execute([
-        `SELECT * FROM [TestDb].[dbo].[BulkSpecialTable] ORDER BY id`,
-      ]);
+      const results = await conn.execute([`SELECT * FROM [BulkTable] WHERE id >= 10 ORDER BY id`]);
       expect(results[0]).toHaveLength(4);
       expect(results[0][0]["name"]).toBe("tab\there");
       expect(results[0][1]["name"]).toBe("new\nline");
       expect(results[0][2]["name"]).toBe('quote"here');
       expect(results[0][3]["name"]).toBe("back\\slash");
-
-      await conn.execute([
-        `IF OBJECT_ID('TestDb.dbo.BulkSpecialTable') IS NOT NULL DROP TABLE [TestDb].[dbo].[BulkSpecialTable]`,
-      ]);
     });
   });
 
