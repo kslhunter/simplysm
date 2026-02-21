@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/notify.py"
+            "command": "python3 .claude/hooks/sd-notify.py"
           }
         ]
       }

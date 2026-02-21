@@ -1,6 +1,7 @@
 # Workflow Rules
 
 - **No auto-proceeding after skill completion**: When the user explicitly invokes a skill, report the result and **stop** once the skill finishes. Do not guess the next step and proceed arbitrarily. Wait for explicit user instructions if further work is needed.
+  - **Exception — yolo mode**: When a skill explicitly defines a "yolo mode" that chains multiple skills sequentially (e.g., sd-plan's "Path A: yolo"), auto-proceeding is permitted for the duration of that chain. Each step MUST still be invoked via the Skill tool.
 
 ## Problem-Solving Principles
 
