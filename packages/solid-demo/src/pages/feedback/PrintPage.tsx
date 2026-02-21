@@ -1,5 +1,5 @@
 import { type Component, createSignal, onMount } from "solid-js";
-import { Button, Print, Topbar, usePrint, usePrintInstance } from "@simplysm/solid";
+import { Button, Print, usePrint, usePrintInstance } from "@simplysm/solid";
 
 function AsyncReadyContent() {
   const print = usePrintInstance();
@@ -236,10 +236,10 @@ const PrintDemo: Component = () => {
   };
 
   return (
-    <div class="space-y-8 p-6">
+    <div class="space-y-8">
       {/* toPrinter */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">toPrinter</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">toPrinter</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           window.print()를 사용하여 브라우저 인쇄 대화상자를 표시합니다.
         </p>
@@ -250,7 +250,9 @@ const PrintDemo: Component = () => {
 
       {/* toPdf - 단일 페이지 (자동 분할) */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">toPdf - 단일 (자동 분할)</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          toPdf - 단일 (자동 분할)
+        </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Print 컴포넌트 없이 콘텐츠를 PDF로 변환합니다. A4 높이 기준 자동 분할.
         </p>
@@ -261,7 +263,9 @@ const PrintDemo: Component = () => {
 
       {/* toPdf - 다중 페이지 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">toPdf - 다중 페이지</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          toPdf - 다중 페이지
+        </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Print.Page로 명시적으로 3페이지를 분할합니다.
         </p>
@@ -272,7 +276,7 @@ const PrintDemo: Component = () => {
 
       {/* toPdf - 가로 방향 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">toPdf - 가로 방향</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">toPdf - 가로 방향</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           size: "A4 landscape" 옵션으로 가로 방향 PDF를 생성합니다.
         </p>
@@ -283,7 +287,9 @@ const PrintDemo: Component = () => {
 
       {/* toPdf - 비동기 ready */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">toPdf - 비동기 ready</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          toPdf - 비동기 ready
+        </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           Print ready 시그널을 사용하여 1초 후 데이터 로딩이 완료된 뒤 PDF를 생성합니다.
         </p>
@@ -294,7 +300,7 @@ const PrintDemo: Component = () => {
 
       {/* 상태 표시 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
         <div class="rounded border border-base-200 p-4 font-mono text-sm dark:border-base-700">
           {status() || "대기 중..."}
         </div>
@@ -315,13 +321,8 @@ function downloadPdf(buf: Uint8Array, filename: string) {
 
 export default function PrintPage() {
   return (
-    <Topbar.Container>
-      <Topbar>
-        <h1 class="m-0 text-base">Print</h1>
-      </Topbar>
-      <div class="flex-1 overflow-auto">
-        <PrintDemo />
-      </div>
-    </Topbar.Container>
+    <div class="space-y-8 p-6">
+      <PrintDemo />
+    </div>
   );
 }
