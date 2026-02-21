@@ -11,12 +11,14 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const fieldSizes = {
   "field": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]} + 2px)`,
+  "field-xs": `calc(${lh}rem + 2px)`,
   "field-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]} + 2px)`,
   "field-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]} + 2px)`,
+  "field-xl": `calc(${lh}rem + ${sp["3"]} + ${sp["3"]} + 2px)`,
   "field-inset": `calc(${lh}rem + ${sp["1"]} + ${sp["1"]})`,
+  "field-inset-xs": `${lh}rem`,
   "field-inset-sm": `calc(${lh}rem + ${sp["0.5"]} + ${sp["0.5"]})`,
   "field-inset-lg": `calc(${lh}rem + ${sp["2"]} + ${sp["2"]})`,
-  "field-xl": `calc(${lh}rem + ${sp["3"]} + ${sp["3"]} + 2px)`,
   "field-inset-xl": `calc(${lh}rem + ${sp["3"]} + ${sp["3"]})`,
 };
 

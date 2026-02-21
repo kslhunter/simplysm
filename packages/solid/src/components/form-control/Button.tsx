@@ -37,13 +37,14 @@ const themeClasses = Object.fromEntries(
     {
       solid: clsx(t.solid, t.solidHover /*, "shadow-md hover:shadow-lg"*/),
       outline: clsx("bg-transparent", t.hoverBg, t.text, t.border),
-      ghost: clsx("bg-transparent", t.hoverBg, t.text),
+      ghost: clsx("bg-transparent", `hover:bg-base-100 dark:hover:bg-base-800/30`, t.text),
     },
   ]),
 ) as Record<ButtonTheme, Record<ButtonVariant, string>>;
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: clsx("min-w-6 px-1 py-0"),
+  xs: clsx("min-w-4 px-0.5 py-0"),
+  sm: clsx("min-w-6 px-1 py-0.5"),
   lg: clsx("min-w-9 px-3 py-1.5"),
   xl: clsx("min-w-10 px-4 py-2 text-lg"),
 };

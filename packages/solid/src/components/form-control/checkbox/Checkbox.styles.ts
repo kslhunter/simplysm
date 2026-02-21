@@ -7,6 +7,7 @@ import {
   paddingLg,
   paddingSm,
   paddingXl,
+  paddingXs,
 } from "../../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../../styles/patterns.styles";
 
@@ -40,6 +41,7 @@ export const checkedClass = clsx("border-primary-500 bg-primary-500", "text-whit
 
 // 사이즈별 스타일
 export const checkboxSizeClasses: Record<CheckboxSize, string> = {
+  xs: clsx("h-field-xs", paddingXs),
   sm: clsx("h-field-sm", paddingSm),
   lg: clsx("h-field-lg", paddingLg),
   xl: clsx("h-field-xl", paddingXl),
@@ -54,6 +56,7 @@ export const checkboxInsetClass = clsx(
 
 // inset 사이즈별 높이 (border 2px 제외)
 export const checkboxInsetSizeHeightClasses: Record<CheckboxSize, string> = {
+  xs: "h-field-inset-xs",
   sm: "h-field-inset-sm",
   lg: "h-field-inset-lg",
   xl: "h-field-inset-xl",

@@ -6,6 +6,7 @@ import {
   paddingLg,
   paddingSm,
   paddingXl,
+  paddingXs,
 } from "../../styles/tokens.styles";
 import { insetBase, insetFocusOutlineSelf } from "../../styles/patterns.styles";
 
@@ -29,6 +30,7 @@ export const triggerDisabledClass = clsx(
 export const triggerInsetClass = clsx(insetBase, "bg-transparent", insetFocusOutlineSelf);
 
 export const triggerSizeClasses: Record<ComponentSize, string> = {
+  xs: clsx("gap-0.5", paddingXs),
   sm: clsx("gap-1.5", paddingSm),
   lg: clsx("gap-3", paddingLg),
   xl: clsx("gap-3.5", paddingXl),

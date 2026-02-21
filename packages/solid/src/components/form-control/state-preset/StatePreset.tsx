@@ -44,7 +44,8 @@ const chipClass = clsx(
 const chipDefaultClass = "px-3 py-1";
 
 const chipSizeClasses: Record<StatePresetSize, string> = {
-  sm: "px-2 py-0.5 text-sm",
+  xs: "px-1.5 py-0 text-sm",
+  sm: "px-2 py-0.5",
   lg: "px-4 py-2",
   xl: "px-5 py-3 text-lg",
 };
@@ -56,7 +57,8 @@ const iconBtnClass = twMerge(iconButtonBase, "rounded-full");
 const iconBtnDefaultClass = "p-0.5";
 
 const iconBtnSizeClasses: Record<StatePresetSize, string> = {
-  sm: "p-px",
+  xs: "p-0",
+  sm: "p-0.5",
   lg: "p-1",
   xl: "p-1.5",
 };
@@ -74,6 +76,7 @@ const starBtnClass = clsx(
 const starBtnDefaultClass = "p-1";
 
 const starBtnSizeClasses: Record<StatePresetSize, string> = {
+  xs: "p-0",
   sm: "p-0.5",
   lg: "p-1.5",
   xl: "p-2",
@@ -92,7 +95,8 @@ const inputClass = clsx(
 const inputDefaultClass = "px-3 py-1 w-24";
 
 const inputSizeClasses: Record<StatePresetSize, string> = {
-  sm: "px-2 py-0.5 w-20 text-sm",
+  xs: clsx("w-16 px-1 py-0 text-sm"),
+  sm: "px-2 py-0.5 w-20",
   lg: "px-4 py-2 w-32",
   xl: "px-5 py-3 w-36 text-lg",
 };

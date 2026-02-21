@@ -19,6 +19,7 @@ export const listItemBaseClass = clsx(
 
 // 사이즈별 스타일
 export const listItemSizeClasses: Record<ComponentSize, string> = {
+  xs: clsx("px-0.5 py-0"),
   sm: clsx("px-1 py-0.5"),
   lg: clsx("px-2 py-1.5"),
   xl: clsx("px-3 py-2"),

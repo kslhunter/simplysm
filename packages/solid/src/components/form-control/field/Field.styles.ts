@@ -1,6 +1,12 @@
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type ComponentSize, paddingLg, paddingSm, paddingXl } from "../../../styles/tokens.styles";
+import {
+  type ComponentSize,
+  paddingLg,
+  paddingSm,
+  paddingXl,
+  paddingXs,
+} from "../../../styles/tokens.styles";
 import {
   fieldSurface,
   insetBase,
@@ -20,6 +26,7 @@ export const fieldBaseClass = clsx(
 
 // 사이즈별 스타일
 export const fieldSizeClasses: Record<FieldSize, string> = {
+  xs: clsx("h-field-xs", paddingXs),
   sm: clsx("h-field-sm", paddingSm),
   lg: clsx("h-field-lg", paddingLg),
   xl: clsx("h-field-xl", paddingXl),
@@ -35,6 +42,7 @@ export const fieldInsetClass = clsx(
 // inset 높이 (border 2px 제외)
 export const fieldInsetHeightClass = "h-field-inset";
 export const fieldInsetSizeHeightClasses: Record<FieldSize, string> = {
+  xs: "h-field-inset-xs",
   sm: "h-field-inset-sm",
   lg: "h-field-inset-lg",
   xl: "h-field-inset-xl",
@@ -48,6 +56,7 @@ export const textAreaBaseClass = clsx("inline-block w-48", fieldSurface, "px-2 p
 
 // textarea 사이즈별 스타일 (h-field-* 제거)
 export const textAreaSizeClasses: Record<FieldSize, string> = {
+  xs: paddingXs,
   sm: paddingSm,
   lg: paddingLg,
   xl: paddingXl,
@@ -58,8 +67,9 @@ export const fieldInputClass = inputBase;
 
 // prefixIcon gap 클래스 (nested ternary 대체)
 export const fieldGapClasses: Record<FieldSize | "default", string> = {
-  default: "gap-2",
+  xs: "gap-0.5",
   sm: "gap-1.5",
+  default: "gap-2",
   lg: "gap-3",
   xl: "gap-4",
 };

@@ -70,6 +70,7 @@ const editorContentClass = clsx(
 
 // 에디터 콘텐츠 사이즈별 스타일
 const editorContentSizeClasses: Record<FieldSize, string> = {
+  xs: clsx("px-1.5 py-1", "min-h-12"),
   sm: clsx("px-3 py-2", "min-h-24"),
   lg: clsx("px-5 py-4", "min-h-48"),
   xl: clsx("px-6 py-5", "min-h-64"),
