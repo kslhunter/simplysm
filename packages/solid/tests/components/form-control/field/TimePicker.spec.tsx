@@ -232,7 +232,7 @@ describe("TimePicker 컴포넌트", () => {
     it("다크 모드 background 스타일이 적용된다", () => {
       const { container } = render(() => <TimePicker />);
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.classList.contains("dark:bg-base-900")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
     });
   });
 

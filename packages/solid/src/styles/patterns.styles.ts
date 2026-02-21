@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { bgSurface, borderDefault, textDefault, textPlaceholder } from "./tokens.styles";
+import { borderDefault, textDefault, textPlaceholder } from "./tokens.styles";
 
 // ── 아이콘 버튼 공통 ──
 export const iconButtonBase = clsx(
@@ -32,7 +32,7 @@ export const insetBase = "w-full rounded-none border-none";
 
 // ── 폼 필드 공통 표면 (배경 + 텍스트 + 테두리 + 포커스) ──
 export const fieldSurface = clsx(
-  bgSurface,
+  "bg-primary-50 dark:bg-primary-950/30",
   textDefault,
   "border",
   borderDefault,

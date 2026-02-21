@@ -49,7 +49,7 @@ export interface RichTextEditorProps {
 // 에디터 wrapper 스타일
 const editorWrapperClass = clsx(
   "flex flex-col",
-  "bg-white dark:bg-base-900",
+  "bg-primary-50 dark:bg-primary-950/30",
   "text-base-900 dark:text-base-100",
   "border border-base-300 dark:border-base-700",
   "rounded",

@@ -277,7 +277,7 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
       size: local.size,
       disabled: local.disabled,
       inset: local.inset,
-      class: local.class,
+      class: clsx(!local.inset && "bg-primary-50 dark:bg-primary-950/30", local.class),
     });
 
   // 참고: 초기 검색은 handleTriggerClick에서 수행됨

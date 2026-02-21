@@ -247,7 +247,7 @@ describe("TextInput 컴포넌트", () => {
       const { container } = render(() => <TextInput />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("dark:border-base-700")).toBe(true);
-      expect(wrapper.classList.contains("dark:bg-base-900")).toBe(true);
+      expect(wrapper.classList.contains("dark:bg-primary-950/30")).toBe(true);
     });
   });
 
