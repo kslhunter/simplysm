@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { MssqlDbConn } from "@simplysm/orm-node";
+import { MssqlDbConn, DB_CONN_ERRORS } from "@simplysm/orm-node";
+import type { ColumnMeta } from "@simplysm/orm-common";
 import { mssqlConfig } from "../test-configs";
 import {
   bulkColumnMetas,
@@ -29,17 +30,27 @@ describe("MssqlDbConn", () => {
 
   describe("연결", () => {
     it("연결 성공", async () => {
-      await conn.connect();
-      expect(conn.isConnected).toBe(true);
+      const testConn = new MssqlDbConn(tedious, mssqlConfig);
+      await testConn.connect();
+      expect(testConn.isConnected).toBe(true);
+      await testConn.close();
     });
 
     it("중복 연결 시 에러", async () => {
-      await expect(conn.connect()).rejects.toThrow("이미 'Connection'이 연결되어있습니다.");
+      const testConn = new MssqlDbConn(tedious, mssqlConfig);
+      await testConn.connect();
+      try {
+        await expect(testConn.connect()).rejects.toThrow(DB_CONN_ERRORS.ALREADY_CONNECTED);
+      } finally {
+        await testConn.close();
+      }
     });
 
     it("연결 종료", async () => {
-      await conn.close();
-      expect(conn.isConnected).toBe(false);
+      const testConn = new MssqlDbConn(tedious, mssqlConfig);
+      await testConn.connect();
+      await testConn.close();
+      expect(testConn.isConnected).toBe(false);
     });
   });
 
@@ -108,7 +119,7 @@ describe("MssqlDbConn", () => {
     it("미연결 상태에서 쿼리 실행 시 에러", async () => {
       const disconnectedConn = new MssqlDbConn(tedious, mssqlConfig);
       await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
-        "'Connection'이 연결되어있지 않습니다",
+        DB_CONN_ERRORS.NOT_CONNECTED,
       );
     });
 
@@ -201,6 +212,43 @@ describe("MssqlDbConn", () => {
     it("빈 배열 INSERT 시 아무 동작 없음", async () => {
       // 빈 배열로 호출해도 에러 없이 완료되어야 함
       await expect(conn.bulkInsert("[BulkTable]", bulkColumnMetas, [])).resolves.toBeUndefined();
+    });
+
+    it("특수 문자 포함 데이터 INSERT", async () => {
+      await conn.execute([
+        `IF OBJECT_ID('TestDb.dbo.BulkSpecialTable') IS NOT NULL DROP TABLE [TestDb].[dbo].[BulkSpecialTable]`,
+        `CREATE TABLE [TestDb].[dbo].[BulkSpecialTable] (
+          id INT,
+          name NVARCHAR(200)
+        )`,
+      ]);
+
+      const columnMetas: Record<string, ColumnMeta> = {
+        id: { type: "number", dataType: { type: "int" } },
+        name: { type: "string", dataType: { type: "varchar", length: 200 } },
+      };
+
+      const records = [
+        { id: 1, name: "tab\there" },
+        { id: 2, name: "new\nline" },
+        { id: 3, name: 'quote"here' },
+        { id: 4, name: "back\\slash" },
+      ];
+
+      await conn.bulkInsert("[TestDb].[dbo].[BulkSpecialTable]", columnMetas, records);
+
+      const results = await conn.execute([
+        `SELECT * FROM [TestDb].[dbo].[BulkSpecialTable] ORDER BY id`,
+      ]);
+      expect(results[0]).toHaveLength(4);
+      expect(results[0][0]["name"]).toBe("tab\there");
+      expect(results[0][1]["name"]).toBe("new\nline");
+      expect(results[0][2]["name"]).toBe('quote"here');
+      expect(results[0][3]["name"]).toBe("back\\slash");
+
+      await conn.execute([
+        `IF OBJECT_ID('TestDb.dbo.BulkSpecialTable') IS NOT NULL DROP TABLE [TestDb].[dbo].[BulkSpecialTable]`,
+      ]);
     });
   });
 
