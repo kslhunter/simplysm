@@ -124,11 +124,49 @@ git commit -m "feat: add specific feature"
 
 ## Execution Handoff
 
-After saving the plan:
+After saving the plan, present the following workflow paths in the **system's configured language**.
 
-- If in **yolo mode** (user chose "yolo" from sd-brainstorm): Immediately proceed to sd-plan-dev without asking. No confirmation needed.
-- Otherwise: Display this message **in the system's configured language** (detect from the language setting and translate accordingly):
-  **"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute with sd-plan-dev?"**
+Before presenting, check git status for uncommitted changes. If there are any, append the `⚠️` warning line.
+
+```
+Plan complete! Here's how to proceed:
+
+--- Path A: With branch isolation (recommended for features/large changes) ---
+
+1. /sd-worktree add <name>  — Create a worktree branch
+2. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
+3. /sd-check                — Verify (modified + dependents)
+4. /sd-commit               — Commit
+5. /sd-worktree merge       — Merge back to main
+6. /sd-worktree clean       — Remove worktree
+
+--- Path B: Direct on current branch (quick fixes/small changes) ---
+
+1. /sd-plan-dev             — Execute tasks in parallel (includes TDD + review)
+2. /sd-check                — Verify (modified + dependents)
+3. /sd-commit               — Commit
+
+You can start from any step or skip steps as needed.
+
+💡 "Path A: yolo" or "Path B: yolo" to auto-run all steps
+
+⚠️ You have uncommitted changes. To use Path A, run `/sd-commit all` first.
+```
+
+- The `⚠️` line is only shown when uncommitted changes exist. Omit it when working tree is clean.
+- **Recommend one** based on the plan's scope:
+  - Path A: new features, multi-file changes, architectural changes
+  - Path B: small bug fixes, single-file changes, minor adjustments
+  - Briefly explain why (1 sentence)
+- Do NOT auto-proceed. Wait for user's choice.
+
+**Yolo mode:** If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps.
+
+**Yolo sd-check — include dependents:** NEVER check only modified packages. Also check all packages that depend on them:
+1. Identify modified packages from `git diff --name-only`
+2. Trace reverse dependencies (packages that import from modified packages) using `package.json` or project dependency graph
+3. Include integration/e2e tests that cover the modified packages
+4. Run `/sd-check` with all affected paths, or `/sd-check` without path (whole project) when changes are widespread
 
 - **REQUIRED SUB-SKILL:** Use sd-plan-dev
 - Fresh fork per task + two-stage review (spec compliance → code quality)
