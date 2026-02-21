@@ -275,11 +275,6 @@ This catches cross-task integration issues early — especially when the next ba
 - Escalate to user with specific error details before proceeding
 - Do NOT re-launch on potentially partially-modified files without inspection
 
-## After Completion
-
-When all tasks and final review are done, if the current working directory is inside a worktree (`.worktrees/`), guide the user to:
-- `/sd-worktree merge` — Merge the worktree branch back into main
-
 ## Integration
 
 **Related skills:**

@@ -4,129 +4,102 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 model: opus
 ---
 
-# Writing Plans
+# Turning Designs Into Implementation Plans
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
-
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
-
-**Announce at start:** "I'm using the sd-plan skill to create the implementation plan."
+Turn a design doc into a step-by-step implementation plan through codebase exploration. Write bite-sized tasks assuming the implementing engineer has zero context — exact file paths, complete code, precise commands.
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
-## Clarification Phase
+## The Process
 
-**Before writing the plan**, read the design doc and explore the codebase. Then identify implementation decisions the design didn't specify.
+**Exploring the codebase:**
+- Read the design doc, then explore relevant files, patterns, dependencies
+- Ask questions one at a time as they arise during planning, with your recommendation
+- Don't batch questions upfront — real questions emerge while deep in the details
 
-**Ask the user about:**
-- Core behavior choices (state management approach, error handling strategy, validation UX)
-- User-facing behavior not specified (what the user sees on error, how navigation works)
-- Architectural choices with multiple valid options (which pattern, which abstraction level)
+**Ask about:**
+- Conflicts with existing codebase patterns discovered while exploring
+- Implementation choices the design didn't specify (which pattern, which abstraction level)
+- Ambiguous behavior uncovered while designing tests or file structure
 
 **Don't ask — just decide:**
 - Internal details covered by project conventions (file naming, export patterns)
-- Pure YAGNI decisions (features not mentioned = don't add)
+- YAGNI decisions (not mentioned = don't add)
 - Implementation details with only one reasonable option
 
-**Format:** Present all discovered gaps as a single numbered list with your recommended option for each. Wait for user confirmation before writing the plan.
+**Writing the plan:**
+- Break into independent tasks
+- Include exact file paths, complete code, exact commands with expected output
+- Never write "add validation" — write the actual validation code
 
-```
-Before writing the plan, I found these implementation decisions not covered in the design:
+## Plan Document Format
 
-1. **[Topic]**: [The gap]. I'd recommend [option A] because [reason]. Alternatively, [option B].
-2. **[Topic]**: [The gap]. I'd recommend [option] because [reason].
-...
-
-Should I proceed with these recommendations, or would you like to change any?
-```
-
-If no gaps are found, skip this phase and proceed directly to writing the plan.
-
-## Bite-Sized Task Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
-
-## Plan Document Header
-
-**Every plan MUST start with this header:**
+**Header:**
 
 ```markdown
 # [Feature Name] Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use sd-plan-dev to implement this plan task-by-task.
 
-**Goal:** [One sentence describing what this builds]
+**Goal:** [One sentence]
 
-**Architecture:** [2-3 sentences about approach]
+**Architecture:** [2-3 sentences]
 
 **Tech Stack:** [Key technologies/libraries]
 
 ---
 ```
 
-## Task Structure
+**Each task (TDD steps):**
 
-```markdown
+````markdown
 ### Task N: [Component Name]
 
 **Files:**
 - Create: `exact/path/to/file.ts`
 - Modify: `exact/path/to/existing.ts:123-145`
-- Test: `exact/path/to/tests/file.spec.ts`
+- Test: `exact/path/to/test.spec.ts`
 
 **Step 1: Write the failing test**
 
 ```typescript
 test("specific behavior", () => {
-  const result = functionUnderTest(input);
+  const result = fn(input);
   expect(result).toBe(expected);
 });
 ```
 
 **Step 2: Run test to verify it fails**
 
-Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
-Expected: FAIL with "functionUnderTest is not defined"
+Run: `pnpm vitest exact/path/to/test.spec.ts --project=node`
+Expected: FAIL with "fn is not defined"
 
 **Step 3: Write minimal implementation**
 
 ```typescript
-function functionUnderTest(input: InputType): OutputType {
+export function fn(input: string): string {
   return expected;
 }
 ```
 
 **Step 4: Run test to verify it passes**
 
-Run: `pnpm vitest exact/path/to/tests/file.spec.ts --run`
+Run: `pnpm vitest exact/path/to/test.spec.ts --project=node`
 Expected: PASS
 
 **Step 5: Commit**
 
 ```bash
-git add exact/path/to/tests/file.spec.ts exact/path/to/file.ts
+git add exact/path/to/file.ts exact/path/to/test.spec.ts
 git commit -m "feat: add specific feature"
 ```
-```
+````
 
-## Remember
-- Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+## After the Plan
 
-## Execution Handoff
-
-After saving the plan, present the following workflow paths in the **system's configured language**.
-
-Before presenting, check git status for uncommitted changes. If there are any, append the `⚠️` warning line.
+Save the plan, then present workflow paths. Check git status first. Display in the **system's configured language**:
 
 ```
 Plan complete! Here's how to proceed:
@@ -153,20 +126,19 @@ You can start from any step or skip steps as needed.
 ⚠️ You have uncommitted changes. To use Path A, run `/sd-commit all` first.
 ```
 
-- The `⚠️` line is only shown when uncommitted changes exist. Omit it when working tree is clean.
-- **Recommend one** based on the plan's scope:
-  - Path A: new features, multi-file changes, architectural changes
-  - Path B: small bug fixes, single-file changes, minor adjustments
-  - Briefly explain why (1 sentence)
+- The `⚠️` line only when uncommitted changes exist
+- **Recommend one** based on scope (1 sentence why)
 - Do NOT auto-proceed. Wait for user's choice.
 
-**Yolo mode:** If the user responds with "Path A: yolo" or "Path B: yolo" (or similar intent like "A yolo", "B 자동"), execute all steps of the chosen path sequentially without stopping between steps. **Each `/sd-*` step MUST be invoked via the Skill tool** (e.g., `Skill("sd-worktree", "add <name>")`, `Skill("sd-plan-dev")`, `Skill("sd-check")`, `Skill("sd-commit")`, `Skill("sd-worktree", "merge")`, `Skill("sd-worktree", "clean")`). Do NOT execute the underlying git/shell commands directly — always delegate to the skill.
+**Yolo mode:** Execute all steps sequentially. Each `/sd-*` step MUST be invoked via the Skill tool — never execute underlying commands directly.
 
-**Yolo sd-check — include dependents:** NEVER check only modified packages. Also check all packages that depend on them:
-1. Identify modified packages from `git diff --name-only`
-2. Trace reverse dependencies (packages that import from modified packages) using `package.json` or project dependency graph
-3. Include integration/e2e tests that cover the modified packages
-4. Run `/sd-check` with all affected paths, or `/sd-check` without path (whole project) when changes are widespread
+**Yolo sd-check:** NEVER check only modified packages. Trace reverse dependencies and include all affected paths.
 
-- **REQUIRED SUB-SKILL:** Use sd-plan-dev
-- Fresh fork per task + two-stage review (spec compliance → code quality)
+## Key Principles
+
+- **One question at a time** — Ask inline during planning, not batched upfront
+- **Exact everything** — File paths, complete code, commands with expected output
+- **Bite-sized steps** — Each step is one action (2-5 minutes)
+- **TDD always** — Test first, implement second, commit third
+- **DRY, YAGNI** — No unnecessary features, no repetition
+- **REQUIRED SUB-SKILL:** sd-plan-dev (fresh fork per task + two-stage review)
