@@ -130,7 +130,10 @@ You can start from any step or skip steps as needed.
 - **Recommend one** based on scope (1 sentence why)
 - Do NOT auto-proceed. Wait for user's choice.
 
-**Yolo mode:** Execute all steps sequentially. Each `/sd-*` step MUST be invoked via the Skill tool — never execute underlying commands directly.
+**Yolo mode:** Execute all steps sequentially.
+- Each `/sd-*` step MUST be invoked via the Skill tool
+- NEVER execute underlying commands (git, pnpm, etc.) directly, even if you know what the skill does internally
+- If a step fails, stop and report — do not attempt manual recovery
 
 **Yolo sd-check:** NEVER check only modified packages. Trace reverse dependencies and include all affected paths.
 

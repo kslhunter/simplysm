@@ -33,6 +33,8 @@ All execution uses `Task(general-purpose)` for parallel execution.
 
 Independent tasks run as **parallel Task calls in a single message**. Within each task agent, spec and quality reviews also run as **parallel sub-Task calls**.
 
+**CRITICAL: Do NOT use `run_in_background: true`** — achieve parallelism by making multiple Task calls in a single message (foreground parallel). This ensures the orchestrator waits for all tasks to complete before proceeding to the next batch, and prevents Stop hooks from firing prematurely.
+
 ## The Process
 
 ```dot
@@ -257,6 +259,7 @@ This catches cross-task integration issues early — especially when the next ba
 - Accept "close enough" on spec compliance
 - Skip review loops (issue found → fix → re-review)
 - Skip batch integration checks between batches
+- Use `run_in_background: true` on Task calls (use foreground parallel instead)
 
 **If task agent returns questions:**
 - Answer clearly and completely

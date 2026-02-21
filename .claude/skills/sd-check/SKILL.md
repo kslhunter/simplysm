@@ -62,16 +62,16 @@ Replace `[path]` with user's argument, or OMIT if no argument (defaults to full 
 **Output format:**
 ```
 ====== TYPECHECK: PASS ======
-[last few lines]
 
-====== LINT: FAIL ======
-[full error output]
+====== LINT: FAIL → .tmp/sd-check/lint.log ======
 
 ====== TEST: PASS (47 tests) ======
-[last few lines]
 
 ====== SUMMARY: 1/3 FAILED (lint) ======
 ```
+
+- Failed checks write full output to `.tmp/sd-check/{name}.log`
+- Use the **Read tool** to read log files for error details
 
 - **ENV-CHECK FAIL**: Environment prerequisites missing. Report to user and STOP.
 - **SUMMARY: ALL PASSED**: Complete (see Completion Criteria).
@@ -82,7 +82,7 @@ Replace `[path]` with user's argument, or OMIT if no argument (defaults to full 
 1. **Analyze by priority:** Typecheck → Lint → Test
    - Typecheck errors may cause lint/test errors (cascade)
 
-2. **Read failing files** to identify root cause
+2. **Read log files** (`.tmp/sd-check/{name}.log`) to see full error output, then **read failing source files** to identify root cause
 
 3. **Fix with Edit:**
    - **Typecheck:** Fix type issues
