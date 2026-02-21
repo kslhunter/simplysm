@@ -288,6 +288,7 @@ interface AppStructure<TModule> {
   usablePerms: Accessor<AppPerm<TModule>[]>;    // reactive, filtered permission tree
   flatPerms: AppFlatPerm<TModule>[];            // static, all perm entries (not reactive)
   getTitleChainByHref(href: string): string[];
+  perms: InferPerms<TItems>;                    // typed permission accessor (getter-based reactive booleans)
 }
 
 interface AppRoute {
@@ -378,3 +379,45 @@ import { useLocation } from "@solidjs/router";
 const location = useLocation();
 const breadcrumb = () => appStructure.getTitleChainByHref(location.pathname);
 ```
+
+#### perms
+
+Typed permission accessor providing dot-notation access with TypeScript autocompletion and reactive boolean values. Built from the `permRecord` signal using `Object.defineProperty` getters.
+
+**Important:** For type inference to work, pass items inline to `createAppStructure`. Declaring items as a separate variable with explicit `AppStructureItem[]` type annotation widens literal types, losing autocompletion.
+
+```typescript
+const appStructure = createAppStructure({
+  items: [
+    {
+      code: "home",
+      title: "Home",
+      children: [
+        {
+          code: "user",
+          title: "User",
+          perms: ["use", "edit"],
+          subPerms: [
+            { code: "auth", title: "Auth", perms: ["use"] },
+          ],
+        },
+      ],
+    },
+  ],
+  permRecord: () => userPermissions(),
+});
+
+// Typed access with autocompletion:
+appStructure.perms.home.user.use        // boolean (reactive)
+appStructure.perms.home.user.edit       // boolean (reactive)
+appStructure.perms.home.user.auth.use   // boolean (reactive)
+
+// Use in components:
+<Show when={appStructure.perms.home.user.use}>
+  <UserPage />
+</Show>
+```
+
+- Leaf items without `perms`/`subPerms` are excluded from the tree
+- Groups with no permission-bearing descendants are excluded
+- Returns `false` when `permRecord` is not provided or key is missing
