@@ -172,11 +172,7 @@ export class WatchOrchestrator {
       const promise = buildPromises.get(`${pkg.name}:build`) ?? Promise.resolve();
       allBuildTasks.push({
         name: `${pkg.name}:build`,
-        promise: (async () => {
-          this._logger.start(`${pkg.name} (${pkg.config.target}) 빌드 시작`);
-          await promise;
-          this._logger.success(`${pkg.name} (${pkg.config.target}) 빌드 완료`);
-        })(),
+        promise,
       });
     }
 
@@ -185,11 +181,7 @@ export class WatchOrchestrator {
       const promise = dtsPromises.get(`${pkg.name}:dts`) ?? Promise.resolve();
       allBuildTasks.push({
         name: `${pkg.name}:dts`,
-        promise: (async () => {
-          this._logger.start(`${pkg.name} (dts) 시작`);
-          await promise;
-          this._logger.success(`${pkg.name} (dts) 완료`);
-        })(),
+        promise,
       });
     }
 

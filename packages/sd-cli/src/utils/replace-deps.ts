@@ -162,6 +162,9 @@ export async function setupReplaceDeps(
   replaceDeps: Record<string, string>,
 ): Promise<void> {
   const logger = consola.withTag("sd:cli:replace-deps");
+  let setupCount = 0;
+
+  logger.start("Setting up replace-deps");
 
   // 1. Workspace 패키지 경로 목록 수집
   const searchRoots = await collectSearchRoots(projectRoot);
@@ -216,12 +219,14 @@ export async function setupReplaceDeps(
         // 소스 파일을 actualTargetPath에 덮어쓰기 복사 (기존 디렉토리 유지, symlink 보존)
         await fsCopy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
 
-        logger.info(`${targetName} → ${sourcePath}`);
+        setupCount += 1;
       } catch (err) {
         logger.error(`복사 교체 실패 (${targetName}): ${err instanceof Error ? err.message : err}`);
       }
     }
   }
+
+  logger.success(`Replaced ${setupCount} dependencies`);
 }
 
 /**
@@ -306,6 +311,8 @@ export async function watchReplaceDeps(
   const watchers: FsWatcher[] = [];
   const watchedSources = new Set<string>();
 
+  logger.start(`Watching ${entries.length} replace-deps target(s)`);
+
   for (const entry of entries) {
     if (watchedSources.has(entry.resolvedSourcePath)) continue;
     watchedSources.add(entry.resolvedSourcePath);
@@ -352,11 +359,9 @@ export async function watchReplaceDeps(
                 await fsMkdir(path.dirname(destPath));
                 await fsCopy(changedPath, destPath, replaceDepsCopyFilter);
               }
-              logger.info(`복사: ${relativePath} → ${e.targetName}`);
             } else {
               // 소스가 삭제됨 → 대상도 삭제
               await fsRm(destPath);
-              logger.info(`삭제: ${relativePath} (${e.targetName})`);
             }
           } catch (err) {
             logger.error(
@@ -369,6 +374,8 @@ export async function watchReplaceDeps(
 
     watchers.push(watcher);
   }
+
+  logger.success(`Replace-deps watch ready`);
 
   return {
     entries,
