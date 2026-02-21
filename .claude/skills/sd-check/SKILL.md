@@ -29,10 +29,15 @@ When the user asks to verify code, YOU will manually execute **EXACTLY THESE 3 S
 
 ## Usage
 
-- `/sd-check` — verify entire project
-- `/sd-check packages/core-common` — verify specific path only
+- `/sd-check` — verify entire project (all 3 checks)
+- `/sd-check packages/core-common` — verify specific path (all 3 checks)
+- `/sd-check test` — run only tests (entire project)
+- `/sd-check packages/core-common test` — run only tests for specific path
+- `/sd-check typecheck` — run only typecheck
+- `/sd-check lint` — run only lint
 
-**Default:** If no path argument provided, verify entire project.
+**Default:** If no path argument provided, verify entire project. If no type argument provided, run all 3 checks.
+**Valid types:** `typecheck`, `lint`, `test`
 
 ## Quick Reference
 
@@ -52,12 +57,14 @@ Launch the single check command in background:
 
 ```
 Bash tool:
-  command: "node .claude/skills/sd-check/run-checks.mjs [path]"
+  command: "node .claude/skills/sd-check/run-checks.mjs [path] [type]"
   description: "Run typecheck + lint + test"
   timeout: 600000
 ```
 
-Replace `[path]` with user's argument, or OMIT if no argument (defaults to full project).
+Replace `[path]` with user's path argument, `[type]` with check type (`typecheck`, `lint`, `test`).
+Omit `[path]` for full project, omit `[type]` for all checks.
+If only type is given (no path), pass type as the first argument directly.
 
 **Output format:**
 ```
