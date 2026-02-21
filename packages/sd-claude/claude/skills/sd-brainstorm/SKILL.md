@@ -39,13 +39,11 @@ Start by understanding the current project context, then ask questions one at a 
 - Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 - Commit the design document to git
 
-**Next Step:**
-
-Display in the **system's configured language**:
+**STOP here.** Report the result to the user in the **system's configured language**:
 
 **"Design complete and saved to `docs/plans/<filename>.md`. Next step: `/sd-plan` to create the implementation plan."**
 
-Do NOT auto-proceed. Wait for the user's explicit instruction.
+Do NOT invoke `/sd-plan` or any other skill. Do NOT auto-proceed. Wait for the user's explicit instruction.
 
 ## Key Principles
 

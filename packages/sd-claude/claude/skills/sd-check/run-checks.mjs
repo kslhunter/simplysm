@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { spawn } from "child_process";
 
@@ -48,7 +48,7 @@ if (errors.length > 0) {
 // Phase 2: Run 3 checks in parallel
 // ══════════════════════════════════════════
 
-const TAIL_LINES = 15;
+const logDir = resolve(root, ".tmp/sd-check");
 
 function runCommand(name, cmd, args) {
   return new Promise((res) => {
@@ -67,12 +67,6 @@ function runCommand(name, cmd, args) {
       res({ name, code: 1, output: err.message });
     });
   });
-}
-
-function tail(text, n) {
-  const lines = text.trimEnd().split("\n");
-  if (lines.length <= n) return text.trimEnd();
-  return "...\n" + lines.slice(-n).join("\n");
 }
 
 function extractTestCount(output) {
@@ -96,6 +90,7 @@ const results = await Promise.all(checks.map((c) => runCommand(c.name, c.cmd, c.
 // ══════════════════════════════════════════
 
 const failed = [];
+mkdirSync(logDir, { recursive: true });
 
 for (const r of results) {
   const passed = r.code === 0;
@@ -106,12 +101,12 @@ for (const r of results) {
     if (count) label = `PASS (${count} tests)`;
   }
 
-  console.log(`\n${"=".repeat(6)} ${r.name}: ${label} ${"=".repeat(6)}`);
-
   if (passed) {
-    console.log(tail(r.output, TAIL_LINES));
+    console.log(`\n${"=".repeat(6)} ${r.name}: ${label} ${"=".repeat(6)}`);
   } else {
-    console.log(r.output.trimEnd());
+    const logFile = resolve(logDir, `${r.name.toLowerCase()}.log`);
+    writeFileSync(logFile, r.output, "utf8");
+    console.log(`\n${"=".repeat(6)} ${r.name}: ${label} → ${logFile} ${"=".repeat(6)}`);
     failed.push(r.name.toLowerCase());
   }
 }
