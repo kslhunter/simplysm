@@ -37,7 +37,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
   private _connTimeout?: ReturnType<typeof setTimeout>;
 
   isConnected = false;
-  isOnTransaction = false;
+  isInTransaction = false;
 
   constructor(
     private readonly _mysql2: typeof import("mysql2/promise"),
@@ -109,23 +109,23 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     // 그 다음 트랜잭션 시작
     await conn.beginTransaction();
 
-    this.isOnTransaction = true;
+    this.isInTransaction = true;
   }
 
   async commitTransaction(): Promise<void> {
     const conn = this._assertConnected();
     await conn.commit();
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
   }
 
   async rollbackTransaction(): Promise<void> {
     const conn = this._assertConnected();
     await conn.rollback();
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
   }
 
-  async execute(queries: string[]): Promise<unknown[][]> {
-    const results: unknown[][] = [];
+  async execute(queries: string[]): Promise<Record<string, unknown>[][]> {
+    const results: Record<string, unknown>[][] = [];
     for (const query of queries.filter((item) => !strIsNullOrEmpty(item))) {
       const resultItems = await this.executeParametrized(query);
       results.push(...resultItems);
@@ -133,7 +133,10 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     return results;
   }
 
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(
+    query: string,
+    params?: unknown[],
+  ): Promise<Record<string, unknown>[][]> {
     const conn = this._assertConnected();
 
     logger.debug("쿼리 실행", { queryLength: query.length, params });
@@ -150,7 +153,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       // MySQL은 INSERT/UPDATE/DELETE 문에 대해 ResultSetHeader를 반환함
       // SELECT 결과만 추출하기 위해 ResultSetHeader 객체를 필터링함
       // ResultSetHeader는 affectedRows, fieldCount 등의 필드를 가지고 있음
-      const result: unknown[] = [];
+      const result: Record<string, unknown>[] = [];
       if (queryResults instanceof Array) {
         for (const queryResult of queryResults.filter(
           (item: unknown) =>
@@ -161,7 +164,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
               "fieldCount" in item
             ),
         )) {
-          result.push(queryResult);
+          result.push(queryResult as Record<string, unknown>);
         }
       }
 
@@ -264,6 +267,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         // 탭, 줄바꿈, 백슬래시 이스케이프
         return str
           .replace(/\\/g, "\\\\")
+          .replace(/\0/g, "\\0")
           .replace(/\t/g, "\\t")
           .replace(/\n/g, "\\n")
           .replace(/\r/g, "\\r");
@@ -299,7 +303,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
   private _resetState(): void {
     this.isConnected = false;
-    this.isOnTransaction = false;
+    this.isInTransaction = false;
     this._conn = undefined;
   }
 

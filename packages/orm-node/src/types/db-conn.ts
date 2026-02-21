@@ -52,7 +52,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
   /**
    * 트랜잭션 진행 여부
    */
-  isOnTransaction: boolean;
+  isInTransaction: boolean;
 
   /**
    * DB 연결 수립
@@ -87,7 +87,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
    * @param queries - 실행할 SQL 문자열 배열
    * @returns 각 쿼리별 결과 배열의 배열
    */
-  execute(queries: string[]): Promise<unknown[][]>;
+  execute(queries: string[]): Promise<Record<string, unknown>[][]>;
 
   /**
    * 파라미터화된 쿼리 실행
@@ -96,7 +96,7 @@ export interface DbConn extends EventEmitter<{ close: void }> {
    * @param params - 바인딩 파라미터 (선택)
    * @returns 결과 배열의 배열
    */
-  executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>;
+  executeParametrized(query: string, params?: unknown[]): Promise<Record<string, unknown>[][]>;
 
   /**
    * 대량 INSERT (네이티브 벌크 API 사용)

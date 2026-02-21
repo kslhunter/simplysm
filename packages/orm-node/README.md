@@ -225,7 +225,7 @@ try {
   await conn.execute(["INSERT INTO User (name) VALUES ('Jane Smith')"]);
   await conn.commitTransaction();
 } catch (err) {
-  if (conn.isOnTransaction) {
+  if (conn.isInTransaction) {
     await conn.rollbackTransaction();
   }
   throw err;
@@ -370,14 +370,14 @@ The common interface implemented by all DBMS-specific connection classes (`Mysql
 |------------|----------|------|
 | `config` | `DbConnConfig` | Connection config (read-only) |
 | `isConnected` | `boolean` | Connection status |
-| `isOnTransaction` | `boolean` | Transaction in progress |
+| `isInTransaction` | `boolean` | Transaction in progress |
 | `connect()` | `() => Promise<void>` | Establish DB connection |
 | `close()` | `() => Promise<void>` | Close DB connection (PooledDbConn returns to pool) |
 | `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Start transaction |
 | `commitTransaction()` | `() => Promise<void>` | Commit transaction |
 | `rollbackTransaction()` | `() => Promise<void>` | Rollback transaction |
-| `execute()` | `(queries: string[]) => Promise<unknown[][]>` | Execute SQL query array |
-| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<unknown[][]>` | Execute parameterized query |
+| `execute()` | `(queries: string[]) => Promise<Record<string, unknown>[][]>` | Execute SQL query array |
+| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | Execute parameterized query |
 | `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | Native bulk INSERT |
 
 `DbConn` extends `EventEmitter<{ close: void }>`, so you can listen for connection close events with `on("close", handler)` / `off("close", handler)`.
@@ -406,7 +406,7 @@ const executor = new NodeDbContextExecutor({
 | `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Begin a transaction |
 | `commitTransaction()` | `() => Promise<void>` | Commit the current transaction |
 | `rollbackTransaction()` | `() => Promise<void>` | Roll back the current transaction |
-| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<unknown[][]>` | Execute a parameterized SQL query |
+| `executeParametrized()` | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | Execute a parameterized SQL query |
 | `bulkInsert()` | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: DataRecord[]) => Promise<void>` | Delegate bulk insert to the underlying connection |
 | `executeDefs()` | `(defs: QueryDef[], resultMetas?: (ResultMeta \| undefined)[]) => Promise<T[][]>` | Build SQL from `QueryDef` array, execute, and parse results using `ResultMeta` |
 

@@ -100,7 +100,7 @@ async function createRawConnection(config: DbConnConfig): Promise<DbConn> {
   } else if (config.dialect === "postgresql") {
     const pg = await ensureModule("pg");
     const pgCopyStreams = await ensureModule("pgCopyStreams");
-    return new PostgresqlDbConn(pg, pgCopyStreams.from, config);
+    return new PostgresqlDbConn(pg, pgCopyStreams, config);
   } else {
     // mssql, mssql-azure
     const tedious = await ensureModule("tedious");

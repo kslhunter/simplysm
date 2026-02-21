@@ -88,7 +88,10 @@ export class NodeDbContextExecutor implements DbContextExecutor {
    * @returns 쿼리 결과 배열
    * @throws {Error} 연결되지 않은 상태일 때
    */
-  async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
+  async executeParametrized(
+    query: string,
+    params?: unknown[],
+  ): Promise<Record<string, unknown>[][]> {
     const conn = this._requireConn();
     return conn.executeParametrized(query, params);
   }
@@ -150,10 +153,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
         buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
 
       if (meta != null) {
-        const parsed = await parseQueryResult<T>(
-          targetResultSet as Record<string, unknown>[],
-          meta,
-        );
+        const parsed = await parseQueryResult<T>(targetResultSet, meta);
         results.push(parsed ?? []);
       } else {
         results.push(targetResultSet as T[]);

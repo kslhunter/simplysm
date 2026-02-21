@@ -3,11 +3,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const composePath = path.resolve(__dirname, "docker-compose.test.yml");
 
 export async function setup() {
   console.log("[orm] Starting Docker containers...");
-
-  const composePath = path.resolve(__dirname, "docker-compose.test.yml");
 
   try {
     execSync(`docker compose -f "${composePath}" up -d --wait`, {
@@ -17,6 +16,7 @@ export async function setup() {
     console.log("[orm] Docker containers started, creating MSSQL database...");
 
     // MSSQL TestDb 생성 (MySQL, PostgreSQL은 docker compose에서 자동 생성)
+    let mssqlReady = false;
     for (let i = 0; i < 10; i++) {
       try {
         execSync(
@@ -24,11 +24,16 @@ export async function setup() {
           { stdio: "pipe" },
         );
         console.log("[orm] MSSQL TestDb created.");
+        mssqlReady = true;
         break;
       } catch {
         console.log(`[orm] MSSQL not ready, retrying... (${i + 1}/10)`);
         await new Promise((r) => setTimeout(r, 3000));
       }
+    }
+
+    if (!mssqlReady) {
+      throw new Error("[orm] Failed to create MSSQL TestDb after 10 retries");
     }
 
     console.log("[orm] All databases ready.");
@@ -40,8 +45,6 @@ export async function setup() {
 
 export function teardown() {
   console.log("[orm] Stopping Docker containers...");
-
-  const composePath = path.resolve(__dirname, "docker-compose.test.yml");
 
   try {
     execSync(`docker compose -f "${composePath}" down`, {
