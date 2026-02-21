@@ -1,7 +1,8 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { TextInput, Button, ThemeToggle, FormGroup } from "@simplysm/solid";
+import { Button, Card, FormGroup, Link, TextInput, ThemeToggle } from "@simplysm/solid";
 import clsx from "clsx";
+import { IconLock, IconMail } from "@tabler/icons-solidjs";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -15,86 +16,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      class={clsx(
-        "flex h-full items-center justify-center",
-        "bg-gradient-to-br from-primary-50 to-primary-100",
-        "dark:from-base-900 dark:to-base-800",
-      )}
-    >
-      {/* Card */}
-      <div
-        class={clsx(
-          "w-full max-w-sm rounded-2xl p-8",
-          "bg-white shadow-lg",
-          "dark:bg-base-800 dark:shadow-base-900/50",
-        )}
-      >
+    <div class={clsx("flex items-center justify-center", "pb-64", "bg-base-100 dark:bg-base-900")}>
+      <div class="max-w-sm">
         {/* Logo */}
-        <div class="mb-10 flex justify-center">
+        <div class={clsx("flex justify-center", "mb-4", "animate-fade-in")}>
           <img src="logo-landscape.png" alt="SIMPLYSM" class="h-12 w-auto" />
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <FormGroup class="w-full">
-            <FormGroup.Item label="아이디">
-              <TextInput
-                class="w-full"
-                placeholder="아이디를 입력하세요"
-                size="lg"
-                required
-                touchMode
-                value={id()}
-                onValueChange={setId}
-              />
-            </FormGroup.Item>
-            <FormGroup.Item label="비밀번호">
-              <TextInput
-                class="w-full"
-                type="password"
-                placeholder="비밀번호를 입력하세요"
-                size="lg"
-                required
-                touchMode
-                value={pw()}
-                onValueChange={setPw}
-              />
-            </FormGroup.Item>
-          </FormGroup>
-
-          {/* Login Button */}
-          <div class="mt-5">
-            <Button theme="primary" variant="solid" class="w-full" type="submit" size="xl">
-              로그인
-            </Button>
-          </div>
-        </form>
-
-        {/* Links */}
-        <div
-          class={clsx(
-            "mt-4 flex items-center justify-center gap-3",
-            "text-sm text-base-500 dark:text-base-400",
-          )}
-        >
-          <span
-            class="cursor-pointer hover:text-primary-500"
-            onClick={() => alert("비밀번호 변경")}
-          >
-            비밀번호 변경
-          </span>
-          <span class="text-base-300 dark:text-base-600">|</span>
-          <span class="cursor-pointer hover:text-primary-500" onClick={() => alert("회원가입")}>
-            회원가입
-          </span>
-        </div>
+        <Card class={clsx("rounded-2xl p-8", "[animation-delay:0.3s]")}>
+          {/* Form */}
+          <form onSubmit={handleSubmit}>
+            <FormGroup class="w-full">
+              <FormGroup.Item>
+                <TextInput
+                  prefixIcon={IconMail}
+                  class="w-full"
+                  placeholder="아이디를 입력하세요"
+                  size="lg"
+                  required
+                  touchMode
+                  value={id()}
+                  onValueChange={setId}
+                />
+              </FormGroup.Item>
+              <FormGroup.Item>
+                <TextInput
+                  prefixIcon={IconLock}
+                  class="w-full"
+                  type="password"
+                  placeholder="비밀번호를 입력하세요"
+                  size="lg"
+                  required
+                  touchMode
+                  value={pw()}
+                  onValueChange={setPw}
+                />
+              </FormGroup.Item>
+              <FormGroup.Item>
+                <Button theme="primary" variant="solid" class="w-full" type="submit" size="xl">
+                  로그인
+                </Button>
+              </FormGroup.Item>
+              <FormGroup.Item class="flex flex-row justify-center gap-3 pt-4">
+                <Link onClick={() => alert("비밀번호 변경")} class="text-sm text-base-500">
+                  비밀번호 변경
+                </Link>
+                <span class="text-base-300 dark:text-base-600">|</span>
+                <Link onClick={() => alert("회원가입")} class="text-sm text-base-500">
+                  회원가입
+                </Link>
+              </FormGroup.Item>
+            </FormGroup>
+          </form>
+        </Card>
       </div>
 
-      {/* Theme Toggle */}
-      <div class="fixed bottom-4 right-4">
-        <ThemeToggle size="sm" />
-      </div>
+      <ThemeToggle class="fixed bottom-4 right-4" size="sm" />
     </div>
   );
 }

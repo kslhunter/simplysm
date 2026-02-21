@@ -13,7 +13,6 @@ import {
   Textarea,
   TextInput,
   TimePicker,
-  Topbar,
 } from "@simplysm/solid";
 
 const departments = ["영업", "개발", "인사", "마케팅"];
@@ -159,432 +158,419 @@ export default function SheetPage() {
   ]);
 
   return (
-    <Topbar.Container>
-      <Topbar>
-        <h1 class="m-0 text-base">DataSheet</h1>
-      </Topbar>
-      <div class="flex-1 overflow-auto p-6">
-        <div class="space-y-8">
-          {/* 기본 테이블 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">기본 테이블</h2>
-            <DataSheet items={users} persistKey="basic">
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+    <div class="space-y-8 p-6">
+      {/* 기본 테이블 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 테이블</h2>
+        <DataSheet items={users} persistKey="basic">
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 다단계 헤더 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">다단계 헤더</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
-            </p>
-            <DataSheet items={users} persistKey="multi-header">
-              <DataSheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header={["기본정보", "나이"]} class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 다단계 헤더 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">다단계 헤더</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          header에 배열을 전달하면 다단계 헤더가 생성됩니다. 같은 그룹명은 자동으로 병합됩니다.
+        </p>
+        <DataSheet items={users} persistKey="multi-header">
+          <DataSheet.Column<User> key="name" header={["기본정보", "이름"]} class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header={["기본정보", "나이"]} class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 합계 행 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">합계 행</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에
-              고정됩니다.
-            </p>
-            <DataSheet items={users} persistKey="summary">
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User>
-                key="salary"
-                header="급여"
-                class="px-2 py-1 text-right"
-                summary={() => (
-                  <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>
-                )}
-              >
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 합계 행 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">합계 행</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          summary prop으로 합계 행을 추가합니다. thead 내에 배치되어 스크롤 시 상단에 고정됩니다.
+        </p>
+        <DataSheet items={users} persistKey="summary">
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User>
+            key="salary"
+            header="급여"
+            class="px-2 py-1 text-right"
+            summary={() => <span class="font-bold">합계: {totalSalary().toLocaleString()}원</span>}
+          >
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 정렬 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">정렬</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
-            </p>
-            <DataSheet
-              items={users}
-              persistKey="sorting"
-              sorts={sorts()}
-              onSortsChange={setSorts}
-              autoSort
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-              <DataSheet.Column<User>
-                key="email"
-                header="이메일 (정렬 불가)"
-                class="px-2 py-1"
-                sortable={false}
-              >
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 정렬 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">정렬</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          헤더 클릭으로 정렬 토글. Shift+Click으로 다중 정렬. autoSort로 자동 정렬 적용.
+        </p>
+        <DataSheet
+          items={users}
+          persistKey="sorting"
+          sorts={sorts()}
+          onSortsChange={setSorts}
+          autoSort
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+          <DataSheet.Column<User>
+            key="email"
+            header="이메일 (정렬 불가)"
+            class="px-2 py-1"
+            sortable={false}
+          >
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 페이지네이션 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">페이지네이션</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
-            </p>
-            <DataSheet
-              items={users}
-              persistKey="paging"
-              itemsPerPage={2}
-              page={page()}
-              onPageChange={setPage}
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 페이지네이션 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">페이지네이션</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          itemsPerPage를 설정하면 자동으로 페이지네이션이 표시됩니다.
+        </p>
+        <DataSheet
+          items={users}
+          persistKey="paging"
+          itemsPerPage={2}
+          page={page()}
+          onPageChange={setPage}
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 트리 확장 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">트리 확장</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로
-              깊이를 표현합니다.
-            </p>
-            <DataSheet
-              items={categories}
-              persistKey="tree"
-              getChildren={(item) => item.children}
-              expandedItems={expanded()}
-              onExpandedItemsChange={setExpanded}
-            >
-              <DataSheet.Column<Category> key="name" header="카테고리" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<Category> key="count" header="상품 수" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.count.toLocaleString()}개</>}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 트리 확장 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">트리 확장</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          getChildren으로 트리 구조를 정의합니다. 캐럿 아이콘으로 펼침/접기, 세로선 가이드로 깊이를
+          표현합니다.
+        </p>
+        <DataSheet
+          items={categories}
+          persistKey="tree"
+          getChildren={(item) => item.children}
+          expandedItems={expanded()}
+          onExpandedItemsChange={setExpanded}
+        >
+          <DataSheet.Column<Category> key="name" header="카테고리" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<Category> key="count" header="상품 수" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.count.toLocaleString()}개</>}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
 
-          {/* 고정 컬럼 + 리사이징 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">고정 컬럼 + 리사이징</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로
-              초기화.
-            </p>
-            <div>
-              <DataSheet items={users} persistKey="fixed-resize">
-                <DataSheet.Column<User>
-                  key="name"
-                  header="이름"
-                  class="px-2 py-1 font-medium"
-                  fixed
-                >
-                  {(ctx) => ctx.item.name}
-                </DataSheet.Column>
-                <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
-                  {(ctx) => ctx.item.age}
-                </DataSheet.Column>
-                <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                  {(ctx) => ctx.item.email}
-                </DataSheet.Column>
-                <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                  {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-                </DataSheet.Column>
-              </DataSheet>
-            </div>
-          </section>
-
-          {/* 인라인 편집 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">인라인 편집</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
-            </p>
-            <DataSheet items={editUsers} persistKey="cell-edit">
-              <DataSheet.Column<User> key="name" header="이름">
-                {(ctx) => (
-                  <TextInput
-                    value={ctx.item.name}
-                    onValueChange={(v) => {
-                      ctx.item.name = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이">
-                {(ctx) => (
-                  <NumberInput
-                    value={ctx.item.age}
-                    onValueChange={(v) => {
-                      ctx.item.age = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="birthDate" header="생년월일">
-                {(ctx) => (
-                  <DatePicker
-                    value={ctx.item.birthDate}
-                    onValueChange={(v) => {
-                      ctx.item.birthDate = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="startTime" header="출근시간">
-                {(ctx) => (
-                  <TimePicker
-                    value={ctx.item.startTime}
-                    onValueChange={(v) => {
-                      ctx.item.startTime = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="createdAt" header="생성일시">
-                {(ctx) => (
-                  <DateTimePicker
-                    value={ctx.item.createdAt}
-                    onValueChange={(v) => {
-                      ctx.item.createdAt = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="memo" header="메모">
-                {(ctx) => (
-                  <Textarea
-                    value={ctx.item.memo}
-                    onValueChange={(v) => {
-                      ctx.item.memo = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="department" header="부서">
-                {(ctx) => (
-                  <Select
-                    value={ctx.item.department}
-                    onValueChange={(v) => {
-                      ctx.item.department = v;
-                    }}
-                    items={departments}
-                    renderValue={(v) => <>{v}</>}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="active" header="활성">
-                {(ctx) => (
-                  <Checkbox
-                    value={ctx.item.active}
-                    onValueChange={(v) => {
-                      ctx.item.active = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="vip" header="VIP">
-                {(ctx) => (
-                  <Radio
-                    value={ctx.item.vip}
-                    onValueChange={(v) => {
-                      ctx.item.vip = v;
-                    }}
-                    inset
-                  />
-                )}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
-
-          {/* 다중 선택 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">다중 선택</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              selectMode="multiple"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
-            </p>
-            <DataSheet
-              items={users}
-              persistKey="select-multi"
-              selectMode="multiple"
-              selectedItems={multiSelected()}
-              onSelectedItemsChange={setMultiSelected}
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-            </DataSheet>
-            <p class="mt-2 text-sm text-base-500">
-              선택된 항목:{" "}
-              {multiSelected()
-                .map((u) => u.name)
-                .join(", ") || "(없음)"}
-            </p>
-          </section>
-
-          {/* 단일 선택 + autoSelect */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">단일 선택 + autoSelect</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시
-              자동 선택.
-            </p>
-            <DataSheet
-              items={users}
-              persistKey="select-single"
-              selectMode="single"
-              selectedItems={singleSelected()}
-              onSelectedItemsChange={setSingleSelected}
-              autoSelect="click"
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-            </DataSheet>
-            <p class="mt-2 text-sm text-base-500">
-              선택된 항목:{" "}
-              {singleSelected()
-                .map((u) => u.name)
-                .join(", ") || "(없음)"}
-            </p>
-          </section>
-
-          {/* 선택 불가 항목 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">선택 불가 항목</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로
-              표시됩니다.
-            </p>
-            <DataSheet
-              items={users}
-              persistKey="select-disabled"
-              selectMode="multiple"
-              selectedItems={disabledSelected()}
-              onSelectedItemsChange={setDisabledSelected}
-              isItemSelectable={(item) =>
-                item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가"
-              }
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
-                {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-            </DataSheet>
-            <p class="mt-2 text-sm text-base-500">
-              선택된 항목:{" "}
-              {disabledSelected()
-                .map((u) => u.name)
-                .join(", ") || "(없음)"}
-            </p>
-          </section>
-
-          {/* 드래그 재정렬 */}
-          <section>
-            <h2 class="mb-4 text-xl font-bold">드래그 재정렬</h2>
-            <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-              onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여
-              행 순서를 변경할 수 있습니다.
-            </p>
-            <DataSheet
-              items={reorderItems()}
-              persistKey="reorder"
-              onItemsReorder={(event) => {
-                const items = [...reorderItems()];
-                const fromIndex = items.indexOf(event.item);
-                if (fromIndex < 0) return;
-
-                const [moved] = items.splice(fromIndex, 1);
-                let toIndex = items.indexOf(event.targetItem);
-                if (toIndex < 0) return;
-
-                if (event.position === "after") toIndex++;
-                items.splice(toIndex, 0, moved);
-                setReorderItems(items);
-              }}
-            >
-              <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
-                {(ctx) => ctx.item.name}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
-                {(ctx) => ctx.item.age}
-              </DataSheet.Column>
-              <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
-                {(ctx) => ctx.item.email}
-              </DataSheet.Column>
-            </DataSheet>
-          </section>
+      {/* 고정 컬럼 + 리사이징 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          고정 컬럼 + 리사이징
+        </h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          fixed 컬럼은 스크롤 시 좌측에 고정됩니다. 헤더 우측 드래그로 너비 변경, 더블클릭으로
+          초기화.
+        </p>
+        <div>
+          <DataSheet items={users} persistKey="fixed-resize">
+            <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1 font-medium" fixed>
+              {(ctx) => ctx.item.name}
+            </DataSheet.Column>
+            <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1" fixed>
+              {(ctx) => ctx.item.age}
+            </DataSheet.Column>
+            <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+              {(ctx) => ctx.item.email}
+            </DataSheet.Column>
+            <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+              {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+            </DataSheet.Column>
+          </DataSheet>
         </div>
-      </div>
-    </Topbar.Container>
+      </section>
+
+      {/* 인라인 편집 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">인라인 편집</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          inset 컴포넌트를 사용하여 셀 내에서 직접 편집합니다.
+        </p>
+        <DataSheet items={editUsers} persistKey="cell-edit">
+          <DataSheet.Column<User> key="name" header="이름">
+            {(ctx) => (
+              <TextInput
+                value={ctx.item.name}
+                onValueChange={(v) => {
+                  ctx.item.name = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이">
+            {(ctx) => (
+              <NumberInput
+                value={ctx.item.age}
+                onValueChange={(v) => {
+                  ctx.item.age = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="birthDate" header="생년월일">
+            {(ctx) => (
+              <DatePicker
+                value={ctx.item.birthDate}
+                onValueChange={(v) => {
+                  ctx.item.birthDate = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="startTime" header="출근시간">
+            {(ctx) => (
+              <TimePicker
+                value={ctx.item.startTime}
+                onValueChange={(v) => {
+                  ctx.item.startTime = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="createdAt" header="생성일시">
+            {(ctx) => (
+              <DateTimePicker
+                value={ctx.item.createdAt}
+                onValueChange={(v) => {
+                  ctx.item.createdAt = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="memo" header="메모">
+            {(ctx) => (
+              <Textarea
+                value={ctx.item.memo}
+                onValueChange={(v) => {
+                  ctx.item.memo = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="department" header="부서">
+            {(ctx) => (
+              <Select
+                value={ctx.item.department}
+                onValueChange={(v) => {
+                  ctx.item.department = v;
+                }}
+                items={departments}
+                renderValue={(v) => <>{v}</>}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="active" header="활성">
+            {(ctx) => (
+              <Checkbox
+                value={ctx.item.active}
+                onValueChange={(v) => {
+                  ctx.item.active = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="vip" header="VIP">
+            {(ctx) => (
+              <Radio
+                value={ctx.item.vip}
+                onValueChange={(v) => {
+                  ctx.item.vip = v;
+                }}
+                inset
+              />
+            )}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
+
+      {/* 다중 선택 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">다중 선택</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          selectMode="multiple"로 체크박스 기반 다중 선택. Shift+Click으로 범위 선택.
+        </p>
+        <DataSheet
+          items={users}
+          persistKey="select-multi"
+          selectMode="multiple"
+          selectedItems={multiSelected()}
+          onSelectedItemsChange={setMultiSelected}
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+        </DataSheet>
+        <p class="mt-2 text-sm text-base-500">
+          선택된 항목:{" "}
+          {multiSelected()
+            .map((u) => u.name)
+            .join(", ") || "(없음)"}
+        </p>
+      </section>
+
+      {/* 단일 선택 + autoSelect */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          단일 선택 + autoSelect
+        </h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          selectMode="single"로 화살표 아이콘 기반 단일 선택. autoSelect="click"으로 행 클릭 시 자동
+          선택.
+        </p>
+        <DataSheet
+          items={users}
+          persistKey="select-single"
+          selectMode="single"
+          selectedItems={singleSelected()}
+          onSelectedItemsChange={setSingleSelected}
+          autoSelect="click"
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+        </DataSheet>
+        <p class="mt-2 text-sm text-base-500">
+          선택된 항목:{" "}
+          {singleSelected()
+            .map((u) => u.name)
+            .join(", ") || "(없음)"}
+        </p>
+      </section>
+
+      {/* 선택 불가 항목 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">선택 불가 항목</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          isItemSelectable으로 특정 항목의 선택을 비활성화합니다. 비활성 사유가 tooltip으로
+          표시됩니다.
+        </p>
+        <DataSheet
+          items={users}
+          persistKey="select-disabled"
+          selectMode="multiple"
+          selectedItems={disabledSelected()}
+          onSelectedItemsChange={setDisabledSelected}
+          isItemSelectable={(item) => (item.salary >= 4500 ? true : "급여 4,500 미만은 선택 불가")}
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="salary" header="급여" class="px-2 py-1 text-right">
+            {(ctx) => <>{ctx.item.salary.toLocaleString()}원</>}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+        </DataSheet>
+        <p class="mt-2 text-sm text-base-500">
+          선택된 항목:{" "}
+          {disabledSelected()
+            .map((u) => u.name)
+            .join(", ") || "(없음)"}
+        </p>
+      </section>
+
+      {/* 드래그 재정렬 */}
+      <section>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">드래그 재정렬</h2>
+        <p class="mb-4 text-sm text-base-600 dark:text-base-400">
+          onItemsReorder를 설정하면 드래그 핸들 컬럼이 자동 추가됩니다. 핸들을 잡고 드래그하여 행
+          순서를 변경할 수 있습니다.
+        </p>
+        <DataSheet
+          items={reorderItems()}
+          persistKey="reorder"
+          onItemsReorder={(event) => {
+            const items = [...reorderItems()];
+            const fromIndex = items.indexOf(event.item);
+            if (fromIndex < 0) return;
+
+            const [moved] = items.splice(fromIndex, 1);
+            let toIndex = items.indexOf(event.targetItem);
+            if (toIndex < 0) return;
+
+            if (event.position === "after") toIndex++;
+            items.splice(toIndex, 0, moved);
+            setReorderItems(items);
+          }}
+        >
+          <DataSheet.Column<User> key="name" header="이름" class="px-2 py-1">
+            {(ctx) => ctx.item.name}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="age" header="나이" class="px-2 py-1">
+            {(ctx) => ctx.item.age}
+          </DataSheet.Column>
+          <DataSheet.Column<User> key="email" header="이메일" class="px-2 py-1">
+            {(ctx) => ctx.item.email}
+          </DataSheet.Column>
+        </DataSheet>
+      </section>
+    </div>
   );
 }

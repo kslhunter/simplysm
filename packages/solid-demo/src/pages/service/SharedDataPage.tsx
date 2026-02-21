@@ -1,10 +1,8 @@
 import { type Component, createSignal, For, onMount, onCleanup, Show } from "solid-js";
 import {
-  NotificationBell,
   useNotification,
   useServiceClient,
   useSharedData,
-  Topbar,
   Table,
   BusyContainer,
   Tag,
@@ -34,7 +32,7 @@ const SharedDataDemo: Component = () => {
     <div class="space-y-8">
       {/* busy 상태 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">busy 상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">busy 상태</h2>
         <Tag theme={shared.busy() ? "warning" : "success"}>
           {shared.busy() ? "로딩 중..." : "로드 완료"}
         </Tag>
@@ -42,7 +40,7 @@ const SharedDataDemo: Component = () => {
 
       {/* User 목록 - items() */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">User — items()</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">User — items()</h2>
         <Table>
           <thead>
             <tr>
@@ -67,7 +65,7 @@ const SharedDataDemo: Component = () => {
 
       {/* Company 목록 - items() */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">Company — items()</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Company — items()</h2>
         <Table>
           <thead>
             <tr>
@@ -92,7 +90,9 @@ const SharedDataDemo: Component = () => {
 
       {/* get() 단일 조회 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">get() — O(1) 단일 조회</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
+          get() — O(1) 단일 조회
+        </h2>
         <div class="space-y-2">
           <div>
             <code class="text-sm">shared.user.get(1)</code>
@@ -185,14 +185,8 @@ const ConnectedSharedDataDemo: Component = () => {
 
 export default function SharedDataPage() {
   return (
-    <Topbar.Container>
-      <Topbar>
-        <h1 class="m-0 flex-1 text-base">SharedData</h1>
-        <NotificationBell />
-      </Topbar>
-      <div class="flex-1 overflow-auto p-6">
-        <ConnectedSharedDataDemo />
-      </div>
-    </Topbar.Container>
+    <div class="space-y-8 p-6">
+      <ConnectedSharedDataDemo />
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { type Component } from "solid-js";
-import { NotificationBell, useNotification, Button, Topbar } from "@simplysm/solid";
+import { useNotification, Button } from "@simplysm/solid";
 
 const NotificationDemo: Component = () => {
   const notification = useNotification();
@@ -8,7 +8,7 @@ const NotificationDemo: Component = () => {
     <div class="space-y-8">
       {/* 테마별 알림 테스트 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">테마별 알림</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">테마별 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           각 버튼을 클릭하면 해당 테마의 알림이 발생합니다. 상단 배너와 우측 상단의 벨 아이콘에서
           확인할 수 있습니다.
@@ -47,7 +47,7 @@ const NotificationDemo: Component = () => {
 
       {/* 액션 버튼 포함 알림 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">액션 버튼 포함</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">액션 버튼 포함</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           알림에 액션 버튼을 포함할 수 있습니다. 배너에서 버튼을 클릭해 보세요.
         </p>
@@ -69,7 +69,7 @@ const NotificationDemo: Component = () => {
 
       {/* 여러 알림 발생 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">연속 알림</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">연속 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           여러 개의 알림을 연속으로 발생시킵니다. 벨 아이콘을 클릭하면 모든 알림 목록을 확인할 수
           있습니다.
@@ -89,7 +89,7 @@ const NotificationDemo: Component = () => {
 
       {/* 전체 삭제 */}
       <section>
-        <h2 class="mb-4 text-xl font-bold">알림 관리</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">알림 관리</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">모든 알림을 삭제합니다.</p>
         <Button theme="danger" variant="outline" onClick={() => notification.clear()}>
           전체 알림 삭제
@@ -101,14 +101,8 @@ const NotificationDemo: Component = () => {
 
 export default function NotificationPage() {
   return (
-    <Topbar.Container>
-      <Topbar>
-        <h1 class="m-0 flex-1 text-base">Notification</h1>
-        <NotificationBell />
-      </Topbar>
-      <div class="flex-1 overflow-auto p-6">
-        <NotificationDemo />
-      </div>
-    </Topbar.Container>
+    <div class="space-y-8 p-6">
+      <NotificationDemo />
+    </div>
   );
 }
