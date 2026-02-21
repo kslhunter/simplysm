@@ -1,7 +1,7 @@
 ---
 name: sd-check
 description: Use when verifying code quality via typecheck, lint, and tests - before deployment, PR creation, after code changes, or when type errors, lint violations, or test failures are suspected. Applies to whole project or specific paths.
-allowed-tools: Bash(node .claude/skills/sd-check/run-checks.mjs), Bash(pnpm typecheck), Bash(pnpm lint --fix), Bash(pnpm vitest)
+allowed-tools: Bash(pnpm check), Bash(pnpm typecheck), Bash(pnpm lint --fix), Bash(pnpm vitest)
 ---
 
 # sd-check
@@ -57,30 +57,34 @@ Launch the single check command in background:
 
 ```
 Bash tool:
-  command: "node .claude/skills/sd-check/run-checks.mjs [path] [type]"
+  command: "pnpm check [path] [--type type]"
   description: "Run typecheck + lint + test"
   timeout: 600000
 ```
 
-Replace `[path]` with user's path argument, `[type]` with check type (`typecheck`, `lint`, `test`).
-Omit `[path]` for full project, omit `[type]` for all checks.
-If only type is given (no path), pass type as the first argument directly.
+Replace `[path]` with user's path argument, `[--type type]` with check type (`typecheck`, `lint`, `test`).
+Omit `[path]` for full project, omit `[--type type]` for all checks.
+If only type is given (no path), use `pnpm check --type <type>`.
+Multiple types: `pnpm check --type typecheck,lint`.
 
 **Output format:**
 ```
-====== TYPECHECK: PASS ======
+====== TYPECHECK ======
+✔ 0 errors, 0 warnings
 
-====== LINT: FAIL → .tmp/sd-check/lint.log ======
+====== LINT ======
+✖ 3 errors, 1 warning
+(error details...)
 
-====== TEST: PASS (47 tests) ======
+====== TEST ======
+✔ passed
 
-====== SUMMARY: 1/3 FAILED (lint) ======
+====== SUMMARY ======
+✖ 1/3 FAILED (lint)
+Total: 3 errors, 1 warnings
 ```
 
-- Failed checks write full output to `.tmp/sd-check/{name}.log`
-- Use the **Read tool** to read log files for error details
-
-- **ENV-CHECK FAIL**: Environment prerequisites missing. Report to user and STOP.
+- Failed checks show full error details inline
 - **SUMMARY: ALL PASSED**: Complete (see Completion Criteria).
 - **SUMMARY: N/3 FAILED**: Proceed to Step 2.
 
