@@ -234,7 +234,7 @@ describe("TextInput 컴포넌트", () => {
       const { container } = render(() => <TextInput />);
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.classList.contains("border")).toBe(true);
-      expect(wrapper.classList.contains("border-base-300")).toBe(true);
+      expect(wrapper.classList.contains("border-base-200")).toBe(true);
     });
 
     it("focus 시 border 색상이 변경된다", () => {

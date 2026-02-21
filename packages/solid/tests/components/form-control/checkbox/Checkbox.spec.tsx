@@ -97,7 +97,7 @@ describe("Checkbox 컴포넌트", () => {
 
     it("disabled 스타일이 적용된다", () => {
       const { getByRole } = render(() => <Checkbox disabled />);
-      expect(getByRole("checkbox").classList.contains("opacity-50")).toBe(true);
+      expect(getByRole("checkbox").classList.contains("opacity-30")).toBe(true);
     });
   });
 

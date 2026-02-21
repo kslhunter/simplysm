@@ -98,7 +98,7 @@ describe("Radio 컴포넌트", () => {
 
     it("disabled 스타일이 적용된다", () => {
       const { getByRole } = render(() => <Radio disabled />);
-      expect(getByRole("radio").classList.contains("opacity-50")).toBe(true);
+      expect(getByRole("radio").classList.contains("opacity-30")).toBe(true);
     });
   });
 

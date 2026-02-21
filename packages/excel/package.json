@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/excel",
-  "version": "13.0.51",
+  "version": "13.0.52",
   "description": "Excel 파일 처리 라이브러리",
   "author": "김석래",
   "license": "Apache-2.0",
