@@ -149,7 +149,7 @@ import "@simplysm/solid/tailwind.css";
 ### Layout
 
 - [`Sidebar`](docs/layout.md#sidebar) - Sidebar navigation with responsive mobile overlay
-- [`Topbar`](docs/layout.md#topbar) - Top navigation bar with menus and user dropdown
+- [`Topbar`](docs/layout.md#topbar) - Top navigation bar with menus, user dropdown, and actions slot
 - [`FormGroup`](docs/layout.md#formgroup) - Form fields layout with labels (vertical/inline)
 - [`FormTable`](docs/layout.md#formtable) - Table-based form layout
 - [`Kanban`](docs/layout.md#kanban) - Kanban board with drag-and-drop, lane collapse, multi-select
@@ -195,6 +195,8 @@ import "@simplysm/solid/tailwind.css";
 - [`createControllableSignal`](docs/hooks.md#createcontrollablesignal) - Controlled/Uncontrolled signal pattern
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
+- [`createTopbarActions`](docs/layout.md#topbar-actions-slot) - Register actions in nearest Topbar.Container scope
+- [`useTopbarActionsAccessor`](docs/layout.md#topbar-actions-slot) - Direct access to topbar actions accessor
 - [`useRouterLink`](docs/hooks.md#userouterlink) - Navigation with Ctrl/Shift+click support
 
 ## Providers

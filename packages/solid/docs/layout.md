@@ -127,9 +127,78 @@ const userMenus: TopbarUserMenu[] = [
 ```
 
 **Sub-components:**
-- `Topbar.Container` -- Container wrapping main content below topbar
+- `Topbar.Container` -- Container wrapping topbar and main content, provides `TopbarContext`
+- `Topbar.Actions` -- Slot outlet that renders actions registered via `createTopbarActions`
 - `Topbar.Menu` -- Menu items list
 - `Topbar.User` -- User menu (dropdown)
+
+### Topbar Actions Slot
+
+A slot pattern that lets child pages inject action buttons (save, delete, etc.) into the topbar. The parent layout defines **where** actions appear, child pages define **what** to show.
+
+**Layout (define the slot):**
+
+```tsx
+import { Topbar } from "@simplysm/solid";
+
+<Topbar.Container>
+  <Topbar>
+    <span>Title</span>
+    <Topbar.Actions />
+    <div class="flex-1" />
+  </Topbar>
+  <main class="flex-1 overflow-auto p-4">
+    {props.children}
+  </main>
+</Topbar.Container>
+```
+
+**Child page (fill the slot):**
+
+```tsx
+import { createTopbarActions, Button } from "@simplysm/solid";
+
+function UserPage() {
+  createTopbarActions(() => (
+    <>
+      <Button theme="primary">Save</Button>
+      <Button>Cancel</Button>
+    </>
+  ));
+
+  return <div>...</div>;
+}
+```
+
+When `UserPage` mounts, the buttons appear in the topbar. When it unmounts, the actions are automatically cleaned up via `onCleanup`.
+
+**createTopbarActions(accessor: () => JSX.Element): void**
+
+Registers actions in the nearest `Topbar.Container` scope. Automatically removes actions on component unmount. Must be called inside `Topbar.Container`.
+
+**useTopbarActionsAccessor(): Accessor&lt;JSX.Element | undefined&gt;**
+
+Returns the actions accessor directly. For advanced use cases such as building custom topbar components. Must be called inside `Topbar.Container`.
+
+```tsx
+import { useTopbarActionsAccessor } from "@simplysm/solid";
+
+const actions = useTopbarActionsAccessor();
+// actions() returns the currently registered JSX.Element or undefined
+```
+
+**TopbarContext:**
+
+`TopbarContext` is exported for building custom topbar layouts. `Topbar.Container` wraps children with `TopbarContext.Provider`, sharing `actions` accessor and `setActions` setter.
+
+```typescript
+import { TopbarContext } from "@simplysm/solid";
+
+interface TopbarContextValue {
+  actions: Accessor<JSX.Element | undefined>;
+  setActions: Setter<JSX.Element | undefined>;
+}
+```
 
 **TopbarMenuItem type:**
 
