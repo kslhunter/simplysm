@@ -461,4 +461,212 @@ describe("createAppStructure", () => {
       });
     });
   });
+
+  describe("perms", () => {
+    it("permRecord에서 true인 perm은 true를 반환한다", () => {
+      createRoot((dispose) => {
+        const [perms] = createSignal<Record<string, boolean>>({
+          "/home/sales/invoice/use": true,
+          "/home/sales/invoice/edit": false,
+        });
+
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "sales",
+                  title: "영업",
+                  children: [
+                    {
+                      code: "invoice",
+                      title: "송장",
+                      perms: ["use", "edit"] as ("use" | "edit")[],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          permRecord: perms,
+        });
+
+        expect(result.perms.home.sales.invoice.use).toBe(true);
+        expect(result.perms.home.sales.invoice.edit).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("permRecord에 없는 perm은 false를 반환한다", () => {
+      createRoot((dispose) => {
+        const [perms] = createSignal<Record<string, boolean>>({});
+
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+          permRecord: perms,
+        });
+
+        expect(result.perms.home.user.use).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("permRecord가 없으면 모든 perm이 false다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        expect(result.perms.home.user.use).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("subPerms에도 동일하게 접근할 수 있다", () => {
+      createRoot((dispose) => {
+        const [perms] = createSignal<Record<string, boolean>>({
+          "/home/user/auth/use": true,
+        });
+
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use", "edit"] as ("use" | "edit")[],
+                  subPerms: [{ code: "auth", title: "권한", perms: ["use"] as ("use" | "edit")[] }],
+                },
+              ],
+            },
+          ],
+          permRecord: perms,
+        });
+
+        expect(result.perms.home.user.auth.use).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("permRecord 변경 시 perm 값이 반응적으로 업데이트된다", () => {
+      createRoot((dispose) => {
+        const [perms, setPerms] = createSignal<Record<string, boolean>>({
+          "/home/user/use": false,
+        });
+
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+          permRecord: perms,
+        });
+
+        expect(result.perms.home.user.use).toBe(false);
+
+        setPerms({ "/home/user/use": true });
+        expect(result.perms.home.user.use).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("perms가 없는 leaf는 perms 트리에서 제외된다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                { code: "main", title: "메인" },
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        expect(result.perms.home.user).toBeDefined();
+        expect((result.perms.home as Record<string, unknown>)["main"]).toBeUndefined();
+
+        dispose();
+      });
+    });
+
+    it("하위에 perm이 없는 group은 perms 트리에서 제외된다", () => {
+      createRoot((dispose) => {
+        const result = createAppStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "empty-group",
+                  title: "빈그룹",
+                  children: [{ code: "about", title: "소개" }],
+                },
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        expect(result.perms.home.user).toBeDefined();
+        expect((result.perms.home as Record<string, unknown>)["empty-group"]).toBeUndefined();
+
+        dispose();
+      });
+    });
+  });
 });

@@ -80,6 +80,39 @@ export interface AppStructure<TModule> {
   getTitleChainByHref(href: string): string[];
 }
 
+// ── Perms 타입 추론 ──
+
+type PermKey<TItem> = TItem extends { code: infer C extends string }
+  ? TItem extends { children: any }
+    ? C
+    : TItem extends { perms: any } | { subPerms: any }
+      ? C
+      : never
+  : never;
+
+type InferLeafPerms<TItem> = (TItem extends {
+  perms: (infer P extends string)[];
+}
+  ? { [K in P]: boolean }
+  : unknown) &
+  (TItem extends { subPerms: (infer S)[] }
+    ? {
+        [K in S & { code: string } as K["code"]]: K extends {
+          perms: (infer P extends string)[];
+        }
+          ? { [J in P]: boolean }
+          : never;
+      }
+    : unknown);
+
+type InferPerms<TItems extends any[]> = {
+  [Item in TItems[number] as PermKey<Item>]: Item extends {
+    children: infer C extends any[];
+  }
+    ? InferPerms<C>
+    : InferLeafPerms<Item>;
+};
+
 // ── 내부 헬퍼 ──
 
 function isGroupItem<TModule>(
@@ -293,6 +326,59 @@ function collectFlatPerms<TModule>(items: AppStructureItem<TModule>[]): AppFlatP
   return results;
 }
 
+function buildPermsObject<TModule>(
+  items: AppStructureItem<TModule>[],
+  basePath: string,
+  permRecord?: Accessor<Record<string, boolean> | undefined>,
+): Record<string, unknown> {
+  const obj: Record<string, unknown> = {};
+
+  for (const item of items) {
+    const path = basePath + "/" + item.code;
+
+    if (isGroupItem(item)) {
+      const child = buildPermsObject(item.children, path, permRecord);
+      if (Object.keys(child).length > 0) {
+        obj[item.code] = child;
+      }
+    } else if (item.perms !== undefined || item.subPerms !== undefined) {
+      const leaf: Record<string, unknown> = {};
+
+      if (item.perms !== undefined) {
+        for (const perm of item.perms) {
+          const permPath = path + "/" + perm;
+          Object.defineProperty(leaf, perm, {
+            get() {
+              return permRecord?.()?.[permPath] ?? false;
+            },
+            enumerable: true,
+          });
+        }
+      }
+
+      if (item.subPerms !== undefined) {
+        for (const sub of item.subPerms) {
+          const subObj: Record<string, unknown> = {};
+          for (const p of sub.perms) {
+            const subPermPath = path + "/" + sub.code + "/" + p;
+            Object.defineProperty(subObj, p, {
+              get() {
+                return permRecord?.()?.[subPermPath] ?? false;
+              },
+              enumerable: true,
+            });
+          }
+          leaf[sub.code] = subObj;
+        }
+      }
+
+      obj[item.code] = leaf;
+    }
+  }
+
+  return obj;
+}
+
 // ── Info ──
 
 function findItemChainByCodes<TModule>(
@@ -314,11 +400,14 @@ function findItemChainByCodes<TModule>(
 
 // ── 메인 함수 ──
 
-export function createAppStructure<TModule>(opts: {
-  items: AppStructureItem<TModule>[];
+export function createAppStructure<
+  TModule,
+  const TItems extends AppStructureItem<TModule>[],
+>(opts: {
+  items: TItems;
   usableModules?: Accessor<TModule[] | undefined>;
   permRecord?: Accessor<Record<string, boolean> | undefined>;
-}): AppStructure<TModule> {
+}): AppStructure<TModule> & { perms: InferPerms<TItems> } {
   const flatPerms = collectFlatPerms(opts.items);
 
   const memos = createRoot(() => {
@@ -364,6 +453,8 @@ export function createAppStructure<TModule>(opts: {
     return { usableRoutes, usableMenus, usableFlatMenus, usablePerms };
   });
 
+  const permsObj = buildPermsObject(opts.items, "", opts.permRecord);
+
   return {
     items: opts.items,
     usableRoutes: memos.usableRoutes,
@@ -371,6 +462,7 @@ export function createAppStructure<TModule>(opts: {
     usableFlatMenus: memos.usableFlatMenus,
     usablePerms: memos.usablePerms,
     flatPerms,
+    perms: permsObj as InferPerms<TItems>,
     getTitleChainByHref(href: string): string[] {
       const codes = href.split("/").filter(Boolean);
       return findItemChainByCodes(opts.items, codes).map((item) => item.title);
