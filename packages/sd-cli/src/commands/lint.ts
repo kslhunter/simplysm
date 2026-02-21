@@ -21,6 +21,20 @@ export interface LintOptions {
   timing: boolean;
 }
 
+/**
+ * executeLint()의 반환 타입
+ */
+export interface LintResult {
+  /** 린트 에러가 없으면 true */
+  success: boolean;
+  /** ESLint + Stylelint 에러 합계 */
+  errorCount: number;
+  /** ESLint + Stylelint 경고 합계 */
+  warningCount: number;
+  /** 포맷터 출력 문자열 (stdout에 쓸 내용) */
+  formattedOutput: string;
+}
+
 //#endregion
 
 //#region Utilities
@@ -116,17 +130,17 @@ async function hasStylelintConfig(cwd: string): Promise<boolean> {
 //#region Main
 
 /**
- * ESLint를 실행한다.
+ * ESLint/Stylelint를 실행하고 결과를 반환한다.
  *
  * - `eslint.config.ts/js`에서 globalIgnores 패턴을 추출하여 glob 필터링에 적용
  * - consola를 사용하여 진행 상황 표시
  * - 캐시 활성화 (`.cache/eslint.cache`에 저장, 설정 변경 시 자동 무효화)
- * - 에러 발생 시 `process.exitCode = 1` 설정
+ * - stdout 출력이나 process.exitCode 설정은 하지 않음 (호출자가 판단)
  *
  * @param options - 린트 실행 옵션
- * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ * @returns 린트 결과 (성공 여부, 에러/경고 수, 포맷터 출력)
  */
-export async function runLint(options: LintOptions): Promise<void> {
+export async function executeLint(options: LintOptions): Promise<LintResult> {
   const { targets, fix, timing } = options;
   const cwd = process.cwd();
   const logger = consola.withTag("sd:cli:lint");
@@ -231,15 +245,15 @@ export async function runLint(options: LintOptions): Promise<void> {
     }
   }
 
-  // 파일이 없거나 린트가 실행되지 않았으면 조기 종료
+  // 파일이 없거나 린트가 실행되지 않았으면 성공 결과 반환
   if (files.length === 0 || eslintResults == null || eslint == null) {
     logger.info("린트할 파일 없음");
-    return;
+    return { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" };
   }
 
   // 결과 집계
-  const errorCount = eslintResults.sum((r) => r.errorCount);
-  const warningCount = eslintResults.sum((r) => r.warningCount);
+  let errorCount = eslintResults.sum((r) => r.errorCount);
+  let warningCount = eslintResults.sum((r) => r.warningCount);
 
   if (errorCount > 0) {
     logger.error("린트 에러 발생", { errorCount, warningCount });
@@ -249,19 +263,15 @@ export async function runLint(options: LintOptions): Promise<void> {
     logger.info("린트 완료", { errorCount, warningCount });
   }
 
-  // 포맷터 출력
+  // 포맷터 출력 수집
+  let formattedOutput = "";
   const formatter = await eslint.loadFormatter("stylish");
   const resultText = await formatter.format(eslintResults);
   if (resultText) {
-    process.stdout.write(resultText);
+    formattedOutput += resultText;
   }
 
-  // 에러 있으면 exit code 1
-  if (errorCount > 0) {
-    process.exitCode = 1;
-  }
-
-  // Stylelint 결과 출력
+  // Stylelint 결과 수집
   if (stylelintResult != null && stylelintResult.results.length > 0) {
     const stylelintErrorCount = stylelintResult.results.sum(
       (r) => r.warnings.filter((w) => w.severity === "error").length,
@@ -269,6 +279,9 @@ export async function runLint(options: LintOptions): Promise<void> {
     const stylelintWarningCount = stylelintResult.results.sum(
       (r) => r.warnings.filter((w) => w.severity === "warning").length,
     );
+
+    errorCount += stylelintErrorCount;
+    warningCount += stylelintWarningCount;
 
     if (stylelintErrorCount > 0) {
       logger.error("Stylelint 에러 발생", {
@@ -291,12 +304,33 @@ export async function runLint(options: LintOptions): Promise<void> {
     const stylelintFormatter = await stylelint.formatters.string;
     const stylelintOutput = stylelintFormatter(stylelintResult.results, stylelintResult);
     if (stylelintOutput) {
-      process.stdout.write(stylelintOutput);
+      formattedOutput += stylelintOutput;
     }
+  }
 
-    if (stylelintErrorCount > 0) {
-      process.exitCode = 1;
-    }
+  return {
+    success: errorCount === 0,
+    errorCount,
+    warningCount,
+    formattedOutput,
+  };
+}
+
+/**
+ * ESLint를 실행한다.
+ *
+ * executeLint()를 호출하고 결과를 stdout에 출력한 뒤 exitCode를 설정하는 래퍼.
+ *
+ * @param options - 린트 실행 옵션
+ * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ */
+export async function runLint(options: LintOptions): Promise<void> {
+  const result = await executeLint(options);
+  if (result.formattedOutput) {
+    process.stdout.write(result.formattedOutput);
+  }
+  if (!result.success) {
+    process.exitCode = 1;
   }
 }
 

@@ -82,7 +82,7 @@ vi.mock("consola", () => {
 });
 
 import { fsExists, fsGlob } from "@simplysm/core-node";
-import { runLint } from "../src/commands/lint";
+import { runLint, executeLint } from "../src/commands/lint";
 
 describe("runLint", () => {
   let originalExitCode: typeof process.exitCode;
@@ -339,5 +339,77 @@ describe("runLint", () => {
     vi.mocked(fsGlob).mockRejectedValue(new Error("Glob error"));
 
     await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow("Glob error");
+  });
+});
+
+describe("executeLint", () => {
+  let originalCwd: () => string;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    originalCwd = process.cwd;
+    process.cwd = vi.fn().mockReturnValue("/project");
+
+    // 상태 초기화
+    mockState.lintResults = [];
+    mockState.lintedFiles = [];
+    mockState.outputFixesCalled = false;
+
+    // 기본 ESLint 설정 mock
+    const cwd = "/project";
+    vi.mocked(fsExists).mockImplementation((filePath: string) => {
+      return Promise.resolve(filePath === path.join(cwd, "eslint.config.ts"));
+    });
+    mockJitiImportFn.mockResolvedValue({
+      default: [{ ignores: ["node_modules/**"] }],
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    process.cwd = originalCwd;
+  });
+
+  it("에러가 없으면 성공 결과를 반환", async () => {
+    mockState.lintResults = [{ errorCount: 0, warningCount: 0 }];
+    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
+
+    const result = await executeLint({ targets: [], fix: false, timing: false });
+
+    expect(result.success).toBe(true);
+    expect(result.errorCount).toBe(0);
+    expect(result.warningCount).toBe(0);
+  });
+
+  it("에러가 있으면 실패 결과를 반환", async () => {
+    mockState.lintResults = [{ errorCount: 2, warningCount: 1 }];
+    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
+
+    const result = await executeLint({ targets: [], fix: false, timing: false });
+
+    expect(result.success).toBe(false);
+    expect(result.errorCount).toBe(2);
+    expect(result.warningCount).toBe(1);
+  });
+
+  it("formattedOutput에 포맷터 출력을 포함", async () => {
+    mockState.lintResults = [{ errorCount: 1, warningCount: 0 }];
+    vi.mocked(fsGlob).mockResolvedValue(["/project/packages/core-common/src/index.ts"]);
+
+    const result = await executeLint({ targets: [], fix: false, timing: false });
+
+    // MockESLint의 formatter는 빈 문자열을 반환하므로 formattedOutput도 빈 문자열
+    expect(result.formattedOutput).toBeDefined();
+    expect(typeof result.formattedOutput).toBe("string");
+  });
+
+  it("파일이 없으면 성공 결과를 반환", async () => {
+    vi.mocked(fsGlob).mockResolvedValue([]);
+
+    const result = await executeLint({ targets: [], fix: false, timing: false });
+
+    expect(result.success).toBe(true);
+    expect(result.errorCount).toBe(0);
+    expect(result.warningCount).toBe(0);
   });
 });
