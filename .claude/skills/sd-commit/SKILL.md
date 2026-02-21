@@ -14,8 +14,22 @@ Stages and commits changes using Conventional Commits format. Two modes: **defau
 
 ## Mode
 
-- **Default mode** (no arguments): Stage only files relevant to the current conversation context. Always a **single commit**.
+- **Default mode** (no arguments): Stage files relevant to the current conversation context. Always a **single commit**.
 - **"all" mode** (`$ARGUMENTS` is "all"): Target **all** changed/untracked files. May produce multiple commits.
+
+## File Selection Rules
+
+**NEVER arbitrarily exclude files.** The ONLY valid reason to exclude a file is:
+- It is in `.gitignore`
+- It is completely unrelated to the conversation context (default mode only)
+
+**Do NOT exclude files based on:**
+- File type or extension (e.g., `.styles.ts`, `.config.ts`)
+- Folder name or path (e.g., `node_modules` is handled by `.gitignore`)
+- Personal judgment about importance or "cleanliness"
+- Assumption that generated/config/style files are unimportant
+
+**When in doubt, INCLUDE the file.** Over-inclusion is always better than silent exclusion.
 
 ## Context
 
