@@ -449,8 +449,8 @@ export class BuildOrchestrator {
     const lintWorker = Worker.create<typeof LintWorkerModule>(lintWorkerPath);
     const lintTask = async (): Promise<void> => {
       try {
-        const hasError = await lintWorker.lint(lintOptions);
-        if (hasError) state.hasError = true;
+        const result = await lintWorker.lint(lintOptions);
+        if (!result.success) state.hasError = true;
       } finally {
         await lintWorker.terminate();
       }
