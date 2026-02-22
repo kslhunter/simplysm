@@ -92,12 +92,10 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   });
 
   // -- Change Detection --
-  /* eslint-disable solid/reactivity -- 이벤트 핸들러에서만 호출, store 즉시 읽기 */
   function hasChanges(): boolean {
     if (originalData == null) return false;
     return !objEqual(unwrap(data) as unknown, originalData as unknown);
   }
-  /* eslint-enable solid/reactivity */
 
   // -- Refresh --
   async function handleRefresh() {
@@ -121,7 +119,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     setBusyCount((c) => c + 1);
     // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
     await noti.try(async () => {
-      const result = await local.submit!(objClone(unwrap(data)) as TData);
+      const result = await local.submit!(objClone(unwrap(data)));
       if (result) {
         noti.success("저장 완료", "저장되었습니다.");
         if (dialogInstance) {
@@ -150,7 +148,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     const del = !currentInfo.isDeleted;
 
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
+    /* eslint-disable solid/reactivity -- noti.try 내부에서 비동기 호출 */
     await noti.try(
       async () => {
         const result = await local.toggleDelete!(del);
@@ -168,6 +166,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       },
       del ? "삭제 실패" : "복구 실패",
     );
+    /* eslint-enable solid/reactivity */
     setBusyCount((c) => c - 1);
   }
 
