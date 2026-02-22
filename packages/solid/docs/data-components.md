@@ -312,7 +312,7 @@ The `value` record uses keys in `"{href}/{perm}"` format (e.g., `{ "/user/use": 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `items` | `AppPerm<TModule>[]` | - | Permission tree structure (same type as `createAppStructure` outputs via `usablePerms()`) |
+| `items` | `AppPerm<TModule>[]` | - | Permission tree structure (same type as `useAppStructure().usablePerms()`) |
 | `value` | `Record<string, boolean>` | - | Permission state record |
 | `onValueChange` | `(value: Record<string, boolean>) => void` | - | State change callback |
 | `modules` | `TModule[]` | - | Module filter (show only matching items) |
@@ -330,7 +330,7 @@ interface AppPerm<TModule = string> {
 }
 ```
 
-`AppPerm` is the same type returned by `createAppStructure().usablePerms()`, so you can pass the output of `createAppStructure` directly to `PermissionTable`.
+`AppPerm` is the same type returned by `useAppStructure().usablePerms()`, so you can pass the output directly to `PermissionTable`.
 
 **Cascading behavior:** Checking a parent checks all children. Unchecking `perms[0]` (base permission) automatically unchecks all other permissions for that item.
 

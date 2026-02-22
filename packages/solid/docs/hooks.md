@@ -306,68 +306,101 @@ const navigate = useRouterLink();
 
 ## createAppStructure
 
-Utility for declaratively defining app structure (routing, menus, permissions). Takes a single options object and returns reactive accessors for routes, menus, and permissions.
+Utility for declaratively defining app structure (routing, menus, permissions). Takes a factory function and returns `{ AppStructureProvider, useAppStructure }` for Context-based access with full `InferPerms` type preservation.
 
 ```tsx
-import { createAppStructure, type AppStructureItem } from "@simplysm/solid";
+// appStructure.ts
+import { createAppStructure } from "@simplysm/solid";
 import { IconHome, IconUsers } from "@tabler/icons-solidjs";
+import { useAuth } from "./AuthProvider";
 
-const structure = createAppStructure({
-  items: [
-    {
-      code: "home",
-      title: "Home",
-      icon: IconHome,
-      component: HomePage,
-      perms: ["use"],
-    },
-    {
-      code: "admin",
-      title: "Admin",
-      icon: IconUsers,
-      children: [
-        { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
-        { code: "roles", title: "Role Management", component: RolesPage, perms: ["use"], isNotMenu: true },
-      ],
-    },
-  ],
-  usableModules: () => activeModules(),  // optional: filter by active modules
-  permRecord: () => userPermissions(),   // optional: Record<string, boolean> permission state
+export const { AppStructureProvider, useAppStructure } = createAppStructure(() => {
+  const auth = useAuth();
+  return {
+    items: [
+      {
+        code: "home",
+        title: "Home",
+        icon: IconHome,
+        component: HomePage,
+        perms: ["use"],
+      },
+      {
+        code: "admin",
+        title: "Admin",
+        icon: IconUsers,
+        children: [
+          { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
+          { code: "roles", title: "Role Management", component: RolesPage, perms: ["use"], isNotMenu: true },
+        ],
+      },
+    ],
+    usableModules: () => activeModules(),          // optional: filter by active modules
+    permRecord: () => auth.authInfo()?.permissions, // optional: Record<string, boolean>
+  };
 });
+```
 
-// structure.usableRoutes()      -- Accessor<AppRoute[]> - reactive, routes filtered by modules + permRecord
-// structure.usableMenus()       -- Accessor<AppMenu[]> - reactive, filtered menu array for Sidebar.Menu
-// structure.usableFlatMenus()   -- Accessor<AppFlatMenu[]> - reactive, flat filtered menu list
-// structure.usablePerms()       -- Accessor<AppPerm[]> - reactive, filtered permission tree
-// structure.allFlatPerms        -- AppFlatPerm[] - all flat perm entries (static)
-// structure.getTitleChainByHref(href) -- string[] - breadcrumb titles for a path
-// structure.perms               -- typed permission accessor (reactive boolean getters)
+The factory function (`getOpts`) is called inside `AppStructureProvider` at render time, so context hooks like `useAuth()` can be used. The `const TItems` generic preserves item literal types for full `InferPerms` type inference.
+
+**Provider setup:**
+
+```tsx
+// main.tsx or App.tsx
+import { AppStructureProvider } from "./appStructure";
+
+render(
+  () => (
+    <AppStructureProvider>
+      <HashRouter>
+        {/* ... */}
+      </HashRouter>
+    </AppStructureProvider>
+  ),
+  document.getElementById("root")!,
+);
+```
+
+**Using the hook in components:**
+
+```tsx
+import { useAppStructure } from "./appStructure";
+
+function Home(props: RouteSectionProps) {
+  const appStructure = useAppStructure();
+
+  // appStructure.usableRoutes()      -- Accessor<AppRoute[]>
+  // appStructure.usableMenus()       -- Accessor<AppMenu[]>
+  // appStructure.usableFlatMenus()   -- Accessor<AppFlatMenu[]>
+  // appStructure.usablePerms()       -- Accessor<AppPerm[]>
+  // appStructure.allFlatPerms        -- AppFlatPerm[]
+  // appStructure.getTitleChainByHref(href) -- string[]
+  // appStructure.perms               -- typed permission accessor
+
+  return <Sidebar.Menu menus={appStructure.usableMenus()} />;
+}
 ```
 
 **Routing integration with `@solidjs/router`:**
 
 ```tsx
-import { render } from "solid-js/web";
-import { HashRouter, Navigate, Route } from "@solidjs/router";
-import { appStructure } from "./appStructure";
+import { useAppStructure } from "./appStructure";
 
-render(
-  () => (
-    <HashRouter>
-      <Route path="/" component={App}>
-        <Route path="/home" component={Home}>
-          <Route path="/" component={() => <Navigate href="/home/main" />} />
-          <For each={appStructure.usableRoutes()}>
-            {(r) => <Route path={r.path} component={r.component} />}
-          </For>
-          <Route path="/*" component={NotFoundPage} />
-        </Route>
-        <Route path="/" component={() => <Navigate href="/home" />} />
-      </Route>
-    </HashRouter>
-  ),
-  document.getElementById("root")!,
-);
+function HomeRoutes() {
+  const appStructure = useAppStructure();
+  return (
+    <For each={appStructure.usableRoutes()}>
+      {(r) => <Route path={r.path} component={r.component} />}
+    </For>
+  );
+}
+
+// In your router setup (inside AppStructureProvider):
+<Route path="/home" component={Home}>
+  <Route path="/" component={() => <Navigate href="/home/main" />} />
+  <HomeRoutes />
+  <Route path="/*" component={NotFoundPage} />
+</Route>
 ```
 
 `usableRoutes()` is a reactive accessor returning routes filtered by `usableModules` and `permRecord`. Items with `perms: ["use"]` are excluded from routes when the user lacks the `use` permission.
@@ -462,18 +495,18 @@ type AppStructureItem<TModule> = AppStructureGroupItem<TModule> | AppStructureLe
 Retrieves the breadcrumb title chain for a given href path. Works on raw items (including `isNotMenu` items).
 
 ```tsx
-import { createAppStructure } from "@simplysm/solid";
-
-const appStructure = createAppStructure({ items });
-
-// Returns ["Sales", "Invoice"] for /home/sales/invoice
-const titles = appStructure.getTitleChainByHref("/home/sales/invoice");
-
-// Use with router for dynamic breadcrumb
 import { useLocation } from "@solidjs/router";
+import { useAppStructure } from "./appStructure";
 
-const location = useLocation();
-const breadcrumb = () => appStructure.getTitleChainByHref(location.pathname);
+function Breadcrumb() {
+  const appStructure = useAppStructure();
+  const location = useLocation();
+
+  // Returns ["Sales", "Invoice"] for /home/sales/invoice
+  const breadcrumb = () => appStructure.getTitleChainByHref(location.pathname);
+
+  return <span>{breadcrumb().join(" > ")}</span>;
+}
 ```
 
 #### perms
@@ -483,7 +516,10 @@ Typed permission accessor providing dot-notation access with TypeScript autocomp
 **Important:** For type inference to work, pass items inline to `createAppStructure`. Declaring items as a separate variable with explicit `AppStructureItem[]` type annotation widens literal types, losing autocompletion.
 
 ```typescript
-const appStructure = createAppStructure({
+// appStructure.ts
+import { createAppStructure } from "@simplysm/solid";
+
+export const { AppStructureProvider, useAppStructure } = createAppStructure(() => ({
   items: [
     {
       code: "home",
@@ -501,7 +537,10 @@ const appStructure = createAppStructure({
     },
   ],
   permRecord: () => userPermissions(),
-});
+}));
+
+// In a component (inside AppStructureProvider):
+const appStructure = useAppStructure();
 
 // Typed access with autocompletion:
 appStructure.perms.home.user.use        // boolean (reactive)
