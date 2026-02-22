@@ -8,6 +8,7 @@
 ## Prototype Extensions
 
 Importing `@simplysm/core-common` adds extension methods to Array, Map, Set:
+
 - `Array`: `single()`, `filterExists()`, `groupBy()`, `orderBy()`, etc.
 - `Map`: `getOrCreate()`, `update()`
 - `Set`: `adds()`, `toggle()`
@@ -27,6 +28,11 @@ function readFileSync() { ... }        // Sync version
 // Bad
 async function readFileAsync() { ... } // Async suffix prohibited
 ```
+
+## File Naming
+
+- Auxiliary files (`types.ts`, `utils.ts`, etc.) must be prefixed with the main file name (e.g., `CrudSheet.types.ts`)
+- File names must be self-identifying without relying on the parent directory
 
 ## JSDoc Convention
 

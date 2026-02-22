@@ -19,10 +19,13 @@ Turn a design doc into a step-by-step implementation plan through codebase explo
 - Ask questions one at a time as they arise during planning, with your recommendation
 - Don't batch questions upfront — real questions emerge while deep in the details
 
-**Ask about:**
-- Conflicts with existing codebase patterns discovered while exploring
-- Implementation choices the design didn't specify (which pattern, which abstraction level)
-- Ambiguous behavior uncovered while designing tests or file structure
+**Ask about anything you're not 100% confident about.** Examples:
+- Dependency choices (add library vs implement directly)
+- Conflicts with existing codebase patterns
+- Implementation choices the design didn't specify
+- Ambiguous behavior or edge cases
+- Migration concerns (breaking changes, compatibility)
+- If in doubt, ask. The cost of asking is low; the cost of a wrong assumption is high.
 
 **Don't ask — just decide:**
 - Internal details covered by project conventions (file naming, export patterns)
