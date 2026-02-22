@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createRoot, createSignal } from "solid-js";
+import { type Accessor, createRoot, createSignal } from "solid-js";
 import type { Component } from "solid-js";
 import { createAppStructure, type AppStructureItem } from "../../src/helpers/createAppStructure";
 
@@ -58,6 +58,24 @@ function createTestItems(): AppStructureItem<string>[] {
   ];
 }
 
+function buildTestStructure(opts: {
+  items: AppStructureItem<string>[];
+  permRecord?: Accessor<Record<string, boolean> | undefined>;
+  usableModules?: Accessor<string[] | undefined>;
+}) {
+  const { AppStructureProvider, useAppStructure } = createAppStructure(() => opts);
+
+  let result!: ReturnType<typeof useAppStructure>;
+  AppStructureProvider({
+    get children() {
+      result = useAppStructure();
+      return undefined;
+    },
+  });
+
+  return result;
+}
+
 describe("createAppStructure", () => {
   it("AppStructureProvider와 useAppStructure를 반환한다", () => {
     createRoot((dispose) => {
@@ -88,7 +106,7 @@ describe("createAppStructure", () => {
   describe("usableRoutes", () => {
     it("모든 리프 아이템의 경로와 컴포넌트를 포함한다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         expect(result.usableRoutes()).toEqual([
           { path: "/sales/invoice", component: DummyA },
@@ -111,7 +129,7 @@ describe("createAppStructure", () => {
           },
         ];
 
-        const result = createAppStructure({ items });
+        const result = buildTestStructure({ items });
         expect(result.usableRoutes()).toEqual([]);
 
         dispose();
@@ -122,7 +140,7 @@ describe("createAppStructure", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
         });
@@ -140,7 +158,7 @@ describe("createAppStructure", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["sales"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
         });
@@ -165,7 +183,7 @@ describe("createAppStructure", () => {
           "/home/sales/order/use": true,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           permRecord: perms,
         });
@@ -189,7 +207,7 @@ describe("createAppStructure", () => {
           "/home/sales/order/use": false,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -208,7 +226,7 @@ describe("createAppStructure", () => {
 
     it("isNotMenu 아이템도 route에 포함된다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         const routes = result.usableRoutes();
         expect(routes.find((r) => r.path === "/admin/hidden")).toBeDefined();
@@ -221,7 +239,7 @@ describe("createAppStructure", () => {
   describe("allFlatPerms", () => {
     it("requiredModulesChain을 계층별로 수집한다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         // order는 requiredModules: ["sales", "erp"]
         // 부모 sales는 modules: ["sales"] (requiredModules 아님)
@@ -248,7 +266,7 @@ describe("createAppStructure", () => {
       // permRecord 기본값이 {}이므로, perms에 "use"가 있는 아이템은
       // permRecord[href + "/use"]가 undefined(falsy)가 되어 필터링됨
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
         const menus = result.usableMenus();
 
         // 영업 하위 아이템(송장, 주문)은 모두 perms에 "use"가 있어 숨겨짐
@@ -272,7 +290,7 @@ describe("createAppStructure", () => {
 
         const [modules] = createSignal<string[]>(["sales", "erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -300,7 +318,7 @@ describe("createAppStructure", () => {
 
         const [modules] = createSignal<string[]>(["sales", "erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -319,7 +337,7 @@ describe("createAppStructure", () => {
       createRoot((dispose) => {
         const [modules] = createSignal<string[]>(["erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
         });
@@ -341,7 +359,7 @@ describe("createAppStructure", () => {
           "/home/sales/order/use": true,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -367,7 +385,7 @@ describe("createAppStructure", () => {
 
         const [modules] = createSignal<string[]>(["sales", "erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -385,7 +403,7 @@ describe("createAppStructure", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({});
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           permRecord: perms,
         });
@@ -411,7 +429,7 @@ describe("createAppStructure", () => {
 
         const [modules] = createSignal<string[]>(["sales", "erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -434,7 +452,7 @@ describe("createAppStructure", () => {
           "/home/sales/order/use": true,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -464,7 +482,7 @@ describe("createAppStructure", () => {
 
         const [modules] = createSignal<string[]>(["sales", "erp"]);
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: createTestItems(),
           usableModules: modules,
           permRecord: perms,
@@ -489,7 +507,7 @@ describe("createAppStructure", () => {
   describe("getTitleChainByHref", () => {
     it("href에서 title 체인을 반환한다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         expect(result.getTitleChainByHref("/home/sales/invoice")).toEqual(["홈", "영업", "송장"]);
         expect(result.getTitleChainByHref("/home/admin/users")).toEqual(["홈", "관리", "사용자"]);
@@ -500,7 +518,7 @@ describe("createAppStructure", () => {
 
     it("isNotMenu 아이템도 찾는다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         expect(result.getTitleChainByHref("/home/admin/hidden")).toEqual(["홈", "관리", "숨김"]);
 
@@ -510,7 +528,7 @@ describe("createAppStructure", () => {
 
     it("존재하지 않는 href는 빈 배열을 반환한다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({ items: createTestItems() });
+        const result = buildTestStructure({ items: createTestItems() });
 
         expect(result.getTitleChainByHref("/home/nonexistent")).toEqual(["홈"]);
         expect(result.getTitleChainByHref("/totally/wrong")).toEqual([]);
@@ -528,7 +546,7 @@ describe("createAppStructure", () => {
           "/home/sales/invoice/edit": false,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -562,7 +580,7 @@ describe("createAppStructure", () => {
       createRoot((dispose) => {
         const [perms] = createSignal<Record<string, boolean>>({});
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -587,7 +605,7 @@ describe("createAppStructure", () => {
 
     it("permRecord가 없으면 모든 perm이 false다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -615,7 +633,7 @@ describe("createAppStructure", () => {
           "/home/user/auth/use": true,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -645,7 +663,7 @@ describe("createAppStructure", () => {
           "/home/user/use": false,
         });
 
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -673,7 +691,7 @@ describe("createAppStructure", () => {
 
     it("perms가 없는 leaf는 perms 트리에서 제외된다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
@@ -699,7 +717,7 @@ describe("createAppStructure", () => {
 
     it("하위에 perm이 없는 group은 perms 트리에서 제외된다", () => {
       createRoot((dispose) => {
-        const result = createAppStructure({
+        const result = buildTestStructure({
           items: [
             {
               code: "home",
