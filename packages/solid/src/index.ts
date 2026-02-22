@@ -157,6 +157,7 @@ export * from "./hooks/useLocalStorage";
 export * from "./hooks/useSyncConfig";
 export * from "./hooks/useLogger";
 export { createControllableSignal } from "./hooks/createControllableSignal";
+export { createControllableStore } from "./hooks/createControllableStore";
 export { createIMEHandler } from "./hooks/createIMEHandler";
 export { createMountTransition } from "./hooks/createMountTransition";
 export { useRouterLink } from "./hooks/useRouterLink";
