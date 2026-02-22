@@ -163,6 +163,45 @@ setValue((prev) => prev + "!");
 
 ---
 
+## createControllableStore
+
+Store hook that automatically handles Controlled/Uncontrolled patterns for objects and arrays. Similar to `createControllableSignal` but uses SolidJS `createStore` internally, supporting path-based updates via `SetStoreFunction`.
+
+Operates in controlled mode when `onChange` is provided (setter calls `onChange` with cloned value), uncontrolled mode otherwise (internal store only).
+
+```tsx
+import { createControllableStore } from "@simplysm/solid";
+
+// Controlled mode (parent manages state)
+const [items, setItems] = createControllableStore<Item[]>({
+  value: () => props.items ?? [],
+  onChange: () => props.onItemsChange,
+});
+
+// Uncontrolled mode (internal state only)
+const [items, setItems] = createControllableStore<Item[]>({
+  value: () => [],
+  onChange: () => undefined,
+});
+
+// Supports all SetStoreFunction overloads
+setItems(0, "name", "updated");          // path-based update
+setItems(produce((draft) => { ... }));   // produce
+setItems(reconcile(newItems));           // reconcile
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `value` | `() => TValue` | Reactive value accessor (syncs external changes to internal store) |
+| `onChange` | `() => ((value: TValue) => void) \| undefined` | Change callback accessor. When defined, enables controlled mode |
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `[0]` | `TValue` | Store (reactive proxy) |
+| `[1]` | `SetStoreFunction<TValue>` | Store setter (triggers `onChange` in controlled mode) |
+
+---
+
 ## createMountTransition
 
 Mount transition hook for open/close CSS animations. Control DOM rendering with `mounted()` and toggle CSS classes with `animating()`.

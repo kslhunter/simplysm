@@ -331,3 +331,263 @@ interface PermissionItem<TModule = string> {
 ```
 
 **Cascading behavior:** Checking a parent checks all children. Unchecking `perms[0]` (base permission) automatically unchecks all other permissions for that item.
+
+---
+
+## CrudSheet
+
+Full-featured CRUD data sheet component. Wraps `DataSheet` with built-in search, filter form, inline editing, modal editing, Excel import/export, select mode, pagination, sorting, and topbar action integration. Uses compound component pattern with `CrudSheet.Column`, `CrudSheet.Filter`, `CrudSheet.Tools`, and `CrudSheet.Header`.
+
+```tsx
+import { CrudSheet, type SearchResult, type SortingDef } from "@simplysm/solid";
+
+interface User {
+  id?: number;
+  name: string;
+  email: string;
+  isDeleted?: boolean;
+}
+
+interface UserFilter {
+  keyword: string;
+}
+
+// Inline editing mode
+<CrudSheet<User, UserFilter>
+  search={async (filter, page, sorts) => {
+    const result = await api.getUsers(filter, page, sorts);
+    return { items: result.items, pageCount: result.pageCount };
+  }}
+  getItemKey={(item) => item.id}
+  persistKey="user-crud"
+  itemsPerPage={20}
+  filterInitial={{ keyword: "" }}
+  inlineEdit={{
+    newItem: () => ({ name: "", email: "" }),
+    submit: async (diffs) => { await api.saveUsers(diffs); },
+    deleteProp: "isDeleted",
+  }}
+>
+  <CrudSheet.Filter>
+    {(filter, setFilter) => (
+      <FormGroup.Item label="Keyword">
+        <TextInput value={filter.keyword} onValueChange={(v) => setFilter("keyword", v)} />
+      </FormGroup.Item>
+    )}
+  </CrudSheet.Filter>
+  <CrudSheet.Column key="name" header="Name" class="px-2 py-1">
+    {(ctx) => (
+      <TextInput value={ctx.item.name} onValueChange={(v) => ctx.setItem("name", v)} />
+    )}
+  </CrudSheet.Column>
+  <CrudSheet.Column key="email" header="Email" class="px-2 py-1">
+    {(ctx) => (
+      <TextInput value={ctx.item.email} onValueChange={(v) => ctx.setItem("email", v)} />
+    )}
+  </CrudSheet.Column>
+</CrudSheet>
+
+// Modal editing mode
+<CrudSheet<User, UserFilter>
+  search={async (filter, page, sorts) => {
+    return await api.getUsers(filter, page, sorts);
+  }}
+  getItemKey={(item) => item.id}
+  persistKey="user-modal-crud"
+  itemsPerPage={20}
+  modalEdit={{
+    editItem: async (item) => {
+      const result = await dialog.show((close) => <UserEditDialog item={item} onClose={close} />);
+      return result === true;
+    },
+    deleteItems: async (items) => {
+      if (!confirm("Delete selected items?")) return false;
+      await api.deleteUsers(items.map((i) => i.id!));
+      return true;
+    },
+  }}
+>
+  <CrudSheet.Column key="name" header="Name" editable class="px-2 py-1">
+    {(ctx) => <>{ctx.item.name}</>}
+  </CrudSheet.Column>
+  <CrudSheet.Column key="email" header="Email" class="px-2 py-1">
+    {(ctx) => <>{ctx.item.email}</>}
+  </CrudSheet.Column>
+</CrudSheet>
+
+// Select mode (for picker dialogs)
+<CrudSheet<User, UserFilter>
+  search={async (filter, page, sorts) => {
+    return await api.getUsers(filter, page, sorts);
+  }}
+  getItemKey={(item) => item.id}
+  persistKey="user-select"
+  itemsPerPage={20}
+  selectMode="multi"
+  onSelect={(result) => {
+    // result.items: selected User[]
+    // result.keys: selected (string | number)[]
+    onConfirm(result.items);
+  }}
+>
+  <CrudSheet.Column key="name" header="Name" class="px-2 py-1">
+    {(ctx) => <>{ctx.item.name}</>}
+  </CrudSheet.Column>
+</CrudSheet>
+```
+
+**CrudSheet Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `search` | `(filter: TFilter, page: number, sorts: SortingDef[]) => Promise<SearchResult<TItem>>` | **(required)** | Search function. `page=0` means no pagination |
+| `getItemKey` | `(item: TItem) => string \| number \| undefined` | **(required)** | Unique key extractor for diff tracking |
+| `persistKey` | `string` | - | LocalStorage key for column configuration |
+| `itemsPerPage` | `number` | - | Items per page (enables pagination when set) |
+| `canEdit` | `() => boolean` | `() => true` | Whether editing is allowed |
+| `filterInitial` | `TFilter` | - | Initial filter state |
+| `items` | `TItem[]` | - | Controlled items (external state) |
+| `onItemsChange` | `(items: TItem[]) => void` | - | Items change callback (controlled mode) |
+| `inlineEdit` | `InlineEditConfig<TItem>` | - | Inline editing configuration (mutually exclusive with `modalEdit`) |
+| `modalEdit` | `ModalEditConfig<TItem>` | - | Modal editing configuration (mutually exclusive with `inlineEdit`) |
+| `excel` | `ExcelConfig<TItem>` | - | Excel download/upload configuration |
+| `selectMode` | `"single" \| "multi"` | - | Select mode (disables editing, shows selection UI) |
+| `onSelect` | `(result: SelectResult<TItem>) => void` | - | Select confirmation callback |
+| `hideAutoTools` | `boolean` | - | Hide auto-generated toolbar buttons |
+| `class` | `string` | - | CSS class |
+
+**InlineEditConfig:**
+
+```typescript
+interface InlineEditConfig<TItem> {
+  submit: (diffs: ArrayDiffs2Result<TItem>[]) => Promise<void>;
+  newItem: () => TItem;
+  deleteProp?: keyof TItem & string;
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `submit` | Save function receiving changed items (inserted/updated/deleted diffs) |
+| `newItem` | Factory function for creating new empty rows |
+| `deleteProp` | Property name for soft-delete flag (e.g., `"isDeleted"`) |
+
+**ModalEditConfig:**
+
+```typescript
+interface ModalEditConfig<TItem> {
+  editItem: (item?: TItem) => Promise<boolean>;
+  deleteItems?: (items: TItem[]) => Promise<boolean>;
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `editItem` | Open edit dialog. `undefined` = new item. Return `true` to refresh |
+| `deleteItems` | Delete selected items. Return `true` to refresh |
+
+**ExcelConfig:**
+
+```typescript
+interface ExcelConfig<TItem> {
+  download: (items: TItem[]) => Promise<void>;
+  upload?: (file: File) => Promise<void>;
+}
+```
+
+**SelectResult:**
+
+```typescript
+interface SelectResult<TItem> {
+  items: TItem[];
+  keys: (string | number)[];
+}
+```
+
+**Sub-components:**
+
+- `CrudSheet.Column` -- Column definition (extends `DataSheet.Column` props + `editable`)
+- `CrudSheet.Filter` -- Filter form render prop
+- `CrudSheet.Tools` -- Custom toolbar render prop
+- `CrudSheet.Header` -- Header area above filter
+
+**CrudSheet.Column Props:**
+
+Inherits all `DataSheet.Column` props (`key`, `header`, `width`, `fixed`, `hidden`, `sortable`, `resizable`, `class`, `headerContent`, `headerStyle`, `summary`, `tooltip`, `collapse`) plus:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `editable` | `boolean` | `false` | Wrap cell with edit link (modal edit mode only) |
+| `children` | `(ctx: CrudSheetCellContext<TItem>) => JSX.Element` | **(required)** | Cell render function |
+
+**CrudSheetCellContext:**
+
+```typescript
+interface CrudSheetCellContext<TItem> {
+  item: TItem;
+  index: number;
+  row: number;
+  depth: number;
+  setItem: <TKey extends keyof TItem>(key: TKey, value: TItem[TKey]) => void;
+}
+```
+
+`setItem` updates a specific field of the current row item (inline edit mode).
+
+**CrudSheet.Filter:**
+
+```tsx
+<CrudSheet.Filter>
+  {(filter, setFilter) => (
+    <FormGroup.Item label="Search">
+      <TextInput value={filter.keyword} onValueChange={(v) => setFilter("keyword", v)} />
+    </FormGroup.Item>
+  )}
+</CrudSheet.Filter>
+```
+
+Receives `filter` (store) and `setFilter` (`SetStoreFunction`) as render prop arguments.
+
+**CrudSheet.Tools:**
+
+```tsx
+<CrudSheet.Tools>
+  {(ctx) => (
+    <Button size="sm" onClick={() => ctx.refresh()}>Custom Refresh</Button>
+  )}
+</CrudSheet.Tools>
+```
+
+**CrudSheetContext (Tools render prop):**
+
+```typescript
+interface CrudSheetContext<TItem> {
+  items(): TItem[];
+  selectedItems(): TItem[];
+  page(): number;
+  sorts(): SortingDef[];
+  busy(): boolean;
+  hasChanges(): boolean;
+  save(): Promise<void>;
+  refresh(): Promise<void>;
+  addItem(): void;
+  setPage(page: number): void;
+  setSorts(sorts: SortingDef[]): void;
+}
+```
+
+**CrudSheet.Header:**
+
+```tsx
+<CrudSheet.Header>
+  <h2 class="p-2 text-lg font-bold">User Management</h2>
+</CrudSheet.Header>
+```
+
+Renders static content above the filter area.
+
+**Keyboard shortcuts:**
+- `Ctrl+S` -- Save (inline edit mode)
+- `Ctrl+Alt+L` -- Refresh
+
+**Topbar integration:** When used inside `Topbar.Container`, CrudSheet automatically registers Save and Refresh buttons in the topbar via `createTopbarActions`.

@@ -145,6 +145,7 @@ import "@simplysm/solid/tailwind.css";
 - [`Pagination`](docs/data-components.md#pagination) - Page navigation component
 - [`Calendar`](docs/data-components.md#calendar) - Calendar-style data display
 - [`PermissionTable`](docs/data-components.md#permissiontable) - Hierarchical permission management table with cascading checks
+- [`CrudSheet`](docs/data-components.md#crudsheet) - CRUD data sheet with search, inline/modal editing, Excel import/export, and select mode
 
 ### Layout
 
@@ -193,6 +194,7 @@ import "@simplysm/solid/tailwind.css";
 - [`useDialog`](docs/disclosure.md#dialog) - Programmatic dialog opening
 - [`useDialogInstance`](docs/disclosure.md#dialog) - Access dialog instance for closing from inside dialog content
 - [`createControllableSignal`](docs/hooks.md#createcontrollablesignal) - Controlled/Uncontrolled signal pattern
+- [`createControllableStore`](docs/hooks.md#createcontrollablestore) - Controlled/Uncontrolled store pattern (for objects/arrays)
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
 - [`createTopbarActions`](docs/layout.md#topbar-actions-slot) - Register actions in nearest Topbar.Container scope
