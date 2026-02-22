@@ -4,7 +4,7 @@
  * @param target - Element to capture pointer on
  * @param pointerId - Pointer ID from the initiating PointerEvent
  * @param options.onMove - Called on each pointermove
- * @param options.onEnd - Called on pointerup (after listener cleanup)
+ * @param options.onEnd - Called on pointerup or pointercancel (after listener cleanup)
  */
 export function createPointerDrag(
   target: HTMLElement,
@@ -16,13 +16,16 @@ export function createPointerDrag(
 ): void {
   target.setPointerCapture(pointerId);
 
-  const onPointerMove = (e: PointerEvent) => options.onMove(e);
-  const onPointerUp = (e: PointerEvent) => {
+  const cleanup = (e: PointerEvent) => {
     target.removeEventListener("pointermove", onPointerMove);
-    target.removeEventListener("pointerup", onPointerUp);
+    target.removeEventListener("pointerup", cleanup);
+    target.removeEventListener("pointercancel", cleanup);
     options.onEnd(e);
   };
 
+  const onPointerMove = (e: PointerEvent) => options.onMove(e);
+
   target.addEventListener("pointermove", onPointerMove);
-  target.addEventListener("pointerup", onPointerUp);
+  target.addEventListener("pointerup", cleanup);
+  target.addEventListener("pointercancel", cleanup);
 }
