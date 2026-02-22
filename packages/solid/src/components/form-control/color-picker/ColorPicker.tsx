@@ -107,7 +107,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
 
   const errorMsg = createMemo(() => {
     const v = value();
-    if (local.required && (v === undefined || v === "")) return "필수 입력 항목입니다";
+    if (local.required && v === "") return "필수 입력 항목입니다";
     return local.validate?.(v);
   });
 
