@@ -1,5 +1,5 @@
-import type { Component } from "solid-js";
-import { type Accessor, createMemo, createRoot } from "solid-js";
+import type { Component, ParentComponent } from "solid-js";
+import { type Accessor, createContext, createMemo, createRoot, useContext } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 
 // ── 입력 타입 ──
@@ -412,10 +412,7 @@ function findItemChainByCodes<TModule>(
 
 // ── 메인 함수 ──
 
-export function createAppStructure<
-  TModule,
-  const TItems extends AppStructureItem<TModule>[],
->(opts: {
+function buildAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(opts: {
   items: TItems;
   usableModules?: Accessor<TModule[] | undefined>;
   permRecord?: Accessor<Record<string, boolean> | undefined>;
@@ -480,4 +477,37 @@ export function createAppStructure<
       return findItemChainByCodes(opts.items, codes).map((item) => item.title);
     },
   };
+}
+
+export function createAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(
+  getOpts: () => {
+    items: TItems;
+    usableModules?: Accessor<TModule[] | undefined>;
+    permRecord?: Accessor<Record<string, boolean> | undefined>;
+  },
+): {
+  AppStructureProvider: ParentComponent;
+  useAppStructure: () => AppStructure<TModule> & { perms: InferPerms<TItems> };
+} {
+  type TRet = AppStructure<TModule> & { perms: InferPerms<TItems> };
+
+  const Ctx = createContext<TRet>();
+
+  const AppStructureProvider: ParentComponent = (props) => {
+    const structure = buildAppStructure(getOpts());
+    return Ctx.Provider({
+      value: structure as TRet,
+      get children() {
+        return props.children;
+      },
+    });
+  };
+
+  const useAppStructure = (): TRet => {
+    const ctx = useContext(Ctx);
+    if (!ctx) throw new Error("AppStructureProvider가 필요합니다.");
+    return ctx;
+  };
+
+  return { AppStructureProvider, useAppStructure };
 }

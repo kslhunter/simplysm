@@ -59,6 +59,32 @@ function createTestItems(): AppStructureItem<string>[] {
 }
 
 describe("createAppStructure", () => {
+  it("AppStructureProvider와 useAppStructure를 반환한다", () => {
+    createRoot((dispose) => {
+      const { AppStructureProvider, useAppStructure } = createAppStructure(() => ({
+        items: [
+          {
+            code: "home",
+            title: "홈",
+            children: [
+              {
+                code: "user",
+                title: "사용자",
+                component: DummyA,
+                perms: ["use"] as ("use" | "edit")[],
+              },
+            ],
+          },
+        ],
+      }));
+
+      expect(AppStructureProvider).toBeTypeOf("function");
+      expect(useAppStructure).toBeTypeOf("function");
+
+      dispose();
+    });
+  });
+
   describe("usableRoutes", () => {
     it("모든 리프 아이템의 경로와 컴포넌트를 포함한다", () => {
       createRoot((dispose) => {
