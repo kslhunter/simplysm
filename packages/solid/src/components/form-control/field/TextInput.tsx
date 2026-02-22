@@ -1,7 +1,14 @@
 import clsx from "clsx";
-import { type Component, createEffect, createMemo, type JSX, Show, splitProps } from "solid-js";
+import {
+  children,
+  createEffect,
+  createMemo,
+  type JSX,
+  type ParentComponent,
+  Show,
+  splitProps,
+} from "solid-js";
 import { twMerge } from "tailwind-merge";
-import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
@@ -11,10 +18,16 @@ import {
   getFieldWrapperClass,
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
-import { Icon } from "../../display/Icon";
 import { Invalid } from "../../form-control/Invalid";
+import { splitSlots } from "../../../helpers/splitSlots";
 
 type TextInputType = "text" | "password" | "email";
+
+const TextInputPrefix: ParentComponent = (props) => (
+  <span data-text-input-prefix class="shrink-0">
+    {props.children}
+  </span>
+);
 
 export interface TextInputProps {
   /** 입력 값 */
@@ -50,9 +63,6 @@ export interface TextInputProps {
   /** 입력 포맷 (예: XXX-XXXX-XXXX) */
   format?: string;
 
-  /** 접두 아이콘 */
-  prefixIcon?: Component<TablerIconProps>;
-
   /** 필수 입력 여부 */
   required?: boolean;
 
@@ -76,6 +86,9 @@ export interface TextInputProps {
 
   /** 커스텀 style */
   style?: JSX.CSSProperties;
+
+  /** children (TextInput.Prefix 슬롯) */
+  children?: JSX.Element;
 }
 
 /**
@@ -141,7 +154,12 @@ function removeFormat(formattedValue: string, format: string): string {
  * <TextInput type="password" placeholder="비밀번호 입력" />
  * ```
  */
-export const TextInput: Component<TextInputProps> = (props) => {
+interface TextInputComponent {
+  (props: TextInputProps): JSX.Element;
+  Prefix: typeof TextInputPrefix;
+}
+
+const TextInputInner = (props: TextInputProps) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
@@ -154,7 +172,6 @@ export const TextInput: Component<TextInputProps> = (props) => {
     "size",
     "inset",
     "format",
-    "prefixIcon",
     "required",
     "minLength",
     "maxLength",
@@ -163,6 +180,7 @@ export const TextInput: Component<TextInputProps> = (props) => {
     "touchMode",
     "class",
     "style",
+    "children",
   ]);
 
   // controlled/uncontrolled 패턴 지원
@@ -213,6 +231,11 @@ export const TextInput: Component<TextInputProps> = (props) => {
     ime.handleCompositionEnd(extractValue(e.currentTarget));
   };
 
+  // children에서 Prefix 슬롯 추출
+  const resolved = children(() => local.children);
+  const [slots] = splitSlots(resolved, ["textInputPrefix"] as const);
+  const prefixEl = () => slots().textInputPrefix[0] as HTMLElement | undefined;
+
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
     getFieldWrapperClass({
@@ -220,17 +243,11 @@ export const TextInput: Component<TextInputProps> = (props) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
-      extra: local.prefixIcon && fieldGapClasses[local.size ?? "default"],
+      extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
     });
 
   // 편집 가능 여부
   const isEditable = () => !local.disabled && !local.readonly;
-
-  const prefixIconEl = () => (
-    <Show when={local.prefixIcon}>
-      <Icon icon={local.prefixIcon!} class="shrink-0 opacity-70" />
-    </Show>
-  );
 
   // disabled 전환 시 미커밋 조합 값 flush
   createEffect(() => {
@@ -274,13 +291,13 @@ export const TextInput: Component<TextInputProps> = (props) => {
                 style={local.style}
                 title={local.title}
               >
-                {prefixIconEl()}
+                {prefixEl()}
                 <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
               </div>
             }
           >
             <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
-              {prefixIconEl()}
+              {prefixEl()}
               <input
                 type={local.type ?? "text"}
                 class={fieldInputClass}
@@ -309,13 +326,13 @@ export const TextInput: Component<TextInputProps> = (props) => {
             style={{ visibility: isEditable() ? "hidden" : undefined }}
             title={local.title}
           >
-            {prefixIconEl()}
+            {prefixEl()}
             <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
           </div>
 
           <Show when={isEditable()}>
             <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-              {prefixIconEl()}
+              {prefixEl()}
               <input
                 type={local.type ?? "text"}
                 class={fieldInputClass}
@@ -334,3 +351,6 @@ export const TextInput: Component<TextInputProps> = (props) => {
     </Invalid>
   );
 };
+
+export const TextInput = TextInputInner as unknown as TextInputComponent;
+TextInput.Prefix = TextInputPrefix;

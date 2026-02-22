@@ -53,7 +53,6 @@ const itemTimeClass = clsx("mt-1 text-xs", "text-base-400");
 export const NotificationBell: Component<NotificationBellProps> = (props) => {
   const notification = useNotification();
   const [open, setOpen] = createSignal(false);
-  let buttonRef: HTMLButtonElement | undefined;
 
   const handleClear = () => {
     notification.clear();
@@ -73,65 +72,60 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         <NotificationBanner />
       </Show>
 
-      <button
-        ref={(el) => (buttonRef = el)}
-        type="button"
-        data-notification-bell
-        class={buttonClass}
-        aria-label={`알림 ${notification.unreadCount()}개`}
-        aria-haspopup="true"
-        aria-expanded={open()}
-        onClick={() => handleOpenChange(!open())}
-      >
-        <Icon icon={IconBell} />
-        <Show when={notification.unreadCount() > 0}>
-          <span data-notification-badge aria-hidden="true" class={badgeClass}>
-            {notification.unreadCount()}
-          </span>
-        </Show>
-      </button>
+      <Dropdown open={open()} onOpenChange={handleOpenChange} maxHeight={400}>
+        <Dropdown.Trigger>
+          <button
+            type="button"
+            data-notification-bell
+            class={buttonClass}
+            aria-label={`알림 ${notification.unreadCount()}개`}
+            aria-haspopup="true"
+            aria-expanded={open()}
+          >
+            <Icon icon={IconBell} />
+            <Show when={notification.unreadCount() > 0}>
+              <span data-notification-badge aria-hidden="true" class={badgeClass}>
+                {notification.unreadCount()}
+              </span>
+            </Show>
+          </button>
+        </Dropdown.Trigger>
+        <Dropdown.Content>
+          <div class="w-80 p-2">
+            <div class={dropdownHeaderClass}>
+              <span class="font-bold">알림</span>
+              <Show when={notification.items().length > 0}>
+                <button
+                  type="button"
+                  data-notification-clear
+                  class={clearButtonClass}
+                  onClick={handleClear}
+                >
+                  전체 삭제
+                </button>
+              </Show>
+            </div>
 
-      <Dropdown
-        triggerRef={() => buttonRef}
-        open={open()}
-        onOpenChange={handleOpenChange}
-        maxHeight={400}
-        class="w-80"
-      >
-        <div class="p-2">
-          <div class={dropdownHeaderClass}>
-            <span class="font-bold">알림</span>
-            <Show when={notification.items().length > 0}>
-              <button
-                type="button"
-                data-notification-clear
-                class={clearButtonClass}
-                onClick={handleClear}
-              >
-                전체 삭제
-              </button>
+            <Show
+              when={notification.items().length > 0}
+              fallback={<div class={emptyClass}>알림이 없습니다</div>}
+            >
+              <div class={listClass}>
+                <For each={[...notification.items()].reverse()}>
+                  {(item) => (
+                    <div class={clsx(itemBaseClass, themeStyles[item.theme])}>
+                      <div class="font-medium">{item.title}</div>
+                      <Show when={item.message}>
+                        <pre class={itemMessageClass}>{item.message}</pre>
+                      </Show>
+                      <div class={itemTimeClass}>{item.createdAt.toLocaleTimeString()}</div>
+                    </div>
+                  )}
+                </For>
+              </div>
             </Show>
           </div>
-
-          <Show
-            when={notification.items().length > 0}
-            fallback={<div class={emptyClass}>알림이 없습니다</div>}
-          >
-            <div class={listClass}>
-              <For each={[...notification.items()].reverse()}>
-                {(item) => (
-                  <div class={clsx(itemBaseClass, themeStyles[item.theme])}>
-                    <div class="font-medium">{item.title}</div>
-                    <Show when={item.message}>
-                      <pre class={itemMessageClass}>{item.message}</pre>
-                    </Show>
-                    <div class={itemTimeClass}>{item.createdAt.toLocaleTimeString()}</div>
-                  </div>
-                )}
-              </For>
-            </div>
-          </Show>
-        </div>
+        </Dropdown.Content>
       </Dropdown>
     </>
   );

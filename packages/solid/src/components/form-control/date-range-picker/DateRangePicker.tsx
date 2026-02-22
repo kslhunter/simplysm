@@ -39,9 +39,6 @@ export interface DateRangePickerProps {
   /** 사이즈 */
   size?: FieldSize;
 
-  /** 기간 타입 라벨 (기본값: { day: "일", month: "월", range: "범위" }) */
-  periodLabels?: Partial<Record<DateRangePeriodType, string>>;
-
   /** 커스텀 class */
   class?: string;
 
@@ -90,18 +87,9 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
     "required",
     "disabled",
     "size",
-    "periodLabels",
     "class",
     "style",
   ]);
-
-  // 기간 타입 라벨
-  const labels = (): Record<DateRangePeriodType, string> => ({
-    day: "일",
-    month: "월",
-    range: "범위",
-    ...local.periodLabels,
-  });
 
   // controlled/uncontrolled 패턴
   const [periodType, setPeriodType] = createControllableSignal({
@@ -170,15 +158,17 @@ export const DateRangePicker: Component<DateRangePickerProps> = (props) => {
       <Select
         value={periodType()}
         onValueChange={handlePeriodTypeChange}
-        renderValue={(v: DateRangePeriodType) => <>{labels()[v]}</>}
+        renderValue={(v: DateRangePeriodType) => (
+          <>{{ day: "일", month: "월", range: "범위" }[v]}</>
+        )}
         required
         disabled={local.disabled}
         size={local.size}
         inset
       >
-        <Select.Item value={"day" as DateRangePeriodType}>{labels().day}</Select.Item>
-        <Select.Item value={"month" as DateRangePeriodType}>{labels().month}</Select.Item>
-        <Select.Item value={"range" as DateRangePeriodType}>{labels().range}</Select.Item>
+        <Select.Item value={"day" as DateRangePeriodType}>일</Select.Item>
+        <Select.Item value={"month" as DateRangePeriodType}>월</Select.Item>
+        <Select.Item value={"range" as DateRangePeriodType}>범위</Select.Item>
       </Select>
 
       <Show

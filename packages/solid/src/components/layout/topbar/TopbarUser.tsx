@@ -50,15 +50,8 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class", "menus"]);
 
   const [open, setOpen] = createSignal(false);
-  let buttonRef: HTMLButtonElement | undefined;
 
   const hasMenus = () => local.menus !== undefined && local.menus.length > 0;
-
-  const handleClick = () => {
-    if (hasMenus()) {
-      setOpen((v) => !v);
-    }
-  };
 
   const handleMenuClick = (menu: TopbarUserMenu) => {
     setOpen(false);
@@ -67,32 +60,36 @@ export const TopbarUser: ParentComponent<TopbarUserProps> = (props) => {
 
   const getClassName = () => twMerge(wrapperBaseClass, local.class);
 
+  const buttonContent = () => (
+    <Button
+      variant="ghost"
+      class={buttonContentClass}
+      aria-haspopup={hasMenus() ? "menu" : undefined}
+      aria-expanded={hasMenus() ? open() : undefined}
+    >
+      {local.children}
+      <Show when={hasMenus()}>
+        <Icon
+          icon={IconChevronDown}
+          size="1em"
+          class={clsx("transition-transform", open() && "rotate-180")}
+        />
+      </Show>
+    </Button>
+  );
+
   return (
     <div {...rest} data-topbar-user class={getClassName()}>
-      <Button
-        ref={buttonRef}
-        variant="ghost"
-        onClick={handleClick}
-        class={buttonContentClass}
-        aria-haspopup={hasMenus() ? "menu" : undefined}
-        aria-expanded={hasMenus() ? open() : undefined}
-      >
-        {local.children}
-        <Show when={hasMenus()}>
-          <Icon
-            icon={IconChevronDown}
-            size="1em"
-            class={clsx("transition-transform", open() && "rotate-180")}
-          />
-        </Show>
-      </Button>
-      <Show when={hasMenus()}>
-        <Dropdown triggerRef={() => buttonRef} open={open()} onOpenChange={setOpen}>
-          <List inset>
-            <For each={local.menus}>
-              {(menu) => <ListItem onClick={() => handleMenuClick(menu)}>{menu.title}</ListItem>}
-            </For>
-          </List>
+      <Show when={hasMenus()} fallback={buttonContent()}>
+        <Dropdown open={open()} onOpenChange={setOpen}>
+          <Dropdown.Trigger>{buttonContent()}</Dropdown.Trigger>
+          <Dropdown.Content>
+            <List inset>
+              <For each={local.menus}>
+                {(menu) => <ListItem onClick={() => handleMenuClick(menu)}>{menu.title}</ListItem>}
+              </For>
+            </List>
+          </Dropdown.Content>
         </Dropdown>
       </Show>
     </div>

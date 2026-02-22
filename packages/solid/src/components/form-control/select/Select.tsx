@@ -214,8 +214,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "touchMode",
   ]);
 
-  let triggerRef!: HTMLDivElement;
-
   const [open, setOpen] = createSignal(false);
 
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
@@ -262,12 +260,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     isSelected,
     toggleValue,
     closeDropdown,
-  };
-
-  // 트리거 클릭
-  const handleTriggerClick = () => {
-    if (local.disabled) return;
-    setOpen((v) => !v);
   };
 
   // 트리거 키보드 처리 (Enter/Space만 처리, ArrowUp/Down은 Dropdown이 처리)
@@ -372,32 +364,42 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
     return (
       <div {...rest} data-select class={clsx("group", local.inset ? "flex" : "inline-flex")}>
-        <div
-          ref={triggerRef}
-          use:ripple={!local.disabled}
-          role="combobox"
-          aria-haspopup="listbox"
-          aria-expanded={open()}
-          aria-disabled={local.disabled || undefined}
-          aria-required={local.required || undefined}
-          tabIndex={local.disabled ? -1 : 0}
-          class={twMerge(
-            getTriggerClassName(),
-            slots().selectAction.length > 0 &&
-              clsx(
-                "rounded-r-none border-r-0",
-                "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400",
-              ),
-          )}
-          style={local.style}
-          onClick={handleTriggerClick}
-          onKeyDown={handleTriggerKeyDown}
-        >
-          <div class={selectedValueClass}>{renderSelectedValue()}</div>
-          <div class={chevronWrapperClass}>
-            <Icon icon={IconChevronDown} size="1em" />
-          </div>
-        </div>
+        <Dropdown disabled={local.disabled} open={open()} onOpenChange={setOpen} keyboardNav>
+          <Dropdown.Trigger>
+            <div
+              use:ripple={!local.disabled}
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded={open()}
+              aria-disabled={local.disabled || undefined}
+              aria-required={local.required || undefined}
+              tabIndex={local.disabled ? -1 : 0}
+              class={twMerge(
+                getTriggerClassName(),
+                slots().selectAction.length > 0 &&
+                  clsx(
+                    "rounded-r-none border-r-0",
+                    "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400",
+                  ),
+              )}
+              style={local.style}
+              onKeyDown={handleTriggerKeyDown}
+            >
+              <div class={selectedValueClass}>{renderSelectedValue()}</div>
+              <div class={chevronWrapperClass}>
+                <Icon icon={IconChevronDown} size="1em" />
+              </div>
+            </div>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
+            <List inset role="listbox">
+              <Show when={local.items} fallback={items()}>
+                {renderItems(local.items!, 0)}
+              </Show>
+            </List>
+          </Dropdown.Content>
+        </Dropdown>
         <Show when={slots().selectAction.length > 0}>
           <div
             class={clsx(
@@ -409,15 +411,6 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             {slots().selectAction}
           </div>
         </Show>
-
-        <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
-          <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
-          <List inset role="listbox">
-            <Show when={local.items} fallback={items()}>
-              {renderItems(local.items!, 0)}
-            </Show>
-          </List>
-        </Dropdown>
       </div>
     );
   };

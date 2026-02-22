@@ -3,6 +3,7 @@ import {
   type ParentComponent,
   createSignal,
   For,
+  Show,
   splitProps,
   type JSX,
 } from "solid-js";
@@ -115,8 +116,6 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
                   }
                 }}
                 onCloseComplete={() => removeEntry(entry.id)}
-                title={entry.options.title}
-                hideHeader={entry.options.hideHeader}
                 closable={entry.options.closable}
                 closeOnBackdrop={entry.options.closeOnBackdrop}
                 closeOnEscape={entry.options.closeOnEscape}
@@ -132,6 +131,9 @@ export const DialogProvider: ParentComponent<DialogProviderProps> = (props) => {
                 headerStyle={entry.options.headerStyle}
                 canDeactivate={entry.options.canDeactivate}
               >
+                <Show when={entry.options.header !== undefined}>
+                  <Dialog.Header>{entry.options.header}</Dialog.Header>
+                </Show>
                 <DialogInstanceContext.Provider value={instance}>
                   {entry.factory()}
                 </DialogInstanceContext.Provider>

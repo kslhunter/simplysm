@@ -146,17 +146,14 @@ describe("DateRangePicker 컴포넌트", () => {
     });
   });
 
-  describe("periodLabels", () => {
-    it("periodLabels로 라벨을 커스터마이즈할 수 있다", () => {
-      const { container } = render(() => (
-        <DateRangePicker periodLabels={{ day: "Day", month: "Month", range: "Range" }} />
-      ));
+  describe("기간 타입 라벨", () => {
+    it("기본 periodType 'range'에서 '범위' 라벨이 표시된다", () => {
+      const { container } = render(() => <DateRangePicker />);
 
       const wrapper = container.querySelector("[data-date-range-picker]");
       const select = wrapper?.querySelector("[data-select]");
 
-      // 기본 periodType은 "range"이므로 renderValue에 "Range"가 표시되어야 함
-      expect(select?.textContent).toContain("Range");
+      expect(select?.textContent).toContain("범위");
     });
   });
 

@@ -22,6 +22,7 @@ packages/*/src/**/*.d.ts.map
 packages/*/tests/**/*.js
 packages/*/tests/**/*.js.map
 packages/*/tests/**/*.d.ts
+!packages/*/tests/vitest-env.d.ts
 packages/*/tests/**/*.d.ts.map
 
 tests/**/*.js

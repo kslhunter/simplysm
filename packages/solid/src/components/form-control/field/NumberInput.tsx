@@ -1,15 +1,15 @@
 import {
-  type Component,
   createEffect,
   createMemo,
   type JSX,
+  type ParentComponent,
   Show,
   splitProps,
   createSignal,
+  children,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { IconProps as TablerIconProps } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import {
   type FieldSize,
@@ -17,9 +17,9 @@ import {
   fieldGapClasses,
   getFieldWrapperClass,
 } from "./Field.styles";
-import { Icon } from "../../display/Icon";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
+import { splitSlots } from "../../../helpers/splitSlots";
 
 // NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
@@ -27,6 +27,12 @@ const numberInputClass = clsx(
   "text-right",
   "[&::-webkit-outer-spin-button]:appearance-none",
   "[&::-webkit-inner-spin-button]:appearance-none",
+);
+
+const NumberInputPrefix: ParentComponent = (props) => (
+  <span data-number-input-prefix class="shrink-0">
+    {props.children}
+  </span>
 );
 
 export interface NumberInputProps {
@@ -66,9 +72,6 @@ export interface NumberInputProps {
   /** 커스텀 style */
   style?: JSX.CSSProperties;
 
-  /** 접두 아이콘 */
-  prefixIcon?: Component<TablerIconProps>;
-
   /** 필수 입력 여부 */
   required?: boolean;
 
@@ -83,6 +86,9 @@ export interface NumberInputProps {
 
   /** touchMode: 포커스 해제 후에만 에러 표시 */
   touchMode?: boolean;
+
+  /** 자식 요소 (Prefix 슬롯 등) */
+  children?: JSX.Element;
 }
 
 /**
@@ -161,6 +167,11 @@ function isValidNumberInput(str: string): boolean {
   return /^-?\d*\.?\d*$/.test(cleanStr);
 }
 
+interface NumberInputComponent {
+  (props: NumberInputProps): JSX.Element;
+  Prefix: typeof NumberInputPrefix;
+}
+
 /**
  * NumberInput 컴포넌트
  *
@@ -174,9 +185,14 @@ function isValidNumberInput(str: string): boolean {
  *
  * // 최소 소수점 자릿수 지정
  * <NumberInput value={price()} minDigits={2} />
+ *
+ * // Prefix 슬롯
+ * <NumberInput value={price()}>
+ *   <NumberInput.Prefix>₩</NumberInput.Prefix>
+ * </NumberInput>
  * ```
  */
-export const NumberInput: Component<NumberInputProps> = (props) => {
+export const NumberInput: NumberInputComponent = (props) => {
   const [local, rest] = splitProps(props, [
     "value",
     "onValueChange",
@@ -188,7 +204,6 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     "readonly",
     "size",
     "inset",
-    "prefixIcon",
     "required",
     "min",
     "max",
@@ -196,6 +211,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     "touchMode",
     "class",
     "style",
+    "children",
   ]);
 
   // 입력 중인 상태를 추적하기 위한 내부 문자열 상태
@@ -207,6 +223,11 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     value: () => local.value,
     onChange: () => local.onValueChange,
   });
+
+  // children에서 Prefix 슬롯 추출
+  const resolved = children(() => local.children);
+  const [slots] = splitSlots(resolved, ["numberInputPrefix"] as const);
+  const prefixEl = () => slots().numberInputPrefix[0] as HTMLElement | undefined;
 
   // 외부 값 변경 시 입력 문자열 동기화
   createEffect(() => {
@@ -269,16 +290,10 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
       disabled: local.disabled,
       inset: local.inset,
       includeCustomClass: includeCustomClass && local.class,
-      extra: local.prefixIcon && fieldGapClasses[local.size ?? "default"],
+      extra: prefixEl() && fieldGapClasses[local.size ?? "default"],
     });
 
   const isEditable = () => !local.disabled && !local.readonly;
-
-  const prefixIconEl = () => (
-    <Show when={local.prefixIcon}>
-      <Icon icon={local.prefixIcon!} class="shrink-0 opacity-70" />
-    </Show>
-  );
 
   // 유효성 검사 메시지 (순서대로 검사, 최초 실패 메시지 반환)
   const errorMsg = createMemo(() => {
@@ -311,7 +326,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
                 style={local.style}
                 title={local.title}
               >
-                {prefixIconEl()}
+                {prefixEl()}
                 <PlaceholderFallback
                   value={formatNumber(value(), local.comma ?? true, local.minDigits)}
                   placeholder={local.placeholder}
@@ -320,7 +335,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
             }
           >
             <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
-              {prefixIconEl()}
+              {prefixEl()}
               <input
                 type="text"
                 inputmode="numeric"
@@ -345,7 +360,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
             style={{ visibility: isEditable() ? "hidden" : undefined }}
             title={local.title}
           >
-            {prefixIconEl()}
+            {prefixEl()}
             <PlaceholderFallback
               value={formatNumber(value(), local.comma ?? true, local.minDigits)}
               placeholder={local.placeholder}
@@ -354,7 +369,7 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 
           <Show when={isEditable()}>
             <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-              {prefixIconEl()}
+              {prefixEl()}
               <input
                 type="text"
                 inputmode="numeric"
@@ -374,3 +389,5 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
     </Invalid>
   );
 };
+
+NumberInput.Prefix = NumberInputPrefix;

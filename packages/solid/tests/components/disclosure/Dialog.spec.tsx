@@ -6,7 +6,8 @@ describe("Dialog 컴포넌트", () => {
   describe("기본 렌더링", () => {
     it("open=true일 때 다이얼로그가 렌더링된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트 다이얼로그">
+        <Dialog open={true}>
+          <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div data-testid="content">다이얼로그 내용</div>
         </Dialog>
       ));
@@ -18,7 +19,8 @@ describe("Dialog 컴포넌트", () => {
 
     it("open=false일 때 다이얼로그가 DOM에 없다", () => {
       render(() => (
-        <Dialog open={false} title="테스트 다이얼로그">
+        <Dialog open={false}>
+          <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div data-testid="content">다이얼로그 내용</div>
         </Dialog>
       ));
@@ -28,7 +30,8 @@ describe("Dialog 컴포넌트", () => {
 
     it("data-modal 속성이 설정된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트 다이얼로그">
+        <Dialog open={true}>
+          <Dialog.Header>테스트 다이얼로그</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -38,27 +41,29 @@ describe("Dialog 컴포넌트", () => {
       });
     });
 
-    it("제목이 표시된다", async () => {
+    it("Dialog.Header 슬롯이 헤더에 렌더링된다", async () => {
       render(() => (
-        <Dialog open={true} title="내 다이얼로그 제목">
+        <Dialog open={true}>
+          <Dialog.Header>테스트 제목</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
+
       await waitFor(() => {
-        const modal = document.querySelector("[data-modal]");
-        expect(modal).not.toBeNull();
-        expect(modal!.textContent).toContain("내 다이얼로그 제목");
+        const header = document.querySelector("[data-modal-header]");
+        expect(header?.textContent).toContain("테스트 제목");
       });
     });
   });
 
   describe("헤더 옵션", () => {
-    it("hideHeader=true일 때 헤더가 표시되지 않는다", async () => {
+    it("Dialog.Header 미제공 시 헤더가 렌더링되지 않는다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" hideHeader>
-          <div data-testid="content">내용</div>
+        <Dialog open={true}>
+          <div data-testid="content">내용만</div>
         </Dialog>
       ));
+
       await waitFor(() => {
         const content = document.querySelector('[data-testid="content"]');
         expect(content).not.toBeNull();
@@ -67,9 +72,26 @@ describe("Dialog 컴포넌트", () => {
       expect(header).toBeNull();
     });
 
+    it("Dialog.Action 슬롯이 닫기 버튼 옆에 렌더링된다", async () => {
+      render(() => (
+        <Dialog open={true}>
+          <Dialog.Header>제목</Dialog.Header>
+          <Dialog.Action>
+            <button data-testid="action">액션</button>
+          </Dialog.Action>
+          <div>내용</div>
+        </Dialog>
+      ));
+
+      await waitFor(() => {
+        expect(document.querySelector('[data-testid="action"]')).not.toBeNull();
+      });
+    });
+
     it("closable={false}일 때 닫기 버튼이 없다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" closable={false}>
+        <Dialog open={true} closable={false}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -85,7 +107,8 @@ describe("Dialog 컴포넌트", () => {
     it("닫기 버튼 클릭 시 onOpenChange(false)가 호출된다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" onOpenChange={handleOpenChange}>
+        <Dialog open={true} onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -99,7 +122,8 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnBackdrop=true일 때 백드롭 클릭으로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" closeOnBackdrop onOpenChange={handleOpenChange}>
+        <Dialog open={true} closeOnBackdrop onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -113,7 +137,8 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnBackdrop 미설정 시 백드롭 클릭으로 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" onOpenChange={handleOpenChange}>
+        <Dialog open={true} onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -127,7 +152,8 @@ describe("Dialog 컴포넌트", () => {
     it("기본적으로 Escape 키로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" onOpenChange={handleOpenChange}>
+        <Dialog open={true} onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -141,7 +167,8 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnEscape=true일 때 Escape로 닫힌다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" closeOnEscape onOpenChange={handleOpenChange}>
+        <Dialog open={true} closeOnEscape onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -155,7 +182,8 @@ describe("Dialog 컴포넌트", () => {
     it("closeOnEscape=false일 때 Escape로 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog open={true} title="테스트" closeOnEscape={false} onOpenChange={handleOpenChange}>
+        <Dialog open={true} closeOnEscape={false} onOpenChange={handleOpenChange}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -169,12 +197,8 @@ describe("Dialog 컴포넌트", () => {
     it("canDeactivate가 false를 반환하면 닫히지 않는다", async () => {
       const handleOpenChange = vi.fn();
       render(() => (
-        <Dialog
-          open={true}
-          title="테스트"
-          onOpenChange={handleOpenChange}
-          canDeactivate={() => false}
-        >
+        <Dialog open={true} onOpenChange={handleOpenChange} canDeactivate={() => false}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -189,7 +213,8 @@ describe("Dialog 컴포넌트", () => {
   describe("접근성", () => {
     it("role=dialog와 aria-modal 속성이 설정된다", async () => {
       render(() => (
-        <Dialog open={true} title="접근성 테스트">
+        <Dialog open={true}>
+          <Dialog.Header>접근성 테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -198,13 +223,44 @@ describe("Dialog 컴포넌트", () => {
         expect(dialog).not.toBeNull();
         expect(dialog.getAttribute("role")).toBe("dialog");
         expect(dialog.getAttribute("aria-modal")).toBe("true");
-        expect(dialog.getAttribute("aria-label")).toBe("접근성 테스트");
+      });
+    });
+
+    it("aria-labelledby가 Dialog.Header 요소를 참조한다", async () => {
+      render(() => (
+        <Dialog open={true}>
+          <Dialog.Header>접근성 제목</Dialog.Header>
+          <div>내용</div>
+        </Dialog>
+      ));
+
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        const headerId = dialog.getAttribute("aria-labelledby");
+        expect(headerId).toBeTruthy();
+        const header = document.getElementById(headerId!);
+        expect(header?.textContent).toContain("접근성 제목");
+      });
+    });
+
+    it("Dialog.Header 미제공 시 aria-labelledby가 없다", async () => {
+      render(() => (
+        <Dialog open={true}>
+          <div>내용만</div>
+        </Dialog>
+      ));
+
+      await waitFor(() => {
+        const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+        expect(dialog).not.toBeNull();
+        expect(dialog.hasAttribute("aria-labelledby")).toBe(false);
       });
     });
 
     it("float 모드에서는 aria-modal이 설정되지 않는다", async () => {
       render(() => (
-        <Dialog open={true} title="플로팅 다이얼로그" float>
+        <Dialog open={true} float>
+          <Dialog.Header>플로팅 다이얼로그</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -213,7 +269,6 @@ describe("Dialog 컴포넌트", () => {
         expect(dialog).not.toBeNull();
         expect(dialog.getAttribute("role")).toBe("dialog");
         expect(dialog.hasAttribute("aria-modal")).toBe(false);
-        expect(dialog.getAttribute("aria-label")).toBe("플로팅 다이얼로그");
       });
     });
   });
@@ -221,7 +276,8 @@ describe("Dialog 컴포넌트", () => {
   describe("float 모드", () => {
     it("float=true일 때 백드롭이 없다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" float>
+        <Dialog open={true} float>
+          <Dialog.Header>테스트</Dialog.Header>
           <div data-testid="content">내용</div>
         </Dialog>
       ));
@@ -236,7 +292,8 @@ describe("Dialog 컴포넌트", () => {
   describe("fill 모드", () => {
     it("fill=true일 때 다이얼로그에 fill 스타일이 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" fill>
+        <Dialog open={true} fill>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -252,7 +309,8 @@ describe("Dialog 컴포넌트", () => {
   describe("크기 제어", () => {
     it("width, height가 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" width={400} height={300}>
+        <Dialog open={true} width={400} height={300}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -266,7 +324,8 @@ describe("Dialog 컴포넌트", () => {
 
     it("minWidth, minHeight가 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" minWidth={300} minHeight={200}>
+        <Dialog open={true} minWidth={300} minHeight={200}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -282,7 +341,8 @@ describe("Dialog 컴포넌트", () => {
   describe("리사이즈", () => {
     it("resizable=true일 때 리사이즈 바가 렌더링된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트" resizable>
+        <Dialog open={true} resizable>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -294,7 +354,8 @@ describe("Dialog 컴포넌트", () => {
 
     it("resizable=false(기본)일 때 리사이즈 바가 없다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트">
+        <Dialog open={true}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
@@ -309,7 +370,8 @@ describe("Dialog 컴포넌트", () => {
   describe("애니메이션", () => {
     it("열림 시 transition 클래스가 적용된다", async () => {
       render(() => (
-        <Dialog open={true} title="테스트">
+        <Dialog open={true}>
+          <Dialog.Header>테스트</Dialog.Header>
           <div>내용</div>
         </Dialog>
       ));
