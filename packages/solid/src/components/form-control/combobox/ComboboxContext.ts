@@ -1,4 +1,4 @@
-import { createContext, useContext } from "solid-js";
+import { type JSX, createContext, useContext } from "solid-js";
 
 export interface ComboboxContextValue<TValue = unknown> {
   /** 값이 선택되어 있는지 확인 */
@@ -9,6 +9,9 @@ export interface ComboboxContextValue<TValue = unknown> {
 
   /** 드롭다운 닫기 */
   closeDropdown: () => void;
+
+  /** 아이템 템플릿 등록 */
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
 
 export const ComboboxContext = createContext<ComboboxContextValue>();

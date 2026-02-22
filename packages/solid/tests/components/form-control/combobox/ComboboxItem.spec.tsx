@@ -12,6 +12,7 @@ const createMockContext = (
   isSelected: () => false,
   selectValue: vi.fn(),
   closeDropdown: vi.fn(),
+  setItemTemplate: vi.fn(),
   ...overrides,
 });
 

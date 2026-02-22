@@ -1,25 +1,14 @@
-import {
-  children,
-  createMemo,
-  createSignal,
-  For,
-  type JSX,
-  onCleanup,
-  Show,
-  splitProps,
-} from "solid-js";
+import { createMemo, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js";
 import clsx from "clsx";
 import { IconChevronDown, IconLoader2 } from "@tabler/icons-solidjs";
 import { DebounceQueue } from "@simplysm/core-common";
 import { Icon } from "../../display/Icon";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
-import { ComboboxContext, type ComboboxContextValue } from "./ComboboxContext";
+import { ComboboxContext, type ComboboxContextValue, useComboboxContext } from "./ComboboxContext";
 import { ComboboxItem } from "./ComboboxItem";
 import { ripple } from "../../../directives/ripple";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createItemTemplate } from "../../../hooks/createItemTemplate";
-import { splitSlots } from "../../../helpers/splitSlots";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
@@ -36,8 +25,18 @@ const inputClass = clsx(
 
 const noResultsClass = clsx("px-3 py-2", textMuted);
 
-const { TemplateSlot: ComboboxItemTemplate, getTemplate: getComboboxItemTemplate } =
-  createItemTemplate<[item: unknown, index: number]>("data-combobox-item-template");
+/**
+ * 아이템 템플릿 서브 컴포넌트
+ */
+const ComboboxItemTemplate = <TArgs extends unknown[]>(props: {
+  children: (...args: TArgs) => JSX.Element;
+}) => {
+  const ctx = useComboboxContext();
+  // eslint-disable-next-line solid/reactivity -- 렌더 함수를 signal에 저장, JSX tracked scope에서 호출됨
+  ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
+  onCleanup(() => ctx.setItemTemplate(undefined));
+  return null;
+};
 
 // Props 정의
 export interface ComboboxProps<TValue = unknown> {
@@ -188,11 +187,19 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     setOpen(false);
   };
 
+  // 아이템 템플릿 signal
+  const [itemTemplate, _setItemTemplate] = createSignal<
+    ((...args: unknown[]) => JSX.Element) | undefined
+  >();
+  const setItemTemplate = (fn: ((...args: unknown[]) => JSX.Element) | undefined) =>
+    _setItemTemplate(() => fn);
+
   // Context 값
   const contextValue: ComboboxContextValue<T> = {
     isSelected,
     selectValue,
     closeDropdown,
+    setItemTemplate,
   };
 
   // 검색 실행
@@ -268,129 +275,106 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
   // 참고: 초기 검색은 handleTriggerClick에서 수행됨
   // 입력 시에는 handleInput에서 performSearch가 호출됨
 
-  // 내부 컴포넌트
-  const ComboboxInner = (innerProps: { children?: JSX.Element }) => {
-    const resolved = children(() => innerProps.children);
-    const [slots, childItems] = splitSlots(resolved, ["comboboxItemTemplate"] as const);
+  // 선택된 값 또는 입력 표시
+  const renderDisplayContent = (): JSX.Element => {
+    const currentValue = getValue();
 
-    // itemTemplate 함수 추출
-    const getItemTemplate = (): ((item: T, index: number) => JSX.Element) | undefined => {
-      return getComboboxItemTemplate(slots().comboboxItemTemplate) as
-        | ((item: T, index: number) => JSX.Element)
-        | undefined;
-    };
+    // 드롭다운이 열려있거나 값이 없으면 입력 필드 표시
+    if (open() || currentValue === undefined) {
+      return (
+        <input
+          ref={(el) => {
+            // 드롭다운이 열릴 때 input에 포커스
+            if (open()) {
+              requestAnimationFrame(() => el.focus());
+            }
+          }}
+          type="text"
+          class={inputClass}
+          value={query()}
+          placeholder={currentValue === undefined ? local.placeholder : undefined}
+          disabled={local.disabled}
+          autocomplete="one-time-code"
+          onInput={handleInput}
+        />
+      );
+    }
 
-    // 선택된 값 또는 입력 표시
-    const renderDisplayContent = (): JSX.Element => {
-      const currentValue = getValue();
+    // 값이 있고 드롭다운이 닫혀있으면 값 표시
+    return <div class="truncate">{local.renderValue(currentValue)}</div>;
+  };
 
-      // 드롭다운이 열려있거나 값이 없으면 입력 필드 표시
-      if (open() || currentValue === undefined) {
-        return (
-          <input
-            ref={(el) => {
-              // 드롭다운이 열릴 때 input에 포커스
-              if (open()) {
-                requestAnimationFrame(() => el.focus());
-              }
-            }}
-            type="text"
-            class={inputClass}
-            value={query()}
-            placeholder={currentValue === undefined ? local.placeholder : undefined}
-            disabled={local.disabled}
-            autocomplete="one-time-code"
-            onInput={handleInput}
-          />
-        );
-      }
+  // 아이템 렌더링
+  const renderItems = (): JSX.Element => {
+    const template = itemTemplate() as ((item: T, index: number) => JSX.Element) | undefined;
 
-      // 값이 있고 드롭다운이 닫혀있으면 값 표시
-      return <div class="truncate">{local.renderValue(currentValue)}</div>;
-    };
+    // 로딩 중
+    if (busyCount() > 0) {
+      return <div class={noResultsClass}>검색 중...</div>;
+    }
 
-    // 아이템 렌더링
-    const renderItems = (): JSX.Element => {
-      const itemTemplate = getItemTemplate();
+    // items가 비어있는 경우
+    if (items().length === 0) {
+      return <div class={noResultsClass}>검색 결과가 없습니다</div>;
+    }
 
-      // 로딩 중
-      if (busyCount() > 0) {
-        return <div class={noResultsClass}>검색 중...</div>;
-      }
-
-      // children 방식 (아이템이 직접 전달된 경우)
-      const resolvedChildren = childItems();
-      if (resolvedChildren.length > 0) {
-        return <>{resolvedChildren}</>;
-      }
-
-      // items가 비어있는 경우
-      if (items().length === 0) {
-        return <div class={noResultsClass}>검색 결과가 없습니다</div>;
-      }
-
-      // ItemTemplate 방식
-      if (itemTemplate) {
-        return (
-          <For each={items()}>
-            {(item, index) => (
-              <ComboboxItem value={item}>{itemTemplate(item, index())}</ComboboxItem>
-            )}
-          </For>
-        );
-      }
-
-      // 기본 렌더링
+    // ItemTemplate 방식
+    if (template) {
       return (
         <For each={items()}>
-          {(item) => <ComboboxItem value={item}>{String(item)}</ComboboxItem>}
+          {(item, index) => <ComboboxItem value={item}>{template(item, index())}</ComboboxItem>}
         </For>
       );
-    };
+    }
 
+    // 기본 렌더링
     return (
-      <div {...rest} data-combobox class={local.inset ? "flex" : "inline-flex"}>
-        <Dropdown
-          disabled={local.disabled}
-          open={open()}
-          onOpenChange={handleOpenChange}
-          keyboardNav
-        >
-          <Dropdown.Trigger>
-            <div
-              use:ripple={!local.disabled}
-              role="combobox"
-              aria-haspopup="listbox"
-              aria-expanded={open()}
-              aria-disabled={local.disabled || undefined}
-              aria-required={local.required || undefined}
-              tabIndex={local.disabled ? -1 : 0}
-              class={getTriggerClassName()}
-              style={local.style}
-              onKeyDown={handleTriggerKeyDown}
-            >
-              <div class={selectedValueClass}>{renderDisplayContent()}</div>
-              <div class={chevronWrapperClass}>
-                <Show when={busyCount() > 0} fallback={<Icon icon={IconChevronDown} size="1em" />}>
-                  <Icon icon={IconLoader2} size="1em" class="animate-spin" />
-                </Show>
-              </div>
-            </div>
-          </Dropdown.Trigger>
-          <Dropdown.Content>
-            <List inset role="listbox">
-              {renderItems()}
-            </List>
-          </Dropdown.Content>
-        </Dropdown>
-      </div>
+      <For each={items()}>{(item) => <ComboboxItem value={item}>{String(item)}</ComboboxItem>}</For>
     );
   };
 
   return (
     <Invalid message={errorMsg()} variant="border" touchMode={local.touchMode}>
       <ComboboxContext.Provider value={contextValue as ComboboxContextValue}>
-        <ComboboxInner>{local.children}</ComboboxInner>
+        <div {...rest} data-combobox class={local.inset ? "flex" : "inline-flex"}>
+          <Dropdown
+            disabled={local.disabled}
+            open={open()}
+            onOpenChange={handleOpenChange}
+            keyboardNav
+          >
+            <Dropdown.Trigger>
+              <div
+                use:ripple={!local.disabled}
+                role="combobox"
+                aria-haspopup="listbox"
+                aria-expanded={open()}
+                aria-disabled={local.disabled || undefined}
+                aria-required={local.required || undefined}
+                tabIndex={local.disabled ? -1 : 0}
+                class={getTriggerClassName()}
+                style={local.style}
+                onKeyDown={handleTriggerKeyDown}
+              >
+                <div class={selectedValueClass}>{renderDisplayContent()}</div>
+                <div class={chevronWrapperClass}>
+                  <Show
+                    when={busyCount() > 0}
+                    fallback={<Icon icon={IconChevronDown} size="1em" />}
+                  >
+                    <Icon icon={IconLoader2} size="1em" class="animate-spin" />
+                  </Show>
+                </div>
+              </div>
+            </Dropdown.Trigger>
+            <Dropdown.Content>
+              <List inset role="listbox">
+                {local.children}
+                {renderItems()}
+              </List>
+            </Dropdown.Content>
+          </Dropdown>
+        </div>
       </ComboboxContext.Provider>
     </Invalid>
   );
