@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
 
 const [cmd, ...args] = process.argv.slice(2);
 
@@ -21,8 +21,8 @@ const mainWorktree = getOutput("git worktree list --porcelain")
 function detectWorktreeName() {
   const cwd = process.cwd();
   const worktreesDir = resolve(mainWorktree, ".worktrees");
-  if (cwd.startsWith(worktreesDir + "/")) {
-    return cwd.slice(worktreesDir.length + 1).split("/")[0];
+  if (cwd.startsWith(worktreesDir + sep)) {
+    return cwd.slice(worktreesDir.length + 1).split(sep)[0];
   }
   return undefined;
 }
