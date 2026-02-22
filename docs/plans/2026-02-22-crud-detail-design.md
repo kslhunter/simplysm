@@ -303,7 +303,7 @@ function UserDetail(props: { userId?: number }) {
 // Modal 모드 — dialog.show()에서 사용
 const result = await dialog.show(
   () => <UserDetail userId={123} />,
-  { title: "사용자 수정" }
+  { header: "사용자 수정" }
 );
 
 // Control 모드 — 다른 컴포넌트에 임베딩
