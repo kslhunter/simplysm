@@ -310,4 +310,62 @@ describe("NumberInput", () => {
       expect(hiddenInput.validationMessage).toBe("짝수만 입력하세요");
     });
   });
+
+  describe("Prefix 슬롯", () => {
+    it("NumberInput.Prefix 슬롯이 렌더링된다", () => {
+      render(() => (
+        <NumberInput>
+          <NumberInput.Prefix>
+            <span data-testid="prefix">₩</span>
+          </NumberInput.Prefix>
+        </NumberInput>
+      ));
+
+      expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
+    });
+
+    it("Prefix 슬롯 사용 시 gap 클래스가 적용된다", () => {
+      const { container } = render(() => (
+        <NumberInput>
+          <NumberInput.Prefix>
+            <span>₩</span>
+          </NumberInput.Prefix>
+        </NumberInput>
+      ));
+
+      const wrapper = container.querySelector("[data-number-field]") as HTMLElement;
+      expect(wrapper.className).toContain("gap-");
+    });
+
+    it("Prefix 슬롯 없으면 gap 클래스가 없다", () => {
+      const { container } = render(() => <NumberInput />);
+
+      const wrapper = container.querySelector("[data-number-field]") as HTMLElement;
+      expect(wrapper.className).not.toContain("gap-");
+    });
+
+    it("disabled 상태에서 Prefix 슬롯이 렌더링된다", () => {
+      render(() => (
+        <NumberInput disabled value={100}>
+          <NumberInput.Prefix>
+            <span data-testid="prefix">₩</span>
+          </NumberInput.Prefix>
+        </NumberInput>
+      ));
+
+      expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
+    });
+
+    it("inset 모드에서 Prefix 슬롯이 렌더링된다", () => {
+      render(() => (
+        <NumberInput inset value={100}>
+          <NumberInput.Prefix>
+            <span data-testid="prefix">₩</span>
+          </NumberInput.Prefix>
+        </NumberInput>
+      ));
+
+      expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
+    });
+  });
 });
