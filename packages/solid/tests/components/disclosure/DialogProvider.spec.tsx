@@ -28,7 +28,23 @@ function TestApp() {
     <button
       data-testid="open-btn"
       onClick={() => {
-        void dialog.show<string>(() => <TestContent />, { title: "테스트 다이얼로그" });
+        void dialog.show<string>(() => <TestContent />, { header: "테스트 다이얼로그" });
+      }}
+    >
+      다이얼로그 열기
+    </button>
+  );
+}
+
+// header 없이 열리는 테스트용 컴포넌트
+function TestAppNoHeader() {
+  const dialog = useDialog();
+
+  return (
+    <button
+      data-testid="open-btn"
+      onClick={() => {
+        void dialog.show<string>(() => <TestContent />, {});
       }}
     >
       다이얼로그 열기
@@ -92,7 +108,7 @@ describe("DialogProvider", () => {
     });
   });
 
-  it("다이얼로그 제목이 표시된다", async () => {
+  it("다이얼로그 header가 표시된다", async () => {
     render(() => (
       <DialogProvider>
         <TestApp />
@@ -106,5 +122,21 @@ describe("DialogProvider", () => {
       expect(modal).not.toBeNull();
       expect(modal!.textContent).toContain("테스트 다이얼로그");
     });
+  });
+
+  it("header 미제공 시 헤더가 렌더링되지 않는다", async () => {
+    render(() => (
+      <DialogProvider>
+        <TestAppNoHeader />
+      </DialogProvider>
+    ));
+
+    fireEvent.click(document.querySelector('[data-testid="open-btn"]')!);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-testid="modal-content"]')).not.toBeNull();
+    });
+    const header = document.querySelector("[data-modal-header]");
+    expect(header).toBeNull();
   });
 });

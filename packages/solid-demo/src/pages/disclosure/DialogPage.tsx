@@ -39,7 +39,7 @@ export default function ModalPage() {
 
   const handleProgrammaticOpen = async () => {
     const result = await dialog.show<string>(() => <SampleDialogContent />, {
-      title: "프로그래매틱 다이얼로그",
+      header: "프로그래매틱 다이얼로그",
       closeOnBackdrop: true,
       closeOnEscape: true,
     });
@@ -57,7 +57,8 @@ export default function ModalPage() {
         <Button theme="primary" variant="solid" onClick={() => setBasicOpen(true)}>
           다이얼로그 열기
         </Button>
-        <Dialog open={basicOpen()} onOpenChange={setBasicOpen} title="기본 다이얼로그">
+        <Dialog open={basicOpen()} onOpenChange={setBasicOpen}>
+          <Dialog.Header>기본 다이얼로그</Dialog.Header>
           <div class="p-4">
             <p class="text-sm">이것은 기본 다이얼로그입니다.</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
@@ -101,10 +102,10 @@ export default function ModalPage() {
         <Dialog
           open={closeOptionOpen()}
           onOpenChange={setCloseOptionOpen}
-          title="닫기 옵션"
           closeOnBackdrop
           closeOnEscape
         >
+          <Dialog.Header>닫기 옵션</Dialog.Header>
           <div class="p-4">
             <p class="text-sm">백드롭을 클릭하거나 Escape 키를 눌러 닫을 수 있습니다.</p>
           </div>
@@ -121,13 +122,8 @@ export default function ModalPage() {
         <Button theme="success" variant="solid" onClick={() => setFloatOpen(!floatOpen())}>
           {floatOpen() ? "Float 다이얼로그 닫기" : "Float 다이얼로그 열기"}
         </Button>
-        <Dialog
-          open={floatOpen()}
-          onOpenChange={setFloatOpen}
-          title="Float 다이얼로그"
-          float
-          width={320}
-        >
+        <Dialog open={floatOpen()} onOpenChange={setFloatOpen} float width={320}>
+          <Dialog.Header>Float 다이얼로그</Dialog.Header>
           <div class="p-4">
             <p class="text-sm">백드롭이 없는 플로팅 다이얼로그입니다.</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
@@ -146,13 +142,8 @@ export default function ModalPage() {
         <Button theme="warning" variant="solid" onClick={() => setFillOpen(true)}>
           Fill 다이얼로그 열기
         </Button>
-        <Dialog
-          open={fillOpen()}
-          onOpenChange={setFillOpen}
-          title="Fill 다이얼로그"
-          fill
-          closeOnEscape
-        >
+        <Dialog open={fillOpen()} onOpenChange={setFillOpen} fill closeOnEscape>
+          <Dialog.Header>Fill 다이얼로그</Dialog.Header>
           <div class="flex flex-1 flex-col items-center justify-center p-4">
             <p class="text-lg font-bold">전체 화면 다이얼로그</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">
@@ -175,7 +166,6 @@ export default function ModalPage() {
         <Dialog
           open={resizableOpen()}
           onOpenChange={setResizableOpen}
-          title="리사이즈 / 이동"
           resizable
           movable
           width={400}
@@ -184,6 +174,7 @@ export default function ModalPage() {
           minHeight={200}
           closeOnEscape
         >
+          <Dialog.Header>리사이즈 / 이동</Dialog.Header>
           <div class="p-4">
             <p class="text-sm">다이얼로그의 가장자리를 드래그하여 크기를 조절할 수 있습니다.</p>
             <p class="mt-2 text-sm text-base-500 dark:text-base-400">

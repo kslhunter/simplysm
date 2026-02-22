@@ -187,7 +187,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     const result = await modal.show<DataSheetConfig>(
       () => <DataSheetConfigDialog columnInfos={columnInfos} currentConfig={currentConfig} />,
       {
-        title: "시트 설정",
+        header: "시트 설정",
         closeOnBackdrop: true,
         closeOnEscape: true,
       },

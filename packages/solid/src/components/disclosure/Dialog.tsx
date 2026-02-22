@@ -1,7 +1,9 @@
 import {
   type JSX,
   type ParentComponent,
+  children,
   createEffect,
+  createUniqueId,
   onCleanup,
   Show,
   splitProps,
@@ -17,20 +19,31 @@ import { createControllableSignal } from "../../hooks/createControllableSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { createPointerDrag } from "../../hooks/createPointerDrag";
 import { mergeStyles } from "../../helpers/mergeStyles";
+import { splitSlots } from "../../helpers/splitSlots";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
 import { registerDialog, unregisterDialog, bringToFront } from "./dialogZIndex";
+
+/**
+ * 다이얼로그 헤더 서브 컴포넌트
+ */
+const DialogHeader: ParentComponent = (props) => (
+  <h5 data-dialog-header class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>
+    {props.children}
+  </h5>
+);
+
+/**
+ * 다이얼로그 액션 서브 컴포넌트
+ */
+const DialogAction: ParentComponent = (props) => <div data-dialog-action>{props.children}</div>;
 
 export interface DialogProps {
   /** 모달 열림 상태 */
   open?: boolean;
   /** 열림 상태 변경 시 콜백 */
   onOpenChange?: (open: boolean) => void;
-  /** 모달 제목 */
-  title: string;
-  /** 헤더 숨김 */
-  hideHeader?: boolean;
   /** 닫기 버튼 표시 (기본: true) */
   closable?: boolean;
   /** 백드롭 클릭으로 닫기 */
@@ -57,16 +70,12 @@ export interface DialogProps {
   position?: "bottom-right" | "top-right";
   /** 헤더 스타일 */
   headerStyle?: JSX.CSSProperties | string;
-  /** 헤더 액션 영역 */
-  headerAction?: JSX.Element;
   /** 닫기 전 확인 함수 */
   canDeactivate?: () => boolean;
   /** 닫기 애니메이션 완료 후 콜백 */
   onCloseComplete?: () => void;
   /** 추가 CSS 클래스 */
   class?: string;
-  /** 자식 요소 */
-  children: JSX.Element;
 }
 
 type ResizeDirection =
@@ -125,19 +134,23 @@ const resizePositionMap: Record<ResizeDirection, string> = {
  * const [open, setOpen] = createSignal(false);
  *
  * <Button onClick={() => setOpen(true)}>다이얼로그 열기</Button>
- * <Dialog open={open()} onOpenChange={setOpen} title="내 다이얼로그">
+ * <Dialog open={open()} onOpenChange={setOpen}>
+ *   <Dialog.Header>내 다이얼로그</Dialog.Header>
  *   <div class="p-4">다이얼로그 내용</div>
  * </Dialog>
  * ```
  */
-export const Dialog: ParentComponent<DialogProps> = (props) => {
+interface DialogComponent extends ParentComponent<DialogProps> {
+  Header: typeof DialogHeader;
+  Action: typeof DialogAction;
+}
+
+export const Dialog: DialogComponent = (props) => {
   const dialogDefaults = useContext(DialogDefaultsContext);
 
   const [local] = splitProps(props, [
     "open",
     "onOpenChange",
-    "title",
-    "hideHeader",
     "closable",
     "closeOnBackdrop",
     "closeOnEscape",
@@ -151,12 +164,18 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     "minHeight",
     "position",
     "headerStyle",
-    "headerAction",
     "canDeactivate",
     "onCloseComplete",
     "class",
     "children",
   ]);
+
+  const headerId = "dialog-header-" + createUniqueId();
+
+  const resolved = children(() => local.children);
+  const [slots, content] = splitSlots(resolved, ["dialogHeader", "dialogAction"] as const);
+
+  const hasHeader = () => slots().dialogHeader.length > 0;
 
   const [open, setOpen] = createControllableSignal({
     value: () => local.open ?? false,
@@ -443,6 +462,11 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
   // 헤더 클래스
   const headerClass = () => clsx("flex items-center", "select-none", "border-b", borderSubtle);
 
+  // 헤더 slot의 id 설정
+  const setHeaderId = (el: HTMLElement) => {
+    el.id = headerId;
+  };
+
   return (
     <Show when={mounted()}>
       <Portal>
@@ -460,7 +484,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
             data-modal-dialog
             role="dialog"
             aria-modal={local.float ? undefined : true}
-            aria-label={local.title}
+            aria-labelledby={hasHeader() ? headerId : undefined}
             tabIndex={0}
             class={twMerge(dialogBaseClass(), local.class)}
             style={dialogStyle()}
@@ -468,7 +492,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
             onTransitionEnd={handleTransitionEnd}
           >
             {/* 헤더 */}
-            <Show when={!local.hideHeader}>
+            <Show when={hasHeader()}>
               <div
                 data-modal-header
                 class={clsx(headerClass(), "touch-none")}
@@ -479,8 +503,13 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
                 }
                 onPointerDown={handleHeaderPointerDown}
               >
-                <h5 class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>{local.title}</h5>
-                {local.headerAction}
+                <For each={slots().dialogHeader}>
+                  {(headerEl) => {
+                    setHeaderId(headerEl);
+                    return headerEl;
+                  }}
+                </For>
+                <For each={slots().dialogAction}>{(actionEl) => actionEl}</For>
                 <Show when={local.closable ?? true}>
                   <button
                     data-modal-close
@@ -503,7 +532,7 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
 
             {/* 콘텐츠 */}
             <div data-modal-content class={dialogContentClass}>
-              {local.children}
+              {content()}
             </div>
 
             {/* 리사이즈 바 */}
@@ -529,3 +558,6 @@ export const Dialog: ParentComponent<DialogProps> = (props) => {
     </Show>
   );
 };
+
+Dialog.Header = DialogHeader;
+Dialog.Action = DialogAction;

@@ -13,10 +13,8 @@ export const DialogDefaultsContext = createContext<Accessor<DialogDefaults>>();
 
 /** 프로그래매틱 다이얼로그 옵션 */
 export interface DialogShowOptions {
-  /** 다이얼로그 제목 */
-  title: string;
-  /** 헤더 숨김 */
-  hideHeader?: boolean;
+  /** 다이얼로그 헤더 */
+  header?: JSX.Element;
   /** 닫기 버튼 표시 */
   closable?: boolean;
   /** 백드롭 클릭으로 닫기 */
