@@ -1,7 +1,7 @@
 import {
   type JSX,
   type ParentComponent,
-  children,
+  createContext,
   createEffect,
   createUniqueId,
   onCleanup,
@@ -19,25 +19,39 @@ import { createControllableSignal } from "../../hooks/createControllableSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { createPointerDrag } from "../../hooks/createPointerDrag";
 import { mergeStyles } from "../../helpers/mergeStyles";
-import { splitSlots } from "../../helpers/splitSlots";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
 import { registerDialog, unregisterDialog, bringToFront } from "./dialogZIndex";
 
+type SlotAccessor = (() => JSX.Element) | undefined;
+
+interface DialogSlotsContextValue {
+  setHeader: (content: SlotAccessor) => void;
+  setAction: (content: SlotAccessor) => void;
+}
+
+const DialogSlotsContext = createContext<DialogSlotsContextValue>();
+
 /**
  * 다이얼로그 헤더 서브 컴포넌트
  */
-const DialogHeader: ParentComponent = (props) => (
-  <h5 data-dialog-header class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>
-    {props.children}
-  </h5>
-);
+const DialogHeader: ParentComponent = (props) => {
+  const ctx = useContext(DialogSlotsContext)!;
+  ctx.setHeader(() => () => props.children);
+  onCleanup(() => ctx.setHeader(undefined));
+  return null;
+};
 
 /**
  * 다이얼로그 액션 서브 컴포넌트
  */
-const DialogAction: ParentComponent = (props) => <div data-dialog-action>{props.children}</div>;
+const DialogAction: ParentComponent = (props) => {
+  const ctx = useContext(DialogSlotsContext)!;
+  ctx.setAction(() => () => props.children);
+  onCleanup(() => ctx.setAction(undefined));
+  return null;
+};
 
 export interface DialogProps {
   /** 모달 열림 상태 */
@@ -172,10 +186,9 @@ export const Dialog: DialogComponent = (props) => {
 
   const headerId = "dialog-header-" + createUniqueId();
 
-  const resolved = children(() => local.children);
-  const [slots, content] = splitSlots(resolved, ["dialogHeader", "dialogAction"] as const);
-
-  const hasHeader = () => slots().dialogHeader.length > 0;
+  const [header, setHeader] = createSignal<SlotAccessor>();
+  const [action, setAction] = createSignal<SlotAccessor>();
+  const hasHeader = () => header() !== undefined;
 
   const [open, setOpen] = createControllableSignal({
     value: () => local.open ?? false,
@@ -462,98 +475,92 @@ export const Dialog: DialogComponent = (props) => {
   // 헤더 클래스
   const headerClass = () => clsx("flex items-center", "select-none", "border-b", borderSubtle);
 
-  // 헤더 slot의 id 설정
-  const setHeaderId = (el: HTMLElement) => {
-    el.id = headerId;
-  };
-
   return (
     <Show when={mounted()}>
       <Portal>
-        <div ref={setWrapperRef} data-modal class={wrapperClass()}>
-          {/* 백드롭 */}
-          <Show when={!local.float}>
-            <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />
-          </Show>
+        <DialogSlotsContext.Provider value={{ setHeader, setAction }}>
+          <div ref={setWrapperRef} data-modal class={wrapperClass()}>
+            {/* 백드롭 */}
+            <Show when={!local.float}>
+              <div data-modal-backdrop class={backdropClass()} onClick={handleBackdropClick} />
+            </Show>
 
-          {/* 다이얼로그 */}
-          <div
-            ref={(el) => {
-              dialogRef = el;
-            }}
-            data-modal-dialog
-            role="dialog"
-            aria-modal={local.float ? undefined : true}
-            aria-labelledby={hasHeader() ? headerId : undefined}
-            tabIndex={0}
-            class={twMerge(dialogBaseClass(), local.class)}
-            style={dialogStyle()}
-            onFocus={handleDialogFocus}
-            onTransitionEnd={handleTransitionEnd}
-          >
-            {/* 헤더 */}
-            <Show when={hasHeader()}>
-              <div
-                data-modal-header
-                class={clsx(headerClass(), "touch-none")}
-                style={
-                  typeof local.headerStyle === "string"
-                    ? mergeStyles(local.headerStyle)
-                    : local.headerStyle
-                }
-                onPointerDown={handleHeaderPointerDown}
-              >
-                <For each={slots().dialogHeader}>
-                  {(headerEl) => {
-                    setHeaderId(headerEl);
-                    return headerEl;
-                  }}
-                </For>
-                <For each={slots().dialogAction}>{(actionEl) => actionEl}</For>
-                <Show when={local.closable ?? true}>
-                  <button
-                    data-modal-close
-                    type="button"
-                    class={clsx(
-                      "inline-flex items-center justify-center",
-                      "px-3 py-2",
-                      "text-base-400 dark:text-base-500",
-                      "hover:text-base-600 dark:hover:text-base-300",
-                      "cursor-pointer",
-                      "transition-colors",
-                    )}
-                    onClick={handleCloseClick}
-                  >
-                    <Icon icon={IconX} size="1.25em" />
-                  </button>
-                </Show>
+            {/* 다이얼로그 */}
+            <div
+              ref={(el) => {
+                dialogRef = el;
+              }}
+              data-modal-dialog
+              role="dialog"
+              aria-modal={local.float ? undefined : true}
+              aria-labelledby={hasHeader() ? headerId : undefined}
+              tabIndex={0}
+              class={twMerge(dialogBaseClass(), local.class)}
+              style={dialogStyle()}
+              onFocus={handleDialogFocus}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {/* 헤더 */}
+              <Show when={hasHeader()}>
+                <div
+                  data-modal-header
+                  class={clsx(headerClass(), "touch-none")}
+                  style={
+                    typeof local.headerStyle === "string"
+                      ? mergeStyles(local.headerStyle)
+                      : local.headerStyle
+                  }
+                  onPointerDown={handleHeaderPointerDown}
+                >
+                  <h5 id={headerId} class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>
+                    {header()!()}
+                  </h5>
+                  <Show when={action()}>{action()!()}</Show>
+                  <Show when={local.closable ?? true}>
+                    <button
+                      data-modal-close
+                      type="button"
+                      class={clsx(
+                        "inline-flex items-center justify-center",
+                        "px-3 py-2",
+                        "text-base-400 dark:text-base-500",
+                        "hover:text-base-600 dark:hover:text-base-300",
+                        "cursor-pointer",
+                        "transition-colors",
+                      )}
+                      onClick={handleCloseClick}
+                    >
+                      <Icon icon={IconX} size="1.25em" />
+                    </button>
+                  </Show>
+                </div>
+              </Show>
+
+              {/* 콘텐츠 */}
+              <div data-modal-content class={dialogContentClass}>
+                {local.children}
               </div>
-            </Show>
 
-            {/* 콘텐츠 */}
-            <div data-modal-content class={dialogContentClass}>
-              {content()}
+              {/* 리사이즈 바 */}
+              <Show when={local.resizable}>
+                <For each={RESIZE_DIRECTIONS}>
+                  {(direction) => (
+                    <div
+                      data-resize-bar={direction}
+                      class={clsx(
+                        "absolute",
+                        "touch-none",
+                        resizePositionMap[direction],
+                        resizeCursorMap[direction],
+                      )}
+                      onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
+                    />
+                  )}
+                </For>
+              </Show>
             </div>
-
-            {/* 리사이즈 바 */}
-            <Show when={local.resizable}>
-              <For each={RESIZE_DIRECTIONS}>
-                {(direction) => (
-                  <div
-                    data-resize-bar={direction}
-                    class={clsx(
-                      "absolute",
-                      "touch-none",
-                      resizePositionMap[direction],
-                      resizeCursorMap[direction],
-                    )}
-                    onPointerDown={(e) => handleResizeBarPointerDown(e, direction)}
-                  />
-                )}
-              </For>
-            </Show>
           </div>
-        </div>
+        </DialogSlotsContext.Provider>
       </Portal>
     </Show>
   );
