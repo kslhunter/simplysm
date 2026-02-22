@@ -130,3 +130,125 @@ describe("CrudSheet rendering", () => {
     expect(container.querySelector("thead")).toBeTruthy();
   });
 });
+
+describe("CrudSheet inline edit", () => {
+  const searchFn = () =>
+    Promise.resolve({
+      items: [
+        { id: 1, name: "홍길동", isDeleted: false },
+        { id: 2, name: "김철수", isDeleted: false },
+      ],
+      pageCount: 1,
+    });
+
+  it("inlineEdit 제공 시 행추가 버튼이 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("행 추가");
+  });
+
+  it("inlineEdit 미제공 시 행추가 버튼이 없다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("행 추가");
+  });
+
+  it("deleteProp 제공 시 삭제 컬럼이 자동 생성된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+            deleteProp: "isDeleted",
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    // 삭제 컬럼이 첫 번째 fixed 컬럼으로 추가됨
+    const columns = container.querySelectorAll("thead th");
+    expect(columns.length).toBe(2); // 삭제 컬럼 + 이름 컬럼
+  });
+});
+
+describe("CrudSheet select mode", () => {
+  it("selectMode 설정 시 toolbar이 숨겨진다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
+          getItemKey={(item) => item.id}
+          selectMode="single"
+          onSelect={() => {}}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("행 추가");
+  });
+
+  it("selectMode='multi' 시 확인 버튼이 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
+          getItemKey={(item) => item.id}
+          selectMode="multi"
+          onSelect={() => {}}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("확인");
+  });
+});
