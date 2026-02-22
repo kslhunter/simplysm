@@ -242,7 +242,7 @@ export default defineConfig([
     },
     rules: {
       // ─── 실수 방지 ───
-      "solid/reactivity": ["error", { customReactiveFunctions: ["makePersisted"] }], // 반응성 손실 (가장 중요!)
+      "solid/reactivity": "error", // 반응성 손실 (가장 중요!)
       "solid/no-destructure": "error", // props 구조분해 → 반응성 손실
       "solid/components-return-once": "error", // early return → 버그
       "solid/jsx-no-duplicate-props": "error", // 중복 props

@@ -26,7 +26,7 @@ const sizeClasses: Record<ComponentSizeCompact, string> = {
 };
 
 // disabled 스타일 - 대각선 줄무늬로 표시
-// eslint-disable-next-line tailwindcss/enforces-shorthand -- inset은 Chrome 87+에서만 지원
+// eslint-disable-next-line tailwindcss/enforces-shorthand
 const disabledClass = clsx(
   "cursor-default",
   "relative",

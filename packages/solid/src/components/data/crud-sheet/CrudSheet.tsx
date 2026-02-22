@@ -168,8 +168,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setLastFilter(() => objClone(filter));
   }
 
-  function handleRefresh() {
-    setLastFilter(() => ({ ...lastFilter() }));
+  async function handleRefresh() {
+    await doRefresh();
   }
 
   // -- Inline Edit --
@@ -309,14 +309,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   // -- Keyboard Shortcuts --
-  createEventListener(document, "keydown", (e: KeyboardEvent) => {
+  createEventListener(document, "keydown", async (e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
       e.preventDefault();
       formRef?.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
-      handleRefresh();
+      await doRefresh();
     }
   });
 
@@ -356,8 +356,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     },
     save: handleSave,
     refresh: async () => {
-      handleRefresh();
-      await Promise.resolve();
+      await doRefresh();
     },
     addItem: handleAddRow,
     setPage,
