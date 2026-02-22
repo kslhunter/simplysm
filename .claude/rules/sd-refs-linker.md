@@ -9,6 +9,8 @@ Before starting work, **Read** the relevant reference files from `.claude/refs/`
 | Using `@simplysm/*` package APIs | `.claude/refs/sd-simplysm-docs.md` |
 | Debugging, problem-solving, or planning approach | `.claude/refs/sd-workflow.md` |
 | SolidJS / @simplysm/solid / Tailwind 작업 시 | `.claude/refs/sd-solid.md` |
+| @simplysm/orm-* 사용 시 (`@^13`) | `.claude/refs/sd-orm.md` |
+| @simplysm/service-* 사용 시 (`@^13`) | `.claude/refs/sd-service.md` |
 
 **Rules:**
 - Read the reference BEFORE starting the related work (not after)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Important: `.claude/` Folder Scope
 
-The `.claude/` folder contains **cross-project shared rules** used across multiple repositories. Do NOT add project-specific content (SolidJS, ORM, Tailwind, etc.) to `.claude/rules/`. Project-specific guidelines belong in this `CLAUDE.md` file.
+The `.claude/` folder contains **cross-project shared rules** used across multiple repositories. Do NOT add project-specific content to `.claude/rules/`. Project-specific guidelines belong in this `CLAUDE.md` file.
 
 ## Project Overview
 
@@ -95,30 +95,6 @@ core-common → core-browser / core-node → orm-common / service-common → orm
 - No raw HTML elements → use `@simplysm/solid` components
 - Read existing demos before writing new ones
 
-## ORM Guidelines
-
-### Table Definition
-```typescript
-const User = Table("User")
-  .database("mydb")
-  .columns((c) => ({ id: c.bigint().autoIncrement(), name: c.varchar(100) }))
-  .primaryKey("id");
-```
-
-### SQL Injection Prevention
-ORM uses string escaping (not parameter binding). **Always validate user input before ORM queries.**
-```typescript
-const userId = Number(req.query.id);
-if (Number.isNaN(userId)) throw new Error("Invalid ID");
-await db.user().where((u) => [expr.eq(u.id, userId)]).result();
-```
-
-## Service Guidelines
-
-- `ServiceServer`: Fastify-based HTTP/WebSocket server
-- `ServiceClient`: WebSocket client, RPC calls
-- `ServiceProtocol`: Message split/merge (300KB chunks when >3MB)
-
 ## Testing
 
 | Project | Environment | Pattern |
@@ -133,4 +109,4 @@ When modifying code, review and update related tests (`packages/{pkg}/tests/`) a
 
 ## Workflow
 
-After writing code: verify with `pnpm typecheck` or `pnpm lint`.
+After writing code: verify with `/sd-check`.
