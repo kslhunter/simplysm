@@ -1,4 +1,6 @@
-import { createContext, useContext, type Accessor } from "solid-js";
+import { createContext, useContext, type Accessor, type JSX } from "solid-js";
+
+type SlotAccessor = (() => JSX.Element) | undefined;
 
 export interface SelectContextValue<TValue = unknown> {
   /** 다중 선택 모드 여부 */
@@ -12,6 +14,15 @@ export interface SelectContextValue<TValue = unknown> {
 
   /** 드롭다운 닫기 */
   closeDropdown: () => void;
+
+  /** 헤더 슬롯 등록 */
+  setHeader: (content: SlotAccessor) => void;
+
+  /** 액션 슬롯 등록 */
+  setAction: (content: SlotAccessor) => void;
+
+  /** 아이템 템플릿 등록 */
+  setItemTemplate: (fn: ((...args: unknown[]) => JSX.Element) | undefined) => void;
 }
 
 export const SelectContext = createContext<SelectContextValue>();

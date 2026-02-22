@@ -5,6 +5,7 @@ import {
   For,
   type JSX,
   type ParentComponent,
+  onCleanup,
   Show,
   splitProps,
 } from "solid-js";
@@ -15,16 +16,17 @@ import { Icon } from "../../display/Icon";
 import { Dropdown } from "../../disclosure/Dropdown";
 import { List } from "../../data/list/List";
 import { SelectContext, type SelectContextValue } from "./SelectContext";
+import { useSelectContext } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
-import { splitSlots } from "../../../helpers/splitSlots";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createItemTemplate } from "../../../hooks/createItemTemplate";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 
 void ripple;
+
+type SlotAccessor = (() => JSX.Element) | undefined;
 
 // Select 전용 스타일
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
@@ -37,8 +39,9 @@ interface SelectActionProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> 
 
 const SelectAction: ParentComponent<SelectActionProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "class"]);
+  const ctx = useSelectContext();
 
-  return (
+  ctx.setAction(() => (
     <button
       {...rest}
       type="button"
@@ -63,17 +66,31 @@ const SelectAction: ParentComponent<SelectActionProps> = (props) => {
     >
       {local.children}
     </button>
-  );
+  ));
+  onCleanup(() => ctx.setAction(undefined));
+  return null;
 };
 
 /**
  * 드롭다운 상단 커스텀 영역 서브 컴포넌트
  */
-const SelectHeader: ParentComponent = (props) => <div data-select-header>{props.children}</div>;
+const SelectHeader: ParentComponent = (props) => {
+  const ctx = useSelectContext();
+  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
+  ctx.setHeader(() => props.children);
+  onCleanup(() => ctx.setHeader(undefined));
+  return null;
+};
 
-const { TemplateSlot: SelectItemTemplate, getTemplate: getSelectItemTemplate } = createItemTemplate<
-  [item: unknown, index: number, depth: number]
->("data-select-item-template");
+const SelectItemTemplate = <TArgs extends unknown[]>(props: {
+  children: (...args: TArgs) => JSX.Element;
+}) => {
+  const ctx = useSelectContext();
+  // eslint-disable-next-line solid/reactivity -- 렌더 함수를 signal에 저장, JSX tracked scope에서 호출됨
+  ctx.setItemTemplate(props.children as (...args: unknown[]) => JSX.Element);
+  onCleanup(() => ctx.setItemTemplate(undefined));
+  return null;
+};
 
 // Props 정의
 
@@ -254,12 +271,26 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     setOpen(false);
   };
 
+  // 슬롯 signals
+  const [header, _setHeader] = createSignal<SlotAccessor>();
+  const setHeader = (content: SlotAccessor) => _setHeader(() => content);
+  const [action, _setAction] = createSignal<SlotAccessor>();
+  const setAction = (content: SlotAccessor) => _setAction(() => content);
+  const [itemTemplate, _setItemTemplate] = createSignal<
+    ((...args: unknown[]) => JSX.Element) | undefined
+  >();
+  const setItemTemplate = (fn: ((...args: unknown[]) => JSX.Element) | undefined) =>
+    _setItemTemplate(() => fn);
+
   // Context 값
   const contextValue: SelectContextValue<T> = {
     multiple: () => local.multiple ?? false,
     isSelected,
     toggleValue,
     closeDropdown,
+    setHeader,
+    setAction,
+    setItemTemplate,
   };
 
   // 트리거 키보드 처리 (Enter/Space만 처리, ArrowUp/Down은 Dropdown이 처리)
@@ -289,32 +320,26 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       class: local.class,
     });
 
-  // 내부 컴포넌트: Provider 안에서 children을 resolve
+  // 내부 컴포넌트: Provider 안에서 children을 resolve하여 슬롯 등록을 트리거
   const SelectInner: ParentComponent = (innerProps) => {
+    // children() resolve로 서브 컴포넌트 등록 트리거 (Header, Action, ItemTemplate은 null 반환)
     const resolved = children(() => innerProps.children);
-    const [slots, items] = splitSlots(resolved, [
-      "selectHeader",
-      "selectAction",
-      "selectItemTemplate",
-    ] as const);
 
     // itemTemplate 함수 추출
     const getItemTemplate = ():
       | ((item: T, index: number, depth: number) => JSX.Element)
       | undefined => {
-      return getSelectItemTemplate(slots().selectItemTemplate) as
-        | ((item: T, index: number, depth: number) => JSX.Element)
-        | undefined;
+      return itemTemplate() as ((item: T, index: number, depth: number) => JSX.Element) | undefined;
     };
 
     // items 재귀 렌더링
     const renderItems = (itemList: T[], depth: number): JSX.Element => {
-      const itemTemplate = getItemTemplate();
+      const tpl = getItemTemplate();
       return (
         <For each={itemList}>
           {(item, index) => (
             <SelectItem value={item}>
-              {itemTemplate ? itemTemplate(item, index(), depth) : String(item)}
+              {tpl ? tpl(item, index(), depth) : String(item)}
               <Show when={local.getChildren?.(item, index(), depth)} keyed>
                 {(itemChildren) => (
                   <Show when={itemChildren.length > 0}>
@@ -335,9 +360,9 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       if (local.renderValue) {
         return local.renderValue(value);
       }
-      const itemTemplate = getItemTemplate();
-      if (itemTemplate) {
-        return itemTemplate(value, 0, 0);
+      const tpl = getItemTemplate();
+      if (tpl) {
+        return tpl(value, 0, 0);
       }
       return <>{String(value)}</>;
     };
@@ -376,7 +401,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
               tabIndex={local.disabled ? -1 : 0}
               class={twMerge(
                 getTriggerClassName(),
-                slots().selectAction.length > 0 &&
+                action() !== undefined &&
                   clsx(
                     "rounded-r-none border-r-0",
                     "group-focus-within:border-primary-400 dark:group-focus-within:border-primary-400",
@@ -392,15 +417,15 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
             </div>
           </Dropdown.Trigger>
           <Dropdown.Content>
-            <Show when={slots().selectHeader.length > 0}>{slots().selectHeader.single()}</Show>
+            <Show when={header()}>{header()!()}</Show>
             <List inset role="listbox">
-              <Show when={local.items} fallback={items()}>
+              <Show when={local.items} fallback={resolved()}>
                 {renderItems(local.items!, 0)}
               </Show>
             </List>
           </Dropdown.Content>
         </Dropdown>
-        <Show when={slots().selectAction.length > 0}>
+        <Show when={action()}>
           <div
             class={clsx(
               "contents",
@@ -408,7 +433,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
               "[&>[data-select-action]+[data-select-action]]:-ml-px",
             )}
           >
-            {slots().selectAction}
+            {action()!()}
           </div>
         </Show>
       </div>

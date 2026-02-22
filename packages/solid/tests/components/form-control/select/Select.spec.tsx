@@ -183,8 +183,9 @@ describe("Select 컴포넌트", () => {
       await waitFor(() => {
         const dropdown = document.querySelector("[data-dropdown]");
         expect(dropdown).not.toBeNull();
-        const header = dropdown?.querySelector("[data-select-header]");
+        const header = dropdown?.querySelector("[data-testid='header']");
         expect(header).not.toBeNull();
+        expect(header?.textContent).toBe("헤더 영역");
       });
     });
   });

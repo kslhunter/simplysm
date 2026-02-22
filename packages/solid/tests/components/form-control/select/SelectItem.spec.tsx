@@ -20,6 +20,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       const { getByText } = render(() => (
@@ -37,6 +40,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       render(() => (
@@ -57,6 +63,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue,
         closeDropdown: vi.fn(),
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       const { getByText } = render(() => (
@@ -76,6 +85,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown,
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       const { getByText } = render(() => (
@@ -95,6 +107,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue: vi.fn(),
         closeDropdown,
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       const { getByText } = render(() => (
@@ -115,6 +130,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: (v) => v === "apple",
         toggleValue: vi.fn(),
         closeDropdown: vi.fn(),
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       render(() => (
@@ -136,6 +154,9 @@ describe("SelectItem 컴포넌트", () => {
         isSelected: () => false,
         toggleValue,
         closeDropdown: vi.fn(),
+        setHeader: vi.fn(),
+        setAction: vi.fn(),
+        setItemTemplate: vi.fn(),
       };
 
       const { getByText } = render(() => (
