@@ -1,12 +1,14 @@
 import {
+  createContext,
   createEffect,
   createMemo,
+  createSignal,
   type JSX,
+  onCleanup,
   type ParentComponent,
   Show,
   splitProps,
-  createSignal,
-  children,
+  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -19,7 +21,6 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
-import { splitSlots } from "../../../helpers/splitSlots";
 
 // NumberInput 전용 input 스타일 (우측 정렬 + 스피너 숨김)
 const numberInputClass = clsx(
@@ -29,11 +30,20 @@ const numberInputClass = clsx(
   "[&::-webkit-inner-spin-button]:appearance-none",
 );
 
-const NumberInputPrefix: ParentComponent = (props) => (
-  <span data-number-input-prefix class="shrink-0">
-    {props.children}
-  </span>
-);
+type SlotAccessor = (() => JSX.Element) | undefined;
+
+interface NumberInputSlotsContextValue {
+  setPrefix: (content: SlotAccessor) => void;
+}
+
+const NumberInputSlotsContext = createContext<NumberInputSlotsContextValue>();
+
+const NumberInputPrefix: ParentComponent = (props) => {
+  const ctx = useContext(NumberInputSlotsContext)!;
+  ctx.setPrefix(() => () => props.children);
+  onCleanup(() => ctx.setPrefix(undefined));
+  return null;
+};
 
 export interface NumberInputProps {
   /** 입력 값 */
@@ -224,10 +234,8 @@ export const NumberInput: NumberInputComponent = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  // children에서 Prefix 슬롯 추출
-  const resolved = children(() => local.children);
-  const [slots] = splitSlots(resolved, ["numberInputPrefix"] as const);
-  const prefixEl = () => slots().numberInputPrefix[0] as HTMLElement | undefined;
+  const [prefix, setPrefix] = createSignal<SlotAccessor>();
+  const prefixEl = () => prefix() !== undefined;
 
   // 외부 값 변경 시 입력 문자열 동기화
   createEffect(() => {
@@ -307,86 +315,102 @@ export const NumberInput: NumberInputComponent = (props) => {
   });
 
   return (
-    <Invalid
-      message={errorMsg()}
-      variant={local.inset ? "dot" : "border"}
-      touchMode={local.touchMode}
-    >
-      <Show
-        when={local.inset}
-        fallback={
-          // standalone 모드: 기존 Show 패턴 유지
-          <Show
-            when={isEditable()}
-            fallback={
-              <div
-                {...rest}
-                data-number-field
-                class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
-                style={local.style}
-                title={local.title}
-              >
-                {prefixEl()}
-                <PlaceholderFallback
-                  value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+    <NumberInputSlotsContext.Provider value={{ setPrefix }}>
+      {local.children}
+      <Invalid
+        message={errorMsg()}
+        variant={local.inset ? "dot" : "border"}
+        touchMode={local.touchMode}
+      >
+        <Show
+          when={local.inset}
+          fallback={
+            // standalone 모드: 기존 Show 패턴 유지
+            <Show
+              when={isEditable()}
+              fallback={
+                <div
+                  {...rest}
+                  data-number-field
+                  class={twMerge(getWrapperClass(true), "sd-number-field", "justify-end")}
+                  style={local.style}
+                  title={local.title}
+                >
+                  <Show when={prefix()}>
+                    <span class="shrink-0">{prefix()!()}</span>
+                  </Show>
+                  <PlaceholderFallback
+                    value={formatNumber(value(), local.comma ?? true, local.minDigits)}
+                    placeholder={local.placeholder}
+                  />
+                </div>
+              }
+            >
+              <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
+                <Show when={prefix()}>
+                  <span class="shrink-0">{prefix()!()}</span>
+                </Show>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  class={numberInputClass}
+                  value={displayValue()}
                   placeholder={local.placeholder}
+                  title={local.title}
+                  autocomplete="one-time-code"
+                  onInput={handleInput}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                 />
               </div>
-            }
-          >
-            <div {...rest} data-number-field class={getWrapperClass(true)} style={local.style}>
-              {prefixEl()}
-              <input
-                type="text"
-                inputmode="numeric"
-                class={numberInputClass}
-                value={displayValue()}
-                placeholder={local.placeholder}
-                title={local.title}
-                autocomplete="one-time-code"
-                onInput={handleInput}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </div>
-          </Show>
-        }
-      >
-        {/* inset 모드: dual-element overlay 패턴 */}
-        <div {...rest} data-number-field class={clsx("relative", local.class)} style={local.style}>
+            </Show>
+          }
+        >
+          {/* inset 모드: dual-element overlay 패턴 */}
           <div
-            data-number-field-content
-            class={twMerge(getWrapperClass(false), "justify-end")}
-            style={{ visibility: isEditable() ? "hidden" : undefined }}
-            title={local.title}
+            {...rest}
+            data-number-field
+            class={clsx("relative", local.class)}
+            style={local.style}
           >
-            {prefixEl()}
-            <PlaceholderFallback
-              value={formatNumber(value(), local.comma ?? true, local.minDigits)}
-              placeholder={local.placeholder}
-            />
-          </div>
-
-          <Show when={isEditable()}>
-            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-              {prefixEl()}
-              <input
-                type="text"
-                inputmode="numeric"
-                class={numberInputClass}
-                value={displayValue()}
+            <div
+              data-number-field-content
+              class={twMerge(getWrapperClass(false), "justify-end")}
+              style={{ visibility: isEditable() ? "hidden" : undefined }}
+              title={local.title}
+            >
+              <Show when={prefix()}>
+                <span class="shrink-0">{prefix()!()}</span>
+              </Show>
+              <PlaceholderFallback
+                value={formatNumber(value(), local.comma ?? true, local.minDigits)}
                 placeholder={local.placeholder}
-                title={local.title}
-                autocomplete="one-time-code"
-                onInput={handleInput}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
               />
             </div>
-          </Show>
-        </div>
-      </Show>
-    </Invalid>
+
+            <Show when={isEditable()}>
+              <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+                <Show when={prefix()}>
+                  <span class="shrink-0">{prefix()!()}</span>
+                </Show>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  class={numberInputClass}
+                  value={displayValue()}
+                  placeholder={local.placeholder}
+                  title={local.title}
+                  autocomplete="one-time-code"
+                  onInput={handleInput}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </div>
+            </Show>
+          </div>
+        </Show>
+      </Invalid>
+    </NumberInputSlotsContext.Provider>
   );
 };
 
