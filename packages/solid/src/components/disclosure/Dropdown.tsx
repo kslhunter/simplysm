@@ -10,7 +10,6 @@ import {
   splitProps,
 } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import { createControllableSignal } from "../../hooks/createControllableSignal";
 import { createSlotSignal, type SlotAccessor } from "../../hooks/createSlotSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { Portal } from "solid-js/web";
@@ -154,10 +153,21 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     "children",
   ]);
 
-  const [open, setOpen] = createControllableSignal({
-    value: () => local.open ?? false,
-    onChange: () => local.onOpenChange,
+  const [open, setOpenInternal] = createSignal(false);
+
+  // props.open 변경 시 내부 상태 동기화
+  createEffect(() => {
+    const propOpen = local.open;
+    if (propOpen !== undefined) {
+      setOpenInternal(propOpen);
+    }
   });
+
+  // 콜백 포함 setter
+  const setOpen = (value: boolean) => {
+    setOpenInternal(value);
+    local.onOpenChange?.(value);
+  };
 
   // toggle 함수 (disabled 체크 포함)
   const toggle = () => {

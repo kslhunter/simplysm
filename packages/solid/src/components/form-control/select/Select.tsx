@@ -21,7 +21,7 @@ import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 
