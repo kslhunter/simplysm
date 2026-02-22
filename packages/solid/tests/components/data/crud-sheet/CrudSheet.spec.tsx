@@ -20,6 +20,8 @@ import {
 import { CrudSheet } from "../../../../src/components/data/crud-sheet/CrudSheet";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+import { DialogInstanceContext } from "../../../../src/components/disclosure/DialogInstanceContext";
+import { Dialog } from "../../../../src/components/disclosure/Dialog";
 
 interface TestItem {
   id?: number;
@@ -31,6 +33,21 @@ function TestWrapper(props: { children: JSX.Element }) {
   return (
     <ConfigContext.Provider value={{ clientName: "test" }}>
       <NotificationProvider>{props.children}</NotificationProvider>
+    </ConfigContext.Provider>
+  );
+}
+
+function DialogWrapper(props: { children: JSX.Element }) {
+  return (
+    <ConfigContext.Provider value={{ clientName: "test" }}>
+      <NotificationProvider>
+        <Dialog open fill>
+          <Dialog.Header>Test Dialog</Dialog.Header>
+          <DialogInstanceContext.Provider value={{ close: () => {} }}>
+            {props.children}
+          </DialogInstanceContext.Provider>
+        </Dialog>
+      </NotificationProvider>
     </ConfigContext.Provider>
   );
 }
@@ -302,6 +319,96 @@ describe("CrudSheet select mode", () => {
   });
 
   it("selectMode='multi' 시 확인 버튼이 표시된다", async () => {
+    render(() => (
+      <DialogWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
+          getItemKey={(item) => item.id}
+          selectMode="multi"
+          onSelect={() => {}}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </DialogWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    // Dialog renders via Portal so content is in document.body
+    const dialogContent = document.querySelector("[data-modal-content]");
+    expect(dialogContent?.textContent).toContain("확인");
+  });
+});
+
+describe("CrudSheet control mode", () => {
+  it("topbar/dialog 없이 inlineEdit 제공 시 저장/새로고침 버튼이 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [] })}
+          getItemKey={(item) => item.id}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("저장");
+    expect(container.textContent).toContain("새로고침");
+  });
+
+  it("inlineEdit 없으면 저장/새로고침 버튼이 없다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [] })}
+          getItemKey={(item) => item.id}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("저장");
+    expect(container.textContent).not.toContain("새로고침");
+  });
+});
+
+describe("CrudSheet modal mode", () => {
+  it("Dialog 안에서 selectMode='multi' 시 하단 바가 표시된다", async () => {
+    render(() => (
+      <DialogWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
+          getItemKey={(item) => item.id}
+          selectMode="multi"
+          onSelect={() => {}}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </DialogWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    // Dialog renders via Portal so content is in document.body
+    const dialogContent = document.querySelector("[data-modal-content]");
+    expect(dialogContent?.textContent).toContain("확인");
+  });
+
+  it("Dialog 없이 selectMode='multi'이면 하단 바가 표시되지 않는다", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -318,6 +425,6 @@ describe("CrudSheet select mode", () => {
     ));
 
     await new Promise((r) => setTimeout(r, 100));
-    expect(container.textContent).toContain("확인");
+    expect(container.textContent).not.toContain("확인");
   });
 });

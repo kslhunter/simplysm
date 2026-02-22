@@ -22,6 +22,8 @@ import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
 import { TopbarContext, createTopbarActions } from "../../layout/topbar/TopbarContext";
+import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
+import { Dialog } from "../../disclosure/Dialog";
 import { Link } from "../../display/Link";
 import { createEventListener } from "@solid-primitives/event-listener";
 import clsx from "clsx";
@@ -83,6 +85,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   const noti = useNotification();
   const topbarCtx = useContext(TopbarContext);
+  const dialogInstance = useDialogInstance();
+  const isModal = dialogInstance !== undefined;
   const isSelectMode = () => local.selectMode != null;
   const canEdit = () => (isSelectMode() ? false : (local.editable?.() ?? true));
 
@@ -362,225 +366,258 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const deleteProp = () => local.inlineEdit?.deleteProp;
 
   return (
-    <BusyContainer
-      ready={ready()}
-      busy={busyCount() > 0}
-      class={clsx("flex h-full flex-col", local.class)}
-    >
-      {/* Header (optional) */}
-      <Show when={defs().header}>{(headerDef) => headerDef().children}</Show>
+    <>
+      {/* Modal mode: Dialog.Action (refresh button in header) */}
+      <Show when={isModal}>
+        <Dialog.Action>
+          <button
+            class="flex items-center px-2 text-base-400 hover:text-base-600"
+            onClick={handleRefresh}
+          >
+            <Icon icon={IconRefresh} />
+          </button>
+        </Dialog.Action>
+      </Show>
 
-      {/* Filter */}
-      <Show when={defs().filter}>
-        {(filterDef) => (
-          <form class="p-2" onSubmit={handleFilterSubmit}>
-            <FormGroup inline>
-              <FormGroup.Item>
-                <Button type="submit" theme="info" variant="solid">
-                  <Icon icon={IconSearch} class="mr-1" />
-                  조회
+      <BusyContainer
+        ready={ready()}
+        busy={busyCount() > 0}
+        class={clsx("flex h-full flex-col", local.class)}
+      >
+        {/* Control mode: inline save/refresh bar */}
+        <Show when={!isModal && !topbarCtx && canEdit() && local.inlineEdit}>
+          <div class="flex gap-2 p-2 pb-0">
+            <Button
+              size="sm"
+              theme="primary"
+              variant="ghost"
+              onClick={() => formRef?.requestSubmit()}
+            >
+              <Icon icon={IconDeviceFloppy} class="mr-1" />
+              저장
+            </Button>
+            <Button size="sm" theme="info" variant="ghost" onClick={handleRefresh}>
+              <Icon icon={IconRefresh} class="mr-1" />
+              새로고침
+            </Button>
+          </div>
+        </Show>
+
+        {/* Header (optional) */}
+        <Show when={defs().header}>{(headerDef) => headerDef().children}</Show>
+
+        {/* Filter */}
+        <Show when={defs().filter}>
+          {(filterDef) => (
+            <form class="p-2" onSubmit={handleFilterSubmit}>
+              <FormGroup inline>
+                <FormGroup.Item>
+                  <Button type="submit" theme="info" variant="solid">
+                    <Icon icon={IconSearch} class="mr-1" />
+                    조회
+                  </Button>
+                </FormGroup.Item>
+                {filterDef().children(filter, setFilter)}
+              </FormGroup>
+            </form>
+          )}
+        </Show>
+
+        {/* Toolbar */}
+        <Show when={!isSelectMode()}>
+          <div class="flex gap-2 p-2 pb-0">
+            <Show when={!local.hideAutoTools}>
+              {/* Inline edit buttons */}
+              <Show when={canEdit() && local.inlineEdit}>
+                <Button size="sm" theme="primary" variant="ghost" onClick={handleAddRow}>
+                  <Icon icon={IconPlus} class="mr-1" />행 추가
                 </Button>
-              </FormGroup.Item>
-              {filterDef().children(filter, setFilter)}
-            </FormGroup>
-          </form>
-        )}
-      </Show>
+              </Show>
 
-      {/* Toolbar */}
-      <Show when={!isSelectMode()}>
-        <div class="flex gap-2 p-2 pb-0">
-          <Show when={!local.hideAutoTools}>
-            {/* Inline edit buttons */}
-            <Show when={canEdit() && local.inlineEdit}>
-              <Button size="sm" theme="primary" variant="ghost" onClick={handleAddRow}>
-                <Icon icon={IconPlus} class="mr-1" />행 추가
-              </Button>
-            </Show>
-
-            {/* Modal edit buttons */}
-            <Show when={canEdit() && local.modalEdit}>
-              <Button
-                size="sm"
-                theme="primary"
-                variant="ghost"
-                onClick={() => void handleEditItem()}
-              >
-                <Icon icon={IconPlus} class="mr-1" />
-                등록
-              </Button>
-            </Show>
-            <Show when={canEdit() && local.modalEdit?.deleteItems}>
-              <Button
-                size="sm"
-                theme="danger"
-                variant="ghost"
-                onClick={handleDeleteItems}
-                disabled={
-                  selectedItems().length === 0 ||
-                  !selectedItems().some((item) => local.itemDeletable?.(item) ?? true)
-                }
-              >
-                <Icon icon={IconTrash} class="mr-1" />
-                선택 삭제
-              </Button>
-            </Show>
-
-            {/* Excel buttons */}
-            <Show when={canEdit() && local.excel?.upload}>
-              <Button size="sm" theme="success" variant="ghost" onClick={handleExcelUpload}>
-                <Icon icon={IconUpload} class="mr-1" />
-                엑셀 업로드
-              </Button>
-            </Show>
-            <Show when={local.excel}>
-              <Button size="sm" theme="success" variant="ghost" onClick={handleExcelDownload}>
-                <Icon icon={IconFileExcel} class="mr-1" />
-                엑셀 다운로드
-              </Button>
-            </Show>
-          </Show>
-
-          {/* Custom tools */}
-          <Show when={defs().tools}>{(toolsDef) => toolsDef().children(ctx)}</Show>
-        </div>
-      </Show>
-
-      {/* DataSheet */}
-      <form ref={formRef} class="flex-1 overflow-hidden p-2 pt-1" onSubmit={handleFormSubmit}>
-        <DataSheet
-          class="h-full"
-          items={items}
-          persistKey={local.persistKey != null ? `${local.persistKey}-sheet` : undefined}
-          page={local.itemsPerPage != null ? page() : undefined}
-          onPageChange={setPage}
-          totalPageCount={totalPageCount()}
-          itemsPerPage={local.itemsPerPage}
-          sorts={sorts()}
-          onSortsChange={setSorts}
-          selectMode={
-            isSelectMode()
-              ? local.selectMode === "multi"
-                ? "multiple"
-                : "single"
-              : local.modalEdit?.deleteItems != null
-                ? "multiple"
-                : undefined
-          }
-          selectedItems={selectedItems()}
-          onSelectedItemsChange={setSelectedItems}
-          autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
-          cellClass={(item, _colKey) => {
-            const dp = deleteProp();
-            if (dp != null && Boolean((item as Record<string, unknown>)[dp])) {
-              return clsx("line-through");
-            }
-            return undefined;
-          }}
-        >
-          {/* Auto delete column */}
-          <Show when={deleteProp() != null && canEdit() ? deleteProp() : undefined}>
-            {(dp) => (
-              <DataSheetColumn<TItem>
-                key="__delete"
-                header=""
-                fixed
-                sortable={false}
-                resizable={false}
-              >
-                {(dsCtx) => (
-                  <div class="flex items-center justify-center px-1 py-0.5">
-                    <Link
-                      theme="danger"
-                      disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
-                      onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
-                    >
-                      <Icon
-                        icon={
-                          Boolean((dsCtx.item as Record<string, unknown>)[dp()])
-                            ? IconTrashOff
-                            : IconTrash
-                        }
-                      />
-                    </Link>
-                  </div>
-                )}
-              </DataSheetColumn>
-            )}
-          </Show>
-
-          {/* User-defined columns -- map CrudSheetColumn to DataSheetColumn */}
-          <For each={defs().columns}>
-            {(col) => (
-              <DataSheetColumn<TItem>
-                key={col.key}
-                header={col.header}
-                headerContent={col.headerContent}
-                headerStyle={col.headerStyle}
-                summary={col.summary}
-                tooltip={col.tooltip}
-                fixed={col.fixed}
-                hidden={col.hidden}
-                collapse={col.collapse}
-                width={col.width}
-                class={col.class}
-                sortable={col.sortable}
-                resizable={col.resizable}
-              >
-                {(dsCtx) => {
-                  const crudCtx = {
-                    ...dsCtx,
-                    setItem: <TKey extends keyof TItem>(key: TKey, value: TItem[TKey]) => {
-                      setItems(dsCtx.index as any, key as any, value as any);
-                    },
-                  };
-
-                  // modalEdit editable column -- wrap with edit link
-                  if (
-                    local.modalEdit &&
-                    col.editable &&
-                    canEdit() &&
-                    (local.itemEditable?.(dsCtx.item) ?? true)
-                  ) {
-                    return (
-                      <Link
-                        class="flex w-full"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          void handleEditItem(dsCtx.item);
-                        }}
-                      >
-                        {col.cell(crudCtx)}
-                      </Link>
-                    );
+              {/* Modal edit buttons */}
+              <Show when={canEdit() && local.modalEdit}>
+                <Button
+                  size="sm"
+                  theme="primary"
+                  variant="ghost"
+                  onClick={() => void handleEditItem()}
+                >
+                  <Icon icon={IconPlus} class="mr-1" />
+                  등록
+                </Button>
+              </Show>
+              <Show when={canEdit() && local.modalEdit?.deleteItems}>
+                <Button
+                  size="sm"
+                  theme="danger"
+                  variant="ghost"
+                  onClick={handleDeleteItems}
+                  disabled={
+                    selectedItems().length === 0 ||
+                    !selectedItems().some((item) => local.itemDeletable?.(item) ?? true)
                   }
+                >
+                  <Icon icon={IconTrash} class="mr-1" />
+                  선택 삭제
+                </Button>
+              </Show>
 
-                  return col.cell(crudCtx);
-                }}
-              </DataSheetColumn>
-            )}
-          </For>
-        </DataSheet>
-      </form>
+              {/* Excel buttons */}
+              <Show when={canEdit() && local.excel?.upload}>
+                <Button size="sm" theme="success" variant="ghost" onClick={handleExcelUpload}>
+                  <Icon icon={IconUpload} class="mr-1" />
+                  엑셀 업로드
+                </Button>
+              </Show>
+              <Show when={local.excel}>
+                <Button size="sm" theme="success" variant="ghost" onClick={handleExcelDownload}>
+                  <Icon icon={IconFileExcel} class="mr-1" />
+                  엑셀 다운로드
+                </Button>
+              </Show>
+            </Show>
 
-      {/* Select mode bottom bar */}
-      <Show when={isSelectMode()}>
-        <div class="flex gap-2 border-t p-2">
-          <div class="flex-1" />
-          <Show when={selectedItems().length > 0}>
-            <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-              {local.selectMode === "multi" ? "모두" : "선택"} 해제
-            </Button>
-          </Show>
-          <Show when={local.selectMode === "multi"}>
-            <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
-              확인({selectedItems().length})
-            </Button>
-          </Show>
-        </div>
-      </Show>
-    </BusyContainer>
+            {/* Custom tools */}
+            <Show when={defs().tools}>{(toolsDef) => toolsDef().children(ctx)}</Show>
+          </div>
+        </Show>
+
+        {/* DataSheet */}
+        <form ref={formRef} class="flex-1 overflow-hidden p-2 pt-1" onSubmit={handleFormSubmit}>
+          <DataSheet
+            class="h-full"
+            items={items}
+            persistKey={local.persistKey != null ? `${local.persistKey}-sheet` : undefined}
+            page={local.itemsPerPage != null ? page() : undefined}
+            onPageChange={setPage}
+            totalPageCount={totalPageCount()}
+            itemsPerPage={local.itemsPerPage}
+            sorts={sorts()}
+            onSortsChange={setSorts}
+            selectMode={
+              isSelectMode()
+                ? local.selectMode === "multi"
+                  ? "multiple"
+                  : "single"
+                : local.modalEdit?.deleteItems != null
+                  ? "multiple"
+                  : undefined
+            }
+            selectedItems={selectedItems()}
+            onSelectedItemsChange={setSelectedItems}
+            autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
+            cellClass={(item, _colKey) => {
+              const dp = deleteProp();
+              if (dp != null && Boolean((item as Record<string, unknown>)[dp])) {
+                return clsx("line-through");
+              }
+              return undefined;
+            }}
+          >
+            {/* Auto delete column */}
+            <Show when={deleteProp() != null && canEdit() ? deleteProp() : undefined}>
+              {(dp) => (
+                <DataSheetColumn<TItem>
+                  key="__delete"
+                  header=""
+                  fixed
+                  sortable={false}
+                  resizable={false}
+                >
+                  {(dsCtx) => (
+                    <div class="flex items-center justify-center px-1 py-0.5">
+                      <Link
+                        theme="danger"
+                        disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
+                        onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
+                      >
+                        <Icon
+                          icon={
+                            Boolean((dsCtx.item as Record<string, unknown>)[dp()])
+                              ? IconTrashOff
+                              : IconTrash
+                          }
+                        />
+                      </Link>
+                    </div>
+                  )}
+                </DataSheetColumn>
+              )}
+            </Show>
+
+            {/* User-defined columns -- map CrudSheetColumn to DataSheetColumn */}
+            <For each={defs().columns}>
+              {(col) => (
+                <DataSheetColumn<TItem>
+                  key={col.key}
+                  header={col.header}
+                  headerContent={col.headerContent}
+                  headerStyle={col.headerStyle}
+                  summary={col.summary}
+                  tooltip={col.tooltip}
+                  fixed={col.fixed}
+                  hidden={col.hidden}
+                  collapse={col.collapse}
+                  width={col.width}
+                  class={col.class}
+                  sortable={col.sortable}
+                  resizable={col.resizable}
+                >
+                  {(dsCtx) => {
+                    const crudCtx = {
+                      ...dsCtx,
+                      setItem: <TKey extends keyof TItem>(key: TKey, value: TItem[TKey]) => {
+                        setItems(dsCtx.index as any, key as any, value as any);
+                      },
+                    };
+
+                    // modalEdit editable column -- wrap with edit link
+                    if (
+                      local.modalEdit &&
+                      col.editable &&
+                      canEdit() &&
+                      (local.itemEditable?.(dsCtx.item) ?? true)
+                    ) {
+                      return (
+                        <Link
+                          class="flex w-full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            void handleEditItem(dsCtx.item);
+                          }}
+                        >
+                          {col.cell(crudCtx)}
+                        </Link>
+                      );
+                    }
+
+                    return col.cell(crudCtx);
+                  }}
+                </DataSheetColumn>
+              )}
+            </For>
+          </DataSheet>
+        </form>
+
+        {/* Select mode bottom bar */}
+        <Show when={isModal && isSelectMode()}>
+          <div class="flex gap-2 border-t p-2">
+            <div class="flex-1" />
+            <Show when={selectedItems().length > 0}>
+              <Button size="sm" theme="danger" onClick={handleSelectCancel}>
+                {local.selectMode === "multi" ? "모두" : "선택"} 해제
+              </Button>
+            </Show>
+            <Show when={local.selectMode === "multi"}>
+              <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
+                확인({selectedItems().length})
+              </Button>
+            </Show>
+          </div>
+        </Show>
+      </BusyContainer>
+    </>
   );
 };
 
