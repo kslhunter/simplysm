@@ -637,6 +637,7 @@ export class DevOrchestrator {
           name,
           cwd: this._cwd,
           pkgDir,
+          watchScopes: this._watchScopes,
           env: { ...this._baseEnv, ...config.env },
           configs: config.configs,
           externals: config.externals,
