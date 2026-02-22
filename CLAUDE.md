@@ -119,6 +119,7 @@ All sub-components via dot notation only (`Parent.Child`).
 - Define `interface ParentComponent { Child: typeof ChildComponent }`
 - Assign `Parent.Child = ChildComponent;`
 - Don't export sub-components separately (export parent only)
+- UI elements → compound sub-components, non-rendering config (state, behavior, callbacks) → props
 
 ### Tailwind CSS
 - `darkMode: "class"`, `aspectRatio` plugin disabled (Chrome 84)
