@@ -263,7 +263,7 @@ Pass values like `"win32"`, `"darwin"`, or `"linux"` to `platform`.
 - Passing binary data less than 28 bytes to `decode()` will throw an `ArgumentError`.
 - `ServiceResponseMessage.body` is optional (`body?: unknown`) — the server may return `undefined` for void methods.
 - Service interfaces (`OrmService`, `AutoUpdateService`) only provide type definitions. Actual implementations are handled by the `@simplysm/service-server` package.
-- The `$info` and `$data` properties of `ServiceEventDef` are declared with `declare` and do not exist at runtime; they are only used for TypeScript type extraction.
+- The `$info` and `$data` properties of `ServiceEventDef` are typed as `readonly` and are set to `undefined as unknown as TInfo/TData` at runtime. They exist only for TypeScript type extraction and must not be used at runtime.
 
 ## License
 

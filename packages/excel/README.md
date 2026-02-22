@@ -444,6 +444,32 @@ Behavior of the `read()` method:
 | `read(file, wsNameOrIndex?, options?)` | `Promise<z.infer<TSchema>[]>` | Read records from Excel file (`Uint8Array` or `Blob`); defaults to first worksheet. `options.excludes` omits specific fields. |
 | `write(wsName, records, options?)` | `Promise<ExcelWorkbook>` | Write partial records to a new workbook; caller must manage the returned workbook's lifecycle. `options.excludes` omits specific fields. |
 
+## XML Data Types
+
+These types represent the raw OOXML structure used internally by the library. They are exported for advanced use cases such as direct XML manipulation.
+
+| Type | Description |
+|------|-------------|
+| `ExcelXmlContentTypeData` | Structure of `[Content_Types].xml` |
+| `ExcelXmlRelationshipData` | Structure of `.rels` relationship XML files |
+| `ExcelRelationshipData` | Single relationship entry within `ExcelXmlRelationshipData` |
+| `ExcelXmlWorkbookData` | Structure of `xl/workbook.xml` |
+| `ExcelXmlWorksheetData` | Structure of `xl/worksheets/sheet*.xml` |
+| `ExcelRowData` | Single row entry within `ExcelXmlWorksheetData` |
+| `ExcelCellData` | Single cell entry within a row |
+| `ExcelXmlDrawingData` | Structure of `xl/drawings/drawing*.xml` |
+| `ExcelXmlSharedStringData` | Structure of `xl/sharedStrings.xml` |
+| `ExcelXmlSharedStringDataSi` | Single shared string item (plain text or rich text) |
+| `ExcelXmlSharedStringDataText` | Text element inside a shared string item |
+| `ExcelXmlStyleData` | Structure of `xl/styles.xml` |
+| `ExcelXmlStyleDataXf` | Cell format (`xf`) entry within `cellXfs` |
+| `ExcelXmlStyleDataFill` | Fill entry within `fills` |
+| `ExcelXmlStyleDataBorder` | Border entry within `borders` |
+
+```typescript
+import type { ExcelXmlWorksheetData, ExcelCellData } from "@simplysm/excel";
+```
+
 ## Caveats
 
 ### All Cell Methods are Asynchronous

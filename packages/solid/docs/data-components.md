@@ -270,9 +270,9 @@ Hierarchical permission management table. Displays a tree of permission items wi
 
 ```tsx
 import { createSignal } from "solid-js";
-import { type PermissionItem, PermissionTable } from "@simplysm/solid";
+import { type AppPerm, PermissionTable } from "@simplysm/solid";
 
-const items: PermissionItem[] = [
+const items: AppPerm[] = [
   {
     title: "User Management",
     href: "/user",
@@ -312,25 +312,35 @@ The `value` record uses keys in `"{href}/{perm}"` format (e.g., `{ "/user/use": 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `items` | `PermissionItem<TModule>[]` | - | Permission tree structure |
+| `items` | `AppPerm<TModule>[]` | - | Permission tree structure (same type as `createAppStructure` outputs via `usablePerms()`) |
 | `value` | `Record<string, boolean>` | - | Permission state record |
 | `onValueChange` | `(value: Record<string, boolean>) => void` | - | State change callback |
 | `modules` | `TModule[]` | - | Module filter (show only matching items) |
 | `disabled` | `boolean` | - | Disable all checkboxes |
 
-**PermissionItem type:**
+**AppPerm type** (used as items):
 
 ```typescript
-interface PermissionItem<TModule = string> {
+interface AppPerm<TModule = string> {
   title: string;                       // Display text
   href?: string;                       // Permission path (used as value key prefix)
   modules?: TModule[];                 // Modules this item belongs to
   perms?: string[];                    // Permission types (e.g., ["use", "edit", "approve"])
-  children?: PermissionItem<TModule>[]; // Child items
+  children?: AppPerm<TModule>[];       // Child items
 }
 ```
 
+`AppPerm` is the same type returned by `createAppStructure().usablePerms()`, so you can pass the output of `createAppStructure` directly to `PermissionTable`.
+
 **Cascading behavior:** Checking a parent checks all children. Unchecking `perms[0]` (base permission) automatically unchecks all other permissions for that item.
+
+**Utility functions (exported):**
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `collectAllPerms` | `(items: AppPerm[]) => string[]` | Collect all unique perm type strings from a tree |
+| `filterByModules` | `(items: AppPerm<TModule>[], modules: TModule[] \| undefined) => AppPerm<TModule>[]` | Filter items by active modules |
+| `changePermCheck` | `(value: Record<string,boolean>, item: AppPerm, perm: string, checked: boolean) => Record<string,boolean>` | Apply cascading check logic to a value record |
 
 ---
 

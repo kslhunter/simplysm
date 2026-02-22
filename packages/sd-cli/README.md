@@ -1,6 +1,6 @@
 # @simplysm/sd-cli
 
-The CLI tool for the Simplysm framework. It provides project initialization, ESLint linting, TypeScript type-checking, library/client/server package builds, development mode, deployment, Android device execution, and Electron desktop app build capabilities.
+The CLI tool for the Simplysm framework. It provides project initialization, ESLint/Stylelint linting, TypeScript type-checking, combined check (typecheck + lint + test), library/client/server package builds, development mode, deployment, Android device execution, and Electron desktop app build capabilities.
 
 ## Installation
 
@@ -16,7 +16,7 @@ The CLI binary name is `sd-cli`. All commands support the `--debug` option to ou
 
 ### lint
 
-Runs ESLint. It automatically extracts and applies globalIgnores patterns from `eslint.config.ts` and stores cache in `.cache/eslint.cache`.
+Runs ESLint and Stylelint. ESLint lints `.ts`/`.tsx`/`.js`/`.jsx` files; Stylelint lints `.css` files (only when a Stylelint config file is present). Extracts globalIgnores patterns from `eslint.config.ts`. Caches results in `.cache/eslint.cache` and `.cache/stylelint.cache`.
 
 ```bash
 # Lint all
@@ -76,6 +76,32 @@ sd-cli typecheck -o key=value
 | `browser`, `client` | browser environment once |
 | `neutral`           | node + browser environment twice |
 | `scripts`           | Excluded from type-check |
+
+### check
+
+Runs typecheck, lint, and test in parallel and prints a consolidated summary. Lint auto-fix is always enabled when run via `check`. Exits with code `1` if any check fails.
+
+```bash
+# Run all checks (typecheck + lint + test)
+sd-cli check
+
+# Run specific check types
+sd-cli check --type typecheck,lint
+
+# Filter paths
+sd-cli check packages/core-common
+```
+
+**Options:**
+
+| Option     | Description                                                          | Default                  |
+| ---------- | -------------------------------------------------------------------- | ------------------------ |
+| `--type`   | Comma-separated list of check types to run: `typecheck`, `lint`, `test` | `typecheck,lint,test` |
+| `--debug`  | Output debug logs                                                    | `false`                  |
+
+**Output format:**
+
+Each check type prints a section header followed by its result summary. A final `SUMMARY` section lists overall pass/fail status and total error/warning counts.
 
 ### watch
 
@@ -925,6 +951,7 @@ pm2 start pm2.config.cjs
 | Command       | Cache Path                                           | Description                                                        |
 | ------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
 | `lint`        | `.cache/eslint.cache`                                | ESLint cache                                                       |
+| `lint`        | `.cache/stylelint.cache`                             | Stylelint cache                                                    |
 | `typecheck`   | `packages/{pkg}/.cache/typecheck-{env}.tsbuildinfo`  | Incremental type-check info (`{env}` is `node` or `browser`)      |
 | `watch` (dts) | `packages/{pkg}/.cache/dts.tsbuildinfo`              | Incremental .d.ts build info                                       |
 

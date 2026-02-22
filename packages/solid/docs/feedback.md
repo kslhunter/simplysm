@@ -59,8 +59,14 @@ function MyComponent() {
 | `clear` | `() => void` | Clear all |
 
 **Components:**
-- `NotificationBanner` -- Top-of-screen notification banner (add inside `NotificationProvider`)
-- `NotificationBell` -- Notification bell icon (shows unread count, add to your layout as needed)
+- `NotificationBanner` -- Top-of-screen notification banner. Automatically included by `SystemProvider`.
+- `NotificationBell` -- Notification bell icon (shows unread count badge; click to view history). Add to your layout as needed. By default includes its own `NotificationBanner` instance via `showBanner` prop — set `showBanner={false}` when using with `SystemProvider` to avoid a duplicate banner.
+
+**NotificationBell Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `showBanner` | `boolean` | `true` | Render a `NotificationBanner` alongside the bell. Set to `false` when `SystemProvider` already provides one. |
 
 ---
 

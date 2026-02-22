@@ -97,7 +97,8 @@ Or use the full configuration directly:
         "ignore": ["css-cascade-layers", "css-nesting", "css-overflow"]
       }
     ],
-    "plugin/no-unresolved-module": true
+    "plugin/no-unresolved-module": true,
+    "declaration-block-no-redundant-longhand-properties": [true, { "ignoreShorthands": ["inset"] }]
   }
 }
 ```
@@ -128,6 +129,7 @@ The `stylelint-recommended` config includes:
 |------|----------|-------------|
 | `plugin/no-unsupported-browser-features` | error | Checks CSS features compatibility with Chrome 84+ |
 | `plugin/no-unresolved-module` | error | Validates that `@import` and `url()` references exist |
+| `declaration-block-no-redundant-longhand-properties` | error | Enforces shorthand properties, except `inset` (Chrome 87+ only) |
 | All rules from `stylelint-config-standard` | varies | Standard CSS linting rules |
 | All rules from `stylelint-config-tailwindcss` | varies | Tailwind CSS-specific rules (`@apply`, `@layer`, etc.) |
 

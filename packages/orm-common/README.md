@@ -588,6 +588,22 @@ N:1 logical relationship without a DB FK constraint. Available for both tables a
 
 1:N logical reverse reference without a DB FK constraint. Call `.single()` for 1:1.
 
+#### `createRelationFactory(ownerFn)`
+
+Creates a relation builder factory for the given owner table or view. Used internally by `TableBuilder.relations()` and `ViewBuilder.relations()`. Available for building custom schema utilities.
+
+Tables receive both FK methods (`foreignKey`, `foreignKeyTarget`) and logical relation methods (`relationKey`, `relationKeyTarget`). Views receive only logical relation methods.
+
+```typescript
+import { createRelationFactory } from "@simplysm/orm-common";
+
+const r = createRelationFactory(() => Post);
+// r.foreignKey(...)        — available (Post is a TableBuilder)
+// r.foreignKeyTarget(...)  — available
+// r.relationKey(...)       — available
+// r.relationKeyTarget(...) — available
+```
+
 #### `IndexBuilder` / `createIndexFactory`
 
 Index builder, used inside `.indexes()`.
@@ -1055,6 +1071,7 @@ import { toExpr } from "@simplysm/orm-common";
 | `InferColumnPrimitiveFromDataType<T>` | TypeScript type from a `DataType` |
 | `dataTypeStrToColumnPrimitiveStr` | Constant object mapping SQL type name → `ColumnPrimitiveStr` |
 | `inferColumnPrimitiveStr(value)` | Runtime function: infer `ColumnPrimitiveStr` from a value |
+| `DateSeparator` | `"year" \| "month" \| "day" \| "hour" \| "minute" \| "second"` — date interval unit for `dateDiff`/`dateAdd` |
 
 #### SQL Type to TypeScript Type Mapping
 
@@ -1100,6 +1117,291 @@ import { toExpr } from "@simplysm/orm-common";
 | `OptionalInsertKeys<T>` | Keys that are optional in INSERT |
 | `ExtractRelationTarget<T>` | Extract the TypeScript type of an FK/RelationKey target |
 | `ExtractRelationTargetResult<T>` | Extract the TypeScript type of an FKTarget/RelationKeyTarget (array or single) |
+
+### QueryDef Types
+
+`QueryDef` is the JSON AST representation of any SQL statement. Every `Queryable` execution method generates a `QueryDef` that is then converted to SQL by `QueryBuilderBase`.
+
+#### `QueryDef`
+
+The master union type for all possible query definitions:
+
+```typescript
+import { QueryDef } from "@simplysm/orm-common";
+
+type QueryDef =
+  | SelectQueryDef | InsertQueryDef | InsertIfNotExistsQueryDef | InsertIntoQueryDef
+  | UpdateQueryDef | DeleteQueryDef | UpsertQueryDef
+  | ClearSchemaQueryDef | CreateTableQueryDef | DropTableQueryDef | RenameTableQueryDef
+  | TruncateQueryDef | AddColumnQueryDef | DropColumnQueryDef | ModifyColumnQueryDef
+  | RenameColumnQueryDef | DropPkQueryDef | AddPkQueryDef | AddFkQueryDef | DropFkQueryDef
+  | AddIdxQueryDef | DropIdxQueryDef | CreateViewQueryDef | DropViewQueryDef
+  | CreateProcQueryDef | DropProcQueryDef | ExecProcQueryDef | SwitchFkQueryDef
+  | SchemaExistsQueryDef;
+```
+
+#### `QueryDefObjectName`
+
+Represents a DBMS object identifier (table, view, procedure). DBMS-specific namespace rules:
+
+- MySQL: `database.name` (schema is ignored)
+- MSSQL: `database.schema.name` (schema defaults to `dbo`)
+- PostgreSQL: `schema.name` (database is connection-level)
+
+```typescript
+import { QueryDefObjectName } from "@simplysm/orm-common";
+
+interface QueryDefObjectName {
+  database?: string;
+  schema?: string;
+  name: string;
+}
+```
+
+#### `CudOutputDef`
+
+Defines the OUTPUT clause for INSERT/UPDATE/DELETE operations that return values.
+
+```typescript
+import { CudOutputDef } from "@simplysm/orm-common";
+
+interface CudOutputDef {
+  columns: string[];     // Column names to return
+  pkColNames: string[];  // Primary key column names
+  aiColName?: string;    // Auto-increment column name (if any)
+}
+```
+
+#### DML QueryDef interfaces
+
+| Interface | `type` | Description |
+|-----------|--------|-------------|
+| `SelectQueryDef` | `"select"` | SELECT with optional FROM, WHERE, JOIN, ORDER BY, GROUP BY, HAVING, LIMIT, DISTINCT, recursive CTE |
+| `SelectQueryDefJoin` | `"select"` | Extends `SelectQueryDef` with `isSingle?: boolean` for 1:1 JOIN distinction |
+| `InsertQueryDef` | `"insert"` | INSERT with records array; optional `overrideIdentity` and `output` |
+| `InsertIfNotExistsQueryDef` | `"insertIfNotExists"` | INSERT only if `existsSelectQuery` returns no rows |
+| `InsertIntoQueryDef` | `"insertInto"` | INSERT INTO ... SELECT from `recordsSelectQuery` |
+| `UpdateQueryDef` | `"update"` | UPDATE with record map, optional WHERE/JOIN/LIMIT |
+| `DeleteQueryDef` | `"delete"` | DELETE with optional WHERE/JOIN/LIMIT |
+| `UpsertQueryDef` | `"upsert"` | UPDATE or INSERT (MERGE pattern): `existsSelectQuery` determines branch |
+
+#### DDL QueryDef interfaces
+
+| Interface | `type` | Description |
+|-----------|--------|-------------|
+| `ClearSchemaQueryDef` | `"clearSchema"` | Drop all objects in a database/schema |
+| `CreateTableQueryDef` | `"createTable"` | CREATE TABLE with column definitions and optional primary key |
+| `DropTableQueryDef` | `"dropTable"` | DROP TABLE |
+| `RenameTableQueryDef` | `"renameTable"` | RENAME TABLE to `newName` |
+| `TruncateQueryDef` | `"truncate"` | TRUNCATE TABLE |
+| `AddColumnQueryDef` | `"addColumn"` | ADD COLUMN with data type and optional constraints |
+| `DropColumnQueryDef` | `"dropColumn"` | DROP COLUMN |
+| `ModifyColumnQueryDef` | `"modifyColumn"` | MODIFY/ALTER COLUMN definition |
+| `RenameColumnQueryDef` | `"renameColumn"` | RENAME COLUMN to `newName` |
+| `DropPkQueryDef` | `"dropPk"` | DROP PRIMARY KEY |
+| `AddPkQueryDef` | `"addPk"` | ADD PRIMARY KEY on given `columns` |
+| `AddFkQueryDef` | `"addFk"` | ADD FOREIGN KEY with name, FK columns, target table and PK columns |
+| `DropFkQueryDef` | `"dropFk"` | DROP FOREIGN KEY by name |
+| `AddIdxQueryDef` | `"addIdx"` | CREATE INDEX with name, columns, order direction, and optional unique |
+| `DropIdxQueryDef` | `"dropIdx"` | DROP INDEX by name |
+| `CreateViewQueryDef` | `"createView"` | CREATE VIEW with a `SelectQueryDef` body |
+| `DropViewQueryDef` | `"dropView"` | DROP VIEW |
+| `CreateProcQueryDef` | `"createProc"` | CREATE PROCEDURE with params, returns columns, and body SQL string |
+| `DropProcQueryDef` | `"dropProc"` | DROP PROCEDURE |
+| `ExecProcQueryDef` | `"execProc"` | EXECUTE PROCEDURE with optional params record |
+
+#### Utility / Meta QueryDef interfaces
+
+| Interface | `type` | Description |
+|-----------|--------|-------------|
+| `SwitchFkQueryDef` | `"switchFk"` | Enable/disable FK constraint checking for a table (`"on"` or `"off"`) |
+| `SchemaExistsQueryDef` | `"schemaExists"` | Check if a database/schema exists |
+
+#### `DDL_TYPES` / `DdlType`
+
+Constant array of all DDL operation type strings. Used internally to block DDL inside transactions and to validate whether a given `QueryDef` is a DDL operation. `SwitchFkQueryDef` is excluded because FK toggle is permitted inside transactions.
+
+```typescript
+import { DDL_TYPES, DdlType } from "@simplysm/orm-common";
+
+// DDL_TYPES: readonly string[] constant
+// ["clearSchema", "createTable", "dropTable", ..., "dropProc"]
+
+// DdlType: union of all DDL type strings
+type DdlType = "clearSchema" | "createTable" | "dropTable" | "renameTable" | "truncate"
+  | "addColumn" | "dropColumn" | "modifyColumn" | "renameColumn"
+  | "dropPk" | "addPk" | "addFk" | "dropFk" | "addIdx" | "dropIdx"
+  | "createView" | "dropView" | "createProc" | "dropProc";
+
+// Check if a QueryDef is DDL:
+if (DDL_TYPES.includes(queryDef.type as DdlType)) {
+  // DDL — cannot run inside a transaction
+}
+```
+
+### Expr AST Types
+
+Low-level JSON AST interfaces that represent individual SQL expressions. These are the types stored in `QueryDef` fields such as `select`, `where`, `orderBy`, etc. Direct use is only necessary when extending `QueryBuilderBase` or `ExprRendererBase`.
+
+#### `Expr` and `WhereExpr` (union types)
+
+```typescript
+import { Expr, WhereExpr } from "@simplysm/orm-common";
+```
+
+| Union type | Description |
+|------------|-------------|
+| `Expr` | All value-producing expressions: column refs, literals, string/numeric/date/conditional/aggregate/window/subquery |
+| `WhereExpr` | All boolean-producing expressions: comparison operators + logical operators (AND/OR/NOT) |
+
+#### Value expressions
+
+| Interface | `type` | Description |
+|-----------|--------|-------------|
+| `ExprColumn` | `"column"` | Column reference: `{ path: string[] }` — table alias + column name |
+| `ExprValue` | `"value"` | Literal value: `{ value: ColumnPrimitive }` |
+| `ExprRaw` | `"raw"` | Raw SQL template: `{ sql: string; params: Expr[] }` — params referenced as `{0}`, `{1}` |
+
+#### Comparison expressions (WHERE)
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprEq` | `"eq"` | NULL-safe `=` / `IS NULL` |
+| `ExprGt` | `"gt"` | `>` |
+| `ExprLt` | `"lt"` | `<` |
+| `ExprGte` | `"gte"` | `>=` |
+| `ExprLte` | `"lte"` | `<=` |
+| `ExprBetween` | `"between"` | `BETWEEN from AND to` |
+| `ExprIsNull` | `"null"` | `IS NULL` |
+| `ExprLike` | `"like"` | `LIKE` |
+| `ExprRegexp` | `"regexp"` | `REGEXP` |
+| `ExprIn` | `"in"` | `IN (values)` |
+| `ExprInQuery` | `"inQuery"` | `IN (subquery)` |
+| `ExprExists` | `"exists"` | `EXISTS (subquery)` |
+
+#### Logical expressions (WHERE)
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprNot` | `"not"` | `NOT (...)` |
+| `ExprAnd` | `"and"` | `(... AND ...)` |
+| `ExprOr` | `"or"` | `(... OR ...)` |
+
+#### String expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprConcat` | `"concat"` | `CONCAT(args...)` |
+| `ExprLeft` | `"left"` | `LEFT(source, length)` |
+| `ExprRight` | `"right"` | `RIGHT(source, length)` |
+| `ExprTrim` | `"trim"` | `TRIM(arg)` |
+| `ExprPadStart` | `"padStart"` | `LPAD(source, length, fillString)` |
+| `ExprReplace` | `"replace"` | `REPLACE(source, from, to)` |
+| `ExprUpper` | `"upper"` | `UPPER(arg)` |
+| `ExprLower` | `"lower"` | `LOWER(arg)` |
+| `ExprLength` | `"length"` | `CHAR_LENGTH(arg)` |
+| `ExprByteLength` | `"byteLength"` | `OCTET_LENGTH(arg)` |
+| `ExprSubstring` | `"substring"` | `SUBSTRING(source, start, length?)` |
+| `ExprIndexOf` | `"indexOf"` | `LOCATE(source, search)` |
+
+#### Numeric expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprAbs` | `"abs"` | `ABS(arg)` |
+| `ExprRound` | `"round"` | `ROUND(arg, digits)` |
+| `ExprCeil` | `"ceil"` | `CEILING(arg)` |
+| `ExprFloor` | `"floor"` | `FLOOR(arg)` |
+
+#### Date expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprYear` | `"year"` | `YEAR(arg)` |
+| `ExprMonth` | `"month"` | `MONTH(arg)` |
+| `ExprDay` | `"day"` | `DAY(arg)` |
+| `ExprHour` | `"hour"` | `HOUR(arg)` |
+| `ExprMinute` | `"minute"` | `MINUTE(arg)` |
+| `ExprSecond` | `"second"` | `SECOND(arg)` |
+| `ExprIsoWeek` | `"isoWeek"` | `WEEK(arg, 3)` |
+| `ExprIsoWeekStartDate` | `"isoWeekStartDate"` | Monday of the ISO week |
+| `ExprIsoYearMonth` | `"isoYearMonth"` | First day of month (YYYY-MM-01) |
+| `ExprDateDiff` | `"dateDiff"` | `DATEDIFF(separator, from, to)` |
+| `ExprDateAdd` | `"dateAdd"` | `DATEADD(separator, source, value)` |
+| `ExprFormatDate` | `"formatDate"` | `DATE_FORMAT(source, format)` |
+
+#### Conditional expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprIfNull` | `"ifNull"` | `COALESCE(args...)` |
+| `ExprNullIf` | `"nullIf"` | `NULLIF(source, value)` |
+| `ExprIs` | `"is"` | Convert boolean condition to 0/1 value |
+| `ExprSwitch` | `"switch"` | `CASE WHEN ... THEN ... ELSE ... END` |
+| `ExprIf` | `"if"` | `IF(condition, then, else)` |
+
+#### Aggregate expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprCount` | `"count"` | `COUNT(*)` or `COUNT(arg)` or `COUNT(DISTINCT arg)` |
+| `ExprSum` | `"sum"` | `SUM(arg)` |
+| `ExprAvg` | `"avg"` | `AVG(arg)` |
+| `ExprMax` | `"max"` | `MAX(arg)` |
+| `ExprMin` | `"min"` | `MIN(arg)` |
+
+#### Other expressions
+
+| Interface | `type` | SQL |
+|-----------|--------|-----|
+| `ExprGreatest` | `"greatest"` | `GREATEST(args...)` |
+| `ExprLeast` | `"least"` | `LEAST(args...)` |
+| `ExprRowNum` | `"rowNum"` | Row number (simple, no window spec) |
+| `ExprRandom` | `"random"` | `RAND()` / `RANDOM()` |
+| `ExprCast` | `"cast"` | `CAST(source AS targetType)` |
+| `ExprSubquery` | `"subquery"` | Scalar subquery `(SELECT ...)` |
+
+#### Window function types
+
+`ExprWindow` is the AST node for any window function expression. It combines a `WinFn` (the function) with a `WinSpec` (the OVER clause).
+
+```typescript
+import { ExprWindow, WinFn, WinSpec } from "@simplysm/orm-common";
+
+interface ExprWindow {
+  type: "window";
+  fn: WinFn;       // The window function
+  spec: WinSpec;   // OVER (PARTITION BY ... ORDER BY ...)
+}
+
+interface WinSpec {
+  partitionBy?: Expr[];
+  orderBy?: [Expr, ("ASC" | "DESC")?][];
+}
+
+type WinFn =
+  | WinFnRowNumber | WinFnRank | WinFnDenseRank | WinFnNtile
+  | WinFnLag | WinFnLead | WinFnFirstValue | WinFnLastValue
+  | WinFnSum | WinFnAvg | WinFnCount | WinFnMin | WinFnMax;
+```
+
+Individual `WinFn` interfaces:
+
+| Interface | `type` | SQL | Notes |
+|-----------|--------|-----|-------|
+| `WinFnRowNumber` | `"rowNumber"` | `ROW_NUMBER()` | |
+| `WinFnRank` | `"rank"` | `RANK()` | |
+| `WinFnDenseRank` | `"denseRank"` | `DENSE_RANK()` | |
+| `WinFnNtile` | `"ntile"` | `NTILE(n)` | Has `n: number` property |
+| `WinFnLag` | `"lag"` | `LAG(column, offset?, default?)` | |
+| `WinFnLead` | `"lead"` | `LEAD(column, offset?, default?)` | |
+| `WinFnFirstValue` | `"firstValue"` | `FIRST_VALUE(column)` | |
+| `WinFnLastValue` | `"lastValue"` | `LAST_VALUE(column)` | |
+| `WinFnSum` | `"sum"` | `SUM(column) OVER (...)` | |
+| `WinFnAvg` | `"avg"` | `AVG(column) OVER (...)` | |
+| `WinFnCount` | `"count"` | `COUNT(*) OVER (...)` | `column` is optional |
+| `WinFnMin` | `"min"` | `MIN(column) OVER (...)` | |
+| `WinFnMax` | `"max"` | `MAX(column) OVER (...)` | |
 
 ---
 

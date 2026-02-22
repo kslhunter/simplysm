@@ -1,6 +1,6 @@
 # @simplysm/sd-claude
 
-Simplysm Claude Code CLI — asset installer and cross-platform npx wrapper. Automatically installs Claude Code assets (skills, agents, rules) via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
+Simplysm Claude Code CLI — asset installer and cross-platform npx wrapper. Automatically installs Claude Code assets (skills, agents, rules, refs, hooks) via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
 
 ## Installation
 
@@ -10,13 +10,13 @@ pnpm add -D @simplysm/sd-claude
 npm install --save-dev @simplysm/sd-claude
 ```
 
-Skills, agents, and rules are automatically installed to `.claude/` on `pnpm install` / `npm install`.
+Skills, agents, rules, refs, and hooks are automatically installed to `.claude/` on `pnpm install` / `npm install`.
 
 ## How It Works
 
 When installed as a dependency, the `postinstall` script (`scripts/postinstall.mjs`) invokes the `sd-claude install` CLI command, which:
 
-1. Copies all `sd-*` assets (skills, agents, rules, statusline) to the project's `.claude/` directory
+1. Copies all `sd-*` assets (skills, agents, rules, refs, hooks, statusline) to the project's `.claude/` directory
 2. Configures `statusLine` in `.claude/settings.json` to use `sd-statusline.js`
 3. Configures MCP servers in `.mcp.json` (context7 and playwright) using the cross-platform npx wrapper
 4. Existing `sd-*` entries are replaced with the latest version on each install
@@ -40,15 +40,23 @@ Updates also trigger reinstallation (`pnpm up @simplysm/sd-claude`).
   claude/
     sd-statusline.js          # Status line script
     rules/
-      sd-simplysm-docs.md     # Local README documentation rule
+      sd-refs-linker.md       # Reference guide rule (reads .claude/refs/ before work)
       sd-language.md          # Language response rule
-      sd-naming-conventions.md # Function naming rule
-      sd-workflow-rules.md    # Workflow behavior rule
+    refs/
+      sd-code-conventions.md  # Code style and naming conventions reference
+      sd-directories.md       # Directory layout reference (.cache/, .tmp/playwright/)
+      sd-simplysm-docs.md     # @simplysm/* package documentation lookup reference
+      sd-workflow.md          # Workflow behavior and problem-solving principles
+      sd-solid.md             # SolidJS / @simplysm/solid / Tailwind guidelines
+      sd-orm.md               # ORM query patterns and SQL injection prevention
+      sd-service.md           # Service layer guidelines
     agents/
       sd-code-reviewer.md     # Code review agent
       sd-code-simplifier.md   # Code simplification agent
       sd-api-reviewer.md      # API/DX review agent
       sd-security-reviewer.md # ORM SQL injection and input validation agent
+    hooks/
+      sd-notify.py            # Windows toast notification hook (Stop event)
     skills/
       sd-brainstorm/           # Brainstorming skill
       sd-plan/                 # Plan writing skill
@@ -64,6 +72,8 @@ Updates also trigger reinstallation (`pnpm up @simplysm/sd-claude`).
       sd-use/                  # Auto skill/agent router
       sd-skill/                # Skill authoring skill
       sd-api-name-review/      # API naming review skill
+      sd-discuss/              # Standards-based technical discussion skill
+      sd-eml-analyze/          # EML email file analysis skill
 ```
 
 ## CLI Commands
@@ -126,29 +136,7 @@ Collaborative design exploration before implementation. Helps turn ideas into fu
 - Presents design in 200-300 word sections with validation
 - Saves validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 - Commits the design document to git
-
-**Next Steps Guide:**
-
-After design is complete, presents two workflow paths and recommends one based on scope:
-
-```
---- Path A: With branch isolation (recommended for features/large changes) ---
-1. /sd-worktree add <name>
-2. /sd-plan
-3. /sd-plan-dev
-4. /sd-check
-5. /sd-commit
-6. /sd-worktree merge
-7. /sd-worktree clean
-
---- Path B: Direct on current branch (quick fixes/small changes) ---
-1. /sd-plan
-2. /sd-plan-dev
-3. /sd-check
-4. /sd-commit
-```
-
-**Yolo mode**: Respond with "Path A: yolo" or "Path B: yolo" to auto-execute all steps sequentially.
+- Stops after saving the design — does not auto-proceed to `/sd-plan`
 
 ### sd-plan
 
@@ -185,30 +173,22 @@ Creates comprehensive implementation plans with TDD, assuming the implementer ha
 
 ### sd-plan-dev
 
-Executes implementation plans with right-sized process: direct execution for small plans, parallel agents for large plans.
+Executes implementation plans via parallel Task agents with dependency-aware scheduling.
 
 ```
 /sd-plan-dev
 ```
 
-**Mode selection:**
-- **Direct Mode** — tasks ≤ 3 AND source files ≤ 5: implement directly in main context, no agents
-- **Agent Mode** — otherwise: parallel Task agents with dependency-aware scheduling
-
-**Direct Mode process:**
-1. Read plan, implement tasks in dependency order
-2. For each task: implement, write tests, self-review
-3. After all tasks: `pnpm typecheck` + `pnpm lint` + `pnpm vitest` on affected packages
-
-**Agent Mode process:**
-- Reads plan, extracts full task text, creates TaskCreate
+**Process:**
+- Reads plan, extracts full task text
 - Analyzes file dependencies to build a task graph
 - Groups independent tasks into parallel batches
 - Each task agent: implements, launches parallel spec + quality review sub-Tasks, fixes issues
-- Repeats review cycle until both reviewers approve (max 3 cycles)
+- Repeats review cycle until both reviewers approve
+- Runs batch integration check (typecheck + lint) between batches
 - Final review Task across entire implementation
 
-**Agents used per task (Agent Mode):**
+**Agents used per task:**
 - **Task agent** (implementer) — implements the task, runs sub-Tasks for review
 - **Spec reviewer** sub-Task (`model: opus`) — verifies spec compliance
 - **Quality reviewer** sub-Task (`model: opus`) — reviews code quality
@@ -216,11 +196,9 @@ Executes implementation plans with right-sized process: direct execution for sma
 
 **If task agent returns questions:** orchestrator answers and re-launches that agent; other parallel agents continue unaffected.
 
-**After all batches complete:** if working inside a `.worktrees/` directory, guides user to run `/sd-worktree merge`.
-
 ### sd-tdd
 
-Test-driven development workflow. Enforces the Red-Green-Refactor cycle. Internally used by other skills; typically not invoked directly by the user.
+Test-driven development workflow. Enforces the Red-Green-Refactor cycle. Internally used by other skills (`user-invocable: false`); typically not invoked directly by the user.
 
 **Iron Law:** No production code without a failing test first.
 
@@ -245,7 +223,7 @@ Systematic debugging workflow. Enforces root-cause investigation before any fix 
 
 **Four Phases:**
 
-1. **Root Cause Investigation** — Read error messages carefully, reproduce consistently, check recent changes, gather evidence by adding diagnostic instrumentation at each component boundary, trace data flow backward through the call stack
+1. **Root Cause Investigation** — Read error messages carefully, reproduce consistently, read source code directly (not git diff), gather evidence by adding diagnostic instrumentation at each component boundary, trace data flow backward through the call stack
 2. **Pattern Analysis** — Find working examples in the codebase, compare against references, identify differences, understand dependencies
 3. **Hypothesis and Testing** — Form a single specific hypothesis, make the smallest possible change to test it, verify before continuing
 4. **Implementation** — Create a failing test case (use `sd-tdd`), implement single fix addressing the root cause, verify fix
@@ -259,18 +237,22 @@ Systematic debugging workflow. Enforces root-cause investigation before any fix 
 
 ### sd-check
 
-Verifies code via typecheck, lint, and tests using 3 parallel haiku agents. Fixes errors automatically and re-runs until all checks pass.
+Verifies code via typecheck, lint, and tests. Fixes errors automatically and re-runs until all checks pass.
 
 ```
 /sd-check
 /sd-check packages/core-common
+/sd-check test
+/sd-check packages/core-common lint
 ```
 
-**Process (4 steps, fix-and-retry):**
-1. **Environment pre-check** (parallel): verify pnpm workspace, package.json scripts, vitest config, and root package version
-2. **Launch 3 haiku agents in parallel** (single message): typecheck (`pnpm typecheck [path]`), lint (`pnpm lint --fix [path]`), test (`pnpm vitest [path] --run`)
-3. **Collect results, fix errors** in priority order: typecheck → lint → test. After 2-3 failed fix attempts on tests → recommend `/sd-debug`
-4. **Re-verify** — go back to step 2 and run all 3 agents again until all pass
+**Process (fix-and-retry):**
+1. **Run** `pnpm check [path] [--type typecheck|lint|test]` (timeout: 600000ms)
+2. **All passed?** Report with actual output numbers — done
+3. **Errors?** Fix in priority order: typecheck → lint → test
+   - E2E test failures: use Playwright MCP to inspect page state before fixing
+   - Stuck after 2-3 attempts → recommend `/sd-debug`
+4. **Re-run ALL checks** after any fix — never assume other checks still pass
 
 **No path argument:** defaults to verifying the entire project.
 
@@ -386,7 +368,7 @@ Auto skill/agent router. Analyzes the user request and selects the best matching
 # Selects sd-review and executes it
 ```
 
-**Catalog includes:** `sd-brainstorm`, `sd-debug`, `sd-tdd`, `sd-plan`, `sd-plan-dev`, `sd-explore`, `sd-review`, `sd-check`, `sd-commit`, `sd-readme`, `sd-api-name-review`, `sd-worktree`, `sd-skill` (skills), and `sd-code-reviewer`, `sd-code-simplifier`, `sd-api-reviewer`, `sd-security-reviewer` (agents).
+**Catalog includes:** `sd-brainstorm`, `sd-debug`, `sd-tdd`, `sd-plan`, `sd-plan-dev`, `sd-explore`, `sd-review`, `sd-check`, `sd-commit`, `sd-readme`, `sd-discuss`, `sd-api-name-review`, `sd-worktree`, `sd-skill` (skills), and `sd-code-reviewer`, `sd-code-simplifier`, `sd-api-reviewer` (agents).
 
 ### sd-skill
 
@@ -422,6 +404,58 @@ Reviews a library's public API naming for consistency and industry standard alig
 | **P1** | Internal inconsistency (same concept, different names) |
 | **P2** | Better industry term exists (optional) |
 | **Keep** | Already aligned with standards |
+
+### sd-discuss
+
+Standards-based technical discussion skill. Evaluates code design decisions against industry standards and project conventions before forming opinions.
+
+```
+/sd-discuss class vs functional components for this use case
+```
+
+**When to use:** Evaluating code design decisions — class vs functional, pattern choices, architecture trade-offs, technology selection.
+
+**Process:**
+1. Asks one question to understand the user's motivation and constraints
+2. Researches BEFORE forming any opinion:
+   - Project research (Read/Grep): reads related source code, CLAUDE.md, existing patterns
+   - Industry research (WebSearch): community consensus, specifications, benchmarks, comparable libraries
+3. Presents each option with equal depth, advocating FOR each
+4. Provides a decision matrix comparing options across criteria
+5. Asks which criteria matter most to the user — does NOT give a unilateral recommendation
+
+**Key rules:** Research first, opinion last. Equal advocacy for each option. Evidence over intuition. No "obvious" answers.
+
+### sd-eml-analyze
+
+EML email file analysis skill. Parses `.eml` files and extracts content from all attachments into a structured markdown report.
+
+```
+/sd-eml-analyze path/to/email.eml
+```
+
+**When to use:** When a user provides a `.eml` file to analyze, summarize, or extract attachments from (PDF, XLSX, PPTX).
+
+**Internally runs:**
+```bash
+python .claude/skills/sd-eml-analyze/eml-analyzer.py <eml_file_path>
+```
+
+First run auto-installs required Python packages: `pdfminer.six`, `python-pptx`, `openpyxl`.
+
+**Output:** Markdown report with mail info table, body text, and per-attachment extracted content.
+
+**Supported attachments:**
+
+| Format | Method |
+|--------|--------|
+| PDF | pdfminer.six text extraction |
+| XLSX/XLS | openpyxl cell data as markdown table |
+| PPTX | python-pptx slide text + tables + notes |
+| Text files (.txt, .csv, .json, .xml, .html, .md) | UTF-8/CP949 decode |
+| Images | Filename and size only |
+
+Handles Korean encodings (EUC-KR, CP949, ks_c_5601-1987) automatically.
 
 ## Agents
 
@@ -475,6 +509,45 @@ Reviews ORM queries and service endpoints for SQL injection and input validation
 
 ## Rules
 
+Rules are loaded automatically by Claude Code for all conversations in the project.
+
+### sd-refs-linker
+
+Instructs Claude to read the relevant reference file from `.claude/refs/` before starting work. Maps task types to specific reference files:
+
+| When | Reference file |
+|------|----------------|
+| Writing or modifying code | `sd-code-conventions.md` |
+| Working with `.cache/` or Playwright screenshots | `sd-directories.md` |
+| Using `@simplysm/*` package APIs | `sd-simplysm-docs.md` |
+| Debugging, problem-solving, or planning | `sd-workflow.md` |
+| SolidJS / @simplysm/solid / Tailwind work | `sd-solid.md` |
+| Using `@simplysm/orm-*` | `sd-orm.md` |
+| Using `@simplysm/service-*` | `sd-service.md` |
+
+### sd-language
+
+Instructs Claude to respond in the system's configured language setting, while keeping technical terms, code identifiers, and library names unchanged. English error messages and logs are preserved in their original form.
+
+## Refs
+
+Reference files in `.claude/refs/` are consumed by Claude when the `sd-refs-linker` rule directs it to read them.
+
+### sd-code-conventions
+
+Code style and naming conventions for the simplysm monorepo:
+- Generic type parameter naming (`TItem`, `TData`, not plain `T`)
+- Prototype extension methods available from `@simplysm/core-common`
+- Function naming: no `Async` suffix (async is the default); `Sync` suffix for synchronous variants
+- File naming: auxiliary files prefixed with the main file name
+- JSDoc: optional, use Korean when written
+
+### sd-directories
+
+Directory layout reference:
+- `.cache/` — build cache (`eslint.cache`, `typecheck-{env}.tsbuildinfo`, `dts.tsbuildinfo`). Reset by deleting `.cache/`
+- `.tmp/playwright/` — Playwright MCP output directory; screenshots must always be saved here
+
 ### sd-simplysm-docs
 
 Instructs Claude to read `@simplysm/*` package documentation from local `node_modules/` README.md files. Includes an embedded package list so Claude can immediately identify which package to look up.
@@ -484,17 +557,35 @@ Instructs Claude to read `@simplysm/*` package documentation from local `node_mo
 node_modules/@simplysm/{package-name}/README.md
 ```
 
-### sd-language
+### sd-workflow
 
-Instructs Claude to respond in the system's configured language setting, while keeping technical terms, code identifiers, and library names unchanged. English error messages and logs are preserved in their original form.
+Workflow behavior and problem-solving principles:
+- No auto-proceeding after skill completion (report and stop; exception: yolo mode)
+- Root cause first — investigate before fixing; no band-aid patches
+- Pre-coding checklist: read similar files before creating new ones
+- Memory policy: do not use auto memory; all persistent knowledge belongs in `.claude/rules/` or project docs
 
-### sd-naming-conventions
+### sd-solid
 
-Enforces function naming conventions including prohibition of `Async` suffix (async is the default) and use of `Sync` suffix for synchronous versions when both exist.
+SolidJS / `@simplysm/solid` / Tailwind CSS guidelines covering component model differences from React, props design rules, compound component patterns, Tailwind semantic color/z-index tokens, and application view naming conventions.
 
-### sd-workflow-rules
+### sd-orm
 
-Defines workflow behavior including the rule to not auto-proceed after skill completion — report results and stop, waiting for explicit user instructions before the next step.
+ORM query patterns and SQL injection prevention for simplysm ORM, which uses string escaping rather than parameter binding. Covers table definition syntax and mandatory input validation before queries.
+
+### sd-service
+
+Service layer guidelines for `ServiceServer`, `ServiceClient`, and `ServiceProtocol`.
+
+## Hooks
+
+Hooks run automatically at Claude Code lifecycle events.
+
+### sd-notify.py
+
+Windows toast notification hook. Fires on the `Stop` event (when Claude Code finishes a task) and displays a Windows balloon tip notification showing the current folder name and a completion message.
+
+Requires Python 3 and PowerShell (Windows only). Uses `System.Windows.Forms.NotifyIcon` via PowerShell.
 
 ## Status Line
 
@@ -525,6 +616,7 @@ Runs before `npm pack` / `npm publish` (via `prepack` script). Syncs `sd-*` asse
 - If using `onlyBuiltDependencies` in `pnpm-workspace.yaml`, add `@simplysm/sd-claude` to the list
 - Skills and agents use the `sd-` prefix to distinguish them from user-defined assets
 - Existing `sd-*` entries are always replaced with the latest version on install
+- `sd-notify.py` hook requires Windows and Python 3
 
 ## Dependencies
 

@@ -30,13 +30,22 @@ Local-only persistent storage hook. Always uses `localStorage` regardless of `sy
 ```tsx
 import { useLocalStorage } from "@simplysm/solid";
 
-const [token, setToken] = useLocalStorage<string | undefined>("auth-token", undefined);
+const [token, setToken] = useLocalStorage<string>("auth-token");
+
+// Set value
+setToken("abc123");
+
+// Remove value
+setToken(undefined);
+
+// Functional update
+setToken((prev) => prev + "-refreshed");
 ```
 
 | Return value | Type | Description |
 |--------------|------|-------------|
-| `[0]` | `Accessor<T>` | Value getter |
-| `[1]` | `Setter<T>` | Value setter |
+| `[0]` | `Accessor<T \| undefined>` | Value getter |
+| `[1]` | `StorageSetter<T>` | Value setter (accepts value, `undefined` to remove, or updater function) |
 
 ---
 
@@ -66,14 +75,16 @@ const [theme, setTheme, ready] = useSyncConfig("theme", "light");
 Logging hook. If `LoggerProvider` is present, logs are sent to the adapter only. Otherwise, logs fall back to `consola`.
 
 ```tsx
-import { useLogger } from "@simplysm/solid";
+import { useLogger, type Logger } from "@simplysm/solid";
 
-const logger = useLogger();
+const logger: Logger = useLogger();
 logger.log("user action", { userId: 123 });
 logger.info("app started");
 logger.error("something failed", errorObj);
 logger.warn("deprecation notice");
 ```
+
+**Logger interface:**
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -81,6 +92,7 @@ logger.warn("deprecation notice");
 | `info` | `(...args: unknown[]) => void` | Log message (informational) |
 | `warn` | `(...args: unknown[]) => void` | Log message (warning) |
 | `error` | `(...args: unknown[]) => void` | Log message (error) |
+| `configure` | `(fn: (origin: LogAdapter) => LogAdapter) => void` | Set or wrap the log adapter (inside `LoggerProvider` only) |
 
 **Configuring a custom adapter (decorator pattern):**
 
@@ -222,13 +234,44 @@ const { mounted, animating, unmount } = createMountTransition(() => open());
 
 ## createIMEHandler
 
-Hook that delays `onValueChange` calls during IME (Korean, etc.) composition to prevent interrupted input.
+Hook that delays `setValue` calls during IME (Korean, CJK, etc.) composition to prevent interrupted input. Use inside contenteditable or custom input components.
+
+```tsx
+import { createIMEHandler } from "@simplysm/solid";
+
+const {
+  composingValue,
+  handleCompositionStart,
+  handleInput,
+  handleCompositionEnd,
+  flushComposition,
+} = createIMEHandler((value) => {
+  // called only when composition is complete
+  setMyValue(value);
+});
+
+// Wire up to DOM element events:
+<div
+  contentEditable
+  onCompositionStart={handleCompositionStart}
+  onCompositionEnd={(e) => handleCompositionEnd(e.currentTarget.textContent ?? "")}
+  onInput={(e) => handleInput(e.currentTarget.textContent ?? "", e.isComposing)}
+/>
+```
+
+| Return value | Type | Description |
+|--------------|------|-------------|
+| `composingValue` | `Accessor<string \| null>` | Current composing value (for display); `null` when not composing |
+| `handleCompositionStart` | `() => void` | Call on `compositionstart` event |
+| `handleInput` | `(value: string, isComposing: boolean) => void` | Call on `input` event |
+| `handleCompositionEnd` | `(value: string) => void` | Call on `compositionend` event |
+| `flushComposition` | `() => void` | Immediately commit any pending composition |
 
 ---
 
 ## useRouterLink
 
-`@solidjs/router`-based navigation hook. Automatically handles Ctrl/Alt + click (new tab), Shift + click (new window).
+`@solidjs/router`-based navigation hook. Automatically handles Ctrl/Alt + click (new tab), Shift + click (new window), and regular click (SPA routing).
 
 ```tsx
 import { useRouterLink } from "@simplysm/solid";
@@ -239,53 +282,66 @@ const navigate = useRouterLink();
   Dashboard
 </List.Item>
 
-// Pass state
+// Pass state (not visible in URL)
 <List.Item onClick={navigate({ href: "/users/123", state: { from: "list" } })}>
   User
 </List.Item>
+
+// Custom new window size on Shift+click
+<List.Item onClick={navigate({ href: "/reports/pdf", window: { width: 1200, height: 900 } })}>
+  Report
+</List.Item>
 ```
+
+**Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `href` | `string` | (required) | Navigation path (fully-formed URL, e.g., `"/home/dashboard?tab=1"`) |
+| `state` | `Record<string, unknown>` | - | State to pass to the route (not exposed in URL) |
+| `window.width` | `number` | `800` | New window width (Shift+click) |
+| `window.height` | `number` | `800` | New window height (Shift+click) |
 
 ---
 
 ## createAppStructure
 
-Utility for declaratively defining app structure (routing, menus, permissions). Takes a single options object.
+Utility for declaratively defining app structure (routing, menus, permissions). Takes a single options object and returns reactive accessors for routes, menus, and permissions.
 
 ```tsx
 import { createAppStructure, type AppStructureItem } from "@simplysm/solid";
 import { IconHome, IconUsers } from "@tabler/icons-solidjs";
 
-const items: AppStructureItem<string>[] = [
-  {
-    code: "home",
-    title: "Home",
-    icon: IconHome,
-    component: HomePage,
-    perms: ["use"],
-  },
-  {
-    code: "admin",
-    title: "Admin",
-    icon: IconUsers,
-    children: [
-      { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
-      { code: "roles", title: "Role Management", component: RolesPage, perms: ["use"], isNotMenu: true },
-    ],
-  },
-];
-
 const structure = createAppStructure({
-  items,
+  items: [
+    {
+      code: "home",
+      title: "Home",
+      icon: IconHome,
+      component: HomePage,
+      perms: ["use"],
+    },
+    {
+      code: "admin",
+      title: "Admin",
+      icon: IconUsers,
+      children: [
+        { code: "users", title: "User Management", component: UsersPage, perms: ["use", "edit"] },
+        { code: "roles", title: "Role Management", component: RolesPage, perms: ["use"], isNotMenu: true },
+      ],
+    },
+  ],
   usableModules: () => activeModules(),  // optional: filter by active modules
   permRecord: () => userPermissions(),   // optional: Record<string, boolean> permission state
 });
 
-// structure.allRoutes           -- AppRoute[] - all routes with permCode + module info (static)
-// structure.usableMenus()       -- Accessor<AppMenu[]> - filtered menu array for Sidebar.Menu
-// structure.usableFlatMenus()   -- Accessor<AppFlatMenu[]> - flat filtered menu list
-// structure.usablePerms()       -- Accessor<AppPerm[]> - filtered permission tree
+// structure.usableRoutes()      -- Accessor<AppRoute[]> - reactive, routes filtered by modules + permRecord
+// structure.usableMenus()       -- Accessor<AppMenu[]> - reactive, filtered menu array for Sidebar.Menu
+// structure.usableFlatMenus()   -- Accessor<AppFlatMenu[]> - reactive, flat filtered menu list
+// structure.usablePerms()       -- Accessor<AppPerm[]> - reactive, filtered permission tree
 // structure.allFlatPerms        -- AppFlatPerm[] - all flat perm entries (static)
-// structure.checkRouteAccess(r) -- boolean - check if route is accessible
+// structure.getTitleChainByHref(href) -- string[] - breadcrumb titles for a path
+// structure.perms               -- typed permission accessor (reactive boolean getters)
 ```
 
 **Routing integration with `@solidjs/router`:**
@@ -301,17 +357,9 @@ render(
       <Route path="/" component={App}>
         <Route path="/home" component={Home}>
           <Route path="/" component={() => <Navigate href="/home/main" />} />
-          {appStructure.allRoutes.map((r) => (
-            <Route
-              path={r.path}
-              component={() => {
-                if (!appStructure.checkRouteAccess(r)) {
-                  return <Navigate href="/login" />;
-                }
-                return <r.component />;
-              }}
-            />
-          ))}
+          <For each={appStructure.usableRoutes()}>
+            {(r) => <Route path={r.path} component={r.component} />}
+          </For>
           <Route path="/*" component={NotFoundPage} />
         </Route>
         <Route path="/" component={() => <Navigate href="/home" />} />
@@ -322,29 +370,25 @@ render(
 );
 ```
 
-`allRoutes` is a static (non-reactive) array containing all routes with `permCode` and module chain information. Use `checkRouteAccess(route)` to reactively verify access based on `permRecord` and `usableModules` signals.
+`usableRoutes()` is a reactive accessor returning routes filtered by `usableModules` and `permRecord`. Items with `perms: ["use"]` are excluded from routes when the user lacks the `use` permission.
 
 **AppStructure return type:**
 
 ```typescript
 interface AppStructure<TModule> {
   items: AppStructureItem<TModule>[];
-  allRoutes: AppRoute<TModule>[];                // static, all routes with perm/module info
+  usableRoutes: Accessor<AppRoute[]>;            // reactive, filtered by modules + permRecord
   usableMenus: Accessor<AppMenu[]>;              // reactive, filtered by modules + permRecord
   usableFlatMenus: Accessor<AppFlatMenu[]>;      // reactive, flat version of usableMenus
   usablePerms: Accessor<AppPerm<TModule>[]>;     // reactive, filtered permission tree
-  allFlatPerms: AppFlatPerm<TModule>[];           // static, all perm entries (not reactive)
-  checkRouteAccess(route: AppRoute<TModule>): boolean; // reactive access check
+  allFlatPerms: AppFlatPerm<TModule>[];          // static, all perm entries (not reactive)
   getTitleChainByHref(href: string): string[];
   perms: InferPerms<TItems>;                     // typed permission accessor (getter-based reactive booleans)
 }
 
-interface AppRoute<TModule = string> {
+interface AppRoute {
   path: string;
   component: Component;
-  permCode?: string;
-  modulesChain: TModule[][];
-  requiredModulesChain: TModule[][];
 }
 
 interface AppMenu {

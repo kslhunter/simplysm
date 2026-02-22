@@ -15,7 +15,7 @@ Managed with pnpm workspaces, it provides SolidJS UI components, ORM, service co
 
 | Package | Target | Description |
 |---------|--------|-------------|
-| [`@simplysm/core-common`](packages/core-common/README.md) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`), error classes |
+| [`@simplysm/core-common`](packages/core-common/README.md) | neutral | Common utilities, custom types (`DateTime`, `DateOnly`, `Time`, `Uuid`, `LazyGcMap`), error classes |
 | [`@simplysm/core-browser`](packages/core-browser/README.md) | browser | Browser-specific extensions |
 | [`@simplysm/core-node`](packages/core-node/README.md) | node | Node.js utilities (filesystem, worker threads) |
 

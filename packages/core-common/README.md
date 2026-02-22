@@ -43,6 +43,9 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 - [`DebounceQueue`](docs/features.md#debouncequeue) - Async debounce queue (executes only last request)
 - [`SerialQueue`](docs/features.md#serialqueue) - Async serial queue (sequential execution)
 - [`EventEmitter`](docs/features.md#eventemitter) - EventTarget wrapper with type-safe events
+
+### ZIP
+
 - [`ZipArchive`](docs/features.md#ziparchive) - ZIP file compression/decompression utility
 
 ### Object Utilities
@@ -154,7 +157,7 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 
 #### Mapping/Transformation
 - [`mapAsync`](docs/extensions.md#mapasync) - Async mapping (sequential)
-- [`mapMany`](docs/extensions.md#mapmany) - flat + filterExists
+- [`mapMany`](docs/extensions.md#mapmany) - Flatten nested arrays and remove null/undefined
 - [`mapManyAsync`](docs/extensions.md#mapmanyasync) - Async mapMany
 - [`parallelAsync`](docs/extensions.md#parallelasync) - Parallel async mapping
 
@@ -190,7 +193,7 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 
 #### Mutation
 - [`insert`](docs/extensions.md#insert) - Insert at specific position
-- [`remove`](docs/extensions.md#remove) - Remove item
+- [`remove`](docs/extensions.md#remove) - Remove item or items matching predicate
 - [`toggle`](docs/extensions.md#toggle) - Toggle item
 - [`clear`](docs/extensions.md#clear) - Remove all items
 - [`shuffle`](docs/extensions.md#shuffle) - Shuffle array
@@ -203,7 +206,7 @@ To use extension methods (`getOrCreate()`, `toggle()`, etc.), you must import th
 ### Set Extensions
 
 - [`adds`](docs/extensions.md#adds) - Add multiple values at once
-- [`toggle`](docs/extensions.md#toggle-1) - Toggle value (add/remove)
+- [`toggle`](docs/extensions.md#toggle-1) - Toggle value (add/remove/force)
 
 ## Types
 

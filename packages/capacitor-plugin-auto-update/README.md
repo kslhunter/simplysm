@@ -46,15 +46,6 @@ A low-level API responsible for APK installation and permission management. All 
 | `install(apkUri)` | `Promise<void>` | Execute APK installation. `apkUri` is a `content://` URI (FileProvider URI) |
 | `getVersionInfo()` | `Promise<IVersionInfo>` | Retrieve current app version information |
 
-### AutoUpdate
-
-A high-level API that manages the complete automatic update flow. All methods are `static`.
-
-| Method | Return Type | Description |
-|--------|-----------|------|
-| `run(opt)` | `Promise<void>` | Execute server-based automatic update |
-| `runByExternalStorage(opt)` | `Promise<void>` | Execute external storage-based automatic update |
-
 ### IVersionInfo
 
 An interface representing app version information.
@@ -75,6 +66,15 @@ Capacitor native plugin interface. Generally used indirectly through the `ApkIns
 | `requestPermission()` | `Promise<void>` | Request installation permission |
 | `hasPermissionManifest()` | `Promise<{ declared: boolean }>` | Check manifest permission declaration |
 | `getVersionInfo()` | `Promise<IVersionInfo>` | Retrieve version information |
+
+### AutoUpdate
+
+A high-level API that manages the complete automatic update flow. All methods are `static`.
+
+| Method | Return Type | Description |
+|--------|-----------|------|
+| `run(opt)` | `Promise<void>` | Execute server-based automatic update |
+| `runByExternalStorage(opt)` | `Promise<void>` | Execute external storage-based automatic update |
 
 ## Usage Examples
 

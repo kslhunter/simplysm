@@ -25,13 +25,17 @@ npx cap sync
 
 A wrapper class consisting only of static methods. Access the native plugin through this class instead of using it directly.
 
-| Method | Return Type | Description |
-|--------|----------|------|
-| `subscribe(filters, callback)` | `Promise<() => Promise<void>>` | Registers a Broadcast receiver and returns an unsubscribe function |
-| `unsubscribeAll()` | `Promise<void>` | Unregisters all registered Broadcast receivers |
-| `send(options)` | `Promise<void>` | Sends a Broadcast Intent |
-| `getLaunchIntent()` | `Promise<IBroadcastResult>` | Retrieves the Intent information that launched the app |
-| `addNewIntentListener(callback)` | `Promise<PluginListenerHandle>` | Registers a listener for new Intents received while the app is running |
+```typescript
+import { Broadcast } from "@simplysm/capacitor-plugin-broadcast";
+```
+
+| Method | Signature | Return Type | Description |
+|--------|-----------|----------|------|
+| `subscribe` | `(filters: string[], callback: (result: IBroadcastResult) => void)` | `Promise<() => Promise<void>>` | Registers a Broadcast receiver and returns an unsubscribe function |
+| `unsubscribeAll` | `()` | `Promise<void>` | Unregisters all registered Broadcast receivers |
+| `send` | `(options: { action: string; extras?: Record<string, unknown> })` | `Promise<void>` | Sends a Broadcast Intent |
+| `getLaunchIntent` | `()` | `Promise<IBroadcastResult>` | Retrieves the Intent information that launched the app |
+| `addNewIntentListener` | `(callback: (result: IBroadcastResult) => void)` | `Promise<PluginListenerHandle>` | Registers a listener for new Intents received while the app is running |
 
 ### `IBroadcastResult` Interface
 
@@ -46,14 +50,14 @@ An interface representing Broadcast reception results or Intent information.
 
 The low-level Capacitor plugin interface. In most cases, use the `Broadcast` wrapper class instead of this interface directly. It is exported for advanced use cases such as custom plugin registration.
 
-| Method | Return Type | Description |
-|--------|----------|------|
-| `subscribe(options, callback)` | `Promise<{ id: string }>` | Register a BroadcastReceiver with intent filters |
-| `unsubscribe(options)` | `Promise<void>` | Unregister a specific BroadcastReceiver by ID |
-| `unsubscribeAll()` | `Promise<void>` | Unregister all BroadcastReceivers |
-| `send(options)` | `Promise<void>` | Send a Broadcast Intent |
-| `getLaunchIntent()` | `Promise<IBroadcastResult>` | Retrieve the launch Intent |
-| `addListener("onNewIntent", callback)` | `Promise<PluginListenerHandle>` | Listen for new Intents while the app is running |
+| Method | Signature | Return Type | Description |
+|--------|-----------|----------|------|
+| `subscribe` | `(options: { filters: string[] }, callback: (result: IBroadcastResult) => void)` | `Promise<{ id: string }>` | Register a BroadcastReceiver with intent filters |
+| `unsubscribe` | `(options: { id: string })` | `Promise<void>` | Unregister a specific BroadcastReceiver by ID |
+| `unsubscribeAll` | `()` | `Promise<void>` | Unregister all BroadcastReceivers |
+| `send` | `(options: { action: string; extras?: Record<string, unknown> })` | `Promise<void>` | Send a Broadcast Intent |
+| `getLaunchIntent` | `()` | `Promise<IBroadcastResult>` | Retrieve the launch Intent |
+| `addListener` | `(eventName: "onNewIntent", listenerFunc: (data: IBroadcastResult) => void)` | `Promise<PluginListenerHandle>` | Listen for new Intents while the app is running |
 
 ```typescript
 import type { IBroadcastPlugin, IBroadcastResult } from "@simplysm/capacitor-plugin-broadcast";

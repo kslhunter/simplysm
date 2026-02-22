@@ -40,6 +40,7 @@
 | `z-dropdown` | 1000 | Dropdown popup |
 | `z-modal-backdrop` | 1999 | Modal backdrop |
 | `z-modal` | 2000 | Modal dialog |
+| `z-notification` | 3000 | Notification banner |
 
 ## Dark Mode
 

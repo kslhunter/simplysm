@@ -147,6 +147,7 @@ import "@simplysm/solid/tailwind.css";
 - [`PermissionTable`](docs/data-components.md#permissiontable) - Hierarchical permission management table with cascading checks
 - [`CrudSheet`](docs/data-components.md#crudsheet) - CRUD data sheet with search, inline/modal editing, Excel import/export, and select mode
 - [`CrudDetail`](docs/data-components.md#cruddetail) - CRUD detail form with load, save, delete, and topbar action integration
+- [`Kanban`](docs/layout.md#kanban) - Kanban board with drag-and-drop, lane collapse, multi-select
 
 ### Layout
 
@@ -154,7 +155,6 @@ import "@simplysm/solid/tailwind.css";
 - [`Topbar`](docs/layout.md#topbar) - Top navigation bar with menus, user dropdown, and actions slot
 - [`FormGroup`](docs/layout.md#formgroup) - Form fields layout with labels (vertical/inline)
 - [`FormTable`](docs/layout.md#formtable) - Table-based form layout
-- [`Kanban`](docs/layout.md#kanban) - Kanban board with drag-and-drop, lane collapse, multi-select
 
 ### Display
 

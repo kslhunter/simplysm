@@ -45,3 +45,4 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 - **Report with evidence** — cite actual numbers (e.g., "0 errors, 47 tests passed"), not "should work"
 - **No build, no dev server** — typecheck + lint + test only
 - **Run Bash directly** — no Task/agent/team overhead
+- **Never run in background** — always run Bash in foreground (do NOT set `run_in_background: true`), wait for result before proceeding

@@ -37,9 +37,9 @@ createOrm() (top-level entry point)
 
 - `createOrm()` is the top-level factory function that takes a `DbContextDef` and connection settings to manage transactions.
 - `NodeDbContextExecutor` is the executor used by `DbContext`, converting `QueryDef` to SQL and executing it.
-- `createDbConn()` is a factory function that acquires connections from the connection pool and returns a `DbConn`.
+- `createDbConn()` is a factory function that creates a `PooledDbConn` wrapper synchronously; actual pool acquisition happens when `connect()` is called on the returned object.
 - `PooledDbConn` is a connection pool wrapper based on `generic-pool`, returning connections to the pool instead of closing them after use.
-- Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers.
+- Each DBMS-specific connection class (`MysqlDbConn`, `MssqlDbConn`, `PostgresqlDbConn`) directly uses low-level DB drivers. These are not intended for direct instantiation — use `createDbConn()` instead.
 
 ## Main Modules
 
@@ -202,7 +202,7 @@ You can connect directly to the DB and execute SQL without `createOrm`/`DbContex
 ```typescript
 import { createDbConn } from "@simplysm/orm-node";
 
-// Create connection (acquire from pool)
+// Create connection wrapper (pool acquisition happens on connect())
 const conn = await createDbConn({
   dialect: "mysql",
   host: "localhost",
@@ -401,7 +401,7 @@ const executor = new NodeDbContextExecutor({
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `connect()` | `() => Promise<void>` | Acquire a connection from the pool and activate it |
+| `connect()` | `() => Promise<void>` | Create a `PooledDbConn` via `createDbConn()` and call `connect()` to acquire from pool |
 | `close()` | `() => Promise<void>` | Return the connection to the pool |
 | `beginTransaction()` | `(isolationLevel?: IsolationLevel) => Promise<void>` | Begin a transaction |
 | `commitTransaction()` | `() => Promise<void>` | Commit the current transaction |
@@ -415,7 +415,27 @@ const executor = new NodeDbContextExecutor({
 `executeDefs()` is the core method used by `DbContext`. It:
 - Builds SQL strings from `QueryDef` using the appropriate dialect query builder.
 - If all `resultMetas` entries are `undefined`, combines all SQL into a single batch execution and returns empty arrays (used for write-only operations to minimize round-trips).
-- Otherwise, executes each `QueryDef` individually and parses results through `parseQueryResult()` using the corresponding `ResultMeta`.
+- Otherwise, executes each `QueryDef` individually and parses results through `parseQueryResult()` using the corresponding `ResultMeta`. When `ResultMeta` contains `resultSetIndex`, that index selects the correct result set from multi-result-set responses (relevant for MSSQL stored procedures, etc.).
+
+## PooledDbConn
+
+`PooledDbConn` wraps a physical DBMS connection with pool management. Key behaviors:
+
+- **`config` getter**: Returns the inner connection's config if connected, otherwise falls back to the config passed at creation.
+- **`isConnected` / `isInTransaction`**: Delegated to the inner physical connection.
+- **`connect()`**: Acquires a physical connection from `generic-pool`. If the pool factory fails, the error is reported with context from the last creation error.
+- **`close()`**: If a transaction is in progress, automatically attempts rollback before returning the connection to the pool. Emits a `close` event.
+
+## OrmOptions
+
+Options object passed as the third argument to `createOrm()`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `database` | `string \| undefined` | Override the `database` from `DbConnConfig` for use in DbContext queries |
+| `schema` | `string \| undefined` | Override the `schema` from `DbConnConfig` for use in DbContext queries |
+
+These overrides affect SQL generation (table prefixing) without changing the physical connection target.
 
 ## Orm Interface
 

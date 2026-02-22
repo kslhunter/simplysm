@@ -15,6 +15,23 @@
 
 `WebSocketHandler` is created and managed internally by `ServiceServer`. Access its functionality through `ServiceServer` methods (`emitEvent`, `broadcastReload`).
 
+### createWebSocketHandler
+
+Factory function that creates a `WebSocketHandler` instance.
+
+```typescript
+import { createWebSocketHandler } from "@simplysm/service-server";
+
+const handler = createWebSocketHandler(runMethod, jwtSecret);
+```
+
+| Parameter | Type | Description |
+|-----------|------|------|
+| `runMethod` | `(def: { serviceName: string; methodName: string; params: unknown[]; socket?: ServiceSocket }) => Promise<unknown>` | Function to execute service method calls |
+| `jwtSecret` | `string \| undefined` | JWT secret for authentication (`undefined` disables auth) |
+
+**Returns:** `WebSocketHandler`
+
 ## ServiceSocket
 
 `ServiceSocket` is an interface wrapping a single WebSocket connection. It is available in service methods as `ctx.socket` when the request comes via WebSocket. Create an instance with `createServiceSocket`.
@@ -47,6 +64,25 @@
 | `error` | `Error` | WebSocket error occurred |
 | `close` | `number` | Connection closed (payload is the close code) |
 | `message` | `{ uuid: string; msg: ServiceClientMessage }` | Decoded message received from client |
+
+### createServiceSocket
+
+Factory function that creates a `ServiceSocket` instance wrapping a raw WebSocket.
+
+```typescript
+import { createServiceSocket } from "@simplysm/service-server";
+
+const serviceSocket = createServiceSocket(socket, clientId, clientName, connReq);
+```
+
+| Parameter | Type | Description |
+|-----------|------|------|
+| `socket` | `WebSocket` | Raw WebSocket connection |
+| `clientId` | `string` | Unique client identifier |
+| `clientName` | `string` | Client app name |
+| `connReq` | `FastifyRequest` | Original Fastify request that initiated the WebSocket upgrade |
+
+**Returns:** `ServiceSocket`
 
 ## HTTP API Call
 
@@ -84,6 +120,13 @@ import { handleHttpRequest } from "@simplysm/service-server";
 await handleHttpRequest(req, reply, jwtSecret, runMethod);
 ```
 
+| Parameter | Type | Description |
+|-----------|------|------|
+| `req` | `FastifyRequest` | Fastify request object |
+| `reply` | `FastifyReply` | Fastify reply object |
+| `jwtSecret` | `string \| undefined` | JWT secret for authentication |
+| `runMethod` | `(def: { serviceName: string; methodName: string; params: unknown[]; http: { clientName: string; authTokenPayload?: AuthTokenPayload } }) => Promise<unknown>` | Function to execute service method calls |
+
 ## File Upload
 
 Upload files via multipart request to the `/upload` endpoint. Auth token is required.
@@ -118,6 +161,13 @@ import { handleUpload } from "@simplysm/service-server";
 await handleUpload(req, reply, rootPath, jwtSecret);
 ```
 
+| Parameter | Type | Description |
+|-----------|------|------|
+| `req` | `FastifyRequest` | Fastify request object (must be multipart) |
+| `reply` | `FastifyReply` | Fastify reply object |
+| `rootPath` | `string` | Server root path (files stored under `rootPath/www/uploads/`) |
+| `jwtSecret` | `string \| undefined` | JWT secret for authentication |
+
 ### handleStaticFile
 
 The internal handler function for static file serving. Exported for advanced use cases.
@@ -127,6 +177,13 @@ import { handleStaticFile } from "@simplysm/service-server";
 
 await handleStaticFile(req, reply, rootPath, urlPath);
 ```
+
+| Parameter | Type | Description |
+|-----------|------|------|
+| `req` | `FastifyRequest` | Fastify request object |
+| `reply` | `FastifyReply` | Fastify reply object |
+| `rootPath` | `string` | Server root path (serves files from `rootPath/www/`) |
+| `urlPath` | `string` | URL path relative to the root |
 
 Security behavior:
 - Blocks path traversal (`..`, outside `rootPath/www/`)
@@ -160,7 +217,13 @@ await server.broadcastReload("my-app", new Set(["main.js"]));
 
 ## ProtocolWrapper
 
-`ProtocolWrapper` is an interface for encoding/decoding WebSocket messages. Create an instance with `createProtocolWrapper`. Automatically branches between main thread and worker thread based on message size.
+`ProtocolWrapper` is an interface for encoding/decoding WebSocket messages. Create an instance with `createProtocolWrapper`. Automatically branches between main thread and worker thread based on message size. Uses a shared worker singleton internally.
+
+### createProtocolWrapper
+
+Factory function that creates a `ProtocolWrapper` instance.
+
+**Returns:** `ProtocolWrapper` (no parameters)
 
 ```typescript
 import { createProtocolWrapper } from "@simplysm/service-server";
