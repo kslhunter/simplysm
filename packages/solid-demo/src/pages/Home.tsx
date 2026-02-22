@@ -2,11 +2,12 @@ import { Show, Suspense } from "solid-js";
 import { useNavigate, useLocation, type RouteSectionProps } from "@solidjs/router";
 import { NotificationBell, Sidebar, ThemeToggle, Topbar } from "@simplysm/solid";
 import { env } from "@simplysm/core-common";
-import { appStructure } from "../appStructure";
+import { useAppStructure } from "../appStructure";
 
 export function Home(props: RouteSectionProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const appStructure = useAppStructure();
 
   const titleChain = () => {
     const chain = appStructure.getTitleChainByHref(location.pathname);

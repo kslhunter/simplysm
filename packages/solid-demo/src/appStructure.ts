@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-solidjs";
 import { MainPage } from "./pages/main/MainPage";
 
-export const appStructure = createAppStructure({
+export const { AppStructureProvider, useAppStructure } = createAppStructure(() => ({
   items: [
     {
       code: "home",
@@ -282,4 +282,4 @@ export const appStructure = createAppStructure({
       ],
     },
   ],
-});
+}));
