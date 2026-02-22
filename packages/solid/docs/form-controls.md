@@ -31,6 +31,8 @@ Text input field with format mask and IME (Korean, etc.) composition support.
 
 ```tsx
 import { TextInput } from "@simplysm/solid";
+import { IconSearch } from "@tabler/icons-solidjs";
+import { Icon } from "@simplysm/solid";
 
 // Basic usage
 <TextInput value={name()} onValueChange={setName} placeholder="Enter name" />
@@ -40,6 +42,11 @@ import { TextInput } from "@simplysm/solid";
 
 // Format mask (e.g., phone number)
 <TextInput format="XXX-XXXX-XXXX" value={phone()} onValueChange={setPhone} />
+
+// With prefix
+<TextInput value={query()} onValueChange={setQuery}>
+  <TextInput.Prefix><Icon icon={IconSearch} /></TextInput.Prefix>
+</TextInput>
 
 // With validation
 <TextInput required minLength={3} value={name()} onValueChange={setName} />
@@ -56,7 +63,6 @@ import { TextInput } from "@simplysm/solid";
 | `onValueChange` | `(value: string) => void` | - | Value change callback |
 | `type` | `"text" \| "password" \| "email"` | `"text"` | Input type |
 | `format` | `string` | - | Input format (`X` represents character position, rest are separators) |
-| `prefixIcon` | `Component<TablerIconProps>` | - | Prefix icon (Tabler Icons component) |
 | `placeholder` | `string` | - | Placeholder |
 | `title` | `string` | - | Tooltip title |
 | `autocomplete` | `JSX.HTMLAutocomplete` | - | HTML autocomplete attribute |
@@ -72,6 +78,9 @@ import { TextInput } from "@simplysm/solid";
 | `pattern` | `string` | - | Regex pattern string (error: "입력 형식이 올바르지 않습니다") |
 | `validate` | `(value: string) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
+
+**Sub-components:**
+- `TextInput.Prefix` -- Prefix element (icon, text, etc.) displayed before the input
 
 ---
 
@@ -91,6 +100,11 @@ import { NumberInput } from "@simplysm/solid";
 // Minimum 2 decimal places
 <NumberInput value={price()} minDigits={2} />
 
+// With prefix
+<NumberInput value={price()} onValueChange={setPrice}>
+  <NumberInput.Prefix>&#8361;</NumberInput.Prefix>
+</NumberInput>
+
 // With validation
 <NumberInput required min={0} max={100} value={score()} onValueChange={setScore} />
 ```
@@ -101,7 +115,6 @@ import { NumberInput } from "@simplysm/solid";
 | `onValueChange` | `(value: number \| undefined) => void` | - | Value change callback |
 | `comma` | `boolean` | `true` | Show thousand separators |
 | `minDigits` | `number` | - | Minimum decimal places |
-| `prefixIcon` | `Component<TablerIconProps>` | - | Prefix icon (Tabler Icons component) |
 | `placeholder` | `string` | - | Placeholder |
 | `title` | `string` | - | Tooltip title |
 | `disabled` | `boolean` | - | Disabled state |
@@ -115,6 +128,9 @@ import { NumberInput } from "@simplysm/solid";
 | `max` | `number` | - | Maximum value (error: "최댓값은 N입니다") |
 | `validate` | `(value: number \| undefined) => string \| undefined` | - | Custom validation function |
 | `touchMode` | `boolean` | - | Show error only after field loses focus |
+
+**Sub-components:**
+- `NumberInput.Prefix` -- Prefix element (currency symbol, icon, etc.) displayed before the input
 
 ---
 

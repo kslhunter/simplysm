@@ -59,37 +59,56 @@ Animation is automatically disabled when `prefers-reduced-motion` is set.
 
 ## Dropdown
 
-Positioned dropdown popup. Position is determined relative to trigger element or absolute coordinates.
+Positioned dropdown popup using compound components. Trigger click auto-toggles open state.
 
 ```tsx
-import { Dropdown, Button } from "@simplysm/solid";
-import { createSignal } from "solid-js";
+import { Dropdown, Button, List } from "@simplysm/solid";
 
-const [open, setOpen] = createSignal(false);
-let triggerRef!: HTMLButtonElement;
-
-<Button ref={triggerRef} onClick={() => setOpen(!open())}>Open</Button>
-<Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen}>
-  <p class="p-3">Dropdown content</p>
+// Trigger/Content compound components
+<Dropdown>
+  <Dropdown.Trigger>
+    <Button>Open</Button>
+  </Dropdown.Trigger>
+  <Dropdown.Content>
+    <p class="p-3">Dropdown content</p>
+  </Dropdown.Content>
 </Dropdown>
 
-// Context menu (absolute position)
+// Controlled open state
+<Dropdown open={open()} onOpenChange={setOpen}>
+  <Dropdown.Trigger>
+    <Button>Open</Button>
+  </Dropdown.Trigger>
+  <Dropdown.Content>
+    <p class="p-3">Dropdown content</p>
+  </Dropdown.Content>
+</Dropdown>
+
+// Context menu (absolute position, no Trigger)
 <Dropdown position={{ x: 100, y: 200 }} open={menuOpen()} onOpenChange={setMenuOpen}>
-  <List inset>
-    <List.Item>Menu item 1</List.Item>
-    <List.Item>Menu item 2</List.Item>
-  </List>
+  <Dropdown.Content>
+    <List inset>
+      <List.Item>Menu item 1</List.Item>
+      <List.Item>Menu item 2</List.Item>
+    </List>
+  </Dropdown.Content>
 </Dropdown>
 ```
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `triggerRef` | `() => HTMLElement \| undefined` | - | Trigger element reference (mutually exclusive with position) |
-| `position` | `{ x: number; y: number }` | - | Absolute position (mutually exclusive with triggerRef) |
+| `position` | `{ x: number; y: number }` | - | Absolute position (context menu mode, no Trigger needed) |
 | `open` | `boolean` | - | Open state |
 | `onOpenChange` | `(open: boolean) => void` | - | State change callback |
 | `maxHeight` | `number` | `300` | Maximum height (px) |
+| `disabled` | `boolean` | - | Disabled state (Trigger click ignored) |
 | `keyboardNav` | `boolean` | - | Enable keyboard navigation (used by Select, etc.) |
+| `class` | `string` | - | Additional CSS class for popup |
+| `style` | `JSX.CSSProperties` | - | Inline style for popup |
+
+**Sub-components:**
+- `Dropdown.Trigger` -- Trigger element wrapper (click to toggle)
+- `Dropdown.Content` -- Dropdown popup content
 
 ---
 
@@ -106,27 +125,31 @@ import { createSignal } from "solid-js";
 const [open, setOpen] = createSignal(false);
 
 <Button onClick={() => setOpen(true)}>Open</Button>
-<Dialog
-  title="Dialog Title"
-  open={open()}
-  onOpenChange={setOpen}
-  closeOnBackdrop
-  width={600}
->
+<Dialog open={open()} onOpenChange={setOpen} closeOnBackdrop width={600}>
+  <Dialog.Header>Dialog Title</Dialog.Header>
   <div class="p-4">
     Dialog content
   </div>
 </Dialog>
 
+// With header action buttons
+<Dialog open={open()} onOpenChange={setOpen}>
+  <Dialog.Header>My Dialog</Dialog.Header>
+  <Dialog.Action>
+    <Button size="sm" variant="ghost">Help</Button>
+  </Dialog.Action>
+  <div class="p-4">Dialog content</div>
+</Dialog>
+
 // Floating mode (no backdrop)
-<Dialog
-  title="Notification"
-  open={open()}
-  onOpenChange={setOpen}
-  float
-  position="bottom-right"
->
+<Dialog open={open()} onOpenChange={setOpen} float position="bottom-right">
+  <Dialog.Header>Notification</Dialog.Header>
   <div class="p-4">Floating dialog</div>
+</Dialog>
+
+// No header (content only)
+<Dialog open={open()} onOpenChange={setOpen}>
+  <div class="p-4">Dialog without header</div>
 </Dialog>
 ```
 
@@ -158,7 +181,7 @@ function MyPage() {
   const handleOpen = async () => {
     const result = await dialog.show<string>(
       () => <EditDialog />,
-      { title: "Edit Name", width: 400, closeOnBackdrop: true },
+      { header: "Edit Name", width: 400, closeOnBackdrop: true },
     );
     if (result != null) {
       // result is the value passed to dialogInstance.close()
@@ -176,8 +199,6 @@ function MyPage() {
 |------|------|---------|-------------|
 | `open` | `boolean` | - | Open state |
 | `onOpenChange` | `(open: boolean) => void` | - | State change callback |
-| `title` | `string` | **(required)** | Modal title |
-| `hideHeader` | `boolean` | - | Hide header |
 | `closable` | `boolean` | `true` | Show close button |
 | `closeOnBackdrop` | `boolean` | - | Close on backdrop click |
 | `closeOnEscape` | `boolean` | `true` | Close on Escape key |
@@ -190,11 +211,16 @@ function MyPage() {
 | `minWidth` | `number` | - | Minimum width (px) |
 | `minHeight` | `number` | - | Minimum height (px) |
 | `position` | `"bottom-right" \| "top-right"` | - | Fixed position |
-| `headerAction` | `JSX.Element` | - | Header action area |
 | `headerStyle` | `JSX.CSSProperties \| string` | - | Header style |
 | `canDeactivate` | `() => boolean` | - | Pre-close confirmation function |
 | `onCloseComplete` | `() => void` | - | Post-close animation callback |
 | `class` | `string` | - | Additional CSS class applied to the dialog element |
+
+**Sub-components:**
+- `Dialog.Header` -- Dialog title (renders as `<h5>`, sets `aria-labelledby` on the dialog)
+- `Dialog.Action` -- Header action area (rendered between header text and close button)
+
+> The header bar (including close button) is only rendered when `Dialog.Header` is present. If no `Dialog.Header` is provided, the dialog renders content only with no header bar.
 
 **useDialog API:**
 
@@ -202,7 +228,11 @@ function MyPage() {
 |--------|-----------|-------------|
 | `show` | `<T>(factory: () => JSX.Element, options: DialogShowOptions) => Promise<T \| undefined>` | Open dialog, returns result on close |
 
-`DialogShowOptions` accepts all Dialog props except `open`, `onOpenChange`, and `children`.
+`DialogShowOptions` accepts all Dialog props except `open`, `onOpenChange`, `onCloseComplete`, and `children`, plus:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `header` | `JSX.Element` | Dialog header content (renders inside `Dialog.Header`) |
 
 **useDialogInstance API:**
 
