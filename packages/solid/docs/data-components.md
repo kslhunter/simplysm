@@ -433,7 +433,7 @@ interface UserFilter {
   getItemKey={(item) => item.id}
   persistKey="user-select"
   itemsPerPage={20}
-  selectMode="multi"
+  selectMode="multiple"
   onSelect={(result) => {
     // result.items: selected User[]
     // result.keys: selected (string | number)[]
@@ -463,7 +463,7 @@ interface UserFilter {
 | `inlineEdit` | `InlineEditConfig<TItem>` | - | Inline editing configuration (mutually exclusive with `modalEdit`) |
 | `modalEdit` | `ModalEditConfig<TItem>` | - | Modal editing configuration (mutually exclusive with `inlineEdit`) |
 | `excel` | `ExcelConfig<TItem>` | - | Excel download/upload configuration |
-| `selectMode` | `"single" \| "multi"` | - | Select mode (disables editing, shows selection UI) |
+| `selectMode` | `"single" \| "multiple"` | - | Select mode (disables editing, shows selection UI) |
 | `onSelect` | `(result: SelectResult<TItem>) => void` | - | Select confirmation callback |
 | `hideAutoTools` | `boolean` | - | Hide auto-generated toolbar buttons |
 | `class` | `string` | - | CSS class |

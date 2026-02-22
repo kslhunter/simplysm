@@ -500,9 +500,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             onSortsChange={setSorts}
             selectMode={
               isSelectMode()
-                ? local.selectMode === "multi"
-                  ? "multiple"
-                  : "single"
+                ? local.selectMode
                 : local.modalEdit?.deleteItems != null
                   ? "multiple"
                   : undefined
@@ -604,10 +602,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <div class="flex-1" />
             <Show when={selectedItems().length > 0}>
               <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-                {local.selectMode === "multi" ? "모두" : "선택"} 해제
+                {local.selectMode === "multiple" ? "모두" : "선택"} 해제
               </Button>
             </Show>
-            <Show when={local.selectMode === "multi"}>
+            <Show when={local.selectMode === "multiple"}>
               <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
                 확인({selectedItems().length})
               </Button>
