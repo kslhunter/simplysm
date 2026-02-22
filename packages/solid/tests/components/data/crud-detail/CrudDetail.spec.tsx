@@ -102,10 +102,12 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
         >
           {(ctx) => <div data-testid="name">{ctx.data.name}</div>}
         </CrudDetail>
@@ -120,11 +122,13 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
-          submit={async () => true}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
+          submit={() => Promise.resolve(true)}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -139,10 +143,12 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -157,11 +163,13 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
-          toggleDelete={async () => true}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
+          toggleDelete={() => Promise.resolve(true)}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -176,10 +184,12 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -194,11 +204,13 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: { isNew: false, isDeleted: false },
-          })}
-          submit={async () => true}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
+          submit={() => Promise.resolve(true)}
           canEdit={() => false}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
@@ -217,15 +229,17 @@ describe("CrudDetail rendering", () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
-          load={async () => ({
-            data: { id: 1, name: "홍길동" },
-            info: {
-              isNew: false,
-              isDeleted: false,
-              lastModifiedAt: new DateTime(2026, 1, 15, 10, 30),
-              lastModifiedBy: "관리자",
-            },
-          })}
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: {
+                isNew: false,
+                isDeleted: false,
+                lastModifiedAt: new DateTime(2026, 1, 15, 10, 30),
+                lastModifiedBy: "관리자",
+              },
+            })
+          }
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
