@@ -162,6 +162,7 @@ export { createControllableSignal } from "./hooks/createControllableSignal";
 export { createControllableStore } from "./hooks/createControllableStore";
 export { createIMEHandler } from "./hooks/createIMEHandler";
 export { createMountTransition } from "./hooks/createMountTransition";
+export * from "./hooks/createSlotSignal";
 export { useRouterLink } from "./hooks/useRouterLink";
 
 //#endregion
