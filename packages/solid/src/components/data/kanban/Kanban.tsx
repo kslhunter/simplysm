@@ -1,5 +1,4 @@
 import {
-  children,
   createEffect,
   createMemo,
   createSignal,
@@ -9,6 +8,7 @@ import {
   type ParentComponent,
   Show,
   splitProps,
+  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -18,7 +18,6 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { splitSlots } from "../../../helpers/splitSlots";
 import "./Kanban.css";
 import { iconButtonBase } from "../../../styles/patterns.styles";
 import {
@@ -35,15 +34,23 @@ import {
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-const KanbanLaneTitle: ParentComponent = (props) => (
-  <div data-kanban-lane-title>{props.children}</div>
-);
+const KanbanLaneTitle: ParentComponent = (props) => {
+  const ctx = useContext(KanbanLaneContext)!;
+  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
+  ctx.setTitle(() => props.children);
+  onCleanup(() => ctx.setTitle(undefined));
+  return null;
+};
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-const KanbanLaneTools: ParentComponent = (props) => (
-  <div data-kanban-lane-tools>{props.children}</div>
-);
+const KanbanLaneTools: ParentComponent = (props) => {
+  const ctx = useContext(KanbanLaneContext)!;
+  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
+  ctx.setTools(() => props.children);
+  onCleanup(() => ctx.setTools(undefined));
+  return null;
+};
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 
@@ -378,64 +385,66 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
     }
   };
 
+  // Slot signals
+  type SlotAccessor = (() => JSX.Element) | undefined;
+  const [title, _setTitle] = createSignal<SlotAccessor>();
+  const [tools, _setTools] = createSignal<SlotAccessor>();
+  const setTitle = (content: SlotAccessor) => _setTitle(() => content);
+  const setTools = (content: SlotAccessor) => _setTools(() => content);
+
   const laneContextValue: KanbanLaneContextValue = {
     value: () => local.value,
     dropTarget,
     setDropTarget,
     registerCard,
     unregisterCard,
+    setTitle,
+    setTools,
   };
 
-  // Provider 안에서 children을 resolve해야 splitSlots가 올바르게 동작
-  const LaneInner: ParentComponent = (innerProps) => {
-    const resolved = children(() => innerProps.children);
-    const [slots, content] = splitSlots(resolved, ["kanbanLaneTitle", "kanbanLaneTools"] as const);
+  const hasHeader = () =>
+    local.collapsible || hasSelectableCards() || title() != null || tools() != null;
 
-    const hasHeader = () =>
-      local.collapsible ||
-      hasSelectableCards() ||
-      slots().kanbanLaneTitle.length > 0 ||
-      slots().kanbanLaneTools.length > 0;
+  // placeholder div (Lane이 소유, DOM 직접 제어)
+  let bodyRef: HTMLDivElement | undefined;
+  const placeholderEl = document.createElement("div");
+  placeholderEl.className = placeholderBaseClass;
 
-    // placeholder div (Lane이 소유, DOM 직접 제어)
-    let bodyRef: HTMLDivElement | undefined;
-    const placeholderEl = document.createElement("div");
-    placeholderEl.className = placeholderBaseClass;
+  createEffect(() => {
+    const target = dropTarget();
+    const dc = boardCtx.dragCard();
 
-    createEffect(() => {
-      const target = dropTarget();
-      const dc = boardCtx.dragCard();
-
-      if (!target || !dc || !bodyRef) {
-        if (placeholderEl.parentNode) {
-          placeholderEl.remove();
-        }
-        return;
-      }
-
-      // placeholder 높이 설정
-      placeholderEl.style.height = `${dc.heightOnDrag}px`;
-
-      // 삽입 위치 계산
-      const referenceNode =
-        target.position === "before" ? target.element : target.element.nextElementSibling;
-
-      // 이미 올바른 위치면 DOM 조작 생략
-      if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
-        return;
-      }
-
-      bodyRef.insertBefore(placeholderEl, referenceNode);
-    });
-
-    // placeholder cleanup
-    onCleanup(() => {
+    if (!target || !dc || !bodyRef) {
       if (placeholderEl.parentNode) {
         placeholderEl.remove();
       }
-    });
+      return;
+    }
 
-    return (
+    // placeholder 높이 설정
+    placeholderEl.style.height = `${dc.heightOnDrag}px`;
+
+    // 삽입 위치 계산
+    const referenceNode =
+      target.position === "before" ? target.element : target.element.nextElementSibling;
+
+    // 이미 올바른 위치면 DOM 조작 생략
+    if (placeholderEl.parentNode === bodyRef && placeholderEl.nextSibling === referenceNode) {
+      return;
+    }
+
+    bodyRef.insertBefore(placeholderEl, referenceNode);
+  });
+
+  // placeholder cleanup
+  onCleanup(() => {
+    if (placeholderEl.parentNode) {
+      placeholderEl.remove();
+    }
+  });
+
+  return (
+    <KanbanLaneContext.Provider value={laneContextValue}>
       <BusyContainer busy={local.busy} variant="bar">
         <div
           {...rest}
@@ -460,25 +469,23 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
               <Show when={hasSelectableCards()}>
                 <Checkbox value={isAllSelected()} onValueChange={handleSelectAll} inline />
               </Show>
-              <div class="flex-1">{slots().kanbanLaneTitle}</div>
-              <Show when={slots().kanbanLaneTools.length > 0}>
-                <div class={laneToolsClass}>{slots().kanbanLaneTools}</div>
+              <div class="flex-1">
+                <Show when={title()}>{title()!()}</Show>
+              </div>
+              <Show when={tools()}>
+                <div class={laneToolsClass}>{tools()!()}</div>
               </Show>
             </div>
           </Show>
-          <Show when={!collapsed()}>
-            <div ref={bodyRef} class={laneBodyBaseClass}>
-              {content()}
-            </div>
-          </Show>
+          <div
+            ref={bodyRef}
+            class={laneBodyBaseClass}
+            style={{ display: collapsed() ? "none" : undefined }}
+          >
+            {local.children}
+          </div>
         </div>
       </BusyContainer>
-    );
-  };
-
-  return (
-    <KanbanLaneContext.Provider value={laneContextValue}>
-      <LaneInner>{local.children}</LaneInner>
     </KanbanLaneContext.Provider>
   );
 };

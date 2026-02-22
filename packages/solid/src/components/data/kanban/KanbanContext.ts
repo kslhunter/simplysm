@@ -1,4 +1,4 @@
-import { createContext, useContext, type Accessor, type Setter } from "solid-js";
+import { createContext, useContext, type Accessor, type JSX, type Setter } from "solid-js";
 
 // ── 타입 ──────────────────────────────────────────────────────
 
@@ -50,6 +50,8 @@ export function useKanbanContext(): KanbanContextValue {
 
 // ── Lane Context ───────────────────────────────────────────────
 
+type SlotAccessor = (() => JSX.Element) | undefined;
+
 export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   value: Accessor<L | undefined>;
   dropTarget: Accessor<KanbanDropTarget<T> | undefined>;
@@ -58,6 +60,10 @@ export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   // Card registration (Phase 4)
   registerCard: (id: string, info: { value: T | undefined; selectable: boolean }) => void;
   unregisterCard: (id: string) => void;
+
+  // Slot registration
+  setTitle: (content: SlotAccessor) => void;
+  setTools: (content: SlotAccessor) => void;
 }
 
 export const KanbanLaneContext = createContext<KanbanLaneContextValue>();
