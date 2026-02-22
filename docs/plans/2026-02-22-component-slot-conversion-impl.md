@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use sd-plan-dev to implement this plan task-by-task.
 
-**Goal:** Convert 6 component APIs from prop-based to slot-based patterns using `splitSlots`.
+**Goal:** Convert 5 component APIs from prop-based to slot-based patterns using `splitSlots`.
 
 **Architecture:** Each component gains compound sub-components (e.g., `Dropdown.Trigger`) that use `data-*` attributes for slot identification. `splitSlots` extracts them from resolved children. Internal consumers (Select, Combobox, etc.) are migrated in the same task as the component they depend on.
 
@@ -63,8 +63,10 @@ describe("Dropdown 컴포넌트", () => {
     });
 
     it("Trigger 재클릭 시 닫힌다", async () => {
+      const handleOpenChange = vi.fn();
+
       render(() => (
-        <Dropdown>
+        <Dropdown onOpenChange={handleOpenChange}>
           <Dropdown.Trigger>
             <button data-testid="trigger">열기</button>
           </Dropdown.Trigger>
@@ -76,13 +78,28 @@ describe("Dropdown 컴포넌트", () => {
 
       const trigger = document.querySelector('[data-testid="trigger"]')!;
       fireEvent.click(trigger);
-
-      await waitFor(() => {
-        expect(document.querySelector('[data-testid="content"]')).not.toBeNull();
-      });
+      expect(handleOpenChange).toHaveBeenCalledWith(true);
 
       fireEvent.click(trigger);
-      // onOpenChange(false)가 호출되므로 닫힘 시작
+      expect(handleOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("disabled 시 Trigger 클릭이 무시된다", () => {
+      const handleOpenChange = vi.fn();
+
+      render(() => (
+        <Dropdown disabled onOpenChange={handleOpenChange}>
+          <Dropdown.Trigger>
+            <button data-testid="trigger">열기</button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <div>팝업</div>
+          </Dropdown.Content>
+        </Dropdown>
+      ));
+
+      fireEvent.click(document.querySelector('[data-testid="trigger"]')!);
+      expect(handleOpenChange).not.toHaveBeenCalled();
     });
   });
 
@@ -226,16 +243,26 @@ Expected: FAIL — `Dropdown.Trigger` is not a function
 **Step 3: Implement Dropdown restructure**
 
 Rewrite `Dropdown.tsx`:
-- Add `DropdownTrigger` sub-component: `<span data-dropdown-trigger>{props.children}</span>`
+- Add `DropdownTrigger` sub-component: `<div data-dropdown-trigger onClick={...}>{props.children}</div>`
+  - Click handler calls `ctx.toggle()` via Context (only if not disabled)
 - Add `DropdownContent` sub-component: `<div data-dropdown-content>{props.children}</div>`
-- `Dropdown` becomes a container using `children()` + `splitSlots` to extract trigger/content
-- Trigger: captures ref via the wrapping `<span>`, adds click handler for open toggle
-- Content: receives all existing popup logic (Portal, position calc, animation, close detection)
-- Remove `triggerRef` from `DropdownProps`
-- Keep `position`, `open`, `onOpenChange`, `maxHeight`, `keyboardNav`, `class`, `style`
-- `class`/`style` on `Dropdown.Content` are passed through to the popup element
+- Add `DropdownContext` (internal) to pass `toggle` function from Dropdown to Trigger
+- Add `disabled?: boolean` to `DropdownProps`, remove `triggerRef` from `DropdownProps`
+- `Dropdown` uses `children(() => local.children)` + `splitSlots(resolved, ["dropdownTrigger", "dropdownContent"] as const)` to extract slots
+- Trigger slot element: rendered inline, its ref used for position calculation
+- Content slot element: rendered inside existing Portal + popup logic
+- Trigger click handler: `if (!local.disabled) setOpen(!open())` — auto-toggle gated by `disabled`
+- Keep all existing popup logic: position calc, outside click, Escape, scroll close, resize close, animation, keyboard nav
+- For keyboard nav: use `triggerEl()` instead of `local.triggerRef?.()`
+- For outside click: check `triggerEl()?.contains(target)` instead of `local.triggerRef?.()?.contains(target)`
+- Compound component interface:
 
-Key implementation detail: When `Dropdown.Trigger` is present, the trigger's `<span>` ref is used for position calculation. When absent, `position` prop is used. The popup is only rendered inside `Dropdown.Content` slot.
+```typescript
+interface DropdownComponent extends ParentComponent<DropdownProps> {
+  Trigger: typeof DropdownTrigger;
+  Content: typeof DropdownContent;
+}
+```
 
 **Step 4: Run test to verify it passes**
 
@@ -244,35 +271,49 @@ Expected: PASS
 
 **Step 5: Migrate Dropdown consumers**
 
-Update these files to use `Dropdown.Trigger`/`Dropdown.Content`:
+Update these files to use `Dropdown.Trigger`/`Dropdown.Content`. For each:
+- Remove `let xxxRef` declaration
+- Remove `ref={xxxRef}` assignment on trigger element
+- Remove `onClick={handleTriggerClick}` / manual toggle on trigger element (auto-toggle replaces it)
+- Wrap trigger element in `<Dropdown.Trigger>`
+- Wrap content in `<Dropdown.Content>`
+- Replace `triggerRef={() => xxxRef}` with nothing (removed prop)
+- Add `disabled={local.disabled}` to Dropdown (for Select, Combobox)
 
-- `packages/solid/src/components/form-control/select/Select.tsx` (line ~413)
-- `packages/solid/src/components/form-control/combobox/Combobox.tsx` (line ~390)
-- `packages/solid/src/components/layout/topbar/TopbarMenu.tsx` (lines ~87, ~172)
-- `packages/solid/src/components/layout/topbar/TopbarUser.tsx` (line ~90)
-- `packages/solid/src/components/feedback/notification/NotificationBell.tsx` (line ~94)
+Files:
+- `packages/solid/src/components/form-control/select/Select.tsx` (line ~390-420)
+  - Remove `let triggerRef!: HTMLDivElement` (line ~217)
+  - Remove `ref={triggerRef}` on trigger div (line ~385)
+  - Remove `onClick={handleTriggerClick}` on trigger div (line ~393)
+  - Remove `handleTriggerClick` function
+  - Add `disabled={local.disabled}` to `<Dropdown>`
+  - Wrap trigger div in `<Dropdown.Trigger>`
+  - Wrap dropdown content (selectHeader + List) in `<Dropdown.Content>`
 
-Pattern for each:
-```tsx
-// Before
-<Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
-  {items}
-</Dropdown>
+- `packages/solid/src/components/form-control/combobox/Combobox.tsx` (line ~370-395)
+  - Remove `let triggerRef!: HTMLDivElement` (line ~153)
+  - Remove `ref={triggerRef}` on trigger div
+  - Remove `onClick={handleTriggerClick}` on trigger div (line ~379)
+  - Remove `handleTriggerClick` function
+  - Add `disabled={local.disabled}` to `<Dropdown>`
+  - Wrap trigger div in `<Dropdown.Trigger>`, content in `<Dropdown.Content>`
 
-// After
-<Dropdown open={open()} onOpenChange={setOpen} keyboardNav>
-  <Dropdown.Trigger>
-    {/* existing trigger element with ref={triggerRef} */}
-  </Dropdown.Trigger>
-  <Dropdown.Content>
-    {items}
-  </Dropdown.Content>
-</Dropdown>
-```
+- `packages/solid/src/components/layout/topbar/TopbarMenu.tsx`
+  - Desktop `TopbarMenuButton` (line ~148-181): remove `let buttonRef`, remove `ref={buttonRef}`, remove `onClick={handleClick}` from Button, wrap Button in `<Dropdown.Trigger>`, wrap List in `<Dropdown.Content>`
+  - Mobile hamburger (line ~76-101): same pattern with `mobileButtonRef`
 
-Note: For Select/Combobox, the trigger div and its siblings (SelectAction) are OUTSIDE the Dropdown wrapper, so the Dropdown wraps only the trigger div + content. The existing trigger click handlers in Select/Combobox should be preserved (they do not use auto-toggle since Select manages its own open state via controlled mode).
+- `packages/solid/src/components/layout/topbar/TopbarUser.tsx` (line ~70-99)
+  - Remove `let buttonRef` (line ~53), remove `ref={buttonRef}` on Button
+  - Remove `onClick={handleClick}` from Button
+  - Wrap Button in `<Dropdown.Trigger>`, wrap List in `<Dropdown.Content>`
 
-**Step 6: Run all related tests**
+- `packages/solid/src/components/feedback/notification/NotificationBell.tsx` (line ~76-100)
+  - Remove `let buttonRef` (line ~56), remove `ref={(el) => (buttonRef = el)}`
+  - Remove `onClick={() => handleOpenChange(!open())}` from button
+  - Wrap button in `<Dropdown.Trigger>`, wrap popup content in `<Dropdown.Content>`
+  - Move `class="w-80"` from `<Dropdown>` to `<Dropdown.Content>`
+
+**Step 6: Run related tests**
 
 Run: `pnpm vitest packages/solid/tests/components/disclosure/Dropdown.spec.tsx packages/solid/tests/components/form-control/select/Select.spec.tsx packages/solid/tests/components/form-control/combobox/Combobox.spec.tsx --project=solid --run`
 Expected: PASS
@@ -280,23 +321,15 @@ Expected: PASS
 **Step 7: Update demo page**
 
 Modify `packages/solid-demo/src/pages/disclosure/DropdownPage.tsx`:
-- Remove `let buttonRef` variables and manual `ref={buttonRef}` assignments
-- Remove manual `onClick={() => setOpen(!open())}` on buttons
+- Remove `let xButtonRef` variables and `ref={xButtonRef}` assignments
+- Remove manual `onClick={() => setXOpen(!xOpen())}` on buttons
 - Wrap trigger buttons in `<Dropdown.Trigger>`, content in `<Dropdown.Content>`
-- Context menu section: keep `position` mode, wrap content in `<Dropdown.Content>`
+- Context menu section: keep `position` mode, wrap content in `<Dropdown.Content>` only (no Trigger)
 
 **Step 8: Commit**
 
-```bash
-git add packages/solid/src/components/disclosure/Dropdown.tsx \
-  packages/solid/tests/components/disclosure/Dropdown.spec.tsx \
-  packages/solid/src/components/form-control/select/Select.tsx \
-  packages/solid/src/components/form-control/combobox/Combobox.tsx \
-  packages/solid/src/components/layout/topbar/TopbarMenu.tsx \
-  packages/solid/src/components/layout/topbar/TopbarUser.tsx \
-  packages/solid/src/components/feedback/notification/NotificationBell.tsx \
-  packages/solid-demo/src/pages/disclosure/DropdownPage.tsx
-git commit -m "refactor(solid): convert Dropdown to Trigger/Content slot pattern"
+```
+refactor(solid): convert Dropdown to Trigger/Content slot pattern
 ```
 
 ---
@@ -315,7 +348,8 @@ git commit -m "refactor(solid): convert Dropdown to Trigger/Content slot pattern
 Update tests to use `Dialog.Header`/`Dialog.Action` instead of `title`/`headerAction` props.
 
 ```tsx
-// Key test cases:
+// Key test cases to add/modify in Dialog.spec.tsx:
+
 it("Dialog.Header 슬롯이 헤더에 렌더링된다", async () => {
   render(() => (
     <Dialog open={true}>
@@ -357,7 +391,26 @@ it("Dialog.Header 미제공 시 헤더가 렌더링되지 않는다", async () =
     expect(document.querySelector("[data-modal-header]")).toBeNull();
   });
 });
+
+it("aria-labelledby가 Dialog.Header 요소를 참조한다", async () => {
+  render(() => (
+    <Dialog open={true}>
+      <Dialog.Header>접근성 제목</Dialog.Header>
+      <div>내용</div>
+    </Dialog>
+  ));
+
+  await waitFor(() => {
+    const dialog = document.querySelector("[data-modal-dialog]") as HTMLElement;
+    const headerId = dialog.getAttribute("aria-labelledby");
+    expect(headerId).toBeTruthy();
+    const header = document.getElementById(headerId!);
+    expect(header?.textContent).toContain("접근성 제목");
+  });
+});
 ```
+
+Also update ALL existing tests: replace `title="..."` with `<Dialog.Header>...</Dialog.Header>` child, remove `hideHeader` usage.
 
 **Step 2: Run test to verify it fails**
 
@@ -367,20 +420,37 @@ Expected: FAIL
 **Step 3: Implement Dialog slot changes**
 
 In `Dialog.tsx`:
-- Add `DialogHeader: ParentComponent` → `<div data-dialog-header>{props.children}</div>`
+- Add `DialogHeader: ParentComponent` → `<h5 data-dialog-header class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>{props.children}</h5>`
 - Add `DialogAction: ParentComponent` → `<div data-dialog-action>{props.children}</div>`
-- Use `children()` + `splitSlots(resolved, ["dialogHeader", "dialogAction"] as const)` to extract slots
-- Remove `title` and `headerAction` from `DialogProps`
-- Keep `children` as `JSX.Element` (no longer needs to be the only content)
-- Header renders when `dialogHeader` slot has content AND `hideHeader` is not true
-- Layout: `[dialogHeader slot (flex-1 px-4 py-2 text-sm font-bold)] [dialogAction slot] [close button]`
-- `aria-label` needs a fallback since `title` prop is removed — use text content of header slot or a generic label
+- Use `children(() => local.children)` + `splitSlots(resolved, ["dialogHeader", "dialogAction"] as const)` to extract slots
+- Remove `title`, `hideHeader`, `headerAction` from `DialogProps`
+- Add `children` to splitProps list, remove `title`, `hideHeader`, `headerAction`
+- Header renders when `slots().dialogHeader.length > 0`
+- Generate auto id: `const headerId = "dialog-header-" + createUniqueId()` (import from `solid-js`)
+- Set `aria-labelledby={headerId}` on dialog div when header slot exists, else omit
+- Set `id={headerId}` on the header h5 element (via the slot element's id attribute or wrapper)
+- Layout: `[dialogHeader slot (from splitSlots)] [dialogAction slot] [close button]`
+- Note: `dialogHeader` slot returns the `<h5 data-dialog-header>` element itself (already styled with flex-1, px-4, etc.)
+- Compound component interface:
+
+```typescript
+interface DialogComponent extends ParentComponent<DialogProps> {
+  Header: typeof DialogHeader;
+  Action: typeof DialogAction;
+}
+```
+
+- Assign `Dialog.Header = DialogHeader; Dialog.Action = DialogAction;`
 
 In `DialogContext.ts`:
-- `DialogShowOptions.title` remains for programmatic API
+- Replace `title: string` with `header?: JSX.Element` in `DialogShowOptions`
+- Remove `hideHeader` from `DialogShowOptions`
+- Keep all other options unchanged
 
 In `DialogProvider.tsx`:
-- Change `title={entry.options.title}` to render `<Dialog.Header>{entry.options.title}</Dialog.Header>` as a child
+- Remove `title={entry.options.title}` and `hideHeader={entry.options.hideHeader}` from `<Dialog>`
+- When `entry.options.header` exists, render `<Dialog.Header>{entry.options.header}</Dialog.Header>` as first child of Dialog
+- Import `Show` if not already imported
 
 **Step 4: Run tests**
 
@@ -391,17 +461,13 @@ Expected: PASS
 
 Modify `packages/solid-demo/src/pages/disclosure/DialogPage.tsx`:
 - Replace all `title="..."` with `<Dialog.Header>...</Dialog.Header>` child
+- Replace all `hideHeader` usage with simply omitting `<Dialog.Header>`
+- Replace programmatic `{ title: "..." }` with `{ header: "..." }`
 
 **Step 6: Commit**
 
-```bash
-git add packages/solid/src/components/disclosure/Dialog.tsx \
-  packages/solid/src/components/disclosure/DialogContext.ts \
-  packages/solid/src/components/disclosure/DialogProvider.tsx \
-  packages/solid/tests/components/disclosure/Dialog.spec.tsx \
-  packages/solid/tests/components/disclosure/DialogProvider.spec.tsx \
-  packages/solid-demo/src/pages/disclosure/DialogPage.tsx
-git commit -m "refactor(solid): convert Dialog title/headerAction to Header/Action slots"
+```
+refactor(solid): convert Dialog title/headerAction to Header/Action slots
 ```
 
 ---
@@ -452,14 +518,28 @@ Expected: FAIL
 
 In `TextInput.tsx`:
 - Add `TextInputPrefix: ParentComponent` → `<span data-text-input-prefix class="shrink-0">{props.children}</span>`
-- Change `Component<TextInputProps>` to `ParentComponent` (to accept children)
+- Add `children?: JSX.Element` to `TextInputProps`
 - Add `children` to splitProps list
-- Use `children()` + `splitSlots(resolved, ["textInputPrefix"] as const)`
-- Replace `prefixIconEl()` usage with `prefixEl()` that renders the slot content
-- Gap class: apply `fieldGapClasses` when prefix slot has content (same logic as current `local.prefixIcon`)
-- Remove `prefixIcon` from `TextInputProps`
-- Assign `TextInput.Prefix = TextInputPrefix`
-- Update type: `interface TextInputComponent extends Component<TextInputProps> { Prefix: typeof TextInputPrefix }`
+- Use `children(() => local.children)` + `splitSlots(resolved, ["textInputPrefix"] as const)` to extract prefix
+- Replace `prefixIconEl()` with `prefixEl()`:
+  ```typescript
+  const prefixEl = () => slots().textInputPrefix[0] as HTMLElement | undefined;
+  ```
+- Replace all `{prefixIconEl()}` calls (4 places: disabled standalone, editable standalone, inset content, inset overlay) with `{prefixEl()}`
+- Gap class logic: replace `local.prefixIcon && fieldGapClasses[...]` with `prefixEl() && fieldGapClasses[...]` in `getWrapperClass()`
+- Remove `prefixIcon` from `TextInputProps` and `splitProps` list
+- Remove `prefixIconEl()` function
+- Remove `Icon` import if no longer used
+- Remove `TablerIconProps` import
+- Compound component interface:
+  ```typescript
+  interface TextInputComponent {
+    (props: TextInputProps): JSX.Element;
+    Prefix: typeof TextInputPrefix;
+  }
+  export const TextInput: TextInputComponent = ...
+  TextInput.Prefix = TextInputPrefix;
+  ```
 
 **Step 4: Run test**
 
@@ -481,11 +561,8 @@ Modify `packages/solid-demo/src/pages/LoginPage.tsx`:
 
 **Step 6: Commit**
 
-```bash
-git add packages/solid/src/components/form-control/field/TextInput.tsx \
-  packages/solid/tests/components/form-control/field/TextInput.spec.tsx \
-  packages/solid-demo/src/pages/LoginPage.tsx
-git commit -m "refactor(solid): convert TextInput prefixIcon to Prefix slot"
+```
+refactor(solid): convert TextInput prefixIcon to Prefix slot
 ```
 
 ---
@@ -499,7 +576,9 @@ git commit -m "refactor(solid): convert TextInput prefixIcon to Prefix slot"
 Same pattern as Task 3. Key differences:
 - Sub-component: `NumberInputPrefix` with `data-number-input-prefix`
 - Remove `prefixIcon` from `NumberInputProps`
-- Update type to `NumberInputComponent` with `Prefix` property
+- Update compound type to `NumberInputComponent` with `Prefix` property
+- Replace `prefixIconEl()` with `prefixEl()` using splitSlots (4 places: disabled standalone, editable standalone, inset content, inset overlay)
+- Gap class: `prefixEl() && fieldGapClasses[...]` in `getWrapperClass()`
 
 **Step 1: Update tests**
 
@@ -523,137 +602,13 @@ Run: `pnpm vitest packages/solid/tests/components/form-control/field/NumberInput
 
 **Step 5: Commit**
 
-```bash
-git add packages/solid/src/components/form-control/field/NumberInput.tsx \
-  packages/solid/tests/components/form-control/field/NumberInput.spec.tsx
-git commit -m "refactor(solid): convert NumberInput prefixIcon to Prefix slot"
+```
+refactor(solid): convert NumberInput prefixIcon to Prefix slot
 ```
 
 ---
 
-### Task 5: Topbar.Right slot + User extraction
-
-**Files:**
-- Modify: `packages/solid/src/components/layout/topbar/Topbar.tsx`
-- Modify: `packages/solid/src/components/layout/topbar/TopbarUser.tsx`
-- Test: new test or update existing topbar tests
-
-**Step 1: Write tests**
-
-```tsx
-// packages/solid/tests/components/layout/topbar/Topbar.spec.tsx (new)
-import { render } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
-import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
-
-describe("Topbar 슬롯", () => {
-  it("children은 왼쪽, Topbar.Right는 오른쪽에 렌더링된다", () => {
-    const { container } = render(() => (
-      <Topbar>
-        <span data-testid="left">왼쪽</span>
-        <Topbar.Right>
-          <span data-testid="right">오른쪽</span>
-        </Topbar.Right>
-      </Topbar>
-    ));
-
-    const header = container.querySelector("[data-topbar]")!;
-    const children = [...header.children];
-
-    // left content가 먼저, spacer, right content 순서
-    const leftEl = header.querySelector('[data-testid="left"]');
-    const rightEl = header.querySelector('[data-testid="right"]');
-    expect(leftEl).not.toBeNull();
-    expect(rightEl).not.toBeNull();
-
-    // spacer (flex-1) 존재
-    const spacer = header.querySelector("[data-topbar-spacer]");
-    expect(spacer).not.toBeNull();
-  });
-
-  it("Topbar.User는 항상 가장 오른쪽에 렌더링된다", () => {
-    const { container } = render(() => (
-      <Topbar>
-        <span>왼쪽</span>
-        <Topbar.User>홍길동</Topbar.User>
-        <Topbar.Right>
-          <span data-testid="right">알림</span>
-        </Topbar.Right>
-      </Topbar>
-    ));
-
-    const header = container.querySelector("[data-topbar]")!;
-    const children = [...header.children];
-    // User가 마지막 child
-    const lastChild = children[children.length - 1];
-    expect(lastChild.textContent).toContain("홍길동");
-  });
-});
-```
-
-**Step 2: Run test to verify fail**
-
-Run: `pnpm vitest packages/solid/tests/components/layout/topbar/Topbar.spec.tsx --project=solid --run`
-Expected: FAIL
-
-**Step 3: Implement**
-
-In `Topbar.tsx`:
-- Add `TopbarRight: ParentComponent` → `<div data-topbar-right class="flex items-center gap-2">{props.children}</div>`
-- Add `Topbar.Right = TopbarRight` to compound component interface
-- Use `children()` + `splitSlots(resolved, ["topbarRight", "topbarUser"] as const)`
-- Render order: `[sidebar toggle] [left content] [<div data-topbar-spacer class="flex-1" />] [topbarRight slot] [topbarUser slot]`
-- Spacer only rendered when Right or User slots have content
-
-In `TopbarUser.tsx`:
-- Add `data-topbar-user` attribute to the root element so `splitSlots` can extract it
-
-**Step 4: Run tests**
-
-Run: `pnpm vitest packages/solid/tests/components/layout/topbar/ --project=solid --run`
-Expected: PASS
-
-**Step 5: Update demos**
-
-Modify `packages/solid-demo/src/pages/Home.tsx`:
-```tsx
-// Before
-<Topbar>
-  <span ...>{titleChain().join(" > ")}</span>
-  <div class="flex-1" />
-  <NotificationBell />
-  <ThemeToggle size="sm" />
-</Topbar>
-
-// After
-<Topbar>
-  <span ...>{titleChain().join(" > ")}</span>
-  <Topbar.Right>
-    <NotificationBell />
-    <ThemeToggle size="sm" />
-  </Topbar.Right>
-</Topbar>
-```
-
-Also update:
-- `packages/solid-demo/src/pages/layout/TopbarPage.tsx` — remove manual `<div class="flex-1" />` spacers
-- `packages/solid-demo/src/pages/mobile/MobileLayoutDemoPage.tsx`
-
-**Step 6: Commit**
-
-```bash
-git add packages/solid/src/components/layout/topbar/Topbar.tsx \
-  packages/solid/src/components/layout/topbar/TopbarUser.tsx \
-  packages/solid/tests/components/layout/topbar/Topbar.spec.tsx \
-  packages/solid-demo/src/pages/Home.tsx \
-  packages/solid-demo/src/pages/layout/TopbarPage.tsx \
-  packages/solid-demo/src/pages/mobile/MobileLayoutDemoPage.tsx
-git commit -m "refactor(solid): add Topbar.Right slot and extract Topbar.User"
-```
-
----
-
-### Task 6: DateRangePicker — remove periodLabels
+### Task 5: DateRangePicker — remove periodLabels
 
 **Files:**
 - Modify: `packages/solid/src/components/form-control/date-range-picker/DateRangePicker.tsx`
@@ -661,26 +616,17 @@ git commit -m "refactor(solid): add Topbar.Right slot and extract Topbar.User"
 
 **Step 1: Update tests**
 
-Remove any test using `periodLabels` prop. Add test verifying hardcoded labels:
-
-```tsx
-it("기간 타입 라벨이 '일/월/범위'로 고정된다", async () => {
-  render(() => (
-    <DateRangePicker />
-  ));
-
-  // Select의 렌더링된 값 확인 (기본 periodType=range)
-  // Select 트리거에 "범위" 텍스트가 표시됨
-});
-```
+Remove any test using `periodLabels` prop. Verify hardcoded labels work.
 
 **Step 2: Implement**
 
 In `DateRangePicker.tsx`:
-- Remove `periodLabels` from `DateRangePickerProps`
-- Remove `periodLabels` from `splitProps` list
-- Remove `labels()` function
-- Replace `labels().day` → `"일"`, `labels().month` → `"월"`, `labels().range` → `"범위"` (4 occurrences: `renderValue` and 3 `Select.Item` children)
+- Remove `periodLabels` from `DateRangePickerProps` (line ~43)
+- Remove `periodLabels` from `splitProps` list (line ~93)
+- Remove `labels()` function (lines ~99-104)
+- Replace `labels().day` → `"일"`, `labels().month` → `"월"`, `labels().range` → `"범위"` (4 occurrences):
+  - `renderValue` callback (line ~173): `labels()[v]` → inline map `({ day: "일", month: "월", range: "범위" })[v]`
+  - 3 `Select.Item` children (lines ~179-181): `{labels().day}` → `일`, etc.
 
 **Step 3: Run tests**
 
@@ -689,15 +635,13 @@ Expected: PASS
 
 **Step 4: Commit**
 
-```bash
-git add packages/solid/src/components/form-control/date-range-picker/DateRangePicker.tsx \
-  packages/solid/tests/components/form-control/date-range-picker/DateRangePicker.spec.tsx
-git commit -m "refactor(solid): remove periodLabels prop from DateRangePicker"
+```
+refactor(solid): remove periodLabels prop from DateRangePicker
 ```
 
 ---
 
-### Task 7: Typecheck + lint + README
+### Task 6: Typecheck + lint + README
 
 **Step 1: Typecheck**
 
@@ -712,16 +656,15 @@ Expected: PASS (or auto-fixable issues only)
 **Step 3: Update README**
 
 Update `packages/solid/README.md`:
-- Dropdown: document `Dropdown.Trigger`/`Dropdown.Content`, remove `triggerRef` docs
-- Dialog: document `Dialog.Header`/`Dialog.Action`, remove `title`/`headerAction` docs
+- Dropdown: document `Dropdown.Trigger`/`Dropdown.Content`, add `disabled` prop, remove `triggerRef` docs
+- Dialog: document `Dialog.Header`/`Dialog.Action`, remove `title`/`hideHeader`/`headerAction` docs, document `aria-labelledby` behavior
 - TextInput: document `TextInput.Prefix`, remove `prefixIcon` docs
 - NumberInput: document `NumberInput.Prefix`, remove `prefixIcon` docs
-- Topbar: document `Topbar.Right` slot
 - DateRangePicker: remove `periodLabels` docs
+- DialogShowOptions: update `title: string` → `header?: JSX.Element`
 
 **Step 4: Commit**
 
-```bash
-git add packages/solid/README.md
-git commit -m "docs(solid): update README for slot pattern conversions"
+```
+docs(solid): update README for slot pattern conversions
 ```
