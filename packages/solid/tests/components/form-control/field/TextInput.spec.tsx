@@ -311,4 +311,31 @@ describe("TextInput 컴포넌트", () => {
       expect(hiddenInput.validationMessage).toBe("필수 입력 항목입니다");
     });
   });
+
+  describe("Prefix 슬롯", () => {
+    it("TextInput.Prefix 슬롯이 렌더링된다", () => {
+      render(() => (
+        <TextInput>
+          <TextInput.Prefix>
+            <span data-testid="prefix">P</span>
+          </TextInput.Prefix>
+        </TextInput>
+      ));
+
+      expect(document.querySelector('[data-testid="prefix"]')).not.toBeNull();
+    });
+
+    it("Prefix 슬롯 사용 시 gap 클래스가 적용된다", () => {
+      const { container } = render(() => (
+        <TextInput>
+          <TextInput.Prefix>
+            <span>P</span>
+          </TextInput.Prefix>
+        </TextInput>
+      ));
+
+      const wrapper = container.querySelector("[data-text-field]") as HTMLElement;
+      expect(wrapper.className).toContain("gap-");
+    });
+  });
 });

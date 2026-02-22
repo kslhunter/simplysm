@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { Button, Card, FormGroup, Link, TextInput, ThemeToggle } from "@simplysm/solid";
+import { Button, Card, FormGroup, Icon, Link, TextInput, ThemeToggle } from "@simplysm/solid";
 import clsx from "clsx";
 import { IconLock, IconMail } from "@tabler/icons-solidjs";
 
@@ -29,7 +29,6 @@ export default function LoginPage() {
             <FormGroup class="w-full">
               <FormGroup.Item>
                 <TextInput
-                  prefixIcon={IconMail}
                   class="w-full"
                   placeholder="아이디를 입력하세요"
                   size="lg"
@@ -37,11 +36,14 @@ export default function LoginPage() {
                   touchMode
                   value={id()}
                   onValueChange={setId}
-                />
+                >
+                  <TextInput.Prefix>
+                    <Icon icon={IconMail} />
+                  </TextInput.Prefix>
+                </TextInput>
               </FormGroup.Item>
               <FormGroup.Item>
                 <TextInput
-                  prefixIcon={IconLock}
                   class="w-full"
                   type="password"
                   placeholder="비밀번호를 입력하세요"
@@ -50,7 +52,11 @@ export default function LoginPage() {
                   touchMode
                   value={pw()}
                   onValueChange={setPw}
-                />
+                >
+                  <TextInput.Prefix>
+                    <Icon icon={IconLock} />
+                  </TextInput.Prefix>
+                </TextInput>
               </FormGroup.Item>
               <FormGroup.Item>
                 <Button theme="primary" variant="solid" class="w-full" type="submit" size="xl">
