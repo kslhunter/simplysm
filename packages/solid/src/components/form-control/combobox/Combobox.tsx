@@ -150,8 +150,6 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     "touchMode",
   ]);
 
-  let triggerRef!: HTMLDivElement;
-
   // 상태
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
@@ -224,24 +222,11 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
     }
   };
 
-  // 트리거 클릭
-  const handleTriggerClick = (e: MouseEvent) => {
-    if (local.disabled) return;
-
-    // input 클릭 시 드롭다운 토글
-    const target = e.target as HTMLElement;
-    if (target.tagName === "INPUT") {
-      if (!open()) {
-        setOpen(true);
-        performSearch(query());
-      }
-    } else {
-      // 다른 영역 클릭 시 토글
-      const wasOpen = open();
-      setOpen(!wasOpen);
-      if (!wasOpen) {
-        performSearch(query());
-      }
+  // Dropdown 열림/닫힘 변경 핸들러
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      performSearch(query());
     }
   };
 
@@ -365,32 +350,38 @@ export const Combobox: ComboboxComponent = <T,>(props: ComboboxProps<T>) => {
 
     return (
       <div {...rest} data-combobox class={local.inset ? "flex" : "inline-flex"}>
-        <div
-          ref={triggerRef}
-          use:ripple={!local.disabled}
-          role="combobox"
-          aria-haspopup="listbox"
-          aria-expanded={open()}
-          aria-disabled={local.disabled || undefined}
-          aria-required={local.required || undefined}
-          tabIndex={local.disabled ? -1 : 0}
-          class={getTriggerClassName()}
-          style={local.style}
-          onClick={handleTriggerClick}
-          onKeyDown={handleTriggerKeyDown}
+        <Dropdown
+          disabled={local.disabled}
+          open={open()}
+          onOpenChange={handleOpenChange}
+          keyboardNav
         >
-          <div class={selectedValueClass}>{renderDisplayContent()}</div>
-          <div class={chevronWrapperClass}>
-            <Show when={busyCount() > 0} fallback={<Icon icon={IconChevronDown} size="1em" />}>
-              <Icon icon={IconLoader2} size="1em" class="animate-spin" />
-            </Show>
-          </div>
-        </div>
-
-        <Dropdown triggerRef={() => triggerRef} open={open()} onOpenChange={setOpen} keyboardNav>
-          <List inset role="listbox">
-            {renderItems()}
-          </List>
+          <Dropdown.Trigger>
+            <div
+              use:ripple={!local.disabled}
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded={open()}
+              aria-disabled={local.disabled || undefined}
+              aria-required={local.required || undefined}
+              tabIndex={local.disabled ? -1 : 0}
+              class={getTriggerClassName()}
+              style={local.style}
+              onKeyDown={handleTriggerKeyDown}
+            >
+              <div class={selectedValueClass}>{renderDisplayContent()}</div>
+              <div class={chevronWrapperClass}>
+                <Show when={busyCount() > 0} fallback={<Icon icon={IconChevronDown} size="1em" />}>
+                  <Icon icon={IconLoader2} size="1em" class="animate-spin" />
+                </Show>
+              </div>
+            </div>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <List inset role="listbox">
+              {renderItems()}
+            </List>
+          </Dropdown.Content>
         </Dropdown>
       </div>
     );

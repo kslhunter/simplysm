@@ -63,7 +63,6 @@ export interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "
 export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
   const [local, rest] = splitProps(props, ["menus", "class"]);
   const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);
-  let mobileButtonRef: HTMLButtonElement | undefined;
 
   return (
     <>
@@ -74,28 +73,26 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
 
       {/* 모바일 햄버거 (640px 미만에서만 표시) */}
       <div class={mobileWrapperClass}>
-        <Button
-          ref={mobileButtonRef}
-          variant="ghost"
-          onClick={() => setMobileMenuOpen((v) => !v)}
-          aria-label="메뉴"
-          aria-haspopup="menu"
-          aria-expanded={mobileMenuOpen()}
-        >
-          <Icon icon={IconDotsVertical} size="1.25em" />
-        </Button>
-        <Dropdown
-          triggerRef={() => mobileButtonRef}
-          open={mobileMenuOpen()}
-          onOpenChange={setMobileMenuOpen}
-        >
-          <List inset>
-            <For each={local.menus}>
-              {(menu) => (
-                <TopbarMenuDropdownItem menu={menu} onClose={() => setMobileMenuOpen(false)} />
-              )}
-            </For>
-          </List>
+        <Dropdown open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
+          <Dropdown.Trigger>
+            <Button
+              variant="ghost"
+              aria-label="메뉴"
+              aria-haspopup="menu"
+              aria-expanded={mobileMenuOpen()}
+            >
+              <Icon icon={IconDotsVertical} size="1.25em" />
+            </Button>
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <List inset>
+              <For each={local.menus}>
+                {(menu) => (
+                  <TopbarMenuDropdownItem menu={menu} onClose={() => setMobileMenuOpen(false)} />
+                )}
+              </For>
+            </List>
+          </Dropdown.Content>
         </Dropdown>
       </div>
     </>
@@ -111,7 +108,6 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
   const navigate = useNavigate();
 
   const [open, setOpen] = createSignal(false);
-  let buttonRef: HTMLButtonElement | undefined;
 
   const hasChildren = () => props.menu.children !== undefined && props.menu.children.length > 0;
   const isExternalLink = () => props.menu.href?.includes("://") ?? false;
@@ -133,10 +129,8 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
     return false;
   });
 
-  const handleClick = () => {
-    if (hasChildren()) {
-      setOpen((v) => !v);
-    } else if (props.menu.href !== undefined) {
+  const handleNavigate = () => {
+    if (props.menu.href !== undefined) {
       if (isExternalLink()) {
         window.open(props.menu.href, "_blank", "noopener,noreferrer");
       } else {
@@ -145,39 +139,42 @@ const TopbarMenuButton: Component<TopbarMenuButtonProps> = (props) => {
     }
   };
 
-  return (
-    <>
-      <Button
-        ref={buttonRef}
-        variant={isSelected() ? "solid" : "ghost"}
-        theme={isSelected() ? "primary" : "base"}
-        onClick={handleClick}
-        class={menuButtonContentClass}
-        aria-haspopup={hasChildren() ? "menu" : undefined}
-        aria-expanded={hasChildren() ? open() : undefined}
-      >
-        <Show when={props.menu.icon}>
-          <Icon icon={props.menu.icon!} />
-        </Show>
-        <span>{props.menu.title}</span>
-        <Show when={hasChildren()}>
-          <Icon
-            icon={IconChevronDown}
-            size="1em"
-            class={clsx("transition-transform", open() && "rotate-180")}
-          />
-        </Show>
-      </Button>
+  const buttonContent = () => (
+    <Button
+      variant={isSelected() ? "solid" : "ghost"}
+      theme={isSelected() ? "primary" : "base"}
+      class={menuButtonContentClass}
+      aria-haspopup={hasChildren() ? "menu" : undefined}
+      aria-expanded={hasChildren() ? open() : undefined}
+      onClick={hasChildren() ? undefined : handleNavigate}
+    >
+      <Show when={props.menu.icon}>
+        <Icon icon={props.menu.icon!} />
+      </Show>
+      <span>{props.menu.title}</span>
       <Show when={hasChildren()}>
-        <Dropdown triggerRef={() => buttonRef} open={open()} onOpenChange={setOpen}>
+        <Icon
+          icon={IconChevronDown}
+          size="1em"
+          class={clsx("transition-transform", open() && "rotate-180")}
+        />
+      </Show>
+    </Button>
+  );
+
+  return (
+    <Show when={hasChildren()} fallback={buttonContent()}>
+      <Dropdown open={open()} onOpenChange={setOpen}>
+        <Dropdown.Trigger>{buttonContent()}</Dropdown.Trigger>
+        <Dropdown.Content>
           <List inset>
             <For each={props.menu.children}>
               {(child) => <TopbarMenuDropdownItem menu={child} onClose={() => setOpen(false)} />}
             </For>
           </List>
-        </Dropdown>
-      </Show>
-    </>
+        </Dropdown.Content>
+      </Dropdown>
+    </Show>
   );
 };
 
