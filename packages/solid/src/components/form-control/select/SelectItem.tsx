@@ -1,6 +1,5 @@
 import {
   createContext,
-  createSignal,
   type JSX,
   onCleanup,
   type ParentComponent,
@@ -13,6 +12,7 @@ import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import {
@@ -25,8 +25,6 @@ import {
 } from "../../data/list/ListItem.styles";
 
 void ripple;
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 interface SelectItemSlotsContextValue {
   setChildren: (content: SlotAccessor) => void;
@@ -83,8 +81,7 @@ export const SelectItem: SelectItemComponent = <T,>(
 
   const context = useSelectContext<T>();
 
-  const [childrenSlot, _setChildrenSlot] = createSignal<SlotAccessor>();
-  const setChildrenSlot = (content: SlotAccessor) => _setChildrenSlot(() => content);
+  const [childrenSlot, setChildrenSlot] = createSlotSignal();
   const hasChildren = () => childrenSlot() !== undefined;
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;

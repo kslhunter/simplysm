@@ -3,7 +3,6 @@ import {
   createContext,
   createEffect,
   createMemo,
-  createSignal,
   type JSX,
   onCleanup,
   type ParentComponent,
@@ -13,6 +12,7 @@ import {
 } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { createIMEHandler } from "../../../hooks/createIMEHandler";
 import {
   fieldGapClasses,
@@ -22,8 +22,6 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 interface TextInputSlotsContextValue {
   setPrefix: (content: SlotAccessor) => void;
@@ -244,8 +242,7 @@ const TextInputInner = (props: TextInputProps) => {
   };
 
   // Prefix 슬롯 Context 등록
-  const [prefix, _setPrefix] = createSignal<SlotAccessor>();
-  const setPrefix = (content: SlotAccessor) => _setPrefix(() => content);
+  const [prefix, setPrefix] = createSlotSignal();
   const prefixEl = () => prefix() !== undefined;
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)

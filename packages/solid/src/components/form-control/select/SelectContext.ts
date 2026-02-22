@@ -1,6 +1,5 @@
 import { createContext, useContext, type Accessor, type JSX } from "solid-js";
-
-type SlotAccessor = (() => JSX.Element) | undefined;
+import type { SlotAccessor } from "../../../hooks/createSlotSignal";
 
 export interface SelectContextValue<TValue = unknown> {
   /** 다중 선택 모드 여부 */

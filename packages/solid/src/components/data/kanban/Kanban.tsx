@@ -18,6 +18,7 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import "./Kanban.css";
 import { iconButtonBase } from "../../../styles/patterns.styles";
 import {
@@ -386,11 +387,8 @@ const KanbanLane: ParentComponent<KanbanLaneProps> = (props) => {
   };
 
   // Slot signals
-  type SlotAccessor = (() => JSX.Element) | undefined;
-  const [title, _setTitle] = createSignal<SlotAccessor>();
-  const [tools, _setTools] = createSignal<SlotAccessor>();
-  const setTitle = (content: SlotAccessor) => _setTitle(() => content);
-  const setTools = (content: SlotAccessor) => _setTools(() => content);
+  const [title, setTitle] = createSlotSignal();
+  const [tools, setTools] = createSlotSignal();
 
   const laneContextValue: KanbanLaneContextValue = {
     value: () => local.value,

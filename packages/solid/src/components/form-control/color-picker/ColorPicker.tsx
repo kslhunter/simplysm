@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { Invalid } from "../Invalid";
-import { type ComponentSizeCompact } from "../../../styles/tokens.styles";
+import { type ComponentSize } from "../../../styles/tokens.styles";
 
 // 기본 스타일
 const baseClass = clsx(
@@ -20,9 +20,11 @@ const baseClass = clsx(
 );
 
 // 사이즈별 스타일
-const sizeClasses: Record<ComponentSizeCompact, string> = {
+const sizeClasses: Record<ComponentSize, string> = {
+  xs: "size-field-xs",
   sm: "size-field-sm",
   lg: "size-field-lg",
+  xl: "size-field-xl",
 };
 
 // disabled 스타일 - 대각선 줄무늬로 표시
@@ -39,7 +41,7 @@ export interface ColorPickerProps {
   value?: string;
 
   /** 값 변경 콜백 */
-  onValueChange?: (value: string) => void;
+  onValueChange?: (value: string | undefined) => void;
 
   /** 타이틀 (툴팁) */
   title?: string;
@@ -48,7 +50,10 @@ export interface ColorPickerProps {
   disabled?: boolean;
 
   /** 사이즈 */
-  size?: ComponentSizeCompact;
+  size?: ComponentSize;
+
+  /** inset 모드 (DataSheet 셀 내부 등) */
+  inset?: boolean;
 
   /** 필수 입력 여부 */
   required?: boolean;
@@ -81,6 +86,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     "title",
     "disabled",
     "size",
+    "inset",
     "required",
     "validate",
     "touchMode",
@@ -89,7 +95,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
   ]);
 
   const [value, setValue] = createControllableSignal({
-    value: () => local.value ?? "#000000",
+    value: () => local.value,
     onChange: () => local.onValueChange,
   });
 
@@ -106,20 +112,24 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     );
 
   const errorMsg = createMemo(() => {
-    const v = props.value;
+    const v = value();
     if (local.required && (v === undefined || v === "")) return "필수 입력 항목입니다";
     return local.validate?.(v);
   });
 
   return (
-    <Invalid variant="border" message={errorMsg()} touchMode={local.touchMode}>
+    <Invalid
+      variant={local.inset ? "dot" : "border"}
+      message={errorMsg()}
+      touchMode={local.touchMode}
+    >
       <input
         {...rest}
         data-color-picker
         type="color"
         class={getClassName()}
         style={local.style}
-        value={value()}
+        value={value() ?? "#000000"}
         title={local.title}
         disabled={local.disabled}
         onInput={handleInput}

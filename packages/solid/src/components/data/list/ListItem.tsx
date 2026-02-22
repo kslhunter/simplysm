@@ -1,7 +1,6 @@
 import {
   type Component,
   createContext,
-  createSignal,
   type JSX,
   onCleanup,
   type ParentComponent,
@@ -16,6 +15,7 @@ import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
 import {
@@ -31,8 +31,6 @@ import {
 import type { ComponentSize } from "../../../styles/tokens.styles";
 
 void ripple;
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 interface ListItemSlotsContextValue {
   setChildren: (content: SlotAccessor) => void;
@@ -166,8 +164,7 @@ export const ListItem: ListItemComponent = (props) => {
     onChange: () => local.onOpenChange,
   });
 
-  const [childrenSlot, _setChildrenSlot] = createSignal<SlotAccessor>();
-  const setChildrenSlot = (content: SlotAccessor) => _setChildrenSlot(() => content);
+  const [childrenSlot, setChildrenSlot] = createSlotSignal();
   const hasChildren = () => childrenSlot() !== undefined;
 
   const useRipple = () => !(local.readonly || local.disabled);

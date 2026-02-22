@@ -320,13 +320,13 @@ describe("CrudSheet select mode", () => {
     expect(container.textContent).not.toContain("행 추가");
   });
 
-  it("selectMode='multi' 시 확인 버튼이 표시된다", async () => {
+  it("selectMode='multiple' 시 확인 버튼이 표시된다", async () => {
     render(() => (
       <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multi"
+          selectMode="multiple"
           onSelect={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
@@ -388,13 +388,13 @@ describe("CrudSheet control mode", () => {
 });
 
 describe("CrudSheet modal mode", () => {
-  it("Dialog 안에서 selectMode='multi' 시 하단 바가 표시된다", async () => {
+  it("Dialog 안에서 selectMode='multiple' 시 하단 바가 표시된다", async () => {
     render(() => (
       <DialogWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multi"
+          selectMode="multiple"
           onSelect={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
@@ -410,13 +410,13 @@ describe("CrudSheet modal mode", () => {
     expect(dialogContent?.textContent).toContain("확인");
   });
 
-  it("Dialog 없이 selectMode='multi'이면 하단 바가 표시되지 않는다", async () => {
+  it("Dialog 없이 selectMode='multiple'이면 하단 바가 표시되지 않는다", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
           search={() => Promise.resolve({ items: [{ id: 1, name: "홍길동", isDeleted: false }] })}
           getItemKey={(item) => item.id}
-          selectMode="multi"
+          selectMode="multiple"
           onSelect={() => {}}
         >
           <CrudSheet.Column<TestItem> key="name" header="이름">
