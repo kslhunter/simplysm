@@ -46,7 +46,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     "children",
     "submit",
     "toggleDelete",
-    "canEdit",
+    "editable",
+    "deletable",
     "data",
     "onDataChange",
     "class",
@@ -58,7 +59,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
   const isModal = dialogInstance !== undefined;
 
-  const canEdit = () => local.canEdit?.() ?? true;
+  const canEdit = () => local.editable?.() ?? true;
 
   // -- State --
   const [data, setData] = createControllableStore<TData>({
@@ -273,7 +274,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               <Icon icon={IconRefresh} class="mr-1" />
               새로고침
             </Button>
-            <Show when={local.toggleDelete && info()}>
+            <Show
+              when={local.toggleDelete && info() && !info()!.isNew && (local.deletable?.() ?? true)}
+            >
               {(_) => (
                 <Button
                   size="sm"
@@ -315,7 +318,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={isModal && canEdit()}>
           <div class="flex gap-2 border-t border-base-200 p-2">
             <div class="flex-1" />
-            <Show when={local.toggleDelete && info()}>
+            <Show
+              when={local.toggleDelete && info() && !info()!.isNew && (local.deletable?.() ?? true)}
+            >
               {(_) => (
                 <Button size="sm" theme="danger" onClick={() => void handleToggleDelete()}>
                   <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />

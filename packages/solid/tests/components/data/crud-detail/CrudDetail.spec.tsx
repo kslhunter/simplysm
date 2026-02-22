@@ -200,7 +200,7 @@ describe("CrudDetail rendering", () => {
     expect(container.textContent).toContain("새로고침");
   });
 
-  it("canEdit=false 시 toolbar이 표시되지 않는다", async () => {
+  it("editable=false 시 toolbar이 표시되지 않는다", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudDetail<TestData>
@@ -211,7 +211,7 @@ describe("CrudDetail rendering", () => {
             })
           }
           submit={() => Promise.resolve(true)}
-          canEdit={() => false}
+          editable={() => false}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -221,6 +221,50 @@ describe("CrudDetail rendering", () => {
     await new Promise((r) => setTimeout(r, 100));
     expect(container.textContent).not.toContain("저장");
     expect(container.textContent).not.toContain("새로고침");
+  });
+
+  it("deletable=false 시 toggleDelete 제공해도 삭제 버튼이 표시되지 않는다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
+          toggleDelete={() => Promise.resolve(true)}
+          deletable={() => false}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("삭제");
+    expect(container.textContent).not.toContain("복구");
+  });
+
+  it("deletable 미지정 시 toggleDelete 있으면 삭제 버튼 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={() =>
+            Promise.resolve({
+              data: { id: 1, name: "홍길동" },
+              info: { isNew: false, isDeleted: false },
+            })
+          }
+          toggleDelete={() => Promise.resolve(true)}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("삭제");
   });
 
   it("lastModifiedAt/By가 있으면 수정 정보가 표시된다", async () => {

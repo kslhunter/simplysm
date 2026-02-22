@@ -31,7 +31,8 @@ export interface CrudDetailProps<TData extends object> {
 
   submit?: (data: TData) => Promise<boolean | undefined>;
   toggleDelete?: (del: boolean) => Promise<boolean | undefined>;
-  canEdit?: () => boolean;
+  editable?: () => boolean;
+  deletable?: () => boolean;
 
   data?: TData;
   onDataChange?: (data: TData) => void;
