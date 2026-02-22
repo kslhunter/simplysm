@@ -21,12 +21,11 @@ import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
 import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
 import { Invalid } from "../Invalid";
 
 void ripple;
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 // Select 전용 스타일
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
@@ -272,10 +271,8 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
   };
 
   // 슬롯 signals
-  const [header, _setHeader] = createSignal<SlotAccessor>();
-  const setHeader = (content: SlotAccessor) => _setHeader(() => content);
-  const [action, _setAction] = createSignal<SlotAccessor>();
-  const setAction = (content: SlotAccessor) => _setAction(() => content);
+  const [header, setHeader] = createSlotSignal();
+  const [action, setAction] = createSlotSignal();
   const [itemTemplate, _setItemTemplate] = createSignal<
     ((...args: unknown[]) => JSX.Element) | undefined
   >();

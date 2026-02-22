@@ -16,6 +16,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconX } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
+import { createSlotSignal, type SlotAccessor } from "../../hooks/createSlotSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
 import { createPointerDrag } from "../../hooks/createPointerDrag";
 import { mergeStyles } from "../../helpers/mergeStyles";
@@ -24,8 +25,6 @@ import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
 import { bringToFront, registerDialog, unregisterDialog } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 interface DialogSlotsContextValue {
   setHeader: (content: SlotAccessor) => void;
@@ -189,10 +188,8 @@ export const Dialog: DialogComponent = (props) => {
 
   const headerId = "dialog-header-" + createUniqueId();
 
-  const [header, _setHeader] = createSignal<SlotAccessor>();
-  const setHeader = (content: SlotAccessor) => _setHeader(() => content);
-  const [action, _setAction] = createSignal<SlotAccessor>();
-  const setAction = (content: SlotAccessor) => _setAction(() => content);
+  const [header, setHeader] = createSlotSignal();
+  const [action, setAction] = createSlotSignal();
   const hasHeader = () => header() !== undefined;
 
   const [open, setOpen] = createControllableSignal({

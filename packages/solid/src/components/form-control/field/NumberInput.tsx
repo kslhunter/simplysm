@@ -13,6 +13,7 @@ import {
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import {
   type FieldSize,
   fieldInputClass,
@@ -29,8 +30,6 @@ const numberInputClass = clsx(
   "[&::-webkit-outer-spin-button]:appearance-none",
   "[&::-webkit-inner-spin-button]:appearance-none",
 );
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 interface NumberInputSlotsContextValue {
   setPrefix: (content: SlotAccessor) => void;
@@ -235,8 +234,7 @@ export const NumberInput: NumberInputComponent = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  const [prefix, _setPrefix] = createSignal<SlotAccessor>();
-  const setPrefix = (content: SlotAccessor) => _setPrefix(() => content);
+  const [prefix, setPrefix] = createSlotSignal();
   const prefixEl = () => prefix() !== undefined;
 
   // 외부 값 변경 시 입력 문자열 동기화

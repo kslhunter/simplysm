@@ -1,4 +1,5 @@
-import { createContext, useContext, type Accessor, type JSX, type Setter } from "solid-js";
+import { createContext, useContext, type Accessor, type Setter } from "solid-js";
+import type { SlotAccessor } from "../../../hooks/createSlotSignal";
 
 // ── 타입 ──────────────────────────────────────────────────────
 
@@ -49,8 +50,6 @@ export function useKanbanContext(): KanbanContextValue {
 }
 
 // ── Lane Context ───────────────────────────────────────────────
-
-type SlotAccessor = (() => JSX.Element) | undefined;
 
 export interface KanbanLaneContextValue<L = unknown, T = unknown> {
   value: Accessor<L | undefined>;
