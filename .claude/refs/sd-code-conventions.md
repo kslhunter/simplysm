@@ -31,8 +31,8 @@ async function readFileAsync() { ... } // Async suffix prohibited
 
 ## File Naming
 
-- 보조 파일(`types.ts`, `utils.ts` 등)은 메인 파일명을 접두어로 붙인다 (예: `CrudSheet.types.ts`)
-- 파일명만으로 소속을 식별할 수 있어야 한다
+- Auxiliary files (`types.ts`, `utils.ts`, etc.) must be prefixed with the main file name (e.g., `CrudSheet.types.ts`)
+- File names must be self-identifying without relying on the parent directory
 
 ## JSDoc Convention
 
