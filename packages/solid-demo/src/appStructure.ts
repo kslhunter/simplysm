@@ -159,6 +159,11 @@ export const appStructure = createAppStructure({
               title: "PermissionTable",
               component: lazy(() => import("./pages/data/PermissionTablePage")),
             },
+            {
+              code: "crud-sheet",
+              title: "CrudSheet",
+              component: lazy(() => import("./pages/data/CrudSheetPage")),
+            },
           ],
         },
         {
