@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { resolve, sep } from "node:path";
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -118,7 +118,14 @@ switch (cmd) {
     }
     if (existsSync(worktreePath)) {
       console.log(`Removing worktree: .worktrees/${name}`);
-      run(`git worktree remove "${worktreePath}"`, { cwd: mainWorktree });
+      try {
+        run(`git worktree remove --force "${worktreePath}"`, { cwd: mainWorktree });
+      } catch {
+        // node_modules 등으로 git worktree remove 실패 시 수동 정리
+        console.log("git worktree remove failed, cleaning up manually...");
+        rmSync(worktreePath, { recursive: true, force: true });
+        run("git worktree prune", { cwd: mainWorktree });
+      }
     }
     console.log(`Deleting branch: ${name}`);
     run(`git branch -d "${name}"`, { cwd: mainWorktree });
