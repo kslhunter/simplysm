@@ -41,3 +41,9 @@ All sub-components via dot notation only (`Parent.Child`).
 - Default `rem`, use `em` for text-relative sizing (e.g., Icon)
 - Use `clsx()` with semantic grouping + `twMerge()` for conflict resolution
 - Before modifying styles: Read existing class patterns of the same component
+
+## Application View Naming (`client-*`)
+- `~Sheet` — List view based on DataSheet (e.g., `UserSheet`)
+- `~Detail` — Single record detail/edit view (e.g., `MyInfoDetail`)
+- `~View` — Everything else (e.g., `LoginView`, `MainView`)
+- Directory: `src/views/` (usable as standalone page, embedded component, or modal)

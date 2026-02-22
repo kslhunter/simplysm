@@ -29,6 +29,13 @@ Multiple types: `--type typecheck,lint`. No path = full project. No type = all c
 2. **All passed?** Report with actual output numbers → done
 3. **Errors?** Fix in priority order: typecheck → lint → test (fixes cascade)
    - Test failures: run `git diff` to decide — update test or fix source
+   - **E2E test failures** (browser/solid/service project): use Playwright MCP to investigate before fixing
+     1. `browser_navigate` to the target URL
+     2. `browser_snapshot` / `browser_take_screenshot` (save to `.tmp/playwright/`) to see page state
+     3. `browser_console_messages` for JS errors
+     4. `browser_network_requests` for failed API calls
+     5. Interact with the page following the test steps to reproduce the failure
+     6. Fix based on observed evidence, not guesswork
    - Stuck after 2-3 attempts → recommend `/sd-debug`
 4. **Go to 1** — always re-run ALL checks after any fix
 
