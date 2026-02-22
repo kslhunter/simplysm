@@ -3,7 +3,8 @@ import { borderDefault, borderSubtle } from "../../../styles/tokens.styles";
 
 export const dataSheetContainerClass = clsx(
   "relative",
-  "bg-white dark:bg-base-950",
+  // "bg-white dark:bg-base-950",
+  "bg-base-100 dark:bg-base-900",
   "overflow-auto",
 );
 
@@ -50,13 +51,7 @@ export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 export const sortIconClass = clsx("px-1 py-0.5", "bg-base-100 dark:bg-base-900");
 
 // 상단 툴바 (설정 버튼 + 페이지네이션)
-export const toolbarClass = clsx(
-  "flex items-center gap-2",
-  "px-2 py-1",
-  "bg-base-50 dark:bg-base-900",
-  "border-b",
-  borderDefault,
-);
+export const toolbarClass = clsx("flex items-center gap-2", "px-2 py-1", "border-b", borderDefault);
 
 // 고정 컬럼 기본 (sticky)
 export const fixedClass = "sticky";

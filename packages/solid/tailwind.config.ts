@@ -52,6 +52,7 @@ export default {
         "dropdown": "1000",
         "modal-backdrop": "1999",
         "modal": "2000",
+        "notification": "3000",
       },
     },
   },

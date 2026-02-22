@@ -16,7 +16,7 @@ export const Icon: Component<IconProps> = (props) => {
       component={local.icon}
       size={local.size ?? "1.25em"}
       {...rest}
-      class={clsx("inline", rest.class)}
+      class={clsx("inline", "[vertical-align:-0.25em]", rest.class)}
     />
   );
 };

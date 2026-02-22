@@ -15,18 +15,24 @@ import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationContext";
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
-import { TopbarContext, createTopbarActions } from "../../layout/topbar/TopbarContext";
+import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";
 import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { createEventListener } from "@solid-primitives/event-listener";
 import clsx from "clsx";
-import { IconDeviceFloppy, IconRefresh, IconTrash, IconTrashOff } from "@tabler/icons-solidjs";
-import { isCrudDetailToolsDef, CrudDetailTools } from "./CrudDetailTools";
-import { isCrudDetailBeforeDef, CrudDetailBefore } from "./CrudDetailBefore";
-import { isCrudDetailAfterDef, CrudDetailAfter } from "./CrudDetailAfter";
+import {
+  IconCheck,
+  IconDeviceFloppy,
+  IconRefresh,
+  IconTrash,
+  IconTrashOff,
+} from "@tabler/icons-solidjs";
+import { CrudDetailTools, isCrudDetailToolsDef } from "./CrudDetailTools";
+import { CrudDetailBefore, isCrudDetailBeforeDef } from "./CrudDetailBefore";
+import { CrudDetailAfter, isCrudDetailAfterDef } from "./CrudDetailAfter";
 import type {
-  CrudDetailBeforeDef,
   CrudDetailAfterDef,
+  CrudDetailBeforeDef,
   CrudDetailContext,
   CrudDetailInfo,
   CrudDetailProps,
@@ -242,12 +248,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       {/* Modal mode: Dialog.Action (refresh button in header) */}
       <Show when={isModal}>
         <Dialog.Action>
-          <button
-            class="flex items-center px-2 text-base-400 hover:text-base-600"
-            onClick={() => void handleRefresh()}
-          >
+          <Button size={"sm"} variant={"ghost"} onClick={() => void handleRefresh()}>
             <Icon icon={IconRefresh} />
-          </button>
+          </Button>
         </Dialog.Action>
       </Show>
 
@@ -297,7 +300,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={defs().before}>{(beforeDef) => beforeDef().children}</Show>
 
         {/* Form */}
-        <form ref={formRef} class="flex-1 overflow-auto p-2" onSubmit={handleFormSubmit}>
+        <form ref={formRef} class="flex-1 overflow-auto p-4" onSubmit={handleFormSubmit}>
           {formContent()}
         </form>
 
@@ -316,20 +319,26 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
         {/* Modal mode: bottom bar */}
         <Show when={isModal && canEdit()}>
-          <div class="flex gap-2 border-t border-base-200 p-2">
+          <div class="flex gap-2 border-t border-base-200 px-3 py-1.5">
             <div class="flex-1" />
             <Show
               when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}
             >
               {(_) => (
-                <Button size="sm" theme="danger" onClick={() => void handleToggleDelete()}>
+                <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
                   <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
                   {info()!.isDeleted ? "복구" : "삭제"}
                 </Button>
               )}
             </Show>
             <Show when={local.submit}>
-              <Button size="sm" theme="primary" onClick={() => formRef?.requestSubmit()}>
+              <Button
+                variant={"solid"}
+                theme="primary"
+                onClick={() => formRef?.requestSubmit()}
+                class={"gap-1"}
+              >
+                <Icon icon={IconCheck} />
                 확인
               </Button>
             </Show>

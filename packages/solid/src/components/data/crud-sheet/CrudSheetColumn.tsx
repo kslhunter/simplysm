@@ -28,7 +28,7 @@ export function CrudSheetColumn<TItem>(props: CrudSheetColumnProps<TItem>): JSX.
     width: props.width,
     sortable: props.sortable ?? true,
     resizable: props.resizable ?? true,
-    editable: props.editable ?? false,
+    editTrigger: props.editTrigger ?? false,
   } as unknown as JSX.Element;
 }
 /* eslint-enable solid/reactivity */

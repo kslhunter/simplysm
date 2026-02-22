@@ -204,6 +204,7 @@ describe("CrudSheet inline edit", () => {
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
+          itemDeleted={(item) => item.isDeleted}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),
@@ -241,6 +242,7 @@ describe("CrudSheet itemDeletable", () => {
           search={searchFn}
           getItemKey={(item) => item.id}
           itemDeletable={(item) => item.id !== 1}
+          itemDeleted={(item) => item.isDeleted}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),
@@ -365,7 +367,7 @@ describe("CrudSheet control mode", () => {
     expect(container.textContent).toContain("새로고침");
   });
 
-  it("inlineEdit 없으면 저장/새로고침 버튼이 없다", async () => {
+  it("inlineEdit 없으면 저장 버튼이 없고 새로고침 버튼은 있다", async () => {
     const { container } = render(() => (
       <TestWrapper>
         <CrudSheet<TestItem, Record<string, never>>
@@ -381,7 +383,7 @@ describe("CrudSheet control mode", () => {
 
     await new Promise((r) => setTimeout(r, 100));
     expect(container.textContent).not.toContain("저장");
-    expect(container.textContent).not.toContain("새로고침");
+    expect(container.textContent).toContain("새로고침");
   });
 });
 

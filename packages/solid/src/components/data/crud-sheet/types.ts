@@ -80,6 +80,7 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   editable?: boolean;
   itemEditable?: (item: TItem) => boolean;
   itemDeletable?: (item: TItem) => boolean;
+  itemDeleted?: (item: TItem) => boolean;
   filterInitial?: TFilter;
   items?: TItem[];
   onItemsChange?: (items: TItem[]) => void;
@@ -108,12 +109,12 @@ export interface CrudSheetColumnDef<TItem> {
   class?: string;
   sortable: boolean;
   resizable: boolean;
-  editable: boolean;
+  editTrigger: boolean;
   cell: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;
 }
 
 export interface CrudSheetColumnProps<TItem> extends Omit<DataSheetColumnProps<TItem>, "children"> {
-  editable?: boolean;
+  editTrigger?: boolean;
   children: (ctx: CrudSheetCellContext<TItem>) => JSX.Element;
 }
 

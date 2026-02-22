@@ -1,15 +1,15 @@
 import {
-  type JSX,
-  type ParentComponent,
   createContext,
   createEffect,
+  createSignal,
   createUniqueId,
+  For,
+  type JSX,
   onCleanup,
+  type ParentComponent,
   Show,
   splitProps,
-  For,
   useContext,
-  createSignal,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import clsx from "clsx";
@@ -22,7 +22,8 @@ import { mergeStyles } from "../../helpers/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
-import { registerDialog, unregisterDialog, bringToFront } from "./dialogZIndex";
+import { bringToFront, registerDialog, unregisterDialog } from "./dialogZIndex";
+import { Button } from "../form-control/Button";
 
 type SlotAccessor = (() => JSX.Element) | undefined;
 
@@ -477,7 +478,8 @@ export const Dialog: DialogComponent = (props) => {
     );
 
   // 헤더 클래스
-  const headerClass = () => clsx("flex items-center", "select-none", "border-b", borderSubtle);
+  const headerClass = () =>
+    clsx("flex items-center gap-2", "px-3 py-1", "select-none", "border-b", borderSubtle);
 
   return (
     <Show when={mounted()}>
@@ -516,26 +518,19 @@ export const Dialog: DialogComponent = (props) => {
                   }
                   onPointerDown={handleHeaderPointerDown}
                 >
-                  <h5 id={headerId} class={clsx("flex-1", "px-4 py-2", "text-sm font-bold")}>
+                  <h5 id={headerId} class={clsx("flex-1 font-bold")}>
                     {header()!()}
                   </h5>
                   <Show when={action()}>{action()!()}</Show>
                   <Show when={local.closable ?? true}>
-                    <button
+                    <Button
                       data-modal-close
-                      type="button"
-                      class={clsx(
-                        "inline-flex items-center justify-center",
-                        "px-3 py-2",
-                        "text-base-400 dark:text-base-500",
-                        "hover:text-base-600 dark:hover:text-base-300",
-                        "cursor-pointer",
-                        "transition-colors",
-                      )}
+                      size={"sm"}
+                      variant={"ghost"}
                       onClick={handleCloseClick}
                     >
-                      <Icon icon={IconX} size="1.25em" />
-                    </button>
+                      <Icon icon={IconX} />
+                    </Button>
                   </Show>
                 </div>
               </Show>

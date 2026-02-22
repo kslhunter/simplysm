@@ -21,7 +21,7 @@ import { useNotification } from "../../feedback/notification/NotificationContext
 import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { FormGroup } from "../../layout/FormGroup";
-import { TopbarContext, createTopbarActions } from "../../layout/topbar/TopbarContext";
+import { createTopbarActions, TopbarContext } from "../../layout/topbar/TopbarContext";
 import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { Link } from "../../display/Link";
@@ -29,6 +29,7 @@ import { createEventListener } from "@solid-primitives/event-listener";
 import clsx from "clsx";
 import {
   IconDeviceFloppy,
+  IconExternalLink,
   IconFileExcel,
   IconPlus,
   IconRefresh,
@@ -37,10 +38,10 @@ import {
   IconTrashOff,
   IconUpload,
 } from "@tabler/icons-solidjs";
-import { isCrudSheetColumnDef, CrudSheetColumn } from "./CrudSheetColumn";
-import { isCrudSheetFilterDef, CrudSheetFilter } from "./CrudSheetFilter";
-import { isCrudSheetToolsDef, CrudSheetTools } from "./CrudSheetTools";
-import { isCrudSheetHeaderDef, CrudSheetHeader } from "./CrudSheetHeader";
+import { CrudSheetColumn, isCrudSheetColumnDef } from "./CrudSheetColumn";
+import { CrudSheetFilter, isCrudSheetFilterDef } from "./CrudSheetFilter";
+import { CrudSheetTools, isCrudSheetToolsDef } from "./CrudSheetTools";
+import { CrudSheetHeader, isCrudSheetHeaderDef } from "./CrudSheetHeader";
 import type {
   CrudSheetColumnDef,
   CrudSheetContext,
@@ -70,6 +71,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "editable",
     "itemEditable",
     "itemDeletable",
+    "itemDeleted",
     "filterInitial",
     "items",
     "onItemsChange",
@@ -364,6 +366,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Render --
   const deleteProp = () => local.inlineEdit?.deleteProp;
+  const isItemDeleted = (item: TItem) => local.itemDeleted?.(item) ?? false;
 
   return (
     <>
@@ -385,17 +388,19 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
         class={clsx("flex h-full flex-col", local.class)}
       >
         {/* Control mode: inline save/refresh bar */}
-        <Show when={!isModal && !topbarCtx && canEdit() && local.inlineEdit}>
+        <Show when={!isModal && !topbarCtx}>
           <div class="flex gap-2 p-2 pb-0">
-            <Button
-              size="sm"
-              theme="primary"
-              variant="ghost"
-              onClick={() => formRef?.requestSubmit()}
-            >
-              <Icon icon={IconDeviceFloppy} class="mr-1" />
-              저장
-            </Button>
+            <Show when={canEdit() && local.inlineEdit}>
+              <Button
+                size="sm"
+                theme="primary"
+                variant="ghost"
+                onClick={() => formRef?.requestSubmit()}
+              >
+                <Icon icon={IconDeviceFloppy} class="mr-1" />
+                저장
+              </Button>
+            </Show>
             <Button size="sm" theme="info" variant="ghost" onClick={handleRefresh}>
               <Icon icon={IconRefresh} class="mr-1" />
               새로고침
@@ -506,43 +511,34 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             selectedItems={selectedItems()}
             onSelectedItemsChange={setSelectedItems}
             autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
-            cellClass={(item, _colKey) => {
-              const dp = deleteProp();
-              if (dp != null && Boolean((item as Record<string, unknown>)[dp])) {
+            cellClass={(item) => {
+              if (isItemDeleted(item)) {
                 return clsx("line-through");
               }
               return undefined;
             }}
           >
-            {/* Auto delete column */}
-            <Show when={deleteProp() != null && canEdit() ? deleteProp() : undefined}>
-              {(dp) => (
-                <DataSheetColumn<TItem>
-                  key="__delete"
-                  header=""
-                  fixed
-                  sortable={false}
-                  resizable={false}
-                >
-                  {(dsCtx) => (
-                    <div class="flex items-center justify-center px-1 py-0.5">
-                      <Link
-                        theme="danger"
-                        disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
-                        onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
-                      >
-                        <Icon
-                          icon={
-                            Boolean((dsCtx.item as Record<string, unknown>)[dp()])
-                              ? IconTrashOff
-                              : IconTrash
-                          }
-                        />
-                      </Link>
-                    </div>
-                  )}
-                </DataSheetColumn>
-              )}
+            {/* Auto delete column (inline edit only) */}
+            <Show when={deleteProp() != null && canEdit()}>
+              <DataSheetColumn<TItem>
+                key="__delete"
+                header=""
+                fixed
+                sortable={false}
+                resizable={false}
+              >
+                {(dsCtx) => (
+                  <div class="flex items-center justify-center px-1 py-0.5">
+                    <Link
+                      theme="danger"
+                      disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
+                      onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
+                    >
+                      <Icon icon={isItemDeleted(dsCtx.item) ? IconTrashOff : IconTrash} />
+                    </Link>
+                  </div>
+                )}
+              </DataSheetColumn>
             </Show>
 
             {/* User-defined columns -- map CrudSheetColumn to DataSheetColumn */}
@@ -574,20 +570,23 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                     // modalEdit editable column -- wrap with edit link
                     if (
                       local.modalEdit &&
-                      col.editable &&
+                      col.editTrigger &&
                       canEdit() &&
                       (local.itemEditable?.(dsCtx.item) ?? true)
                     ) {
                       return (
                         <Link
-                          class="flex w-full"
+                          class={clsx("flex", "gap-1")}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             void handleEditItem(dsCtx.item);
                           }}
                         >
-                          {col.cell(crudCtx)}
+                          <div class={"p-1"}>
+                            <Icon icon={IconExternalLink} />
+                          </div>
+                          <div class={"flex-1"}>{col.cell(crudCtx)}</div>
                         </Link>
                       );
                     }

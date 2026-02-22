@@ -10,7 +10,7 @@ const baseClass = clsx(
   "fixed",
   "top-8",
   "right-4",
-  "z-50",
+  "z-notification",
   "flex",
   "items-start",
   "gap-4",

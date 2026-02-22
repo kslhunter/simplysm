@@ -34,6 +34,7 @@ export function CrudSheetPage() {
         return Promise.resolve({ items });
       }}
       getItemKey={(item) => item.id}
+      itemDeleted={(item) => item.isDeleted}
       filterInitial={{ isIncludeDeleted: false }}
       inlineEdit={{
         submit: (diffs) => {
