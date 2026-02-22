@@ -207,6 +207,75 @@ describe("CrudSheet inline edit", () => {
   });
 });
 
+describe("CrudSheet itemDeletable", () => {
+  it("itemDeletable=false인 아이템의 인라인 삭제 버튼이 disabled이다", async () => {
+    const searchFn = () =>
+      Promise.resolve({
+        items: [
+          { id: 1, name: "홍길동", isDeleted: false },
+          { id: 2, name: "김철수", isDeleted: false },
+        ],
+        pageCount: 1,
+      });
+
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          itemDeletable={(item) => item.id !== 1}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+            deleteProp: "isDeleted",
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    // 삭제 컬럼의 링크들
+    const deleteLinks = container.querySelectorAll('a[aria-disabled="true"]');
+    expect(deleteLinks.length).toBe(1); // id=1인 아이템만 disabled
+  });
+});
+
+describe("CrudSheet editable (renamed from canEdit)", () => {
+  it("editable=false 시 인라인 편집 버튼이 숨겨진다", async () => {
+    const searchFn = () =>
+      Promise.resolve({
+        items: [{ id: 1, name: "홍길동", isDeleted: false }],
+        pageCount: 1,
+      });
+
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudSheet<TestItem, Record<string, never>>
+          search={searchFn}
+          getItemKey={(item) => item.id}
+          editable={() => false}
+          inlineEdit={{
+            submit: () => Promise.resolve(),
+            newItem: () => ({ name: "", isDeleted: false }),
+          }}
+        >
+          <CrudSheet.Column<TestItem> key="name" header="이름">
+            {(ctx) => <div>{ctx.item.name}</div>}
+          </CrudSheet.Column>
+        </CrudSheet>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("행 추가");
+  });
+});
+
 describe("CrudSheet select mode", () => {
   it("selectMode 설정 시 toolbar이 숨겨진다", async () => {
     const { container } = render(() => (

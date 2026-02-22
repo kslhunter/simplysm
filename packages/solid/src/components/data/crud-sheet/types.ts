@@ -77,7 +77,9 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   getItemKey: (item: TItem) => string | number | undefined;
   persistKey?: string;
   itemsPerPage?: number;
-  canEdit?: () => boolean;
+  editable?: () => boolean;
+  itemEditable?: (item: TItem) => boolean;
+  itemDeletable?: (item: TItem) => boolean;
   filterInitial?: TFilter;
   items?: TItem[];
   onItemsChange?: (items: TItem[]) => void;

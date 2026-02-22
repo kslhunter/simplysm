@@ -65,7 +65,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "getItemKey",
     "persistKey",
     "itemsPerPage",
-    "canEdit",
+    "editable",
+    "itemEditable",
+    "itemDeletable",
     "filterInitial",
     "items",
     "onItemsChange",
@@ -82,7 +84,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const noti = useNotification();
   const topbarCtx = useContext(TopbarContext);
   const isSelectMode = () => local.selectMode != null;
-  const canEdit = () => (isSelectMode() ? false : (local.canEdit?.() ?? true));
+  const canEdit = () => (isSelectMode() ? false : (local.editable?.() ?? true));
 
   // -- Children Resolution --
   const resolved = children(() => local.children);
@@ -176,6 +178,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   function handleToggleDelete(item: TItem, index: number) {
+    if (!(local.itemDeletable?.(item) ?? true)) return;
     if (local.inlineEdit?.deleteProp == null) return;
     const dp = local.inlineEdit.deleteProp;
 
@@ -413,7 +416,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 theme="danger"
                 variant="ghost"
                 onClick={handleDeleteItems}
-                disabled={selectedItems().length === 0}
+                disabled={
+                  selectedItems().length === 0 ||
+                  !selectedItems().some((item) => local.itemDeletable?.(item) ?? true)
+                }
               >
                 <Icon icon={IconTrash} class="mr-1" />
                 선택 삭제
@@ -486,6 +492,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   <div class="flex items-center justify-center px-1 py-0.5">
                     <Link
                       theme="danger"
+                      disabled={!(local.itemDeletable?.(dsCtx.item) ?? true)}
                       onClick={() => handleToggleDelete(dsCtx.item, dsCtx.index)}
                     >
                       <Icon
@@ -529,7 +536,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   };
 
                   // modalEdit editable column -- wrap with edit link
-                  if (local.modalEdit && col.editable && canEdit()) {
+                  if (
+                    local.modalEdit &&
+                    col.editable &&
+                    canEdit() &&
+                    (local.itemEditable?.(dsCtx.item) ?? true)
+                  ) {
                     return (
                       <Link
                         class="flex w-full"
