@@ -38,6 +38,7 @@ const DialogSlotsContext = createContext<DialogSlotsContextValue>();
  */
 const DialogHeader: ParentComponent = (props) => {
   const ctx = useContext(DialogSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
   ctx.setHeader(() => props.children);
   onCleanup(() => ctx.setHeader(undefined));
   return null;
@@ -48,6 +49,7 @@ const DialogHeader: ParentComponent = (props) => {
  */
 const DialogAction: ParentComponent = (props) => {
   const ctx = useContext(DialogSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
   ctx.setAction(() => props.children);
   onCleanup(() => ctx.setAction(undefined));
   return null;

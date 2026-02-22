@@ -35,6 +35,7 @@ type TextInputType = "text" | "password" | "email";
 
 const TextInputPrefix: ParentComponent = (props) => {
   const ctx = useContext(TextInputSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
   ctx.setPrefix(() => props.children);
   onCleanup(() => ctx.setPrefix(undefined));
   return null;

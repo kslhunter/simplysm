@@ -33,6 +33,7 @@ const DropdownContext = createContext<DropdownContextValue>();
 
 const DropdownTrigger: ParentComponent = (props) => {
   const ctx = useContext(DropdownContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
   ctx.setTrigger(() => props.children);
   onCleanup(() => ctx.setTrigger(undefined));
   return null;
@@ -42,6 +43,7 @@ const DropdownTrigger: ParentComponent = (props) => {
 
 const DropdownContent: ParentComponent = (props) => {
   const ctx = useContext(DropdownContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
   ctx.setContent(() => props.children);
   onCleanup(() => ctx.setContent(undefined));
   return null;
