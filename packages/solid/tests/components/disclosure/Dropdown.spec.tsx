@@ -39,10 +39,11 @@ describe("Dropdown 컴포넌트", () => {
     });
 
     it("Trigger 재클릭 시 닫힌다", () => {
-      const handleOpenChange = vi.fn();
+      const [open, setOpen] = createSignal(false);
+      const handleOpenChange = vi.fn((v: boolean) => setOpen(v));
 
       render(() => (
-        <Dropdown onOpenChange={handleOpenChange}>
+        <Dropdown open={open()} onOpenChange={handleOpenChange}>
           <Dropdown.Trigger>
             <button data-testid="trigger">열기</button>
           </Dropdown.Trigger>
@@ -61,10 +62,11 @@ describe("Dropdown 컴포넌트", () => {
     });
 
     it("disabled 시 Trigger 클릭이 무시된다", () => {
-      const handleOpenChange = vi.fn();
+      const [open, setOpen] = createSignal(false);
+      const handleOpenChange = vi.fn((v: boolean) => setOpen(v));
 
       render(() => (
-        <Dropdown disabled onOpenChange={handleOpenChange}>
+        <Dropdown disabled open={open()} onOpenChange={handleOpenChange}>
           <Dropdown.Trigger>
             <button data-testid="trigger">열기</button>
           </Dropdown.Trigger>

@@ -41,7 +41,7 @@ export interface ColorPickerProps {
   value?: string;
 
   /** 값 변경 콜백 */
-  onValueChange?: (value: string) => void;
+  onValueChange?: (value: string | undefined) => void;
 
   /** 타이틀 (툴팁) */
   title?: string;
@@ -95,7 +95,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
   ]);
 
   const [value, setValue] = createControllableSignal({
-    value: () => local.value ?? "#000000",
+    value: () => local.value,
     onChange: () => local.onValueChange,
   });
 
@@ -112,9 +112,9 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
     );
 
   const errorMsg = createMemo(() => {
-    if (local.required && (local.value === undefined || local.value === ""))
-      return "필수 입력 항목입니다";
-    return local.validate?.(value());
+    const v = value();
+    if (local.required && (v === undefined || v === "")) return "필수 입력 항목입니다";
+    return local.validate?.(v);
   });
 
   return (
@@ -129,7 +129,7 @@ export const ColorPicker: Component<ColorPickerProps> = (props) => {
         type="color"
         class={getClassName()}
         style={local.style}
-        value={value()}
+        value={value() ?? "#000000"}
         title={local.title}
         disabled={local.disabled}
         onInput={handleInput}
