@@ -444,7 +444,9 @@ interface UserFilter {
 | `getItemKey` | `(item: TItem) => string \| number \| undefined` | **(required)** | Unique key extractor for diff tracking |
 | `persistKey` | `string` | - | LocalStorage key for column configuration |
 | `itemsPerPage` | `number` | - | Items per page (enables pagination when set) |
-| `canEdit` | `() => boolean` | `() => true` | Whether editing is allowed |
+| `editable` | `() => boolean` | `() => true` | Whether editing is allowed |
+| `itemEditable` | `(item: TItem) => boolean` | `() => true` | Per-item edit control (modal edit mode) |
+| `itemDeletable` | `(item: TItem) => boolean` | `() => true` | Per-item delete control |
 | `filterInitial` | `TFilter` | - | Initial filter state |
 | `items` | `TItem[]` | - | Controlled items (external state) |
 | `onItemsChange` | `(items: TItem[]) => void` | - | Items change callback (controlled mode) |
@@ -591,3 +593,169 @@ Renders static content above the filter area.
 - `Ctrl+Alt+L` -- Refresh
 
 **Topbar integration:** When used inside `Topbar.Container`, CrudSheet automatically registers Save and Refresh buttons in the topbar via `createTopbarActions`.
+
+---
+
+## CrudDetail
+
+CRUD detail form component for single-record editing. Provides load, save, soft-delete/restore, change detection, and topbar action integration. Works both as a standalone page component and inside a `Dialog` (modal mode).
+
+```tsx
+import { CrudDetail, type CrudDetailInfo } from "@simplysm/solid";
+import { FormTable, TextInput, NumberInput } from "@simplysm/solid";
+
+interface User {
+  id?: number;
+  name: string;
+  age: number;
+}
+
+// Page mode (standalone)
+<CrudDetail<User>
+  load={async () => {
+    const user = await api.getUser(userId);
+    return {
+      data: user,
+      info: { isNew: user.id == null, isDeleted: false, lastModifiedAt: user.updatedAt },
+    };
+  }}
+  submit={async (data) => {
+    await api.saveUser(data);
+    return true; // return true to trigger success notification + refresh/close
+  }}
+  toggleDelete={async (del) => {
+    await api.toggleDeleteUser(userId, del);
+    return true;
+  }}
+>
+  {(ctx) => (
+    <FormTable>
+      <tbody>
+        <tr>
+          <th>Name</th>
+          <td>
+            <TextInput value={ctx.data.name} onValueChange={(v) => ctx.setData("name", v)} />
+          </td>
+        </tr>
+        <tr>
+          <th>Age</th>
+          <td>
+            <NumberInput value={ctx.data.age} onValueChange={(v) => ctx.setData("age", v!)} />
+          </td>
+        </tr>
+      </tbody>
+    </FormTable>
+  )}
+</CrudDetail>
+
+// Modal mode (inside Dialog via useDialog)
+const dialog = useDialog();
+
+const handleEdit = async () => {
+  const result = await dialog.show<boolean>(
+    () => (
+      <CrudDetail<User>
+        load={async () => ({ data: user, info: { isNew: false, isDeleted: false } })}
+        submit={async (data) => { await api.saveUser(data); return true; }}
+      >
+        {(ctx) => (
+          <FormTable>
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td><TextInput value={ctx.data.name} onValueChange={(v) => ctx.setData("name", v)} /></td>
+              </tr>
+            </tbody>
+          </FormTable>
+        )}
+      </CrudDetail>
+    ),
+    { header: "Edit User", width: 500 },
+  );
+  if (result) { /* saved successfully */ }
+};
+
+// With custom tools and before/after slots
+<CrudDetail<User>
+  load={loadUser}
+  submit={saveUser}
+  editable={() => hasEditPermission()}
+  deletable={() => hasDeletPermission()}
+>
+  {(ctx) => (
+    <>
+      <CrudDetail.Tools>
+        <Button size="sm" variant="ghost" onClick={() => ctx.refresh()}>Custom Refresh</Button>
+      </CrudDetail.Tools>
+      <CrudDetail.Before>
+        <div class="p-2 bg-info-50">Info banner (outside form)</div>
+      </CrudDetail.Before>
+      <FormTable>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td><TextInput value={ctx.data.name} onValueChange={(v) => ctx.setData("name", v)} /></td>
+          </tr>
+        </tbody>
+      </FormTable>
+      <CrudDetail.After>
+        <div class="p-2">Footer content (outside form)</div>
+      </CrudDetail.After>
+    </>
+  )}
+</CrudDetail>
+```
+
+**CrudDetail Props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `load` | `() => Promise<{ data: TData; info: CrudDetailInfo }>` | **(required)** | Load function returning data and metadata |
+| `children` | `(ctx: CrudDetailContext<TData>) => JSX.Element` | **(required)** | Render prop receiving context |
+| `submit` | `(data: TData) => Promise<boolean \| undefined>` | - | Save function. Return `true` to trigger success notification |
+| `toggleDelete` | `(del: boolean) => Promise<boolean \| undefined>` | - | Soft-delete/restore function. `del=true` for delete, `false` for restore |
+| `editable` | `() => boolean` | `() => true` | Whether editing is allowed |
+| `deletable` | `() => boolean` | `() => true` | Whether delete/restore is allowed |
+| `data` | `TData` | - | Controlled data state |
+| `onDataChange` | `(data: TData) => void` | - | Data change callback (controlled mode) |
+| `class` | `string` | - | CSS class |
+
+**CrudDetailInfo:**
+
+```typescript
+interface CrudDetailInfo {
+  isNew: boolean;
+  isDeleted: boolean;
+  lastModifiedAt?: DateTime;
+  lastModifiedBy?: string;
+}
+```
+
+**CrudDetailContext (render prop argument):**
+
+```typescript
+interface CrudDetailContext<TData> {
+  data: TData;
+  setData: SetStoreFunction<TData>;
+  info: () => CrudDetailInfo;
+  busy: () => boolean;
+  hasChanges: () => boolean;
+  save: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+```
+
+**Sub-components:**
+- `CrudDetail.Tools` -- Custom toolbar buttons (rendered in the toolbar area)
+- `CrudDetail.Before` -- Content rendered before the form (outside `<form>`)
+- `CrudDetail.After` -- Content rendered after the form (outside `<form>`)
+
+**Page vs Modal mode:**
+- **Page mode**: Toolbar with Save/Refresh/Delete buttons appears at the top. When inside `Topbar.Container`, Save and Refresh are also registered in the topbar via `createTopbarActions`.
+- **Modal mode** (inside `useDialog`): Refresh button appears in the dialog header. Save/Delete buttons appear in the bottom bar. On save/delete success, the dialog closes with `true` as the return value.
+
+**Keyboard shortcuts:**
+- `Ctrl+S` -- Save
+- `Ctrl+Alt+L` -- Refresh
+
+**Change detection:** On refresh, if unsaved changes exist, a confirmation dialog is shown. On save, if no changes exist (and not a new record), an info notification is shown instead.

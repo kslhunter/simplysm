@@ -146,6 +146,7 @@ import "@simplysm/solid/tailwind.css";
 - [`Calendar`](docs/data-components.md#calendar) - Calendar-style data display
 - [`PermissionTable`](docs/data-components.md#permissiontable) - Hierarchical permission management table with cascading checks
 - [`CrudSheet`](docs/data-components.md#crudsheet) - CRUD data sheet with search, inline/modal editing, Excel import/export, and select mode
+- [`CrudDetail`](docs/data-components.md#cruddetail) - CRUD detail form with load, save, delete, and topbar action integration
 
 ### Layout
 
