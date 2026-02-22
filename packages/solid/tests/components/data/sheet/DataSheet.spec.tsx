@@ -302,7 +302,7 @@ describe("DataSheet", () => {
 
     const tds = container.querySelectorAll("tbody tr:first-child td");
     // fixedLastClass에 포함된 클래스 확인
-    expect(tds[0].classList.contains("border-r-2")).toBe(true);
+    expect(tds[0].classList.contains("border-r")).toBe(true);
   });
 
   it("리사이저: resizable 컬럼에 리사이저 핸들이 있다", () => {
