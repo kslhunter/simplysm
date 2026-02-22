@@ -40,7 +40,7 @@ const SelectItemSlotsContext = createContext<SelectItemSlotsContextValue>();
 const SelectItemChildren: ParentComponent = (props) => {
   const ctx = useContext(SelectItemSlotsContext)!;
   // eslint-disable-next-line solid/reactivity -- slot accessor: children is lazily read at render time
-  ctx.setChildren(() => () => props.children);
+  ctx.setChildren(() => props.children);
   onCleanup(() => ctx.setChildren(undefined));
   return null;
 };
@@ -83,7 +83,8 @@ export const SelectItem: SelectItemComponent = <T,>(
 
   const context = useSelectContext<T>();
 
-  const [childrenSlot, setChildrenSlot] = createSignal<SlotAccessor>();
+  const [childrenSlot, _setChildrenSlot] = createSignal<SlotAccessor>();
+  const setChildrenSlot = (content: SlotAccessor) => _setChildrenSlot(() => content);
   const hasChildren = () => childrenSlot() !== undefined;
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;

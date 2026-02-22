@@ -38,7 +38,7 @@ const DialogSlotsContext = createContext<DialogSlotsContextValue>();
  */
 const DialogHeader: ParentComponent = (props) => {
   const ctx = useContext(DialogSlotsContext)!;
-  ctx.setHeader(() => () => props.children);
+  ctx.setHeader(() => props.children);
   onCleanup(() => ctx.setHeader(undefined));
   return null;
 };
@@ -48,7 +48,7 @@ const DialogHeader: ParentComponent = (props) => {
  */
 const DialogAction: ParentComponent = (props) => {
   const ctx = useContext(DialogSlotsContext)!;
-  ctx.setAction(() => () => props.children);
+  ctx.setAction(() => props.children);
   onCleanup(() => ctx.setAction(undefined));
   return null;
 };
@@ -186,8 +186,10 @@ export const Dialog: DialogComponent = (props) => {
 
   const headerId = "dialog-header-" + createUniqueId();
 
-  const [header, setHeader] = createSignal<SlotAccessor>();
-  const [action, setAction] = createSignal<SlotAccessor>();
+  const [header, _setHeader] = createSignal<SlotAccessor>();
+  const setHeader = (content: SlotAccessor) => _setHeader(() => content);
+  const [action, _setAction] = createSignal<SlotAccessor>();
+  const setAction = (content: SlotAccessor) => _setAction(() => content);
   const hasHeader = () => header() !== undefined;
 
   const [open, setOpen] = createControllableSignal({

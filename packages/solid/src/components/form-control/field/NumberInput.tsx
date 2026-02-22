@@ -40,7 +40,7 @@ const NumberInputSlotsContext = createContext<NumberInputSlotsContextValue>();
 
 const NumberInputPrefix: ParentComponent = (props) => {
   const ctx = useContext(NumberInputSlotsContext)!;
-  ctx.setPrefix(() => () => props.children);
+  ctx.setPrefix(() => props.children);
   onCleanup(() => ctx.setPrefix(undefined));
   return null;
 };
@@ -234,7 +234,8 @@ export const NumberInput: NumberInputComponent = (props) => {
     onChange: () => local.onValueChange,
   });
 
-  const [prefix, setPrefix] = createSignal<SlotAccessor>();
+  const [prefix, _setPrefix] = createSignal<SlotAccessor>();
+  const setPrefix = (content: SlotAccessor) => _setPrefix(() => content);
   const prefixEl = () => prefix() !== undefined;
 
   // 외부 값 변경 시 입력 문자열 동기화
