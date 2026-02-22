@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import type { JSX } from "solid-js";
+import { render } from "@solidjs/testing-library";
 import type {
   CrudDetailToolsDef,
   CrudDetailBeforeDef,
@@ -16,6 +18,22 @@ import {
   CrudDetailAfter,
   isCrudDetailAfterDef,
 } from "../../../../src/components/data/crud-detail/CrudDetailAfter";
+import { CrudDetail } from "../../../../src/components/data/crud-detail/CrudDetail";
+import { ConfigContext } from "../../../../src/providers/ConfigContext";
+import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
+
+interface TestData {
+  id?: number;
+  name: string;
+}
+
+function TestWrapper(props: { children: JSX.Element }) {
+  return (
+    <ConfigContext.Provider value={{ clientName: "test" }}>
+      <NotificationProvider>{props.children}</NotificationProvider>
+    </ConfigContext.Provider>
+  );
+}
 
 describe("CrudDetail types", () => {
   it("CrudDetailToolsDef 타입이 __type 필드를 가진다", () => {
@@ -76,5 +94,146 @@ describe("CrudDetail sub-components", () => {
     expect(isCrudDetailToolsDef(null)).toBe(false);
     expect(isCrudDetailBeforeDef("string")).toBe(false);
     expect(isCrudDetailAfterDef(42)).toBe(false);
+  });
+});
+
+describe("CrudDetail rendering", () => {
+  it("기본 렌더링: load 후 children이 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+        >
+          {(ctx) => <div data-testid="name">{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("홍길동");
+  });
+
+  it("submit 제공 시 저장 버튼이 toolbar에 표시된다 (page/control 모드)", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+          submit={async () => true}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("저장");
+  });
+
+  it("submit 미제공 시 저장 버튼이 없다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("저장");
+  });
+
+  it("toggleDelete 제공 시 삭제 버튼이 toolbar에 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+          toggleDelete={async () => true}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("삭제");
+  });
+
+  it("새로고침 버튼이 항상 toolbar에 표시된다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("새로고침");
+  });
+
+  it("canEdit=false 시 toolbar이 표시되지 않는다", async () => {
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: { isNew: false, isDeleted: false },
+          })}
+          submit={async () => true}
+          canEdit={() => false}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).not.toContain("저장");
+    expect(container.textContent).not.toContain("새로고침");
+  });
+
+  it("lastModifiedAt/By가 있으면 수정 정보가 표시된다", async () => {
+    const { DateTime } = await import("@simplysm/core-common");
+
+    const { container } = render(() => (
+      <TestWrapper>
+        <CrudDetail<TestData>
+          load={async () => ({
+            data: { id: 1, name: "홍길동" },
+            info: {
+              isNew: false,
+              isDeleted: false,
+              lastModifiedAt: new DateTime(2026, 1, 15, 10, 30),
+              lastModifiedBy: "관리자",
+            },
+          })}
+        >
+          {(ctx) => <div>{ctx.data.name}</div>}
+        </CrudDetail>
+      </TestWrapper>
+    ));
+
+    await new Promise((r) => setTimeout(r, 100));
+    expect(container.textContent).toContain("최종 수정");
+    expect(container.textContent).toContain("관리자");
   });
 });
