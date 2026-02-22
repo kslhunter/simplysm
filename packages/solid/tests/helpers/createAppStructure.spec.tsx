@@ -58,8 +58,8 @@ function createTestItems(): AppStructureItem<string>[] {
   ];
 }
 
-function buildTestStructure(opts: {
-  items: AppStructureItem<string>[];
+function buildTestStructure<const TItems extends AppStructureItem<string>[]>(opts: {
+  items: TItems;
   permRecord?: Accessor<Record<string, boolean> | undefined>;
   usableModules?: Accessor<string[] | undefined>;
 }) {
