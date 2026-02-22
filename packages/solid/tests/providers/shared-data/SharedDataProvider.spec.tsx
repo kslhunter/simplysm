@@ -55,7 +55,7 @@ function createMockNotification(): NotificationContextValue {
     success: vi.fn(() => ""),
     warning: vi.fn(() => ""),
     danger: vi.fn(() => ""),
-    try: vi.fn(async (fn) => await fn()),
+    error: vi.fn(),
     update: vi.fn(),
     remove: vi.fn(),
     markAsRead: vi.fn(),

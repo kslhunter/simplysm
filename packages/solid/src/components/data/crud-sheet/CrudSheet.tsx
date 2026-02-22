@@ -126,28 +126,27 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   let formRef: HTMLFormElement | undefined;
 
-  // -- Auto Refresh Effect --
   createEffect(() => {
-    const currLastFilter = lastFilter();
-    const currSorts = sorts();
-    const currPage = page();
-
-    queueMicrotask(async () => {
-      setBusyCount((c) => c + 1);
-      await noti.try(async () => {
-        await refresh(currLastFilter, currSorts, currPage);
-      }, "조회 실패");
-      setBusyCount((c) => c - 1);
-      setReady(true);
-    });
+    void doRefresh();
   });
 
-  async function refresh(currLastFilter: TFilter, currSorts: SortingDef[], currPage: number) {
+  async function doRefresh() {
+    setBusyCount((c) => c + 1);
+    try {
+      await refresh();
+    } catch (err) {
+      noti.error(err, "조회 실패");
+    }
+    setBusyCount((c) => c - 1);
+    setReady(true);
+  }
+
+  async function refresh() {
     const usePagination = local.itemsPerPage != null;
     const result: SearchResult<TItem> = await local.search(
-      currLastFilter,
-      usePagination ? currPage : 0,
-      currSorts,
+      lastFilter(),
+      usePagination ? page() : 0,
+      sorts(),
     );
     setItems(reconcile(result.items));
     originalItems = objClone(result.items);
@@ -212,17 +211,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       return;
     }
 
-    const currLastFilter = lastFilter();
-    const currSorts = sorts();
-    const currPage = page();
-
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 refresh 호출
-    await noti.try(async () => {
-      await local.inlineEdit!.submit(diffs);
+    try {
+      await local.inlineEdit.submit(diffs);
       noti.success("저장 완료", "저장되었습니다.");
-      await refresh(currLastFilter, currSorts, currPage);
-    }, "저장 실패");
+      await refresh();
+    } catch (err) {
+      noti.error(err, "저장 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
@@ -238,10 +234,11 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     if (!result) return;
 
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 refresh 호출
-    await noti.try(async () => {
-      await refresh(lastFilter(), sorts(), page());
-    }, "조회 실패");
+    try {
+      await refresh();
+    } catch (err) {
+      noti.error(err, "조회 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
@@ -251,11 +248,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     if (!result) return;
 
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 refresh 호출
-    await noti.try(async () => {
-      await refresh(lastFilter(), sorts(), page());
+    try {
+      await refresh();
       noti.success("삭제 완료", "삭제되었습니다.");
-    }, "삭제 실패");
+    } catch (err) {
+      noti.error(err, "삭제 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
@@ -264,11 +262,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     if (!local.excel) return;
 
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
-    await noti.try(async () => {
+    try {
       const result = await local.search(lastFilter(), 0, sorts());
-      await local.excel!.download(result.items);
-    }, "엑셀 다운로드 실패");
+      await local.excel.download(result.items);
+    } catch (err) {
+      noti.error(err, "엑셀 다운로드 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
@@ -283,12 +282,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       if (file == null) return;
 
       setBusyCount((c) => c + 1);
-      // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
-      await noti.try(async () => {
+      try {
         await local.excel!.upload!(file);
         noti.success("완료", "엑셀 업로드가 완료되었습니다.");
-        await refresh(lastFilter(), sorts(), page());
-      }, "엑셀 업로드 실패");
+        await refresh();
+      } catch (err) {
+        noti.error(err, "엑셀 업로드 실패");
+      }
       setBusyCount((c) => c - 1);
     };
     input.click();

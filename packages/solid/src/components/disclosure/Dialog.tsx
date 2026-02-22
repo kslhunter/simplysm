@@ -213,10 +213,18 @@ export const Dialog: DialogComponent = (props) => {
     local.onCloseComplete?.();
   };
 
-  // open 변경 시 closeCompleteEmitted 초기화
+  // open 변경 시 closeCompleteEmitted 초기화 + fallback unmount 감지
+  let wasMounted = false;
   createEffect(() => {
     if (open()) {
       closeCompleteEmitted = false;
+    }
+    if (mounted()) {
+      wasMounted = true;
+    } else if (wasMounted) {
+      // fallback timer가 transitionend보다 먼저 실행되어 DOM이 제거된 경우,
+      // onCloseComplete가 호출되지 않는 문제 방지
+      emitCloseComplete();
     }
   });
 

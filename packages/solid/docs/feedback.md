@@ -24,14 +24,15 @@ function MyComponent() {
     });
   };
 
-  // Automatic error handling with try
+  // Error handling with error()
   const handleLoad = async () => {
-    const data = await notification.try(
-      async () => await fetchData(),
-      "Failed to load data", // optional header
-    );
-    // On error: shows danger notification with header + err.message,
-    // logs err.stack, returns undefined
+    try {
+      const data = await fetchData();
+    } catch (err) {
+      notification.error(err, "Failed to load data"); // optional header
+      // Shows danger notification with header + err.message,
+      // logs err.stack via useLogger
+    }
   };
 
   return <Button onClick={handleSave}>Save</Button>;
@@ -49,7 +50,7 @@ function MyComponent() {
 | `success` | `(title: string, message?: string, options?: NotificationOptions) => string` | Success notification |
 | `warning` | `(title: string, message?: string, options?: NotificationOptions) => string` | Warning notification |
 | `danger` | `(title: string, message?: string, options?: NotificationOptions) => string` | Error notification |
-| `try` | `<TResult>(fn: () => Promise<TResult> \| TResult, header?: string) => Promise<TResult \| undefined>` | Execute function with automatic error handling (shows danger notification + logs to `useLogger`) |
+| `error` | `(err?: any, header?: string) => void` | Show error notification from caught error (shows danger notification + logs to `useLogger`). Re-throws if `err` is not an `Error` instance. |
 | `update` | `(id: string, updates: Partial<NotificationItem>, options?: { renotify?: boolean }) => void` | Update notification |
 | `remove` | `(id: string) => void` | Remove notification |
 | `markAsRead` | `(id: string) => void` | Mark as read |

@@ -1,4 +1,4 @@
-import { type ParentComponent, createSignal, createMemo, Show } from "solid-js";
+import { createMemo, createSignal, type ParentComponent, Show } from "solid-js";
 import {
   NotificationContext,
   type NotificationContextValue,
@@ -79,20 +79,13 @@ export const NotificationProvider: ParentComponent = (props) => {
     return addNotification("danger", title, message, options);
   };
 
-  const tryFn = async <TResult,>(
-    fn: () => Promise<TResult> | TResult,
-    header?: string,
-  ): Promise<TResult | undefined> => {
-    try {
-      return await fn();
-    } catch (err) {
-      if (err instanceof Error) {
-        danger(header ?? err.message, header != null ? err.message : undefined);
-        logger.error(err.stack ?? err.message);
-        return undefined;
-      }
-      throw err;
+  const error = (err?: any, header?: string): void => {
+    if (err instanceof Error) {
+      danger(header ?? err.message, header != null ? err.message : undefined);
+      logger.error(err.stack ?? err.message);
+      return;
     }
+    throw err;
   };
 
   const update = (
@@ -151,7 +144,7 @@ export const NotificationProvider: ParentComponent = (props) => {
     success,
     warning,
     danger,
-    try: tryFn,
+    error,
     update,
     remove,
     markAsRead,

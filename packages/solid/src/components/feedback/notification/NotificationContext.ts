@@ -1,4 +1,4 @@
-import { createContext, useContext, type Accessor } from "solid-js";
+import { type Accessor, createContext, useContext } from "solid-js";
 
 /** 알림 테마 */
 export type NotificationTheme = "info" | "success" | "warning" | "danger";
@@ -59,12 +59,7 @@ export interface NotificationContextValue {
   success: (title: string, message?: string, options?: NotificationOptions) => string;
   warning: (title: string, message?: string, options?: NotificationOptions) => string;
   danger: (title: string, message?: string, options?: NotificationOptions) => string;
-
-  // 에러 처리 (danger 알림 + 로깅)
-  try: <TResult>(
-    fn: () => Promise<TResult> | TResult,
-    header?: string,
-  ) => Promise<TResult | undefined>;
+  error: (err?: any, header?: string) => void;
 
   // 알림 수정
   update: (

@@ -83,13 +83,14 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Load --
   async function doLoad() {
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
-    await noti.try(async () => {
+    try {
       const result = await local.load();
       setData(reconcile(result.data) as any);
       originalData = objClone(result.data);
       setInfo(result.info);
-    }, "조회 실패");
+    } catch (err) {
+      noti.error(err, "조회실패");
+    }
     setBusyCount((c) => c - 1);
     setReady(true);
   }
@@ -124,9 +125,8 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     }
 
     setBusyCount((c) => c + 1);
-    // eslint-disable-next-line solid/reactivity -- noti.try 내부에서 비동기 호출
-    await noti.try(async () => {
-      const result = await local.submit!(objClone(unwrap(data)));
+    try {
+      const result = await local.submit(objClone(unwrap(data)));
       if (result) {
         noti.success("저장 완료", "저장되었습니다.");
         if (dialogInstance) {
@@ -135,7 +135,9 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
           await doLoad();
         }
       }
-    }, "저장 실패");
+    } catch (err) {
+      noti.error(err, "저장 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
@@ -155,25 +157,19 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     const del = !currentInfo.isDeleted;
 
     setBusyCount((c) => c + 1);
-    /* eslint-disable solid/reactivity -- noti.try 내부에서 비동기 호출 */
-    await noti.try(
-      async () => {
-        const result = await local.toggleDelete!(del);
-        if (result) {
-          noti.success(
-            del ? "삭제 완료" : "복구 완료",
-            del ? "삭제되었습니다." : "복구되었습니다.",
-          );
-          if (dialogInstance) {
-            dialogInstance.close(true);
-          } else {
-            await doLoad();
-          }
+    try {
+      const result = await local.toggleDelete(del);
+      if (result) {
+        noti.success(del ? "삭제 완료" : "복구 완료", del ? "삭제되었습니다." : "복구되었습니다.");
+        if (dialogInstance) {
+          dialogInstance.close(true);
+        } else {
+          await doLoad();
         }
-      },
-      del ? "삭제 실패" : "복구 실패",
-    );
-    /* eslint-enable solid/reactivity */
+      }
+    } catch (err) {
+      noti.error(err, del ? "삭제 실패" : "복구 실패");
+    }
     setBusyCount((c) => c - 1);
   }
 
