@@ -59,6 +59,8 @@ export * from "./components/data/sheet/DataSheet.styles";
 export * from "./components/data/sheet/types";
 export * from "./components/data/crud-sheet/CrudSheet";
 export * from "./components/data/crud-sheet/types";
+export * from "./components/data/crud-detail/CrudDetail";
+export * from "./components/data/crud-detail/types";
 export * from "./components/data/calendar/Calendar";
 export * from "./components/data/permission-table/PermissionTable";
 export * from "./components/data/kanban/Kanban";
