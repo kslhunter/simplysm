@@ -1,4 +1,13 @@
-import { children, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
+import {
+  createContext,
+  createSignal,
+  type JSX,
+  onCleanup,
+  type ParentComponent,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -6,7 +15,6 @@ import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
-import { splitSlots } from "../../../helpers/splitSlots";
 import {
   listItemBaseClass,
   listItemSelectedClass,
@@ -18,17 +26,24 @@ import {
 
 void ripple;
 
+type SlotAccessor = (() => JSX.Element) | undefined;
+
+interface SelectItemSlotsContextValue {
+  setChildren: (content: SlotAccessor) => void;
+}
+
+const SelectItemSlotsContext = createContext<SelectItemSlotsContextValue>();
+
 /**
  * 중첩 아이템을 담는 서브 컴포넌트
  */
-const SelectItemChildren: ParentComponent = (props) => (
-  <div class="flex" data-select-item-children>
-    <div class={listItemIndentGuideClass} />
-    <List inset class="flex-1">
-      {props.children}
-    </List>
-  </div>
-);
+const SelectItemChildren: ParentComponent = (props) => {
+  const ctx = useContext(SelectItemSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children is lazily read at render time
+  ctx.setChildren(() => props.children);
+  onCleanup(() => ctx.setChildren(undefined));
+  return null;
+};
 
 export interface SelectItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -68,10 +83,9 @@ export const SelectItem: SelectItemComponent = <T,>(
 
   const context = useSelectContext<T>();
 
-  const resolved = children(() => local.children);
-  const [slots, content] = splitSlots(resolved, ["selectItemChildren"] as const);
-
-  const hasChildren = () => slots().selectItemChildren.length > 0;
+  const [childrenSlot, _setChildrenSlot] = createSignal<SlotAccessor>();
+  const setChildrenSlot = (content: SlotAccessor) => _setChildrenSlot(() => content);
+  const hasChildren = () => childrenSlot() !== undefined;
   const isSelected = () => context.isSelected(local.value);
   const useRipple = () => !local.disabled;
 
@@ -97,7 +111,7 @@ export const SelectItem: SelectItemComponent = <T,>(
   const getCheckIconClass = () => getListItemSelectedIconClass(isSelected());
 
   return (
-    <>
+    <SelectItemSlotsContext.Provider value={{ setChildren: setChildrenSlot }}>
       <button
         {...rest}
         type="button"
@@ -114,12 +128,19 @@ export const SelectItem: SelectItemComponent = <T,>(
         <Show when={context.multiple() && !hasChildren()}>
           <Icon icon={IconCheck} class={getCheckIconClass()} />
         </Show>
-        <span class={listItemContentClass}>{content()}</span>
+        <span class={listItemContentClass}>{local.children}</span>
       </button>
       <Show when={hasChildren()}>
-        <Collapse open={true}>{slots().selectItemChildren.single()}</Collapse>
+        <Collapse open={true}>
+          <div class="flex">
+            <div class={listItemIndentGuideClass} />
+            <List inset class="flex-1">
+              {childrenSlot()!()}
+            </List>
+          </div>
+        </Collapse>
       </Show>
-    </>
+    </SelectItemSlotsContext.Provider>
   );
 };
 

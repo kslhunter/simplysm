@@ -1,12 +1,15 @@
 import clsx from "clsx";
 import {
-  children,
+  createContext,
   createEffect,
   createMemo,
+  createSignal,
   type JSX,
+  onCleanup,
   type ParentComponent,
   Show,
   splitProps,
+  useContext,
 } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
@@ -19,15 +22,24 @@ import {
 } from "./Field.styles";
 import { PlaceholderFallback } from "./FieldPlaceholder";
 import { Invalid } from "../../form-control/Invalid";
-import { splitSlots } from "../../../helpers/splitSlots";
+
+type SlotAccessor = (() => JSX.Element) | undefined;
+
+interface TextInputSlotsContextValue {
+  setPrefix: (content: SlotAccessor) => void;
+}
+
+const TextInputSlotsContext = createContext<TextInputSlotsContextValue>();
 
 type TextInputType = "text" | "password" | "email";
 
-const TextInputPrefix: ParentComponent = (props) => (
-  <span data-text-input-prefix class="shrink-0">
-    {props.children}
-  </span>
-);
+const TextInputPrefix: ParentComponent = (props) => {
+  const ctx = useContext(TextInputSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
+  ctx.setPrefix(() => props.children);
+  onCleanup(() => ctx.setPrefix(undefined));
+  return null;
+};
 
 export interface TextInputProps {
   /** 입력 값 */
@@ -231,10 +243,10 @@ const TextInputInner = (props: TextInputProps) => {
     ime.handleCompositionEnd(extractValue(e.currentTarget));
   };
 
-  // children에서 Prefix 슬롯 추출
-  const resolved = children(() => local.children);
-  const [slots] = splitSlots(resolved, ["textInputPrefix"] as const);
-  const prefixEl = () => slots().textInputPrefix[0] as HTMLElement | undefined;
+  // Prefix 슬롯 Context 등록
+  const [prefix, _setPrefix] = createSignal<SlotAccessor>();
+  const setPrefix = (content: SlotAccessor) => _setPrefix(() => content);
+  const prefixEl = () => prefix() !== undefined;
 
   // wrapper 클래스 (includeCustomClass=false일 때 local.class 제외 — inset에서 outer에만 적용)
   const getWrapperClass = (includeCustomClass: boolean) =>
@@ -272,83 +284,94 @@ const TextInputInner = (props: TextInputProps) => {
   });
 
   return (
-    <Invalid
-      message={errorMsg()}
-      variant={local.inset ? "dot" : "border"}
-      touchMode={local.touchMode}
-    >
-      <Show
-        when={local.inset}
-        fallback={
-          // standalone 모드: 기존 Show 패턴 유지
-          <Show
-            when={isEditable()}
-            fallback={
-              <div
-                {...rest}
-                data-text-field
-                class={twMerge(getWrapperClass(true), "sd-text-field")}
-                style={local.style}
-                title={local.title}
-              >
-                {prefixEl()}
-                <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
-              </div>
-            }
-          >
-            <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
-              {prefixEl()}
-              <input
-                type={local.type ?? "text"}
-                class={fieldInputClass}
-                value={inputValue()}
-                placeholder={local.placeholder}
-                title={local.title}
-                autocomplete={local.autocomplete ?? "one-time-code"}
-                onInput={handleInput}
-                onCompositionStart={handleCompositionStart}
-                onCompositionEnd={handleCompositionEnd}
-              />
-            </div>
-          </Show>
-        }
+    <TextInputSlotsContext.Provider value={{ setPrefix }}>
+      {local.children}
+      <Invalid
+        message={errorMsg()}
+        variant={local.inset ? "dot" : "border"}
+        touchMode={local.touchMode}
       >
-        {/* inset 모드: dual-element overlay 패턴 */}
-        <div
-          {...rest}
-          data-text-field
-          class={clsx("relative", "[text-decoration:inherit]", local.class)}
-          style={local.style}
+        <Show
+          when={local.inset}
+          fallback={
+            // standalone 모드: 기존 Show 패턴 유지
+            <Show
+              when={isEditable()}
+              fallback={
+                <div
+                  {...rest}
+                  data-text-field
+                  class={twMerge(getWrapperClass(true), "sd-text-field")}
+                  style={local.style}
+                  title={local.title}
+                >
+                  <Show when={prefix()}>
+                    <span class="shrink-0">{prefix()!()}</span>
+                  </Show>
+                  <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
+                </div>
+              }
+            >
+              <div {...rest} data-text-field class={getWrapperClass(true)} style={local.style}>
+                <Show when={prefix()}>
+                  <span class="shrink-0">{prefix()!()}</span>
+                </Show>
+                <input
+                  type={local.type ?? "text"}
+                  class={fieldInputClass}
+                  value={inputValue()}
+                  placeholder={local.placeholder}
+                  title={local.title}
+                  autocomplete={local.autocomplete ?? "one-time-code"}
+                  onInput={handleInput}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={handleCompositionEnd}
+                />
+              </div>
+            </Show>
+          }
         >
+          {/* inset 모드: dual-element overlay 패턴 */}
           <div
-            data-text-field-content
-            class={getWrapperClass(false)}
-            style={{ visibility: isEditable() ? "hidden" : undefined }}
-            title={local.title}
+            {...rest}
+            data-text-field
+            class={clsx("relative", "[text-decoration:inherit]", local.class)}
+            style={local.style}
           >
-            {prefixEl()}
-            <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
-          </div>
-
-          <Show when={isEditable()}>
-            <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
-              {prefixEl()}
-              <input
-                type={local.type ?? "text"}
-                class={fieldInputClass}
-                value={inputValue()}
-                placeholder={local.placeholder}
-                title={local.title}
-                autocomplete={local.autocomplete ?? "one-time-code"}
-                onInput={handleInput}
-                onCompositionStart={handleCompositionStart}
-                onCompositionEnd={handleCompositionEnd}
-              />
+            <div
+              data-text-field-content
+              class={getWrapperClass(false)}
+              style={{ visibility: isEditable() ? "hidden" : undefined }}
+              title={local.title}
+            >
+              <Show when={prefix()}>
+                <span class="shrink-0">{prefix()!()}</span>
+              </Show>
+              <PlaceholderFallback value={displayValue()} placeholder={local.placeholder} />
             </div>
-          </Show>
-        </div>
-      </Show>
-    </Invalid>
+
+            <Show when={isEditable()}>
+              <div class={twMerge(getWrapperClass(false), "absolute left-0 top-0 size-full")}>
+                <Show when={prefix()}>
+                  <span class="shrink-0">{prefix()!()}</span>
+                </Show>
+                <input
+                  type={local.type ?? "text"}
+                  class={fieldInputClass}
+                  value={inputValue()}
+                  placeholder={local.placeholder}
+                  title={local.title}
+                  autocomplete={local.autocomplete ?? "one-time-code"}
+                  onInput={handleInput}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={handleCompositionEnd}
+                />
+              </div>
+            </Show>
+          </div>
+        </Show>
+      </Invalid>
+    </TextInputSlotsContext.Provider>
   );
 };
 

@@ -8,7 +8,6 @@ import {
   onCleanup,
   Show,
   splitProps,
-  children,
 } from "solid-js";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { createMountTransition } from "../../hooks/createMountTransition";
@@ -17,12 +16,15 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { borderSubtle } from "../../styles/tokens.styles";
-import { splitSlots } from "../../helpers/splitSlots";
 
 // --- DropdownContext (internal) ---
 
+type SlotAccessor = (() => JSX.Element) | undefined;
+
 interface DropdownContextValue {
   toggle: () => void;
+  setTrigger: (content: SlotAccessor) => void;
+  setContent: (content: SlotAccessor) => void;
 }
 
 const DropdownContext = createContext<DropdownContextValue>();
@@ -30,23 +32,21 @@ const DropdownContext = createContext<DropdownContextValue>();
 // --- DropdownTrigger ---
 
 const DropdownTrigger: ParentComponent = (props) => {
-  const ctx = useContext(DropdownContext);
-
-  const handleClick = () => {
-    ctx?.toggle();
-  };
-
-  return (
-    <div data-dropdown-trigger onClick={handleClick}>
-      {props.children}
-    </div>
-  );
+  const ctx = useContext(DropdownContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
+  ctx.setTrigger(() => props.children);
+  onCleanup(() => ctx.setTrigger(undefined));
+  return null;
 };
 
 // --- DropdownContent ---
 
 const DropdownContent: ParentComponent = (props) => {
-  return <div data-dropdown-content>{props.children}</div>;
+  const ctx = useContext(DropdownContext)!;
+  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
+  ctx.setContent(() => props.children);
+  onCleanup(() => ctx.setContent(undefined));
+  return null;
 };
 
 // --- Dropdown ---
@@ -176,338 +176,326 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     setOpen(!open());
   };
 
-  // Context를 먼저 제공하고, 그 안에서 children을 resolve하는 내부 컴포넌트
-  const DropdownInner: ParentComponent = (innerProps) => {
-    // children resolve + slot 분리
-    const resolved = children(() => innerProps.children);
-    const [slots] = splitSlots(resolved, ["dropdownTrigger", "dropdownContent"] as const);
+  // 슬롯 등록 시그널
+  const [triggerSlot, _setTriggerSlot] = createSignal<SlotAccessor>();
+  const setTrigger = (content: SlotAccessor) => _setTriggerSlot(() => content);
+  const [contentSlot, _setContentSlot] = createSignal<SlotAccessor>();
+  const setContent = (content: SlotAccessor) => _setContentSlot(() => content);
 
-    // Trigger 요소 ref (슬롯에서 추출)
-    const triggerEl = (): HTMLElement | undefined => {
-      const triggerSlot = slots().dropdownTrigger;
-      return triggerSlot.length > 0 ? triggerSlot[0] : undefined;
-    };
+  // Trigger wrapper ref (위치 계산에 필요)
+  let triggerRef: HTMLDivElement | undefined;
 
-    // 팝업 ref
-    const [popupRef, setPopupRef] = createSignal<HTMLDivElement>();
+  // 팝업 ref
+  const [popupRef, setPopupRef] = createSignal<HTMLDivElement>();
 
-    // 애니메이션 상태 (mount transition)
-    const { mounted, animating, unmount } = createMountTransition(open);
+  // 애니메이션 상태 (mount transition)
+  const { mounted, animating, unmount } = createMountTransition(open);
 
-    // 계산된 위치
-    const [computedStyle, setComputedStyle] = createSignal<JSX.CSSProperties>({});
+  // 계산된 위치
+  const [computedStyle, setComputedStyle] = createSignal<JSX.CSSProperties>({});
 
-    // 방향 (위/아래)
-    const [direction, setDirection] = createSignal<"down" | "up">("down");
+  // 방향 (위/아래)
+  const [direction, setDirection] = createSignal<"down" | "up">("down");
 
-    // 위치 계산 함수 추출
-    const updatePosition = () => {
-      const popup = popupRef();
-      if (!popup) return;
+  // 위치 계산 함수 추출
+  const updatePosition = () => {
+    const popup = popupRef();
+    if (!popup) return;
 
-      const style: JSX.CSSProperties = {};
+    const style: JSX.CSSProperties = {};
 
-      const trigger = triggerEl();
-      if (trigger) {
-        const rect = trigger.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
+    if (triggerRef) {
+      const rect = triggerRef.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
 
-        // 위/아래 방향 결정 (화면 중앙 기준)
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
-        const openDown = spaceBelow >= spaceAbove;
-        setDirection(openDown ? "down" : "up");
+      // 위/아래 방향 결정 (화면 중앙 기준)
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const openDown = spaceBelow >= spaceAbove;
+      setDirection(openDown ? "down" : "up");
 
-        // 좌/우 조정 (화면 밖으로 나가지 않도록) - 뷰포트 기준
-        const adjustedLeft = Math.min(rect.left, viewportWidth - popup.offsetWidth);
+      // 좌/우 조정 (화면 밖으로 나가지 않도록) - 뷰포트 기준
+      const adjustedLeft = Math.min(rect.left, viewportWidth - popup.offsetWidth);
 
-        style.left = `${Math.max(0, adjustedLeft)}px`;
-        style["min-width"] = `${rect.width}px`;
+      style.left = `${Math.max(0, adjustedLeft)}px`;
+      style["min-width"] = `${rect.width}px`;
 
-        if (openDown) {
-          style.top = `${rect.bottom}px`;
-        } else {
-          style.bottom = `${viewportHeight - rect.top}px`;
-        }
-      } else if (local.position) {
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
-
-        // 위/아래 방향 결정
-        const spaceBelow = viewportHeight - local.position.y;
-        const spaceAbove = local.position.y;
-        const openDown = spaceBelow >= spaceAbove;
-        setDirection(openDown ? "down" : "up");
-
-        // 좌/우 조정 - 뷰포트 기준
-        const adjustedLeft = Math.min(local.position.x, viewportWidth - (popup.offsetWidth || 200));
-        style.left = `${Math.max(0, adjustedLeft)}px`;
-
-        if (openDown) {
-          style.top = `${local.position.y}px`;
-        } else {
-          style.bottom = `${viewportHeight - local.position.y}px`;
-        }
-      }
-
-      setComputedStyle(style);
-    };
-
-    // 마운트 시 위치 계산 + popup 크기 변경 시 재계산
-    createEffect(() => {
-      if (!mounted()) return;
-
-      updatePosition();
-
-      const popup = popupRef();
-      if (popup) {
-        createResizeObserver(popup, () => {
-          updatePosition();
-        });
-      }
-    });
-
-    // 외부 클릭 감지 (pointerdown)
-    createEffect(() => {
-      if (!open()) return;
-
-      const handlePointerDown = (e: PointerEvent) => {
-        const popup = popupRef();
-        const target = e.target as Node;
-
-        // 팝업 내부 클릭은 무시
-        if (popup?.contains(target)) return;
-
-        // Trigger 내부 클릭도 무시
-        const trigger = triggerEl();
-        if (trigger?.contains(target)) return;
-
-        // 외부 클릭 -> 닫기
-        setOpen(false);
-      };
-
-      document.addEventListener("pointerdown", handlePointerDown);
-      onCleanup(() => document.removeEventListener("pointerdown", handlePointerDown));
-    });
-
-    // Tab 키 포커스 이동 감지 (focusout)
-    createEffect(() => {
-      if (!open()) return;
-
-      const handleFocusOut = (e: FocusEvent) => {
-        const popup = popupRef();
-        const relatedTarget = e.relatedTarget as Node | null;
-
-        // relatedTarget이 null이면 무시 (pointerdown이 처리)
-        if (!relatedTarget) return;
-
-        // 팝업 내부로 이동은 무시
-        if (popup?.contains(relatedTarget)) return;
-
-        // Trigger 내부로 이동도 무시
-        const trigger = triggerEl();
-        if (trigger?.contains(relatedTarget)) return;
-
-        // 외부로 포커스 이동 -> 닫기
-        setOpen(false);
-      };
-
-      document.addEventListener("focusout", handleFocusOut);
-      onCleanup(() => document.removeEventListener("focusout", handleFocusOut));
-    });
-
-    // Escape 키 감지
-    createEffect(() => {
-      if (!open()) return;
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-          e.stopImmediatePropagation();
-          setOpen(false);
-        }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-      onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
-    });
-
-    // 키보드 네비게이션: 트리거용 핸들러
-    const handleTriggerKeyDown = (e: KeyboardEvent) => {
-      if (!local.keyboardNav) return;
-
-      // 닫혀있을 때: ArrowUp/ArrowDown으로 열기
-      if (!open()) {
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-          e.preventDefault();
-          setOpen(true);
-        }
-        return;
-      }
-
-      // 열려있을 때: direction에 따른 처리
-      const popup = popupRef();
-      if (!popup) return;
-
-      const dir = direction();
-      const focusables = [
-        ...popup.querySelectorAll<HTMLElement>(
-          '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
-        ),
-      ];
-
-      if (dir === "down") {
-        if (e.key === "ArrowDown" && focusables.length > 0) {
-          e.preventDefault();
-          focusables[0]?.focus();
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          setOpen(false);
-        }
+      if (openDown) {
+        style.top = `${rect.bottom}px`;
       } else {
-        // direction === "up"
-        if (e.key === "ArrowUp" && focusables.length > 0) {
-          e.preventDefault();
-          focusables[focusables.length - 1]?.focus();
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          setOpen(false);
-        }
+        style.bottom = `${viewportHeight - rect.top}px`;
       }
-    };
+    } else if (local.position) {
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
 
-    // 키보드 네비게이션: 팝업용 핸들러
-    const handlePopupKeyDown = (e: KeyboardEvent) => {
-      if (!local.keyboardNav) return;
+      // 위/아래 방향 결정
+      const spaceBelow = viewportHeight - local.position.y;
+      const spaceAbove = local.position.y;
+      const openDown = spaceBelow >= spaceAbove;
+      setDirection(openDown ? "down" : "up");
 
-      // List 등에서 이미 처리된 이벤트는 무시
-      if (e.defaultPrevented) return;
+      // 좌/우 조정 - 뷰포트 기준
+      const adjustedLeft = Math.min(local.position.x, viewportWidth - (popup.offsetWidth || 200));
+      style.left = `${Math.max(0, adjustedLeft)}px`;
 
-      const trigger = triggerEl();
-      if (!trigger) return;
-
-      const dir = direction();
-
-      // 팝업에서 ArrowUp/ArrowDown이 처리되지 않았다면 (첫/마지막 아이템)
-      // 트리거로 포커스 이동
-      if (dir === "down" && e.key === "ArrowUp") {
-        e.preventDefault();
-        trigger.focus();
-      } else if (dir === "up" && e.key === "ArrowDown") {
-        e.preventDefault();
-        trigger.focus();
-      }
-    };
-
-    // 트리거에 키보드 핸들러 등록
-    createEffect(() => {
-      if (!local.keyboardNav) return;
-
-      const trigger = triggerEl();
-      if (!trigger) return;
-
-      trigger.addEventListener("keydown", handleTriggerKeyDown);
-      onCleanup(() => trigger.removeEventListener("keydown", handleTriggerKeyDown));
-    });
-
-    // 스크롤 감지
-    createEffect(() => {
-      if (!open()) return;
-
-      const handleScroll = (e: Event) => {
-        // 팝업 내부 스크롤은 무시
-        const popup = popupRef();
-        if (popup?.contains(e.target as Node)) return;
-
-        setOpen(false);
-      };
-
-      // capture로 모든 스크롤 감지
-      document.addEventListener("scroll", handleScroll, { capture: true });
-      onCleanup(() => document.removeEventListener("scroll", handleScroll, { capture: true }));
-    });
-
-    // resize 감지 (뷰포트 크기 변경 시 닫기)
-    createEffect(() => {
-      if (!open()) return;
-
-      const handleResize = () => {
-        setOpen(false);
-      };
-
-      window.addEventListener("resize", handleResize);
-      onCleanup(() => window.removeEventListener("resize", handleResize));
-    });
-
-    // transitionend 이벤트 처리
-    const handleTransitionEnd = (e: TransitionEvent) => {
-      // opacity 전환 완료 시에만 처리
-      if (e.propertyName !== "opacity") return;
-
-      if (!open()) {
-        // 닫힘 애니메이션 완료 -> DOM에서 제거
-        unmount();
-      }
-    };
-
-    const maxHeight = () => local.maxHeight ?? 300;
-
-    // 애니메이션 클래스 (opacity와 transform만 transition, 위치 속성은 제외)
-    const animationClass = () => {
-      const base = "transition-[opacity,transform] duration-150 ease-out";
-      const visible = animating();
-      const dir = direction();
-
-      if (visible) {
-        return clsx(base, "translate-y-0 opacity-100");
+      if (openDown) {
+        style.top = `${local.position.y}px`;
       } else {
-        return clsx(base, "opacity-0", dir === "down" ? "-translate-y-1" : "translate-y-1");
+        style.bottom = `${viewportHeight - local.position.y}px`;
+      }
+    }
+
+    setComputedStyle(style);
+  };
+
+  // 마운트 시 위치 계산 + popup 크기 변경 시 재계산
+  createEffect(() => {
+    if (!mounted()) return;
+
+    updatePosition();
+
+    const popup = popupRef();
+    if (popup) {
+      createResizeObserver(popup, () => {
+        updatePosition();
+      });
+    }
+  });
+
+  // 외부 클릭 감지 (pointerdown)
+  createEffect(() => {
+    if (!open()) return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const popup = popupRef();
+      const target = e.target as Node;
+
+      // 팝업 내부 클릭은 무시
+      if (popup?.contains(target)) return;
+
+      // Trigger 내부 클릭도 무시
+      if (triggerRef?.contains(target)) return;
+
+      // 외부 클릭 -> 닫기
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    onCleanup(() => document.removeEventListener("pointerdown", handlePointerDown));
+  });
+
+  // Tab 키 포커스 이동 감지 (focusout)
+  createEffect(() => {
+    if (!open()) return;
+
+    const handleFocusOut = (e: FocusEvent) => {
+      const popup = popupRef();
+      const relatedTarget = e.relatedTarget as Node | null;
+
+      // relatedTarget이 null이면 무시 (pointerdown이 처리)
+      if (!relatedTarget) return;
+
+      // 팝업 내부로 이동은 무시
+      if (popup?.contains(relatedTarget)) return;
+
+      // Trigger 내부로 이동도 무시
+      if (triggerRef?.contains(relatedTarget)) return;
+
+      // 외부로 포커스 이동 -> 닫기
+      setOpen(false);
+    };
+
+    document.addEventListener("focusout", handleFocusOut);
+    onCleanup(() => document.removeEventListener("focusout", handleFocusOut));
+  });
+
+  // Escape 키 감지
+  createEffect(() => {
+    if (!open()) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        setOpen(false);
       }
     };
 
-    return (
-      <>
-        {/* Trigger 슬롯 인라인 렌더링 */}
-        {slots().dropdownTrigger}
+    document.addEventListener("keydown", handleKeyDown);
+    onCleanup(() => document.removeEventListener("keydown", handleKeyDown));
+  });
 
-        {/* Content 슬롯: Portal + 팝업 */}
-        <Show when={mounted()}>
-          <Portal>
-            <div
-              {...rest}
-              ref={setPopupRef}
-              data-dropdown
-              class={twMerge(
-                clsx(
-                  "fixed",
-                  "z-dropdown",
-                  "bg-white dark:bg-base-800",
-                  "border",
-                  borderSubtle,
-                  "shadow-lg dark:shadow-black/30",
-                  "rounded-md",
-                  "overflow-y-auto",
-                  animationClass(),
-                ),
-                local.class,
-              )}
-              style={mergeStyles(computedStyle(), local.style, {
-                "max-height": `${maxHeight()}px`,
-              })}
-              onTransitionEnd={handleTransitionEnd}
-              onKeyDown={handlePopupKeyDown}
-            >
-              {slots().dropdownContent}
-            </div>
-          </Portal>
-        </Show>
-      </>
-    );
+  // 키보드 네비게이션: 트리거용 핸들러
+  const handleTriggerKeyDown = (e: KeyboardEvent) => {
+    if (!local.keyboardNav) return;
+
+    // 닫혀있을 때: ArrowUp/ArrowDown으로 열기
+    if (!open()) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+
+    // 열려있을 때: direction에 따른 처리
+    const popup = popupRef();
+    if (!popup) return;
+
+    const dir = direction();
+    const focusables = [
+      ...popup.querySelectorAll<HTMLElement>(
+        '[tabindex]:not([tabindex="-1"]), button, [data-list-item]',
+      ),
+    ];
+
+    if (dir === "down") {
+      if (e.key === "ArrowDown" && focusables.length > 0) {
+        e.preventDefault();
+        focusables[0]?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setOpen(false);
+      }
+    } else {
+      // direction === "up"
+      if (e.key === "ArrowUp" && focusables.length > 0) {
+        e.preventDefault();
+        focusables[focusables.length - 1]?.focus();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setOpen(false);
+      }
+    }
+  };
+
+  // 키보드 네비게이션: 팝업용 핸들러
+  const handlePopupKeyDown = (e: KeyboardEvent) => {
+    if (!local.keyboardNav) return;
+
+    // List 등에서 이미 처리된 이벤트는 무시
+    if (e.defaultPrevented) return;
+
+    if (!triggerRef) return;
+
+    const dir = direction();
+
+    // 팝업에서 ArrowUp/ArrowDown이 처리되지 않았다면 (첫/마지막 아이템)
+    // 트리거로 포커스 이동
+    if (dir === "down" && e.key === "ArrowUp") {
+      e.preventDefault();
+      triggerRef.focus();
+    } else if (dir === "up" && e.key === "ArrowDown") {
+      e.preventDefault();
+      triggerRef.focus();
+    }
+  };
+
+  // 스크롤 감지
+  createEffect(() => {
+    if (!open()) return;
+
+    const handleScroll = (e: Event) => {
+      // 팝업 내부 스크롤은 무시
+      const popup = popupRef();
+      if (popup?.contains(e.target as Node)) return;
+
+      setOpen(false);
+    };
+
+    // capture로 모든 스크롤 감지
+    document.addEventListener("scroll", handleScroll, { capture: true });
+    onCleanup(() => document.removeEventListener("scroll", handleScroll, { capture: true }));
+  });
+
+  // resize 감지 (뷰포트 크기 변경 시 닫기)
+  createEffect(() => {
+    if (!open()) return;
+
+    const handleResize = () => {
+      setOpen(false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    onCleanup(() => window.removeEventListener("resize", handleResize));
+  });
+
+  // transitionend 이벤트 처리
+  const handleTransitionEnd = (e: TransitionEvent) => {
+    // opacity 전환 완료 시에만 처리
+    if (e.propertyName !== "opacity") return;
+
+    if (!open()) {
+      // 닫힘 애니메이션 완료 -> DOM에서 제거
+      unmount();
+    }
+  };
+
+  const maxHeight = () => local.maxHeight ?? 300;
+
+  // 애니메이션 클래스 (opacity와 transform만 transition, 위치 속성은 제외)
+  const animationClass = () => {
+    const base = "transition-[opacity,transform] duration-150 ease-out";
+    const visible = animating();
+    const dir = direction();
+
+    if (visible) {
+      return clsx(base, "translate-y-0 opacity-100");
+    } else {
+      return clsx(base, "opacity-0", dir === "down" ? "-translate-y-1" : "translate-y-1");
+    }
   };
 
   return (
-    <DropdownContext.Provider value={{ toggle }}>
-      <DropdownInner>{local.children}</DropdownInner>
+    <DropdownContext.Provider value={{ toggle, setTrigger, setContent }}>
+      {local.children}
+
+      {/* Trigger 슬롯 렌더링 (wrapper div에 click/keyboard handler 부착) */}
+      <Show when={triggerSlot()}>
+        <div
+          ref={(el) => {
+            triggerRef = el;
+          }}
+          data-dropdown-trigger
+          onClick={toggle}
+          onKeyDown={handleTriggerKeyDown}
+        >
+          {triggerSlot()!()}
+        </div>
+      </Show>
+
+      {/* Content 슬롯: Portal + 팝업 */}
+      <Show when={mounted()}>
+        <Portal>
+          <div
+            {...rest}
+            ref={setPopupRef}
+            data-dropdown
+            class={twMerge(
+              clsx(
+                "fixed",
+                "z-dropdown",
+                "bg-white dark:bg-base-800",
+                "border",
+                borderSubtle,
+                "shadow-lg dark:shadow-black/30",
+                "rounded-md",
+                "overflow-y-auto",
+                animationClass(),
+              ),
+              local.class,
+            )}
+            style={mergeStyles(computedStyle(), local.style, {
+              "max-height": `${maxHeight()}px`,
+            })}
+            onTransitionEnd={handleTransitionEnd}
+            onKeyDown={handlePopupKeyDown}
+          >
+            <Show when={contentSlot()}>{contentSlot()!()}</Show>
+          </div>
+        </Portal>
+      </Show>
     </DropdownContext.Provider>
   );
 }) as DropdownComponent;

@@ -1,10 +1,13 @@
 import {
-  children,
   type Component,
+  createContext,
+  createSignal,
   type JSX,
+  onCleanup,
   type ParentComponent,
   Show,
   splitProps,
+  useContext,
 } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -15,7 +18,6 @@ import { Collapse } from "../../disclosure/Collapse";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
-import { splitSlots } from "../../../helpers/splitSlots";
 import {
   listItemBaseClass,
   listItemSizeClasses,
@@ -29,6 +31,14 @@ import {
 import type { ComponentSize } from "../../../styles/tokens.styles";
 
 void ripple;
+
+type SlotAccessor = (() => JSX.Element) | undefined;
+
+interface ListItemSlotsContextValue {
+  setChildren: (content: SlotAccessor) => void;
+}
+
+const ListItemSlotsContext = createContext<ListItemSlotsContextValue>();
 
 const chevronClass = clsx("transition-transform duration-200 motion-reduce:transition-none");
 
@@ -50,14 +60,13 @@ const chevronClass = clsx("transition-transform duration-200 motion-reduce:trans
  * </List.Item>
  * ```
  */
-const ListItemChildren: ParentComponent = (props) => (
-  <div class="flex" data-list-item-children>
-    <div class={listItemIndentGuideClass} />
-    <List inset class="flex-1">
-      {props.children}
-    </List>
-  </div>
-);
+const ListItemChildren: ParentComponent = (props) => {
+  const ctx = useContext(ListItemSlotsContext)!;
+  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
+  ctx.setChildren(() => props.children);
+  onCleanup(() => ctx.setChildren(undefined));
+  return null;
+};
 
 export interface ListItemProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -157,10 +166,9 @@ export const ListItem: ListItemComponent = (props) => {
     onChange: () => local.onOpenChange,
   });
 
-  const resolved = children(() => local.children);
-  const [slots, content] = splitSlots(resolved, ["listItemChildren"] as const);
-
-  const hasChildren = () => slots().listItemChildren.length > 0;
+  const [childrenSlot, _setChildrenSlot] = createSignal<SlotAccessor>();
+  const setChildrenSlot = (content: SlotAccessor) => _setChildrenSlot(() => content);
+  const hasChildren = () => childrenSlot() !== undefined;
 
   const useRipple = () => !(local.readonly || local.disabled);
 
@@ -189,7 +197,7 @@ export const ListItem: ListItemComponent = (props) => {
   const getSelectedIconClassName = () => getListItemSelectedIconClass(local.selected ?? false);
 
   return (
-    <>
+    <ListItemSlotsContext.Provider value={{ setChildren: setChildrenSlot }}>
       <button
         {...rest}
         type="button"
@@ -215,17 +223,22 @@ export const ListItem: ListItemComponent = (props) => {
         <Show when={local.selectedIcon && !hasChildren()}>
           <Icon icon={local.selectedIcon!} class={getSelectedIconClassName()} />
         </Show>
-        <span class={listItemContentClass}>{content()}</span>
+        <span class={listItemContentClass}>{local.children}</span>
         <Show when={hasChildren()}>
           <Icon icon={IconChevronDown} size="1em" class={getChevronClassName()} />
         </Show>
       </button>
       <Show when={hasChildren()}>
         <Collapse open={openState()} data-collapsed={!openState() || undefined}>
-          {slots().listItemChildren.single()}
+          <div class="flex">
+            <div class={listItemIndentGuideClass} />
+            <List inset class="flex-1">
+              {childrenSlot()!()}
+            </List>
+          </div>
         </Collapse>
       </Show>
-    </>
+    </ListItemSlotsContext.Provider>
   );
 };
 

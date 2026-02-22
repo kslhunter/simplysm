@@ -219,7 +219,6 @@ import "@simplysm/solid/tailwind.css";
 ## Helpers & Directives
 
 - [`mergeStyles`](docs/helpers.md#mergestyles) - Merge inline style strings and CSSProperties objects
-- [`splitSlots`](docs/helpers.md#splitslots) - Split children into named slots by component type
 - [`ripple`](docs/helpers.md#ripple-directive) - Material Design ripple effect directive
 - [`createAppStructure`](docs/hooks.md#createappstructure) - Declarative app structure (routing, menus, permissions)
 

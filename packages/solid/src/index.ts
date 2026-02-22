@@ -182,7 +182,6 @@ export { ripple } from "./directives/ripple";
 //#region ========== Helpers ==========
 
 export { mergeStyles } from "./helpers/mergeStyles";
-export { splitSlots } from "./helpers/splitSlots";
 export { createAppStructure } from "./helpers/createAppStructure";
 export type {
   AppStructureItem,
