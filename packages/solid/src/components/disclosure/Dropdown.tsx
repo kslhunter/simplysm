@@ -154,7 +154,7 @@ export const Dropdown: DropdownComponent = ((props: DropdownProps) => {
     "children",
   ]);
 
-  const [open, setOpenInternal] = createSignal(local.open ?? false);
+  const [open, setOpenInternal] = createSignal(false);
 
   // props.open 변경 시 내부 상태 동기화
   createEffect(() => {

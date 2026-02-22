@@ -38,7 +38,7 @@ describe("Dropdown 컴포넌트", () => {
       });
     });
 
-    it("Trigger 재클릭 시 닫힌다", async () => {
+    it("Trigger 재클릭 시 닫힌다", () => {
       const handleOpenChange = vi.fn();
 
       render(() => (
