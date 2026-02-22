@@ -10,6 +10,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, produce, reconcile } from "solid-js/store";
+import { createControllableStore } from "../../../hooks/createControllableStore";
 import { objClone } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../sheet/types";
@@ -66,6 +67,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "itemsPerPage",
     "canEdit",
     "filterInitial",
+    "items",
+    "onItemsChange",
     "inlineEdit",
     "modalEdit",
     "excel",
@@ -94,7 +97,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   });
 
   // -- State --
-  const [items, setItems] = createStore<TItem[]>([]);
+  const [items, setItems] = createControllableStore<TItem[]>({
+    value: () => local.items ?? [],
+    onChange: () => local.onItemsChange,
+  });
   let originalItems: TItem[] = [];
 
   // eslint-disable-next-line solid/reactivity -- filterInitial은 초기값으로만 사용

@@ -79,6 +79,8 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   itemsPerPage?: number;
   canEdit?: () => boolean;
   filterInitial?: TFilter;
+  items?: TItem[];
+  onItemsChange?: (items: TItem[]) => void;
   excel?: ExcelConfig<TItem>;
   selectMode?: "single" | "multi";
   onSelect?: (result: SelectResult<TItem>) => void;
