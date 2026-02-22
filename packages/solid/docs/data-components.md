@@ -679,8 +679,8 @@ const handleEdit = async () => {
 <CrudDetail<User>
   load={loadUser}
   submit={saveUser}
-  editable={() => hasEditPermission()}
-  deletable={() => hasDeletPermission()}
+  editable={hasEditPermission()}
+  deletable={hasDeletePermission()}
 >
   {(ctx) => (
     <>

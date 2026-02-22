@@ -211,7 +211,7 @@ describe("CrudDetail rendering", () => {
             })
           }
           submit={() => Promise.resolve(true)}
-          editable={() => false}
+          editable={false}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>
@@ -234,7 +234,7 @@ describe("CrudDetail rendering", () => {
             })
           }
           toggleDelete={() => Promise.resolve(true)}
-          deletable={() => false}
+          deletable={false}
         >
           {(ctx) => <div>{ctx.data.name}</div>}
         </CrudDetail>

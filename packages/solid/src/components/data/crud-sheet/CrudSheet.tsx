@@ -88,7 +88,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const dialogInstance = useDialogInstance();
   const isModal = dialogInstance !== undefined;
   const isSelectMode = () => local.selectMode != null;
-  const canEdit = () => (isSelectMode() ? false : (local.editable?.() ?? true));
+  const canEdit = () => (isSelectMode() ? false : (local.editable ?? true));
 
   // -- Children Resolution --
   const resolved = children(() => local.children);

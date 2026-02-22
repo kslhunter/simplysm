@@ -275,7 +275,7 @@ describe("CrudSheet editable (renamed from canEdit)", () => {
         <CrudSheet<TestItem, Record<string, never>>
           search={searchFn}
           getItemKey={(item) => item.id}
-          editable={() => false}
+          editable={false}
           inlineEdit={{
             submit: () => Promise.resolve(),
             newItem: () => ({ name: "", isDeleted: false }),
