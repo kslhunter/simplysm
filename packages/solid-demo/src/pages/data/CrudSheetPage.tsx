@@ -25,7 +25,7 @@ export function CrudSheetPage() {
     <CrudSheet<DemoItem, DemoFilter>
       search={(filter, _page, _sorts) => {
         let items = [...mockData];
-        if (filter.searchText) {
+        if (filter.searchText != null && filter.searchText !== "") {
           items = items.filter((i) => i.name.includes(filter.searchText!));
         }
         if (!filter.isIncludeDeleted) {
