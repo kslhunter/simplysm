@@ -51,16 +51,6 @@
   },
   "teammateMode": "in-process",
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 .claude/hooks/sd-notify.py"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|NotebookEdit",
