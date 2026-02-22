@@ -296,7 +296,6 @@ const [to, setTo] = createSignal<DateOnly>();
 | `required` | `boolean` | - | Required field |
 | `disabled` | `boolean` | - | Disabled state |
 | `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
-| `periodLabels` | `Partial<Record<DateRangePeriodType, string>>` | `{ day: "일", month: "월", range: "범위" }` | Period type labels (Korean by default) |
 | `class` | `string` | - | Additional CSS class |
 | `style` | `JSX.CSSProperties` | - | Inline style |
 
