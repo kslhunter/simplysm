@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-file-system",
-  "version": "13.0.65",
+  "version": "13.0.66",
   "description": "심플리즘 패키지 - Capacitor File System Plugin",
   "author": "김석래",
   "license": "MIT",
