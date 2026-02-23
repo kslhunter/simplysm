@@ -41,13 +41,6 @@ Turn a design doc into a step-by-step implementation plan through codebase explo
 - Include exact file paths, complete code, exact commands with expected output
 - Never write "add validation" — write the actual validation code
 
-**Presenting the plan:**
-
-- Present the plan header first (Goal, Architecture, Tech Stack) — confirm with user
-- Then present one task at a time with full detail
-- Ask after each task whether it looks right before moving to the next
-- If the user requests changes to an earlier task, revise before continuing
-
 ## Plan Document Format
 
 **Header:**
@@ -159,6 +152,5 @@ You can start from any step or skip steps as needed.
 - **Exact everything** — File paths, complete code, commands with expected output
 - **Bite-sized steps** — Each step is one action (2-5 minutes)
 - **TDD always** — Test first, implement second, commit third
-- **Incremental validation** — Present plan task-by-task, validate each before moving on
 - **DRY, YAGNI** — No unnecessary features, no repetition
 - **REQUIRED SUB-SKILL:** sd-plan-dev (fresh fork per task + two-stage review)
