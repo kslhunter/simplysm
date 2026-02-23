@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createSignal, type Accessor, type JSX } from "solid-js";
+import { type Accessor, type JSX } from "solid-js";
 import { render } from "@solidjs/testing-library";
 import type {
   CrudDetailToolsDef,
