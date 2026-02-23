@@ -18,7 +18,7 @@ export interface SpawnOptions {
  * - stdout/stderr를 캡처하여 반환
  * - NO_COLOR 환경변수 존중 (forceColor로 오버라이드 가능)
  * - 종료 코드가 0이 아니면 에러 throw
- * - Windows에서도 shell 없이 실행 (보안상 shell: true 사용 안 함)
+ * - Windows에서는 shell: true (.cmd 파일 실행 필요), 그 외는 shell: false
  *
  * @param cmd - 실행할 명령어
  * @param args - 명령어 인자
@@ -46,9 +46,8 @@ export async function spawn(cmd: string, args: string[], options?: SpawnOptions)
         ...colorEnv,
         ...options?.env,
       },
-      // shell: false for security (avoid shell injection)
-      // Windows .bat/.cmd files are handled by calling cmd.exe explicitly in capacitor.ts
-      shell: false,
+      // Windows에서 npm, pnpm 등은 .cmd 파일이므로 shell을 통해 실행해야 함
+      shell: process.platform === "win32",
       stdio: ["ignore", "pipe", "pipe"],
     };
 

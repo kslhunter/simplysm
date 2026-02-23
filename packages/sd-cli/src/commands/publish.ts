@@ -563,12 +563,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         throw new Error("npm 로그인 정보가 없습니다.");
       }
       logger.debug(`npm 로그인 확인: ${whoami.trim()}`);
-    } catch {
-      logger.error(
+    } catch (err) {
+      logger.error(`npm whoami 실패:`, err);
+      /*logger.error(
         "npm 토큰이 유효하지 않거나 만료되었습니다.\n" +
           "https://www.npmjs.com/settings/~/tokens 에서 Granular Access Token 생성 후:\n" +
           "  npm config set //registry.npmjs.org/:_authToken <토큰>",
-      );
+      );*/
       process.exitCode = 1;
       return;
     }
