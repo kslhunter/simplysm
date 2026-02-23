@@ -7,7 +7,7 @@ describe("SelectList", () => {
   // ─── 검색 필터링 ───────────────────────────────────────
 
   describe("검색 필터링", () => {
-    it("getSearchText가 있으면 검색 입력란이 표시된다", async () => {
+    it("getSearchText가 있으면 검색 입력란이 표시된다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} getSearchText={(item) => item} />);
@@ -18,7 +18,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("getSearchText가 없으면 검색 입력란이 표시되지 않는다", async () => {
+    it("getSearchText가 없으면 검색 입력란이 표시되지 않는다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} />);
@@ -29,13 +29,13 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("검색어 입력 시 일치하는 항목만 표시된다", async () => {
+    it("검색어 입력 시 일치하는 항목만 표시된다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} getSearchText={(item) => item} />);
 
       const input = screen.getByPlaceholderText("검색...");
-      await fireEvent.input(input, { target: { value: "an" } });
+      fireEvent.input(input, { target: { value: "an" } });
 
       // "Banana"만 "an"을 포함
       const listItems = screen.getAllByRole("treeitem");
@@ -48,13 +48,13 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("검색은 대소문자를 구분하지 않는다", async () => {
+    it("검색은 대소문자를 구분하지 않는다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} getSearchText={(item) => item} />);
 
       const input = screen.getByPlaceholderText("검색...");
-      await fireEvent.input(input, { target: { value: "APPLE" } });
+      fireEvent.input(input, { target: { value: "APPLE" } });
 
       const listItems = screen.getAllByRole("treeitem");
       const textContents = listItems.map((el) => el.textContent);
@@ -69,7 +69,7 @@ describe("SelectList", () => {
   // ─── 페이지네이션 ─────────────────────────────────────
 
   describe("페이지네이션", () => {
-    it("pageSize가 있으면 항목이 페이지 단위로 표시된다", async () => {
+    it("pageSize가 있으면 항목이 페이지 단위로 표시된다", () => {
       const items = Array.from({ length: 10 }, (_, i) => `Item ${i + 1}`);
 
       render(() => <SelectList items={items} pageSize={3} required />);
@@ -83,7 +83,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("pageSize가 없으면 모든 항목이 표시된다", async () => {
+    it("pageSize가 없으면 모든 항목이 표시된다", () => {
       const items = Array.from({ length: 5 }, (_, i) => `Item ${i + 1}`);
 
       render(() => <SelectList items={items} required />);
@@ -94,7 +94,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("Pagination 컴포넌트가 표시되고 페이지 전환이 동작한다", async () => {
+    it("Pagination 컴포넌트가 표시되고 페이지 전환이 동작한다", () => {
       const items = Array.from({ length: 10 }, (_, i) => `Item ${i + 1}`);
 
       render(() => <SelectList items={items} pageSize={3} required />);
@@ -105,7 +105,7 @@ describe("SelectList", () => {
 
       // 페이지 2 버튼 클릭
       const page2Btn = screen.getByText("2");
-      await fireEvent.click(page2Btn);
+      fireEvent.click(page2Btn);
 
       const listItems = screen.getAllByRole("treeitem");
       expect(listItems[0]?.textContent).toBe("Item 4");
@@ -114,7 +114,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("총 항목이 pageSize 이하이면 Pagination이 표시되지 않는다", async () => {
+    it("총 항목이 pageSize 이하이면 Pagination이 표시되지 않는다", () => {
       const items = ["A", "B"];
 
       render(() => <SelectList items={items} pageSize={5} required />);
@@ -129,42 +129,42 @@ describe("SelectList", () => {
   // ─── 선택/토글 + canChange 가드 ──────────────────────
 
   describe("선택/토글", () => {
-    it("아이템 클릭 시 onValueChange가 호출된다", async () => {
+    it("아이템 클릭 시 onValueChange가 호출된다", () => {
       const items = ["Apple", "Banana", "Cherry"];
       const onChange = vi.fn();
 
       render(() => <SelectList items={items} onValueChange={onChange} required />);
 
       const bananaItem = screen.getByText("Banana");
-      await fireEvent.click(bananaItem);
+      fireEvent.click(bananaItem);
 
       expect(onChange).toHaveBeenCalledWith("Banana");
 
       cleanup();
     });
 
-    it("이미 선택된 아이템을 다시 클릭하면 선택 해제된다 (required가 아닐 때)", async () => {
+    it("이미 선택된 아이템을 다시 클릭하면 선택 해제된다 (required가 아닐 때)", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
       render(() => <SelectList items={items} value="Apple" onValueChange={onChange} />);
 
       const appleItem = screen.getByText("Apple");
-      await fireEvent.click(appleItem);
+      fireEvent.click(appleItem);
 
       expect(onChange).toHaveBeenCalledWith(undefined);
 
       cleanup();
     });
 
-    it("required일 때 이미 선택된 아이템을 다시 클릭해도 선택 해제되지 않는다", async () => {
+    it("required일 때 이미 선택된 아이템을 다시 클릭해도 선택 해제되지 않는다", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
       render(() => <SelectList items={items} value="Apple" onValueChange={onChange} required />);
 
       const appleItem = screen.getByText("Apple");
-      await fireEvent.click(appleItem);
+      fireEvent.click(appleItem);
 
       // required이므로 같은 값으로 다시 호출됨 (해제 아님)
       expect(onChange).toHaveBeenCalledWith("Apple");
@@ -172,21 +172,21 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("미지정 항목 클릭 시 undefined로 변경된다", async () => {
+    it("미지정 항목 클릭 시 undefined로 변경된다", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
       render(() => <SelectList items={items} value="Apple" onValueChange={onChange} />);
 
       const unsetItem = screen.getByText("미지정");
-      await fireEvent.click(unsetItem);
+      fireEvent.click(unsetItem);
 
       expect(onChange).toHaveBeenCalledWith(undefined);
 
       cleanup();
     });
 
-    it("required일 때 미지정 항목이 표시되지 않는다", async () => {
+    it("required일 때 미지정 항목이 표시되지 않는다", () => {
       const items = ["Apple", "Banana"];
 
       render(() => <SelectList items={items} required />);
@@ -197,7 +197,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("canChange가 false를 반환하면 값이 변경되지 않는다", async () => {
+    it("canChange가 false를 반환하면 값이 변경되지 않는다", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
@@ -206,7 +206,7 @@ describe("SelectList", () => {
       ));
 
       const bananaItem = screen.getByText("Banana");
-      await fireEvent.click(bananaItem);
+      fireEvent.click(bananaItem);
 
       expect(onChange).not.toHaveBeenCalled();
 
@@ -222,37 +222,44 @@ describe("SelectList", () => {
       ));
 
       const bananaItem = screen.getByText("Banana");
-      await fireEvent.click(bananaItem);
+      fireEvent.click(bananaItem);
 
-      expect(onChange).toHaveBeenCalledWith("Banana");
+      await vi.waitFor(() => {
+        expect(onChange).toHaveBeenCalledWith("Banana");
+      });
 
       cleanup();
     });
 
-    it("canChange가 Promise<false>를 반환하면 값이 변경되지 않는다", async () => {
+    it("canChange가 Promise<false>를 반환하면 값이 변경되지 않는다", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
       render(() => (
-        <SelectList items={items} onValueChange={onChange} canChange={async () => false} required />
+        <SelectList
+          items={items}
+          onValueChange={onChange}
+          canChange={() => Promise.resolve(false)}
+          required
+        />
       ));
 
       const bananaItem = screen.getByText("Banana");
-      await fireEvent.click(bananaItem);
+      fireEvent.click(bananaItem);
 
       expect(onChange).not.toHaveBeenCalled();
 
       cleanup();
     });
 
-    it("disabled일 때 아이템 클릭이 무시된다", async () => {
+    it("disabled일 때 아이템 클릭이 무시된다", () => {
       const items = ["Apple", "Banana"];
       const onChange = vi.fn();
 
       render(() => <SelectList items={items} onValueChange={onChange} disabled required />);
 
       const bananaItem = screen.getByText("Banana");
-      await fireEvent.click(bananaItem);
+      fireEvent.click(bananaItem);
 
       expect(onChange).not.toHaveBeenCalled();
 
@@ -263,7 +270,7 @@ describe("SelectList", () => {
   // ─── items 변경 시 value 재매칭 ──────────────────────
 
   describe("items 변경 시 value 재매칭", () => {
-    it("items가 변경되어도 value가 동일 참조로 유지된다", async () => {
+    it("items가 변경되어도 value가 동일 참조로 유지된다", () => {
       const item1 = { id: 1, name: "Apple" };
       const item2 = { id: 2, name: "Banana" };
       const onChange = vi.fn();
@@ -289,7 +296,7 @@ describe("SelectList", () => {
 
       // items를 같은 참조로 업데이트
       const updateBtn = screen.getByTestId("update");
-      await fireEvent.click(updateBtn);
+      fireEvent.click(updateBtn);
 
       // 선택된 값은 그대로 유지 (onChange 호출 없음)
       expect(onChange).not.toHaveBeenCalled();
@@ -301,7 +308,7 @@ describe("SelectList", () => {
   // ─── 필터 조합 ────────────────────────────────────────
 
   describe("필터 조합", () => {
-    it("getIsHidden으로 숨겨진 항목은 표시되지 않는다", async () => {
+    it("getIsHidden으로 숨겨진 항목은 표시되지 않는다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} getIsHidden={(item) => item === "Banana"} required />);
@@ -316,7 +323,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("filterFn으로 필터링된 항목만 표시된다", async () => {
+    it("filterFn으로 필터링된 항목만 표시된다", () => {
       const items = ["Apple", "Banana", "Cherry"];
 
       render(() => <SelectList items={items} filterFn={(item) => item.startsWith("B")} required />);
@@ -331,7 +338,7 @@ describe("SelectList", () => {
       cleanup();
     });
 
-    it("header prop이 전달되면 헤더 텍스트가 표시된다", async () => {
+    it("header prop이 전달되면 헤더 텍스트가 표시된다", () => {
       const items = ["Apple"];
 
       render(() => <SelectList items={items} header="과일 목록" required />);
