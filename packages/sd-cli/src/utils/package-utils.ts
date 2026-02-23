@@ -15,32 +15,72 @@ export function findPackageRoot(startDir: string): string {
   return dir;
 }
 
-/**
- * 패키지명과 replaceDeps 설정에서 watch scope 목록을 생성한다.
- * - 패키지명의 scope (예: "@myapp/root" → "@myapp")
- * - replaceDeps 키의 scope (예: "@simplysm/*" → "@simplysm")
- * @param packageName 루트 package.json의 name 필드
- * @param replaceDeps sd.config.ts의 replaceDeps 설정 (키: glob 패턴, 값: 소스 경로)
- * @returns scope 배열 (중복 제거)
- */
-export function getWatchScopes(
-  packageName: string,
-  replaceDeps?: Record<string, string>,
-): string[] {
-  const scopes = new Set<string>();
-  const match = packageName.match(/^(@[^/]+)\//);
-  if (match != null) {
-    scopes.add(match[1]);
+export interface DepsResult {
+  workspaceDeps: string[];
+  replaceDeps: string[];
+}
+
+export function collectDeps(
+  pkgDir: string,
+  cwd: string,
+  replaceDepsConfig?: Record<string, string>,
+): DepsResult {
+  const rootPkgJsonPath = path.join(cwd, "package.json");
+  const rootPkgJson = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")) as { name: string };
+  const scopeMatch = rootPkgJson.name.match(/^(@[^/]+)\//);
+  const workspaceScope = scopeMatch != null ? scopeMatch[1] : undefined;
+
+  const replaceDepsPatterns: Array<{ regex: RegExp }> = [];
+  if (replaceDepsConfig != null) {
+    for (const pattern of Object.keys(replaceDepsConfig)) {
+      const regexStr = pattern.replace(/[.+]/g, (ch) => `\\${ch}`).replace(/\*/g, "[^/]+");
+      replaceDepsPatterns.push({ regex: new RegExp(`^${regexStr}$`) });
+    }
   }
-  if (replaceDeps != null) {
-    for (const pattern of Object.keys(replaceDeps)) {
-      const depMatch = pattern.match(/^(@[^/]+)\//);
-      if (depMatch != null) {
-        scopes.add(depMatch[1]);
+
+  const workspaceDeps: string[] = [];
+  const replaceDeps: string[] = [];
+  const visited = new Set<string>();
+
+  function traverse(dir: string): void {
+    const pkgJsonPath = path.join(dir, "package.json");
+    if (!fs.existsSync(pkgJsonPath)) return;
+
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as {
+      dependencies?: Record<string, string>;
+    };
+    const deps = Object.keys(pkgJson.dependencies ?? {});
+
+    for (const dep of deps) {
+      if (visited.has(dep)) continue;
+      visited.add(dep);
+
+      // workspace package check
+      if (workspaceScope != null && dep.startsWith(workspaceScope + "/")) {
+        const dirName = dep.slice(workspaceScope.length + 1);
+        const depDir = path.join(cwd, "packages", dirName);
+        if (fs.existsSync(path.join(depDir, "package.json"))) {
+          workspaceDeps.push(dirName);
+          traverse(depDir);
+          continue;
+        }
+      }
+
+      // replaceDeps pattern check
+      const matched = replaceDepsPatterns.find((p) => p.regex.test(dep));
+      if (matched != null) {
+        replaceDeps.push(dep);
+        const depNodeModulesDir = path.join(cwd, "node_modules", ...dep.split("/"));
+        if (fs.existsSync(path.join(depNodeModulesDir, "package.json"))) {
+          traverse(depNodeModulesDir);
+        }
+        continue;
       }
     }
   }
-  return [...scopes];
+
+  traverse(pkgDir);
+  return { workspaceDeps, replaceDeps };
 }
 
 /**

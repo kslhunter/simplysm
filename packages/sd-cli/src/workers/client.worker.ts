@@ -6,6 +6,7 @@ import { consola } from "consola";
 import type { SdClientPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import { createViteConfig } from "../utils/vite-config";
+import { collectDeps } from "../utils/package-utils";
 import { registerCleanupHandlers } from "../utils/worker-utils";
 
 //#region Types
@@ -36,8 +37,8 @@ export interface ClientWatchInfo {
   config: SdClientPackageConfig;
   cwd: string;
   pkgDir: string;
-  /** watch 대상 scope 목록 */
-  watchScopes?: string[];
+  /** sd.config.ts의 replaceDeps 설정 */
+  replaceDeps?: Record<string, string>;
 }
 
 /**
@@ -176,6 +177,9 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
     // server가 숫자면 해당 포트로 고정 (standalone 클라이언트)
     const serverPort = typeof info.config.server === "number" ? info.config.server : 0;
 
+    // 의존성 기반 replaceDeps 수집
+    const { replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
+
     // Vite 설정 생성
     const viteConfig = createViteConfig({
       pkgDir: info.pkgDir,
@@ -185,7 +189,7 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
       env: info.config.env,
       mode: "dev",
       serverPort,
-      watchScopes: info.watchScopes,
+      replaceDeps,
       onScopeRebuild: () => sender.send("scopeRebuild", {}),
     });
 

@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
@@ -10,11 +9,7 @@ import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import { Capacitor } from "../capacitor/capacitor";
-import {
-  filterPackagesByTargets,
-  getWatchScopes,
-  type PackageResult,
-} from "../utils/package-utils";
+import { filterPackagesByTargets, type PackageResult } from "../utils/package-utils";
 import { printErrors, printServers } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import {
@@ -70,8 +65,6 @@ export class DevOrchestrator {
   // Config
   private _sdConfig: SdConfig | undefined;
   private _baseEnv: { VER: string; DEV: string } | undefined;
-  private _watchScopes: string[] = [];
-
   // Package classification
   private readonly _serverPackages: Array<{ name: string; config: SdServerPackageConfig }> = [];
   private readonly _clientPackages: Array<{ name: string; config: SdClientPackageConfig }> = [];
@@ -152,11 +145,6 @@ export class DevOrchestrator {
     // VER, DEV 환경변수 준비
     const version = await getVersion(this._cwd);
     this._baseEnv = { VER: version, DEV: "true" };
-
-    // watchScopes 생성 (루트 package.json에서 scope 추출)
-    const rootPkgJsonPath = path.join(this._cwd, "package.json");
-    const rootPkgName = JSON.parse(fs.readFileSync(rootPkgJsonPath, "utf-8")).name as string;
-    this._watchScopes = getWatchScopes(rootPkgName, this._sdConfig.replaceDeps);
 
     // targets 필터링
     const allPackages = filterPackagesByTargets(this._sdConfig.packages, targets);
@@ -586,7 +574,7 @@ export class DevOrchestrator {
           config: clientConfig,
           cwd: this._cwd,
           pkgDir,
-          watchScopes: this._watchScopes,
+          replaceDeps: this._sdConfig!.replaceDeps,
         })
         .catch((err: unknown) => {
           completeTask({
@@ -615,7 +603,7 @@ export class DevOrchestrator {
           config: viteConfig,
           cwd: this._cwd,
           pkgDir,
-          watchScopes: this._watchScopes,
+          replaceDeps: this._sdConfig!.replaceDeps,
         })
         .catch((err: unknown) => {
           completeTask({
@@ -637,7 +625,7 @@ export class DevOrchestrator {
           name,
           cwd: this._cwd,
           pkgDir,
-          watchScopes: this._watchScopes,
+          replaceDeps: this._sdConfig!.replaceDeps,
           env: { ...this._baseEnv, ...config.env },
           configs: config.configs,
           externals: config.externals,

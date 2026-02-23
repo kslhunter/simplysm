@@ -17,14 +17,14 @@ import { FsWatcher, pathNorm } from "@simplysm/core-node";
  * preset 등으로 참조하는 scope 패키지의 config 변경을 감지하지 못한다.
  * 이 플러그인이 해당 파일들을 watch하고, 변경 시 Tailwind 캐시를 무효화한다.
  */
-function sdTailwindConfigDepsPlugin(pkgDir: string, scopes: string[]): Plugin {
+function sdTailwindConfigDepsPlugin(pkgDir: string, replaceDeps: string[]): Plugin {
   return {
     name: "sd-tailwind-config-deps",
     configureServer(server) {
       const configPath = path.join(pkgDir, "tailwind.config.ts");
       if (!fs.existsSync(configPath)) return;
 
-      const allDeps = getTailwindConfigDeps(configPath, scopes);
+      const allDeps = getTailwindConfigDeps(configPath, replaceDeps);
       const configAbsolute = path.resolve(configPath);
       const externalDeps = allDeps.filter((d) => d !== configAbsolute);
       if (externalDeps.length === 0) return;
@@ -133,66 +133,51 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
  * 변경 시 Vite의 내부 HMR 파이프라인을 트리거한다.
  * optimizeDeps에서 제외하여 pre-bundled 캐시로 인한 변경 무시를 방지한다.
  */
-function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: () => void): Plugin {
+function sdScopeWatchPlugin(
+  pkgDir: string,
+  replaceDeps: string[],
+  onScopeRebuild?: () => void,
+): Plugin {
   return {
     name: "sd-scope-watch",
     config() {
       const excluded: string[] = [];
       const nestedDepsToInclude: string[] = [];
 
-      for (const scope of scopes) {
-        // scope 패키지를 pre-bundling에서 제외하여 소스 코드로 취급
-        const scopeDir = path.join(pkgDir, "node_modules", scope);
-        if (!fs.existsSync(scopeDir)) continue;
+      for (const pkg of replaceDeps) {
+        excluded.push(pkg);
 
-        for (const name of fs.readdirSync(scopeDir)) {
-          excluded.push(`${scope}/${name}`);
+        const pkgParts = pkg.split("/");
+        const depPkgJsonPath = path.join(pkgDir, "node_modules", ...pkgParts, "package.json");
+        try {
+          const depPkgJson = JSON.parse(fs.readFileSync(depPkgJsonPath, "utf-8")) as {
+            dependencies?: Record<string, string>;
+          };
+          for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
+            if (replaceDeps.includes(dep)) continue;
+            if (dep === "solid-js" || dep.startsWith("@solidjs/") || dep.startsWith("solid-"))
+              continue;
+            if (dep === "tailwindcss") continue;
 
-          // excluded 패키지의 dependencies를 nested include로 추가하여 pre-bundling 보장
-          // Vite nested dependency 구문: "excluded-pkg > dep"
-          // (pnpm strict 모듈 격리에서 transitive dep을 resolve하기 위해 필요)
-          const depPkgJsonPath = path.join(scopeDir, name, "package.json");
-          try {
-            const depPkgJson = JSON.parse(fs.readFileSync(depPkgJsonPath, "utf-8")) as {
-              dependencies?: Record<string, string>;
-            };
-            const excludedPkg = `${scope}/${name}`;
-            for (const dep of Object.keys(depPkgJson.dependencies ?? {})) {
-              // 같은 scope 내 패키지는 이미 excluded이므로 제외
-              if (scopes.some((s) => dep.startsWith(`${s}/`))) continue;
-              // SolidJS 관련 패키지는 solid 플러그인 transform이 필요하므로 pre-bundling 불가
-              if (dep === "solid-js" || dep.startsWith("@solidjs/") || dep.startsWith("solid-"))
-                continue;
-              // PostCSS/빌드 도구는 브라우저 pre-bundling 대상 아님
-              if (dep === "tailwindcss") continue;
+            const realPkgPath = fs.realpathSync(path.join(pkgDir, "node_modules", ...pkgParts));
+            const pnpmNodeModules = path.resolve(realPkgPath, "../..");
+            const depPkgJsonResolved = path.join(pnpmNodeModules, dep, "package.json");
+            if (isSubpathOnlyPackage(depPkgJsonResolved)) continue;
 
-              // subpath-only 패키지 필터링: 두 경로를 시도하여 확인
-              // pnpm 구조에서 realpath를 따라 .pnpm node_modules에서 먼저 찾기
-              const realPkgPath = fs.realpathSync(path.join(scopeDir, name));
-              const pnpmNodeModules = path.resolve(realPkgPath, "../..");
-              const depPkgJsonResolved = path.join(pnpmNodeModules, dep, "package.json");
-              if (isSubpathOnlyPackage(depPkgJsonResolved)) {
-                continue;
-              }
+            const depPkgJsonFallback = path.join(
+              pkgDir,
+              "node_modules",
+              ...pkgParts,
+              "node_modules",
+              dep,
+              "package.json",
+            );
+            if (isSubpathOnlyPackage(depPkgJsonFallback)) continue;
 
-              // workspace 패키지는 realpath가 소스 디렉토리로 해석되어 .pnpm 구조가 아님
-              // symlink 경로의 node_modules에서 fallback 시도
-              const depPkgJsonFallback = path.join(
-                scopeDir,
-                name,
-                "node_modules",
-                dep,
-                "package.json",
-              );
-              if (isSubpathOnlyPackage(depPkgJsonFallback)) {
-                continue;
-              }
-
-              nestedDepsToInclude.push(`${excludedPkg} > ${dep}`);
-            }
-          } catch {
-            // package.json 읽기 실패 시 스킵
+            nestedDepsToInclude.push(`${pkg} > ${dep}`);
           }
+        } catch {
+          // package.json 읽기 실패 시 스킵
         }
       }
 
@@ -207,56 +192,43 @@ function sdScopeWatchPlugin(pkgDir: string, scopes: string[], onScopeRebuild?: (
     async configureServer(server) {
       const watchPaths: string[] = [];
 
-      for (const scope of scopes) {
-        const scopeDir = path.join(pkgDir, "node_modules", scope);
-        if (!fs.existsSync(scopeDir)) continue;
+      for (const pkg of replaceDeps) {
+        const pkgParts = pkg.split("/");
+        const pkgRoot = path.join(pkgDir, "node_modules", ...pkgParts);
+        if (!fs.existsSync(pkgRoot)) continue;
 
-        for (const pkgName of fs.readdirSync(scopeDir)) {
-          const pkgRoot = path.join(scopeDir, pkgName);
+        const distDir = path.join(pkgRoot, "dist");
+        if (fs.existsSync(distDir)) {
+          watchPaths.push(distDir);
+        }
 
-          // dist 디렉토리 watch (JS/TS 빌드 결과물)
-          const distDir = path.join(pkgRoot, "dist");
-          if (fs.existsSync(distDir)) {
-            watchPaths.push(distDir);
-          }
-
-          // 패키지 루트의 CSS/config 파일 watch (tailwind.css, tailwind.config.ts 등)
-          for (const file of fs.readdirSync(pkgRoot)) {
-            if (
-              file.endsWith(".css") ||
-              file === "tailwind.config.ts" ||
-              file === "tailwind.config.js"
-            ) {
-              watchPaths.push(path.join(pkgRoot, file));
-            }
+        for (const file of fs.readdirSync(pkgRoot)) {
+          if (
+            file.endsWith(".css") ||
+            file === "tailwind.config.ts" ||
+            file === "tailwind.config.js"
+          ) {
+            watchPaths.push(path.join(pkgRoot, file));
           }
         }
       }
 
       if (watchPaths.length === 0) return;
 
-      // Vite의 기본 watcher는 **/node_modules/**를 ignore하고
-      // server.watcher.add()로는 이 패턴을 override할 수 없다.
-      // 별도의 FsWatcher로 scope 패키지의 dist 디렉토리를 감시한다.
       const scopeWatcher = await FsWatcher.watch(watchPaths);
       scopeWatcher.onChange({ delay: 300 }, (changeInfos) => {
         for (const { path: changedPath } of changeInfos) {
-          // pnpm symlink → real path 변환 (Vite module graph은 real path 사용)
           let realPath: string;
           try {
             realPath = fs.realpathSync(changedPath);
           } catch {
-            continue; // 삭제된 파일
+            continue;
           }
-
-          // Vite의 내부 HMR 파이프라인 트리거
           server.watcher.emit("change", realPath);
         }
-
         onScopeRebuild?.();
       });
 
-      // 서버 종료 시 watcher 정리
       server.httpServer?.on("close", () => void scopeWatcher.close());
     },
   };
@@ -274,9 +246,9 @@ export interface ViteConfigOptions {
   mode: "build" | "dev";
   /** dev 모드일 때 서버 포트 (0이면 자동 할당) */
   serverPort?: number;
-  /** watch 대상 scope 목록 (예: ["@myapp", "@simplysm"]) */
-  watchScopes?: string[];
-  /** scope 패키지 dist 변경 감지 시 콜백 */
+  /** replaceDeps 패키지명 배열 (resolve 완료된 상태) */
+  replaceDeps?: string[];
+  /** replaceDeps 패키지 dist 변경 감지 시 콜백 */
   onScopeRebuild?: () => void;
 }
 
@@ -288,7 +260,7 @@ export interface ViteConfigOptions {
  * - dev 모드: dev server (define으로 env 치환, server 설정)
  */
 export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
-  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, watchScopes } =
+  const { pkgDir, name, tsconfigPath, compilerOptions, env, mode, serverPort, replaceDeps } =
     options;
 
   // Read package.json to extract app name for PWA manifest
@@ -322,11 +294,11 @@ export function createViteConfig(options: ViteConfigOptions): ViteUserConfig {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         },
       }),
-      ...(watchScopes != null && watchScopes.length > 0
-        ? [sdTailwindConfigDepsPlugin(pkgDir, watchScopes)]
+      ...(replaceDeps != null && replaceDeps.length > 0
+        ? [sdTailwindConfigDepsPlugin(pkgDir, replaceDeps)]
         : []),
-      ...(watchScopes != null && watchScopes.length > 0
-        ? [sdScopeWatchPlugin(pkgDir, watchScopes, options.onScopeRebuild)]
+      ...(replaceDeps != null && replaceDeps.length > 0
+        ? [sdScopeWatchPlugin(pkgDir, replaceDeps, options.onScopeRebuild)]
         : []),
       ...(mode === "dev" ? [sdPublicDevPlugin(pkgDir)] : []),
     ],

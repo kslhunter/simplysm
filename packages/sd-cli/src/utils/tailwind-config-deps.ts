@@ -50,9 +50,12 @@ function resolvePackageFile(specifier: string, fromDir: string): string | null {
  * Tailwind 내장 `getModuleDependencies`는 상대 경로 import만 추적하지만,
  * 이 함수는 지정된 scope의 패키지 경로도 `node_modules` symlink를 풀어 실제 파일을 추적한다.
  */
-export function getTailwindConfigDeps(configPath: string, scopes: string[]): string[] {
-  const scopePrefixes = scopes.map((s) => (s.endsWith("/") ? s : s + "/"));
+export function getTailwindConfigDeps(configPath: string, replaceDeps: string[]): string[] {
   const seen = new Set<string>();
+
+  function isReplaceDepImport(specifier: string): boolean {
+    return replaceDeps.some((dep) => specifier === dep || specifier.startsWith(dep + "/"));
+  }
 
   function walk(absoluteFile: string): void {
     if (seen.has(absoluteFile)) return;
@@ -80,7 +83,7 @@ export function getTailwindConfigDeps(configPath: string, scopes: string[]): str
 
       if (specifier.startsWith(".")) {
         resolved = resolveWithExtension(path.resolve(base, specifier), extensions);
-      } else if (scopePrefixes.some((p) => specifier.startsWith(p))) {
+      } else if (isReplaceDepImport(specifier)) {
         resolved = resolvePackageFile(specifier, base);
       }
 
