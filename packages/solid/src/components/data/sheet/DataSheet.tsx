@@ -114,10 +114,8 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   // #region Column Collection
   const resolved = children(() => local.children);
-  const columnDefs = createMemo(() =>
-    (resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[]).filter(
-      (col) => !col.hidden,
-    ),
+  const columnDefs = createMemo(
+    () => resolved.toArray().filter(isDataSheetColumnDef) as unknown as DataSheetColumnDef<T>[],
   );
 
   // #region Config (useSyncConfig)
@@ -130,14 +128,15 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
   // 설정이 적용된 최종 컬럼 — config의 hidden/fixed/width/displayOrder 오버라이드 적용
   const effectiveColumns = createMemo(() => {
-    const cols = columnDefs(); // 이미 col.hidden (코드 설정) 필터링됨
+    const cols = columnDefs();
     const record = config().columnRecord ?? {};
 
     return cols
       .filter((col) => {
-        // config에서 hidden으로 설정된 컬럼 제외
+        // config 오버라이드가 있으면 config 우선, 없으면 원래 col.hidden 사용
         const saved = record[col.key];
-        return !saved?.hidden;
+        const isHidden = saved?.hidden ?? col.hidden;
+        return !isHidden;
       })
       .map((col) => {
         const saved = record[col.key];

@@ -436,6 +436,263 @@ import { Select } from "@simplysm/solid";
 
 ---
 
+## SelectList
+
+List-style single selection component with built-in search, pagination, and slot-based customization. Uses compound component pattern with `SelectList.Header`, `SelectList.Filter`, and `SelectList.ItemTemplate`.
+
+```tsx
+import { SelectList } from "@simplysm/solid";
+
+// Basic usage with search
+<SelectList
+  items={users()}
+  value={selectedUser()}
+  onValueChange={setSelectedUser}
+  getSearchText={(user) => user.name}
+>
+  <SelectList.ItemTemplate>
+    {(user) => <>{user.name} ({user.email})</>}
+  </SelectList.ItemTemplate>
+</SelectList>
+
+// With pagination and header
+<SelectList
+  items={items()}
+  value={selected()}
+  onValueChange={setSelected}
+  pageSize={20}
+  header="Select an item"
+>
+  <SelectList.ItemTemplate>
+    {(item) => <>{item.name}</>}
+  </SelectList.ItemTemplate>
+</SelectList>
+
+// With custom header and filter slots
+<SelectList
+  items={items()}
+  value={selected()}
+  onValueChange={setSelected}
+>
+  <SelectList.Header>
+    <div class="flex items-center gap-1">Custom Header</div>
+  </SelectList.Header>
+  <SelectList.Filter>
+    <MyCustomFilter />
+  </SelectList.Filter>
+  <SelectList.ItemTemplate>
+    {(item) => <>{item.label}</>}
+  </SelectList.ItemTemplate>
+</SelectList>
+
+// With canChange guard
+<SelectList
+  items={items()}
+  value={selected()}
+  onValueChange={setSelected}
+  canChange={async (item) => {
+    if (hasUnsavedChanges()) return confirm("Discard changes?");
+    return true;
+  }}
+>
+  <SelectList.ItemTemplate>
+    {(item) => <>{item.name}</>}
+  </SelectList.ItemTemplate>
+</SelectList>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `T[]` | **(required)** | Item array |
+| `value` | `T` | - | Selected value |
+| `onValueChange` | `(value: T \| undefined) => void` | - | Value change callback |
+| `required` | `boolean` | - | Required (hides "unspecified" item) |
+| `disabled` | `boolean` | - | Disabled state |
+| `getSearchText` | `(item: T) => string` | - | Search text extractor (auto-shows search input) |
+| `getIsHidden` | `(item: T) => boolean` | - | Hidden item filter |
+| `filterFn` | `(item: T, index: number) => boolean` | - | Custom filter function |
+| `canChange` | `(item: T \| undefined) => boolean \| Promise<boolean>` | - | Change guard (return `false` to block) |
+| `pageSize` | `number` | - | Page size (auto-shows pagination) |
+| `header` | `string` | - | Header text |
+| `class` | `string` | - | CSS class |
+| `style` | `JSX.CSSProperties` | - | Inline style |
+
+**Sub-components:**
+- `SelectList.Header` -- Custom header slot (overrides `header` prop)
+- `SelectList.Filter` -- Custom filter slot (overrides default search input)
+- `SelectList.ItemTemplate` -- Item rendering template
+
+---
+
+## DataSelectButton
+
+Modal-based selection button. Displays selected items inline and opens a dialog for selection. Supports single and multiple selection with key-based loading.
+
+```tsx
+import { DataSelectButton, type DataSelectModalResult } from "@simplysm/solid";
+
+// Single selection
+<DataSelectButton
+  value={selectedUserId()}
+  onValueChange={setSelectedUserId}
+  load={async (keys) => await api.getUsersByIds(keys)}
+  modal={() => <UserSelectModal />}
+  renderItem={(user) => <>{user.name}</>}
+/>
+
+// Multiple selection
+<DataSelectButton
+  value={selectedIds()}
+  onValueChange={setSelectedIds}
+  multiple
+  load={async (keys) => await api.getItemsByIds(keys)}
+  modal={() => <ItemSelectModal />}
+  renderItem={(item) => <>{item.name}</>}
+/>
+```
+
+The modal should return `DataSelectModalResult<TKey>` via `dialogInstance.close({ selectedKeys: [...] })`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `TKey \| TKey[]` | - | Selected key(s) |
+| `onValueChange` | `(value: TKey \| TKey[] \| undefined) => void` | - | Value change callback |
+| `load` | `(keys: TKey[]) => TItem[] \| Promise<TItem[]>` | **(required)** | Load items by keys |
+| `modal` | `() => JSX.Element` | **(required)** | Selection modal factory |
+| `renderItem` | `(item: TItem) => JSX.Element` | **(required)** | Item display renderer |
+| `multiple` | `boolean` | - | Multiple selection mode |
+| `required` | `boolean` | - | Required field |
+| `disabled` | `boolean` | - | Disabled state |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
+| `validate` | `(value: unknown) => string \| undefined` | - | Custom validation function |
+| `touchMode` | `boolean` | - | Show error only after focus loss |
+| `dialogOptions` | `DialogShowOptions` | - | Dialog options for modal |
+
+**DataSelectModalResult:**
+
+```typescript
+interface DataSelectModalResult<TKey> {
+  selectedKeys: TKey[];
+}
+```
+
+---
+
+## SharedData Wrappers
+
+Convenience wrappers that connect `SharedDataAccessor` (from `useSharedData()`) to `Select`, `DataSelectButton`, and `SelectList` components. They auto-wire `items`, tree structure (`getChildren`), search, and hidden filtering from the shared data definition.
+
+### SharedDataSelect
+
+Wraps `Select` with `SharedDataAccessor`. Optionally adds search modal and edit modal action buttons.
+
+```tsx
+import { SharedDataSelect } from "@simplysm/solid";
+
+const sharedData = useSharedData<MySharedData>();
+
+<SharedDataSelect data={sharedData.departments} value={deptId()} onValueChange={setDeptId}>
+  {(dept) => <>{dept.name}</>}
+</SharedDataSelect>
+
+// With search modal and edit modal
+<SharedDataSelect
+  data={sharedData.users}
+  value={userId()}
+  onValueChange={setUserId}
+  modal={() => <UserSearchModal />}
+  editModal={() => <UserEditModal />}
+>
+  {(user) => <>{user.name}</>}
+</SharedDataSelect>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | **(required)** | Shared data accessor |
+| `value` | `unknown` | - | Selected value |
+| `onValueChange` | `(value: unknown) => void` | - | Value change callback |
+| `multiple` | `boolean` | - | Multiple selection |
+| `required` | `boolean` | - | Required field |
+| `disabled` | `boolean` | - | Disabled state |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
+| `filterFn` | `(item: TItem, index: number) => boolean` | - | Item filter function |
+| `modal` | `() => JSX.Element` | - | Search modal factory (adds search icon action) |
+| `editModal` | `() => JSX.Element` | - | Edit modal factory (adds edit icon action) |
+| `children` | `(item: TItem, index: number, depth: number) => JSX.Element` | **(required)** | Item render function |
+
+### SharedDataSelectButton
+
+Wraps `DataSelectButton` with `SharedDataAccessor`. Auto-wires `load` from shared data items.
+
+```tsx
+import { SharedDataSelectButton } from "@simplysm/solid";
+
+const sharedData = useSharedData<MySharedData>();
+
+<SharedDataSelectButton
+  data={sharedData.users}
+  value={userId()}
+  onValueChange={setUserId}
+  modal={() => <UserSelectModal />}
+>
+  {(user) => <>{user.name}</>}
+</SharedDataSelectButton>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | **(required)** | Shared data accessor |
+| `value` | `TKey \| TKey[]` | - | Selected key(s) |
+| `onValueChange` | `(value: TKey \| TKey[] \| undefined) => void` | - | Value change callback |
+| `multiple` | `boolean` | - | Multiple selection |
+| `required` | `boolean` | - | Required field |
+| `disabled` | `boolean` | - | Disabled state |
+| `size` | `"xs" \| "sm" \| "lg" \| "xl"` | - | Size |
+| `inset` | `boolean` | - | Inset style |
+| `modal` | `() => JSX.Element` | **(required)** | Selection modal factory |
+| `children` | `(item: TItem) => JSX.Element` | **(required)** | Item render function |
+
+### SharedDataSelectList
+
+Wraps `SelectList` with `SharedDataAccessor`. Optionally adds a management modal link in header.
+
+```tsx
+import { SharedDataSelectList } from "@simplysm/solid";
+
+const sharedData = useSharedData<MySharedData>();
+
+<SharedDataSelectList
+  data={sharedData.categories}
+  value={selectedCategory()}
+  onValueChange={setSelectedCategory}
+  header="Category"
+  modal={() => <CategoryManageModal />}
+>
+  <SelectList.ItemTemplate>
+    {(cat) => <>{cat.name}</>}
+  </SelectList.ItemTemplate>
+</SharedDataSelectList>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `SharedDataAccessor<TItem>` | **(required)** | Shared data accessor |
+| `value` | `TItem` | - | Selected value |
+| `onValueChange` | `(value: TItem \| undefined) => void` | - | Value change callback |
+| `required` | `boolean` | - | Required field |
+| `disabled` | `boolean` | - | Disabled state |
+| `filterFn` | `(item: TItem, index: number) => boolean` | - | Item filter function |
+| `canChange` | `(item: TItem \| undefined) => boolean \| Promise<boolean>` | - | Change guard |
+| `pageSize` | `number` | - | Page size (auto-shows pagination) |
+| `header` | `string` | - | Header text |
+| `modal` | `() => JSX.Element` | - | Management modal factory (adds link icon in header) |
+| `children` | `JSX.Element` | **(required)** | Sub-component children (e.g., `SelectList.ItemTemplate`) |
+
+---
+
 ## Combobox
 
 Autocomplete component with async search and item selection support. Debouncing is built-in.

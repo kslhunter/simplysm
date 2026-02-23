@@ -127,6 +127,11 @@ import "@simplysm/solid/tailwind.css";
 - [`DateRangePicker`](docs/form-controls.md#daterangepicker) - Date range input with period type selection (day/month/range)
 - [`Textarea`](docs/form-controls.md#textarea) - Multi-line text input with auto-height and IME support
 - [`Select`](docs/form-controls.md#select) - Dropdown selection with single/multiple, hierarchical items, and compound components
+- [`SelectList`](docs/form-controls.md#selectlist) - List-style single selection with search, pagination, and slot customization
+- [`DataSelectButton`](docs/form-controls.md#dataselectbutton) - Modal-based selection button with key-based loading
+- [`SharedDataSelect`](docs/form-controls.md#shareddataselect) - SharedData-connected Select wrapper
+- [`SharedDataSelectButton`](docs/form-controls.md#shareddataselectbutton) - SharedData-connected DataSelectButton wrapper
+- [`SharedDataSelectList`](docs/form-controls.md#shareddataselectlist) - SharedData-connected SelectList wrapper
 - [`Combobox`](docs/form-controls.md#combobox) - Autocomplete with async search and debouncing
 - [`Checkbox`](docs/form-controls.md#checkbox--radio) / [`Radio`](docs/form-controls.md#checkbox--radio) - Checkbox and radio button
 - [`CheckboxGroup`](docs/form-controls.md#checkboxgroup--radiogroup) / [`RadioGroup`](docs/form-controls.md#checkboxgroup--radiogroup) - Group components for multiple/single selection
@@ -198,6 +203,7 @@ import "@simplysm/solid/tailwind.css";
 - [`createControllableStore`](docs/hooks.md#createcontrollablestore) - Controlled/Uncontrolled store pattern (for objects/arrays)
 - [`createMountTransition`](docs/hooks.md#createmounttransition) - Mount/unmount CSS animation hook
 - [`createIMEHandler`](docs/hooks.md#createimehandler) - IME composition delay handler
+- [`createSlotSignal`](docs/hooks.md#createslotsignal) - Slot registration signal for compound components
 - [`createTopbarActions`](docs/layout.md#topbar-actions-slot) - Register actions in nearest Topbar.Container scope
 - [`useTopbarActionsAccessor`](docs/layout.md#topbar-actions-slot) - Direct access to topbar actions accessor
 - [`useRouterLink`](docs/hooks.md#userouterlink) - Navigation with Ctrl/Shift+click support

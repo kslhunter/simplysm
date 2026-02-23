@@ -25,9 +25,7 @@ import { Topbar } from "../../../../src/components/layout/topbar/Topbar";
 import { useTopbarActionsAccessor } from "../../../../src/components/layout/topbar/TopbarContext";
 
 // Helper: TopbarContext에서 actions accessor를 추출
-function ActionsReader(props: {
-  onCapture: (actions: Accessor<JSX.Element | undefined>) => void;
-}) {
+function ActionsReader(props: { onCapture: (actions: Accessor<JSX.Element | undefined>) => void }) {
   const actions = useTopbarActionsAccessor();
   props.onCapture(actions);
   return null;

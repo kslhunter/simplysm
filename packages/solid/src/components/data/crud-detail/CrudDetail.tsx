@@ -202,11 +202,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         </Show>
         <Show
           when={
-            canEdit() &&
-            local.toggleDelete &&
-            info() &&
-            !info()!.isNew &&
-            (local.deletable ?? true)
+            canEdit() && local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)
           }
         >
           {(_) => (

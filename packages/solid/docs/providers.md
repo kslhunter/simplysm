@@ -106,6 +106,9 @@ interface SharedDataDefinition<TData> {
   getKey: (item: TData) => string | number;                    // Primary key extractor
   orderBy: [(item: TData) => unknown, "asc" | "desc"][];       // Sort order
   filter?: unknown;                                             // Optional filter for change events
+  getSearchText?: (item: TData) => string;                      // Search text extractor (for SelectList/Select filtering)
+  getIsHidden?: (item: TData) => boolean;                       // Hidden item filter
+  getParentKey?: (item: TData) => string | number | undefined;  // Parent key extractor (for tree structure)
 }
 ```
 
@@ -116,6 +119,10 @@ interface SharedDataDefinition<TData> {
 | `items` | `Accessor<TData[]>` | Reactive item array |
 | `get` | `(key: string \| number \| undefined) => TData \| undefined` | Get item by key |
 | `emit` | `(changeKeys?: Array<string \| number>) => Promise<void>` | Emit change event to server (triggers refetch in all subscribers) |
+| `getKey` | `(item: TData) => string \| number` | Primary key extractor |
+| `getSearchText` | `((item: TData) => string) \| undefined` | Search text extractor |
+| `getIsHidden` | `((item: TData) => boolean) \| undefined` | Hidden item filter |
+| `getParentKey` | `((item: TData) => string \| number \| undefined) \| undefined` | Parent key extractor (tree structure) |
 
 **SharedDataValue extras:**
 

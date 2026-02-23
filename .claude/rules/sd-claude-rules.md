@@ -9,11 +9,29 @@ Respond in the **system's configured language** (set via Claude Code's language 
 
 ## Missing References
 
-참조 파일이나 문서를 찾지 못하면 **즉시 멈추고 사용자에게 올바른 경로를 물어야 한다.**
+If a referenced file or document cannot be found, **stop immediately and ask the user for the correct path.**
 
-- 혼자 판단해서 생략하거나 다른 방식으로 진행하지 말 것
-- "파일을 찾을 수 없으므로 건너뛰겠습니다" 같은 자의적 판단 금지
-- 반드시 사용자에게 확인 후 진행
+- Do NOT skip or proceed on your own judgment.
+- Responses like "I couldn't find the file, so I'll skip it" are strictly prohibited.
+- Always confirm with the user before proceeding.
+
+## Scope of Work
+
+**Do only what is explicitly asked.** Never perform work that was not requested.
+
+### Questions vs. Code Requests — CRITICAL
+
+- **If the user asks a question** (e.g., "이건 왜 이래?", "이거 뭐야?", "어떻게 동작해?") → **answer with text only**. Do NOT edit, write, or create any files.
+- **If the user discusses, explains, or shares opinions** → **respond with text only**. Do NOT touch any files.
+- **Only edit/write/create files when the user explicitly requests code changes** (e.g., "수정해줘", "만들어줘", "변경해줘", "추가해줘", "고쳐줘").
+- Reading files to answer a question is fine. **Modifying files to answer a question is prohibited.**
+
+### General Rules
+
+- When the user says "ask", "request", or "confirm" → **ask the user**. Do NOT decide or create it yourself.
+- Do NOT add features, refactoring, improvements, or documentation beyond the requested scope.
+- When in doubt, **ask first** before proceeding.
+- Responses like "I'll create it myself" or "I'll add that as well" are strictly prohibited.
 
 ## Bug Workarounds
 

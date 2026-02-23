@@ -269,6 +269,36 @@ const {
 
 ---
 
+## createSlotSignal
+
+Signal factory for slot registration pattern. Used internally by compound components (`SelectList`, etc.) to register child slot content.
+
+```tsx
+import { createSlotSignal, type SlotAccessor } from "@simplysm/solid";
+
+const [headerSlot, setHeader] = createSlotSignal();
+
+// Register slot content (typically from a sub-component)
+setHeader(() => <div>Header Content</div>);
+
+// Read slot content (in parent render)
+<Show when={headerSlot()}>
+  {headerSlot()!()}
+</Show>
+
+// Unregister
+setHeader(undefined);
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `[0]` | `Accessor<SlotAccessor>` | Slot accessor (`(() => JSX.Element) \| undefined`) |
+| `[1]` | `(content: SlotAccessor) => void` | Slot setter |
+
+**`SlotAccessor` type:** `(() => JSX.Element) | undefined`
+
+---
+
 ## useRouterLink
 
 `@solidjs/router`-based navigation hook. Automatically handles Ctrl/Alt + click (new tab), Shift + click (new window), and regular click (SPA routing).

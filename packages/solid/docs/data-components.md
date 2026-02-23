@@ -137,11 +137,22 @@ import { DataSheet } from "@simplysm/solid";
 | `width` | `string` | - | Column width (e.g., `"100px"`, `"10rem"`) |
 | `class` | `string` | - | Cell CSS class |
 | `fixed` | `boolean` | `false` | Fixed column |
-| `hidden` | `boolean` | `false` | Hidden column |
+| `hidden` | `boolean` | `false` | Default hidden state (overridable by user column config) |
 | `collapse` | `boolean` | `false` | Hidden in config modal |
 | `sortable` | `boolean` | `true` | Sortable |
 | `resizable` | `boolean` | `true` | Resizable |
-| `children` | `(ctx: { item: T, index: number, depth: number }) => JSX.Element` | **(required)** | Cell rendering function |
+| `children` | `(ctx: DataSheetCellContext<T>) => JSX.Element` | **(required)** | Cell rendering function |
+
+**DataSheetCellContext:**
+
+```typescript
+interface DataSheetCellContext<T> {
+  item: T;
+  index: number;  // Position within parent array (root: items[], child: parent.children[])
+  row: number;    // Flat display row position (within current page)
+  depth: number;
+}
+```
 
 ---
 
@@ -724,8 +735,8 @@ const handleEdit = async () => {
 | `children` | `(ctx: CrudDetailContext<TData>) => JSX.Element` | **(required)** | Render prop receiving context |
 | `submit` | `(data: TData) => Promise<boolean \| undefined>` | - | Save function. Return `true` to trigger success notification |
 | `toggleDelete` | `(del: boolean) => Promise<boolean \| undefined>` | - | Soft-delete/restore function. `del=true` for delete, `false` for restore |
-| `editable` | `() => boolean` | `() => true` | Whether editing is allowed |
-| `deletable` | `() => boolean` | `() => true` | Whether delete/restore is allowed |
+| `editable` | `boolean` | `true` | Whether editing is allowed |
+| `deletable` | `boolean` | `true` | Whether delete/restore is allowed |
 | `data` | `TData` | - | Controlled data state |
 | `onDataChange` | `(data: TData) => void` | - | Data change callback (controlled mode) |
 | `class` | `string` | - | CSS class |
