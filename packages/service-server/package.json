@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/service-server",
-  "version": "13.0.63",
+  "version": "13.0.64",
   "description": "심플리즘 패키지 - 서비스 모듈 (server)",
   "author": "김석래",
   "license": "Apache-2.0",
