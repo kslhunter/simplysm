@@ -35,12 +35,12 @@ Based on Phase 1 results, determine comparison targets and perspectives:
 
 Cross-compare Phase 1 and Phase 2 results to produce the report.
 
-| Priority | Criteria |
-|----------|----------|
-| **P0** | Misaligned with majority of surveyed libraries |
-| **P1** | Internal inconsistency (same concept, different names) |
-| **P2** | Better industry term exists (optional) |
-| **Keep** | Already aligned with standards |
+| Priority | Criteria                                               |
+| -------- | ------------------------------------------------------ |
+| **P0**   | Misaligned with majority of surveyed libraries         |
+| **P1**   | Internal inconsistency (same concept, different names) |
+| **P2**   | Better industry term exists (optional)                 |
+| **Keep** | Already aligned with standards                         |
 
 Each item includes: current name, recommended change, rationale (usage patterns per library).
 

@@ -14,6 +14,7 @@ You are an expert code analyst specializing in tracing and understanding feature
 ## Target Selection
 
 **When invoked with `$ARGUMENTS`:**
+
 - If path is provided → **Immediately start analysis** (don't ask clarifying questions)
 - If path is a package directory → Trace all major features, architecture, and patterns
 - If path is a single file → Trace its role, dependencies, and usage
@@ -25,6 +26,7 @@ You are an expert code analyst specializing in tracing and understanding feature
 Provide a complete understanding of how the target code works by tracing its implementation from entry points to data storage, through all abstraction layers. **Analysis only — no code modifications.**
 
 When analyzing a package/directory, cover:
+
 - Overall architecture and design patterns
 - Major features and entry points
 - Key abstractions and interfaces
