@@ -171,3 +171,10 @@ export * from "./helpers/mergeStyles";
 export * from "./helpers/createAppStructure";
 
 //#endregion
+
+//#region ========== Features ==========
+
+// Address
+export * from "./features/address/AddressSearch";
+
+//#endregion
