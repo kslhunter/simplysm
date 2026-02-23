@@ -356,4 +356,46 @@ describe("SharedDataProvider", () => {
 
     result.unmount();
   });
+
+  it("configure() 직후에는 fetch하지 않고, items() 접근 시 lazy하게 fetch한다", async () => {
+    const { serviceClientValue, mockClient } = createMockServiceClient();
+    const mockUsers: TestUser[] = [{ id: 1, name: "Alice" }];
+
+    const fetchFn = vi.fn(() => Promise.resolve(mockUsers));
+
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
+      user: {
+        fetch: fetchFn,
+        getKey: (item) => item.id,
+        orderBy: [[(item) => item.name, "asc"]],
+      },
+    };
+
+    // configure만 호출하고 items()에 접근하지 않는 컴포넌트
+    function ConfigureOnly() {
+      const shared = useTestSharedData();
+      shared.configure(() => definitions);
+      return <div data-testid="configured">configured</div>;
+    }
+
+    const result = render(() => (
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureOnly />
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
+    ));
+
+    // configure 직후: fetch와 addEventListener가 호출되지 않아야 함
+    await vi.waitFor(() => {
+      expect(result.getByTestId("configured").textContent).toBe("configured");
+    });
+
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(mockClient.addEventListener).not.toHaveBeenCalled();
+
+    result.unmount();
+  });
 });
