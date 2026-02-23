@@ -1,5 +1,6 @@
+import { useContext } from "solid-js";
 import { consola } from "consola";
-import { useLogAdapter, type LogAdapter } from "../providers/LoggerContext";
+import { LoggerContext, type LogAdapter } from "../providers/LoggerContext";
 
 type LogLevel = Parameters<LogAdapter["write"]>[0];
 
@@ -13,11 +14,10 @@ export interface Logger {
 }
 
 export function useLogger(): Logger {
-  const loggerCtx = useLogAdapter();
+  const loggerCtx = useContext(LoggerContext);
 
   const createLogFunction = (level: LogLevel) => {
     return (...args: unknown[]) => {
-      // Lazy read: 매 호출마다 현재 adapter를 확인
       const adapter = loggerCtx?.adapter();
       if (adapter) {
         void adapter.write(level, ...args);
