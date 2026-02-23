@@ -1,107 +1,139 @@
 # SIMPLYSM
 
-Signal 기반 Angular UI 프레임워크 및 엔터프라이즈급 풀스택 플랫폼
+Signal-based Angular UI framework and enterprise-grade full-stack platform.
 
-## 개요
+## Overview
 
-SIMPLYSM은 **Angular 20+ Signal 기반**의 UI 프레임워크와 **Fastify 백엔드**, **ORM**, **모바일 플러그인**을 포함한 통합 개발 플랫폼입니다. 기업용 Admin UI, 업무 시스템, 대규모 Feature 기반 프로젝트에 적합하도록 설계되었습니다.
+SIMPLYSM is an integrated development platform consisting of an **Angular 20+ Signal-based** UI framework, a **Fastify 5.x** backend, an ORM, and mobile plugins. It is designed for enterprise admin UIs, business systems, and large-scale feature-based projects.
 
-## 의존성
+## Dependencies
 
 - **Angular**: 20.x
 - **TypeScript**: 5.8.x
 - **Node.js**: 20.x
 - **Yarn**: 4.12.0
 
-## 설치
+## Installation
 
 ```bash
-# 저장소 클론
+# Clone the repository
 git clone https://github.com/kslhunter/simplysm.git
 
-# 의존성 설치
+# Install dependencies
 yarn install
 ```
 
-### 개별 패키지 설치
+### Installing individual packages
 
 ```bash
-# UI 프레임워크
+# UI framework
 npm install @simplysm/sd-angular
 
-# 백엔드 서버
+# Backend server
 npm install @simplysm/sd-service-server
 
-# ORM (필요한 DB 드라이버와 함께)
+# ORM (with the required DB driver)
 npm install @simplysm/sd-orm-node mysql2
 ```
 
-## 패키지 구조
+## Package Structure
 
-### Core 패키지
-| 패키지 | 설명 |
-|--------|------|
-| `@simplysm/sd-core-common` | 기반 유틸리티 (XML, YAML, ZIP, 리플렉션) |
-| `@simplysm/sd-core-browser` | 브라우저 환경 유틸리티 |
-| `@simplysm/sd-core-node` | Node.js 환경 유틸리티 |
+### Core Packages
 
-### UI 프레임워크
-| 패키지 | 설명 |
-|--------|------|
-| `@simplysm/sd-angular` | Signal 기반 Angular UI 컴포넌트 (폼, 레이아웃, 데이터, 오버레이) |
-| `@simplysm/sd-service-client` | 서비스 통신용 WebSocket 클라이언트 |
+| Package                     | Description                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `@simplysm/sd-core-common`  | Base utilities (XML, YAML, ZIP, reflection, custom types: DateTime, DateOnly, Time, Uuid) |
+| `@simplysm/sd-core-browser` | Browser environment utilities                                                             |
+| `@simplysm/sd-core-node`    | Node.js environment utilities (filesystem, workers)                                       |
 
-### 백엔드
-| 패키지 | 설명 |
-|--------|------|
-| `@simplysm/sd-service-server` | Fastify REST/WebSocket 서버 (JWT 인증) |
-| `@simplysm/sd-service-common` | 서비스 공통 타입 및 프로토콜 |
-| `@simplysm/sd-storage` | FTP/SFTP 스토리지 모듈 |
+### UI Framework
 
-### 데이터베이스
-| 패키지 | 설명 |
-|--------|------|
-| `@simplysm/sd-orm-common` | ORM 공통 인터페이스 및 쿼리 빌더 |
-| `@simplysm/sd-orm-node` | Node.js ORM 구현 (SQLite3, MySQL2, MSSQL) |
+| Package                       | Description                                                                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `@simplysm/sd-angular`        | Signal-based Angular UI components (forms, layouts, data, navigation, overlays, visuals, barcode, QR, charts, PDF, rich text editor) |
+| `@simplysm/sd-service-client` | WebSocket client for service communication                                                                                           |
 
-### 유틸리티
-| 패키지 | 설명 |
-|--------|------|
-| `@simplysm/sd-excel` | Excel 파일 처리 (XLSX 내보내기/가져오기) |
-| `@simplysm/sd-cli` | 빌드 CLI (watch, build, publish) |
-| `@simplysm/eslint-plugin` | 커스텀 ESLint 규칙 |
+### Backend
 
-### 모바일 플러그인
+| Package                       | Description                                                    |
+| ----------------------------- | -------------------------------------------------------------- |
+| `@simplysm/sd-service-server` | Fastify REST/WebSocket server (JWT auth, email via nodemailer) |
+| `@simplysm/sd-service-common` | Shared service types and protocol definitions                  |
+| `@simplysm/sd-storage`        | FTP/SFTP storage module                                        |
+
+### Database
+
+| Package                   | Description                                                     |
+| ------------------------- | --------------------------------------------------------------- |
+| `@simplysm/sd-orm-common` | ORM contracts and query builder                                 |
+| `@simplysm/sd-orm-node`   | Node.js ORM implementation (SQLite3, MySQL2, MSSQL via Tedious) |
+
+### Utilities
+
+| Package                   | Description                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `@simplysm/sd-excel`      | Excel file processing (XLSX export/import)                                                               |
+| `@simplysm/sd-cli`        | Build CLI (watch, build, publish, lint orchestration for Library, Angular, Electron, Cordova, Capacitor) |
+| `@simplysm/eslint-plugin` | Custom ESLint rules (including sd-control attribute validation)                                          |
+
+### Mobile Plugins
+
 **Capacitor** (iOS/Android):
-- `@simplysm/capacitor-plugin-auto-update` - OTA 업데이트
-- `@simplysm/capacitor-plugin-broadcast` - Intent 브로드캐스트 (Android)
-- `@simplysm/capacitor-plugin-file-system` - 파일 시스템
-- `@simplysm/capacitor-plugin-usb-storage` - USB 스토리지
 
-**Cordova** (레거시):
-- `@simplysm/cordova-plugin-auto-update`
-- `@simplysm/cordova-plugin-file-system`
-- `@simplysm/cordova-plugin-usb-storage`
+- `@simplysm/capacitor-plugin-auto-update` - OTA updates
+- `@simplysm/capacitor-plugin-broadcast` - Intent broadcast (Android only)
+- `@simplysm/capacitor-plugin-file-system` - File system access
+- `@simplysm/capacitor-plugin-usb-storage` - USB storage access
 
-## 개발
+**Cordova** (deprecated — migrating to Capacitor):
 
-```bash
-# 개발 모드 (watch)
-yarn watch
+- `@simplysm/cordova-plugin-auto-update` _(deprecated)_
+- `@simplysm/cordova-plugin-file-system` _(deprecated)_
+- `@simplysm/cordova-plugin-usb-storage` _(deprecated)_
 
-# 빌드
-yarn build
+> **Note:** `@simplysm/sd-orm-common-ext` is also **deprecated** and must not be used.
 
-# 린트 수정
-yarn eslint:fix
+## Package Dependency Structure
 
-# 테스트
-vitest
+```
+sd-core-common (base: utilities, reflection, xml, yaml, zip)
+├── sd-core-browser → sd-angular (UI framework)
+├── sd-core-node → sd-orm-node, sd-service-server
+├── sd-orm-common → sd-orm-node, sd-service-common
+├── sd-service-common → sd-service-server, sd-service-client
+└── sd-excel, sd-storage (standalone utilities)
 ```
 
-## sd-angular 사용 예시
+## Development
 
-### 초기 설정
+```bash
+# Development mode (watch)
+yarn watch
+
+# Production build
+yarn build
+
+# Publish to npm
+yarn publish
+
+# Auto-fix lint errors
+yarn eslint:fix
+
+# Reinstall dependencies
+yarn reinstall
+
+# Run all tests
+vitest
+
+# Run specific test file
+vitest run <pattern>
+```
+
+The build system uses `sd-cli` (custom CLI tool). All commands run via `tsx` with 8 GB memory allocated.
+
+## sd-angular Usage
+
+### Initial Setup
 
 ```typescript
 import { provideSdAngular } from "@simplysm/sd-angular";
@@ -110,53 +142,68 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideSdAngular({
       defaultTheme: "compact",
-      defaultDark: false
-    })
-  ]
+      defaultDark: false,
+    }),
+  ],
 });
 ```
 
-### 컴포넌트 사용
+### Component Usage
 
 ```html
 <sd-form>
-  <sd-textfield label="이름" />
-  <sd-select label="유형" [items]="types" />
-  <sd-button (click)="save()">저장</sd-button>
+  <sd-textfield label="Name" />
+  <sd-select label="Type" [items]="types" />
+  <sd-button (click)="save()">Save</sd-button>
 </sd-form>
 
 <sd-sheet [items]="rows" (itemSelect)="onSelect($event)" />
 ```
 
-### 테마
-5가지 테마 제공: `compact`, `mobile`, `kiosk`, `modern`, `dark`
+### Themes
+
+Three layout themes are available: `compact`, `mobile`, `kiosk`. Dark mode is a separate boolean toggle independent of the theme.
 
 ```html
 <sd-theme-selector></sd-theme-selector>
 ```
 
-## 주요 업데이트
+### Icons
+
+Uses `@ng-icons/tabler-icons` from the `ng-icons` package (not FontAwesome).
+Browse available icons at [Tabler Icons](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=tablerTools).
+
+## Code Conventions
+
+- **State management**: Angular Signals only (no RxJS for state; RxJS is used for HTTP/WebSocket).
+- **Icon library**: `@ng-icons/tabler-icons` (not FontAwesome).
+- **Async functions**: Do not add an `Async` suffix — async is the default. Use `Sync` suffix only when a synchronous counterpart exists.
+- **Package manager**: Yarn 4.12.0 (workspaces).
+- **npm scope**: All packages use the `@simplysm/` scope.
+
+## Migration Notes
 
 ### 12.15.x → 12.16.x
 
-- ESLint 오류는 `yarn eslint:fix`로 대부분 수정 가능
-- **아이콘 시스템 변경**: FontAwesome → ng-icons (`@ng-icons/tabler-icons`)
-  - [Tabler Icons 브라우저](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=tablerTools)
-  - 기존 FontAwesome 계속 사용 가능, sd-angular 컨트롤의 `[icon]` 속성만 수정 필요
+- Most ESLint errors can be auto-fixed with `yarn eslint:fix`.
+- **Icon system change**: FontAwesome → ng-icons (`@ng-icons/tabler-icons`).
+  - [Browse Tabler Icons](https://ng-icons.github.io/ng-icons/#/browse-icons?iconset=tablerTools)
+  - Existing FontAwesome usage remains functional; only the `[icon]` attribute on sd-angular controls needs updating.
+- **Cordova plugins deprecated**: All three Cordova plugins are now deprecated. Use the equivalent Capacitor plugins instead.
 
 ### 12.14.x → 12.15.x
 
-- `sd-dock-container`, `sd-dock` 컨트롤 복원
-- 레이아웃 컨트롤(디렉티브) 변경: `sd-flex`, `sd-form-*`, `sd-grid`, `sd-card`, `sd-pane`, `sd-table`
-  - 태그/속성/클래스 방식으로 사용 가능
-  - 일부 Control이 Directive로 변경 (import 변경 필요)
-- ESLint에 sd-컨트롤 attribute 관련 규칙 추가
-  - `yarn eslint:fix`로 자동 수정 가능
+- `sd-dock-container` and `sd-dock` controls restored.
+- Layout controls (directives) changed: `sd-flex`, `sd-form-*`, `sd-grid`, `sd-card`, `sd-pane`, `sd-table`.
+  - Can be used as tags, attributes, or class-based.
+  - Some controls changed to directives (import updates required).
+- ESLint rules added for sd-control attributes.
+  - Auto-fixable with `yarn eslint:fix`.
 
-## 라이선스
+## License
 
 MIT
 
-## 기여
+## Contributing
 
-이슈 및 PR은 [GitHub](https://github.com/kslhunter/simplysm)에서 환영합니다.
+Issues and PRs are welcome at [GitHub](https://github.com/kslhunter/simplysm).
