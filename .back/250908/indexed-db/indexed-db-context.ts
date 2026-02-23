@@ -37,7 +37,11 @@ export class IndexedDbContext {
     });
   }
 
-  async transAsync<R>(stores: IndexedStore<any>[], mode: IDBTransactionMode, fn: () => Promise<R>): Promise<R> {
+  async transAsync<R>(
+    stores: IndexedStore<any>[],
+    mode: IDBTransactionMode,
+    fn: () => Promise<R>,
+  ): Promise<R> {
     if (!this.indexedDb) throw new Error(`${this.dbName}(IndexedDB)가 연결되어있지 않습니다.`);
 
     return await new Promise<R>(async (resolve, reject) => {
@@ -88,7 +92,9 @@ export class IndexedDbContext {
                 autoIncrement: true,
               }
             : {
-                keyPath: storeDef.key.columns.orderBy((item) => item.order).map((item) => item.name),
+                keyPath: storeDef.key.columns
+                  .orderBy((item) => item.order)
+                  .map((item) => item.name),
               }
           : undefined,
       );

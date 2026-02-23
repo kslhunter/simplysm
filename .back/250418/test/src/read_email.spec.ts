@@ -5,22 +5,24 @@ import { SdPop3Client } from "@simplysm/sd-pop3";
 
 describe("메일 읽기", () => {
   it("목록", async () => {
-    await SdPop3Client.connectAsync({
-      host: "",
-      port: 0,
-      user: "",
-      pass: "",
-    }, async (client) => {
-      const stat = await client.statAsync();
-      console.log(stat);
+    await SdPop3Client.connectAsync(
+      {
+        host: "",
+        port: 0,
+        user: "",
+        pass: "",
+      },
+      async (client) => {
+        const stat = await client.statAsync();
+        console.log(stat);
 
-      const top = await client.topAsync(18696); //18663
-      console.log("TOP:", top);
+        const top = await client.topAsync(18696); //18663
+        console.log("TOP:", top);
 
-      /*const capa = await client.capaAsync();
+        /*const capa = await client.capaAsync();
       console.log("CAPA:", capa);*/
 
-      /*const list = await client.listAsync();
+        /*const list = await client.listAsync();
       console.log("LIST:", list);
 
       const top = await client.topAsync(8);
@@ -60,6 +62,7 @@ describe("메일 읽기", () => {
 
         console.log(result);
       }*/
-    });
+      },
+    );
   });
 });

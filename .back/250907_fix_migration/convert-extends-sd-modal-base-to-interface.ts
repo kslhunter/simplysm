@@ -42,22 +42,20 @@ export function convertExtendsSdModalBaseToInterface() {
 
     const onlyISharedData =
       props.length === 0 &&
-      paramInterface.getExtends().some(e =>
-        e.getText().includes("ISharedDataModalInputParam")
-      );
+      paramInterface.getExtends().some((e) => e.getText().includes("ISharedDataModalInputParam"));
 
     if (onlyISharedData) {
       props = [
         {
           getName: () => "selectedItemKeys",
           hasQuestionToken: () => false,
-          getTypeNode: () => ({ getText: () => "any[]" })
+          getTypeNode: () => ({ getText: () => "any[]" }),
         },
         {
           getName: () => "selectMode",
           hasQuestionToken: () => true,
-          getTypeNode: () => ({ getText: () => `"single" | "multi"` })
-        }
+          getTypeNode: () => ({ getText: () => `"single" | "multi"` }),
+        },
       ] as any;
       paramNames = ["selectedItemKeys", "selectMode"];
     }
@@ -76,7 +74,10 @@ export function convertExtendsSdModalBaseToInterface() {
       }
     }
     if (!modalClass.getProperty("close")) {
-      modalClass.insertProperty(lastPropIdx, { name: "close", initializer: `output<${modalOutputTypeText}>()` });
+      modalClass.insertProperty(lastPropIdx, {
+        name: "close",
+        initializer: `output<${modalOutputTypeText}>()`,
+      });
       changed = true;
     }
 
@@ -87,7 +88,7 @@ export function convertExtendsSdModalBaseToInterface() {
     } else {
       implementsText = `ISdModal<${modalOutputTypeText}>`;
     }
-    if (!modalClass.getImplements().some(i => i.getText() === implementsText)) {
+    if (!modalClass.getImplements().some((i) => i.getText() === implementsText)) {
       modalClass.addImplements(implementsText);
       changed = true;
     }
@@ -210,24 +211,22 @@ export function convertExtendsSdModalBaseToInterface() {
 
     // 8. import 관리
     const sdAngularImport = sourceFile.getImportDeclaration(
-      d => d.getModuleSpecifierValue() === "@simplysm/sd-angular"
+      (d) => d.getModuleSpecifierValue() === "@simplysm/sd-angular",
     );
     if (modalOutputTypeText === "ISharedDataModalOutputResult") {
       // ISdSelectModal 추가
       if (sdAngularImport) {
         const namedImports = sdAngularImport.getNamedImports();
         // ISdSelectModal 없으면 추가
-        if (!namedImports.some(n => n.getName() === "ISdSelectModal")) {
+        if (!namedImports.some((n) => n.getName() === "ISdSelectModal")) {
           sdAngularImport.addNamedImport("ISdSelectModal");
         }
         // ISdModal 제거
-        namedImports
-          .filter(n => n.getName() === "ISdModal")
-          .forEach(n => n.remove());
+        namedImports.filter((n) => n.getName() === "ISdModal").forEach((n) => n.remove());
       } else {
         sourceFile.addImportDeclaration({
           namedImports: ["ISdSelectModal"],
-          moduleSpecifier: "@simplysm/sd-angular"
+          moduleSpecifier: "@simplysm/sd-angular",
         });
       }
     } else {
@@ -235,17 +234,15 @@ export function convertExtendsSdModalBaseToInterface() {
       if (sdAngularImport) {
         const namedImports = sdAngularImport.getNamedImports();
         // ISdModal 없으면 추가
-        if (!namedImports.some(n => n.getName() === "ISdModal")) {
+        if (!namedImports.some((n) => n.getName() === "ISdModal")) {
           sdAngularImport.addNamedImport("ISdModal");
         }
         // ISdSelectModal 제거
-        namedImports
-          .filter(n => n.getName() === "ISdSelectModal")
-          .forEach(n => n.remove());
+        namedImports.filter((n) => n.getName() === "ISdSelectModal").forEach((n) => n.remove());
       } else {
         sourceFile.addImportDeclaration({
           namedImports: ["ISdModal"],
-          moduleSpecifier: "@simplysm/sd-angular"
+          moduleSpecifier: "@simplysm/sd-angular",
         });
       }
     }

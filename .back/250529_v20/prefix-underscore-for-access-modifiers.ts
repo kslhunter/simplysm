@@ -29,7 +29,7 @@ export default function prefixUnderscoreForAccessModifiers() {
         if (nameNode.getKind() !== SyntaxKind.Identifier) continue;
 
         const originalName = nameNode.getText();
-        const modifiers = namedMember.getModifiers().map(mod => mod.getText());
+        const modifiers = namedMember.getModifiers().map((mod) => mod.getText());
 
         // 예외 조건들
         if (originalName.startsWith("_")) continue;
@@ -53,7 +53,9 @@ export default function prefixUnderscoreForAccessModifiers() {
               }
             });
 
-          console.log(`[private-or-protected] ${sourceFile.getBaseName()} :: ${originalName} → ${newName}`);
+          console.log(
+            `[private-or-protected] ${sourceFile.getBaseName()} :: ${originalName} → ${newName}`,
+          );
           changed = true;
         }
       }

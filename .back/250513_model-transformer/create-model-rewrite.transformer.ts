@@ -1,7 +1,10 @@
 import ts from "typescript";
 import path from "path";
 
-export function createModelRewriteTransformer(pkgRoot: string, pkgName: string): ts.TransformerFactory<ts.SourceFile> {
+export function createModelRewriteTransformer(
+  pkgRoot: string,
+  pkgName: string,
+): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     const factory = context.factory;
 
@@ -13,9 +16,12 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
       let hasModel = false;
 
       for (const stmt of sourceFile.statements) {
-        if (ts.isImportDeclaration(stmt) && stmt.importClause?.namedBindings && ts.isNamedImports(
-          stmt.importClause.namedBindings)) {
-          const bindings = stmt.importClause.namedBindings.elements.map(e => e.name.text);
+        if (
+          ts.isImportDeclaration(stmt) &&
+          stmt.importClause?.namedBindings &&
+          ts.isNamedImports(stmt.importClause.namedBindings)
+        ) {
+          const bindings = stmt.importClause.namedBindings.elements.map((e) => e.name.text);
           const module = (stmt.moduleSpecifier as ts.StringLiteral).text;
 
           if (module === "@angular/core") {
@@ -43,8 +49,8 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
               ts.isIdentifier(member.name)
             ) {
               const varName = member.name.text;
-              const valueExpr = member.initializer.arguments.first() ?? factory.createIdentifier(
-                "undefined");
+              const valueExpr =
+                member.initializer.arguments.first() ?? factory.createIdentifier("undefined");
               const typeArg = member.initializer.typeArguments?.[0];
 
               const inputField = factory.createPropertyDeclaration(
@@ -96,8 +102,7 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
 
               newMembers.push(inputField, outputField, modelField);
               didInsertModel = true;
-            }
-            else {
+            } else {
               newMembers.push(member);
             }
           }
@@ -122,26 +127,34 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
       if (didInsertModel) {
         if (!hasInput || !hasOutput) {
           const specifiers: ts.ImportSpecifier[] = [];
-          if (!hasInput) specifiers.push(ts.factory.createImportSpecifier(
-            false,
-            undefined,
-            ts.factory.createIdentifier("input"),
-          ));
-          if (!hasOutput) specifiers.push(ts.factory.createImportSpecifier(
-            false,
-            undefined,
-            ts.factory.createIdentifier("output"),
-          ));
+          if (!hasInput)
+            specifiers.push(
+              ts.factory.createImportSpecifier(
+                false,
+                undefined,
+                ts.factory.createIdentifier("input"),
+              ),
+            );
+          if (!hasOutput)
+            specifiers.push(
+              ts.factory.createImportSpecifier(
+                false,
+                undefined,
+                ts.factory.createIdentifier("output"),
+              ),
+            );
 
-          importDecls.push(ts.factory.createImportDeclaration(
-            undefined,
-            ts.factory.createImportClause(
-              false,
+          importDecls.push(
+            ts.factory.createImportDeclaration(
               undefined,
-              ts.factory.createNamedImports(specifiers),
+              ts.factory.createImportClause(
+                false,
+                undefined,
+                ts.factory.createNamedImports(specifiers),
+              ),
+              ts.factory.createStringLiteral("@angular/core"),
             ),
-            ts.factory.createStringLiteral("@angular/core"),
-          ));
+          );
         }
 
         if (!hasModel) {
@@ -154,7 +167,8 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
 
           if (normalizedFile.startsWith(normalizedSrc) && pkgName === "@simplysm/sd-angular") {
             if (normalizedFile.startsWith(normalizedSrc)) {
-              importPath = path.relative(fileDir, hooksPath)
+              importPath = path
+                .relative(fileDir, hooksPath)
                 .replace(/\\/g, "/")
                 .replace(/\.ts$/, "");
             }
@@ -162,26 +176,27 @@ export function createModelRewriteTransformer(pkgRoot: string, pkgName: string):
             if (!importPath.startsWith(".")) {
               importPath = "./" + importPath;
             }
-          }
-          else {
+          } else {
             importPath = "@simplysm/sd-angular";
           }
 
-          importDecls.push(ts.factory.createImportDeclaration(
-            undefined,
-            ts.factory.createImportClause(
-              false,
+          importDecls.push(
+            ts.factory.createImportDeclaration(
               undefined,
-              ts.factory.createNamedImports([
-                ts.factory.createImportSpecifier(
-                  false,
-                  undefined,
-                  ts.factory.createIdentifier("$model"),
-                ),
-              ]),
+              ts.factory.createImportClause(
+                false,
+                undefined,
+                ts.factory.createNamedImports([
+                  ts.factory.createImportSpecifier(
+                    false,
+                    undefined,
+                    ts.factory.createIdentifier("$model"),
+                  ),
+                ]),
+              ),
+              ts.factory.createStringLiteral(importPath),
             ),
-            ts.factory.createStringLiteral(importPath),
-          ));
+          );
         }
 
         newStatements.unshift(...importDecls);

@@ -52,9 +52,8 @@ export class SdSheet2Control<T> {
 
   config = resource({
     request: () => this.key(),
-    loader: async ({ request }) => (
-      await this._sdSystemConfig.getAsync(`sd-sheet2.${request}`)
-    ) as ISdSheet2Config,
+    loader: async ({ request }) =>
+      (await this._sdSystemConfig.getAsync(`sd-sheet2.${request}`)) as ISdSheet2Config,
   });
 
   // column def
@@ -62,25 +61,24 @@ export class SdSheet2Control<T> {
   columnDefs = computed(() => {
     const conf = this.config.value();
 
-    return this.columnControls()
-      .map(columnControl => {
-        const colConf = conf?.columnRecord?.[columnControl.key()];
-        return {
-          control: columnControl,
-          fixed: colConf?.fixed ?? columnControl.fixed(),
-          width: colConf?.width ?? columnControl.width(),
-          displayOrder: colConf?.displayOrder,
-          hidden: colConf?.hidden ?? columnControl.hidden(),
-        };
-      });
+    return this.columnControls().map((columnControl) => {
+      const colConf = conf?.columnRecord?.[columnControl.key()];
+      return {
+        control: columnControl,
+        fixed: colConf?.fixed ?? columnControl.fixed(),
+        width: colConf?.width ?? columnControl.width(),
+        displayOrder: colConf?.displayOrder,
+        hidden: colConf?.hidden ?? columnControl.hidden(),
+      };
+    });
   });
 
   displayColumnDefs = computed(() => {
     return this.columnDefs()
-      .filter(item => !item.hidden && !item.control.collapse())
-      .orderBy(item => item.displayOrder ?? 999)
+      .filter((item) => !item.hidden && !item.control.collapse())
+      .orderBy((item) => item.displayOrder ?? 999)
       .orderBy((item) => (item.fixed ? -1 : 0))
-      .map(item => ({
+      .map((item) => ({
         control: item.control,
         fixed: item.fixed,
         width: item.width,
@@ -122,8 +120,10 @@ export class SdSheet2Control<T> {
     const currColHeaderDef = headerDefTable[r][c];
     const prevColHeaderDef = headerDefTable[r][cc];
 
-    return currColHeaderDef?.text === prevColHeaderDef?.text
-      && currColHeaderDef?.fixed === prevColHeaderDef?.fixed;
+    return (
+      currColHeaderDef?.text === prevColHeaderDef?.text &&
+      currColHeaderDef?.fixed === prevColHeaderDef?.fixed
+    );
   }
 
   // 앞컬럼과 같으면, 컬럼 무시(앞컬럼의 colspan으로 합쳐져야하는 컬럼)
@@ -209,21 +209,20 @@ export class SdSheet2Control<T> {
 
     if (headerDef.fixed) {
       if (!this.fixedHeaderWidths()[c]) return;
-      this.fixedHeaderWidths.update(v => {
+      this.fixedHeaderWidths.update((v) => {
         const vr = [...v];
         delete vr[c];
         return vr;
       });
 
       return;
-    }
-    else {
+    } else {
       const el = event.target as HTMLTableCellElement;
       const offsetWidth = el.offsetWidth;
 
       if (this.fixedHeaderWidths()[c] === offsetWidth) return;
 
-      this.fixedHeaderWidths.update(v => {
+      this.fixedHeaderWidths.update((v) => {
         const vr = [...v];
         vr[c] = offsetWidth;
         return vr;

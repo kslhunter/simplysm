@@ -6,11 +6,8 @@ const createArrayExpression = ts.factory.createArrayLiteralExpression;
 const createStringLiteral = ts.factory.createStringLiteral;
 
 export default function transformer(program: ts.Program): ts.TransformerFactory<ts.SourceFile> {
-  return (context: ts.TransformationContext) => (file: ts.SourceFile) => visitNodeAndChildren(
-    file,
-    program,
-    context,
-  );
+  return (context: ts.TransformationContext) => (file: ts.SourceFile) =>
+    visitNodeAndChildren(file, program, context);
 }
 
 function visitNodeAndChildren(
@@ -63,8 +60,7 @@ function isKeysImportExpression(node: ts.Node): node is ts.ImportDeclaration {
       ? import.meta.resolve(path.resolve(path.dirname(node.getSourceFile().fileName), module))
       : import.meta.resolve(module);
     return PathUtils.isChildPath(modulePath, import.meta.dirname);
-  }
-  catch {
+  } catch {
     return false;
   }
 }
@@ -85,8 +81,7 @@ function isKeysCallExpression(
       import.meta.resolve(declaration.getSourceFile().fileName),
       import.meta.dirname,
     );
-  }
-  catch {
+  } catch {
     return false;
   }
 }

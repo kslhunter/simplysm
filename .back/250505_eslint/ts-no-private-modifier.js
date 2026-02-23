@@ -20,10 +20,14 @@ export default {
       context.report({
         node,
         messageId: "noPrivate",
-        fix: fixer => fixer.replaceTextRange(
-          [start, end],
-          sourceCode.getText().slice(start, end).replace(/\bprivate\b/, "protected"),
-        ),
+        fix: (fixer) =>
+          fixer.replaceTextRange(
+            [start, end],
+            sourceCode
+              .getText()
+              .slice(start, end)
+              .replace(/\bprivate\b/, "protected"),
+          ),
       });
     }
 
@@ -39,10 +43,7 @@ export default {
     function visitInterfaceModifierNode(node) {
       const modifiers = node.modifiers ?? [];
       for (const mod of modifiers) {
-        if (
-          mod.type === AST_NODE_TYPES.TSAccessibilityKeyword &&
-          mod.kind === "private"
-        ) {
+        if (mod.type === AST_NODE_TYPES.TSAccessibilityKeyword && mod.kind === "private") {
           reportAndFixPrivate(mod, mod.range[0], mod.range[1]);
         }
       }

@@ -54,7 +54,7 @@ export function convertExtendsSdPrintTemplateBaseToInterface() {
     }
 
     // 2. implements 추가
-    if (!printClass.getImplements().some(i => i.getText() === "ISdPrint")) {
+    if (!printClass.getImplements().some((i) => i.getText() === "ISdPrint")) {
       printClass.addImplements("ISdPrint");
       changed = true;
     }
@@ -76,9 +76,10 @@ export function convertExtendsSdPrintTemplateBaseToInterface() {
     // 4. this.print() 전체 삭제
     printClass
       .getDescendantsOfKind(SyntaxKind.CallExpression)
-      .filter((expr) =>
-        expr.getExpression().getKind() === SyntaxKind.PropertyAccessExpression &&
-        expr.getExpression().getText() === "this.print",
+      .filter(
+        (expr) =>
+          expr.getExpression().getKind() === SyntaxKind.PropertyAccessExpression &&
+          expr.getExpression().getText() === "this.print",
       )
       .forEach((expr) => {
         const parentStmt = expr.getFirstAncestorByKind(SyntaxKind.ExpressionStatement);
@@ -105,7 +106,8 @@ export function convertExtendsSdPrintTemplateBaseToInterface() {
             changed = true;
           } else if (
             innerExpr.getKind() === SyntaxKind.PropertyAccessExpression &&
-            innerExpr.asKind(SyntaxKind.PropertyAccessExpression)!.getExpression().getKind() === SyntaxKind.ThisKeyword &&
+            innerExpr.asKind(SyntaxKind.PropertyAccessExpression)!.getExpression().getKind() ===
+              SyntaxKind.ThisKeyword &&
             innerExpr.asKind(SyntaxKind.PropertyAccessExpression)!.getName() === "params"
           ) {
             propAccess.replaceWithText(`this.${propName}()`);
@@ -143,18 +145,18 @@ export function convertExtendsSdPrintTemplateBaseToInterface() {
 
     // 7. import 정리
     const sdAngularImport = sourceFile.getImportDeclaration(
-      d => d.getModuleSpecifierValue() === "@simplysm/sd-angular"
+      (d) => d.getModuleSpecifierValue() === "@simplysm/sd-angular",
     );
     if (sdAngularImport) {
       const namedImports = sdAngularImport.getNamedImports();
-      if (!namedImports.some(n => n.getName() === "ISdPrint")) {
+      if (!namedImports.some((n) => n.getName() === "ISdPrint")) {
         sdAngularImport.addNamedImport("ISdPrint");
         changed = true;
       }
     } else {
       sourceFile.addImportDeclaration({
         namedImports: ["ISdPrint"],
-        moduleSpecifier: "@simplysm/sd-angular"
+        moduleSpecifier: "@simplysm/sd-angular",
       });
       changed = true;
     }

@@ -23,7 +23,9 @@ export default function convertEcmaPrivateToTsPrivate() {
           prop.toggleModifier("private", true);
         }
 
-        console.log(`[private-field] ${sourceFile.getBaseName()} :: #${baseName} → private ${newName}`);
+        console.log(
+          `[private-field] ${sourceFile.getBaseName()} :: #${baseName} → private ${newName}`,
+        );
         changed = true;
       }
 
@@ -43,12 +45,15 @@ export default function convertEcmaPrivateToTsPrivate() {
           method.toggleModifier("private", true);
         }
 
-        console.log(`[private-method] ${sourceFile.getBaseName()} :: #${baseName}() → private ${newName}()`);
+        console.log(
+          `[private-method] ${sourceFile.getBaseName()} :: #${baseName}() → private ${newName}()`,
+        );
         changed = true;
       }
 
       // (3) this.#x → this._x
-      classDec.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression)
+      classDec
+        .getDescendantsOfKind(SyntaxKind.PropertyAccessExpression)
         .forEach((expr: PropertyAccessExpression) => {
           const nameNode = expr.getNameNode();
           if (nameNode.getKind() !== SyntaxKind.PrivateIdentifier) return;

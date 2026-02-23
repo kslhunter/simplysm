@@ -81,8 +81,7 @@ export class CordovaAppStorage {
     try {
       await File.readAsText(dirUrl, fileName);
       return true;
-    }
-    catch (err) {
+    } catch (err) {
       // 존재하지 않음
       if ("code" in err && err.code === 1 /*NOT_FOUND_ERR*/) {
         return false;
@@ -98,7 +97,6 @@ export class CordovaAppStorage {
     }
   }
 
-
   async removeAsync(dirOrFilePath: string) {
     const fullUrl = this.getFullUrl(dirOrFilePath);
     const dirUrl = path.dirname(fullUrl);
@@ -110,16 +108,15 @@ export class CordovaAppStorage {
 
     if (single.isDirectory) {
       await File.removeRecursively(dirUrl, dirOrFileName);
-    }
-    else {
+    } else {
       await File.removeFile(dirUrl, dirOrFileName);
     }
   }
 
   getFullUrl(targetPath: string) {
-    return this._rootDirectoryUrl + (targetPath.startsWith("/")
-      ? targetPath.substring(1)
-      : targetPath);
+    return (
+      this._rootDirectoryUrl + (targetPath.startsWith("/") ? targetPath.substring(1) : targetPath)
+    );
   }
 
   getFullPath(targetPath: string) {

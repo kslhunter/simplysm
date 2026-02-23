@@ -43,8 +43,7 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
       conn.on("error", (error) => {
         if (this.isConnected) {
           this.#logger.error("error: " + error.message);
-        }
-        else {
+        } else {
           reject(new Error(error.message));
         }
       });
@@ -166,7 +165,9 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
             this.#startTimeout();
 
             if (err) {
-              reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"));
+              reject(
+                new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString.trim() + "\n--"),
+              );
               return;
             }
 
@@ -223,7 +224,8 @@ export class SqliteDbConn extends EventEmitter implements IDbConn {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter((item) => !item.autoIncrement)
+    for (const colName of columnDefs
+      .filter((item) => !item.autoIncrement)
       .map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }

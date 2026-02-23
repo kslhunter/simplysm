@@ -1,13 +1,13 @@
-import {SdLogger} from "@simplysm/sd-core-node";
+import { SdLogger } from "@simplysm/sd-core-node";
 import mysql from "mysql";
-import {EventEmitter} from "events";
-import {SdError, StringUtils} from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import { SdError, StringUtils } from "@simplysm/sd-core-common";
 import {
   IDbConn,
   IDefaultDbConnConf,
   IQueryColumnDef,
   ISOLATION_LEVEL,
-  QueryHelper
+  QueryHelper,
 } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConn extends EventEmitter implements IDbConn {
@@ -37,7 +37,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       password: this.config.password,
       database: this.config.username === "root" ? undefined : this.config.database,
       multipleStatements: true,
-      charset: "utf8mb4"
+      charset: "utf8mb4",
     });
 
     conn.on("end", () => {
@@ -51,8 +51,7 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
       conn.on("error", (error) => {
         if (this.isConnected) {
           this.#logger.error("error: " + error.message);
-        }
-        else {
+        } else {
           reject(new Error(error.message));
         }
       });
@@ -103,18 +102,26 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     });
 
     await new Promise<void>((resolve, reject) => {
-      conn.query({
-        sql: "SET SESSION TRANSACTION ISOLATION LEVEL " + (isolationLevel ?? this.config.defaultIsolationLevel ?? "REPEATABLE_READ").replace(/_/g, " "),
-        timeout: this.#timeout
-      }, (err) => {
-        if (err) {
-          reject(new Error(err.message));
-          return;
-        }
+      conn.query(
+        {
+          sql:
+            "SET SESSION TRANSACTION ISOLATION LEVEL " +
+            (isolationLevel ?? this.config.defaultIsolationLevel ?? "REPEATABLE_READ").replace(
+              /_/g,
+              " ",
+            ),
+          timeout: this.#timeout,
+        },
+        (err) => {
+          if (err) {
+            reject(new Error(err.message));
+            return;
+          }
 
-        this.isOnTransaction = true;
-        resolve();
-      });
+          this.isOnTransaction = true;
+          resolve();
+        },
+      );
     });
   }
 
@@ -178,17 +185,25 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
         await new Promise<void>((resolve, reject) => {
           let rejected = false;
           conn
-            .query({sql: queryString, timeout: this.#timeout}, (err, queryResults) => {
+            .query({ sql: queryString, timeout: this.#timeout }, (err, queryResults) => {
               this.#startTimeout();
 
               if (err) {
                 rejected = true;
-                reject(new SdError(err, "쿼리 수행중 오류발생" + (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : "")));
+                reject(
+                  new SdError(
+                    err,
+                    "쿼리 수행중 오류발생" +
+                      (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
+                  ),
+                );
                 return;
               }
 
               if (queryResults instanceof Array) {
-                for (const queryResult of queryResults.filter((item) => !("affectedRows" in item && "fieldCount" in item))) {
+                for (const queryResult of queryResults.filter(
+                  (item) => !("affectedRows" in item && "fieldCount" in item),
+                )) {
                   resultItems.push(queryResult);
                 }
               }
@@ -198,7 +213,13 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
               if (rejected) return;
 
               rejected = true;
-              reject(new SdError(err, "쿼리 수행중 오류발생" + (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : "")));
+              reject(
+                new SdError(
+                  err,
+                  "쿼리 수행중 오류발생" +
+                    (err.sql !== undefined ? "\n-- query\n" + err.sql.trim() + "\n--" : ""),
+                ),
+              );
             })
             .on("end", () => {
               this.#startTimeout();
@@ -215,7 +236,11 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     return results;
   }
 
-  async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  async bulkInsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void> {
     const qh = new QueryHelper("mysql");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -232,8 +257,11 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     await this.executeAsync([q]);
   }
 
-
-  async bulkUpsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+  async bulkUpsertAsync(
+    tableName: string,
+    columnDefs: IQueryColumnDef[],
+    records: Record<string, any>[],
+  ): Promise<void> {
     const qh = new QueryHelper("mysql");
 
     const colNames = columnDefs.map((def) => def.name);
@@ -249,7 +277,9 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
 
     q += "\n";
     q += "ON DUPLICATE KEY UPDATE\n";
-    for (const colName of columnDefs.filter(item => !item.autoIncrement).map(item => item.name)) {
+    for (const colName of columnDefs
+      .filter((item) => !item.autoIncrement)
+      .map((item) => item.name)) {
       q += `${colName} = VALUES(${colName}),\n`;
     }
     q = q.slice(0, -2) + ";";
@@ -267,11 +297,8 @@ export class MysqlDbConn extends EventEmitter implements IDbConn {
     if (this.#connTimeout) {
       clearTimeout(this.#connTimeout);
     }
-    this.#connTimeout = setTimeout(
-      async () => {
-        await this.closeAsync();
-      },
-      this.#timeout * 2
-    );
+    this.#connTimeout = setTimeout(async () => {
+      await this.closeAsync();
+    }, this.#timeout * 2);
   }
 }

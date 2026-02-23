@@ -5,7 +5,7 @@ export interface IIndexedDbStoreDef {
 }
 
 export interface IIndexedDbStoreKeyDef {
-  columns: { name: string, order?: number }[];
+  columns: { name: string; order?: number }[];
   autoIncrement?: boolean;
 }
 
@@ -14,5 +14,5 @@ export interface IIndexedDbStoreIdxDef {
   multiEntry?: boolean;
   unique?: boolean;
 
-  columns: { name: string, order?: number }[];
+  columns: { name: string; order?: number }[];
 }

@@ -31,7 +31,9 @@ export default function convertSetupCumulateSelectedKeysToObjectParam() {
 
       callExpr.replaceWithText(`setupCumulateSelectedKeys(${newArgText})`);
       changed = true;
-      console.log(`[updated] ${sourceFile.getBaseName()} :: setupCumulateSelectedKeys 인자 구조 변경`);
+      console.log(
+        `[updated] ${sourceFile.getBaseName()} :: setupCumulateSelectedKeys 인자 구조 변경`,
+      );
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

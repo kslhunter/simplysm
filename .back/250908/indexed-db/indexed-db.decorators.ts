@@ -1,11 +1,10 @@
-import {TClassDecoratorReturn, TPropertyDecoratorReturn, Type} from "@simplysm/sd-core-common";
-import {IndexedDbStoreDefUtils} from "./indexed-db-store-def.utils";
-
+import { TClassDecoratorReturn, TPropertyDecoratorReturn, Type } from "@simplysm/sd-core-common";
+import { IndexedDbStoreDefUtils } from "./indexed-db-store-def.utils";
 
 export function IndexedDbStore<T>(): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
     IndexedDbStoreDefUtils.setName(classType, {
-      name: classType.name
+      name: classType.name,
     });
   };
 }

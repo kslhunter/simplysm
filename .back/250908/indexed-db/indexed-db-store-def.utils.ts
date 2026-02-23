@@ -1,5 +1,5 @@
-import {Type} from "@simplysm/sd-core-common";
-import {IIndexedDbStoreDef} from "./indexed-db.types";
+import { Type } from "@simplysm/sd-core-common";
+import { IIndexedDbStoreDef } from "./indexed-db.types";
 
 export class IndexedDbStoreDefUtils {
   static METADATA_KEY = "sd-indexed-db-store-def";
@@ -16,24 +16,34 @@ export class IndexedDbStoreDefUtils {
   static setName(type: Type<any>, params: { name: string }) {
     const prevDef = Reflect.getMetadata(this.METADATA_KEY, type);
     if (prevDef != null) {
-      Reflect.defineMetadata(this.METADATA_KEY, {
-        ...prevDef,
-        name: params.name
-      }, type);
-    }
-    else {
-      Reflect.defineMetadata(this.METADATA_KEY, {
-        name: params.name,
-        index: []
-      }, type);
+      Reflect.defineMetadata(
+        this.METADATA_KEY,
+        {
+          ...prevDef,
+          name: params.name,
+        },
+        type,
+      );
+    } else {
+      Reflect.defineMetadata(
+        this.METADATA_KEY,
+        {
+          name: params.name,
+          index: [],
+        },
+        type,
+      );
     }
   }
 
-  static addKey(type: Type<any>, params: {
-    colName: string;
-    order?: number;
-    autoIncrement?: boolean;
-  }) {
+  static addKey(
+    type: Type<any>,
+    params: {
+      colName: string;
+      order?: number;
+      autoIncrement?: boolean;
+    },
+  ) {
     const prevDef = Reflect.getMetadata(this.METADATA_KEY, type);
     if (prevDef != null) {
       if (prevDef.key != null) {
@@ -41,79 +51,89 @@ export class IndexedDbStoreDefUtils {
           throw new Error();
         }
 
-        prevDef.key.columns.push({name: params.colName, order: params.order});
-      }
-      else {
+        prevDef.key.columns.push({ name: params.colName, order: params.order });
+      } else {
         prevDef.key = {
-          columns: [{name: params.colName, order: params.order}],
-          autoIncrement: params.autoIncrement
+          columns: [{ name: params.colName, order: params.order }],
+          autoIncrement: params.autoIncrement,
         };
       }
 
       Reflect.defineMetadata(this.METADATA_KEY, prevDef, type);
-    }
-    else {
-      Reflect.defineMetadata(this.METADATA_KEY, {
-        indexes: [],
-        key: {
-          columns: [{name: params.colName, order: params.order}],
-          autoIncrement: params.autoIncrement
-        }
-      }, type);
+    } else {
+      Reflect.defineMetadata(
+        this.METADATA_KEY,
+        {
+          indexes: [],
+          key: {
+            columns: [{ name: params.colName, order: params.order }],
+            autoIncrement: params.autoIncrement,
+          },
+        },
+        type,
+      );
     }
   }
 
-  static addIndex(type: Type<any>, params: {
-    colName: string;
-    order?: number;
-    name: string;
-    multiEntry?: boolean;
-    unique?: boolean;
-  }) {
+  static addIndex(
+    type: Type<any>,
+    params: {
+      colName: string;
+      order?: number;
+      name: string;
+      multiEntry?: boolean;
+      unique?: boolean;
+    },
+  ) {
     const prevDef = Reflect.getMetadata(this.METADATA_KEY, type);
     if (prevDef != null) {
-      const prevIdxDef = prevDef.indexes.single(item => item.name === params.name);
+      const prevIdxDef = prevDef.indexes.single((item) => item.name === params.name);
       if (prevIdxDef != null) {
-        if (
-          prevIdxDef.multiEntry !== params.multiEntry ||
-          prevIdxDef.unique !== params.unique
-        ) {
+        if (prevIdxDef.multiEntry !== params.multiEntry || prevIdxDef.unique !== params.unique) {
           throw new Error();
         }
 
         prevIdxDef.columns.push({
           name: params.colName,
-          order: params.order
+          order: params.order,
         });
-      }
-      else {
+      } else {
         prevDef.indexes.push({
           name: params.name,
           multiEntry: params.multiEntry,
           unique: params.unique,
 
-          columns: [{
-            name: params.colName,
-            order: params.order
-          }]
+          columns: [
+            {
+              name: params.colName,
+              order: params.order,
+            },
+          ],
         });
       }
 
       Reflect.defineMetadata(this.METADATA_KEY, prevDef, type);
-    }
-    else {
-      Reflect.defineMetadata(this.METADATA_KEY, {
-        indexes: [{
-          name: params.name,
-          multiEntry: params.multiEntry,
-          unique: params.unique,
+    } else {
+      Reflect.defineMetadata(
+        this.METADATA_KEY,
+        {
+          indexes: [
+            {
+              name: params.name,
+              multiEntry: params.multiEntry,
+              unique: params.unique,
 
-          columns: [{
-            name: params.colName,
-            order: params.order
-          }]
-        }]
-      }, type);
+              columns: [
+                {
+                  name: params.colName,
+                  order: params.order,
+                },
+              ],
+            },
+          ],
+        },
+        type,
+      );
     }
   }
 }

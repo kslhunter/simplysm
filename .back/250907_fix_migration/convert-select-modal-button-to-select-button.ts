@@ -11,7 +11,8 @@ export default function convertSelectModalButtonToSelectButton() {
     "@simplysm/sd-angular#SdSelectModalButtonControl":
       "@simplysm/sd-angular#SdDataSelectButtonControl",
     "@simplysm/sd-angular#TSelectValue": "@simplysm/sd-angular#TSelectModeValue",
-    "@simplysm/sd-angular#SdSharedDataSelectViewControl": "@simplysm/sd-angular#SdSharedDataSelectListControl",
+    "@simplysm/sd-angular#SdSharedDataSelectViewControl":
+      "@simplysm/sd-angular#SdSharedDataSelectListControl",
   });
 
   const sourceFiles = getTsMortphSourceFiles();

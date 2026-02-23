@@ -21,8 +21,9 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     divEl.style.overflow = "auto";
     divEl.style.padding = "4px";
 
-    divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${err.stack
-    ?? ""}</pre>`;
+    divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${
+      err.stack ?? ""
+    }</pre>`;
 
     try {
       const appRef = this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
@@ -35,10 +36,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         location.reload();
       };
 
-      this._systemLog.writeAsync("error", err.stack).catch(() => {
-      });
-    }
-    catch {
-    }
+      this._systemLog.writeAsync("error", err.stack).catch(() => {});
+    } catch {}
   }
 }

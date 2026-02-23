@@ -8,7 +8,4 @@ export interface CompileOptions {
  * @param options Optional compile options
  * @returns Compiled CSS string
  */
-export declare function compileScss(
-  source: string,
-  options?: CompileOptions,
-): string;
+export declare function compileScss(source: string, options?: CompileOptions): string;

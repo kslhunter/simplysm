@@ -27,7 +27,9 @@ export default function convertModalShowParams() {
       const props = [`type: ${typeText}`, `title: ${titleText}`, `inputs: ${inputsText}`];
       const objectLiteralText = `{\n  ${props.join(",\n  ")}\n}`;
 
-      const newArgs = [`${objectLiteralText}`, ...args.slice(3).map((arg) => arg.getText())].join(", ");
+      const newArgs = [`${objectLiteralText}`, ...args.slice(3).map((arg) => arg.getText())].join(
+        ", ",
+      );
 
       callExpr.replaceWithText(`this._sdModal.showAsync(${newArgs})`);
     }

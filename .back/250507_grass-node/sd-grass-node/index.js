@@ -1,9 +1,9 @@
-import { createRequire } from 'module';
+import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
 
 // Rust native addon (.node)
-const binding = require('./index.node');
+const binding = require("./index.node");
 
 /**
  * @typedef {Object} CompileOptions

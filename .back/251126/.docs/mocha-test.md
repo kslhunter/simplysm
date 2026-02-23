@@ -6,6 +6,7 @@ Read file: tsconfig.base.json
 1. **공통 테스트 설정**
 
 모든 패키지에 공통적으로 필요한 의존성:
+
 ```json
 {
   "devDependencies": {
@@ -23,6 +24,7 @@ Read file: tsconfig.base.json
 각 패키지의 루트에 `tsconfig.test.json`을 생성하고, 다음과 같이 구성합니다:
 
 **Node.js 환경 패키지** (sd-core-node, sd-orm-node 등):
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -40,6 +42,7 @@ Read file: tsconfig.base.json
 ```
 
 **브라우저 환경 패키지** (sd-angular, sd-core-browser 등):
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -63,16 +66,17 @@ Read file: tsconfig.base.json
 
 ```javascript
 module.exports = {
-  extension: ['ts'],
-  require: ['ts-node/register', 'tsconfig-paths/register'],
-  spec: ['test/**/*.test.ts'],
-  timeout: 5000
+  extension: ["ts"],
+  require: ["ts-node/register", "tsconfig-paths/register"],
+  spec: ["test/**/*.test.ts"],
+  timeout: 5000,
 };
 ```
 
 4. **패키지별 특수 의존성**
 
 **sd-core-common, sd-core-node:**
+
 ```json
 {
   "devDependencies": {
@@ -83,18 +87,20 @@ module.exports = {
 ```
 
 **sd-orm 관련 패키지:**
+
 ```json
 {
   "devDependencies": {
-    "sqlite3": "^5.1.6",  // sqlite 테스트용
-    "mysql2": "^3.6.0",   // mysql 테스트용
-    "mssql": "^9.1.1",    // mssql 테스트용
-    "testcontainers": "^10.2.1"  // 데이터베이스 컨테이너 테스트용
+    "sqlite3": "^5.1.6", // sqlite 테스트용
+    "mysql2": "^3.6.0", // mysql 테스트용
+    "mssql": "^9.1.1", // mssql 테스트용
+    "testcontainers": "^10.2.1" // 데이터베이스 컨테이너 테스트용
   }
 }
 ```
 
 **sd-angular:**
+
 ```json
 {
   "devDependencies": {
@@ -114,6 +120,7 @@ module.exports = {
 각 패키지의 `package.json`에 다음과 같이 테스트 스크립트를 추가:
 
 **Node.js 환경 패키지:**
+
 ```json
 {
   "scripts": {
@@ -123,6 +130,7 @@ module.exports = {
 ```
 
 **브라우저 환경 패키지 (sd-angular 등):**
+
 ```json
 {
   "scripts": {
@@ -135,6 +143,7 @@ module.exports = {
 6. **루트 package.json 설정**
 
 프로젝트 루트의 `package.json`에 다음 스크립트를 추가:
+
 ```json
 {
   "scripts": {
@@ -146,6 +155,7 @@ module.exports = {
 ```
 
 이렇게 구성하면:
+
 1. TypeScript와 Mocha가 잘 통합되어 작동합니다.
 2. 각 패키지의 특성에 맞는 테스트 환경이 구성됩니다.
 3. 패키지 간 의존성이 올바르게 해결됩니다.

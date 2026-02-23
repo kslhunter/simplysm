@@ -27,12 +27,7 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdAnchorControl,
-    SdPaneControl,
-    SdEventsDirective,
-    forwardRef(() => SdIconControl),
-  ],
+  imports: [SdAnchorControl, SdPaneControl, SdEventsDirective, forwardRef(() => SdIconControl)],
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
 
@@ -43,8 +38,12 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
       (keydown.escape)="onDialogEscapeKeydown()"
       [style.min-width.px]="minWidthPx()"
       [style.min-height.px]="minHeightPx()"
-      [style.width.px]="minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()"
-      [style.height.px]="minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()"
+      [style.width.px]="
+        minWidthPx() && widthPx() && minWidthPx()! > widthPx()! ? minWidthPx() : widthPx()
+      "
+      [style.height.px]="
+        minHeightPx() && heightPx() && minHeightPx()! > heightPx()! ? minHeightPx() : heightPx()
+      "
       (focus)="onDialogFocus()"
     >
       <div class="_content">
@@ -55,7 +54,6 @@ import { ISdResizeEvent } from "../plugins/events/sd-resize.event-plugin";
               <sd-icon [icon]="icons.xmark" fixedWidth />
             </sd-anchor>
           }
-
         </div>
         <div class="_content">
           <div class="_content" (sdResize)="onDialogContentResize($event)">
@@ -428,7 +426,8 @@ export class SdModalControl {
   }
 
   onDialogFocus() {
-    const maxZIndex = document.body.findAll("sd-modal")
+    const maxZIndex = document.body
+      .findAll("sd-modal")
       .max((el) => Number(getComputedStyle(el).zIndex));
     if (maxZIndex !== undefined) {
       this.#elRef.nativeElement.style.zIndex = (maxZIndex + 1).toString();
@@ -456,20 +455,24 @@ export class SdModalControl {
 
   #calcHeight() {
     const dialogEl = this.dialogElRef().nativeElement;
-    const dialogHeaderEl = this.dialogElRef().nativeElement.findFirst<HTMLElement>("> ._content > ._header")!;
-    const dialogContentEl = this.dialogElRef().nativeElement.findFirst<HTMLElement>("> ._content > ._content > ._content")!;
+    const dialogHeaderEl =
+      this.dialogElRef().nativeElement.findFirst<HTMLElement>("> ._content > ._header")!;
+    const dialogContentEl = this.dialogElRef().nativeElement.findFirst<HTMLElement>(
+      "> ._content > ._content > ._content",
+    )!;
     const containerEl = this.#elRef.nativeElement;
 
     const style = getComputedStyle(containerEl);
-    let containerElPaddingTop = style.paddingTop === ""
-      ? 0
-      : (NumberUtils.parseInt(style.paddingTop) ?? 0);
+    let containerElPaddingTop =
+      style.paddingTop === "" ? 0 : (NumberUtils.parseInt(style.paddingTop) ?? 0);
 
-    if (dialogHeaderEl.offsetHeight + dialogContentEl.offsetHeight >= containerEl.offsetHeight - containerElPaddingTop) {
+    if (
+      dialogHeaderEl.offsetHeight + dialogContentEl.offsetHeight >=
+      containerEl.offsetHeight - containerElPaddingTop
+    ) {
       dialogEl.style.maxHeight = `100%`;
       dialogEl.style.height = `100%`;
-    }
-    else {
+    } else {
       dialogEl.style.maxHeight = "";
       dialogEl.style.height = "";
     }
@@ -485,14 +488,12 @@ export class SdModalControl {
   @HostListener("window:resize")
   onWindowResize() {
     if (this.dialogElRef().nativeElement.offsetLeft > this.#elRef.nativeElement.offsetWidth - 100) {
-      this.dialogElRef().nativeElement.style.left = this.#elRef.nativeElement.offsetWidth
-        - 100
-        + "px";
+      this.dialogElRef().nativeElement.style.left =
+        this.#elRef.nativeElement.offsetWidth - 100 + "px";
     }
     if (this.dialogElRef().nativeElement.offsetTop > this.#elRef.nativeElement.offsetHeight - 100) {
-      this.dialogElRef().nativeElement.style.right = this.#elRef.nativeElement.offsetHeight
-        - 100
-        + "px";
+      this.dialogElRef().nativeElement.style.right =
+        this.#elRef.nativeElement.offsetHeight - 100 + "px";
     }
   }
 
@@ -522,7 +523,15 @@ export class SdModalControl {
 
   onResizeBarMousedown(
     event: MouseEvent,
-    direction: "left" | "right" | "top" | "top-left" | "top-right" | "bottom" | "bottom-left" | "bottom-right",
+    direction:
+      | "left"
+      | "right"
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "bottom"
+      | "bottom-left"
+      | "bottom-right",
   ) {
     if (!this.resizable()) return;
 
@@ -558,21 +567,19 @@ export class SdModalControl {
         )}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        dialogEl.style.width = `${Math.max(startWidth
-          + (e.clientX - startX)
-          * (dialogEl.style.position === "absolute"
-            ? 1
-            : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(
+          startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+          this.minWidthPx() ?? 0,
+        )}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (dialogEl.style.position === "absolute") {
           dialogEl.style.left = startLeft + (e.clientX - startX) + "px";
         }
-        dialogEl.style.width = `${Math.max(startWidth
-          - (e.clientX - startX)
-          * (dialogEl.style.position === "absolute"
-            ? 1
-            : 2), this.minWidthPx() ?? 0)}px`;
+        dialogEl.style.width = `${Math.max(
+          startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2),
+          this.minWidthPx() ?? 0,
+        )}px`;
       }
 
       isDoDrag = true;

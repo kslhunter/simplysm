@@ -14,11 +14,11 @@ describe("SdExcelWrapper", () => {
       date: DateOnly;
       isDeleted: boolean;
     }>(() => ({
-      id: { displayName: "ID", type: Number },
-      name: { displayName: "명칭", type: String, notnull: true },
-      date: { displayName: "일자", type: DateOnly },
+      "id": { displayName: "ID", type: Number },
+      "name": { displayName: "명칭", type: String, notnull: true },
+      "date": { displayName: "일자", type: DateOnly },
       "goods.name": { displayName: "품목명", type: String },
-      isDeleted: { displayName: "삭제", type: Boolean, notnull: true },
+      "isDeleted": { displayName: "삭제", type: Boolean, notnull: true },
     }));
 
     const buffer = await FsUtils.readFileBufferAsync(

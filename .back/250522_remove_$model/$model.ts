@@ -1,4 +1,11 @@
-import { effect, InputSignal, InputSignalWithTransform, OutputEmitterRef, signal, WritableSignal } from "@angular/core";
+import {
+  effect,
+  InputSignal,
+  InputSignalWithTransform,
+  OutputEmitterRef,
+  signal,
+  WritableSignal,
+} from "@angular/core";
 import { SIGNAL } from "@angular/core/primitives/signals";
 
 /**
