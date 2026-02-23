@@ -200,6 +200,27 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             저장
           </Button>
         </Show>
+        <Show
+          when={
+            canEdit() &&
+            local.toggleDelete &&
+            info() &&
+            !info()!.isNew &&
+            (local.deletable ?? true)
+          }
+        >
+          {(_) => (
+            <Button
+              size="lg"
+              variant="ghost"
+              theme="danger"
+              onClick={() => void handleToggleDelete()}
+            >
+              <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
+              {info()!.isDeleted ? "복구" : "삭제"}
+            </Button>
+          )}
+        </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={() => void handleRefresh()}>
           <Icon icon={IconRefresh} class="mr-1" />
           새로고침
@@ -255,38 +276,46 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         busy={busyCount() > 0}
         class={clsx("flex h-full flex-col", local.class)}
       >
-        {/* Toolbar (page/control mode) */}
-        <Show when={!isModal && canEdit()}>
+        {/* Toolbar */}
+        <Show when={(!isModal && !topbarCtx) || defs().tools}>
           <div class="flex gap-2 p-2 pb-0">
-            <Show when={local.submit}>
-              <Button
-                size="sm"
-                theme="primary"
-                variant="ghost"
-                onClick={() => formRef?.requestSubmit()}
-              >
-                <Icon icon={IconDeviceFloppy} class="mr-1" />
-                저장
-              </Button>
-            </Show>
-            <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
-              <Icon icon={IconRefresh} class="mr-1" />
-              새로고침
-            </Button>
-            <Show
-              when={local.toggleDelete && info() && !info()!.isNew && (local.deletable ?? true)}
-            >
-              {(_) => (
+            <Show when={!topbarCtx && !isModal}>
+              <Show when={canEdit() && local.submit}>
                 <Button
                   size="sm"
-                  theme="danger"
+                  theme="primary"
                   variant="ghost"
-                  onClick={() => void handleToggleDelete()}
+                  onClick={() => formRef?.requestSubmit()}
                 >
-                  <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                  {info()!.isDeleted ? "복구" : "삭제"}
+                  <Icon icon={IconDeviceFloppy} class="mr-1" />
+                  저장
                 </Button>
-              )}
+              </Show>
+              <Show
+                when={
+                  canEdit() &&
+                  local.toggleDelete &&
+                  info() &&
+                  !info()!.isNew &&
+                  (local.deletable ?? true)
+                }
+              >
+                {(_) => (
+                  <Button
+                    size="sm"
+                    theme="danger"
+                    variant="ghost"
+                    onClick={() => void handleToggleDelete()}
+                  >
+                    <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
+                    {info()!.isDeleted ? "복구" : "삭제"}
+                  </Button>
+                )}
+              </Show>
+              <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
+                <Icon icon={IconRefresh} class="mr-1" />
+                새로고침
+              </Button>
             </Show>
             <Show when={defs().tools}>{(toolsDef) => toolsDef().children}</Show>
           </div>
