@@ -29,6 +29,9 @@ for (const [name, def] of Object.entries(definitions)) {
   const itemMap = createMemo(() => { ... });
   memoMap.set(name, itemMap);
 
+  // client 참조는 eager (emit에서도 사용, 네트워크 호출 아님)
+  const client = serviceClient.get(def.serviceKey ?? "default");
+
   // lazy 초기화 플래그
   let initialized = false;
 
@@ -36,8 +39,8 @@ for (const [name, def] of Object.entries(definitions)) {
     if (initialized) return;
     initialized = true;
 
+    // TODO: addEventListener가 resolve 전에 unmount되면 listener orphan 가능
     // listener 등록 (lazy)
-    const client = serviceClient.get(def.serviceKey ?? "default");
     void client.addEventListener(
       SharedDataChangeEvent,
       { name, filter: def.filter },
@@ -55,7 +58,13 @@ for (const [name, def] of Object.entries(definitions)) {
       if (key === undefined) return undefined;
       return itemMap().get(key);
     },
-    emit: async (changeKeys) => { ... },  // emit은 초기화 여부와 무관
+    emit: async (changeKeys) => {
+      await client.emitToServer(
+        SharedDataChangeEvent,
+        (info) => info.name === name && objEqual(info.filter, def.filter),
+        changeKeys,
+      );
+    },
     getKey: def.getKey,
     getSearchText: def.getSearchText,
     getIsHidden: def.getIsHidden,
@@ -66,8 +75,13 @@ for (const [name, def] of Object.entries(definitions)) {
 
 ### 제거 항목
 
-- configure() 내 `void loadData(name, def)` (158행) 제거
-- configure() 내 즉시 listener 등록 (146~156행) → ensureInitialized()로 이동
+- configure() 내 즉시 listener 등록 (146~156행) → `ensureInitialized()`로 이동
+- configure() 내 `void loadData(name, def)` (158행) → `ensureInitialized()`로 이동
+
+### emit()은 초기화와 무관
+
+- `client` 참조는 configure()에서 eager 생성 (동기 getter, 네트워크 호출 아님)
+- v12에서도 `emitAsync()`는 signal 존재 여부와 무관하게 동작
 
 ### 기존 테스트 영향
 
