@@ -33,7 +33,7 @@ import type {
 import { isDataSheetColumnDef, DataSheetColumn } from "./DataSheetColumn";
 import { applySorting, buildHeaderTable, collectAllExpandable, flattenTree } from "./sheetUtils";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
-import { createPointerDrag } from "../../../hooks/createPointerDrag";
+import { startPointerDrag } from "../../../helpers/startPointerDrag";
 import { Icon } from "../../display/Icon";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Pagination } from "../Pagination";
@@ -390,7 +390,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
       height: `${container.scrollHeight}px`,
     });
 
-    createPointerDrag(target, event.pointerId, {
+    startPointerDrag(target, event.pointerId, {
       onMove(e) {
         const delta = e.clientX - startX;
         const newWidth = Math.max(30, startWidth + delta);
@@ -586,7 +586,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
     setDragState({ draggingItem: item, targetItem: null, position: null });
 
-    createPointerDrag(target, e.pointerId, {
+    startPointerDrag(target, e.pointerId, {
       onMove(ev) {
         let foundTarget: T | null = null;
         let foundPosition: "before" | "after" | "inside" | null = null;

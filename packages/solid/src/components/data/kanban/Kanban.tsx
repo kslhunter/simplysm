@@ -8,7 +8,6 @@ import {
   type ParentComponent,
   Show,
   splitProps,
-  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -18,6 +17,7 @@ import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { Icon } from "../../display/Icon";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import "./Kanban.css";
 import { iconButtonBase } from "../../../styles/patterns.styles";
@@ -35,23 +35,11 @@ import {
 
 // ─── KanbanLaneTitle ─────────────────────────────────────────────
 
-const KanbanLaneTitle: ParentComponent = (props) => {
-  const ctx = useContext(KanbanLaneContext)!;
-  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
-  ctx.setTitle(() => props.children);
-  onCleanup(() => ctx.setTitle(undefined));
-  return null;
-};
+const KanbanLaneTitle = createSlotComponent(KanbanLaneContext, (ctx) => ctx.setTitle);
 
 // ─── KanbanLaneTools ─────────────────────────────────────────────
 
-const KanbanLaneTools: ParentComponent = (props) => {
-  const ctx = useContext(KanbanLaneContext)!;
-  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
-  ctx.setTools(() => props.children);
-  onCleanup(() => ctx.setTools(undefined));
-  return null;
-};
+const KanbanLaneTools = createSlotComponent(KanbanLaneContext, (ctx) => ctx.setTools);
 
 // ─── KanbanCard ──────────────────────────────────────────────────
 

@@ -1,18 +1,11 @@
-import {
-  createContext,
-  type JSX,
-  onCleanup,
-  type ParentComponent,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, type JSX, type ParentComponent, Show, splitProps } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { IconCheck } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
 import { useSelectContext } from "./SelectContext";
 import { ripple } from "../../../directives/ripple";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { List } from "../../data/list/List";
 import { Collapse } from "../../disclosure/Collapse";
 import {
@@ -32,16 +25,7 @@ interface SelectItemSlotsContextValue {
 
 const SelectItemSlotsContext = createContext<SelectItemSlotsContextValue>();
 
-/**
- * 중첩 아이템을 담는 서브 컴포넌트
- */
-const SelectItemChildren: ParentComponent = (props) => {
-  const ctx = useContext(SelectItemSlotsContext)!;
-  // eslint-disable-next-line solid/reactivity -- slot accessor: children is lazily read at render time
-  ctx.setChildren(() => props.children);
-  onCleanup(() => ctx.setChildren(undefined));
-  return null;
-};
+const SelectItemChildren = createSlotComponent(SelectItemSlotsContext, (ctx) => ctx.setChildren);
 
 export interface SelectItemProps<TValue = unknown> extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,

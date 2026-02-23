@@ -2,11 +2,9 @@ import {
   type Component,
   createContext,
   type JSX,
-  onCleanup,
   type ParentComponent,
   Show,
   splitProps,
-  useContext,
 } from "solid-js";
 import { IconChevronDown, type IconProps } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
@@ -15,6 +13,7 @@ import { twMerge } from "tailwind-merge";
 import { ripple } from "../../../directives/ripple";
 import { Collapse } from "../../disclosure/Collapse";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import { useListContext } from "./ListContext";
 import { List } from "./List";
@@ -40,31 +39,7 @@ const ListItemSlotsContext = createContext<ListItemSlotsContextValue>();
 
 const chevronClass = clsx("transition-transform duration-200 motion-reduce:transition-none");
 
-/**
- * 중첩 리스트를 담는 서브 컴포넌트
- *
- * ListItem의 하위 아이템을 정의할 때 사용한다.
- * 내부적으로 `<List inset>`으로 감싸서 Context와 키보드 네비게이션이 동작한다.
- * 세로선 가이드가 자동으로 표시된다.
- *
- * @example
- * ```tsx
- * <List.Item>
- *   Folder
- *   <List.Item.Children>
- *     <List.Item>File 1</List.Item>
- *     <List.Item>File 2</List.Item>
- *   </List.Item.Children>
- * </List.Item>
- * ```
- */
-const ListItemChildren: ParentComponent = (props) => {
-  const ctx = useContext(ListItemSlotsContext)!;
-  // eslint-disable-next-line solid/reactivity -- 슬롯 accessor로 저장, JSX tracked scope에서 호출됨
-  ctx.setChildren(() => props.children);
-  onCleanup(() => ctx.setChildren(undefined));
-  return null;
-};
+const ListItemChildren = createSlotComponent(ListItemSlotsContext, (ctx) => ctx.setChildren);
 
 export interface ListItemProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
