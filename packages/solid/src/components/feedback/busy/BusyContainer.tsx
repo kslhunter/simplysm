@@ -14,7 +14,9 @@ import { createMountTransition } from "../../../hooks/createMountTransition";
 import "./BusyContainer.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
+  /** 로딩 오버레이 표시 (children은 유지됨) */
   busy?: boolean;
+  /** false이면 children을 숨기고 로딩 오버레이 표시. 초기 데이터 로드 시 사용 */
   ready?: boolean;
   variant?: BusyVariant;
   message?: string;
