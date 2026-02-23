@@ -390,7 +390,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     if (!formRef?.contains(document.activeElement)) return;
     if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
       e.preventDefault();
-      formRef?.requestSubmit();
+      formRef.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();

@@ -178,7 +178,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     if (!formRef?.contains(document.activeElement)) return;
     if (e.ctrlKey && e.key === "s") {
       e.preventDefault();
-      formRef?.requestSubmit();
+      formRef.requestSubmit();
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
