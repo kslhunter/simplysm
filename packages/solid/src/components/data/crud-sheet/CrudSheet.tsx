@@ -12,6 +12,7 @@ import {
 import { createStore, produce, reconcile } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
 import { objClone } from "@simplysm/core-common";
+import type { DateTime } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../sheet/types";
 import { DataSheet } from "../sheet/DataSheet";
@@ -26,6 +27,7 @@ import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 import { Dialog } from "../../disclosure/Dialog";
 import { Link } from "../../display/Link";
 import { createEventListener } from "@solid-primitives/event-listener";
+import { useBeforeLeave } from "@solidjs/router";
 import clsx from "clsx";
 import {
   IconDeviceFloppy,
@@ -67,11 +69,14 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "search",
     "getItemKey",
     "persistKey",
-    "itemsPerPage",
     "editable",
     "itemEditable",
     "itemDeletable",
     "itemDeleted",
+    "isItemSelectable",
+    "lastModifiedAtProp",
+    "lastModifiedByProp",
+    "onSubmitted",
     "filterInitial",
     "items",
     "onItemsChange",
@@ -123,11 +128,29 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   const [ready, setReady] = createSignal(false);
 
   const [selectedItems, setSelectedItems] = createSignal<TItem[]>([]);
+  const [selectedKeys, setSelectedKeys] = createSignal<Set<string | number>>(new Set());
 
   let formRef: HTMLFormElement | undefined;
 
   createEffect(() => {
     void doRefresh();
+  });
+
+  // -- Key-based selection: restore selectedItems when items change --
+  createEffect(() => {
+    const currentItems = items as unknown as TItem[];
+    const keys = selectedKeys();
+    if (keys.size === 0) {
+      if (selectedItems().length > 0) {
+        setSelectedItems([]);
+      }
+      return;
+    }
+    const restored = currentItems.filter((item) => {
+      const key = local.getItemKey(item);
+      return key != null && keys.has(key);
+    });
+    setSelectedItems(restored);
   });
 
   async function doRefresh() {
@@ -142,10 +165,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   async function refresh() {
-    const usePagination = local.itemsPerPage != null;
     const result: SearchResult<TItem> = await local.search(
       lastFilter(),
-      usePagination ? page() : 0,
+      page(),
       sorts(),
     );
     setItems(reconcile(result.items));
@@ -155,18 +177,28 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   /* eslint-disable solid/reactivity -- 이벤트 핸들러에서만 호출, store 즉시 읽기 */
   function getItemDiffs() {
-    return items.oneWayDiffs(originalItems, (item) => local.getItemKey(item));
+    return items.oneWayDiffs(originalItems, (item) => local.getItemKey(item), {
+      excludes: local.inlineEdit?.diffsExcludes,
+    });
   }
   /* eslint-enable solid/reactivity */
+
+  function checkIgnoreChanges(): boolean {
+    if (!local.inlineEdit) return true;
+    if (getItemDiffs().length === 0) return true;
+    return confirm("변경사항이 있습니다. 무시하시겠습니까?");
+  }
 
   // -- Filter --
   function handleFilterSubmit(e: Event) {
     e.preventDefault();
+    if (!checkIgnoreChanges()) return;
     setPage(1);
     setLastFilter(() => objClone(filter));
   }
 
   async function handleRefresh() {
+    if (!checkIgnoreChanges()) return;
     await doRefresh();
   }
 
@@ -214,6 +246,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       await local.inlineEdit.submit(diffs);
       noti.success("저장 완료", "저장되었습니다.");
       await refresh();
+      local.onSubmitted?.();
     } catch (err) {
       noti.error(err, "저장 실패");
     }
@@ -255,13 +288,28 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c - 1);
   }
 
+  async function handleRestoreItems() {
+    if (!local.modalEdit?.restoreItems) return;
+    const result = await local.modalEdit.restoreItems(selectedItems());
+    if (!result) return;
+
+    setBusyCount((c) => c + 1);
+    try {
+      await refresh();
+      noti.success("복구 완료", "복구되었습니다.");
+    } catch (err) {
+      noti.error(err, "복구 실패");
+    }
+    setBusyCount((c) => c - 1);
+  }
+
   // -- Excel --
   async function handleExcelDownload() {
     if (!local.excel) return;
 
     setBusyCount((c) => c + 1);
     try {
-      const result = await local.search(lastFilter(), 0, sorts());
+      const result = await local.search(lastFilter(), undefined, sorts());
       await local.excel.download(result.items);
     } catch (err) {
       noti.error(err, "엑셀 다운로드 실패");
@@ -293,16 +341,51 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   // -- Select Mode --
+  function handleSelectedItemsChange(newSelectedItems: TItem[]) {
+    // 현재 페이지 아이템들의 key Set
+    const currentItems = items as unknown as TItem[];
+    const currentKeys = new Set<string | number>();
+    for (const item of currentItems) {
+      const key = local.getItemKey(item);
+      if (key != null) currentKeys.add(key);
+    }
+
+    // 새로 선택된 아이템들의 key
+    const newSelectedKeys = new Set<string | number>();
+    for (const item of newSelectedItems) {
+      const key = local.getItemKey(item);
+      if (key != null) newSelectedKeys.add(key);
+    }
+
+    // 다른 페이지 key 보존 + 현재 페이지 key 갱신
+    const merged = new Set<string | number>();
+    for (const key of selectedKeys()) {
+      if (!currentKeys.has(key)) {
+        merged.add(key); // 다른 페이지 key 보존
+      }
+    }
+    for (const key of newSelectedKeys) {
+      merged.add(key); // 현재 페이지 선택 추가
+    }
+
+    setSelectedKeys(merged);
+    setSelectedItems(newSelectedItems);
+  }
+
+  function clearSelection() {
+    setSelectedKeys(new Set<string | number>());
+    setSelectedItems([]);
+  }
+
   function handleSelectConfirm() {
     local.onSelect?.({
       items: selectedItems(),
-      keys: selectedItems()
-        .map((item) => local.getItemKey(item))
-        .filter((k): k is string | number => k != null),
+      keys: [...selectedKeys()],
     });
   }
 
   function handleSelectCancel() {
+    clearSelection();
     local.onSelect?.({ items: [], keys: [] });
   }
 
@@ -314,9 +397,24 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     }
     if (e.ctrlKey && e.altKey && e.key === "l") {
       e.preventDefault();
+      if (!checkIgnoreChanges()) return;
       await doRefresh();
     }
   });
+
+  // -- Route Leave Guard --
+  // eslint-disable-next-line solid/reactivity -- inlineEdit는 초기 설정값으로만 사용
+  if (!isModal && local.inlineEdit) {
+    try {
+      useBeforeLeave((e) => {
+        if (!checkIgnoreChanges()) {
+          e.preventDefault();
+        }
+      });
+    } catch {
+      // Router context 없으면 skip
+    }
+  }
 
   // -- Topbar Actions --
   if (topbarCtx) {
@@ -359,6 +457,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     addItem: handleAddRow,
     setPage,
     setSorts,
+    clearSelection,
   };
 
   // -- Render --
@@ -456,11 +555,28 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={handleDeleteItems}
                   disabled={
                     selectedItems().length === 0 ||
-                    !selectedItems().some((item) => local.itemDeletable?.(item) ?? true)
+                    !selectedItems().some((item) =>
+                      (local.itemDeletable?.(item) ?? true) && !(local.itemDeleted?.(item) ?? false),
+                    )
                   }
                 >
                   <Icon icon={IconTrash} class="mr-1" />
                   선택 삭제
+                </Button>
+              </Show>
+              <Show when={canEdit() && local.modalEdit?.restoreItems}>
+                <Button
+                  size="sm"
+                  theme="warning"
+                  variant="ghost"
+                  onClick={handleRestoreItems}
+                  disabled={
+                    selectedItems().length === 0 ||
+                    !selectedItems().some((item) => local.itemDeleted?.(item) ?? false)
+                  }
+                >
+                  <Icon icon={IconTrashOff} class="mr-1" />
+                  선택 복구
                 </Button>
               </Show>
 
@@ -490,21 +606,21 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             class="h-full"
             items={items}
             persistKey={local.persistKey != null ? `${local.persistKey}-sheet` : undefined}
-            page={local.itemsPerPage != null ? page() : undefined}
+            page={totalPageCount() > 0 ? page() : undefined}
             onPageChange={setPage}
             totalPageCount={totalPageCount()}
-            itemsPerPage={local.itemsPerPage}
             sorts={sorts()}
             onSortsChange={setSorts}
+            isItemSelectable={local.isItemSelectable}
             selectMode={
               isSelectMode()
                 ? local.selectMode
-                : local.modalEdit?.deleteItems != null
+                : (local.modalEdit?.deleteItems != null || local.modalEdit?.restoreItems != null)
                   ? "multiple"
                   : undefined
             }
             selectedItems={selectedItems()}
-            onSelectedItemsChange={setSelectedItems}
+            onSelectedItemsChange={handleSelectedItemsChange}
             autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
             cellClass={(item) => {
               if (isItemDeleted(item)) {
@@ -591,6 +707,41 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 </DataSheetColumn>
               )}
             </For>
+
+            {/* Auto lastModified columns */}
+            <Show when={local.lastModifiedAtProp}>
+              <DataSheetColumn<TItem>
+                key={local.lastModifiedAtProp!}
+                header="수정일시"
+                hidden
+                sortable={false}
+                resizable={false}
+              >
+                {(dsCtx) => (
+                  <div class="px-2 py-0.5 text-center">
+                    {(dsCtx.item[local.lastModifiedAtProp!] as DateTime | undefined)?.toFormatString(
+                      "yyyy-MM-dd HH:mm",
+                    )}
+                  </div>
+                )}
+              </DataSheetColumn>
+            </Show>
+
+            <Show when={local.lastModifiedByProp}>
+              <DataSheetColumn<TItem>
+                key={local.lastModifiedByProp!}
+                header="수정자"
+                hidden
+                sortable={false}
+                resizable={false}
+              >
+                {(dsCtx) => (
+                  <div class="px-2 py-0.5 text-center">
+                    {dsCtx.item[local.lastModifiedByProp!] as string}
+                  </div>
+                )}
+              </DataSheetColumn>
+            </Show>
           </DataSheet>
         </form>
 
