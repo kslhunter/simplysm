@@ -7,6 +7,7 @@ import solidPlugin from "eslint-plugin-solid";
 import tailwindcssPlugin from "eslint-plugin-tailwindcss";
 import { defineConfig, globalIgnores } from "eslint/config";
 import { ESLint } from "eslint";
+import { fileURLToPath } from "url";
 
 //#region 공통 규칙 설정
 
@@ -148,7 +149,7 @@ export default defineConfig([
     },
     settings: {
       "import/resolver": {
-        typescript: {
+        [fileURLToPath(import.meta.resolve("eslint-import-resolver-typescript"))]: {
           alwaysTryTypes: true,
         },
       },
