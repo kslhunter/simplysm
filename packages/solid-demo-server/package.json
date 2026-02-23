@@ -11,6 +11,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@simplysm/core-common": "workspace:*",
     "@simplysm/service-server": "workspace:*"
   },
   "private": true

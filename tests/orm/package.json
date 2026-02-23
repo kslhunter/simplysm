@@ -19,7 +19,7 @@
   "dependencies": {
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",
-    "mysql2": "^3.17.4",
+    "mysql2": "^3.18.0",
     "pg": "^8.18.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.1"

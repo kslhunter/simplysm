@@ -25,6 +25,8 @@
   "dependencies": {
     "@simplysm/core-browser": "workspace:*",
     "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
     "@solid-primitives/event-listener": "^2.4.4",
     "@solid-primitives/media": "^2.3.4",
     "@solid-primitives/resize-observer": "^2.1.4",

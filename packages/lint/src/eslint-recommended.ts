@@ -146,6 +146,13 @@ export default defineConfig([
       "import": importPlugin,
       "unused-imports": unusedImportsPlugin,
     },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+    },
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {

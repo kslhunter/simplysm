@@ -12,4 +12,5 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - ssh2
+  - unrs-resolver
   - utf-8-validate

@@ -25,7 +25,7 @@ Start by understanding the current project context, then ask questions one at a 
 
 When you think you've asked enough, **STOP and run a gap review before moving on.**
 
-Tell the user you're running a gap review, then check ALL categories and **show the result as a checklist**:
+Tell the user you're running a gap review, then check ALL categories. For each ✅, you MUST **cite specific evidence** (which Q&A, code reference, or explicit user requirement). "I already know" is not evidence.
 
 | Category | Check for... |
 |----------|-------------|
@@ -37,15 +37,32 @@ Tell the user you're running a gap review, then check ALL categories and **show 
 | Non-functional | Performance, accessibility, security, i18n |
 | Assumptions | Anything you assumed but never confirmed |
 
-For each category, output one line: `✅ covered` or `❓ gap — [what's missing]`
+Output format — cite evidence for each:
+- `✅ Scope — [Q2: user confirmed X / code at file:line / requirement doc says Y]`
+- `❓ Edge cases — gap: [what's missing]`
+
+If evidence is vague ("obvious", "I already know", "common sense") → mark as ❓, not ✅.
 
 - If ANY ❓ exists → ask about it. After the user answers, **run the full checklist again from scratch**.
-- Only when ALL categories show ✅ → proceed to exploring approaches.
+- Only when ALL categories show ✅ with cited evidence → proceed to exploring approaches.
+
+**All-✅ on first run is PROHIBITED — not "suspicious", prohibited.**
+If your first gap review shows all ✅:
+1. You are rubber-stamping. Prior investigation ≠ complete design exploration.
+2. Pick the 2 weakest categories (thinnest evidence).
+3. Write one concrete unasked question per category.
+4. Ask those questions, then re-run the full checklist from scratch.
+
+| Excuse | Reality |
+|--------|---------|
+| "Requirements are already clear" | Clear requirements ≠ complete design. Edge cases, error states, integration points still need exploration. |
+| "I already investigated the code" | Code investigation reveals what IS. Design exploration asks what SHOULD BE. Different activities. |
+| "It's just a bug fix" | Bug fixes have edge cases: error states, concurrent access, timing changes, consumer compatibility. |
+| "User is frustrated/in a hurry" | Rushing causes exactly the mistakes brainstorming prevents. Slow down. |
 
 **Rules:**
 - You MUST show the checklist to the user every time you run it. No silent/internal-only checks.
 - Each run must re-examine ALL categories from zero — do not carry over previous results.
-- Finding zero gaps on the very first run is suspicious — re-examine more carefully before proceeding.
 - When in doubt, ask. One extra question costs less than a flawed design.
 
 **Exploring approaches:**

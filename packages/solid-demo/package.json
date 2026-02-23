@@ -11,6 +11,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@simplysm/core-common": "workspace:*",
     "@simplysm/solid": "workspace:*",
     "@solidjs/router": "^0.15.4",
     "@tabler/icons-solidjs": "^3.37.1",

@@ -128,11 +128,9 @@ When modifying code, review and update related tests (`packages/{pkg}/tests/`) a
 
 When porting/migrating code from another codebase (e.g., v12 Angular → v13 SolidJS):
 
-1. **Before starting**: Read the original source thoroughly and list ALL features, props, callbacks, and behaviors.
-2. **Feature parity check**: After implementation, compare 1:1 with the original. Every omission or behavioral difference must be explicitly reported to the user.
-3. **No silent omissions**: Never silently drop features, props, or behaviors. If something is intentionally excluded, explain why and get approval.
-4. **No silent additions**: Never add new props or behaviors that didn't exist in the original without explaining the reason and getting approval.
-5. **Design changes require discussion**: If the migration requires a different design approach (e.g., changing from key-based selection to object-reference selection), discuss the trade-offs with the user before proceeding.
+1. **Analyze every line**: Read the original source and all its dependencies (imports, base classes, etc.) line by line. Understand every feature, prop, and behavior. If a dependency cannot be found, ask the user.
+2. **Ask about every difference**: Any change from the original (API, pattern, design, omission, addition) must be asked to the user. Never decide silently.
+3. **Verify after completion**: Compare the result 1:1 with the original and report any omissions or differences to the user.
 
 ## Workflow
 
