@@ -16,11 +16,13 @@ export interface InlineEditConfig<TItem> {
   submit: (diffs: ArrayDiffs2Result<TItem>[]) => Promise<void>;
   newItem: () => TItem;
   deleteProp?: keyof TItem & string;
+  diffsExcludes?: string[];
 }
 
 export interface ModalEditConfig<TItem> {
   editItem: (item?: TItem) => Promise<boolean | undefined>;
   deleteItems?: (items: TItem[]) => Promise<boolean>;
+  restoreItems?: (items: TItem[]) => Promise<boolean>;
 }
 
 export interface ExcelConfig<TItem> {
@@ -56,6 +58,7 @@ export interface CrudSheetContext<TItem> {
   save(): Promise<void>;
   refresh(): Promise<void>;
   addItem(): void;
+  clearSelection(): void;
   setPage(page: number): void;
   setSorts(sorts: SortingDef[]): void;
 }
@@ -73,20 +76,23 @@ export type CrudSheetProps<TItem, TFilter extends Record<string, any>> = CrudShe
   );
 
 interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
-  search: (filter: TFilter, page: number, sorts: SortingDef[]) => Promise<SearchResult<TItem>>;
+  search: (filter: TFilter, page: number | undefined, sorts: SortingDef[]) => Promise<SearchResult<TItem>>;
   getItemKey: (item: TItem) => string | number | undefined;
   persistKey?: string;
-  itemsPerPage?: number;
   editable?: boolean;
   itemEditable?: (item: TItem) => boolean;
   itemDeletable?: (item: TItem) => boolean;
   itemDeleted?: (item: TItem) => boolean;
+  isItemSelectable?: (item: TItem) => boolean | string;
+  lastModifiedAtProp?: keyof TItem & string;
+  lastModifiedByProp?: keyof TItem & string;
   filterInitial?: TFilter;
   items?: TItem[];
   onItemsChange?: (items: TItem[]) => void;
   excel?: ExcelConfig<TItem>;
   selectMode?: "single" | "multiple";
   onSelect?: (result: SelectResult<TItem>) => void;
+  onSubmitted?: () => void;
   hideAutoTools?: boolean;
   class?: string;
   children: JSX.Element;
