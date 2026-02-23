@@ -171,6 +171,10 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
             changeKeys,
           );
         },
+        getKey: def.getKey,
+        getSearchText: def.getSearchText,
+        getIsHidden: def.getIsHidden,
+        getParentKey: def.getParentKey,
       };
     }
   }

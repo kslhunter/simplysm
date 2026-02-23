@@ -17,6 +17,12 @@ export interface SharedDataDefinition<TData> {
   orderBy: [(item: TData) => unknown, "asc" | "desc"][];
   /** 서버 이벤트 필터 (같은 name의 이벤트 중 filter가 일치하는 것만 수신) */
   filter?: unknown;
+  /** 항목에서 검색 텍스트를 추출하는 함수 */
+  getSearchText?: (item: TData) => string;
+  /** 항목이 숨김 상태인지 판별하는 함수 */
+  getIsHidden?: (item: TData) => boolean;
+  /** 항목의 부모 key를 추출하는 함수 (트리 구조 지원) */
+  getParentKey?: (item: TData) => string | number | undefined;
 }
 
 /**
@@ -32,6 +38,14 @@ export interface SharedDataAccessor<TData> {
   get: (key: string | number | undefined) => TData | undefined;
   /** 서버에 변경 이벤트 전파 (모든 구독자에게 refetch 트리거) */
   emit: (changeKeys?: Array<string | number>) => Promise<void>;
+  /** 항목의 고유 key 추출 함수 */
+  getKey: (item: TData) => string | number;
+  /** 항목에서 검색 텍스트를 추출하는 함수 */
+  getSearchText?: (item: TData) => string;
+  /** 항목이 숨김 상태인지 판별하는 함수 */
+  getIsHidden?: (item: TData) => boolean;
+  /** 항목의 부모 key를 추출하는 함수 (트리 구조 지원) */
+  getParentKey?: (item: TData) => string | number | undefined;
 }
 
 /**
