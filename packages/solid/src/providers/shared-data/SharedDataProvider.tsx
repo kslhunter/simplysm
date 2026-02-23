@@ -32,7 +32,6 @@ import { useLogger } from "../../hooks/useLogger";
  * // 자식 컴포넌트에서 나중에 설정:
  * useSharedData().configure(() => ({
  *   users: {
- *     serviceKey: "main",
  *     fetch: async (changeKeys) => fetchUsers(changeKeys),
  *     getKey: (item) => item.id,
  *     orderBy: [[(item) => item.name, "asc"]],
@@ -143,7 +142,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       // eslint-disable-next-line solid/reactivity -- memo 참조를 Map에 저장하는 것은 반응성 접근이 아님
       memoMap.set(name, itemMap);
 
-      const client = serviceClient.get(def.serviceKey);
+      const client = serviceClient.get(def.serviceKey ?? "default");
       void client
         .addEventListener(
           SharedDataChangeEvent,
@@ -185,7 +184,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       const listenerKey = listenerKeyMap.get(name);
       if (listenerKey != null) {
         const def = currentDefinitions[name];
-        const client = serviceClient.get(def.serviceKey);
+        const client = serviceClient.get(def.serviceKey ?? "default");
         void client.removeEventListener(listenerKey);
       }
     }

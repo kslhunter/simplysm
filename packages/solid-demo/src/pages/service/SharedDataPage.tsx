@@ -130,13 +130,12 @@ const ConnectedSharedDataDemo: Component = () => {
 
   onMount(async () => {
     try {
-      await serviceClient.connect("main", { port: 40081 });
+      await serviceClient.connect(undefined, { port: 40081 });
 
       sharedData.configure(() => ({
         user: {
-          serviceKey: "main",
           fetch: async (changeKeys) => {
-            const client = serviceClient.get("main");
+            const client = serviceClient.get();
             return (await client.send("SharedDataDemoService", "getUsers", [
               changeKeys,
             ])) as IDemoUser[];
@@ -145,9 +144,8 @@ const ConnectedSharedDataDemo: Component = () => {
           orderBy: [[(item) => item.name, "asc"]],
         },
         company: {
-          serviceKey: "main",
           fetch: async (changeKeys) => {
-            const client = serviceClient.get("main");
+            const client = serviceClient.get();
             return (await client.send("SharedDataDemoService", "getCompanies", [
               changeKeys,
             ])) as IDemoCompany[];
@@ -164,8 +162,8 @@ const ConnectedSharedDataDemo: Component = () => {
   });
 
   onCleanup(async () => {
-    if (serviceClient.isConnected("main")) {
-      await serviceClient.close("main");
+    if (serviceClient.isConnected()) {
+      await serviceClient.close();
     }
   });
 

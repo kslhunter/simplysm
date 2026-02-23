@@ -10,12 +10,12 @@ model: haiku
 
 ## Overview
 
-Stages and commits changes using Conventional Commits format. Two modes: **default** (context-relevant files, single commit) and **all** (all changed files, split by intent if needed).
+Stages and commits changes using Conventional Commits format. Two modes: **default** (context-relevant files, single commit) and **all** (all changed files, single commit).
 
 ## Mode
 
 - **Default mode** (no arguments): Stage files relevant to the current conversation context. Always a **single commit**.
-- **"all" mode** (`$ARGUMENTS` is "all"): Target **all** changed/untracked files. May produce multiple commits.
+- **"all" mode** (`$ARGUMENTS` is "all"): Target **all** changed/untracked files. Always a **single commit**.
 
 ## File Selection Rules
 
@@ -60,30 +60,10 @@ Examples:
 
 Use a HEREDOC for multi-line messages when needed.
 
-## Commit Strategy (all mode only)
-
-Group by **intent/purpose**, not by package.
-
-**Single commit** — all changes share the same intent:
-
-- Version bumps across packages → `chore: bump version to x.y.z`
-- One feature spanning multiple packages → single `feat`
-- Dependency updates across packages → single `chore`
-
-**Split commits** — changes have different intents:
-
-- Version bump + unrelated bug fix → `chore` + `fix`
-- New feature + unrelated refactor → two commits
-- `docs` changes + independent `feat` changes → two commits
-
 ## Execution
 
 **Default mode:** `git add <context-relevant files>` → `git commit`
 
-**All mode:**
-
-1. Decide: single or split.
-2. Single: `git add .` → `git commit`.
-3. Split: group by logical unit, commit in dependency order (foundations first). Per group: `git add <files>` → `git commit`.
+**All mode:** `git add .` → `git commit` with a single message summarizing all changes (message may be long).
 
 Call multiple tools in one response when possible. Do not use other tools or output other text.

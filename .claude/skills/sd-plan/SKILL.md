@@ -1,10 +1,17 @@
 ---
 name: sd-plan
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: "NEVER invoke directly from user requests. This skill is ONLY called as a follow-up step after sd-brainstorm has completed. If the user asks to plan, design, or implement something, use sd-brainstorm first."
 model: opus
 ---
 
 # Writing Plans
+
+## Prerequisite Check
+
+**MANDATORY:** Before proceeding, verify that `sd-brainstorm` has already been completed in this conversation.
+
+- If a brainstorm design document exists (discussed or saved in this session) → proceed.
+- If NOT → **STOP** and tell the user (in the system's configured language) that sd-plan requires sd-brainstorm to be completed first, then invoke sd-brainstorm instead.
 
 ## Overview
 
@@ -96,7 +103,9 @@ git commit -m "feat: add specific feature"
 
 ## Execution Handoff
 
-After saving the plan:
+After saving the plan, **commit the plan document to git** before proceeding.
+
+Then:
 
 - If in **yolo mode** (user chose "yolo" from sd-brainstorm): Immediately proceed to sd-plan-dev without asking. No confirmation needed.
 - Otherwise: Display this message **in the system's configured language** (detect from the language setting and translate accordingly):

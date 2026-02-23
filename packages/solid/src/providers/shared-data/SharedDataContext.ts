@@ -7,8 +7,8 @@ import { type Accessor, createContext, useContext } from "solid-js";
  * SharedDataProvider에 전달하여 서버 데이터 구독을 설정한다.
  */
 export interface SharedDataDefinition<TData> {
-  /** 서비스 연결 key (useServiceClient의 connect key와 동일) */
-  serviceKey: string;
+  /** 서비스 연결 key (생략 시 "default") */
+  serviceKey?: string;
   /** 데이터 조회 함수 (changeKeys가 있으면 해당 항목만 부분 갱신) */
   fetch: (changeKeys?: Array<string | number>) => Promise<TData[]>;
   /** 항목의 고유 key 추출 함수 */

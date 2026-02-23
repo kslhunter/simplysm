@@ -26,7 +26,7 @@ const ServiceClientDemo: Component = () => {
 
   onMount(async () => {
     try {
-      await serviceClient.connect("main", { port: 40081 });
+      await serviceClient.connect(undefined, { port: 40081 });
       setConnected(true);
       notification.success("연결 성공", "서버에 연결되었습니다.");
     } catch (err) {
@@ -35,8 +35,8 @@ const ServiceClientDemo: Component = () => {
   });
 
   onCleanup(async () => {
-    if (serviceClient.isConnected("main")) {
-      await serviceClient.close("main");
+    if (serviceClient.isConnected()) {
+      await serviceClient.close();
     }
   });
 
@@ -44,7 +44,7 @@ const ServiceClientDemo: Component = () => {
     setEchoResult(null);
     setEchoError(null);
     try {
-      const client = serviceClient.get("main");
+      const client = serviceClient.get();
       const result = await client.send("EchoService", "echo", [echoInput()]);
       setEchoResult(JSON.stringify(result, null, 2));
     } catch (err) {
@@ -57,7 +57,7 @@ const ServiceClientDemo: Component = () => {
     setJsonError(null);
     try {
       const data = JSON.parse(jsonInput());
-      const client = serviceClient.get("main");
+      const client = serviceClient.get();
       const result = await client.send("EchoService", "echoJson", [data]);
       setJsonResult(JSON.stringify(result, null, 2));
     } catch (err) {
@@ -68,7 +68,7 @@ const ServiceClientDemo: Component = () => {
   const handlePing = async () => {
     setPingResult(null);
     try {
-      const client = serviceClient.get("main");
+      const client = serviceClient.get();
       const result = await client.send("HealthService", "ping", []);
       setPingResult(JSON.stringify(result, null, 2));
     } catch (err) {
@@ -79,7 +79,7 @@ const ServiceClientDemo: Component = () => {
   const handleHealthCheck = async () => {
     setHealthResult(null);
     try {
-      const client = serviceClient.get("main");
+      const client = serviceClient.get();
       const result = await client.send("HealthService", "check", []);
       setHealthResult(JSON.stringify(result, null, 2));
     } catch (err) {

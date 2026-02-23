@@ -25,20 +25,27 @@ Start by understanding the current project context, then ask questions one at a 
 
 When you think you've asked enough, **STOP and run a gap review before moving on.**
 
-1. Silently check ALL of these categories for unanswered questions:
-   - **Scope**: What's in? What's explicitly out?
-   - **User flows**: All inputs, outputs, feedback, navigation
-   - **Edge cases**: Empty states, errors, limits, concurrency, undo
-   - **Data**: Shape, validation, persistence, migration, relationships
-   - **Integration**: How does this connect to existing code/systems?
-   - **Non-functional**: Performance, accessibility, security, i18n
-   - **Assumptions**: Anything you assumed but never confirmed
-2. If ANY new question emerges → ask it, then **restart from step 1**
-3. Only when zero questions remain across ALL categories → proceed to exploring approaches.
+Tell the user you're running a gap review, then check ALL categories and **show the result as a checklist**:
+
+| Category | Check for... |
+|----------|-------------|
+| Scope | What's in? What's explicitly out? |
+| User flows | All inputs, outputs, feedback, navigation |
+| Edge cases | Empty states, errors, limits, concurrency, undo |
+| Data | Shape, validation, persistence, migration, relationships |
+| Integration | How does this connect to existing code/systems? |
+| Non-functional | Performance, accessibility, security, i18n |
+| Assumptions | Anything you assumed but never confirmed |
+
+For each category, output one line: `✅ covered` or `❓ gap — [what's missing]`
+
+- If ANY ❓ exists → ask about it. After the user answers, **run the full checklist again from scratch**.
+- Only when ALL categories show ✅ → proceed to exploring approaches.
 
 **Rules:**
-- Each loop must seriously re-examine all categories, not just skim.
-- Looping only once is suspicious — double-check.
+- You MUST show the checklist to the user every time you run it. No silent/internal-only checks.
+- Each run must re-examine ALL categories from zero — do not carry over previous results.
+- Finding zero gaps on the very first run is suspicious — re-examine more carefully before proceeding.
 - When in doubt, ask. One extra question costs less than a flawed design.
 
 **Exploring approaches:**

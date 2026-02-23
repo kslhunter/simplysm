@@ -45,11 +45,13 @@ export const ServiceClientProvider: ParentComponent = (props) => {
   });
 
   const connect = async (
-    key: string,
+    key?: string,
     options?: Partial<ServiceConnectionConfig>,
   ): Promise<void> => {
-    if (clientMap.has(key)) {
-      const existing = clientMap.get(key)!;
+    const resolvedKey = key ?? "default";
+
+    if (clientMap.has(resolvedKey)) {
+      const existing = clientMap.get(resolvedKey)!;
       if (!existing.connected) {
         throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
       } else {
@@ -125,27 +127,30 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     });
 
     await client.connect();
-    clientMap.set(key, client);
+    clientMap.set(resolvedKey, client);
   };
 
-  const close = async (key: string): Promise<void> => {
-    const client = clientMap.get(key);
+  const close = async (key?: string): Promise<void> => {
+    const resolvedKey = key ?? "default";
+    const client = clientMap.get(resolvedKey);
     if (client) {
       await client.close();
-      clientMap.delete(key);
+      clientMap.delete(resolvedKey);
     }
   };
 
-  const get = (key: string): ServiceClient => {
-    const client = clientMap.get(key);
+  const get = (key?: string): ServiceClient => {
+    const resolvedKey = key ?? "default";
+    const client = clientMap.get(resolvedKey);
     if (!client) {
-      throw new Error(`연결하지 않은 클라이언트 키입니다. ${key}`);
+      throw new Error(`연결하지 않은 클라이언트 키입니다. ${resolvedKey}`);
     }
     return client;
   };
 
-  const isConnected = (key: string): boolean => {
-    const client = clientMap.get(key);
+  const isConnected = (key?: string): boolean => {
+    const resolvedKey = key ?? "default";
+    const client = clientMap.get(resolvedKey);
     return client?.connected ?? false;
   };
 

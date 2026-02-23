@@ -97,7 +97,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
         getKey: (item) => item.id,
         orderBy: [[(item) => item.name, "asc"]],
@@ -134,7 +133,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
         getKey: (item) => item.id,
         orderBy: [[(item) => item.name, "asc"]],
@@ -180,7 +178,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve(mockUsers)),
         getKey: (item) => item.id,
         orderBy: [[(item) => item.name, "asc"]],
@@ -223,7 +220,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => fetchPromise),
         getKey: (item) => item.id,
         orderBy: [],
@@ -269,7 +265,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
         getKey: getKeyFn,
         orderBy: [[(item) => item.name, "asc"]],
@@ -324,7 +319,6 @@ describe("SharedDataProvider", () => {
 
     const definitions: { user: SharedDataDefinition<TestUser> } = {
       user: {
-        serviceKey: "main",
         fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
         getKey: getKeyFn,
         orderBy: [[(item) => item.name, "asc"]],
