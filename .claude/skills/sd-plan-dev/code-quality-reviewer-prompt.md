@@ -14,7 +14,9 @@ You are reviewing code quality for a completed implementation.
 
 Use git diff to review only what changed:
 ```
+
 git diff [BASE_SHA]..[HEAD_SHA]
+
 ```
 BASE_SHA: [commit before task started]
 HEAD_SHA: [implementer's commit SHA from report]

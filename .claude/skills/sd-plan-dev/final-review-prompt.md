@@ -38,8 +38,8 @@ Individual tasks already passed spec and quality reviews. Focus on cross-task in
 ### Verification
 
 Run and report results:
-- `pnpm typecheck [affected packages]`
-- `pnpm lint [affected packages]`
+- `npm run typecheck [affected packages]`
+- `npm run lint [affected packages]`
 
 ### Report
 

@@ -20,10 +20,12 @@ Stages and commits changes using Conventional Commits format. Two modes: **defau
 ## File Selection Rules
 
 **NEVER arbitrarily exclude files.** The ONLY valid reason to exclude a file is:
+
 - It is in `.gitignore`
 - It is completely unrelated to the conversation context (default mode only)
 
 **Do NOT exclude files based on:**
+
 - File type or extension (e.g., `.styles.ts`, `.config.ts`)
 - Folder name or path (e.g., `node_modules` is handled by `.gitignore`)
 - Personal judgment about importance or "cleanliness"
@@ -44,13 +46,14 @@ Stages and commits changes using Conventional Commits format. Two modes: **defau
 type(scope): short description
 ```
 
-| Field | Values |
-|-------|--------|
-| `type` | `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf` |
-| `scope` | package name or area (e.g., `solid`, `core-common`, `orm-node`) |
-| `description` | imperative, lowercase, no period at end |
+| Field         | Values                                                                       |
+| ------------- | ---------------------------------------------------------------------------- |
+| `type`        | `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`, `style`, `perf` |
+| `scope`       | package name or area (e.g., `solid`, `core-common`, `orm-node`)              |
+| `description` | imperative, lowercase, no period at end                                      |
 
 Examples:
+
 - `feat(solid): add Select component`
 - `fix(orm-node): handle null values in bulk insert`
 - `docs: update README with new API examples`
@@ -62,11 +65,13 @@ Use a HEREDOC for multi-line messages when needed.
 Group by **intent/purpose**, not by package.
 
 **Single commit** — all changes share the same intent:
+
 - Version bumps across packages → `chore: bump version to x.y.z`
 - One feature spanning multiple packages → single `feat`
 - Dependency updates across packages → single `chore`
 
 **Split commits** — changes have different intents:
+
 - Version bump + unrelated bug fix → `chore` + `fix`
 - New feature + unrelated refactor → two commits
 - `docs` changes + independent `feat` changes → two commits
@@ -76,6 +81,7 @@ Group by **intent/purpose**, not by package.
 **Default mode:** `git add <context-relevant files>` → `git commit`
 
 **All mode:**
+
 1. Decide: single or split.
 2. Single: `git add .` → `git commit`.
 3. Split: group by logical unit, commit in dependency order (foundations first). Per group: `git add <files>` → `git commit`.

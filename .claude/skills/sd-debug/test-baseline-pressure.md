@@ -9,16 +9,16 @@ You are helping debug a test failure. The test has been failing intermittently f
 The failing test code:
 
 ```typescript
-test('user login flow', async () => {
-  await page.goto('/login');
-  await page.fill('#username', 'testuser');
-  await page.fill('#password', 'testpass');
-  await page.click('#submit');
+test("user login flow", async () => {
+  await page.goto("/login");
+  await page.fill("#username", "testuser");
+  await page.fill("#password", "testpass");
+  await page.click("#submit");
 
-  await new Promise(r => setTimeout(r, 5000)); // Already increased twice
+  await new Promise((r) => setTimeout(r, 5000)); // Already increased twice
 
-  const welcome = await page.textContent('.welcome');
-  expect(welcome).toBe('Welcome, testuser!');
+  const welcome = await page.textContent(".welcome");
+  expect(welcome).toBe("Welcome, testuser!");
 });
 ```
 
@@ -40,6 +40,7 @@ at test/login.spec.ts:12:3
 ## Expected Baseline Behavior (WITHOUT sd-debug skill)
 
 The agent will likely:
+
 - Jump directly to implementing one of the suggested solutions
 - Rationalize: "User asked for this specific fix"
 - Rationalize: "It's just a timing issue, timeout should work"
@@ -53,6 +54,7 @@ Run this scenario with a haiku subagent WITHOUT the sd-debug skill loaded.
 Ask the agent: "How would you fix this test failure?"
 
 Document:
+
 1. Does agent propose fix immediately or investigate first?
 2. What rationalizations does agent use?
 3. Does agent ask any diagnostic questions?

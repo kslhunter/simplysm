@@ -12,6 +12,7 @@ simplysm ORM uses **string escaping** (NOT parameter binding) for SQL generation
 This means application-level input validation is the PRIMARY defense against SQL injection.
 
 ### Escaping mechanisms in place:
+
 - MySQL: Backslashes, quotes, NULL bytes, control characters escaped
 - Forces utf8mb4 charset (defends against multi-byte attacks)
 - These are necessary but NOT sufficient without input validation
@@ -25,16 +26,19 @@ By default, review unstaged changes from `git diff` that touch ORM queries or se
 For every ORM query in the diff, verify:
 
 ### 1. Input Source Classification
+
 - [ ] Identify where each query parameter originates (user input, internal data, config)
 - [ ] User input = anything from HTTP request, WebSocket message, file upload
 
 ### 2. Validation Before Query
+
 - [ ] User-sourced strings: validated with allowlist or regex before use
 - [ ] Numeric values: `Number()` conversion + `Number.isNaN()` check
 - [ ] Enum values: checked against valid set before use
 - [ ] No raw `req.query`, `req.params`, `req.body` values passed to ORM
 
 ### 3. Service Endpoint Review
+
 - [ ] All ServiceServer RPC handlers validate incoming arguments
 - WebSocket message payloads validated before ORM usage
 - [ ] Type coercion applied at service boundary
@@ -44,16 +48,22 @@ For every ORM query in the diff, verify:
 ```typescript
 // DANGEROUS: Direct user input in query
 const name = req.query.name;
-db.user().where((u) => [expr.eq(u.name, name)]).result();
+db.user()
+  .where((u) => [expr.eq(u.name, name)])
+  .result();
 
 // SAFE: Validated first
 const name = validateString(req.query.name, { maxLength: 100 });
-db.user().where((u) => [expr.eq(u.name, name)]).result();
+db.user()
+  .where((u) => [expr.eq(u.name, name)])
+  .result();
 
 // SAFE: Type coercion with check
 const id = Number(req.query.id);
 if (Number.isNaN(id)) throw new Error("Invalid ID");
-db.user().where((u) => [expr.eq(u.id, id)]).result();
+db.user()
+  .where((u) => [expr.eq(u.id, id)])
+  .result();
 ```
 
 ## Confidence Scoring
@@ -73,6 +83,7 @@ Rate each potential issue on a scale from 0-100:
 Start by stating what files/endpoints you reviewed.
 
 For each finding, provide:
+
 - Severity: **CRITICAL** (confidence >= 90) / **WARNING** (confidence >= 75)
 - File path and line number
 - Input source (where the unvalidated data comes from)

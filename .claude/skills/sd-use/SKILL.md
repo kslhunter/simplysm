@@ -6,7 +6,7 @@ model: haiku
 
 # sd-use - Auto Skill/Agent Router
 
-Analyze user request from ARGUMENTS, select the best matching sd-* skill or agent, explain why, then execute it.
+Analyze user request from ARGUMENTS, select the best matching sd-\* skill or agent, explain why, then execute it.
 
 ## Execution Flow
 
@@ -19,30 +19,30 @@ Analyze user request from ARGUMENTS, select the best matching sd-* skill or agen
 
 ### Skills (execute via `Skill` tool)
 
-| Skill | When to select |
-|-------|----------------|
-| `sd-brainstorm` | New feature, component, or behavior change — **creative work before implementation** |
-| `sd-debug` | Bug, test failure, unexpected behavior — **systematic root cause investigation** |
-| `sd-tdd` | Implementing a feature or fixing a bug — **before writing code** |
-| `sd-plan` | Multi-step task with spec/requirements — **planning before code** |
-| `sd-plan-dev` | Already have a plan — **executing implementation plan** |
-| `sd-explore` | Deep codebase analysis — tracing execution paths, architecture, dependencies |
-| `sd-review` | Comprehensive code review of a package or path |
-| `sd-check` | Verify code — typecheck, lint, tests |
-| `sd-commit` | Create a git commit |
-| `sd-readme` | Update a package README.md |
-| `sd-discuss` | Evaluate code design decisions against industry standards and project conventions |
-| `sd-api-name-review` | Review public API naming consistency |
-| `sd-worktree` | Start new work in branch isolation |
-| `sd-skill` | Create or edit skills |
+| Skill                | When to select                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| `sd-brainstorm`      | New feature, component, or behavior change — **creative work before implementation** |
+| `sd-debug`           | Bug, test failure, unexpected behavior — **systematic root cause investigation**     |
+| `sd-tdd`             | Implementing a feature or fixing a bug — **before writing code**                     |
+| `sd-plan`            | Multi-step task with spec/requirements — **planning before code**                    |
+| `sd-plan-dev`        | Already have a plan — **executing implementation plan**                              |
+| `sd-explore`         | Deep codebase analysis — tracing execution paths, architecture, dependencies         |
+| `sd-review`          | Comprehensive code review of a package or path                                       |
+| `sd-check`           | Verify code — typecheck, lint, tests                                                 |
+| `sd-commit`          | Create a git commit                                                                  |
+| `sd-readme`          | Update a package README.md                                                           |
+| `sd-discuss`         | Evaluate code design decisions against industry standards and project conventions    |
+| `sd-api-name-review` | Review public API naming consistency                                                 |
+| `sd-worktree`        | Start new work in branch isolation                                                   |
+| `sd-skill`           | Create or edit skills                                                                |
 
 ### Agents (execute via `Task` tool with matching `subagent_type`)
 
-| Agent | When to select |
-|-------|----------------|
-| `sd-code-reviewer` | Focused review for bugs, security vulnerabilities, quality issues |
-| `sd-code-simplifier` | Simplify, clean up, improve code readability |
-| `sd-api-reviewer` | Review library public API for DX quality |
+| Agent                | When to select                                                    |
+| -------------------- | ----------------------------------------------------------------- |
+| `sd-code-reviewer`   | Focused review for bugs, security vulnerabilities, quality issues |
+| `sd-code-simplifier` | Simplify, clean up, improve code readability                      |
+| `sd-api-reviewer`    | Review library public API for DX quality                          |
 
 ## Selection Rules
 

@@ -26,19 +26,20 @@ First run auto-installs: `pdfminer.six`, `python-pptx`, `openpyxl`.
 ## Output Format
 
 Markdown report with sections:
+
 1. **Mail info table**: Subject, From, To, Cc, Date, attachment count
 2. **Body text**: Plain text (HTML stripped if no plain text)
 3. **Attachment analysis**: Summary table + extracted text per file
 
 ## Supported Attachments
 
-| Format | Method |
-|--------|--------|
-| PDF | pdfminer.six text extraction |
-| XLSX/XLS | openpyxl cell data as markdown table |
-| PPTX | python-pptx slide text + tables + notes |
-| Text files (.txt, .csv, .json, .xml, .html, .md) | UTF-8/CP949 decode |
-| Images | Filename and size only |
+| Format                                           | Method                                  |
+| ------------------------------------------------ | --------------------------------------- |
+| PDF                                              | pdfminer.six text extraction            |
+| XLSX/XLS                                         | openpyxl cell data as markdown table    |
+| PPTX                                             | python-pptx slide text + tables + notes |
+| Text files (.txt, .csv, .json, .xml, .html, .md) | UTF-8/CP949 decode                      |
+| Images                                           | Filename and size only                  |
 
 ## Common Mistakes
 

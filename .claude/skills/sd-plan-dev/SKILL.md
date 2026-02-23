@@ -240,8 +240,8 @@ Done!
 Between batches, run targeted verification on affected packages before starting the next batch:
 
 ```bash
-pnpm typecheck [affected packages]
-pnpm lint [affected packages]
+npm run typecheck [affected packages]
+npm run lint [affected packages]
 ```
 
 This catches cross-task integration issues early — especially when the next batch depends on the current batch's output. Do NOT skip this even if individual task reviews passed.
@@ -249,6 +249,7 @@ This catches cross-task integration issues early — especially when the next ba
 ## Red Flags
 
 **Never:**
+
 - Start implementation on main/master without explicit user consent
 - Skip reviews (spec compliance OR code quality)
 - Proceed with unfixed issues
@@ -262,16 +263,19 @@ This catches cross-task integration issues early — especially when the next ba
 - Use `run_in_background: true` on Task calls (use foreground parallel instead)
 
 **If task agent returns questions:**
+
 - Answer clearly and completely
 - Re-launch that agent with answers included
 - Other parallel agents continue unaffected
 
 **If reviewers find issues:**
+
 - Task agent fixes all issues from both reviewers at once
 - Re-review only the failed aspects (parallel sub-Tasks)
 - Repeat until both approved
 
 **If task agent fails or times out:**
+
 - Do NOT silently proceed — the affected files may be in an indeterminate state
 - Check if other tasks in the same batch depend on the failed task's output
 - Independent tasks' results still stand
@@ -281,6 +285,7 @@ This catches cross-task integration issues early — especially when the next ba
 ## Integration
 
 **Related skills:**
+
 - **sd-plan** — creates the plan this skill executes
 - **sd-tdd** — task agents follow TDD
 - **sd-worktree** — branch isolation for worktree-based workflows

@@ -15,6 +15,7 @@ Create, merge, and clean up git worktrees under `.worktrees/`. Uses the current 
 ## Target Worktree Resolution
 
 For all commands, the target worktree name is resolved in this order:
+
 1. Explicitly provided in args → use as-is
 2. Current cd is inside `.worktrees/<name>/` → use that `<name>` (auto-detected)
 3. Neither applies → ask the user

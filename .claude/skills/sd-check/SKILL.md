@@ -1,31 +1,31 @@
 ---
 name: sd-check
 description: Use when verifying code quality via typecheck, lint, and tests - before deployment, PR creation, after code changes, or when type errors, lint violations, or test failures are suspected. Applies to whole project or specific paths.
-allowed-tools: Bash(pnpm check), Bash(pnpm typecheck), Bash(pnpm lint --fix), Bash(pnpm vitest)
+allowed-tools: Bash(npm run check), Bash(npm run typecheck), Bash(npm run lint --fix), Bash(npm run vitest)
 ---
 
 # sd-check
 
-Run `pnpm check`, fix errors, repeat until clean.
+Run `npm run check`, fix errors, repeat until clean.
 
 ## Usage
 
 ```
-pnpm check [path] [--type typecheck|lint|test]
+npm run check [path] [--type typecheck|lint|test]
 ```
 
-| Example | Effect |
-|---------|--------|
-| `/sd-check` | Full project, all checks |
-| `/sd-check packages/core-common` | Specific path, all checks |
-| `/sd-check test` | Tests only, full project |
-| `/sd-check packages/core-common lint` | Specific path + type |
+| Example                               | Effect                    |
+| ------------------------------------- | ------------------------- |
+| `/sd-check`                           | Full project, all checks  |
+| `/sd-check packages/core-common`      | Specific path, all checks |
+| `/sd-check test`                      | Tests only, full project  |
+| `/sd-check packages/core-common lint` | Specific path + type      |
 
 Multiple types: `--type typecheck,lint`. No path = full project. No type = all checks.
 
 ## Workflow
 
-1. **Run** `pnpm check [path] [--type type]` (timeout: 600000)
+1. **Run** `npm run check [path] [--type type]` (timeout: 600000)
 2. **All passed?** Report with actual output numbers → done
 3. **Errors?** Fix in priority order: typecheck → lint → test (fixes cascade)
    - Test failures: run `git diff` to decide — update test or fix source

@@ -44,15 +44,15 @@ sd-core-common (기반: 유틸리티, 리플렉션, xml, yaml, zip)
 
 ### 주요 패키지 역할
 
-| 패키지 | 용도 |
-|--------|------|
-| **sd-angular** | Signal 기반 Angular UI 프레임워크 (폼/레이아웃/데이터/네비게이션/오버레이/비주얼 컴포넌트) |
-| **sd-service-server** | Fastify REST/WebSocket 서버 (JWT 인증 포함) |
-| **sd-service-client** | 서비스 통신용 WebSocket 클라이언트 |
-| **sd-orm-common** | ORM 컨트랙트 및 쿼리 빌딩 |
-| **sd-orm-node** | Node.js ORM 구현 (SQLite3, MySQL2, MSSQL via Tedious) |
-| **sd-cli** | 라이브러리, Angular 앱, Electron, Cordova, Capacitor 빌드 오케스트레이션 |
-| **eslint-plugin** | 커스텀 ESLint 규칙 (sd-control attribute 검증 포함) |
+| 패키지                | 용도                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| **sd-angular**        | Signal 기반 Angular UI 프레임워크 (폼/레이아웃/데이터/네비게이션/오버레이/비주얼 컴포넌트) |
+| **sd-service-server** | Fastify REST/WebSocket 서버 (JWT 인증 포함)                                                |
+| **sd-service-client** | 서비스 통신용 WebSocket 클라이언트                                                         |
+| **sd-orm-common**     | ORM 컨트랙트 및 쿼리 빌딩                                                                  |
+| **sd-orm-node**       | Node.js ORM 구현 (SQLite3, MySQL2, MSSQL via Tedious)                                      |
+| **sd-cli**            | 라이브러리, Angular 앱, Electron, Cordova, Capacitor 빌드 오케스트레이션                   |
+| **eslint-plugin**     | 커스텀 ESLint 규칙 (sd-control attribute 검증 포함)                                        |
 
 ### sd-angular 3계층 구조
 

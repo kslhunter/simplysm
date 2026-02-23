@@ -15,6 +15,7 @@ Facilitate balanced, evidence-based technical discussions by researching industr
 ### 1. Understand the Question
 
 Ask ONE question to understand the user's motivation:
+
 - What problem triggered this question?
 - What constraints matter most?
 
@@ -23,11 +24,13 @@ Ask ONE question to understand the user's motivation:
 **MANDATORY before forming any opinion:**
 
 **Project research** (Read/Grep tools):
+
 - Read the actual source code related to the question
 - Check CLAUDE.md for project conventions
 - Find similar patterns in the codebase
 
 **Industry research** (WebSearch tool):
+
 - Search for current community consensus and trends
 - Check relevant specifications (TC39, W3C, RFCs)
 - Find recent benchmarks, migration case studies, or survey data
@@ -38,6 +41,7 @@ Ask ONE question to understand the user's motivation:
 Present each option as if you were **advocating FOR it**. Equal depth, equal effort.
 
 For each option:
+
 - **Industry support**: Libraries, standards, and projects that use this approach (with sources)
 - **Technical advantages**: Concrete benefits with evidence
 - **When this wins**: Specific scenarios where this is clearly better
@@ -52,12 +56,12 @@ For each option:
 
 Provide a decision matrix — NOT a single recommendation:
 
-| Criteria | Option A | Option B |
-|----------|----------|----------|
-| Industry alignment | ... | ... |
-| Project consistency | ... | ... |
-| Migration cost | ... | ... |
-| Long-term trend | ... | ... |
+| Criteria            | Option A | Option B |
+| ------------------- | -------- | -------- |
+| Industry alignment  | ...      | ...      |
+| Project consistency | ...      | ...      |
+| Migration cost      | ...      | ...      |
+| Long-term trend     | ...      | ...      |
 
 Then ask: "Which criteria matter most to you?"
 
@@ -79,10 +83,10 @@ Then ask: "Which criteria matter most to you?"
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Jump to recommendation | Research first, present balanced options |
-| "Industry standard is X" without sources | WebSearch for actual data and citations |
-| Ignoring project context | Read codebase patterns before discussing |
-| Monologue instead of discussion | Ask about user's priorities and constraints |
-| Treating "modern" as "better" | Evaluate on actual trade-offs, not trends |
+| Mistake                                  | Fix                                         |
+| ---------------------------------------- | ------------------------------------------- |
+| Jump to recommendation                   | Research first, present balanced options    |
+| "Industry standard is X" without sources | WebSearch for actual data and citations     |
+| Ignoring project context                 | Read codebase patterns before discussing    |
+| Monologue instead of discussion          | Ask about user's priorities and constraints |
+| Treating "modern" as "better"            | Evaluate on actual trade-offs, not trends   |

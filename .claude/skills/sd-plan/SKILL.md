@@ -15,11 +15,13 @@ Turn a design doc into a step-by-step implementation plan through codebase explo
 ## The Process
 
 **Exploring the codebase:**
+
 - Read the design doc, then explore relevant files, patterns, dependencies
 - Ask questions one at a time as they arise during planning, with your recommendation
 - Don't batch questions upfront — real questions emerge while deep in the details
 
 **Ask about anything you're not 100% confident about.** Examples:
+
 - Dependency choices (add library vs implement directly)
 - Conflicts with existing codebase patterns
 - Implementation choices the design didn't specify
@@ -28,11 +30,13 @@ Turn a design doc into a step-by-step implementation plan through codebase explo
 - If in doubt, ask. The cost of asking is low; the cost of a wrong assumption is high.
 
 **Don't ask — just decide:**
+
 - Internal details covered by project conventions (file naming, export patterns)
 - YAGNI decisions (not mentioned = don't add)
 - Implementation details with only one reasonable option
 
 **Writing the plan:**
+
 - Break into independent tasks
 - Include exact file paths, complete code, exact commands with expected output
 - Never write "add validation" — write the actual validation code
@@ -61,6 +65,7 @@ Turn a design doc into a step-by-step implementation plan through codebase explo
 ### Task N: [Component Name]
 
 **Files:**
+
 - Create: `exact/path/to/file.ts`
 - Modify: `exact/path/to/existing.ts:123-145`
 - Test: `exact/path/to/test.spec.ts`
@@ -76,7 +81,7 @@ test("specific behavior", () => {
 
 **Step 2: Run test to verify it fails**
 
-Run: `pnpm vitest exact/path/to/test.spec.ts --project=node`
+Run: `npx vitest exact/path/to/test.spec.ts --project=node`
 Expected: FAIL with "fn is not defined"
 
 **Step 3: Write minimal implementation**
@@ -89,7 +94,7 @@ export function fn(input: string): string {
 
 **Step 4: Run test to verify it passes**
 
-Run: `pnpm vitest exact/path/to/test.spec.ts --project=node`
+Run: `npx vitest exact/path/to/test.spec.ts --project=node`
 Expected: PASS
 
 **Step 5: Commit**
@@ -134,8 +139,9 @@ You can start from any step or skip steps as needed.
 - Do NOT auto-proceed. Wait for user's choice.
 
 **Yolo mode:** Execute all steps sequentially.
+
 - Each `/sd-*` step MUST be invoked via the Skill tool
-- NEVER execute underlying commands (git, pnpm, etc.) directly, even if you know what the skill does internally
+- NEVER execute underlying commands (git, npm, etc.) directly, even if you know what the skill does internally
 - If a step fails, stop and report — do not attempt manual recovery
 
 **Yolo sd-check:** NEVER check only modified packages. Trace reverse dependencies and include all affected paths.
