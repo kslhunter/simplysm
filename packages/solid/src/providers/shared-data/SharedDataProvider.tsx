@@ -18,7 +18,7 @@ import { useLogger } from "../../hooks/useLogger";
  * - ServiceClientProvider와 NotificationProvider 내부에서 사용해야 함
  * - LoggerProvider가 있으면 fetch 실패를 로거에도 기록
  * - configure() 호출 전: wait, busy, configure만 접근 가능. 데이터 접근 시 throw
- * - configure() 호출 후: definitions의 각 key마다 서버 이벤트 리스너를 등록하여 실시간 동기화
+ * - configure() 호출 후: definitions 등록. 각 key의 items()/get() 첫 접근 시 서버 이벤트 리스너 등록 + fetch (lazy)
  * - 동시 fetch 호출 시 version counter로 데이터 역전 방지
  * - fetch 실패 시 사용자에게 danger 알림 표시
  * - cleanup 시 모든 이벤트 리스너 자동 해제
@@ -143,23 +143,36 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       memoMap.set(name, itemMap);
 
       const client = serviceClient.get(def.serviceKey ?? "default");
-      void client
-        .addEventListener(
-          SharedDataChangeEvent,
-          { name, filter: def.filter },
-          async (changeKeys) => {
-            await loadData(name, def, changeKeys);
-          },
-        )
-        .then((key) => {
-          listenerKeyMap.set(name, key);
-        });
 
-      void loadData(name, def);
+      let initialized = false;
+
+      function ensureInitialized() {
+        if (initialized) return;
+        initialized = true;
+
+        // TODO: addEventListener가 resolve 전에 unmount되면 listener orphan 가능
+        void client
+          .addEventListener(
+            SharedDataChangeEvent,
+            { name, filter: def.filter },
+            async (changeKeys) => {
+              await loadData(name, def, changeKeys);
+            },
+          )
+          .then((key) => {
+            listenerKeyMap.set(name, key);
+          });
+
+        void loadData(name, def);
+      }
 
       accessors[name] = {
-        items,
+        items: () => {
+          ensureInitialized();
+          return items();
+        },
         get: (key: string | number | undefined) => {
+          ensureInitialized();
           if (key === undefined) return undefined;
           return itemMap().get(key);
         },
