@@ -191,7 +191,7 @@ export interface ReadonlyArrayExt<TItem> {
 
   oneWayDiffs<K extends keyof TItem>(
     orgItems: TItem[] | Map<TItem[K], TItem>,
-    keyPropNameOrFn: K | ((item: TItem) => K),
+    keyPropNameOrGetValFn: K | ((item: TItem) => string | number | undefined),
     options?: {
       includeSame?: boolean;
       excludes?: string[];

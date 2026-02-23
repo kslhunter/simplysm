@@ -469,7 +469,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
   oneWayDiffs<T extends Record<string, unknown>, K extends keyof T>(
     orgItems: T[] | Map<T[K], T>,
-    keyPropNameOrFn: K | ((item: T) => K),
+    keyPropNameOrGetValFn: K | ((item: T) => string | number | undefined),
     options?: {
       includeSame?: boolean;
       excludes?: string[];
@@ -480,16 +480,18 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       orgItems instanceof Map
         ? orgItems
         : orgItems.toMap((orgItem) =>
-            typeof keyPropNameOrFn === "function"
-              ? keyPropNameOrFn(orgItem)
-              : orgItem[keyPropNameOrFn],
+            typeof keyPropNameOrGetValFn === "function"
+              ? keyPropNameOrGetValFn(orgItem)
+              : orgItem[keyPropNameOrGetValFn],
           );
     const includeSame = options?.includeSame ?? false;
 
     const diffs: ArrayDiffs2Result<T>[] = [];
     for (const item of this) {
       const keyValue =
-        typeof keyPropNameOrFn === "function" ? keyPropNameOrFn(item) : item[keyPropNameOrFn];
+        typeof keyPropNameOrGetValFn === "function"
+          ? keyPropNameOrGetValFn(item)
+          : item[keyPropNameOrGetValFn];
       if (keyValue == null) {
         diffs.push({ type: "create", item, orgItem: undefined });
         continue;

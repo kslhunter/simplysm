@@ -120,3 +120,7 @@ When porting/migrating code from another codebase (e.g., v12 Angular → v13 Sol
 ## Workflow
 
 After writing code: verify with `/sd-check`.
+
+## UI / UX Rules
+
+- Before calling `AskUserQuestion`, output **2 blank lines** (`\n\n`) so the preceding text is not clipped in the UI.

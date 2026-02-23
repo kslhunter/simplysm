@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/core-node",
-  "version": "13.0.62",
+  "version": "13.0.63",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "license": "Apache-2.0",

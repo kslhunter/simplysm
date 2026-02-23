@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import {
-  bgSurface,
   borderDefault,
   type ComponentSize,
   disabledOpacity,

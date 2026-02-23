@@ -155,9 +155,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   /* eslint-disable solid/reactivity -- 이벤트 핸들러에서만 호출, store 즉시 읽기 */
   function getItemDiffs() {
-    return (items as unknown as TItem[]).oneWayDiffs(originalItems, ((item: TItem) => {
-      return local.getItemKey(item);
-    }) as (item: TItem) => keyof TItem);
+    return items.oneWayDiffs(originalItems, (item) => local.getItemKey(item));
   }
   /* eslint-enable solid/reactivity */
 
