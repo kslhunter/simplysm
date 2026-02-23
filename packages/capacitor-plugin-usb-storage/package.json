@@ -18,7 +18,7 @@
     }
   },
   "devDependencies": {
-    "@capacitor/core": "^7.4.4"
+    "@capacitor/core": "^7.5.0"
   },
   "peerDependencies": {
     "@capacitor/core": "^7.0.0"

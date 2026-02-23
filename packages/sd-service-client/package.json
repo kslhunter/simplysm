@@ -16,6 +16,6 @@
     "@simplysm/sd-core-common": "12.16.27",
     "@simplysm/sd-orm-common": "12.16.27",
     "@simplysm/sd-service-common": "12.16.27",
-    "ws": "^8.18.3"
+    "ws": "^8.19.0"
   }
 }

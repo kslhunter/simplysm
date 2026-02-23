@@ -24,7 +24,7 @@
     "@simplysm/sd-core-common": "12.16.27",
     "@simplysm/sd-service-client": "12.16.27",
     "@simplysm/sd-service-common": "12.16.27",
-    "semver": "^7.7.3"
+    "semver": "^7.7.4"
   },
   "devDependencies": {
     "@types/semver": "^7.7.1"
