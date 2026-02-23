@@ -15,6 +15,7 @@ export * from "./components/form-control/data-select-button/DataSelectButton";
 // SharedData wrappers
 export * from "./components/form-control/shared-data/SharedDataSelect";
 export * from "./components/form-control/shared-data/SharedDataSelectButton";
+export * from "./components/form-control/shared-data/SharedDataSelectList";
 
 // Combobox
 export * from "./components/form-control/combobox/Combobox";
