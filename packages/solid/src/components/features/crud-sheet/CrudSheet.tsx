@@ -65,7 +65,7 @@ interface CrudSheetComponent {
 const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   props: CrudSheetProps<TItem, TFilter>,
 ) => {
-  const [local, _rest] = splitProps(props, [
+  const [local] = splitProps(props, [
     "search",
     "getItemKey",
     "persistKey",
@@ -387,6 +387,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
   // -- Keyboard Shortcuts --
   createEventListener(document, "keydown", async (e: KeyboardEvent) => {
+    if (!formRef?.contains(document.activeElement)) return;
     if (e.ctrlKey && e.key === "s" && !isSelectMode()) {
       e.preventDefault();
       formRef?.requestSubmit();
@@ -622,7 +623,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             autoSelect={isSelectMode() && local.selectMode === "single" ? "click" : undefined}
             cellClass={(item) => {
               if (isItemDeleted(item)) {
-                return clsx("line-through");
+                return "line-through";
               }
               return undefined;
             }}

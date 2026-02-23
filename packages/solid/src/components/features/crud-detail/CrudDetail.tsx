@@ -47,7 +47,7 @@ interface CrudDetailComponent {
 }
 
 const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => {
-  const [local, _rest] = splitProps(props, [
+  const [local] = splitProps(props, [
     "load",
     "children",
     "submit",
@@ -175,6 +175,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
   // -- Keyboard Shortcuts --
   createEventListener(document, "keydown", (e: KeyboardEvent) => {
+    if (!formRef?.contains(document.activeElement)) return;
     if (e.ctrlKey && e.key === "s") {
       e.preventDefault();
       formRef?.requestSubmit();
