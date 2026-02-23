@@ -1,7 +1,7 @@
-import { createMemo, type JSX, splitProps } from "solid-js";
+import { createMemo, type JSX, mergeProps, splitProps } from "solid-js";
 import { IconEdit, IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
-import { Select } from "../select/Select";
+import { Select, type SelectProps } from "../select/Select";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
@@ -69,21 +69,18 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     await dialog.show(local.editModal, {});
   };
 
-  // Select는 value: unknown에 의해 TValue=unknown으로 추론되므로 타입 캐스팅 필요
-  type UnknownFn<TRet> = (item: unknown) => TRet;
+  // Select의 discriminated union (multiple: true | false?)과 TItem → unknown 변환을 위해 mergeProps + as 사용
+  const selectProps = mergeProps(rest, {
+    get items() {
+      return items();
+    },
+    getChildren,
+    getSearchText: local.data.getSearchText,
+    getIsHidden: local.data.getIsHidden,
+  }) as unknown as SelectProps;
 
   return (
-    <Select
-      items={items()}
-      getChildren={
-        getChildren as
-          | ((item: unknown, index: number, depth: number) => unknown[] | undefined)
-          | undefined
-      }
-      getSearchText={local.data.getSearchText as UnknownFn<string> | undefined}
-      getIsHidden={local.data.getIsHidden as UnknownFn<boolean> | undefined}
-      {...rest}
-    >
+    <Select {...selectProps}>
       <Select.ItemTemplate>{local.children}</Select.ItemTemplate>
       {local.modal && (
         <Select.Action onClick={() => void handleOpenModal()} aria-label="검색">
