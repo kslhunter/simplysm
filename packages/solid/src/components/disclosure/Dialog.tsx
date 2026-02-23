@@ -18,12 +18,13 @@ import { IconX } from "@tabler/icons-solidjs";
 import { createControllableSignal } from "../../hooks/createControllableSignal";
 import { createSlotSignal, type SlotAccessor } from "../../hooks/createSlotSignal";
 import { createMountTransition } from "../../hooks/createMountTransition";
-import { createPointerDrag } from "../../hooks/createPointerDrag";
+import { startPointerDrag } from "../../helpers/startPointerDrag";
+import { createSlotComponent } from "../../helpers/createSlotComponent";
 import { mergeStyles } from "../../helpers/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
-import { bringToFront, registerDialog, unregisterDialog } from "./dialogZIndex";
+import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
 
 interface DialogSlotsContextValue {
@@ -33,27 +34,8 @@ interface DialogSlotsContextValue {
 
 const DialogSlotsContext = createContext<DialogSlotsContextValue>();
 
-/**
- * 다이얼로그 헤더 서브 컴포넌트
- */
-const DialogHeader: ParentComponent = (props) => {
-  const ctx = useContext(DialogSlotsContext)!;
-  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
-  ctx.setHeader(() => props.children);
-  onCleanup(() => ctx.setHeader(undefined));
-  return null;
-};
-
-/**
- * 다이얼로그 액션 서브 컴포넌트
- */
-const DialogAction: ParentComponent = (props) => {
-  const ctx = useContext(DialogSlotsContext)!;
-  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
-  ctx.setAction(() => props.children);
-  onCleanup(() => ctx.setAction(undefined));
-  return null;
-};
+const DialogHeader = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setHeader);
+const DialogAction = createSlotComponent(DialogSlotsContext, (ctx) => ctx.setAction);
 
 export interface DialogProps {
   /** 모달 열림 상태 */
@@ -238,10 +220,15 @@ export const Dialog: DialogComponent = (props) => {
   // Escape 키 감지
   createEffect(() => {
     if (!open()) return;
-    if (!closeOnEscape()) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key !== "Escape") return;
+
+      const el = wrapperRef();
+      if (!el || !isTopmost(el)) return;
+
+      if (closeOnEscape()) {
+        e.stopImmediatePropagation();
         tryClose();
       }
     };
@@ -308,7 +295,7 @@ export const Dialog: DialogComponent = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    createPointerDrag(target, event.pointerId, {
+    startPointerDrag(target, event.pointerId, {
       onMove(e) {
         e.stopPropagation();
         e.preventDefault();
@@ -356,7 +343,7 @@ export const Dialog: DialogComponent = (props) => {
     const startTop = dialogEl.offsetTop;
     const startLeft = dialogEl.offsetLeft;
 
-    createPointerDrag(target, event.pointerId, {
+    startPointerDrag(target, event.pointerId, {
       onMove(e) {
         e.stopPropagation();
         e.preventDefault();

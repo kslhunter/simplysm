@@ -34,6 +34,7 @@ export function useSyncConfig<TValue>(
   const prefixedKey = `${config.clientName}.${key}`;
   const [value, setValue] = createSignal<TValue>(defaultValue);
   const [ready, setReady] = createSignal(false);
+  let writeVersion = 0;
 
   // Initialize from storage (reactive to adapter changes via configure())
   createEffect(() => {
@@ -41,11 +42,13 @@ export function useSyncConfig<TValue>(
     setReady(false);
 
     void (async () => {
+      const versionBefore = writeVersion;
+
       if (!currentAdapter) {
         // Use localStorage synchronously
         try {
           const stored = localStorage.getItem(prefixedKey);
-          if (stored !== null) {
+          if (stored !== null && writeVersion === versionBefore) {
             setValue(() => JSON.parse(stored) as TValue);
           }
         } catch {
@@ -58,14 +61,14 @@ export function useSyncConfig<TValue>(
       // Use custom adapter asynchronously
       try {
         const stored = await currentAdapter.getItem(prefixedKey);
-        if (stored !== null) {
+        if (stored !== null && writeVersion === versionBefore) {
           setValue(() => JSON.parse(stored) as TValue);
         }
       } catch {
         // Fall back to localStorage on error
         try {
           const stored = localStorage.getItem(prefixedKey);
-          if (stored !== null) {
+          if (stored !== null && writeVersion === versionBefore) {
             setValue(() => JSON.parse(stored) as TValue);
           }
         } catch {
@@ -103,5 +106,10 @@ export function useSyncConfig<TValue>(
     })();
   });
 
-  return [value, setValue, ready];
+  const userSetValue: Setter<TValue> = ((...args: any[]) => {
+    writeVersion++;
+    return (setValue as any)(...args);
+  }) as Setter<TValue>;
+
+  return [value, userSetValue, ready];
 }

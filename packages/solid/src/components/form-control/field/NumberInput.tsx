@@ -4,15 +4,13 @@ import {
   createMemo,
   createSignal,
   type JSX,
-  onCleanup,
-  type ParentComponent,
   Show,
   splitProps,
-  useContext,
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
+import { createSlotComponent } from "../../../helpers/createSlotComponent";
 import { createSlotSignal, type SlotAccessor } from "../../../hooks/createSlotSignal";
 import {
   type FieldSize,
@@ -37,13 +35,7 @@ interface NumberInputSlotsContextValue {
 
 const NumberInputSlotsContext = createContext<NumberInputSlotsContextValue>();
 
-const NumberInputPrefix: ParentComponent = (props) => {
-  const ctx = useContext(NumberInputSlotsContext)!;
-  // eslint-disable-next-line solid/reactivity -- slot accessor: children은 렌더 시점에 lazy 평가됨
-  ctx.setPrefix(() => props.children);
-  onCleanup(() => ctx.setPrefix(undefined));
-  return null;
-};
+const NumberInputPrefix = createSlotComponent(NumberInputSlotsContext, (ctx) => ctx.setPrefix);
 
 export interface NumberInputProps {
   /** 입력 값 */

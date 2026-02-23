@@ -5,7 +5,6 @@ import { afterEach } from "vitest";
 import {
   LoggerContext,
   LoggerProvider,
-  useLogAdapter,
   type LoggerContextValue,
 } from "../../src/providers/LoggerContext";
 import { useContext } from "solid-js";
@@ -27,7 +26,7 @@ describe("LoggerContext", () => {
     let received: LoggerContextValue | undefined;
 
     function TestComponent() {
-      received = useLogAdapter();
+      received = useContext(LoggerContext);
       return <div />;
     }
 
@@ -49,7 +48,7 @@ describe("LoggerContext", () => {
     let received: LoggerContextValue | undefined;
 
     function TestComponent() {
-      received = useLogAdapter();
+      received = useContext(LoggerContext);
       return <div />;
     }
 

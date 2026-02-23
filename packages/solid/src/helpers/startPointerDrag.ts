@@ -6,7 +6,7 @@
  * @param options.onMove - Called on each pointermove
  * @param options.onEnd - Called on pointerup or pointercancel (after listener cleanup)
  */
-export function createPointerDrag(
+export function startPointerDrag(
   target: HTMLElement,
   pointerId: number,
   options: {

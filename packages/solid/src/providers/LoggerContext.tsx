@@ -1,10 +1,4 @@
-import {
-  type Accessor,
-  createContext,
-  createSignal,
-  useContext,
-  type ParentComponent,
-} from "solid-js";
+import { type Accessor, createContext, createSignal, type ParentComponent } from "solid-js";
 import { consola } from "consola";
 
 /**
@@ -41,15 +35,6 @@ export interface LoggerContextValue {
  * Provider가 없으면 `undefined` (useLogger에서 consola 기본 adapter 사용)
  */
 export const LoggerContext = createContext<LoggerContextValue>();
-
-/**
- * 로그 어댑터 Context에 접근하는 훅
- *
- * @returns LoggerContextValue 또는 undefined (Provider가 없으면)
- */
-export function useLogAdapter(): LoggerContextValue | undefined {
-  return useContext(LoggerContext);
-}
 
 /**
  * 로그 어댑터 Provider

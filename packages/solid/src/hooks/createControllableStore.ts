@@ -39,8 +39,12 @@ export function createControllableStore<TValue extends object>(options: {
 
   // 함수 래퍼로 setter 감싸서 onChange 알림 추가
   const wrappedSet = ((...args: any[]) => {
+    const before = JSON.stringify(unwrap(store));
     (rawSet as any)(...args);
-    options.onChange()?.(objClone(unwrap(store)));
+    const after = JSON.stringify(unwrap(store));
+    if (before !== after) {
+      options.onChange()?.(objClone(unwrap(store)));
+    }
   }) as SetStoreFunction<TValue>;
 
   return [store, wrappedSet];
