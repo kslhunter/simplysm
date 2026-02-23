@@ -62,6 +62,7 @@ Start with a brief summary of the package's public API surface.
 ### Findings by Category
 
 For each high-confidence issue:
+
 - Clear description with confidence score
 - File path and relevant export/type
 - Comparison with industry standard libraries (if applicable)
@@ -69,12 +70,12 @@ For each high-confidence issue:
 
 ### Priority
 
-| Priority | Criteria |
-|----------|----------|
-| **P0** | API misuse likely — naming misleads or types insufficient |
-| **P1** | Significant friction — unnecessary complexity or inconsistency |
-| **P2** | Minor improvement — better naming or defaults exist |
-| **Keep** | Already aligned with standards |
+| Priority | Criteria                                                       |
+| -------- | -------------------------------------------------------------- |
+| **P0**   | API misuse likely — naming misleads or types insufficient      |
+| **P1**   | Significant friction — unnecessary complexity or inconsistency |
+| **P2**   | Minor improvement — better naming or defaults exist            |
+| **Keep** | Already aligned with standards                                 |
 
 ### Summary Table
 

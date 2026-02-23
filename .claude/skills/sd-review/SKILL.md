@@ -23,6 +23,7 @@ Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in paralle
 - When onboarding to unfamiliar code and want a quality overview
 
 **When NOT to use:**
+
 - Single-file or trivial changes (typo, config tweak)
 - When you need code modifications (sd-review is analysis-only)
 
@@ -37,12 +38,12 @@ Analyzes code via the `sd-explore` skill, then runs up to 4 subagents in paralle
 
 Run subagents in parallel via the Task tool:
 
-| Agent Type               | Role | Condition |
-|--------------------------|------|-----------|
-| `sd-code-reviewer`       | Bugs, security, logic errors, convention issues | Always |
-| `sd-code-simplifier`     | Complexity, duplication, readability issues | Always |
-| `sd-api-reviewer`        | DX/usability, naming, type hints | Always |
-| `sd-security-reviewer`   | ORM SQL injection, input validation vulnerabilities | When target path contains ORM queries or service endpoints |
+| Agent Type             | Role                                                | Condition                                                  |
+| ---------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| `sd-code-reviewer`     | Bugs, security, logic errors, convention issues     | Always                                                     |
+| `sd-code-simplifier`   | Complexity, duplication, readability issues         | Always                                                     |
+| `sd-api-reviewer`      | DX/usability, naming, type hints                    | Always                                                     |
+| `sd-security-reviewer` | ORM SQL injection, input validation vulnerabilities | When target path contains ORM queries or service endpoints |
 
 ## Workflow
 
@@ -69,7 +70,7 @@ Run subagents **in parallel** via the Task tool. Include the sd-explore analysis
 - **sd-code-reviewer**: Based on the analysis, find bugs, security vulnerabilities, logic errors, and convention issues. Each finding must include **file:line** and **evidence**.
 - **sd-code-simplifier**: Based on the analysis, find unnecessary complexity, code duplication, and readability issues. Each finding must include **file:line** and **evidence**. **No code modifications.**
 - **sd-api-reviewer**: Based on the analysis, review API intuitiveness, naming consistency, type hints, error messages, and configuration complexity. Each finding must include **file:line** and **evidence**.
-- **sd-security-reviewer** *(conditional)*: If the sd-explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
+- **sd-security-reviewer** _(conditional)_: If the sd-explore analysis reveals ORM queries (`orm-common`, `orm-node`, query builders, `expr.eq`, `.where()`, `.result()`) or service endpoints (`ServiceServer`, RPC handlers), also dispatch this agent. Based on the analysis, find SQL injection risks, missing input validation, and unvalidated user input reaching ORM queries. Each finding must include **file:line** and **evidence**.
 
 ### Step 3: Verify Issues
 
@@ -86,15 +87,15 @@ Compile only **verified findings** into a comprehensive report.
 
 ### Report Structure
 
-| Section | Priority | Source |
-|---------|----------|--------|
-| **Architecture Summary** | — | sd-explore analysis |
-| **Critical Issues** | P0 | Bugs, security vulnerabilities |
-| **Security Issues** | P0 | SQL injection, input validation (when sd-security-reviewer ran) |
-| **Quality Issues** | P1 | Logic errors, missing error handling, performance |
-| **DX/Usability Issues** | P2 | API intuitiveness, naming, type hints |
-| **Simplification Opportunities** | P3 | Complexity removal, duplicate code, abstractions |
-| **Convention Issues** | P4 | Project convention mismatches |
+| Section                          | Priority | Source                                                          |
+| -------------------------------- | -------- | --------------------------------------------------------------- |
+| **Architecture Summary**         | —        | sd-explore analysis                                             |
+| **Critical Issues**              | P0       | Bugs, security vulnerabilities                                  |
+| **Security Issues**              | P0       | SQL injection, input validation (when sd-security-reviewer ran) |
+| **Quality Issues**               | P1       | Logic errors, missing error handling, performance               |
+| **DX/Usability Issues**          | P2       | API intuitiveness, naming, type hints                           |
+| **Simplification Opportunities** | P3       | Complexity removal, duplicate code, abstractions                |
+| **Convention Issues**            | P4       | Project convention mismatches                                   |
 
 Each issue includes **file:line**, **description**, and **suggestion**.
 
@@ -102,11 +103,11 @@ Optionally include an **Invalid Findings Summary** appendix showing which findin
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Using git diff to limit review scope | Review ALL source files under target path |
-| Skipping verification step | Always verify subagent findings against actual code |
-| Reporting unverified issues | Only include verified findings in final report |
+| Mistake                              | Fix                                                 |
+| ------------------------------------ | --------------------------------------------------- |
+| Using git diff to limit review scope | Review ALL source files under target path           |
+| Skipping verification step           | Always verify subagent findings against actual code |
+| Reporting unverified issues          | Only include verified findings in final report      |
 
 ## Completion Criteria
 

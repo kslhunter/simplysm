@@ -39,7 +39,9 @@ README.md is the **sole API documentation source for Claude Code**. When Claude 
 ## Installation
 
 ## Main Modules
+
 ### {Category matching index.ts #region}
+
 - Description + code examples per export
 
 ## Types
@@ -50,6 +52,7 @@ README.md is the **sole API documentation source for Claude Code**. When Claude 
 ### docs/ Subfolder Rules
 
 When README exceeds ~500 lines, split detailed documentation into `docs/`:
+
 - README.md becomes an **overview/index** with links: `[functionName](docs/category.md#anchor)`
 - docs/ files contain detailed descriptions, full code examples, parameter tables
 - File organization follows index.ts `#region` (e.g., `docs/types.md`, `docs/utils.md`)
@@ -83,14 +86,15 @@ Map each documented item to its current documentation content.
 
 Compare export map (Step 2) against documentation map (Step 3):
 
-| Status | Meaning |
-|--------|---------|
-| **ADDED** | Exported in source but not in README |
-| **REMOVED** | In README but no longer exported |
+| Status      | Meaning                              |
+| ----------- | ------------------------------------ |
+| **ADDED**   | Exported in source but not in README |
+| **REMOVED** | In README but no longer exported     |
 | **CHANGED** | Both exist but API signature differs |
-| **OK** | Documentation matches source |
+| **OK**      | Documentation matches source         |
 
 **Report to user before editing:**
+
 ```
 ADDED (3):
   - strToCamelCase (from utils/str.ts)
@@ -131,6 +135,7 @@ When `$ARGUMENTS` is empty:
 2. Launch **parallel subagents** (`subagent_type: "general-purpose"`, `model: "sonnet"`) — one per package + one for project root:
 
 **Per-package subagent prompt template:**
+
 ```
 Update README.md for package {pkg-name} at {pkg-path}.
 
@@ -160,6 +165,7 @@ STEPS:
 ```
 
 **Project root subagent prompt:**
+
 ```
 Update the project root README.md at {project-root}/README.md.
 Read CLAUDE.md for project context.
@@ -172,14 +178,14 @@ Report what was changed.
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc |
-| Rewriting OK sections | Only touch ADDED/REMOVED/CHANGED items |
-| Ignoring existing docs/ structure | If docs/ exists, update those files too |
-| Arbitrary section reorganization | Follow index.ts `#region` structure |
-| Missing import paths in examples | Always: `import { X } from "@simplysm/..."` |
-| Writing in Korean | README must be in English |
-| Adding changelog sections | Never add version history |
-| Editing before reporting diff | Always report ADDED/REMOVED/CHANGED and wait for confirmation |
-| Destroying docs/ link format | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |
+| Mistake                               | Fix                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| Skipping exports with @internal JSDoc | Document ALL exports — Claude Code doesn't read JSDoc               |
+| Rewriting OK sections                 | Only touch ADDED/REMOVED/CHANGED items                              |
+| Ignoring existing docs/ structure     | If docs/ exists, update those files too                             |
+| Arbitrary section reorganization      | Follow index.ts `#region` structure                                 |
+| Missing import paths in examples      | Always: `import { X } from "@simplysm/..."`                         |
+| Writing in Korean                     | README must be in English                                           |
+| Adding changelog sections             | Never add version history                                           |
+| Editing before reporting diff         | Always report ADDED/REMOVED/CHANGED and wait for confirmation       |
+| Destroying docs/ link format          | If README uses `[name](docs/file.md#anchor)`, preserve that pattern |
