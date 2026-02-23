@@ -9,14 +9,6 @@ export * from "./components/form-control/select/Select";
 // SelectList
 export * from "./components/form-control/select-list/SelectList";
 
-// DataSelectButton
-export * from "./components/form-control/data-select-button/DataSelectButton";
-
-// SharedData wrappers
-export * from "./components/form-control/shared-data/SharedDataSelect";
-export * from "./components/form-control/shared-data/SharedDataSelectButton";
-export * from "./components/form-control/shared-data/SharedDataSelectList";
-
 // Combobox
 export * from "./components/form-control/combobox/Combobox";
 
@@ -68,12 +60,7 @@ export * from "./components/data/Pagination";
 export * from "./components/data/sheet/DataSheet";
 export * from "./components/data/sheet/DataSheet.styles";
 export * from "./components/data/sheet/types";
-export * from "./components/data/crud-sheet/CrudSheet";
-export * from "./components/data/crud-sheet/types";
-export * from "./components/data/crud-detail/CrudDetail";
-export * from "./components/data/crud-detail/types";
 export * from "./components/data/calendar/Calendar";
-export * from "./components/data/permission-table/PermissionTable";
 export * from "./components/data/kanban/Kanban";
 export * from "./components/data/kanban/KanbanContext";
 
@@ -186,6 +173,25 @@ export * from "./helpers/createAppStructure";
 //#region ========== Features ==========
 
 // Address
-export * from "./features/address/AddressSearch";
+export * from "./components/features/address/AddressSearch";
+
+// SharedData wrappers
+export * from "./components/features/shared-data/SharedDataSelect";
+export * from "./components/features/shared-data/SharedDataSelectButton";
+export * from "./components/features/shared-data/SharedDataSelectList";
+
+// DataSelectButton
+export * from "./components/features/data-select-button/DataSelectButton";
+
+// CrudSheet
+export * from "./components/features/crud-sheet/CrudSheet";
+export * from "./components/features/crud-sheet/types";
+
+// CrudDetail
+export * from "./components/features/crud-detail/CrudDetail";
+export * from "./components/features/crud-detail/types";
+
+// PermissionTable
+export * from "./components/features/permission-table/PermissionTable";
 
 //#endregion

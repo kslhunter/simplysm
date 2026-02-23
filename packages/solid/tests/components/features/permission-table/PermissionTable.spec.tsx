@@ -6,7 +6,7 @@ import {
   collectAllPerms,
   filterByModules,
   changePermCheck,
-} from "../../../../src/components/data/permission-table/PermissionTable";
+} from "../../../../src/components/features/permission-table/PermissionTable";
 import type { AppPerm } from "../../../../src/helpers/createAppStructure";
 
 // --- 테스트 데이터 ---

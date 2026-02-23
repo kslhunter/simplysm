@@ -4,20 +4,20 @@ import { render } from "@solidjs/testing-library";
 import {
   CrudSheetColumn,
   isCrudSheetColumnDef,
-} from "../../../../src/components/data/crud-sheet/CrudSheetColumn";
+} from "../../../../src/components/features/crud-sheet/CrudSheetColumn";
 import {
   CrudSheetFilter,
   isCrudSheetFilterDef,
-} from "../../../../src/components/data/crud-sheet/CrudSheetFilter";
+} from "../../../../src/components/features/crud-sheet/CrudSheetFilter";
 import {
   CrudSheetTools,
   isCrudSheetToolsDef,
-} from "../../../../src/components/data/crud-sheet/CrudSheetTools";
+} from "../../../../src/components/features/crud-sheet/CrudSheetTools";
 import {
   CrudSheetHeader,
   isCrudSheetHeaderDef,
-} from "../../../../src/components/data/crud-sheet/CrudSheetHeader";
-import { CrudSheet } from "../../../../src/components/data/crud-sheet/CrudSheet";
+} from "../../../../src/components/features/crud-sheet/CrudSheetHeader";
+import { CrudSheet } from "../../../../src/components/features/crud-sheet/CrudSheet";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { DialogInstanceContext } from "../../../../src/components/disclosure/DialogInstanceContext";

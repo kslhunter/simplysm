@@ -14,9 +14,9 @@ import { createControllableStore } from "../../../hooks/createControllableStore"
 import type { DateTime } from "@simplysm/core-common";
 import { objClone, objGetChainValue } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
-import type { SortingDef } from "../sheet/types";
-import { DataSheet } from "../sheet/DataSheet";
-import { DataSheetColumn } from "../sheet/DataSheetColumn";
+import type { SortingDef } from "../../data/sheet/types";
+import { DataSheet } from "../../data/sheet/DataSheet";
+import { DataSheetColumn } from "../../data/sheet/DataSheetColumn";
 import { BusyContainer } from "../../feedback/busy/BusyContainer";
 import { useNotification } from "../../feedback/notification/NotificationContext";
 import { Button } from "../../form-control/Button";

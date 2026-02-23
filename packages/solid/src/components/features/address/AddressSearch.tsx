@@ -1,6 +1,6 @@
 import { type Component, createSignal, onMount } from "solid-js";
-import { BusyContainer } from "../../components/feedback/busy/BusyContainer";
-import { useDialogInstance } from "../../components/disclosure/DialogInstanceContext";
+import { BusyContainer } from "../../feedback/busy/BusyContainer";
+import { useDialogInstance } from "../../disclosure/DialogInstanceContext";
 
 export interface AddressSearchResult {
   postNumber: string | undefined;

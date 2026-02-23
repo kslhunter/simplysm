@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import type { CrudSheetColumnDef, CrudSheetColumnProps } from "./types";
-import { normalizeHeader } from "../sheet/sheetUtils";
+import { normalizeHeader } from "../../data/sheet/sheetUtils";
 
 export function isCrudSheetColumnDef(value: unknown): value is CrudSheetColumnDef<unknown> {
   return (

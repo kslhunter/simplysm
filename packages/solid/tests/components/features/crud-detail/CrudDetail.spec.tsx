@@ -5,20 +5,20 @@ import type {
   CrudDetailToolsDef,
   CrudDetailBeforeDef,
   CrudDetailAfterDef,
-} from "../../../../src/components/data/crud-detail/types";
+} from "../../../../src/components/features/crud-detail/types";
 import {
   CrudDetailTools,
   isCrudDetailToolsDef,
-} from "../../../../src/components/data/crud-detail/CrudDetailTools";
+} from "../../../../src/components/features/crud-detail/CrudDetailTools";
 import {
   CrudDetailBefore,
   isCrudDetailBeforeDef,
-} from "../../../../src/components/data/crud-detail/CrudDetailBefore";
+} from "../../../../src/components/features/crud-detail/CrudDetailBefore";
 import {
   CrudDetailAfter,
   isCrudDetailAfterDef,
-} from "../../../../src/components/data/crud-detail/CrudDetailAfter";
-import { CrudDetail } from "../../../../src/components/data/crud-detail/CrudDetail";
+} from "../../../../src/components/features/crud-detail/CrudDetailAfter";
+import { CrudDetail } from "../../../../src/components/features/crud-detail/CrudDetail";
 import { ConfigContext } from "../../../../src/providers/ConfigContext";
 import { NotificationProvider } from "../../../../src/components/feedback/notification/NotificationProvider";
 import { Topbar } from "../../../../src/components/layout/topbar/Topbar";

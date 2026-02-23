@@ -13,7 +13,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { IconSearch, IconX } from "@tabler/icons-solidjs";
 import { Icon } from "../../display/Icon";
-import { Invalid } from "../Invalid";
+import { Invalid } from "../../form-control/Invalid";
 import { useDialog, type DialogShowOptions } from "../../disclosure/DialogContext";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { type ComponentSize, textMuted } from "../../../styles/tokens.styles";
@@ -22,7 +22,7 @@ import {
   triggerDisabledClass,
   triggerInsetClass,
   triggerSizeClasses,
-} from "../DropdownTrigger.styles";
+} from "../../form-control/DropdownTrigger.styles";
 
 /** 모달에서 반환하는 결과 인터페이스 */
 export interface DataSelectModalResult<TKey> {

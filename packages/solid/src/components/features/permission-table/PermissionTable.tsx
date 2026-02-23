@@ -11,7 +11,7 @@ import {
 } from "solid-js";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { DataSheet } from "../sheet/DataSheet";
+import { DataSheet } from "../../data/sheet/DataSheet";
 import { Checkbox } from "../../form-control/checkbox/Checkbox";
 import { borderDefault } from "../../../styles/tokens.styles";
 import type { AppPerm } from "../../../helpers/createAppStructure";

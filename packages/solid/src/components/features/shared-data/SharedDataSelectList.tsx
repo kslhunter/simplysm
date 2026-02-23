@@ -1,7 +1,7 @@
 import { createMemo, type JSX, Show, splitProps } from "solid-js";
 import { IconExternalLink } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
-import { SelectList } from "../select-list/SelectList";
+import { SelectList } from "../../form-control/select-list/SelectList";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
 

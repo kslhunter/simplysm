@@ -1,8 +1,8 @@
 import { render, waitFor } from "@solidjs/testing-library";
 import { describe, it, expect } from "vitest";
-import { DialogProvider } from "../../../src/components/disclosure/DialogProvider";
-import { useDialog } from "../../../src/components/disclosure/DialogContext";
-import { AddressSearchContent } from "../../../src/features/address/AddressSearch";
+import { DialogProvider } from "../../../../src/components/disclosure/DialogProvider";
+import { useDialog } from "../../../../src/components/disclosure/DialogContext";
+import { AddressSearchContent } from "../../../../src/components/features/address/AddressSearch";
 
 function TestApp() {
   const dialog = useDialog();

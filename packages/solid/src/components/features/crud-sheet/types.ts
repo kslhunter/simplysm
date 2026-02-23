@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
 import type { ArrayDiffs2Result } from "@simplysm/core-common";
-import type { DataSheetColumnProps, SortingDef } from "../sheet/types";
+import type { DataSheetColumnProps, SortingDef } from "../../data/sheet/types";
 
 // ── Search ──
 

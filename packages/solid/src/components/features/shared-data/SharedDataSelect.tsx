@@ -1,7 +1,7 @@
 import { createMemo, type JSX, mergeProps, splitProps } from "solid-js";
 import { IconEdit, IconSearch } from "@tabler/icons-solidjs";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
-import { Select, type SelectProps } from "../select/Select";
+import { Select, type SelectProps } from "../../form-control/select/Select";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
 import { type ComponentSize } from "../../../styles/tokens.styles";
