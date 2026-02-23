@@ -11,7 +11,8 @@ import {
 } from "solid-js";
 import { createStore, produce, reconcile } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
-import { objClone } from "@simplysm/core-common";
+import type { DateTime } from "@simplysm/core-common";
+import { objClone, objGetChainValue } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../sheet/types";
 import { DataSheet } from "../sheet/DataSheet";
@@ -73,8 +74,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "itemDeletable",
     "itemDeleted",
     "isItemSelectable",
-    "lastModifiedAt",
-    "lastModifiedBy",
+    "lastModifiedAtProp",
+    "lastModifiedByProp",
     "onSubmitted",
     "filterInitial",
     "items",
@@ -706,33 +707,25 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </For>
 
             {/* Auto lastModified columns */}
-            <Show when={local.lastModifiedAt}>
-              <DataSheetColumn<TItem>
-                key="__lastModifiedAt"
-                header="수정일시"
-                hidden
-                sortable={false}
-                resizable={false}
-              >
+            <Show when={local.lastModifiedAtProp}>
+              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header="수정일시" hidden>
                 {(dsCtx) => (
-                  <div class="px-2 py-0.5 text-center">
-                    {local.lastModifiedAt!(dsCtx.item)?.toFormatString("yyyy-MM-dd HH:mm")}
+                  <div class="px-2 py-1 text-center">
+                    {(
+                      objGetChainValue(dsCtx.item, local.lastModifiedAtProp!, true) as
+                        | DateTime
+                        | undefined
+                    )?.toFormatString("yyyy-MM-dd HH:mm")}
                   </div>
                 )}
               </DataSheetColumn>
             </Show>
 
-            <Show when={local.lastModifiedBy}>
-              <DataSheetColumn<TItem>
-                key="__lastModifiedBy"
-                header="수정자"
-                hidden
-                sortable={false}
-                resizable={false}
-              >
+            <Show when={local.lastModifiedByProp}>
+              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header="수정자" hidden>
                 {(dsCtx) => (
-                  <div class="px-2 py-0.5 text-center">
-                    {local.lastModifiedBy!(dsCtx.item)}
+                  <div class="px-2 py-1 text-center">
+                    {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
                   </div>
                 )}
               </DataSheetColumn>

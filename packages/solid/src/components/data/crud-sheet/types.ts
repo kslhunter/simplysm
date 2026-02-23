@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
-import type { ArrayDiffs2Result, DateTime } from "@simplysm/core-common";
+import type { ArrayDiffs2Result } from "@simplysm/core-common";
 import type { DataSheetColumnProps, SortingDef } from "../sheet/types";
 
 // ── Search ──
@@ -88,8 +88,8 @@ interface CrudSheetBaseProps<TItem, TFilter extends Record<string, any>> {
   itemDeletable?: (item: TItem) => boolean;
   itemDeleted?: (item: TItem) => boolean;
   isItemSelectable?: (item: TItem) => boolean | string;
-  lastModifiedAt?: (item: TItem) => DateTime | undefined;
-  lastModifiedBy?: (item: TItem) => string | undefined;
+  lastModifiedAtProp?: string;
+  lastModifiedByProp?: string;
   filterInitial?: TFilter;
   items?: TItem[];
   onItemsChange?: (items: TItem[]) => void;
