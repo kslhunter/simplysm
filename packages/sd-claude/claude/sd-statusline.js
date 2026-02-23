@@ -8,8 +8,6 @@ import { stdin } from "process";
 
 const STDIN_TIMEOUT_MS = 5000;
 const FETCH_TIMEOUT_MS = 3000;
-const PROGRESS_BAR_SIZE = 5;
-const PROGRESS_BAR_UNIT = 100 / PROGRESS_BAR_SIZE; // 20
 
 //#endregion
 
@@ -164,19 +162,6 @@ function formatTimeRemaining(isoDate) {
   }
 }
 
-/**
- * 퍼센트 값을 5칸 프로그레스 바 문자열로 변환한다.
- * 각 칸은 20%를 나타내며, 채워진 칸은 ■, 빈 칸은 □로 표시한다.
- * @param {number} percent - 0~100 범위의 퍼센트 값
- * @returns {string} 5글자 프로그레스 바 문자열 (예: "■■■□□")
- */
-function formatProgressBar(percent) {
-  const clamped = Math.min(Math.max(percent, 0), 100);
-  const filled = Math.round(clamped / PROGRESS_BAR_UNIT);
-  const empty = PROGRESS_BAR_SIZE - filled;
-  return "■".repeat(filled) + "□".repeat(empty);
-}
-
 //#endregion
 
 //#region Main
@@ -257,12 +242,11 @@ async function main() {
   const folderName = path.basename(cwd);
 
   // 출력
-  const ctxBar = formatProgressBar(contextPercent);
-  const dailyBar = dailyPercent !== "?" ? formatProgressBar(Number(dailyPercent)) : "□□□□□";
-  const weekBar = weekPercent !== "?" ? formatProgressBar(Number(weekPercent)) : "□□□□□";
-  console.log(
-    `${modelName} ${ctxBar} ${contextPercent}% ─ ${dailyResetTime} ${dailyBar} ${dailyPercent}% ─ ${weekResetDay} ${weekBar} ${weekPercent}% ─ ${extraUsage} ─ ${folderName}`,
-  );
+  const dailyStr = dailyResetTime ? `${dailyPercent}%(${dailyResetTime})` : `${dailyPercent}%`;
+  const weekStr = weekResetDay ? `${weekPercent}%(${weekResetDay})` : `${weekPercent}%`;
+  const parts = [folderName, modelName, `${contextPercent}%`, dailyStr, weekStr];
+  if (extraUsage) parts.push(extraUsage);
+  console.log(parts.join(" │ "));
 }
 
 void main();

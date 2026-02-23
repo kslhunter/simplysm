@@ -32,7 +32,8 @@ export const indicatorBaseClass = clsx(
   "size-4",
   "border",
   borderDefault,
-  bgSurface,
+  // bgSurface,
+  "bg-primary-50 dark:bg-primary-950/30",
   "transition-colors",
 );
 

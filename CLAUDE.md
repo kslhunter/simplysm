@@ -107,6 +107,16 @@ core-common → core-browser / core-node → orm-common / service-common → orm
 
 When modifying code, review and update related tests (`packages/{pkg}/tests/`) and demos (`packages/solid-demo/src/`).
 
+## Migration Rules
+
+When porting/migrating code from another codebase (e.g., v12 Angular → v13 SolidJS):
+
+1. **Before starting**: Read the original source thoroughly and list ALL features, props, callbacks, and behaviors.
+2. **Feature parity check**: After implementation, compare 1:1 with the original. Every omission or behavioral difference must be explicitly reported to the user.
+3. **No silent omissions**: Never silently drop features, props, or behaviors. If something is intentionally excluded, explain why and get approval.
+4. **No silent additions**: Never add new props or behaviors that didn't exist in the original without explaining the reason and getting approval.
+5. **Design changes require discussion**: If the migration requires a different design approach (e.g., changing from key-based selection to object-reference selection), discuss the trade-offs with the user before proceeding.
+
 ## Workflow
 
 After writing code: verify with `/sd-check`.

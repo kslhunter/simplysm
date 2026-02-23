@@ -19,7 +19,7 @@ export interface InlineEditConfig<TItem> {
 }
 
 export interface ModalEditConfig<TItem> {
-  editItem: (item?: TItem) => Promise<boolean>;
+  editItem: (item?: TItem) => Promise<boolean | undefined>;
   deleteItems?: (items: TItem[]) => Promise<boolean>;
 }
 
