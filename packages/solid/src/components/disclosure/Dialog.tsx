@@ -23,7 +23,7 @@ import { mergeStyles } from "../../helpers/mergeStyles";
 import { Icon } from "../display/Icon";
 import { borderSubtle } from "../../styles/tokens.styles";
 import { DialogDefaultsContext } from "./DialogContext";
-import { bringToFront, registerDialog, unregisterDialog } from "./dialogZIndex";
+import { bringToFront, registerDialog, unregisterDialog, isTopmost } from "./dialogZIndex";
 import { Button } from "../form-control/Button";
 
 interface DialogSlotsContextValue {
@@ -238,10 +238,15 @@ export const Dialog: DialogComponent = (props) => {
   // Escape 키 감지
   createEffect(() => {
     if (!open()) return;
-    if (!closeOnEscape()) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key !== "Escape") return;
+
+      const el = wrapperRef();
+      if (!el || !isTopmost(el)) return;
+
+      if (closeOnEscape()) {
+        e.stopImmediatePropagation();
         tryClose();
       }
     };

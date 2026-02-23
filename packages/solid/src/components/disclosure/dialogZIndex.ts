@@ -41,3 +41,8 @@ function reindex(): void {
     stack[i].style.zIndex = (BASE_Z + i).toString();
   }
 }
+
+/** 해당 Dialog가 스택 최상위인지 확인 */
+export function isTopmost(el: HTMLElement): boolean {
+  return stack.length > 0 && stack[stack.length - 1] === el;
+}
