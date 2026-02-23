@@ -101,31 +101,43 @@ export class SdExcelXmlDrawing implements ISdExcelXml {
     const name = `Picture ${picId}`;
 
     anchors.push({
-      from: [{
-        col: [opts.c.toString()],
-        colOff: [((opts.left ?? 0) * 9525).toString()],
-        row: [opts.r.toString()],
-        rowOff: [((opts.top ?? 0) * 9525).toString()],
-      }],
-      ext: [{
-        $: {
-          cx: (opts.width * 9525).toString(),
-          cy: (opts.height * 9525).toString(),
+      from: [
+        {
+          col: [opts.c.toString()],
+          colOff: [((opts.left ?? 0) * 9525).toString()],
+          row: [opts.r.toString()],
+          rowOff: [((opts.top ?? 0) * 9525).toString()],
         },
-      }],
-      pic: [{
-        nvPicPr: [{
-          cNvPr: [{ $: { id: picId.toString(), name } }],
-          cNvPicPr: [{ "a:picLocks": [{ $: { noChangeAspect: "1" } }] }],
-        }],
-        blipFill: [{
-          "a:blip": [{ $: { "r:embed": opts.blipRelId } }],
-          "a:stretch": [{ "a:fillRect": [] }],
-        }],
-        spPr: [{
-          "a:prstGeom": [{ $: { prst: "rect" }, "a:avLst": [] }],
-        }],
-      }],
+      ],
+      ext: [
+        {
+          $: {
+            cx: (opts.width * 9525).toString(),
+            cy: (opts.height * 9525).toString(),
+          },
+        },
+      ],
+      pic: [
+        {
+          nvPicPr: [
+            {
+              cNvPr: [{ $: { id: picId.toString(), name } }],
+              cNvPicPr: [{ "a:picLocks": [{ $: { noChangeAspect: "1" } }] }],
+            },
+          ],
+          blipFill: [
+            {
+              "a:blip": [{ $: { "r:embed": opts.blipRelId } }],
+              "a:stretch": [{ "a:fillRect": [] }],
+            },
+          ],
+          spPr: [
+            {
+              "a:prstGeom": [{ "$": { prst: "rect" }, "a:avLst": [] }],
+            },
+          ],
+        },
+      ],
       clientData: [{}],
     });
   }

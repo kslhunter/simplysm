@@ -12,7 +12,6 @@
   transform: translateY(-1em);
   animation-fill-mode: forwards;
 
-
   &:hover,
   &:focus-within {
     @include mixins.elevation(4);

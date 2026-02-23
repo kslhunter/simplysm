@@ -6,36 +6,36 @@ export class SdExcelXmlContentType implements ISdExcelXml {
   constructor(data?: ISdExcelXmlContentTypeData) {
     if (data == null) {
       this.data = {
-        "Types": {
-          "$": {
-            "xmlns": "http://schemas.openxmlformats.org/package/2006/content-types",
+        Types: {
+          $: {
+            xmlns: "http://schemas.openxmlformats.org/package/2006/content-types",
           },
-          "Default": [
+          Default: [
             {
-              "$": {
-                "Extension": "rels",
-                "ContentType": "application/vnd.openxmlformats-package.relationships+xml",
+              $: {
+                Extension: "rels",
+                ContentType: "application/vnd.openxmlformats-package.relationships+xml",
               },
             },
             {
-              "$": {
-                "Extension": "xml",
-                "ContentType": "application/xml",
+              $: {
+                Extension: "xml",
+                ContentType: "application/xml",
               },
             },
           ],
-          "Override": [
+          Override: [
             {
-              "$": {
-                "PartName": "/xl/workbook.xml",
-                "ContentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+              $: {
+                PartName: "/xl/workbook.xml",
+                ContentType:
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
               },
             },
           ],
         },
       };
-    }
-    else {
+    } else {
       this.data = data;
     }
   }
@@ -43,9 +43,9 @@ export class SdExcelXmlContentType implements ISdExcelXml {
   add(partName: string, contentType: string): this {
     if (!this.data.Types.Override.some((item: any) => item.$.PartName === partName)) {
       this.data.Types.Override.push({
-        "$": {
-          "PartName": partName,
-          "ContentType": contentType,
+        $: {
+          PartName: partName,
+          ContentType: contentType,
         },
       });
     }
@@ -53,6 +53,5 @@ export class SdExcelXmlContentType implements ISdExcelXml {
     return this;
   }
 
-  cleanup() {
-  }
+  cleanup() {}
 }

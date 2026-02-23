@@ -284,11 +284,14 @@ export class SdExcelWorksheet {
   }> {
     // 1. Sheet Rels에서 기존 drawing 관계 검색
     const sheetRelsPath = `xl/worksheets/_rels/${this._targetFileName}.rels`;
-    let sheetRels = (await this._zipCache.getAsync(sheetRelsPath)) as SdExcelXmlRelationShip | undefined;
+    let sheetRels = (await this._zipCache.getAsync(sheetRelsPath)) as
+      | SdExcelXmlRelationShip
+      | undefined;
     sheetRels = sheetRels ?? new SdExcelXmlRelationShip();
 
-    const existingDrawingRel = sheetRels.data.Relationships.Relationship
-      ?.single((rel: any) => /drawing[0-9]/.test(rel.$.Target));
+    const existingDrawingRel = sheetRels.data.Relationships.Relationship?.single((rel: any) =>
+      /drawing[0-9]/.test(rel.$.Target),
+    );
 
     let drawingIndex: number;
     let wsRelId: number;
@@ -319,13 +322,18 @@ export class SdExcelWorksheet {
     drawing = drawing ?? new SdExcelXmlDrawing();
     this._zipCache.set(drawingPath, drawing);
 
-    let drawingRels = (await this._zipCache.getAsync(drawingRelsPath)) as SdExcelXmlRelationShip | undefined;
+    let drawingRels = (await this._zipCache.getAsync(drawingRelsPath)) as
+      | SdExcelXmlRelationShip
+      | undefined;
     drawingRels = drawingRels ?? new SdExcelXmlRelationShip();
     this._zipCache.set(drawingRelsPath, drawingRels);
 
     // 3. [Content_Types] - drawing 타입 등록 (중복 체크)
     const typeXml = (await this._zipCache.getAsync("[Content_Types].xml")) as SdExcelXmlContentType;
-    typeXml.add(`/xl/drawings/drawing${drawingIndex}.xml`, "application/vnd.openxmlformats-officedocument.drawing+xml");
+    typeXml.add(
+      `/xl/drawings/drawing${drawingIndex}.xml`,
+      "application/vnd.openxmlformats-officedocument.drawing+xml",
+    );
 
     // 4. Worksheet XML - drawing 참조 (중복 체크)
     const wsXml = await this._getWsDataAsync();

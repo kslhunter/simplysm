@@ -31,7 +31,8 @@ export default {
         if (!args?.[0] || args[0].type !== "ObjectExpression") return;
 
         const templateProp = args[0].properties.find(
-          (p) => p.type === "Property" && p.key?.type === "Identifier" && p.key?.name === "template"
+          (p) =>
+            p.type === "Property" && p.key?.type === "Identifier" && p.key?.name === "template",
         );
 
         if (!templateProp) return;
@@ -54,7 +55,7 @@ export default {
             node.accessibility === "protected" &&
             node.readonly === true &&
             !node.static &&
-            node.key?.type === "Identifier"
+            node.key?.type === "Identifier",
         );
 
         for (const field of protectedReadonlyFields) {
@@ -63,7 +64,7 @@ export default {
           // 템플릿에서 사용 여부
           // \b는 $로 시작하는 identifier에서 동작 안 함 → lookahead/lookbehind 사용
           const identifierPattern = new RegExp(
-            `(?<![a-zA-Z0-9_$])${escapeRegExp(fieldName)}(?![a-zA-Z0-9_$])`
+            `(?<![a-zA-Z0-9_$])${escapeRegExp(fieldName)}(?![a-zA-Z0-9_$])`,
           );
           const usedInTemplate = identifierPattern.test(templateText);
 

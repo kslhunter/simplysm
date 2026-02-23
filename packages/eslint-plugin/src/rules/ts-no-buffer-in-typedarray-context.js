@@ -1,22 +1,29 @@
 import ts from "typescript";
-import { ESLintUtils } from '@typescript-eslint/utils';
+import { ESLintUtils } from "@typescript-eslint/utils";
 
 const TYPED_ARRAY_NAMES = new Set([
-  'Uint8Array', 'Uint8ClampedArray',
-  'Int8Array', 'Uint16Array', 'Int16Array',
-  'Uint32Array', 'Int32Array',
-  'Float32Array', 'Float64Array',
+  "Uint8Array",
+  "Uint8ClampedArray",
+  "Int8Array",
+  "Uint16Array",
+  "Int16Array",
+  "Uint32Array",
+  "Int32Array",
+  "Float32Array",
+  "Float64Array",
 ]);
 
 export default {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Disallow Buffer being used directly in TypedArray contexts. Use new TypedArray(buffer) instead.',
-      recommended: 'error',
+      description:
+        "Disallow Buffer being used directly in TypedArray contexts. Use new TypedArray(buffer) instead.",
+      recommended: "error",
     },
     messages: {
-      directBuffer: 'Do not use Buffer directly where {{expected}} is expected. Use new {{expected}}(buffer) instead.',
+      directBuffer:
+        "Do not use Buffer directly where {{expected}} is expected. Use new {{expected}}(buffer) instead.",
     },
     schema: [],
   },
@@ -39,7 +46,7 @@ export default {
     }
 
     function isBuffer(type) {
-      return getTypeName(type) === 'Buffer';
+      return getTypeName(type) === "Buffer";
     }
 
     function isTypedArray(type) {
@@ -57,7 +64,7 @@ export default {
           const expr = current.expression;
           if (
             expr.expression.kind === ts.SyntaxKind.Identifier &&
-            expr.expression.escapedText === 'Buffer'
+            expr.expression.escapedText === "Buffer"
           ) {
             return true;
           }
@@ -79,15 +86,15 @@ export default {
 
       context.report({
         node,
-        messageId: 'directBuffer',
+        messageId: "directBuffer",
         data: {
-          expected: getTypeName(expectedType) || 'TypedArray',
+          expected: getTypeName(expectedType) || "TypedArray",
         },
       });
     }
 
     function checkTypedAssignment(lhsNode, rhsNode) {
-      if (lhsNode.type !== 'Identifier') return;
+      if (lhsNode.type !== "Identifier") return;
 
       const lhsTsNode = parserServices.esTreeNodeToTSNodeMap.get(lhsNode);
       const expectedType = getCachedType(lhsTsNode);
@@ -140,8 +147,8 @@ export default {
       },
 
       ArrayExpression(node) {
-        node.elements.forEach(el => {
-          if (el && el.type !== 'SpreadElement') {
+        node.elements.forEach((el) => {
+          if (el && el.type !== "SpreadElement") {
             const tsNode = parserServices.esTreeNodeToTSNodeMap.get(el);
             const contextualType = checker.getContextualType(tsNode);
             if (contextualType) {

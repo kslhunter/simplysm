@@ -1,6 +1,6 @@
-import { afterAll, describe, it } from 'vitest';
-import { RuleTester } from '@typescript-eslint/rule-tester';
-import rule from '../src/rules/ts-no-buffer-in-typedarray-context.js';
+import { afterAll, describe, it } from "vitest";
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import rule from "../src/rules/ts-no-buffer-in-typedarray-context.js";
 
 // vitest 훅 바인딩
 RuleTester.afterAll = afterAll;
@@ -12,16 +12,16 @@ const ruleTester = new RuleTester({
   languageOptions: {
     parserOptions: {
       projectService: {
-        allowDefaultProject: ['*.ts*'],
+        allowDefaultProject: ["*.ts*"],
       },
     },
   },
 });
 
-describe('ts-no-buffer-in-typedarray-context 규칙', () => {
-  describe('허용되는 코드들 (valid)', () => {
-    describe('Buffer를 new TypedArray(buffer)로 감싸서 사용하는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+describe("ts-no-buffer-in-typedarray-context 규칙", () => {
+  describe("허용되는 코드들 (valid)", () => {
+    describe("Buffer를 new TypedArray(buffer)로 감싸서 사용하는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [
           {
             code: `
@@ -34,8 +34,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('TypedArray를 반환할 때 Buffer를 변환해서 사용하는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("TypedArray를 반환할 때 Buffer를 변환해서 사용하는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [
           {
             code: `
@@ -50,8 +50,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('TypedArray를 받는 함수에 Buffer가 아닌 TypedArray 인스턴스를 넘기는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("TypedArray를 받는 함수에 Buffer가 아닌 TypedArray 인스턴스를 넘기는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [
           {
             code: `
@@ -66,9 +66,9 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
     });
   });
 
-  describe('오류가 발생해야 하는 코드들 (invalid)', () => {
-    describe('Buffer를 TypedArray 타입 변수에 직접 할당하는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+  describe("오류가 발생해야 하는 코드들 (invalid)", () => {
+    describe("Buffer를 TypedArray 타입 변수에 직접 할당하는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -78,8 +78,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Uint8Array' },
+                messageId: "directBuffer",
+                data: { expected: "Uint8Array" },
               },
             ],
           },
@@ -87,8 +87,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('Buffer를 TypedArray를 기대하는 함수 인자에 직접 전달하는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("Buffer를 TypedArray를 기대하는 함수 인자에 직접 전달하는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -99,8 +99,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Float32Array' },
+                messageId: "directBuffer",
+                data: { expected: "Float32Array" },
               },
             ],
           },
@@ -108,8 +108,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('Buffer를 TypedArray를 반환해야 하는 함수에서 직접 반환하는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("Buffer를 TypedArray를 반환해야 하는 함수에서 직접 반환하는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -121,8 +121,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Int16Array' },
+                messageId: "directBuffer",
+                data: { expected: "Int16Array" },
               },
             ],
           },
@@ -130,8 +130,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('TypedArray 배열에 Buffer를 직접 넣는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("TypedArray 배열에 Buffer를 직접 넣는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -141,8 +141,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Uint8Array' },
+                messageId: "directBuffer",
+                data: { expected: "Uint8Array" },
               },
             ],
           },
@@ -150,8 +150,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('객체 속성에 TypedArray를 기대하는데 Buffer를 넣는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("객체 속성에 TypedArray를 기대하는데 Buffer를 넣는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -161,8 +161,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Int32Array' },
+                messageId: "directBuffer",
+                data: { expected: "Int32Array" },
               },
             ],
           },
@@ -170,8 +170,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('조건부 표현식에서 Buffer가 TypedArray로 기대되는 경우', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("조건부 표현식에서 Buffer가 TypedArray로 기대되는 경우", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [],
         invalid: [
           {
@@ -181,8 +181,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
             `,
             errors: [
               {
-                messageId: 'directBuffer',
-                data: { expected: 'Uint8Array' },
+                messageId: "directBuffer",
+                data: { expected: "Uint8Array" },
               },
             ],
           },
@@ -190,8 +190,8 @@ describe('ts-no-buffer-in-typedarray-context 규칙', () => {
       });
     });
 
-    describe('Buffer 사용이 허용되어야 하는 Buffer.정적메서드 호출', () => {
-      ruleTester.run('ts-no-buffer-in-typedarray-context', rule, {
+    describe("Buffer 사용이 허용되어야 하는 Buffer.정적메서드 호출", () => {
+      ruleTester.run("ts-no-buffer-in-typedarray-context", rule, {
         valid: [
           {
             code: `

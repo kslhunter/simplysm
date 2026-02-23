@@ -15,9 +15,11 @@ export function useFullPageCodeSignal() {
     { initialValue: router.url },
   );
 
-  return $computed(() => url()
-    .split("/")
-    .slice(2)
-    .map((item) => item.split(/[;?]/).first())
-    .join("."));
+  return $computed(() =>
+    url()
+      .split("/")
+      .slice(2)
+      .map((item) => item.split(/[;?]/).first())
+      .join("."),
+  );
 }

@@ -52,7 +52,11 @@ export class SdCliElectron {
     });
   }
 
-  private static async _loadDevConfig(opt: { package: string; config: string; options?: string[] }) {
+  private static async _loadDevConfig(opt: {
+    package: string;
+    config: string;
+    options?: string[];
+  }) {
     const projConf = await loadProjConfAsync(process.cwd(), true, opt);
     const pkgConf = projConf.packages[opt.package];
     if (pkgConf?.type !== "client" || pkgConf.builder?.electron === undefined) {

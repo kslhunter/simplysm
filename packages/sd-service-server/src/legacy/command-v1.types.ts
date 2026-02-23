@@ -1,4 +1,3 @@
-
 /** @deprecated */
 export interface ISdServiceMethodCommandInfo {
   serviceName: string;

@@ -129,7 +129,11 @@ export class SdToastProvider {
     return this._show("danger", message, useProgress);
   }
 
-  private _show(theme: "info" | "success" | "warning" | "danger", message: string, useProgress: boolean) {
+  private _show(
+    theme: "info" | "success" | "warning" | "danger",
+    message: string,
+    useProgress: boolean,
+  ) {
     this.beforeShowFn?.(theme);
 
     if (this.alertThemes().includes(theme)) {

@@ -36,7 +36,7 @@ export abstract class CordovaUsbStorage {
    */
   static async requestPermission(filter: {
     vendorId: number;
-    productId: number
+    productId: number;
   }): Promise<boolean> {
     return await new Promise((resolve, reject) => {
       cordova.exec(

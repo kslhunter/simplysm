@@ -48,7 +48,7 @@ export function provideSdAngular(opt: {
     },
     provideNgIconsConfig({
       strokeWidth: 1.5,
-      size: "1.33em"
+      size: "1.33em",
     }),
     provideEnvironmentInitializer(() => {
       const _sdNgConf = inject(SdAngularConfigProvider);

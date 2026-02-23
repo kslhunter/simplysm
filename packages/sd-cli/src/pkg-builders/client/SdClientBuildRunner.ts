@@ -15,7 +15,7 @@ export class SdClientBuildRunner extends SdBuildRunnerBase<"client"> {
 
   private _ngBundlers?: SdNgBundler[];
   private _cordova?: SdCliCordova;
-  private _capacitor?: SdCliCapacitor
+  private _capacitor?: SdCliCapacitor;
 
   protected override async _runAsync(modifiedFileSet?: Set<TNormPath>): Promise<ISdBuildResult> {
     // 최초 한번

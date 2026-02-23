@@ -173,7 +173,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       for (let c = startAddr.c; c <= endAddr.c; c++) {
         const currentAddr = { r, c };
         if (currentAddr.r !== startAddr.r || currentAddr.c !== startAddr.c) {
-          this.clearCellValue(currentAddr);  // 값만 삭제, style 보존
+          this.clearCellValue(currentAddr); // 값만 삭제, style 보존
         }
       }
     }
@@ -186,10 +186,10 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     const cellData = rowInfo.cellMap.get(addr.c);
     if (!cellData) return;
 
-    delete cellData.v;    // 값 삭제
-    delete cellData.f;    // 수식 삭제
-    delete cellData.is;   // 인라인 문자열 삭제
-    delete cellData.$.t;  // 타입 삭제
+    delete cellData.v; // 값 삭제
+    delete cellData.f; // 수식 삭제
+    delete cellData.is; // 인라인 문자열 삭제
+    delete cellData.$.t; // 타입 삭제
     // cellData.$.s (styleId)는 보존 → border 유지
   }
 
@@ -335,9 +335,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
   insertEmptyRow(row: number): void {
     // 1. _dataMap에서 row 이상의 키를 내림차순으로 순회하며 키를 +1
-    const keysToShift = [...this._dataMap.keys()]
-      .filter(r => r >= row)
-      .sort((a, b) => b - a);
+    const keysToShift = [...this._dataMap.keys()].filter((r) => r >= row).sort((a, b) => b - a);
 
     for (const r of keysToShift) {
       const rowInfo = this._dataMap.get(r)!;

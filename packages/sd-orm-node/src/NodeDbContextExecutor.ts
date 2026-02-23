@@ -78,7 +78,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     return await this.#conn.executeAsync(queries);
   }*/
 
-  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]>{
+  async executeParametrizedAsync(query: string, params?: any[]): Promise<any[][]> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
@@ -129,8 +129,9 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
         return Array.isArray(query) ? query : [query];
       });
       const result = await this._conn.executeAsync(queries);
-      return await result.mapAsync(async (item, i) =>
-        await SdOrmUtils.parseQueryResultAsync (item, options ? options[i] : undefined),
+      return await result.mapAsync(
+        async (item, i) =>
+          await SdOrmUtils.parseQueryResultAsync(item, options ? options[i] : undefined),
       );
     }
   }

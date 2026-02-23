@@ -7,11 +7,10 @@ export function useCurrentPageCodeSignal() {
   const activatedRoute = inject(ActivatedRoute, { optional: true });
 
   if (activatedRoute) {
-    const activatedUrlSegmentsSignals = activatedRoute.pathFromRoot.slice(2)
-      .map(item => toSignal(item.url, { initialValue: item.snapshot.url }));
-    return $computed(() =>
-      activatedUrlSegmentsSignals.map(item => item()).join("."),
-    );
+    const activatedUrlSegmentsSignals = activatedRoute.pathFromRoot
+      .slice(2)
+      .map((item) => toSignal(item.url, { initialValue: item.snapshot.url }));
+    return $computed(() => activatedUrlSegmentsSignals.map((item) => item()).join("."));
   }
 
   return undefined;

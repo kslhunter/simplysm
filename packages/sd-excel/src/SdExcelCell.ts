@@ -120,7 +120,9 @@ export class SdExcelCell {
         numFmtId: SdExcelUtils.convertNumFmtNameToId("Time").toString(),
       });
     } else {
-      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${val}`);
+      throw new Error(
+        `[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${val}`,
+      );
     }
   }
 
@@ -188,7 +190,9 @@ export class SdExcelCell {
         throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 타입분석 실패 (${numFmt})`);
       }
     } else {
-      throw new Error(`[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${cellType}`);
+      throw new Error(
+        `[${SdExcelUtils.stringifyAddr(this.addr)}] 지원되지 않는 타입입니다: ${cellType}`,
+      );
     }
   }
 

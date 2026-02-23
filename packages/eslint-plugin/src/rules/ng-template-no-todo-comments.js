@@ -22,9 +22,7 @@ export default {
 
       const start = match.index;
       const end = start + match[0].length;
-      const content = commentContent
-        .slice(todoIndex + 5)
-        .trim();
+      const content = commentContent.slice(todoIndex + 5).trim();
 
       const loc = context.getSourceCode().getLocFromIndex(start);
       const endLoc = context.getSourceCode().getLocFromIndex(end);

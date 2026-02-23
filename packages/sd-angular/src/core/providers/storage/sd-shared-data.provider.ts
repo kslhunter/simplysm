@@ -30,8 +30,7 @@ export abstract class SdSharedDataProvider<
       existing.getter = getter;
       existing.listenerKey = undefined;
       void this._loadDataAsync(name);
-    }
-    else{
+    } else {
       this._infoMap.set(name, { getter });
     }
   }

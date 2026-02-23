@@ -18,8 +18,7 @@ export function injectParent<T = any>(
     if (!currentInjector) {
       if (options?.optional) {
         return undefined;
-      }
-      else {
+      } else {
         throw new Error("부모 컴포넌트를 찾을 수 없습니다.");
       }
     }

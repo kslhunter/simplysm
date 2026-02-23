@@ -23,7 +23,7 @@ export default {
             node.type === "PropertyDefinition" &&
             node.value?.type === "CallExpression" &&
             node.value.callee?.name === "inject" &&
-            node.key?.type === "Identifier"
+            node.key?.type === "Identifier",
         );
 
         for (const field of injectFields) {

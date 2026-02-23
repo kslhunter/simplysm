@@ -41,10 +41,7 @@ export abstract class UsbStorage {
    * @param filter 권한을 확인할 USB 장치의 vendorId와 productId
    * @returns 권한 보유 여부
    */
-  static async hasPermission(filter: {
-    vendorId: number;
-    productId: number;
-  }): Promise<boolean> {
+  static async hasPermission(filter: { vendorId: number; productId: number }): Promise<boolean> {
     const result = await UsbStoragePlugin.hasPermission(filter);
     return result.granted;
   }

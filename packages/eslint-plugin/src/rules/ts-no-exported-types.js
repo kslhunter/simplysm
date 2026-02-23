@@ -7,7 +7,7 @@ export default {
     docs: {
       description:
         "지정된 타입이 export API나 public 클래스 멤버에서 노출되는 것을 금지하고, 대체 타입을 안내합니다.",
-      recommended: 'error',
+      recommended: "error",
     },
     schema: [
       {
@@ -40,11 +40,13 @@ export default {
 
   create(context) {
     const optTypes = context.options[0].types;
-    const optTypeMap = new Map(optTypes.map(t => [
-      t.ban,
-      { safe: t.safe ?? undefined, ignoreInGeneric: t.ignoreInGeneric ?? false },
-    ]));
-    const bannedTypeNames = new Set(optTypes.map(t => t.ban));
+    const optTypeMap = new Map(
+      optTypes.map((t) => [
+        t.ban,
+        { safe: t.safe ?? undefined, ignoreInGeneric: t.ignoreInGeneric ?? false },
+      ]),
+    );
+    const bannedTypeNames = new Set(optTypes.map((t) => t.ban));
 
     const parserServices = ESLintUtils.getParserServices(context);
     const checker = parserServices.program.getTypeChecker();
@@ -71,11 +73,12 @@ export default {
           return { ban: name, safe: entry.safe };
         }
 
-        const typeArgs = ("aliasTypeArguments" in t && Array.isArray(t.aliasTypeArguments))
-          ? t.aliasTypeArguments
-          : (t.flags & ts.TypeFlags.Object && t.objectFlags & ts.ObjectFlags.Reference)
-            ? checker.getTypeArguments(t)
-            : [];
+        const typeArgs =
+          "aliasTypeArguments" in t && Array.isArray(t.aliasTypeArguments)
+            ? t.aliasTypeArguments
+            : t.flags & ts.TypeFlags.Object && t.objectFlags & ts.ObjectFlags.Reference
+              ? checker.getTypeArguments(t)
+              : [];
 
         for (const arg of typeArgs) {
           const match = visit(arg);
@@ -120,8 +123,7 @@ export default {
     return {
       FunctionDeclaration(node) {
         const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-        const isExported =
-          (ts.getCombinedModifierFlags(tsNode) & ts.ModifierFlags.Export) !== 0;
+        const isExported = (ts.getCombinedModifierFlags(tsNode) & ts.ModifierFlags.Export) !== 0;
         if (!isExported) return;
 
         const signature = checker.getSignatureFromDeclaration(tsNode);
@@ -137,9 +139,7 @@ export default {
 
       MethodDefinition(node) {
         const isConstructor = node.kind === "constructor";
-        const isPublic =
-          node.accessibility !== "private" &&
-          node.accessibility !== "protected";
+        const isPublic = node.accessibility !== "private" && node.accessibility !== "protected";
         if (!isConstructor && !isPublic) return;
 
         const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node.value);
@@ -157,8 +157,7 @@ export default {
       },
 
       PropertyDefinition(node) {
-        const isPublic =
-          node.accessibility !== "private" && node.accessibility !== "protected";
+        const isPublic = node.accessibility !== "private" && node.accessibility !== "protected";
         if (!isPublic) return;
 
         const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
@@ -184,8 +183,7 @@ export default {
             node.id.typeAnnotation.typeAnnotation,
           );
           type = checker.getTypeFromTypeNode(tsType);
-        }
-        else if (node.init) {
+        } else if (node.init) {
           const tsInit = parserServices.esTreeNodeToTSNodeMap.get(node.init);
           type = getCachedType(tsInit);
         }

@@ -103,7 +103,10 @@ export class SdTsCompiler {
     };
   }
 
-  private _createCompilerHost(compilerOptions: ts.CompilerOptions, modifiedFileSet: Set<TNormPath>) {
+  private _createCompilerHost(
+    compilerOptions: ts.CompilerOptions,
+    modifiedFileSet: Set<TNormPath>,
+  ) {
     // 지식: SourceFile은 하나의 파일에만 국한된 정적 정보객체임, 변경된 파일의 SourceFile만 다시 생성하면됨
 
     const compilerHost = ts.createCompilerHost(compilerOptions);

@@ -68,7 +68,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
             opacity: 0;
             color: white;
 
-            > ng-icon {              
+            > ng-icon {
               > svg {
                 vertical-align: top;
                 stroke-width: 2.5px !important;

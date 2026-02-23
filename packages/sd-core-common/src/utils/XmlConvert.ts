@@ -29,9 +29,8 @@ export class XmlConvert {
 
   private static _stripTagPrefix(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => this._stripTagPrefix(item));
-    }
-    else if (typeof obj === "object" && obj !== null) {
+      return obj.map((item) => this._stripTagPrefix(item));
+    } else if (typeof obj === "object" && obj !== null) {
       const newObj: any = {};
 
       for (const key in obj) {
@@ -40,8 +39,7 @@ export class XmlConvert {
         // Attribute는 prefix를 제거하면 안 된다.
         if (key === "$") {
           newObj[key] = value;
-        }
-        else {
+        } else {
           // 태그 이름에서만 ":"을 기준으로 prefix 제거
           const cleanKey = key.includes(":") ? key.split(":")[1] : key;
           newObj[cleanKey] = this._stripTagPrefix(value);
@@ -49,8 +47,7 @@ export class XmlConvert {
       }
 
       return newObj;
-    }
-    else {
+    } else {
       return obj;
     }
   }

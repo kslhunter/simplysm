@@ -76,7 +76,7 @@ export class DateOnly {
 
     throw new ArgumentError(
       `날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`,
-      { input: str }
+      { input: str },
     );
   }
 

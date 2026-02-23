@@ -20,7 +20,7 @@ export class SdProcess {
         ...options,
         env: {
           ...process.env,
-          ...options?.env
+          ...options?.env,
         },
       });
 

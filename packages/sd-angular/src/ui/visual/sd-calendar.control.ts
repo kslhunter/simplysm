@@ -79,7 +79,7 @@ import { $computed } from "../../core/utils/bindings/$computed";
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/mixins";
-      
+
       sd-calendar {
         > table {
           border-collapse: collapse;

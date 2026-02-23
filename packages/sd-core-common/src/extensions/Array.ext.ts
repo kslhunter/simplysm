@@ -172,7 +172,7 @@ function compareForOrder(pp: unknown, pn: unknown, desc: boolean): number {
   if (typeof cpn === "boolean" && typeof cpp === "boolean") {
     return cpn === cpp ? 0 : cpn ? (desc ? 1 : -1) : desc ? -1 : 1;
   }
-  
+
   throw new Error(`orderBy를 사용할 수 없는 타입입니다. (${typeof cpp}, ${typeof cpn})`);
 }
 

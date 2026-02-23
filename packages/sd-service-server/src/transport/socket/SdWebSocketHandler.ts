@@ -17,12 +17,7 @@ export class SdWebSocketHandler {
     private readonly _jwt: SdServiceJwtManager,
   ) {}
 
-  addSocket(
-    socket: WebSocket,
-    clientId: string,
-    clientName: string,
-    connReq: FastifyRequest
-  ) {
+  addSocket(socket: WebSocket, clientId: string, clientName: string, connReq: FastifyRequest) {
     try {
       const serviceSocket = new SdServiceSocket(socket, clientId, clientName, connReq);
 

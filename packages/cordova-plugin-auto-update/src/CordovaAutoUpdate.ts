@@ -168,7 +168,7 @@ export abstract class CordovaAutoUpdate {
               2,
             );
             opt.log(`최신버전 파일 다운로드중...(${progressText}%)`);
-          }
+          },
         },
       );
       const storagePath = await CordovaFileSystem.getStoragePathAsync("appCache");

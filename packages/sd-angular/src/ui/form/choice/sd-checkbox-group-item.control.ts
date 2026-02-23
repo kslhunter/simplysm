@@ -29,7 +29,9 @@ import { $computed } from "../../../core/utils/bindings/$computed";
   `,
 })
 export class SdCheckboxGroupItemControl<T> {
-  private readonly _parentControl = inject<SdCheckboxGroupControl<T>>(forwardRef(() => SdCheckboxGroupControl));
+  private readonly _parentControl = inject<SdCheckboxGroupControl<T>>(
+    forwardRef(() => SdCheckboxGroupControl),
+  );
 
   value = input.required<T>();
   inline = input(false, { transform: transformBoolean });

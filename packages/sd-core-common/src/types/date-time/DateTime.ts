@@ -93,7 +93,7 @@ export class DateTime {
 
     throw new ArgumentError(
       `날짜시간 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd HH:mm:ss', 'yyyyMMddHHmmss', 'yyyy-MM-dd 오전/오후 HH:mm:ss', ISO 8601`,
-      { input: str }
+      { input: str },
     );
   }
 
