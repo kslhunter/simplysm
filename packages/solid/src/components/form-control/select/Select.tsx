@@ -1,5 +1,6 @@
 import {
   children,
+  createEffect,
   createMemo,
   createSignal,
   For,
@@ -19,7 +20,13 @@ import { SelectContext, type SelectContextValue } from "./SelectContext";
 import { useSelectContext } from "./SelectContext";
 import { SelectItem } from "./SelectItem";
 import { ripple } from "../../../directives/ripple";
-import { borderDefault, type ComponentSize, textMuted } from "../../../styles/tokens.styles";
+import {
+  borderDefault,
+  borderSubtle,
+  type ComponentSize,
+  textMuted,
+  textPlaceholder,
+} from "../../../styles/tokens.styles";
 import { createControllableSignal } from "../../../hooks/createControllableSignal";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { chevronWrapperClass, getTriggerClass } from "../DropdownTrigger.styles";
@@ -30,6 +37,28 @@ void ripple;
 // Select 전용 스타일
 const multiTagClass = clsx("rounded", "bg-base-200 px-1", "dark:bg-base-600");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap");
+
+// 검색 입력 스타일
+const searchInputClass = clsx(
+  "w-full",
+  "border-b",
+  borderSubtle,
+  "bg-transparent",
+  "px-2 py-1.5",
+  "text-sm",
+  "outline-none",
+  textPlaceholder,
+);
+
+// 전체선택/해제 버튼 영역 스타일
+const selectAllBarClass = clsx("flex gap-2", "border-b", borderSubtle, "px-2 py-1", "text-xs");
+
+// 전체선택/해제 버튼 스타일
+const selectAllBtnClass = clsx(
+  "text-primary-500",
+  "hover:text-primary-600 dark:hover:text-primary-400",
+  "cursor-pointer",
+);
 
 /**
  * Select 우측 액션 서브 컴포넌트
@@ -94,7 +123,7 @@ const SelectItemTemplate = <TArgs extends unknown[]>(props: {
 // Props 정의
 
 // 공통 Props (value, onValueChange, multiple 제외)
-interface SelectCommonProps {
+interface SelectCommonProps<TValue = unknown> {
   /** 비활성화 */
   disabled?: boolean;
 
@@ -116,6 +145,12 @@ interface SelectCommonProps {
   /** touchMode: 포커스 해제 후에만 에러 표시 */
   touchMode?: boolean;
 
+  /** 검색 텍스트 추출 함수 (설정 시 검색 입력 자동 표시) */
+  getSearchText?: (item: TValue) => string;
+
+  /** 숨김 여부 판별 함수 */
+  getIsHidden?: (item: TValue) => boolean;
+
   /** 커스텀 class */
   class?: string;
 
@@ -124,7 +159,7 @@ interface SelectCommonProps {
 }
 
 // 단일 선택 Props
-interface SelectSingleBaseProps<TValue> extends SelectCommonProps {
+interface SelectSingleBaseProps<TValue> extends SelectCommonProps<TValue> {
   /** 다중 선택 모드 */
   multiple?: false;
 
@@ -142,7 +177,7 @@ interface SelectSingleBaseProps<TValue> extends SelectCommonProps {
 }
 
 // 다중 선택 Props
-interface SelectMultipleBaseProps<TValue> extends SelectCommonProps {
+interface SelectMultipleBaseProps<TValue> extends SelectCommonProps<TValue> {
   /** 다중 선택 모드 */
   multiple: true;
 
@@ -228,40 +263,52 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
     "renderValue",
     "validate",
     "touchMode",
+    "getSearchText",
+    "getIsHidden",
   ]);
 
   const [open, setOpen] = createSignal(false);
 
+  // 검색 텍스트 signal
+  const [searchText, setSearchText] = createSignal("");
+
+  // open → false 시 searchText 초기화
+  createEffect(() => {
+    if (!open()) {
+      setSearchText("");
+    }
+  });
+
   // 선택된 값 관리 (controlled/uncontrolled 패턴)
   type ValueType = T | T[] | undefined;
-  const [getValue, setInternalValue] = createControllableSignal<ValueType>({
+  const [value, setValue] = createControllableSignal<ValueType>({
     value: () => local.value,
     onChange: () => local.onValueChange as ((v: ValueType) => void) | undefined,
   } as Parameters<typeof createControllableSignal<ValueType>>[0]);
 
   // 값이 선택되어 있는지 확인
-  const isSelected = (value: T): boolean => {
-    const current = getValue();
+  const isSelected = (itemValue: T): boolean => {
+    const current = value();
     if (current === undefined) return false;
 
     if (local.multiple) {
-      return Array.isArray(current) && current.includes(value);
+      return Array.isArray(current) && current.includes(itemValue);
     }
-    return current === value;
+    return current === itemValue;
   };
 
   // 값 토글
-  const toggleValue = (value: T) => {
+  const toggleValue = (itemValue: T) => {
     if (local.multiple) {
-      const current = (getValue() as T[] | undefined) ?? [];
-      const idx = current.indexOf(value);
+      const current = (value() as T[] | undefined) ?? [];
+      const idx = current.indexOf(itemValue);
       if (idx >= 0) {
-        setInternalValue([...current.slice(0, idx), ...current.slice(idx + 1)] as T[]);
+        setValue([...current.slice(0, idx), ...current.slice(idx + 1)] as T[]);
       } else {
-        setInternalValue([...current, value] as T[]);
+        setValue([...current, itemValue] as T[]);
       }
     } else {
-      setInternalValue(value);
+      setValue(itemValue);
     }
   };
 
@@ -302,7 +349,7 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
   // 유효성 검사 메시지
   const errorMsg = createMemo(() => {
-    const v = getValue();
+    const v = value();
     if (local.required && (v === undefined || v === null || v === ""))
       return "필수 입력 항목입니다";
     return local.validate?.(v);
@@ -316,6 +363,57 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       inset: local.inset,
       class: local.class,
     });
+
+  // 검색 필터링 (계층 구조 지원)
+  const filteredItems = createMemo((): T[] | undefined => {
+    if (!local.items) return undefined;
+    if (!local.getSearchText || !searchText()) return local.items;
+
+    const terms = searchText().trim().split(" ").filter(Boolean);
+    if (terms.length === 0) return local.items;
+
+    // 계층 구조에서 자식 매칭 시 부모도 포함
+    const matchesSearch = (item: T): boolean => {
+      const text = local.getSearchText!(item).toLowerCase();
+      if (terms.every((t) => text.includes(t.toLowerCase()))) return true;
+
+      // 자식 중 매칭되는 항목이 있으면 부모도 표시
+      if (local.getChildren) {
+        const itemChildren = local.getChildren(item, 0, 0);
+        if (itemChildren?.some((child) => matchesSearch(child))) return true;
+      }
+
+      return false;
+    };
+
+    return local.items.filter((item) => matchesSearch(item));
+  });
+
+  // 숨김 필터링 적용된 items
+  const visibleItems = createMemo((): T[] | undefined => {
+    const items = filteredItems();
+    if (!items || !local.getIsHidden) return items;
+
+    return items.filter((item) => {
+      // 숨김 항목이지만 선택된 경우 표시 (취소선으로)
+      if (local.getIsHidden!(item)) {
+        return isSelected(item);
+      }
+      return true;
+    });
+  });
+
+  // 전체선택
+  const handleSelectAll = () => {
+    const items = visibleItems();
+    if (!items) return;
+    setValue(items);
+  };
+
+  // 전체해제
+  const handleDeselectAll = () => {
+    setValue([] as unknown as T[]);
+  };
 
   // 내부 컴포넌트: Provider 안에서 children을 resolve하여 슬롯 등록을 트리거
   const SelectInner: ParentComponent = (innerProps) => {
@@ -334,39 +432,52 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
       const tpl = getItemTemplate();
       return (
         <For each={itemList}>
-          {(item, index) => (
-            <SelectItem value={item}>
-              {tpl ? tpl(item, index(), depth) : String(item)}
-              <Show when={local.getChildren?.(item, index(), depth)} keyed>
-                {(itemChildren) => (
-                  <Show when={itemChildren.length > 0}>
-                    <SelectItem.Children>
-                      {renderItems(itemChildren, depth + 1)}
-                    </SelectItem.Children>
-                  </Show>
-                )}
-              </Show>
-            </SelectItem>
-          )}
+          {(item, index) => {
+            const hidden = () => local.getIsHidden?.(item) ?? false;
+            return (
+              <SelectItem value={item} class={hidden() ? "line-through opacity-60" : undefined}>
+                {tpl ? tpl(item, index(), depth) : String(item)}
+                <Show when={local.getChildren?.(item, index(), depth)} keyed>
+                  {(itemChildren) => {
+                    // 자식 목록에서 숨김 필터링 적용
+                    const visibleChildren = () => {
+                      if (!local.getIsHidden) return itemChildren;
+                      return itemChildren.filter((child) => {
+                        if (local.getIsHidden!(child)) return isSelected(child);
+                        return true;
+                      });
+                    };
+                    return (
+                      <Show when={visibleChildren().length > 0}>
+                        <SelectItem.Children>
+                          {renderItems(visibleChildren(), depth + 1)}
+                        </SelectItem.Children>
+                      </Show>
+                    );
+                  }}
+                </Show>
+              </SelectItem>
+            );
+          }}
         </For>
       );
     };
 
     // 선택된 값 렌더링 (items 방식일 때 itemTemplate 재사용)
-    const renderValue = (value: T): JSX.Element => {
+    const renderValue = (renderVal: T): JSX.Element => {
       if (local.renderValue) {
-        return local.renderValue(value);
+        return local.renderValue(renderVal);
       }
       const tpl = getItemTemplate();
       if (tpl) {
-        return tpl(value, 0, 0);
+        return tpl(renderVal, 0, 0);
       }
-      return <>{String(value)}</>;
+      return <>{String(renderVal)}</>;
     };
 
     // 선택된 값 표시
     const renderSelectedValue = (): JSX.Element => {
-      const current = getValue();
+      const current = value();
 
       if (current === undefined || (Array.isArray(current) && current.length === 0)) {
         return <span class={textMuted}>{local.placeholder ?? ""}</span>;
@@ -383,6 +494,13 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
 
       return renderValue(current as T);
     };
+
+    // 미지정 항목 표시 여부: 단일 선택 + required 아님 + items 모드
+    const showUnsetItem = () => !local.multiple && !local.required && local.items !== undefined;
+
+    // 전체선택/해제 버튼 표시 여부: multiple + hideSelectAll 아님 + items 모드
+    const showSelectAllBar = () =>
+      local.multiple === true && !local.hideSelectAll && local.items !== undefined;
 
     return (
       <div {...rest} data-select class={clsx("group", local.inset ? "flex" : "inline-flex")}>
@@ -415,9 +533,47 @@ export const Select: SelectComponent = <T,>(props: SelectProps<T>) => {
           </Dropdown.Trigger>
           <Dropdown.Content>
             <Show when={header()}>{header()!()}</Show>
+            {/* 검색 입력 */}
+            <Show when={local.getSearchText && local.items}>
+              <input
+                type="text"
+                data-select-search
+                class={searchInputClass}
+                placeholder="검색..."
+                value={searchText()}
+                onInput={(e) => setSearchText(e.currentTarget.value)}
+              />
+            </Show>
+            {/* 전체선택/해제 버튼 */}
+            <Show when={showSelectAllBar()}>
+              <div class={selectAllBarClass}>
+                <button
+                  type="button"
+                  data-select-all
+                  class={selectAllBtnClass}
+                  onClick={handleSelectAll}
+                >
+                  전체선택
+                </button>
+                <button
+                  type="button"
+                  data-deselect-all
+                  class={selectAllBtnClass}
+                  onClick={handleDeselectAll}
+                >
+                  전체해제
+                </button>
+              </div>
+            </Show>
             <List inset role="listbox">
               <Show when={local.items} fallback={resolved()}>
-                {renderItems(local.items!, 0)}
+                {/* 미지정 항목 */}
+                <Show when={showUnsetItem()}>
+                  <SelectItem value={undefined as T}>
+                    <span class={textMuted}>미지정</span>
+                  </SelectItem>
+                </Show>
+                {renderItems(visibleItems() ?? [], 0)}
               </Show>
             </List>
           </Dropdown.Content>
