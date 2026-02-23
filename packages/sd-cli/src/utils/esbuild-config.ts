@@ -13,7 +13,8 @@ import type { TypecheckEnv } from "./tsconfig";
  * - 그 외 파일(.js.map 등): 원본 그대로 비교
  * - 기존 파일과 내용이 동일하면 쓰기를 건너뛰어 타임스탬프를 유지한다.
  */
-export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<void> {
+export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<boolean> {
+  let hasChanges = false;
   await Promise.all(
     outputFiles.map(async (file) => {
       const finalText = file.path.endsWith(".js")
@@ -26,7 +27,6 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
           )
         : file.text;
 
-      // Compare with existing file — skip write if unchanged
       try {
         const existing = await fs.readFile(file.path, "utf-8");
         if (existing === finalText) return;
@@ -34,10 +34,12 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
         // File doesn't exist yet
       }
 
+      hasChanges = true;
       await fs.mkdir(path.dirname(file.path), { recursive: true });
       await fs.writeFile(file.path, finalText);
     }),
   );
+  return hasChanges;
 }
 
 /**
