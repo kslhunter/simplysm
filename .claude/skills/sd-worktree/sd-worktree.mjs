@@ -18,6 +18,18 @@ const mainWorktree = getOutput("git worktree list --porcelain")
   .split("\n")[0]
   .replace("worktree ", "");
 
+function detectPackageManager() {
+  if (existsSync(resolve(mainWorktree, "pnpm-lock.yaml"))) return "pnpm";
+  if (existsSync(resolve(mainWorktree, "yarn.lock"))) return "yarn";
+  if (existsSync(resolve(mainWorktree, "package-lock.json"))) return "npm";
+  if (
+    existsSync(resolve(mainWorktree, "bun.lockb")) ||
+    existsSync(resolve(mainWorktree, "bun.lock"))
+  )
+    return "bun";
+  return "npm";
+}
+
 function detectWorktreeName() {
   const cwd = process.cwd();
   const worktreesDir = resolve(mainWorktree, ".worktrees");
@@ -46,8 +58,9 @@ switch (cmd) {
     const branch = getMainBranch();
     console.log(`Creating worktree: .worktrees/${name} (from ${branch})`);
     run(`git worktree add "${worktreePath}" -b "${name}"`);
-    console.log("Installing dependencies...");
-    run("npm install", { cwd: worktreePath });
+    const pm = detectPackageManager();
+    console.log(`Installing dependencies (${pm})...`);
+    run(`${pm} install`, { cwd: worktreePath });
     console.log(`\nReady: ${worktreePath}`);
     break;
   }
