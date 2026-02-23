@@ -256,4 +256,110 @@ describe("SharedDataProvider", () => {
 
     result.unmount();
   });
+
+  it("메타 함수를 포함한 configure 시 accessor에서 함수에 접근할 수 있다", async () => {
+    const { serviceClientValue } = createMockServiceClient();
+
+    const getKeyFn = (item: TestUser) => item.id;
+    const getSearchTextFn = (item: TestUser) => item.name;
+    const getIsHiddenFn = (item: TestUser) => item.name === "hidden";
+    const getParentKeyFn = (_item: TestUser) => undefined as number | undefined;
+
+    let sharedRef: any;
+
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
+      user: {
+        serviceKey: "main",
+        fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
+        getKey: getKeyFn,
+        orderBy: [[(item) => item.name, "asc"]],
+        getSearchText: getSearchTextFn,
+        getIsHidden: getIsHiddenFn,
+        getParentKey: getParentKeyFn,
+      },
+    };
+
+    const result = render(() => (
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
+              <TestConsumer
+                onData={(s) => {
+                  sharedRef = s;
+                }}
+              />
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
+    ));
+
+    await vi.waitFor(() => {
+      expect(result.getByTestId("count").textContent).toBe("1");
+    });
+
+    // accessor에서 메타 함수 참조가 definition과 동일한지 확인
+    expect(sharedRef!.user.getKey).toBe(getKeyFn);
+    expect(sharedRef!.user.getSearchText).toBe(getSearchTextFn);
+    expect(sharedRef!.user.getIsHidden).toBe(getIsHiddenFn);
+    expect(sharedRef!.user.getParentKey).toBe(getParentKeyFn);
+
+    // 실제 호출 결과 검증
+    const testItem: TestUser = { id: 42, name: "Test" };
+    expect(sharedRef!.user.getKey(testItem)).toBe(42);
+    expect(sharedRef!.user.getSearchText(testItem)).toBe("Test");
+    expect(sharedRef!.user.getIsHidden(testItem)).toBe(false);
+    expect(sharedRef!.user.getParentKey(testItem)).toBeUndefined();
+
+    result.unmount();
+  });
+
+  it("메타 함수 미지정 시 accessor에서 undefined로 접근된다", async () => {
+    const { serviceClientValue } = createMockServiceClient();
+
+    const getKeyFn = (item: TestUser) => item.id;
+
+    let sharedRef: any;
+
+    const definitions: { user: SharedDataDefinition<TestUser> } = {
+      user: {
+        serviceKey: "main",
+        fetch: vi.fn(() => Promise.resolve([{ id: 1, name: "Alice" }])),
+        getKey: getKeyFn,
+        orderBy: [[(item) => item.name, "asc"]],
+        // getSearchText, getIsHidden, getParentKey 미지정
+      },
+    };
+
+    const result = render(() => (
+      <NotificationContext.Provider value={createMockNotification()}>
+        <ServiceClientContext.Provider value={serviceClientValue}>
+          <SharedDataProvider>
+            <ConfigureSharedData definitions={definitions}>
+              <TestConsumer
+                onData={(s) => {
+                  sharedRef = s;
+                }}
+              />
+            </ConfigureSharedData>
+          </SharedDataProvider>
+        </ServiceClientContext.Provider>
+      </NotificationContext.Provider>
+    ));
+
+    await vi.waitFor(() => {
+      expect(result.getByTestId("count").textContent).toBe("1");
+    });
+
+    // getKey는 항상 존재
+    expect(sharedRef!.user.getKey).toBe(getKeyFn);
+
+    // 옵셔널 메타 함수는 미지정 시 undefined
+    expect(sharedRef!.user.getSearchText).toBeUndefined();
+    expect(sharedRef!.user.getIsHidden).toBeUndefined();
+    expect(sharedRef!.user.getParentKey).toBeUndefined();
+
+    result.unmount();
+  });
 });

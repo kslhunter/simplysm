@@ -243,6 +243,313 @@ describe("Select 컴포넌트", () => {
     });
   });
 
+  describe("검색 기능", () => {
+    it("getSearchText가 있으면 검색 입력이 표시된다", async () => {
+      const { getByRole } = render(() => (
+        <Select
+          items={["apple", "banana", "cherry"]}
+          getSearchText={(item) => item}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        const searchInput = document.querySelector("[data-select-search]");
+        expect(searchInput).not.toBeNull();
+      });
+    });
+
+    it("검색어 입력 시 항목이 필터링된다", async () => {
+      const { getByRole } = render(() => (
+        <Select
+          items={["apple", "banana", "cherry"]}
+          getSearchText={(item) => item}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-select-search]")).not.toBeNull();
+      });
+
+      const searchInput = document.querySelector("[data-select-search]") as HTMLInputElement;
+      fireEvent.input(searchInput, { target: { value: "ban" } });
+
+      await waitFor(() => {
+        const items = document.querySelectorAll("[data-select-item]");
+        // 미지정 + banana = 2
+        expect(items.length).toBe(2);
+        expect(items[0].textContent).toContain("미지정");
+        expect(items[1].textContent).toContain("banana");
+      });
+    });
+
+    it("공백 분리 AND 매칭으로 검색한다", async () => {
+      const { getByRole } = render(() => (
+        <Select
+          items={["red apple", "green apple", "banana"]}
+          getSearchText={(item) => item}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-select-search]")).not.toBeNull();
+      });
+
+      const searchInput = document.querySelector("[data-select-search]") as HTMLInputElement;
+      fireEvent.input(searchInput, { target: { value: "red apple" } });
+
+      await waitFor(() => {
+        const items = document.querySelectorAll("[data-select-item]");
+        // 미지정 + red apple = 2
+        expect(items.length).toBe(2);
+        expect(items[0].textContent).toContain("미지정");
+        expect(items[1].textContent).toContain("red apple");
+      });
+    });
+
+    it("getSearchText가 없으면 검색 입력이 표시되지 않는다", async () => {
+      const { getByRole } = render(() => (
+        <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      expect(document.querySelector("[data-select-search]")).toBeNull();
+    });
+  });
+
+  describe("미지정 항목", () => {
+    it("단일 선택 + required 아님 → '미지정' 항목이 표시된다", async () => {
+      const { getByRole } = render(() => (
+        <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const items = document.querySelectorAll("[data-select-item]");
+      // 미지정 + apple + banana = 3
+      expect(items.length).toBe(3);
+      expect(items[0].textContent).toContain("미지정");
+    });
+
+    it("required일 때는 '미지정' 항목이 표시되지 않는다", async () => {
+      const { getByRole } = render(() => (
+        <Select items={["apple", "banana"]} required renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const items = document.querySelectorAll("[data-select-item]");
+      // apple + banana = 2 (미지정 없음)
+      expect(items.length).toBe(2);
+    });
+
+    it("다중 선택에서는 '미지정' 항목이 표시되지 않는다", async () => {
+      const { getByRole } = render(() => (
+        <Select multiple items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const items = document.querySelectorAll("[data-select-item]");
+      // apple + banana = 2 (미지정 없음)
+      expect(items.length).toBe(2);
+    });
+  });
+
+  describe("전체선택/해제", () => {
+    it("multiple 모드에서 전체선택/해제 버튼이 표시된다", async () => {
+      const { getByRole } = render(() => (
+        <Select multiple items={["apple", "banana", "cherry"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-select-all]")).not.toBeNull();
+        expect(document.querySelector("[data-deselect-all]")).not.toBeNull();
+      });
+    });
+
+    it("전체선택 클릭 시 모든 항목이 선택된다", async () => {
+      const [value, setValue] = createSignal<string[]>([]);
+      const { getByRole } = render(() => (
+        <Select<string>
+          multiple
+          items={["apple", "banana", "cherry"]}
+          value={value()}
+          onValueChange={setValue}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-select-all]")).not.toBeNull();
+      });
+
+      const selectAllBtn = document.querySelector("[data-select-all]") as HTMLElement;
+      fireEvent.click(selectAllBtn);
+
+      expect(value()).toEqual(["apple", "banana", "cherry"]);
+    });
+
+    it("전체해제 클릭 시 모든 선택이 해제된다", async () => {
+      const [value, setValue] = createSignal<string[]>(["apple", "banana"]);
+      const { getByRole } = render(() => (
+        <Select<string>
+          multiple
+          items={["apple", "banana", "cherry"]}
+          value={value()}
+          onValueChange={setValue}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-deselect-all]")).not.toBeNull();
+      });
+
+      const deselectAllBtn = document.querySelector("[data-deselect-all]") as HTMLElement;
+      fireEvent.click(deselectAllBtn);
+
+      expect(value()).toEqual([]);
+    });
+
+    it("hideSelectAll일 때 전체선택/해제 버튼이 표시되지 않는다", async () => {
+      const { getByRole } = render(() => (
+        <Select multiple hideSelectAll items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      expect(document.querySelector("[data-select-all]")).toBeNull();
+      expect(document.querySelector("[data-deselect-all]")).toBeNull();
+    });
+
+    it("단일 선택 모드에서는 전체선택/해제 버튼이 표시되지 않는다", async () => {
+      const { getByRole } = render(() => (
+        <Select items={["apple", "banana"]} renderValue={(v) => <>{v}</>}>
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      expect(document.querySelector("[data-select-all]")).toBeNull();
+    });
+  });
+
+  describe("숨김 처리", () => {
+    it("getIsHidden이 true인 항목은 목록에서 숨겨진다", async () => {
+      const { getByRole } = render(() => (
+        <Select
+          items={["apple", "banana", "cherry"]}
+          getIsHidden={(item) => item === "banana"}
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const items = document.querySelectorAll("[data-select-item]");
+      const texts = Array.from(items).map((el) => el.textContent);
+      // 미지정 + apple + cherry (banana 숨김)
+      expect(texts).toContain("미지정");
+      expect(texts.some((t) => t.includes("apple"))).toBe(true);
+      expect(texts.some((t) => t.includes("cherry"))).toBe(true);
+      expect(texts.some((t) => t.includes("banana"))).toBe(false);
+    });
+
+    it("숨김 항목이지만 선택된 경우 취소선으로 표시된다", async () => {
+      const { getByRole } = render(() => (
+        <Select
+          items={["apple", "banana", "cherry"]}
+          getIsHidden={(item) => item === "banana"}
+          value="banana"
+          renderValue={(v) => <>{v}</>}
+        >
+          <Select.ItemTemplate>{(item) => <>{item}</>}</Select.ItemTemplate>
+        </Select>
+      ));
+
+      fireEvent.click(getByRole("combobox"));
+
+      await waitFor(() => {
+        expect(document.querySelector("[data-dropdown]")).not.toBeNull();
+      });
+
+      const items = document.querySelectorAll("[data-select-item]");
+      const bananaItem = Array.from(items).find((el) => el.textContent.includes("banana"));
+      expect(bananaItem).not.toBeNull();
+      // 취소선 스타일 확인
+      expect(bananaItem!.classList.contains("line-through")).toBe(true);
+    });
+  });
+
   describe("validation", () => {
     it("required일 때 값이 없으면 에러 메시지가 설정된다", () => {
       const { container } = render(() => (
