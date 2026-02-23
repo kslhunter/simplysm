@@ -27,7 +27,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-\* skill or age
 | `sd-plan`            | Multi-step task with spec/requirements — **planning before code**                    |
 | `sd-plan-dev`        | Already have a plan — **executing implementation plan**                              |
 | `sd-explore`         | Deep codebase analysis — tracing execution paths, architecture, dependencies         |
-| `sd-review`          | Comprehensive code review of a package or path                                       |
+| `sd-review`          | **Large-scale** comprehensive review of an entire package or broad path — use only when user explicitly requests full/deep/comprehensive review |
 | `sd-check`           | Verify code — typecheck, lint, tests                                                 |
 | `sd-commit`          | Create a git commit                                                                  |
 | `sd-readme`          | Update a package README.md                                                           |
@@ -40,15 +40,16 @@ Analyze user request from ARGUMENTS, select the best matching sd-\* skill or age
 
 | Agent                | When to select                                                    |
 | -------------------- | ----------------------------------------------------------------- |
-| `sd-code-reviewer`   | Focused review for bugs, security vulnerabilities, quality issues |
+| `sd-code-reviewer`   | Quick/focused review — specific files, recent changes, bugs, security, quality issues. **Default choice for most review requests** |
 | `sd-code-simplifier` | Simplify, clean up, improve code readability                      |
 | `sd-api-reviewer`    | Review library public API for DX quality                          |
 
 ## Selection Rules
 
 1. Select **exactly one** skill or agent — the most specific match wins
-2. If nothing matches, use **default LLM behavior** and handle the request directly
-3. Pass ARGUMENTS through as the skill/agent's input
+2. **Review requests**: Default to `sd-code-reviewer` agent. Only use `sd-review` skill when the user explicitly asks for a full/comprehensive/deep review of an entire package
+3. If nothing matches, use **default LLM behavior** and handle the request directly
+4. Pass ARGUMENTS through as the skill/agent's input
 
 ## Report Format
 
