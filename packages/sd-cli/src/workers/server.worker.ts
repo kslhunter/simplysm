@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import cp from "child_process";
 import esbuild from "esbuild";
-import { createWorker, FsWatcher } from "@simplysm/core-node";
+import { createWorker, FsWatcher, pathNorm } from "@simplysm/core-node";
 import { consola } from "consola";
 import {
   parseRootTsconfig,
@@ -13,6 +13,7 @@ import {
   createServerEsbuildOptions,
   collectUninstalledOptionalPeerDeps,
   collectNativeModuleExternals,
+  writeChangedOutputFiles,
 } from "../utils/esbuild-config";
 import { registerCleanupHandlers } from "../utils/worker-utils";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
@@ -103,6 +104,9 @@ const logger = consola.withTag("sd:cli:server:worker");
 /** esbuild build context (정리 대상) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
+/** 마지막 빌드의 metafile (rebuild 시 변경 파일 필터링용) */
+let lastMetafile: esbuild.Metafile | undefined;
+
 /** public 파일 watcher (정리 대상) */
 let publicWatcher: FsWatcher | undefined;
 
@@ -117,6 +121,7 @@ async function cleanup(): Promise<void> {
   // (Promise.all 대기 중 다른 호출에서 전역 변수를 수정할 수 있으므로)
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
+  lastMetafile = undefined;
 
   const watcherToClose = publicWatcher;
   publicWatcher = undefined;
@@ -385,6 +390,8 @@ async function createAndBuildContext(
 
   const context = await esbuild.context({
     ...baseOptions,
+    metafile: true,
+    write: false,
     plugins: [
       {
         name: "watch-notify",
@@ -393,22 +400,38 @@ async function createAndBuildContext(
             sender.send("buildStart", {});
           });
 
-          pluginBuild.onEnd((result) => {
+          pluginBuild.onEnd(async (result) => {
+            // metafile 저장
+            if (result.metafile != null) {
+              lastMetafile = result.metafile;
+            }
+
             const errors = result.errors.map((e) => e.text);
             const warnings = result.warnings.map((w) => w.text);
             const success = result.errors.length === 0;
+
+            // output 파일 쓰기 및 변경 여부 확인
+            let hasOutputChange = false;
+            if (success && result.outputFiles != null) {
+              hasOutputChange = await writeChangedOutputFiles(result.outputFiles);
+            }
 
             if (isBuildFirstTime && success) {
               const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
               fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
             }
 
-            sender.send("build", {
-              success,
-              mainJsPath,
-              errors: errors.length > 0 ? errors : undefined,
-              warnings: warnings.length > 0 ? warnings : undefined,
-            });
+            // 첫 빌드이거나, output이 변경되었거나, 에러인 경우에만 build 이벤트 발생
+            if (isBuildFirstTime || hasOutputChange || !success) {
+              sender.send("build", {
+                success,
+                mainJsPath,
+                errors: errors.length > 0 ? errors : undefined,
+                warnings: warnings.length > 0 ? warnings : undefined,
+              });
+            } else {
+              logger.debug("output 변경 없음, 서버 재시작 skip");
+            }
 
             if (isBuildFirstTime) {
               isBuildFirstTime = false;
@@ -455,21 +478,25 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     // FsWatcher 감시 경로 수집
     const watchPaths: string[] = [];
 
-    // 1) 서버 자체 소스
-    watchPaths.push(path.join(info.pkgDir, "src", "**", "*.{ts,tsx}"));
+    // 1) workspace 패키지 소스
+    watchPaths.push(path.join(info.cwd, "packages", "*", "src", "**", "*"));
 
-    // 2) scope 패키지 dist 디렉토리
+    // 2) workspace 패키지 루트 설정 파일
+    watchPaths.push(path.join(info.cwd, "packages", "*", "*.{ts,js,css}"));
+
+    // 3-4) scope 패키지 (루트 node_modules)
     if (info.watchScopes != null) {
       for (const scope of info.watchScopes) {
-        const scopeDir = path.join(info.pkgDir, "node_modules", scope);
-        if (!fs.existsSync(scopeDir)) continue;
+        watchPaths.push(path.join(info.cwd, "node_modules", scope, "*", "dist", "**", "*.js"));
+        watchPaths.push(path.join(info.cwd, "node_modules", scope, "*", "*.{ts,js,css}"));
+      }
+    }
 
-        for (const pkgName of fs.readdirSync(scopeDir)) {
-          const distDir = path.join(scopeDir, pkgName, "dist");
-          if (fs.existsSync(distDir)) {
-            watchPaths.push(distDir);
-          }
-        }
+    // 5-6) scope 패키지 (현재 패키지 node_modules, hoisting 안 된 경우)
+    if (info.watchScopes != null) {
+      for (const scope of info.watchScopes) {
+        watchPaths.push(path.join(info.pkgDir, "node_modules", scope, "*", "dist", "**", "*.js"));
+        watchPaths.push(path.join(info.pkgDir, "node_modules", scope, "*", "*.{ts,js,css}"));
       }
     }
 
@@ -479,16 +506,11 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     // 파일 변경 감지 시 처리
     srcWatcher.onChange({ delay: 300 }, async (changes) => {
       try {
-        // 서버 자체 소스에서 add/unlink가 있으면 context 재생성
-        const srcDir = path.join(info.pkgDir, "src");
-        const hasEntryPointChange = changes.some(
-          (c) =>
-            (c.event === "add" || c.event === "unlink") &&
-            c.path.startsWith(srcDir.replace(/\\/g, "/")),
-        );
+        // 파일 추가/삭제가 있으면 context 재생성 (import graph 변경 가능)
+        const hasFileAddOrRemove = changes.some((c) => c.event === "add" || c.event === "unlink");
 
-        if (hasEntryPointChange) {
-          logger.debug("서버 소스 파일 추가/삭제 감지, context 재생성");
+        if (hasFileAddOrRemove) {
+          logger.debug("파일 추가/삭제 감지, context 재생성");
 
           const oldContext = esbuildContext;
           esbuildContext = await createAndBuildContext(info, false);
@@ -496,10 +518,29 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           if (oldContext != null) {
             await oldContext.dispose();
           }
+          return;
+        }
+
+        // 파일 변경만 있는 경우: metafile 필터링
+        if (esbuildContext == null) return;
+
+        // metafile이 없으면 (첫 빌드 전) 무조건 rebuild
+        if (lastMetafile == null) {
+          await esbuildContext.rebuild();
+          return;
+        }
+
+        // metafile.inputs 키를 절대경로(NormPath)로 변환하여 비교
+        const metafileAbsPaths = new Set(
+          Object.keys(lastMetafile.inputs).map((key) => pathNorm(info.cwd, key)),
+        );
+
+        const hasRelevantChange = changes.some((c) => metafileAbsPaths.has(c.path));
+
+        if (hasRelevantChange) {
+          await esbuildContext.rebuild();
         } else {
-          if (esbuildContext != null) {
-            await esbuildContext.rebuild();
-          }
+          logger.debug("변경된 파일이 빌드에 포함되지 않음, rebuild skip");
         }
       } catch (err) {
         sender.send("error", {
