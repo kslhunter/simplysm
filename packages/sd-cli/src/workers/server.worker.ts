@@ -16,6 +16,7 @@ import {
   writeChangedOutputFiles,
 } from "../utils/esbuild-config";
 import { registerCleanupHandlers } from "../utils/worker-utils";
+import { collectDeps } from "../utils/package-utils";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 
 //#region Types
@@ -65,8 +66,8 @@ export interface ServerWatchInfo {
   configs?: Record<string, unknown>;
   /** sd.config.ts에서 수동 지정한 external 모듈 */
   externals?: string[];
-  /** scope 패키지 감시 대상 (e.g. ["@simplysm"]) */
-  watchScopes?: string[];
+  /** sd.config.ts의 replaceDeps 설정 */
+  replaceDeps?: Record<string, string>;
 }
 
 /**
@@ -475,29 +476,27 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
     // Watch public/ and public-dev/ (dev mode includes public-dev)
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
-    // FsWatcher 감시 경로 수집
+    // 의존성 기반 감시 경로 수집
+    const { workspaceDeps, replaceDeps } = collectDeps(info.pkgDir, info.cwd, info.replaceDeps);
+
     const watchPaths: string[] = [];
 
-    // 1) workspace 패키지 소스
-    watchPaths.push(path.join(info.cwd, "packages", "*", "src", "**", "*"));
-
-    // 2) workspace 패키지 루트 설정 파일
-    watchPaths.push(path.join(info.cwd, "packages", "*", "*.{ts,js,css}"));
-
-    // 3-4) scope 패키지 (루트 node_modules)
-    if (info.watchScopes != null) {
-      for (const scope of info.watchScopes) {
-        watchPaths.push(path.join(info.cwd, "node_modules", scope, "*", "dist", "**", "*.js"));
-        watchPaths.push(path.join(info.cwd, "node_modules", scope, "*", "*.{ts,js,css}"));
-      }
+    // 1) 서버 패키지 자신 + workspace 의존 패키지 소스
+    const watchDirs = [
+      info.pkgDir,
+      ...workspaceDeps.map((d) => path.join(info.cwd, "packages", d)),
+    ];
+    for (const dir of watchDirs) {
+      watchPaths.push(path.join(dir, "src", "**", "*"));
+      watchPaths.push(path.join(dir, "*.{ts,js,css}"));
     }
 
-    // 5-6) scope 패키지 (현재 패키지 node_modules, hoisting 안 된 경우)
-    if (info.watchScopes != null) {
-      for (const scope of info.watchScopes) {
-        watchPaths.push(path.join(info.pkgDir, "node_modules", scope, "*", "dist", "**", "*.js"));
-        watchPaths.push(path.join(info.pkgDir, "node_modules", scope, "*", "*.{ts,js,css}"));
-      }
+    // 2) replaceDeps 의존 패키지 dist (루트 + 패키지 node_modules)
+    for (const pkg of replaceDeps) {
+      watchPaths.push(path.join(info.cwd, "node_modules", ...pkg.split("/"), "dist", "**", "*.js"));
+      watchPaths.push(
+        path.join(info.pkgDir, "node_modules", ...pkg.split("/"), "dist", "**", "*.js"),
+      );
     }
 
     // FsWatcher 시작
