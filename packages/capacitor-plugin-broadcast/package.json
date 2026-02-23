@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/capacitor-plugin-broadcast",
-  "version": "13.0.60",
+  "version": "13.0.61",
   "description": "심플리즘 패키지 - Capacitor Broadcast Plugin",
   "author": "김석래",
   "license": "MIT",
