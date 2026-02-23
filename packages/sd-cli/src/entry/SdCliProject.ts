@@ -122,6 +122,90 @@ export class SdCliProject {
     this._logging(messages, logger);
   }
 
+  static async checkAsync(opt: {
+    config: string;
+    options?: string[];
+    path?: string;
+    type?: "lint" | "typecheck";
+  }): Promise<void> {
+    const logger = SdLogger.get(["simplysm", "sd-cli", "SdCliProject", "checkAsync"]);
+
+    logger.debug("프로젝트 설정 가져오기...");
+    const projConf = await loadProjConfAsync(process.cwd(), true, opt);
+
+    logger.debug("프로젝트 package.json 가져오기...");
+    const projNpmConf = (await FsUtils.readJsonAsync(
+      path.resolve(process.cwd(), "package.json"),
+    )) as INpmConfig;
+
+    logger.debug("패키지 목록 구성...");
+    if (!projNpmConf.workspaces) {
+      throw new Error("프로젝트 package.json에 workspaces가 설정되어있지 않습니다.");
+    }
+    const allPkgPaths = (
+      await projNpmConf.workspaces.mapManyAsync(async (item) => await FsUtils.globAsync(item))
+    )
+      .filter((item) => !item.includes("."))
+      .map((item) => PathUtils.norm(item));
+
+    logger.debug("패키지 존재 확인...");
+    const notExistsPkgs = Object.keys(projConf.packages).filter((pkgConfKey) =>
+      allPkgPaths.every((pkgPath) => path.basename(pkgPath) !== pkgConfKey),
+    );
+    if (notExistsPkgs.length > 0) {
+      throw new Error("패키지를 찾을 수 없습니다. (" + notExistsPkgs.join(", ") + ")");
+    }
+
+    // path 해석 → 대상 패키지 결정
+    let pkgPaths = allPkgPaths.filter((pkgPath) => path.basename(pkgPath) in projConf.packages);
+    let filterFilePath: string | undefined;
+
+    if (opt.path != null) {
+      const inputPath = PathUtils.norm(path.resolve(process.cwd(), opt.path));
+
+      // 패키지 디렉토리인지 확인
+      const matchedPkg = pkgPaths.find((pkgPath) => inputPath === pkgPath);
+      if (matchedPkg) {
+        pkgPaths = [matchedPkg];
+      } else {
+        // 파일 경로로 간주 → 해당 파일이 속한 패키지 찾기
+        const containingPkg = pkgPaths.find((pkgPath) => inputPath.startsWith(pkgPath + path.sep));
+        if (containingPkg) {
+          pkgPaths = [containingPkg];
+          filterFilePath = inputPath;
+        } else {
+          throw new Error(`경로에 해당하는 패키지를 찾을 수 없습니다. (${opt.path})`);
+        }
+      }
+    }
+
+    logger.debug("체크 프로세스 시작...");
+    let messages = await SdProjectBuildRunner.buildAsync({
+      allPkgPaths,
+      pkgPaths,
+      projConf,
+      noEmit: true,
+    });
+
+    // --type 필터링
+    if (opt.type === "lint") {
+      messages = messages.filter((m) => m.type === "lint");
+    } else if (opt.type === "typecheck") {
+      messages = messages.filter((m) => m.type === "compile");
+    }
+
+    // 파일 경로 필터링
+    if (filterFilePath != null) {
+      messages = messages.filter((m) => m.filePath === filterFilePath);
+    }
+
+    this._logging(messages, logger);
+
+    if (messages.some((m) => m.severity === "error")) {
+      process.exit(1);
+    }
+  }
+
   static async publishAsync(opt: {
     config: string;
     options?: string[];

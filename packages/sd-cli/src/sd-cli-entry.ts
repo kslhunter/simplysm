@@ -126,6 +126,37 @@ await yargs(hideBin(process.argv))
     },
   )
   .command(
+    "check [path]",
+    "타입체크 및 린트를 수행합니다.",
+    (cmd) =>
+      cmd
+        .version(false)
+        .hide("help")
+        .hide("debug")
+        .positional("path", {
+          type: "string",
+          describe: "패키지 경로 또는 파일 경로",
+        })
+        .options({
+          config: {
+            type: "string",
+            describe: "설정 파일 경로",
+            default: "simplysm.js",
+          },
+          options: {
+            type: "string",
+            array: true,
+            describe: "옵션 설정",
+          },
+          type: {
+            type: "string",
+            choices: ["lint", "typecheck"] as const,
+            describe: "체크 종류 (미지정 시 둘 다)",
+          },
+        }),
+    async (argv) => await SdCliProject.checkAsync(argv),
+  )
+  .command(
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
     (cmd) =>

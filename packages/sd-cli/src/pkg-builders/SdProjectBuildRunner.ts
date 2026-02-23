@@ -300,6 +300,7 @@ export class SdProjectBuildRunner {
     allPkgPaths: TNormPath[];
     pkgPaths: TNormPath[];
     projConf: ISdProjectConfig;
+    noEmit?: boolean;
   }) {
     const scopePathSet = await this._getScopePathSetAsync(
       opt.allPkgPaths,
@@ -322,7 +323,11 @@ export class SdProjectBuildRunner {
 
       await worker.run("initialize", [
         {
-          options: { pkgPath, scopePathSet },
+          options: {
+            pkgPath,
+            scopePathSet,
+            ...(opt.noEmit ? { watch: { dev: true, emitOnly: false, noEmit: true } } : {}),
+          },
           pkgConf,
         },
       ]);
