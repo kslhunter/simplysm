@@ -49,14 +49,6 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     return allItems.filter(local.filterFn);
   });
 
-  // parentKey → getChildren 변환
-  const getChildren = local.data.getParentKey
-    ? (item: TItem) => {
-        const key = local.data.getKey(item);
-        return items().filter((child) => local.data.getParentKey!(child) === key);
-      }
-    : undefined;
-
   // modal 열기
   const handleOpenModal = async () => {
     if (!local.modal) return;
@@ -70,13 +62,25 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
   };
 
   // Select의 discriminated union (multiple: true | false?)과 TItem → unknown 변환을 위해 mergeProps + as 사용
+  // getter로 래핑하여 SolidJS 반응성 lint 규칙 충족
   const selectProps = mergeProps(rest, {
     get items() {
       return items();
     },
-    getChildren,
-    getSearchText: local.data.getSearchText,
-    getIsHidden: local.data.getIsHidden,
+    get getChildren() {
+      if (!local.data.getParentKey) return undefined;
+      // eslint-disable-next-line solid/reactivity -- 반환 함수는 Select 내부 JSX tracked scope에서 호출됨
+      return (item: TItem) => {
+        const key = local.data.getKey(item);
+        return items().filter((child) => local.data.getParentKey!(child) === key);
+      };
+    },
+    get getSearchText() {
+      return local.data.getSearchText;
+    },
+    get getIsHidden() {
+      return local.data.getIsHidden;
+    },
   }) as unknown as SelectProps;
 
   return (
