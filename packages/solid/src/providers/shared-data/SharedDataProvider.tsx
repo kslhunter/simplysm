@@ -150,7 +150,6 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         if (initialized) return;
         initialized = true;
 
-        // TODO: addEventListener가 resolve 전에 unmount되면 listener orphan 가능
         void client
           .addEventListener(
             SharedDataChangeEvent,
@@ -160,7 +159,11 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
             },
           )
           .then((key) => {
-            listenerKeyMap.set(name, key);
+            if (disposed) {
+              void client.removeEventListener(key);
+            } else {
+              listenerKeyMap.set(name, key);
+            }
           });
 
         void loadData(name, def);
@@ -191,7 +194,10 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     }
   }
 
+  let disposed = false;
+
   onCleanup(() => {
+    disposed = true;
     if (!currentDefinitions) return;
     for (const [name] of Object.entries(currentDefinitions)) {
       const listenerKey = listenerKeyMap.get(name);
