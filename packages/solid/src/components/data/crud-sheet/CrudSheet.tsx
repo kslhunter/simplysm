@@ -12,7 +12,6 @@ import {
 import { createStore, produce, reconcile } from "solid-js/store";
 import { createControllableStore } from "../../../hooks/createControllableStore";
 import { objClone } from "@simplysm/core-common";
-import type { DateTime } from "@simplysm/core-common";
 import "@simplysm/core-common"; // register extensions
 import type { SortingDef } from "../sheet/types";
 import { DataSheet } from "../sheet/DataSheet";
@@ -74,8 +73,8 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     "itemDeletable",
     "itemDeleted",
     "isItemSelectable",
-    "lastModifiedAtProp",
-    "lastModifiedByProp",
+    "lastModifiedAt",
+    "lastModifiedBy",
     "onSubmitted",
     "filterInitial",
     "items",
@@ -165,11 +164,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   }
 
   async function refresh() {
-    const result: SearchResult<TItem> = await local.search(
-      lastFilter(),
-      page(),
-      sorts(),
-    );
+    const result: SearchResult<TItem> = await local.search(lastFilter(), page(), sorts());
     setItems(reconcile(result.items));
     originalItems = objClone(result.items);
     setTotalPageCount(result.pageCount ?? 0);
@@ -555,8 +550,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={handleDeleteItems}
                   disabled={
                     selectedItems().length === 0 ||
-                    !selectedItems().some((item) =>
-                      (local.itemDeletable?.(item) ?? true) && !(local.itemDeleted?.(item) ?? false),
+                    !selectedItems().some(
+                      (item) =>
+                        (local.itemDeletable?.(item) ?? true) &&
+                        !(local.itemDeleted?.(item) ?? false),
                     )
                   }
                 >
@@ -615,7 +612,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             selectMode={
               isSelectMode()
                 ? local.selectMode
-                : (local.modalEdit?.deleteItems != null || local.modalEdit?.restoreItems != null)
+                : local.modalEdit?.deleteItems != null || local.modalEdit?.restoreItems != null
                   ? "multiple"
                   : undefined
             }
@@ -709,9 +706,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </For>
 
             {/* Auto lastModified columns */}
-            <Show when={local.lastModifiedAtProp}>
+            <Show when={local.lastModifiedAt}>
               <DataSheetColumn<TItem>
-                key={local.lastModifiedAtProp!}
+                key="__lastModifiedAt"
                 header="수정일시"
                 hidden
                 sortable={false}
@@ -719,17 +716,15 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               >
                 {(dsCtx) => (
                   <div class="px-2 py-0.5 text-center">
-                    {(dsCtx.item[local.lastModifiedAtProp!] as DateTime | undefined)?.toFormatString(
-                      "yyyy-MM-dd HH:mm",
-                    )}
+                    {local.lastModifiedAt!(dsCtx.item)?.toFormatString("yyyy-MM-dd HH:mm")}
                   </div>
                 )}
               </DataSheetColumn>
             </Show>
 
-            <Show when={local.lastModifiedByProp}>
+            <Show when={local.lastModifiedBy}>
               <DataSheetColumn<TItem>
-                key={local.lastModifiedByProp!}
+                key="__lastModifiedBy"
                 header="수정자"
                 hidden
                 sortable={false}
@@ -737,7 +732,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               >
                 {(dsCtx) => (
                   <div class="px-2 py-0.5 text-center">
-                    {dsCtx.item[local.lastModifiedByProp!] as string}
+                    {local.lastModifiedBy!(dsCtx.item)}
                   </div>
                 )}
               </DataSheetColumn>
