@@ -1,9 +1,14 @@
-import { createMemo, type JSX, Show, splitProps } from "solid-js";
+import { createEffect, createMemo, createSignal, For, type JSX, Show, splitProps } from "solid-js";
 import { IconExternalLink } from "@tabler/icons-solidjs";
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 import { type SharedDataAccessor } from "../../../providers/shared-data/SharedDataContext";
-import { SelectList } from "../../form-control/select-list/SelectList";
+import { List } from "../../data/list/List";
+import { Pagination } from "../../data/Pagination";
+import { Button } from "../../form-control/Button";
 import { Icon } from "../../display/Icon";
 import { useDialog } from "../../disclosure/DialogContext";
+import { textMuted } from "../../../styles/tokens.styles";
 
 /** SharedDataSelectList Props */
 export interface SharedDataSelectListProps<TItem> {
@@ -30,56 +35,172 @@ export interface SharedDataSelectListProps<TItem> {
   /** 관리 모달 컴포넌트 팩토리 */
   modal?: () => JSX.Element;
 
-  /** 서브 컴포넌트용 children (ItemTemplate 등) */
-  children: JSX.Element;
+  /** 아이템 렌더 함수 */
+  children: (item: TItem, index: number) => JSX.Element;
+
+  /** 커스텀 class */
+  class?: string;
+  /** 커스텀 style */
+  style?: JSX.CSSProperties;
 }
 
+// ─── 스타일 ──────────────────────────────────────────────
+
+const containerClass = clsx("flex-col gap-1");
+
+const headerClass = clsx("flex items-center gap-1 px-2 py-1 text-sm font-semibold");
+
+// ─── 컴포넌트 ───────────────────────────────────────────
+
 export function SharedDataSelectList<TItem>(props: SharedDataSelectListProps<TItem>): JSX.Element {
-  const [local, rest] = splitProps(props, ["data", "filterFn", "modal", "header", "children"]);
+  const [local, rest] = splitProps(props, [
+    "data",
+    "children",
+    "class",
+    "style",
+    "value",
+    "onValueChange",
+    "required",
+    "disabled",
+    "filterFn",
+    "canChange",
+    "pageSize",
+    "header",
+    "modal",
+  ]);
 
   const dialog = useDialog();
 
-  // filterFn 적용된 items
-  const items = createMemo(() => {
-    const allItems = local.data.items();
-    if (!local.filterFn) return allItems;
-    return allItems.filter(local.filterFn);
+  // ─── 페이지네이션 상태 ─────────────────────────────────
+
+  const [page, setPage] = createSignal(1);
+
+  // ─── 필터링 파이프라인 ─────────────────────────────────
+
+  const filteredItems = createMemo(() => {
+    let result = local.data.items();
+
+    // getIsHidden 필터
+    const isHidden = local.data.getIsHidden;
+    if (isHidden) {
+      result = result.filter((item) => !isHidden(item));
+    }
+
+    // filterFn
+    if (local.filterFn) {
+      const fn = local.filterFn;
+      result = result.filter((item, index) => fn(item, index));
+    }
+
+    return result;
   });
 
-  // modal 열기
+  // ─── 페이지 계산 ───────────────────────────────────────
+
+  const totalPageCount = createMemo(() => {
+    if (local.pageSize == null) return 1;
+    return Math.max(1, Math.ceil(filteredItems().length / local.pageSize));
+  });
+
+  // 필터 변경 시 페이지 리셋
+  createEffect(() => {
+    void filteredItems();
+    setPage(1);
+  });
+
+  // 페이지 슬라이스
+  const displayItems = createMemo(() => {
+    const items = filteredItems();
+    if (local.pageSize == null) return items;
+
+    const start = (page() - 1) * local.pageSize;
+    const end = start + local.pageSize;
+    return items.slice(start, end);
+  });
+
+  // ─── 선택/토글 핸들러 ─────────────────────────────────
+
+  const handleSelect = async (item: TItem | undefined) => {
+    if (local.disabled) return;
+
+    // canChange 가드
+    if (local.canChange) {
+      const allowed = await local.canChange(item);
+      if (!allowed) return;
+    }
+
+    // 토글: 이미 선택된 값을 다시 클릭하면 선택 해제 (required가 아닐 때만)
+    if (item !== undefined && item === local.value && !local.required) {
+      local.onValueChange?.(undefined);
+    } else {
+      local.onValueChange?.(item);
+    }
+  };
+
+  // ─── modal 열기 ────────────────────────────────────────
+
   const handleOpenModal = async () => {
     if (!local.modal) return;
     await dialog.show(local.modal, {});
   };
 
+  // ─── 렌더링 ────────────────────────────────────────────
+
   return (
-    <SelectList
+    <div
       {...rest}
-      items={items()}
-      getSearchText={local.data.getSearchText}
-      getIsHidden={local.data.getIsHidden}
+      data-shared-data-select-list
+      class={twMerge(containerClass, local.class)}
+      style={local.style}
     >
-      {/* header + modal 아이콘을 SelectList.Header로 결합 */}
+      {/* Header */}
       <Show when={local.header != null || local.modal != null}>
-        <SelectList.Header>
-          <div class="flex items-center gap-1">
-            <Show when={local.header != null}>
-              <span>{local.header}</span>
-            </Show>
-            <Show when={local.modal != null}>
-              <button
-                type="button"
-                class="inline-flex items-center justify-center rounded p-0.5 text-base-500 hover:text-primary-500 dark:text-base-400 dark:hover:text-primary-400"
-                aria-label="관리"
-                onClick={() => void handleOpenModal()}
-              >
-                <Icon icon={IconExternalLink} size="1em" />
-              </button>
-            </Show>
-          </div>
-        </SelectList.Header>
+        <div class={headerClass}>
+          <Show when={local.header != null}>{local.header}</Show>
+          <Show when={local.modal != null}>
+            <Button size="sm" onClick={() => void handleOpenModal()}>
+              <Icon icon={IconExternalLink} />
+            </Button>
+          </Show>
+        </div>
       </Show>
-      {local.children}
-    </SelectList>
+
+      {/* Pagination */}
+      <Show when={local.pageSize != null && totalPageCount() > 1}>
+        <Pagination
+          page={page()}
+          onPageChange={setPage}
+          totalPageCount={totalPageCount()}
+          size="sm"
+        />
+      </Show>
+
+      {/* List */}
+      <List inset>
+        {/* 미지정 항목 (required가 아닐 때) */}
+        <Show when={!local.required}>
+          <List.Item
+            selected={local.value === undefined}
+            disabled={local.disabled}
+            onClick={() => handleSelect(undefined)}
+          >
+            <span class={textMuted}>미지정</span>
+          </List.Item>
+        </Show>
+
+        {/* 아이템 목록 */}
+        <For each={displayItems()}>
+          {(item, index) => (
+            <List.Item
+              selected={item === local.value}
+              disabled={local.disabled}
+              onClick={() => handleSelect(item)}
+            >
+              {local.children(item, index())}
+            </List.Item>
+          )}
+        </For>
+      </List>
+    </div>
   );
 }

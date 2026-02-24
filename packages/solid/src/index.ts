@@ -6,9 +6,6 @@ export * from "./components/form-control/Button";
 // Select
 export * from "./components/form-control/select/Select";
 
-// SelectList
-export * from "./components/form-control/select-list/SelectList";
-
 // Combobox
 export * from "./components/form-control/combobox/Combobox";
 
