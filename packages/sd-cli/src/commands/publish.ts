@@ -7,7 +7,7 @@ import { env, jsonStringify } from "@simplysm/core-common";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
-import { spawn } from "../utils/spawn";
+import { execa } from "execa";
 import { runBuild } from "./build";
 import { parseWorkspaceGlobs } from "../utils/replace-deps";
 import os from "os";
@@ -352,7 +352,7 @@ async function publishPackage(
       logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
     }
 
-    await spawn("pnpm", args, { cwd: pkgPath });
+    await execa("pnpm", args, { cwd: pkgPath });
   } else if (publishConfig.type === "local-directory") {
     // 로컬 디렉토리 복사
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
@@ -558,7 +558,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (publishPackages.some((p) => p.config === "npm")) {
     logger.debug("npm 인증 확인...");
     try {
-      const whoami = await spawn("npm", ["whoami"]);
+      const { stdout: whoami } = await execa("npm", ["whoami"]);
       if (whoami.trim() === "") {
         throw new Error("npm 로그인 정보가 없습니다.");
       }
@@ -588,13 +588,13 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (!noBuild && hasGit) {
     logger.debug("Git 커밋 여부 확인...");
     try {
-      const diff = await spawn("git", ["diff", "--name-only"]);
-      const stagedDiff = await spawn("git", ["diff", "--cached", "--name-only"]);
+      const { stdout: diff } = await execa("git", ["diff", "--name-only"]);
+      const { stdout: stagedDiff } = await execa("git", ["diff", "--cached", "--name-only"]);
 
       if (diff.trim() !== "" || stagedDiff.trim() !== "") {
         logger.info("커밋되지 않은 변경사항 감지. claude 자동 커밋 시도...");
         try {
-          await spawn("claude", [
+          await execa("claude", [
             "-p",
             "/sd-commit all",
             "--dangerously-skip-permissions",
@@ -609,8 +609,8 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         }
 
         // 커밋 후 재확인
-        const recheckDiff = await spawn("git", ["diff", "--name-only"]);
-        const recheckStaged = await spawn("git", ["diff", "--cached", "--name-only"]);
+        const { stdout: recheckDiff } = await execa("git", ["diff", "--name-only"]);
+        const { stdout: recheckStaged } = await execa("git", ["diff", "--cached", "--name-only"]);
         if (recheckDiff.trim() !== "" || recheckStaged.trim() !== "") {
           throw new Error(
             "자동 커밋 후에도 미커밋 변경사항이 남아있습니다.\n" + recheckDiff + recheckStaged,
@@ -687,18 +687,18 @@ export async function runPublish(options: PublishOptions): Promise<void> {
         logger.info(`[DRY-RUN] git commit -m "v${version}"`);
         logger.info(`[DRY-RUN] git tag -a v${version} -m "v${version}"`);
         logger.info("[DRY-RUN] git push --dry-run");
-        await spawn("git", ["push", "--dry-run"]);
+        await execa("git", ["push", "--dry-run"]);
         logger.info("[DRY-RUN] git push --tags --dry-run");
-        await spawn("git", ["push", "--tags", "--dry-run"]);
+        await execa("git", ["push", "--tags", "--dry-run"]);
         logger.info("[DRY-RUN] Git 작업 시뮬레이션 완료");
       } else {
         logger.debug("Git 커밋/태그/푸시...");
         try {
-          await spawn("git", ["add", ..._changedFiles]);
-          await spawn("git", ["commit", "-m", `v${version}`]);
-          await spawn("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
-          await spawn("git", ["push"]);
-          await spawn("git", ["push", "--tags"]);
+          await execa("git", ["add", ..._changedFiles]);
+          await execa("git", ["commit", "-m", `v${version}`]);
+          await execa("git", ["tag", "-a", `v${version}`, "-m", `v${version}`]);
+          await execa("git", ["push"]);
+          await execa("git", ["push", "--tags"]);
           logger.debug("Git 작업 완료");
         } catch (err) {
           logger.error(
@@ -812,7 +812,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           logger.info(`[DRY-RUN] 실행 예정: ${cmd} ${args.join(" ")}`);
         } else {
           logger.debug(`실행: ${cmd} ${args.join(" ")}`);
-          await spawn(cmd, args, { cwd });
+          await execa(cmd, args, { cwd });
         }
       } catch (err) {
         // postPublish 실패 시 경고만 출력 (배포 롤백 불가)

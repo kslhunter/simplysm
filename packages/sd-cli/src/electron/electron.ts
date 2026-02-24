@@ -5,7 +5,7 @@ import module from "module";
 import { fsExists, fsMkdir, fsCopy, fsReaddir, fsReadJson, fsWriteJson } from "@simplysm/core-node";
 import { consola } from "consola";
 import type { SdElectronConfig } from "../sd-config.types";
-import { spawn } from "../utils/spawn";
+import { execa } from "execa";
 
 /**
  * package.json 타입
@@ -68,7 +68,7 @@ export class Electron {
     env?: Record<string, string>,
   ): Promise<string> {
     Electron._logger.debug(`실행 명령: ${cmd} ${args.join(" ")}`);
-    const result = await spawn(cmd, args, { cwd, env });
+    const { stdout: result } = await execa(cmd, args, { cwd, env: { ...process.env, ...env } });
     Electron._logger.debug(`실행 결과: ${result}`);
     return result;
   }

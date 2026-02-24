@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execaSync } from "execa";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,7 +9,7 @@ export async function setup() {
   console.log("[orm] Starting Docker containers...");
 
   try {
-    execSync(`docker compose -f "${composePath}" up -d --wait`, {
+    execaSync("docker", ["compose", "-f", composePath, "up", "-d", "--wait"], {
       stdio: "inherit",
     });
 
@@ -19,10 +19,23 @@ export async function setup() {
     let mssqlReady = false;
     for (let i = 0; i < 10; i++) {
       try {
-        execSync(
-          `docker compose -f "${composePath}" exec -T mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb"`,
-          { stdio: "pipe" },
-        );
+        execaSync("docker", [
+          "compose",
+          "-f",
+          composePath,
+          "exec",
+          "-T",
+          "mssql",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "YourStrong@Passw0rd",
+          "-Q",
+          "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb",
+        ]);
         console.log("[orm] MSSQL TestDb created.");
         mssqlReady = true;
         break;
@@ -47,7 +60,7 @@ export function teardown() {
   console.log("[orm] Stopping Docker containers...");
 
   try {
-    execSync(`docker compose -f "${composePath}" down`, {
+    execaSync("docker", ["compose", "-f", composePath, "down"], {
       stdio: "inherit",
     });
     console.log("[orm] Docker containers stopped.");
