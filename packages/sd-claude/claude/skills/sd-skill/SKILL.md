@@ -1,6 +1,7 @@
 ---
 name: sd-skill
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: Skill creation and editing with TDD methodology
+disable-model-invocation: true
 model: opus
 ---
 

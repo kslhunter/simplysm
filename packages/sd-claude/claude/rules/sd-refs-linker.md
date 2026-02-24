@@ -18,6 +18,7 @@ Before starting work, **Read** the relevant reference files from `.claude/refs/`
 | Using `@simplysm/*` package APIs                 | `.claude/refs/sd-simplysm-docs.md`    |
 | Debugging, problem-solving, or planning approach | `.claude/refs/sd-workflow.md`         |
 | @simplysm/service-\* 사용 시                     | `.claude/refs/sd-service.md`          |
+| Migrating/porting code from another codebase     | `.claude/refs/sd-migration.md`        |
 
 ## v12 only (< 13)
 

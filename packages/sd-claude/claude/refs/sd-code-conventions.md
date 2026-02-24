@@ -38,3 +38,9 @@ async function readFileAsync() { ... } // Async suffix prohibited
 
 - Not enforced — omit when code is self-explanatory
 - When written, use Korean
+
+## index.ts Export Pattern
+
+- Large packages: `#region`/`#endregion` for sections + `//` for sub-groups
+- Small packages (≤10 exports): `//` comments only
+- Always `export *` (wildcard), never explicit `export type { ... } from "..."`

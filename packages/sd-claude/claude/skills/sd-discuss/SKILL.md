@@ -1,6 +1,7 @@
 ---
 name: sd-discuss
-description: "Use when evaluating code design decisions against industry standards and project conventions - class vs functional, pattern choices, architecture trade-offs, technology selection"
+description: Evidence-based technical discussion with industry research
+disable-model-invocation: true
 model: opus
 ---
 

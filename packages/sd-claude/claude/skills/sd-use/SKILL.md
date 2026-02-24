@@ -1,6 +1,7 @@
 ---
 name: sd-use
-description: You MUST invoke this for any user request that does not explicitly use a /sd-* slash command. Do not bypass by selecting other sd-* skills directly, even when the match seems obvious.
+description: Auto router that matches user requests to the appropriate sd-* skill or agent
+disable-model-invocation: true
 model: haiku
 ---
 
@@ -35,6 +36,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-\* skill or age
 | `sd-api-name-review` | Review public API naming consistency                                                 |
 | `sd-worktree`        | Start new work in branch isolation                                                   |
 | `sd-skill`           | Create or edit skills                                                                |
+| `sd-email-analyze`   | Analyze, read, or summarize email files (`.eml` or `.msg`) — parsing and attachment extraction |
 
 ### Agents (execute via `Task` tool with matching `subagent_type`)
 
@@ -43,6 +45,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-\* skill or age
 | `sd-code-reviewer`   | Quick/focused review — specific files, recent changes, bugs, security, quality issues. **Default choice for most review requests** |
 | `sd-code-simplifier` | Simplify, clean up, improve code readability                      |
 | `sd-api-reviewer`    | Review library public API for DX quality                          |
+| `sd-security-reviewer` | ORM SQL injection and input validation vulnerability review     |
 
 ## Selection Rules
 

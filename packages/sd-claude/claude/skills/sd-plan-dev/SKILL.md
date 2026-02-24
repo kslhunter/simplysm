@@ -1,6 +1,7 @@
 ---
 name: sd-plan-dev
-description: Use when executing implementation plans with independent tasks in the current session
+description: Parallel execution of implementation plan tasks
+disable-model-invocation: true
 model: opus
 ---
 

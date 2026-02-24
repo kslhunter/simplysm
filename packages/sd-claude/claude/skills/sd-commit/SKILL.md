@@ -1,6 +1,7 @@
 ---
 name: sd-commit
-description: Use when creating git commits — for staging and committing changed files with conventional commit messages, either for context-relevant files only (default) or all uncommitted changes at once (all mode).
+description: Git commit with conventional commit messages
+disable-model-invocation: true
 argument-hint: "[all]"
 allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git commit:*)
 model: haiku

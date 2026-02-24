@@ -1,6 +1,7 @@
 ---
 name: sd-plan
-description: "NEVER invoke directly from user requests. This skill is ONLY called as a follow-up step after sd-brainstorm has completed. If the user asks to plan, design, or implement something, use sd-brainstorm first."
+description: Implementation plan creation from brainstorm designs
+disable-model-invocation: true
 model: opus
 ---
 

@@ -58,14 +58,6 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
           name: "eventemitter3",
           message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
         },
-        {
-          name: "child_process",
-          message: "execa를 사용하세요.",
-        },
-        {
-          name: "node:child_process",
-          message: "execa를 사용하세요.",
-        },
       ],
     },
   ],
@@ -133,9 +125,10 @@ export default defineConfig([
         {
           devDependencies: [
             "**/lib/**",
-            "**/eslint.config.js",
-            "**/simplysm.js",
-            "**/vitest.config.js",
+            "**/eslint.config.{js,cjs,mjs}",
+            "**/stylelint.config.{js,cjs,mjs}",
+            "**/simplysm.{js,cjs,mjs}",
+            "**/vitest.config.{js,cjs,mjs}",
           ],
         },
       ],
@@ -226,6 +219,7 @@ export default defineConfig([
           devDependencies: [
             "**/lib/**",
             "**/eslint.config.ts",
+            "**/stylelint.config.ts",
             "**/simplysm.ts",
             "**/vitest.config.ts",
             "**/vitest.setup.ts",
