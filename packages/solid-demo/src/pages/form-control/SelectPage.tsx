@@ -43,13 +43,13 @@ const categories: Category[] = [
 ];
 
 export default function SelectPage() {
-  // Controlled 예제용 시그널
+  // Signals for controlled example
   const [controlledSelected, setControlledSelected] = createSignal<Fruit | undefined>();
   const [controlledMultiSelected, setControlledMultiSelected] = createSignal<Fruit[]>([]);
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 사용 */}
+      {/* Basic usage */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
         <Select
@@ -70,7 +70,7 @@ export default function SelectPage() {
         </Select>
       </section>
 
-      {/* 다중 선택 */}
+      {/* Multiple selection */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">다중 선택</h2>
         <Select
@@ -92,7 +92,7 @@ export default function SelectPage() {
         </Select>
       </section>
 
-      {/* 추가 버튼 */}
+      {/* Add button */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           추가 버튼 (Select.Action)
@@ -106,7 +106,7 @@ export default function SelectPage() {
         </Select>
       </section>
 
-      {/* 커스텀 헤더 */}
+      {/* Custom header */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           커스텀 헤더 (Select.Header)
@@ -123,7 +123,7 @@ export default function SelectPage() {
         </Select>
       </section>
 
-      {/* 계층 구조 */}
+      {/* Hierarchical structure */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           계층 구조 (중첩 아이템)
@@ -146,7 +146,7 @@ export default function SelectPage() {
         </Select>
       </section>
 
-      {/* 사이즈 */}
+      {/* Size */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
         <div class="flex flex-col items-start gap-4">
@@ -165,7 +165,7 @@ export default function SelectPage() {
         </div>
       </section>
 
-      {/* 상태 */}
+      {/* State */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
         <div class="flex flex-col items-start gap-4">
@@ -215,7 +215,7 @@ export default function SelectPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Controlled</h2>
         <div class="space-y-6">
-          {/* 단일 선택 */}
+          {/* Single selection */}
           <div>
             <h3 class="mb-3 text-lg font-bold">단일 선택</h3>
             <div class="flex flex-col items-start gap-3">
@@ -254,7 +254,7 @@ export default function SelectPage() {
             </div>
           </div>
 
-          {/* 다중 선택 */}
+          {/* Multiple selection */}
           <div>
             <h3 class="mb-3 text-lg font-bold">다중 선택</h3>
             <div class="flex flex-col items-start gap-3">

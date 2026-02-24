@@ -159,7 +159,7 @@ export default function SheetPage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 테이블 */}
+      {/* Basic table */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 테이블</h2>
         <DataSheet items={users} persistKey="basic">
@@ -175,7 +175,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 다단계 헤더 */}
+      {/* Multi-level header */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">다단계 헤더</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -197,7 +197,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 합계 행 */}
+      {/* Summary row */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">합계 행</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -218,7 +218,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 정렬 */}
+      {/* Sorting */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">정렬</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -251,7 +251,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 페이지네이션 */}
+      {/* Pagination */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">페이지네이션</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -276,7 +276,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 트리 확장 */}
+      {/* Tree expansion */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">트리 확장</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -299,7 +299,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 고정 컬럼 + 리사이징 */}
+      {/* Fixed columns + resizing */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           고정 컬럼 + 리사이징
@@ -326,7 +326,7 @@ export default function SheetPage() {
         </div>
       </section>
 
-      {/* 인라인 편집 */}
+      {/* Inline editing */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">인라인 편집</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -437,7 +437,7 @@ export default function SheetPage() {
         </DataSheet>
       </section>
 
-      {/* 다중 선택 */}
+      {/* Multiple selection */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">다중 선택</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -468,7 +468,7 @@ export default function SheetPage() {
         </p>
       </section>
 
-      {/* 단일 선택 + autoSelect */}
+      {/* Single selection + autoSelect */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           단일 선택 + autoSelect
@@ -503,7 +503,7 @@ export default function SheetPage() {
         </p>
       </section>
 
-      {/* 선택 불가 항목 */}
+      {/* Non-selectable items */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">선택 불가 항목</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -536,7 +536,7 @@ export default function SheetPage() {
         </p>
       </section>
 
-      {/* 드래그 재정렬 */}
+      {/* Drag reorder */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">드래그 재정렬</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

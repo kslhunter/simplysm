@@ -12,7 +12,7 @@ import {
 import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
 export default function FieldPage() {
-  // Controlled 예제용 시그널
+  // Signals for controlled example
   const [controlledText, setControlledText] = createSignal<string | undefined>("controlled 값");
   const [controlledNumber, setControlledNumber] = createSignal<number | undefined>(12345);
   const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>(
@@ -25,13 +25,13 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">TextInput</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <TextInput placeholder="이름을 입력하세요" />
           </div>
 
-          {/* 타입 */}
+          {/* Type */}
           <div>
             <h3 class="mb-3 text-lg font-bold">타입</h3>
             <div class="flex flex-col items-start gap-3">
@@ -41,13 +41,13 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 포맷 */}
+          {/* Format */}
           <div>
             <h3 class="mb-3 text-lg font-bold">포맷 (전화번호)</h3>
             <TextInput placeholder="전화번호" format="XXX-XXXX-XXXX" />
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <div class="flex flex-col items-start gap-3">
@@ -57,7 +57,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -84,7 +84,7 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Textarea</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <Textarea placeholder="내용을 입력하세요" />
@@ -109,7 +109,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <div class="flex flex-col items-start gap-3">
@@ -119,7 +119,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -146,13 +146,13 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">NumberInput</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <NumberInput placeholder="숫자를 입력하세요" />
           </div>
 
-          {/* 천단위 콤마 */}
+          {/* Thousands comma */}
           <div>
             <h3 class="mb-3 text-lg font-bold">천단위 콤마</h3>
             <div class="flex flex-col items-start gap-3">
@@ -167,13 +167,13 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 소수점 자릿수 */}
+          {/* Decimal places */}
           <div>
             <h3 class="mb-3 text-lg font-bold">소수점 자릿수 (minDigits)</h3>
             <NumberInput value={100} minDigits={2} placeholder="minDigits=2" />
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -196,7 +196,7 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">DatePicker</h2>
         <div class="space-y-6">
-          {/* 타입별 */}
+          {/* By type */}
           <div>
             <h3 class="mb-3 text-lg font-bold">타입</h3>
             <div class="flex flex-col items-start gap-3">
@@ -215,7 +215,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -232,7 +232,7 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">DateTimePicker</h2>
         <div class="space-y-6">
-          {/* 타입별 */}
+          {/* By type */}
           <div>
             <h3 class="mb-3 text-lg font-bold">타입</h3>
             <div class="flex flex-col items-start gap-3">
@@ -247,7 +247,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -264,7 +264,7 @@ export default function FieldPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">TimePicker</h2>
         <div class="space-y-6">
-          {/* 타입별 */}
+          {/* By type */}
           <div>
             <h3 class="mb-3 text-lg font-bold">타입</h3>
             <div class="flex flex-col items-start gap-3">
@@ -279,7 +279,7 @@ export default function FieldPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">

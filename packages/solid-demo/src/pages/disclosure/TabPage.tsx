@@ -8,7 +8,7 @@ export default function TabPage() {
 
   return (
     <div class="space-y-12 p-6">
-      {/* 기본 사용 */}
+      {/* Basic usage */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
         <div class="space-y-4">
@@ -46,7 +46,7 @@ export default function TabPage() {
         </Tabs>
       </section>
 
-      {/* 사이즈 */}
+      {/* Size */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
         <div class="space-y-6">

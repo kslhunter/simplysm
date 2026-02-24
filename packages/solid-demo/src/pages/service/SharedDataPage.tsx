@@ -30,7 +30,7 @@ const SharedDataDemo: Component = () => {
 
   return (
     <div class="space-y-8">
-      {/* busy 상태 */}
+      {/* Busy state */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">busy 상태</h2>
         <Tag theme={shared.busy() ? "warning" : "success"}>
@@ -38,7 +38,7 @@ const SharedDataDemo: Component = () => {
         </Tag>
       </section>
 
-      {/* User 목록 - items() */}
+      {/* User list - items() */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">User — items()</h2>
         <Table>
@@ -63,7 +63,7 @@ const SharedDataDemo: Component = () => {
         </Table>
       </section>
 
-      {/* Company 목록 - items() */}
+      {/* Company list - items() */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Company — items()</h2>
         <Table>
@@ -88,7 +88,7 @@ const SharedDataDemo: Component = () => {
         </Table>
       </section>
 
-      {/* get() 단일 조회 */}
+      {/* get() single lookup */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           get() — O(1) 단일 조회

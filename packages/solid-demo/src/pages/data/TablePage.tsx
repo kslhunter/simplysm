@@ -12,7 +12,7 @@ const sampleData = [
 export default function TablePage() {
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 (inline) */}
+      {/* Basic (inline) */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 테이블</h2>
         <Table>

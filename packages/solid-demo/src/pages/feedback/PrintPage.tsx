@@ -248,7 +248,7 @@ const PrintDemo: Component = () => {
         </Button>
       </section>
 
-      {/* toPdf - 단일 페이지 (자동 분할) */}
+      {/* toPdf - Single page (auto split) */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           toPdf - 단일 (자동 분할)
@@ -261,7 +261,7 @@ const PrintDemo: Component = () => {
         </Button>
       </section>
 
-      {/* toPdf - 다중 페이지 */}
+      {/* toPdf - Multiple pages */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           toPdf - 다중 페이지
@@ -274,7 +274,7 @@ const PrintDemo: Component = () => {
         </Button>
       </section>
 
-      {/* toPdf - 가로 방향 */}
+      {/* toPdf - Landscape */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">toPdf - 가로 방향</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -285,7 +285,7 @@ const PrintDemo: Component = () => {
         </Button>
       </section>
 
-      {/* toPdf - 비동기 ready */}
+      {/* toPdf - Async ready */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           toPdf - 비동기 ready
@@ -298,7 +298,7 @@ const PrintDemo: Component = () => {
         </Button>
       </section>
 
-      {/* 상태 표시 */}
+      {/* Status display */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
         <div class="rounded border border-base-200 p-4 font-mono text-sm dark:border-base-700">

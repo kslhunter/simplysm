@@ -11,7 +11,7 @@ export default function CheckboxRadioPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Checkbox</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <div class="flex flex-col items-start gap-3">
@@ -21,7 +21,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <div class="flex flex-col items-start gap-3">
@@ -31,7 +31,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -52,7 +52,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 인라인 */}
+          {/* Inline */}
           <div>
             <h3 class="mb-3 text-lg font-bold">인라인</h3>
             <p class="text-base-700 dark:text-base-300">
@@ -70,7 +70,7 @@ export default function CheckboxRadioPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Radio</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <div class="flex flex-col items-start gap-3">
@@ -80,7 +80,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <div class="flex flex-col items-start gap-3">
@@ -90,7 +90,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 상태 */}
+          {/* State */}
           <div>
             <h3 class="mb-3 text-lg font-bold">상태</h3>
             <div class="flex flex-col items-start gap-3">
@@ -107,7 +107,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* 인라인 */}
+          {/* Inline */}
           <div>
             <h3 class="mb-3 text-lg font-bold">인라인</h3>
             <p class="text-base-700 dark:text-base-300">
@@ -175,7 +175,7 @@ export default function CheckboxRadioPage() {
             </div>
           </div>
 
-          {/* Radio Controlled (그룹) */}
+          {/* Radio Controlled (group) */}
           <div>
             <h3 class="mb-3 text-lg font-bold">Radio (그룹)</h3>
             <div class="flex flex-col items-start gap-3">

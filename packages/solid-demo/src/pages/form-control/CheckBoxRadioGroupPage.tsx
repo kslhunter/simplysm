@@ -11,7 +11,7 @@ export default function CheckboxRadioGroupPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">CheckboxGroup</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <CheckboxGroup value={selectedFruits()} onValueChange={setSelectedFruits}>
@@ -27,7 +27,7 @@ export default function CheckboxRadioGroupPage() {
             </p>
           </div>
 
-          {/* disabled 아이템 */}
+          {/* Disabled item */}
           <div>
             <h3 class="mb-3 text-lg font-bold">Disabled</h3>
             <CheckboxGroup>
@@ -38,7 +38,7 @@ export default function CheckboxRadioGroupPage() {
             </CheckboxGroup>
           </div>
 
-          {/* 전체 disabled */}
+          {/* All disabled */}
           <div>
             <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
             <CheckboxGroup disabled value={["a"]}>
@@ -47,7 +47,7 @@ export default function CheckboxRadioGroupPage() {
             </CheckboxGroup>
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <CheckboxGroup size="sm" value={["x"]}>
@@ -109,7 +109,7 @@ export default function CheckboxRadioGroupPage() {
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">RadioGroup</h2>
         <div class="space-y-6">
-          {/* 기본 사용 */}
+          {/* Basic usage */}
           <div>
             <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
             <RadioGroup value={selectedOption()} onValueChange={setSelectedOption}>
@@ -123,7 +123,7 @@ export default function CheckboxRadioGroupPage() {
             </p>
           </div>
 
-          {/* disabled 아이템 */}
+          {/* Disabled item */}
           <div>
             <h3 class="mb-3 text-lg font-bold">Disabled</h3>
             <RadioGroup>
@@ -134,7 +134,7 @@ export default function CheckboxRadioGroupPage() {
             </RadioGroup>
           </div>
 
-          {/* 전체 disabled */}
+          {/* All disabled */}
           <div>
             <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
             <RadioGroup disabled value="a">
@@ -143,7 +143,7 @@ export default function CheckboxRadioGroupPage() {
             </RadioGroup>
           </div>
 
-          {/* 사이즈 */}
+          {/* Size */}
           <div>
             <h3 class="mb-3 text-lg font-bold">사이즈</h3>
             <RadioGroup size="lg" value="x">

@@ -6,7 +6,7 @@ const themes: ProgressTheme[] = ["primary", "info", "success", "warning", "dange
 export default function ProgressPage() {
   return (
     <div class="space-y-8 p-6">
-      {/* 테마 */}
+      {/* Theme */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">테마</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -17,7 +17,7 @@ export default function ProgressPage() {
         </div>
       </section>
 
-      {/* 사이즈 */}
+      {/* Size */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
         <div class="space-y-2">
@@ -38,7 +38,7 @@ export default function ProgressPage() {
         </div>
       </section>
 
-      {/* 커스텀 콘텐츠 */}
+      {/* Custom content */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">커스텀 콘텐츠</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -54,7 +54,7 @@ export default function ProgressPage() {
         </div>
       </section>
 
-      {/* 다양한 진행률 */}
+      {/* Various progress levels */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">진행률</h2>
         <div class="space-y-2">

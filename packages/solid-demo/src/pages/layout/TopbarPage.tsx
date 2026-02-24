@@ -16,7 +16,7 @@ import {
   IconUsers,
 } from "@tabler/icons-solidjs";
 
-// 단순 메뉴 (2단계)
+// Simple menu (2 levels)
 const simpleMenus: TopbarMenuItem[] = [
   {
     title: "관리",
@@ -28,7 +28,7 @@ const simpleMenus: TopbarMenuItem[] = [
   },
 ];
 
-// 중첩 메뉴 (3단계 이상, 아이콘 포함)
+// Nested menu (3+ levels, with icons)
 const nestedMenus: TopbarMenuItem[] = [
   {
     title: "관리",
@@ -56,13 +56,13 @@ const nestedMenus: TopbarMenuItem[] = [
   },
 ];
 
-// TopbarUser용 메뉴
+// Menu for TopbarUser
 const userMenus: TopbarUserMenu[] = [
   { title: "프로필", onClick: () => alert("프로필") },
   { title: "로그아웃", onClick: () => alert("로그아웃") },
 ];
 
-// Sidebar + Topbar 통합용 메뉴
+// Menu for Sidebar + Topbar integration
 const sidebarMenus: AppMenu[] = [
   { title: "홈", href: "#", icon: IconHome },
   {
@@ -76,7 +76,7 @@ const sidebarMenus: AppMenu[] = [
   { title: "설정", href: "#", icon: IconSettings },
 ];
 
-// 하위 페이지 시뮬레이션 컴포넌트
+// Sub-page simulation component
 function UserPageSimulation() {
   createTopbarActions(() => (
     <div class="flex gap-1">
@@ -100,7 +100,7 @@ function UserPageSimulation() {
 export default function TopbarPage() {
   return (
     <div class="space-y-8 p-6">
-      {/* 1. TopbarContainer 기본 */}
+      {/* 1. TopbarContainer basic */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           TopbarContainer 기본
@@ -123,7 +123,7 @@ export default function TopbarPage() {
         </div>
       </section>
 
-      {/* 2. 토글 버튼 자동 연동 */}
+      {/* 2. Toggle button auto-linking */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           토글 버튼 자동 연동
@@ -173,7 +173,7 @@ export default function TopbarPage() {
         </div>
       </section>
 
-      {/* 3. TopbarMenu 변형 */}
+      {/* 3. TopbarMenu variants */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">TopbarMenu 변형</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -217,7 +217,7 @@ export default function TopbarPage() {
         </div>
       </section>
 
-      {/* 4. TopbarUser 변형 */}
+      {/* 4. TopbarUser variants */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">TopbarUser 변형</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -263,7 +263,7 @@ export default function TopbarPage() {
         </div>
       </section>
 
-      {/* 5. Sidebar + Topbar 통합 */}
+      {/* 5. Sidebar + Topbar integration */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           Sidebar + Topbar 통합
@@ -337,7 +337,7 @@ export default function TopbarPage() {
         </div>
       </section>
 
-      {/* 6. 모바일 데모 */}
+      {/* 6. Mobile demo */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">모바일 데모</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

@@ -89,7 +89,7 @@ const ServiceClientDemo: Component = () => {
 
   return (
     <div class="space-y-8">
-      {/* 연결 상태 */}
+      {/* Connection status */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">연결 상태</h2>
         <Tag theme={connected() ? "success" : "danger"}>

@@ -21,19 +21,19 @@ render(
     <AppStructureProvider>
       <HashRouter>
         <Route path="/" component={App}>
-          {/* Home 레이아웃 외부 라우트 */}
+          {/* Routes outside Home layout */}
           <Route path="/login" component={lazy(() => import("./pages/LoginPage"))} />
           <Route
             path="/mobile-layout-demo"
             component={lazy(() => import("./pages/mobile/MobileLayoutDemoPage"))}
           />
-          {/* Home 레이아웃 내부 */}
+          {/* Inside Home layout */}
           <Route path="/home" component={Home}>
             <Route path="/" component={() => <Navigate href="/home/main" />} />
             <HomeRoutes />
             <Route path="/*" component={NotFoundPage} />
           </Route>
-          {/* 루트 리다이렉트 */}
+          {/* Root redirect */}
           <Route path="/" component={() => <Navigate href="/login" />} />
         </Route>
       </HashRouter>

@@ -51,7 +51,7 @@ export default function KanbanPage() {
     const targetCardValue = info.targetCardValue as number | undefined;
 
     setLanes((prev) => {
-      // 소스 카드 찾기 및 제거
+      // Find and remove source card
       let sourceCard: CardData | undefined;
       const withoutSource = prev.map((lane) => ({
         ...lane,
@@ -66,17 +66,17 @@ export default function KanbanPage() {
 
       if (!sourceCard) return prev;
 
-      // 대상 레인에 삽입
+      // Insert into target lane
       return withoutSource.map((lane) => {
         if (lane.id !== targetLaneValue) return lane;
 
         const newCards = [...lane.cards];
 
         if (targetCardValue == null) {
-          // 빈 영역 드롭 → 맨 끝에 추가
+          // Dropped on empty area -> append to end
           newCards.push(sourceCard!);
         } else {
-          // 특정 카드 앞/뒤에 삽입
+          // Insert before/after specific card
           const targetIdx = newCards.findIndex((c) => c.id === targetCardValue);
           if (targetIdx < 0) {
             newCards.push(sourceCard!);

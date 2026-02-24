@@ -7,7 +7,7 @@ export default function FormTablePage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 FormTable */}
+      {/* Basic FormTable */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 FormTable</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -86,7 +86,7 @@ export default function FormTablePage() {
         </FormTable>
       </section>
 
-      {/* 읽기 전용 정보 */}
+      {/* Read-only information */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">읽기 전용 정보</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

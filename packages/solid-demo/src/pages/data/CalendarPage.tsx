@@ -23,7 +23,7 @@ export default function CalendarPage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* Section 1: 기본 사용 */}
+      {/* Section 1: Basic usage */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -41,7 +41,7 @@ export default function CalendarPage() {
         />
       </section>
 
-      {/* Section 2: 주 시작 요일 변경 (월요일) */}
+      {/* Section 2: Week start day change (Monday) */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           주 시작 요일: 월요일
@@ -62,7 +62,7 @@ export default function CalendarPage() {
         />
       </section>
 
-      {/* Section 3: Controlled 연월 */}
+      {/* Section 3: Controlled year/month */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Controlled 연월</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

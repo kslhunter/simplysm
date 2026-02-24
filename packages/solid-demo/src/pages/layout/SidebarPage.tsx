@@ -26,7 +26,7 @@ const SidebarToggleButton = () => {
 export default function SidebarPage() {
   return (
     <div class="space-y-8 p-6">
-      {/* 1. 기본 Sidebar */}
+      {/* 1. Basic Sidebar */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 Sidebar</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -63,7 +63,7 @@ export default function SidebarPage() {
         </div>
       </section>
 
-      {/* 2. Toggled 상태 */}
+      {/* 2. Toggled state */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Toggled 상태</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -90,11 +90,11 @@ export default function SidebarPage() {
         </div>
       </section>
 
-      {/* 3. SidebarUser 변형 */}
+      {/* 3. SidebarUser variants */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">SidebarUser 변형</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* 없음 */}
+          {/* None */}
           <div>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">없음</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
@@ -113,7 +113,7 @@ export default function SidebarPage() {
             </div>
           </div>
 
-          {/* 기본 (메뉴 없음) */}
+          {/* Basic (no menu) */}
           <div>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">기본 (메뉴 없음)</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
@@ -135,7 +135,7 @@ export default function SidebarPage() {
             </div>
           </div>
 
-          {/* 메뉴 포함 */}
+          {/* With menu */}
           <div>
             <p class="mb-2 text-sm text-base-600 dark:text-base-400">메뉴 포함</p>
             <div class="h-80 overflow-hidden rounded-lg border border-base-200 dark:border-base-700">
@@ -166,7 +166,7 @@ export default function SidebarPage() {
         </div>
       </section>
 
-      {/* 4. 모바일 데모 */}
+      {/* 4. Mobile demo */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">모바일 데모</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

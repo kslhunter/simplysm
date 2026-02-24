@@ -6,7 +6,7 @@ const NotificationDemo: Component = () => {
 
   return (
     <div class="space-y-8">
-      {/* 테마별 알림 테스트 */}
+      {/* Theme-specific notification test */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">테마별 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -45,7 +45,7 @@ const NotificationDemo: Component = () => {
         </div>
       </section>
 
-      {/* 액션 버튼 포함 알림 */}
+      {/* Notification with action button */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">액션 버튼 포함</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -67,7 +67,7 @@ const NotificationDemo: Component = () => {
         </Button>
       </section>
 
-      {/* 여러 알림 발생 */}
+      {/* Multiple notifications */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">연속 알림</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -87,7 +87,7 @@ const NotificationDemo: Component = () => {
         </Button>
       </section>
 
-      {/* 전체 삭제 */}
+      {/* Clear all */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">알림 관리</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">모든 알림을 삭제합니다.</p>

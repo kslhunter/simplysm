@@ -4,14 +4,14 @@ import type { DateRangePeriodType } from "@simplysm/solid";
 import { DateOnly } from "@simplysm/core-common";
 
 export default function DateRangePickerPage() {
-  // Controlled 예제용 시그널
+  // Signals for controlled example
   const [periodType, setPeriodType] = createSignal<DateRangePeriodType>("range");
   const [from, setFrom] = createSignal<DateOnly | undefined>(new DateOnly(2025, 3, 1));
   const [to, setTo] = createSignal<DateOnly | undefined>(new DateOnly(2025, 3, 31));
 
   return (
     <div class="space-y-12 p-6">
-      {/* 기본 사용 */}
+      {/* Basic usage */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
         <div class="space-y-6">
@@ -30,7 +30,7 @@ export default function DateRangePickerPage() {
         </div>
       </section>
 
-      {/* 기간 타입별 */}
+      {/* By period type */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기간 타입</h2>
         <div class="space-y-6">
@@ -53,7 +53,7 @@ export default function DateRangePickerPage() {
         </div>
       </section>
 
-      {/* 상태 */}
+      {/* State */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
         <div class="space-y-6">
@@ -69,7 +69,7 @@ export default function DateRangePickerPage() {
         </div>
       </section>
 
-      {/* 사이즈 */}
+      {/* Size */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
         <div class="space-y-6">

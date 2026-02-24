@@ -3,7 +3,7 @@ import { Button, FormGroup, Icon, NumberInput, Select, TextInput } from "@simply
 import { IconSearch } from "@tabler/icons-solidjs";
 
 export default function FormGroupPage() {
-  // Controlled 예제용 시그널
+  // Signals for controlled example
   const [controlledName, setControlledName] = createSignal("");
   const [controlledEmail, setControlledEmail] = createSignal("");
 

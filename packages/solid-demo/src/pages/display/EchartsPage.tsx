@@ -37,7 +37,7 @@ export default function EchartsPage() {
         </div>
       </section>
 
-      {/* Loading 토글 */}
+      {/* Loading toggle */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Busy</h2>
         <Button onClick={() => setBusy((v) => !v)}>{busy() ? "로딩 해제" : "로딩 표시"}</Button>

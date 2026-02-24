@@ -18,7 +18,7 @@ const allFruits: Fruit[] = [
   { id: 8, name: "체리", emoji: "🍒" },
 ];
 
-// 즉시 필터링 (로딩 없음)
+// Instant filtering (no loading)
 const filterFruits = (query: string): Promise<Fruit[]> => {
   if (!query.trim()) {
     return Promise.resolve(allFruits);
@@ -28,9 +28,9 @@ const filterFruits = (query: string): Promise<Fruit[]> => {
   );
 };
 
-// 비동기 검색 시뮬레이션 (로딩 있음)
+// Async search simulation (with loading)
 const searchFruitsAsync = async (query: string): Promise<Fruit[]> => {
-  // 네트워크 지연 시뮬레이션
+  // Network delay simulation
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   if (!query.trim()) {
@@ -40,13 +40,13 @@ const searchFruitsAsync = async (query: string): Promise<Fruit[]> => {
 };
 
 export default function ComboboxPage() {
-  // Controlled 예제용 시그널
+  // Signals for controlled example
   const [controlledSelected, setControlledSelected] = createSignal<Fruit | undefined>();
   const [customValue, setCustomValue] = createSignal<string | Fruit | undefined>();
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 사용 */}
+      {/* Basic usage */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
@@ -143,7 +143,7 @@ export default function ComboboxPage() {
         </Combobox>
       </section>
 
-      {/* 비동기 로딩 */}
+      {/* Async loading */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">비동기 로딩</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
@@ -168,7 +168,7 @@ export default function ComboboxPage() {
         </Combobox>
       </section>
 
-      {/* 사이즈 */}
+      {/* Size */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
         <div class="flex flex-col items-start gap-4">
@@ -216,7 +216,7 @@ export default function ComboboxPage() {
         </div>
       </section>
 
-      {/* 상태 */}
+      {/* State */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
         <div class="flex flex-col items-start gap-4">

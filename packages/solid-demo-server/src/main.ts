@@ -14,8 +14,8 @@ export const server = createServiceServer({
   services: [EchoService, HealthService, SharedDataDemoService],
 });
 
-// 프로덕션 모드: 정적 파일 서빙 포함하여 직접 listen
-// Watch 모드 (env.DEV): Server Runtime Worker가 proxy 설정 후 listen 호출
+// Production mode: listen directly with static file serving
+// Watch mode (env.DEV): Server Runtime Worker sets up proxy then calls listen
 if (!env.DEV) {
   await server.listen();
 }

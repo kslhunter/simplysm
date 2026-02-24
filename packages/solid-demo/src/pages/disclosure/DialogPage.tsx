@@ -19,22 +19,22 @@ function SampleDialogContent() {
 export default function ModalPage() {
   const dialog = useDialog();
 
-  // 기본 다이얼로그
+  // Basic dialog
   const [basicOpen, setBasicOpen] = createSignal(false);
 
-  // 프로그래매틱 다이얼로그 결과
+  // Programmatic dialog result
   const [programmaticResult, setProgrammaticResult] = createSignal<string | undefined>();
 
-  // 닫기 옵션 다이얼로그
+  // Close options dialog
   const [closeOptionOpen, setCloseOptionOpen] = createSignal(false);
 
-  // Float 다이얼로그
+  // Float dialog
   const [floatOpen, setFloatOpen] = createSignal(false);
 
-  // Fill 다이얼로그
+  // Fill dialog
   const [fillOpen, setFillOpen] = createSignal(false);
 
-  // 리사이즈/이동 다이얼로그
+  // Resizable/movable dialog
   const [resizableOpen, setResizableOpen] = createSignal(false);
 
   const handleProgrammaticOpen = async () => {
@@ -48,7 +48,7 @@ export default function ModalPage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 다이얼로그 */}
+      {/* Basic dialog */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 다이얼로그</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -68,7 +68,7 @@ export default function ModalPage() {
         </Dialog>
       </section>
 
-      {/* 프로그래매틱 다이얼로그 */}
+      {/* Programmatic dialog */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           프로그래매틱 다이얼로그
@@ -89,7 +89,7 @@ export default function ModalPage() {
         </div>
       </section>
 
-      {/* 닫기 옵션 */}
+      {/* Close options */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">닫기 옵션</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -112,7 +112,7 @@ export default function ModalPage() {
         </Dialog>
       </section>
 
-      {/* Float 다이얼로그 */}
+      {/* Float dialog */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Float 다이얼로그</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -133,7 +133,7 @@ export default function ModalPage() {
         </Dialog>
       </section>
 
-      {/* Fill 다이얼로그 */}
+      {/* Fill dialog */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Fill 다이얼로그</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -153,7 +153,7 @@ export default function ModalPage() {
         </Dialog>
       </section>
 
-      {/* 리사이즈/이동 */}
+      {/* Resize/move */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">리사이즈 / 이동</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

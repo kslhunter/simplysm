@@ -41,7 +41,7 @@ const BusyDemo: Component = () => {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 전역 Busy */}
+      {/* Global Busy */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           전역 Busy (Provider)
@@ -54,7 +54,7 @@ const BusyDemo: Component = () => {
         </Button>
       </section>
 
-      {/* 로컬 Spinner */}
+      {/* Local Spinner */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           로컬 BusyContainer (Spinner)
@@ -75,7 +75,7 @@ const BusyDemo: Component = () => {
         </BusyContainer>
       </section>
 
-      {/* 로컬 Bar */}
+      {/* Local Bar */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           로컬 BusyContainer (Bar)

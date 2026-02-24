@@ -5,15 +5,15 @@ const menuItems = ["복사", "붙여넣기", "잘라내기", "삭제"];
 const longMenuItems = Array.from({ length: 20 }, (_, i) => `항목 ${i + 1}`);
 
 export default function DropdownPage() {
-  // 기본 드롭다운 상태
+  // Basic dropdown state
   const [basicSelected, setBasicSelected] = createSignal<string | null>(null);
 
-  // 컨텍스트 메뉴 상태
+  // Context menu state
   const [contextOpen, setContextOpen] = createSignal(false);
   const [contextPosition, setContextPosition] = createSignal({ x: 0, y: 0 });
   const [contextSelected, setContextSelected] = createSignal<string | null>(null);
 
-  // 최대 높이 상태
+  // Max height state
   const [maxHeightSelected, setMaxHeightSelected] = createSignal<string | null>(null);
 
   const handleContextMenu = (e: MouseEvent) => {
@@ -24,7 +24,7 @@ export default function DropdownPage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 드롭다운 메뉴 */}
+      {/* Basic dropdown menu */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           기본 드롭다운 메뉴
@@ -70,7 +70,7 @@ export default function DropdownPage() {
         </div>
       </section>
 
-      {/* 컨텍스트 메뉴 */}
+      {/* Context menu */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">컨텍스트 메뉴</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">아래 영역에서 우클릭하세요.</p>
@@ -113,7 +113,7 @@ export default function DropdownPage() {
         </Dropdown>
       </section>
 
-      {/* 위치 자동 조정 */}
+      {/* Auto position adjustment */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">위치 자동 조정</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -143,7 +143,7 @@ export default function DropdownPage() {
         </Dropdown>
       </section>
 
-      {/* 최대 높이 설정 */}
+      {/* Max height setting */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">최대 높이 설정</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">

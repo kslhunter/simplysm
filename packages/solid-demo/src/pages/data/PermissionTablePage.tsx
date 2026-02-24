@@ -33,7 +33,7 @@ export default function PermissionTablePage() {
 
   return (
     <div class="space-y-8 p-6">
-      {/* 기본 */}
+      {/* Basic */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
           기본 PermissionTable
@@ -41,7 +41,7 @@ export default function PermissionTablePage() {
         <PermissionTable items={demoItems} value={value()} onValueChange={setValue} />
       </section>
 
-      {/* modules 필터 적용 */}
+      {/* Modules filter applied */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">모듈 필터 (admin)</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
@@ -61,7 +61,7 @@ export default function PermissionTablePage() {
         <PermissionTable items={demoItems} value={value()} disabled />
       </section>
 
-      {/* 현재 값 */}
+      {/* Current value */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">현재 값</h2>
         <pre class="overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">
