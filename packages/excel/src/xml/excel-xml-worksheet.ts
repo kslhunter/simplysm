@@ -16,8 +16,8 @@ interface RowInfo {
 }
 
 /**
- * xl/worksheets/sheet*.xml 파일을 관리하는 클래스.
- * 셀 데이터, 병합, 열 너비, 행 높이 등을 처리한다.
+ * Class managing xl/worksheets/sheet*.xml files.
+ * Handles cell data, merges, column widths, row heights, etc.
  */
 export class ExcelXmlWorksheet implements ExcelXml {
   data: ExcelXmlWorksheetData;
@@ -130,21 +130,21 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   deleteCell(addr: { r: number; c: number }): void {
-    // ROW 없으면 무효
+    // No-op if ROW does not exist
     const rowInfo = this._dataMap.get(addr.r);
     if (rowInfo == null) return;
 
-    // CELL 없으면 무효
+    // No-op if CELL does not exist
     const cellData = rowInfo.cellMap.get(addr.c);
     if (cellData == null) return;
 
-    // CELL 삭제
+    // Delete CELL
     const cellsData = rowInfo.data.c!;
     const cellIndex = cellsData.indexOf(cellData);
     if (cellIndex !== -1) cellsData.splice(cellIndex, 1);
     rowInfo.cellMap.delete(addr.c);
 
-    // 마지막 CELL이면 ROW도 삭제
+    // Delete ROW if it was the last CELL
     if (rowInfo.cellMap.size === 0) {
       this._deleteRow(addr.r);
     }
@@ -160,7 +160,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     const newRange = { s: startAddr, e: endAddr };
 
-    // 머지 겹침 체크
+    // Check for merge overlap
     const existingMergeCells = mergeCells[0].mergeCell;
     for (const mergeCell of existingMergeCells) {
       const existingRange = ExcelUtils.parseRangeAddrCode(mergeCell.$.ref);
@@ -180,7 +180,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     mergeCells[0].mergeCell.push({ $: { ref: ExcelUtils.stringifyRangeAddr(newRange) } });
     mergeCells[0].$.count = mergeCells[0].mergeCell.length.toString();
 
-    // 시작셀외 모든셀 삭제
+    // Delete all cells except the start cell
     for (let r = startAddr.r; r <= endAddr.r; r++) {
       for (let c = startAddr.c; c <= endAddr.c; c++) {
         const currentAddr = { r, c };
@@ -221,13 +221,13 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   /**
-   * 특정 열의 너비를 설정한다.
+   * Set width of a specific column.
    *
    * @internal
-   * 외부에서는 ExcelCol.setWidth()를 사용한다.
+   * Use ExcelCol.setWidth() externally.
    *
-   * @param colIndex 열 인덱스 (1-based, 문자열)
-   * @param width 설정할 너비
+   * @param colIndex Column index (1-based, string)
+   * @param width Width to set
    */
   setColWidth(colIndex: string, width: string): void {
     const colIndexNumber = numParseInt(colIndex);
@@ -237,7 +237,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     const cols = this.data.worksheet.cols?.[0];
 
-    // 대상 열을 포함하는 기존 범위 찾기
+    // Find existing range containing the target column
     const col = cols
       ? cols.col.single(
           (item) =>
@@ -248,20 +248,20 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     if (col != null && cols != null) {
       if (col.$.min === col.$.max) {
-        // 기존 범위가 단일 열인 경우: 해당 열의 속성만 변경
+        // Single column range: update properties of that column only
         col.$.bestFit = "1";
         col.$.customWidth = "1";
         col.$.width = width;
       } else {
-        // 기존 범위가 여러 열인 경우: 범위를 분할하여 대상 열만 새 width 적용
-        // 예: 기존 [1~5, width=10], 대상=3, 새 width=20
-        //     → [1~2, width=10], [3, width=20], [4~5, width=10]
+        // Multi-column range: split the range and apply new width only to target column
+        // e.g.: existing [1~5, width=10], target=3, new width=20
+        //     -> [1~2, width=10], [3, width=20], [4~5, width=10]
         const minNumber = numParseInt(col.$.min) ?? 0;
         const maxNumber = numParseInt(col.$.max) ?? 0;
 
         let insertIndex = cols.col.indexOf(col);
 
-        // 앞쪽 범위 생성 (min ~ colIndex-1): 원본 속성 유지
+        // Create front range (min ~ colIndex-1): keep original properties
         if (minNumber < colIndexNumber) {
           cols.col.splice(insertIndex, 0, {
             $: {
@@ -273,7 +273,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
           insertIndex++;
         }
 
-        // 대상 열 생성 (colIndex): 새 width 적용
+        // Create target column (colIndex): apply new width
         cols.col.splice(insertIndex, 0, {
           $: {
             min: colIndex,
@@ -285,7 +285,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
         });
         insertIndex++;
 
-        // 뒤쪽 범위 생성 (colIndex+1 ~ max): 원본 속성 유지
+        // Create back range (colIndex+1 ~ max): keep original properties
         if (maxNumber > colIndexNumber) {
           cols.col.splice(insertIndex, 0, {
             $: {
@@ -296,12 +296,12 @@ export class ExcelXmlWorksheet implements ExcelXml {
           });
         }
 
-        // 원본 범위 삭제
+        // Delete original range
         const colIndex2 = cols.col.indexOf(col);
         if (colIndex2 !== -1) cols.col.splice(colIndex2, 1);
       }
     } else {
-      // 기존 범위 없음: 새 범위 생성
+      // No existing range: create new range
       this.data.worksheet.cols = this.data.worksheet.cols ?? [{ col: [] }];
       this.data.worksheet.cols[0].col.push({
         $: {
@@ -353,17 +353,17 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   copyRow(sourceR: number, targetR: number): void {
-    // 출발지ROW 데이터 복제
+    // Clone source ROW data
     const sourceRowInfo = this._dataMap.get(sourceR);
 
     if (sourceRowInfo != null) {
-      // rowData 복제
+      // Clone rowData
       const newRowData: ExcelRowData = objClone(sourceRowInfo.data);
 
-      // ROW 주소 변경
+      // Update ROW address
       newRowData.$.r = ExcelUtils.stringifyRowAddr(targetR);
 
-      // 각 CELL 주소 변경
+      // Update each CELL address
       if (newRowData.c != null) {
         for (const cellData of newRowData.c) {
           const colAddr = ExcelUtils.parseColAddrCode(cellData.$.r);
@@ -376,19 +376,19 @@ export class ExcelXmlWorksheet implements ExcelXml {
       this._deleteRow(targetR);
     }
 
-    // 소스 행의 병합 셀 정보를 먼저 복사하여 저장
+    // Copy and store source row merge cell info first
     const sourceMergeCells = this.getMergeCells()
       .filter((mc) => mc.s.r <= sourceR && mc.e.r >= sourceR)
       .map((mc) => ({ s: { ...mc.s }, e: { ...mc.e } }));
 
-    // 타겟 행의 기존 병합 셀 제거
+    // Remove existing merge cells in target row
     for (const mergeCell of this.getMergeCells()) {
       if (mergeCell.s.r <= targetR && mergeCell.e.r >= targetR) {
         this.removeMergeCells(mergeCell.s, mergeCell.e);
       }
     }
 
-    // 저장된 소스 병합 정보로 타겟에 복사
+    // Copy stored source merge info to target
     for (const mergeCell of sourceMergeCells) {
       const rowDiff = targetR - sourceR;
       const newStartAddr = { r: mergeCell.s.r + rowDiff, c: mergeCell.s.c };
@@ -412,7 +412,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   cleanup(): void {
     const result = {} as ExcelXmlWorksheetData["worksheet"];
 
-    // 순서 정렬 ("sheetData"기준 앞뒤로, 나머지는 원래위치대로)
+    // Sort order (around "sheetData", keep others in original position)
 
     for (const key of Object.keys(this.data.worksheet)) {
       if (key === "mergeCells") continue;
@@ -442,11 +442,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
       }
     }
 
-    // ROW 정렬
+    // Sort ROWs
     const rowsData = (result.sheetData[0].row = result.sheetData[0].row ?? []);
     rowsData.sort((a, b) => (numParseInt(a.$.r) ?? 0) - (numParseInt(b.$.r) ?? 0));
 
-    // CELL 정렬
+    // Sort CELLs
     for (const rowData of rowsData) {
       const cellsData = rowData.c;
       if (cellsData == null) continue;
@@ -455,7 +455,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
       );
     }
 
-    // Dimension 값 적용
+    // Apply dimension value
     if (result.dimension != null) {
       result.dimension[0].$.ref = ExcelUtils.stringifyRangeAddr(this.range);
     } else {
@@ -470,10 +470,10 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   private _getOrCreateCellData(addr: { r: number; c: number }): ExcelCellData {
-    // ROW 없으면 만들기
+    // Create ROW if it does not exist
     const rowInfo = this._getOrCreateRowInfo(addr.r);
 
-    // CELL 없으면 만들기
+    // Create CELL if it does not exist
     let cellData = rowInfo.cellMap.get(addr.c);
     if (cellData === undefined) {
       rowInfo.data.c = rowInfo.data.c ?? [];
@@ -497,11 +497,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
   private _replaceRowData(r: number, rowData: ExcelRowData): RowInfo {
     this._deleteRow(r);
 
-    // sheet에 기록
+    // Write to sheet
     this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
     this.data.worksheet.sheetData[0].row.push(rowData);
 
-    // cache에 기록
+    // Write to cache
     const rowInfo = {
       data: rowData,
       cellMap: (rowData.c ?? []).toMap(
@@ -520,11 +520,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
     // ROW
     const targetRowInfo = this._getOrCreateRowInfo(addr.r);
 
-    // sheet에 기록
+    // Write to sheet
     targetRowInfo.data.c = targetRowInfo.data.c ?? [];
     targetRowInfo.data.c.push(cellData);
 
-    // cache에 기록
+    // Write to cache
     targetRowInfo.cellMap.set(addr.c, cellData);
   }
 
@@ -539,7 +539,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
     this._dataMap.delete(r);
 
-    // ROW가 하나도 없으면 XML의 row부분 자체를 삭제
+    // Delete the row section from XML if no ROWs remain
     if (this.data.worksheet.sheetData[0].row?.length === 0) {
       delete this.data.worksheet.sheetData[0].row;
     }

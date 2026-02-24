@@ -9,13 +9,13 @@ const ApkInstallerPlugin = registerPlugin<IApkInstallerPlugin>("ApkInstaller", {
 });
 
 /**
- * APK 설치 플러그인
- * - Android: APK 설치 인텐트 실행, REQUEST_INSTALL_PACKAGES 권한 관리
- * - Browser: alert으로 안내 후 정상 반환
+ * APK installation plugin
+ * - Android: Executes APK install intent, manages REQUEST_INSTALL_PACKAGES permission
+ * - Browser: Shows alert message and returns normally
  */
 export abstract class ApkInstaller {
   /**
-   * Manifest에 REQUEST_INSTALL_PACKAGES 권한이 선언되어 있는지 확인
+   * Check if REQUEST_INSTALL_PACKAGES permission is declared in the manifest
    */
   static async hasPermissionManifest(): Promise<boolean> {
     const result = await ApkInstallerPlugin.hasPermissionManifest();
@@ -23,7 +23,7 @@ export abstract class ApkInstaller {
   }
 
   /**
-   * REQUEST_INSTALL_PACKAGES 권한이 허용되어 있는지 확인
+   * Check if REQUEST_INSTALL_PACKAGES permission is granted
    */
   static async hasPermission(): Promise<boolean> {
     const result = await ApkInstallerPlugin.hasPermission();
@@ -31,14 +31,14 @@ export abstract class ApkInstaller {
   }
 
   /**
-   * REQUEST_INSTALL_PACKAGES 권한 요청 (설정 화면으로 이동)
+   * Request REQUEST_INSTALL_PACKAGES permission (navigates to settings)
    */
   static async requestPermission(): Promise<void> {
     await ApkInstallerPlugin.requestPermission();
   }
 
   /**
-   * APK 설치
+   * Install APK
    * @param apkUri content:// URI (FileProvider URI)
    */
   static async install(apkUri: string): Promise<void> {
@@ -46,7 +46,7 @@ export abstract class ApkInstaller {
   }
 
   /**
-   * 앱 버전 정보 가져오기
+   * Get app version info
    */
   static async getVersionInfo(): Promise<IVersionInfo> {
     return ApkInstallerPlugin.getVersionInfo();

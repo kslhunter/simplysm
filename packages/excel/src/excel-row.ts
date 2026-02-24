@@ -3,7 +3,7 @@ import { ExcelCell } from "./excel-cell";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 import type { ZipCache } from "./utils/zip-cache";
 
-/** Excel 워크시트의 행을 나타내는 클래스. 셀 접근 기능을 제공한다. */
+/** Class representing a row in an Excel worksheet. Provides cell access functionality. */
 export class ExcelRow {
   private readonly _cellMap = new Map<number, ExcelCell>();
 
@@ -13,7 +13,7 @@ export class ExcelRow {
     private readonly _r: number,
   ) {}
 
-  /** 열 인덱스에 해당하는 셀 반환 (0-based) */
+  /** Return cell at the given column index (0-based) */
   cell(c: number): ExcelCell {
     return this._cellMap.getOrCreate(
       c,
@@ -21,7 +21,7 @@ export class ExcelRow {
     );
   }
 
-  /** 행의 모든 셀 반환 */
+  /** Return all cells in the row */
   async getCells(): Promise<ExcelCell[]> {
     const result: ExcelCell[] = [];
     const wsData = await this._getWsData();

@@ -13,18 +13,18 @@ import { ExcelWorkbook } from "./excel-workbook";
 import type { ExcelValueType } from "./types";
 
 /**
- * Zod 스키마 기반 Excel 래퍼
+ * Zod schema-based Excel wrapper
  *
- * 스키마에서 타입 정보를 추론하여 타입 안전한 읽기/쓰기 제공
+ * Infers type information from schema to provide type-safe read/write
  */
 export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   /**
-   * @param _schema Zod 스키마 (레코드 구조 정의, `.describe()`로 Excel 헤더명 지정)
+   * @param _schema Zod schema (defines record structure, use `.describe()` to specify Excel header names)
    */
   constructor(private readonly _schema: TSchema) {}
 
   /**
-   * Excel 파일 읽기 → 레코드 배열
+   * Read Excel file into record array
    */
   async read(
     file: Bytes | Blob,
@@ -73,7 +73,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
         continue;
       }
 
-      // Zod 스키마로 검증
+      // Validate with Zod schema
       const parseResult = this._schema.safeParse(record);
       if (!parseResult.success) {
         const errors = parseResult.error.issues
@@ -89,11 +89,11 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
   }
 
   /**
-   * 레코드 배열 → Excel 워크북
+   * Record array to Excel workbook
    *
    * @remarks
-   * 반환된 워크북은 호출자가 리소스를 관리해야 합니다.
-   * `await using`을 사용하거나 작업 완료 후 `close()`를 호출하세요.
+   * The caller is responsible for managing the returned workbook's resources.
+   * Use `await using` or call `close()` after use.
    *
    * @example
    * ```typescript
@@ -113,12 +113,12 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
     const keys = Object.keys(displayNameMap) as (keyof z.infer<TSchema>)[];
     const headers = keys.map((key) => displayNameMap[key as string]);
 
-    // 헤더 행 작성
+    // Write header row
     for (let c = 0; c < headers.length; c++) {
       await ws.cell(0, c).setVal(headers[c]);
     }
 
-    // 데이터 행 작성
+    // Write data rows
     for (let r = 0; r < records.length; r++) {
       for (let c = 0; c < keys.length; c++) {
         const key = keys[c];
@@ -127,7 +127,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       }
     }
 
-    // 테두리 스타일 적용
+    // Apply border style
     for (let r = 0; r < records.length + 1; r++) {
       for (let c = 0; c < keys.length; c++) {
         await ws.cell(r, c).setStyle({
@@ -136,7 +136,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       }
     }
 
-    // 필수 필드 헤더 강조 (노란색)
+    // Highlight required field headers (yellow)
     const shape = this._schema.shape;
     for (let c = 0; c < keys.length; c++) {
       const fieldKey = keys[c] as string;
@@ -149,7 +149,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       }
     }
 
-    // 뷰 설정
+    // View settings
     await ws.setZoom(85);
     await ws.setFix({ r: 0 });
 
@@ -198,7 +198,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       return Boolean(rawValue);
     }
 
-    // DateOnly, DateTime, Time은 instanceof로 처리
+    // DateOnly, DateTime, Time are handled via instanceof
     if (rawValue instanceof DateOnly || rawValue instanceof DateTime || rawValue instanceof Time) {
       return rawValue;
     }
@@ -218,7 +218,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 
   private _getDefaultForSchema(schema: z.ZodType): unknown {
     if (schema instanceof ZodDefault) {
-      // ZodDefault.parse(undefined)는 기본값을 반환함
+      // ZodDefault.parse(undefined) returns the default value
       return schema.parse(undefined);
     }
 
@@ -226,7 +226,7 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       return undefined;
     }
 
-    // Boolean 필수 필드의 기본값은 false
+    // Default value for required boolean fields is false
     const innerSchema = this._unwrapSchema(schema);
     if (innerSchema instanceof ZodBoolean) {
       return false;

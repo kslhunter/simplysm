@@ -2,23 +2,23 @@ import { numParseInt } from "@simplysm/core-common";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelNumberFormat } from "../types";
 
 /**
- * Excel 관련 유틸리티 함수 모음.
- * 셀 주소 변환, 날짜/숫자 변환, 숫자 형식 처리 등의 기능을 제공한다.
+ * Collection of Excel utility functions.
+ * Provides cell address conversion, date/number conversion, and number format processing.
  */
 export class ExcelUtils {
-  /** 셀 좌표를 "A1" 형식 문자열로 변환 */
+  /** Convert cell coordinates to "A1" format string */
   static stringifyAddr(point: ExcelAddressPoint): string {
     const rowStr = this.stringifyRowAddr(point.r);
     const colStr = this.stringifyColAddr(point.c);
     return `${colStr}${rowStr}`;
   }
 
-  /** 행 인덱스(0-based)를 행 주소 문자열로 변환 (예: 0 -> "1") */
+  /** Convert row index (0-based) to row address string (e.g. 0 -> "1") */
   static stringifyRowAddr(r: number): string {
     return (r + 1).toString();
   }
 
-  /** 열 인덱스(0-based)를 열 주소 문자열로 변환 (예: 0 -> "A", 26 -> "AA") */
+  /** Convert column index (0-based) to column address string (e.g. 0 -> "A", 26 -> "AA") */
   static stringifyColAddr(c: number): string {
     if (c < 0 || c > 16383) {
       throw new Error(`열 인덱스는 0~16383 범위여야 합니다: ${c}`);
@@ -34,7 +34,7 @@ export class ExcelUtils {
     return result;
   }
 
-  /** 셀 주소에서 행 인덱스 추출 (예: "A3" -> 2) */
+  /** Extract row index from cell address (e.g. "A3" -> 2) */
   static parseRowAddrCode(addrCode: string): number {
     const rowAddrCode = /\d*$/.exec(addrCode)?.[0] ?? "";
     const parsed = numParseInt(rowAddrCode);
@@ -44,7 +44,7 @@ export class ExcelUtils {
     return parsed - 1;
   }
 
-  /** 셀 주소에서 열 인덱스 추출 (예: "B3" -> 1) */
+  /** Extract column index from cell address (e.g. "B3" -> 1) */
   static parseColAddrCode(addrCode: string): number {
     const colAddrCode = /^[a-zA-Z]*/.exec(addrCode)?.[0] ?? "";
 
@@ -57,7 +57,7 @@ export class ExcelUtils {
     return result;
   }
 
-  /** 셀 주소를 좌표로 변환 (예: "B3" -> {r: 2, c: 1}) */
+  /** Convert cell address to coordinates (e.g. "B3" -> {r: 2, c: 1}) */
   static parseCellAddrCode(addr: string): ExcelAddressPoint {
     return {
       r: ExcelUtils.parseRowAddrCode(addr),
@@ -65,7 +65,7 @@ export class ExcelUtils {
     };
   }
 
-  /** 범위 주소를 좌표로 변환 (예: "A1:C3" -> {s: {r:0,c:0}, e: {r:2,c:2}}) */
+  /** Convert range address to coordinates (e.g. "A1:C3" -> {s: {r:0,c:0}, e: {r:2,c:2}}) */
   static parseRangeAddrCode(rangeAddr: string): ExcelAddressRangePoint {
     const parts = rangeAddr.split(":");
     return {
@@ -74,7 +74,7 @@ export class ExcelUtils {
     };
   }
 
-  /** 범위 좌표를 주소 문자열로 변환 */
+  /** Convert range coordinates to address string */
   static stringifyRangeAddr(point: ExcelAddressRangePoint): string {
     const sAddr = this.stringifyAddr(point.s);
     const eAddr = this.stringifyAddr(point.e);
@@ -87,8 +87,8 @@ export class ExcelUtils {
   }
 
   /**
-   * JavaScript 타임스탬프(ms)를 Excel 날짜 숫자로 변환.
-   * Excel은 1900-01-01을 1로 계산한다 (1899-12-30이 날짜 0).
+   * Convert JavaScript timestamp (ms) to Excel date number.
+   * Excel counts 1900-01-01 as 1 (1899-12-30 is date 0).
    */
   static convertTimeTickToNumber(tick: number): number {
     const currDate = new Date(tick);
@@ -99,8 +99,8 @@ export class ExcelUtils {
   }
 
   /**
-   * Excel 날짜 숫자를 JavaScript 타임스탬프(ms)로 변환.
-   * Excel은 1900-01-01을 1로 계산한다 (1899-12-30이 날짜 0).
+   * Convert Excel date number to JavaScript timestamp (ms).
+   * Excel counts 1900-01-01 as 1 (1899-12-30 is date 0).
    */
   static convertNumberToTimeTick(num: number): number {
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
@@ -111,7 +111,7 @@ export class ExcelUtils {
     return date.getTime();
   }
 
-  /** 숫자 형식 코드를 형식 이름으로 변환 */
+  /** Convert number format code to format name */
   static convertNumFmtCodeToName(numFmtCode: string): ExcelNumberFormat {
     if (numFmtCode === "General") {
       return "number";
@@ -121,14 +121,14 @@ export class ExcelUtils {
     const hasTime = /hh/i.test(numFmtCode) || /ss/i.test(numFmtCode);
 
     if (hasDate && hasTime) {
-      return "DateTime"; // 날짜+시간 = DateTime
+      return "DateTime"; // date+time = DateTime
     } else if (hasDate) {
-      return "DateOnly"; // 날짜만 = DateOnly
+      return "DateOnly"; // date only = DateOnly
     } else if (hasTime) {
-      return "Time"; // 시간만 = Time
+      return "Time"; // time only = Time
     }
-    // 숫자 형식 패턴: 0, #, 소수점, 천단위 구분자, 음수 구분자, 괄호, 통화, 공백, 지수, 백분율 등
-    // "[조건부 서식]실제형식" 구조에서 실제형식 부분만 검사 (split("]").at(-1))
+    // Number format pattern: 0, #, decimal, thousands separator, negative separator, parentheses, currency, space, exponent, percent, etc.
+    // In "[conditional format]actual format" structure, only check the actual format part (split("]").at(-1))
     else if (/^[0.#,_;()\-\\$ @*?"E%+]*$/.test(numFmtCode.split("]").at(-1) ?? "")) {
       return "number";
     } else if ((numFmtCode.split("]").at(-1) ?? "").includes("#,0")) {
@@ -139,22 +139,22 @@ export class ExcelUtils {
   }
 
   /**
-   * 숫자 형식 ID를 형식 이름으로 변환
+   * Convert number format ID to format name
    *
    * @remarks
-   * Excel 내장 형식 ID 범위:
-   * - 0~13, 37~40, 48: 숫자/일반/통화/백분율 형식
-   * - 14~17, 27~31, 34~36, 50~58: 날짜 형식 (지역화 포함)
-   * - 22: 날짜+시간 형식
-   * - 18~21, 32~33, 45~47: 시간 형식
-   * - 49: 텍스트 형식
+   * Excel built-in format ID ranges:
+   * - 0~13, 37~40, 48: number/general/currency/percent formats
+   * - 14~17, 27~31, 34~36, 50~58: date formats (including localized)
+   * - 22: date+time format
+   * - 18~21, 32~33, 45~47: time formats
+   * - 49: text format
    */
   static convertNumFmtIdToName(numFmtId: number): ExcelNumberFormat {
-    // 숫자/일반/통화/백분율 형식
+    // Number/general/currency/percent formats
     if (numFmtId <= 13 || (numFmtId >= 37 && numFmtId <= 40) || numFmtId === 48) {
       return "number";
     }
-    // 날짜 형식 (지역화 포함)
+    // Date formats (including localized)
     else if (
       (numFmtId >= 14 && numFmtId <= 17) ||
       (numFmtId >= 27 && numFmtId <= 31) ||
@@ -163,11 +163,11 @@ export class ExcelUtils {
     ) {
       return "DateOnly";
     }
-    // 날짜+시간 형식
+    // Date+time format
     else if (numFmtId === 22) {
       return "DateTime";
     }
-    // 시간 형식
+    // Time formats
     else if (
       (numFmtId >= 18 && numFmtId <= 21) ||
       (numFmtId >= 32 && numFmtId <= 33) ||
@@ -175,7 +175,7 @@ export class ExcelUtils {
     ) {
       return "Time";
     }
-    // 텍스트 형식
+    // Text format
     else if (numFmtId === 49) {
       return "string";
     } else {
@@ -183,7 +183,7 @@ export class ExcelUtils {
     }
   }
 
-  /** 숫자 형식 이름을 형식 ID로 변환 */
+  /** Convert number format name to format ID */
   static convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number {
     if (numFmtName === "number") {
       return 0;
@@ -194,7 +194,7 @@ export class ExcelUtils {
     } else if (numFmtName === "Time") {
       return 18;
     } else {
-      // 마지막 케이스: "string" (TypeScript가 타입 좁히기를 통해 자동으로 확인)
+      // Last case: "string" (TypeScript verifies automatically through type narrowing)
       return 49;
     }
   }

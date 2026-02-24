@@ -21,8 +21,8 @@ export interface ExcelStyle {
 }
 
 /**
- * xl/styles.xml 파일을 관리하는 클래스.
- * 숫자 형식, 배경색, 테두리, 정렬 등의 스타일을 처리한다.
+ * Class managing xl/styles.xml.
+ * Handles styles such as number formats, background colors, borders, and alignment.
  */
 export class ExcelXmlStyle implements ExcelXml {
   data: ExcelXmlStyleData;
@@ -262,7 +262,7 @@ export class ExcelXmlStyle implements ExcelXml {
   cleanup(): void {
     const result = {} as ExcelXmlStyleData["styleSheet"];
 
-    // 순서 정렬 (numFmts 맨위로)
+    // Sort order (numFmts first)
 
     if (this.data.styleSheet.numFmts != null) {
       result.numFmts = this.data.styleSheet.numFmts;
@@ -282,7 +282,7 @@ export class ExcelXmlStyle implements ExcelXml {
   //#region Private Methods
 
   private _setNumFmtCode(numFmtCode: string): string {
-    // 이미 해당 code가 있으면 넘기기
+    // Skip if the code already exists
     const existsNumFmtId = (this.data.styleSheet.numFmts?.[0].numFmt ?? []).single(
       (item) => item.$.formatCode === numFmtCode,
     )?.$.numFmtId;
@@ -299,7 +299,7 @@ export class ExcelXmlStyle implements ExcelXml {
 
     this.data.styleSheet.numFmts[0].numFmt = this.data.styleSheet.numFmts[0].numFmt ?? [];
 
-    // Excel 사용자 정의 숫자 형식은 ID 180 이상부터 시작한다 (0-163: 내장 형식, 164-179: 예약됨)
+    // Excel custom number formats start from ID 180+ (0-163: built-in, 164-179: reserved)
     const numFmts = this.data.styleSheet.numFmts[0].numFmt;
     const maxItem =
       numFmts.length > 0

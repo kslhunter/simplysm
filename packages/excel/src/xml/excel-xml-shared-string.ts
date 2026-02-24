@@ -7,8 +7,8 @@ import type {
 import "@simplysm/core-common";
 
 /**
- * xl/sharedStrings.xml 파일을 관리하는 클래스.
- * 문자열 중복을 방지하여 파일 크기를 최적화한다.
+ * Class managing xl/sharedStrings.xml.
+ * Optimizes file size by preventing string duplication.
  */
 export class ExcelXmlSharedString implements ExcelXml {
   data: ExcelXmlSharedStringData;

@@ -3,7 +3,7 @@ import { ExcelCell } from "./excel-cell";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 import type { ZipCache } from "./utils/zip-cache";
 
-/** Excel 워크시트의 열을 나타내는 클래스. 셀 접근 및 열 너비 설정 기능을 제공한다. */
+/** Class representing a column in an Excel worksheet. Provides cell access and column width configuration. */
 export class ExcelCol {
   private readonly _cellMap = new Map<number, ExcelCell>();
 
@@ -13,7 +13,7 @@ export class ExcelCol {
     private readonly _c: number,
   ) {}
 
-  /** 행 인덱스에 해당하는 셀 반환 (0-based) */
+  /** Return cell at the given row index (0-based) */
   cell(r: number): ExcelCell {
     return this._cellMap.getOrCreate(
       r,
@@ -21,7 +21,7 @@ export class ExcelCol {
     );
   }
 
-  /** 열의 모든 셀 반환 */
+  /** Return all cells in the column */
   async getCells(): Promise<ExcelCell[]> {
     const result: ExcelCell[] = [];
     const wsData = await this._getWsData();
@@ -34,7 +34,7 @@ export class ExcelCol {
     return result;
   }
 
-  /** 열 너비 설정 */
+  /** Set column width */
   async setWidth(size: number): Promise<void> {
     const wsData = await this._getWsData();
     wsData.setColWidth((this._c + 1).toString(), size.toString());

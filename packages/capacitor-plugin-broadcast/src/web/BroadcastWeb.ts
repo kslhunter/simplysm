@@ -15,11 +15,11 @@ export class BroadcastWeb extends WebPlugin implements IBroadcastPlugin {
   }
 
   async unsubscribe(_options: { id: string }): Promise<void> {
-    // 웹 환경에서는 no-op
+    // No-op on web
   }
 
   async unsubscribeAll(): Promise<void> {
-    // 웹 환경에서는 no-op
+    // No-op on web
   }
 
   send(_options: { action: string; extras?: Record<string, unknown> }): Promise<void> {

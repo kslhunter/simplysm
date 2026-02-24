@@ -1,8 +1,8 @@
 import type { ExcelXml, ExcelXmlContentTypeData } from "../types";
 
 /**
- * [Content_Types].xml 파일을 관리하는 클래스.
- * 파일별 MIME 타입 정보를 관리한다.
+ * Class managing [Content_Types].xml.
+ * Manages MIME type information per file.
  */
 export class ExcelXmlContentType implements ExcelXml {
   data: ExcelXmlContentTypeData;
@@ -45,7 +45,7 @@ export class ExcelXmlContentType implements ExcelXml {
   }
 
   add(partName: string, contentType: string): this {
-    // 중복 체크
+    // Duplicate check
     const exists = this.data.Types.Override.some((item) => item.$.PartName === partName);
     if (exists) {
       return this;

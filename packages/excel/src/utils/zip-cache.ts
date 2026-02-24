@@ -20,15 +20,15 @@ import { ExcelXmlWorkbook } from "../xml/excel-xml-workbook";
 import { ExcelXmlWorksheet } from "../xml/excel-xml-worksheet";
 
 /**
- * Excel ZIP 아카이브의 파일 캐시를 관리하는 클래스.
- * XML 파일은 파싱하여 ExcelXml 객체로, 그 외 파일은 바이트 배열로 캐싱한다.
+ * Class managing file cache for Excel ZIP archives.
+ * XML files are parsed into ExcelXml objects; other files are cached as byte arrays.
  *
  * @remarks
- * ## Lazy Loading 캐시 전략
+ * ## Lazy Loading Cache Strategy
  *
- * - 파일은 첫 접근 시에만 ZIP에서 읽고 파싱한다
- * - 이후 접근은 캐시된 객체를 반환한다
- * - 대용량 Excel 파일에서 필요한 부분만 로드하여 메모리 효율성을 높인다
+ * - Files are read and parsed from the ZIP only on first access
+ * - Subsequent accesses return the cached object
+ * - Loads only the needed parts from large Excel files for memory efficiency
  */
 export class ZipCache {
   private readonly _cache = new Map<string, ExcelXml | Bytes | undefined>();

@@ -56,9 +56,9 @@ export class FileSystemWeb extends WebPlugin implements IFileSystemPlugin {
   }
 
   /**
-   * 파일의 Blob URL을 반환합니다.
-   * @warning 반환된 URI는 사용 후 반드시 `URL.revokeObjectURL(uri)`를 호출하여 해제해야 합니다.
-   * 해제하지 않으면 메모리 누수가 발생할 수 있습니다.
+   * Return the Blob URL of a file.
+   * @warning The returned URI must be released by calling `URL.revokeObjectURL(uri)` after use.
+   * Failure to release may cause memory leaks.
    */
   async getFileUri(options: { path: string }): Promise<{ uri: string }> {
     const entry = await this._fs.getEntry(options.path);

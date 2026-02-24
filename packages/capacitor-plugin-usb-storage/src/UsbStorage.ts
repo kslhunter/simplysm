@@ -16,14 +16,14 @@ const UsbStoragePlugin = registerPlugin<IUsbStoragePlugin>("UsbStorage", {
 });
 
 /**
- * USB 저장장치와 상호작용하기 위한 플러그인
- * - Android: libaums 라이브러리를 통한 USB Mass Storage 접근
- * - Browser: IndexedDB 기반 가상 USB 저장소 에뮬레이션
+ * Plugin for interacting with USB storage devices
+ * - Android: USB Mass Storage access via libaums library
+ * - Browser: IndexedDB-based virtual USB storage emulation
  */
 export abstract class UsbStorage {
   /**
-   * 연결된 USB 장치 목록을 가져옴
-   * @returns 연결된 USB 장치 정보 배열
+   * Get list of connected USB devices
+   * @returns Array of connected USB device info
    */
   static async getDevices(): Promise<IUsbDeviceInfo[]> {
     const result = await UsbStoragePlugin.getDevices();
@@ -31,9 +31,9 @@ export abstract class UsbStorage {
   }
 
   /**
-   * USB 장치 접근 권한을 요청
-   * @param filter 권한을 요청할 USB 장치의 vendorId와 productId
-   * @returns 권한 승인 여부
+   * Request USB device access permission
+   * @param filter vendorId and productId of the USB device to request permission for
+   * @returns Whether permission was granted
    */
   static async requestPermission(filter: IUsbDeviceFilter): Promise<boolean> {
     const result = await UsbStoragePlugin.requestPermission(filter);
@@ -41,9 +41,9 @@ export abstract class UsbStorage {
   }
 
   /**
-   * USB 장치 접근 권한이 있는지 확인
-   * @param filter 권한을 확인할 USB 장치의 vendorId와 productId
-   * @returns 권한 보유 여부
+   * Check if USB device access permission is granted
+   * @param filter vendorId and productId of the USB device to check permission for
+   * @returns Whether permission is held
    */
   static async hasPermission(filter: IUsbDeviceFilter): Promise<boolean> {
     const result = await UsbStoragePlugin.hasPermission(filter);
@@ -51,10 +51,10 @@ export abstract class UsbStorage {
   }
 
   /**
-   * USB 저장장치의 디렉토리 내용을 읽어옴
-   * @param filter 대상 USB 장치의 vendorId와 productId
-   * @param dirPath 읽어올 디렉토리 경로
-   * @returns 디렉토리 내 파일/폴더 정보 배열
+   * Read directory contents from USB storage device
+   * @param filter vendorId and productId of the target USB device
+   * @param dirPath Directory path to read
+   * @returns Array of file/folder info in the directory
    */
   static async readdir(filter: IUsbDeviceFilter, dirPath: string): Promise<IUsbFileInfo[]> {
     const result = await UsbStoragePlugin.readdir({ ...filter, path: dirPath });
@@ -62,10 +62,10 @@ export abstract class UsbStorage {
   }
 
   /**
-   * USB 저장장치의 파일을 읽어옴
-   * @param filter 대상 USB 장치의 vendorId와 productId
-   * @param filePath 읽어올 파일 경로
-   * @returns 파일 데이터를 담은 Bytes 또는 undefined
+   * Read a file from USB storage device
+   * @param filter vendorId and productId of the target USB device
+   * @param filePath File path to read
+   * @returns Bytes containing file data, or undefined
    */
   static async read(filter: IUsbDeviceFilter, filePath: string): Promise<Bytes | undefined> {
     const result = await UsbStoragePlugin.read({ ...filter, path: filePath });

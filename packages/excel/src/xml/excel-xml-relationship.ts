@@ -3,8 +3,8 @@ import { numParseInt } from "@simplysm/core-common";
 import type { ExcelRelationshipData, ExcelXml, ExcelXmlRelationshipData } from "../types";
 
 /**
- * *.rels 파일을 관리하는 클래스.
- * 파일 간의 참조 관계를 처리한다.
+ * Class managing *.rels files.
+ * Handles reference relationships between files.
  */
 export class ExcelXmlRelationship implements ExcelXml {
   data: ExcelXmlRelationshipData;

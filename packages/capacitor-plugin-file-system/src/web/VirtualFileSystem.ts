@@ -47,12 +47,12 @@ export class VirtualFileSystem {
   }
 
   /**
-   * 디렉토리의 직접 자식 목록을 반환합니다.
-   * @param dirPath 조회할 디렉토리 경로
-   * @returns 자식 파일/디렉토리 목록
-   * @note 암시적 디렉토리 처리: 파일 경로만 존재하고 디렉토리 엔트리가 없는 경우에도
-   * 중간 경로는 디렉토리로 판정됩니다. 예: "/a/b/c.txt"만 저장된 상태에서
-   * listChildren("/a") 호출 시 "b"는 isDirectory: true로 반환됩니다.
+   * Return the direct children of a directory.
+   * @param dirPath Directory path to query
+   * @returns List of child files/directories
+   * @note Implicit directory handling: Even when only file paths exist without directory entries,
+   * intermediate paths are treated as directories. e.g., With only "/a/b/c.txt" stored,
+   * calling listChildren("/a") returns "b" with isDirectory: true.
    */
   async listChildren(dirPath: string): Promise<IFileInfo[]> {
     const prefix = dirPath === "/" ? "/" : dirPath + "/";

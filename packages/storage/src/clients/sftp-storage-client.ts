@@ -4,25 +4,25 @@ import SftpClient from "ssh2-sftp-client";
 import type { Storage, FileInfo } from "../types/storage";
 import type { StorageConnConfig } from "../types/storage-conn-config";
 
-// ssh2-sftp-client 라이브러리 타입 정의에서 Buffer 사용
+// Buffer usage from ssh2-sftp-client library type definitions
 type SftpGetResult = string | NodeJS.WritableStream | Bytes;
 
 /**
- * SFTP 프로토콜을 사용하는 스토리지 클라이언트.
+ * Storage client using SFTP protocol.
  *
  * @remarks
- * 직접 사용보다 {@link StorageFactory.connect}를 통한 사용을 권장합니다.
+ * Using {@link StorageFactory.connect} is recommended over direct usage.
  */
 export class SftpStorageClient implements Storage {
   private _client: SftpClient | undefined;
 
   /**
-   * SFTP 서버에 연결합니다.
+   * Connect to the SFTP server.
    *
    * @remarks
-   * - 연결 후 반드시 {@link close}로 연결을 종료해야 합니다.
-   * - 동일 인스턴스에서 여러 번 호출하지 마세요. (연결 누수 발생)
-   * - 자동 연결/종료 관리가 필요하면 {@link StorageFactory.connect}를 사용하세요. (권장)
+   * - Must close the connection with {@link close} after use.
+   * - Do not call multiple times on the same instance (connection leak).
+   * - Use {@link StorageFactory.connect} for automatic connection/close management (recommended).
    */
   async connect(config: StorageConnConfig): Promise<void> {
     if (this._client !== undefined) {
@@ -39,7 +39,7 @@ export class SftpStorageClient implements Storage {
           password: config.pass,
         });
       } else {
-        // SSH agent + 키 파일로 인증 시도
+        // Authenticate with SSH agent + key file
         const fsP = await import("fs/promises");
         const os = await import("os");
         const pathMod = await import("path");
@@ -58,7 +58,7 @@ export class SftpStorageClient implements Storage {
             privateKey: await fsP.readFile(keyPath),
           });
         } catch {
-          // privateKey 파싱 실패 (암호화된 키 등) → agent만으로 재시도
+          // privateKey parsing failed (encrypted key, etc.) -> retry with agent only
           await client.connect(baseOptions);
         }
       }
@@ -76,7 +76,7 @@ export class SftpStorageClient implements Storage {
     return this._client;
   }
 
-  /** 디렉토리를 생성합니다. 상위 디렉토리가 없으면 함께 생성합니다. */
+  /** Create a directory. Creates parent directories if they do not exist. */
   async mkdir(dirPath: string): Promise<void> {
     await this._requireClient().mkdir(dirPath, true);
   }
@@ -86,16 +86,16 @@ export class SftpStorageClient implements Storage {
   }
 
   /**
-   * 파일 또는 디렉토리 존재 여부를 확인합니다.
+   * Check whether a file or directory exists.
    *
    * @remarks
-   * 상위 디렉토리가 존재하지 않는 경우에도 false를 반환합니다.
-   * 네트워크 오류, 권한 오류 등 모든 예외도 false를 반환합니다.
+   * Returns false even if the parent directory does not exist.
+   * Returns false for all exceptions including network errors and permission errors.
    */
   async exists(filePath: string): Promise<boolean> {
     try {
-      // ssh2-sftp-client의 exists()는 false | 'd' | '-' | 'l' 를 반환한다.
-      // false: 존재하지 않음, 'd': 디렉토리, '-': 파일, 'l': 심볼릭 링크
+      // ssh2-sftp-client's exists() returns false | 'd' | '-' | 'l'.
+      // false: does not exist, 'd': directory, '-': file, 'l': symbolic link
       const result = await this._requireClient().exists(filePath);
       return typeof result === "string";
     } catch {
@@ -112,13 +112,13 @@ export class SftpStorageClient implements Storage {
   }
 
   async readFile(filePath: string): Promise<Bytes> {
-    // ssh2-sftp-client의 get()은 dst 미전달 시 Buffer를 반환한다.
-    // 타입 정의(string | WritableStream | Buffer)와 달리 실제로는 Buffer만 반환된다.
+    // ssh2-sftp-client's get() returns Buffer when dst is not provided.
+    // Despite the type definition (string | WritableStream | Buffer), only Buffer is actually returned.
     const result = (await this._requireClient().get(filePath)) as SftpGetResult;
     if (result instanceof Uint8Array) {
       return result;
     }
-    // 타입 정의상 string도 가능하므로 방어 코드
+    // Defensive code since string is possible per type definition
     if (typeof result === "string") {
       return new TextEncoder().encode(result);
     }
@@ -129,12 +129,12 @@ export class SftpStorageClient implements Storage {
     await this._requireClient().delete(filePath);
   }
 
-  /** 로컬 파일 경로 또는 바이트 데이터를 원격 경로에 업로드합니다. */
+  /** Upload a local file path or byte data to the remote path. */
   async put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void> {
     if (typeof localPathOrBuffer === "string") {
       await this._requireClient().fastPut(localPathOrBuffer, storageFilePath);
     } else {
-      // eslint-disable-next-line no-restricted-globals -- ssh2-sftp-client 라이브러리 요구사항
+      // eslint-disable-next-line no-restricted-globals -- ssh2-sftp-client library requirement
       await this._requireClient().put(Buffer.from(localPathOrBuffer), storageFilePath);
     }
   }
@@ -144,11 +144,11 @@ export class SftpStorageClient implements Storage {
   }
 
   /**
-   * 연결을 종료합니다.
+   * Close the connection.
    *
    * @remarks
-   * 이미 종료된 상태에서 호출해도 에러가 발생하지 않습니다.
-   * 종료 후에는 동일 인스턴스에서 {@link connect}를 다시 호출하여 재연결할 수 있습니다.
+   * Safe to call when already closed (no error thrown).
+   * After closing, you can reconnect by calling {@link connect} again on the same instance.
    */
   async close(): Promise<void> {
     if (this._client === undefined) {

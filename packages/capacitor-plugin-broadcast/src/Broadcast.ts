@@ -10,13 +10,13 @@ const BroadcastPlugin = registerPlugin<IBroadcastPlugin>("Broadcast", {
 });
 
 /**
- * Android Broadcast 송수신 플러그인
- * - 산업용 장치(바코드 스캐너, PDA 등) 연동용
+ * Android Broadcast send/receive plugin
+ * - For industrial device integration (barcode scanners, PDAs, etc.)
  */
 export abstract class Broadcast {
   /**
-   * Broadcast 수신 등록
-   * @returns 해제 함수
+   * Register broadcast receiver
+   * @returns Unsubscribe function
    *
    * @example
    * ```ts
@@ -25,7 +25,7 @@ export abstract class Broadcast {
    *   (result) => console.log(result.extras)
    * );
    *
-   * // 해제
+   * // Unsubscribe
    * unsub();
    * ```
    */
@@ -45,14 +45,14 @@ export abstract class Broadcast {
   }
 
   /**
-   * 모든 Broadcast 수신기 해제
+   * Unsubscribe all broadcast receivers
    */
   static async unsubscribeAll(): Promise<void> {
     await BroadcastPlugin.unsubscribeAll();
   }
 
   /**
-   * Broadcast 전송
+   * Send broadcast
    *
    * @example
    * ```ts
@@ -69,15 +69,15 @@ export abstract class Broadcast {
   }
 
   /**
-   * 앱 시작 Intent 가져오기
+   * Get launch intent
    */
   static async getLaunchIntent(): Promise<IBroadcastResult> {
     return BroadcastPlugin.getLaunchIntent();
   }
 
   /**
-   * 앱 실행 중 새 Intent 수신 리스너 등록
-   * @returns 리스너 핸들 (remove()로 해제)
+   * Register listener for new intents received while app is running
+   * @returns Listener handle (release with remove())
    */
   static async addNewIntentListener(
     callback: (result: IBroadcastResult) => void,

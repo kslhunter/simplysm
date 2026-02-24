@@ -9,7 +9,7 @@ export interface IBroadcastResult {
 
 export interface IBroadcastPlugin {
   /**
-   * Broadcast 수신기 등록
+   * Register broadcast receiver
    */
   subscribe(
     options: { filters: string[] },
@@ -17,27 +17,27 @@ export interface IBroadcastPlugin {
   ): Promise<{ id: string }>;
 
   /**
-   * 특정 Broadcast 수신기 해제
+   * Unsubscribe a specific broadcast receiver
    */
   unsubscribe(options: { id: string }): Promise<void>;
 
   /**
-   * 모든 Broadcast 수신기 해제
+   * Unsubscribe all broadcast receivers
    */
   unsubscribeAll(): Promise<void>;
 
   /**
-   * Broadcast 전송
+   * Send broadcast
    */
   send(options: { action: string; extras?: Record<string, unknown> }): Promise<void>;
 
   /**
-   * 앱 시작 Intent 가져오기
+   * Get launch intent
    */
   getLaunchIntent(): Promise<IBroadcastResult>;
 
   /**
-   * 앱 실행 중 새 Intent 수신 리스너 등록
+   * Register listener for new intents received while app is running
    */
   addListener(
     eventName: "onNewIntent",

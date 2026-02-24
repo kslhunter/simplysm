@@ -3,8 +3,8 @@ import { numParseInt } from "@simplysm/core-common";
 import type { ExcelXml, ExcelXmlWorkbookData } from "../types";
 
 /**
- * xl/workbook.xml 파일을 관리하는 클래스.
- * 워크시트 목록과 관계 ID를 처리한다.
+ * Class managing xl/workbook.xml.
+ * Handles the worksheet list and relationship IDs.
  */
 export class ExcelXmlWorkbook implements ExcelXml {
   data: ExcelXmlWorkbookData;
@@ -55,7 +55,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   cleanup(): void {
     const result = {} as ExcelXmlWorkbookData["workbook"];
 
-    // 순서 정렬 ("sheets"기준 앞뒤로, 나머지는 원래위치대로)
+    // Sort order (around "sheets", keep others in original position)
 
     const workbookRec = this.data.workbook as Record<string, unknown>;
     const resultRec = result as Record<string, unknown>;
@@ -112,7 +112,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   private _getReplacedName(name: string): string {
-    //-- 시트명칭 사용불가 텍스트를 "_"로 변환
+    //-- Replace invalid sheet name characters with "_"
     return name.replace(/[:\\/?*\[\]']/g, "_");
   }
 }

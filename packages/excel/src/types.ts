@@ -326,13 +326,13 @@ export type ExcelValueType = number | string | DateOnly | DateTime | Time | bool
 export type ExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | "Time";
 
 /**
- * Excel 셀 타입
- * - s: 공유 문자열 (SharedString)
- * - b: 불리언
- * - str: 수식 결과 문자열
- * - n: 숫자
- * - inlineStr: 인라인 문자열 (리치 텍스트)
- * - e: 에러
+ * Excel cell type
+ * - s: shared string (SharedString)
+ * - b: boolean
+ * - str: formula result string
+ * - n: number
+ * - inlineStr: inline string (rich text)
+ * - e: error
  */
 export type ExcelCellType = "s" | "b" | "str" | "n" | "inlineStr" | "e";
 
@@ -368,11 +368,11 @@ export type ExcelHorizontalAlign = "center" | "left" | "right";
 export type ExcelVerticalAlign = "center" | "top" | "bottom";
 
 /**
- * 셀 스타일 옵션
+ * Cell style options
  * @example
  * ```typescript
  * await cell.setStyle({
- *   background: "00FF0000",  // 빨간색
+ *   background: "00FF0000",  // red
  *   border: ["left", "right", "top", "bottom"],
  *   horizontalAlign: "center",
  *   verticalAlign: "center",
@@ -381,15 +381,15 @@ export type ExcelVerticalAlign = "center" | "top" | "bottom";
  * ```
  */
 export interface ExcelStyleOptions {
-  /** 배경색 (ARGB 형식, 예: "00FF0000") */
+  /** Background color (ARGB format, e.g. "00FF0000") */
   background?: string;
-  /** 테두리 위치 */
+  /** Border positions */
   border?: ExcelBorderPosition[];
-  /** 가로 정렬 */
+  /** Horizontal alignment */
   horizontalAlign?: ExcelHorizontalAlign;
-  /** 세로 정렬 */
+  /** Vertical alignment */
   verticalAlign?: ExcelVerticalAlign;
-  /** 숫자 형식 */
+  /** Number format */
   numberFormat?: ExcelNumberFormat;
 }
 

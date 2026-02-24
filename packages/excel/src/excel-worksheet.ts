@@ -14,8 +14,8 @@ import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
 import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 
 /**
- * Excel 워크시트를 나타내는 클래스.
- * 셀 접근, 행/열 복사, 데이터 테이블 처리, 이미지 삽입 등의 기능을 제공한다.
+ * Class representing an Excel worksheet.
+ * Provides cell access, row/column copying, data table processing, and image insertion.
  */
 export class ExcelWorksheet {
   private readonly _rowMap = new Map<number, ExcelRow>();
@@ -29,7 +29,7 @@ export class ExcelWorksheet {
 
   //#region Name Methods
 
-  /** 워크시트 이름 반환 */
+  /** Return worksheet name */
   async getName(): Promise<string> {
     const wbXmlData = await this._getWbData();
     const name = wbXmlData.getWorksheetNameById(this._relId);
@@ -39,7 +39,7 @@ export class ExcelWorksheet {
     return name;
   }
 
-  /** 워크시트 이름 변경 */
+  /** Rename worksheet */
   async setName(newName: string): Promise<void> {
     const wbXmlData = await this._getWbData();
     wbXmlData.setWorksheetNameById(this._relId, newName);
@@ -49,17 +49,17 @@ export class ExcelWorksheet {
 
   //#region Cell Access Methods
 
-  /** 행 객체 반환 (0-based) */
+  /** Return row object (0-based) */
   row(r: number): ExcelRow {
     return this._rowMap.getOrCreate(r, new ExcelRow(this._zipCache, this._targetFileName, r));
   }
 
-  /** 셀 객체 반환 (0-based 행/열) */
+  /** Return cell object (0-based row/column) */
   cell(r: number, c: number): ExcelCell {
     return this.row(r).cell(c);
   }
 
-  /** 열 객체 반환 (0-based) */
+  /** Return column object (0-based) */
   col(c: number): ExcelCol {
     return this._colMap.getOrCreate(c, new ExcelCol(this._zipCache, this._targetFileName, c));
   }
@@ -68,7 +68,7 @@ export class ExcelWorksheet {
 
   //#region Copy Methods
 
-  /** 소스 행의 스타일을 타겟 행에 복사 */
+  /** Copy style from source row to target row */
   async copyRowStyle(srcR: number, targetR: number): Promise<void> {
     const range = await this.getRange();
 
@@ -77,7 +77,7 @@ export class ExcelWorksheet {
     }
   }
 
-  /** 소스 셀의 스타일을 타겟 셀에 복사 */
+  /** Copy style from source cell to target cell */
   async copyCellStyle(srcAddr: ExcelAddressPoint, targetAddr: ExcelAddressPoint): Promise<void> {
     const wsData = await this._getWsData();
 
@@ -87,36 +87,36 @@ export class ExcelWorksheet {
     }
   }
 
-  /** 소스 행을 타겟 행에 복사 (덮어쓰기) */
+  /** Copy source row to target row (overwrite) */
   async copyRow(srcR: number, targetR: number): Promise<void> {
     const wsData = await this._getWsData();
     wsData.copyRow(srcR, targetR);
   }
 
-  /** 소스 셀을 타겟 셀에 복사 */
+  /** Copy source cell to target cell */
   async copyCell(srcAddr: ExcelAddressPoint, targetAddr: ExcelAddressPoint): Promise<void> {
     const wsData = await this._getWsData();
     wsData.copyCell(srcAddr, targetAddr);
   }
 
   /**
-   * 소스 행을 타겟 위치에 삽입 복사.
-   * 타겟 위치 이하의 기존 행들은 한 칸씩 아래로 밀린다.
-   * @param srcR 복사할 소스 행 인덱스 (0-based)
-   * @param targetR 삽입할 타겟 행 인덱스 (0-based)
+   * Insert-copy the source row at the target position.
+   * Existing rows at and below the target are shifted down by one.
+   * @param srcR Source row index to copy (0-based)
+   * @param targetR Target row index to insert at (0-based)
    */
   async insertCopyRow(srcR: number, targetR: number): Promise<void> {
     const wsData = await this._getWsData();
     const range = wsData.range;
 
-    // targetR 이하 모든 병합 셀의 행 인덱스 +1
+    // Increment row index by 1 for all merge cells at or below targetR
     const mergeCells = wsData.getMergeCells();
     for (const mc of mergeCells) {
       if (mc.s.r >= targetR) mc.s.r++;
       if (mc.e.r >= targetR) mc.e.r++;
     }
 
-    // srcR >= targetR인 경우, 밀림 후 srcR 위치가 변경되므로 보정
+    // When srcR >= targetR, adjust for the shifted position of srcR
     const adjustedSrcR = srcR >= targetR ? srcR + 1 : srcR;
 
     for (let r = range.e.r; r >= targetR; r--) {
@@ -130,13 +130,13 @@ export class ExcelWorksheet {
 
   //#region Range Methods
 
-  /** 워크시트의 데이터 범위 반환 */
+  /** Return data range of the worksheet */
   async getRange(): Promise<ExcelAddressRangePoint> {
     const xml = await this._getWsData();
     return xml.range;
   }
 
-  /** 워크시트의 모든 셀을 2차원 배열로 반환 */
+  /** Return all cells as a 2D array */
   async getCells(): Promise<ExcelCell[][]> {
     const xml = await this._getWsData();
     const range = xml.range;
@@ -154,10 +154,10 @@ export class ExcelWorksheet {
   //#region Data Methods
 
   /**
-   * 워크시트 데이터를 테이블(레코드 배열) 형식으로 반환.
-   * @param opt.headerRowIndex 헤더 행 인덱스 (기본값: 첫 번째 행)
-   * @param opt.checkEndColIndex 데이터 종료를 판단할 열 인덱스. 해당 열이 비어있으면 데이터 끝으로 간주
-   * @param opt.usableHeaderNameFn 사용할 헤더를 필터링하는 함수
+   * Return worksheet data as a table (record array).
+   * @param opt.headerRowIndex Header row index (default: first row)
+   * @param opt.checkEndColIndex Column index to determine data end. Data ends when this column is empty.
+   * @param opt.usableHeaderNameFn Function to filter usable headers
    */
   async getDataTable(opt?: {
     headerRowIndex?: number;
@@ -201,8 +201,8 @@ export class ExcelWorksheet {
   }
 
   /**
-   * 2차원 배열 데이터를 워크시트에 기록
-   * @param matrix 2차원 배열 데이터 (행 우선, 0번 인덱스가 첫 번째 행)
+   * Write 2D array data to the worksheet
+   * @param matrix 2D array data (row-major, index 0 is the first row)
    */
   async setDataMatrix(matrix: ExcelValueType[][]): Promise<void> {
     for (let r = 0; r < matrix.length; r++) {
@@ -213,8 +213,8 @@ export class ExcelWorksheet {
   }
 
   /**
-   * 레코드 배열을 워크시트에 기록
-   * @param records 레코드 배열. 첫 행에 헤더가 자동 생성되고, 이후 행에 데이터가 기록된다.
+   * Write record array to the worksheet
+   * @param records Record array. Headers are auto-generated in the first row, data follows in subsequent rows.
    */
   async setRecords(records: Record<string, ExcelValueType>[]): Promise<void> {
     const headers = records
@@ -237,7 +237,7 @@ export class ExcelWorksheet {
 
   //#region View Methods
 
-  /** 워크시트 확대/축소 비율 설정 (퍼센트) */
+  /** Set worksheet zoom scale (percent) */
   async setZoom(percent: number): Promise<void> {
     const wbXml = await this._getWbData();
     wbXml.initializeView();
@@ -246,7 +246,7 @@ export class ExcelWorksheet {
     wsXml.setZoom(percent);
   }
 
-  /** 행/열 틀 고정 설정 */
+  /** Set freeze panes for rows/columns */
   async setFix(point: { r?: number; c?: number }): Promise<void> {
     const wbXml = await this._getWbData();
     wbXml.initializeView();
@@ -260,11 +260,11 @@ export class ExcelWorksheet {
   //#region Image Methods
 
   /**
-   * 워크시트에 이미지를 삽입.
-   * @param opts.bytes 이미지 바이너리 데이터
-   * @param opts.ext 이미지 확장자 (png, jpg 등)
-   * @param opts.from 이미지 시작 위치 (0-based 행/열 인덱스, rOff/cOff는 EMU 단위 오프셋)
-   * @param opts.to 이미지 끝 위치 (생략 시 from 위치에 원본 크기로 삽입)
+   * Insert an image into the worksheet.
+   * @param opts.bytes Image binary data
+   * @param opts.ext Image extension (png, jpg, etc.)
+   * @param opts.from Image start position (0-based row/column index, rOff/cOff in EMU offset)
+   * @param opts.to Image end position (if omitted, inserted at from position with original size)
    */
   async addImage(opts: {
     bytes: Bytes;
@@ -277,7 +277,7 @@ export class ExcelWorksheet {
       throw new Error(`확장자 '${opts.ext}'의 MIME 타입을 확인할 수 없습니다`);
     }
 
-    // 1. media 파일명 결정 및 저장
+    // 1. Determine media filename and save
     let mediaIndex = 1;
     while ((await this._zipCache.get(`xl/media/image${mediaIndex}.${opts.ext}`)) !== undefined) {
       mediaIndex++;
@@ -285,16 +285,16 @@ export class ExcelWorksheet {
     const mediaPath = `xl/media/image${mediaIndex}.${opts.ext}`;
     this._zipCache.set(mediaPath, opts.bytes);
 
-    // 2. [Content_Types].xml 갱신
+    // 2. Update [Content_Types].xml
     const typeXml = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
     typeXml.add(`/xl/media/image${mediaIndex}.${opts.ext}`, mimeType);
 
-    // 3. worksheet의 기존 drawing 확인
+    // 3. Check for existing drawing in worksheet
     const wsXml = await this._getWsData();
     const sheetRelsPath = `xl/worksheets/_rels/${this._targetFileName}.rels`;
     let sheetRels = (await this._zipCache.get(sheetRelsPath)) as ExcelXmlRelationship | undefined;
 
-    // 기존 drawing 찾기
+    // Find existing drawing
     let drawingIndex: number | undefined;
     let drawingPath: string | undefined;
     let drawing: ExcelXmlDrawing | undefined;
@@ -307,7 +307,7 @@ export class ExcelWorksheet {
           "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
       );
       if (existingDrawingRel != null) {
-        // 기존 drawing 경로에서 인덱스 추출
+        // Extract index from existing drawing path
         const match = existingDrawingRel.$.Target.match(/drawing(\d+)\.xml$/);
         if (match != null) {
           drawingIndex = parseInt(match[1], 10);
@@ -320,7 +320,7 @@ export class ExcelWorksheet {
       }
     }
 
-    // 4. drawing이 없으면 새로 생성
+    // 4. Create new drawing if none exists
     if (drawingIndex == null || drawingPath == null || drawing == null) {
       drawingIndex = 1;
       while ((await this._zipCache.get(`xl/drawings/drawing${drawingIndex}.xml`)) !== undefined) {
@@ -329,10 +329,10 @@ export class ExcelWorksheet {
       drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
       drawing = new ExcelXmlDrawing();
 
-      // [Content_Types].xml에 drawing 타입 추가
+      // Add drawing type to [Content_Types].xml
       typeXml.add("/" + drawingPath, "application/vnd.openxmlformats-officedocument.drawing+xml");
 
-      // worksheet의 rels에 drawing 추가
+      // Add drawing to worksheet rels
       sheetRels = sheetRels ?? new ExcelXmlRelationship();
       const sheetRelNum = sheetRels.addAndGetId(
         `../drawings/drawing${drawingIndex}.xml`,
@@ -341,7 +341,7 @@ export class ExcelWorksheet {
       const drawingRelIdOnWorksheet = `rId${sheetRelNum}`;
       this._zipCache.set(sheetRelsPath, sheetRels);
 
-      // worksheet XML에 drawing 추가
+      // Add drawing to worksheet XML
       wsXml.data.worksheet.$["xmlns:r"] =
         wsXml.data.worksheet.$["xmlns:r"] ??
         "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -350,7 +350,7 @@ export class ExcelWorksheet {
       this._zipCache.set(`xl/worksheets/${this._targetFileName}`, wsXml);
     }
 
-    // 5. drawing rels 준비 (없으면 새로 생성)
+    // 5. Prepare drawing rels (create if not exists)
     drawingRels = drawingRels ?? new ExcelXmlRelationship();
     const mediaFileName = mediaPath.slice(3);
     const drawingTarget = `../${mediaFileName}`;
@@ -360,7 +360,7 @@ export class ExcelWorksheet {
     );
     this._zipCache.set(`xl/drawings/_rels/drawing${drawingIndex}.xml.rels`, drawingRels);
 
-    // 6. drawing에 이미지 추가
+    // 6. Add image to drawing
     const blipRelId = `rId${relNum}`;
     drawing.addPicture({
       from: opts.from,

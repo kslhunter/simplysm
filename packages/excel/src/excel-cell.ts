@@ -18,23 +18,23 @@ import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
 
 /**
- * Excel 셀을 나타내는 클래스.
- * 값 읽기/쓰기, 수식 설정, 스타일 설정, 셀 병합 등의 기능을 제공한다.
+ * Class representing an Excel cell.
+ * Provides value read/write, formula, style, and cell merge functionality.
  *
  * @remarks
- * ## 비동기 메서드 설계
+ * ## Async Method Design
  *
- * `getVal()`, `setVal()` 등 모든 셀 메서드가 `async`인 이유:
- * - 셀 타입에 따라 필요한 XML만 선택적으로 로드한다
- * - 문자열 셀: SharedStrings.xml 로드
- * - 숫자 셀: SharedStrings 로드 안함
- * - 스타일이 있는 셀: Styles.xml 로드
+ * Why all cell methods like `getVal()`, `setVal()` are `async`:
+ * - Only the XML needed for the cell type is selectively loaded
+ * - String cell: loads SharedStrings.xml
+ * - Number cell: does not load SharedStrings
+ * - Styled cell: loads Styles.xml
  *
- * 어떤 셀을 읽을지 미리 알 수 없기 때문에 동기 구조로는 구현할 수 없다.
- * 동기 구조로 만들려면 모든 XML을 미리 로드해야 하므로 대용량 파일에서 메모리 문제가 발생한다.
+ * Since the cell to be read cannot be known in advance, a synchronous design is not feasible.
+ * A synchronous design would require preloading all XML, causing memory issues with large files.
  */
 export class ExcelCell {
-  /** 셀 주소 (0-based 행/열 인덱스) */
+  /** Cell address (0-based row/column index) */
   readonly addr: ExcelAddressPoint;
 
   constructor(
@@ -48,7 +48,7 @@ export class ExcelCell {
 
   //#region Value Methods
 
-  /** 셀에 수식 설정 (undefined: 수식 삭제) */
+  /** Set formula on cell (undefined: remove formula) */
   async setFormula(val: string | undefined): Promise<void> {
     if (val === undefined) {
       await this._deleteCell(this.addr);
@@ -60,13 +60,13 @@ export class ExcelCell {
     }
   }
 
-  /** 셀의 수식 반환 */
+  /** Return cell formula */
   async getFormula(): Promise<string | undefined> {
     const wsData = await this._getWsData();
     return wsData.getCellFormula(this.addr);
   }
 
-  /** 셀 값 설정 (undefined: 셀 삭제) */
+  /** Set cell value (undefined: delete cell) */
   async setVal(val: ExcelValueType): Promise<void> {
     if (val === undefined) {
       await this._deleteCell(this.addr);
@@ -107,7 +107,7 @@ export class ExcelCell {
     }
   }
 
-  /** 셀 값 반환 */
+  /** Return cell value */
   async getVal(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
@@ -138,7 +138,7 @@ export class ExcelCell {
         `[${ExcelUtils.stringifyAddr(this.addr)}] 셀 타입 분석 실패: 셀에 에러 값이 포함되어 있습니다 (${cellVal})`,
       );
     } else {
-      // cellType === undefined: 숫자 또는 날짜/시간 타입
+      // cellType === undefined: number or date/time type
       const cellStyleId = wsData.getCellStyleId(this.addr);
       if (cellStyleId === undefined) {
         return parseFloat(cellVal);
@@ -197,11 +197,11 @@ export class ExcelCell {
   //#region Merge Methods
 
   /**
-   * 현재 셀부터 지정된 끝 좌표까지 셀 병합
-   * @param r 병합 끝 행 인덱스 (0-based)
-   * @param c 병합 끝 열 인덱스 (0-based)
+   * Merge cells from current cell to the specified end coordinates
+   * @param r End row index of merge (0-based)
+   * @param c End column index of merge (0-based)
    * @example
-   * // A1 셀에서 호출하면 A1:C3 범위 (3행 x 3열)를 병합
+   * // Called from cell A1, merges range A1:C3 (3 rows x 3 columns)
    * await ws.cell(0, 0).merge(2, 2);
    */
   async merge(r: number, c: number): Promise<void> {
@@ -213,26 +213,26 @@ export class ExcelCell {
 
   //#region Style Methods
 
-  /** 셀의 스타일 ID 반환 */
+  /** Return cell style ID */
   async getStyleId(): Promise<string | undefined> {
     const wsData = await this._getWsData();
     return wsData.getCellStyleId(this.addr);
   }
 
-  /** 셀의 스타일 ID 설정 */
+  /** Set cell style ID */
   async setStyleId(styleId: string | undefined): Promise<void> {
     const wsData = await this._getWsData();
     wsData.setCellStyleId(this.addr, styleId);
   }
 
   /**
-   * 셀 스타일 설정
-   * @param opts 스타일 옵션
-   * @param opts.background 배경색 (ARGB 형식, 8자리 16진수. 예: "FFFF0000")
-   * @param opts.border 테두리 위치 배열 (예: ["left", "right", "top", "bottom"])
-   * @param opts.horizontalAlign 가로 정렬 ("left", "center", "right")
-   * @param opts.verticalAlign 세로 정렬 ("top", "center", "bottom")
-   * @param opts.numberFormat 숫자 형식 ("number", "DateOnly", "DateTime", "Time", "string")
+   * Set cell style
+   * @param opts Style options
+   * @param opts.background Background color (ARGB format, 8-digit hex. e.g. "FFFF0000")
+   * @param opts.border Border position array (e.g. ["left", "right", "top", "bottom"])
+   * @param opts.horizontalAlign Horizontal alignment ("left", "center", "right")
+   * @param opts.verticalAlign Vertical alignment ("top", "center", "bottom")
+   * @param opts.numberFormat Number format ("number", "DateOnly", "DateTime", "Time", "string")
    */
   async setStyle(opts: ExcelStyleOptions): Promise<void> {
     const style: ExcelStyle = {};

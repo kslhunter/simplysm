@@ -8,16 +8,16 @@ export class ApkInstallerWeb extends WebPlugin implements IApkInstallerPlugin {
   }
 
   hasPermission(): Promise<{ granted: boolean }> {
-    // 웹에서는 권한 체크 스킵
+    // Skip permission check on web
     return Promise.resolve({ granted: true });
   }
 
   async requestPermission(): Promise<void> {
-    // 웹에서는 no-op
+    // No-op on web
   }
 
   hasPermissionManifest(): Promise<{ declared: boolean }> {
-    // 웹에서는 매니페스트 체크 스킵
+    // Skip manifest check on web
     return Promise.resolve({ declared: true });
   }
 

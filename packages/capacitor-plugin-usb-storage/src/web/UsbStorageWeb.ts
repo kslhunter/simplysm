@@ -62,7 +62,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   }
 
   /**
-   * 가상 USB 장치를 추가합니다. (테스트/개발용)
+   * Add a virtual USB device. (For testing/development)
    */
   async addVirtualDevice(device: {
     vendorId: number;
@@ -75,7 +75,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   }
 
   /**
-   * 가상 USB 장치에 파일을 추가합니다. (테스트/개발용)
+   * Add a file to a virtual USB device. (For testing/development)
    */
   async addVirtualFile(
     filter: IUsbDeviceFilter,
@@ -95,7 +95,7 @@ export class UsbStorageWeb extends WebPlugin implements IUsbStoragePlugin {
   }
 
   /**
-   * 가상 USB 장치에 디렉토리를 추가합니다. (테스트/개발용)
+   * Add a directory to a virtual USB device. (For testing/development)
    */
   async addVirtualDirectory(filter: IUsbDeviceFilter, dirPath: string): Promise<void> {
     const deviceKey = `${filter.vendorId}:${filter.productId}`;

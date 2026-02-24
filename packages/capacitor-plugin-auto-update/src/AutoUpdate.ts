@@ -72,7 +72,7 @@ export abstract class AutoUpdate {
         <button onclick="location.reload()">재시도</button>
       `);
       await ApkInstaller.requestPermission();
-      // 최대 5분(300초) 대기 - 사용자가 설정 화면에서 권한을 승인할 시간
+      // Wait up to 5 minutes (300 seconds) - time for user to grant permission in settings
       await waitUntil(
         async () => {
           return ApkInstaller.hasPermission();
@@ -108,14 +108,14 @@ export abstract class AutoUpdate {
   }
 
   private static async _freezeApp() {
-    await new Promise(() => {}); // 무한대기
+    await new Promise(() => {}); // Wait indefinitely
   }
 
   static async run(opt: { log: (messageHtml: string) => void; serviceClient: ServiceClient }) {
     try {
       opt.log(`최신버전 확인 중...`);
 
-      // 서버의 버전 및 다운로드링크 가져오기
+      // Get version and download link from server
       const autoUpdateServiceClient =
         opt.serviceClient.getService<AutoUpdateService>("AutoUpdateService");
 
@@ -132,10 +132,10 @@ export abstract class AutoUpdate {
         opt.serviceClient.hostUrl + serverVersionInfo.downloadPath,
       );
 
-      // 현재 앱 버전 가져오기
+      // Get current app version
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이거나 서버 버전이 낮으면 반환
+      // Return if already latest or server version is lower
       if (
         semver.valid(currentVersionInfo.versionName) === null ||
         semver.valid(serverVersionInfo.version) === null
@@ -179,7 +179,7 @@ export abstract class AutoUpdate {
 
       opt.log(`최신버전 확인 중...`);
 
-      // 버전 가져오기
+      // Get versions
       const externalPath = await FileSystem.getStoragePath("external");
       const fileInfos = await FileSystem.readdir(pathJoin(externalPath, opt.dirPath));
 
@@ -194,7 +194,7 @@ export abstract class AutoUpdate {
           return item.extName === ".apk" && /^[0-9.]*$/.test(item.version);
         });
 
-      // 버전파일 저장된것 없으면 반환
+      // Return if no version files are saved
       if (versions.length === 0) return;
 
       const latestVersion = semver.maxSatisfying(
@@ -202,17 +202,17 @@ export abstract class AutoUpdate {
         "*",
       );
 
-      // 유효한 semver 버전이 없으면 반환
+      // Return if no valid semver versions
       if (latestVersion == null) {
         // eslint-disable-next-line no-console
         console.log("유효한 semver 버전 파일이 없습니다.");
         return;
       }
 
-      // 현재 앱 버전 가져오기
+      // Get current app version
       const currentVersionInfo = await ApkInstaller.getVersionInfo();
 
-      // 최신버전이거나 외부 저장소 버전이 낮으면 반환
+      // Return if already latest or external storage version is lower
       if (
         semver.valid(currentVersionInfo.versionName) === null ||
         semver.valid(latestVersion) === null
