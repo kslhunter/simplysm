@@ -35,6 +35,7 @@ Analyze user request from ARGUMENTS, select the best matching sd-\* skill or age
 | `sd-api-name-review` | Review public API naming consistency                                                 |
 | `sd-worktree`        | Start new work in branch isolation                                                   |
 | `sd-skill`           | Create or edit skills                                                                |
+| `sd-email-analyze`   | Analyze, read, or summarize email files (`.eml` or `.msg`) — parsing and attachment extraction |
 
 ### Agents (execute via `Task` tool with matching `subagent_type`)
 
