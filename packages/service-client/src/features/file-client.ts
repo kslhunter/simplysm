@@ -11,7 +11,7 @@ export interface FileClient {
 
 export function createFileClient(hostUrl: string, clientName: string): FileClient {
   async function download(relPath: string): Promise<Bytes> {
-    // URL 구성
+    // Build URL
     const url = `${hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
 
     const res = await fetch(url);
@@ -32,11 +32,11 @@ export function createFileClient(hostUrl: string, clientName: string): FileClien
 
     for (const file of fileList) {
       if ("data" in file) {
-        // 커스텀 객체 ({ name, data })
+        // Custom object ({ name, data })
         const blob = file.data instanceof Blob ? file.data : new Blob([file.data]);
         formData.append("files", blob, file.name);
       } else {
-        // 브라우저 File 객체
+        // Browser File object
         formData.append("files", file, file.name);
       }
     }

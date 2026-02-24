@@ -71,7 +71,7 @@ export const OrmService = defineService(
           sock().on("close", async () => {
             if (myConns == null) return;
 
-            logger.debug("소켓 연결 종료 감지: 열려있는 모든 DB 연결을 정리합니다.");
+            logger.debug("Socket close detected: cleaning up all open DB connections.");
             const conns = Array.from(myConns.values());
 
             await Promise.all(
@@ -81,7 +81,7 @@ export const OrmService = defineService(
                     await conn.close();
                   }
                 } catch (err) {
-                  logger.warn("DB 연결 강제 종료 중 오류 무시됨", err);
+                  logger.warn("Error ignored during forced DB connection close", err);
                 }
               }),
             );
@@ -110,7 +110,7 @@ export const OrmService = defineService(
           const conn = getConn(connId);
           await conn.close();
         } catch (err) {
-          logger.warn("DB 연결 종료 중 오류 무시됨", err);
+          logger.warn("Error ignored during DB connection close", err);
         }
       },
 

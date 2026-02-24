@@ -21,7 +21,7 @@ export async function handleUpload(
     return;
   }
 
-  // 인증 검사
+  // Auth check
   try {
     const authHeader = req.headers.authorization;
     if (authHeader == null) {

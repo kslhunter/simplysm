@@ -14,12 +14,12 @@ export async function handleStaticFile(
   let targetFilePath = path.resolve(rootPath, "www", urlPath);
   const allowedRootPath = path.resolve(rootPath, "www");
 
-  // targetPath 보안 방어 (Path Traversal 방지)
+  // Security guard for targetPath (prevent path traversal)
   if (targetFilePath !== allowedRootPath && !pathIsChildPath(targetFilePath, allowedRootPath)) {
     throw new Error("Access denied");
   }
 
-  // 디렉토리면 trailing slash 리다이렉트 (표준 웹 서버 동작)
+  // Redirect with trailing slash for directories (standard web server behavior)
   if ((await fsExists(targetFilePath)) && (await fsStat(targetFilePath)).isDirectory()) {
     if (!urlPath.endsWith("/")) {
       const urlObj = new URL(req.raw.url!, "http://localhost");
@@ -29,7 +29,7 @@ export async function handleStaticFile(
     targetFilePath = path.resolve(targetFilePath, "index.html");
   }
 
-  // 권한 확인 (숨김 파일 등)
+  // Permission check (hidden files, etc.)
   if (path.basename(targetFilePath).startsWith(".")) {
     const errorMessage = "파일을 사용할 권한이 없습니다.";
     responseErrorHtml(reply, 403, errorMessage);
@@ -37,7 +37,7 @@ export async function handleStaticFile(
     return;
   }
 
-  // 파일 전송
+  // Send file
   const filename = path.basename(targetFilePath);
   const directory = path.dirname(targetFilePath);
 

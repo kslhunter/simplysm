@@ -38,13 +38,13 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     const key = Uuid.new().toString();
     const eventName = eventDef.eventName;
 
-    // 서버에 등록 요청
+    // Send registration request to server
     await transport.send({
       name: "evt:add",
       body: { key, name: eventName, info },
     });
 
-    // 로컬 맵에 저장 (재연결 시 복구용)
+    // Store in local map (for recovery on reconnect)
     listenerMap.set(key, {
       eventName,
       info,
@@ -66,7 +66,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   ): Promise<void> {
     const eventName = eventDef.eventName;
 
-    // 서버에 'gets' 요청을 보내 타겟을 확보
+    // Send 'gets' request to server to obtain targets
     const listenerInfos = (await transport.send({
       name: "evt:gets",
       body: { name: eventName },
@@ -84,7 +84,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     }
   }
 
-  // 재연결 시 호출됨
+  // Called on reconnect
   async function reRegisterAll(): Promise<void> {
     for (const [key, value] of listenerMap.entries()) {
       try {
@@ -98,7 +98,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     }
   }
 
-  // 서버에서 온 이벤트를 로컬 리스너에게 분배
+  // Dispatch server events to local listeners
   async function executeByKey(keys: string[], data: unknown): Promise<void> {
     for (const key of keys) {
       const entry = listenerMap.get(key);

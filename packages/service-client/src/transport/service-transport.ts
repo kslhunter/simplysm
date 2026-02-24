@@ -41,12 +41,12 @@ export function createServiceTransport(
     }
   >();
 
-  // 응답 progress의 totalSize 저장 (complete 시 100% emit용)
+  // Store response progress totalSize (for emitting 100% on complete)
   const responseProgressTotalSize = new Map<string, number>();
 
   socket.on("message", onMessage);
 
-  // 소켓이 끊기면 대기 중인 모든 요청을 에러 처리하여 메모리 해제
+  // When socket disconnects, reject all pending requests to free memory
   socket.on("state", (state) => {
     if (state === "closed" || state === "reconnecting") {
       cancelAllRequests("Socket connection lost");
@@ -56,16 +56,16 @@ export function createServiceTransport(
   async function send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown> {
     const uuid = Uuid.new().toString();
 
-    // 응답 대기 시작 (요청 보내기 전에 리스너를 먼저 등록해야 안전함)
+    // Start awaiting response (register listener before sending request for safety)
     const responsePromise = new Promise((resolve, reject) => {
       pendingRequests.set(uuid, { resolve, reject, progress });
     });
 
-    // 요청 전송
+    // Send request
     try {
       const { chunks, totalSize } = await protocol.encode(uuid, message);
 
-      // 진행률 초기화
+      // Initialize progress
       if (chunks.length > 1) {
         progress?.request?.({
           uuid,
@@ -74,18 +74,18 @@ export function createServiceTransport(
         });
       }
 
-      // 전송
+      // Send
       for (const chunk of chunks) {
         await socket.send(chunk);
       }
     } catch (err) {
-      // 전송 실패 시 즉시 정리
+      // Clean up immediately on send failure
       pendingRequests.get(uuid)?.reject(err as Error);
       pendingRequests.delete(uuid);
       throw err;
     }
 
-    // 응답 결과 반환
+    // Return response result
     return responsePromise;
   }
 
@@ -96,7 +96,7 @@ export function createServiceTransport(
 
     try {
       if (decoded.type === "progress") {
-        // totalSize 기억 (complete 시 100% emit용)
+        // Remember totalSize (for emitting 100% on complete)
         responseProgressTotalSize.set(decoded.uuid, decoded.totalSize);
 
         listenerInfo?.progress?.response?.({
@@ -113,7 +113,7 @@ export function createServiceTransport(
             completedSize: body.completedSize,
           });
         } else if (decoded.message.name === "response") {
-          // split된 메시지였으면 100% progress emit
+          // Emit 100% progress if it was a split message
           const totalSize = responseProgressTotalSize.get(decoded.uuid);
           if (totalSize != null) {
             responseProgressTotalSize.delete(decoded.uuid);
@@ -124,15 +124,15 @@ export function createServiceTransport(
             });
           }
 
-          // 응답을 받았으므로 Map에서 제거
+          // Remove from Map since response received
           pendingRequests.delete(decoded.uuid);
 
           listenerInfo?.resolve(decoded.message.body as ServiceResponseMessage);
         } else if (decoded.message.name === "error") {
-          // progress totalSize 정리
+          // Clean up progress totalSize
           responseProgressTotalSize.delete(decoded.uuid);
 
-          // 에러를 받았으므로 Map에서 제거
+          // Remove from Map since error received
           pendingRequests.delete(decoded.uuid);
 
           listenerInfo?.reject(toError(decoded.message.body));
@@ -153,7 +153,7 @@ export function createServiceTransport(
     }
   }
 
-  // 모든 대기 요청 취소 처리
+  // Cancel all pending requests
   function cancelAllRequests(reason: string): void {
     for (const listenerInfo of pendingRequests.values()) {
       listenerInfo.reject(new Error(`Request canceled: ${reason}`));

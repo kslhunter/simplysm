@@ -2,6 +2,6 @@ export interface ServiceConnectionConfig {
   port: number;
   host: string;
   ssl?: boolean;
-  /** 0 입력시 reconnect안함. 바로 끊김 */
+  /** Set to 0 to disable reconnect; disconnects immediately */
   maxReconnectCount?: number;
 }

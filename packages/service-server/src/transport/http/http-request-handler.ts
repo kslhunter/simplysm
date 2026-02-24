@@ -16,11 +16,11 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
 ): Promise<void> {
   const { service, method } = req.params as { service: string; method: string };
 
-  // ClientName 헤더
+  // ClientName header
   const clientName = req.headers["x-sd-client-name"] as string | undefined;
   if (clientName == null) throw new Error("ClientName header is required");
 
-  // Authorization 헤더 파싱 및 검증
+  // Parse and verify Authorization header
   let authTokenPayload: AuthTokenPayload<TAuthInfo> | undefined;
   try {
     const authHeader = req.headers.authorization;
@@ -38,7 +38,7 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
     return;
   }
 
-  // 파라미터 파싱
+  // Parse parameters
   let params: unknown[] | undefined;
   if (req.method === "GET") {
     const query = req.query as { json?: string };
@@ -58,7 +58,7 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
     params = req.body as unknown[];
   }
 
-  // 서비스 실행 및 응답
+  // Execute service and send response
   if (params != null) {
     const serviceResult = await runMethod({
       serviceName: service,

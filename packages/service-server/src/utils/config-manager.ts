@@ -5,12 +5,12 @@ import consola from "consola";
 
 const logger = consola.withTag("service-server:ConfigManager");
 
-// 값: Config 객체, 키: 파일 경로
+// Value: Config object, Key: file path
 const _cache = new LazyGcMap<string, unknown>({
-  gcInterval: 10 * 60 * 1000, // 10분마다
-  expireTime: 60 * 60 * 1000, // 1시간 만료
+  gcInterval: 10 * 60 * 1000, // Every 10 minutes
+  expireTime: 60 * 60 * 1000, // Expire after 1 hour
   onExpire: async (filePath) => {
-    logger.debug(`설정 캐시 만료 및 감시 해제: ${path.basename(filePath)}`);
+    logger.debug(`Config cache expired and watcher released: ${path.basename(filePath)}`);
     await closeWatcher(filePath);
   },
 });
@@ -18,18 +18,18 @@ const _cache = new LazyGcMap<string, unknown>({
 const _watchers = new Map<string, FsWatcher>();
 
 export async function getConfig<TConfig>(filePath: string): Promise<TConfig | undefined> {
-  // 1. 캐시 적중 (시간 자동 갱신)
+  // 1. Cache hit (time auto-renewed)
   if (_cache.has(filePath)) {
     return _cache.get(filePath) as TConfig;
   }
 
   if (!(await fsExists(filePath))) return undefined;
 
-  // 2. 로드 및 캐시
+  // 2. Load and cache
   const config = await fsReadJson(filePath);
   _cache.set(filePath, config);
 
-  // 3. Watcher 등록
+  // 3. Register watcher
   if (!_watchers.has(filePath)) {
     try {
       const watcher = await FsWatcher.watch([filePath]);
@@ -39,20 +39,20 @@ export async function getConfig<TConfig>(filePath: string): Promise<TConfig | un
         if (!(await fsExists(filePath))) {
           _cache.delete(filePath);
           await closeWatcher(filePath);
-          logger.debug(`설정 파일 삭제됨: ${path.basename(filePath)}`);
+          logger.debug(`Config file deleted: ${path.basename(filePath)}`);
           return;
         }
 
         try {
           const newConfig = await fsReadJson(filePath);
           _cache.set(filePath, newConfig);
-          logger.debug(`설정 파일 실시간 갱신: ${path.basename(filePath)}`);
+          logger.debug(`Config file live-reloaded: ${path.basename(filePath)}`);
         } catch (err) {
-          logger.warn(`설정 파일 갱신 실패: ${filePath}`, err);
+          logger.warn(`Config file reload failed: ${filePath}`, err);
         }
       });
     } catch (err) {
-      logger.error(`감시 실패: ${filePath}`, err);
+      logger.error(`Watch failed: ${filePath}`, err);
     }
   }
 

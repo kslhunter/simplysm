@@ -37,8 +37,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   constructor(readonly options: ServiceServerOptions) {
     super();
 
-    // SSL 설정 (동기)
-    // Note: Fastify HTTPS 설정은 Buffer 타입을 요구함 (Uint8Array 직접 사용 불가)
+    // SSL configuration (synchronous)
+    // Note: Fastify HTTPS requires Buffer type (Uint8Array not directly usable)
     const httpsConf = options.ssl
       ? { pfx: Buffer.from(options.ssl.pfxBytes), passphrase: options.ssl.passphrase }
       : null;
@@ -52,12 +52,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async listen(): Promise<void> {
-    logger.info(`서버 시작... ${env.VER ?? ""}`);
+    logger.info(`Server starting... ${env.VER ?? ""}`);
 
-    // Websocket 플러그인
+    // WebSocket plugin
     await this.fastify.register(fastifyWebsocket);
 
-    // 보안 플러그인
+    // Security plugin
     await this.fastify.register(fastifyHelmet, {
       global: true,
       contentSecurityPolicy: {
@@ -78,17 +78,17 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       originAgentCluster: false,
     });
 
-    // 업로드 플러그인
+    // Upload plugin
     await this.fastify.register(fastifyMultipart);
 
-    // @fastify/static 등록
+    // Register @fastify/static
     await this.fastify.register(fastifyStatic, {
       root: path.resolve(this.options.rootPath, "www"),
       wildcard: false,
       serve: false,
     });
 
-    // CORS 설정
+    // CORS configuration
     await this.fastify.register(fastifyCors, {
       origin: (_origin, cb) => {
         cb(null, true);
@@ -97,7 +97,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       exposedHeaders: ["Content-Disposition", "Content-Length"],
     });
 
-    // JSON 파서
+    // JSON parser
     this.fastify.addContentTypeParser(
       "application/json",
       { parseAs: "string" },
@@ -113,22 +113,22 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       },
     );
 
-    // JSON 생성기
+    // JSON serializer
     this.fastify.setSerializerCompiler(() => (data) => jsonStringify(data));
 
-    // API 라우트
+    // API routes
     this.fastify.all("/api/:service/:method", async (req, reply) => {
       await handleHttpRequest(req, reply, this.options.auth?.jwtSecret, (def) =>
         runServiceMethod(this, def),
       );
     });
 
-    // 업로드 라우트
+    // Upload route
     this.fastify.all("/upload", async (req, reply) => {
       await handleUpload(req, reply, this.options.rootPath, this.options.auth?.jwtSecret);
     });
 
-    // WebSocket 라우트
+    // WebSocket route
     const onWebSocketConnected = (socket: WebSocket, req: FastifyRequest) => {
       const { ver, clientId, clientName } = req.query as {
         ver: string | undefined;
@@ -143,7 +143,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         }
         this._wsHandler.addSocket(socket, clientId, clientName, req);
       } else {
-        // V1 레거시 지원 (auto-update만)
+        // V1 legacy support (auto-update only)
         const autoUpdateDef = this.options.services.find((s) => s.name === "AutoUpdate");
         if (autoUpdateDef == null) {
           socket.close(1008, "AutoUpdate service not configured");
@@ -163,7 +163,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
     this.fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
 
-    // 정적 파일 와일드카드 핸들러
+    // Static file wildcard handler
     this.fastify.route({
       method: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
       url: "/*",
@@ -175,19 +175,19 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
       },
     });
 
-    // HTTP 서버 수준의 에러 핸들링
+    // HTTP server-level error handling
     this.fastify.server.on("error", (err) => {
-      logger.error("HTTP 서버 오류 발생", err);
+      logger.error("HTTP server error", err);
     });
 
-    // 리슨
+    // Listen
     await this.fastify.listen({ port: this.options.port, host: "0.0.0.0" });
 
-    // Graceful Shutdown 핸들러 등록
+    // Register graceful shutdown handler
     this._registerGracefulShutdown();
 
     this.isOpen = true;
-    logger.info(`서버 시작됨 (port: ${this.options.port})`);
+    logger.info(`Server started (port: ${this.options.port})`);
     this.emit("ready");
   }
 
@@ -196,12 +196,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     await this.fastify.close();
 
     this.isOpen = false;
-    logger.debug("서버 종료됨");
+    logger.debug("Server closed");
     this.emit("close");
   }
 
   async broadcastReload(clientName: string | undefined, changedFileSet: Set<string>) {
-    logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
+    logger.debug("Broadcasting RELOAD to all server clients");
     await this._wsHandler.broadcastReload(clientName, changedFileSet);
   }
 
@@ -229,10 +229,10 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   private _registerGracefulShutdown() {
     const shutdownHandler = async (signal: string) => {
-      logger.info(`${signal} 시그널 감지. 서버 종료 프로세스 시작...`);
+      logger.info(`${signal} signal received. Starting server shutdown...`);
 
       const forceExitTimer = setTimeout(() => {
-        logger.error("서버 종료 시간 초과 (10초). 강제 종료합니다.");
+        logger.error("Server shutdown timed out (10s). Forcing exit.");
         process.exit(1);
       }, 10000);
 
@@ -240,11 +240,11 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         if (this.isOpen) {
           await this.close();
         }
-        logger.info("서버가 안전하게 종료되었습니다.");
+        logger.info("Server shut down gracefully.");
         clearTimeout(forceExitTimer);
         process.exit(0);
       } catch (err) {
-        logger.error("서버 종료 중 오류 발생", err);
+        logger.error("Error during server shutdown", err);
         process.exit(1);
       }
     };

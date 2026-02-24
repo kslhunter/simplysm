@@ -21,7 +21,7 @@ interface ServiceClientEvents {
 }
 
 export class ServiceClient extends EventEmitter<ServiceClientEvents> {
-  // 모듈들
+  // Modules
   private readonly _socket: SocketProvider;
   private readonly _transport: ServiceTransport;
   private readonly _eventClient: EventClient;
@@ -29,7 +29,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
 
   private _authToken?: string;
 
-  // 상태 접근자
+  // State accessors
   get connected() {
     return this._socket.connected;
   }
@@ -47,7 +47,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     const wsProtocol = options.ssl ? "wss" : "ws";
     const wsUrl = `${wsProtocol}://${options.host}:${options.port}/ws`;
 
-    // 모듈 초기화
+    // Initialize modules
     this._socket = createSocketProvider(wsUrl, this.name, this.options.maxReconnectCount ?? 10);
     const protocol = createServiceProtocol();
     const protocolWrapper = createClientProtocolWrapper(protocol);
@@ -55,15 +55,15 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     this._eventClient = createEventClient(this._transport);
     this._fileClient = createFileClient(this.hostUrl, this.name);
 
-    // 이벤트 바인딩
+    // Event bindings
     this._socket.on("state", async (state) => {
       this.emit("state", state);
 
-      // 재연결 시 이벤트 리스너 자동 복구
+      // Auto-recover event listeners on reconnect
       if (state === "connected") {
         try {
           if (this._authToken != null) {
-            await this.auth(this._authToken); // 재인증
+            await this.auth(this._authToken); // Re-authenticate
           }
           await this._eventClient.reRegisterAll();
         } catch (err) {
@@ -77,7 +77,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     });
   }
 
-  // 타입 안전성을 위한 Proxy 생성 메소드
+  // Proxy creation method for type safety
   getService<TService>(serviceName: string): RemoteService<TService> {
     return new Proxy({} as RemoteService<TService>, {
       get: (_target, prop) => {
@@ -161,11 +161,11 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 }
 
-// TService의 모든 메소드 반환형을 Promise로 감싸주는 타입 변환기
+// Type transformer that wraps all method return types of TService with Promise
 export type RemoteService<TService> = {
   [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
     ? (...args: P) => Promise<Awaited<R>>
-    : never; // 함수가 아닌 프로퍼티는 안씀
+    : never; // Non-function properties are excluded
 };
 
 export function createServiceClient(name: string, options: ServiceConnectionConfig): ServiceClient {

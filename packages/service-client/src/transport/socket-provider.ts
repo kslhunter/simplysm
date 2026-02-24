@@ -30,15 +30,15 @@ export function createSocketProvider(
   clientName: string,
   maxReconnectCount: number,
 ): SocketProvider {
-  // 설정상수
-  const HEARTBEAT_TIMEOUT = 30000; // 30초간 아무런 메시지가 없으면 끊김으로 간주
-  const HEARTBEAT_INTERVAL = 5000; // 5초마다 핑 전송
-  const RECONNECT_DELAY = 3000; // 3초마다 재연결 시도
+  // Configuration constants
+  const HEARTBEAT_TIMEOUT = 30000; // Consider disconnected if no message for 30s
+  const HEARTBEAT_INTERVAL = 5000; // Send ping every 5s
+  const RECONNECT_DELAY = 3000; // Retry reconnect every 3s
 
-  // 1바이트 버퍼 미리 생성 (메모리 절약)
+  // Pre-allocate 1-byte buffer (saves memory)
   const PING_PACKET = new Uint8Array([0x01]);
 
-  // 상태
+  // State
   let ws: WebSocket | undefined;
   let isManualClose = false;
   let reconnectCount = 0;
@@ -58,10 +58,10 @@ export function createSocketProvider(
     try {
       await createSocket();
       startHeartbeat();
-      reconnectCount = 0; // 연결 성공 시 카운트 초기화
+      reconnectCount = 0; // Reset count on successful connection
       emitter.emit("state", "connected");
     } catch (err) {
-      // 최초 연결 실패는 에러를 던짐 (호출자가 알 수 있게)
+      // Throw on initial connection failure (so the caller can handle it)
       throw err;
     }
   }
@@ -72,7 +72,7 @@ export function createSocketProvider(
     const currentWs = ws;
     if (currentWs != null) {
       currentWs.close();
-      // 완전히 닫힐 때까지 대기 (Graceful Shutdown)
+      // Wait until fully closed (graceful shutdown)
       await waitUntil(() => currentWs.readyState === WebSocket.CLOSED, 100, 30).catch(() => {});
     }
     emitter.emit("state", "closed");
@@ -109,7 +109,7 @@ export function createSocketProvider(
       };
 
       newWs.onerror = (event: Event) => {
-        // 연결 중 에러 발생 시 reject
+        // Reject on error during connection
         if (!isConnected()) {
           const errorEvent = event as ErrorEvent;
           const msg = errorEvent.message;
@@ -118,21 +118,21 @@ export function createSocketProvider(
       };
     });
 
-    // 이 시점에서 ws는 항상 할당되어 있음 (ws.onopen에서 할당)
+    // At this point ws is always assigned (assigned in ws.onopen)
     const currentWs = ws;
     if (currentWs == null) {
-      throw new Error("WebSocket 초기화 실패");
+      throw new Error("WebSocket initialization failed");
     }
 
     currentWs.onmessage = (event) => {
-      lastHeartbeatTime = Date.now(); // 하트비트 갱신
+      lastHeartbeatTime = Date.now(); // Update heartbeat
 
       const data = event.data as ArrayBuffer;
       const bytes = new Uint8Array(data);
 
-      // Raw Ping/Pong 처리 (가장 먼저 체크)
-      // 1바이트이고 첫 바이트가 0x02(Pong)이면 무시
-      // (하트비트 타임스탬프만 갱신하고 끝냄)
+      // Raw Ping/Pong handling (checked first)
+      // If 1 byte and first byte is 0x02 (Pong), ignore
+      // (only heartbeat timestamp was updated, nothing else to do)
       if (bytes.length === 1 && bytes[0] === 0x02) return;
 
       emitter.emit("message", bytes);
@@ -147,11 +147,11 @@ export function createSocketProvider(
   }
 
   async function tryReconnect(): Promise<void> {
-    // 루프 기반 재연결 (재귀 대신 사용하여 스택 안전성 확보)
+    // Loop-based reconnect (used instead of recursion for stack safety)
     while (reconnectCount < maxReconnectCount) {
       reconnectCount++;
       emitter.emit("state", "reconnecting");
-      logger.warn("WebSocket 연결 끊김. 재연결 시도...", {
+      logger.warn("WebSocket disconnected. Attempting reconnect...", {
         reconnectCount,
         maxReconnectCount,
       });
@@ -162,16 +162,16 @@ export function createSocketProvider(
         await createSocket();
         startHeartbeat();
         reconnectCount = 0;
-        emitter.emit("state", "connected"); // 재연결 성공 알림
-        logger.info("WebSocket 재연결 성공");
-        return; // 재연결 성공 시 종료
+        emitter.emit("state", "connected"); // Notify reconnect success
+        logger.info("WebSocket reconnected successfully");
+        return; // Exit on successful reconnect
       } catch {
-        // 실패 시 루프 계속
+        // Continue loop on failure
       }
     }
 
-    // 최대 재시도 횟수 초과
-    logger.error("재연결 시도 횟수 초과. 연결을 포기합니다.");
+    // Max retry count exceeded
+    logger.error("Reconnect retry limit exceeded. Giving up.");
     emitter.emit("state", "closed");
   }
 
@@ -180,32 +180,32 @@ export function createSocketProvider(
     lastHeartbeatTime = Date.now();
 
     heartbeatTimer = setInterval(() => {
-      // 타임아웃 체크
+      // Timeout check
       if (Date.now() - lastHeartbeatTime > HEARTBEAT_TIMEOUT) {
         logger.warn("Heartbeat Timeout. Connection lost.");
 
-        // 타임아웃이 발생했으므로 즉시 타이머를 멈춰서 반복 실행을 막습니다.
+        // Stop the timer immediately on timeout to prevent repeated execution.
         stopHeartbeat();
 
-        // 소켓이 닫히기를 기다리지 말고(onclose 미발생 대비), 강제로 정리 후 재연결합니다.
+        // Don't wait for socket close (onclose may not fire); force cleanup and reconnect.
         if (ws != null) {
           const tempWs = ws;
-          ws = undefined; // 연결 상태 끊김으로 간주
+          ws = undefined; // Consider connection as disconnected
 
-          // 기존 소켓의 이벤트 핸들러 제거
-          // 뒤늦게 발생한 onclose에 따른 중복 재연결 방지
+          // Remove event handlers from old socket
+          // Prevent duplicate reconnect from late onclose events
           tempWs.onclose = null;
           tempWs.onerror = null;
           tempWs.onmessage = null;
 
-          // 소켓 닫기 시도 (에러 무시)
+          // Attempt to close socket (ignore errors)
           try {
             tempWs.close();
           } catch {
             // ignore
           }
 
-          // 수동 종료가 아니라면 재연결 로직 강제 실행
+          // Force reconnect logic if not a manual close
           if (!isManualClose) {
             void tryReconnect();
           }
@@ -213,7 +213,7 @@ export function createSocketProvider(
         return;
       }
 
-      // ping 전송
+      // Send ping
       const currentWs = ws;
       if (isConnected() && currentWs != null) {
         try {

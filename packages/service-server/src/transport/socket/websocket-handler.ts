@@ -164,38 +164,38 @@ export function createWebSocketHandler(
       try {
         const serviceSocket = createServiceSocket(socket, clientId, clientName, connReq);
 
-        // 기존 연결 끊기
+        // Disconnect existing connection
         const prevServiceSocket = socketMap.get(clientId);
         if (prevServiceSocket != null) {
           prevServiceSocket.close();
 
           const connectionDateTimeText =
             prevServiceSocket.connectedAtDateTime.toFormatString("yyyy:MM:dd HH:mm:ss.fff");
-          logger.debug(`클라이언트 기존연결 끊음: ${clientId}: ${connectionDateTimeText}`);
+          logger.debug(`Disconnected previous client connection: ${clientId}: ${connectionDateTimeText}`);
         }
 
         socketMap.set(clientId, serviceSocket);
 
         serviceSocket.on("close", (code) => {
-          logger.debug(`클라이언트 연결 끊김: (code: ${code})`);
+          logger.debug(`Client disconnected: (code: ${code})`);
 
           if (socketMap.get(clientId) !== serviceSocket) return;
           socketMap.delete(clientId);
         });
 
         serviceSocket.on("message", async ({ uuid, msg }) => {
-          logger.debug("요청 수신", msg);
+          logger.debug("Request received", msg);
           const sentSize = await processRequest(serviceSocket, uuid, msg);
-          logger.debug(`응답 전송 (size: ${sentSize})`);
+          logger.debug(`Response sent (size: ${sentSize})`);
         });
 
-        logger.debug("클라이언트 연결됨", {
+        logger.debug("Client connected", {
           clientId,
           remoteAddress: connReq.socket.remoteAddress,
           socketSize: socketMap.size,
         });
       } catch (err) {
-        logger.error("연결 처리 중 오류 발생", err);
+        logger.error("Error handling connection", err);
         socket.terminate();
       }
     },

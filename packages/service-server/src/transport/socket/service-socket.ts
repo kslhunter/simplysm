@@ -80,7 +80,7 @@ export function createServiceSocket(
   // State
   // -------------------------------------------------------------------
 
-  const PING_INTERVAL = 5000; // 5초마다 핑 전송
+  const PING_INTERVAL = 5000; // Send ping every 5s
   const PONG_PACKET = new Uint8Array([0x02]);
 
   const protocol = createProtocolWrapper();
@@ -125,7 +125,7 @@ export function createServiceSocket(
   // -------------------------------------------------------------------
 
   function onError(err: Error): void {
-    logger.error("WebSocket 클라이언트 오류 발생", err);
+    logger.error("WebSocket client error", err);
     emitEvent("error", err);
   }
 
@@ -137,7 +137,7 @@ export function createServiceSocket(
 
   async function onMessage(msgBuffer: Bytes): Promise<void> {
     try {
-      // ping에 대한 pong처리
+      // Handle pong response to ping
       if (msgBuffer.length === 1 && msgBuffer[0] === 0x01) {
         if (socket.readyState === WebSocket.OPEN) {
           socket.send(PONG_PACKET);
@@ -159,7 +159,7 @@ export function createServiceSocket(
         emitEvent("message", { uuid: decodeResult.uuid, msg });
       }
     } catch (err) {
-      logger.error("WebSocket 메시지 처리 중 오류 발생", err);
+      logger.error("Error processing WebSocket message", err);
     }
   }
 

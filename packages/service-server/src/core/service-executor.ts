@@ -13,14 +13,14 @@ export async function runServiceMethod(
     http?: { clientName: string; authTokenPayload?: AuthTokenPayload };
   },
 ): Promise<unknown> {
-  // 서비스 정의 찾기
+  // Find service definition
   const serviceDef = server.options.services.find((item) => item.name === def.serviceName);
 
   if (serviceDef == null) {
     throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
   }
 
-  // 요청 검증 (Gatekeeper)
+  // Request validation (gatekeeper)
   const clientName = def.socket?.clientName ?? def.http?.clientName;
   if (clientName != null) {
     if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
@@ -28,21 +28,21 @@ export async function runServiceMethod(
     }
   }
 
-  // Context 생성
+  // Create context
   const ctx = createServiceContext(server, def.socket, def.http);
 
-  // Factory 호출하여 메서드 객체 생성
+  // Invoke factory to create method object
   const methods = serviceDef.factory(ctx);
 
-  // 메서드 찾기
+  // Find method
   const method = (methods as Record<string, unknown>)[def.methodName];
   if (typeof method !== "function") {
     throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
   }
 
-  // 인증 검사
+  // Auth check
   if (server.options.auth != null) {
-    // 메서드 레벨 auth 먼저 확인, 없으면 서비스 레벨 확인
+    // Check method-level auth first, fallback to service-level
     const methodPerms = getServiceAuthPermissions(method);
     const requiredPerms = methodPerms ?? serviceDef.authPermissions;
 
@@ -62,6 +62,6 @@ export async function runServiceMethod(
     }
   }
 
-  // 실행
+  // Execute
   return await method(...def.params);
 }

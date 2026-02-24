@@ -18,24 +18,24 @@ interface IV1Response {
 }
 
 /**
- * V1 레거시 클라이언트 처리 (auto-update만 지원)
- * 다른 모든 요청은 업그레이드 유도 에러를 반환합니다.
+ * V1 legacy client handler (only auto-update supported).
+ * All other requests return an upgrade-required error.
  */
 export function handleV1Connection(
   socket: WebSocket,
   autoUpdateMethods: { getLastVersion: (platform: string) => Promise<any> },
   clientNameSetter?: (clientName: string | undefined) => void,
 ) {
-  // 연결 완료 알림
+  // Notify connection established
   socket.send(JSON.stringify({ name: "connected" }));
 
   socket.on("message", (data) => {
     try {
       const msg = JSON.parse(data.toString()) as IV1Request;
 
-      // SdAutoUpdateService.getLastVersion만 허용
+      // Only allow SdAutoUpdateService.getLastVersion
       if (msg.command === "SdAutoUpdateService.getLastVersion") {
-        // legacy 컨텍스트 설정
+        // Set legacy context
         clientNameSetter?.(msg.clientName);
 
         const result = autoUpdateMethods.getLastVersion(msg.params[0] as string);
@@ -48,7 +48,7 @@ export function handleV1Connection(
         };
         socket.send(JSON.stringify(response));
       } else {
-        // 다른 모든 요청은 업그레이드 유도
+        // All other requests prompt for upgrade
         const response: IV1Response = {
           name: "response",
           reqUuid: msg.uuid,
@@ -61,7 +61,7 @@ export function handleV1Connection(
         socket.send(JSON.stringify(response));
       }
     } catch (err) {
-      logger.warn("V1 메시지 처리 오류", err);
+      logger.warn("V1 message processing error", err);
     }
   });
 }

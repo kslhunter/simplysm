@@ -1,13 +1,13 @@
 /**
- * 파일 업로드 결과
+ * File upload result
  *
- * 서버에 업로드된 파일의 정보를 담는다.
+ * Contains information about a file uploaded to the server.
  */
 export interface ServiceUploadResult {
-  /** 서버 내 저장 경로 */
+  /** Storage path on the server */
   path: string;
-  /** 원본 파일명 */
+  /** Original filename */
   filename: string;
-  /** 파일 크기 (bytes) */
+  /** File size (bytes) */
   size: number;
 }

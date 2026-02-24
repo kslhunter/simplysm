@@ -11,52 +11,52 @@ import {
 import { PROTOCOL_CONFIG, type ServiceMessage } from "./protocol.types";
 
 /**
- * 서비스 프로토콜 인터페이스
+ * Service protocol interface
  *
  * Binary Protocol V2:
  * - Header: 28 bytes (UUID 16 + TotalSize 8 + Index 4)
  * - Body: JSON
- * - 자동 청킹: 3MB 초과 시 300KB 단위 분할
- * - 최대 메시지: 100MB
+ * - Auto chunking: splits into 300KB chunks when exceeding 3MB
+ * - Max message size: 100MB
  */
 export interface ServiceProtocol {
   /**
-   * 메시지 인코딩 (필요 시 자동 분할)
+   * Encode a message (auto-split if needed)
    */
   encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number };
 
   /**
-   * 메시지 디코딩 (분할 패킷 자동 조립)
+   * Decode a message (auto-reassemble chunked packets)
    */
   decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T>;
 
   /**
-   * 프로토콜 인스턴스를 정리한다.
+   * Dispose the protocol instance.
    *
-   * 내부 청크 누적기의 GC 타이머를 해제하고 메모리를 정리한다.
-   * 프로토콜 인스턴스 사용이 끝나면 반드시 호출해야 한다.
+   * Releases the internal chunk accumulator's GC timer and frees memory.
+   * Must be called when the protocol instance is no longer needed.
    */
   dispose(): void;
 }
 
 /**
- * 메시지 디코딩 결과 타입 (유니온)
+ * Message decode result type (union)
  *
- * - `type: "complete"`: 모든 청크가 수신되어 메시지 조립이 완료됨
- * - `type: "progress"`: 분할 메시지 수신 중 (일부 청크만 도착)
+ * - `type: "complete"`: all chunks received and message reassembly is complete
+ * - `type: "progress"`: chunked message in progress (only some chunks arrived)
  */
 export type ServiceMessageDecodeResult<TMessage extends ServiceMessage> =
   | { type: "complete"; uuid: string; message: TMessage }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
 
 /**
- * 서비스 프로토콜 인코더/디코더 생성
+ * Create a service protocol encoder/decoder
  *
  * Binary Protocol V2:
  * - Header: 28 bytes (UUID 16 + TotalSize 8 + Index 4)
  * - Body: JSON
- * - 자동 청킹: 3MB 초과 시 300KB 단위 분할
- * - 최대 메시지: 100MB
+ * - Auto chunking: splits into 300KB chunks when exceeding 3MB
+ * - Max message size: 100MB
  */
 export function createServiceProtocol(): ServiceProtocol {
   // -------------------------------------------------------------------
@@ -80,9 +80,9 @@ export function createServiceProtocol(): ServiceProtocol {
   // -------------------------------------------------------------------
 
   /**
-   * 메시지 청크 인코딩 (헤더 + 바디)
+   * Encode a message chunk (header + body)
    *
-   * 헤더 구조 (28 bytes, Big Endian):
+   * Header structure (28 bytes, Big Endian):
    * ```
    * Offset  Size  Field
    * ------  ----  -----
@@ -128,7 +128,7 @@ export function createServiceProtocol(): ServiceProtocol {
 
       const totalSize = msgBytes.length;
 
-      // 전체 사이즈 제한 체크 (가장 먼저 수행)
+      // Total size limit check (performed first)
       if (totalSize > PROTOCOL_CONFIG.MAX_TOTAL_SIZE) {
         throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
           totalSize,
@@ -136,12 +136,12 @@ export function createServiceProtocol(): ServiceProtocol {
         });
       }
 
-      // 사이즈가 작으면 그대로 반환
+      // Return as-is if small enough
       if (totalSize <= PROTOCOL_CONFIG.SPLIT_MESSAGE_SIZE) {
         return { chunks: [encodeChunk({ uuid, totalSize, index: 0 }, msgBytes)], totalSize };
       }
 
-      // 분할 처리
+      // Split into chunks
       const chunks: Bytes[] = [];
       let offset = 0;
       let index = 0;
@@ -167,7 +167,7 @@ export function createServiceProtocol(): ServiceProtocol {
         });
       }
 
-      // 1. 헤더 읽기
+      // 1. Read header
 
       // UUID
       const uuidBytes = bytes.subarray(0, 16);
@@ -178,7 +178,7 @@ export function createServiceProtocol(): ServiceProtocol {
       const totalSize = Number(headerView.getBigUint64(16, false));
       const index = headerView.getUint32(24, false);
 
-      // 전체 사이즈 제한 체크 (가장 먼저 수행)
+      // Total size limit check (performed first)
       if (totalSize > PROTOCOL_CONFIG.MAX_TOTAL_SIZE) {
         throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
           totalSize,
@@ -194,7 +194,7 @@ export function createServiceProtocol(): ServiceProtocol {
         chunks: [],
       }));
       if (accItem.chunks[index] == null) {
-        // 패킷중복 방어
+        // Duplicate packet guard
         accItem.chunks[index] = bodyBytes;
         accItem.completedSize += bodyBytes.length;
       }
@@ -207,7 +207,7 @@ export function createServiceProtocol(): ServiceProtocol {
           completedSize: accItem.completedSize,
         };
       } else {
-        accumulator.delete(uuid); // 메모리 해제
+        accumulator.delete(uuid); // Free memory
 
         const resultBytes = bytesConcat(accItem.chunks.filterExists());
         let messageArr: [string, unknown];

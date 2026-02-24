@@ -2,17 +2,17 @@
 // Protocol Constants
 // ----------------------------------------------------------------------
 
-/** 서비스 프로토콜 설정 */
+/** Service protocol configuration */
 export const PROTOCOL_CONFIG = {
-  /** 최대 메시지 크기 (100MB) */
+  /** Max message size (100MB) */
   MAX_TOTAL_SIZE: 100 * 1024 * 1024,
-  /** 청킹 임계값 (3MB) */
+  /** Chunking threshold (3MB) */
   SPLIT_MESSAGE_SIZE: 3 * 1024 * 1024,
-  /** 청크 크기 (300KB) */
+  /** Chunk size (300KB) */
   CHUNK_SIZE: 300 * 1024,
-  /** GC 주기 (10초) */
+  /** GC interval (10s) */
   GC_INTERVAL: 10 * 1000,
-  /** 미완성 메시지 만료 시간 (60초) */
+  /** Incomplete message expiry time (60s) */
   EXPIRE_TIME: 60 * 1000,
 } as const;
 
@@ -34,10 +34,10 @@ export type ServiceMessage =
   | ServiceEventMessage;
 
 export type ServiceServerMessage =
-  | ServiceReloadMessage // 알림
+  | ServiceReloadMessage // Notification
   | ServiceResponseMessage
   | ServiceErrorMessage
-  | ServiceEventMessage; // 알림
+  | ServiceEventMessage; // Notification
 
 export type ServiceServerRawMessage = ServiceProgressMessage | ServiceServerMessage;
 
@@ -50,28 +50,28 @@ export type ServiceClientMessage =
   | ServiceEmitEventMessage;
 
 // ----------------------------------------------------------------------
-// System 공통
+// System (common)
 // ----------------------------------------------------------------------
 
-/** 서버: 클라이언트에게 reload 명령 */
+/** Server: reload command to client */
 export interface ServiceReloadMessage {
   name: "reload";
   body: {
-    clientName: string | undefined; // 클라이언트명
-    changedFileSet: Set<string>; // 변경파일목록
+    clientName: string | undefined; // Client name
+    changedFileSet: Set<string>; // Changed file list
   };
 }
 
-/** 서버: 받은 분할메시지에 대한 progress 알림 */
+/** Server: progress notification for received chunked message */
 export interface ServiceProgressMessage {
   name: "progress";
   body: {
-    totalSize: number; // 총 크기 (Bytes)
-    completedSize: number; // 완료된 크기 (Bytes)
+    totalSize: number; // Total size (bytes)
+    completedSize: number; // Completed size (bytes)
   };
 }
 
-/** 서버: 에러 발생 알림 */
+/** Server: error notification */
 export interface ServiceErrorMessage {
   name: "error";
   body: {
@@ -84,72 +84,72 @@ export interface ServiceErrorMessage {
   };
 }
 
-/** 클라: 인증 메시지 */
+/** Client: authentication message */
 export interface ServiceAuthMessage {
   name: "auth";
-  body: string; // 토큰
+  body: string; // Token
 }
 
 // ----------------------------------------------------------------------
 // Service.Method
 // ----------------------------------------------------------------------
 
-/** 클라: ServiceMethod 요청 */
+/** Client: service method request */
 export interface ServiceRequestMessage {
   name: `${string}.${string}`; // ${service}.${method}
   body: unknown[]; // params
 }
 
-/** 서버: ServiceMethod 응답 */
+/** Server: service method response */
 export interface ServiceResponseMessage {
   name: "response";
   body?: unknown; // result
 }
 
 // ----------------------------------------------------------------------
-// 이벤트
+// Events
 // ----------------------------------------------------------------------
 
-/** 클라: 이벤트 리스너 등록 */
+/** Client: add event listener */
 export interface ServiceAddEventListenerMessage {
   name: "evt:add";
   body: {
-    key: string; // 리스너키 (uuid) - 차후 removeEventListener를 위해서라도 필요함
-    name: string; // 이벤트명 (Type.name)
-    info: unknown; // 이벤트 발생시, 리스너 필터링이 가능하도록 하기 위한 "추가 리스너 정보"
+    key: string; // Listener key (uuid) - needed for removeEventListener
+    name: string; // Event name (Type.name)
+    info: unknown; // Additional listener info for filtering when events fire
   };
 }
 
-/** 클라: 이벤트 리스너 제거 */
+/** Client: remove event listener */
 export interface ServiceRemoveEventListenerMessage {
   name: "evt:remove";
   body: {
-    key: string; // 리스너키 (uuid)
+    key: string; // Listener key (uuid)
   };
 }
 
-/** 클라: 이벤트 리스너 정보 목록 요청 */
+/** Client: request event listener info list */
 export interface ServiceGetEventListenerInfosMessage {
   name: "evt:gets";
   body: {
-    name: string; // 이벤트명
+    name: string; // Event name
   };
 }
 
-/** 클라: 이벤트 발생 */
+/** Client: emit event */
 export interface ServiceEmitEventMessage {
   name: "evt:emit";
   body: {
-    keys: string[]; // 리스너키 목록
-    data: unknown; // 데이터
+    keys: string[]; // Listener key list
+    data: unknown; // Data
   };
 }
 
-/** 서버: 이벤트 발생 알림 */
+/** Server: event notification */
 export interface ServiceEventMessage {
   name: "evt:on";
   body: {
-    keys: string[]; // 리스너키 목록
-    data: unknown; // 데이터
+    keys: string[]; // Listener key list
+    data: unknown; // Data
   };
 }
