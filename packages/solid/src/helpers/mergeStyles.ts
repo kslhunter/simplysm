@@ -1,25 +1,25 @@
 import { type JSX } from "solid-js";
 
 /**
- * CSS 스타일을 병합하는 유틸리티 함수
+ * Utility function that merges CSS styles.
  *
  * @remarks
- * - string과 object 형태의 스타일을 모두 지원
- * - object 형태는 하나의 객체로 병합 (나중 값이 우선)
- * - string은 파싱하여 병합
- * - undefined는 무시
+ * - Supports both string and object style formats
+ * - Object styles are merged into a single object (later values take precedence)
+ * - Strings are parsed and merged
+ * - undefined values are ignored
  *
  * @example
  * ```tsx
- * // Object 병합
+ * // Object merge
  * mergeStyles({ color: "red" }, { background: "blue" })
  * // => { color: "red", background: "blue" }
  *
- * // String 병합
+ * // String merge
  * mergeStyles("color: red;", "background: blue;")
  * // => { color: "red", background: "blue" }
  *
- * // Mixed 병합
+ * // Mixed merge
  * mergeStyles({ color: "red" }, "background: blue;")
  * // => { color: "red", background: "blue" }
  * ```
@@ -33,7 +33,7 @@ export function mergeStyles(
     if (style === undefined) continue;
 
     if (typeof style === "string") {
-      // CSS string 파싱
+      // Parse CSS string
       const declarations = style.split(";").filter((s) => s.trim());
       for (const declaration of declarations) {
         const colonIndex = declaration.indexOf(":");
@@ -42,7 +42,7 @@ export function mergeStyles(
         const property = declaration.slice(0, colonIndex).trim();
         const value = declaration.slice(colonIndex + 1).trim();
         if (property && value) {
-          // kebab-case를 camelCase로 변환
+          // Convert kebab-case to camelCase
           const camelProperty = property.replace(/-([a-z])/g, (_, letter: string) =>
             letter.toUpperCase(),
           );
@@ -50,7 +50,7 @@ export function mergeStyles(
         }
       }
     } else {
-      // Object 스타일 병합
+      // Merge object styles
       Object.assign(result, style);
     }
   }

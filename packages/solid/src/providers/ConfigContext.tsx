@@ -1,24 +1,24 @@
 import { createContext, useContext, type ParentComponent } from "solid-js";
 
 /**
- * 앱 전역 설정
+ * App-wide configuration.
  */
 export interface AppConfig {
   /**
-   * 클라이언트 식별자 (저장소 key prefix로 사용)
+   * Client identifier (used as storage key prefix)
    */
   clientName: string;
 }
 
 /**
- * 앱 전역 설정 Context
+ * App-wide configuration Context.
  */
 export const ConfigContext = createContext<AppConfig>();
 
 /**
- * 앱 전역 설정에 접근하는 훅
+ * Hook to access app-wide configuration.
  *
- * @throws ConfigProvider가 없으면 에러 발생
+ * @throws Throws an error if ConfigProvider is not present
  */
 export function useConfig(): AppConfig {
   const context = useContext(ConfigContext);
@@ -29,7 +29,7 @@ export function useConfig(): AppConfig {
 }
 
 /**
- * 앱 전역 설정 Provider
+ * App-wide configuration Provider.
  *
  * @example
  * ```tsx
@@ -40,7 +40,7 @@ export function useConfig(): AppConfig {
  */
 export const ConfigProvider: ParentComponent<{ clientName: string }> = (props) => {
   return (
-    // eslint-disable-next-line solid/reactivity -- clientName은 초기 설정값으로 변경되지 않음
+    // eslint-disable-next-line solid/reactivity -- clientName is an initial config value that does not change
     <ConfigContext.Provider value={{ clientName: props.clientName }}>
       {props.children}
     </ConfigContext.Provider>

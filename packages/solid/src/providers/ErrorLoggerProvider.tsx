@@ -2,11 +2,11 @@ import { onCleanup, type ParentComponent } from "solid-js";
 import { useLogger } from "../hooks/useLogger";
 
 /**
- * 전역 에러 캡처 Provider
+ * Global error capture Provider.
  *
  * @remarks
- * window.onerror, unhandledrejection 이벤트를 캡처하여 useLogger를 통해 로깅한다.
- * LoggerProvider가 없으면 consola로 fallback.
+ * Captures window.onerror and unhandledrejection events and logs them via useLogger.
+ * Falls back to consola if LoggerProvider is not present.
  */
 export const ErrorLoggerProvider: ParentComponent = (props) => {
   const logger = useLogger();

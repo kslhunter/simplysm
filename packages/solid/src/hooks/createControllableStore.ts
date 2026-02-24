@@ -4,22 +4,22 @@ import type { SetStoreFunction } from "solid-js/store";
 import { objClone } from "@simplysm/core-common";
 
 /**
- * Controlled/Uncontrolled 패턴을 지원하는 store hook
+ * Store hook that supports the controlled/uncontrolled pattern.
  *
  * @remarks
- * - `onChange`가 제공되면 controlled 모드: setter 호출 시 onChange로 변경 알림
- * - `onChange`가 없으면 uncontrolled 모드: 내부 store만 사용
- * - SetStoreFunction의 모든 overload 지원 (path 기반, produce, reconcile 등)
+ * - When `onChange` is provided: controlled mode, notifies changes via onChange on setter calls
+ * - When `onChange` is absent: uncontrolled mode, uses internal store only
+ * - Supports all SetStoreFunction overloads (path-based, produce, reconcile, etc.)
  *
  * @example
  * ```tsx
- * // Controlled 모드 (onItemsChange 제공)
+ * // Controlled mode (onItemsChange provided)
  * const [items, setItems] = createControllableStore<Item[]>({
  *   value: () => props.items ?? [],
  *   onChange: () => props.onItemsChange,
  * });
  *
- * // Uncontrolled 모드 (onItemsChange 미제공)
+ * // Uncontrolled mode (onItemsChange not provided)
  * const [items, setItems] = createControllableStore<Item[]>({
  *   value: () => [],
  *   onChange: () => undefined,
@@ -32,12 +32,12 @@ export function createControllableStore<TValue extends object>(options: {
 }): [TValue, SetStoreFunction<TValue>] {
   const [store, rawSet] = createStore<TValue>(objClone(options.value()));
 
-  // 외부 value 변경 → 내부 store 동기화
+  // Sync internal store when external value changes
   createEffect(() => {
     rawSet(reconcile(options.value()) as any);
   });
 
-  // 함수 래퍼로 setter 감싸서 onChange 알림 추가
+  // Wrap setter with a function wrapper to add onChange notification
   const wrappedSet = ((...args: any[]) => {
     const before = JSON.stringify(unwrap(store));
     (rawSet as any)(...args);

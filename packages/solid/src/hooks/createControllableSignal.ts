@@ -1,37 +1,37 @@
 import { createSignal, createEffect } from "solid-js";
 
 /**
- * 함수 타입을 제한하는 유틸리티 타입
- * 함수 타입이 전달되면 never로 변환되어 컴파일 타임 에러 발생
+ * Utility type that restricts function types.
+ * If a function type is passed, it is converted to never, causing a compile-time error.
  *
  * @remarks
- * 함수를 저장해야 할 경우 객체로 감싸기: `createControllableSignal<{ fn: () => void }>(...)`
+ * To store a function, wrap it in an object: `createControllableSignal<{ fn: () => void }>(...)`
  */
 type NotFunction<TValue> = TValue extends (...args: unknown[]) => unknown ? never : TValue;
 
 /**
- * Controlled/Uncontrolled 패턴을 지원하는 signal hook
+ * Signal hook that supports the controlled/uncontrolled pattern.
  *
  * @remarks
- * - `onChange`가 제공되면 controlled 모드: 외부에서 값 관리
- * - `onChange`가 없으면 uncontrolled 모드: 내부 상태 사용
- * - 함수형 setter 지원: `setValue(prev => !prev)`
+ * - When `onChange` is provided: controlled mode, value managed externally
+ * - When `onChange` is absent: uncontrolled mode, uses internal state
+ * - Supports functional setter: `setValue(prev => !prev)`
  *
  * @example
  * ```tsx
- * // Controlled 모드 (onOpenChange 제공)
+ * // Controlled mode (onOpenChange provided)
  * const [open, setOpen] = createControllableSignal({
  *   value: () => props.open ?? false,
  *   onChange: () => props.onOpenChange,
  * });
  *
- * // Uncontrolled 모드 (onOpenChange 미제공)
+ * // Uncontrolled mode (onOpenChange not provided)
  * const [open, setOpen] = createControllableSignal({
  *   value: () => props.open ?? false,
  *   onChange: () => undefined,
  * });
  *
- * // 함수형 setter
+ * // Functional setter
  * setOpen(prev => !prev);
  * ```
  */
@@ -41,7 +41,7 @@ export function createControllableSignal<TValue>(options: {
 }) {
   const [internalValue, setInternalValue] = createSignal<TValue>(options.value());
 
-  // props 변경 시 내부 상태 동기화 (props 우선)
+  // Sync internal state when props change (props take precedence)
   createEffect(() => {
     const propValue = options.value();
     setInternalValue(() => propValue);

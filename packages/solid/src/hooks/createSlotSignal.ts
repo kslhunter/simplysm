@@ -3,9 +3,9 @@ import { createSignal, type Accessor, type JSX } from "solid-js";
 export type SlotAccessor = (() => JSX.Element) | undefined;
 
 /**
- * 슬롯 등록용 signal 생성
+ * Creates a signal for slot registration.
  *
- * @returns [accessor, setter] — setter는 함수를 값으로 저장하기 위해 래핑 처리
+ * @returns [accessor, setter] -- setter is wrapped to store a function as a value
  */
 export function createSlotSignal(): [Accessor<SlotAccessor>, (content: SlotAccessor) => void] {
   const [slot, _setSlot] = createSignal<SlotAccessor>();

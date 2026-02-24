@@ -10,13 +10,13 @@ declare module "solid-js" {
 }
 
 /**
- * 인터랙티브 요소에 ripple 효과를 추가하는 directive.
+ * Directive that adds a ripple effect to interactive elements.
  *
  * @remarks
- * - 내부에 ripple-container div를 생성하여 overflow: hidden 적용 (부모 요소 영향 없음)
- * - 요소의 position이 `static`일 때만 `relative`로 변경 (cleanup 시 원래 값 복원)
- * - 단일 ripple 모드: 새 클릭 시 이전 ripple 제거
- * - `prefers-reduced-motion: reduce` 설정 시 ripple 비활성화
+ * - Creates an internal ripple-container div with overflow: hidden (no impact on parent element)
+ * - Changes position to `relative` only when the element is `static` (restores original value on cleanup)
+ * - Single ripple mode: removes the previous ripple on new click
+ * - Disables ripple when `prefers-reduced-motion: reduce` is set
  *
  * @example
  * ```tsx
@@ -32,7 +32,7 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // ripple container 생성 (내부에서 overflow: hidden 처리)
+  // Create ripple container (handles overflow: hidden internally)
   const ensureContainer = () => {
     if (containerEl) return containerEl;
 
@@ -48,7 +48,7 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
     if (!accessor()) return;
     if (prefersReducedMotion.matches) return;
 
-    // position 확인 및 적용 (container 배치를 위해 필요)
+    // Check and apply position (required for container placement)
     if (getComputedStyle(el).position === "static") {
       if (!positionApplied) originalPosition = el.style.position;
       el.style.position = "relative";
@@ -66,7 +66,7 @@ export function ripple(el: HTMLElement, accessor: Accessor<boolean>): void {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // 클릭 위치에서 가장 먼 모서리까지의 거리를 반지름으로 사용
+    // Use the distance from the click position to the farthest corner as the radius
     const maxDist = Math.max(
       Math.hypot(x, y),
       Math.hypot(rect.width - x, y),

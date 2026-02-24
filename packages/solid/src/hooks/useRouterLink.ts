@@ -1,41 +1,41 @@
 import { useNavigate } from "@solidjs/router";
 
 export interface RouterLinkOptions {
-  /** 이동할 경로 (완성된 URL, 예: "/home/dashboard?tab=1") */
+  /** Navigation path (complete URL, e.g., "/home/dashboard?tab=1") */
   href: string;
 
-  /** 페이지 이동 시 전달할 데이터 (URL에 노출되지 않음) */
+  /** Data to pass during navigation (not exposed in the URL) */
   state?: Record<string, unknown>;
 
-  /** Shift+클릭 시 새 창 크기 */
+  /** New window size on Shift+click */
   window?: {
-    width?: number; // 기본값: 800
-    height?: number; // 기본값: 800
+    width?: number; // Default: 800
+    height?: number; // Default: 800
   };
 }
 
 /**
- * 라우터 네비게이션을 처리하는 hook
+ * Hook that handles router navigation.
  *
  * @remarks
- * - 일반 클릭: SPA 라우팅 (useNavigate)
- * - Ctrl/Alt + 클릭: 새 탭
- * - Shift + 클릭: 새 창 (window 옵션 크기 적용)
+ * - Normal click: SPA routing (useNavigate)
+ * - Ctrl/Alt + click: new tab
+ * - Shift + click: new window (with window option size applied)
  *
  * @example
  * ```tsx
  * const navigate = useRouterLink();
  *
  * <ListItem onClick={navigate({ href: "/home/dashboard" })}>
- *   대시보드
+ *   Dashboard
  * </ListItem>
  *
- * // state 전달
+ * // Passing state
  * <ListItem onClick={navigate({
  *   href: "/users/123",
  *   state: { from: "list" }
  * })}>
- *   사용자
+ *   Users
  * </ListItem>
  * ```
  */
@@ -50,15 +50,15 @@ export function useRouterLink(): (
       e.stopPropagation();
 
       if (e.ctrlKey || e.metaKey || e.altKey) {
-        // Ctrl/Cmd/Alt + 클릭: 새 탭
+        // Ctrl/Cmd/Alt + click: new tab
         window.open(options.href, "_blank");
       } else if (e.shiftKey) {
-        // Shift + 클릭: 새 창
+        // Shift + click: new window
         const width = options.window?.width ?? 800;
         const height = options.window?.height ?? 800;
         window.open(options.href, "", `width=${width},height=${height}`);
       } else {
-        // 일반 클릭: SPA 라우팅
+        // Normal click: SPA routing
         navigate(options.href, options.state ? { state: options.state } : undefined);
       }
     };

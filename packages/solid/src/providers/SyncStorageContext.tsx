@@ -7,11 +7,11 @@ import {
 } from "solid-js";
 
 /**
- * 커스텀 동기화 저장소 어댑터 인터페이스
+ * Custom sync storage adapter interface.
  *
  * @remarks
- * - 동기 저장소: `localStorage`, `sessionStorage` 등 그대로 전달 가능
- * - 비동기 저장소: `getItem`이 `Promise`를 반환하는 구현체 전달
+ * - Sync storage: can pass `localStorage`, `sessionStorage`, etc. directly
+ * - Async storage: pass an implementation where `getItem` returns a `Promise`
  */
 export interface StorageAdapter {
   getItem(key: string): string | null | Promise<string | null>;
@@ -20,7 +20,7 @@ export interface StorageAdapter {
 }
 
 /**
- * 기본 localStorage 기반 어댑터
+ * Default localStorage-based adapter.
  */
 const defaultStorageAdapter: StorageAdapter = {
   getItem: (key) => localStorage.getItem(key),
@@ -29,11 +29,11 @@ const defaultStorageAdapter: StorageAdapter = {
 };
 
 /**
- * 동기화 저장소 Context 값
+ * Sync storage context value.
  *
  * @remarks
- * - `adapter`: 현재 설정된 StorageAdapter (signal). 기본값은 localStorage 기반 어댑터
- * - `configure`: decorator 함수를 받아 기존 adapter를 감싸서 새 adapter를 설정하는 함수
+ * - `adapter`: Currently configured StorageAdapter (signal). Defaults to localStorage-based adapter
+ * - `configure`: Function that accepts a decorator function to wrap the existing adapter into a new one
  */
 export interface SyncStorageContextValue {
   adapter: Accessor<StorageAdapter>;
@@ -41,28 +41,28 @@ export interface SyncStorageContextValue {
 }
 
 /**
- * 동기화 저장소 Context
+ * Sync storage Context.
  *
  * @remarks
- * Provider가 없으면 `undefined` (useSyncConfig에서 localStorage로 fallback)
+ * Returns `undefined` without Provider (useSyncConfig falls back to localStorage)
  */
 export const SyncStorageContext = createContext<SyncStorageContextValue>();
 
 /**
- * 동기화 저장소 Context에 접근하는 훅
+ * Hook to access the sync storage Context.
  *
- * @returns SyncStorageContextValue 또는 undefined (Provider가 없으면)
+ * @returns SyncStorageContextValue or undefined (if Provider is not present)
  */
 export function useSyncStorage(): SyncStorageContextValue | undefined {
   return useContext(SyncStorageContext);
 }
 
 /**
- * 동기화 저장소 Provider
+ * Sync storage Provider.
  *
  * @remarks
- * - prop 없이 사용. 기본적으로 localStorage 기반 어댑터가 설정됨
- * - `configure()`로 decorator 함수를 전달하여 기존 adapter를 감싸거나 교체 가능
+ * - Used without props. localStorage-based adapter is set by default
+ * - Use `configure()` to pass a decorator function to wrap or replace the existing adapter
  *
  * @example
  * ```tsx
@@ -70,7 +70,7 @@ export function useSyncStorage(): SyncStorageContextValue | undefined {
  *   <App />
  * </SyncStorageProvider>
  *
- * // 자식 컴포넌트에서 decorator 패턴으로 adapter 커스터마이징:
+ * // Customize adapter with decorator pattern in a child component:
  * useSyncStorage()!.configure((origin) => ({
  *   getItem: (key) => myCustomGetItem(key),
  *   setItem: origin.setItem,

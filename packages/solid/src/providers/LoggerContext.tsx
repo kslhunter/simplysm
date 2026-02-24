@@ -2,11 +2,11 @@ import { type Accessor, createContext, createSignal, type ParentComponent } from
 import { consola } from "consola";
 
 /**
- * 로그 어댑터 인터페이스
+ * Log adapter interface.
  *
  * @remarks
- * - `useLogger`에서 사용하는 로그 전송 어댑터 (DB, 서버 등)
- * - adapter가 설정되면 consola 대신 adapter만 사용됨
+ * - Log transport adapter used by `useLogger` (DB, server, etc.)
+ * - When an adapter is set, only the adapter is used instead of consola
  */
 export interface LogAdapter {
   write(severity: "error" | "warn" | "info" | "log", ...data: any[]): Promise<void> | void;
@@ -17,11 +17,11 @@ const defaultLogAdapter: LogAdapter = {
 };
 
 /**
- * 로그 어댑터 Context 값
+ * Logger context value.
  *
  * @remarks
- * - `adapter`: 현재 설정된 LogAdapter (signal). 기본값은 consola 기반 adapter
- * - `configure`: decorator function으로 adapter를 설정/체이닝하는 함수
+ * - `adapter`: Currently configured LogAdapter (signal). Defaults to consola-based adapter
+ * - `configure`: Function that sets/chains adapter via decorator function
  */
 export interface LoggerContextValue {
   adapter: Accessor<LogAdapter>;
@@ -29,20 +29,20 @@ export interface LoggerContextValue {
 }
 
 /**
- * 로그 어댑터 Context
+ * Log adapter Context.
  *
  * @remarks
- * Provider가 없으면 `undefined` (useLogger에서 consola 기본 adapter 사용)
+ * Returns `undefined` without Provider (useLogger uses consola default adapter)
  */
 export const LoggerContext = createContext<LoggerContextValue>();
 
 /**
- * 로그 어댑터 Provider
+ * Log adapter Provider.
  *
  * @remarks
- * - prop 없이 사용. adapter는 `useLogger().configure()`로 나중에 주입
- * - 기본값은 consola 기반 adapter
- * - configure는 decorator function을 받아 기존 adapter를 감싸거나 교체
+ * - Used without props. Adapter is injected later via `useLogger().configure()`
+ * - Defaults to consola-based adapter
+ * - configure accepts a decorator function to wrap or replace the existing adapter
  *
  * @example
  * ```tsx
@@ -50,7 +50,7 @@ export const LoggerContext = createContext<LoggerContextValue>();
  *   <App />
  * </LoggerProvider>
  *
- * // 자식 컴포넌트에서 decorator로 설정:
+ * // Configure with a decorator in a child component:
  * useLogger().configure((origin) => ({
  *   write: (...args) => {
  *     origin.write(...args);

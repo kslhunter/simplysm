@@ -2,26 +2,26 @@ import { createContext, useContext } from "solid-js";
 import type { ServiceClient, ServiceConnectionConfig } from "@simplysm/service-client";
 
 /**
- * WebSocket 서비스 클라이언트 Context 값
+ * WebSocket service client context value.
  */
 export interface ServiceClientContextValue {
-  /** WebSocket 연결 열기 (key 생략 시 "default") */
+  /** Open a WebSocket connection (defaults to "default" if key is omitted) */
   connect: (key?: string, options?: Partial<ServiceConnectionConfig>) => Promise<void>;
-  /** 연결 닫기 */
+  /** Close a connection */
   close: (key?: string) => Promise<void>;
-  /** 연결된 클라이언트 인스턴스 가져오기 (연결되지 않은 key면 에러 발생) */
+  /** Get a connected client instance (throws if the key is not connected) */
   get: (key?: string) => ServiceClient;
-  /** 연결 상태 확인 */
+  /** Check connection status */
   isConnected: (key?: string) => boolean;
 }
 
-/** WebSocket 서비스 클라이언트 Context */
+/** WebSocket service client Context */
 export const ServiceClientContext = createContext<ServiceClientContextValue>();
 
 /**
- * WebSocket 서비스 클라이언트에 접근하는 훅
+ * Hook to access the WebSocket service client.
  *
- * @throws ServiceClientProvider가 없으면 에러 발생
+ * @throws Throws an error if ServiceClientProvider is not present
  */
 export function useServiceClient(): ServiceClientContextValue {
   const context = useContext(ServiceClientContext);

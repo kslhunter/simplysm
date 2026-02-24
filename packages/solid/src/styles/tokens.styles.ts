@@ -1,11 +1,11 @@
-// ── 테두리 ──
+// ── Border ──
 export const borderDefault = "border-base-200 dark:border-base-700";
 export const borderSubtle = "border-base-200 dark:border-base-700";
 
-// ── 표면 배경 ──
+// ── Surface Background ──
 export const bgSurface = "bg-white dark:bg-base-900";
 
-// ── 텍스트 ──
+// ── Text ──
 export const textDefault = "text-base-900 dark:text-base-100";
 export const textMuted = "text-base-400 dark:text-base-500";
 export const textPlaceholder = "placeholder:text-base-400 dark:placeholder:text-base-500";
@@ -13,7 +13,7 @@ export const textPlaceholder = "placeholder:text-base-400 dark:placeholder:text-
 // ── disabled ──
 export const disabledOpacity = "cursor-default opacity-30 pointer-events-none";
 
-// ── 사이즈 ──
+// ── Size ──
 export type ComponentSize = "xs" | "sm" | "lg" | "xl";
 export type ComponentSizeCompact = "sm" | "lg";
 export const paddingXs = "px-1 py-0";
@@ -21,7 +21,7 @@ export const paddingSm = "px-1.5 py-0.5";
 export const paddingLg = "px-3 py-2";
 export const paddingXl = "px-4 py-3";
 
-// ── 테마 ──
+// ── Theme ──
 export type SemanticTheme = "primary" | "info" | "success" | "warning" | "danger" | "base";
 
 export const themeTokens: Record<

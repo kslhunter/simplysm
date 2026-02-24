@@ -9,7 +9,7 @@ export interface Logger {
   info: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
-  /** LogAdapter를 나중에 주입. LoggerProvider 내부에서만 사용 가능 */
+  /** Inject LogAdapter later. Only usable inside LoggerProvider */
   configure: (fn: (origin: LogAdapter) => LogAdapter) => void;
 }
 

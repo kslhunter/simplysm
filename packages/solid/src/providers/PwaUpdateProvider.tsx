@@ -4,13 +4,13 @@ import { useNotification } from "../components/feedback/notification/Notificatio
 const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 /**
- * PWA Service Worker 업데이트 감지 Provider
+ * PWA Service Worker update detection Provider.
  *
  * @remarks
- * 5분마다 SW 업데이트를 폴링하며, 새 버전 감지 시 알림을 표시한다.
- * NotificationProvider 내부에서 사용해야 한다.
+ * Polls for SW updates every 5 minutes and displays a notification when a new version is detected.
+ * Must be used inside NotificationProvider.
  *
- * navigator.serviceWorker가 없거나 등록된 SW가 없으면 graceful no-op.
+ * Graceful no-op if navigator.serviceWorker is unavailable or no SW is registered.
  */
 export const PwaUpdateProvider: ParentComponent = (props) => {
   if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {

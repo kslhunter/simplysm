@@ -1,17 +1,17 @@
 import { onCleanup, onMount, type ParentComponent } from "solid-js";
 
 /**
- * 폼 컨트롤의 value를 클립보드 복사에 포함시키는 Provider
+ * Provider that includes form control values in clipboard copy.
  *
  * @remarks
- * 브라우저 기본 동작에서는 드래그 선택 후 복사 시 `<input>`, `<textarea>`, `<select>`의
- * 값이 포함되지 않는 문제를 해결한다.
+ * Fixes the browser default behavior where `<input>`, `<textarea>`, `<select>` values
+ * are not included when copying after drag selection.
  *
  * - `<input type="text|number|...">` → `.value`
  * - `<textarea>` → `.value`
- * - `<select>` → 선택된 옵션 텍스트
+ * - `<select>` → selected option text
  * - `<input type="checkbox|radio">` → `.checked` ? "Y" : ""
- * - 테이블 내에서는 셀 간 탭(`\t`), 행 간 개행(`\n`) 구분 (Excel 호환)
+ * - Within tables: tab (`\t`) between cells, newline (`\n`) between rows (Excel compatible)
  */
 export const ClipboardProvider: ParentComponent = (props) => {
   onMount(() => {
@@ -35,10 +35,10 @@ export const ClipboardProvider: ParentComponent = (props) => {
 };
 
 /**
- * Selection Range 내의 텍스트를 추출한다.
- * 폼 컨트롤은 value로 치환하고, 테이블 구조는 TSV 형식으로 변환한다.
+ * Extracts text from a Selection Range.
+ * Substitutes form controls with their values and converts table structures to TSV format.
  *
- * @returns 추출된 텍스트. 폼 컨트롤이 없으면 `null` (브라우저 기본 동작 유지)
+ * @returns Extracted text. Returns `null` if no form controls are present (preserves browser default behavior)
  */
 function extractTextFromRange(range: Range): string | null {
   const root =
@@ -47,7 +47,7 @@ function extractTextFromRange(range: Range): string | null {
       : range.commonAncestorContainer.parentElement;
   if (!root) return null;
 
-  // 선택 범위에 폼 컨트롤이 없으면 브라우저 기본 동작 사용
+  // Use browser default behavior if no form controls in selection range
   const formSelector =
     'input:not([type=hidden]), textarea, select, [role="checkbox"], [role="radio"]';
   const hasFormElements = [...root.querySelectorAll(formSelector)].some((el) =>
@@ -60,7 +60,7 @@ function extractTextFromRange(range: Range): string | null {
   const walk = (node: Node) => {
     if (!range.intersectsNode(node)) return;
 
-    // ARIA checkbox/radio: role="checkbox" 또는 role="radio" 요소
+    // ARIA checkbox/radio: elements with role="checkbox" or role="radio"
     if (node instanceof Element) {
       const role = node.getAttribute("role");
       if (role === "checkbox" || role === "radio") {
@@ -69,7 +69,7 @@ function extractTextFromRange(range: Range): string | null {
       }
     }
 
-    // 폼 컨트롤: value 추출
+    // Form control: extract value
     if (node instanceof HTMLInputElement) {
       if (node.type === "hidden") return;
       if (node.type === "checkbox" || node.type === "radio") {
@@ -81,7 +81,7 @@ function extractTextFromRange(range: Range): string | null {
     }
     if (node instanceof HTMLTextAreaElement) {
       const v = node.value;
-      // 개행 포함 시 큰따옴표로 감싸서 Excel 셀 내 줄바꿈 유지
+      // Wrap in double quotes when containing newlines to preserve line breaks within Excel cells
       parts.push(v.includes("\n") ? `"${v.replace(/"/g, '""')}"` : v);
       return;
     }
@@ -92,9 +92,9 @@ function extractTextFromRange(range: Range): string | null {
       return;
     }
 
-    // 텍스트 노드
+    // Text node
     if (node.nodeType === Node.TEXT_NODE) {
-      // 숨겨진 텍스트 건너뛰기 (dual-element overlay 패턴 등)
+      // Skip hidden text (dual-element overlay pattern, etc.)
       const parent = node.parentElement;
       if (parent) {
         const style = getComputedStyle(parent);
@@ -115,7 +115,7 @@ function extractTextFromRange(range: Range): string | null {
       return;
     }
 
-    // Element가 아닌 노드
+    // Non-Element node
     if (!(node instanceof Element)) {
       for (const child of node.childNodes) walk(child);
       return;
@@ -127,7 +127,7 @@ function extractTextFromRange(range: Range): string | null {
       return;
     }
 
-    // 테이블 행: 셀 간 탭 구분, 행 끝 개행
+    // Table row: tab-separated cells, newline at end of row
     if (node.tagName === "TR") {
       let firstCell = true;
       for (const child of node.childNodes) {
@@ -142,7 +142,7 @@ function extractTextFromRange(range: Range): string | null {
       return;
     }
 
-    // 기본: 자식 순회
+    // Default: traverse children
     for (const child of node.childNodes) {
       walk(child);
     }
@@ -154,11 +154,11 @@ function extractTextFromRange(range: Range): string | null {
 }
 
 /**
- * input value를 로캘 형식으로 변환한다.
+ * Converts input value to locale format.
  * - `date` → `toLocaleDateString()`
  * - `time` → `toLocaleTimeString()`
  * - `datetime-local` → `toLocaleString()`
- * - 그 외 → 원래 값 그대로
+ * - Others → original value as-is
  */
 function formatInputValue(input: HTMLInputElement): string {
   const { type, value } = input;

@@ -9,14 +9,14 @@ import { useConfig } from "./ConfigContext";
 import { useNotification } from "../components/feedback/notification/NotificationContext";
 
 /**
- * WebSocket 서비스 클라이언트 Provider
+ * WebSocket service client Provider.
  *
  * @remarks
- * - ConfigProvider와 NotificationProvider 내부에서 사용해야 함
- * - key 기반 다중 연결 관리
- * - 요청/응답 진행률을 NotificationProvider 알림으로 표시
- * - host, port, ssl 미지정 시 window.location에서 자동 추론
- * - cleanup 시 모든 연결 자동 종료
+ * - Must be used inside ConfigProvider and NotificationProvider
+ * - Key-based multi-connection management
+ * - Displays request/response progress as NotificationProvider alerts
+ * - Auto-infers host, port, ssl from window.location when not specified
+ * - Automatically closes all connections on cleanup
  *
  * @example
  * ```tsx
@@ -70,7 +70,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       ...options,
     });
 
-    // 요청 진행률 이벤트
+    // Request progress event
     client.on("request-progress", (state) => {
       const existing = reqProgressMap.get(state.uuid);
 
@@ -98,7 +98,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       }
     });
 
-    // 응답 진행률 이벤트
+    // Response progress event
     client.on("response-progress", (state) => {
       const existing = resProgressMap.get(state.uuid);
 

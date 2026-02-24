@@ -12,16 +12,16 @@ import { useNotification } from "../../components/feedback/notification/Notifica
 import { useLogger } from "../../hooks/useLogger";
 
 /**
- * 공유 데이터 Provider
+ * Shared data Provider.
  *
  * @remarks
- * - ServiceClientProvider와 NotificationProvider 내부에서 사용해야 함
- * - LoggerProvider가 있으면 fetch 실패를 로거에도 기록
- * - configure() 호출 전: wait, busy, configure만 접근 가능. 데이터 접근 시 throw
- * - configure() 호출 후: definitions 등록. 각 key의 items()/get() 첫 접근 시 서버 이벤트 리스너 등록 + fetch (lazy)
- * - 동시 fetch 호출 시 version counter로 데이터 역전 방지
- * - fetch 실패 시 사용자에게 danger 알림 표시
- * - cleanup 시 모든 이벤트 리스너 자동 해제
+ * - Must be used inside ServiceClientProvider and NotificationProvider
+ * - Logs fetch failures to logger if LoggerProvider is present
+ * - Before configure(): only wait, busy, configure are accessible. Data access throws
+ * - After configure(): registers definitions. Registers server event listeners + fetch on first items()/get() access per key (lazy)
+ * - Prevents data inversion on concurrent fetch calls via version counter
+ * - Displays danger notification to the user on fetch failure
+ * - Automatically releases all event listeners on cleanup
  *
  * @example
  * ```tsx
@@ -29,7 +29,7 @@ import { useLogger } from "../../hooks/useLogger";
  *   <App />
  * </SharedDataProvider>
  *
- * // 자식 컴포넌트에서 나중에 설정:
+ * // Configure later in a child component:
  * useSharedData().configure(() => ({
  *   users: {
  *     fetch: async (changeKeys) => fetchUsers(changeKeys),
@@ -73,7 +73,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     def: SharedDataDefinition<unknown>,
     changeKeys?: Array<string | number>,
   ): Promise<void> {
-    // CR-1: version counter로 동시 호출 시 데이터 역전 방지
+    // CR-1: Prevent data inversion on concurrent calls via version counter
     const currentVersion = (versionMap.get(name) ?? 0) + 1;
     versionMap.set(name, currentVersion);
 
@@ -85,7 +85,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       const [, setItems] = signal;
       const resData = await def.fetch(changeKeys);
 
-      // CR-1: 오래된 응답은 무시
+      // CR-1: Ignore stale responses
       if (versionMap.get(name) !== currentVersion) return;
 
       if (!changeKeys) {
@@ -98,7 +98,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         });
       }
     } catch (err) {
-      // CR-2: fetch 실패 시 사용자에게 알림
+      // CR-2: Notify user on fetch failure
       logger.error(`SharedData '${name}' fetch failed:`, err);
       notification.danger(
         "공유 데이터 로드 실패",
@@ -110,7 +110,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
   }
 
   async function wait(): Promise<void> {
-    // eslint-disable-next-line solid/reactivity -- waitUntil은 폴링 기반이므로 tracked scope 불필요
+    // eslint-disable-next-line solid/reactivity -- waitUntil is polling-based, so tracked scope is unnecessary
     await waitUntil(() => busyCount() <= 0);
   }
 
@@ -129,7 +129,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
     for (const [name, def] of Object.entries(definitions)) {
       const [items, setItems] = createSignal<unknown[]>([]);
-      // eslint-disable-next-line solid/reactivity -- signal 참조를 Map에 저장하는 것은 반응성 접근이 아님
+      // eslint-disable-next-line solid/reactivity -- Storing signal references in a Map is not a reactive access
       signalMap.set(name, [items, setItems]);
 
       const itemMap = createMemo(() => {
@@ -139,7 +139,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
         }
         return map;
       });
-      // eslint-disable-next-line solid/reactivity -- memo 참조를 Map에 저장하는 것은 반응성 접근이 아님
+      // eslint-disable-next-line solid/reactivity -- Storing memo references in a Map is not a reactive access
       memoMap.set(name, itemMap);
 
       const client = serviceClient.get(def.serviceKey ?? "default");
@@ -211,7 +211,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
 
   const KNOWN_KEYS = new Set(["wait", "busy", "configure"]);
 
-  // Proxy: configure 전 데이터 접근 시 throw
+  // Proxy: throw on data access before configure
   const contextValue = new Proxy(
     { wait, busy, configure } as SharedDataValue<Record<string, unknown>>,
     {

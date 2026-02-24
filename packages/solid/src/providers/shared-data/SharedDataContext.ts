@@ -1,68 +1,68 @@
 import { type Accessor, createContext, useContext } from "solid-js";
 
 /**
- * 공유 데이터 정의
+ * Shared data definition.
  *
  * @remarks
- * SharedDataProvider에 전달하여 서버 데이터 구독을 설정한다.
+ * Passed to SharedDataProvider to set up server data subscriptions.
  */
 export interface SharedDataDefinition<TData> {
-  /** 서비스 연결 key (생략 시 "default") */
+  /** Service connection key (defaults to "default" if omitted) */
   serviceKey?: string;
-  /** 데이터 조회 함수 (changeKeys가 있으면 해당 항목만 부분 갱신) */
+  /** Data fetch function (partial refresh for specified changeKeys only) */
   fetch: (changeKeys?: Array<string | number>) => Promise<TData[]>;
-  /** 항목의 고유 key 추출 함수 */
+  /** Function to extract the unique key from an item */
   getKey: (item: TData) => string | number;
-  /** 정렬 기준 배열 (여러 기준 적용 가능) */
+  /** Sort criteria array (multiple criteria supported) */
   orderBy: [(item: TData) => unknown, "asc" | "desc"][];
-  /** 서버 이벤트 필터 (같은 name의 이벤트 중 filter가 일치하는 것만 수신) */
+  /** Server event filter (receives only events with matching filter among same-name events) */
   filter?: unknown;
-  /** 항목에서 검색 텍스트를 추출하는 함수 */
+  /** Function to extract search text from an item */
   getSearchText?: (item: TData) => string;
-  /** 항목이 숨김 상태인지 판별하는 함수 */
+  /** Function to determine if an item is hidden */
   getIsHidden?: (item: TData) => boolean;
-  /** 항목의 부모 key를 추출하는 함수 (트리 구조 지원) */
+  /** Function to extract parent key from an item (tree structure support) */
   getParentKey?: (item: TData) => string | number | undefined;
 }
 
 /**
- * 공유 데이터 접근자
+ * Shared data accessor.
  *
  * @remarks
- * 각 데이터 key에 대한 반응형 접근 및 변경 알림을 제공한다.
+ * Provides reactive access and change notifications for each data key.
  */
 export interface SharedDataAccessor<TData> {
-  /** 반응형 항목 배열 */
+  /** Reactive items array */
   items: Accessor<TData[]>;
-  /** key로 단일 항목 조회 */
+  /** Get a single item by key */
   get: (key: string | number | undefined) => TData | undefined;
-  /** 서버에 변경 이벤트 전파 (모든 구독자에게 refetch 트리거) */
+  /** Propagate change event to server (triggers refetch for all subscribers) */
   emit: (changeKeys?: Array<string | number>) => Promise<void>;
-  /** 항목의 고유 key 추출 함수 */
+  /** Function to extract the unique key from an item */
   getKey: (item: TData) => string | number;
-  /** 항목에서 검색 텍스트를 추출하는 함수 */
+  /** Function to extract search text from an item */
   getSearchText?: (item: TData) => string;
-  /** 항목이 숨김 상태인지 판별하는 함수 */
+  /** Function to determine if an item is hidden */
   getIsHidden?: (item: TData) => boolean;
-  /** 항목의 부모 key를 추출하는 함수 (트리 구조 지원) */
+  /** Function to extract parent key from an item (tree structure support) */
   getParentKey?: (item: TData) => string | number | undefined;
 }
 
 /**
- * 공유 데이터 Context 값
+ * Shared data context value.
  *
  * @remarks
- * - configure 호출 전: wait, busy, configure만 접근 가능. 데이터 접근 시 throw
- * - configure 호출 후: 각 데이터 key별 SharedDataAccessor와 전체 상태 관리 메서드 포함
+ * - Before configure: only wait, busy, configure are accessible. Data access throws
+ * - After configure: includes SharedDataAccessor per data key and overall state management methods
  */
 export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   [K in keyof TSharedData]: SharedDataAccessor<TSharedData[K]>;
 } & {
-  /** 모든 초기 fetch 완료까지 대기 */
+  /** Wait until all initial fetches complete */
   wait: () => Promise<void>;
-  /** fetch 진행 중 여부 */
+  /** Whether a fetch is in progress */
   busy: Accessor<boolean>;
-  /** definitions를 설정하여 데이터 구독 시작 (decorator 패턴) */
+  /** Set definitions to start data subscriptions (decorator pattern) */
   configure: (
     fn: (origin: {
       [K in keyof TSharedData]: SharedDataDefinition<TSharedData[K]>;
@@ -72,13 +72,13 @@ export type SharedDataValue<TSharedData extends Record<string, unknown>> = {
   ) => void;
 };
 
-/** 공유 데이터 Context */
+/** Shared data Context */
 export const SharedDataContext = createContext<SharedDataValue<Record<string, unknown>>>();
 
 /**
- * 공유 데이터에 접근하는 훅
+ * Hook to access shared data.
  *
- * @throws SharedDataProvider가 없으면 에러 발생
+ * @throws Throws an error if SharedDataProvider is not present
  */
 export function useSharedData<
   TSharedData extends Record<string, unknown> = Record<string, unknown>,

@@ -2,7 +2,7 @@ import type { Component, ParentComponent } from "solid-js";
 import { type Accessor, createContext, createMemo, createRoot, useContext } from "solid-js";
 import type { IconProps } from "@tabler/icons-solidjs";
 
-// ── 입력 타입 ──
+// ── Input Types ──
 
 export interface AppStructureGroupItem<TModule> {
   code: string;
@@ -37,7 +37,7 @@ export interface AppStructureSubPerm<TModule> {
   perms: ("use" | "edit")[];
 }
 
-// ── 출력 타입 ──
+// ── Output Types ──
 
 export interface AppMenu {
   title: string;
@@ -81,7 +81,7 @@ export interface AppStructure<TModule> {
   getTitleChainByHref(href: string): string[];
 }
 
-// ── Perms 타입 추론 ──
+// ── Perms Type Inference ──
 
 type PermKey<TItem> = TItem extends { code: infer C extends string }
   ? TItem extends { children: any }
@@ -114,7 +114,7 @@ type InferPerms<TItems extends any[]> = {
     : InferLeafPerms<Item>;
 };
 
-// ── 내부 헬퍼 ──
+// ── Internal Helpers ──
 
 function isGroupItem<TModule>(
   item: AppStructureItem<TModule>,
@@ -416,7 +416,7 @@ function findItemChainByCodes<TModule>(
   return result;
 }
 
-// ── 메인 함수 ──
+// ── Main Function ──
 
 function buildAppStructure<TModule, const TItems extends AppStructureItem<TModule>[]>(opts: {
   items: TItems;

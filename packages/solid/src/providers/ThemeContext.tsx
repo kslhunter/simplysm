@@ -10,51 +10,51 @@ import { createMediaQuery } from "@solid-primitives/media";
 import { useSyncConfig } from "../hooks/useSyncConfig";
 
 /**
- * 테마 모드
- * - `light`: 라이트 모드
- * - `dark`: 다크 모드
- * - `system`: 시스템 설정 따름
+ * Theme mode.
+ * - `light`: Light mode
+ * - `dark`: Dark mode
+ * - `system`: Follows system setting
  */
 export type ThemeMode = "light" | "dark" | "system";
 
 /**
- * 실제 적용되는 테마 (system일 때 OS 설정에 따라 결정)
+ * Resolved theme (determined by OS setting when mode is system)
  */
 export type ResolvedTheme = "light" | "dark";
 
 interface ThemeContextValue {
-  /** 현재 테마 모드 (사용자 선택값) */
+  /** Current theme mode (user selection) */
   mode: () => ThemeMode;
-  /** 테마 모드 설정 */
+  /** Set theme mode */
   setMode: (mode: ThemeMode) => void;
-  /** 실제 적용되는 테마 (system일 때 OS 설정 따름) */
+  /** Resolved theme (follows OS setting when mode is system) */
   resolvedTheme: () => ResolvedTheme;
-  /** 다음 모드로 순환 (light → system → dark → light) */
+  /** Cycle to next mode (light -> system -> dark -> light) */
   cycleMode: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>();
 
 /**
- * 테마 Context에 접근하는 훅
+ * Hook to access the theme Context.
  *
- * @throws ThemeProvider가 없으면 에러 발생
+ * @throws Throws an error if ThemeProvider is not present
  *
  * @example
  * ```tsx
  * const { mode, setMode, resolvedTheme, cycleMode } = useTheme();
  *
- * // 현재 모드 확인
+ * // Check current mode
  * console.log(mode()); // "light" | "dark" | "system"
  *
- * // 실제 적용 테마 확인
+ * // Check resolved theme
  * console.log(resolvedTheme()); // "light" | "dark"
  *
- * // 모드 변경
+ * // Change mode
  * setMode("dark");
  *
- * // 순환 (토글 버튼용)
- * cycleMode(); // light → system → dark → light
+ * // Cycle (for toggle button)
+ * cycleMode(); // light -> system -> dark -> light
  * ```
  */
 export function useTheme(): ThemeContextValue {
@@ -66,12 +66,12 @@ export function useTheme(): ThemeContextValue {
 }
 
 /**
- * 테마 Provider 컴포넌트
+ * Theme Provider component.
  *
  * @remarks
- * - ConfigContext.Provider 내부에서 사용해야 함 (useSyncConfig 의존)
- * - localStorage에 테마 설정 저장
- * - `<html>` 요소에 `dark` 클래스 자동 토글
+ * - Must be used inside ConfigContext.Provider (depends on useSyncConfig)
+ * - Persists theme setting to localStorage
+ * - Automatically toggles `dark` class on the `<html>` element
  *
  * @example
  * ```tsx
@@ -85,10 +85,10 @@ export function useTheme(): ThemeContextValue {
 export const ThemeProvider: ParentComponent = (props) => {
   const [mode, setMode, ready] = useSyncConfig<ThemeMode>("theme", "system");
 
-  // OS 다크모드 감지
+  // Detect OS dark mode
   const prefersDark = createMediaQuery("(prefers-color-scheme: dark)");
 
-  // 실제 적용 테마 계산
+  // Calculate resolved theme
   const resolvedTheme = createMemo<ResolvedTheme>(() => {
     const currentMode = mode();
     if (currentMode === "system") {
@@ -97,7 +97,7 @@ export const ThemeProvider: ParentComponent = (props) => {
     return currentMode;
   });
 
-  // 다음 모드로 순환
+  // Cycle to next mode
   const cycleMode = () => {
     const current = mode();
     const next: ThemeMode =
@@ -105,14 +105,14 @@ export const ThemeProvider: ParentComponent = (props) => {
     setMode(next);
   };
 
-  // <html>에 dark 클래스 토글
+  // Toggle dark class on <html>
   createEffect(() => {
     if (!ready()) return; // Don't apply theme until storage has been read
     const isDark = resolvedTheme() === "dark";
     document.documentElement.classList.toggle("dark", isDark);
   });
 
-  // cleanup 시 dark 클래스 제거
+  // Remove dark class on cleanup
   onCleanup(() => {
     document.documentElement.classList.remove("dark");
   });

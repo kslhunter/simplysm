@@ -4,10 +4,10 @@ import type { JSX } from "solid-js";
 type SlotSetter = (value: (() => JSX.Element) | undefined) => void;
 
 /**
- * Slot 등록 컴포넌트를 생성하는 팩토리 함수
+ * Factory function that creates a slot registration component.
  *
- * @param context - slot을 등록할 Context
- * @param getSetter - context value에서 setter를 추출하는 함수
+ * @param context - Context to register the slot in
+ * @param getSetter - Function to extract the setter from the context value
  */
 export function createSlotComponent<TCtx>(
   context: Context<TCtx | undefined>,
@@ -15,7 +15,7 @@ export function createSlotComponent<TCtx>(
 ): ParentComponent {
   return (props) => {
     const ctx = useContext(context)!;
-    // eslint-disable-next-line solid/reactivity -- slot 등록은 초기 마운트 시 한 번만 수행
+    // eslint-disable-next-line solid/reactivity -- Slot registration runs only once on initial mount
     getSetter(ctx)(() => props.children);
     onCleanup(() => getSetter(ctx)(undefined));
     return null;
