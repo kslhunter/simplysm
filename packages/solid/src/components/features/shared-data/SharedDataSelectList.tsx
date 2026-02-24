@@ -48,7 +48,7 @@ export interface SharedDataSelectListProps<TItem> {
 
 const containerClass = clsx("flex-col gap-1");
 
-const headerClass = clsx("px-2 py-1 text-sm font-semibold flex items-center gap-1");
+const headerClass = clsx("flex items-center gap-1 px-2 py-1 text-sm font-semibold");
 
 // ─── 컴포넌트 ───────────────────────────────────────────
 
