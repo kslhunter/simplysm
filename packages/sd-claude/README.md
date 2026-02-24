@@ -1,6 +1,6 @@
 # @simplysm/sd-claude
 
-Simplysm Claude Code CLI — asset installer and cross-platform npx wrapper. Automatically installs Claude Code assets (skills, agents, rules, refs, hooks) via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
+Simplysm Claude Code CLI — asset installer. Automatically installs Claude Code assets (skills, agents, rules, refs, hooks) via `postinstall` when added as a dev dependency. Provides opinionated development workflows including TDD, systematic debugging, code review, planning, brainstorming, and git worktree management.
 
 ## Installation
 
@@ -18,8 +18,7 @@ When installed as a dependency, the `postinstall` script (`scripts/postinstall.m
 
 1. Copies all `sd-*` assets (skills, agents, rules, refs, hooks, statusline) to the project's `.claude/` directory
 2. Configures `statusLine` in `.claude/settings.json` to use `sd-statusline.js`
-3. Configures MCP servers in `.mcp.json` (context7 and playwright) using the cross-platform npx wrapper
-4. Existing `sd-*` entries are replaced with the latest version on each install
+3. Existing `sd-*` entries are replaced with the latest version on each install
 
 The `prepack` script (`scripts/sync-claude-assets.mjs`) runs before `npm pack` / `npm publish` to sync assets from the project root `.claude/` directory into the package's `claude/` directory.
 
@@ -33,7 +32,6 @@ Updates also trigger reinstallation (`pnpm up @simplysm/sd-claude`).
     sd-claude.js               # CLI entry point (bin)
     commands/
       install.js               # Asset installation logic
-      npx.js                   # Cross-platform npx wrapper
   scripts/
     postinstall.mjs            # Thin wrapper — calls `sd-claude install`
     sync-claude-assets.mjs     # Syncs assets from .claude/ before publish
@@ -78,22 +76,19 @@ Updates also trigger reinstallation (`pnpm up @simplysm/sd-claude`).
 
 ## CLI Commands
 
-The package provides an `sd-claude` binary with two subcommands:
+The package provides an `sd-claude` binary:
 
 ```bash
 # Install Claude Code assets to the project's .claude/ directory
 sd-claude install
-
-# Cross-platform npx wrapper (uses npx.cmd on Windows, npx elsewhere)
-sd-claude npx -y @upstash/context7-mcp
 ```
 
-`sd-claude install` is called automatically by the `postinstall` script. `sd-claude npx` is used in `.mcp.json` to launch MCP servers cross-platform.
+`sd-claude install` is called automatically by the `postinstall` script.
 
 ## Programmatic API
 
 ```typescript
-import { runInstall, runNpx } from "@simplysm/sd-claude";
+import { runInstall } from "@simplysm/sd-claude";
 ```
 
 ### runInstall
@@ -107,15 +102,6 @@ Installs Claude Code assets to the project's `.claude/` directory. Performs:
 - Skips if running inside the simplysm monorepo itself
 - Cleans existing `sd-*` entries, then copies fresh versions from the package's `claude/` directory
 - Configures `statusLine` in `.claude/settings.json`
-- Configures MCP servers (context7, playwright) in `.mcp.json`
-
-### runNpx
-
-```typescript
-function runNpx(args: string[]): void
-```
-
-Cross-platform npx wrapper. Spawns `npx.cmd` on Windows, `npx` on other platforms. Passes all arguments through and forwards the exit code.
 
 ## Skills
 

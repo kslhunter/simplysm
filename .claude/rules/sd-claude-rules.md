@@ -33,8 +33,6 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 - When in doubt, **ask first** before proceeding.
 - Responses like "I'll create it myself" or "I'll add that as well" are strictly prohibited.
 
-## Bug Workarounds
+## ⚠️ CRITICAL — NEVER SKIP
 
-### AskUserQuestion UI Clipping
-
-Before calling `AskUserQuestion`, output **2 blank lines** (`\n\n`) so the preceding text is not clipped in the UI.
+**Before EVERY `AskUserQuestion` call, output `---` as the last line.** The widget clips text above it. No exceptions.

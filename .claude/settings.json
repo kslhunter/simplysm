@@ -1,10 +1,8 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "node .claude/sd-statusline.js"
+  "respectGitignore": true,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
-  "enabledMcpjsonServers": ["context7", "playwright", "postgres"],
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "WebFetch",
@@ -40,16 +38,8 @@
     "defaultMode": "default"
   },
   "model": "opus",
-  "respectGitignore": true,
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true,
-    "claude-code-setup@claude-plugins-official": true,
-    "github@claude-plugins-official": true
-  },
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "teammateMode": "in-process",
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["context7", "playwright", "postgres"],
   "hooks": {
     "PostToolUse": [
       {
@@ -71,5 +61,14 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/sd-statusline.js"
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true
+  },
+  "teammateMode": "in-process"
 }

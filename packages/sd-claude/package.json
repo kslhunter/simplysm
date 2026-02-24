@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/sd-claude",
   "version": "13.0.67",
-  "description": "Simplysm Claude Code CLI — asset installer and cross-platform npx wrapper",
+  "description": "Simplysm Claude Code CLI — asset installer",
   "author": "김석래",
   "license": "Apache-2.0",
   "repository": {

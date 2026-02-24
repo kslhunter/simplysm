@@ -35,6 +35,22 @@ If a referenced file or document cannot be found, **stop immediately and ask the
 
 ## Bug Workarounds
 
-### AskUserQuestion UI Clipping
+### AskUserQuestion UI Clipping — CRITICAL
 
-Before calling `AskUserQuestion`, output **2 blank lines** (`\n\n`) so the preceding text is not clipped in the UI.
+The `AskUserQuestion` widget overlaps and hides the text above it in the UI.
+
+**Mitigation:** Before every `AskUserQuestion` call, output **5 blank lines** at the end of your text so the important content is pushed above the clipping zone.
+
+```
+(your text here)⏎
+⏎
+⏎
+⏎
+⏎
+⏎
+→ AskUserQuestion tool call
+```
+
+- This applies to EVERY `AskUserQuestion` call, no exceptions.
+- The blank lines MUST be in the same message, immediately before the tool call.
+- If you forget the blank lines, the user will not be able to read your preceding text.

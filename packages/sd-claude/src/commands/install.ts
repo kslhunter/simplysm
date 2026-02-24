@@ -40,7 +40,6 @@ export function runInstall(): void {
     cleanSdEntries(targetDir);
     copySdEntries(sourceDir, targetDir, sourceEntries);
     setupStatusLine(targetDir);
-    setupMcpConfig(projectRoot);
 
     // eslint-disable-next-line no-console
     console.log(`[@simplysm/sd-claude] ${sourceEntries.length}개의 sd-* 항목을 설치했습니다.`);
@@ -158,44 +157,5 @@ function setupStatusLine(targetDir: string): void {
   if (settings["statusLine"] == null) {
     settings["statusLine"] = { type: "command", command: sdStatusLineCommand };
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
-  }
-}
-
-/** .mcp.json에 MCP 서버 설정을 추가한다. sd-claude npx를 사용하여 크로스플랫폼 지원. */
-function setupMcpConfig(projectRoot: string): void {
-  const mcpPath = path.join(projectRoot, ".mcp.json");
-
-  let mcpConfig = { mcpServers: {} as Record<string, unknown> };
-  if (fs.existsSync(mcpPath)) {
-    const parsed = JSON.parse(fs.readFileSync(mcpPath, "utf-8")) as {
-      mcpServers?: Record<string, unknown>;
-    };
-    mcpConfig.mcpServers = parsed.mcpServers ?? {};
-  }
-
-  const sdClaudeBin = "node_modules/@simplysm/sd-claude/dist/sd-claude.js";
-  let changed = false;
-
-  if (mcpConfig.mcpServers["context7"] == null) {
-    mcpConfig.mcpServers["context7"] = {
-      command: "node",
-      args: [sdClaudeBin, "npx", "-y", "@upstash/context7-mcp"],
-    };
-    changed = true;
-  }
-
-  if (mcpConfig.mcpServers["playwright"] == null) {
-    mcpConfig.mcpServers["playwright"] = {
-      command: "node",
-      args: [sdClaudeBin, "npx", "@playwright/mcp@latest", "--headless"],
-      env: {
-        PLAYWRIGHT_OUTPUT_DIR: ".tmp/playwright",
-      },
-    };
-    changed = true;
-  }
-
-  if (changed) {
-    fs.writeFileSync(mcpPath, JSON.stringify(mcpConfig, null, 2) + "\n");
   }
 }
