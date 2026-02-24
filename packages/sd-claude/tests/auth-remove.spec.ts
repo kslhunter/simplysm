@@ -69,6 +69,6 @@ describe("runAuthRemove", () => {
   });
 
   test("throws with invalid name", () => {
-    expect(() => runAuthRemove("BAD NAME!", tmpDir)).toThrow("Invalid profile name");
+    expect(() => runAuthRemove("BAD NAME!", tmpDir)).toThrow("Invalid name");
   });
 });

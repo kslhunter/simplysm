@@ -39,7 +39,7 @@ describe("runAuthList", () => {
     );
     fs.writeFileSync(
       path.join(betaDir, "credentials.json"),
-      JSON.stringify({ expiresAt: "2025-06-20" }),
+      JSON.stringify({ claudeAiOauth: { expiresAt: new Date("2025-06-20").getTime() } }),
     );
 
     // Create profile "alpha"
@@ -54,7 +54,7 @@ describe("runAuthList", () => {
     );
     fs.writeFileSync(
       path.join(alphaDir, "credentials.json"),
-      JSON.stringify({ expiresAt: "2025-06-25" }),
+      JSON.stringify({ claudeAiOauth: { expiresAt: new Date("2025-06-25").getTime() } }),
     );
 
     // Set current userID to "user-alpha"
@@ -91,7 +91,7 @@ describe("runAuthList", () => {
     );
     fs.writeFileSync(
       path.join(profileDir, "credentials.json"),
-      JSON.stringify({ expiresAt: "2025-07-01" }),
+      JSON.stringify({ claudeAiOauth: { expiresAt: new Date("2025-07-01").getTime() } }),
     );
 
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -136,7 +136,7 @@ describe("runAuthList", () => {
     );
     fs.writeFileSync(
       path.join(profileDir, "credentials.json"),
-      JSON.stringify({ expiresAt: "2025-12-31" }),
+      JSON.stringify({ claudeAiOauth: { expiresAt: new Date("2025-12-31").getTime() } }),
     );
 
     // Set current userID to match
@@ -163,7 +163,7 @@ describe("runAuthList", () => {
     );
     fs.writeFileSync(
       path.join(profileDir, "credentials.json"),
-      JSON.stringify({ expiresAt: "2025-08-15" }),
+      JSON.stringify({ claudeAiOauth: { expiresAt: new Date("2025-08-15").getTime() } }),
     );
 
     // Set current userID to something different

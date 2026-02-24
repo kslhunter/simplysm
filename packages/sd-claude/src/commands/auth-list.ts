@@ -30,12 +30,17 @@ export function runAuthList(homeDir?: string): void {
     const organizationName =
       (oauthAccount?.["organizationName"] as string | undefined) ?? "Personal";
     const userID = authData["userID"] as string | undefined;
-    const expiresAt = (credData["expiresAt"] as string | undefined) ?? "unknown";
+    const oauth = credData["claudeAiOauth"] as Record<string, unknown> | undefined;
+    let expiresStr = "unknown";
+    if (oauth != null && typeof oauth["expiresAt"] === "number") {
+      const d = new Date(oauth["expiresAt"] as number);
+      expiresStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
 
     const isActive = currentUserID != null && userID === currentUserID;
     const prefix = isActive ? "*" : " ";
 
     // eslint-disable-next-line no-console
-    console.log(`${prefix} ${name} (${email}) [${organizationName}] expires: ${expiresAt}`);
+    console.log(`${prefix} ${name} (${email}) [${organizationName}] expires: ${expiresStr}`);
   }
 }

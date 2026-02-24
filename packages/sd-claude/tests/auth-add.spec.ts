@@ -62,7 +62,7 @@ describe("runAuthAdd", () => {
   });
 
   test("throws with invalid name", () => {
-    expect(() => runAuthAdd("BAD NAME!", tmpDir)).toThrow("Invalid profile name");
+    expect(() => runAuthAdd("BAD NAME!", tmpDir)).toThrow("Invalid name");
   });
 
   test("throws when not logged in", () => {

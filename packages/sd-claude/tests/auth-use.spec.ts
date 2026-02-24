@@ -134,7 +134,7 @@ describe("runAuthUse", () => {
   });
 
   test("throws with invalid name", () => {
-    expect(() => runAuthUse("BAD NAME!", tmpDir)).toThrow("Invalid profile name");
+    expect(() => runAuthUse("BAD NAME!", tmpDir)).toThrow("Invalid name");
   });
 
   test("logs switched message with name and email", () => {

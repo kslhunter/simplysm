@@ -7,7 +7,7 @@ const NAME_PATTERN = /^[a-z0-9_-]+$/;
 export function validateName(name: string): void {
   if (!NAME_PATTERN.test(name)) {
     throw new Error(
-      `Invalid profile name: "${name}". Only lowercase letters, digits, hyphens, and underscores are allowed.`,
+      `Invalid name '${name}'. Use only lowercase letters, numbers, hyphens, underscores.`,
     );
   }
 }
@@ -43,7 +43,7 @@ export function readCurrentAuth(homeDir?: string): {
   const userID = data["userID"] as string | undefined;
 
   if (oauthAccount == null || userID == null) {
-    throw new Error("Not logged in: oauthAccount or userID missing from .claude.json");
+    throw new Error("Not logged in. Run /login first.");
   }
 
   return { oauthAccount, userID };
