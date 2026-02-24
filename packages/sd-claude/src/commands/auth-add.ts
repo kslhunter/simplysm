@@ -30,7 +30,7 @@ export function runAuthAdd(name: string, homeDir?: string): void {
 
   fs.writeFileSync(path.join(profileDir, "credentials.json"), JSON.stringify(credentials, null, 2));
 
-  const email = (oauthAccount as Record<string, unknown>)["emailAddress"] as string | undefined;
+  const email = oauthAccount["emailAddress"] as string | undefined;
   // eslint-disable-next-line no-console
   console.log(`Saved profile '${name}' (${email ?? userID})`);
 }
