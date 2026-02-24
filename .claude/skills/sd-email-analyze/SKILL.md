@@ -1,6 +1,7 @@
 ---
 name: sd-email-analyze
-description: Use when user asks to analyze, read, or summarize email files (.eml or Outlook .msg), or when encountering email files that need parsing and attachment extraction
+description: Email file (.eml/.msg) parsing and attachment extraction
+disable-model-invocation: true
 ---
 
 # Email Analyzer

@@ -1,6 +1,7 @@
 ---
 name: sd-debug
-description: Use when encountering any bug, test failure, or unexpected behavior. Enforces root-cause investigation before proposing fixes.
+description: Systematic root-cause debugging methodology
+disable-model-invocation: true
 ---
 
 # Systematic Debugging

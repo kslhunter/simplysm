@@ -1,6 +1,7 @@
 ---
 name: sd-explore
-description: Deeply analyze a codebase path by tracing execution paths, mapping architecture layers, understanding patterns, and documenting dependencies
+description: Deep codebase analysis - execution paths, architecture, dependencies
+disable-model-invocation: true
 model: sonnet
 context: fork
 allowed-tools: Read, Glob, Grep

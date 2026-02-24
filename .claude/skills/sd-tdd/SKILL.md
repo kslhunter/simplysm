@@ -1,6 +1,7 @@
 ---
 name: sd-tdd
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Test-Driven Development - write failing test first, then implement
+disable-model-invocation: true
 user-invocable: false
 model: opus
 ---

@@ -1,6 +1,7 @@
 ---
 name: sd-api-name-review
-description: Use when reviewing a library or module's public API naming for consistency and industry standard alignment - function names, parameter names, option keys, enum values, type names
+description: Public API naming consistency and industry standard alignment review
+disable-model-invocation: true
 model: sonnet
 ---
 

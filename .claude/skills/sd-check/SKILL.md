@@ -1,6 +1,7 @@
 ---
 name: sd-check
-description: Use when verifying code quality via typecheck, lint, and tests - before deployment, PR creation, after code changes, or when type errors, lint violations, or test failures are suspected. Applies to whole project or specific paths.
+description: Code quality verification via typecheck, lint, and tests
+disable-model-invocation: true
 allowed-tools: Bash(npm run check), Bash(npm run typecheck), Bash(npm run lint --fix), Bash(npm run vitest)
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: sd-review
-description: Use when performing a comprehensive code review of a package or path for bugs, security issues, code quality, DX, and simplification opportunities
+description: Multi-perspective comprehensive code review
+disable-model-invocation: true
 ---
 
 # sd-review
