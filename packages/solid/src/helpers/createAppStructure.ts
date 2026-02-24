@@ -234,12 +234,18 @@ function buildPerms<TModule>(
 
     if (isGroupItem(item)) {
       const children = buildPerms(item.children, href, usableModules);
+      if (children.length === 0) continue;
       result.push({
         title: item.title,
         modules: item.modules,
         children,
       });
     } else {
+      if (
+        (item.perms == null || item.perms.length === 0) &&
+        (item.subPerms == null || item.subPerms.length === 0)
+      )
+        continue;
       result.push({
         title: item.title,
         href,

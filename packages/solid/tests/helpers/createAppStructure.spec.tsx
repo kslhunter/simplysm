@@ -538,6 +538,101 @@ describe("createAppStructure", () => {
     });
   });
 
+  describe("usablePerms", () => {
+    it("perms가 없는 leaf는 usablePerms에서 제외된다", () => {
+      createRoot((dispose) => {
+        const result = buildTestStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                { code: "main", title: "메인" },
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        const perms = result.usablePerms();
+        // home 그룹의 children에 "메인"이 없어야 함
+        const homeGroup = perms[0];
+        expect(homeGroup.children).toHaveLength(1);
+        expect(homeGroup.children![0].title).toBe("사용자");
+
+        dispose();
+      });
+    });
+
+    it("perms가 빈 배열인 leaf도 제외된다", () => {
+      createRoot((dispose) => {
+        const result = buildTestStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "empty",
+                  title: "빈perms",
+                  perms: [] as ("use" | "edit")[],
+                },
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        const perms = result.usablePerms();
+        const homeGroup = perms[0];
+        expect(homeGroup.children).toHaveLength(1);
+        expect(homeGroup.children![0].title).toBe("사용자");
+
+        dispose();
+      });
+    });
+
+    it("children이 모두 필터링되면 그룹도 제외된다", () => {
+      createRoot((dispose) => {
+        const result = buildTestStructure({
+          items: [
+            {
+              code: "home",
+              title: "홈",
+              children: [
+                {
+                  code: "empty-group",
+                  title: "빈그룹",
+                  children: [{ code: "about", title: "소개" }],
+                },
+                {
+                  code: "user",
+                  title: "사용자",
+                  perms: ["use"] as ("use" | "edit")[],
+                },
+              ],
+            },
+          ],
+        });
+
+        const perms = result.usablePerms();
+        const homeGroup = perms[0];
+        expect(homeGroup.children).toHaveLength(1);
+        expect(homeGroup.children![0].title).toBe("사용자");
+
+        dispose();
+      });
+    });
+  });
+
   describe("perms", () => {
     it("permRecord에서 true인 perm은 true를 반환한다", () => {
       createRoot((dispose) => {
