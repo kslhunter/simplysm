@@ -1,7 +1,6 @@
 ---
 name: sd-debug
-description: Systematic root-cause debugging methodology
-disable-model-invocation: true
+description: "Systematic root-cause debugging (explicit invocation only)"
 ---
 
 # Systematic Debugging

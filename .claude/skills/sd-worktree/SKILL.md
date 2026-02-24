@@ -1,7 +1,6 @@
 ---
 name: sd-worktree
-description: Git worktree management for branch isolation
-disable-model-invocation: true
+description: "Git worktree branch isolation (explicit invocation only)"
 model: haiku
 ---
 

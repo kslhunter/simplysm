@@ -1,7 +1,6 @@
 ---
 name: sd-tdd
-description: Test-Driven Development - write failing test first, then implement
-disable-model-invocation: true
+description: "TDD - failing test first, then implement (explicit invocation only)"
 user-invocable: false
 model: opus
 ---

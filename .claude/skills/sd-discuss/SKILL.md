@@ -1,7 +1,6 @@
 ---
 name: sd-discuss
-description: Evidence-based technical discussion with industry research
-disable-model-invocation: true
+description: "Technical discussion with industry research (explicit invocation only)"
 model: opus
 ---
 

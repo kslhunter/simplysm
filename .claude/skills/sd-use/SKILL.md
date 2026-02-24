@@ -1,7 +1,6 @@
 ---
 name: sd-use
-description: Auto router that matches user requests to the appropriate sd-* skill or agent
-disable-model-invocation: true
+description: "Route requests to sd-* skills/agents (explicit invocation only)"
 model: haiku
 ---
 

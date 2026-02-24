@@ -1,7 +1,6 @@
 ---
 name: sd-explore
-description: Deep codebase analysis - execution paths, architecture, dependencies
-disable-model-invocation: true
+description: "Deep codebase analysis (explicit invocation only)"
 model: sonnet
 context: fork
 allowed-tools: Read, Glob, Grep

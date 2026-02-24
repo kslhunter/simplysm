@@ -1,7 +1,6 @@
 ---
 name: sd-readme
-description: Package README.md sync with current source code exports
-disable-model-invocation: true
+description: "Sync README.md with source code (explicit invocation only)"
 argument-hint: "<package-name or path> (optional - omit to update all)"
 model: sonnet
 ---

@@ -1,7 +1,6 @@
 ---
 name: sd-email-analyze
-description: Email file (.eml/.msg) parsing and attachment extraction
-disable-model-invocation: true
+description: "Email file (.eml/.msg) parsing (explicit invocation only)"
 ---
 
 # Email Analyzer

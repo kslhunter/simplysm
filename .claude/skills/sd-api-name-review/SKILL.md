@@ -1,7 +1,6 @@
 ---
 name: sd-api-name-review
-description: Public API naming consistency and industry standard alignment review
-disable-model-invocation: true
+description: "Public API naming review (explicit invocation only)"
 model: sonnet
 ---
 

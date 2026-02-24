@@ -1,7 +1,6 @@
 ---
 name: sd-plan-dev
-description: Parallel execution of implementation plan tasks
-disable-model-invocation: true
+description: "Parallel execution of plan tasks (explicit invocation only)"
 model: opus
 ---
 

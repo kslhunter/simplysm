@@ -1,7 +1,6 @@
 ---
 name: sd-plan
-description: Implementation plan creation from brainstorm designs
-disable-model-invocation: true
+description: "Implementation plan from brainstorm designs (explicit invocation only)"
 model: opus
 ---
 

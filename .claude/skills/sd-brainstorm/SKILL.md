@@ -1,7 +1,6 @@
 ---
 name: sd-brainstorm
-description: Collaborative design exploration through Q&A before implementation
-disable-model-invocation: true
+description: "Design exploration before implementation (explicit invocation only)"
 model: opus
 ---
 

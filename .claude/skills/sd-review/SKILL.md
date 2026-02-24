@@ -1,7 +1,6 @@
 ---
 name: sd-review
-description: Multi-perspective comprehensive code review
-disable-model-invocation: true
+description: "Comprehensive multi-perspective code review (explicit invocation only)"
 ---
 
 # sd-review

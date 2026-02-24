@@ -1,7 +1,6 @@
 ---
 name: sd-skill
-description: Skill creation and editing with TDD methodology
-disable-model-invocation: true
+description: "Skill creation and editing (explicit invocation only)"
 model: opus
 ---
 

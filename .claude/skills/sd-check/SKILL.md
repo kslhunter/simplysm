@@ -1,7 +1,6 @@
 ---
 name: sd-check
-description: Code quality verification via typecheck, lint, and tests
-disable-model-invocation: true
+description: "Typecheck, lint, test verification (explicit invocation only)"
 allowed-tools: Bash(npm run check), Bash(npm run typecheck), Bash(npm run lint --fix), Bash(npm run vitest)
 ---
 

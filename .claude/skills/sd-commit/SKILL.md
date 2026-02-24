@@ -1,7 +1,6 @@
 ---
 name: sd-commit
-description: Git commit with conventional commit messages
-disable-model-invocation: true
+description: "Git commit with conventional messages (explicit invocation only)"
 argument-hint: "[all]"
 allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git commit:*)
 model: haiku
