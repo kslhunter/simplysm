@@ -31,6 +31,7 @@
     "@simplysm/storage": "workspace:*",
     "consola": "^3.4.2",
     "esbuild": "^0.27.3",
+    "execa": "^9.6.0",
     "esbuild-plugin-solid": "^0.6.0",
     "eslint": "^9.39.3",
     "glob": "^13.0.6",
