@@ -2,12 +2,13 @@ import path from "path";
 import fs from "fs";
 import { build as viteBuild, createServer, type ViteDevServer } from "vite";
 import { createWorker } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdClientPackageConfig } from "../sd-config.types";
 import { parseRootTsconfig, getCompilerOptionsForPackage } from "../utils/tsconfig";
 import { createViteConfig } from "../utils/vite-config";
 import { collectDeps } from "../utils/package-utils";
-import { registerCleanupHandlers } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils";
 
 //#region Types
 
@@ -142,13 +143,12 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   } catch (err) {
     return {
       success: false,
-      errors: [err instanceof Error ? err.message : String(err)],
+      errors: [errorMessage(err)],
     };
   }
 }
 
-/** startWatch 호출 여부 플래그 */
-let isWatchStarted = false;
+const guardStartWatch = createOnceGuard("startWatch");
 
 /**
  * watch 시작 (Vite dev server)
@@ -156,10 +156,7 @@ let isWatchStarted = false;
  * @throws 이미 watch가 시작된 경우
  */
 async function startWatch(info: ClientWatchInfo): Promise<void> {
-  if (isWatchStarted) {
-    throw new Error("startWatch는 Worker당 한 번만 호출할 수 있습니다.");
-  }
-  isWatchStarted = true;
+  guardStartWatch();
 
   try {
     // tsconfig 파싱
@@ -204,13 +201,17 @@ async function startWatch(info: ClientWatchInfo): Promise<void> {
 
     // 실제 할당된 포트 반환 (config.server.port는 설정값이므로 httpServer에서 실제 포트를 가져옴)
     const address = viteServer.httpServer?.address();
-    const actualPort =
-      typeof address === "object" && address != null ? address.port : viteServer.config.server.port;
+    const actualPort = typeof address === "object" && address != null ? address.port : undefined;
+
+    if (actualPort == null) {
+      sender.send("error", { message: "Vite dev server port를 확인할 수 없습니다." });
+      return;
+    }
 
     sender.send("serverReady", { port: actualPort });
   } catch (err) {
     sender.send("error", {
-      message: err instanceof Error ? err.message : String(err),
+      message: errorMessage(err),
     });
   }
 }

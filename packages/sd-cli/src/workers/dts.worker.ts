@@ -1,6 +1,7 @@
 import path from "path";
 import ts from "typescript";
 import { createWorker, pathIsChildPath, pathNorm } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
   getCompilerOptionsForPackage,
@@ -10,6 +11,7 @@ import {
   type TypecheckEnv,
 } from "../utils/tsconfig";
 import { serializeDiagnostic, type SerializedDiagnostic } from "../utils/typecheck-serialization";
+import { createOnceGuard } from "../utils/worker-utils";
 
 //#region Types
 
@@ -181,12 +183,12 @@ function createDtsPathRewriter(
 
 //#endregion
 
-//#region buildDts (일회성 빌드)
+//#region build (일회성 빌드)
 
 /**
  * DTS 일회성 빌드 (타입체크 + dts 생성)
  */
-async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
+async function build(info: DtsBuildInfo): Promise<DtsBuildResult> {
   try {
     const parsedConfig = parseRootTsconfig(info.cwd);
 
@@ -327,7 +329,7 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
   } catch (err) {
     return {
       success: false,
-      errors: [err instanceof Error ? err.message : String(err)],
+      errors: [errorMessage(err)],
       diagnostics: [],
       errorCount: 1,
       warningCount: 0,
@@ -337,21 +339,17 @@ async function buildDts(info: DtsBuildInfo): Promise<DtsBuildResult> {
 
 //#endregion
 
-//#region startDtsWatch (watch 모드)
+//#region startWatch (watch 모드)
 
-/** startDtsWatch 호출 여부 플래그 */
-let isWatchStarted = false;
+const guardStartWatch = createOnceGuard("startWatch");
 
 /**
  * DTS watch 시작
  * @remarks 이 함수는 Worker당 한 번만 호출되어야 합니다.
  * @throws 이미 watch가 시작된 경우
  */
-async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
-  if (isWatchStarted) {
-    throw new Error("startDtsWatch는 Worker당 한 번만 호출할 수 있습니다.");
-  }
-  isWatchStarted = true;
+async function startWatch(info: DtsWatchInfo): Promise<void> {
+  guardStartWatch();
 
   try {
     const parsedConfig = parseRootTsconfig(info.cwd);
@@ -451,17 +449,17 @@ async function startDtsWatch(info: DtsWatchInfo): Promise<void> {
     tscWatchProgram = ts.createWatchProgram(host);
   } catch (err) {
     sender.send("error", {
-      message: err instanceof Error ? err.message : String(err),
+      message: errorMessage(err),
     });
   }
 }
 
 const sender = createWorker<
-  { startDtsWatch: typeof startDtsWatch; buildDts: typeof buildDts },
+  { startWatch: typeof startWatch; build: typeof build },
   DtsWorkerEvents
 >({
-  startDtsWatch,
-  buildDts,
+  startWatch,
+  build,
 });
 
 export default sender;

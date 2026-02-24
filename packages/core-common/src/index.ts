@@ -44,6 +44,7 @@ export * from "./utils/transferable";
 export * from "./utils/wait";
 export * from "./utils/xml";
 export * from "./utils/path";
+export * from "./utils/error";
 //#endregion
 
 //#region zip

@@ -1,5 +1,6 @@
 import { execa } from "execa";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import { executeTypecheck, type TypecheckResult } from "./typecheck";
 import type { LintResult } from "./lint";
 import type * as LintWorkerModule from "../workers/lint.worker";
@@ -52,7 +53,7 @@ async function spawnVitest(targets: string[]): Promise<CheckResult> {
       success: false,
       errorCount: 1,
       warningCount: 0,
-      formattedOutput: err instanceof Error ? err.message : String(err),
+      formattedOutput: errorMessage(err),
     };
   }
 }
@@ -140,7 +141,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
       success: false,
       errorCount: 1,
       warningCount: 0,
-      formattedOutput: r.reason instanceof Error ? r.reason.message : String(r.reason),
+      formattedOutput: errorMessage(r.reason),
     };
   });
 

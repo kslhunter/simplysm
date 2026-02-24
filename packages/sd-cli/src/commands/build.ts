@@ -4,16 +4,6 @@ import {
 } from "../orchestrators/BuildOrchestrator";
 
 /**
- * Build 명령 옵션 (하위 호환성)
- */
-export interface BuildOptions {
-  /** 빌드할 패키지 필터 (빈 배열이면 모든 패키지) */
-  targets: string[];
-  /** sd.config.ts에 전달할 추가 옵션 */
-  options: string[];
-}
-
-/**
  * 프로덕션 빌드를 실행한다.
  *
  * - `sd.config.ts`를 로드하여 패키지별 빌드 타겟 정보 확인 (필수)
@@ -26,13 +16,8 @@ export interface BuildOptions {
  * @param options - build 실행 옵션
  * @returns 완료 시 resolve
  */
-export async function runBuild(options: BuildOptions): Promise<void> {
-  const orchestratorOptions: BuildOrchestratorOptions = {
-    targets: options.targets,
-    options: options.options,
-  };
-
-  const orchestrator = new BuildOrchestrator(orchestratorOptions);
+export async function runBuild(options: BuildOrchestratorOptions): Promise<void> {
+  const orchestrator = new BuildOrchestrator(options);
 
   try {
     await orchestrator.initialize();

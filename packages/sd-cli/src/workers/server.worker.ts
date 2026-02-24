@@ -3,6 +3,7 @@ import fs from "fs";
 import { execaSync } from "execa";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathNorm } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import {
   parseRootTsconfig,
@@ -15,7 +16,7 @@ import {
   collectNativeModuleExternals,
   writeChangedOutputFiles,
 } from "../utils/esbuild-config";
-import { registerCleanupHandlers } from "../utils/worker-utils";
+import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils";
 import { collectDeps } from "../utils/package-utils";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 
@@ -268,8 +269,7 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
         : `  interpreter: cp.execSync("mise which node").toString().trim(),\n`;
 
     const pm2Config = [
-      `const cp = require("child_process");`,
-      ``,
+      ...(info.packageManager !== "volta" ? [`const cp = require("child_process");`, ``] : []),
       `module.exports = {`,
       `  name: ${JSON.stringify(pm2Name)},`,
       `  script: "main.js",`,
@@ -353,13 +353,12 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     return {
       success: false,
       mainJsPath,
-      errors: [err instanceof Error ? err.message : String(err)],
+      errors: [errorMessage(err)],
     };
   }
 }
 
-/** startWatch 호출 여부 플래그 */
-let isWatchStarted = false;
+const guardStartWatch = createOnceGuard("startWatch");
 
 /**
  * esbuild context 생성 및 초기 빌드 수행
@@ -455,10 +454,7 @@ async function createAndBuildContext(
  * @throws 이미 watch가 시작된 경우
  */
 async function startWatch(info: ServerWatchInfo): Promise<void> {
-  if (isWatchStarted) {
-    throw new Error("startWatch는 Worker당 한 번만 호출할 수 있습니다.");
-  }
-  isWatchStarted = true;
+  guardStartWatch();
 
   try {
     // 첫 번째 빌드 완료 대기를 위한 Promise
@@ -543,13 +539,13 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
         }
       } catch (err) {
         sender.send("error", {
-          message: err instanceof Error ? err.message : String(err),
+          message: errorMessage(err),
         });
       }
     });
   } catch (err) {
     sender.send("error", {
-      message: err instanceof Error ? err.message : String(err),
+      message: errorMessage(err),
     });
   }
 }

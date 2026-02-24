@@ -1,5 +1,6 @@
 import type * as DtsWorkerModule from "../workers/dts.worker";
 import type { BuildResult } from "../infra/ResultCollector";
+import { errorMessage } from "@simplysm/core-common";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
@@ -56,7 +57,7 @@ export class DtsBuilder extends BaseBuilder {
       });
     });
 
-    void worker.startDtsWatch({
+    void worker.startWatch({
       name: pkg.name,
       cwd: this.cwd,
       pkgDir: pkg.dir,
@@ -70,7 +71,7 @@ export class DtsBuilder extends BaseBuilder {
     const worker = this.workerManager.get<typeof DtsWorkerModule>(`${pkg.name}:dts`)!;
 
     worker
-      .startDtsWatch({
+      .startWatch({
         name: pkg.name,
         cwd: this.cwd,
         pkgDir: pkg.dir,
@@ -82,7 +83,7 @@ export class DtsBuilder extends BaseBuilder {
           target: pkg.config.target,
           type: "dts",
           status: "error",
-          message: err instanceof Error ? err.message : String(err),
+          message: errorMessage(err),
         };
         this.resultCollector.add(result);
         this.completeBuild(pkg);

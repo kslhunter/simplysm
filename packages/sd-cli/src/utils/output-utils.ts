@@ -1,28 +1,32 @@
 import { consola } from "consola";
 import type { BuildResult } from "../infra/ResultCollector";
-import type { PackageResult } from "./package-utils";
 
 /**
- * printErrors에서 사용되는 결과 타입
- * PackageResult와 BuildResult 모두 지원
+ * 빌드 경고/에러 메시지를 포맷팅한다.
  */
-type ErrorResult = PackageResult | BuildResult;
+export function formatBuildMessages(name: string, label: string, messages: string[]): string {
+  const lines: string[] = [`${name} (${label})`];
+  for (const msg of messages) {
+    for (const line of msg.split("\n")) {
+      lines.push(`  → ${line}`);
+    }
+  }
+  return lines.join("\n");
+}
 
 /**
  * 에러만 출력한다.
  * @param results 패키지별 빌드 결과 상태
  */
-export function printErrors(results: Map<string, ErrorResult>): void {
+export function printErrors(results: Map<string, BuildResult>): void {
   for (const result of results.values()) {
     if (result.status === "error") {
       const typeLabel = result.type === "dts" ? "dts" : result.target;
-      const errorLines: string[] = [`${result.name} (${typeLabel})`];
       if (result.message != null && result.message !== "") {
-        for (const line of result.message.split("\n")) {
-          errorLines.push(`  → ${line}`);
-        }
+        consola.error(formatBuildMessages(result.name, typeLabel, [result.message]));
+      } else {
+        consola.error(`${result.name} (${typeLabel})`);
       }
-      consola.error(errorLines.join("\n"));
     }
   }
 }
@@ -33,7 +37,7 @@ export function printErrors(results: Map<string, ErrorResult>): void {
  * @param serverClientsMap 서버별 연결된 클라이언트 목록
  */
 export function printServers(
-  results: Map<string, PackageResult>,
+  results: Map<string, BuildResult>,
   serverClientsMap?: Map<string, string[]>,
 ): void {
   // 서버 정보 수집

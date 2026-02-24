@@ -86,7 +86,7 @@ export function createCliParser(argv: string[]): Argv {
             default: [],
           })
           .options({
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -97,7 +97,7 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runTypecheck({
           targets: args.targets,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -142,7 +142,7 @@ export function createCliParser(argv: string[]): Argv {
             default: [],
           })
           .options({
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -153,7 +153,7 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runWatch({
           targets: args.targets,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -171,7 +171,7 @@ export function createCliParser(argv: string[]): Argv {
             default: [],
           })
           .options({
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -182,7 +182,7 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runDev({
           targets: args.targets,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -200,7 +200,7 @@ export function createCliParser(argv: string[]): Argv {
             default: [],
           })
           .options({
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -211,7 +211,7 @@ export function createCliParser(argv: string[]): Argv {
       async (args) => {
         await runBuild({
           targets: args.targets,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -234,7 +234,7 @@ export function createCliParser(argv: string[]): Argv {
               alias: "u",
               describe: "개발 서버 URL (미지정 시 sd.config.ts의 server 설정 사용)",
             },
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -246,7 +246,7 @@ export function createCliParser(argv: string[]): Argv {
         await runDevice({
           package: args.package,
           url: args.url,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -307,7 +307,7 @@ export function createCliParser(argv: string[]): Argv {
               describe: "실제 배포 없이 시뮬레이션",
               default: false,
             },
-            "configOpt": {
+            "opt": {
               type: "string",
               array: true,
               alias: "o",
@@ -320,7 +320,7 @@ export function createCliParser(argv: string[]): Argv {
           targets: args.targets,
           noBuild: !args.build,
           dryRun: args.dryRun,
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )
@@ -332,7 +332,7 @@ export function createCliParser(argv: string[]): Argv {
           .version(false)
           .hide("help")
           .options({
-            configOpt: {
+            opt: {
               type: "string",
               array: true,
               alias: "o",
@@ -342,7 +342,7 @@ export function createCliParser(argv: string[]): Argv {
           }),
       async (args) => {
         await runReplaceDeps({
-          options: args.configOpt,
+          options: args.opt,
         });
       },
     )

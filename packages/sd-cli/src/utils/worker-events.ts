@@ -1,7 +1,8 @@
 import { consola } from "consola";
-import type { PackageResult } from "./package-utils";
+import type { BuildResult } from "../infra/ResultCollector";
 import type { SdPackageConfig } from "../sd-config.types";
 import type { RebuildManager } from "./rebuild-manager";
+import { formatBuildMessages } from "./output-utils";
 
 const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 
@@ -33,12 +34,12 @@ export interface ServerBuildEventData {
 /**
  * 기본 Worker 정보 타입
  */
-export interface BaseWorkerInfo<TEvents extends Record<string, any[]> = Record<string, any[]>> {
+export interface BaseWorkerInfo<TEvents extends Record<string, unknown> = Record<string, unknown>> {
   name: string;
   config: SdPackageConfig;
   worker: {
-    on<K extends keyof TEvents>(event: K, handler: (data: TEvents[K][0]) => void): void;
-    send<K extends keyof TEvents>(event: K, data: TEvents[K][0]): void;
+    on<K extends keyof TEvents>(event: K, handler: (data: TEvents[K]) => void): void;
+    send<K extends keyof TEvents>(event: K, data: TEvents[K]): void;
   };
   isInitialBuild: boolean;
   buildResolver: (() => void) | undefined;
@@ -63,15 +64,15 @@ export interface WorkerEventHandlerOptions {
  * @returns completeTask 함수 (결과를 저장하고 빌드 완료를 알림)
  */
 export function registerWorkerEventHandlers<
-  TEvents extends Record<string, any[]>,
+  TEvents extends Record<string, unknown>,
   T extends BaseWorkerInfo<TEvents>,
 >(
   workerInfo: T,
   opts: WorkerEventHandlerOptions,
-  results: Map<string, PackageResult>,
+  results: Map<string, BuildResult>,
   rebuildManager: RebuildManager,
-): (result: PackageResult) => void {
-  const completeTask = (result: PackageResult): void => {
+): (result: BuildResult) => void {
+  const completeTask = (result: BuildResult): void => {
     results.set(opts.resultKey, result);
     workerInfo.buildResolver?.();
     workerInfo.buildResolver = undefined;
@@ -86,40 +87,36 @@ export function registerWorkerEventHandlers<
   });
 
   // 빌드 완료
-  workerInfo.worker.on("build", (data) => {
-    const event = data as BuildEventData;
-    workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(event.success)}`);
+  workerInfo.worker.on("build", (_data) => {
+    const data = _data as BuildEventData;
+    workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(data.success)}`);
 
     // warnings 출력
-    if (event.warnings != null && event.warnings.length > 0) {
-      const warnLines: string[] = [`${workerInfo.name} (${workerInfo.config.target})`];
-      for (const warning of event.warnings) {
-        for (const line of warning.split("\n")) {
-          warnLines.push(`  → ${line}`);
-        }
-      }
-      workerEventsLogger.warn(warnLines.join("\n"));
+    if (data.warnings != null && data.warnings.length > 0) {
+      workerEventsLogger.warn(
+        formatBuildMessages(workerInfo.name, workerInfo.config.target, data.warnings),
+      );
     }
 
     completeTask({
       name: workerInfo.name,
       target: workerInfo.config.target,
       type: opts.resultType,
-      status: event.success ? "success" : "error",
-      message: event.errors?.join("\n"),
+      status: data.success ? "success" : "error",
+      message: data.errors?.join("\n"),
     });
   });
 
   // 에러
-  workerInfo.worker.on("error", (data) => {
-    const event = data as ErrorEventData;
-    workerEventsLogger.debug(`[${workerInfo.name}] error: ${event.message}`);
+  workerInfo.worker.on("error", (_data) => {
+    const data = _data as ErrorEventData;
+    workerEventsLogger.debug(`[${workerInfo.name}] error: ${data.message}`);
     completeTask({
       name: workerInfo.name,
       target: workerInfo.config.target,
       type: opts.resultType,
       status: "error",
-      message: event.message,
+      message: data.message,
     });
   });
 

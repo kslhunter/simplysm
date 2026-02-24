@@ -1,7 +1,7 @@
 import path from "path";
 import ts from "typescript";
 import { Worker, type WorkerProxy, fsRm } from "@simplysm/core-node";
-import "@simplysm/core-common";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import type {
   SdConfig,
@@ -22,6 +22,7 @@ import type * as DtsWorkerModule from "../workers/dts.worker";
 import { Capacitor } from "../capacitor/capacitor";
 import { Electron } from "../electron/electron";
 import { copySrcFiles } from "../utils/copy-src";
+import { formatBuildMessages } from "../utils/output-utils";
 
 //#region Types
 
@@ -38,7 +39,7 @@ export interface BuildOrchestratorOptions {
 /**
  * 빌드 결과
  */
-interface BuildResult {
+interface BuildStepResult {
   name: string;
   target: string;
   type: "js" | "dts" | "vite" | "capacitor" | "electron";
@@ -206,7 +207,7 @@ export class BuildOrchestrator {
     const baseEnv = this._baseEnv!;
 
     // 결과 수집
-    const results: BuildResult[] = [];
+    const results: BuildStepResult[] = [];
     // 에러 추적 (객체로 래핑하여 콜백 내 수정 추적 가능하게 함)
     const state = { hasError: false };
 
@@ -263,7 +264,7 @@ export class BuildOrchestrator {
             // JS 빌드
             libraryWorker.build({ name, config, cwd: this._cwd, pkgDir }),
             // DTS 생성
-            dtsWorker.buildDts({ name, cwd: this._cwd, pkgDir, env, emit: true }),
+            dtsWorker.build({ name, cwd: this._cwd, pkgDir, env, emit: true }),
           ]);
 
           // JS 빌드 결과 처리
@@ -321,7 +322,7 @@ export class BuildOrchestrator {
             // Vite production 빌드
             clientWorker.build({ name, config: clientConfig, cwd: this._cwd, pkgDir }),
             // typecheck (dts 없이)
-            dtsWorker.buildDts({
+            dtsWorker.build({
               name,
               cwd: this._cwd,
               pkgDir,
@@ -374,7 +375,7 @@ export class BuildOrchestrator {
               target: "client",
               type: "capacitor",
               success: false,
-              errors: [err instanceof Error ? err.message : String(err)],
+              errors: [errorMessage(err)],
             });
             state.hasError = true;
           }
@@ -399,7 +400,7 @@ export class BuildOrchestrator {
               target: "client",
               type: "electron",
               success: false,
-              errors: [err instanceof Error ? err.message : String(err)],
+              errors: [errorMessage(err)],
             });
             state.hasError = true;
           }
@@ -465,26 +466,16 @@ export class BuildOrchestrator {
 
       // warnings 출력
       if (result.warnings != null) {
-        const warnLines: string[] = [`${result.name} (${typeLabel})`];
-        for (const warning of result.warnings) {
-          for (const line of warning.split("\n")) {
-            warnLines.push(`  → ${line}`);
-          }
-        }
-        this._logger.warn(warnLines.join("\n"));
+        this._logger.warn(formatBuildMessages(result.name, typeLabel, result.warnings));
       }
 
       // errors 출력
       if (!result.success) {
-        const errorLines: string[] = [`${result.name} (${typeLabel})`];
         if (result.errors != null) {
-          for (const error of result.errors) {
-            for (const line of error.split("\n")) {
-              errorLines.push(`  → ${line}`);
-            }
-          }
+          this._logger.error(formatBuildMessages(result.name, typeLabel, result.errors));
+        } else {
+          this._logger.error(`${result.name} (${typeLabel})`);
         }
-        this._logger.error(errorLines.join("\n"));
       }
       if (result.diagnostics != null) {
         allDiagnostics.push(...result.diagnostics);

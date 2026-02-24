@@ -2,7 +2,7 @@ import ts from "typescript";
 import path from "path";
 import os from "os";
 import { pathPosix, pathFilterByTargets, Worker, type WorkerProxy } from "@simplysm/core-node";
-import "@simplysm/core-common";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import type { SdConfig } from "../sd-config.types";
 import { parseRootTsconfig, type TypecheckEnv } from "../utils/tsconfig";
@@ -202,7 +202,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   try {
     parsedConfig = parseRootTsconfig(cwd);
   } catch (err) {
-    logger.error(err instanceof Error ? err.message : String(err));
+    logger.error(errorMessage(err));
     return { success: false, errorCount: 1, warningCount: 0, formattedOutput: "" };
   }
 
@@ -274,7 +274,7 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
 
         logger.debug(`[${task.displayName}] 타입체크 시작`);
         try {
-          const result = await worker.buildDts(task.buildInfo);
+          const result = await worker.build(task.buildInfo);
           allResults.push({ displayName: task.displayName, result });
           if (result.success) {
             logger.debug(`[${task.displayName}] 타입체크 완료`);
@@ -283,13 +283,13 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
           }
         } catch (err) {
           logger.error(`Worker 오류: ${task.displayName}`, {
-            error: err instanceof Error ? err.message : String(err),
+            error: errorMessage(err),
           });
           allResults.push({
             displayName: task.displayName,
             result: {
               success: false,
-              errors: [err instanceof Error ? err.message : String(err)],
+              errors: [errorMessage(err)],
               diagnostics: [],
               errorCount: 1,
               warningCount: 0,

@@ -3,6 +3,7 @@ import { WorkerManager } from "../infra/WorkerManager";
 import type { BuildResult, ResultCollector } from "../infra/ResultCollector";
 import type { RebuildManager } from "../utils/rebuild-manager";
 import type { BuildEventData, ErrorEventData } from "../utils/worker-events";
+import { formatBuildMessages } from "../utils/output-utils";
 import type { IBuilder, PackageInfo } from "./types";
 
 const baseBuilderLogger = consola.withTag("sd:cli:build");
@@ -153,13 +154,7 @@ export abstract class BaseBuilder implements IBuilder {
 
       // warnings 출력
       if (event.warnings != null && event.warnings.length > 0) {
-        const warnLines: string[] = [`${pkg.name} (${pkg.config.target})`];
-        for (const warning of event.warnings) {
-          for (const line of warning.split("\n")) {
-            warnLines.push(`  → ${line}`);
-          }
-        }
-        baseBuilderLogger.warn(warnLines.join("\n"));
+        baseBuilderLogger.warn(formatBuildMessages(pkg.name, pkg.config.target, event.warnings));
       }
 
       const result: BuildResult = {

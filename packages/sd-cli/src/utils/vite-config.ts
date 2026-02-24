@@ -111,7 +111,15 @@ function sdPublicDevPlugin(pkgDir: string): Plugin {
           urlPath = urlPath.slice(1);
         }
 
-        const filePath = path.join(publicDevDir, urlPath);
+        // path traversal 방어: publicDevDir 범위 밖의 파일 접근 차단
+        const decodedPath = decodeURIComponent(urlPath);
+        const filePath = path.resolve(publicDevDir, decodedPath);
+        const normalizedRoot = path.resolve(publicDevDir);
+        if (!filePath.startsWith(normalizedRoot + path.sep) && filePath !== normalizedRoot) {
+          next();
+          return;
+        }
+
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
           // sirv 대신 간단히 파일 스트림으로 응답
           const stream = fs.createReadStream(filePath);

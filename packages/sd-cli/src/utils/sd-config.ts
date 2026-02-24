@@ -2,18 +2,14 @@ import path from "path";
 import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
 import { fsExists } from "@simplysm/core-node";
-import type { SdConfig } from "../sd-config.types";
+import type { SdConfig, SdConfigParams } from "../sd-config.types";
 
 /**
  * sd.config.ts 로드
  * @returns SdConfig 객체
  * @throws sd.config.ts가 없거나 형식이 잘못된 경우
  */
-export async function loadSdConfig(params: {
-  cwd: string;
-  dev: boolean;
-  opt: string[];
-}): Promise<SdConfig> {
+export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
   const sdConfigPath = path.resolve(params.cwd, "sd.config.ts");
 
   if (!(await fsExists(sdConfigPath))) {

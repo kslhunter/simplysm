@@ -1,5 +1,6 @@
 import type * as LibraryWorkerModule from "../workers/library.worker";
 import type { BuildResult } from "../infra/ResultCollector";
+import { errorMessage } from "@simplysm/core-common";
 import type { SdBuildPackageConfig } from "../sd-config.types";
 import { BaseBuilder } from "./BaseBuilder";
 import type { PackageInfo } from "./types";
@@ -77,7 +78,7 @@ export class LibraryBuilder extends BaseBuilder {
           target: pkg.config.target,
           type: "build",
           status: "error",
-          message: err instanceof Error ? err.message : String(err),
+          message: errorMessage(err),
         };
         this.resultCollector.add(result);
         this.completeBuild(pkg);

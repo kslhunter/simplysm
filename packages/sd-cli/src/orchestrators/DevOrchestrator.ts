@@ -1,5 +1,6 @@
 import path from "path";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import type { SdConfig, SdClientPackageConfig, SdServerPackageConfig } from "../sd-config.types";
 import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
@@ -9,8 +10,9 @@ import type * as ClientWorkerModule from "../workers/client.worker";
 import type * as ServerWorkerModule from "../workers/server.worker";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
 import { Capacitor } from "../capacitor/capacitor";
-import { filterPackagesByTargets, type PackageResult } from "../utils/package-utils";
-import { printErrors, printServers } from "../utils/output-utils";
+import { filterPackagesByTargets } from "../utils/package-utils";
+import type { BuildResult } from "../infra/ResultCollector";
+import { formatBuildMessages, printErrors, printServers } from "../utils/output-utils";
 import { RebuildManager } from "../utils/rebuild-manager";
 import {
   registerWorkerEventHandlers,
@@ -89,7 +91,7 @@ export class DevOrchestrator {
   >();
 
   // State
-  private readonly _results = new Map<string, PackageResult>();
+  private readonly _results = new Map<string, BuildResult>();
   private _clientPorts: Record<string, number> = {};
   private _rebuildManager!: RebuildManager;
   private _signalHandler!: SignalHandler;
@@ -233,10 +235,85 @@ export class DevOrchestrator {
         buildResolver: undefined,
       }));
 
-    // Standalone client 빌드 Promise 미리 생성
-    const standaloneClientBuildPromises = new Map<string, Promise<void>>();
+    // 각 섹션별 setup 및 워커 시작
+    const standaloneClientPromises = this._setupStandaloneClients();
+    const { buildPromises: viteClientPromises, readyPromises: viteClientReadyPromises } =
+      this._setupViteClients();
+    const serverPromises = this._setupServers(
+      serverWorkerPath,
+      serverRuntimeWorkerPath,
+      viteClientReadyPromises,
+    );
+
+    // 초기 빌드 완료까지 대기 (병렬 실행)
+    this._logger.debug("초기 빌드 시작 (Promise.allSettled)");
+    const initialBuildPromises: Array<{ name: string; promise: Promise<void> }> = [
+      ...standaloneClientPromises,
+      ...viteClientPromises,
+      ...serverPromises,
+    ];
+
+    const initialResults = await Promise.allSettled(
+      initialBuildPromises.map((item) => item.promise),
+    );
+
+    initialResults.forEach((result, index) => {
+      const taskName = initialBuildPromises[index].name;
+      if (result.status === "rejected") {
+        this._logger.debug(`[${taskName}] 초기 빌드 실패:`, result.reason);
+      } else {
+        this._logger.debug(`[${taskName}] 초기 빌드 완료`);
+      }
+    });
+
+    // Capacitor 초기화 (client 타겟 중 capacitor 설정이 있는 패키지)
+    const capacitorPackages: Array<[string, SdClientPackageConfig]> = [];
+    for (const { name, config } of this._clientPackages) {
+      if (config.capacitor != null) {
+        capacitorPackages.push([name, config]);
+      }
+    }
+
+    if (capacitorPackages.length > 0) {
+      for (const [name, config] of capacitorPackages) {
+        const taskName = `${name} (capacitor)`;
+        this._logger.start(taskName);
+        const pkgDir = path.join(this._cwd, "packages", name);
+        try {
+          const cap = await Capacitor.create(pkgDir, config.capacitor!);
+          await cap.initialize();
+          this._results.set(`${name}:capacitor`, {
+            name,
+            target: "client",
+            type: "capacitor",
+            status: "success",
+          });
+          this._logger.success(taskName);
+        } catch (err) {
+          this._results.set(`${name}:capacitor`, {
+            name,
+            target: "client",
+            type: "capacitor",
+            status: "error",
+            message: errorMessage(err),
+          });
+          this._logger.fail(taskName);
+        }
+      }
+    }
+
+    // 초기 빌드 결과 출력
+    printErrors(this._results);
+    printServers(this._results, this._serverClientsMap);
+  }
+
+  /**
+   * Standalone client Worker 설정 및 시작
+   */
+  private _setupStandaloneClients(): Array<{ name: string; promise: Promise<void> }> {
+    const buildPromises = new Map<string, Promise<void>>();
     for (const workerInfo of this._standaloneClientWorkers) {
-      standaloneClientBuildPromises.set(
+      buildPromises.set(
         workerInfo.name,
         new Promise<void>((resolve) => {
           workerInfo.buildResolver = resolve;
@@ -244,14 +321,78 @@ export class DevOrchestrator {
       );
     }
 
-    // Vite client 빌드 Promise 미리 생성 (서버 연결 클라이언트)
-    const viteClientBuildPromises = new Map<string, Promise<void>>();
-    const viteClientReadyPromises = new Map<
-      string,
-      { promise: Promise<void>; resolver: () => void }
-    >();
+    // 이벤트 핸들러 등록
+    for (const workerInfo of this._standaloneClientWorkers) {
+      const completeTask = registerWorkerEventHandlers(
+        workerInfo as unknown as BaseWorkerInfo,
+        {
+          resultKey: `${workerInfo.name}:build`,
+          listrTitle: `${workerInfo.name} (client)`,
+          resultType: "build",
+        },
+        this._results,
+        this._rebuildManager,
+      );
+
+      // serverReady (Vite dev server)
+      workerInfo.worker.on("serverReady", (data) => {
+        const event = data as ServerReadyEventData;
+        completeTask({
+          name: workerInfo.name,
+          target: workerInfo.config.target,
+          type: "server",
+          status: "running",
+          port: event.port,
+        });
+      });
+
+      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      workerInfo.worker.on("scopeRebuild", () => {
+        this._schedulePrintServers();
+      });
+
+      // 워커 시작
+      const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
+      const clientConfig: SdClientPackageConfig = {
+        ...workerInfo.config,
+        env: { ...this._baseEnv, ...workerInfo.config.env },
+      };
+      workerInfo.worker
+        .startWatch({
+          name: workerInfo.name,
+          config: clientConfig,
+          cwd: this._cwd,
+          pkgDir,
+          replaceDeps: this._sdConfig!.replaceDeps,
+        })
+        .catch((err: unknown) => {
+          completeTask({
+            name: workerInfo.name,
+            target: workerInfo.config.target,
+            type: "build",
+            status: "error",
+            message: errorMessage(err),
+          });
+        });
+    }
+
+    return this._standaloneClientWorkers.map((workerInfo) => ({
+      name: `${workerInfo.name} (client)`,
+      promise: buildPromises.get(workerInfo.name) ?? Promise.resolve(),
+    }));
+  }
+
+  /**
+   * Vite client (서버 연결) Worker 설정 및 시작
+   */
+  private _setupViteClients(): {
+    buildPromises: Array<{ name: string; promise: Promise<void> }>;
+    readyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>;
+  } {
+    const buildPromiseMap = new Map<string, Promise<void>>();
+    const readyPromises = new Map<string, { promise: Promise<void>; resolver: () => void }>();
     for (const workerInfo of this._viteClientWorkers) {
-      viteClientBuildPromises.set(
+      buildPromiseMap.set(
         workerInfo.name,
         new Promise<void>((resolve) => {
           workerInfo.buildResolver = resolve;
@@ -262,12 +403,96 @@ export class DevOrchestrator {
       const readyPromise = new Promise<void>((resolve) => {
         readyResolver = resolve;
       });
-      viteClientReadyPromises.set(workerInfo.name, {
+      readyPromises.set(workerInfo.name, {
         promise: readyPromise,
         resolver: readyResolver,
       });
     }
 
+    // 이벤트 핸들러 등록
+    for (const workerInfo of this._viteClientWorkers) {
+      const completeTask = registerWorkerEventHandlers(
+        workerInfo as unknown as BaseWorkerInfo,
+        {
+          resultKey: `${workerInfo.name}:build`,
+          listrTitle: `${workerInfo.name} (client)`,
+          resultType: "build",
+        },
+        this._results,
+        this._rebuildManager,
+      );
+
+      // serverReady - Vite 포트를 clientPorts에 저장 (URL은 서버를 통해 출력)
+      workerInfo.worker.on("serverReady", (data) => {
+        const event = data as ServerReadyEventData;
+        this._logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(event.port)})`);
+        this._clientPorts[workerInfo.name] = event.port;
+        // Vite 서버 준비 완료 알림 (서버가 프록시 설정을 위해 대기 중)
+        readyPromises.get(workerInfo.name)?.resolver();
+        // 빌드 완료를 위해 completeTask 호출 (Vite는 build 이벤트를 발생시키지 않음)
+        completeTask({
+          name: workerInfo.name,
+          target: workerInfo.config.target,
+          type: "build",
+          status: "success",
+        });
+      });
+
+      // Vite client error 시에도 readyPromises resolve
+      // (서버가 await Promise.all(clientReadyPromises)에서 무한 대기하지 않도록)
+      workerInfo.worker.on("error", () => {
+        readyPromises.get(workerInfo.name)?.resolver();
+      });
+
+      // scope 패키지 리빌드 감지 시 서버 URL 출력
+      workerInfo.worker.on("scopeRebuild", () => {
+        this._schedulePrintServers();
+      });
+
+      // 워커 시작
+      const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
+      // Vite가 자동으로 포트를 할당하도록 설정
+      const viteConfig: SdClientPackageConfig = {
+        ...workerInfo.config,
+        server: 0, // Vite가 자동으로 포트 할당
+        env: { ...this._baseEnv, ...workerInfo.config.env },
+      };
+      workerInfo.worker
+        .startWatch({
+          name: workerInfo.name,
+          config: viteConfig,
+          cwd: this._cwd,
+          pkgDir,
+          replaceDeps: this._sdConfig!.replaceDeps,
+        })
+        .catch((err: unknown) => {
+          completeTask({
+            name: workerInfo.name,
+            target: workerInfo.config.target,
+            type: "build",
+            status: "error",
+            message: errorMessage(err),
+          });
+        });
+    }
+
+    return {
+      buildPromises: this._viteClientWorkers.map((workerInfo) => ({
+        name: `${workerInfo.name} (client)`,
+        promise: buildPromiseMap.get(workerInfo.name) ?? Promise.resolve(),
+      })),
+      readyPromises,
+    };
+  }
+
+  /**
+   * Server Build/Runtime Worker 설정 및 시작
+   */
+  private _setupServers(
+    serverWorkerPath: string,
+    serverRuntimeWorkerPath: string,
+    viteClientReadyPromises: Map<string, { promise: Promise<void>; resolver: () => void }>,
+  ): Array<{ name: string; promise: Promise<void> }> {
     // Server Build Worker 및 Promise 생성
     for (const { name } of this._serverPackages) {
       let resolver!: () => void;
@@ -294,81 +519,6 @@ export class DevOrchestrator {
       serverRuntimePromises.set(name, { promise, resolver });
     }
 
-    // Standalone client 이벤트 핸들러 등록 및 completeTask 함수 저장
-    const clientCompleteTasks = new Map<string, (result: PackageResult) => void>();
-    for (const workerInfo of this._standaloneClientWorkers) {
-      const completeTask = registerWorkerEventHandlers(
-        workerInfo as unknown as BaseWorkerInfo,
-        {
-          resultKey: `${workerInfo.name}:build`,
-          listrTitle: `${workerInfo.name} (client)`,
-          resultType: "build",
-        },
-        this._results,
-        this._rebuildManager,
-      );
-      clientCompleteTasks.set(workerInfo.name, completeTask);
-
-      // serverReady (Vite dev server)
-      workerInfo.worker.on("serverReady", (data) => {
-        const event = data as ServerReadyEventData;
-        completeTask({
-          name: workerInfo.name,
-          target: workerInfo.config.target,
-          type: "server",
-          status: "running",
-          port: event.port,
-        });
-      });
-
-      // scope 패키지 리빌드 감지 시 서버 URL 출력
-      workerInfo.worker.on("scopeRebuild", () => {
-        this._schedulePrintServers();
-      });
-    }
-
-    // Vite client (서버 연결) 이벤트 핸들러 등록
-    for (const workerInfo of this._viteClientWorkers) {
-      const completeTask = registerWorkerEventHandlers(
-        workerInfo as unknown as BaseWorkerInfo,
-        {
-          resultKey: `${workerInfo.name}:build`,
-          listrTitle: `${workerInfo.name} (client)`,
-          resultType: "build",
-        },
-        this._results,
-        this._rebuildManager,
-      );
-      clientCompleteTasks.set(workerInfo.name, completeTask);
-
-      // serverReady - Vite 포트를 clientPorts에 저장 (URL은 서버를 통해 출력)
-      workerInfo.worker.on("serverReady", (data) => {
-        const event = data as ServerReadyEventData;
-        this._logger.debug(`[${workerInfo.name}] Vite serverReady (port: ${String(event.port)})`);
-        this._clientPorts[workerInfo.name] = event.port;
-        // Vite 서버 준비 완료 알림 (서버가 프록시 설정을 위해 대기 중)
-        viteClientReadyPromises.get(workerInfo.name)?.resolver();
-        // 빌드 완료를 위해 completeTask 호출 (Vite는 build 이벤트를 발생시키지 않음)
-        completeTask({
-          name: workerInfo.name,
-          target: workerInfo.config.target,
-          type: "build",
-          status: "success",
-        });
-      });
-
-      // Vite client error 시에도 viteClientReadyPromises resolve
-      // (서버가 await Promise.all(clientReadyPromises)에서 무한 대기하지 않도록)
-      workerInfo.worker.on("error", () => {
-        viteClientReadyPromises.get(workerInfo.name)?.resolver();
-      });
-
-      // scope 패키지 리빌드 감지 시 서버 URL 출력
-      workerInfo.worker.on("scopeRebuild", () => {
-        this._schedulePrintServers();
-      });
-    }
-
     // Server Build Worker 이벤트 핸들러 등록
     for (const { name } of this._serverPackages) {
       const serverBuild = this._serverBuildWorkers.get(name)!;
@@ -391,13 +541,7 @@ export class DevOrchestrator {
 
         // warnings 출력
         if (event.warnings != null && event.warnings.length > 0) {
-          const warnLines: string[] = [`${name} (server)`];
-          for (const warning of event.warnings) {
-            for (const line of warning.split("\n")) {
-              warnLines.push(`  → ${line}`);
-            }
-          }
-          this._logger.warn(warnLines.join("\n"));
+          this._logger.warn(formatBuildMessages(name, "server", event.warnings));
         }
 
         if (!event.success) {
@@ -419,7 +563,7 @@ export class DevOrchestrator {
 
         // 빌드 성공 시 런타임 워커 시작 (async 로직은 별도 함수로 분리하여 에러 전파 방지)
         void startServerRuntime(name, event.mainJsPath).catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : String(err);
+          const message = errorMessage(err);
           this._logger.error(`[${name}] Server Runtime 시작 중 오류:`, message);
 
           this._results.set(`${name}:server`, {
@@ -524,7 +668,7 @@ export class DevOrchestrator {
             clientPorts: serverClientPorts,
           })
           .catch((err: unknown) => {
-            const message = err instanceof Error ? err.message : String(err);
+            const message = errorMessage(err);
             this._logger.error(`[${serverName}] Server Runtime Worker 크래시:`, message);
 
             this._results.set(`${serverName}:server`, {
@@ -560,62 +704,6 @@ export class DevOrchestrator {
       });
     }
 
-    // Standalone client 워커 시작
-    for (const workerInfo of this._standaloneClientWorkers) {
-      const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
-      const completeTask = clientCompleteTasks.get(workerInfo.name)!;
-      const clientConfig: SdClientPackageConfig = {
-        ...workerInfo.config,
-        env: { ...this._baseEnv, ...workerInfo.config.env },
-      };
-      workerInfo.worker
-        .startWatch({
-          name: workerInfo.name,
-          config: clientConfig,
-          cwd: this._cwd,
-          pkgDir,
-          replaceDeps: this._sdConfig!.replaceDeps,
-        })
-        .catch((err: unknown) => {
-          completeTask({
-            name: workerInfo.name,
-            target: workerInfo.config.target,
-            type: "build",
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
-        });
-    }
-
-    // Vite client 워커 시작 (서버 연결) - Vite 자동 포트 사용
-    for (const workerInfo of this._viteClientWorkers) {
-      const pkgDir = path.join(this._cwd, "packages", workerInfo.name);
-      const completeTask = clientCompleteTasks.get(workerInfo.name)!;
-      // Vite가 자동으로 포트를 할당하도록 설정
-      const viteConfig: SdClientPackageConfig = {
-        ...workerInfo.config,
-        server: 0, // Vite가 자동으로 포트 할당
-        env: { ...this._baseEnv, ...workerInfo.config.env },
-      };
-      workerInfo.worker
-        .startWatch({
-          name: workerInfo.name,
-          config: viteConfig,
-          cwd: this._cwd,
-          pkgDir,
-          replaceDeps: this._sdConfig!.replaceDeps,
-        })
-        .catch((err: unknown) => {
-          completeTask({
-            name: workerInfo.name,
-            target: workerInfo.config.target,
-            type: "build",
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
-        });
-    }
-
     // Server Build 워커 시작
     for (const { name, config } of this._serverPackages) {
       const pkgDir = path.join(this._cwd, "packages", name);
@@ -636,85 +724,17 @@ export class DevOrchestrator {
             target: "server",
             type: "build",
             status: "error",
-            message: err instanceof Error ? err.message : String(err),
+            message: errorMessage(err),
           });
           serverRuntimePromises.get(name)?.resolver();
           serverBuild.buildResolver();
         });
     }
 
-    // 초기 빌드 완료까지 대기 (병렬 실행)
-    this._logger.debug("초기 빌드 시작 (Promise.allSettled)");
-    const initialBuildPromises: Array<{ name: string; promise: Promise<void> }> = [
-      // Standalone client
-      ...this._standaloneClientWorkers.map((workerInfo) => ({
-        name: `${workerInfo.name} (client)`,
-        promise: standaloneClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
-      })),
-      // Vite client (서버 연결)
-      ...this._viteClientWorkers.map((workerInfo) => ({
-        name: `${workerInfo.name} (client)`,
-        promise: viteClientBuildPromises.get(workerInfo.name) ?? Promise.resolve(),
-      })),
-      // Server 빌드 + 런타임 시작
-      ...this._serverPackages.map(({ name }) => ({
-        name: `${name} (server)`,
-        promise: serverRuntimePromises.get(name)?.promise ?? Promise.resolve(),
-      })),
-    ];
-
-    const initialResults = await Promise.allSettled(
-      initialBuildPromises.map((item) => item.promise),
-    );
-
-    initialResults.forEach((result, index) => {
-      const taskName = initialBuildPromises[index].name;
-      if (result.status === "rejected") {
-        this._logger.debug(`[${taskName}] 초기 빌드 실패:`, result.reason);
-      } else {
-        this._logger.debug(`[${taskName}] 초기 빌드 완료`);
-      }
-    });
-
-    // Capacitor 초기화 (client 타겟 중 capacitor 설정이 있는 패키지)
-    const capacitorPackages: Array<[string, SdClientPackageConfig]> = [];
-    for (const { name, config } of this._clientPackages) {
-      if (config.capacitor != null) {
-        capacitorPackages.push([name, config]);
-      }
-    }
-
-    if (capacitorPackages.length > 0) {
-      for (const [name, config] of capacitorPackages) {
-        const taskName = `${name} (capacitor)`;
-        this._logger.start(taskName);
-        const pkgDir = path.join(this._cwd, "packages", name);
-        try {
-          const cap = await Capacitor.create(pkgDir, config.capacitor!);
-          await cap.initialize();
-          this._results.set(`${name}:capacitor`, {
-            name,
-            target: "client",
-            type: "capacitor",
-            status: "success",
-          });
-          this._logger.success(taskName);
-        } catch (err) {
-          this._results.set(`${name}:capacitor`, {
-            name,
-            target: "client",
-            type: "capacitor",
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
-          this._logger.fail(taskName);
-        }
-      }
-    }
-
-    // 초기 빌드 결과 출력
-    printErrors(this._results);
-    printServers(this._results, this._serverClientsMap);
+    return this._serverPackages.map(({ name }) => ({
+      name: `${name} (server)`,
+      promise: serverRuntimePromises.get(name)?.promise ?? Promise.resolve(),
+    }));
   }
 
   /**

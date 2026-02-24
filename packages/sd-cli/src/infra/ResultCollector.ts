@@ -37,42 +37,6 @@ export class ResultCollector {
   }
 
   /**
-   * 모든 결과 조회
-   */
-  getAll(): BuildResult[] {
-    return [...this._results.values()];
-  }
-
-  /**
-   * 에러 상태인 결과만 조회
-   */
-  getErrors(): BuildResult[] {
-    return this.getAll().filter((r) => r.status === "error");
-  }
-
-  /**
-   * 서버 상태인 결과만 조회
-   */
-  getServers(): BuildResult[] {
-    return this.getAll().filter((r) => r.type === "server" && r.status === "running");
-  }
-
-  /**
-   * 특정 타입의 결과만 조회
-   * @param type 결과 타입
-   */
-  getByType(type: BuildResult["type"]): BuildResult[] {
-    return this.getAll().filter((r) => r.type === type);
-  }
-
-  /**
-   * 결과 초기화
-   */
-  clear(): void {
-    this._results.clear();
-  }
-
-  /**
    * 내부 Map 반환 (하위 호환성)
    */
   toMap(): Map<string, BuildResult> {

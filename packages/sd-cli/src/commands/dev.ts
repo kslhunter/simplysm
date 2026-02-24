@@ -1,15 +1,6 @@
 import { DevOrchestrator, type DevOrchestratorOptions } from "../orchestrators/DevOrchestrator";
 
 /**
- * Dev 명령 옵션 (하위 호환성)
- */
-export interface DevOptions {
-  /** dev할 패키지 필터 (빈 배열이면 모든 패키지) */
-  targets: string[];
-  options: string[];
-}
-
-/**
  * Client 및 Server 패키지를 개발 모드로 실행한다.
  *
  * - `sd.config.ts`를 로드하여 패키지별 빌드 타겟 정보 확인 (필수)
@@ -22,13 +13,8 @@ export interface DevOptions {
  * @param options - dev 실행 옵션
  * @returns 종료 시그널 수신 시 resolve
  */
-export async function runDev(options: DevOptions): Promise<void> {
-  const orchestratorOptions: DevOrchestratorOptions = {
-    targets: options.targets,
-    options: options.options,
-  };
-
-  const orchestrator = new DevOrchestrator(orchestratorOptions);
+export async function runDev(options: DevOrchestratorOptions): Promise<void> {
+  const orchestrator = new DevOrchestrator(options);
 
   try {
     await orchestrator.initialize();

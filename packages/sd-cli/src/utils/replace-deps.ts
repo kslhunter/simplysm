@@ -148,110 +148,26 @@ async function collectSearchRoots(projectRoot: string): Promise<string[]> {
 }
 
 /**
- * replaceDeps 설정에 따라 node_modules 내 패키지를 소스 디렉토리로 복사 교체한다.
+ * replaceDeps 설정에서 모든 교체 대상 항목을 해석한다.
  *
  * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
  * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
- * 3. 기존 symlink/디렉토리 제거 → 소스 경로를 복사 (node_modules, package.json, .cache, tests 제외)
+ * 3. 패턴 매칭 + 소스 경로 존재 확인 + symlink 해석
  *
  * @param projectRoot - 프로젝트 루트 경로
  * @param replaceDeps - sd.config.ts의 replaceDeps 설정
+ * @param logger - consola 로거
+ * @returns 해석된 교체 대상 항목 배열
  */
-export async function setupReplaceDeps(
+async function resolveAllReplaceDepEntries(
   projectRoot: string,
   replaceDeps: Record<string, string>,
-): Promise<void> {
-  const logger = consola.withTag("sd:cli:replace-deps");
-  let setupCount = 0;
-
-  logger.start("Setting up replace-deps");
-
-  // 1. Workspace 패키지 경로 목록 수집
-  const searchRoots = await collectSearchRoots(projectRoot);
-
-  // 2. 각 searchRoot의 node_modules에서 매칭되는 패키지 찾기
-  for (const searchRoot of searchRoots) {
-    const nodeModulesDir = path.join(searchRoot, "node_modules");
-
-    try {
-      await fs.promises.access(nodeModulesDir);
-    } catch {
-      continue; // node_modules 없으면 스킵
-    }
-
-    // replaceDeps의 각 glob 패턴으로 node_modules 내 디렉토리 탐색
-    const targetNames: string[] = [];
-    for (const pattern of Object.keys(replaceDeps)) {
-      const matches = await glob(pattern, { cwd: nodeModulesDir });
-      targetNames.push(...matches);
-    }
-
-    if (targetNames.length === 0) continue;
-
-    // 패턴 매칭 및 경로 해석
-    const entries = resolveReplaceDepEntries(replaceDeps, targetNames);
-
-    // 3. 복사 교체
-    for (const { targetName, sourcePath } of entries) {
-      const targetPath = path.join(nodeModulesDir, targetName);
-      const resolvedSourcePath = path.resolve(projectRoot, sourcePath);
-
-      // 소스 경로 존재 확인
-      try {
-        await fs.promises.access(resolvedSourcePath);
-      } catch {
-        logger.warn(`소스 경로가 존재하지 않아 스킵합니다: ${resolvedSourcePath}`);
-        continue;
-      }
-
-      try {
-        // targetPath가 symlink면 realpath로 해석하여 실제 .pnpm 스토어 경로 얻기
-        let actualTargetPath = targetPath;
-        try {
-          const stat = await fs.promises.lstat(targetPath);
-          if (stat.isSymbolicLink()) {
-            actualTargetPath = await fs.promises.realpath(targetPath);
-          }
-        } catch {
-          // targetPath가 존재하지 않으면 그대로 사용
-        }
-
-        // 소스 파일을 actualTargetPath에 덮어쓰기 복사 (기존 디렉토리 유지, symlink 보존)
-        await fsCopy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
-
-        setupCount += 1;
-      } catch (err) {
-        logger.error(`복사 교체 실패 (${targetName}): ${err instanceof Error ? err.message : err}`);
-      }
-    }
-  }
-
-  logger.success(`Replaced ${setupCount} dependencies`);
-}
-
-/**
- * replaceDeps 설정에 따라 소스 디렉토리를 watch하여 변경 시 대상 경로로 복사한다.
- *
- * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
- * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
- * 3. 소스 디렉토리를 FsWatcher로 watch (300ms delay)
- * 4. 변경 시 대상 경로로 복사 (node_modules, package.json, .cache, tests 제외)
- *
- * @param projectRoot - 프로젝트 루트 경로
- * @param replaceDeps - sd.config.ts의 replaceDeps 설정
- * @returns entries와 dispose 함수
- */
-export async function watchReplaceDeps(
-  projectRoot: string,
-  replaceDeps: Record<string, string>,
-): Promise<WatchReplaceDepResult> {
-  const logger = consola.withTag("sd:cli:replace-deps:watch");
+  logger: ReturnType<typeof consola.withTag>,
+): Promise<ReplaceDepEntry[]> {
   const entries: ReplaceDepEntry[] = [];
 
-  // 1. Workspace 패키지 경로 목록 수집
   const searchRoots = await collectSearchRoots(projectRoot);
 
-  // 2. 각 searchRoot의 node_modules에서 매칭되는 패키지 찾기
   for (const searchRoot of searchRoots) {
     const nodeModulesDir = path.join(searchRoot, "node_modules");
 
@@ -273,7 +189,6 @@ export async function watchReplaceDeps(
     // 패턴 매칭 및 경로 해석
     const matchedEntries = resolveReplaceDepEntries(replaceDeps, targetNames);
 
-    // 3. entry 정보 수집 (symlink 해석 포함)
     for (const { targetName, sourcePath } of matchedEntries) {
       const targetPath = path.join(nodeModulesDir, targetName);
       const resolvedSourcePath = path.resolve(projectRoot, sourcePath);
@@ -307,7 +222,65 @@ export async function watchReplaceDeps(
     }
   }
 
-  // 4. 소스 디렉토리 watch 설정
+  return entries;
+}
+
+/**
+ * replaceDeps 설정에 따라 node_modules 내 패키지를 소스 디렉토리로 복사 교체한다.
+ *
+ * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
+ * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
+ * 3. 기존 symlink/디렉토리 제거 → 소스 경로를 복사 (node_modules, package.json, .cache, tests 제외)
+ *
+ * @param projectRoot - 프로젝트 루트 경로
+ * @param replaceDeps - sd.config.ts의 replaceDeps 설정
+ */
+export async function setupReplaceDeps(
+  projectRoot: string,
+  replaceDeps: Record<string, string>,
+): Promise<void> {
+  const logger = consola.withTag("sd:cli:replace-deps");
+  let setupCount = 0;
+
+  logger.start("Setting up replace-deps");
+
+  const entries = await resolveAllReplaceDepEntries(projectRoot, replaceDeps, logger);
+
+  for (const { targetName, resolvedSourcePath, actualTargetPath } of entries) {
+    try {
+      // 소스 파일을 actualTargetPath에 덮어쓰기 복사 (기존 디렉토리 유지, symlink 보존)
+      await fsCopy(resolvedSourcePath, actualTargetPath, replaceDepsCopyFilter);
+
+      setupCount += 1;
+    } catch (err) {
+      logger.error(`복사 교체 실패 (${targetName}): ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  logger.success(`Replaced ${setupCount} dependencies`);
+}
+
+/**
+ * replaceDeps 설정에 따라 소스 디렉토리를 watch하여 변경 시 대상 경로로 복사한다.
+ *
+ * 1. pnpm-workspace.yaml 파싱 → workspace 패키지 경로 목록
+ * 2. [루트, ...workspace 패키지]의 node_modules에서 매칭되는 패키지 찾기
+ * 3. 소스 디렉토리를 FsWatcher로 watch (300ms delay)
+ * 4. 변경 시 대상 경로로 복사 (node_modules, package.json, .cache, tests 제외)
+ *
+ * @param projectRoot - 프로젝트 루트 경로
+ * @param replaceDeps - sd.config.ts의 replaceDeps 설정
+ * @returns entries와 dispose 함수
+ */
+export async function watchReplaceDeps(
+  projectRoot: string,
+  replaceDeps: Record<string, string>,
+): Promise<WatchReplaceDepResult> {
+  const logger = consola.withTag("sd:cli:replace-deps:watch");
+
+  const entries = await resolveAllReplaceDepEntries(projectRoot, replaceDeps, logger);
+
+  // 소스 디렉토리 watch 설정
   const watchers: FsWatcher[] = [];
   const watchedSources = new Set<string>();
 

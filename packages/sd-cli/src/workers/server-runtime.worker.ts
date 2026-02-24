@@ -1,5 +1,6 @@
 import proxy from "@fastify/http-proxy";
 import { createWorker } from "@simplysm/core-node";
+import { errorMessage } from "@simplysm/core-common";
 import { consola } from "consola";
 import net from "net";
 import { pathToFileURL } from "url";
@@ -60,14 +61,14 @@ async function cleanup(): Promise<void> {
 process.on("uncaughtException", (err) => {
   logger.error("Server Runtime 미처리 오류", err);
   sender.send("error", {
-    message: err instanceof Error ? err.message : String(err),
+    message: errorMessage(err),
   });
 });
 
 process.on("unhandledRejection", (reason) => {
   logger.error("Server Runtime 미처리 Promise 거부", reason);
   sender.send("error", {
-    message: reason instanceof Error ? reason.message : String(reason),
+    message: errorMessage(reason),
   });
 });
 
@@ -144,7 +145,7 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
   } catch (err) {
     logger.error("Server Runtime 시작 실패", err);
     sender.send("error", {
-      message: err instanceof Error ? err.message : String(err),
+      message: errorMessage(err),
     });
   }
 }
