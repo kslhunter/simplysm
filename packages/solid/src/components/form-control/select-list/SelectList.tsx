@@ -18,16 +18,7 @@ import { TextInput } from "../field/TextInput";
 import { createSlotSignal } from "../../../hooks/createSlotSignal";
 import { SelectListContext, type SelectListContextValue } from "./SelectListContext";
 import { useSelectListContext } from "./SelectListContext";
-import {
-  listItemBaseClass,
-  listItemSelectedClass,
-  listItemContentClass,
-  listItemDisabledClass,
-} from "../../data/list/ListItem.styles";
-import { ripple } from "../../../directives/ripple";
 import { textMuted } from "../../../styles/tokens.styles";
-
-void ripple;
 
 // ─── 서브 컴포넌트 ──────────────────────────────────────
 
@@ -114,7 +105,7 @@ export interface SelectListProps<TValue> {
 
 // ─── 스타일 ──────────────────────────────────────────────
 
-const containerClass = clsx("inline-flex flex-col gap-1");
+const containerClass = clsx("flex-col gap-1");
 
 const headerClass = clsx("px-2 py-1 text-sm font-semibold");
 
@@ -301,10 +292,10 @@ export const SelectList: SelectListComponent = <TValue,>(props: SelectListProps<
           fallback={
             <Show when={local.getSearchText}>
               <TextInput
+                class={"w-full"}
                 value={searchText()}
                 onValueChange={setSearchText}
                 placeholder="검색..."
-                inset
                 disabled={local.disabled}
               />
             </Show>
@@ -327,45 +318,25 @@ export const SelectList: SelectListComponent = <TValue,>(props: SelectListProps<
         <List inset>
           {/* 미지정 항목 (required가 아닐 때) */}
           <Show when={!local.required}>
-            <button
-              type="button"
-              use:ripple={!local.disabled}
-              class={twMerge(
-                listItemBaseClass,
-                local.value === undefined && listItemSelectedClass,
-                local.disabled && listItemDisabledClass,
-              )}
-              data-list-item
-              role="treeitem"
-              aria-selected={local.value === undefined || undefined}
-              aria-disabled={local.disabled || undefined}
-              tabIndex={local.disabled ? -1 : 0}
+            <List.Item
+              selected={local.value === undefined}
+              disabled={local.disabled}
               onClick={() => handleSelect(undefined)}
             >
-              <span class={clsx(listItemContentClass, textMuted)}>미지정</span>
-            </button>
+              <span class={textMuted}>미지정</span>
+            </List.Item>
           </Show>
 
           {/* 아이템 목록 */}
           <For each={displayItems()}>
             {(item, index) => (
-              <button
-                type="button"
-                use:ripple={!local.disabled}
-                class={twMerge(
-                  listItemBaseClass,
-                  item === local.value && listItemSelectedClass,
-                  local.disabled && listItemDisabledClass,
-                )}
-                data-list-item
-                role="treeitem"
-                aria-selected={item === local.value || undefined}
-                aria-disabled={local.disabled || undefined}
-                tabIndex={local.disabled ? -1 : 0}
+              <List.Item
+                selected={item === local.value}
+                disabled={local.disabled}
                 onClick={() => handleSelect(item)}
               >
-                <span class={listItemContentClass}>{renderItem(item, index())}</span>
-              </button>
+                {renderItem(item, index())}
+              </List.Item>
             )}
           </For>
         </List>
