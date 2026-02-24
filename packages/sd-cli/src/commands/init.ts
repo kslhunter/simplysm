@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
-import { spawn } from "../utils/spawn";
+import { execa } from "execa";
 import { findPackageRoot } from "../utils/package-utils";
 
 //#region Types
@@ -69,14 +69,14 @@ export async function runInit(_options: InitOptions): Promise<void> {
 
   // 4. pnpm install
   logger.info("pnpm install 실행 중...");
-  await spawn("pnpm", ["install"], { cwd });
+  await execa("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
   // 5. git 초기화
   logger.info("git 저장소 초기화 중...");
-  await spawn("git", ["init"], { cwd });
-  await spawn("git", ["add", "."], { cwd });
-  await spawn("git", ["commit", "-m", "init"], { cwd });
+  await execa("git", ["init"], { cwd });
+  await execa("git", ["add", "."], { cwd });
+  await execa("git", ["commit", "-m", "init"], { cwd });
   logger.success("git 저장소 초기화 완료");
 
   // 6. 완료 메시지

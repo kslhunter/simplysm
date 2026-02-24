@@ -7,7 +7,7 @@
  * .js 실행 (배포): replaceDeps 실행 후 새 프로세스로 sd-cli-entry spawn
  */
 
-import { exec, spawn } from "child_process";
+import { execa } from "execa";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -40,7 +40,7 @@ if (isDev) {
 
   // Phase 2: 새 프로세스로 실제 CLI 실행 (모듈 캐시 초기화)
   const cliEntryFilePath = path.join(__dirname, "sd-cli-entry.js");
-  const child = spawn(
+  const subprocess = execa(
     "node",
     [
       "--max-old-space-size=8192",
@@ -48,14 +48,11 @@ if (isDev) {
       cliEntryFilePath,
       ...process.argv.slice(2),
     ],
-    { stdio: "inherit" },
+    { stdio: "inherit", reject: false },
   );
-  child.on("spawn", () => {
-    if (child.pid != null) configureAffinityAndPriority(child.pid);
-  });
-  child.on("exit", (code) => {
-    process.exitCode = code ?? 0;
-  });
+  if (subprocess.pid != null) configureAffinityAndPriority(subprocess.pid);
+  const result = await subprocess;
+  process.exitCode = result.exitCode ?? 0;
 }
 
 /**
@@ -97,10 +94,8 @@ function configureAffinityAndPriority(pid: number): void {
     command = `taskset -p ${mask} ${pid} && renice +10 -p ${pid}`;
   }
 
-  exec(command, (err) => {
-    if (err) {
-      // eslint-disable-next-line no-console
-      console.warn("CPU affinity/priority 설정 실패:", err.message);
-    }
+  execa({ shell: true })`${command}`.catch((err: Error) => {
+    // eslint-disable-next-line no-console
+    console.warn("CPU affinity/priority 설정 실패:", err.message);
   });
 }

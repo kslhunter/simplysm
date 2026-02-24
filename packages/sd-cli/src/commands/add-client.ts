@@ -4,7 +4,7 @@ import { input, confirm } from "@inquirer/prompts";
 import { consola } from "consola";
 import { renderTemplateDir } from "../utils/template";
 import { addPackageToSdConfig, addTailwindToEslintConfig } from "../utils/config-editor";
-import { spawn } from "../utils/spawn";
+import { execa } from "execa";
 import { findPackageRoot } from "../utils/package-utils";
 
 //#region Types
@@ -110,7 +110,7 @@ export async function runAddClient(_options: AddClientOptions): Promise<void> {
 
   // 7. pnpm install
   logger.info("pnpm install 실행 중...");
-  await spawn("pnpm", ["install"], { cwd });
+  await execa("pnpm", ["install"], { cwd });
   logger.success("pnpm install 완료");
 
   // 완료

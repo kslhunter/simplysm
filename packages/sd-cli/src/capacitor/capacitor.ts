@@ -14,7 +14,7 @@ import { env } from "@simplysm/core-common";
 import { consola } from "consola";
 import sharp from "sharp";
 import type { SdCapacitorConfig } from "../sd-config.types";
-import { spawn } from "../utils/spawn";
+import { execa } from "execa";
 
 /**
  * package.json 타입
@@ -103,7 +103,7 @@ export class Capacitor {
    */
   private async _exec(cmd: string, args: string[], cwd: string): Promise<string> {
     Capacitor._logger.debug(`실행 명령: ${cmd} ${args.join(" ")}`);
-    const result = await spawn(cmd, args, { cwd });
+    const { stdout: result } = await execa(cmd, args, { cwd });
     Capacitor._logger.debug(`실행 결과: ${result}`);
     return result;
   }

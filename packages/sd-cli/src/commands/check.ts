@@ -1,4 +1,4 @@
-import { spawn as cpSpawn } from "child_process";
+import { execa } from "execa";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import { executeTypecheck, type TypecheckResult } from "./typecheck";
 import type { LintResult } from "./lint";
@@ -26,49 +26,35 @@ interface CheckResult {
 
 //#region Utilities
 
-function spawnVitest(targets: string[]): Promise<CheckResult> {
-  return new Promise((resolve) => {
+async function spawnVitest(targets: string[]): Promise<CheckResult> {
+  try {
     const args = ["vitest", ...targets, "--run"];
-    const child = cpSpawn("pnpm", args, {
-      cwd: process.cwd(),
-      shell: true,
-      stdio: "pipe",
-    });
+    const result = await execa("pnpm", args, { cwd: process.cwd(), reject: false });
+    const output = result.stdout + result.stderr;
+    const code = result.exitCode;
 
-    let output = "";
-    child.stdout.on("data", (d: Uint8Array) => {
-      output += new TextDecoder().decode(d);
-    });
-    child.stderr.on("data", (d: Uint8Array) => {
-      output += new TextDecoder().decode(d);
-    });
+    const failMatch =
+      output.match(/(\d+)\s+tests?\s+failed/i) ??
+      output.match(/Tests\s+(\d+)\s+failed/i) ??
+      output.match(/(\d+)\s+fail/i);
+    const failCount = failMatch ? Number(failMatch[1]) : 0;
 
-    child.on("close", (code) => {
-      const failMatch =
-        output.match(/(\d+)\s+tests?\s+failed/i) ??
-        output.match(/Tests\s+(\d+)\s+failed/i) ??
-        output.match(/(\d+)\s+fail/i);
-      const failCount = failMatch ? Number(failMatch[1]) : 0;
-
-      resolve({
-        name: "TEST",
-        success: code === 0,
-        errorCount: failCount,
-        warningCount: 0,
-        formattedOutput: code === 0 ? "" : output,
-      });
-    });
-
-    child.on("error", (err) => {
-      resolve({
-        name: "TEST",
-        success: false,
-        errorCount: 1,
-        warningCount: 0,
-        formattedOutput: err.message,
-      });
-    });
-  });
+    return {
+      name: "TEST",
+      success: code === 0,
+      errorCount: failCount,
+      warningCount: 0,
+      formattedOutput: code === 0 ? "" : output,
+    };
+  } catch (err) {
+    return {
+      name: "TEST",
+      success: false,
+      errorCount: 1,
+      warningCount: 0,
+      formattedOutput: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 function formatSection(result: CheckResult): string {

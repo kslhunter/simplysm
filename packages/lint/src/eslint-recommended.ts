@@ -58,6 +58,14 @@ const noNodeBuiltinsRules: FlatConfig.Rules = {
           name: "eventemitter3",
           message: "@simplysm/core-common의 SdEventEmitter를 사용하세요.",
         },
+        {
+          name: "child_process",
+          message: "execa를 사용하세요.",
+        },
+        {
+          name: "node:child_process",
+          message: "execa를 사용하세요.",
+        },
       ],
     },
   ],

@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import cp from "child_process";
+import { execaSync } from "execa";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathNorm } from "@simplysm/core-node";
 import { consola } from "consola";
@@ -196,7 +196,7 @@ function generateProductionFiles(info: ServerBuildInfo, externals: string[]): vo
     distPkgJson["dependencies"] = deps;
   }
   if (info.packageManager === "volta") {
-    const nodeVersion = cp.execSync("node -v").toString().trim();
+    const nodeVersion = execaSync("node", ["-v"]).stdout.trim();
     distPkgJson["volta"] = { node: nodeVersion };
   }
   fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
