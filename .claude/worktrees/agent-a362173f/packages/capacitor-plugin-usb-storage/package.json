@@ -1,0 +1,33 @@
+{
+  "name": "@simplysm/capacitor-plugin-usb-storage",
+  "version": "13.0.69",
+  "description": "심플리즘 패키지 - Capacitor USB Storage Plugin",
+  "author": "김석래",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/capacitor-plugin-usb-storage"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "android"
+  ],
+  "dependencies": {
+    "@simplysm/core-common": "workspace:*"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.5.0"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.4.4"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "name": "@simplysm/solid",
+  "version": "13.0.69",
+  "description": "심플리즘 패키지 - SolidJS 라이브러리",
+  "author": "김석래",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/solid"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "docs",
+    "tailwind.config.ts",
+    "tailwind.css"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "dependencies": {
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "@solid-primitives/event-listener": "^2.4.5",
+    "@solid-primitives/media": "^2.3.5",
+    "@solid-primitives/resize-observer": "^2.1.5",
+    "@solid-primitives/storage": "^4.3.4",
+    "@solidjs/router": "^0.15.4",
+    "@tabler/icons-solidjs": "^3.37.1",
+    "@tiptap/core": "^3.20.0",
+    "@tiptap/extension-color": "^3.20.0",
+    "@tiptap/extension-highlight": "^3.20.0",
+    "@tiptap/extension-image": "^3.20.0",
+    "@tiptap/extension-table": "^3.20.0",
+    "@tiptap/extension-table-cell": "^3.20.0",
+    "@tiptap/extension-table-header": "^3.20.0",
+    "@tiptap/extension-table-row": "^3.20.0",
+    "@tiptap/extension-text-align": "^3.20.0",
+    "@tiptap/extension-text-style": "^3.20.0",
+    "@tiptap/pm": "^3.20.0",
+    "@tiptap/starter-kit": "^3.20.0",
+    "bwip-js": "^4.8.0",
+    "clsx": "^2.1.1",
+    "consola": "^3.4.2",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.0",
+    "solid-js": "^1.9.11",
+    "solid-tiptap": "^0.8.0",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^3.4.19"
+  },
+  "devDependencies": {
+    "@solidjs/testing-library": "^0.8.10"
+  },
+  "peerDependencies": {
+    "echarts": "^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "echarts": {
+      "optional": true
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "name": "simplysm",
+  "version": "13.0.69",
+  "description": "심플리즘 패키지",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "watch": "pnpm _sd-cli_ watch",
+    "dev": "pnpm _sd-cli_ dev",
+    "build": "pnpm _sd-cli_ build",
+    "pub": "pnpm _sd-cli_ publish",
+    "pub:no-build": "pnpm _sd-cli_ --no-build",
+    "---": "",
+    "typecheck": "pnpm _sd-cli_ typecheck",
+    "lint": "pnpm _sd-cli_ lint",
+    "lint:fix": "pnpm _sd-cli_ lint --fix",
+    "check": "pnpm _sd-cli_ check",
+    "vitest": "vitest",
+    "----": "",
+    "_sd-cli_": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsx packages/sd-cli/src/sd-cli.ts",
+    "reinstall": "pnpm install --force",
+    "postinstall": "playwright install"
+  },
+  "devDependencies": {
+    "@simplysm/sd-cli": "workspace:*",
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/node": "^20.19.33",
+    "@vanilla-extract/vite-plugin": "^5.1.4",
+    "@vitest/browser": "^4.0.18",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.3",
+    "jiti": "^2.6.1",
+    "playwright": "^1.58.2",
+    "prettier": "^3.8.1",
+    "solid-js": "^1.9.11",
+    "stylelint": "^16.26.1",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-solid": "^2.11.10",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "esbuild-plugin-solid": "^0.6.0"
+  }
+}

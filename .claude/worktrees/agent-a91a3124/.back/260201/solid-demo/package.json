@@ -1,0 +1,21 @@
+{
+  "name": "@simplysm/solid-demo",
+  "version": "13.0.0-beta.0",
+  "description": "심플리즘 패키지 - SolidJS 라이브러리 데모",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/solid-demo"
+  },
+  "author": "김석래",
+  "license": "Apache-2.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@simplysm/solid": "workspace:*",
+    "@solidjs/router": "^0.15.4",
+    "@tabler/icons-solidjs": "^3.31.0",
+    "@vanilla-extract/css": "^1.18.0",
+    "solid-js": "^1.9.11"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@simplysm/capacitor-plugin-auto-update",
+  "version": "13.0.69",
+  "description": "심플리즘 패키지 - Capacitor Auto Update Plugin",
+  "author": "김석래",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/capacitor-plugin-auto-update"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "android"
+  ],
+  "dependencies": {
+    "@simplysm/capacitor-plugin-file-system": "workspace:*",
+    "@simplysm/core-browser": "workspace:*",
+    "@simplysm/core-common": "workspace:*",
+    "@simplysm/service-client": "workspace:*",
+    "@simplysm/service-common": "workspace:*",
+    "semver": "^7.7.4"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.5.0",
+    "@types/semver": "^7.7.1"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.4.4"
+  },
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}
