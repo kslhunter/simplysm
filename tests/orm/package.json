@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/pg": "^8.16.0",
     "@types/pg-copy-streams": "^1.2.5",
-    "execa": "^9.6.0"
+    "execa": "^9.6.1"
   },
   "dependencies": {
     "@simplysm/orm-common": "workspace:*",

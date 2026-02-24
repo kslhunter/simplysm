@@ -30,8 +30,9 @@
     }
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^8.56.0",
+    "@typescript-eslint/utils": "^8.56.1",
     "eslint": "^9.39.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-solid": "^0.14.5",
     "eslint-plugin-tailwindcss": "^3.18.2",
@@ -42,12 +43,11 @@
     "stylelint-config-tailwindcss": "^1.0.1",
     "stylelint-no-unresolved-module": "^2.5.2",
     "stylelint-no-unsupported-browser-features": "^8.1.1",
-    "eslint-import-resolver-typescript": "^4.4.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0"
+    "typescript-eslint": "^8.56.1"
   },
   "devDependencies": {
     "@types/eslint-plugin-tailwindcss": "^3.17.0",
-    "@typescript-eslint/rule-tester": "^8.56.0"
+    "@typescript-eslint/rule-tester": "^8.56.1"
   }
 }
