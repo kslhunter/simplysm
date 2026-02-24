@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Important: `.claude/` Folder Scope
 
-The `.claude/` folder contains **cross-project shared rules** used across multiple repositories. Do NOT add project-specific content to `.claude/rules/`. Project-specific guidelines belong in this `CLAUDE.md` file.
+The `.claude/` folder contains **cross-project shared rules** used across multiple repositories. Do NOT add project-specific content to `.claude/rules/`. Project-specific guidelines belong in this `CLAUDE.md` file or `docs/references/`.
 
 ## Project Overview
 
@@ -16,121 +16,17 @@ Simplysm is a TypeScript-based full-stack framework monorepo. Managed with pnpm 
 - **Explicit and predictable code**: Prefer explicit code over implicit behavior.
 - **Incremental learning**: Each package is independently usable.
 
-## Key Commands
+## Project References
 
-```bash
-pnpm install                    # Install dependencies
-pnpm lint [path] [--fix]        # ESLint
-pnpm typecheck [path]           # TypeScript typecheck
-pnpm build [name]               # Production build
-pnpm watch [name]               # Watch mode (library build + .d.ts)
-pnpm dev                        # Dev mode (Vite dev server)
-pnpm pub                        # Build then publish
-pnpm pub:no-build               # Publish without build
-pnpm vitest [path] [--project=node|browser|solid|orm|service] [-t "name"]
-```
+When working on this monorepo, read the relevant reference before starting:
 
-## Project Structure
-
-### Packages (`packages/`)
-| Package | Target |
-|---------|--------|
-| `core-common` | neutral |
-| `core-browser` | browser |
-| `core-node` | node |
-| `cli` | node |
-| `lint` | node |
-| `orm-common` | neutral |
-| `orm-node` | node |
-| `service-common` | neutral |
-| `service-client` | neutral |
-| `service-server` | node |
-| `solid` | browser |
-| `solid-demo` | client |
-| `excel` | neutral |
-| `storage` | node |
-
-### Integration Tests (`tests/`)
-- `tests/orm/`: ORM integration tests (Docker DB required)
-- `tests/service/`: Service integration tests (browser tests)
-
-### Custom Types (`core-common`)
-Immutable types: `DateTime`, `DateOnly`, `Time`, `Uuid`, `LazyGcMap`
-
-## Architecture
-
-### Dependency Layers
-```
-core-common → core-browser / core-node → orm-common / service-common → orm-node / service-server / service-client → solid
-```
-
-### Build Targets (sd.config.ts)
-- `node`: Node.js only (no DOM, includes `@types/node`)
-- `browser`: Browser only (includes DOM, excludes `@types/node`)
-- `neutral`: Node/browser shared
-- `client`: Vite dev server
-
-## Code Conventions
-
-### ESLint Rules (`@simplysm/lint`)
-- ECMAScript private fields (`#field`) prohibited → Use TypeScript `private`
-- `@simplysm/*/src/` path imports prohibited → Read package's `index.ts` to check exports first
-- `no-console`, `eqeqeq`, `no-shadow` enforced
-- `Buffer` prohibited → Use `Uint8Array` (exception: `eslint-disable` with reason when library requires it)
-- `await` required in async functions
-
-### TypeScript Configuration
-- `strict: true`, `verbatimModuleSyntax: true`
-- Path aliases: `@simplysm/*` → `packages/*/src/index.ts`
-- JSX: SolidJS (`jsxImportSource: "solid-js"`)
-
-### index.ts Export Pattern
-- Large packages: `#region`/`#endregion` for sections + `//` for sub-groups
-- Small packages (≤10 exports): `//` comments only
-- Always `export *` (wildcard), never explicit `export type { ... } from "..."`
-
-## SolidJS Guidelines
-
-### `solid` Package Directory Structure (`packages/solid/src/`)
-
-Classification is based on how the user perceives each unit.
-
-| Directory | Role | Examples |
-|-----------|------|----------|
-| `components/` | Pure UI building blocks | Button, Sheet, Select, Dialog, Calendar |
-| `components/features/` | Wrapper components combining multiple pure components | CrudSheet, CrudDetail, SharedDataSelect, PermissionTable |
-| `directives/` | DOM behavior attachment | ripple |
-| `hooks/` | Reusable logic | createPointerDrag, useLocalStorage |
-| `providers/` | App-wide state/service injection | ThemeContext, ServiceClient, SharedDataProvider |
-| `helpers/` | Utility functions | createAppStructure, mergeStyles |
-| `styles/` | Shared style tokens/patterns | tokens.styles, patterns.styles |
-
-- **components vs features**: Standalone UI units go in `components/`. Pre-built wrappers that combine multiple components for common patterns go in `components/features/`.
-- Place new files in the directory matching the criteria above.
-
-### Demo Page Rules
-- No raw HTML elements → use `@simplysm/solid` components
-- Read existing demos before writing new ones
-
-## Testing
-
-| Project | Environment | Pattern |
-|---------|-------------|---------|
-| node | Node.js | `packages/*/tests/**/*.spec.ts` |
-| browser | Playwright | `packages/*/tests/**/*.spec.ts` |
-| solid | Playwright + vite-plugin-solid | `packages/solid/tests/**/*.spec.tsx` |
-| orm | Node.js + Docker | `tests/orm/**/*.spec.ts` |
-| service | Playwright | `tests/service/**/*.spec.ts` |
-
-When modifying code, review and update related tests (`packages/{pkg}/tests/`) and demos (`packages/solid-demo/src/`).
-
-## Migration Rules
-
-When porting/migrating code from another codebase (e.g., v12 Angular → v13 SolidJS):
-
-1. **Analyze every line**: Read the original source and all its dependencies (imports, base classes, etc.) line by line. Understand every feature, prop, and behavior. If a dependency cannot be found, ask the user.
-2. **Ask about every difference**: Any change from the original (API, pattern, design, omission, addition) must be asked to the user. Never decide silently.
-3. **Verify after completion**: Compare the result 1:1 with the original and report any omissions or differences to the user.
+| When | Read |
+|------|------|
+| Understanding project structure | `docs/references/project-structure.md` |
+| Running build/dev commands | `docs/references/commands.md` |
+| Writing code (ESLint, TS config) | `docs/references/code-rules.md` |
+| Working on solid package | `docs/references/solid-guide.md` |
+| Writing/running tests | `docs/references/testing.md` |
 
 ## Workflow
 
