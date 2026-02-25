@@ -2,7 +2,7 @@ import ts from "typescript";
 import { fsExistsSync, fsReadSync } from "@simplysm/core-node";
 
 /**
- * Worker로 전달 가능한 직렬화된 Diagnostic
+ * Serialized Diagnostic that can be passed to Worker
  */
 export interface SerializedDiagnostic {
   category: number;
@@ -16,11 +16,11 @@ export interface SerializedDiagnostic {
 }
 
 /**
- * Diagnostic을 직렬화 가능한 형태로 변환
- * (Worker thread 간 structured clone 통신을 위해 순환 참조/함수 제거)
+ * Convert Diagnostic to serializable form
+ * (remove circular references/functions for structured clone communication between Worker threads)
  */
 export function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagnostic {
-  // DiagnosticMessageChain인 경우 전체 체인을 평탄화하여 모든 컨텍스트 정보 보존
+  // If DiagnosticMessageChain, flatten entire chain to preserve all context info
   const messageText = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 
   return {
@@ -38,7 +38,7 @@ export function serializeDiagnostic(diagnostic: ts.Diagnostic): SerializedDiagno
 }
 
 /**
- * 파일명에서 TypeScript ScriptKind 결정
+ * Determine TypeScript ScriptKind from filename
  */
 function getScriptKind(fileName: string): ts.ScriptKind {
   if (fileName.endsWith(".tsx")) return ts.ScriptKind.TSX;
