@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { defineService, auth, getServiceAuthPermissions } from "@simplysm/service-server";
 
 describe("defineService", () => {
-  it("creates a service definition with name and factory", () => {
+  it("이름과 팩토리로 서비스 정의 생성", () => {
     const svc = defineService("Health", (_ctx) => ({
       check: () => "ok",
     }));
@@ -11,7 +11,7 @@ describe("defineService", () => {
     expect(typeof svc.factory).toBe("function");
   });
 
-  it("factory produces methods when called with ctx", () => {
+  it("ctx로 호출할 때 팩토리가 메서드 생성", () => {
     const svc = defineService("Echo", (_ctx) => ({
       echo: (msg: string) => `Echo: ${msg}`,
     }));
@@ -21,25 +21,25 @@ describe("defineService", () => {
   });
 });
 
-describe("auth", () => {
-  it("marks a function with empty permissions (login only)", () => {
+describe("인증", () => {
+  it("빈 권한으로 함수 표시 (로그인만)", () => {
     const fn = auth(() => "result");
     expect(getServiceAuthPermissions(fn)).toEqual([]);
     expect(fn()).toBe("result");
   });
 
-  it("marks a function with specific permissions", () => {
+  it("특정 권한으로 함수 표시", () => {
     const fn = auth(["admin"], (id: number) => id * 2);
     expect(getServiceAuthPermissions(fn)).toEqual(["admin"]);
     expect(fn(5)).toBe(10);
   });
 
-  it("returns undefined for unmarked functions", () => {
+  it("표시되지 않은 함수에 대해 undefined 반환", () => {
     const fn = () => "plain";
     expect(getServiceAuthPermissions(fn)).toBeUndefined();
   });
 
-  it("works at service-level (wrapping factory)", () => {
+  it("서비스 레벨에서 작동 (팩토리 래핑)", () => {
     const svc = defineService(
       "User",
       auth((_ctx) => ({

@@ -23,7 +23,7 @@ export const ConfigContext = createContext<AppConfig>();
 export function useConfig(): AppConfig {
   const context = useContext(ConfigContext);
   if (!context) {
-    throw new Error("useConfig는 ConfigProvider 내부에서만 사용할 수 있습니다");
+    throw new Error("useConfig can only be used inside ConfigProvider");
   }
   return context;
 }

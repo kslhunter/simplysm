@@ -23,7 +23,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     expect(result).toBe("Echo: hello");
   });
 
-  it("throws when service not found", async () => {
+  it("에러 발생 when service not found", async () => {
     const server = createMockServer([]);
 
     await expect(
@@ -31,7 +31,7 @@ describe("runServiceMethod with ServiceDefinition", () => {
     ).rejects.toThrow("Service [Unknown] not found.");
   });
 
-  it("throws when method not found", async () => {
+  it("에러 발생 when method not found", async () => {
     const svc = defineService("Test", (_ctx) => ({
       existing: () => "ok",
     }));

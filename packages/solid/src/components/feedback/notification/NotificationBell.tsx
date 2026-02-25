@@ -78,7 +78,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
             type="button"
             data-notification-bell
             class={buttonClass}
-            aria-label={`알림 ${notification.unreadCount()}개`}
+            aria-label={`${notification.unreadCount()} notifications`}
             aria-haspopup="true"
             aria-expanded={open()}
           >

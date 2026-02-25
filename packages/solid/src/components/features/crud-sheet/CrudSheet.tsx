@@ -158,7 +158,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, "조회 실패");
+      noti.error(err, "Lookup failed");
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -233,18 +233,18 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     const diffs = getItemDiffs();
 
     if (diffs.length === 0) {
-      noti.info("안내", "변경사항이 없습니다.");
+      noti.info("Notice", "No changes to save.");
       return;
     }
 
     setBusyCount((c) => c + 1);
     try {
       await local.inlineEdit.submit(diffs);
-      noti.success("저장 완료", "저장되었습니다.");
+      noti.success("Save completed", "Saved successfully.");
       await refresh();
       local.onSubmitted?.();
     } catch (err) {
-      noti.error(err, "저장 실패");
+      noti.error(err, "Save failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -264,7 +264,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     try {
       await refresh();
     } catch (err) {
-      noti.error(err, "조회 실패");
+      noti.error(err, "Lookup failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -277,9 +277,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success("삭제 완료", "삭제되었습니다.");
+      noti.success("Delete completed", "Deleted successfully.");
     } catch (err) {
-      noti.error(err, "삭제 실패");
+      noti.error(err, "Delete failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -292,9 +292,9 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
     setBusyCount((c) => c + 1);
     try {
       await refresh();
-      noti.success("복구 완료", "복구되었습니다.");
+      noti.success("Restore completed", "Restored successfully.");
     } catch (err) {
-      noti.error(err, "복구 실패");
+      noti.error(err, "Restore failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -308,7 +308,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       const result = await local.search(lastFilter(), undefined, sorts());
       await local.excel.download(result.items);
     } catch (err) {
-      noti.error(err, "엑셀 다운로드 실패");
+      noti.error(err, "Excel download failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -326,10 +326,10 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
       setBusyCount((c) => c + 1);
       try {
         await local.excel!.upload!(file);
-        noti.success("완료", "엑셀 업로드가 완료되었습니다.");
+        noti.success("Completed", "Excel upload completed successfully.");
         await refresh();
       } catch (err) {
-        noti.error(err, "엑셀 업로드 실패");
+        noti.error(err, "Excel upload failed");
       }
       setBusyCount((c) => c - 1);
     };

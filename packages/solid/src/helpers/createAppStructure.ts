@@ -511,7 +511,7 @@ export function createAppStructure<TModule, const TItems extends AppStructureIte
 
   const useAppStructure = (): TRet => {
     const ctx = useContext(Ctx);
-    if (!ctx) throw new Error("AppStructureProvider가 필요합니다.");
+    if (!ctx) throw new Error("AppStructureProvider is required.");
     return ctx;
   };
 

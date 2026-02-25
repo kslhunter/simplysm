@@ -43,4 +43,4 @@ for (const entry of allEntries) {
   fs.cpSync(src, dest, { recursive: true });
 }
 
-console.log(`${allEntries.length}개의 sd-* 에셋을 동기화했습니다.`);
+console.log(`Synchronized ${allEntries.length} sd-* assets.`);

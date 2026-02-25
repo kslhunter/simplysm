@@ -1,32 +1,32 @@
 /**
- * 빌드 타겟 유형 (esbuild로 빌드)
- * - node: Node.js 전용 패키지
- * - browser: 브라우저 전용 패키지
- * - neutral: Node/브라우저 공용 패키지
+ * Build target type (built with esbuild)
+ * - node: Node.js only package
+ * - browser: browser only package
+ * - neutral: Node/browser shared package
  */
 export type BuildTarget = "node" | "browser" | "neutral";
 
-//#region Publish 설정 타입
+//#region Publish configuration types
 
 /**
- * 패키지 publish 설정
- * - "npm": npm 레지스트리에 배포
- * - SdLocalDirectoryPublishConfig: 로컬 디렉토리에 복사
- * - SdStoragePublishConfig: FTP/FTPS/SFTP 서버에 업로드
+ * Package publish configuration
+ * - "npm": deploy to npm registry
+ * - SdLocalDirectoryPublishConfig: copy to local directory
+ * - SdStoragePublishConfig: upload to FTP/FTPS/SFTP server
  */
 export type SdPublishConfig = "npm" | SdLocalDirectoryPublishConfig | SdStoragePublishConfig;
 
 /**
- * 로컬 디렉토리 publish 설정
+ * Local directory publish configuration
  */
 export interface SdLocalDirectoryPublishConfig {
   type: "local-directory";
-  /** 배포 대상 경로 (환경변수 치환 지원: %VER%, %PROJECT%) */
+  /** deployment target path (supports environment variable substitution: %VER%, %PROJECT%) */
   path: string;
 }
 
 /**
- * 스토리지 (FTP/FTPS/SFTP) publish 설정
+ * Storage (FTP/FTPS/SFTP) publish configuration
  */
 export interface SdStoragePublishConfig {
   type: "ftp" | "ftps" | "sftp";
@@ -38,168 +38,168 @@ export interface SdStoragePublishConfig {
 }
 
 /**
- * postPublish 스크립트 설정
+ * postPublish script configuration
  */
 export interface SdPostPublishScriptConfig {
   type: "script";
   cmd: string;
-  /** 스크립트 인자 (환경변수 치환 지원: %VER%, %PROJECT%) */
+  /** script arguments (supports environment variable substitution: %VER%, %PROJECT%) */
   args: string[];
 }
 
 //#endregion
 
 /**
- * 패키지 설정 (node/browser/neutral)
+ * Package configuration (node/browser/neutral)
  */
 export interface SdBuildPackageConfig {
-  /** 빌드 타겟 */
+  /** build target */
   target: BuildTarget;
-  /** publish 설정 */
+  /** publish configuration */
   publish?: SdPublishConfig;
-  /** src/에서 dist/로 복사할 파일 glob 패턴 (src/ 기준 상대 경로) */
+  /** glob patterns for files to copy from src/ to dist/ (relative path based on src/) */
   copySrc?: string[];
 }
 
 /**
- * Capacitor Android 서명 설정
+ * Capacitor Android sign configuration
  */
 export interface SdCapacitorSignConfig {
-  /** keystore 파일 경로 (패키지 디렉토리 기준 상대경로) */
+  /** keystore file path (relative path based on package directory) */
   keystore: string;
-  /** keystore 비밀번호 */
+  /** keystore password */
   storePassword: string;
-  /** 키 별칭 */
+  /** key alias */
   alias: string;
-  /** 키 비밀번호 */
+  /** key password */
   password: string;
-  /** keystore 타입 (기본값: "jks") */
+  /** keystore type (default: "jks") */
   keystoreType?: string;
 }
 
 /**
- * Capacitor Android 권한 설정
+ * Capacitor Android permission configuration
  */
 export interface SdCapacitorPermission {
-  /** 권한 이름 (예: "CAMERA", "WRITE_EXTERNAL_STORAGE") */
+  /** permission name (e.g., "CAMERA", "WRITE_EXTERNAL_STORAGE") */
   name: string;
-  /** 최대 SDK 버전 */
+  /** maximum SDK version */
   maxSdkVersion?: number;
-  /** tools:ignore 속성 값 */
+  /** tools:ignore attribute value */
   ignore?: string;
 }
 
 /**
- * Capacitor Android Intent Filter 설정
+ * Capacitor Android Intent Filter configuration
  */
 export interface SdCapacitorIntentFilter {
-  /** intent action (예: "android.intent.action.VIEW") */
+  /** intent action (e.g., "android.intent.action.VIEW") */
   action?: string;
-  /** intent category (예: "android.intent.category.DEFAULT") */
+  /** intent category (e.g., "android.intent.category.DEFAULT") */
   category?: string;
 }
 
 /**
- * Capacitor Android 플랫폼 설정
+ * Capacitor Android platform configuration
  */
 export interface SdCapacitorAndroidConfig {
-  /** AndroidManifest.xml application 태그 속성 (예: { requestLegacyExternalStorage: "true" }) */
+  /** AndroidManifest.xml application tag attributes (e.g., { requestLegacyExternalStorage: "true" }) */
   config?: Record<string, string>;
-  /** AAB 번들 빌드 여부 (false면 APK) */
+  /** AAB bundle build flag (false for APK) */
   bundle?: boolean;
-  /** Intent Filter 설정 */
+  /** Intent Filter configuration */
   intentFilters?: SdCapacitorIntentFilter[];
-  /** APK/AAB 서명 설정 */
+  /** APK/AAB signing configuration */
   sign?: SdCapacitorSignConfig;
-  /** Android SDK 버전 (minSdk, targetSdk) */
+  /** Android SDK version (minSdk, targetSdk) */
   sdkVersion?: number;
-  /** 추가 권한 설정 */
+  /** additional permission configuration */
   permissions?: SdCapacitorPermission[];
 }
 
 /**
- * Capacitor 설정
+ * Capacitor configuration
  */
 export interface SdCapacitorConfig {
-  /** 앱 ID (예: "com.example.app") */
+  /** app ID (e.g., "com.example.app") */
   appId: string;
-  /** 앱 이름 */
+  /** app name */
   appName: string;
-  /** Capacitor 플러그인 설정 (키: 패키지명, 값: true 또는 플러그인 옵션) */
+  /** Capacitor plugin configuration (key: package name, value: true or plugin options) */
   plugins?: Record<string, Record<string, unknown> | true>;
-  /** 앱 아이콘 경로 (패키지 디렉토리 기준 상대경로) */
+  /** app icon path (relative path based on package directory) */
   icon?: string;
-  /** 디버그 빌드 여부 */
+  /** debug build flag */
   debug?: boolean;
-  /** 플랫폼별 설정 */
+  /** per-platform configuration */
   platform?: {
     android?: SdCapacitorAndroidConfig;
   };
 }
 
 /**
- * Electron 설정
+ * Electron configuration
  */
 export interface SdElectronConfig {
-  /** Electron 앱 ID (예: "com.example.myapp") */
+  /** Electron app ID (e.g., "com.example.myapp") */
   appId: string;
-  /** portable .exe (true) 또는 NSIS 인스톨러 (false/미지정) */
+  /** portable .exe (true) or NSIS installer (false/unspecified) */
   portable?: boolean;
-  /** 인스톨러 아이콘 경로 (.ico, 패키지 디렉토리 기준 상대경로) */
+  /** installer icon path (.ico, relative path based on package directory) */
   installerIcon?: string;
-  /** Electron에 포함할 npm 패키지 (native 모듈 등) */
+  /** npm packages to include in Electron (native modules, etc.) */
   reinstallDependencies?: string[];
-  /** npm postinstall 스크립트 */
+  /** npm postinstall script */
   postInstallScript?: string;
-  /** NSIS 옵션 (portable이 아닌 경우) */
+  /** NSIS options (when portable is false) */
   nsisOptions?: Record<string, unknown>;
-  /** 환경변수 (electron-main.ts에서 process.env로 접근) */
+  /** environment variables (accessible via process.env in electron-main.ts) */
   env?: Record<string, string>;
 }
 
 /**
- * 클라이언트 패키지 설정 (Vite 개발 서버)
+ * Client package configuration (Vite development server)
  */
 export interface SdClientPackageConfig {
-  /** 빌드 타겟 */
+  /** build target */
   target: "client";
   /**
-   * 서버 설정
-   * - string: 연결할 서버 패키지명 (예: "solid-demo-server")
-   * - number: Vite 직접 포트 사용 (하위 호환성)
+   * server configuration
+   * - string: server package name to connect to (e.g., "solid-demo-server")
+   * - number: use Vite port directly (backward compatibility)
    */
   server: string | number;
-  /** 빌드 시 치환할 환경변수 (process.env를 객체로 치환) */
+  /** environment variables to substitute during build (replace process.env with object) */
   env?: Record<string, string>;
-  /** publish 설정 */
+  /** publish configuration */
   publish?: SdPublishConfig;
-  /** Capacitor 설정 */
+  /** Capacitor configuration */
   capacitor?: SdCapacitorConfig;
-  /** Electron 설정 */
+  /** Electron configuration */
   electron?: SdElectronConfig;
   /** runtime config (written to dist/.config.json during build) */
   configs?: Record<string, unknown>;
 }
 
 /**
- * 서버 패키지 설정 (Fastify 서버)
+ * Server package configuration (Fastify server)
  */
 export interface SdServerPackageConfig {
-  /** 빌드 타겟 */
+  /** build target */
   target: "server";
-  /** 빌드 시 치환할 환경변수 (process.env.KEY를 상수로 치환) */
+  /** environment variables to substitute during build (replace process.env.KEY with constant) */
   env?: Record<string, string>;
-  /** publish 설정 */
+  /** publish configuration */
   publish?: SdPublishConfig;
   /** runtime config (written to dist/.config.json during build) */
   configs?: Record<string, unknown>;
-  /** esbuild에서 번들에 포함하지 않을 외부 모듈 (binding.gyp 자동 감지에 더해 수동 지정) */
+  /** external modules not to include in esbuild bundle (in addition to automatic binding.gyp detection) */
   externals?: string[];
-  /** PM2 설정 (지정 시 dist/pm2.config.cjs 생성) */
+  /** PM2 configuration (generates dist/pm2.config.cjs when specified) */
   pm2?: {
-    /** PM2 프로세스 이름 (미지정 시 package.json name에서 생성) */
+    /** PM2 process name (generated from package.json name if unspecified) */
     name?: string;
-    /** PM2 watch에서 제외할 경로 */
+    /** paths to exclude from PM2 watch */
     ignoreWatchPaths?: string[];
   };
   /** Package manager to use (affects mise.toml or volta settings generation) */
@@ -207,15 +207,15 @@ export interface SdServerPackageConfig {
 }
 
 /**
- * 스크립트 전용 패키지 설정 (watch/typecheck 제외)
+ * Scripts-only package configuration (excluded from watch/typecheck)
  */
 export interface SdScriptsPackageConfig {
-  /** 빌드 타겟 */
+  /** build target */
   target: "scripts";
 }
 
 /**
- * 패키지 설정
+ * Package configuration
  */
 export type SdPackageConfig =
   | SdBuildPackageConfig
@@ -224,36 +224,36 @@ export type SdPackageConfig =
   | SdScriptsPackageConfig;
 
 /**
- * sd.config.ts 설정 타입
+ * sd.config.ts configuration type
  */
 export interface SdConfig {
-  /** 패키지별 설정 (키: packages/ 하위 디렉토리 이름, 예: "core-common") */
+  /** per-package configuration (key: subdirectory name under packages/, e.g., "core-common") */
   packages: Record<string, SdPackageConfig | undefined>;
   /**
-   * 의존성 교체 설정 (node_modules 패키지를 로컬 소스로 symlink 교체)
-   * - 키: node_modules에서 찾을 패키지 glob 패턴 (예: "@simplysm/*")
-   * - 값: 소스 디렉토리 경로 (키의 * 캡처값이 값의 *에 치환됨)
-   * - 예: { "@simplysm/*": "../simplysm/packages/*" }
+   * dependency replacement configuration (replace node_modules packages with local sources via symlink)
+   * - key: package glob pattern to find in node_modules (e.g., "@simplysm/*")
+   * - value: source directory path (captured values from key's * are substituted into value's *)
+   * - example: { "@simplysm/*": "../simplysm/packages/*" }
    */
   replaceDeps?: Record<string, string>;
-  /** 배포 완료 후 실행할 스크립트 */
+  /** script to execute after deployment completes */
   postPublish?: SdPostPublishScriptConfig[];
 }
 
 /**
- * sd.config.ts 함수에 전달되는 파라미터
+ * parameters passed to sd.config.ts function
  */
 export interface SdConfigParams {
-  /** 현재 작업 디렉토리 */
+  /** current working directory */
   cwd: string;
-  /** 개발 모드 여부 */
+  /** development mode flag */
   dev: boolean;
-  /** 추가 옵션 (CLI의 -o 플래그) */
+  /** additional options (from CLI's -o flag) */
   opt: string[];
 }
 
 /**
- * sd.config.ts는 다음과 같은 형태의 함수를 default export해야 한다:
+ * sd.config.ts must default export a function of the following form:
  *
  * ```typescript
  * import type { SdConfig, SdConfigFn, SdConfigParams } from "@simplysm/sd-cli";

@@ -53,9 +53,9 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     if (clientMap.has(resolvedKey)) {
       const existing = clientMap.get(resolvedKey)!;
       if (!existing.connected) {
-        throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
+        throw new Error("Attempted to connect with the same key as a disconnected client.");
       } else {
-        throw new Error("이미 연결된 클라이언트와 같은 키로 연결을 시도하였습니다.");
+        throw new Error("Attempted to connect with the same key as an already connected client.");
       }
     }
 
@@ -75,7 +75,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       const existing = reqProgressMap.get(state.uuid);
 
       if (existing == null) {
-        const id = notification.info("요청을 전송하는 중입니다.", "0%");
+        const id = notification.info("Sending request", "0%");
         reqProgressMap.set(state.uuid, id);
       } else {
         const percent = Math.round((state.completedSize / state.totalSize) * 100);
@@ -88,7 +88,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
           notification.update(
             id,
             {
-              title: "요청 전송 완료",
+              title: "Request transmission completed",
               message: "100%",
             },
             { renotify: true },
@@ -103,7 +103,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
       const existing = resProgressMap.get(state.uuid);
 
       if (existing == null) {
-        const id = notification.info("응답을 전송받는 중입니다.", "0%");
+        const id = notification.info("Receiving response", "0%");
         resProgressMap.set(state.uuid, id);
       } else {
         const percent = Math.round((state.completedSize / state.totalSize) * 100);
@@ -116,7 +116,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
           notification.update(
             id,
             {
-              title: "응답 전송 완료",
+              title: "Response reception completed",
               message: "100%",
             },
             { renotify: true },
@@ -143,7 +143,7 @@ export const ServiceClientProvider: ParentComponent = (props) => {
     const resolvedKey = key ?? "default";
     const client = clientMap.get(resolvedKey);
     if (!client) {
-      throw new Error(`연결하지 않은 클라이언트 키입니다. ${resolvedKey}`);
+      throw new Error(`Client key not connected: ${resolvedKey}`);
     }
     return client;
   };

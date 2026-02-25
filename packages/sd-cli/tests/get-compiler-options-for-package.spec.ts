@@ -26,7 +26,7 @@ describe("getCompilerOptionsForPackage", () => {
     strict: true,
   };
 
-  it("node 타겟: DOM lib 제거, types에 node 포함", async () => {
+  it("node target: removes DOM lib, includes node in types", async () => {
     const packageDir = "/project/packages/core-node";
     vi.mocked(fsExists).mockResolvedValue(true);
     vi.mocked(fsReadJson).mockResolvedValue({
@@ -37,14 +37,14 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 
-    // DOM, WebWorker lib 제거됨
+    // DOM, WebWorker lib removed
     expect(result.lib).toEqual(["ES2024"]);
-    // types에 node와 express 포함
+    // types includes node and express
     expect(result.types).toContain("node");
     expect(result.types).toContain("express");
   });
 
-  it("browser 타겟: lib 유지, types에서 node 제거", async () => {
+  it("browser target: keeps lib, removes node from types", async () => {
     const packageDir = "/project/packages/core-browser";
     vi.mocked(fsExists).mockResolvedValue(true);
     vi.mocked(fsReadJson).mockResolvedValue({
@@ -56,14 +56,14 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "browser", packageDir);
 
-    // lib는 그대로 유지
+    // lib is preserved
     expect(result.lib).toEqual(["ES2024", "DOM", "DOM.Iterable", "WebWorker"]);
-    // types에서 node 제거, react만 포함
+    // types removes node, includes react only
     expect(result.types).not.toContain("node");
     expect(result.types).toContain("react");
   });
 
-  it("neutral 타겟: lib 유지, types에 node 포함", async () => {
+  it("neutral target: keeps lib, includes node in types", async () => {
     const packageDir = "/project/packages/core-common";
     vi.mocked(fsExists).mockResolvedValue(true);
     vi.mocked(fsReadJson).mockResolvedValue({
@@ -74,14 +74,14 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "neutral", packageDir);
 
-    // lib는 그대로 유지 (DOM 포함)
+    // lib is preserved (includes DOM)
     expect(result.lib).toEqual(["ES2024", "DOM", "DOM.Iterable", "WebWorker"]);
-    // types에 node와 lodash 포함
+    // types includes node and lodash
     expect(result.types).toContain("node");
     expect(result.types).toContain("lodash");
   });
 
-  it("node 타겟: 중복된 node 타입 제거", async () => {
+  it("node target: removes duplicate node types", async () => {
     const packageDir = "/project/packages/core-node";
     vi.mocked(fsExists).mockResolvedValue(true);
     vi.mocked(fsReadJson).mockResolvedValue({
@@ -92,21 +92,21 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 
-    // node 타입이 중복 없이 한 번만 포함
+    // node type is included only once without duplicates
     expect(result.types?.filter((t) => t === "node")).toHaveLength(1);
   });
 
-  it("package.json이 없는 경우 빈 types로 처리", async () => {
+  it("handles missing package.json with empty types", async () => {
     const packageDir = "/project/packages/unknown";
     vi.mocked(fsExists).mockResolvedValue(false);
 
     const result = await getCompilerOptionsForPackage(baseOptions, "node", packageDir);
 
-    // node만 포함 (패키지에서 읽은 types는 빈 배열)
+    // includes only node (types from package are empty array)
     expect(result.types).toEqual(["node"]);
   });
 
-  it("lib가 undefined인 경우 처리", async () => {
+  it("handles undefined lib correctly", async () => {
     const optionsWithoutLib: ts.CompilerOptions = {
       strict: true,
     };
@@ -115,12 +115,12 @@ describe("getCompilerOptionsForPackage", () => {
 
     const result = await getCompilerOptionsForPackage(optionsWithoutLib, "node", packageDir);
 
-    // lib가 undefined여도 에러 없이 처리
+    // handles undefined lib without error
     expect(result.lib).toBeUndefined();
     expect(result.types).toEqual(["node"]);
   });
 
-  it("원본 baseOptions가 변경되지 않음 (immutability)", async () => {
+  it("does not mutate original baseOptions (immutability)", async () => {
     const originalOptions: ts.CompilerOptions = {
       lib: ["ES2024", "DOM"],
       types: ["original"],
@@ -131,7 +131,7 @@ describe("getCompilerOptionsForPackage", () => {
 
     await getCompilerOptionsForPackage(originalOptions, "node", packageDir);
 
-    // 원본 옵션이 변경되지 않음
+    // original options are not changed
     expect(originalOptions.lib).toEqual(["ES2024", "DOM"]);
     expect(originalOptions.types).toEqual(["original"]);
     expect(originalOptions.noEmit).toBeUndefined();

@@ -4,8 +4,8 @@ import { DateOnly } from "@simplysm/core-common";
 describe("DateOnly", () => {
   //#region 생성자
 
-  describe("constructor", () => {
-    it("인수 없이 생성하면 오늘 날짜를 반환한다", () => {
+  describe("생성자", () => {
+    it("인수 없이 생성하면 오늘 날짜를 반환", () => {
       const now = new Date();
       const dateOnly = new DateOnly();
 
@@ -14,7 +14,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(now.getDate());
     });
 
-    it("연월일로 생성한다", () => {
+    it("year/month/day로 생성", () => {
       const dateOnly = new DateOnly(2025, 1, 6);
 
       expect(dateOnly.year).toBe(2025);
@@ -22,7 +22,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("tick (millisecond)로 생성한다", () => {
+    it("creates with tick (millisecond)", () => {
       const tick = new Date(2025, 0, 6).getTime();
       const dateOnly = new DateOnly(tick);
 
@@ -31,7 +31,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("Date 타입으로 생성한다", () => {
+    it("creates with Date type", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45);
       const dateOnly = new DateOnly(date);
 
@@ -40,7 +40,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("Date 타입으로 생성할 때 시간은 무시한다", () => {
+    it("ignores time when creating from Date type", () => {
       const date1 = new Date(2025, 0, 6, 0, 0, 0);
       const date2 = new Date(2025, 0, 6, 23, 59, 59);
 
@@ -50,7 +50,7 @@ describe("DateOnly", () => {
       expect(dateOnly1.tick).toBe(dateOnly2.tick);
     });
 
-    it("윤년 2월 29일을 생성한다", () => {
+    it("creates leap year February 29th", () => {
       const dateOnly = new DateOnly(2024, 2, 29);
 
       expect(dateOnly.year).toBe(2024);
@@ -59,7 +59,7 @@ describe("DateOnly", () => {
       expect(dateOnly.isValid).toBe(true);
     });
 
-    it("평년 2월 29일은 3월 1일로 자동 조정된다 (JS Date 동작)", () => {
+    it("adjusts February 29th in non-leap year to March 1st (JS Date behavior)", () => {
       const dateOnly = new DateOnly(2023, 2, 29);
 
       expect(dateOnly.year).toBe(2023);
@@ -67,7 +67,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(1);
     });
 
-    it("유효하지 않은 월(13월)은 다음 해 1월로 자동 조정된다 (JS Date 동작)", () => {
+    it("adjusts invalid month (13) to next year January (JS Date behavior)", () => {
       const dateOnly = new DateOnly(2024, 13, 1);
 
       expect(dateOnly.year).toBe(2025);

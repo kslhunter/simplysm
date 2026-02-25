@@ -53,9 +53,9 @@ export const PwaUpdateProvider: ParentComponent = (props) => {
     });
 
     function promptUpdate(waitingSW: ServiceWorker): void {
-      notification.info("앱이 업데이트되었습니다", "새로고침하면 최신 버전을 사용할 수 있습니다", {
+      notification.info("App updated", "Refresh to use the latest version", {
         action: {
-          label: "새로고침",
+          label: "Refresh",
           onClick: () => {
             waitingSW.postMessage({ type: "SKIP_WAITING" });
           },

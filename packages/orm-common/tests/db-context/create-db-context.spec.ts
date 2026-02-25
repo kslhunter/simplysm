@@ -11,7 +11,7 @@ const TestDb = defineDbContext({
 });
 
 describe("createDbContext", () => {
-  it("creates instance with queryable accessors", () => {
+  it("쿼리 가능한 접근자와 함께 인스턴스 생성", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
       schema: "TestSchema",
@@ -24,7 +24,7 @@ describe("createDbContext", () => {
     expect(typeof db.post).toBe("function");
   });
 
-  it("queryable generates correct QueryDef", () => {
+  it("쿼리 가능 함수가 올바른 QueryDef 생성", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
       schema: "TestSchema",
@@ -38,7 +38,7 @@ describe("createDbContext", () => {
     });
   });
 
-  it("alias counter increments across queryable calls", () => {
+  it("쿼리 가능 호출 간 별칭 카운터 증가", () => {
     const db = createDbContext(TestDb, new MockExecutor(), {
       database: "TestDb",
       schema: "TestSchema",

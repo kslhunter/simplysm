@@ -15,6 +15,6 @@ export const PrintContext = createContext<PrintContextValue>();
 
 export function usePrint(): PrintContextValue {
   const ctx = useContext(PrintContext);
-  if (!ctx) throw new Error("usePrint는 PrintProvider 내부에서만 사용할 수 있습니다");
+  if (!ctx) throw new Error("usePrint can only be used inside PrintProvider");
   return ctx;
 }

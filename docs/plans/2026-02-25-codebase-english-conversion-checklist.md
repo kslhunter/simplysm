@@ -1,8 +1,8 @@
 # Codebase English Conversion — Package Checklist
 
 **Status:** 🚀 YOLO Mode - Rapid Progress
-**Last Updated:** 2026-02-25 (19:45)
-**Progress:** ~75% complete
+**Last Updated:** 2026-02-25 (20:30)
+**Progress:** ~80% complete
 
 ---
 
@@ -53,8 +53,8 @@
 - ✅ tsconfig.json (1 file)
 
 **Partially Complete:**
-- ⏳ solid/components (~20/80 files)
-- ⏳ sd-cli (~10/42 files)
+- ⏳ solid/components (20/80 files) → **~25% more to complete**
+- ⏳ sd-cli (9/42 files) → **~33 files remaining**
 
 ### Phase 2: Error / Log Messages (MOSTLY COMPLETE ✅)
 **Completed:**
@@ -162,9 +162,13 @@
 - `3ee93c56c` - orm, sd-claude, lint, tsconfig Phase 1
 - `dfd83f302` - Phase 5: strGetSuffix → koreanGetSuffix rename
 
-**Currently In Progress (5 parallel agents):**
-- solid-demo Phase 2: UI text translation (1,127 items)
-- core-common/orm Phase 3: test descriptions (104 files)
-- solid-components Phase 1: component comments (~60 remaining)
-- sd-cli Phase 1-2: CLI command translations (~30 remaining)
-- service-*/solid-demo Phase 3: test descriptions
+**Phase 1 Progress:**
+- ✅ solid-components: 20 files completed (Dialog, Dropdown, DataSheet, etc.)
+- ⏳ sd-cli: 9 files completed (capacitor, electron, orchestrators, etc.)
+  - Remaining: copy-src, config-editor, replace-deps, template, and more
+
+**Next Priority:**
+1. Complete remaining solid-components (~60 more files)
+2. Complete remaining sd-cli (~30 more files)
+3. Then move to Phase 2 (Error messages)
+4. Then Phase 3 (Test descriptions)

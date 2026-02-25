@@ -85,7 +85,7 @@ export function useSharedData<
 >(): SharedDataValue<TSharedData> {
   const context = useContext(SharedDataContext);
   if (!context) {
-    throw new Error("useSharedData는 SharedDataProvider 내부에서만 사용할 수 있습니다");
+    throw new Error("useSharedData can only be used inside SharedDataProvider");
   }
   return context as unknown as SharedDataValue<TSharedData>;
 }

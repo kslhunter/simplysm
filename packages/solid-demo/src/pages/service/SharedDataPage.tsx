@@ -157,7 +157,7 @@ const ConnectedSharedDataDemo: Component = () => {
 
       setConnected(true);
     } catch (err) {
-      notification.danger("연결 실패", String(err));
+      notification.danger("Connection failed", String(err));
     }
   });
 

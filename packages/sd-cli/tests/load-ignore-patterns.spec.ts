@@ -26,7 +26,7 @@ describe("loadIgnorePatterns", () => {
     vi.restoreAllMocks();
   });
 
-  it("eslint.config.ts에서 globalIgnores 패턴을 추출", async () => {
+  it("extracts globalIgnores pattern from eslint.config.ts", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -43,7 +43,7 @@ describe("loadIgnorePatterns", () => {
     expect(patterns).toEqual(["node_modules/**", "dist/**"]);
   });
 
-  it("files가 있는 설정은 globalIgnores로 추출하지 않음", async () => {
+  it("does not extract as globalIgnores if files is present", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -64,16 +64,16 @@ describe("loadIgnorePatterns", () => {
     expect(patterns).not.toContain("local/**");
   });
 
-  it("설정 파일이 없으면 에러 발생", async () => {
+  it("throws error if config file not found", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockResolvedValue(false);
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint 설정 파일을 찾을 수 없습니다");
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint config file not found");
   });
 
-  it("설정이 배열이 아니면 에러 발생", async () => {
+  it("throws error if config is not array", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -85,10 +85,10 @@ describe("loadIgnorePatterns", () => {
       default: { rules: {} },
     });
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint 설정이 배열이 아닙니다");
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint config is not array");
   });
 
-  it("여러 globalIgnores 설정을 병합", async () => {
+  it("merges multiple globalIgnores settings", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -105,7 +105,7 @@ describe("loadIgnorePatterns", () => {
     expect(patterns).toEqual(["node_modules/**", "dist/**", ".cache/**"]);
   });
 
-  it("배열을 직접 export하는 설정도 처리", async () => {
+  it("handles config that directly exports array", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -120,7 +120,7 @@ describe("loadIgnorePatterns", () => {
     expect(patterns).toEqual(["build/**"]);
   });
 
-  it("default도 없고 배열도 아닌 설정은 에러 발생", async () => {
+  it("throws error if config has no default and is not array", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -133,16 +133,16 @@ describe("loadIgnorePatterns", () => {
     });
 
     await expect(loadIgnorePatterns(cwd)).rejects.toThrow(
-      "ESLint 설정 파일이 올바른 형식이 아닙니다",
+      "ESLint config file is not valid format",
     );
   });
 
-  it("eslint.config.ts가 없고 eslint.config.mts만 있는 경우 mts 파일 사용", async () => {
+  it("uses mts file if eslint.config.ts not found", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
     mockExists.mockImplementation((filePath: string) => {
-      // eslint.config.ts는 없고 eslint.config.mts만 존재
+      // eslint.config.ts does not exist, only eslint.config.mts
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.mts"));
     });
 
@@ -156,7 +156,7 @@ describe("loadIgnorePatterns", () => {
     expect(mockJitiImportFn).toHaveBeenCalledWith(expect.stringContaining("eslint.config.mts"));
   });
 
-  it("빈 배열 export 시 빈 패턴 배열 반환", async () => {
+  it("returns empty pattern array if empty array exported", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 
@@ -173,7 +173,7 @@ describe("loadIgnorePatterns", () => {
     expect(patterns).toEqual([]);
   });
 
-  it("jiti import 에러 발생 시 에러 전파", async () => {
+  it("propagates error if jiti import fails", async () => {
     const cwd = "/project";
     const mockExists = vi.mocked(fsExists);
 

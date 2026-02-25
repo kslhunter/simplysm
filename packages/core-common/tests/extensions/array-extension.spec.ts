@@ -1,17 +1,17 @@
 import { describe, it, expect } from "vitest";
 import "@simplysm/core-common"; // $ 확장 활성화
 
-describe("Array.prototype extension", () => {
-  //#region Basic chaining
+describe("배열 프로토타입 확장", () => {
+  //#region 기본 체이닝
 
-  describe("Basic chaining", () => {
-    it("can chain existing Array methods", () => {
+  describe("기본 체이닝", () => {
+    it("기존 배열 메서드 체이닝 가능", () => {
       const result = [1, 2, 3, 4, 5].filter((x) => x > 2).map((x) => x * 10);
 
       expect(result).toEqual([30, 40, 50]);
     });
 
-    it("can chain extension methods", () => {
+    it("확장 메서드 체이닝 가능", () => {
       const result = [
         { id: 1, name: "a" },
         { id: 2, name: "b" },
@@ -21,7 +21,7 @@ describe("Array.prototype extension", () => {
       expect(result.get(2)).toEqual({ id: 2, name: "b" });
     });
 
-    it("can chain Array methods and extension methods mixed", () => {
+    it("배열 메서드와 확장 메서드 혼합 체이닝 가능", () => {
       const users = [
         { id: 1, name: "Kim", active: true },
         { id: 2, name: "Lee", active: false },
@@ -36,7 +36,7 @@ describe("Array.prototype extension", () => {
       expect(result.has(2)).toBe(false);
     });
 
-    it("can chain multiple levels", () => {
+    it("여러 단계 체이닝 가능", () => {
       const result = [1, 2, 3, 4, 5]
         .filter((x) => x > 1)
         .map((x) => x * 2)
@@ -49,7 +49,7 @@ describe("Array.prototype extension", () => {
       expect(result.has(8)).toBe(true);
     });
 
-    it("can access array properties", () => {
+    it("배열 속성에 접근 가능", () => {
       const arr = [1, 2, 3];
 
       expect(arr.length).toBe(3);
@@ -64,29 +64,29 @@ describe("Array.prototype extension", () => {
   //#region single
 
   describe("single()", () => {
-    it("returns single matching element", () => {
+    it("일치하는 단일 요소 반환", () => {
       const result = [1, 2, 3].single((x) => x === 2);
 
       expect(result).toBe(2);
     });
 
-    it("returns undefined when no matching element", () => {
+    it("일치하는 요소가 없으면 undefined 반환", () => {
       const result = [1, 2, 3].single((x) => x === 4);
 
       expect(result).toBe(undefined);
     });
 
-    it("throws error when multiple matching elements", () => {
+    it("일치하는 요소가 여러 개면 에러 발생", () => {
       expect(() => [1, 1, 2].single((x) => x === 1)).toThrow();
     });
 
-    it("targets entire array when called without condition", () => {
+    it("조건 없이 호출하면 전체 배열 대상", () => {
       expect([1].single()).toBe(1);
       expect(([] as number[]).single()).toBe(undefined);
       expect(() => [1, 2].single()).toThrow();
     });
 
-    it("can use single after chaining", () => {
+    it("체이닝 후 single 사용 가능", () => {
       const result = [1, 2, 3, 4, 5].filter((x) => x > 3).single((x) => x === 4);
 
       expect(result).toBe(4);
@@ -98,7 +98,7 @@ describe("Array.prototype extension", () => {
   //#region 비동기 메서드
 
   describe("parallelAsync()", () => {
-    it("performs parallel async execution", async () => {
+    it("병렬 비동기 실행 수행", async () => {
       const result = await [1, 2, 3].parallelAsync(async (x) => Promise.resolve(x * 2));
 
       expect(result).toEqual([2, 4, 6]);
@@ -106,13 +106,13 @@ describe("Array.prototype extension", () => {
   });
 
   describe("mapAsync()", () => {
-    it("performs sequential async mapping", async () => {
+    it("순차 비동기 매핑 수행", async () => {
       const result = await [1, 2, 3].mapAsync(async (x) => Promise.resolve(x * 2));
 
       expect(result).toEqual([2, 4, 6]);
     });
 
-    it("can use mapAsync after chaining", async () => {
+    it("체이닝 후 mapAsync 사용 가능", async () => {
       const result = await [1, 2, 3, 4, 5]
         .filter((x) => x > 2)
         .mapAsync(async (x) => Promise.resolve(x * 10));
@@ -122,7 +122,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("filterAsync()", () => {
-    it("performs async filtering", async () => {
+    it("비동기 필터링 수행", async () => {
       const result = await [1, 2, 3, 4, 5].filterAsync(async (x) => Promise.resolve(x > 2));
 
       expect(result).toEqual([3, 4, 5]);
@@ -134,7 +134,7 @@ describe("Array.prototype extension", () => {
   //#region Map 변환
 
   describe("toMap()", () => {
-    it("creates Map with key function", () => {
+    it("키 함수로 Map 생성", () => {
       const result = [
         { id: 1, name: "a" },
         { id: 2, name: "b" },
@@ -144,7 +144,7 @@ describe("Array.prototype extension", () => {
       expect(result.get(2)).toEqual({ id: 2, name: "b" });
     });
 
-    it("transforms values with value function", () => {
+    it("값 함수로 값 변환", () => {
       const result = [
         { id: 1, name: "a" },
         { id: 2, name: "b" },
@@ -157,7 +157,7 @@ describe("Array.prototype extension", () => {
       expect(result.get(2)).toBe("b");
     });
 
-    it("throws error when keys are duplicated", () => {
+    it("키가 중복되면 에러 발생", () => {
       expect(() =>
         [
           { id: 1, name: "a" },
@@ -168,7 +168,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("toMapAsync()", () => {
-    it("creates Map with async key/value functions", async () => {
+    it("비동기 키/값 함수로 Map 생성", async () => {
       const result = await [
         { id: 1, name: "a" },
         { id: 2, name: "b" },
@@ -180,7 +180,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("toArrayMap()", () => {
-    it("creates Map with array values", () => {
+    it("배열 값을 가지는 Map 생성", () => {
       const result = [
         { type: "a", v: 1 },
         { type: "b", v: 2 },
@@ -191,7 +191,7 @@ describe("Array.prototype extension", () => {
       expect(result.get("b")).toHaveLength(1);
     });
 
-    it("transforms values with value function", () => {
+    it("값 함수로 값 변환", () => {
       const result = [
         { type: "a", v: 1 },
         { type: "a", v: 2 },
@@ -205,7 +205,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("toSetMap()", () => {
-    it("creates Map with Set values", () => {
+    it("Set 값을 가지는 Map 생성", () => {
       const result = [
         { type: "a", v: 1 },
         { type: "a", v: 1 }, // 중복
@@ -220,7 +220,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("toMapValues()", () => {
-    it("creates Map with aggregated results by group", () => {
+    it("그룹별 집계 결과를 가지는 Map 생성", () => {
       const result = [
         { type: "a", v: 10 },
         { type: "b", v: 20 },
@@ -240,7 +240,7 @@ describe("Array.prototype extension", () => {
   //#region 트리 변환
 
   describe("toTree()", () => {
-    it("converts to tree structure", () => {
+    it("트리 구조로 변환", () => {
       interface Item {
         id: number;
         parentId?: number;
@@ -267,7 +267,7 @@ describe("Array.prototype extension", () => {
   //#region 배열 비교
 
   describe("diffs()", () => {
-    it("analyzes differences between arrays", () => {
+    it("배열 간 차이 분석", () => {
       interface Item {
         id: number;
         value: string;
@@ -299,7 +299,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("oneWayDiffs()", () => {
-    it("analyzes one-way differences", () => {
+    it("단방향 차이 분석", () => {
       interface Item {
         id: number;
         value: string;
@@ -324,7 +324,7 @@ describe("Array.prototype extension", () => {
       expect(created?.type).toBe("create");
     });
 
-    it("includes unchanged items when includeSame=true", () => {
+    it("includeSame=true일 때 변경되지 않은 항목 포함", () => {
       interface Item {
         id: number;
         value: string;
@@ -351,7 +351,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("merge()", () => {
-    it("merges modified items", () => {
+    it("수정된 항목 병합", () => {
       interface Item {
         id: number;
         value: string;
@@ -375,10 +375,10 @@ describe("Array.prototype extension", () => {
 
   //#endregion
 
-  //#region ReadonlyArray support
+  //#region ReadonlyArray 지원
 
-  describe("ReadonlyArray support", () => {
-    it("can use $ with readonly arrays", () => {
+  describe("ReadonlyArray 지원", () => {
+    it("읽기 전용 배열과 함께 $ 사용 가능", () => {
       const arr: readonly number[] = [1, 2, 3];
       const result = arr.filter((x) => x > 1).toMap((x) => x);
 
@@ -390,10 +390,10 @@ describe("Array.prototype extension", () => {
 
   //#endregion
 
-  //#region various Array methods chaining
+  //#region 다양한 배열 메서드 체이닝
 
-  describe("various Array methods chaining", () => {
-    it("can chain flatMap", () => {
+  describe("다양한 배열 메서드 체이닝", () => {
+    it("flatMap 체이닝 가능", () => {
       const result = [
         [1, 2],
         [3, 4],
@@ -404,7 +404,7 @@ describe("Array.prototype extension", () => {
       expect(result.size).toBe(4);
     });
 
-    it("can chain slice", () => {
+    it("slice 체이닝 가능", () => {
       const result = [1, 2, 3, 4, 5].slice(1, 4).toMap((x) => x);
 
       expect(result.size).toBe(3);
@@ -413,13 +413,13 @@ describe("Array.prototype extension", () => {
       expect(result.has(4)).toBe(true);
     });
 
-    it("can chain concat", () => {
+    it("concat 체이닝 가능", () => {
       const result = [1, 2].concat([3, 4]).toMap((x) => x);
 
       expect(result.size).toBe(4);
     });
 
-    it("can chain sort", () => {
+    it("sort 체이닝 가능", () => {
       const result = [3, 1, 2].sort((a, b) => a - b).toMap((x, i) => i);
 
       expect(result.get(0)).toBe(1);
@@ -433,29 +433,29 @@ describe("Array.prototype extension", () => {
   //#region first, last
 
   describe("first()", () => {
-    it("returns first element", () => {
+    it("첫 번째 요소 반환", () => {
       expect([1, 2, 3].first()).toBe(1);
     });
 
-    it("returns first matching element", () => {
+    it("일치하는 첫 번째 요소 반환", () => {
       expect([1, 2, 3, 4, 5].first((x) => x > 3)).toBe(4);
     });
 
-    it("returns undefined for empty array", () => {
+    it("빈 배열에서 undefined 반환", () => {
       expect(([] as number[]).first()).toBe(undefined);
     });
   });
 
   describe("last()", () => {
-    it("returns last element", () => {
+    it("마지막 요소 반환", () => {
       expect([1, 2, 3].last()).toBe(3);
     });
 
-    it("returns last matching element", () => {
+    it("일치하는 마지막 요소 반환", () => {
       expect([1, 2, 3, 4, 5].last((x) => x < 4)).toBe(3);
     });
 
-    it("returns undefined for empty array", () => {
+    it("빈 배열에서 undefined 반환", () => {
       expect(([] as number[]).last()).toBe(undefined);
     });
   });
@@ -465,13 +465,13 @@ describe("Array.prototype extension", () => {
   //#region filterExists, ofType
 
   describe("filterExists()", () => {
-    it("removes null/undefined", () => {
+    it("null/undefined 제거", () => {
       const arr = [1, null, 2, undefined, 3];
       const result = arr.filterExists();
       expect(result).toEqual([1, 2, 3]);
     });
 
-    it("can be chained", () => {
+    it("체이닝 가능", () => {
       const arr = [1, null, 2, undefined, 3];
       const result = arr.filterExists().map((x) => x * 2);
       expect(result).toEqual([2, 4, 6]);
@@ -479,19 +479,19 @@ describe("Array.prototype extension", () => {
   });
 
   describe("ofType()", () => {
-    it("filters only elements of specific type (string)", () => {
+    it("특정 타입(문자열) 요소만 필터링", () => {
       const arr = [1, "a", 2, "b", true];
       const result = arr.ofType("string");
       expect(result).toEqual(["a", "b"]);
     });
 
-    it("filters only elements of specific type (number)", () => {
+    it("특정 타입(숫자) 요소만 필터링", () => {
       const arr = [1, "a", 2, "b", 3];
       const result = arr.ofType("number");
       expect(result).toEqual([1, 2, 3]);
     });
 
-    it("filters only elements of specific type (boolean)", () => {
+    it("특정 타입(boolean) 요소만 필터링", () => {
       const arr = [1, "a", true, false, 2];
       const result = arr.ofType("boolean");
       expect(result).toEqual([true, false]);
@@ -503,19 +503,19 @@ describe("Array.prototype extension", () => {
   //#region mapMany
 
   describe("mapMany()", () => {
-    it("maps then flattens", () => {
+    it("매핑 후 펼침", () => {
       const result = [1, 2, 3].mapMany((x) => [x, x * 10]);
       expect(result).toEqual([1, 10, 2, 20, 3, 30]);
     });
   });
 
   describe("mapManyAsync()", () => {
-    it("maps async then flattens", async () => {
+    it("비동기 매핑 후 펼침", async () => {
       const result = await [1, 2, 3].mapManyAsync(async (x) => Promise.resolve([x, x * 10]));
       expect(result).toEqual([1, 10, 2, 20, 3, 30]);
     });
 
-    it("maps async nested Promise array then flattens", async () => {
+    it("비동기 중첩 Promise 배열 매핑 후 펼침", async () => {
       const result = await [1, 2].mapManyAsync(async (x) => Promise.resolve([x, x + 1, x + 2]));
       expect(result).toEqual([1, 2, 3, 2, 3, 4]);
     });
@@ -526,7 +526,7 @@ describe("Array.prototype extension", () => {
   //#region groupBy
 
   describe("groupBy()", () => {
-    it("groups by key", () => {
+    it("키별로 그룹화", () => {
       const items = [
         { type: "a", value: 1 },
         { type: "b", value: 2 },
@@ -545,7 +545,7 @@ describe("Array.prototype extension", () => {
   //#region toObject
 
   describe("toObject()", () => {
-    it("converts array to object", () => {
+    it("배열을 객체로 변환", () => {
       const items = [
         { key: "a", value: 1 },
         { key: "b", value: 2 },
@@ -558,7 +558,7 @@ describe("Array.prototype extension", () => {
       expect(result).toEqual({ a: 1, b: 2 });
     });
 
-    it("throws error when keys are duplicated", () => {
+    it("키가 중복되면 에러 발생", () => {
       const items = [
         { key: "a", value: 1 },
         { key: "a", value: 2 },
@@ -572,22 +572,22 @@ describe("Array.prototype extension", () => {
   //#region distinct
 
   describe("distinct()", () => {
-    it("removes duplicates", () => {
+    it("중복 제거", () => {
       expect([1, 2, 2, 3, 3, 3].distinct()).toEqual([1, 2, 3]);
     });
 
-    it("removes duplicates in object array", () => {
+    it("객체 배열에서 중복 제거", () => {
       const arr = [{ a: 1 }, { a: 2 }, { a: 1 }];
       const result = arr.distinct();
       expect(result).toHaveLength(2);
     });
 
-    it("can be chained", () => {
+    it("체이닝 가능", () => {
       const result = [1, 2, 2, 3].distinct().map((x) => x * 2);
       expect(result).toEqual([2, 4, 6]);
     });
 
-    it("can use custom key with keyFn", () => {
+    it("keyFn으로 사용자 지정 키 사용 가능", () => {
       const arr = [
         { id: 1, name: "a" },
         { id: 2, name: "b" },
@@ -597,7 +597,7 @@ describe("Array.prototype extension", () => {
       expect(result).toHaveLength(2);
     });
 
-    it("removes duplicates by reference comparison with matchAddress=true", () => {
+    it("matchAddress=true일 때 참조 비교로 중복 제거", () => {
       const obj1 = { a: 1 };
       const obj2 = { a: 1 }; // 같은 값이지만 다른 참조
       const arr = [obj1, obj1, obj2];
@@ -613,11 +613,11 @@ describe("Array.prototype extension", () => {
   //#region orderBy, orderByDesc
 
   describe("orderBy()", () => {
-    it("sorts in ascending order", () => {
+    it("오름차순 정렬", () => {
       expect([3, 1, 2].orderBy()).toEqual([1, 2, 3]);
     });
 
-    it("can specify sort criteria with selector", () => {
+    it("선택자로 정렬 기준 지정 가능", () => {
       const items = [
         { name: "b", age: 30 },
         { name: "a", age: 20 },
@@ -627,14 +627,14 @@ describe("Array.prototype extension", () => {
       expect(result.map((x) => x.age)).toEqual([20, 25, 30]);
     });
 
-    it("can be chained", () => {
+    it("체이닝 가능", () => {
       const result = [3, 1, 2].orderBy().map((x) => x * 2);
       expect(result).toEqual([2, 4, 6]);
     });
   });
 
   describe("orderByDesc()", () => {
-    it("sorts in descending order", () => {
+    it("내림차순 정렬", () => {
       expect([1, 3, 2].orderByDesc()).toEqual([3, 2, 1]);
     });
   });
@@ -644,34 +644,34 @@ describe("Array.prototype extension", () => {
   //#region sum, min, max
 
   describe("sum()", () => {
-    it("returns sum", () => {
+    it("합계 반환", () => {
       expect([1, 2, 3, 4, 5].sum()).toBe(15);
     });
 
-    it("can extract values with selector", () => {
+    it("선택자로 값 추출 가능", () => {
       const items = [{ value: 10 }, { value: 20 }, { value: 30 }];
       expect(items.sum((x) => x.value)).toBe(60);
     });
 
-    it("returns 0 for empty array", () => {
+    it("빈 배열에서 0 반환", () => {
       expect(([] as number[]).sum()).toBe(0);
     });
 
-    it("throws error for non-number types", () => {
+    it("숫자가 아닌 타입에서 에러 발생", () => {
       expect(() => (["a", "b"] as unknown as number[]).sum()).toThrow("sum 은 number 에 대해서만");
     });
   });
 
   describe("min()", () => {
-    it("returns minimum value", () => {
+    it("최솟값 반환", () => {
       expect([3, 1, 2].min()).toBe(1);
     });
 
-    it("returns undefined for empty array", () => {
+    it("빈 배열에서 undefined 반환", () => {
       expect(([] as number[]).min()).toBe(undefined);
     });
 
-    it("throws error for non-number/string types", () => {
+    it("숫자/문자열이 아닌 타입에서 에러 발생", () => {
       expect(() => ([true, false] as unknown as number[]).min()).toThrow(
         "min 은 number/string 에 대해서만",
       );
@@ -679,15 +679,15 @@ describe("Array.prototype extension", () => {
   });
 
   describe("max()", () => {
-    it("returns maximum value", () => {
+    it("최댓값 반환", () => {
       expect([1, 3, 2].max()).toBe(3);
     });
 
-    it("returns undefined for empty array", () => {
+    it("빈 배열에서 undefined 반환", () => {
       expect(([] as number[]).max()).toBe(undefined);
     });
 
-    it("throws error for non-number/string types", () => {
+    it("숫자/문자열이 아닌 타입에서 에러 발생", () => {
       expect(() => ([{}, {}] as unknown as number[]).max()).toThrow(
         "max 은 number/string 에 대해서만",
       );
@@ -699,7 +699,7 @@ describe("Array.prototype extension", () => {
   //#region shuffle
 
   describe("shuffle()", () => {
-    it("shuffles array (preserves original)", () => {
+    it("배열 섞음 (원본 보존)", () => {
       const original = [1, 2, 3, 4, 5];
       const shuffled = original.shuffle();
 
@@ -712,10 +712,10 @@ describe("Array.prototype extension", () => {
 
   //#endregion
 
-  //#region Mutable methods
+  //#region 변경 메서드
 
   describe("distinctThis()", () => {
-    it("removes duplicates in original array", () => {
+    it("원본 배열에서 중복 제거", () => {
       const arr = [1, 2, 2, 3, 3, 3];
       const result = arr.distinctThis();
 
@@ -725,7 +725,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("orderByThis()", () => {
-    it("sorts original array in ascending order", () => {
+    it("원본 배열을 오름차순 정렬", () => {
       const arr = [3, 1, 2];
       arr.orderByThis();
 
@@ -734,7 +734,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("orderByDescThis()", () => {
-    it("sorts original array in descending order", () => {
+    it("원본 배열을 내림차순 정렬", () => {
       const arr = [1, 3, 2];
       arr.orderByDescThis();
 
@@ -743,7 +743,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("insert()", () => {
-    it("inserts item into original array", () => {
+    it("원본 배열에 항목 삽입", () => {
       const arr = [1, 3];
       arr.insert(1, 2);
 
@@ -752,14 +752,14 @@ describe("Array.prototype extension", () => {
   });
 
   describe("remove()", () => {
-    it("removes item from original array", () => {
+    it("원본 배열에서 항목 제거", () => {
       const arr = [1, 2, 3];
       arr.remove(2);
 
       expect(arr).toEqual([1, 3]);
     });
 
-    it("removes items with condition function", () => {
+    it("조건 함수로 항목 제거", () => {
       const arr = [1, 2, 3, 4];
       arr.remove((x) => x % 2 === 0);
 
@@ -768,14 +768,14 @@ describe("Array.prototype extension", () => {
   });
 
   describe("toggle()", () => {
-    it("removes item if exists", () => {
+    it("항목이 존재하면 제거", () => {
       const arr = [1, 2, 3];
       arr.toggle(2);
 
       expect(arr).toEqual([1, 3]);
     });
 
-    it("adds item if not exists", () => {
+    it("항목이 없으면 추가", () => {
       const arr = [1, 3];
       arr.toggle(2);
 
@@ -784,7 +784,7 @@ describe("Array.prototype extension", () => {
   });
 
   describe("clear()", () => {
-    it("clears original array", () => {
+    it("원본 배열 초기화", () => {
       const arr = [1, 2, 3];
       arr.clear();
 

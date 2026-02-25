@@ -24,7 +24,7 @@ export const SidebarContext = createContext<SidebarContextValue>();
 export function useSidebarContext(): SidebarContextValue {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error("useSidebarContext는 SidebarContainer 내부에서만 사용할 수 있습니다");
+    throw new Error("useSidebarContext can only be used inside SidebarContainer");
   }
   return context;
 }

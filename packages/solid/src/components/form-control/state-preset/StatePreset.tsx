@@ -147,7 +147,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     }
 
     if (presets().some((p) => p.name === name)) {
-      notification.warning("이름 중복", "같은 이름의 프리셋이 이미 존재합니다.");
+      notification.warning("Duplicate name", "A preset with this name already exists.");
       return;
     }
 
@@ -156,7 +156,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
       state: objClone(local.value),
     };
     setPresets([...presets(), newPreset]);
-    notification.info("프리셋 저장", `"${name}" 프리셋이 저장되었습니다.`);
+    notification.info("Preset saved", `Preset "${name}" has been saved.`);
     setAdding(false);
     setInputValue("");
   }
@@ -177,11 +177,11 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     setPresets(updated);
 
     const notiId = notification.info(
-      "프리셋 덮어쓰기",
-      `"${presetName}" 프리셋이 현재 상태로 업데이트되었습니다.`,
+      "Preset overwritten",
+      `Preset "${presetName}" has been updated with the current state.`,
       {
         action: {
-          label: "실행 취소",
+          label: "Undo",
           onClick: () => {
             setPresets(snapshot);
             notification.remove(notiId);
@@ -198,9 +198,9 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
     const updated = snapshot.filter((_, i) => i !== index);
     setPresets(updated);
 
-    const notiId = notification.info("프리셋 삭제", `"${presetName}" 프리셋이 삭제되었습니다.`, {
+    const notiId = notification.info("Preset deleted", `Preset "${presetName}" has been deleted.`, {
       action: {
-        label: "실행 취소",
+        label: "Undo",
         onClick: () => {
           setPresets(snapshot);
           notification.remove(notiId);

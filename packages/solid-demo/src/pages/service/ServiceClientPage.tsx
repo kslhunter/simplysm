@@ -28,9 +28,9 @@ const ServiceClientDemo: Component = () => {
     try {
       await serviceClient.connect(undefined, { port: 40081 });
       setConnected(true);
-      notification.success("연결 성공", "서버에 연결되었습니다.");
+      notification.success("Connection successful", "Connected to the server.");
     } catch (err) {
-      notification.danger("연결 실패", String(err));
+      notification.danger("Connection failed", String(err));
     }
   });
 

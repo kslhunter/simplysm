@@ -80,7 +80,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     setBusyCount((c) => c + 1);
     try {
       const signal = signalMap.get(name);
-      if (!signal) throw new Error(`'${name}'에 대한 공유데이터 저장소가 없습니다.`);
+      if (!signal) throw new Error(`No shared data store found for '${name}'.`);
 
       const [, setItems] = signal;
       const resData = await def.fetch(changeKeys);
@@ -101,8 +101,8 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
       // CR-2: Notify user on fetch failure
       logger.error(`SharedData '${name}' fetch failed:`, err);
       notification.danger(
-        "공유 데이터 로드 실패",
-        err instanceof Error ? err.message : `'${name}' 데이터를 불러오는 중 오류가 발생했습니다.`,
+        "Shared data load failed",
+        err instanceof Error ? err.message : `Error occurred while loading '${name}' data.`,
       );
     } finally {
       setBusyCount((c) => c - 1);
@@ -120,7 +120,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
     ) => Record<string, SharedDataDefinition<unknown>>,
   ): void {
     if (configured) {
-      throw new Error("SharedDataProvider: configure()는 1회만 호출할 수 있습니다");
+      throw new Error("SharedDataProvider: configure() can only be called once");
     }
     configured = true;
 
@@ -220,7 +220,7 @@ export function SharedDataProvider(props: { children: JSX.Element }): JSX.Elemen
           return target[prop];
         }
         if (!configured) {
-          throw new Error("SharedDataProvider: configure()를 먼저 호출해야 합니다");
+          throw new Error("SharedDataProvider: configure() must be called first");
         }
         return accessors[prop];
       },

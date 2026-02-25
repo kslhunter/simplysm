@@ -89,7 +89,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
       originalData = objClone(result.data);
       setInfo(result.info);
     } catch (err) {
-      noti.error(err, "조회실패");
+      noti.error(err, "Lookup failed");
     }
     setBusyCount((c) => c - 1);
     setReady(true);
@@ -120,7 +120,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
 
     const currentInfo = info();
     if (currentInfo && !currentInfo.isNew && !hasChanges()) {
-      noti.info("안내", "변경사항이 없습니다.");
+      noti.info("Notice", "No changes to save.");
       return;
     }
 
@@ -128,7 +128,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.submit(objClone(unwrap(data)));
       if (result) {
-        noti.success("저장 완료", "저장되었습니다.");
+        noti.success("Save completed", "Saved successfully.");
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -136,7 +136,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, "저장 실패");
+      noti.error(err, "Save failed");
     }
     setBusyCount((c) => c - 1);
   }
@@ -160,7 +160,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
     try {
       const result = await local.toggleDelete(del);
       if (result) {
-        noti.success(del ? "삭제 완료" : "복구 완료", del ? "삭제되었습니다." : "복구되었습니다.");
+        noti.success(del ? "Delete completed" : "Restore completed", del ? "Deleted successfully." : "Restored successfully.");
         if (dialogInstance) {
           dialogInstance.close(true);
         } else {
@@ -168,7 +168,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         }
       }
     } catch (err) {
-      noti.error(err, del ? "삭제 실패" : "복구 실패");
+      noti.error(err, del ? "Delete failed" : "Restore failed");
     }
     setBusyCount((c) => c - 1);
   }

@@ -6,7 +6,7 @@ import { getPackageSourceFiles, getPackageFiles } from "../src/utils/tsconfig";
 describe("getPackageSourceFiles", () => {
   const sep = path.sep;
 
-  it("패키지 src 디렉토리 내 파일만 필터링", () => {
+  it("filters files within package src directory only", () => {
     const pkgDir = `/project/packages/core-common`;
     const parsedConfig = {
       fileNames: [
@@ -25,7 +25,7 @@ describe("getPackageSourceFiles", () => {
     ]);
   });
 
-  it("유사한 이름의 다른 패키지 파일 제외 (core vs core-common)", () => {
+  it("excludes files from similar package names (core vs core-common)", () => {
     const pkgDir = `/project/packages/core`;
     const parsedConfig = {
       fileNames: [
@@ -37,11 +37,11 @@ describe("getPackageSourceFiles", () => {
 
     const result = getPackageSourceFiles(pkgDir, parsedConfig);
 
-    // core-common, core-node는 제외되고 core만 포함
+    // core-common, core-node are excluded, only core is included
     expect(result).toEqual([`/project/packages/core/src/index.ts`]);
   });
 
-  it("src 디렉토리 외부 파일 제외 (tests, scripts 등)", () => {
+  it("excludes files outside src directory (tests, scripts, etc)", () => {
     const pkgDir = `/project/packages/cli`;
     const parsedConfig = {
       fileNames: [
@@ -60,7 +60,7 @@ describe("getPackageSourceFiles", () => {
     ]);
   });
 
-  it("파일이 없으면 빈 배열 반환", () => {
+  it("returns empty array if no files", () => {
     const pkgDir = `/project/packages/empty`;
     const parsedConfig = {
       fileNames: [
@@ -74,8 +74,8 @@ describe("getPackageSourceFiles", () => {
     expect(result).toEqual([]);
   });
 
-  it("경로 구분자를 올바르게 처리", () => {
-    // path.sep을 사용하여 플랫폼 독립적인 테스트
+  it("handles path separators correctly", () => {
+    // use path.sep for platform-independent test
     const pkgDir = `${sep}project${sep}packages${sep}core`;
     const parsedConfig = {
       fileNames: [
@@ -89,9 +89,9 @@ describe("getPackageSourceFiles", () => {
     expect(result).toEqual([`${sep}project${sep}packages${sep}core${sep}src${sep}index.ts`]);
   });
 
-  it("TypeScript API의 forward slash 경로도 올바르게 필터링 (Windows 호환)", () => {
-    // TypeScript API는 Windows에서도 forward slash 경로를 반환
-    // pkgDir은 path.join으로 생성되어 OS-native 구분자 사용
+  it("handles forward slash paths from TypeScript API correctly (Windows compatible)", () => {
+    // TypeScript API returns forward slash paths even on Windows
+    // pkgDir is created with path.join using OS-native separator
     const pkgDir = path.resolve("/project/packages/core-common");
     const parsedConfig = {
       fileNames: [
@@ -110,7 +110,7 @@ describe("getPackageSourceFiles", () => {
 });
 
 describe("getPackageFiles", () => {
-  it("패키지 디렉토리 내 모든 파일 필터링 (src + tests)", () => {
+  it("filters all files within package directory (src + tests)", () => {
     const pkgDir = `/project/packages/core-common`;
     const parsedConfig = {
       fileNames: [
@@ -133,7 +133,7 @@ describe("getPackageFiles", () => {
     ]);
   });
 
-  it("유사한 이름의 다른 패키지 파일 제외 (core vs core-common)", () => {
+  it("excludes files from similar package names (core vs core-common)", () => {
     const pkgDir = `/project/packages/core`;
     const parsedConfig = {
       fileNames: [
@@ -152,7 +152,7 @@ describe("getPackageFiles", () => {
     ]);
   });
 
-  it("파일이 없으면 빈 배열 반환", () => {
+  it("returns empty array if no files", () => {
     const pkgDir = `/project/packages/empty`;
     const parsedConfig = {
       fileNames: [`/project/packages/core/src/index.ts`],
@@ -163,7 +163,7 @@ describe("getPackageFiles", () => {
     expect(result).toEqual([]);
   });
 
-  it("TypeScript API의 forward slash 경로도 올바르게 필터링 (Windows 호환)", () => {
+  it("handles forward slash paths from TypeScript API correctly (Windows compatible)", () => {
     const pkgDir = path.resolve("/project/packages/core-common");
     const parsedConfig = {
       fileNames: [

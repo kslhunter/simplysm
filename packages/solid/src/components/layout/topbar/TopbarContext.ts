@@ -17,7 +17,7 @@ export const TopbarContext = createContext<TopbarContextValue>();
 export function useTopbarActionsAccessor(): Accessor<JSX.Element | undefined> {
   const context = useContext(TopbarContext);
   if (!context) {
-    throw new Error("useTopbarActionsAccessor는 Topbar.Container 내부에서만 사용할 수 있습니다");
+    throw new Error("useTopbarActionsAccessor can only be used inside Topbar.Container");
   }
   return context.actions;
 }
@@ -25,7 +25,7 @@ export function useTopbarActionsAccessor(): Accessor<JSX.Element | undefined> {
 export function createTopbarActions(accessor: () => JSX.Element): void {
   const context = useContext(TopbarContext);
   if (!context) {
-    throw new Error("createTopbarActions는 Topbar.Container 내부에서만 사용할 수 있습니다");
+    throw new Error("createTopbarActions can only be used inside Topbar.Container");
   }
 
   context.setActions(() => accessor());

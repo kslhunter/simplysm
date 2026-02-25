@@ -34,7 +34,7 @@ export function useLogger(): Logger {
     error: createLogFunction("error"),
     configure: (fn: (origin: LogAdapter) => LogAdapter) => {
       if (!loggerCtx) {
-        throw new Error("configure()는 LoggerProvider 내부에서만 사용할 수 있습니다");
+        throw new Error("configure() can only be used inside LoggerProvider");
       }
       loggerCtx.configure(fn);
     },
