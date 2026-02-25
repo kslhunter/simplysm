@@ -117,6 +117,7 @@ You can start from any step or skip steps as needed.
 ```
 
 - The last `⚠️` line is only shown when uncommitted changes exist. Omit it when working tree is clean.
+- If the design does NOT involve code modifications, omit the `/sd-check` step from both paths.
 
 - After presenting both paths, **recommend one** based on the design's scope:
    - Path A recommended: new features, multi-file changes, architectural changes, anything that benefits from isolation

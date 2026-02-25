@@ -8,7 +8,7 @@ import type { SdElectronConfig } from "../sd-config.types";
 import { execa } from "execa";
 
 /**
- * package.json 타입
+ * package.json type
  */
 interface NpmConfig {
   name: string;
@@ -18,11 +18,11 @@ interface NpmConfig {
 }
 
 /**
- * Electron 프로젝트 관리 클래스
+ * Electron project management class
  *
- * - Electron 프로젝트 초기화 (package.json 생성, 의존성 설치, native 모듈 재빌드)
- * - Windows 실행 파일 빌드 (electron-builder)
- * - 개발 모드 실행 (Vite dev server URL 로드)
+ * - Initialize Electron project (create package.json, install dependencies, rebuild native modules)
+ * - Build Windows executable (electron-builder)
+ * - Run in development mode (load Vite dev server URL)
  */
 export class Electron {
   private static readonly _logger = consola.withTag("sd:cli:electron");
@@ -40,7 +40,7 @@ export class Electron {
   }
 
   /**
-   * Electron 인스턴스 생성 (설정 검증 포함)
+   * Create Electron instance (with configuration validation)
    */
   static async create(pkgPath: string, config: SdElectronConfig): Promise<Electron> {
     Electron._validateConfig(config);
@@ -50,16 +50,16 @@ export class Electron {
   }
 
   /**
-   * 설정 검증
+   * Validate configuration
    */
   private static _validateConfig(config: SdElectronConfig): void {
     if (typeof config.appId !== "string" || config.appId.trim() === "") {
-      throw new Error("electron.appId는 필수입니다.");
+      throw new Error("electron.appId is required.");
     }
   }
 
   /**
-   * 명령어 실행 (로깅 포함)
+   * Execute command (with logging)
    */
   private async _exec(
     cmd: string,
@@ -67,31 +67,31 @@ export class Electron {
     cwd: string,
     env?: Record<string, string>,
   ): Promise<string> {
-    Electron._logger.debug(`실행 명령: ${cmd} ${args.join(" ")}`);
+    Electron._logger.debug(`executed command: ${cmd} ${args.join(" ")}`);
     const { stdout: result } = await execa(cmd, args, { cwd, env: { ...process.env, ...env } });
-    Electron._logger.debug(`실행 결과: ${result}`);
+    Electron._logger.debug(`execution result: ${result}`);
     return result;
   }
 
   //#region Public Methods
 
   /**
-   * Electron 프로젝트 초기화
+   * Initialize Electron project
    *
-   * 1. .electron/src/package.json 생성
-   * 2. npm install 실행
-   * 3. electron-rebuild 실행 (native 모듈 재빌드)
+   * 1. Create .electron/src/package.json
+   * 2. Run npm install
+   * 3. Run electron-rebuild (rebuild native modules)
    */
   async initialize(): Promise<void> {
     const srcPath = path.resolve(this._electronPath, "src");
 
-    // 1. package.json 생성
+    // 1. Create package.json
     await this._setupPackageJson(srcPath);
 
     // 2. npm install
     await this._exec("npm", ["install"], srcPath);
 
-    // 3. native 모듈 재빌드
+    // 3. Rebuild native modules
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     if (reinstallDeps.length > 0) {
       await this._exec("npx", ["electron-rebuild"], srcPath);
@@ -99,27 +99,27 @@ export class Electron {
   }
 
   /**
-   * 프로덕션 빌드
+   * Production build
    *
-   * 1. esbuild로 electron-main.ts 번들링
-   * 2. 웹 에셋 복사
-   * 3. electron-builder 설정 생성
-   * 4. electron-builder 실행
-   * 5. 결과물 복사
+   * 1. Bundle electron-main.ts with esbuild
+   * 2. Copy web assets
+   * 3. Create electron-builder configuration
+   * 4. Run electron-builder
+   * 5. Copy build output
    */
   async build(outPath: string): Promise<void> {
     const srcPath = path.resolve(this._electronPath, "src");
 
-    // 1. electron-main.ts 번들링
+    // 1. Bundle electron-main.ts
     await this._bundleMainProcess(srcPath);
 
-    // 2. 웹 에셋 복사 (outPath → .electron/src/)
+    // 2. Copy web assets (outPath → .electron/src/)
     await this._copyWebAssets(outPath, srcPath);
 
-    // 3. electron-builder 설정 생성 + 실행
+    // 3. Create electron-builder configuration and run
     await this._runElectronBuilder(srcPath);
 
-    // 4. 결과물 복사
+    // 4. Copy build output
     await this._copyBuildOutput(outPath);
   }
 

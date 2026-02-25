@@ -76,48 +76,48 @@ export class Capacitor {
   }
 
   /**
-   * F5: 설정 검증
+   * F5: Validate configuration
    */
   private static _validateConfig(config: SdCapacitorConfig): void {
     if (typeof config.appId !== "string" || config.appId.trim() === "") {
-      throw new CapacitorConfigError("capacitor.appId는 필수입니다.");
+      throw new CapacitorConfigError("capacitor.appId is required.");
     }
     if (!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i.test(config.appId)) {
-      throw new CapacitorConfigError(`capacitor.appId 형식이 올바르지 않습니다: ${config.appId}`);
+      throw new CapacitorConfigError(`capacitor.appId format is invalid: ${config.appId}`);
     }
     if (typeof config.appName !== "string" || config.appName.trim() === "") {
-      throw new CapacitorConfigError("capacitor.appName은 필수입니다.");
+      throw new CapacitorConfigError("capacitor.appName is required.");
     }
     if (config.platform != null) {
       const platforms = Object.keys(config.platform);
       for (const p of platforms) {
         if (p !== "android") {
-          throw new CapacitorConfigError(`지원하지 않는 플랫폼: ${p} (현재 android만 지원)`);
+          throw new CapacitorConfigError(`unsupported platform: ${p} (currently only android is supported)`);
         }
       }
     }
   }
 
   /**
-   * 명령어 실행 (로깅 포함)
+   * Execute command (with logging)
    */
   private async _exec(cmd: string, args: string[], cwd: string): Promise<string> {
-    Capacitor._logger.debug(`실행 명령: ${cmd} ${args.join(" ")}`);
+    Capacitor._logger.debug(`executed command: ${cmd} ${args.join(" ")}`);
     const { stdout: result } = await execa(cmd, args, { cwd });
-    Capacitor._logger.debug(`실행 결과: ${result}`);
+    Capacitor._logger.debug(`execution result: ${result}`);
     return result;
   }
 
   /**
-   * F10: 동시 실행 방지를 위한 잠금 획득
+   * F10: Acquire lock to prevent concurrent execution
    */
   private async _acquireLock(): Promise<void> {
     const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
     if (await fsExists(lockPath)) {
       const lockContent = await fsRead(lockPath);
       throw new Error(
-        `다른 Capacitor 작업이 진행 중입니다 (PID: ${lockContent}). ` +
-          `문제가 있다면 ${lockPath} 파일을 삭제하세요.`,
+        `Another Capacitor operation is in progress (PID: ${lockContent}). ` +
+          `If there's an issue, delete the ${lockPath} file.`,
       );
     }
     await fsMkdir(this._capPath);
@@ -125,7 +125,7 @@ export class Capacitor {
   }
 
   /**
-   * F10: 잠금 해제
+   * F10: Release lock
    */
   private async _releaseLock(): Promise<void> {
     const lockPath = path.resolve(this._capPath, Capacitor._LOCK_FILE_NAME);
@@ -133,65 +133,65 @@ export class Capacitor {
   }
 
   /**
-   * F4: 외부 도구 검증
+   * F4: Validate external tools
    */
   private async _validateTools(): Promise<void> {
-    // Android SDK 확인
+    // Check Android SDK
     const sdkPath = await this._findAndroidSdk();
     if (sdkPath == null) {
       throw new Error(
-        "Android SDK를 찾을 수 없습니다.\n" +
-          "1. Android Studio를 설치하거나\n" +
-          "2. ANDROID_HOME 또는 ANDROID_SDK_ROOT 환경변수를 설정하세요.",
+        "Android SDK not found.\n" +
+          "1. Install Android Studio or\n" +
+          "2. Set ANDROID_HOME or ANDROID_SDK_ROOT environment variable.",
       );
     }
 
-    // Java 확인 (android 플랫폼일 때만)
+    // Check Java (only for android platform)
     if (this._platforms.includes("android")) {
       const javaPath = await this._findJava21();
       if (javaPath == null) {
         Capacitor._logger.warn(
-          "Java 21을 찾을 수 없습니다. Gradle이 내장 JDK를 사용하거나 빌드가 실패할 수 있습니다.",
+          "Java 21 not found. Gradle may use embedded JDK or the build may fail.",
         );
       }
     }
   }
 
   /**
-   * Capacitor 프로젝트 초기화
+   * Initialize Capacitor project
    *
-   * 1. package.json 생성 및 의존성 설치
-   * 2. capacitor.config.ts 생성
-   * 3. 플랫폼 추가 (android)
-   * 4. 아이콘 설정
-   * 5. Android 네이티브 설정
-   * 6. cap sync 또는 cap copy 실행
+   * 1. Create package.json and install dependencies
+   * 2. Create capacitor.config.ts
+   * 3. Add platform (android)
+   * 4. Set up icon
+   * 5. Configure Android native settings
+   * 6. Run cap sync or cap copy
    */
   async initialize(): Promise<void> {
     await this._acquireLock();
 
     try {
-      // F4: 외부 도구 검증
+      // F4: Validate external tools
       await this._validateTools();
 
-      // 1. Capacitor 프로젝트 초기화
+      // 1. Initialize Capacitor project
       const changed = await this._initCap();
 
-      // 2. Capacitor 설정 파일 생성
+      // 2. Create Capacitor config file
       await this._writeCapConf();
 
-      // 3. 플랫폼 관리 (F12: 멱등성 - 이미 존재하면 스킵)
+      // 3. Manage platform (F12: idempotent - skip if already exists)
       await this._addPlatforms();
 
-      // 4. 아이콘 설정 (F6: 에러 복구)
+      // 4. Set up icon (F6: error recovery)
       await this._setupIcon();
 
-      // 5. Android 네이티브 설정
+      // 5. Configure Android native settings
       if (this._platforms.includes("android")) {
         await this._configureAndroid();
       }
 
-      // 6. 웹 자산 동기화
+      // 6. Synchronize web assets
       if (changed) {
         await this._exec("npx", ["cap", "sync"], this._capPath);
       } else {
@@ -203,7 +203,7 @@ export class Capacitor {
   }
 
   /**
-   * Android APK/AAB 빌드
+   * Build Android APK/AAB
    */
   async build(outPath: string): Promise<void> {
     await this._acquireLock();
@@ -217,7 +217,7 @@ export class Capacitor {
         if (platform === "android") {
           await this._buildAndroid(outPath, buildType);
         } else {
-          throw new Error(`지원하지 않는 플랫폼: ${platform}`);
+          throw new Error(`unsupported platform: ${platform}`);
         }
       }
     } finally {
@@ -226,10 +226,10 @@ export class Capacitor {
   }
 
   /**
-   * 디바이스에서 앱 실행 (WebView를 개발 서버로 연결)
+   * Run app on device (connect WebView to development server)
    */
   async runOnDevice(url?: string): Promise<void> {
-    // F11: URL 검증
+    // F11: Validate URL
     if (url != null) {
       this._validateUrl(url);
       await this._updateServerUrl(url);
@@ -245,7 +245,7 @@ export class Capacitor {
           try {
             await this._exec("adb", ["kill-server"], this._capPath);
           } catch {
-            // adb kill-server 실패는 무시
+            // adb kill-server failure is ignored
           }
         }
         throw err;
@@ -254,26 +254,26 @@ export class Capacitor {
   }
 
   /**
-   * F11: URL 검증
+   * F11: Validate URL
    */
   private _validateUrl(url: string): void {
     try {
       const parsed = new URL(url);
       if (!["http:", "https:"].includes(parsed.protocol)) {
-        throw new Error(`지원하지 않는 프로토콜: ${parsed.protocol}`);
+        throw new Error(`unsupported protocol: ${parsed.protocol}`);
       }
     } catch (err) {
       if (err instanceof TypeError) {
-        throw new Error(`유효하지 않은 URL: ${url}`);
+        throw new Error(`invalid URL: ${url}`);
       }
       throw err;
     }
   }
 
-  //#region Private - 초기화
+  //#region Private - Initialization
 
   /**
-   * Capacitor 프로젝트 기본 초기화 (package.json, npm install, cap init)
+   * Basic Capacitor project initialization (package.json, npm install, cap init)
    */
   private async _initCap(): Promise<boolean> {
     const depChanged = await this._setupNpmConf();
@@ -281,9 +281,9 @@ export class Capacitor {
 
     // pnpm install
     const installResult = await this._exec("pnpm", ["install"], this._capPath);
-    Capacitor._logger.debug(`pnpm install 완료: ${installResult}`);
+    Capacitor._logger.debug(`pnpm install completed: ${installResult}`);
 
-    // F12: cap init 멱등성 - capacitor.config.ts가 없을 때만 실행
+    // F12: cap init idempotency - execute only when capacitor.config.ts does not exist
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
     if (!(await fsExists(configPath))) {
       await this._exec(
@@ -293,7 +293,7 @@ export class Capacitor {
       );
     }
 
-    // 기본 www/index.html 생성
+    // Create default www/index.html
     const wwwPath = path.resolve(this._capPath, "www");
     await fsMkdir(wwwPath);
     await fsWrite(
@@ -305,14 +305,14 @@ export class Capacitor {
   }
 
   /**
-   * package.json 설정
+   * Configure package.json
    */
   private async _setupNpmConf(): Promise<boolean> {
     const projNpmConfigPath = path.resolve(this._pkgPath, "../../package.json");
 
-    // F3: 파일 존재 확인
+    // F3: Check if file exists
     if (!(await fsExists(projNpmConfigPath))) {
-      throw new Error(`루트 package.json을 찾을 수 없습니다: ${projNpmConfigPath}`);
+      throw new Error(`root package.json not found: ${projNpmConfigPath}`);
     }
 
     const projNpmConfig = await fsReadJson<NpmConfig>(projNpmConfigPath);
@@ -329,7 +329,7 @@ export class Capacitor {
       capNpmConf.volta = projNpmConfig.volta;
     }
 
-    // 기본 의존성
+    // Default dependencies
     capNpmConf.dependencies = capNpmConf.dependencies ?? {};
     capNpmConf.dependencies["@capacitor/core"] = "^7.0.0";
     capNpmConf.dependencies["@capacitor/app"] = "^7.0.0";
@@ -341,7 +341,7 @@ export class Capacitor {
     capNpmConf.devDependencies["@capacitor/cli"] = "^7.0.0";
     capNpmConf.devDependencies["@capacitor/assets"] = "^3.0.0";
 
-    // 플러그인 패키지 설정
+    // Configure plugin packages
     const mainDeps = {
       ...this._npmConfig.dependencies,
       ...this._npmConfig.devDependencies,
@@ -357,28 +357,28 @@ export class Capacitor {
         ),
     );
 
-    // 사용하지 않는 플러그인 제거
+    // Remove unused plugins
     for (const prevPlugin of prevPlugins) {
       if (!usePlugins.includes(prevPlugin)) {
         delete capNpmConf.dependencies[prevPlugin];
-        Capacitor._logger.debug(`플러그인 제거: ${prevPlugin}`);
+        Capacitor._logger.debug(`plugin removed: ${prevPlugin}`);
       }
     }
 
-    // 새 플러그인 추가
+    // Add new plugins
     for (const plugin of usePlugins) {
       if (!(plugin in capNpmConf.dependencies)) {
         const version = mainDeps[plugin] ?? "*";
         capNpmConf.dependencies[plugin] = version;
-        Capacitor._logger.debug(`플러그인 추가: ${plugin}@${version}`);
+        Capacitor._logger.debug(`plugin added: ${plugin}@${version}`);
       }
     }
 
-    // 저장
+    // Save
     await fsMkdir(this._capPath);
     await fsWriteJson(capNpmConfPath, capNpmConf, { space: 2 });
 
-    // 의존성 변경 여부 확인
+    // Check if dependencies changed
     const isChanged =
       orgCapNpmConf.volta !== capNpmConf.volta ||
       JSON.stringify(orgCapNpmConf.dependencies) !== JSON.stringify(capNpmConf.dependencies) ||
@@ -388,12 +388,12 @@ export class Capacitor {
   }
 
   /**
-   * capacitor.config.ts 생성
+   * Create capacitor.config.ts
    */
   private async _writeCapConf(): Promise<void> {
     const confPath = path.resolve(this._capPath, "capacitor.config.ts");
 
-    // 플러그인 옵션 생성
+    // Create plugin options
     const pluginOptions: Record<string, Record<string, unknown>> = {};
     for (const [pluginName, options] of Object.entries(this._config.plugins ?? {})) {
       if (options !== true) {
@@ -427,13 +427,13 @@ export default config;
   }
 
   /**
-   * 플랫폼 추가 (F12: 멱등성 보장)
+   * Add platform (F12: ensure idempotency)
    */
   private async _addPlatforms(): Promise<void> {
     for (const platform of this._platforms) {
       const platformPath = path.resolve(this._capPath, platform);
       if (await fsExists(platformPath)) {
-        Capacitor._logger.debug(`플랫폼 이미 존재: ${platform}`);
+        Capacitor._logger.debug(`platform already exists: ${platform}`);
         continue;
       }
 
@@ -442,7 +442,7 @@ export default config;
   }
 
   /**
-   * 아이콘 설정 (F6: 에러 복구)
+   * Set up icon (F6: error recovery)
    */
   private async _setupIcon(): Promise<void> {
     const assetsDirPath = path.resolve(this._capPath, "assets");
@@ -450,10 +450,10 @@ export default config;
     if (this._config.icon != null) {
       const iconSource = path.resolve(this._pkgPath, this._config.icon);
 
-      // F6: 소스 아이콘 존재 확인
+      // F6: Check if source icon exists
       if (!(await fsExists(iconSource))) {
         Capacitor._logger.warn(
-          `아이콘 파일을 찾을 수 없습니다: ${iconSource}. 기본 아이콘을 사용합니다.`,
+          `icon file not found: ${iconSource}. Using default icon.`,
         );
         return;
       }
@@ -461,13 +461,13 @@ export default config;
       try {
         await fsMkdir(assetsDirPath);
 
-        // 아이콘 생성
+        // Create icon
         const logoPath = path.resolve(assetsDirPath, "logo.png");
 
         const logoSize = Math.floor(1024 * 0.6);
         const padding = Math.floor((1024 - logoSize) / 2);
 
-        // F6: sharp 에러 처리
+        // F6: Handle sharp errors
         await sharp(iconSource)
           .resize(logoSize, logoSize, {
             fit: "contain",
@@ -496,9 +496,9 @@ export default config;
         );
       } catch (err) {
         Capacitor._logger.warn(
-          `아이콘 생성 실패: ${err instanceof Error ? err.message : err}. 기본 아이콘을 사용합니다.`,
+          `icon generation failed: ${err instanceof Error ? err.message : err}. Using default icon.`,
         );
-        // F6: 실패해도 계속 진행 (기본 아이콘 사용)
+        // F6: Continue even if it fails (use default icon)
       }
     } else {
       await fsRm(assetsDirPath);
@@ -507,17 +507,17 @@ export default config;
 
   //#endregion
 
-  //#region Private - Android 설정
+  //#region Private - Android Configuration
 
   /**
-   * Android 네이티브 설정
+   * Configure Android native settings
    */
   private async _configureAndroid(): Promise<void> {
     const androidPath = path.resolve(this._capPath, "android");
 
-    // F3: Android 디렉토리 존재 확인
+    // F3: Check if Android directory exists
     if (!(await fsExists(androidPath))) {
-      throw new Error(`Android 프로젝트 디렉토리가 없습니다: ${androidPath}`);
+      throw new Error(`Android project directory not found: ${androidPath}`);
     }
 
     await this._configureAndroidJavaHomePath(androidPath);
@@ -527,14 +527,14 @@ export default config;
   }
 
   /**
-   * JAVA_HOME 경로 설정 (gradle.properties)
+   * Set up JAVA_HOME path (gradle.properties)
    */
   private async _configureAndroidJavaHomePath(androidPath: string): Promise<void> {
     const gradlePropsPath = path.resolve(androidPath, "gradle.properties");
 
-    // F3: 파일 존재 확인
+    // F3: Check if file exists
     if (!(await fsExists(gradlePropsPath))) {
-      Capacitor._logger.warn(`gradle.properties 파일이 없습니다: ${gradlePropsPath}`);
+      Capacitor._logger.warn(`gradle.properties file not found: ${gradlePropsPath}`);
       return;
     }
 
@@ -542,7 +542,7 @@ export default config;
 
     const java21Path = await this._findJava21();
     if (java21Path != null && !content.includes("org.gradle.java.home")) {
-      // F9: Windows 경로 이스케이프 개선
+      // F9: Improved Windows path escaping
       const escapedPath = java21Path.replace(/\\/g, "\\\\");
       content += `\norg.gradle.java.home=${escapedPath}\n`;
       await fsWrite(gradlePropsPath, content);
@@ -550,7 +550,7 @@ export default config;
   }
 
   /**
-   * Java 21 경로 자동 탐색
+   * Auto-detect Java 21 path
    */
   private async _findJava21(): Promise<string | undefined> {
     const patterns = [
@@ -573,26 +573,26 @@ export default config;
   }
 
   /**
-   * Android SDK 경로 설정 (local.properties)
+   * Set up Android SDK path (local.properties)
    */
   private async _configureAndroidSdkPath(androidPath: string): Promise<void> {
     const localPropsPath = path.resolve(androidPath, "local.properties");
 
     const sdkPath = await this._findAndroidSdk();
     if (sdkPath != null) {
-      // F9: 항상 forward slash 사용 (Gradle 호환)
+      // F9: Always use forward slash (Gradle compatible)
       await fsWrite(localPropsPath, `sdk.dir=${sdkPath.replace(/\\/g, "/")}\n`);
     } else {
       throw new Error(
-        "Android SDK를 찾을 수 없습니다.\n" +
-          "1. Android Studio를 설치하거나\n" +
-          "2. ANDROID_HOME 또는 ANDROID_SDK_ROOT 환경변수를 설정하세요.",
+        "Android SDK not found.\n" +
+          "1. Install Android Studio or\n" +
+          "2. Set ANDROID_HOME or ANDROID_SDK_ROOT environment variable.",
       );
     }
   }
 
   /**
-   * Android SDK 경로 탐색
+   * Search for Android SDK path
    */
   private async _findAndroidSdk(): Promise<string | undefined> {
     const fromEnv = (env["ANDROID_HOME"] ?? env["ANDROID_SDK_ROOT"]) as string | undefined;
@@ -617,24 +617,24 @@ export default config;
   }
 
   /**
-   * AndroidManifest.xml 수정 (F3: 에러 처리 추가)
+   * Modify AndroidManifest.xml (F3: add error handling)
    */
   private async _configureAndroidManifest(androidPath: string): Promise<void> {
     const manifestPath = path.resolve(androidPath, "app/src/main/AndroidManifest.xml");
 
-    // F3: 파일 존재 확인
+    // F3: Check if file exists
     if (!(await fsExists(manifestPath))) {
-      throw new Error(`AndroidManifest.xml 파일이 없습니다: ${manifestPath}`);
+      throw new Error(`AndroidManifest.xml file not found: ${manifestPath}`);
     }
 
     let content = await fsRead(manifestPath);
 
-    // usesCleartextTraffic 설정
+    // Configure usesCleartextTraffic
     if (!content.includes("android:usesCleartextTraffic")) {
       content = content.replace("<application", '<application android:usesCleartextTraffic="true"');
     }
 
-    // 추가 권한 설정
+    // Configure additional permissions
     const permissions = this._config.platform?.android?.permissions ?? [];
     for (const perm of permissions) {
       const permTag = `<uses-permission android:name="android.permission.${perm.name}"`;
@@ -655,7 +655,7 @@ export default config;
       }
     }
 
-    // 추가 application 설정
+    // Configure additional application settings
     const appConfig = this._config.platform?.android?.config;
     if (appConfig) {
       for (const [key, value] of Object.entries(appConfig)) {
@@ -666,7 +666,7 @@ export default config;
       }
     }
 
-    // intentFilters 설정
+    // Configure intentFilters
     const intentFilters = this._config.platform?.android?.intentFilters ?? [];
     for (const filter of intentFilters) {
       const filterKey = filter.action ?? filter.category ?? "";
@@ -690,19 +690,19 @@ export default config;
   }
 
   /**
-   * build.gradle 수정 (F3: 에러 처리 추가)
+   * Modify build.gradle (F3: add error handling)
    */
   private async _configureAndroidBuildGradle(androidPath: string): Promise<void> {
     const buildGradlePath = path.resolve(androidPath, "app/build.gradle");
 
-    // F3: 파일 존재 확인
+    // F3: Check if file exists
     if (!(await fsExists(buildGradlePath))) {
-      throw new Error(`build.gradle 파일이 없습니다: ${buildGradlePath}`);
+      throw new Error(`build.gradle file not found: ${buildGradlePath}`);
     }
 
     let content = await fsRead(buildGradlePath);
 
-    // versionName, versionCode 설정
+    // Configure versionName and versionCode
     const version = this._npmConfig.version;
     const cleanVersion = version.replace(/-.*$/, "");
     const versionParts = cleanVersion.split(".");
@@ -714,7 +714,7 @@ export default config;
     content = content.replace(/versionCode \d+/, `versionCode ${versionCode}`);
     content = content.replace(/versionName "[^"]+"/, `versionName "${version}"`);
 
-    // SDK 버전 설정
+    // Configure SDK version
     if (this._config.platform?.android?.sdkVersion != null) {
       const sdkVersion = this._config.platform.android.sdkVersion;
       content = content.replace(/minSdkVersion .+/, `minSdkVersion ${sdkVersion}`);
@@ -727,18 +727,18 @@ export default config;
       );
     }
 
-    // Signing 설정
+    // Configure signing
     const keystorePath = path.resolve(this._capPath, Capacitor._ANDROID_KEYSTORE_FILE_NAME);
     const signConfig = this._config.platform?.android?.sign;
     if (signConfig) {
       const keystoreSource = path.resolve(this._pkgPath, signConfig.keystore);
-      // F3: keystore 파일 존재 확인
+      // F3: Check if keystore file exists
       if (!(await fsExists(keystoreSource))) {
-        throw new Error(`keystore 파일을 찾을 수 없습니다: ${keystoreSource}`);
+        throw new Error(`keystore file not found: ${keystoreSource}`);
       }
       await fsCopy(keystoreSource, keystorePath);
 
-      // F9: 상대 경로를 forward slash로 변환
+      // F9: Convert relative path to forward slash
       const keystoreRelativePath = path
         .relative(path.dirname(buildGradlePath), keystorePath)
         .replace(/\\/g, "/");
@@ -774,10 +774,10 @@ export default config;
 
   //#endregion
 
-  //#region Private - 빌드
+  //#region Private - Build
 
   /**
-   * Android 빌드
+   * Build Android
    */
   private async _buildAndroid(outPath: string, buildType: string): Promise<void> {
     const androidPath = path.resolve(this._capPath, "android");
@@ -787,20 +787,20 @@ export default config;
     const gradleTask =
       buildType === "release" ? (isBundle ? "bundleRelease" : "assembleRelease") : "assembleDebug";
 
-    // Gradle 빌드 실행 (크로스 플랫폼)
-    // F9: Windows에서 cmd.exe를 통해 실행 (shell: false 이므로)
+    // Execute Gradle build (cross-platform)
+    // F9: Run via cmd.exe on Windows (because shell: false)
     if (process.platform === "win32") {
       await this._exec("cmd", ["/c", "gradlew.bat", gradleTask, "--no-daemon"], androidPath);
     } else {
       await this._exec("sh", ["./gradlew", gradleTask, "--no-daemon"], androidPath);
     }
 
-    // 빌드 결과물 복사
+    // Copy build output
     await this._copyAndroidBuildOutput(androidPath, targetOutPath, buildType);
   }
 
   /**
-   * Android 빌드 결과물 복사
+   * Copy Android build output
    */
   private async _copyAndroidBuildOutput(
     androidPath: string,
@@ -833,7 +833,7 @@ export default config;
         );
 
     if (!(await fsExists(actualPath))) {
-      Capacitor._logger.warn(`빌드 결과물을 찾을 수 없습니다: ${actualPath}`);
+      Capacitor._logger.warn(`build output not found: ${actualPath}`);
       return;
     }
 
@@ -842,7 +842,7 @@ export default config;
     await fsMkdir(targetOutPath);
     await fsCopy(actualPath, path.resolve(targetOutPath, outputFileName));
 
-    // 버전별 저장
+    // Save per-version
     const updatesPath = path.resolve(targetOutPath, "updates");
     await fsMkdir(updatesPath);
     await fsCopy(actualPath, path.resolve(updatesPath, `${this._npmConfig.version}.${ext}`));
@@ -850,10 +850,10 @@ export default config;
 
   //#endregion
 
-  //#region Private - 디바이스 실행
+  //#region Private - Device Execution
 
   /**
-   * capacitor.config.ts의 server.url 업데이트
+   * Update server.url in capacitor.config.ts
    */
   private async _updateServerUrl(url: string): Promise<void> {
     const configPath = path.resolve(this._capPath, "capacitor.config.ts");
@@ -873,10 +873,10 @@ export default config;
 
   //#endregion
 
-  //#region Private - 유틸리티
+  //#region Private - Utilities
 
   /**
-   * 문자열을 PascalCase로 변환
+   * Convert string to PascalCase
    */
   private _toPascalCase(str: string): string {
     return str
