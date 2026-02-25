@@ -1,19 +1,19 @@
 import { Worker, type WorkerProxy, type WorkerModule } from "@simplysm/core-node";
 
 /**
- * Worker 생명주기를 관리하는 클래스
+ * Class that manages Worker lifecycle
  *
- * Worker 생성, 조회, 종료를 중앙에서 관리하여
- * 리소스 누수를 방지하고 일관된 Worker 관리를 제공한다.
+ * Centrally manages Worker creation, lookup, and termination
+ * to prevent resource leaks and provide consistent Worker management.
  */
 export class WorkerManager {
   private readonly _workers = new Map<string, WorkerProxy<WorkerModule>>();
 
   /**
-   * 새 Worker 생성
-   * @param id Worker 식별자 (예: "core-common:build")
-   * @param workerPath Worker 파일 경로
-   * @returns 생성된 WorkerProxy
+   * Create a new Worker
+   * @param id Worker identifier (e.g., "core-common:build")
+   * @param workerPath Worker file path
+   * @returns Created WorkerProxy
    */
   create<TModule extends WorkerModule>(id: string, workerPath: string): WorkerProxy<TModule> {
     const worker = Worker.create<TModule>(workerPath);
@@ -22,16 +22,16 @@ export class WorkerManager {
   }
 
   /**
-   * ID로 Worker 조회
-   * @param id Worker 식별자
+   * Lookup Worker by ID
+   * @param id Worker identifier
    */
   get<TModule extends WorkerModule>(id: string): WorkerProxy<TModule> | undefined {
     return this._workers.get(id) as WorkerProxy<TModule> | undefined;
   }
 
   /**
-   * 특정 Worker 종료 및 제거
-   * @param id Worker 식별자
+   * Terminate and remove a specific Worker
+   * @param id Worker identifier
    */
   async terminate(id: string): Promise<void> {
     const worker = this._workers.get(id);
@@ -42,7 +42,7 @@ export class WorkerManager {
   }
 
   /**
-   * 모든 Worker 종료
+   * Terminate all Workers
    */
   async terminateAll(): Promise<void> {
     await Promise.all([...this._workers.values()].map((w) => w.terminate()));
@@ -50,14 +50,14 @@ export class WorkerManager {
   }
 
   /**
-   * 관리 중인 Worker 수
+   * Number of managed Workers
    */
   get size(): number {
     return this._workers.size;
   }
 
   /**
-   * 모든 Worker ID 목록
+   * List of all Worker IDs
    */
   get ids(): string[] {
     return [...this._workers.keys()];

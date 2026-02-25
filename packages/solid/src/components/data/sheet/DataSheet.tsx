@@ -186,7 +186,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     const result = await modal.show<DataSheetConfig>(
       () => <DataSheetConfigDialog columnInfos={columnInfos} currentConfig={currentConfig} />,
       {
-        header: "시트 설정",
+        header: "Sheet Settings",
         closeOnBackdrop: true,
         closeOnEscape: true,
       },
@@ -217,12 +217,12 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
         const updated = current.map((s) => (s.key === key ? { ...s, desc: true } : s));
         setSorts(multiple ? updated : [{ key, desc: true }]);
       } else {
-        // desc → 제거
+        // desc → remove
         const updated = current.filter((s) => s.key !== key);
         setSorts(multiple ? updated : []);
       }
     } else {
-      // 없음 → asc 추가
+      // none → add asc
       const newSort: SortingDef = { key, desc: false };
       setSorts(multiple ? [...current, newSort] : [newSort]);
     }
@@ -272,12 +272,12 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     return map;
   });
 
-  // #region Feature Column Setup (확장/선택 기능 컬럼 공통)
+  // #region Feature Column Setup (expand/select feature columns common)
   const hasExpandFeature = () => local.getChildren != null;
   const hasSelectFeature = () => local.selectMode != null;
   const hasReorderFeature = () => local.onItemsReorder != null;
 
-  // 기능 컬럼 너비 추적 헬퍼
+  // Feature column width tracking helper
   function createTrackedWidth(): [() => number, (el: HTMLElement) => void] {
     const [width, setWidth] = createSignal(0);
     const register = (el: HTMLElement) => {
@@ -292,7 +292,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   const [selectColWidth, registerSelectColRef] = createTrackedWidth();
   const [reorderColWidth, registerReorderColRef] = createTrackedWidth();
 
-  // 기능 컬럼 left 위치 (선택/재정렬 컬럼의 style에 사용)
+  // Feature column left position (used in select/reorder column style)
   const selectColLeft = createMemo(() => (hasExpandFeature() ? `${expandColWidth()}px` : "0"));
 
   const reorderColLeft = createMemo(() => {
@@ -303,13 +303,13 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   });
 
   // #region ColumnFixing
-  // 각 컬럼 셀의 ref → 너비 측정용
+  // Column cell refs → for width measurement
   const columnRefs = new Map<number, HTMLElement>();
 
-  // 각 컬럼의 측정된 너비
+  // Measured width of each column
   const [columnWidths, setColumnWidths] = createSignal<Map<number, number>>(new Map());
 
-  // 기능 컬럼(확장 등)의 총 너비 — 고정 컬럼 left 오프셋에 사용
+  // Total width of feature columns (expand, etc.) — used for fixed column left offset
   const featureColTotalWidth = createMemo(() => {
     let w = 0;
     if (hasExpandFeature()) w += expandColWidth();
@@ -318,21 +318,21 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     return w;
   });
 
-  // 고정 컬럼의 left 위치 계산
+  // Calculate left position of fixed columns
   const fixedLeftMap = createMemo(() => {
     const map = new Map<number, number>();
     const cols = effectiveColumns();
     const widths = columnWidths();
     let left = featureColTotalWidth();
     for (let c = 0; c < cols.length; c++) {
-      if (!cols[c].fixed) break; // 고정 컬럼은 앞쪽에 연속 배치
+      if (!cols[c].fixed) break; // Fixed columns are placed continuously at front
       map.set(c, left);
       left += widths.get(c) ?? 0;
     }
     return map;
   });
 
-  // 마지막 고정 컬럼 인덱스
+  // Last fixed column index
   const lastFixedIndex = createMemo(() => {
     const cols = effectiveColumns();
     let last = -1;
@@ -353,7 +353,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     return colIndex === lastFixedIndex();
   }
 
-  // 고정 컬럼 셀에 ResizeObserver 등록
+  // Register ResizeObserver for fixed column cells
   function registerColumnRef(colIndex: number, el: HTMLElement): void {
     columnRefs.set(colIndex, el);
     createResizeObserver(el, () => {
@@ -381,7 +381,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     const startX = event.clientX;
     const startWidth = th.offsetWidth;
 
-    // 리사이즈 인디케이터 표시
+    // Show resize indicator
     const containerRect = container.getBoundingClientRect();
     setResizeIndicatorStyle({
       display: "block",
@@ -404,7 +404,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
       },
       onEnd(e) {
         const delta = e.clientX - startX;
-        // 실제 드래그가 발생한 경우에만 너비 저장 (더블클릭 시 DOM 재생성으로 dblclick 유실 방지)
+        // Only save width if actual drag occurred (prevent dblclick DOM recreation from losing dblclick)
         if (delta !== 0) {
           const newWidth = Math.max(30, startWidth + delta);
           saveColumnWidth(colKey, `${newWidth}px`);
@@ -419,7 +419,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   }
 
   // #region HeaderSticky
-  // 각 헤더 행의 높이를 추적하여 누적 top 값 계산
+  // Track header row heights to calculate cumulative top values
   const [headerRowHeights, setHeaderRowHeights] = createSignal<number[]>([]);
 
   function registerHeaderRow(rowIndex: number, el: HTMLElement): void {
@@ -432,7 +432,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     });
   }
 
-  // 각 헤더 행의 누적 top 값
+  // Cumulative top value for each header row
   const headerRowTops = createMemo(() => {
     const heights = headerRowHeights();
     const tops: number[] = [];
@@ -444,7 +444,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     return tops;
   });
 
-  // 합계 행의 top 값 (모든 헤더 행 높이 합)
+  // Top value of summary row (sum of all header row heights)
   const summaryRowTop = createMemo(() => {
     const heights = headerRowHeights();
     return heights.reduce((sum, h) => sum + h, 0);
@@ -600,7 +600,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
           const flat = displayItems()[i];
           if (flat.item === item) break;
 
-          // 자기 자신의 하위 항목으로는 드롭 불가
+          // Cannot drop to child items of self
           if (isDescendant(item, flat.item)) break;
 
           const relY = ev.clientY - rect.top;
@@ -623,7 +623,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
 
         setDragState({ draggingItem: item, targetItem: foundTarget, position: foundPosition });
 
-        // 인디케이터 DOM 업데이트
+        // Update indicator DOM
         for (let i = 0; i < rows.length; i++) {
           rows[i].removeAttribute("data-dragging");
           rows[i].removeAttribute("data-drag-over");
@@ -639,7 +639,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
           }
         }
 
-        // before/after 인디케이터
+        // before/after indicator
         const indicatorEl = tableEl
           .closest("[data-sheet-scroll]")
           ?.querySelector("[data-reorder-indicator]") as HTMLElement | null;
@@ -675,7 +675,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
           } as DataSheetReorderEvent<T>);
         }
 
-        // 클린업
+        // Clean up
         for (const row of rows) {
           row.removeAttribute("data-dragging");
           row.removeAttribute("data-drag-over");
@@ -692,7 +692,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
     });
   }
 
-  // #region Keyboard Navigation (Enter/Shift+Enter로 행 이동)
+  // #region Keyboard Navigation (move rows with Enter/Shift+Enter)
   function onTableKeyDown(e: KeyboardEvent): void {
     if (e.key !== "Enter" || e.altKey || e.ctrlKey || e.metaKey) return;
 
@@ -728,24 +728,24 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
   // #region Display
   const displayItems = flatItems;
 
-  // 확장 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
+  // Is expand feature column "last fixed" (일반 고정 컬럼이 없고, 선택 컬럼도 없을 때)
   const isExpandColLastFixed = () =>
     hasExpandFeature() && !hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
-  // 선택 기능 컬럼이 "마지막 고정"인지 (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
+  // Is select feature column "last fixed" (일반 고정 컬럼이 없고, 선택 컬럼이 가장 오른쪽 기능 컬럼일 때)
   const isSelectColLastFixed = () =>
     hasSelectFeature() && !hasReorderFeature() && lastFixedIndex() < 0;
 
   const isReorderColLastFixed = () => hasReorderFeature() && lastFixedIndex() < 0;
 
-  // 전체 헤더 행 수 + 합계 행 수 (기능 컬럼의 rowspan에 사용)
+  // Total header row count + 합계 행 수 (기능 컬럼의 rowspan에 사용)
   const featureHeaderRowspan = createMemo(() => {
     const headerRows = headerTable().length;
     const summaryRow = hasSummary() ? 1 : 0;
     return headerRows + summaryRow;
   });
 
-  // 전체 확장 상태인지
+  // Is all expanded
   const isAllExpanded = createMemo(() => {
     if (!local.getChildren) return false;
     const indexMap = originalIndexMap();
@@ -784,7 +784,7 @@ export const DataSheet: DataSheetComponent = <T,>(props: DataSheetProps<T>) => {
             <button
               class={configButtonClass}
               onClick={openConfigModal}
-              title="시트 설정"
+              title="Sheet Settings"
               type="button"
             >
               <Icon icon={IconSettings} size="1em" />

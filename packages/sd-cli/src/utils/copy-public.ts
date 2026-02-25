@@ -10,17 +10,17 @@ import {
 } from "@simplysm/core-node";
 
 /**
- * public/ 및 public-dev/ 디렉토리의 파일을 dist/로 복사한다.
- * public-dev/가 public/보다 우선한다 (overlay).
+ * Copy files from public/ and public-dev/ directories to dist/.
+ * public-dev/ takes priority over public/ (overlay).
  *
- * @param pkgDir 패키지 루트 디렉토리
- * @param includeDev public-dev/ 포함 여부 (dev 모드에서만 true)
+ * @param pkgDir Package root directory
+ * @param includeDev Whether to include public-dev/ (true only in dev mode)
  */
 export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Promise<void> {
   const distDir = path.join(pkgDir, "dist");
   await fsMkdir(distDir);
 
-  // public/ 복사
+  // Copy public/
   const publicDir = path.join(pkgDir, "public");
   if (await fsExists(publicDir)) {
     const files = await fsGlob("**/*", { cwd: publicDir, absolute: true });
@@ -32,7 +32,7 @@ export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Prom
     }
   }
 
-  // public-dev/ 복사 (overlay: public/ 위에 덮어씀)
+  // Copy public-dev/ (overlay: overwrites public/)
   if (includeDev) {
     const publicDevDir = path.join(pkgDir, "public-dev");
     if (await fsExists(publicDevDir)) {
@@ -48,12 +48,12 @@ export async function copyPublicFiles(pkgDir: string, includeDev: boolean): Prom
 }
 
 /**
- * public/ 및 public-dev/ 디렉토리를 감시하여 dist/로 실시간 복사한다.
- * 초기 복사 후 변경/추가/삭제를 자동 반영한다.
+ * Watch public/ and public-dev/ directories and copy files to dist/ in real-time.
+ * Automatically reflects changes/additions/deletions after initial copy.
  *
- * @param pkgDir 패키지 루트 디렉토리
- * @param includeDev public-dev/ 포함 여부 (dev 모드에서만 true)
- * @returns FsWatcher 인스턴스 (shutdown 시 close() 호출 필요) 또는 watch할 대상이 없으면 undefined
+ * @param pkgDir Package root directory
+ * @param includeDev Whether to include public-dev/ (true only in dev mode)
+ * @returns FsWatcher instance (must call close() on shutdown) or undefined if no watch targets
  */
 export async function watchPublicFiles(
   pkgDir: string,
@@ -63,10 +63,10 @@ export async function watchPublicFiles(
   const publicDir = path.join(pkgDir, "public");
   const publicDevDir = path.join(pkgDir, "public-dev");
 
-  // 초기 복사
+  // Initial copy
   await copyPublicFiles(pkgDir, includeDev);
 
-  // watch 대상 경로 수집
+  // Collect watch target paths
   const watchPaths: string[] = [];
   if (await fsExists(publicDir)) {
     watchPaths.push(path.join(publicDir, "**/*"));
@@ -83,7 +83,7 @@ export async function watchPublicFiles(
 
   watcher.onChange({ delay: 300 }, async (changes) => {
     for (const { event, path: filePath } of changes) {
-      // 어느 소스 디렉토리에서 온 변경인지 판별
+      // Determine which source directory the change came from
       let sourceDir: string;
       if (pathIsChildPath(filePath, publicDevDir)) {
         sourceDir = publicDevDir;
@@ -95,14 +95,14 @@ export async function watchPublicFiles(
       const distPath = path.join(distDir, relPath);
 
       if (event === "unlink") {
-        // public에서 삭제 시, public-dev에 같은 파일이 있으면 삭제하지 않음
+        // If deleted from public, don't delete if same file exists in public-dev
         if (sourceDir === publicDir && includeDev) {
           const devOverride = path.join(publicDevDir, relPath);
           if (await fsExists(devOverride)) {
             continue;
           }
         }
-        // public-dev에서 삭제 시, public에 같은 파일이 있으면 복사 (fallback 복원)
+        // If deleted from public-dev, restore from public if it exists (fallback restore)
         if (sourceDir === publicDevDir && includeDev) {
           const publicFallback = path.join(publicDir, relPath);
           if (await fsExists(publicFallback)) {
@@ -113,7 +113,7 @@ export async function watchPublicFiles(
         }
         await fsRm(distPath);
       } else if (event === "add" || event === "change") {
-        // public에서 변경 시, public-dev에 같은 파일이 있으면 overlay 우선이므로 스킵
+        // If changed in public, skip if same file exists in public-dev (overlay takes priority)
         if (sourceDir === publicDir && includeDev) {
           const devOverride = path.join(publicDevDir, relPath);
           if (await fsExists(devOverride)) {

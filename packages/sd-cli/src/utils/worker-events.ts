@@ -6,24 +6,24 @@ import { formatBuildMessages } from "./output-utils";
 
 const workerEventsLogger = consola.withTag("sd:cli:worker-events");
 
-/** Worker 빌드 완료 이벤트 데이터 */
+/** Worker build completion event data */
 export interface BuildEventData {
   success: boolean;
   errors?: string[];
   warnings?: string[];
 }
 
-/** Worker 에러 이벤트 데이터 */
+/** Worker error event data */
 export interface ErrorEventData {
   message: string;
 }
 
-/** Worker 서버 준비 이벤트 데이터 */
+/** Worker server ready event data */
 export interface ServerReadyEventData {
   port: number;
 }
 
-/** Server Build 완료 이벤트 데이터 */
+/** Server Build completion event data */
 export interface ServerBuildEventData {
   success: boolean;
   mainJsPath: string;
@@ -32,7 +32,7 @@ export interface ServerBuildEventData {
 }
 
 /**
- * 기본 Worker 정보 타입
+ * Base Worker info type
  */
 export interface BaseWorkerInfo<TEvents extends Record<string, unknown> = Record<string, unknown>> {
   name: string;
@@ -46,7 +46,7 @@ export interface BaseWorkerInfo<TEvents extends Record<string, unknown> = Record
 }
 
 /**
- * Worker 이벤트 핸들러 옵션
+ * Worker event handler options
  */
 export interface WorkerEventHandlerOptions {
   resultKey: string;
@@ -55,13 +55,13 @@ export interface WorkerEventHandlerOptions {
 }
 
 /**
- * 공통 Worker 이벤트 핸들러 등록 (buildStart, build, error만 - serverReady는 포함하지 않음)
+ * Register common Worker event handlers (buildStart, build, error only - serverReady not included)
  *
- * @param workerInfo Worker 정보
- * @param opts 핸들러 옵션
- * @param results 결과 맵
- * @param rebuildManager 리빌드 매니저
- * @returns completeTask 함수 (결과를 저장하고 빌드 완료를 알림)
+ * @param workerInfo Worker info
+ * @param opts Handler options
+ * @param results Result map
+ * @param rebuildManager Rebuild manager
+ * @returns completeTask function (saves result and signals build completion)
  */
 export function registerWorkerEventHandlers<
   TEvents extends Record<string, unknown>,
@@ -79,19 +79,19 @@ export function registerWorkerEventHandlers<
     workerInfo.isInitialBuild = false;
   };
 
-  // 빌드 시작 (리빌드 시)
+  // Build start (on rebuild)
   workerInfo.worker.on("buildStart", () => {
     if (!workerInfo.isInitialBuild) {
       workerInfo.buildResolver = rebuildManager.registerBuild(opts.resultKey, opts.listrTitle);
     }
   });
 
-  // 빌드 완료
+  // Build completion
   workerInfo.worker.on("build", (_data) => {
     const data = _data as BuildEventData;
     workerEventsLogger.debug(`[${workerInfo.name}] build: success=${String(data.success)}`);
 
-    // warnings 출력
+    // Print warnings
     if (data.warnings != null && data.warnings.length > 0) {
       workerEventsLogger.warn(
         formatBuildMessages(workerInfo.name, workerInfo.config.target, data.warnings),
@@ -107,7 +107,7 @@ export function registerWorkerEventHandlers<
     });
   });
 
-  // 에러
+  // Error
   workerInfo.worker.on("error", (_data) => {
     const data = _data as ErrorEventData;
     workerEventsLogger.debug(`[${workerInfo.name}] error: ${data.message}`);
