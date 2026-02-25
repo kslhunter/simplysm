@@ -86,7 +86,7 @@ const patterns = {
   z: /z/g,
 };
 
-const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
+const weekStrings = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 //#endregion
 
@@ -105,10 +105,10 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
  * | yy | 2-digit year | 24 |
  * | MM | Zero-padded month | 01~12 |
  * | M | Month | 1~12 |
- * | ddd | Day of week (Korean) | 일, 월, 화, 수, 목, 금, 토 |
+ * | ddd | Day of week | Sun, Mon, Tue, Wed, Thu, Fri, Sat |
  * | dd | Zero-padded day | 01~31 |
  * | d | Day | 1~31 |
- * | tt | AM/PM (Korean) | 오전, 오후 |
+ * | tt | AM/PM | AM, PM |
  * | hh | Zero-padded 12-hour | 01~12 |
  * | h | 12-hour | 1~12 |
  * | HH | Zero-padded 24-hour | 00~23 |
@@ -129,11 +129,11 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
  * formatDate("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
  * // "2024-03-15"
  *
- * formatDate("yyyy년 M월 d일 (ddd)", { year: 2024, month: 3, day: 15 });
- * // "2024년 3월 15일 (금)"
+ * formatDate("yyyy-M-d (ddd)", { year: 2024, month: 3, day: 15 });
+ * // "2024-3-15 (Fri)"
  *
  * formatDate("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
- * // "오후 2:30:45"
+ * // "PM 2:30:45"
  * ```
  */
 export function formatDate(
@@ -193,7 +193,7 @@ export function formatDate(
 
   // Hour
   if (hour !== undefined) {
-    result = result.replace(patterns.tt, hour < 12 ? "오전" : "오후");
+    result = result.replace(patterns.tt, hour < 12 ? "AM" : "PM");
 
     const hour12 = hour % 12 || 12;
     const hour12Str = hour12.toString();

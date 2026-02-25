@@ -70,7 +70,7 @@ export class DateTime {
    * DateTime.parse("2025-01-15 10:30:00")     // yyyy-MM-dd HH:mm:ss
    * DateTime.parse("2025-01-15 10:30:00.123") // yyyy-MM-dd HH:mm:ss.fff
    * DateTime.parse("20250115103000")          // yyyyMMddHHmmss
-   * DateTime.parse("2025-01-15 오전 10:30:00") // yyyy-MM-dd AM/PM HH:mm:ss
+   * DateTime.parse("2025-01-15 AM 10:30:00")  // yyyy-MM-dd AM/PM HH:mm:ss
    * DateTime.parse("2025-01-15T10:30:00Z")    // ISO 8601
    */
   static parse(str: string): DateTime {
@@ -80,12 +80,12 @@ export class DateTime {
     }
 
     const match1 =
-      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/.exec(
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2}) (AM|PM) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})(\.([0-9]{1,3}))?$/i.exec(
         str,
       );
     if (match1 != null) {
       const rawHour = Number(match1[5]);
-      const isPM = match1[4] === "오후"; // "오후" = PM
+      const isPM = match1[4].toUpperCase() === "PM";
       const hour = convert12To24(rawHour, isPM);
       return new DateTime(
         Number(match1[1]),

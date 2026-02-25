@@ -64,14 +64,14 @@ export class Time {
    * @example
    * Time.parse("10:30:00")           // HH:mm:ss
    * Time.parse("10:30:00.123")       // HH:mm:ss.fff
-   * Time.parse("오전 10:30:00")       // AM/PM HH:mm:ss
+   * Time.parse("AM 10:30:00")        // AM/PM HH:mm:ss
    * Time.parse("2025-01-15T10:30:00") // ISO 8601 (extract time part only)
    */
   static parse(str: string): Time {
-    const match1 = /(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
+    const match1 = /(AM|PM) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/i.exec(str);
     if (match1 != null) {
       const rawHour = Number(match1[2]);
-      const isPM = match1[1] === "오후"; // "오후" = PM
+      const isPM = match1[1].toUpperCase() === "PM";
       const hour = convert12To24(rawHour, isPM);
       return new Time(
         hour,
