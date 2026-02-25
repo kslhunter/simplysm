@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import "../../src/extensions/map-ext";
 
-describe("Map.prototype 확장", () => {
+describe("Map.prototype extension", () => {
   //#region getOrCreate
 
   describe("getOrCreate()", () => {
-    it("키가 없으면 직접 값을 설정하고 반환한다", () => {
+    it("sets and returns value directly when key does not exist", () => {
       const map = new Map<string, number>();
 
       const result = map.getOrCreate("key", 100);
@@ -15,7 +15,7 @@ describe("Map.prototype 확장", () => {
       expect(map.size).toBe(1);
     });
 
-    it("키가 없으면 팩토리 함수를 호출하여 설정하고 반환한다", () => {
+    it("calls factory function to set and return value when key does not exist", () => {
       const map = new Map<string, number[]>();
       let factoryCalled = false;
 
@@ -29,7 +29,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toEqual([1, 2, 3]);
     });
 
-    it("키가 있으면 기존 값을 반환하고 팩토리 함수를 호출하지 않는다", () => {
+    it("returns existing value and does not call factory function when key exists", () => {
       const map = new Map<string, number>();
       map.set("key", 50);
       let factoryCalled = false;
@@ -44,7 +44,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toBe(50);
     });
 
-    it("키가 있으면 기존 값을 반환한다 (직접 값)", () => {
+    it("returns existing value when key exists (direct value)", () => {
       const map = new Map<string, number>();
       map.set("key", 50);
 
@@ -54,7 +54,7 @@ describe("Map.prototype 확장", () => {
       expect(map.size).toBe(1);
     });
 
-    it("빈 배열을 기본값으로 설정할 수 있다", () => {
+    it("can set empty array as default value", () => {
       const map = new Map<string, number[]>();
 
       const arr = map.getOrCreate("key", []);
@@ -63,7 +63,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toEqual([1, 2, 3]);
     });
 
-    it("팩토리 함수로 복잡한 객체를 생성할 수 있다", () => {
+    it("can create complex objects with factory function", () => {
       const map = new Map<string, { count: number; items: string[] }>();
 
       const obj = map.getOrCreate("key", () => ({ count: 0, items: [] }));
@@ -73,11 +73,11 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toEqual({ count: 1, items: ["item1"] });
     });
 
-    it("V 타입이 함수인 경우 팩토리로 감싸서 저장한다", () => {
+    it("wraps function value in factory when V type is a function", () => {
       const map = new Map<string, () => number>();
       const fn = () => 42;
 
-      // 함수를 값으로 저장하려면 팩토리로 감싸야 함
+      // Function value must be wrapped in factory to store it
       const result = map.getOrCreate("key", () => fn);
 
       expect(result).toBe(fn);
@@ -91,7 +91,7 @@ describe("Map.prototype 확장", () => {
   //#region update
 
   describe("update()", () => {
-    it("존재하는 키의 값을 업데이트한다", () => {
+    it("updates value of existing key", () => {
       const map = new Map<string, number>();
       map.set("key", 10);
 
@@ -100,7 +100,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toBe(15);
     });
 
-    it("존재하지 않는 키에 대해 undefined를 전달한다", () => {
+    it("passes undefined for non-existent key", () => {
       const map = new Map<string, number>();
       let receivedValue: number | undefined;
 
@@ -113,7 +113,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toBe(100);
     });
 
-    it("콜백의 반환값으로 값을 교체한다", () => {
+    it("replaces value with return value of callback", () => {
       const map = new Map<string, string>();
       map.set("key", "hello");
 
@@ -122,7 +122,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toBe("hello world");
     });
 
-    it("객체 값을 업데이트할 수 있다", () => {
+    it("can update object value", () => {
       const map = new Map<string, { count: number }>();
       map.set("key", { count: 5 });
 
@@ -131,7 +131,7 @@ describe("Map.prototype 확장", () => {
       expect(map.get("key")).toEqual({ count: 6 });
     });
 
-    it("여러 번 연속으로 업데이트할 수 있다", () => {
+    it("can update multiple times consecutively", () => {
       const map = new Map<string, number>();
       map.set("counter", 0);
 
