@@ -1,7 +1,6 @@
 ---
 name: sd-use
-description: Auto router that matches user requests to the appropriate sd-* skill or agent
-disable-model-invocation: true
+description: "Route requests to sd-* skills/agents (explicit invocation only)"
 model: haiku
 ---
 
@@ -28,7 +27,6 @@ then execute it.
 | `sd-tdd`             | Implementing a feature or fixing a bug — **before writing code**                                                                                |
 | `sd-plan`            | Multi-step task with spec/requirements — **planning before code**                                                                               |
 | `sd-plan-dev`        | Already have a plan — **executing implementation plan**                                                                                         |
-| `sd-explore`         | Deep codebase analysis — tracing execution paths, architecture, dependencies                                                                    |
 | `sd-review`          | **Large-scale** comprehensive review of an entire package or broad path — use only when user explicitly requests full/deep/comprehensive review |
 | `sd-check`           | Verify code — typecheck, lint, tests                                                                                                            |
 | `sd-commit`          | Create a git commit                                                                                                                             |
