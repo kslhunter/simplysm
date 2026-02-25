@@ -24,46 +24,46 @@ import {
   triggerSizeClasses,
 } from "../../form-control/DropdownTrigger.styles";
 
-/** 모달에서 반환하는 결과 인터페이스 */
+/** Result interface returned from modal */
 export interface DataSelectModalResult<TKey> {
   selectedKeys: TKey[];
 }
 
 /** DataSelectButton Props */
 export interface DataSelectButtonProps<TItem, TKey = string | number> {
-  /** 현재 선택된 키 (단일 또는 다중) */
+  /** Currently selected key(s) (single or multiple) */
   value?: TKey | TKey[];
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: TKey | TKey[] | undefined) => void;
 
-  /** 키로 아이템을 로드하는 함수 */
+  /** Function to load items by key */
   load: (keys: TKey[]) => TItem[] | Promise<TItem[]>;
-  /** 선택 모달 컴포넌트 팩토리 */
+  /** Selection modal component factory */
   modal: () => JSX.Element;
-  /** 아이템 렌더링 함수 */
+  /** Item rendering function */
   renderItem: (item: TItem) => JSX.Element;
 
-  /** 다중 선택 모드 */
+  /** Multiple selection mode */
   multiple?: boolean;
-  /** 필수 입력 */
+  /** Required input */
   required?: boolean;
-  /** 비활성화 */
+  /** Disabled */
   disabled?: boolean;
-  /** 트리거 크기 */
+  /** Trigger size */
   size?: ComponentSize;
-  /** 테두리 없는 스타일 */
+  /** Borderless style */
   inset?: boolean;
 
-  /** 커스텀 유효성 검사 함수 */
+  /** Custom validation function */
   validate?: (value: unknown) => string | undefined;
-  /** touchMode: 포커스 해제 후에만 에러 표시 */
+  /** touchMode: show error only after focus is lost */
   touchMode?: boolean;
 
-  /** 다이얼로그 옵션 */
+  /** Dialog options */
   dialogOptions?: DialogShowOptions;
 }
 
-// 스타일
+// Styles
 const containerClass = clsx("inline-flex items-center", "group");
 const selectedValueClass = clsx("flex-1", "whitespace-nowrap", "overflow-hidden", "text-ellipsis");
 const actionButtonClass = clsx(
@@ -113,25 +113,25 @@ export function DataSelectButton<TItem, TKey = string | number>(
 
   const dialog = useDialog();
 
-  // value를 항상 배열로 정규화
+  // Always normalize value to array
   const normalizeKeys = (value: TKey | TKey[] | undefined): TKey[] => {
     if (value === undefined || value === null) return [];
     if (Array.isArray(value)) return value;
     return [value];
   };
 
-  // controlled/uncontrolled 패턴
+  // Controlled/uncontrolled pattern
   type ValueType = TKey | TKey[] | undefined;
   const [getValue, setValue] = createControllableSignal<ValueType>({
     value: () => local.value,
     onChange: () => local.onValueChange as ((v: ValueType) => void) | undefined,
   } as Parameters<typeof createControllableSignal<ValueType>>[0]);
 
-  // load를 위한 키 추적 signal
-  // eslint-disable-next-line solid/reactivity -- 초기값은 mount 시점에 한 번만 읽음
+  // Track keys for loading
+  // eslint-disable-next-line solid/reactivity -- initial value read once at mount time
   const [loadKeys, setLoadKeys] = createSignal<TKey[]>(normalizeKeys(local.value));
 
-  // value가 변경되면 loadKeys 업데이트
+  // Update loadKeys when value changes
   createEffect(
     on(
       () => getValue(),
@@ -141,33 +141,33 @@ export function DataSelectButton<TItem, TKey = string | number>(
     ),
   );
 
-  // createResource로 load 호출
-  // eslint-disable-next-line solid/reactivity -- createResource의 fetcher는 source 변경 시 호출됨
+  // Call load via createResource
+  // eslint-disable-next-line solid/reactivity -- createResource fetcher is called when source changes
   const [selectedItems] = createResource(loadKeys, async (keys) => {
     if (keys.length === 0) return [];
     return Promise.resolve(local.load(keys));
   });
 
-  // 값이 있는지 확인
+  // Check if has value
   const hasValue = createMemo(() => {
     const keys = normalizeKeys(getValue());
     return keys.length > 0;
   });
 
-  // 지우기 가능 여부
+  // Check if clearable
   const clearable = createMemo(() => !local.required && hasValue() && !local.disabled);
 
-  // 유효성 검사
+  // Validation
   const errorMsg = createMemo(() => {
     const v = getValue();
     if (local.required) {
       const keys = normalizeKeys(v);
-      if (keys.length === 0) return "필수 입력 항목입니다";
+      if (keys.length === 0) return "Required field";
     }
     return local.validate?.(v);
   });
 
-  // 모달 열기
+  // Open modal
   const handleOpenModal = async () => {
     if (local.disabled) return;
 
@@ -186,7 +186,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
     }
   };
 
-  // 지우기
+  // Clear selection
   const handleClear = (e: MouseEvent) => {
     e.stopPropagation();
     if (local.multiple) {
@@ -196,7 +196,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
     }
   };
 
-  // 선택된 값 표시
+  // Render selected value display
   const renderSelectedDisplay = (): JSX.Element => {
     const items = selectedItems();
     if (!items || items.length === 0) {
@@ -218,7 +218,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
     );
   };
 
-  // 트리거 클래스 계산
+  // Calculate trigger class
   const triggerClassName = () =>
     getTriggerContainerClass({
       size: local.size,
