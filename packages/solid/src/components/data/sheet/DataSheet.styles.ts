@@ -44,22 +44,22 @@ export const insetTableClass = clsx(
 
 export const defaultContainerClass = clsx("border", borderDefault, "rounded");
 
-// 정렬 가능 헤더 — 클릭 가능 표시
+// Sortable header — shows clickable indicator
 export const sortableThClass = clsx("cursor-pointer", "hover:underline");
 
-// 정렬 아이콘 영역
+// Sort icon area
 export const sortIconClass = clsx("px-1 py-0.5", "bg-base-100 dark:bg-base-900");
 
-// 상단 툴바 (설정 버튼 + 페이지네이션)
+// Top toolbar (settings button + pagination)
 export const toolbarClass = clsx("flex items-center gap-2", "px-2 py-1", "border-b", borderDefault);
 
-// 고정 컬럼 기본 (sticky)
+// Fixed column base (sticky)
 export const fixedClass = "sticky";
 
-// 고정/비고정 경계 시각 효과 — 고정 컬럼의 마지막 셀에 적용
+// Visual effect for fixed/unfixed boundary — applied to last cell of fixed column
 export const fixedLastClass = clsx("border-r border-r-base-400", "dark:border-r-base-600");
 
-// 리사이저 핸들 (헤더 셀 우측 드래그 영역)
+// Resizer handle (right-side drag area of header cell)
 export const resizerClass = clsx(
   "absolute inset-y-0 right-0",
   "w-1",
@@ -68,7 +68,7 @@ export const resizerClass = clsx(
   "hover:bg-primary-300 dark:hover:bg-primary-600",
 );
 
-// 드래그 중 세로 점선 인디케이터
+// Vertical dashed indicator while dragging
 export const resizeIndicatorClass = clsx(
   "absolute inset-y-0",
   "w-0 border-l-2 border-dashed border-primary-500",
@@ -76,7 +76,7 @@ export const resizeIndicatorClass = clsx(
   "z-[7]",
 );
 
-// 기능 컬럼 기본 (확장/선택 컬럼 공통)
+// Feature column base (expand/select column common)
 export const featureThClass = clsx(
   "bg-base-100 dark:bg-base-800",
   "border-b border-r",
@@ -94,13 +94,13 @@ export const featureTdClass = clsx(
   "h-px",
 );
 
-// 확장 컬럼 깊이 가이드 — 래퍼 (토글 아이콘과 같은 너비, 세로선 중앙 정렬)
+// Expand column depth guide — wrapper (same width as toggle icon, vertically centered line)
 export const expandIndentGuideClass = clsx("mr-0.5 w-3 self-stretch", "flex justify-end");
 
-// 확장 컬럼 깊이 가이드 — 세로선
+// Expand column depth guide — vertical line
 export const expandIndentGuideLineClass = clsx("w-0 self-stretch", "border-r", borderDefault);
 
-// 확장 토글 버튼
+// Expand toggle button
 export const expandToggleClass = clsx(
   "flex items-center justify-center",
   "size-6",
@@ -109,7 +109,7 @@ export const expandToggleClass = clsx(
   "hover:bg-base-200 dark:hover:bg-base-600",
 );
 
-// 선택 컬럼 — single 모드 아이콘 래퍼
+// Select column — icon wrapper for single mode
 export const selectSingleClass = clsx(
   "flex items-center justify-center",
   "size-6",
@@ -117,13 +117,13 @@ export const selectSingleClass = clsx(
   "rounded",
 );
 
-// single 모드 — 선택됨
+// Single mode — selected
 export const selectSingleSelectedClass = clsx("text-primary-500", "dark:text-primary-400");
 
-// single 모드 — 미선택
+// Single mode — unselected
 export const selectSingleUnselectedClass = clsx("text-base-300", "dark:text-base-600");
 
-// 드래그 핸들 기능 컬럼
+// Drag handle feature column
 export const reorderHandleClass = clsx(
   "flex items-center justify-center",
   "size-6",
@@ -132,7 +132,7 @@ export const reorderHandleClass = clsx(
   "hover:text-base-600 dark:hover:text-base-400",
 );
 
-// 드래그 인디케이터 (before/after 수평선)
+// Drag indicator (before/after horizontal line)
 export const reorderIndicatorClass = clsx(
   "absolute inset-x-0",
   "h-0 border-t-2 border-primary-500",
@@ -140,31 +140,31 @@ export const reorderIndicatorClass = clsx(
   "z-[7]",
 );
 
-// 기능 컬럼 헤더 내부 래퍼 (확장/선택 등)
+// Feature column header inner wrapper (expand/select, etc.)
 export const featureCellWrapperClass = clsx("flex items-center", "px-1");
 
-// 기능 컬럼 바디 내부 래퍼 (확장/선택/재정렬 등 — 전체 높이)
+// Feature column body inner wrapper (expand/select/reorder, etc. — full height)
 export const featureCellBodyWrapperClass = clsx("flex h-full items-center", "px-1");
 
-// 기능 컬럼 헤더 클릭 가능 래퍼 (전체 선택 등)
+// Feature column header clickable wrapper (select all, etc.)
 export const featureCellClickableClass = clsx(
   "flex cursor-pointer items-center justify-center",
   "px-1",
 );
 
-// 기능 컬럼 바디 클릭 가능 래퍼 (선택/재정렬 등 — 전체 높이)
+// Feature column body clickable wrapper (select/reorder, etc. — full height)
 export const featureCellBodyClickableClass = clsx(
   "flex h-full cursor-pointer items-center justify-center",
   "px-1",
 );
 
-// 재정렬 핸들 래퍼 (touch-none 추가)
+// Reorder handle wrapper (with touch-none added)
 export const reorderCellWrapperClass = clsx(
   "flex h-full touch-none items-center justify-center",
   "px-1",
 );
 
-// 설정 버튼
+// Settings button
 export const configButtonClass = clsx(
   "flex items-center justify-center",
   "size-6 rounded",
