@@ -9,35 +9,35 @@ import { IconEraser, IconArrowLeft } from "@tabler/icons-solidjs";
 import type { ComponentSize } from "../../../styles/tokens.styles";
 
 export interface NumpadProps {
-  /** 입력 값 */
+  /** Input value */
   value?: number;
-  /** 값 변경 콜백 */
+  /** Value change callback */
   onValueChange?: (value: number | undefined) => void;
-  /** 플레이스홀더 */
+  /** Placeholder */
   placeholder?: string;
-  /** 필수 입력 여부 */
+  /** Whether input is required */
   required?: boolean;
-  /** 텍스트 필드 직접 입력 비활성화 */
+  /** Disable direct text field input */
   inputDisabled?: boolean;
-  /** ENT 버튼 표시 */
+  /** Show Enter button */
   useEnterButton?: boolean;
-  /** - 버튼 표시 */
+  /** Show minus button */
   useMinusButton?: boolean;
-  /** ENT 클릭 콜백 */
+  /** Enter button click callback */
   onEnterButtonClick?: () => void;
-  /** 사이즈 */
+  /** Size */
   size?: ComponentSize;
-  /** 커스텀 class */
+  /** Custom class */
   class?: string;
-  /** 커스텀 style */
+  /** Custom style */
   style?: JSX.CSSProperties;
 }
 
 const baseClass = clsx("grid grid-cols-3", "gap-0.5", "w-auto");
 
 /**
- * inputStr을 파싱하여 숫자로 변환한다.
- * 빈 문자열이나 "-"만 있는 경우 undefined를 반환한다.
+ * Parse inputStr and convert to number.
+ * Returns undefined for empty string or "-" only.
  */
 function parseInputStr(str: string): number | undefined {
   if (str === "" || str === "-" || str === "." || str === "-.") return undefined;
@@ -46,7 +46,7 @@ function parseInputStr(str: string): number | undefined {
 }
 
 /**
- * 숫자를 inputStr로 변환한다.
+ * Convert number to inputStr.
  */
 function valueToInputStr(value: number | undefined): string {
   if (value == null) return "";
@@ -54,18 +54,18 @@ function valueToInputStr(value: number | undefined): string {
 }
 
 export const Numpad: Component<NumpadProps> = (props) => {
-  // controlled/uncontrolled 패턴
+  // Controlled/uncontrolled pattern
   const [value, setValue] = createControllableSignal({
     value: () => props.value,
     onChange: () => props.onValueChange,
   });
 
-  // 내부 입력 문자열 상태
+  // Internal input string state
   const [inputStr, setInputStr] = createSignal<string>("");
-  // 버튼 입력 중에는 외부 value → inputStr 동기화를 방지
+  // Prevent external value → inputStr sync when button input is in progress
   let isButtonInput = false;
 
-  // 외부 값 변경 시 inputStr 동기화 (버튼 입력 중이 아닐 때만)
+  // Sync inputStr when external value changes (only when not in button input)
   createEffect(() => {
     const val = value();
     if (!isButtonInput) {
@@ -74,38 +74,38 @@ export const Numpad: Component<NumpadProps> = (props) => {
     isButtonInput = false;
   });
 
-  // inputStr을 파싱하여 value로 반영
+  // Parse inputStr and apply to value
   const applyInputStr = (str: string) => {
     isButtonInput = true;
     setInputStr(str);
     setValue(parseInputStr(str));
   };
 
-  // 숫자 버튼 (0-9)
+  // Digit buttons (0-9)
   const handleDigit = (digit: string) => {
     applyInputStr(inputStr() + digit);
   };
 
-  // 소수점 버튼
+  // Decimal point button
   const handleDot = () => {
     const current = inputStr();
     if (current.includes(".")) return;
     applyInputStr(current + ".");
   };
 
-  // C (클리어) 버튼
+  // C (Clear) button
   const handleClear = () => {
     applyInputStr("");
   };
 
-  // BS (백스페이스) 버튼
+  // BS (Backspace) button
   const handleBackspace = () => {
     const current = inputStr();
     if (current.length === 0) return;
     applyInputStr(current.slice(0, -1));
   };
 
-  // - (마이너스 토글) 버튼
+  // - (Minus toggle) button
   const handleMinus = () => {
     const current = inputStr();
     if (current.startsWith("-")) {
@@ -115,12 +115,12 @@ export const Numpad: Component<NumpadProps> = (props) => {
     }
   };
 
-  // ENT 버튼
+  // ENT button
   const handleEnter = () => {
     props.onEnterButtonClick?.();
   };
 
-  // NumberInput 값 변경 핸들러
+  // NumberInput value change handler
   const handleFieldValueChange = (val: number | undefined) => {
     setValue(val);
     setInputStr(valueToInputStr(val));
