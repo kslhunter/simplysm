@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  strGetSuffix,
+  koreanGetSuffix,
   strReplaceFullWidth,
   strToPascalCase,
   strToCamelCase,
@@ -12,107 +12,107 @@ import {
 describe("string utils", () => {
   //#region getSuffix - 한글 조사 처리
 
-  describe("strGetSuffix()", () => {
+  describe("koreanGetSuffix()", () => {
     describe("받침이 있는 경우", () => {
       it("'을' 타입은 '을'을 반환한다", () => {
-        expect(strGetSuffix("책", "을")).toBe("을");
+        expect(koreanGetSuffix("책", "을")).toBe("을");
       });
 
       it("'은' 타입은 '은'을 반환한다", () => {
-        expect(strGetSuffix("책", "은")).toBe("은");
+        expect(koreanGetSuffix("책", "은")).toBe("은");
       });
 
       it("'이' 타입은 '이'를 반환한다", () => {
-        expect(strGetSuffix("책", "이")).toBe("이");
+        expect(koreanGetSuffix("책", "이")).toBe("이");
       });
 
       it("'와' 타입은 '과'를 반환한다", () => {
-        expect(strGetSuffix("책", "와")).toBe("과");
+        expect(koreanGetSuffix("책", "와")).toBe("과");
       });
 
       it("'랑' 타입은 '이랑'을 반환한다", () => {
-        expect(strGetSuffix("책", "랑")).toBe("이랑");
+        expect(koreanGetSuffix("책", "랑")).toBe("이랑");
       });
 
       it("'로' 타입은 '으로'를 반환한다", () => {
-        expect(strGetSuffix("책", "로")).toBe("으로");
+        expect(koreanGetSuffix("책", "로")).toBe("으로");
       });
 
       it("'라' 타입은 '이라'를 반환한다", () => {
-        expect(strGetSuffix("책", "라")).toBe("이라");
+        expect(koreanGetSuffix("책", "라")).toBe("이라");
       });
     });
 
     describe("비한글 문자의 경우", () => {
       it("영문자로 끝나면 받침 없음으로 처리한다", () => {
-        expect(strGetSuffix("ABC", "을")).toBe("를");
-        expect(strGetSuffix("test", "은")).toBe("는");
+        expect(koreanGetSuffix("ABC", "을")).toBe("를");
+        expect(koreanGetSuffix("test", "은")).toBe("는");
       });
 
       it("숫자로 끝나면 받침 없음으로 처리한다", () => {
-        expect(strGetSuffix("123", "을")).toBe("를");
-        expect(strGetSuffix("456", "은")).toBe("는");
+        expect(koreanGetSuffix("123", "을")).toBe("를");
+        expect(koreanGetSuffix("456", "은")).toBe("는");
       });
 
       it("빈 문자열은 받침 없음으로 처리한다", () => {
-        expect(strGetSuffix("", "을")).toBe("를");
-        expect(strGetSuffix("", "은")).toBe("는");
+        expect(koreanGetSuffix("", "을")).toBe("를");
+        expect(koreanGetSuffix("", "은")).toBe("는");
       });
     });
 
     describe("받침이 없는 경우", () => {
       it("'을' 타입은 '를'을 반환한다", () => {
-        expect(strGetSuffix("나무", "을")).toBe("를");
+        expect(koreanGetSuffix("나무", "을")).toBe("를");
       });
 
       it("'은' 타입은 '는'을 반환한다", () => {
-        expect(strGetSuffix("나무", "은")).toBe("는");
+        expect(koreanGetSuffix("나무", "은")).toBe("는");
       });
 
       it("'이' 타입은 '가'를 반환한다", () => {
-        expect(strGetSuffix("나무", "이")).toBe("가");
+        expect(koreanGetSuffix("나무", "이")).toBe("가");
       });
 
       it("'와' 타입은 '와'를 반환한다", () => {
-        expect(strGetSuffix("나무", "와")).toBe("와");
+        expect(koreanGetSuffix("나무", "와")).toBe("와");
       });
 
       it("'랑' 타입은 '랑'을 반환한다", () => {
-        expect(strGetSuffix("나무", "랑")).toBe("랑");
+        expect(koreanGetSuffix("나무", "랑")).toBe("랑");
       });
 
       it("'로' 타입은 '로'를 반환한다", () => {
-        expect(strGetSuffix("나무", "로")).toBe("로");
+        expect(koreanGetSuffix("나무", "로")).toBe("로");
       });
 
       it("'라' 타입은 '라'를 반환한다", () => {
-        expect(strGetSuffix("나무", "라")).toBe("라");
+        expect(koreanGetSuffix("나무", "라")).toBe("라");
       });
     });
 
     describe("받침 ㄹ인 경우 (로 조사 특수 처리)", () => {
       it("'로' 타입은 받침 ㄹ일 때 '로'를 반환한다 (서울)", () => {
-        expect(strGetSuffix("서울", "로")).toBe("로");
+        expect(koreanGetSuffix("서울", "로")).toBe("로");
       });
 
       it("'로' 타입은 받침 ㄹ일 때 '로'를 반환한다 (길)", () => {
-        expect(strGetSuffix("길", "로")).toBe("로");
+        expect(koreanGetSuffix("길", "로")).toBe("로");
       });
 
       it("'로' 타입은 받침 ㄹ일 때 '로'를 반환한다 (발)", () => {
-        expect(strGetSuffix("발", "로")).toBe("로");
+        expect(koreanGetSuffix("발", "로")).toBe("로");
       });
 
       it("'로' 타입은 받침 ㄹ일 때 '로'를 반환한다 (술)", () => {
-        expect(strGetSuffix("술", "로")).toBe("로");
+        expect(koreanGetSuffix("술", "로")).toBe("로");
       });
 
       it("'을' 타입은 받침 ㄹ일 때 일반 규칙대로 '을'을 반환한다", () => {
-        expect(strGetSuffix("서울", "을")).toBe("을");
+        expect(koreanGetSuffix("서울", "을")).toBe("을");
       });
 
       it("'은' 타입은 받침 ㄹ일 때 일반 규칙대로 '은'을 반환한다", () => {
-        expect(strGetSuffix("서울", "은")).toBe("은");
+        expect(koreanGetSuffix("서울", "은")).toBe("은");
       });
     });
   });

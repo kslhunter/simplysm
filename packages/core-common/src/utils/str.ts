@@ -31,7 +31,7 @@ const suffixTable = {
  * getSuffix("사과", "을") // "를"
  * getSuffix("책", "이") // "이"
  */
-export function strGetSuffix(
+export function koreanGetSuffix(
   text: string,
   type: "을" | "은" | "이" | "와" | "랑" | "로" | "라",
 ): string {
