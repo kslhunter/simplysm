@@ -7,7 +7,7 @@ description: "Parallel execution of plan tasks (explicit invocation only)"
 
 Execute plan tasks via parallel Task agents with dependency-aware scheduling.
 
-**Core principle:** Dependency analysis + parallel Task agents + nested parallel reviews = maximum throughput
+**Core principle:** Dependency analysis + parallel implementers + orchestrator-managed reviews = maximum throughput
 
 ## When to Use
 
@@ -26,11 +26,16 @@ digraph when_to_use {
 
 All execution uses `Task(general-purpose)` for parallel execution.
 
-- **task agent**: `Task(general-purpose, model: sonnet)` — implements one task, launches sub-Tasks for review, fixes issues
-- **spec reviewer**: `Task(general-purpose)` — sub-Task launched by task agent (read-only)
-- **quality reviewer**: `Task(general-purpose)` — sub-Task launched by task agent (read-only)
+- **implementer**: `Task(general-purpose, model: min(sonnet, current))` — implements one task, commits, reports
+- **spec reviewer**: `Task(general-purpose)` — dispatched by orchestrator after implementer completes (read-only)
+- **quality reviewer**: `Task(general-purpose)` — dispatched by orchestrator in parallel with spec reviewer (read-only)
+- **final reviewer**: `Task(general-purpose)` — dispatched by orchestrator after all batches complete (read-only)
 
-Independent tasks run as **parallel Task calls in a single message**. Within each task agent, spec and quality reviews also run as **parallel sub-Task calls**.
+**Model selection:**
+- **implementer**: use `min(sonnet, current model)`. If the user's current model is haiku, use haiku. Otherwise use sonnet.
+- **All other agents**: inherit current model (no explicit `model` parameter).
+
+Independent tasks run as **parallel Task calls in a single message**. After implementers complete, spec and quality reviews run as **parallel Task calls**.
 
 **CRITICAL: Do NOT use `run_in_background: true`** — achieve parallelism by making multiple Task calls in a single message (foreground parallel). This ensures the orchestrator waits for all tasks to complete before proceeding to the next batch, and prevents Stop hooks from firing prematurely.
 
@@ -46,33 +51,38 @@ digraph process {
     subgraph cluster_batch {
         label="Per Batch (independent tasks)";
 
-        subgraph cluster_parallel_tasks {
-            label="Parallel Task calls (single message)";
+        subgraph cluster_parallel_implementers {
+            label="Parallel implementer Task calls (single message)";
             style=dashed;
 
-            subgraph cluster_task_agent {
-                label="Each Task Agent";
+            subgraph cluster_implementer {
+                label="Each Implementer";
                 "Implement the task" [shape=box];
                 "Questions?" [shape=diamond];
                 "Return questions to orchestrator" [shape=box];
                 "Re-launch with answers" [shape=box];
-
-                subgraph cluster_nested_review {
-                    label="Parallel sub-Task calls";
-                    style=dashed;
-                    "sub-Task: spec reviewer" [shape=box];
-                    "sub-Task: quality reviewer" [shape=box];
-                }
-
-                "Any issues?" [shape=diamond];
-                "Fix all issues" [shape=box];
-                "Re-review failed aspects (parallel sub-Task)" [shape=box];
-                "Report results" [shape=box];
+                "Commit and report" [shape=box];
             }
+        }
+
+        subgraph cluster_review {
+            label="Orchestrator review loop (per implementer)";
+
+            subgraph cluster_parallel_reviewers {
+                label="Parallel reviewer Task calls (single message)";
+                style=dashed;
+                "Task: spec reviewer" [shape=box];
+                "Task: quality reviewer" [shape=box];
+            }
+
+            "Any issues?" [shape=diamond];
+            "Task: implementer fix" [shape=box];
+            "Re-review (parallel Task calls)" [shape=box];
         }
     }
 
     "More batches?" [shape=diamond];
+    "Batch integration check (typecheck + lint)" [shape=box];
     "Task: final review for entire implementation" [shape=box];
     "Done" [shape=ellipse];
 
@@ -82,15 +92,15 @@ digraph process {
     "Questions?" -> "Return questions to orchestrator" [label="yes"];
     "Return questions to orchestrator" -> "Re-launch with answers";
     "Re-launch with answers" -> "Implement the task";
-    "Questions?" -> "sub-Task: spec reviewer" [label="no"];
-    "Questions?" -> "sub-Task: quality reviewer" [label="no"];
-    "sub-Task: spec reviewer" -> "Any issues?";
-    "sub-Task: quality reviewer" -> "Any issues?";
-    "Any issues?" -> "Fix all issues" [label="yes"];
-    "Fix all issues" -> "Re-review failed aspects (parallel sub-Task)";
-    "Re-review failed aspects (parallel sub-Task)" -> "Any issues?";
-    "Any issues?" -> "Report results" [label="no"];
-    "Report results" -> "More batches?";
+    "Questions?" -> "Commit and report" [label="no"];
+    "Commit and report" -> "Task: spec reviewer";
+    "Commit and report" -> "Task: quality reviewer";
+    "Task: spec reviewer" -> "Any issues?";
+    "Task: quality reviewer" -> "Any issues?";
+    "Any issues?" -> "Task: implementer fix" [label="yes"];
+    "Task: implementer fix" -> "Re-review (parallel Task calls)";
+    "Re-review (parallel Task calls)" -> "Any issues?";
+    "Any issues?" -> "More batches?" [label="no"];
     "More batches?" -> "Batch integration check (typecheck + lint)" [label="yes"];
     "Batch integration check (typecheck + lint)" -> "Implement the task" [label="next batch"];
     "More batches?" -> "Task: final review for entire implementation" [label="no"];
@@ -120,46 +130,30 @@ Example: 5 tasks
   Batch 3: [Task 4] — depends on Task 1
 ```
 
-## Task Agent Prompt
+## Implementer Prompt
 
-Each task agent receives a prompt combining implementation + review instructions:
+Each implementer receives a prompt based on `./implementer-prompt.md`. Fill in all `[bracketed]` sections before dispatching.
 
-```
-You are implementing and reviewing Task N: [task name]
+## Reviewer Dispatch
 
-## Task Description
+After an implementer completes and reports, the orchestrator dispatches reviewers:
 
-[FULL TEXT of task from plan]
-
-## Context
-
-[Scene-setting: where this fits, dependencies, architectural context]
-
-## Your Job
-
-1. Implement exactly what the task specifies
-2. Write tests (following TDD if task says to)
-3. Verify implementation works
-4. Self-review: did I implement everything? Did I over-build?
-5. Commit your work (record the BASE_SHA before and HEAD_SHA after)
-6. Launch TWO parallel sub-Tasks (spec review + quality review):
-   - Sub-Task 1: spec reviewer — send spec-reviewer-prompt.md based prompt
-   - Sub-Task 2: quality reviewer — send code-quality-reviewer-prompt.md based prompt, include BASE_SHA and HEAD_SHA
-7. If either reviewer finds issues → fix them → re-review only failed aspects (parallel sub-Tasks again)
-8. Repeat until both reviewers approve
-9. Report back with: what you implemented, test results, files changed, commit SHA, review outcomes
-
-If you have questions about requirements — return them immediately WITHOUT implementing. Don't guess.
-If you encounter unexpected issues mid-implementation — ask rather than guess.
-
-Work from: [directory]
-```
+1. Record the implementer's commit SHA and files changed from its report
+2. Dispatch TWO parallel Task calls (single message):
+   - spec reviewer — fill `./spec-reviewer-prompt.md` with task requirements + implementer report
+   - quality reviewer — fill `./code-quality-reviewer-prompt.md` with implementer report + BASE_SHA/HEAD_SHA
+3. If either reviewer returns CHANGES_NEEDED:
+   - Re-dispatch implementer with fix instructions (all issues from both reviewers combined)
+   - After fix, re-dispatch only the failed reviewers (parallel Task calls)
+   - Repeat until both approve
+4. Proceed to next task or batch
 
 ## Prompt Templates
 
-- `./implementer-prompt.md` — base implementer instructions (referenced by task agent)
-- `./spec-reviewer-prompt.md` — spec compliance review sub-Task prompt
-- `./code-quality-reviewer-prompt.md` — code quality review sub-Task prompt
+- `./implementer-prompt.md` — implementer instructions
+- `./spec-reviewer-prompt.md` — spec compliance review prompt
+- `./code-quality-reviewer-prompt.md` — code quality review prompt
+- `./final-review-prompt.md` — final integration review prompt
 
 ## Example Workflow
 
@@ -179,56 +173,47 @@ You: Using sd-plan-dev to execute this plan.
   Batch 1: [Task 1, Task 2, Task 5]
   Batch 2: [Task 3, Task 4]
 
---- Batch 1: parallel ---
+--- Batch 1: parallel implementers ---
 
-[3 parallel Task calls in single message]
+[3 parallel implementer Task calls in single message]
 
-  Task 1 agent:
-    - Implemented validator, tests 5/5 pass
-    - Parallel sub-Tasks: spec ✅, quality ✅
-    → Done
+  Implementer 1: Implemented validator, tests 5/5 pass → committed
+  Implementer 2: "Should auth use JWT or session?" (question returned)
+  Implementer 5: Implemented endpoints, tests 3/3 pass → committed
 
-  Task 2 agent:
-    - "Should auth use JWT or session?" (question returned)
+[Answer Implementer 2 question: "JWT"]
+[Re-launch Implementer 2 with answer]
+  Implementer 2: Implemented auth hook with JWT, tests 4/4 pass → committed
 
-  Task 5 agent:
-    - Implemented endpoints, tests 3/3 pass
-    - Parallel sub-Tasks: spec ✅, quality: Issues (magic number)
-    - Fixed magic number
-    - Parallel re-review: quality ✅
-    → Done
+[Orchestrator dispatches reviewers for each completed implementer]
 
-[Answer Task 2 question: "JWT"]
-[Re-launch Task 2 agent with answer]
+  Task 1 reviews: [parallel] spec ✅, quality ✅ → Done
+  Task 2 reviews: [parallel] spec ✅, quality ✅ → Done
+  Task 5 reviews: [parallel] spec ✅, quality ❌ (magic number)
+    → Re-dispatch Implementer 5 to fix → committed
+    → Re-review quality ✅ → Done
 
-  Task 2 agent:
-    - Implemented auth hook with JWT, tests 4/4 pass
-    - Parallel sub-Tasks: spec ✅, quality ✅
-    → Done
+[Batch 1 complete → integration check]
 
-[Batch 1 complete]
+--- Batch 2: parallel implementers ---
 
---- Batch 2: parallel ---
+[2 parallel implementer Task calls in single message]
 
-[2 parallel Task calls in single message]
+  Implementer 3: Implemented login component → committed
+  Implementer 4: Updated validator → committed
 
-  Task 3 agent:
-    - Implemented login component using Task 2's auth hook
-    - Parallel sub-Tasks: spec ❌ (missing error state), quality ✅
-    - Fixed error state
-    - spec re-review ✅
-    → Done
+[Orchestrator dispatches reviewers]
 
-  Task 4 agent:
-    - Updated validator with new rules
-    - Parallel sub-Tasks: spec ✅, quality ✅
-    → Done
+  Task 3 reviews: [parallel] spec ❌ (missing error state), quality ✅
+    → Re-dispatch Implementer 3 to fix → committed
+    → Re-review spec ✅ → Done
+  Task 4 reviews: [parallel] spec ✅, quality ✅ → Done
 
-[Batch 2 complete]
+[Batch 2 complete → integration check]
 
 --- Final ---
 
-[Task — final review for entire implementation]
+[Task: final review for entire implementation]
 Final reviewer: All requirements met, ready to merge
 
 Done!
@@ -254,7 +239,7 @@ This catches cross-task integration issues early — especially when the next ba
 - Proceed with unfixed issues
 - Put tasks with file overlap in the same parallel batch
 - Skip dependency analysis
-- Make task agent read plan file directly (provide full text instead)
+- Make implementer read plan file directly (provide full text instead)
 - Skip scene-setting context
 - Accept "close enough" on spec compliance
 - Skip review loops (issue found → fix → re-review)
@@ -269,11 +254,11 @@ This catches cross-task integration issues early — especially when the next ba
 
 **If reviewers find issues:**
 
-- Task agent fixes all issues from both reviewers at once
-- Re-review only the failed aspects (parallel sub-Tasks)
+- Orchestrator re-dispatches implementer with all issues from both reviewers combined
+- After fix, re-dispatch only the failed reviewers (parallel Task calls)
 - Repeat until both approved
 
-**If task agent fails or times out:**
+**If implementer fails or times out:**
 
 - Do NOT silently proceed — the affected files may be in an indeterminate state
 - Check if other tasks in the same batch depend on the failed task's output
