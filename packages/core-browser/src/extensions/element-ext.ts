@@ -243,7 +243,7 @@ export async function getBounds(els: Element[], timeout: number = 5000): Promise
         }
       }),
       new Promise<ElementBounds[]>((_, reject) =>
-        setTimeout(() => reject(new TimeoutError(undefined, `${timeout}ms 초과`)), timeout),
+        setTimeout(() => reject(new TimeoutError(undefined, `${timeout}ms timeout`)), timeout),
       ),
     ]);
   } finally {
