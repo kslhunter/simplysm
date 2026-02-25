@@ -15,7 +15,7 @@ export function buildHeaderTable<TItem>(
   const maxDepth = Math.max(...columns.map((c) => c.header.length));
   if (maxDepth === 0) return [];
 
-  // occupied[r][c] = true이면 이미 다른 셀의 병합 영역
+  // occupied[r][c] = true indicates already merged area of another cell
   const occupied: boolean[][] = Array.from({ length: maxDepth }, () =>
     Array.from({ length: columns.length }, () => false),
   );
@@ -23,7 +23,7 @@ export function buildHeaderTable<TItem>(
     Array.from({ length: columns.length }, () => null),
   );
 
-  // 각 컬럼의 헤더를 maxDepth까지 패딩
+  // Pad header of each column to maxDepth
   const padded = columns.map((col) => {
     const h = col.header;
     const result: string[] = [];
@@ -38,10 +38,10 @@ export function buildHeaderTable<TItem>(
       if (occupied[r][c]) continue;
 
       const text = padded[c][r];
-      // 원본 header 길이 기반으로 판별: 현재 행이 원본 header의 마지막 레벨 이상이면 leaf
+      // Determined based on original header length: if current row is at or beyond the last level of original header, it's a leaf
       const isLastRow = r >= columns[c].header.length - 1;
 
-      // colspan: 같은 행에서 같은 텍스트 + 같은 상위 그룹 + 고정 경계를 넘지 않음
+      // colspan: same text in same row + same parent group + does not cross fixed boundary
       let colspan = 1;
       if (!isLastRow) {
         const startFixed = columns[c].fixed;
@@ -56,7 +56,7 @@ export function buildHeaderTable<TItem>(
         }
       }
 
-      // rowspan: isLastRow이면 남은 깊이만큼
+      // rowspan: if isLastRow, span the remaining depth
       const rowspan = isLastRow ? maxDepth - r : 1;
 
       const col = columns[c];
@@ -72,7 +72,7 @@ export function buildHeaderTable<TItem>(
         headerContent: isLastRow ? col.headerContent : undefined,
       };
 
-      // 병합 영역 마킹
+      // Mark merged area
       for (let dr = 0; dr < rowspan; dr++) {
         for (let dc = 0; dc < colspan; dc++) {
           if (dr === 0 && dc === 0) continue;
@@ -85,7 +85,7 @@ export function buildHeaderTable<TItem>(
   return table;
 }
 
-// 같은 병합 그룹에 속하는지 확인 (행 0~endRow까지 같은 텍스트 시퀀스)
+// Check if belongs to same merge group (same text sequence from row 0 to endRow)
 function isSameGroup(
   padded: string[][],
   colA: number,
