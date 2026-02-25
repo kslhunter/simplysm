@@ -1,46 +1,46 @@
 import type { JSX } from "solid-js";
 
 export interface DataSheetProps<TItem> {
-  // 데이터
+  // Data
   items?: TItem[];
-  // 설정
+  // Config
   persistKey?: string;
   hideConfigBar?: boolean;
   inset?: boolean;
   contentStyle?: JSX.CSSProperties | string;
 
-  // 정렬
+  // Sorting
   sorts?: SortingDef[];
   onSortsChange?: (sorts: SortingDef[]) => void;
   autoSort?: boolean;
 
-  // 페이지네이션
+  // Pagination
   page?: number;
   onPageChange?: (page: number) => void;
   totalPageCount?: number;
   itemsPerPage?: number;
   displayPageCount?: number;
 
-  // 선택
+  // Selection
   selectMode?: "single" | "multiple";
   selectedItems?: TItem[];
   onSelectedItemsChange?: (items: TItem[]) => void;
   autoSelect?: "click";
   isItemSelectable?: (item: TItem) => boolean | string;
 
-  // 트리 확장
+  // Tree expansion
   expandedItems?: TItem[];
   onExpandedItemsChange?: (items: TItem[]) => void;
   getChildren?: (item: TItem, index: number) => TItem[] | undefined;
 
-  // 셀 스타일
+  // Cell styling
   cellClass?: (item: TItem, colKey: string) => string | undefined;
   cellStyle?: (item: TItem, colKey: string) => string | undefined;
 
-  // 재정렬
+  // Reordering
   onItemsReorder?: (event: DataSheetReorderEvent<TItem>) => void;
 
-  // 기타
+  // Other
   class?: string;
   children: JSX.Element;
 }
@@ -64,9 +64,9 @@ export interface DataSheetColumnProps<TItem> {
 
 export interface DataSheetCellContext<TItem> {
   item: TItem;
-  /** 소속 배열 내 위치 (루트: items[], 자식: parent.children[]) */
+  /** Position within belonging array (root: items[], children: parent.children[]) */
   index: number;
-  /** 플랫 표시 행 위치 (현재 페이지 내 순번) */
+  /** Flat display row position (sequence number within current page) */
   row: number;
   depth: number;
 }
@@ -119,26 +119,26 @@ export interface HeaderDef {
 
 export interface FlatItem<TItem> {
   item: TItem;
-  /** 소속 배열 내 위치 (루트: items[], 자식: parent.children[]) */
+  /** Position within belonging array (root: items[], children: parent.children[]) */
   index: number;
-  /** 플랫 표시 행 위치 (현재 페이지 내 순번) */
+  /** Flat display row position (sequence number within current page) */
   row: number;
   depth: number;
   hasChildren: boolean;
   parent?: TItem;
 }
 
-// 드래그 앤 드롭 위치
+// Drag and drop position
 export type DataSheetDragPosition = "before" | "after" | "inside";
 
-// 재정렬 이벤트
+// Reorder event
 export interface DataSheetReorderEvent<TItem> {
   item: TItem;
   targetItem: TItem;
   position: DataSheetDragPosition;
 }
 
-// 설정 모달에 전달할 컬럼 정보
+// Column information passed to config modal
 export interface DataSheetConfigColumnInfo {
   key: string;
   header: string[];
