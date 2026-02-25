@@ -4,13 +4,13 @@ import { fsExists, fsReadJson, pathIsChildPath } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 
 /**
- * DOM 관련 lib 패턴 - 브라우저 API를 포함하는 lib들
- * node 환경에서 제외되어야 하는 lib을 필터링할 때 사용 (lib.dom.d.ts, lib.webworker.d.ts 등)
+ * DOM-related lib patterns - libs that include browser APIs
+ * Used when filtering libs that should be excluded from node environment (lib.dom.d.ts, lib.webworker.d.ts, etc)
  */
 const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
 
 /**
- * 패키지의 package.json에서 @types/* devDependencies를 읽어 types 목록을 반환합니다.
+ * Read @types/* devDependencies from package.json and return types list
  */
 export async function getTypesFromPackageJson(packageDir: string): Promise<string[]> {
   const packageJsonPath = path.join(packageDir, "package.json");
@@ -29,8 +29,8 @@ export async function getTypesFromPackageJson(packageDir: string): Promise<strin
 }
 
 /**
- * 타입체크 환경
- * - node: DOM lib 제거 + node 타입 추가
+ * Type check environment
+ * - node: remove DOM lib + add node types
  * - browser: node 타입 제거
  * - neutral: DOM lib 유지 + node 타입 추가 (Node/브라우저 공용 패키지용)
  */
