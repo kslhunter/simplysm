@@ -22,7 +22,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("creates with tick (millisecond)", () => {
+    it("tick (millisecond)으로 생성한다", () => {
       const tick = new Date(2025, 0, 6).getTime();
       const dateOnly = new DateOnly(tick);
 
@@ -31,7 +31,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("creates with Date type", () => {
+    it("Date 타입으로 생성한다", () => {
       const date = new Date(2025, 0, 6, 15, 30, 45);
       const dateOnly = new DateOnly(date);
 
@@ -40,7 +40,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(6);
     });
 
-    it("ignores time when creating from Date type", () => {
+    it("Date 타입에서 생성할 때 시간을 무시한다", () => {
       const date1 = new Date(2025, 0, 6, 0, 0, 0);
       const date2 = new Date(2025, 0, 6, 23, 59, 59);
 
@@ -50,7 +50,7 @@ describe("DateOnly", () => {
       expect(dateOnly1.tick).toBe(dateOnly2.tick);
     });
 
-    it("creates leap year February 29th", () => {
+    it("윤년 2월 29일을 생성한다", () => {
       const dateOnly = new DateOnly(2024, 2, 29);
 
       expect(dateOnly.year).toBe(2024);
@@ -59,7 +59,7 @@ describe("DateOnly", () => {
       expect(dateOnly.isValid).toBe(true);
     });
 
-    it("adjusts February 29th in non-leap year to March 1st (JS Date behavior)", () => {
+    it("평년 2월 29일은 3월 1일로 조정된다 (JS Date 동작)", () => {
       const dateOnly = new DateOnly(2023, 2, 29);
 
       expect(dateOnly.year).toBe(2023);
@@ -67,7 +67,7 @@ describe("DateOnly", () => {
       expect(dateOnly.day).toBe(1);
     });
 
-    it("adjusts invalid month (13) to next year January (JS Date behavior)", () => {
+    it("유효하지 않은 월(13)은 다음 해 1월로 조정된다 (JS Date 동작)", () => {
       const dateOnly = new DateOnly(2024, 13, 1);
 
       expect(dateOnly.year).toBe(2025);
