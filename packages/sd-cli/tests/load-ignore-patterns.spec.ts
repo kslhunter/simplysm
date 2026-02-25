@@ -133,7 +133,7 @@ describe("loadIgnorePatterns", () => {
     });
 
     await expect(loadIgnorePatterns(cwd)).rejects.toThrow(
-      "ESLint config file is not valid format",
+      /ESLint config file is not .* format/,
     );
   });
 

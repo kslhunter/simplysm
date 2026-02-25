@@ -35,9 +35,9 @@ vi.mock("@simplysm/core-node", () => {
     return child.startsWith(parentWithSlash);
   };
 
-  // Mock worker proxy - provides buildDts and terminate methods
+  // Mock worker proxy - provides build and terminate methods
   const createMockWorkerProxy = () => ({
-    buildDts: vi.fn(() =>
+    build: vi.fn(() =>
       Promise.resolve({
         success: true,
         diagnostics: [],
@@ -227,7 +227,7 @@ describe("runTypecheck", () => {
       }),
     );
     vi.mocked(Worker.create).mockReturnValue({
-      buildDts: mockBuildDts,
+      build: mockBuildDts,
       terminate: vi.fn(() => Promise.resolve()),
     } as unknown as ReturnType<typeof Worker.create>);
 
@@ -318,6 +318,19 @@ describe("runTypecheck", () => {
       someOtherExport: () => ({}),
     });
 
+    const { Worker } = await import("@simplysm/core-node");
+    vi.mocked(Worker.create).mockReturnValue({
+      build: vi.fn(() =>
+        Promise.resolve({
+          success: true,
+          diagnostics: [],
+          errorCount: 0,
+          warningCount: 0,
+        }),
+      ),
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
+
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
@@ -346,6 +359,19 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
+    const { Worker } = await import("@simplysm/core-node");
+    vi.mocked(Worker.create).mockReturnValue({
+      build: vi.fn(() =>
+        Promise.resolve({
+          success: true,
+          diagnostics: [],
+          errorCount: 0,
+          warningCount: 0,
+        }),
+      ),
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
+
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
@@ -370,7 +396,7 @@ describe("runTypecheck", () => {
     // Worker가 에러 결과를 반환하도록 모킹
     const { Worker } = await import("@simplysm/core-node");
     vi.mocked(Worker.create).mockReturnValue({
-      buildDts: vi.fn(() =>
+      build: vi.fn(() =>
         Promise.resolve({
           success: false,
           diagnostics: [
@@ -439,7 +465,7 @@ describe("runTypecheck", () => {
       }),
     );
     vi.mocked(Worker.create).mockReturnValue({
-      buildDts: mockBuildDts,
+      build: mockBuildDts,
       terminate: vi.fn(() => Promise.resolve()),
     } as unknown as ReturnType<typeof Worker.create>);
 
@@ -486,7 +512,7 @@ describe("runTypecheck", () => {
       }),
     );
     vi.mocked(Worker.create).mockReturnValue({
-      buildDts: mockBuildDts,
+      build: mockBuildDts,
       terminate: vi.fn(() => Promise.resolve()),
     } as unknown as ReturnType<typeof Worker.create>);
 
@@ -520,6 +546,7 @@ describe("executeTypecheck", () => {
 
   it("returns success result when no errors", async () => {
     const { executeTypecheck } = await import("../src/commands/typecheck");
+    const { Worker } = await import("@simplysm/core-node");
 
     vi.mocked(ts.readConfigFile).mockReturnValue({ config: { compilerOptions: {} } });
     vi.mocked(ts.parseJsonConfigFileContent).mockReturnValue({
@@ -530,6 +557,18 @@ describe("executeTypecheck", () => {
 
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
+
+    vi.mocked(Worker.create).mockReturnValue({
+      build: vi.fn(() =>
+        Promise.resolve({
+          success: true,
+          diagnostics: [],
+          errorCount: 0,
+          warningCount: 0,
+        }),
+      ),
+      terminate: vi.fn(() => Promise.resolve()),
+    } as unknown as ReturnType<typeof Worker.create>);
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
@@ -559,7 +598,7 @@ describe("executeTypecheck", () => {
 
     // Mock worker to return error results
     vi.mocked(Worker.create).mockReturnValue({
-      buildDts: vi.fn(() =>
+      build: vi.fn(() =>
         Promise.resolve({
           success: false,
           diagnostics: [
@@ -577,8 +616,8 @@ describe("executeTypecheck", () => {
       terminate: vi.fn(() => Promise.resolve()),
     } as unknown as ReturnType<typeof Worker.create>);
 
-    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
-      [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
+    vi.mocked(ts.sortAndDeduplicateDiagnostics).mockImplementation(
+      (diagnostics) => diagnostics as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
     vi.mocked(ts.formatDiagnosticsWithColorAndContext).mockReturnValue("error output");
 

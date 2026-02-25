@@ -19,7 +19,7 @@ describe("RebuildManager", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(startSpy).toHaveBeenCalledWith("Rebuilding... (pkg1 (node))");
-    expect(successSpy).toHaveBeenCalledWith("Rebuild complete (pkg1 (node))");
+    expect(successSpy).toHaveBeenCalledWith("Rebuild completed (pkg1 (node))");
   });
 
   it("batches multiple builds and logs them together", async () => {
@@ -38,6 +38,6 @@ describe("RebuildManager", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(startSpy).toHaveBeenCalledWith("Rebuilding... (pkg1 (node), pkg2 (browser))");
-    expect(successSpy).toHaveBeenCalledWith("Rebuild complete (pkg1 (node), pkg2 (browser))");
+    expect(successSpy).toHaveBeenCalledWith("Rebuild completed (pkg1 (node), pkg2 (browser))");
   });
 });

@@ -28,7 +28,7 @@ const suffixTable = {
  *   - `"라"`: 이라/라 (ira/ra - copula particle)
  *
  * @example
- * koreanGetSuffix("사과", "을") // "를"
+ * koreanGetSuffix("Apple", "을") // "를"
  * koreanGetSuffix("책", "이") // "이"
  */
 export function koreanGetSuffix(

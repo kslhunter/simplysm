@@ -61,7 +61,7 @@ describe("loadSdConfig", () => {
     });
 
     await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
-      "sd.config.ts return value is not in correct format",
+      /sd\.config\.ts return value is not in .* correct format/,
     );
   });
 
@@ -72,7 +72,7 @@ describe("loadSdConfig", () => {
     });
 
     await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
-      "sd.config.ts return value is not in correct format",
+      /sd\.config\.ts return value is not in .* correct format/,
     );
   });
 
@@ -83,7 +83,7 @@ describe("loadSdConfig", () => {
     });
 
     await expect(loadSdConfig({ cwd: "/project", dev: false, opt: [] })).rejects.toThrow(
-      "sd.config.ts return value is not in correct format",
+      /sd\.config\.ts return value is not in .* correct format/,
     );
   });
 

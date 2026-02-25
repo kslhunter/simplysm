@@ -16,8 +16,8 @@ describe("ExcelWrapper", () => {
       const wrapper = new ExcelWrapper(testSchema);
 
       const records = [
-        { name: "홍길동", age: 30, email: "hong@test.com", active: true },
-        { name: "김철수", age: 25 },
+        { name: "John Doe", age: 30, email: "john@test.com", active: true },
+        { name: "Jane Smith", age: 25 },
       ];
 
       const wb = await wrapper.write("Users", records);
