@@ -292,7 +292,7 @@ describe("normalizeMonth", () => {
   //#region Normal range
 
   describe("Normal range (1-12)", () => {
-    it("Returns unchanged if month is within 1-12 range", () => {
+    it("returns unchanged if month is within 1-12 range", () => {
       expect(normalizeMonth(2025, 1, 15)).toEqual({ year: 2025, month: 1, day: 15 });
       expect(normalizeMonth(2025, 6, 15)).toEqual({ year: 2025, month: 6, day: 15 });
       expect(normalizeMonth(2025, 12, 15)).toEqual({ year: 2025, month: 12, day: 15 });
@@ -304,19 +304,19 @@ describe("normalizeMonth", () => {
   //#region Month overflow
 
   describe("Month overflow (13 or more)", () => {
-    it("Month 13 becomes January next year", () => {
+    it("month 13 becomes January next year", () => {
       expect(normalizeMonth(2025, 13, 15)).toEqual({ year: 2026, month: 1, day: 15 });
     });
 
-    it("Month 14 becomes February next year", () => {
+    it("month 14 becomes February next year", () => {
       expect(normalizeMonth(2025, 14, 15)).toEqual({ year: 2026, month: 2, day: 15 });
     });
 
-    it("Month 25 becomes January 2 years later", () => {
+    it("month 25 becomes January 2 years later", () => {
       expect(normalizeMonth(2025, 25, 15)).toEqual({ year: 2027, month: 1, day: 15 });
     });
 
-    it("Month 24 becomes December next year", () => {
+    it("month 24 becomes December next year", () => {
       expect(normalizeMonth(2025, 24, 15)).toEqual({ year: 2026, month: 12, day: 15 });
     });
   });
@@ -326,23 +326,23 @@ describe("normalizeMonth", () => {
   //#region Month underflow
 
   describe("Month underflow (0 or less)", () => {
-    it("Month 0 becomes December previous year", () => {
+    it("month 0 becomes December previous year", () => {
       expect(normalizeMonth(2025, 0, 15)).toEqual({ year: 2024, month: 12, day: 15 });
     });
 
-    it("Month -1 becomes November previous year", () => {
+    it("month -1 becomes November previous year", () => {
       expect(normalizeMonth(2025, -1, 15)).toEqual({ year: 2024, month: 11, day: 15 });
     });
 
-    it("Month -11 becomes January previous year", () => {
+    it("month -11 becomes January previous year", () => {
       expect(normalizeMonth(2025, -11, 15)).toEqual({ year: 2024, month: 1, day: 15 });
     });
 
-    it("Month -12 becomes December 2 years ago", () => {
+    it("month -12 becomes December 2 years ago", () => {
       expect(normalizeMonth(2025, -12, 15)).toEqual({ year: 2023, month: 12, day: 15 });
     });
 
-    it("Month -13 becomes November 2 years ago", () => {
+    it("month -13 becomes November 2 years ago", () => {
       expect(normalizeMonth(2025, -13, 15)).toEqual({ year: 2023, month: 11, day: 15 });
     });
   });
@@ -352,19 +352,19 @@ describe("normalizeMonth", () => {
   //#region Day adjustment
 
   describe("Day adjustment (target month's last day)", () => {
-    it("Day 31 adjusted to 28 when changing to February (non-leap year)", () => {
+    it("day 31 adjusted to 28 when changing to February (non-leap year)", () => {
       expect(normalizeMonth(2025, 2, 31)).toEqual({ year: 2025, month: 2, day: 28 });
     });
 
-    it("Day 31 adjusted to 29 when changing to February (leap year)", () => {
+    it("day 31 adjusted to 29 when changing to February (leap year)", () => {
       expect(normalizeMonth(2024, 2, 31)).toEqual({ year: 2024, month: 2, day: 29 });
     });
 
-    it("Day 31 adjusted to 30 when changing to April", () => {
+    it("day 31 adjusted to 30 when changing to April", () => {
       expect(normalizeMonth(2025, 4, 31)).toEqual({ year: 2025, month: 4, day: 30 });
     });
 
-    it("Day unchanged if less than target month's day count", () => {
+    it("day unchanged if less than target month's day count", () => {
       expect(normalizeMonth(2025, 3, 15)).toEqual({ year: 2025, month: 3, day: 15 });
     });
   });

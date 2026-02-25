@@ -3,7 +3,7 @@ import { SignalHandler } from "../../src/infra/SignalHandler";
 
 describe("SignalHandler", () => {
   afterEach(() => {
-    // 테스트 간 process 리스너 정리
+    // Clean up process listeners between tests
     process.removeAllListeners("SIGINT");
     process.removeAllListeners("SIGTERM");
   });
@@ -11,7 +11,7 @@ describe("SignalHandler", () => {
   it("resolves waitForTermination when termination is requested", async () => {
     const handler = new SignalHandler();
 
-    // 비동기로 종료 요청
+    // Request termination asynchronously
     setTimeout(() => handler.requestTermination(), 10);
 
     await expect(handler.waitForTermination()).resolves.toBeUndefined();
@@ -31,7 +31,7 @@ describe("SignalHandler", () => {
     const handler = new SignalHandler();
 
     handler.requestTermination();
-    handler.requestTermination(); // 두 번째 호출은 무시됨
+    handler.requestTermination(); // Second call is ignored
 
     expect(handler.isTerminated()).toBe(true);
   });

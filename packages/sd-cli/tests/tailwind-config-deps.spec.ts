@@ -24,7 +24,7 @@ describe("getTailwindConfigDeps", () => {
     const configPath = path.join(packagesDir, "solid/tailwind.config.ts");
     const deps = getTailwindConfigDeps(configPath, ["@simplysm"]);
 
-    // solid/tailwind.config.ts는 tailwindcss/colors를 import하지만 추적하지 않음
-    expect(deps).toHaveLength(1); // 자기 자신만
+    // solid/tailwind.config.ts imports tailwindcss/colors but does not track it
+    expect(deps).toHaveLength(1); // only itself
   });
 });

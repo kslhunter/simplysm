@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
 
-// core-node 함수 모킹
+// Mock core-node functions
 vi.mock("@simplysm/core-node", () => ({
   fsExists: vi.fn(),
   fsReadJson: vi.fn(),

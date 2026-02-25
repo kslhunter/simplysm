@@ -247,7 +247,7 @@ describe("runLint", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
 
     await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow(
-      "ESLint config file not found",
+      "Cannot find ESLint config file",
     );
 
     // Since error is thrown, exitCode must be set by caller (not set inside runLint)

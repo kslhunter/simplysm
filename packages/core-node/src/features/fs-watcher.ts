@@ -13,7 +13,7 @@ const GLOB_CHARS_RE = /[*?{[\]]/;
 
 /**
  * Extracts the base directory from a glob pattern.
- * @example extractGlobBase("/home/user/src/**/*.ts") → "/home/user/src"
+ * @example extractGlobBase("/home/user/src/**\/*.ts") → "/home/user/src"
  */
 function extractGlobBase(globPath: string): string {
   const segments = globPath.split(/[/\\]/);
@@ -63,7 +63,7 @@ export interface FsWatcherChangeInfo {
  * This is intentional behavior to prevent conflicts with the event merging logic.
  *
  * @example
- * const watcher = await FsWatcher.watch(["src/**/*.ts"]);
+ * const watcher = await FsWatcher.watch(["src/**\/*.ts"]);
  * watcher.onChange({ delay: 300 }, (changes) => {
  *   for (const { path, event } of changes) {
  *     console.log(`${event}: ${path}`);

@@ -18,8 +18,8 @@ describe("RebuildManager", () => {
     // wait for _runBatch microtask + Promise.allSettled
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(startSpy).toHaveBeenCalledWith("리빌드 진행 중... (pkg1 (node))");
-    expect(successSpy).toHaveBeenCalledWith("리빌드 완료 (pkg1 (node))");
+    expect(startSpy).toHaveBeenCalledWith("Rebuilding... (pkg1 (node))");
+    expect(successSpy).toHaveBeenCalledWith("Rebuild complete (pkg1 (node))");
   });
 
   it("batches multiple builds and logs them together", async () => {
@@ -37,7 +37,7 @@ describe("RebuildManager", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(startSpy).toHaveBeenCalledWith("리빌드 진행 중... (pkg1 (node), pkg2 (browser))");
-    expect(successSpy).toHaveBeenCalledWith("리빌드 완료 (pkg1 (node), pkg2 (browser))");
+    expect(startSpy).toHaveBeenCalledWith("Rebuilding... (pkg1 (node), pkg2 (browser))");
+    expect(successSpy).toHaveBeenCalledWith("Rebuild complete (pkg1 (node), pkg2 (browser))");
   });
 });

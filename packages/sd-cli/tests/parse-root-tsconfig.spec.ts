@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
 import ts from "typescript";
 
-// typescript 모킹
+// Mock typescript
 vi.mock("typescript", async (importOriginal) => {
   const actual = await importOriginal<typeof ts>();
   return {
@@ -62,7 +62,7 @@ describe("parseRootTsconfig", () => {
 
     vi.mocked(ts.readConfigFile).mockReturnValue({ error: mockError });
 
-    expect(() => parseRootTsconfig(cwd)).toThrow("tsconfig.json 읽기 실패");
+    expect(() => parseRootTsconfig(cwd)).toThrow("Failed to read tsconfig.json");
   });
 
   it("throws error when tsconfig.json fails to parse", () => {
@@ -84,6 +84,6 @@ describe("parseRootTsconfig", () => {
       errors: [mockError],
     });
 
-    expect(() => parseRootTsconfig(cwd)).toThrow("tsconfig.json 파싱 실패");
+    expect(() => parseRootTsconfig(cwd)).toThrow("Failed to parse tsconfig.json");
   });
 });

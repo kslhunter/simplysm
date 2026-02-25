@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { loadIgnorePatterns } from "../src/commands/lint";
 import path from "path";
 
-// core-node 함수와 jiti를 모킹
+// Mock core-node functions and jiti
 vi.mock("@simplysm/core-node", () => ({
   fsExists: vi.fn(),
   pathPosix: vi.fn(),
@@ -70,7 +70,7 @@ describe("loadIgnorePatterns", () => {
 
     mockExists.mockResolvedValue(false);
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint config file not found");
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("Cannot find ESLint config file");
   });
 
   it("throws error if config is not array", async () => {
@@ -85,7 +85,7 @@ describe("loadIgnorePatterns", () => {
       default: { rules: {} },
     });
 
-    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint config is not array");
+    await expect(loadIgnorePatterns(cwd)).rejects.toThrow("ESLint config is not an array");
   });
 
   it("merges multiple globalIgnores settings", async () => {
