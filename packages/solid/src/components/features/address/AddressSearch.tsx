@@ -22,7 +22,7 @@ export const AddressSearchContent: Component = () => {
         scriptEl.setAttribute("id", "daum_address");
 
         scriptEl.onload = (): void => {
-          // @ts-expect-error -- Daum Postcode 글로벌 API
+          // @ts-expect-error -- Daum Postcode global API
           daum.postcode.load(() => {
             resolve();
           });
@@ -31,7 +31,7 @@ export const AddressSearchContent: Component = () => {
       });
     }
 
-    // @ts-expect-error -- Daum Postcode 글로벌 API
+    // @ts-expect-error -- Daum Postcode global API
     new daum.Postcode({
       oncomplete: (data: any): void => {
         const addr = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
