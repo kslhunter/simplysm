@@ -74,22 +74,22 @@ export interface LibraryWorkerEvents extends Record<string, unknown> {
 
 //#endregion
 
-//#region 리소스 관리
+//#region Resource Management
 
 const logger = consola.withTag("sd:cli:library:worker");
 
-/** esbuild build context (정리 대상) */
+/** esbuild build context (to be cleaned up) */
 let esbuildContext: esbuild.BuildContext | undefined;
 
-/** FsWatcher (정리 대상) */
+/** FsWatcher (to be cleaned up) */
 let fsWatcher: FsWatcher | undefined;
 
 /**
- * 리소스 정리
+ * Clean up resources
  */
 async function cleanup(): Promise<void> {
-  // 전역 변수를 임시 변수로 캡처 후 초기화
-  // (Promise.all 대기 중 다른 호출에서 전역 변수를 수정할 수 있으므로)
+  // Capture global variables to temporary variables and initialize
+  // (other calls can modify global variables while Promise.all is waiting)
   const contextToDispose = esbuildContext;
   esbuildContext = undefined;
 
@@ -99,9 +99,9 @@ async function cleanup(): Promise<void> {
   await Promise.all([contextToDispose?.dispose(), watcherToClose?.close()]);
 }
 
-// 프로세스 종료 전 리소스 정리 (SIGTERM/SIGINT)
-// 주의: worker.terminate()는 이 핸들러들을 호출하지 않고 즉시 종료됨.
-// 그러나 watch 모드에서 정상 종료는 메인 프로세스의 SIGINT/SIGTERM을 통해 이루어지므로 문제없음.
+// Clean up resources before process termination (SIGTERM/SIGINT)
+// Note: worker.terminate() does not call these handlers and terminates immediately.
+// However, normal shutdown in watch mode is handled via SIGINT/SIGTERM from the main process, so this is fine.
 registerCleanupHandlers(cleanup, logger);
 
 //#endregion
@@ -109,15 +109,15 @@ registerCleanupHandlers(cleanup, logger);
 //#region Worker
 
 /**
- * 일회성 빌드
+ * One-time build
  */
 async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
   try {
-    // tsconfig 파싱
+    // Parse tsconfig
     const parsedConfig = parseRootTsconfig(info.cwd);
     const entryPoints = getPackageSourceFiles(info.pkgDir, parsedConfig);
 
-    // 타겟별 compilerOptions 생성
+    // Create compilerOptions per target
     const env = getTypecheckEnvFromTarget(info.config.target);
     const compilerOptions = await getCompilerOptionsForPackage(
       parsedConfig.options,
@@ -125,7 +125,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
       info.pkgDir,
     );
 
-    // esbuild 일회성 빌드
+    // One-time esbuild
     const esbuildOptions = createLibraryEsbuildOptions({
       pkgDir: info.pkgDir,
       entryPoints,
@@ -155,7 +155,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
 const guardStartWatch = createOnceGuard("startWatch");
 
 /**
- * esbuild context 생성 및 초기 빌드 수행
+ * Create esbuild context and perform initial build
  */
 async function createAndBuildContext(
   pkgDir: string,
@@ -164,15 +164,15 @@ async function createAndBuildContext(
   isFirstBuild: boolean,
   resolveFirstBuild?: () => void,
 ): Promise<esbuild.BuildContext> {
-  // tsconfig 파싱
+  // Parse tsconfig
   const parsedConfig = parseRootTsconfig(cwd);
   const entryPoints = getPackageSourceFiles(pkgDir, parsedConfig);
 
-  // 타겟별 compilerOptions 생성
+  // Create compilerOptions per target
   const env = getTypecheckEnvFromTarget(config.target);
   const compilerOptions = await getCompilerOptionsForPackage(parsedConfig.options, env, pkgDir);
 
-  // esbuild 옵션 생성
+  // Create esbuild options
   const baseOptions = createLibraryEsbuildOptions({
     pkgDir,
     entryPoints,
@@ -182,7 +182,7 @@ async function createAndBuildContext(
 
   let isBuildFirstTime = isFirstBuild;
 
-  // context 생성 + watch-notify 플러그인 추가
+  // Create context + add watch-notify plugin
   const context = await esbuild.context({
     ...baseOptions,
     plugins: [
@@ -220,28 +220,28 @@ async function createAndBuildContext(
     ],
   });
 
-  // 초기 빌드
+  // Initial build
   await context.rebuild();
 
   return context;
 }
 
 /**
- * watch 시작
- * @remarks 이 함수는 Worker당 한 번만 호출되어야 합니다.
- * @throws 이미 watch가 시작된 경우
+ * Start watch
+ * @remarks This function should be called only once per Worker.
+ * @throws If watch has already been started
  */
 async function startWatch(info: LibraryWatchInfo): Promise<void> {
   guardStartWatch();
 
   try {
-    // 첫 번째 빌드 완료 대기를 위한 Promise
+    // Promise to wait for first build completion
     let resolveFirstBuild!: () => void;
     const firstBuildPromise = new Promise<void>((resolve) => {
       resolveFirstBuild = resolve;
     });
 
-    // 초기 esbuild context 생성 및 빌드
+    // Create initial esbuild context and build
     esbuildContext = await createAndBuildContext(
       info.pkgDir,
       info.cwd,
@@ -250,22 +250,22 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
       resolveFirstBuild,
     );
 
-    // 첫 번째 빌드 완료 대기
+    // Wait for first build completion
     await firstBuildPromise;
 
-    // FsWatcher 시작 (src/**/*.{ts,tsx} 감시)
+    // Start FsWatcher (watch src/**/*.{ts,tsx})
     const srcPattern = path.join(info.pkgDir, "src", "**", "*.{ts,tsx}");
     fsWatcher = await FsWatcher.watch([srcPattern]);
 
-    // 파일 변경 감지 시 처리
+    // Handle file changes
     fsWatcher.onChange({ delay: 300 }, async (changes) => {
       try {
-        // add 또는 unlink 이벤트가 있는지 확인
+        // Check if there are add or unlink events
         const hasAddOrUnlink = changes.some((c) => c.event === "add" || c.event === "unlink");
 
         if (hasAddOrUnlink) {
-          // entry points 변경이 있으므로 context 재생성
-          logger.debug("파일 추가/삭제 감지, context 재생성");
+          // Entry points have changed, recreate context
+          logger.debug("File add/remove detected, recreating context");
 
           const oldContext = esbuildContext;
           esbuildContext = await createAndBuildContext(info.pkgDir, info.cwd, info.config, false);
@@ -274,7 +274,7 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
             await oldContext.dispose();
           }
         } else {
-          // 파일 내용만 변경 (change 이벤트)
+          // Only file content changed (change event)
           if (esbuildContext != null) {
             await esbuildContext.rebuild();
           }
@@ -293,8 +293,8 @@ async function startWatch(info: LibraryWatchInfo): Promise<void> {
 }
 
 /**
- * watch 중지
- * @remarks esbuild context를 정리합니다.
+ * Stop watch
+ * @remarks Cleans up esbuild context.
  */
 async function stopWatch(): Promise<void> {
   await cleanup();

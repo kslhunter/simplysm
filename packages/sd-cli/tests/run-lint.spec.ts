@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import path from "path";
 
-// vi.hoisted로 호이스팅된 상태 관리
+// State management hoisted via vi.hoisted
 const { mockState, mockJitiImportFn } = vi.hoisted(() => ({
   mockState: {
     lintResults: [] as Array<{ errorCount: number; warningCount: number }>,
@@ -243,15 +243,15 @@ describe("runLint", () => {
   });
 
   it("throws error when ESLint config file is not found", async () => {
-    // 모든 설정 파일이 없는 경우
+    // When all config files are missing
     vi.mocked(fsExists).mockResolvedValue(false);
 
     await expect(runLint({ targets: [], fix: false, timing: false })).rejects.toThrow(
-      "ESLint 설정 파일을 찾을 수 없습니다",
+      "ESLint config file not found",
     );
 
-    // 에러가 throw되므로 exitCode는 호출자가 설정해야 함 (runLint 내부에서 설정하지 않음)
-    // ESLint가 호출되지 않음
+    // Since error is thrown, exitCode must be set by caller (not set inside runLint)
+    // ESLint is not called
     expect(mockState.lintedFiles).toHaveLength(0);
   });
 
@@ -307,7 +307,7 @@ describe("runLint", () => {
   it("uses eslint.config.mts when eslint.config.ts is not found", async () => {
     const cwd = "/project";
     vi.mocked(fsExists).mockImplementation((filePath: string) => {
-      // eslint.config.ts는 없고 eslint.config.mts만 존재
+      // eslint.config.ts does not exist, only eslint.config.mts
       return Promise.resolve(filePath === path.join(cwd, "eslint.config.mts"));
     });
 
@@ -321,7 +321,7 @@ describe("runLint", () => {
 
     await runLint({ targets: [], fix: false, timing: false });
 
-    // mts 파일이 로드되었는지 확인
+    // Verify that mts file was loaded
     expect(mockJitiImportFn).toHaveBeenCalledWith(expect.stringContaining("eslint.config.mts"));
     expect(process.exitCode).toBeUndefined();
   });
@@ -398,7 +398,7 @@ describe("executeLint", () => {
 
     const result = await executeLint({ targets: [], fix: false, timing: false });
 
-    // MockESLint의 formatter는 빈 문자열을 반환하므로 formattedOutput도 빈 문자열
+    // MockESLint's formatter returns empty string, so formattedOutput is also empty string
     expect(result.formattedOutput).toBeDefined();
     expect(typeof result.formattedOutput).toBe("string");
   });

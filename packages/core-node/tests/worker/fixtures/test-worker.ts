@@ -23,7 +23,7 @@ const methods = {
     return "logged";
   },
   crash: () => {
-    // 동기적으로 즉시 종료
+    // Exit immediately
     setImmediate(() => process.exit(1));
     return "crashing...";
   },

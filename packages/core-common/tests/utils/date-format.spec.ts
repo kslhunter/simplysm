@@ -5,11 +5,11 @@ describe("formatDateTime", () => {
   //#region Year pattern
 
   describe("Year pattern", () => {
-    it("yyyy - Outputs 4-digit year", () => {
+    it("outputs 4-digit year with yyyy format", () => {
       expect(formatDate("yyyy", { year: 2025 })).toBe("2025");
     });
 
-    it("yy - Outputs 2-digit year", () => {
+    it("outputs 2-digit year with yy format", () => {
       expect(formatDate("yy", { year: 2025 })).toBe("25");
       expect(formatDate("yy", { year: 2000 })).toBe("00");
       expect(formatDate("yy", { year: 1999 })).toBe("99");
@@ -21,13 +21,13 @@ describe("formatDateTime", () => {
   //#region Month pattern
 
   describe("Month pattern", () => {
-    it("MM - Outputs 2-digit month", () => {
+    it("outputs 2-digit month with MM format", () => {
       expect(formatDate("MM", { month: 1 })).toBe("01");
       expect(formatDate("MM", { month: 9 })).toBe("09");
       expect(formatDate("MM", { month: 12 })).toBe("12");
     });
 
-    it("M - Outputs month without padding", () => {
+    it("outputs month without padding with M format", () => {
       expect(formatDate("M", { month: 1 })).toBe("1");
       expect(formatDate("M", { month: 9 })).toBe("9");
       expect(formatDate("M", { month: 12 })).toBe("12");
@@ -39,13 +39,13 @@ describe("formatDateTime", () => {
   //#region Day pattern
 
   describe("Day pattern", () => {
-    it("dd - Outputs 2-digit day", () => {
+    it("outputs 2-digit day with dd format", () => {
       expect(formatDate("dd", { day: 1 })).toBe("01");
       expect(formatDate("dd", { day: 9 })).toBe("09");
       expect(formatDate("dd", { day: 31 })).toBe("31");
     });
 
-    it("d - Outputs day without padding", () => {
+    it("outputs day without padding with d format", () => {
       expect(formatDate("d", { day: 1 })).toBe("1");
       expect(formatDate("d", { day: 9 })).toBe("9");
       expect(formatDate("d", { day: 31 })).toBe("31");
@@ -57,7 +57,7 @@ describe("formatDateTime", () => {
   //#region Day of week pattern
 
   describe("Day of week pattern", () => {
-    it("ddd - Outputs day of week in Korean", () => {
+    it("outputs day of week in Korean with ddd format", () => {
       // 2025-01-18 is Saturday
       expect(formatDate("ddd", { year: 2025, month: 1, day: 18 })).toBe("토");
       // 2025-01-19 is Sunday
@@ -72,14 +72,14 @@ describe("formatDateTime", () => {
   //#region Hour pattern
 
   describe("Hour pattern", () => {
-    it("hh - Outputs 12-hour format with padding", () => {
+    it("outputs 12-hour format with padding using hh format", () => {
       expect(formatDate("hh", { hour: 0 })).toBe("12");
       expect(formatDate("hh", { hour: 1 })).toBe("01");
       expect(formatDate("hh", { hour: 12 })).toBe("12");
       expect(formatDate("hh", { hour: 13 })).toBe("01");
     });
 
-    it("h - Outputs 12-hour format without padding", () => {
+    it("outputs 12-hour format without padding using h format", () => {
       expect(formatDate("h", { hour: 0 })).toBe("12");
       expect(formatDate("h", { hour: 1 })).toBe("1");
       expect(formatDate("h", { hour: 9 })).toBe("9");
@@ -89,19 +89,19 @@ describe("formatDateTime", () => {
       expect(formatDate("h", { hour: 23 })).toBe("11");
     });
 
-    it("HH - Outputs 24-hour format with padding", () => {
+    it("outputs 24-hour format with padding using HH format", () => {
       expect(formatDate("HH", { hour: 0 })).toBe("00");
       expect(formatDate("HH", { hour: 9 })).toBe("09");
       expect(formatDate("HH", { hour: 23 })).toBe("23");
     });
 
-    it("H - Outputs 24-hour format without padding", () => {
+    it("outputs 24-hour format without padding using H format", () => {
       expect(formatDate("H", { hour: 0 })).toBe("0");
       expect(formatDate("H", { hour: 9 })).toBe("9");
       expect(formatDate("H", { hour: 23 })).toBe("23");
     });
 
-    it("tt - Outputs AM/PM", () => {
+    it("outputs AM/PM with tt format", () => {
       expect(formatDate("tt", { hour: 0 })).toBe("AM");
       expect(formatDate("tt", { hour: 11 })).toBe("AM");
       expect(formatDate("tt", { hour: 12 })).toBe("PM");
@@ -114,13 +114,13 @@ describe("formatDateTime", () => {
   //#region Minute pattern
 
   describe("Minute pattern", () => {
-    it("mm - Outputs 2-digit minute", () => {
+    it("outputs 2-digit minute with mm format", () => {
       expect(formatDate("mm", { minute: 0 })).toBe("00");
       expect(formatDate("mm", { minute: 5 })).toBe("05");
       expect(formatDate("mm", { minute: 59 })).toBe("59");
     });
 
-    it("m - Outputs minute without padding", () => {
+    it("outputs minute without padding with m format", () => {
       expect(formatDate("m", { minute: 0 })).toBe("0");
       expect(formatDate("m", { minute: 5 })).toBe("5");
       expect(formatDate("m", { minute: 59 })).toBe("59");
@@ -132,13 +132,13 @@ describe("formatDateTime", () => {
   //#region Second pattern
 
   describe("Second pattern", () => {
-    it("ss - Outputs 2-digit second", () => {
+    it("outputs 2-digit second with ss format", () => {
       expect(formatDate("ss", { second: 0 })).toBe("00");
       expect(formatDate("ss", { second: 5 })).toBe("05");
       expect(formatDate("ss", { second: 59 })).toBe("59");
     });
 
-    it("s - Outputs second without padding", () => {
+    it("outputs second without padding with s format", () => {
       expect(formatDate("s", { second: 0 })).toBe("0");
       expect(formatDate("s", { second: 5 })).toBe("5");
       expect(formatDate("s", { second: 59 })).toBe("59");
@@ -150,7 +150,7 @@ describe("formatDateTime", () => {
   //#region Millisecond pattern
 
   describe("Millisecond pattern", () => {
-    it("fff - Outputs 3-digit millisecond", () => {
+    it("outputs 3-digit millisecond with fff format", () => {
       expect(formatDate("fff", { millisecond: 0 })).toBe("000");
       expect(formatDate("fff", { millisecond: 5 })).toBe("005");
       expect(formatDate("fff", { millisecond: 50 })).toBe("050");
@@ -158,7 +158,7 @@ describe("formatDateTime", () => {
       expect(formatDate("fff", { millisecond: 999 })).toBe("999");
     });
 
-    it("ff - Outputs 2-digit millisecond", () => {
+    it("outputs 2-digit millisecond with ff format", () => {
       expect(formatDate("ff", { millisecond: 0 })).toBe("00");
       expect(formatDate("ff", { millisecond: 5 })).toBe("00");
       expect(formatDate("ff", { millisecond: 50 })).toBe("05");
@@ -166,7 +166,7 @@ describe("formatDateTime", () => {
       expect(formatDate("ff", { millisecond: 999 })).toBe("99");
     });
 
-    it("f - Outputs 1-digit millisecond", () => {
+    it("outputs 1-digit millisecond with f format", () => {
       expect(formatDate("f", { millisecond: 0 })).toBe("0");
       expect(formatDate("f", { millisecond: 5 })).toBe("0");
       expect(formatDate("f", { millisecond: 100 })).toBe("1");
@@ -181,19 +181,19 @@ describe("formatDateTime", () => {
 
   describe("Timezone pattern", () => {
     describe("Positive offset (East)", () => {
-      it("zzz - Outputs +HH:mm format", () => {
+      it("outputs +HH:mm format with zzz format", () => {
         // UTC+9 (540 minutes)
         expect(formatDate("zzz", { timezoneOffsetMinutes: 540 })).toBe("+09:00");
         // UTC+5:30 (330 minutes)
         expect(formatDate("zzz", { timezoneOffsetMinutes: 330 })).toBe("+05:30");
       });
 
-      it("zz - Outputs +HH format", () => {
+      it("outputs +HH format with zz format", () => {
         expect(formatDate("zz", { timezoneOffsetMinutes: 540 })).toBe("+09");
         expect(formatDate("zz", { timezoneOffsetMinutes: 60 })).toBe("+01");
       });
 
-      it("z - Outputs +H format (no padding)", () => {
+      it("outputs +H format without padding with z format", () => {
         expect(formatDate("z", { timezoneOffsetMinutes: 540 })).toBe("+9");
         expect(formatDate("z", { timezoneOffsetMinutes: 60 })).toBe("+1");
         expect(formatDate("z", { timezoneOffsetMinutes: 600 })).toBe("+10");
@@ -201,7 +201,7 @@ describe("formatDateTime", () => {
     });
 
     describe("Negative offset (West)", () => {
-      it("zzz - Outputs -HH:mm format", () => {
+      it("outputs -HH:mm format with zzz format", () => {
         // UTC-5 (-300 minutes) - Integer hour offset
         expect(formatDate("zzz", { timezoneOffsetMinutes: -300 })).toBe("-05:00");
         // UTC-8 (-480 minutes) - Integer hour offset
@@ -212,12 +212,12 @@ describe("formatDateTime", () => {
         expect(formatDate("zzz", { timezoneOffsetMinutes: -570 })).toBe("-09:30");
       });
 
-      it("zz - Outputs -HH format", () => {
+      it("outputs -HH format with zz format", () => {
         expect(formatDate("zz", { timezoneOffsetMinutes: -300 })).toBe("-05");
         expect(formatDate("zz", { timezoneOffsetMinutes: -60 })).toBe("-01");
       });
 
-      it("z - Outputs -H format (no padding)", () => {
+      it("outputs -H format without padding with z format", () => {
         expect(formatDate("z", { timezoneOffsetMinutes: -300 })).toBe("-5");
         expect(formatDate("z", { timezoneOffsetMinutes: -60 })).toBe("-1");
         expect(formatDate("z", { timezoneOffsetMinutes: -720 })).toBe("-12");
@@ -225,15 +225,15 @@ describe("formatDateTime", () => {
     });
 
     describe("UTC (0 offset)", () => {
-      it("zzz - Outputs +00:00", () => {
+      it("outputs +00:00 with zzz format", () => {
         expect(formatDate("zzz", { timezoneOffsetMinutes: 0 })).toBe("+00:00");
       });
 
-      it("zz - Outputs +00", () => {
+      it("outputs +00 with zz format", () => {
         expect(formatDate("zz", { timezoneOffsetMinutes: 0 })).toBe("+00");
       });
 
-      it("z - Outputs +0", () => {
+      it("outputs +0 with z format", () => {
         expect(formatDate("z", { timezoneOffsetMinutes: 0 })).toBe("+0");
       });
     });
@@ -241,10 +241,12 @@ describe("formatDateTime", () => {
 
   //#endregion
 
+  //#endregion
+
   //#region Complex format
 
   describe("Complex format", () => {
-    it("Handles full date/time format", () => {
+    it("handles full date/time format", () => {
       const result = formatDate("yyyy-MM-dd HH:mm:ss.fff", {
         year: 2025,
         month: 1,
@@ -257,7 +259,7 @@ describe("formatDateTime", () => {
       expect(result).toBe("2025-01-18 14:30:45.123");
     });
 
-    it("Handles 12-hour format", () => {
+    it("handles 12-hour format", () => {
       const result = formatDate("yyyy-MM-dd tt h:mm:ss", {
         year: 2025,
         month: 1,
@@ -269,7 +271,7 @@ describe("formatDateTime", () => {
       expect(result).toBe("2025-01-18 PM 2:05:09");
     });
 
-    it("Handles format with timezone", () => {
+    it("handles format with timezone", () => {
       const result = formatDate("yyyy-MM-ddTHH:mm:sszzz", {
         year: 2025,
         month: 1,

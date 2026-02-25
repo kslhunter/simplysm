@@ -160,7 +160,7 @@ describe("SdFsWatcher", () => {
 
   //#endregion
 
-  //#region 이벤트 병합 (Event Merging)
+  //#region Event Merging
 
   describe("event merging", () => {
     const DELAY = 300;
@@ -191,17 +191,17 @@ describe("SdFsWatcher", () => {
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
-      // 파일 추가
+      // Add file
       fs.writeFileSync(testFile, "initial");
 
-      // 짧은 간격으로 파일 변경 (delay 내에서 일어나야 함)
+      // Modify file with short interval (must occur within delay)
       await wait(50);
       fs.writeFileSync(testFile, "modified");
 
-      // 이벤트 콜백 호출 대기
+      // Wait for event callback
       const changes = await changesPromise;
 
-      // add → change 가 add로 병합되어야 함
+      // add → change should be merged to add
       expect(changes.length).toBe(1);
       expect(changes[0].event).toBe("add");
     });
@@ -224,17 +224,17 @@ describe("SdFsWatcher", () => {
         });
       });
 
-      // 파일 추가
+      // Add file
       fs.writeFileSync(testFile, "content");
 
-      // 짧은 간격으로 파일 삭제
+      // Delete file with short interval
       await wait(50);
       fs.unlinkSync(testFile);
 
-      // 타임아웃과 함께 대기 (이벤트가 발생하지 않을 수 있음)
+      // Wait with timeout (event may not occur)
       await Promise.race([changesPromise, wait(DELAY + 200)]);
 
-      // add → unlink 가 병합되어 이벤트 없음
+      // add → unlink merged, no events
       expect(changes.length).toBe(0);
     });
 
@@ -256,42 +256,42 @@ describe("SdFsWatcher", () => {
         });
       });
 
-      // 디렉토리 추가
+      // Add directory
       fs.mkdirSync(testSubDir);
 
-      // 짧은 간격으로 디렉토리 삭제
+      // Delete directory with short interval
       await wait(50);
       fs.rmdirSync(testSubDir);
 
-      // 타임아웃과 함께 대기 (이벤트가 발생하지 않을 수 있음)
+      // Wait with timeout (event may not occur)
       await Promise.race([changesPromise, wait(DELAY + 200)]);
 
-      // addDir → unlinkDir 가 병합되어 이벤트 없음
+      // addDir → unlinkDir merged, no events
       expect(changes.length).toBe(0);
     });
 
     it("merges to add event when file is deleted then recreated", async () => {
       const testFile = path.join(testDir, "test-unlink-add.txt");
 
-      // 파일 미리 생성
+      // Pre-create file
       fs.writeFileSync(testFile, "initial");
 
       watcher = await FsWatcher.watch([testDir]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
-      // 파일 삭제
+      // Delete file
       fs.unlinkSync(testFile);
 
-      // 짧은 간격으로 파일 재생성 (delay 내에서 일어나야 함)
+      // Recreate file with short interval (must occur within delay)
       await wait(50);
       fs.writeFileSync(testFile, "recreated");
 
-      // 이벤트 콜백 호출 대기
+      // Wait for event callback
       const changes = await changesPromise;
 
-      // unlink → add/change 가 add로 병합되어야 함 (나중 이벤트로 덮어씀)
-      // 환경에 따라 chokidar가 unlink 없이 change만 발생시킬 수 있음 (WSL2 등)
+      // unlink → add/change should be merged to add (overwritten by later event)
+      // Depending on environment, chokidar may only emit change without unlink (WSL2, etc)
       expect(changes.length).toBe(1);
       expect(["add", "change"]).toContain(changes[0].event);
     });
@@ -301,30 +301,30 @@ describe("SdFsWatcher", () => {
       const file2 = path.join(testDir, "file2.txt");
       const file3 = path.join(testDir, "file3.txt");
 
-      // file3은 미리 생성 (change 이벤트 발생용)
+      // Pre-create file3 (to trigger change event)
       fs.writeFileSync(file3, "existing");
 
       watcher = await FsWatcher.watch([testDir]);
 
       const changesPromise = waitForChanges(watcher, DELAY);
 
-      // file1: 추가만
+      // file1: only add
       fs.writeFileSync(file1, "content1");
 
-      // file2: 추가 후 삭제 (병합되어 사라짐)
+      // file2: add then delete (merged and removed)
       await wait(50);
       fs.writeFileSync(file2, "content2");
       await wait(50);
       fs.unlinkSync(file2);
 
-      // file3: 변경
+      // file3: modify
       await wait(50);
       fs.writeFileSync(file3, "modified");
 
-      // 이벤트 콜백 호출 대기
+      // Wait for event callback
       const changes = await changesPromise;
 
-      // file1: add, file2: 병합으로 삭제됨, file3: change
+      // file1: add, file2: removed by merge, file3: change
       expect(changes.length).toBe(2);
 
       const file1Change = changes.find((c) => c.path.endsWith("file1.txt"));

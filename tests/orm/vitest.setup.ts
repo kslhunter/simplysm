@@ -15,7 +15,7 @@ export async function setup() {
 
     console.log("[orm] Docker containers started, creating MSSQL database...");
 
-    // MSSQL TestDb 생성 (MySQL, PostgreSQL은 docker compose에서 자동 생성)
+    // Create MSSQL TestDb (MySQL and PostgreSQL are created automatically by docker compose)
     let mssqlReady = false;
     for (let i = 0; i < 10; i++) {
       try {

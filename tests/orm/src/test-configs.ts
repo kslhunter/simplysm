@@ -5,8 +5,8 @@ import type {
 } from "@simplysm/orm-node";
 
 /**
- * 테스트용 MySQL 연결 설정
- * docker-compose.test.yml 참조
+ * MySQL connection configuration for testing
+ * See docker-compose.test.yml
  */
 export const mysqlConfig: MysqlDbConnConfig = {
   dialect: "mysql",
@@ -18,8 +18,8 @@ export const mysqlConfig: MysqlDbConnConfig = {
 };
 
 /**
- * 테스트용 PostgreSQL 연결 설정
- * docker-compose.test.yml 참조
+ * PostgreSQL connection configuration for testing
+ * See docker-compose.test.yml
  */
 export const postgresqlConfig: PostgresqlDbConnConfig = {
   dialect: "postgresql",
@@ -31,8 +31,8 @@ export const postgresqlConfig: PostgresqlDbConnConfig = {
 };
 
 /**
- * 테스트용 MSSQL 연결 설정
- * docker-compose.test.yml 참조
+ * MSSQL connection configuration for testing
+ * See docker-compose.test.yml
  */
 export const mssqlConfig: MssqlDbConnConfig = {
   dialect: "mssql",

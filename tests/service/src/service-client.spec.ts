@@ -7,9 +7,9 @@ import * as jose from "jose";
 const TEST_PORT = 23100;
 const JWT_SECRET = new TextEncoder().encode("test-secret-key-for-jwt-signing");
 
-/** 테스트용 JWT 생성 */
+/** Create test JWT */
 async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
-  // 서버의 AuthTokenPayload 형식에 맞게 토큰 생성
+  // Create token matching server's AuthTokenPayload format
   // { roles: string[], data: TAuthInfo }
   const payload = {
     roles: authInfo.roles,
@@ -20,14 +20,14 @@ async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
     .sign(JWT_SECRET);
 }
 
-/** 테스트용 이벤트 */
+/** Test event */
 const TestEvent = defineEvent<{ channel: string }, string>("TestEvent");
 
-describe("ServiceClient 브라우저 테스트", () => {
+describe("ServiceClient browser test", () => {
   let client: ServiceClient;
 
   beforeAll(async () => {
-    // 브라우저 환경 확인
+    // Check browser environment
     expect(typeof Worker).toBe("function");
     expect(typeof window).toBe("object");
 
@@ -45,24 +45,24 @@ describe("ServiceClient 브라우저 테스트", () => {
     await client.close();
   });
 
-  describe("Worker 환경 확인", () => {
-    it("브라우저 환경에서 Worker API 사용 가능", () => {
+  describe("Worker environment check", () => {
+    it("Worker API available in browser environment", () => {
       expect(typeof Worker).toBe("function");
     });
 
-    it("WebSocket 연결 성공", () => {
+    it("WebSocket connection successful", () => {
       expect(client.connected).toBe(true);
     });
   });
 
-  describe("서비스 호출", () => {
-    it("echo 메소드 호출", async () => {
+  describe("Service call", () => {
+    it("Call echo method", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.echo("Hello from Browser");
       expect(result).toBe("Echo: Hello from Browser");
     });
 
-    it("복잡한 객체 반환 (직렬화/역직렬화)", async () => {
+    it("Return complex object (serialization/deserialization)", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getComplexData();
 
@@ -74,55 +74,55 @@ describe("ServiceClient 브라우저 테스트", () => {
     });
   });
 
-  describe("대용량 데이터 (Worker 테스트)", () => {
-    it("30KB 이하 데이터 처리 (메인 스레드)", async () => {
+  describe("Large data (Worker test)", () => {
+    it("Process data <= 30KB (main thread)", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getLargeData(25); // 25KB
       expect(result.length).toBe(25 * 1024);
     });
 
-    it("30KB 초과 데이터 처리 (Worker 사용)", async () => {
+    it("Process data > 30KB (using Worker)", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      // 50KB 데이터 요청 - Worker가 처리해야 함
+      // Request 50KB data - Worker should handle it
       const result = await svc.getLargeData(50);
       expect(result.length).toBe(50 * 1024);
     });
 
-    it("100KB 대용량 데이터 처리 (Worker 사용)", async () => {
+    it("Process large data 100KB (using Worker)", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      // 100KB 데이터 요청
+      // Request 100KB data
       const result = await svc.getLargeData(100);
       expect(result.length).toBe(100 * 1024);
     });
 
-    it("3MB 초과 데이터 진행률 콜백 호출", async () => {
+    it("Call progress callback for data > 3MB", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      // 진행률 콜백 추적
+      // Track progress callback
       const progressStates: Array<{ totalSize: number; completedSize: number }> = [];
 
       client.on("response-progress", (state) => {
         progressStates.push({ totalSize: state.totalSize, completedSize: state.completedSize });
       });
 
-      // 4MB 데이터 요청 (청킹 발생)
+      // Request 4MB data (chunking occurs)
       const result = await svc.getLargeData(4 * 1024);
       expect(result.length).toBe(4 * 1024 * 1024);
 
-      // 진행률 콜백이 호출되었어야 함
+      // Progress callback should have been called
       expect(progressStates.length).toBeGreaterThan(0);
 
-      // 마지막 진행률은 완료 상태여야 함
+      // Last progress should be complete
       const lastProgress = progressStates[progressStates.length - 1];
       expect(lastProgress.completedSize).toBe(lastProgress.totalSize);
     });
   });
 
-  describe("인증 및 권한", () => {
-    it("인증 토큰 전송 및 인증 정보 조회", async () => {
-      // JWT 토큰 생성
+  describe("Authentication and authorization", () => {
+    it("Send auth token and retrieve auth info", async () => {
+      // Create JWT token
       const authInfo: TestAuthInfo = {
         userId: "test-user-1",
         userName: "Test User",
@@ -130,10 +130,10 @@ describe("ServiceClient 브라우저 테스트", () => {
       };
       const token = await createTestToken(authInfo);
 
-      // 인증
+      // Authenticate
       await client.auth(token);
 
-      // 인증 정보 조회
+      // Retrieve auth info
       const svc = client.getService<TestServiceMethods>("TestService");
       const result = await svc.getAuthInfo();
 
@@ -143,8 +143,8 @@ describe("ServiceClient 브라우저 테스트", () => {
       expect(result?.roles).toContain("user");
     });
 
-    it("관리자 권한 필요 메서드 - 권한 없음", async () => {
-      // 일반 사용자 토큰
+    it("Admin-required method - no permission", async () => {
+      // Regular user token
       const authInfo: TestAuthInfo = {
         userId: "normal-user",
         userName: "Normal User",
@@ -155,12 +155,12 @@ describe("ServiceClient 브라우저 테스트", () => {
 
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      // 권한 없음 에러 예상
+      // Expect permission error
       await expect(svc.adminOnly()).rejects.toThrow();
     });
 
-    it("관리자 권한 필요 메서드 - 권한 있음", async () => {
-      // 관리자 토큰
+    it("Admin-required method - with permission", async () => {
+      // Admin token
       const authInfo: TestAuthInfo = {
         userId: "admin-user",
         userName: "Admin User",
@@ -176,28 +176,28 @@ describe("ServiceClient 브라우저 테스트", () => {
     });
   });
 
-  describe("에러 처리", () => {
-    it("서비스 메서드 에러 전파", async () => {
+  describe("Error handling", () => {
+    it("Service method error propagation", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      await expect(svc.throwError("테스트 에러 메시지")).rejects.toThrow("테스트 에러 메시지");
+      await expect(svc.throwError("Test error message")).rejects.toThrow("Test error message");
     });
 
-    it("에러 발생 후에도 후속 요청 정상 처리", async () => {
+    it("Subsequent request processed normally after error", async () => {
       const svc = client.getService<TestServiceMethods>("TestService");
 
-      // 에러 발생
-      await expect(svc.throwError("에러")).rejects.toThrow();
+      // Error occurs
+      await expect(svc.throwError("Error")).rejects.toThrow();
 
-      // 후속 요청 정상 처리
-      const result = await svc.echo("정상 요청");
-      expect(result).toBe("Echo: 정상 요청");
+      // Subsequent request processed normally
+      const result = await svc.echo("Normal request");
+      expect(result).toBe("Echo: Normal request");
     });
   });
 
-  describe("이벤트 리스너", () => {
-    it("이벤트 리스너 등록 및 해제", async () => {
-      // 관리자 인증 (이벤트 등록에 필요할 수 있음)
+  describe("Event listener", () => {
+    it("Register and remove event listener", async () => {
+      // Admin auth (may be needed for event registration)
       const authInfo: TestAuthInfo = {
         userId: "event-test-user",
         userName: "Event Test",
@@ -206,7 +206,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       const token = await createTestToken(authInfo);
       await client.auth(token);
 
-      // 이벤트 수신 콜백
+      // Event receive callback
       const receivedData: string[] = [];
       const listenerKey = await client.addEventListener(
         TestEvent,
@@ -220,7 +220,7 @@ describe("ServiceClient 브라우저 테스트", () => {
       expect(listenerKey).toBeDefined();
       expect(typeof listenerKey).toBe("string");
 
-      // 리스너 해제
+      // Remove listener
       await client.removeEventListener(listenerKey);
     });
   });

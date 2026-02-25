@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import "@simplysm/core-common"; // Map.getOrCreate 확장 메서드 사용을 위해 import
+import "@simplysm/core-common"; // Import to use Map.getOrCreate extension method
 
 // 외부 의존성 모킹
 vi.mock("typescript", () => {
@@ -35,7 +35,7 @@ vi.mock("@simplysm/core-node", () => {
     return child.startsWith(parentWithSlash);
   };
 
-  // Worker proxy 모킹 - buildDts 메서드와 terminate 메서드 제공
+  // Mock worker proxy - provides buildDts and terminate methods
   const createMockWorkerProxy = () => ({
     buildDts: vi.fn(() =>
       Promise.resolve({
@@ -240,7 +240,7 @@ describe("runTypecheck", () => {
       options: [],
     });
 
-    // core-common 패키지만 buildDts 호출
+    // Call buildDts only for core-common package
     expect(mockBuildDts).toHaveBeenCalledTimes(2); // neutral: node + browser
     for (const call of mockBuildDts.mock.calls as unknown[][]) {
       expect((call[0] as { name: string }).name).toBe("core-common");
@@ -264,7 +264,7 @@ describe("runTypecheck", () => {
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
 
-    // sd.config.ts 로드 실패해도 에러 없이 진행되어야 함
+    // Should proceed without error even if sd.config.ts fails to load
     await runTypecheck({ targets: [], options: [] });
 
     expect(process.exitCode).toBeUndefined();
@@ -284,16 +284,16 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    // sd.config.ts의 default export가 함수가 아닌 객체인 경우
+    // When sd.config.ts's default export is an object, not a function
     mockJitiImport.mockResolvedValue({
-      default: { packages: {} }, // 함수가 아닌 객체
+      default: { packages: {} }, // object, not a function
     });
 
     vi.mocked(ts.sortAndDeduplicateDiagnostics).mockReturnValue(
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
 
-    // 에러 없이 기본값으로 진행되어야 함
+    // Should proceed with default value without error
     await runTypecheck({ targets: [], options: [] });
 
     expect(process.exitCode).toBeUndefined();
@@ -313,7 +313,7 @@ describe("runTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    // sd.config.ts에 default export가 없는 경우
+    // When sd.config.ts has no default export
     mockJitiImport.mockResolvedValue({
       someOtherExport: () => ({}),
     });
@@ -322,7 +322,7 @@ describe("runTypecheck", () => {
       [] as unknown as ts.SortedReadonlyArray<ts.Diagnostic>,
     );
 
-    // 에러 없이 기본값으로 진행되어야 함
+    // Should proceed with default value without error
     await runTypecheck({ targets: [], options: [] });
 
     expect(process.exitCode).toBeUndefined();
@@ -408,7 +408,7 @@ describe("runTypecheck", () => {
     } as unknown as ts.ParsedCommandLine);
 
     vi.mocked(fsExists).mockResolvedValue(false);
-    // core-node는 node 타겟 패키지로 설정
+    // Set core-node as node target package
     vi.mocked(fsReadJson).mockImplementation((filePath: string) => {
       if (filePath.includes("core-node")) {
         return Promise.resolve({ name: "@simplysm/core-node" });
@@ -416,7 +416,7 @@ describe("runTypecheck", () => {
       return Promise.resolve({ devDependencies: {} });
     });
 
-    // sd.config.ts 모킹: core-node를 node 타겟으로 설정
+    // Mock sd.config.ts: set core-node as node target
     mockJitiImport.mockResolvedValue({
       default: () => ({
         packages: {
@@ -445,17 +445,17 @@ describe("runTypecheck", () => {
 
     await runTypecheck({ targets: [], options: [] });
 
-    // buildDts 호출 확인
+    // Verify buildDts call
     expect(mockBuildDts).toHaveBeenCalled();
 
-    // 기타 task: pkgDir/env 없이 호출
+    // Other task: called without pkgDir/env
     const calls = mockBuildDts.mock.calls as unknown[][];
     const nonPkgCall = calls.find((call) => (call[0] as { name: string }).name === "root");
     expect(nonPkgCall).toBeDefined();
     expect((nonPkgCall![0] as { pkgDir?: string }).pkgDir).toBeUndefined();
     expect((nonPkgCall![0] as { env?: string }).env).toBeUndefined();
 
-    // core-node 패키지 task도 존재
+    // core-node package task also exists
     const pkgCall = calls.find((call) => (call[0] as { name: string }).name === "core-node");
     expect(pkgCall).toBeDefined();
   });
@@ -492,7 +492,7 @@ describe("runTypecheck", () => {
 
     await runTypecheck({ targets: [], options: [] });
 
-    // buildDts 호출에 name="root"인 것이 없어야 함
+    // Should have no call with name="root"
     const nonPkgCall = (mockBuildDts.mock.calls as unknown[][]).find(
       (call) => (call[0] as { name: string }).name === "root",
     );
@@ -539,7 +539,7 @@ describe("executeTypecheck", () => {
 
     expect(result.success).toBe(true);
     expect(result.errorCount).toBe(0);
-    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    // executeTypecheck should not set process.exitCode
     expect(process.exitCode).toBeUndefined();
   });
 
@@ -557,7 +557,7 @@ describe("executeTypecheck", () => {
     vi.mocked(fsExists).mockResolvedValue(false);
     vi.mocked(fsReadJson).mockResolvedValue({ devDependencies: {} });
 
-    // Worker가 에러 결과를 반환하도록 모킹
+    // Mock worker to return error results
     vi.mocked(Worker.create).mockReturnValue({
       buildDts: vi.fn(() =>
         Promise.resolve({
@@ -585,10 +585,10 @@ describe("executeTypecheck", () => {
     const result = await executeTypecheck({ targets: [], options: [] });
 
     expect(result.success).toBe(false);
-    // core-common은 neutral이므로 node + browser 2개 task 생성, 각각 errorCount 1
+    // core-common is neutral, so creates 2 tasks (node + browser), each with errorCount 1
     expect(result.errorCount).toBe(2);
     expect(result.formattedOutput).toBe("error output");
-    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    // executeTypecheck should not set process.exitCode
     expect(process.exitCode).toBeUndefined();
   });
 
@@ -608,7 +608,7 @@ describe("executeTypecheck", () => {
 
     expect(result.success).toBe(false);
     expect(result.errorCount).toBe(1);
-    // executeTypecheck는 process.exitCode를 설정하지 않아야 함
+    // executeTypecheck should not set process.exitCode
     expect(process.exitCode).toBeUndefined();
   });
 });

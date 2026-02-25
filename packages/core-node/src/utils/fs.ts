@@ -441,7 +441,7 @@ export async function fsLstat(targetPath: string): Promise<fs.Stats> {
 
 /**
  * Searches for files using a glob pattern.
- * @param pattern - Glob pattern (e.g., "**/*.ts")
+ * @param pattern - Glob pattern (e.g., "**\/*.ts")
  * @param options - glob options
  * @returns Array of absolute paths for matched files
  */
@@ -453,7 +453,7 @@ export function fsGlobSync(pattern: string, options?: GlobOptions): string[] {
 
 /**
  * Searches for files using a glob pattern (asynchronous).
- * @param pattern - Glob pattern (e.g., "**/*.ts")
+ * @param pattern - Glob pattern (e.g., "**\/*.ts")
  * @param options - glob options
  * @returns Array of absolute paths for matched files
  */

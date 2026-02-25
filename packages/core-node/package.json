@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/core-node",
   "version": "13.0.69",
-  "description": "심플리즘 패키지 - 코어 모듈 (node)",
+  "description": "Simplysm package - Core module (node)",
   "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {

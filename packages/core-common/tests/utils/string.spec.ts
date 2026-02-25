@@ -154,79 +154,81 @@ describe("string utils", () => {
 
   //#endregion
 
+  //#endregion
+
   //#region Case conversion
 
   describe("strToPascalCase()", () => {
-    it("Converts kebab-case to PascalCase", () => {
+    it("converts kebab-case to PascalCase", () => {
       expect(strToPascalCase("hello-world")).toBe("HelloWorld");
     });
 
-    it("Converts dot.case to PascalCase", () => {
+    it("converts dot.case to PascalCase", () => {
       expect(strToPascalCase("hello.world")).toBe("HelloWorld");
     });
 
-    it("Converts snake_case to PascalCase", () => {
+    it("converts snake_case to PascalCase", () => {
       expect(strToPascalCase("hello_world")).toBe("HelloWorld");
     });
 
-    it("Capitalizes first letter of lowercase string", () => {
+    it("capitalizes first letter of lowercase string", () => {
       expect(strToPascalCase("hello")).toBe("Hello");
     });
 
-    it("Returns as-is if already PascalCase", () => {
+    it("returns as-is if already PascalCase", () => {
       expect(strToPascalCase("HelloWorld")).toBe("HelloWorld");
     });
 
-    it("Handles consecutive hyphens", () => {
+    it("handles consecutive hyphens", () => {
       expect(strToPascalCase("hello-world-test")).toBe("HelloWorldTest");
     });
   });
 
   describe("strToCamelCase()", () => {
-    it("Converts kebab-case to camelCase", () => {
+    it("converts kebab-case to camelCase", () => {
       expect(strToCamelCase("hello-world")).toBe("helloWorld");
     });
 
-    it("Converts PascalCase to camelCase", () => {
+    it("converts PascalCase to camelCase", () => {
       expect(strToCamelCase("HelloWorld")).toBe("helloWorld");
     });
 
-    it("Converts dot.case to camelCase", () => {
+    it("converts dot.case to camelCase", () => {
       expect(strToCamelCase("hello.world")).toBe("helloWorld");
     });
 
-    it("Converts snake_case to camelCase", () => {
+    it("converts snake_case to camelCase", () => {
       expect(strToCamelCase("hello_world")).toBe("helloWorld");
     });
 
-    it("Returns as-is if already camelCase", () => {
+    it("returns as-is if already camelCase", () => {
       expect(strToCamelCase("helloWorld")).toBe("helloWorld");
     });
   });
 
   describe("strToKebabCase()", () => {
-    it("Converts PascalCase to kebab-case", () => {
+    it("converts PascalCase to kebab-case", () => {
       expect(strToKebabCase("HelloWorld")).toBe("hello-world");
     });
 
-    it("Converts camelCase to kebab-case", () => {
+    it("converts camelCase to kebab-case", () => {
       expect(strToKebabCase("helloWorld")).toBe("hello-world");
     });
 
-    it("Adds hyphen before underscore when present", () => {
+    it("adds hyphen before underscore when present", () => {
       // toKebabCase converts [-_]?[A-Z] to -lowercase, so _W → -_w
       expect(strToKebabCase("Hello_World")).toBe("hello-_world");
     });
 
-    it("Returns as-is if already kebab-case", () => {
+    it("returns as-is if already kebab-case", () => {
       expect(strToKebabCase("hello-world")).toBe("hello-world");
     });
 
-    it("Handles consecutive uppercase letters", () => {
+    it("handles consecutive uppercase letters", () => {
       expect(strToKebabCase("HelloWorldTest")).toBe("hello-world-test");
     });
 
-    it("Handles consecutive uppercase followed by lowercase", () => {
+    it("handles consecutive uppercase followed by lowercase", () => {
       // each uppercase letter treated as separate word
       expect(strToKebabCase("XMLParser")).toBe("x-m-l-parser");
       expect(strToKebabCase("HTTPSConnection")).toBe("h-t-t-p-s-connection");
@@ -234,41 +236,43 @@ describe("string utils", () => {
   });
 
   describe("strToSnakeCase()", () => {
-    it("Converts PascalCase to snake_case", () => {
+    it("converts PascalCase to snake_case", () => {
       expect(strToSnakeCase("HelloWorld")).toBe("hello_world");
     });
 
-    it("Converts camelCase to snake_case", () => {
+    it("converts camelCase to snake_case", () => {
       expect(strToSnakeCase("helloWorld")).toBe("hello_world");
     });
 
-    it("Returns as-is if already snake_case", () => {
+    it("returns as-is if already snake_case", () => {
       expect(strToSnakeCase("hello_world")).toBe("hello_world");
     });
 
-    it("Handles consecutive uppercase letters", () => {
+    it("handles consecutive uppercase letters", () => {
       expect(strToSnakeCase("HelloWorldTest")).toBe("hello_world_test");
     });
   });
 
   //#endregion
 
+  //#endregion
+
   //#region Other
 
   describe("strInsert()", () => {
-    it("Inserts at start of string", () => {
+    it("inserts at start of string", () => {
       expect(strInsert("world", 0, "hello ")).toBe("hello world");
     });
 
-    it("Inserts in middle of string", () => {
+    it("inserts in middle of string", () => {
       expect(strInsert("helloworld", 5, " ")).toBe("hello world");
     });
 
-    it("Inserts at end of string", () => {
+    it("inserts at end of string", () => {
       expect(strInsert("hello", 5, " world")).toBe("hello world");
     });
 
-    it("Inserts into empty string", () => {
+    it("inserts into empty string", () => {
       expect(strInsert("", 0, "hello")).toBe("hello");
     });
   });

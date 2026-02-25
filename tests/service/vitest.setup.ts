@@ -12,29 +12,29 @@ const rootDir = __dirname;
 // 테스트 포트
 export const TEST_PORT = 23100;
 
-// 서버 인스턴스
+// Server instance
 let testServer: ReturnType<typeof createServiceServer<TestAuthInfo>> | undefined;
 
 export async function setup() {
   console.log("[service] Setting up test environment...");
 
-  // www 디렉토리 생성 (정적 파일 서비스용)
+  // Create www directory (for static file serving)
   const wwwDir = path.join(rootDir, "www", "test-client");
   if (!fs.existsSync(wwwDir)) {
     fs.mkdirSync(wwwDir, { recursive: true });
   }
 
-  // 테스트용 정적 파일 생성
+  // Create test static file
   const testFilePath = path.join(wwwDir, "test.txt");
   fs.writeFileSync(testFilePath, "Hello from static file!");
 
-  // 업로드 디렉토리 생성
+  // Create upload directory
   const uploadDir = path.join(rootDir, "www", "_upload");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  // 서버 생성 및 시작
+  // Create and start server
   testServer = createServiceServer<TestAuthInfo>({
     rootPath: rootDir,
     port: TEST_PORT,
@@ -51,12 +51,12 @@ export async function setup() {
 export async function teardown() {
   console.log("[service] Tearing down test environment...");
 
-  // 서버 종료
+  // Close server
   if (testServer?.isOpen === true) {
     await testServer.close();
   }
 
-  // 테스트 디렉토리 정리
+  // Clean up test directory
   const wwwDir = path.join(rootDir, "www");
   if (fs.existsSync(wwwDir)) {
     fs.rmSync(wwwDir, { recursive: true, force: true });

@@ -43,13 +43,13 @@ describe("MySQL Escape Integration Test", () => {
   });
 
   it.each([
-    { id: 1, value: "O'Reilly", desc: "따옴표가 포함된 값" },
-    { id: 2, value: "C:\\path\\to\\file", desc: "백슬래시가 포함된 값" },
-    { id: 3, value: "line1\nline2\ttab\rreturn", desc: "제어 문자가 포함된 값" },
-    { id: 4, value: "'; DROP TABLE users; --", desc: "SQL 인젝션 시도" },
-    { id: 5, value: "null\0byte", desc: "NULL 바이트가 포함된 값" },
-    { id: 6, value: "emoji\u{1F600}test", desc: "유니코드 이모지가 포함된 값" },
-  ])("$desc을 저장하고 조회할 수 있어야 함", async ({ id, value }) => {
+    { id: 1, value: "O'Reilly", desc: "Value with quote" },
+    { id: 2, value: "C:\\path\\to\\file", desc: "Value with backslash" },
+    { id: 3, value: "line1\nline2\ttab\rreturn", desc: "Value with control characters" },
+    { id: 4, value: "'; DROP TABLE users; --", desc: "SQL injection attempt" },
+    { id: 5, value: "null\0byte", desc: "Value with NULL byte" },
+    { id: 6, value: "emoji\u{1F600}test", desc: "Value with Unicode emoji" },
+  ])("Should be able to save and query $desc", async ({ id, value }) => {
     await db.connectWithoutTransaction(async () => {
       await db.trans(async () => {
         await db.escapeTest().insert([{ id, value }]);

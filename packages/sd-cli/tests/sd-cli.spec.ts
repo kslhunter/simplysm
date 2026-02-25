@@ -313,7 +313,7 @@ describe("sd-cli", () => {
 
       await parser.parse();
 
-      expect(errorMessage).toMatch(/Unknown argument|알 수 없는 인수/);
+      expect(errorMessage).toMatch(/Unknown argument/);
     });
 
     it("throws error when no command specified", async () => {
@@ -324,7 +324,7 @@ describe("sd-cli", () => {
 
       await parser.parse();
 
-      expect(errorMessage).toBe("명령어를 지정해주세요.");
+      expect(errorMessage).toMatch(/Please specify a command/);
     });
   });
 });
