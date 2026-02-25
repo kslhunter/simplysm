@@ -1,9 +1,9 @@
 import { Project, SyntaxKind, type ObjectLiteralExpression } from "ts-morph";
 
 /**
- * sd.config.ts에서 packages 객체 리터럴을 찾는다.
+ * Find packages object literal in sd.config.ts
  *
- * 구조: const config: SdConfigFn = () => ({ packages: { ... } });
+ * Structure: const config: SdConfigFn = () => ({ packages: { ... } });
  * -> ArrowFunction -> ParenthesizedExpression -> ObjectLiteral -> "packages" property -> ObjectLiteral
  */
 function findPackagesObject(configPath: string): {
@@ -13,11 +13,11 @@ function findPackagesObject(configPath: string): {
   const project = new Project();
   const sourceFile = project.addSourceFileAtPath(configPath);
 
-  // "config" 변수 선언 찾기
+  // Find "config" variable declaration
   const configVar = sourceFile.getVariableDeclarationOrThrow("config");
   const arrowFn = configVar.getInitializerIfKindOrThrow(SyntaxKind.ArrowFunction);
 
-  // 화살표 함수 본문에서 반환 객체 찾기
+  // Find return object in arrow function body
   const body = arrowFn.getBody();
   let returnObj: ObjectLiteralExpression;
 
@@ -27,10 +27,10 @@ function findPackagesObject(configPath: string): {
     const returnStmt = body.getFirstDescendantByKindOrThrow(SyntaxKind.ReturnStatement);
     returnObj = returnStmt.getExpressionIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
   } else {
-    throw new Error("sd.config.ts의 구조를 인식할 수 없습니다.");
+    throw new Error("Unable to recognize structure of sd.config.ts");
   }
 
-  // "packages" 프로퍼티 찾기
+  // Find "packages" property
   const packagesProp = returnObj
     .getPropertyOrThrow("packages")
     .asKindOrThrow(SyntaxKind.PropertyAssignment);
@@ -40,9 +40,9 @@ function findPackagesObject(configPath: string): {
 }
 
 /**
- * sd.config.ts의 packages 객체에 새 패키지 항목을 추가한다.
+ * Add new package entry to packages object in sd.config.ts
  *
- * @returns true: 성공, false: 이미 존재
+ * @returns true: success, false: already exists
  */
 export function addPackageToSdConfig(
   configPath: string,
@@ -51,14 +51,14 @@ export function addPackageToSdConfig(
 ): boolean {
   const { project, packagesObj } = findPackagesObject(configPath);
 
-  // 이미 존재하는지 확인 (따옴표 있는 형태와 없는 형태 모두 체크)
+  // Check if already exists (check both quoted and unquoted forms)
   const existing =
     packagesObj.getProperty(`"${packageName}"`) ?? packagesObj.getProperty(packageName);
   if (existing) {
     return false;
   }
 
-  // 새 프로퍼티 추가 -- config 객체를 ts-morph initializer 문자열로 변환
+  // Add new property -- convert config object to ts-morph initializer string
   const configStr = JSON.stringify(config)
     .replace(/"([^"]+)":/g, "$1: ")
     .replace(/"/g, '"');
@@ -73,7 +73,7 @@ export function addPackageToSdConfig(
 }
 
 /**
- * sd.config.ts에서 특정 클라이언트의 server 필드를 설정한다.
+ * Set server field for specific client in sd.config.ts
  */
 export function setClientServerInSdConfig(
   configPath: string,
@@ -85,19 +85,19 @@ export function setClientServerInSdConfig(
   const clientPropNode =
     packagesObj.getProperty(`"${clientName}"`) ?? packagesObj.getProperty(clientName);
   if (clientPropNode == null) {
-    throw new Error(`클라이언트 "${clientName}"을(를) sd.config.ts에서 찾을 수 없습니다.`);
+    throw new Error(`Client "${clientName}" not found in sd.config.ts`);
   }
 
   const clientProp = clientPropNode.asKindOrThrow(SyntaxKind.PropertyAssignment);
   const clientObj = clientProp.getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
 
-  // 기존 server 프로퍼티가 있으면 제거
+  // Remove existing server property if present
   const serverProp = clientObj.getProperty("server");
   if (serverProp) {
     serverProp.remove();
   }
 
-  // server 프로퍼티 추가
+  // Add server property
   clientObj.addPropertyAssignment({
     name: "server",
     initializer: `"${serverName}"`,
@@ -107,26 +107,26 @@ export function setClientServerInSdConfig(
 }
 
 /**
- * eslint.config.ts에 tailwindcss 설정 블록을 추가한다.
+ * Add tailwindcss config block to eslint.config.ts
  *
- * @returns true: 추가됨, false: 이미 존재
+ * @returns true: added, false: already exists
  */
 export function addTailwindToEslintConfig(configPath: string, clientName: string): boolean {
   const project = new Project();
   const sourceFile = project.addSourceFileAtPath(configPath);
 
-  // default export 배열 찾기
+  // Find default export array
   const defaultExport = sourceFile.getFirstDescendantByKindOrThrow(
     SyntaxKind.ArrayLiteralExpression,
   );
 
-  // tailwindcss 설정이 이미 있는지 확인
+  // Check if tailwindcss config already exists
   const text = defaultExport.getText();
   if (text.includes("tailwindcss")) {
     return false;
   }
 
-  // 새 설정 객체 추가
+  // Add new config object
   defaultExport.addElement(`{
     files: ["**/*.{ts,tsx}"],
     settings: {
