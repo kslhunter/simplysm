@@ -45,10 +45,10 @@ function resolvePackageFile(specifier: string, fromDir: string): string | null {
 }
 
 /**
- * Tailwind config 파일의 의존성을 재귀적으로 수집한다.
+ * Recursively collect dependencies of Tailwind config file
  *
- * Tailwind 내장 `getModuleDependencies`는 상대 경로 import만 추적하지만,
- * 이 함수는 지정된 scope의 패키지 경로도 `node_modules` symlink를 풀어 실제 파일을 추적한다.
+ * Tailwind built-in `getModuleDependencies` only tracks relative path imports,
+ * but this function also resolves `node_modules` symlinks to track actual files for packages in specified scope.
  */
 export function getTailwindConfigDeps(configPath: string, replaceDeps: string[]): string[] {
   const seen = new Set<string>();
