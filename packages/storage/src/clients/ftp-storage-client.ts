@@ -27,7 +27,7 @@ export class FtpStorageClient implements Storage {
    */
   async connect(config: StorageConnConfig): Promise<void> {
     if (this._client !== undefined) {
-      throw new SdError("이미 FTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.");
+      throw new SdError("FTP server is already connected. Please call close() first.");
     }
     const client = new ftp.Client();
     try {
@@ -47,7 +47,7 @@ export class FtpStorageClient implements Storage {
 
   private _requireClient(): ftp.Client {
     if (this._client === undefined) {
-      throw new SdError("FTP 서버에 연결되어있지 않습니다.");
+      throw new SdError("Not connected to FTP server.");
     }
     return this._client;
   }

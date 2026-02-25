@@ -26,7 +26,7 @@ export class SftpStorageClient implements Storage {
    */
   async connect(config: StorageConnConfig): Promise<void> {
     if (this._client !== undefined) {
-      throw new SdError("이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.");
+      throw new SdError("SFTP server is already connected. Please call close() first.");
     }
 
     const client = new SftpClient();
@@ -71,7 +71,7 @@ export class SftpStorageClient implements Storage {
 
   private _requireClient(): SftpClient {
     if (this._client === undefined) {
-      throw new SdError("SFTP 서버에 연결되어있지 않습니다.");
+      throw new SdError("Not connected to SFTP server.");
     }
     return this._client;
   }
@@ -122,7 +122,7 @@ export class SftpStorageClient implements Storage {
     if (typeof result === "string") {
       return new TextEncoder().encode(result);
     }
-    throw new SdError("예상치 못한 응답 타입입니다.");
+    throw new SdError("Unexpected response type.");
   }
 
   async remove(filePath: string): Promise<void> {
