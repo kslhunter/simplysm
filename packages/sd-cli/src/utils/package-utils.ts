@@ -3,13 +3,13 @@ import fs from "fs";
 import type { SdPackageConfig } from "../sd-config.types";
 
 /**
- * import.meta.dirname에서 상위로 올라가며 package.json을 찾아 패키지 루트를 반환한다.
+ * Walk up from import.meta.dirname to find package.json and return package root
  */
 export function findPackageRoot(startDir: string): string {
   let dir = startDir;
   while (!fs.existsSync(path.join(dir, "package.json"))) {
     const parent = path.dirname(dir);
-    if (parent === dir) throw new Error("package.json을 찾을 수 없습니다.");
+    if (parent === dir) throw new Error("package.json not found");
     dir = parent;
   }
   return dir;
@@ -55,7 +55,7 @@ export function collectDeps(
       if (visited.has(dep)) continue;
       visited.add(dep);
 
-      // workspace package check
+      // Check for workspace package
       if (workspaceScope != null && dep.startsWith(workspaceScope + "/")) {
         const dirName = dep.slice(workspaceScope.length + 1);
         const depDir = path.join(cwd, "packages", dirName);
@@ -66,7 +66,7 @@ export function collectDeps(
         }
       }
 
-      // replaceDeps pattern check
+      // Check replaceDeps pattern
       const matched = replaceDepsPatterns.find((p) => p.regex.test(dep));
       if (matched != null) {
         replaceDeps.push(dep);
@@ -84,11 +84,11 @@ export function collectDeps(
 }
 
 /**
- * 패키지 설정에서 targets 필터링 (scripts 타겟 제외)
- * @param packages 패키지 설정 맵
- * @param targets 필터링할 패키지 이름 목록. 빈 배열이면 scripts를 제외한 모든 패키지 반환
- * @returns 필터링된 패키지 설정 맵
- * @internal 테스트용으로 export
+ * Filter packages config by targets (excluding scripts target)
+ * @param packages Package config map
+ * @param targets List of package names to filter. If empty array, return all packages except scripts
+ * @returns Filtered package config map
+ * @internal exported for testing
  */
 export function filterPackagesByTargets(
   packages: Record<string, SdPackageConfig | undefined>,
@@ -99,16 +99,16 @@ export function filterPackagesByTargets(
   for (const [name, config] of Object.entries(packages)) {
     if (config == null) continue;
 
-    // scripts 타겟은 watch/dev 대상에서 제외
+    // Exclude scripts target from watch/dev targets
     if (config.target === "scripts") continue;
 
-    // targets가 비어있으면 모든 패키지 포함
+    // If targets is empty, include all packages
     if (targets.length === 0) {
       result[name] = config;
       continue;
     }
 
-    // targets에 포함된 패키지만 필터링
+    // Filter only packages included in targets
     if (targets.includes(name)) {
       result[name] = config;
     }
