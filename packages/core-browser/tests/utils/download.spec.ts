@@ -32,7 +32,7 @@ describe("downloadBlob", () => {
     vi.restoreAllMocks();
   });
 
-  it("Blob을 다운로드 링크로 변환하여 클릭", () => {
+  it("converts Blob to download link and clicks it", () => {
     const blob = new Blob(["test content"], { type: "text/plain" });
     const fileName = "test.txt";
 
@@ -44,7 +44,7 @@ describe("downloadBlob", () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
-  it("다운로드 후 URL.revokeObjectURL 호출 (메모리 누수 방지)", () => {
+  it("calls URL.revokeObjectURL after download to prevent memory leak", () => {
     const blob = new Blob(["test"], { type: "text/plain" });
 
     downloadBlob(blob, "test.txt");
@@ -53,7 +53,7 @@ describe("downloadBlob", () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
   });
 
-  it("에러 발생 시에도 revokeObjectURL 호출", () => {
+  it("calls revokeObjectURL even when error occurs", () => {
     const blob = new Blob(["test"], { type: "text/plain" });
     clickSpy.mockImplementation(() => {
       throw new Error("Click failed");
