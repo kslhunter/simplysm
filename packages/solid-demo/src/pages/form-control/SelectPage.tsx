@@ -191,21 +191,21 @@ export default function SelectPage() {
         <div class="space-y-4">
           <div>
             <h3 class="mb-3 text-lg font-semibold">Required</h3>
-            <Select required placeholder="필수 선택" renderValue={(v: string) => <>{v}</>}>
-              <Select.Item value="A">옵션 A</Select.Item>
-              <Select.Item value="B">옵션 B</Select.Item>
+            <Select required placeholder="Required selection" renderValue={(v: string) => <>{v}</>}>
+              <Select.Item value="A">Option A</Select.Item>
+              <Select.Item value="B">Option B</Select.Item>
             </Select>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
             <Select
               required
               touchMode
-              placeholder="touchMode 필수 선택"
+              placeholder="Required selection with touch mode"
               renderValue={(v: string) => <>{v}</>}
             >
-              <Select.Item value="A">옵션 A</Select.Item>
-              <Select.Item value="B">옵션 B</Select.Item>
+              <Select.Item value="A">Option A</Select.Item>
+              <Select.Item value="B">Option B</Select.Item>
             </Select>
           </div>
         </div>

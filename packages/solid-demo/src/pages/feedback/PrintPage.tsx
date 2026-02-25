@@ -10,8 +10,8 @@ function AsyncReadyContent() {
     <Print>
       <Print.Page>
         <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-          <h1>비동기 데이터 PDF</h1>
-          <p>1초 대기 후 ready()가 호출되어 PDF가 생성됩니다.</p>
+          <h1>Async Data PDF</h1>
+          <p>After waiting 1 second, ready() is called and a PDF is generated.</p>
           <div
             style={{
               "margin-top": "20px",
@@ -20,7 +20,7 @@ function AsyncReadyContent() {
               "border-radius": "8px",
             }}
           >
-            <p>이 콘텐츠는 데이터 로딩 완료 후 렌더링된 것을 시뮬레이션합니다.</p>
+            <p>This simulates rendering after data loading is complete.</p>
           </div>
         </div>
       </Print.Page>
@@ -34,32 +34,32 @@ const PrintDemo: Component = () => {
   const [status, setStatus] = createSignal("");
 
   const handlePrint = async () => {
-    setStatus("인쇄 중...");
+    setStatus("Printing...");
     try {
       await toPrinter(() => (
         <Print>
           <Print.Page>
             <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-              <h1>인쇄 테스트</h1>
-              <p>이 페이지는 toPrinter 테스트입니다.</p>
+              <h1>Print Test</h1>
+              <p>This page is a toPrinter test.</p>
               <table style={{ "border-collapse": "collapse", "width": "100%" }}>
                 <thead>
                   <tr>
-                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>이름</th>
-                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>나이</th>
-                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>직업</th>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Name</th>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Age</th>
+                    <th style={{ border: "1px solid #ccc", padding: "8px" }}>Occupation</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>홍길동</td>
+                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>John Doe</td>
                     <td style={{ border: "1px solid #ccc", padding: "8px" }}>30</td>
-                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>개발자</td>
+                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>Developer</td>
                   </tr>
                   <tr>
-                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>김철수</td>
+                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>Jane Smith</td>
                     <td style={{ border: "1px solid #ccc", padding: "8px" }}>25</td>
-                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>디자이너</td>
+                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>Designer</td>
                   </tr>
                 </tbody>
               </table>
@@ -67,19 +67,19 @@ const PrintDemo: Component = () => {
           </Print.Page>
         </Print>
       ));
-      setStatus("인쇄 완료");
+      setStatus("Print completed");
     } catch (e) {
-      setStatus(`에러: ${e}`);
+      setStatus(`Error: ${e}`);
     }
   };
 
   const handlePdfSingle = async () => {
-    setStatus("PDF 생성 중...");
+    setStatus("Creating PDF...");
     try {
       const buf = await toPdf(() => (
         <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-          <h1>단일 페이지 PDF</h1>
-          <p>Print 컴포넌트 없이 단순 콘텐츠를 PDF로 변환합니다.</p>
+          <h1>Single Page PDF</h1>
+          <p>Convert simple content to PDF without Print component.</p>
           <div
             style={{
               "margin-top": "20px",
@@ -88,27 +88,27 @@ const PrintDemo: Component = () => {
               "border-radius": "8px",
             }}
           >
-            <p>자동 분할 테스트: Print.Page 없이 A4 높이 기준으로 자동 슬라이스됩니다.</p>
+            <p>Auto-split test: Without Print.Page, automatically sliced based on A4 height.</p>
           </div>
         </div>
       ));
       downloadPdf(buf, "single-page.pdf");
-      setStatus(`PDF 생성 완료 (${buf.length} bytes)`);
+      setStatus(`PDF created (${buf.length} bytes)`);
     } catch (e) {
-      setStatus(`에러: ${e}`);
+      setStatus(`Error: ${e}`);
     }
   };
 
   const handlePdfMultiPage = async () => {
-    setStatus("다중 페이지 PDF 생성 중...");
+    setStatus("Creating multi-page PDF...");
     try {
       const buf = await toPdf(
         () => (
           <Print>
             <Print.Page>
               <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-                <h1>페이지 1</h1>
-                <p>첫 번째 페이지입니다.</p>
+                <h1>Page 1</h1>
+                <p>This is the first page.</p>
                 <div
                   style={{
                     "margin-top": "20px",
@@ -126,8 +126,8 @@ const PrintDemo: Component = () => {
             </Print.Page>
             <Print.Page>
               <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-                <h1>페이지 2</h1>
-                <p>두 번째 페이지입니다.</p>
+                <h1>Page 2</h1>
+                <p>This is the second page.</p>
                 <div
                   style={{
                     "margin-top": "20px",
@@ -145,8 +145,8 @@ const PrintDemo: Component = () => {
             </Print.Page>
             <Print.Page>
               <div style={{ "padding": "40px", "font-family": "sans-serif" }}>
-                <h1>페이지 3</h1>
-                <p>세 번째 페이지입니다.</p>
+                <h1>Page 3</h1>
+                <p>This is the third page.</p>
                 <div
                   style={{
                     "margin-top": "20px",
@@ -167,9 +167,9 @@ const PrintDemo: Component = () => {
         { size: "A4" },
       );
       downloadPdf(buf, "multi-page.pdf");
-      setStatus(`다중 페이지 PDF 생성 완료 (${buf.length} bytes, 3 페이지)`);
+      setStatus(`Multi-page PDF created (${buf.length} bytes, 3 pages)`);
     } catch (e) {
-      setStatus(`에러: ${e}`);
+      setStatus(`Error: ${e}`);
     }
   };
 

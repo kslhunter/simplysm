@@ -3,25 +3,25 @@ import { type AppPerm, PermissionTable } from "@simplysm/solid";
 
 const demoItems: AppPerm[] = [
   {
-    title: "사용자 관리",
+    title: "User Management",
     href: "/user",
     perms: ["use", "edit"],
     children: [
-      { title: "권한 설정", href: "/user/permission", perms: ["use", "edit", "approve"] },
-      { title: "사용자 목록", href: "/user/list", perms: ["use", "edit"] },
+      { title: "Permission Settings", href: "/user/permission", perms: ["use", "edit", "approve"] },
+      { title: "User List", href: "/user/list", perms: ["use", "edit"] },
     ],
   },
   {
-    title: "게시판",
+    title: "Board",
     href: "/board",
     perms: ["use", "edit"],
     children: [
-      { title: "공지사항", href: "/board/notice", perms: ["use", "edit"] },
-      { title: "자유게시판", href: "/board/free", perms: ["use"] },
+      { title: "Announcements", href: "/board/notice", perms: ["use", "edit"] },
+      { title: "Free Board", href: "/board/free", perms: ["use"] },
     ],
   },
   {
-    title: "시스템",
+    title: "System",
     href: "/system",
     perms: ["use"],
     modules: ["admin"],
@@ -36,16 +36,16 @@ export default function PermissionTablePage() {
       {/* Basic */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          기본 PermissionTable
+          Basic PermissionTable
         </h2>
         <PermissionTable items={demoItems} value={value()} onValueChange={setValue} />
       </section>
 
       {/* Modules filter applied */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">모듈 필터 (admin)</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Module Filter (admin)</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          modules={`["admin"]`}을 전달하면 해당 모듈에 속한 항목만 표시됩니다.
+          When you pass modules={`["admin"]`}, only items belonging to that module are displayed.
         </p>
         <PermissionTable
           items={demoItems}
@@ -57,13 +57,13 @@ export default function PermissionTablePage() {
 
       {/* disabled */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">비활성 상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Disabled State</h2>
         <PermissionTable items={demoItems} value={value()} disabled />
       </section>
 
       {/* Current value */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">현재 값</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Current Value</h2>
         <pre class="overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">
           {JSON.stringify(value(), null, 2)}
         </pre>

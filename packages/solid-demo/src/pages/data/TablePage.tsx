@@ -2,11 +2,11 @@ import { For } from "solid-js";
 import { Table, Tag } from "@simplysm/solid";
 
 const sampleData = [
-  { id: 1, name: "홍길동", email: "hong@example.com", role: "관리자", status: "활성" },
-  { id: 2, name: "김철수", email: "kim@example.com", role: "사용자", status: "활성" },
-  { id: 3, name: "이영희", email: "lee@example.com", role: "사용자", status: "비활성" },
-  { id: 4, name: "박민수", email: "park@example.com", role: "편집자", status: "활성" },
-  { id: 5, name: "최지영", email: "choi@example.com", role: "사용자", status: "대기" },
+  { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", status: "Active" },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Active" },
+  { id: 3, name: "Bob Wilson", email: "bob@example.com", role: "User", status: "Inactive" },
+  { id: 4, name: "Alice Johnson", email: "alice@example.com", role: "Editor", status: "Active" },
+  { id: 5, name: "Charlie Brown", email: "charlie@example.com", role: "User", status: "Pending" },
 ];
 
 export default function TablePage() {
@@ -14,12 +14,12 @@ export default function TablePage() {
     <div class="space-y-8 p-6">
       {/* Basic (inline) */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 테이블</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Table</h2>
         <Table>
           <thead>
             <tr>
-              <th>키</th>
-              <th>값</th>
+              <th>Key</th>
+              <th>Value</th>
             </tr>
           </thead>
           <tbody>
@@ -37,15 +37,15 @@ export default function TablePage() {
 
       {/* w-full */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">전체 너비 테이블</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Full Width Table</h2>
         <Table class="w-full">
           <thead>
             <tr>
               <th>ID</th>
-              <th>이름</th>
-              <th>이메일</th>
-              <th>역할</th>
-              <th>상태</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -59,9 +59,9 @@ export default function TablePage() {
                   <td>
                     <Tag
                       theme={
-                        row.status === "활성"
+                        row.status === "Active"
                           ? "success"
-                          : row.status === "비활성"
+                          : row.status === "Inactive"
                             ? "danger"
                             : "warning"
                       }
@@ -78,29 +78,29 @@ export default function TablePage() {
 
       {/* Inset */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Inset 테이블</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Inset Table</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          inset prop을 사용하면 외곽 테두리가 제거됩니다.
+          Using the inset prop removes the outer border.
         </p>
 
         <Table inset class="w-full">
           <thead>
             <tr>
-              <th>항목</th>
-              <th>값</th>
+              <th>Item</th>
+              <th>Value</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>서버</td>
+              <td>Server</td>
               <td>production-01</td>
             </tr>
             <tr>
-              <td>상태</td>
-              <td>정상</td>
+              <td>Status</td>
+              <td>Healthy</td>
             </tr>
             <tr>
-              <td>업타임</td>
+              <td>Uptime</td>
               <td>99.9%</td>
             </tr>
           </tbody>

@@ -13,10 +13,10 @@ import { DateOnly, DateTime, Time } from "@simplysm/core-common";
 
 export default function FieldPage() {
   // Signals for controlled example
-  const [controlledText, setControlledText] = createSignal<string | undefined>("controlled 값");
+  const [controlledText, setControlledText] = createSignal<string | undefined>("controlled value");
   const [controlledNumber, setControlledNumber] = createSignal<number | undefined>(12345);
   const [controlledTextArea, setControlledTextArea] = createSignal<string | undefined>(
-    "여러 줄의\n텍스트를\n입력할 수 있습니다",
+    "You can enter\nmultiple lines\nof text",
   );
 
   return (
@@ -27,15 +27,15 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* Basic usage */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
-            <TextInput placeholder="이름을 입력하세요" />
+            <h3 class="mb-3 text-lg font-bold">Basic Usage</h3>
+            <TextInput placeholder="Enter your name" />
           </div>
 
           {/* Type */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">타입</h3>
+            <h3 class="mb-3 text-lg font-bold">Type</h3>
             <div class="flex flex-col items-start gap-3">
-              <TextInput placeholder="text (기본)" />
+              <TextInput placeholder="text (default)" />
               <TextInput type="password" placeholder="password" />
               <TextInput type="email" placeholder="email" />
             </div>
@@ -43,13 +43,13 @@ export default function FieldPage() {
 
           {/* Format */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">포맷 (전화번호)</h3>
-            <TextInput placeholder="전화번호" format="XXX-XXXX-XXXX" />
+            <h3 class="mb-3 text-lg font-bold">Format (Phone Number)</h3>
+            <TextInput placeholder="phone number" format="XXX-XXXX-XXXX" />
           </div>
 
           {/* Size */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">사이즈</h3>
+            <h3 class="mb-3 text-lg font-bold">Size</h3>
             <div class="flex flex-col items-start gap-3">
               <TextInput size="sm" placeholder="Small" />
               <TextInput placeholder="Default" />
@@ -59,21 +59,21 @@ export default function FieldPage() {
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
-                <TextInput disabled value="비활성화됨" />
+                <TextInput disabled value="disabled" />
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Invalid</p>
-                <Invalid message="에러 메시지 예시">
-                  <TextInput placeholder="에러 상태" />
+                <Invalid message="Example error message">
+                  <TextInput placeholder="error state" />
                 </Invalid>
               </div>
               <div>
-                <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
-                <TextInput inset placeholder="인셋 스타일" />
+                <p class="mb-1 text-sm text-base-500">Inset (No Border)</p>
+                <TextInput inset placeholder="inset style" />
               </div>
             </div>
           </div>
@@ -86,32 +86,32 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* Basic usage */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
-            <Textarea placeholder="내용을 입력하세요" />
+            <h3 class="mb-3 text-lg font-bold">Basic Usage</h3>
+            <Textarea placeholder="Enter content" />
           </div>
 
           {/* minRows */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">최소 줄 수 (minRows)</h3>
+            <h3 class="mb-3 text-lg font-bold">Minimum Lines (minRows)</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">minRows=1 (기본값)</p>
-                <Textarea placeholder="1줄" />
+                <p class="mb-1 text-sm text-base-500">minRows=1 (default)</p>
+                <Textarea placeholder="1 line" />
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">minRows=3</p>
-                <Textarea minRows={3} placeholder="최소 3줄" />
+                <Textarea minRows={3} placeholder="minimum 3 lines" />
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">minRows=5</p>
-                <Textarea minRows={5} placeholder="최소 5줄" />
+                <Textarea minRows={5} placeholder="minimum 5 lines" />
               </div>
             </div>
           </div>
 
           {/* Size */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">사이즈</h3>
+            <h3 class="mb-3 text-lg font-bold">Size</h3>
             <div class="flex flex-col items-start gap-3">
               <Textarea size="sm" placeholder="Small" />
               <Textarea placeholder="Default" />
@@ -121,21 +121,21 @@ export default function FieldPage() {
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
-                <Textarea disabled value="비활성화됨" />
+                <Textarea disabled value="disabled" />
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Invalid</p>
-                <Invalid message="에러 메시지 예시">
-                  <Textarea placeholder="에러 상태" />
+                <Invalid message="Example error message">
+                  <Textarea placeholder="error state" />
                 </Invalid>
               </div>
               <div>
-                <p class="mb-1 text-sm text-base-500">Inset (테두리 없음)</p>
-                <Textarea inset placeholder="인셋 스타일" />
+                <p class="mb-1 text-sm text-base-500">Inset (No Border)</p>
+                <Textarea inset placeholder="inset style" />
               </div>
             </div>
           </div>
@@ -148,16 +148,16 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* Basic usage */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
-            <NumberInput placeholder="숫자를 입력하세요" />
+            <h3 class="mb-3 text-lg font-bold">Basic Usage</h3>
+            <NumberInput placeholder="Enter a number" />
           </div>
 
           {/* Thousands comma */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">천단위 콤마</h3>
+            <h3 class="mb-3 text-lg font-bold">Thousands Separator</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">comma=true (기본값)</p>
+                <p class="mb-1 text-sm text-base-500">comma=true (default)</p>
                 <NumberInput value={1234567} />
               </div>
               <div>
@@ -169,13 +169,13 @@ export default function FieldPage() {
 
           {/* Decimal places */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">소수점 자릿수 (minDigits)</h3>
+            <h3 class="mb-3 text-lg font-bold">Decimal Places (minDigits)</h3>
             <NumberInput value={100} minDigits={2} placeholder="minDigits=2" />
           </div>
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -183,8 +183,8 @@ export default function FieldPage() {
               </div>
               <div>
                 <p class="mb-1 text-sm text-base-500">Invalid</p>
-                <Invalid message="에러 메시지 예시">
-                  <NumberInput placeholder="에러 상태" />
+                <Invalid message="Example error message">
+                  <NumberInput placeholder="error state" />
                 </Invalid>
               </div>
             </div>
@@ -198,10 +198,10 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* By type */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">타입</h3>
+            <h3 class="mb-3 text-lg font-bold">Type</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">date (기본값)</p>
+                <p class="mb-1 text-sm text-base-500">date (default)</p>
                 <DatePicker value={new DateOnly(2024, 6, 15)} />
               </div>
               <div>
@@ -217,7 +217,7 @@ export default function FieldPage() {
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -234,14 +234,14 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* By type */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">타입</h3>
+            <h3 class="mb-3 text-lg font-bold">Type</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">datetime (기본값)</p>
+                <p class="mb-1 text-sm text-base-500">datetime (default)</p>
                 <DateTimePicker value={new DateTime(2024, 6, 15, 14, 30)} />
               </div>
               <div>
-                <p class="mb-1 text-sm text-base-500">datetime-sec (초 단위)</p>
+                <p class="mb-1 text-sm text-base-500">datetime-sec (with seconds)</p>
                 <DateTimePicker unit="second" value={new DateTime(2024, 6, 15, 14, 30, 45)} />
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function FieldPage() {
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -266,14 +266,14 @@ export default function FieldPage() {
         <div class="space-y-6">
           {/* By type */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">타입</h3>
+            <h3 class="mb-3 text-lg font-bold">Type</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
-                <p class="mb-1 text-sm text-base-500">time (기본값)</p>
+                <p class="mb-1 text-sm text-base-500">time (default)</p>
                 <TimePicker value={new Time(14, 30)} />
               </div>
               <div>
-                <p class="mb-1 text-sm text-base-500">time-sec (초 단위)</p>
+                <p class="mb-1 text-sm text-base-500">time-sec (with seconds)</p>
                 <TimePicker unit="second" value={new Time(14, 30, 45)} />
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function FieldPage() {
 
           {/* State */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">상태</h3>
+            <h3 class="mb-3 text-lg font-bold">State</h3>
             <div class="flex flex-col items-start gap-3">
               <div>
                 <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -306,16 +306,16 @@ export default function FieldPage() {
               }}
             >
               <div class="flex flex-col items-start gap-3">
-                <TextInput required placeholder="필수 입력" />
-                <TextInput required minLength={3} placeholder="최소 3자" />
-                <TextInput pattern="^[0-9]+$" placeholder="숫자만 입력" />
+                <TextInput required placeholder="Required input" />
+                <TextInput required minLength={3} placeholder="Minimum 3 characters" />
+                <TextInput pattern="^[0-9]+$" placeholder="Numbers only" />
                 <TextInput
-                  validate={(v) => (v.includes("@") ? undefined : "@ 문자가 필요합니다")}
-                  placeholder="커스텀 검증"
+                  validate={(v) => (v.includes("@") ? undefined : "@ character is required")}
+                  placeholder="Custom validation"
                 />
-                <TextInput required touchMode placeholder="touchMode (blur 후 표시)" />
-                <NumberInput required min={0} max={100} placeholder="0~100" />
-                <Textarea required minLength={10} placeholder="최소 10자" />
+                <TextInput required touchMode placeholder="touchMode (displays after blur)" />
+                <NumberInput required min={0} max={100} placeholder="0-100" />
+                <Textarea required minLength={10} placeholder="Minimum 10 characters" />
                 <Button type="submit" theme="primary" variant="solid">
                   Submit
                 </Button>
@@ -336,21 +336,21 @@ export default function FieldPage() {
               <TextInput
                 value={controlledText()}
                 onValueChange={setControlledText}
-                placeholder="값을 입력하세요"
+                placeholder="Enter a value"
               />
               <p class="text-sm text-base-600 dark:text-base-400">
-                현재 값:{" "}
+                Current value:{" "}
                 <code class="rounded bg-base-200 px-1 dark:bg-base-700">
-                  {controlledText() ?? "(없음)"}
+                  {controlledText() ?? "(None)"}
                 </code>
               </p>
               <Button
                 theme="primary"
                 variant="solid"
                 size="sm"
-                onClick={() => setControlledText("새로운 값!")}
+                onClick={() => setControlledText("New value!")}
               >
-                값 변경
+                Change Value
               </Button>
             </div>
           </div>
@@ -362,12 +362,12 @@ export default function FieldPage() {
               <NumberInput
                 value={controlledNumber()}
                 onValueChange={setControlledNumber}
-                placeholder="숫자를 입력하세요"
+                placeholder="Enter a number"
               />
               <p class="text-sm text-base-600 dark:text-base-400">
-                현재 값:{" "}
+                Current value:{" "}
                 <code class="rounded bg-base-200 px-1 dark:bg-base-700">
-                  {controlledNumber() ?? "(없음)"}
+                  {controlledNumber() ?? "(None)"}
                 </code>
               </p>
               <div class="flex gap-2">
@@ -388,7 +388,7 @@ export default function FieldPage() {
                   -100
                 </Button>
                 <Button variant="solid" size="sm" onClick={() => setControlledNumber(undefined)}>
-                  초기화
+                  Reset
                 </Button>
               </div>
             </div>
@@ -401,22 +401,22 @@ export default function FieldPage() {
               <Textarea
                 value={controlledTextArea()}
                 onValueChange={setControlledTextArea}
-                placeholder="내용을 입력하세요"
+                placeholder="Enter content"
                 minRows={3}
               />
               <p class="text-sm text-base-600 dark:text-base-400">
-                현재 값:{" "}
+                Current value:{" "}
                 <code class="rounded bg-base-200 px-1 dark:bg-base-700">
-                  {controlledTextArea() ?? "(없음)"}
+                  {controlledTextArea() ?? "(None)"}
                 </code>
               </p>
               <Button
                 theme="primary"
                 variant="solid"
                 size="sm"
-                onClick={() => setControlledTextArea("프로그래밍으로\n값을 변경했습니다")}
+                onClick={() => setControlledTextArea("Changed the value\nprogrammatically")}
               >
-                값 변경
+                Change Value
               </Button>
             </div>
           </div>

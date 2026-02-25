@@ -16,75 +16,75 @@ interface Employee {
 }
 
 const lastNames = [
-  "김",
-  "이",
-  "박",
-  "최",
-  "정",
-  "강",
-  "조",
-  "윤",
-  "장",
-  "임",
-  "한",
-  "오",
-  "서",
-  "신",
-  "권",
-  "황",
-  "안",
-  "송",
-  "류",
-  "홍",
+  "Kim",
+  "Lee",
+  "Park",
+  "Choi",
+  "Jung",
+  "Kang",
+  "Jo",
+  "Yoon",
+  "Jang",
+  "Im",
+  "Han",
+  "Oh",
+  "Seo",
+  "Shin",
+  "Kwon",
+  "Hwang",
+  "An",
+  "Song",
+  "Ryu",
+  "Hong",
 ];
 const firstNames = [
-  "민준",
-  "서윤",
-  "도윤",
-  "서연",
-  "하준",
-  "지우",
-  "시우",
-  "하은",
-  "예준",
-  "지아",
-  "주원",
-  "수아",
-  "지호",
-  "다은",
-  "건우",
-  "채원",
-  "현우",
-  "지윤",
-  "우진",
-  "은서",
+  "Min",
+  "Seo",
+  "Do",
+  "Ji",
+  "Ha",
+  "Jae",
+  "Si",
+  "Ye",
+  "Ju",
+  "Su",
+  "Ho",
+  "Da",
+  "Gun",
+  "Chae",
+  "Hyun",
+  "Woo",
+  "Jin",
+  "Eun",
+  "Mi",
+  "Na",
 ];
 const departments = [
-  "개발",
-  "개발",
-  "개발",
-  "마케팅",
-  "마케팅",
-  "영업",
-  "영업",
-  "인사",
-  "재무",
-  "디자인",
+  "Development",
+  "Development",
+  "Development",
+  "Marketing",
+  "Marketing",
+  "Sales",
+  "Sales",
+  "HR",
+  "Finance",
+  "Design",
 ];
 const teams = [
-  "프론트엔드",
-  "백엔드",
-  "인프라",
-  "디지털마케팅",
-  "브랜드",
-  "국내영업",
-  "해외영업",
-  "채용",
-  "회계",
+  "Frontend",
+  "Backend",
+  "Infrastructure",
+  "Digital Marketing",
+  "Brand",
+  "Domestic Sales",
+  "International Sales",
+  "Recruitment",
+  "Accounting",
   "UI/UX",
 ];
-const positions = ["사원", "사원", "사원", "주임", "대리", "과장", "차장", "부장"];
-const statuses = ["재직", "재직", "재직", "재직", "재직", "재직", "재직", "휴직", "출장"];
+const positions = ["Staff", "Staff", "Staff", "Assistant", "Senior", "Manager", "Director", "Executive"];
+const statuses = ["Active", "Active", "Active", "Active", "Active", "Active", "Active", "On Leave", "Business Trip"];
 
 function generateEmployees(count: number): Employee[] {
   const result: Employee[] = [];
@@ -144,7 +144,7 @@ export default function SheetFullPage() {
         </DataSheet.Column>
         <DataSheet.Column<Employee>
           key="name"
-          header={["인사정보", "이름"]}
+          header={["Employee Info", "Name"]}
           class="px-2 py-1 font-medium"
           fixed
         >
@@ -152,44 +152,44 @@ export default function SheetFullPage() {
         </DataSheet.Column>
         <DataSheet.Column<Employee>
           key="department"
-          header={["인사정보", "부서"]}
+          header={["Employee Info", "Department"]}
           class="px-2 py-1"
           fixed
         >
           {(ctx) => ctx.item.department}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="team" header={["인사정보", "팀"]} class="px-2 py-1">
+        <DataSheet.Column<Employee> key="team" header={["Employee Info", "Team"]} class="px-2 py-1">
           {(ctx) => ctx.item.team}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="position" header={["인사정보", "직급"]} class="px-2 py-1">
+        <DataSheet.Column<Employee> key="position" header={["Employee Info", "Position"]} class="px-2 py-1">
           {(ctx) => ctx.item.position}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="email" header={["연락처", "이메일"]} class="px-2 py-1">
+        <DataSheet.Column<Employee> key="email" header={["Contact", "Email"]} class="px-2 py-1">
           {(ctx) => ctx.item.email}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="phone" header={["연락처", "전화번호"]} class="px-2 py-1">
+        <DataSheet.Column<Employee> key="phone" header={["Contact", "Phone"]} class="px-2 py-1">
           {(ctx) => ctx.item.phone}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="joinDate" header="입사일" class="px-2 py-1">
+        <DataSheet.Column<Employee> key="joinDate" header="Join Date" class="px-2 py-1">
           {(ctx) => ctx.item.joinDate}
         </DataSheet.Column>
         <DataSheet.Column<Employee>
           key="salary"
-          header={["급여정보", "기본급"]}
+          header={["Salary Info", "Base"]}
           class="px-2 py-1 text-right"
-          summary={() => <span class="font-bold">{totalSalary().toLocaleString()}만</span>}
+          summary={() => <span class="font-bold">{totalSalary().toLocaleString()}</span>}
         >
-          {(ctx) => <>{ctx.item.salary.toLocaleString()}만</>}
+          {(ctx) => <>{ctx.item.salary.toLocaleString()}</>}
         </DataSheet.Column>
         <DataSheet.Column<Employee>
           key="bonus"
-          header={["급여정보", "상여금"]}
+          header={["Salary Info", "Bonus"]}
           class="px-2 py-1 text-right"
-          summary={() => <span class="font-bold">{totalBonus().toLocaleString()}만</span>}
+          summary={() => <span class="font-bold">{totalBonus().toLocaleString()}</span>}
         >
-          {(ctx) => <>{ctx.item.bonus.toLocaleString()}만</>}
+          {(ctx) => <>{ctx.item.bonus.toLocaleString()}</>}
         </DataSheet.Column>
-        <DataSheet.Column<Employee> key="status" header="상태" class="px-2 py-1">
+        <DataSheet.Column<Employee> key="status" header="Status" class="px-2 py-1">
           {(ctx) => ctx.item.status}
         </DataSheet.Column>
       </DataSheet>

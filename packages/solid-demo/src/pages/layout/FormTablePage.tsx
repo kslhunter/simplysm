@@ -9,43 +9,43 @@ export default function FormTablePage() {
     <div class="space-y-8 p-6">
       {/* Basic FormTable */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 FormTable</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic FormTable</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          FormTable은 라벨-값 형태의 폼을 테이블 레이아웃으로 정렬할 때 사용합니다.
+          FormTable is used to arrange forms in label-value format with a table layout.
         </p>
         <FormTable>
           <tbody>
             <tr>
-              <th>이름</th>
+              <th>Name</th>
               <td>
-                <TextInput placeholder="이름을 입력하세요" />
+                <TextInput placeholder="Enter name" />
               </td>
             </tr>
             <tr>
-              <th>부서</th>
+              <th>Department</th>
               <td>
                 <Select
-                  placeholder="부서 선택"
+                  placeholder="Select department"
                   renderValue={(v: string) => (
-                    <>{v === "dev" ? "개발팀" : v === "design" ? "디자인팀" : "마케팅팀"}</>
+                    <>{v === "dev" ? "Development" : v === "design" ? "Design" : "Marketing"}</>
                   )}
                 >
-                  <Select.Item value="dev">개발팀</Select.Item>
-                  <Select.Item value="design">디자인팀</Select.Item>
-                  <Select.Item value="marketing">마케팅팀</Select.Item>
+                  <Select.Item value="dev">Development</Select.Item>
+                  <Select.Item value="design">Design</Select.Item>
+                  <Select.Item value="marketing">Marketing</Select.Item>
                 </Select>
               </td>
             </tr>
             <tr>
-              <th>직급</th>
+              <th>Position</th>
               <td>
-                <TextInput placeholder="직급을 입력하세요" />
+                <TextInput placeholder="Enter position" />
               </td>
             </tr>
             <tr>
-              <th>급여</th>
+              <th>Salary</th>
               <td>
-                <NumberInput placeholder="급여를 입력하세요" />
+                <NumberInput placeholder="Enter salary" />
               </td>
             </tr>
           </tbody>
@@ -54,32 +54,32 @@ export default function FormTablePage() {
 
       {/* Colspan */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Colspan 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Using Colspan</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          colspan을 사용하여 복잡한 레이아웃을 구성할 수 있습니다.
+          You can create complex layouts using colspan.
         </p>
         <FormTable>
           <tbody>
             <tr>
-              <th>제목</th>
+              <th>Title</th>
               <td colspan="3">
-                <TextInput placeholder="제목을 입력하세요" />
+                <TextInput placeholder="Enter title" />
               </td>
             </tr>
             <tr>
-              <th>카테고리</th>
+              <th>Category</th>
               <td>
                 <Select
-                  placeholder="선택"
-                  renderValue={(v: string) => <>{v === "notice" ? "공지사항" : "뉴스"}</>}
+                  placeholder="Select"
+                  renderValue={(v: string) => <>{v === "notice" ? "Announcement" : "News"}</>}
                 >
-                  <Select.Item value="notice">공지사항</Select.Item>
-                  <Select.Item value="news">뉴스</Select.Item>
+                  <Select.Item value="notice">Announcement</Select.Item>
+                  <Select.Item value="news">News</Select.Item>
                 </Select>
               </td>
-              <th>작성자</th>
+              <th>Author</th>
               <td>
-                <TextInput placeholder="작성자" />
+                <TextInput placeholder="Author" />
               </td>
             </tr>
           </tbody>
@@ -88,32 +88,32 @@ export default function FormTablePage() {
 
       {/* Read-only information */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">읽기 전용 정보</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Read-Only Information</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          입력 필드 없이 정보만 표시할 때도 FormTable을 사용할 수 있습니다.
+          You can also use FormTable to display information only without input fields.
         </p>
         <FormTable>
           <tbody>
             <tr>
-              <th>아이디</th>
+              <th>User ID</th>
               <td>user123</td>
             </tr>
             <tr>
-              <th>이름</th>
-              <td>홍길동</td>
+              <th>Name</th>
+              <td>John Doe</td>
             </tr>
             <tr>
-              <th>이메일</th>
-              <td>hong@example.com</td>
+              <th>Email</th>
+              <td>john@example.com</td>
             </tr>
             <tr>
-              <th>가입일</th>
+              <th>Joined</th>
               <td>2024-01-15</td>
             </tr>
             <tr>
-              <th>상태</th>
+              <th>Status</th>
               <td>
-                <span class="text-success-600 dark:text-success-400">활성</span>
+                <span class="text-success-600 dark:text-success-400">Active</span>
               </td>
             </tr>
           </tbody>

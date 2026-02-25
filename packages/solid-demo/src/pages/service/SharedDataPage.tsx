@@ -32,9 +32,9 @@ const SharedDataDemo: Component = () => {
     <div class="space-y-8">
       {/* Busy state */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">busy 상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Busy State</h2>
         <Tag theme={shared.busy() ? "warning" : "success"}>
-          {shared.busy() ? "로딩 중..." : "로드 완료"}
+          {shared.busy() ? "Loading..." : "Load completed"}
         </Tag>
       </section>
 
@@ -45,8 +45,8 @@ const SharedDataDemo: Component = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>이름</th>
-              <th>부서</th>
+              <th>Name</th>
+              <th>Department</th>
             </tr>
           </thead>
           <tbody>

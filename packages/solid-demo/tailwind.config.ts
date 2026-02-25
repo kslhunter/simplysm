@@ -1,8 +1,8 @@
 import simplysmPreset from "@simplysm/solid/tailwind.config";
 
 const __dirname = new URL(".", import.meta.url).pathname
-  .replace(/^\/[^/]+\/@fs/, "") // Vite 가상 경로 제거
-  .replace(/index\.ts$/, ""); // re-export 시 index.ts 경로 제거
+  .replace(/^\/[^/]+\/@fs/, "") // Remove Vite virtual paths
+  .replace(/index\.ts$/, ""); // Remove index.ts path during re-export
 
 export default {
   darkMode: "class",

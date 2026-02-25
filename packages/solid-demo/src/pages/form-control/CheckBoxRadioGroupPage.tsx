@@ -13,14 +13,14 @@ export default function CheckboxRadioGroupPage() {
         <div class="space-y-6">
           {/* Basic usage */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
+            <h3 class="mb-3 text-lg font-bold">Basic Usage</h3>
             <CheckboxGroup value={selectedFruits()} onValueChange={setSelectedFruits}>
-              <CheckboxGroup.Item value="apple">사과</CheckboxGroup.Item>
-              <CheckboxGroup.Item value="banana">바나나</CheckboxGroup.Item>
-              <CheckboxGroup.Item value="cherry">체리</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="apple">Apple</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="banana">Banana</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="cherry">Cherry</CheckboxGroup.Item>
             </CheckboxGroup>
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              선택:{" "}
+              Selected:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">
                 {JSON.stringify(selectedFruits())}
               </code>
@@ -31,25 +31,25 @@ export default function CheckboxRadioGroupPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Disabled</h3>
             <CheckboxGroup>
-              <CheckboxGroup.Item value="a">활성</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="a">Enabled</CheckboxGroup.Item>
               <CheckboxGroup.Item value="b" disabled>
-                비활성
+                Disabled
               </CheckboxGroup.Item>
             </CheckboxGroup>
           </div>
 
           {/* All disabled */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
+            <h3 class="mb-3 text-lg font-bold">All Disabled</h3>
             <CheckboxGroup disabled value={["a"]}>
-              <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
-              <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="a">Option A</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="b">Option B</CheckboxGroup.Item>
             </CheckboxGroup>
           </div>
 
           {/* Size */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">사이즈</h3>
+            <h3 class="mb-3 text-lg font-bold">Size</h3>
             <CheckboxGroup size="sm" value={["x"]}>
               <CheckboxGroup.Item value="x">Small A</CheckboxGroup.Item>
               <CheckboxGroup.Item value="y">Small B</CheckboxGroup.Item>
@@ -83,20 +83,20 @@ export default function CheckboxRadioGroupPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">CheckboxGroup Required</h3>
             <CheckboxGroup required value={[]}>
-              <CheckboxGroup.Item value="a">옵션 A</CheckboxGroup.Item>
-              <CheckboxGroup.Item value="b">옵션 B</CheckboxGroup.Item>
-              <CheckboxGroup.Item value="c">옵션 C</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="a">Option A</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="b">Option B</CheckboxGroup.Item>
+              <CheckboxGroup.Item value="c">Option C</CheckboxGroup.Item>
             </CheckboxGroup>
           </div>
           <div>
             <h3 class="mb-3 text-lg font-bold">RadioGroup Required</h3>
             <RadioGroup required>
-              <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
-              <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
+              <RadioGroup.Item value="a">Option A</RadioGroup.Item>
+              <RadioGroup.Item value="b">Option B</RadioGroup.Item>
             </RadioGroup>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-bold">touchMode (blur 후 표시)</h3>
+            <h3 class="mb-3 text-lg font-bold">touchMode (displays after blur)</h3>
             <CheckboxGroup required touchMode value={[]}>
               <CheckboxGroup.Item value="x">X</CheckboxGroup.Item>
               <CheckboxGroup.Item value="y">Y</CheckboxGroup.Item>
@@ -111,14 +111,14 @@ export default function CheckboxRadioGroupPage() {
         <div class="space-y-6">
           {/* Basic usage */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">기본 사용</h3>
+            <h3 class="mb-3 text-lg font-bold">Basic Usage</h3>
             <RadioGroup value={selectedOption()} onValueChange={setSelectedOption}>
-              <RadioGroup.Item value="A">옵션 A</RadioGroup.Item>
-              <RadioGroup.Item value="B">옵션 B</RadioGroup.Item>
-              <RadioGroup.Item value="C">옵션 C</RadioGroup.Item>
+              <RadioGroup.Item value="A">Option A</RadioGroup.Item>
+              <RadioGroup.Item value="B">Option B</RadioGroup.Item>
+              <RadioGroup.Item value="C">Option C</RadioGroup.Item>
             </RadioGroup>
             <p class="mt-2 text-sm text-base-600 dark:text-base-400">
-              선택:{" "}
+              Selected:{" "}
               <code class="rounded bg-base-200 px-1 dark:bg-base-700">{selectedOption()}</code>
             </p>
           </div>
@@ -127,25 +127,25 @@ export default function CheckboxRadioGroupPage() {
           <div>
             <h3 class="mb-3 text-lg font-bold">Disabled</h3>
             <RadioGroup>
-              <RadioGroup.Item value="a">활성</RadioGroup.Item>
+              <RadioGroup.Item value="a">Enabled</RadioGroup.Item>
               <RadioGroup.Item value="b" disabled>
-                비활성
+                Disabled
               </RadioGroup.Item>
             </RadioGroup>
           </div>
 
           {/* All disabled */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">전체 Disabled</h3>
+            <h3 class="mb-3 text-lg font-bold">All Disabled</h3>
             <RadioGroup disabled value="a">
-              <RadioGroup.Item value="a">옵션 A</RadioGroup.Item>
-              <RadioGroup.Item value="b">옵션 B</RadioGroup.Item>
+              <RadioGroup.Item value="a">Option A</RadioGroup.Item>
+              <RadioGroup.Item value="b">Option B</RadioGroup.Item>
             </RadioGroup>
           </div>
 
           {/* Size */}
           <div>
-            <h3 class="mb-3 text-lg font-bold">사이즈</h3>
+            <h3 class="mb-3 text-lg font-bold">Size</h3>
             <RadioGroup size="lg" value="x">
               <RadioGroup.Item value="x">Large A</RadioGroup.Item>
               <RadioGroup.Item value="y">Large B</RadioGroup.Item>

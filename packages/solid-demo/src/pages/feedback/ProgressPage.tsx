@@ -49,14 +49,14 @@ export default function ProgressPage() {
             3/10 Completed
           </Progress>
           <Progress value={0.75} theme="success">
-            다운로드 중...
+            Downloading...
           </Progress>
         </div>
       </section>
 
       {/* Various progress levels */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">진행률</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Progress Levels</h2>
         <div class="space-y-2">
           <Progress value={0} />
           <Progress value={0.25} />

@@ -12,7 +12,7 @@ export default function PaginationPage() {
   return (
     <div class="space-y-8 p-6">
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic</h2>
         <p class="mb-2 text-sm text-base-500">page: {page1()}</p>
         <Pagination page={page1()} onPageChange={setPage1} totalPageCount={20} />
       </section>
@@ -25,7 +25,7 @@ export default function PaginationPage() {
             <Pagination page={pageSm()} onPageChange={setPageSm} totalPageCount={20} size="sm" />
           </div>
           <div>
-            <p class="mb-2 text-sm text-base-500">기본 (page: {pageMd()})</p>
+            <p class="mb-2 text-sm text-base-500">Default (page: {pageMd()})</p>
             <Pagination page={pageMd()} onPageChange={setPageMd} totalPageCount={20} />
           </div>
           <div>
@@ -37,7 +37,7 @@ export default function PaginationPage() {
 
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          displayPageCount 커스텀 (5개씩)
+          Custom displayPageCount (5 per page)
         </h2>
         <p class="mb-2 text-sm text-base-500">page: {pageCustom()}</p>
         <Pagination

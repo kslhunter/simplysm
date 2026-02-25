@@ -8,14 +8,14 @@ interface Fruit {
 }
 
 const allFruits: Fruit[] = [
-  { id: 1, name: "사과", emoji: "🍎" },
-  { id: 2, name: "바나나", emoji: "🍌" },
-  { id: 3, name: "포도", emoji: "🍇" },
-  { id: 4, name: "오렌지", emoji: "🍊" },
-  { id: 5, name: "수박", emoji: "🍉" },
-  { id: 6, name: "딸기", emoji: "🍓" },
-  { id: 7, name: "복숭아", emoji: "🍑" },
-  { id: 8, name: "체리", emoji: "🍒" },
+  { id: 1, name: "Apple", emoji: "🍎" },
+  { id: 2, name: "Banana", emoji: "🍌" },
+  { id: 3, name: "Grape", emoji: "🍇" },
+  { id: 4, name: "Orange", emoji: "🍊" },
+  { id: 5, name: "Watermelon", emoji: "🍉" },
+  { id: 6, name: "Strawberry", emoji: "🍓" },
+  { id: 7, name: "Peach", emoji: "🍑" },
+  { id: 8, name: "Cherry", emoji: "🍒" },
 ];
 
 // Instant filtering (no loading)
@@ -48,14 +48,14 @@ export default function ComboboxPage() {
     <div class="space-y-8 p-6">
       {/* Basic usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
-          입력하면 즉시 필터링됩니다. 로딩 없이 빠르게 검색/선택할 수 있습니다.
+          Filters instantly as you type. Search and select quickly without loading.
         </p>
         <Combobox
           loadItems={filterFruits}
           debounceMs={0}
-          placeholder="과일을 검색하세요"
+          placeholder="Search for fruit"
           renderValue={(v: Fruit) => (
             <>
               {v.emoji} {v.name}
@@ -74,14 +74,14 @@ export default function ComboboxPage() {
 
       {/* allowCustomValue */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">커스텀 값 허용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Allow Custom Values</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
-          allowCustomValue가 true이면 목록에 없는 값도 Enter로 입력할 수 있습니다.
+          When allowCustomValue is true, you can enter values not in the list by pressing Enter.
         </p>
         <div class="flex flex-col items-start gap-3">
           <Combobox
             loadItems={filterFruits}
-            placeholder="검색하거나 직접 입력"
+            placeholder="Search or enter directly"
             allowCustomValue
             value={customValue()}
             onValueChange={setCustomValue}
@@ -104,12 +104,12 @@ export default function ComboboxPage() {
             </Combobox.ItemTemplate>
           </Combobox>
           <p class="text-sm text-base-600 dark:text-base-400">
-            현재 값:{" "}
+            Current value:{" "}
             <code class="rounded bg-base-200 px-1 dark:bg-base-700">
               {customValue() == null
-                ? "(없음)"
+                ? "(None)"
                 : typeof customValue() === "string"
-                  ? `"${customValue()}" (직접 입력)`
+                  ? `"${customValue()}" (custom)`
                   : (customValue() as Fruit).name}
             </code>
           </p>
@@ -118,13 +118,13 @@ export default function ComboboxPage() {
 
       {/* parseCustomValue */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">커스텀 값 변환</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Parse Custom Values</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
-          parseCustomValue로 직접 입력한 문자열을 원하는 형태로 변환할 수 있습니다.
+          Use parseCustomValue to convert manually entered strings to the desired format.
         </p>
         <Combobox<Fruit>
           loadItems={filterFruits}
-          placeholder="과일 이름 입력"
+          placeholder="Enter fruit name"
           allowCustomValue
           parseCustomValue={(text) => ({ id: 0, name: text, emoji: "🆕" })}
           renderValue={(v) => (
@@ -145,13 +145,13 @@ export default function ComboboxPage() {
 
       {/* Async loading */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">비동기 로딩</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Async Loading</h2>
         <p class="mb-3 text-sm text-base-600 dark:text-base-400">
-          서버 API 호출 시 로딩 스피너가 표시됩니다. (500ms 딜레이 시뮬레이션)
+          A loading spinner is displayed when calling server APIs. (500ms delay simulation)
         </p>
         <Combobox
           loadItems={searchFruitsAsync}
-          placeholder="서버에서 검색"
+          placeholder="Search from server"
           renderValue={(v: Fruit) => (
             <>
               {v.emoji} {v.name}
@@ -170,7 +170,7 @@ export default function ComboboxPage() {
 
       {/* Size */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Size</h2>
         <div class="flex flex-col items-start gap-4">
           <Combobox
             size="sm"
@@ -218,25 +218,25 @@ export default function ComboboxPage() {
 
       {/* State */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">State</h2>
         <div class="flex flex-col items-start gap-4">
           <div>
             <p class="mb-1 text-sm text-base-600 dark:text-base-400">Disabled</p>
             <Combobox
               disabled
               loadItems={filterFruits}
-              placeholder="비활성화됨"
+              placeholder="disabled"
               renderValue={(v: Fruit) => <>{v.name}</>}
             >
               <Combobox.ItemTemplate>{(item: Fruit) => <>{item.name}</>}</Combobox.ItemTemplate>
             </Combobox>
           </div>
           <div>
-            <p class="mb-1 text-sm text-base-600 dark:text-base-400">Inset (테두리 없음)</p>
+            <p class="mb-1 text-sm text-base-600 dark:text-base-400">Inset (No Border)</p>
             <Combobox
               inset
               loadItems={filterFruits}
-              placeholder="인셋 스타일"
+              placeholder="inset style"
               renderValue={(v: Fruit) => <>{v.name}</>}
             >
               <Combobox.ItemTemplate>
@@ -260,7 +260,7 @@ export default function ComboboxPage() {
             <Combobox
               required
               loadItems={filterFruits}
-              placeholder="필수 선택"
+              placeholder="Required selection"
               renderValue={(v: Fruit) => (
                 <>
                   {v.emoji} {v.name}
@@ -277,12 +277,12 @@ export default function ComboboxPage() {
             </Combobox>
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
             <Combobox
               required
               touchMode
               loadItems={filterFruits}
-              placeholder="touchMode 필수 선택"
+              placeholder="Required selection with touch mode"
               renderValue={(v: Fruit) => (
                 <>
                   {v.emoji} {v.name}
@@ -309,7 +309,7 @@ export default function ComboboxPage() {
             value={controlledSelected()}
             onValueChange={setControlledSelected}
             loadItems={filterFruits}
-            placeholder="과일을 검색하세요"
+            placeholder="Search for fruit"
             renderValue={(v) => (
               <>
                 {v.emoji} {v.name}
@@ -325,9 +325,9 @@ export default function ComboboxPage() {
             </Combobox.ItemTemplate>
           </Combobox>
           <p class="text-sm text-base-600 dark:text-base-400">
-            현재 값:{" "}
+            Current value:{" "}
             <code class="rounded bg-base-200 px-1 dark:bg-base-700">
-              {controlledSelected()?.name ?? "(없음)"}
+              {controlledSelected()?.name ?? "(None)"}
             </code>
           </p>
           <div class="flex gap-2">
@@ -337,10 +337,10 @@ export default function ComboboxPage() {
               size="sm"
               onClick={() => setControlledSelected(allFruits[2])}
             >
-              포도 선택
+              Select Grape
             </Button>
             <Button variant="solid" size="sm" onClick={() => setControlledSelected(undefined)}>
-              초기화
+              Reset
             </Button>
           </div>
         </div>

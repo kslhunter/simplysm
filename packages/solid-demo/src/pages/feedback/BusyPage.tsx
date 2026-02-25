@@ -78,26 +78,26 @@ const BusyDemo: Component = () => {
       {/* Local Bar */}
       <section>
         <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">
-          로컬 BusyContainer (Bar)
+          Local BusyContainer (Bar)
         </h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
-          bar 타입으로 상단에 프로그레스 바를 표시합니다.
+          Bar type displays a progress bar at the top.
         </p>
         <Button theme="base" variant="outline" onClick={handleBarBusy}>
-          로컬 Bar 2초
+          Local Bar for 2 seconds
         </Button>
         <BusyContainer
           busy={barBusy()}
           variant="bar"
           class="mt-4 h-40 rounded border border-base-200 dark:border-base-700"
         >
-          <div class="flex h-full items-center justify-center text-base-500">콘텐츠 영역</div>
+          <div class="flex h-full items-center justify-center text-base-500">Content area</div>
         </BusyContainer>
       </section>
 
       {/* Progress */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">진행률 표시</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Progress Display</h2>
         <p class="mb-4 text-sm text-base-600 dark:text-base-400">
           progressPercent prop으로 진행률을 표시합니다.
         </p>

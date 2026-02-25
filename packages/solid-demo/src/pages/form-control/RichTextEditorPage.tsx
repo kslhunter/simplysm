@@ -2,13 +2,13 @@ import { createSignal } from "solid-js";
 import { RichTextEditor, Invalid } from "@simplysm/solid";
 
 export default function RichTextEditorPage() {
-  const [html, setHtml] = createSignal("<p>여기에 내용을 입력하세요...</p>");
+  const [html, setHtml] = createSignal("<p>Enter content here...</p>");
 
   return (
     <div class="space-y-12 p-6">
       {/* Basic usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <div class="space-y-6">
           <div>
             <h3 class="mb-3 text-lg font-bold">Controlled</h3>
@@ -16,7 +16,7 @@ export default function RichTextEditorPage() {
           </div>
 
           <div>
-            <h3 class="mb-3 text-lg font-bold">HTML 출력</h3>
+            <h3 class="mb-3 text-lg font-bold">HTML Output</h3>
             <pre class="max-h-40 overflow-auto rounded bg-base-100 p-2 text-xs dark:bg-base-800">
               {html()}
             </pre>
@@ -26,7 +26,7 @@ export default function RichTextEditorPage() {
 
       {/* State */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">State</h2>
         <div class="space-y-6">
           <div>
             <h3 class="mb-3 text-lg font-bold">Disabled</h3>
@@ -35,7 +35,7 @@ export default function RichTextEditorPage() {
 
           <div>
             <h3 class="mb-3 text-lg font-bold">Invalid</h3>
-            <Invalid message="에러 메시지 예시">
+            <Invalid message="Example error message">
               <RichTextEditor value={html()} onValueChange={setHtml} />
             </Invalid>
           </div>
@@ -44,21 +44,21 @@ export default function RichTextEditorPage() {
 
       {/* Size */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Size</h2>
         <div class="space-y-6">
           <div>
             <h3 class="mb-3 text-lg font-bold">Small</h3>
-            <RichTextEditor size="sm" value="<p>Small 사이즈</p>" />
+            <RichTextEditor size="sm" value="<p>Small size</p>" />
           </div>
 
           <div>
             <h3 class="mb-3 text-lg font-bold">Default</h3>
-            <RichTextEditor value="<p>기본 사이즈</p>" />
+            <RichTextEditor value="<p>Default size</p>" />
           </div>
 
           <div>
             <h3 class="mb-3 text-lg font-bold">Large</h3>
-            <RichTextEditor size="lg" value="<p>Large 사이즈</p>" />
+            <RichTextEditor size="lg" value="<p>Large size</p>" />
           </div>
         </div>
       </section>

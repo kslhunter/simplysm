@@ -13,17 +13,17 @@ export interface IDemoCompany {
 }
 
 const USERS: IDemoUser[] = [
-  { id: 1, name: "홍길동", department: "개발팀" },
-  { id: 2, name: "김영희", department: "디자인팀" },
-  { id: 3, name: "이철수", department: "개발팀" },
-  { id: 4, name: "박민수", department: "기획팀" },
-  { id: 5, name: "정다은", department: "디자인팀" },
+  { id: 1, name: "John Doe", department: "Development" },
+  { id: 2, name: "Jane Smith", department: "Design" },
+  { id: 3, name: "Bob Wilson", department: "Development" },
+  { id: 4, name: "Alice Johnson", department: "Planning" },
+  { id: 5, name: "Charlie Brown", department: "Design" },
 ];
 
 const COMPANIES: IDemoCompany[] = [
-  { id: 1, name: "심플리즘", ceo: "홍길동" },
-  { id: 2, name: "테크놀로지", ceo: "김영희" },
-  { id: 3, name: "이노베이션", ceo: "이철수" },
+  { id: 1, name: "Simplysm", ceo: "John Doe" },
+  { id: 2, name: "Technology", ceo: "Jane Smith" },
+  { id: 3, name: "Innovation", ceo: "Bob Wilson" },
 ];
 
 export const SharedDataDemoService = defineService("SharedDataDemo", () => ({

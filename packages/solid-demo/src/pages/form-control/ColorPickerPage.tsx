@@ -5,7 +5,7 @@ export default function ColorPickerPage() {
     <div class="space-y-12 p-6">
       {/* Basic usage */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">기본 사용</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Basic Usage</h2>
         <div class="flex items-center gap-4">
           <ColorPicker />
           <ColorPicker value="#3b82f6" />
@@ -15,7 +15,7 @@ export default function ColorPickerPage() {
 
       {/* Size */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">사이즈</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">Size</h2>
         <div class="flex items-center gap-4">
           <ColorPicker size="sm" value="#22c55e" />
           <ColorPicker value="#22c55e" />
@@ -25,7 +25,7 @@ export default function ColorPickerPage() {
 
       {/* State */}
       <section>
-        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">상태</h2>
+        <h2 class="mb-4 border-l-4 border-primary-500 pl-3 text-lg font-bold">State</h2>
         <div class="flex items-center gap-4">
           <div>
             <p class="mb-1 text-sm text-base-500">Disabled</p>
@@ -43,7 +43,7 @@ export default function ColorPickerPage() {
             <ColorPicker required value={undefined} />
           </div>
           <div>
-            <h3 class="mb-3 text-lg font-semibold">touchMode (blur 후 표시)</h3>
+            <h3 class="mb-3 text-lg font-semibold">touchMode (displays after blur)</h3>
             <ColorPicker required touchMode value={undefined} />
           </div>
         </div>
