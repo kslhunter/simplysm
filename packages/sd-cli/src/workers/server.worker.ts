@@ -171,10 +171,10 @@ function collectAllExternals(pkgDir: string, manualExternals?: string[]): string
 }
 
 /**
- * 프로덕션 배포용 파일 생성 (일회성 빌드에서만 호출)
+ * Generate files for production deployment (called only in one-time build)
  *
- * - dist/package.json: external 모듈을 dependencies로 포함 (volta 사용 시 volta 필드 추가)
- * - dist/mise.toml: Node 버전 지정 (packageManager === "mise"일 때만)
+ * - dist/package.json: include external modules as dependencies (add volta field if volta is used)
+ * - dist/mise.toml: specify Node version (only when packageManager === "mise")
  * - dist/openssl.cnf: 레거시 OpenSSL 프로바이더 활성화
  * - dist/pm2.config.cjs: PM2 프로세스 설정 (pm2 옵션이 있을 때만)
  */

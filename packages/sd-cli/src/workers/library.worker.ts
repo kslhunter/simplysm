@@ -19,7 +19,7 @@ import { registerCleanupHandlers, createOnceGuard } from "../utils/worker-utils"
 //#region Types
 
 /**
- * Library 빌드 정보 (일회성 빌드용)
+ * Library build info (for one-time build)
  */
 export interface LibraryBuildInfo {
   name: string;
@@ -29,7 +29,7 @@ export interface LibraryBuildInfo {
 }
 
 /**
- * Library 빌드 결과
+ * Library build result
  */
 export interface LibraryBuildResult {
   success: boolean;
@@ -38,7 +38,7 @@ export interface LibraryBuildResult {
 }
 
 /**
- * Library Watch 정보
+ * Library watch info
  */
 export interface LibraryWatchInfo {
   name: string;

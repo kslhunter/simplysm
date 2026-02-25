@@ -9,7 +9,7 @@ import { registerCleanupHandlers } from "../utils/worker-utils";
 //#region Types
 
 /**
- * Server Runtime 시작 정보
+ * Server runtime start info
  */
 export interface ServerRuntimeStartInfo {
   mainJsPath: string;
@@ -17,14 +17,14 @@ export interface ServerRuntimeStartInfo {
 }
 
 /**
- * 서버 준비 이벤트
+ * Server ready event
  */
 export interface ServerRuntimeReadyEvent {
   port: number;
 }
 
 /**
- * 에러 이벤트
+ * Error event
  */
 export interface ServerRuntimeErrorEvent {
   message: string;

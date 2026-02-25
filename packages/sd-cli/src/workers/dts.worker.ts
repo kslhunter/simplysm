@@ -16,7 +16,7 @@ import { createOnceGuard } from "../utils/worker-utils";
 //#region Types
 
 /**
- * DTS watch 시작 정보
+ * DTS watch start info
  */
 export interface DtsWatchInfo {
   name: string;
@@ -26,12 +26,12 @@ export interface DtsWatchInfo {
 }
 
 /**
- * DTS 일회성 빌드 정보
+ * DTS one-time build info
  */
 export interface DtsBuildInfo {
   name: string;
   cwd: string;
-  /** 패키지 디렉토리. 미지정 시 non-package 모드 (packages/ 제외 전체 타입체크) */
+  /** Package directory. If unspecified, non-package mode (typecheck all except packages/) */
   pkgDir?: string;
   /** 타입체크 환경. pkgDir과 함께 사용 */
   env?: TypecheckEnv;
