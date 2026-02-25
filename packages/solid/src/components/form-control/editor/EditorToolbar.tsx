@@ -32,38 +32,38 @@ export interface EditorToolbarProps {
   class?: string;
 }
 
-// 툴바 컨테이너 스타일
+// Toolbar container style
 const toolbarClass = clsx(
   "flex flex-wrap items-center gap-0.5",
   "border-b border-base-300 dark:border-base-700",
   "px-2 py-1",
 );
 
-// 툴바 버튼 기본 스타일
+// Toolbar button base style
 const toolbarBtnClass = twMerge(iconButtonBase, "size-7");
 
-// 툴바 버튼 활성 스타일
+// Toolbar button active style
 const toolbarBtnActiveClass = clsx(
   "bg-primary-100 text-primary-700",
   "dark:bg-primary-900/40 dark:text-primary-300",
 );
 
-// 구분선 스타일
+// Separator style
 const separatorClass = clsx("mx-1 h-5 w-px", "bg-base-300 dark:bg-base-700");
 
-// 색상 선택 label 스타일
+// Color picker label style
 const colorLabelClass = twMerge(iconButtonBase, "relative", "size-7");
 
-// 색상 input 숨기기 스타일
+// Color input hide style
 const colorInputClass = clsx("absolute opacity-0", "size-0");
 
-// 색상 indicator 스타일
+// Color indicator style
 const colorIndicatorClass = clsx("absolute inset-x-1 bottom-0.5", "h-0.5 rounded-full");
 
 export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const e = () => props.editor;
 
-  // createEditorTransaction으로 반응적 활성 상태 추적
+  // Track active state reactively with createEditorTransaction
   const isBold = createEditorTransaction(e, (editor) => editor.isActive("bold"));
   const isItalic = createEditorTransaction(e, (editor) => editor.isActive("italic"));
   const isUnderline = createEditorTransaction(e, (editor) => editor.isActive("underline"));
@@ -87,13 +87,13 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
     editor.isActive({ textAlign: "justify" } as unknown as string),
   );
 
-  // 현재 텍스트 색상
+  // Current text color
   const currentColor = createEditorTransaction(
     e,
     (editor) => (editor.getAttributes("textStyle")["color"] as string | undefined) ?? "#000000",
   );
 
-  // 현재 하이라이트 색상
+  // Current highlight color
   const currentHighlight = createEditorTransaction(
     e,
     (editor) => (editor.getAttributes("highlight")["color"] as string | undefined) ?? "#ffff00",
@@ -102,7 +102,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
   const btnClass = (active: () => boolean) =>
     twMerge(toolbarBtnClass, active() && toolbarBtnActiveClass);
 
-  // 이미지 삽입 핸들러
+  // Image insert handler
   const handleImageInsert = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -125,7 +125,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
 
   return (
     <div class={twMerge(toolbarClass, props.class)}>
-      {/* 1. 헤더 (H1, H2) */}
+      {/* 1. Header (H1, H2) */}
       <button
         type="button"
         class={btnClass(isH1)}
@@ -143,10 +143,10 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         <Icon icon={IconH2} size="1em" />
       </button>
 
-      {/* 2. 구분선 */}
+      {/* 2. Separator */}
       <div class={separatorClass} />
 
-      {/* 3. 텍스트 서식 (Bold, Italic, Underline, Strike) */}
+      {/* 3. Text format (Bold, Italic, Underline, Strike) */}
       <button
         type="button"
         class={btnClass(isBold)}
@@ -183,7 +183,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 4. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 5. 텍스트 색상 + 배경색 (input[type=color] 사용) */}
+      {/* 5. Text color + background color (using input[type=color]) */}
       <label class={colorLabelClass} title="텍스트 색상">
         <span class={clsx("text-sm font-bold")}>A</span>
         <div class={colorIndicatorClass} style={{ "background-color": currentColor() }} />
@@ -214,7 +214,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 6. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 7. 리스트 (Bullet, Ordered) */}
+      {/* 7. List (Bullet, Ordered) */}
       <button
         type="button"
         class={btnClass(isBulletList)}
@@ -235,7 +235,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 8. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 9. 들여쓰기 (Increase, Decrease) */}
+      {/* 9. Indentation (Increase, Decrease) */}
       <button
         type="button"
         class={toolbarBtnClass}
@@ -256,7 +256,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 10. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 11. 블록 (Blockquote, CodeBlock) */}
+      {/* 11. Block (Blockquote, CodeBlock) */}
       <button
         type="button"
         class={btnClass(isBlockquote)}
@@ -277,7 +277,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 12. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 13. 정렬 (Left, Center, Right, Justify) */}
+      {/* 13. Alignment (Left, Center, Right, Justify) */}
       <button
         type="button"
         class={btnClass(isAlignLeft)}
@@ -314,7 +314,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 14. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 15. 테이블 삽입 */}
+      {/* 15. Insert table */}
       <button
         type="button"
         class={toolbarBtnClass}
@@ -326,7 +326,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
         <Icon icon={IconTablePlus} size="1em" />
       </button>
 
-      {/* 16. 이미지 삽입 */}
+      {/* 16. Insert image */}
       <button type="button" class={toolbarBtnClass} title="이미지 삽입" onClick={handleImageInsert}>
         <Icon icon={IconPhoto} size="1em" />
       </button>
@@ -334,7 +334,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       {/* 17. 구분선 */}
       <div class={separatorClass} />
 
-      {/* 18. 서식 지우기 */}
+      {/* 18. Clear formatting */}
       <button
         type="button"
         class={toolbarBtnClass}
