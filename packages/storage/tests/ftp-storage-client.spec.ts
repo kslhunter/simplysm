@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FtpStorageClient } from "../src/clients/ftp-storage-client";
 
-// basic-ftp 모듈 모킹
+// Mock basic-ftp module
 const mockAccess = vi.fn().mockResolvedValue(undefined);
 const mockEnsureDir = vi.fn().mockResolvedValue(undefined);
 const mockRename = vi.fn().mockResolvedValue(undefined);
@@ -47,7 +47,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("connect", () => {
-    it("연결 설정으로 접속해야 함", async () => {
+    it("Should connect with connection settings", async () => {
       await client.connect({
         host: "ftp.example.com",
         port: 21,
@@ -64,45 +64,45 @@ describe("FtpStorageClient", () => {
       });
     });
 
-    it("secure 모드로 접속해야 함", async () => {
+    it("Should connect in secure mode", async () => {
       const secureClient = new FtpStorageClient(true);
       await secureClient.connect({ host: "ftp.example.com" });
 
       expect(mockAccess).toHaveBeenCalledWith(expect.objectContaining({ secure: true }));
     });
 
-    it("이미 연결된 상태에서 connect 호출 시 에러", async () => {
+    it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
         "이미 FTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
       );
     });
 
-    it("연결 실패 시 클라이언트를 정리해야 함", async () => {
+    it("Should clean up client on connection failure", async () => {
       mockAccess.mockRejectedValueOnce(new Error("Auth failed"));
       await expect(client.connect({ host: "test" })).rejects.toThrow("Auth failed");
       expect(mockClose).toHaveBeenCalled();
     });
   });
 
-  describe("연결 전 메서드 호출", () => {
-    it("연결 전 mkdir 호출 시 에러", async () => {
+  describe("Method calls before connection", () => {
+    it("Should throw error when mkdir is called before connection", async () => {
       await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
 
-    it("연결 전 rename 호출 시 에러", async () => {
+    it("Should throw error when rename is called before connection", async () => {
       await expect(client.rename("/from", "/to")).rejects.toThrow(
         "FTP 서버에 연결되어있지 않습니다.",
       );
     });
 
-    it("연결 전 readdir 호출 시 에러", async () => {
+    it("Should throw error when readdir is called before connection", async () => {
       await expect(client.readdir("/")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
   });
 
   describe("mkdir", () => {
-    it("디렉토리를 생성해야 함", async () => {
+    it("Should create directory", async () => {
       await client.connect({ host: "test" });
       await client.mkdir("/test/dir");
 
@@ -111,7 +111,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("rename", () => {
-    it("파일/디렉토리 이름을 변경해야 함", async () => {
+    it("Should rename file/directory", async () => {
       await client.connect({ host: "test" });
       await client.rename("/from", "/to");
 
@@ -120,7 +120,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("readdir", () => {
-    it("디렉토리 목록을 FileInfo 배열로 반환해야 함", async () => {
+    it("Should return directory list as FileInfo array", async () => {
       await client.connect({ host: "test" });
       const result = await client.readdir("/");
 
@@ -132,7 +132,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("readFile", () => {
-    it("파일 내용을 Uint8Array로 반환해야 함", async () => {
+    it("Should return file content as Uint8Array", async () => {
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
 
@@ -142,7 +142,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("exists", () => {
-    it("파일이 존재하면 true 반환 (size로 확인)", async () => {
+    it("Should return true if file exists (checked via size)", async () => {
       await client.connect({ host: "test" });
       const result = await client.exists("/path/file.txt");
 
@@ -150,7 +150,7 @@ describe("FtpStorageClient", () => {
       expect(result).toBe(true);
     });
 
-    it("디렉토리가 존재하면 true 반환 (list로 확인)", async () => {
+    it("Should return true if directory exists (checked via list)", async () => {
       mockSize.mockRejectedValueOnce(new Error("Not a file"));
       await client.connect({ host: "test" });
       const result = await client.exists("/path/dir");
@@ -159,7 +159,7 @@ describe("FtpStorageClient", () => {
       expect(result).toBe(true);
     });
 
-    it("파일이 존재하지 않으면 false 반환", async () => {
+    it("Should return false if file does not exist", async () => {
       mockSize.mockRejectedValueOnce(new Error("Not a file"));
       mockList.mockResolvedValueOnce([]);
       await client.connect({ host: "test" });
@@ -168,7 +168,7 @@ describe("FtpStorageClient", () => {
       expect(result).toBe(false);
     });
 
-    it("에러 발생 시 false 반환", async () => {
+    it("Should return false on error", async () => {
       mockSize.mockRejectedValueOnce(new Error("Not a file"));
       mockList.mockRejectedValueOnce(new Error("Not found"));
       await client.connect({ host: "test" });
@@ -177,7 +177,7 @@ describe("FtpStorageClient", () => {
       expect(result).toBe(false);
     });
 
-    it("루트 디렉토리 파일 존재 확인", async () => {
+    it("Should check file existence in root directory", async () => {
       mockSize.mockRejectedValueOnce(new Error("Not a file"));
       await client.connect({ host: "test" });
       const result = await client.exists("/file.txt");
@@ -186,7 +186,7 @@ describe("FtpStorageClient", () => {
       expect(result).toBe(true);
     });
 
-    it("슬래시 없는 경로 존재 확인", async () => {
+    it("Should check file existence for paths without slashes", async () => {
       mockSize.mockRejectedValueOnce(new Error("Not a file"));
       await client.connect({ host: "test" });
       const result = await client.exists("file.txt");
@@ -197,7 +197,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("remove", () => {
-    it("파일을 삭제해야 함", async () => {
+    it("Should delete file", async () => {
       await client.connect({ host: "test" });
       await client.remove("/file.txt");
 
@@ -206,14 +206,14 @@ describe("FtpStorageClient", () => {
   });
 
   describe("put", () => {
-    it("로컬 경로에서 업로드해야 함", async () => {
+    it("Should upload from local path", async () => {
       await client.connect({ host: "test" });
       await client.put("/local/file.txt", "/remote/file.txt");
 
       expect(mockUploadFrom).toHaveBeenCalledWith("/local/file.txt", "/remote/file.txt");
     });
 
-    it("Uint8Array에서 업로드해야 함", async () => {
+    it("Should upload from Uint8Array", async () => {
       await client.connect({ host: "test" });
       const bytes = new TextEncoder().encode("content");
       await client.put(bytes, "/remote/file.txt");
@@ -223,7 +223,7 @@ describe("FtpStorageClient", () => {
   });
 
   describe("uploadDir", () => {
-    it("디렉토리를 업로드해야 함", async () => {
+    it("Should upload directory", async () => {
       await client.connect({ host: "test" });
       await client.uploadDir("/local/dir", "/remote/dir");
 
@@ -232,25 +232,25 @@ describe("FtpStorageClient", () => {
   });
 
   describe("close", () => {
-    it("연결 전 close 호출 시 에러 없이 종료", async () => {
+    it("Should exit without error when close is called before connection", async () => {
       await expect(client.close()).resolves.toBeUndefined();
     });
 
-    it("연결을 닫아야 함", async () => {
+    it("Should close connection", async () => {
       await client.connect({ host: "test" });
       await client.close();
 
       expect(mockClose).toHaveBeenCalled();
     });
 
-    it("close 후 메서드 호출 시 에러", async () => {
+    it("Should throw error when calling method after close", async () => {
       await client.connect({ host: "test" });
       await client.close();
 
       await expect(client.mkdir("/test")).rejects.toThrow("FTP 서버에 연결되어있지 않습니다.");
     });
 
-    it("close 후 재연결이 가능해야 함", async () => {
+    it("Should allow reconnection after close", async () => {
       await client.connect({ host: "test" });
       await client.close();
       await client.connect({ host: "test" });

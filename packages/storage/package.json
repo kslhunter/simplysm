@@ -1,8 +1,8 @@
 {
   "name": "@simplysm/storage",
   "version": "13.0.69",
-  "description": "심플리즘 패키지 - 스토리지 모듈 (node)",
-  "author": "김석래",
+  "description": "Simplysm Package - Storage Module (node)",
+  "author": "simplysm",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

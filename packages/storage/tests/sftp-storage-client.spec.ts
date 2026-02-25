@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SftpStorageClient } from "../src/clients/sftp-storage-client";
 
-// ssh2-sftp-client 모듈 모킹
+// Mock ssh2-sftp-client module
 const mockConnect = vi.fn().mockResolvedValue(undefined);
 const mockMkdir = vi.fn().mockResolvedValue(undefined);
 const mockRename = vi.fn().mockResolvedValue(undefined);
@@ -44,7 +44,7 @@ describe("SftpStorageClient", () => {
   });
 
   describe("connect", () => {
-    it("연결 설정으로 접속해야 함", async () => {
+    it("Should connect with connection settings", async () => {
       await client.connect({
         host: "sftp.example.com",
         port: 22,
@@ -60,38 +60,38 @@ describe("SftpStorageClient", () => {
       });
     });
 
-    it("이미 연결된 상태에서 connect 호출 시 에러", async () => {
+    it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
         "이미 SFTP 서버에 연결되어 있습니다. 먼저 close()를 호출하세요.",
       );
     });
 
-    it("연결 실패 시 클라이언트를 정리해야 함", async () => {
+    it("Should clean up client on connection failure", async () => {
       mockConnect.mockRejectedValueOnce(new Error("Auth failed"));
       await expect(client.connect({ host: "test", pass: "wrong" })).rejects.toThrow("Auth failed");
       expect(mockEnd).toHaveBeenCalled();
     });
   });
 
-  describe("연결 전 메서드 호출", () => {
-    it("연결 전 mkdir 호출 시 에러", async () => {
+  describe("Method calls before connection", () => {
+    it("Should throw error when mkdir is called before connection", async () => {
       await expect(client.mkdir("/test")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
     });
 
-    it("연결 전 rename 호출 시 에러", async () => {
+    it("Should throw error when rename is called before connection", async () => {
       await expect(client.rename("/from", "/to")).rejects.toThrow(
         "SFTP 서버에 연결되어있지 않습니다.",
       );
     });
 
-    it("연결 전 readdir 호출 시 에러", async () => {
+    it("Should throw error when readdir is called before connection", async () => {
       await expect(client.readdir("/")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
     });
   });
 
   describe("mkdir", () => {
-    it("디렉토리를 생성해야 함", async () => {
+    it("Should create directory", async () => {
       await client.connect({ host: "test" });
       await client.mkdir("/test/dir");
 
@@ -100,7 +100,7 @@ describe("SftpStorageClient", () => {
   });
 
   describe("rename", () => {
-    it("파일/디렉토리 이름을 변경해야 함", async () => {
+    it("Should rename file/directory", async () => {
       await client.connect({ host: "test" });
       await client.rename("/from", "/to");
 
@@ -109,14 +109,14 @@ describe("SftpStorageClient", () => {
   });
 
   describe("exists", () => {
-    it("파일이 존재하면 true 반환", async () => {
+    it("Should return true if file exists", async () => {
       await client.connect({ host: "test" });
       const result = await client.exists("/file.txt");
 
       expect(result).toBe(true);
     });
 
-    it("파일이 존재하지 않으면 false 반환", async () => {
+    it("Should return false if file does not exist", async () => {
       mockExists.mockResolvedValueOnce(false);
       await client.connect({ host: "test" });
       const result = await client.exists("/nonexistent.txt");
@@ -124,7 +124,7 @@ describe("SftpStorageClient", () => {
       expect(result).toBe(false);
     });
 
-    it("디렉토리가 존재하면 true 반환 (type='d')", async () => {
+    it("Should return true if directory exists (type='d')", async () => {
       mockExists.mockResolvedValueOnce("d");
       await client.connect({ host: "test" });
       const result = await client.exists("/directory");
@@ -132,7 +132,7 @@ describe("SftpStorageClient", () => {
       expect(result).toBe(true);
     });
 
-    it("심볼릭 링크가 존재하면 true 반환 (type='l')", async () => {
+    it("Should return true if symbolic link exists (type='l')", async () => {
       mockExists.mockResolvedValueOnce("l");
       await client.connect({ host: "test" });
       const result = await client.exists("/symlink");
@@ -140,7 +140,7 @@ describe("SftpStorageClient", () => {
       expect(result).toBe(true);
     });
 
-    it("에러 발생 시 false 반환", async () => {
+    it("Should return false on error", async () => {
       mockExists.mockRejectedValueOnce(new Error("Network error"));
       await client.connect({ host: "test" });
       const result = await client.exists("/test.txt");
@@ -150,7 +150,7 @@ describe("SftpStorageClient", () => {
   });
 
   describe("readdir", () => {
-    it("디렉토리 목록을 FileInfo 배열로 반환해야 함", async () => {
+    it("Should return directory list as FileInfo array", async () => {
       await client.connect({ host: "test" });
       const result = await client.readdir("/");
 
@@ -162,7 +162,7 @@ describe("SftpStorageClient", () => {
   });
 
   describe("readFile", () => {
-    it("파일 내용을 Uint8Array로 반환해야 함", async () => {
+    it("Should return file content as Uint8Array", async () => {
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
 
@@ -170,7 +170,7 @@ describe("SftpStorageClient", () => {
       expect(new TextDecoder().decode(result)).toBe("test content");
     });
 
-    it("문자열 결과를 Uint8Array로 변환해야 함", async () => {
+    it("Should convert string result to Uint8Array", async () => {
       mockGet.mockResolvedValueOnce("string content");
       await client.connect({ host: "test" });
       const result = await client.readFile("/file.txt");
@@ -179,7 +179,7 @@ describe("SftpStorageClient", () => {
       expect(new TextDecoder().decode(result)).toBe("string content");
     });
 
-    it("예상치 못한 타입이면 에러 발생", async () => {
+    it("Should throw error on unexpected type", async () => {
       mockGet.mockResolvedValueOnce({ unexpected: "object" });
       await client.connect({ host: "test" });
 
@@ -188,7 +188,7 @@ describe("SftpStorageClient", () => {
   });
 
   describe("remove", () => {
-    it("파일을 삭제해야 함", async () => {
+    it("Should delete file", async () => {
       await client.connect({ host: "test" });
       await client.remove("/file.txt");
 
@@ -197,25 +197,25 @@ describe("SftpStorageClient", () => {
   });
 
   describe("put", () => {
-    it("로컬 경로에서 fastPut으로 업로드해야 함", async () => {
+    it("Should upload from local path using fastPut", async () => {
       await client.connect({ host: "test" });
       await client.put("/local/file.txt", "/remote/file.txt");
 
       expect(mockFastPut).toHaveBeenCalledWith("/local/file.txt", "/remote/file.txt");
     });
 
-    it("Uint8Array에서 put으로 업로드해야 함", async () => {
+    it("Should upload from Uint8Array using put", async () => {
       await client.connect({ host: "test" });
       const bytes = new TextEncoder().encode("content");
       await client.put(bytes, "/remote/file.txt");
 
-      // Buffer.from으로 변환되어 전달됨
+      // Converted and passed via Buffer.from
       expect(mockPut).toHaveBeenCalled();
     });
   });
 
   describe("uploadDir", () => {
-    it("디렉토리를 업로드해야 함", async () => {
+    it("Should upload directory", async () => {
       await client.connect({ host: "test" });
       await client.uploadDir("/local/dir", "/remote/dir");
 
@@ -224,25 +224,25 @@ describe("SftpStorageClient", () => {
   });
 
   describe("close", () => {
-    it("연결 전 close 호출 시 에러 없이 종료", async () => {
+    it("Should exit without error when close is called before connection", async () => {
       await expect(client.close()).resolves.toBeUndefined();
     });
 
-    it("연결을 닫아야 함", async () => {
+    it("Should close connection", async () => {
       await client.connect({ host: "test" });
       await client.close();
 
       expect(mockEnd).toHaveBeenCalled();
     });
 
-    it("close 후 메서드 호출 시 에러", async () => {
+    it("Should throw error when calling method after close", async () => {
       await client.connect({ host: "test" });
       await client.close();
 
       await expect(client.mkdir("/test")).rejects.toThrow("SFTP 서버에 연결되어있지 않습니다.");
     });
 
-    it("close 후 재연결이 가능해야 함", async () => {
+    it("Should allow reconnection after close", async () => {
       await client.connect({ host: "test" });
       await client.close();
       await client.connect({ host: "test" });
