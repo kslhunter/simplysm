@@ -104,17 +104,17 @@ export class WatchOrchestrator {
       config,
     }));
 
-    // 인프라 초기화
+    // Initialize infrastructure
     this._resultCollector = new ResultCollector();
     this._signalHandler = new SignalHandler();
     this._rebuildManager = new RebuildManager(this._logger);
 
-    // 배치 완료 시 에러 출력
+    // Print errors on batch completion
     this._rebuildManager.on("batchComplete", () => {
       printErrors(this._resultCollector.toMap());
     });
 
-    // Builder 생성
+    // Create builders
     const builderOptions = {
       cwd: this._cwd,
       packages: this._packages,
@@ -125,25 +125,25 @@ export class WatchOrchestrator {
     this._libraryBuilder = new LibraryBuilder(builderOptions);
     this._dtsBuilder = new DtsBuilder(builderOptions);
 
-    // Builder 초기화
+    // Initialize builders
     await Promise.all([this._libraryBuilder.initialize(), this._dtsBuilder.initialize()]);
   }
 
   /**
-   * Watch 모드 시작
-   * - 초기 빌드 실행
-   * - 결과 출력
+   * Start watch mode
+   * - Run initial build
+   * - Output results
    */
   async start(): Promise<void> {
     if (this._packages.length === 0) {
       return;
     }
 
-    // 초기 빌드 Promise 구성
+    // Set up initial build promises
     const buildPromises = this._libraryBuilder.getInitialBuildPromises();
     const dtsPromises = this._dtsBuilder.getInitialBuildPromises();
 
-    // copySrc watch 시작
+    // Start copySrc watch
     for (const pkg of this._packages) {
       const buildConfig = pkg.config as SdBuildPackageConfig;
       if (buildConfig.copySrc != null && buildConfig.copySrc.length > 0) {
@@ -152,17 +152,17 @@ export class WatchOrchestrator {
       }
     }
 
-    // Watch 시작 (백그라운드 실행)
+    // Start watch (run in background)
     void this._libraryBuilder.startWatch();
     void this._dtsBuilder.startWatch();
 
-    // 초기 빌드 시작
-    this._logger.start("초기 빌드 진행 중...");
+    // Start initial build
+    this._logger.start("Running initial build...");
 
-    // Library 빌드 및 DTS 빌드 전체 Promise 배열 구성
+    // Set up complete promise array for library build and DTS build
     const allBuildTasks: Array<{ name: string; promise: Promise<void> }> = [];
 
-    // Library 빌드 태스크
+    // Library build tasks
     for (const pkg of this._packages) {
       const promise = buildPromises.get(`${pkg.name}:build`) ?? Promise.resolve();
       allBuildTasks.push({
@@ -171,7 +171,7 @@ export class WatchOrchestrator {
       });
     }
 
-    // DTS 태스크
+    // DTS tasks
     for (const pkg of this._packages) {
       const promise = dtsPromises.get(`${pkg.name}:dts`) ?? Promise.resolve();
       allBuildTasks.push({
@@ -180,17 +180,17 @@ export class WatchOrchestrator {
       });
     }
 
-    // 모든 빌드 작업 동시 실행 (초기 빌드 완료까지 대기)
+    // Run all build tasks concurrently (wait until initial build completes)
     await Promise.allSettled(allBuildTasks.map((task) => task.promise));
 
-    this._logger.success("초기 빌드 완료");
+    this._logger.success("Initial build completed");
 
-    // 초기 빌드 결과 출력
+    // Output initial build results
     printErrors(this._resultCollector.toMap());
   }
 
   /**
-   * 종료 시그널 대기
+   * Wait for termination signal
    */
   async awaitTermination(): Promise<void> {
     if (this._packages.length === 0) {
@@ -200,14 +200,14 @@ export class WatchOrchestrator {
   }
 
   /**
-   * Orchestrator 종료
+   * Shutdown Orchestrator
    */
   async shutdown(): Promise<void> {
     if (this._packages.length === 0) {
       return;
     }
 
-    process.stdout.write("⏳ 종료 중...\n");
+    process.stdout.write("⏳ Shutting down...\n");
 
     await Promise.all([
       this._libraryBuilder.shutdown(),
@@ -217,6 +217,6 @@ export class WatchOrchestrator {
     this._copySrcWatchers = [];
     this._replaceDepWatcher?.dispose();
 
-    process.stdout.write("✔ 완료\n");
+    process.stdout.write("✔ Done\n");
   }
 }
