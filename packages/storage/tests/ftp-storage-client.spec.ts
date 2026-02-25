@@ -74,7 +74,7 @@ describe("FtpStorageClient", () => {
     it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
-        "Already connected to FTP server. Call close() first.",
+        "FTP server is already connected. Please call close() first.",
       );
     });
 

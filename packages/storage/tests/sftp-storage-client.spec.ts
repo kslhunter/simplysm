@@ -63,7 +63,7 @@ describe("SftpStorageClient", () => {
     it("Should throw error when connect is called on already connected client", async () => {
       await client.connect({ host: "test" });
       await expect(client.connect({ host: "test" })).rejects.toThrow(
-        "Already connected to SFTP server. Call close() first.",
+        "SFTP server is already connected. Please call close() first.",
       );
     });
 
