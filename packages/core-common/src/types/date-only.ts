@@ -2,10 +2,10 @@ import { ArgumentError } from "../errors/argument-error";
 import { formatDate, normalizeMonth } from "../utils/date-format";
 
 /**
- * 날짜 클래스 (시간제외: yyyy-MM-dd, 불변)
+ * Date class (without time: yyyy-MM-dd, immutable)
  *
- * 시간 정보 없이 날짜만 저장하는 불변 클래스이다.
- * 로컬 타임존을 기준으로 동작한다.
+ * An immutable class that stores only the date without time information.
+ * Operates based on local timezone.
  *
  * @example
  * const today = new DateOnly();
@@ -17,13 +17,13 @@ export class DateOnly {
 
   readonly date: Date;
 
-  /** 현재시간 */
+  /** Current time */
   constructor();
-  /** 연월일로 초기화 */
+  /** Initialize with year, month, day */
   constructor(year: number, month: number, day: number);
-  /** tick (millisecond)으로 생성 */
+  /** Create from tick (millisecond) */
   constructor(tick: number);
-  /** Date 타입으로 생성 */
+  /** Create from Date type */
   constructor(date: Date);
   constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
     if (arg1 === undefined) {
@@ -42,26 +42,26 @@ export class DateOnly {
   }
 
   /**
-   * 문자열을 DateOnly로 파싱
-   * @param str 날짜 문자열
-   * @returns DateOnly 인스턴스
+   * Parse a string into DateOnly
+   * @param str Date string
+   * @returns DateOnly instance
    *
-   * 지원 형식:
-   * - `yyyy-MM-dd` (예: '2024-01-15') - 문자열에서 직접 추출, 타임존 영향 없음
-   * - `yyyyMMdd` (예: '20240115') - 문자열에서 직접 추출, 타임존 영향 없음
-   * - ISO 8601 (예: '2024-01-15T00:00:00Z') - UTC로 해석 후 로컬 타임존 변환
+   * Supported formats:
+   * - `yyyy-MM-dd` (e.g., '2024-01-15') - Extracted directly from string, timezone-independent
+   * - `yyyyMMdd` (e.g., '20240115') - Extracted directly from string, timezone-independent
+   * - ISO 8601 (e.g., '2024-01-15T00:00:00Z') - Interpreted as UTC, then converted to local timezone
    *
-   * @note 서버/클라이언트 타임존이 다른 경우 `yyyy-MM-dd` 형식 사용 권장
-   * @note DST(일광절약시간) 지역에서 ISO 8601 형식 파싱 시, 파싱 대상 날짜의 오프셋을 사용합니다.
+   * @note For different server/client timezones, `yyyy-MM-dd` format is recommended
+   * @note For DST regions when parsing ISO 8601 format, the offset of the parsing target date is used.
    */
   static parse(str: string): DateOnly {
-    // yyyy-MM-dd 형식 (타임존 영향 없음)
+    // yyyy-MM-dd format (timezone-independent)
     const matchYMD = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
     if (matchYMD != null) {
       return new DateOnly(Number(matchYMD[1]), Number(matchYMD[2]), Number(matchYMD[3]));
     }
 
-    // yyyyMMdd 형식 (타임존 영향 없음)
+    // yyyyMMdd format (timezone-independent)
     const matchCompact = /^(\d{4})(\d{2})(\d{2})$/.exec(str);
     if (matchCompact != null) {
       return new DateOnly(
@@ -71,11 +71,11 @@ export class DateOnly {
       );
     }
 
-    // ISO 8601 등 기타 형식 (Date.parse 사용, 타임존 변환 적용)
-    // Date.parse()는 'Z' 접미사가 있는 ISO 8601을 UTC tick으로 반환
-    // getTimezoneOffset()은 "로컬에서 UTC로 변환할 때 더할 분"을 반환 (KST는 -540분 = UTC+9)
-    // 여기서는 "UTC → 로컬" 변환이므로 부호를 반대로 적용 (뺄셈)
-    // 파싱 대상 날짜의 오프셋을 사용하여 DST 지역에서도 정확한 변환
+    // ISO 8601 and other formats (using Date.parse, timezone conversion applied)
+    // Date.parse() returns UTC tick for ISO 8601 with 'Z' suffix
+    // getTimezoneOffset() returns "minutes to add when converting from local to UTC" (KST is -540 = UTC+9)
+    // Here we do "UTC → local" conversion, so apply opposite sign (subtraction)
+    // Use the offset of the parsing target date for accurate conversion in DST regions
     const utcTick = Date.parse(str);
     if (!Number.isNaN(utcTick)) {
       const tempDate = new Date(utcTick);
@@ -85,45 +85,45 @@ export class DateOnly {
     }
 
     throw new ArgumentError(
-      `날짜 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 날짜`,
+      `Failed to parse date format. Supported formats: 'yyyy-MM-dd', 'yyyyMMdd', ISO 8601 date`,
       {
         input: str,
       },
     );
   }
 
-  //#region 주차 계산
+  //#region Week calculation
 
   /**
-   * 기준 연도와 월을 주차 정보를 기반으로 반환
-   * @param weekStartDay 주의 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
-   * @param minDaysInFirstWeek 첫 주로 간주할 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
-   * @returns 해당 날짜가 속한 주차의 기준 연도와 월
+   * Return the base year and month based on week information
+   * @param weekStartDay Week start day (0=Sunday, 1=Monday, ..., 6=Saturday). Default: 1(Monday)
+   * @param minDaysInFirstWeek Minimum days to be considered the first week (1~7). Default: 4 (ISO 8601 standard)
+   * @returns Base year and month of the week containing this date
    *
    * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)
+   * // ISO 8601 standard (Monday start, first week minimum 4 days)
    * new DateOnly(2024, 1, 1).getBaseYearMonthSeqForWeekSeq(1, 4)
-   * // 미국식 (일요일 시작, 첫 주 최소 1일)
+   * // US style (Sunday start, first week minimum 1 day)
    * new DateOnly(2024, 1, 1).getBaseYearMonthSeqForWeekSeq(0, 1)
    */
   getBaseYearMonthSeqForWeekSeq(weekStartDay: number = 1, minDaysInFirstWeek: number = 4) {
-    // 주의 시작 요일 기준으로 현재 날짜의 요일 인덱스 계산 (0 = 주 시작일)
+    // Calculate day of week index based on week start day (0 = week start day)
     const dayOfWeek = (this.dayOfWeek + 7 - weekStartDay) % 7;
-    // 현재 주의 남은 일수 (현재 날짜 포함)
+    // Remaining days in the current week (including current date)
     const daysInWeek = 7 - dayOfWeek;
 
-    // 현재 주의 남은 일수가 첫 주 최소 일수 미만이면 이전 주로 간주
+    // If remaining days in current week is less than minimum, consider as previous week
     if (daysInWeek < minDaysInFirstWeek) {
       const prevWeek = this.addDays(-7);
       return { year: prevWeek.year, monthSeq: prevWeek.month };
     } else {
-      // 월 경계를 고려한 실제 주의 남은 일수 계산
+      // Calculate actual remaining days of the week considering month boundary
       const nextMonthDate = this.addMonths(1).setDay(1);
       const remainedDays = (nextMonthDate.tick - this.tick) / DateOnly.MS_PER_DAY;
 
-      // 월 경계까지의 실제 일수와 주의 남은 일수 중 작은 값
+      // Take the smaller of actual days to month boundary and week remaining days
       const realDaysInWeek = Math.min(daysInWeek, remainedDays);
-      // 월 경계 고려 시에도 첫 주 최소 일수 미만이면 다음 주로 간주
+      // If still less than minimum when considering month boundary, consider as next week
       if (realDaysInWeek < minDaysInFirstWeek) {
         const nextWeek = this.addDays(7);
         return { year: nextWeek.year, monthSeq: nextWeek.month };
@@ -134,10 +134,10 @@ export class DateOnly {
   }
 
   /**
-   * 주차 정보를 기반으로 해당 주의 시작 날짜 계산
-   * @param weekStartDay 주의 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
-   * @param minDaysInFirstWeek 첫 주로 간주할 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
-   * @returns 해당 날짜가 속한 주의 시작 날짜
+   * Calculate the start date of the week based on week information
+   * @param weekStartDay Week start day (0=Sunday, 1=Monday, ..., 6=Saturday). Default: 1(Monday)
+   * @param minDaysInFirstWeek Minimum days to be considered the first week (1~7). Default: 4 (ISO 8601 standard)
+   * @returns Start date of the week containing this date
    */
   getWeekSeqStartDate(weekStartDay: number = 1, minDaysInFirstWeek: number = 4) {
     const dayOfWeek = (this.dayOfWeek + 7 - weekStartDay) % 7;
@@ -151,16 +151,16 @@ export class DateOnly {
   }
 
   /**
-   * 연도 및 주차 순서 정보를 반환
-   * @param weekStartDay 주의 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
-   * @param minDaysInFirstWeek 첫 주로 간주할 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
-   * @returns 연도와 해당 연도 기준 주차 번호
+   * Return year and week sequence information
+   * @param weekStartDay Week start day (0=Sunday, 1=Monday, ..., 6=Saturday). Default: 1(Monday)
+   * @param minDaysInFirstWeek Minimum days to be considered the first week (1~7). Default: 4 (ISO 8601 standard)
+   * @returns Year and week number within that year
    *
    * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 4일 이상)
+   * // ISO 8601 standard (Monday start, first week minimum 4 days)
    * new DateOnly(2025, 1, 6).getWeekSeqOfYear(); // { year: 2025, weekSeq: 2 }
    *
-   * // 미국식 (일요일 시작, 첫 주 1일 이상)
+   * // US style (Sunday start, first week minimum 1 day)
    * new DateOnly(2025, 1, 1).getWeekSeqOfYear(0, 1); // { year: 2025, weekSeq: 1 }
    */
   getWeekSeqOfYear(
@@ -182,16 +182,16 @@ export class DateOnly {
   }
 
   /**
-   * 해당 날짜의 연도, 월 및 주차(weekSeq) 정보를 반환
-   * @param weekStartDay 주의 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
-   * @param minDaysInFirstWeek 첫 주로 간주할 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
-   * @returns 연도, 월 및 해당 월 기준 주차 번호
+   * Return year, month and week sequence information for the given date
+   * @param weekStartDay Week start day (0=Sunday, 1=Monday, ..., 6=Saturday). Default: 1(Monday)
+   * @param minDaysInFirstWeek Minimum days to be considered the first week (1~7). Default: 4 (ISO 8601 standard)
+   * @returns Year, month and week number within that month
    *
    * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 4일 이상)
+   * // ISO 8601 standard (Monday start, first week minimum 4 days)
    * new DateOnly(2025, 1, 15).getWeekSeqOfMonth(); // { year: 2025, monthSeq: 1, weekSeq: 3 }
    *
-   * // 미국식 (일요일 시작, 첫 주 1일 이상)
+   * // US style (Sunday start, first week minimum 1 day)
    * new DateOnly(2025, 1, 15).getWeekSeqOfMonth(0, 1); // { year: 2025, monthSeq: 1, weekSeq: 3 }
    */
   getWeekSeqOfMonth(
@@ -214,18 +214,18 @@ export class DateOnly {
   }
 
   /**
-   * 주차 정보를 기반으로 해당 주의 시작 날짜 가져오기
-   * @param arg 연도, 선택적 월, 주차 번호
-   * @param weekStartDay 주의 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
-   * @param minDaysInFirstWeek 첫 주로 간주할 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
-   * @returns 해당 주차의 시작 날짜
+   * Get the start date of a week based on week information
+   * @param arg Year, optional month, and week number
+   * @param weekStartDay Week start day (0=Sunday, 1=Monday, ..., 6=Saturday). Default: 1(Monday)
+   * @param minDaysInFirstWeek Minimum days to be considered the first week (1~7). Default: 4 (ISO 8601 standard)
+   * @returns Start date of the specified week
    *
    * @example
-   * // 2025년 2주차의 시작일 (ISO 8601 표준)
-   * DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 }); // 2025-01-06 (월요일)
+   * // Start date of week 2 in 2025 (ISO 8601 standard)
+   * DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 }); // 2025-01-06 (Monday)
    *
-   * // 2025년 1월 3주차의 시작일
-   * DateOnly.getDateByYearWeekSeq({ year: 2025, month: 1, weekSeq: 3 }); // 2025-01-13 (월요일)
+   * // Start date of week 3 in January 2025
+   * DateOnly.getDateByYearWeekSeq({ year: 2025, month: 1, weekSeq: 3 }); // 2025-01-13 (Monday)
    */
   static getDateByYearWeekSeq(
     arg: { year: number; month?: number; weekSeq: number },
@@ -240,9 +240,9 @@ export class DateOnly {
 
   //#endregion
 
-  //#region Getters (읽기 전용)
+  //#region Getters (read-only)
 
-  /** 날짜 세팅이 제대로 되었는지 여부 */
+  /** Whether the date is set correctly */
   get isValid(): boolean {
     return this.date instanceof Date && !Number.isNaN(this.date.getTime());
   }
@@ -263,25 +263,25 @@ export class DateOnly {
     return this.date.getTime();
   }
 
-  /** 요일 (일~토: 0~6) */
+  /** Day of week (Sunday~Saturday: 0~6) */
   get dayOfWeek(): number {
     return this.date.getDay();
   }
 
   //#endregion
 
-  //#region 불변 변환 메서드 (새 인스턴스 반환)
+  //#region Immutable transformation methods (returns new instance)
 
-  /** 지정된 연도로 새 인스턴스 반환 */
+  /** Return new instance with specified year */
   setYear(year: number): DateOnly {
     return new DateOnly(year, this.month, this.day);
   }
 
   /**
-   * 지정된 월로 새 DateOnly 인스턴스를 반환
-   * @param month 설정할 월 (1-12, 범위 외 값은 연도 조정)
-   * @note 대상 월의 일수보다 현재 일자가 크면 해당 월의 마지막 날로 조정됨
-   *       (예: 1월 31일에서 setMonth(2) → 2월 28일 또는 29일)
+   * Return new DateOnly instance with specified month
+   * @param month Month to set (1-12, out-of-range values are adjusted in year)
+   * @note If current day is greater than target month's day count, it will be adjusted to last day of month
+   *       (e.g., setMonth(2) on Jan 31 → Feb 28 or 29)
    */
   setMonth(month: number): DateOnly {
     const normalized = normalizeMonth(this.year, month, this.day);
@@ -289,10 +289,10 @@ export class DateOnly {
   }
 
   /**
-   * 지정된 일자로 새 DateOnly 인스턴스를 반환
-   * @param day 설정할 일자
-   * @note 해당 월의 유효 범위를 벗어나는 일자는 JavaScript Date 기본 동작에 따라
-   *       자동으로 다음/이전 달로 조정됨 (예: 1월에 day=32 → 2월 1일)
+   * Return new DateOnly instance with specified day
+   * @param day Day to set
+   * @note Days outside valid month range are automatically adjusted to next/previous month per JavaScript Date behavior
+   *       (e.g., day=32 in January → February 1)
    */
   setDay(day: number): DateOnly {
     return new DateOnly(this.year, this.month, day);
@@ -300,31 +300,31 @@ export class DateOnly {
 
   //#endregion
 
-  //#region 산술 메서드 (새 인스턴스 반환)
+  //#region Arithmetic methods (returns new instance)
 
-  /** 지정된 연수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified years added */
   addYears(years: number): DateOnly {
     return this.setYear(this.year + years);
   }
 
-  /** 지정된 월수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified months added */
   addMonths(months: number): DateOnly {
     return this.setMonth(this.month + months);
   }
 
-  /** 지정된 일수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified days added */
   addDays(days: number): DateOnly {
     return new DateOnly(this.tick + days * DateOnly.MS_PER_DAY);
   }
 
   //#endregion
 
-  //#region 포맷팅
+  //#region Formatting
 
   /**
-   * 지정된 포맷으로 문자열 변환
-   * @param format 포맷 문자열
-   * @see dtFormat 지원 포맷 문자열 참조
+   * Convert to string with specified format
+   * @param format Format string
+   * @see dtFormat for supported format strings
    */
   toFormatString(formatStr: string): string {
     return formatDate(formatStr, {

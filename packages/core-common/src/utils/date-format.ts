@@ -1,5 +1,5 @@
 /**
- * 월 설정 시 연도/월/일 정규화 결과
+ * Result of year/month/day normalization when setting month
  */
 export interface DtNormalizedMonth {
   year: number;
@@ -8,27 +8,27 @@ export interface DtNormalizedMonth {
 }
 
 /**
- * 월 설정 시 연도/월/일을 정규화
- * - 월이 1-12 범위를 벗어나면 연도를 조정
- * - 대상 월의 일수보다 현재 일자가 크면 해당 월의 마지막 날로 조정
+ * Normalize year/month/day when setting month
+ * - Adjust year if month is outside 1-12 range
+ * - Adjust to last day of target month if current day is greater than the number of days in the target month
  *
- * @param year 기준 연도
- * @param month 설정할 월 (1-12 범위 외의 값도 허용)
- * @param day 기준 일자
- * @returns 정규화된 연도, 월, 일
+ * @param year Base year
+ * @param month Month to set (values outside 1-12 range allowed)
+ * @param day Base day
+ * @returns Normalized year, month, day
  *
  * @example
  * normalizeMonth(2025, 13, 15) // { year: 2026, month: 1, day: 15 }
  * normalizeMonth(2025, 2, 31)  // { year: 2025, month: 2, day: 28 }
  */
 export function normalizeMonth(year: number, month: number, day: number): DtNormalizedMonth {
-  // 월 오버플로우/언더플로우 정규화
-  // month가 1-12 범위를 벗어나면 연도를 조정
+  // Normalize month overflow/underflow
+  // Adjust year if month is outside 1-12 range
   const normalizedYear = year + Math.floor((month - 1) / 12);
-  // JavaScript % 연산자는 음수에서 음수를 반환하므로 (% 12 + 12) % 12 패턴으로 0-11 범위를 보장 후 1-12로 변환
+  // JavaScript % operator returns negative for negative, so use (% 12 + 12) % 12 pattern to ensure 0-11 range, then convert to 1-12
   const normalizedMonth = ((((month - 1) % 12) + 12) % 12) + 1;
 
-  // 대상 월의 마지막 날 구하기
+  // Get last day of target month
   const lastDay = new Date(normalizedYear, normalizedMonth, 0).getDate();
   const normalizedDay = Math.min(day, lastDay);
 
@@ -36,13 +36,13 @@ export function normalizeMonth(year: number, month: number, day: number): DtNorm
 }
 
 /**
- * 12시간제를 24시간제로 변환
- * - 오전 12시 = 0시, 오후 12시 = 12시
- * - 오전 1-11시 = 1-11시, 오후 1-11시 = 13-23시
+ * Convert 12-hour format to 24-hour format
+ * - 12:00 AM = 0:00, 12:00 PM = 12:00
+ * - 1-11 AM = 1-11, 1-11 PM = 13-23
  *
- * @param rawHour 12시간제 시 (1-12)
- * @param isPM 오후 여부
- * @returns 24시간제 시 (0-23)
+ * @param rawHour 12-hour format hour (1-12)
+ * @param isPM Whether PM
+ * @returns 24-hour format hour (0-23)
  */
 export function convert12To24(rawHour: number, isPM: boolean): number {
   if (rawHour === 12) {
@@ -51,15 +51,15 @@ export function convert12To24(rawHour: number, isPM: boolean): number {
   return isPM ? rawHour + 12 : rawHour;
 }
 
-//#region 정규식 캐싱 (모듈 로드 시 1회만 생성)
+//#region Regex caching (created once at module load)
 
 /**
- * 포맷 패턴 정규식
+ * Format pattern regex
  *
- * 순서 중요:
- * dtFormat() 함수에서 긴 패턴(yyyy, MM, dd 등)을 먼저 처리해야
- * 짧은 패턴(y, M, d 등)이 부분 매칭되는 것을 방지합니다.
- * 예: "yyyy"를 먼저 처리하지 않으면 "yy"가 두 번 매칭될 수 있음
+ * Order is important:
+ * In the dtFormat() function, longer patterns (yyyy, MM, dd, etc.) must be processed first
+ * to prevent shorter patterns (y, M, d, etc.) from being partially matched.
+ * Example: If "yyyy" is not processed first, "yy" may be matched twice
  */
 const patterns = {
   yyyy: /yyyy/g,
@@ -91,38 +91,38 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
 //#endregion
 
 /**
- * 포맷 문자열에 따라 날짜/시간을 문자열로 변환한다
+ * Convert date/time to string according to format string
  *
- * @param formatString 포맷 문자열
- * @param args 날짜/시간 구성 요소
+ * @param formatString Format string
+ * @param args Date/time components
  *
  * @remarks
- * C#과 동일한 포맷 문자열을 지원한다:
+ * Supports the same format strings as C#:
  *
- * | 포맷 | 설명 | 예시 |
- * |------|------|------|
- * | yyyy | 4자리 연도 | 2024 |
- * | yy | 2자리 연도 | 24 |
- * | MM | 0으로 패딩된 월 | 01~12 |
- * | M | 월 | 1~12 |
- * | ddd | 요일 (한글) | 일, 월, 화, 수, 목, 금, 토 |
- * | dd | 0으로 패딩된 일 | 01~31 |
- * | d | 일 | 1~31 |
- * | tt | 오전/오후 | 오전, 오후 |
- * | hh | 0으로 패딩된 12시간 | 01~12 |
- * | h | 12시간 | 1~12 |
- * | HH | 0으로 패딩된 24시간 | 00~23 |
- * | H | 24시간 | 0~23 |
- * | mm | 0으로 패딩된 분 | 00~59 |
- * | m | 분 | 0~59 |
- * | ss | 0으로 패딩된 초 | 00~59 |
- * | s | 초 | 0~59 |
- * | fff | 밀리초 (3자리) | 000~999 |
- * | ff | 밀리초 (2자리) | 00~99 |
- * | f | 밀리초 (1자리) | 0~9 |
- * | zzz | 타임존 오프셋 (±HH:mm) | +09:00 |
- * | zz | 타임존 오프셋 (±HH) | +09 |
- * | z | 타임존 오프셋 (±H) | +9 |
+ * | Format | Description | Example |
+ * |--------|-------------|---------|
+ * | yyyy | 4-digit year | 2024 |
+ * | yy | 2-digit year | 24 |
+ * | MM | Zero-padded month | 01~12 |
+ * | M | Month | 1~12 |
+ * | ddd | Day of week (Korean) | 일, 월, 화, 수, 목, 금, 토 |
+ * | dd | Zero-padded day | 01~31 |
+ * | d | Day | 1~31 |
+ * | tt | AM/PM (Korean) | 오전, 오후 |
+ * | hh | Zero-padded 12-hour | 01~12 |
+ * | h | 12-hour | 1~12 |
+ * | HH | Zero-padded 24-hour | 00~23 |
+ * | H | 24-hour | 0~23 |
+ * | mm | Zero-padded minute | 00~59 |
+ * | m | Minute | 0~59 |
+ * | ss | Zero-padded second | 00~59 |
+ * | s | Second | 0~59 |
+ * | fff | Milliseconds (3 digits) | 000~999 |
+ * | ff | Milliseconds (2 digits) | 00~99 |
+ * | f | Milliseconds (1 digit) | 0~9 |
+ * | zzz | Timezone offset (±HH:mm) | +09:00 |
+ * | zz | Timezone offset (±HH) | +09 |
+ * | z | Timezone offset (±H) | +9 |
  *
  * @example
  * ```typescript
@@ -165,33 +165,33 @@ export function formatDate(
 
   let result = formatString;
 
-  // 연도
+  // Year
   if (year !== undefined) {
     const yearStr = year.toString();
     result = result.replace(patterns.yyyy, yearStr);
     result = result.replace(patterns.yy, yearStr.substring(2, 4));
   }
 
-  // 월
+  // Month
   if (month !== undefined) {
     const monthStr = month.toString();
     result = result.replace(patterns.MM, monthStr.padStart(2, "0"));
     result = result.replace(patterns.M, monthStr);
   }
 
-  // 요일
+  // Day of week
   if (week !== undefined) {
     result = result.replace(patterns.ddd, weekStrings[week]);
   }
 
-  // 일
+  // Day
   if (day !== undefined) {
     const dayStr = day.toString();
     result = result.replace(patterns.dd, dayStr.padStart(2, "0"));
     result = result.replace(patterns.d, dayStr);
   }
 
-  // 시간
+  // Hour
   if (hour !== undefined) {
     result = result.replace(patterns.tt, hour < 12 ? "오전" : "오후");
 
@@ -205,21 +205,21 @@ export function formatDate(
     result = result.replace(patterns.H, hourStr);
   }
 
-  // 분
+  // Minute
   if (minute !== undefined) {
     const minuteStr = minute.toString();
     result = result.replace(patterns.mm, minuteStr.padStart(2, "0"));
     result = result.replace(patterns.m, minuteStr);
   }
 
-  // 초
+  // Second
   if (second !== undefined) {
     const secondStr = second.toString();
     result = result.replace(patterns.ss, secondStr.padStart(2, "0"));
     result = result.replace(patterns.s, secondStr);
   }
 
-  // 밀리초
+  // Millisecond
   if (millisecond !== undefined) {
     const msStr = millisecond.toString().padStart(3, "0");
     result = result.replace(patterns.fff, msStr);
@@ -227,7 +227,7 @@ export function formatDate(
     result = result.replace(patterns.f, msStr.substring(0, 1));
   }
 
-  // 타임존
+  // Timezone
   if (offsetSign !== undefined && offsetHour !== undefined && offsetMinute !== undefined) {
     result = result.replace(
       patterns.zzz,

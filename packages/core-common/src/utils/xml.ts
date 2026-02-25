@@ -1,5 +1,5 @@
 /**
- * XML 변환 유틸리티
+ * XML conversion utility
  */
 import type { XmlBuilderOptions } from "fast-xml-parser";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
@@ -7,14 +7,14 @@ import { XMLBuilder, XMLParser } from "fast-xml-parser";
 //#region parse
 
 /**
- * XML 문자열을 객체로 파싱
- * @param str XML 문자열
- * @param options 옵션
- * @param options.stripTagPrefix 태그 prefix 제거 여부 (namespace)
- * @returns 파싱된 객체. 구조:
- *   - 속성: `$` 객체에 그룹화
- *   - 텍스트 노드: `_` 키에 저장
- *   - 자식 요소: 배열로 변환 (루트 요소 제외)
+ * Parse XML string into an object
+ * @param str XML string
+ * @param options Options
+ * @param options.stripTagPrefix Whether to remove tag prefix (namespace)
+ * @returns Parsed object. Structure:
+ *   - Attributes: grouped in `$` object
+ *   - Text nodes: stored in `_` key
+ *   - Child elements: converted to array (except root element)
  * @example
  * xmlParse('<root id="1"><item>hello</item></root>');
  * // { root: { $: { id: "1" }, item: [{ _: "hello" }] } }
@@ -39,10 +39,10 @@ export function xmlParse(str: string, options?: { stripTagPrefix?: boolean }): u
 //#region stringify
 
 /**
- * 객체를 XML 문자열로 직렬화
- * @param obj 직렬화할 객체
- * @param options fast-xml-parser XmlBuilderOptions (선택)
- * @returns XML 문자열
+ * Serialize object to XML string
+ * @param obj Object to serialize
+ * @param options fast-xml-parser XmlBuilderOptions (optional)
+ * @returns XML string
  * @example
  * xmlStringify({
  *   root: {
@@ -68,10 +68,10 @@ export function xmlStringify(obj: unknown, options?: XmlBuilderOptions): string 
 //#region private
 
 /**
- * 태그 이름에서 namespace prefix 제거
- * @note XML 파싱 결과에서 "ns:tag" 형태의 namespace prefix를 제거하여 태그 이름만 남긴다.
- *       이를 통해 namespace를 고려하지 않고 일관된 방식으로 XML 데이터에 접근할 수 있다.
- *       단, 속성(attribute)은 prefix를 유지한다.
+ * Remove namespace prefix from tag name
+ * @note Removes the namespace prefix in the format "ns:tag" from XML parsing results, leaving only the tag name.
+ *       This allows consistent access to XML data without considering namespace.
+ *       However, attributes are kept with their prefix.
  */
 function stripTagPrefix(obj: unknown): unknown {
   if (Array.isArray(obj)) {
@@ -85,11 +85,11 @@ function stripTagPrefix(obj: unknown): unknown {
     for (const key of Object.keys(record)) {
       const value = record[key];
 
-      // Attribute는 prefix를 제거하면 안 된다.
+      // Attributes must not have prefix removed
       if (key === "$") {
         newObj[key] = value;
       } else {
-        // 태그 이름에서만 첫 번째 ":"을 기준으로 prefix 제거
+        // Remove prefix from tag names only, based on first ":"
         const colonIndex = key.indexOf(":");
         const cleanKey = colonIndex !== -1 ? key.slice(colonIndex + 1) : key;
         newObj[cleanKey] = stripTagPrefix(value);

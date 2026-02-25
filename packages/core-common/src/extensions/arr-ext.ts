@@ -1,7 +1,7 @@
 /**
- * Array 확장 메서드
+ * Array extension methods
  *
- * @remarks 각 메서드의 TSDoc은 타입 정의 파일(arr-ext.types.ts) 참조
+ * @remarks See type definition file (arr-ext.types.ts) for TSDoc of each method
  */
 
 import "./map-ext";
@@ -22,13 +22,13 @@ import type {
   TreeArray,
 } from "./arr-ext.types";
 
-//#region 구현
+//#region Implementation
 
 const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   single<T>(predicate?: (item: T, index: number) => boolean): T | undefined {
     const arr = predicate !== undefined ? this.filter(predicate) : this;
     if (arr.length > 1) {
-      throw new ArgumentError("복수의 결과물이 있습니다.", { count: arr.length });
+      throw new ArgumentError("Multiple results found.", { count: arr.length });
     }
     return arr[0];
   },
@@ -66,7 +66,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 
   ofType<T, N extends T>(type: PrimitiveTypeStr | Type<N>): N[] {
-    // PrimitiveTypeStr인 경우
+    // PrimitiveTypeStr case
     if (typeof type === "string") {
       return this.filter((item) => {
         switch (type) {
@@ -87,15 +87,15 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
           case "Bytes":
             return item instanceof Uint8Array;
           default: {
-            // exhaustive check: PrimitiveTypeStr에 새 타입 추가 시 컴파일 에러 발생
+            // exhaustive check: Compilation error when a new type is added to PrimitiveTypeStr
             const _exhaustive: never = type;
-            throw new ArgumentError(`지원하지 않는 타입: ${_exhaustive}`);
+            throw new ArgumentError(`Unsupported type: ${_exhaustive}`);
           }
         }
       }) as N[];
     }
 
-    // Type<N> (생성자)인 경우
+    // Type<N> (constructor) case
     return this.filter((item) => item instanceof type || item?.constructor === type) as N[];
   },
 
@@ -121,10 +121,10 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     return Promise.all(this.map(fn));
   },
 
-  // 배열을 키별로 그룹화
-  // 성능 고려사항:
-  // - primitive 키 (string, number 등): O(n) - Map 기반
-  // - 객체 키: O(n²) - objEqual 비교
+  // Group array by key
+  // Performance considerations:
+  // - primitive key (string, number, etc.): O(n) - Map-based
+  // - object key: O(n²) - objEqual comparison
   groupBy<T, K, V>(
     keySelector: (item: T, index: number) => K,
     valueSelector?: (item: T, index: number) => V,
@@ -134,14 +134,14 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   }[] {
     const result: { key: K; values: (V | T)[] }[] = [];
 
-    // primitive 키 최적화를 위한 Map (키 문자열 -> result 인덱스)
+    // Map for primitive key optimization (key string -> result index)
     const primitiveKeyIndex = new Map<string, number>();
 
     for (let i = 0; i < this.length; i++) {
       const keyObj = keySelector(this[i], i);
       const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
 
-      // primitive 키는 Map으로 O(n) 처리
+      // primitive keys are processed in O(n) using Map
       if (keyObj == null || typeof keyObj !== "object") {
         const keyStr = typeof keyObj + ":" + String(keyObj);
         const existingIndex = primitiveKeyIndex.get(keyStr);
@@ -154,7 +154,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
         continue;
       }
 
-      // 객체 키는 기존 방식 O(n²)
+      // Object keys use the existing approach O(n²)
       const existsRecord = result.find((item) => objEqual(item.key, keyObj));
       if (existsRecord !== undefined) {
         existsRecord.values.push(valueObj);
@@ -179,7 +179,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
-        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: keyObj });
+        throw new ArgumentError("Duplicated key.", { duplicatedKey: keyObj });
       }
       result.set(keyObj, valueObj);
     }
@@ -200,7 +200,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
-        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: keyObj });
+        throw new ArgumentError("Duplicated key.", { duplicatedKey: keyObj });
       }
       result.set(keyObj, valueObj);
     }
@@ -282,9 +282,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const key = keySelector(item, i);
       const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
-      // undefined 값은 "없음"으로 취급하여 덮어쓰기 허용
+      // undefined values are treated as "none", allowing overwrite
       if (result[key] !== undefined) {
-        throw new ArgumentError("키가 중복되었습니다.", { duplicatedKey: key });
+        throw new ArgumentError("Duplicated key.", { duplicatedKey: key });
       }
       result[key] = valueObj;
     }
@@ -293,7 +293,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 
   toTree<T, K extends keyof T, P extends keyof T>(key: K, parentKey: P): TreeArray<T>[] {
-    // O(n) 최적화: 맵 기반 인덱싱
+    // O(n) optimization: Map-based indexing
     const childrenMap = this.toArrayMap((item) => item[parentKey]);
 
     const fn = (items: T[]): TreeArray<T>[] => {
@@ -310,13 +310,13 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   distinct<T>(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
   ): T[] {
-    // 옵션 정규화
+    // Normalize options
     const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
-    // matchAddress: Set 기반 O(n)
+    // matchAddress: Set-based O(n)
     if (opts.matchAddress === true) return [...new Set(this)];
 
-    // keyFn 제공 시: 커스텀 키 기반 O(n)
+    // keyFn provided: custom key-based O(n)
     if (opts.keyFn) {
       const seen = new Set<string | number>();
       const result: T[] = [];
@@ -330,17 +330,17 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       return result;
     }
 
-    // 기본: 타입별 처리
+    // Default: type-based processing
     const seen = new Map<string, T>();
-    const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>(); // symbol/function용 O(n) 처리
+    const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>(); // O(n) processing for symbol/function
     const result: T[] = [];
 
     for (const item of this) {
-      // primitive 타입은 빠른 경로
+      // primitive types take the fast path
       if (item === null || typeof item !== "object") {
         const type = typeof item;
 
-        // symbol, function은 Set으로 identity 비교 (O(n))
+        // symbol, function use Set for identity comparison (O(n))
         if (type === "symbol" || type === "function") {
           if (!seenRefs.has(item)) {
             seenRefs.add(item);
@@ -349,7 +349,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
           continue;
         }
 
-        // 나머지 primitive는 타입 prefix + 특수 케이스 처리
+        // Other primitives: type prefix + special case handling
         let key = type + ":";
         if (Object.is(item, -0)) {
           key += "-0";
@@ -406,8 +406,8 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     const hasKeys = options?.keys !== undefined && options.keys.length > 0;
     const excludeOpts = { topLevelExcludes: options?.excludes };
 
-    // keys 옵션이 있는 경우 target을 keys 기준으로 Map에 미리 인덱싱하여 O(n×m) → O(n+m) 개선
-    // 키 값이 같은 target이 여러 개 있을 수 있으므로 배열로 저장
+    // If keys option is provided, pre-index target by keys in Map to improve O(n×m) → O(n+m)
+    // Multiple targets with the same key value can exist, so store as array
     const keyIndexedTarget = hasKeys ? new Map<string, P[]>() : undefined;
 
     if (keyIndexedTarget) {
@@ -425,11 +425,11 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     }
 
     for (const sourceItem of this) {
-      // 전체 일치(sameTarget) 우선, 없으면 키 일치(sameKeyTarget) 검색
+      // Prioritize full match (sameTarget), otherwise search for key match (sameKeyTarget)
       let sameTarget: P | undefined;
       let sameKeyTarget: P | undefined;
 
-      // Set 기반 건너뛰기로 이미 매칭된 항목 스킵 (splice O(n) 제거)
+      // Skip already matched items using Set-based skipping (avoid O(n) splice removal)
       for (const targetItem of uncheckedTarget) {
         if (!uncheckedTargetSet.has(targetItem)) continue;
         if (objEqual(targetItem, sourceItem, excludeOpts)) {
@@ -438,14 +438,14 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
         }
       }
 
-      // 전체 일치가 없고 keys 옵션이 있으면 Map에서 O(1) 조회
+      // If no full match and keys option exists, perform O(1) lookup in Map
       if (sameTarget === undefined && keyIndexedTarget) {
         const sourceKeyStr = JSON.stringify(
           options!.keys!.map((k) => (sourceItem as Record<string, unknown>)[k]),
         );
         const candidates = keyIndexedTarget.get(sourceKeyStr);
         if (candidates && candidates.length > 0) {
-          // uncheckedTargetSet에서 O(1) 조회로 아직 남아있는 첫 번째 항목 선택
+          // Select first remaining item using O(1) lookup in uncheckedTargetSet
           sameKeyTarget = candidates.find((c) => uncheckedTargetSet.has(c));
         }
       }
@@ -531,22 +531,22 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     const result: (T | P | (T & P))[] = objClone(this);
 
-    // source 항목의 원본 인덱스를 미리 계산하여 O(n) 검색을 O(1)로 개선
+    // Pre-calculate original index of source items to improve O(n) lookup to O(1)
     const sourceIndexMap = new Map<T, number>();
     for (let i = 0; i < this.length; i++) {
       sourceIndexMap.set(this[i], i);
     }
 
     for (const diff of diffs) {
-      // 변경시
+      // When updating
       if (diff.source !== undefined && diff.target !== undefined) {
         const sourceIndex = sourceIndexMap.get(diff.source);
         if (sourceIndex === undefined) {
-          throw new SdError("예상치 못한 오류: merge에서 source 항목을 찾을 수 없습니다.");
+          throw new SdError("Unexpected error: source item not found in merge.");
         }
         result[sourceIndex] = objMerge(diff.source, diff.target);
       }
-      // 추가시
+      // When adding
       else if (diff.target !== undefined) {
         result.push(diff.target);
       }
@@ -560,7 +560,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number") {
-        throw new ArgumentError("sum 은 number 에 대해서만 사용할 수 있습니다.", {
+        throw new ArgumentError("sum can only be used with numbers.", {
           type: typeof item,
         });
       }
@@ -575,7 +575,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new ArgumentError("min 은 number/string 에 대해서만 사용할 수 있습니다.", {
+        throw new ArgumentError("min can only be used with numbers/strings.", {
           type: typeof item,
         });
       }
@@ -592,7 +592,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = selector !== undefined ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
-        throw new ArgumentError("max 은 number/string 에 대해서만 사용할 수 있습니다.", {
+        throw new ArgumentError("max can only be used with numbers/strings.", {
           type: typeof item,
         });
       }
@@ -622,11 +622,11 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
   distinctThis<T>(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: T) => string | number },
   ): T[] {
-    // 옵션 정규화
+    // Normalize options
     const opts = typeof options === "boolean" ? { matchAddress: options } : (options ?? {});
 
-    // matchAddress: Set 기반 O(n)
-    // 첫 번째 등장한 요소를 유지하기 위해 정방향 순회 후 제거할 인덱스 수집
+    // matchAddress: Set-based O(n)
+    // To preserve first occurrence, collect indices to remove after forward traversal
     if (opts.matchAddress === true) {
       const seen = new Set<T>();
       const toRemove: number[] = [];
@@ -637,15 +637,15 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
           seen.add(this[i]);
         }
       }
-      // 역순으로 제거 (인덱스 변화 방지)
+      // Remove in reverse order (prevent index changes)
       for (let i = toRemove.length - 1; i >= 0; i--) {
         this.splice(toRemove[i], 1);
       }
       return this;
     }
 
-    // keyFn 제공 시: 커스텀 키 기반 O(n)
-    // 첫 번째 등장한 요소를 유지하기 위해 정방향 순회 후 제거할 인덱스 수집
+    // keyFn provided: custom key-based O(n)
+    // To preserve first occurrence, collect indices to remove after forward traversal
     if (opts.keyFn) {
       const seen = new Set<string | number>();
       const toRemove: number[] = [];
@@ -657,14 +657,14 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
           seen.add(key);
         }
       }
-      // 역순으로 제거 (인덱스 변화 방지)
+      // Remove in reverse order (prevent index changes)
       for (let i = toRemove.length - 1; i >= 0; i--) {
         this.splice(toRemove[i], 1);
       }
       return this;
     }
 
-    // 기본: 타입별 처리 (primitive 최적화)
+    // Default: type-based processing (primitive optimization)
     const seen = new Map<string, T>();
     const seenRefs = new Set<symbol | ((...args: unknown[]) => unknown)>();
     const toRemoveSet = new Set<number>();
@@ -672,11 +672,11 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
     for (let i = 0; i < this.length; i++) {
       const item = this[i];
 
-      // primitive 타입은 빠른 경로 O(n)
+      // primitive types take the fast path O(n)
       if (item === null || typeof item !== "object") {
         const type = typeof item;
 
-        // symbol, function은 Set으로 identity 비교
+        // symbol, function use Set for identity comparison
         if (type === "symbol" || type === "function") {
           if (seenRefs.has(item)) {
             toRemoveSet.add(i);
@@ -686,7 +686,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
           continue;
         }
 
-        // 나머지 primitive는 타입 prefix + 특수 케이스 처리
+        // Other primitives: type prefix + special case handling
         let key = type + ":";
         if (Object.is(item, -0)) {
           key += "-0";
@@ -702,10 +702,10 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
         continue;
       }
 
-      // 객체는 깊은 비교 O(n²) - 제거되지 않은 이전 항목들과 비교
+      // Objects: deep comparison O(n²) - compare with previous non-removed items
       let hasDuplicateBefore = false;
       for (let j = 0; j < i; j++) {
-        // toRemoveSet에 있는 인덱스는 건너뜀 (O(1) 조회)
+        // Skip indices in toRemoveSet (O(1) lookup)
         if (toRemoveSet.has(j)) continue;
         if (objEqual(this[j], item)) {
           hasDuplicateBefore = true;
@@ -717,7 +717,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
       }
     }
 
-    // 역순으로 제거 (인덱스 변화 방지)
+    // Remove in reverse order (prevent index changes)
     const toRemoveArr = Array.from(toRemoveSet).sort((a, b) => b - a);
     for (const idx of toRemoveArr) {
       this.splice(idx, 1);
@@ -757,7 +757,7 @@ const arrayMutableExtensions: MutableArrayExt<any> & ThisType<any[]> = {
         ? (itemOrSelector as (item: T, index: number) => boolean)
         : (item: T) => item === itemOrSelector;
 
-    // 역방향 순회로 인덱스 변경 문제 방지 (O(n) 성능)
+    // Reverse traversal to prevent index change issues (O(n) performance)
     for (let i = this.length - 1; i >= 0; i--) {
       if (shouldRemove(this[i], i)) {
         this.splice(i, 1);
@@ -795,7 +795,7 @@ for (const [name, fn] of Object.entries({
 
 //#endregion
 
-//#region 타입 선언
+//#region Type Declarations
 
 declare global {
   interface ReadonlyArray<T> extends ReadonlyArrayExt<T> {}

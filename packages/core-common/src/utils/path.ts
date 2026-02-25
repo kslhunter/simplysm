@@ -1,15 +1,15 @@
 /**
- * 경로 유틸리티 함수
- * Node.js path 모듈 대체용 (브라우저 환경 지원)
+ * Path utility functions
+ * Replacement for Node.js path module (supports browser environments)
  *
- * @note 이 유틸리티는 POSIX 스타일 경로(슬래시 `/`)만 지원합니다.
- *       Windows 백슬래시(`\`) 경로는 지원하지 않습니다.
- *       브라우저 환경 및 Capacitor 플러그인용으로 설계되었습니다.
+ * @note This utility supports POSIX style paths (slash `/`) only.
+ *       Windows backslash (`\`) paths are not supported.
+ *       Designed for browser environments and Capacitor plugins.
  */
 
 /**
- * 경로 조합 (path.join 대체)
- * @note POSIX 스타일 경로만 지원 (슬래시 `/`)
+ * Combine paths (path.join replacement)
+ * @note Supports POSIX style paths only (slash `/`)
  */
 export function pathJoin(...segments: string[]): string {
   return segments
@@ -19,7 +19,7 @@ export function pathJoin(...segments: string[]): string {
 }
 
 /**
- * 파일명 추출 (path.basename 대체)
+ * Extract filename (path.basename replacement)
  */
 export function pathBasename(filePath: string, ext?: string): string {
   const name = filePath.split("/").pop() ?? "";
@@ -30,8 +30,8 @@ export function pathBasename(filePath: string, ext?: string): string {
 }
 
 /**
- * 확장자 추출 (path.extname 대체)
- * @note 숨김 파일(예: `.gitignore`)은 빈 문자열을 반환합니다 (Node.js path.extname과 동일)
+ * Extract file extension (path.extname replacement)
+ * @note Hidden files (e.g., `.gitignore`) return empty string (same as Node.js path.extname)
  */
 export function pathExtname(filePath: string): string {
   const name = filePath.split("/").pop() ?? "";

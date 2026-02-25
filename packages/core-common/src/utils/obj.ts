@@ -7,26 +7,26 @@ import { ArgumentError } from "../errors/argument-error";
 //#region objClone
 
 /**
- * 깊은 복사
- * - 순환 참조 지원
- * - 커스텀 타입(DateTime, DateOnly, Time, Uuid, Uint8Array) 복사 지원
+ * Deep clone
+ * - Supports circular references
+ * - Supports copying custom types (DateTime, DateOnly, Time, Uuid, Uint8Array)
  *
- * @note 함수, Symbol은 복사되지 않고 참조가 유지됨
- * @note WeakMap, WeakSet은 지원되지 않음 (일반 객체로 복사되어 빈 객체가 됨)
- * @note 프로토타입 체인은 유지됨 (Object.setPrototypeOf 사용)
- * @note getter/setter는 현재 값으로 평가되어 복사됨 (접근자 속성 자체는 복사되지 않음)
+ * @note Functions and Symbols are not cloned and references are maintained
+ * @note WeakMap and WeakSet are not supported (copied as generic objects, resulting in empty objects)
+ * @note Prototype chain is maintained (using Object.setPrototypeOf)
+ * @note Getters/setters are evaluated as current values and copied (accessor properties themselves are not copied)
  */
 export function objClone<TSource>(source: TSource): TSource {
   return objCloneImpl(source) as TSource;
 }
 
 function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {
-  // primitive는 그대로 반환
+  // Primitives are returned as-is
   if (typeof source !== "object" || source === null) {
     return source;
   }
 
-  // Immutable-like 타입들 (내부에 object 참조 없음)
+  // Immutable-like types (no internal object references)
   if (source instanceof Date) {
     return new Date(source.getTime());
   }
@@ -52,14 +52,14 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     return new RegExp(source.source, source.flags);
   }
 
-  // 순환 참조 체크 (Error 포함 모든 object 타입에 적용)
+  // Circular reference check (applies to all object types including Error)
   const currPrevClones = prevClones ?? new WeakMap<object, unknown>();
   if (currPrevClones.has(source)) {
     return currPrevClones.get(source);
   }
 
-  // Error (cause 포함)
-  // 생성자 호출 대신 프로토타입 기반 복사 - 커스텀 Error 클래스 호환성 보장
+  // Error (including cause)
+  // Prototype-based copying instead of constructor call - ensures custom Error class compatibility
   if (source instanceof Error) {
     const cloned = Object.create(Object.getPrototypeOf(source)) as Error;
     currPrevClones.set(source, cloned);
@@ -69,7 +69,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     if (source.cause !== undefined) {
       cloned.cause = objCloneImpl(source.cause, currPrevClones);
     }
-    // 커스텀 Error 속성 복사
+    // Copy custom Error properties
     for (const key of Object.keys(source)) {
       if (!["message", "name", "stack", "cause"].includes(key)) {
         (cloned as unknown as Record<string, unknown>)[key] = objCloneImpl(
@@ -114,7 +114,7 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
     return result;
   }
 
-  // 기타 Object
+  // Other Object types
   const result: Record<string, unknown> = {};
   Object.setPrototypeOf(result, Object.getPrototypeOf(source));
   currPrevClones.set(source, result);
@@ -131,40 +131,40 @@ function objCloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): u
 
 //#region objEqual
 
-/** objEqual 옵션 타입 */
+/** objEqual options type */
 export interface EqualOptions {
-  /** 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용) */
+  /** List of keys to compare. When specified, only those keys are compared (applies only to top level) */
   topLevelIncludes?: string[];
-  /** 비교에서 제외할 키 목록 (최상위 레벨에만 적용) */
+  /** List of keys to exclude from comparison (applies only to top level) */
   topLevelExcludes?: string[];
-  /** 배열 순서 무시 여부. true 시 O(n²) 복잡도 */
+  /** Whether to ignore array order. O(n²) complexity when true */
   ignoreArrayIndex?: boolean;
-  /** 얕은 비교 여부. true 시 1단계만 비교 (참조 비교) */
+  /** Whether to do shallow comparison. Only compare 1 level (reference comparison) when true */
   onlyOneDepth?: boolean;
 }
 
 /**
- * 깊은 비교
+ * Deep equality comparison
  *
- * @param source 비교 대상 1
- * @param target 비교 대상 2
- * @param options 비교 옵션
- * @param options.topLevelIncludes 비교할 키 목록. 지정 시 해당 키만 비교 (최상위 레벨에만 적용)
- *   @example `{ topLevelIncludes: ["id", "name"] }` - id, name 키만 비교
- * @param options.topLevelExcludes 비교에서 제외할 키 목록 (최상위 레벨에만 적용)
- *   @example `{ topLevelExcludes: ["updatedAt"] }` - updatedAt 키를 제외하고 비교
- * @param options.ignoreArrayIndex 배열 순서 무시 여부. true 시 O(n²) 복잡도
- * @param options.onlyOneDepth 얕은 비교 여부. true 시 1단계만 비교 (참조 비교)
+ * @param source Comparison target 1
+ * @param target Comparison target 2
+ * @param options Comparison options
+ * @param options.topLevelIncludes List of keys to compare. When specified, only those keys are compared (applies only to top level)
+ *   @example `{ topLevelIncludes: ["id", "name"] }` - Compare only id and name keys
+ * @param options.topLevelExcludes List of keys to exclude from comparison (applies only to top level)
+ *   @example `{ topLevelExcludes: ["updatedAt"] }` - Compare excluding updatedAt key
+ * @param options.ignoreArrayIndex Whether to ignore array order. O(n²) complexity when true
+ * @param options.onlyOneDepth Whether to do shallow comparison. Only compare 1 level (reference comparison) when true
  *
- * @note topLevelIncludes/topLevelExcludes 옵션은 object 속성 키에만 적용됨.
- *       Map의 모든 키는 항상 비교에 포함됨.
- * @note 성능 고려사항:
- * - 기본 배열 비교: O(n) 시간 복잡도
- * - `ignoreArrayIndex: true` 사용 시: O(n²) 시간 복잡도
- *   (대용량 배열에서 성능 저하 가능)
- * @note `ignoreArrayIndex: true` 동작 특성:
- * - 배열 순서를 무시하고 동일한 요소들의 순열인지 비교
- * - 예: `[1,2,3]`과 `[3,2,1]` → true, `[1,1,1]`과 `[1,2,3]` → false
+ * @note topLevelIncludes/topLevelExcludes options apply only to object property keys.
+ *       All keys in Map are always included in comparison.
+ * @note Performance considerations:
+ * - Basic array comparison: O(n) time complexity
+ * - When using `ignoreArrayIndex: true`: O(n²) time complexity
+ *   (possible performance degradation on large arrays)
+ * @note `ignoreArrayIndex: true` behavior characteristics:
+ * - Ignore array order and check if elements are permutations of the same set
+ * - Example: `[1,2,3]` and `[3,2,1]` → true, `[1,1,1]` and `[1,2,3]` → false
  */
 export function objEqual(source: unknown, target: unknown, options?: EqualOptions): boolean {
   if (source === target) return true;
@@ -232,7 +232,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
         return false;
       });
     } else {
-      // 재귀 호출 시 topLevelIncludes/topLevelExcludes 옵션은 최상위 레벨에만 적용되므로 제외
+      // On recursive calls, topLevelIncludes/topLevelExcludes options apply only to top level, so exclude them
       const recursiveOptions = {
         ignoreArrayIndex: options.ignoreArrayIndex,
         onlyOneDepth: options.onlyOneDepth,
@@ -256,7 +256,7 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
         }
       }
     } else {
-      // 재귀 호출 시 topLevelIncludes/topLevelExcludes 옵션은 최상위 레벨에만 적용되므로 제외
+      // On recursive calls, topLevelIncludes/topLevelExcludes options apply only to top level, so exclude them
       for (let i = 0; i < source.length; i++) {
         if (
           !objEqual(source[i], target[i], {
@@ -274,16 +274,16 @@ function objEqualArray(source: unknown[], target: unknown[], options?: EqualOpti
 }
 
 /**
- * Map 객체 비교
- * @note 비문자열 키(객체, 배열 등) 처리 시 O(n²) 복잡도 발생
- * @note 대량 데이터의 경우 onlyOneDepth: true 옵션 사용 권장 (참조 비교로 O(n)으로 개선)
+ * Map object comparison
+ * @note O(n²) complexity when handling non-string keys (objects, arrays, etc.)
+ * @note Recommended to use onlyOneDepth: true option for large datasets (improves to O(n) with reference comparison)
  */
 function objEqualMap(
   source: Map<unknown, unknown>,
   target: Map<unknown, unknown>,
   options?: EqualOptions,
 ): boolean {
-  // Map 비교 시 topLevelIncludes/topLevelExcludes 옵션은 무시됨 (object 속성 키에만 적용)
+  // When comparing Maps, topLevelIncludes/topLevelExcludes options are ignored (apply only to object property keys)
   const sourceKeys = Array.from(source.keys()).filter((key) => source.get(key) != null);
   const targetKeys = Array.from(target.keys()).filter((key) => target.get(key) != null);
 
@@ -293,7 +293,7 @@ function objEqualMap(
 
   const usedTargetKeys = new Set<number>();
   for (const sourceKey of sourceKeys) {
-    // 문자열 키: 직접 비교
+    // String keys: compare directly
     if (typeof sourceKey === "string") {
       const sourceValue = source.get(sourceKey);
       const targetValue = target.get(sourceKey);
@@ -310,7 +310,7 @@ function objEqualMap(
         }
       }
     } else {
-      // 비문자열 키: targetKeys에서 동등한 키 찾기
+      // Non-string keys: find equivalent key in targetKeys
       let found = false;
       for (let i = 0; i < targetKeys.length; i++) {
         const targetKey = targetKeys[i];
@@ -384,9 +384,9 @@ function objEqualObject(
 }
 
 /**
- * Set 깊은 비교
- * @note deep equal 비교(`onlyOneDepth: false`)는 O(n²) 시간 복잡도를 가짐.
- *   primitive Set이나 성능이 중요한 경우 `onlyOneDepth: true` 사용 권장
+ * Set deep equality comparison
+ * @note Deep equal comparison (`onlyOneDepth: false`) has O(n²) time complexity.
+ *   Recommended to use `onlyOneDepth: true` for primitive Sets or when performance is critical
  */
 function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: EqualOptions): boolean {
   if (source.size !== target.size) {
@@ -400,8 +400,8 @@ function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: Equal
       }
     }
   } else {
-    // deep equal: target 배열을 루프 외부에서 1회만 생성
-    // 매칭된 인덱스를 추적하여 중복 매칭 방지
+    // Deep equal: create target array only once outside loop
+    // Track matched indices to prevent duplicate matching
     const targetArr = [...target];
     const matchedIndices = new Set<number>();
     for (const sourceItem of source) {
@@ -422,31 +422,31 @@ function objEqualSet(source: Set<unknown>, target: Set<unknown>, options?: Equal
 
 //#region objMerge
 
-/** objMerge 옵션 타입 */
+/** objMerge options type */
 export interface ObjMergeOptions {
-  /** 배열 처리 방식. "replace": target으로 대체(기본), "concat": 합침(중복 제거) */
+  /** Array processing method. "replace": replace with target (default), "concat": merge (deduplicate) */
   arrayProcess?: "replace" | "concat";
-  /** target이 null일 때 해당 키 삭제 여부 */
+  /** Whether to delete the key when target is null */
   useDelTargetNull?: boolean;
 }
 
 /**
- * 깊은 병합 (source를 base로 target을 병합)
+ * Deep merge (merge target into source as base)
  *
- * @param source 기준 객체
- * @param target 병합할 객체
- * @param opt 병합 옵션
- * @param opt.arrayProcess 배열 처리 방식
- *   - `"replace"`: target 배열로 대체 (기본값)
- *   - `"concat"`: source와 target 배열을 합침 (Set으로 중복 제거)
- * @param opt.useDelTargetNull target 값이 null일 때 해당 키 삭제 여부
- *   - `true`: target이 null이면 결과에서 해당 키 삭제
- *   - `false` 또는 미지정: source 값 유지
+ * @param source Base object
+ * @param target Object to merge
+ * @param opt Merge options
+ * @param opt.arrayProcess Array processing method
+ *   - `"replace"`: Replace with target array (default)
+ *   - `"concat"`: Merge source and target arrays (deduplicate with Set)
+ * @param opt.useDelTargetNull Whether to delete the key when target value is null
+ *   - `true`: Delete the key from result if target is null
+ *   - `false` or not specified: Keep source value
  *
- * @note 원본 객체를 수정하지 않고 새 객체를 반환함 (불변성 보장)
- * @note arrayProcess="concat" 사용 시 Set을 통해 중복을 제거하며,
- *       객체 배열의 경우 참조(주소) 비교로 중복을 판단함
- * @note 타입이 다른 경우 target 값으로 덮어씀
+ * @note Returns a new object without modifying original objects (guarantees immutability)
+ * @note When using arrayProcess="concat", deduplication is done with Set,
+ *       and for object arrays, deduplication is determined by reference (address) comparison
+ * @note If types are different, overwrite with target value
  */
 export function objMerge<TSource, TMergeTarget>(
   source: TSource,
@@ -521,33 +521,33 @@ export function objMerge<TSource, TMergeTarget>(
   return resultRec as TSource & TMergeTarget;
 }
 
-/** merge3 옵션 타입 */
+/** merge3 options type */
 export interface ObjMerge3KeyOptions {
-  /** 비교할 하위 키 목록 (equal의 topLevelIncludes와 동일) */
+  /** List of sub-keys to compare (same as equal's topLevelIncludes) */
   keys?: string[];
-  /** 비교에서 제외할 하위 키 목록 */
+  /** List of sub-keys to exclude from comparison */
   excludes?: string[];
-  /** 배열 순서 무시 여부 */
+  /** Whether to ignore array order */
   ignoreArrayIndex?: boolean;
 }
 
 /**
- * 3-way 병합
+ * 3-way merge
  *
- * source, origin, target 세 객체를 비교하여 병합합니다.
- * - source와 origin이 같고 target이 다르면 → target 값 사용
- * - target과 origin이 같고 source가 다르면 → source 값 사용
- * - source와 target이 같으면 → 해당 값 사용
- * - 세 값이 모두 다르면 → 충돌 발생 (origin 값 유지)
+ * Merge by comparing three objects: source, origin, and target.
+ * - If source and origin are equal and target differs → use target value
+ * - If target and origin are equal and source differs → use source value
+ * - If source and target are equal → use that value
+ * - If all three values differ → conflict occurs (maintain origin value)
  *
- * @param source 변경된 버전 1
- * @param origin 기준 버전 (공통 조상)
- * @param target 변경된 버전 2
- * @param optionsObj 키별 비교 옵션. 각 키에 대해 equal() 비교 옵션을 개별 지정
- *   - `keys`: 비교할 하위 키 목록 (equal의 topLevelIncludes와 동일)
- *   - `excludes`: 비교에서 제외할 하위 키 목록
- *   - `ignoreArrayIndex`: 배열 순서 무시 여부
- * @returns conflict: 충돌 발생 여부, result: 병합 결과
+ * @param source Changed version 1
+ * @param origin Base version (common ancestor)
+ * @param target Changed version 2
+ * @param optionsObj Comparison options per key. Specify equal() comparison options individually for each key
+ *   - `keys`: List of sub-keys to compare (same as equal's topLevelIncludes)
+ *   - `excludes`: List of sub-keys to exclude from comparison
+ *   - `ignoreArrayIndex`: Whether to ignore array order
+ * @returns conflict: Whether conflict occurred, result: Merge result
  *
  * @example
  * const { conflict, result } = merge3(
@@ -596,10 +596,10 @@ export function objMerge3<
 //#region objOmit / objPick
 
 /**
- * 객체에서 특정 키들을 제외
- * @param item 원본 객체
- * @param omitKeys 제외할 키 배열
- * @returns 지정된 키가 제외된 새 객체
+ * Exclude specific keys from object
+ * @param item Source object
+ * @param omitKeys Array of keys to exclude
+ * @returns New object with specified keys excluded
  * @example
  * const user = { name: "Alice", age: 30, email: "alice@example.com" };
  * objOmit(user, ["email"]);
@@ -619,11 +619,11 @@ export function objOmit<T extends Record<string, unknown>, K extends keyof T>(
 }
 
 /**
- * 조건에 맞는 키들을 제외
+ * Exclude keys matching condition
  * @internal
- * @param item 원본 객체
- * @param omitKeyFn 키를 받아 제외 여부를 반환하는 함수 (true면 제외)
- * @returns 조건에 맞는 키가 제외된 새 객체
+ * @param item Source object
+ * @param omitKeyFn Function that receives key and returns whether to exclude (true to exclude)
+ * @returns New object with keys matching condition excluded
  * @example
  * const data = { name: "Alice", _internal: "secret", age: 30 };
  * objOmitByFilter(data, (key) => key.startsWith("_"));
@@ -643,10 +643,10 @@ export function objOmitByFilter<T extends Record<string, unknown>>(
 }
 
 /**
- * 객체에서 특정 키들만 선택
- * @param item 원본 객체
- * @param keys 선택할 키 배열
- * @returns 지정된 키만 포함된 새 객체
+ * Select specific keys from object
+ * @param item Source object
+ * @param keys Array of keys to select
+ * @returns New object containing only specified keys
  * @example
  * const user = { name: "Alice", age: 30, email: "alice@example.com" };
  * objPick(user, ["name", "age"]);
@@ -667,7 +667,7 @@ export function objPick<T extends Record<string, unknown>, K extends keyof T>(
 
 //#region objGetChainValue / objSetChainValue / objDeleteChainValue
 
-// 정규식 캐싱 (모듈 로드 시 1회만 생성)
+// Regex caching (created once at module load)
 const chainSplitRegex = /[.[\]]/g;
 const chainCleanRegex = /[?!'"]/g;
 const chainNumericRegex = /^[0-9]*$/;
@@ -690,7 +690,7 @@ function getChainSplits(chain: string): (string | number)[] {
 }
 
 /**
- * 체인 경로로 값 가져오기
+ * Get value by chain path
  * @example objGetChainValue(obj, "a.b[0].c")
  */
 export function objGetChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
@@ -713,13 +713,13 @@ export function objGetChainValue(
 }
 
 /**
- * depth만큼 같은 키로 내려가기
+ * Descend by the same key for depth levels
  * @internal
- * @param obj 대상 객체
- * @param key 내려갈 키
- * @param depth 내려갈 깊이 (1 이상)
- * @param optional true면 중간에 null/undefined가 있어도 에러 없이 undefined 반환
- * @throws ArgumentError depth가 1 미만일 경우
+ * @param obj Target object
+ * @param key Key to descend by
+ * @param depth Depth to descend (1 or more)
+ * @param optional If true, return undefined without error if null/undefined found in the middle
+ * @throws ArgumentError If depth is less than 1
  * @example objGetChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
  */
 export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
@@ -740,7 +740,7 @@ export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
   optional?: true,
 ): TObject[TKey] | undefined {
   if (depth < 1) {
-    throw new ArgumentError("depth는 1 이상이어야 합니다.", { depth });
+    throw new ArgumentError("depth must be 1 or greater", { depth });
   }
   let result: unknown = obj;
   for (let i = 0; i < depth; i++) {
@@ -754,13 +754,13 @@ export function objGetChainValueByDepth<TObject, TKey extends keyof TObject>(
 }
 
 /**
- * 체인 경로로 값 설정
+ * Set value by chain path
  * @example objSetChainValue(obj, "a.b[0].c", value)
  */
 export function objSetChainValue(obj: unknown, chain: string, value: unknown): void {
   const splits = getChainSplits(chain);
   if (splits.length === 0) {
-    throw new ArgumentError("체인이 비어있습니다.", { chain });
+    throw new ArgumentError("Chain is empty", { chain });
   }
 
   let curr: Record<string | number, unknown> = obj as Record<string | number, unknown>;
@@ -774,19 +774,19 @@ export function objSetChainValue(obj: unknown, chain: string, value: unknown): v
 }
 
 /**
- * 체인 경로의 값 삭제
+ * Delete value by chain path
  * @example objDeleteChainValue(obj, "a.b[0].c")
  */
 export function objDeleteChainValue(obj: unknown, chain: string): void {
   const splits = getChainSplits(chain);
   if (splits.length === 0) {
-    throw new ArgumentError("체인이 비어있습니다.", { chain });
+    throw new ArgumentError("Chain is empty", { chain });
   }
 
   let curr: Record<string | number, unknown> = obj as Record<string | number, unknown>;
   for (const splitItem of splits.slice(0, -1)) {
     const next = curr[splitItem];
-    // 중간 경로가 없으면 조용히 리턴 (삭제할 것이 없음)
+    // Silently return if middle path doesn't exist (nothing to delete)
     if (next == null || typeof next !== "object") {
       return;
     }
@@ -802,10 +802,10 @@ export function objDeleteChainValue(obj: unknown, chain: string): void {
 //#region objClearUndefined / objClear / objNullToUndefined / objUnflatten
 
 /**
- * 객체에서 undefined 값을 가진 키 삭제
+ * Delete keys with undefined values from object
  * @internal
  *
- * @mutates 원본 객체를 직접 수정함
+ * @mutates Modifies the original object directly
  */
 export function objClearUndefined<T extends object>(obj: T): T {
   const record = obj as Record<string, unknown>;
@@ -818,10 +818,10 @@ export function objClearUndefined<T extends object>(obj: T): T {
 }
 
 /**
- * 객체의 모든 키 삭제
+ * Delete all keys from object
  * @internal
  *
- * @mutates 원본 객체를 직접 수정함
+ * @mutates Modifies the original object directly
  */
 export function objClear<T extends Record<string, unknown>>(obj: T): Record<string, never> {
   for (const key of Object.keys(obj)) {
@@ -831,10 +831,10 @@ export function objClear<T extends Record<string, unknown>>(obj: T): Record<stri
 }
 
 /**
- * null을 undefined로 변환 (재귀적)
+ * Convert null to undefined (recursive)
  * @internal
  *
- * @mutates 원본 배열/객체를 직접 수정함
+ * @mutates Modifies the original array/object directly
  */
 export function objNullToUndefined<TObject>(obj: TObject): TObject | undefined {
   return objNullToUndefinedImpl(obj, new WeakSet());
@@ -879,7 +879,7 @@ function objNullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): T
 }
 
 /**
- * flat된 객체를 nested 객체로 변환
+ * Convert flattened object to nested object
  * @internal
  * @example objUnflatten({ "a.b.c": 1 }) => { a: { b: { c: 1 } } }
  */
@@ -909,10 +909,10 @@ export function objUnflatten(flatObj: Record<string, unknown>): Record<string, u
 
 //#endregion
 
-//#region 타입 유틸리티
+//#region Type utilities
 
 /**
- * undefined를 가진 프로퍼티를 optional로 변환
+ * Convert properties with undefined to optional
  * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
 export type ObjUndefToOptional<TObject> = {
@@ -920,7 +920,7 @@ export type ObjUndefToOptional<TObject> = {
 } & { [K in keyof TObject as undefined extends TObject[K] ? never : K]: TObject[K] };
 
 /**
- * optional 프로퍼티를 required + undefined 유니온으로 변환
+ * Convert optional properties to required + undefined union
  * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
 export type ObjOptionalToUndef<TObject> = {
@@ -930,27 +930,27 @@ export type ObjOptionalToUndef<TObject> = {
 //#endregion
 
 /**
- * Object.keys의 타입 안전한 버전
- * @param obj 키를 추출할 객체
- * @returns 객체의 키 배열
+ * Type-safe version of Object.keys
+ * @param obj Object to extract keys from
+ * @returns Array of object keys
  */
 export function objKeys<T extends object>(obj: T): (keyof T)[] {
   return Object.keys(obj) as (keyof T)[];
 }
 
 /**
- * Object.entries의 타입 안전한 버전
- * @param obj 엔트리를 추출할 객체
- * @returns [키, 값] 튜플 배열
+ * Type-safe version of Object.entries
+ * @param obj Object to extract entries from
+ * @returns Array of [key, value] tuples
  */
 export function objEntries<T extends object>(obj: T): ObjEntries<T> {
   return Object.entries(obj) as ObjEntries<T>;
 }
 
 /**
- * Object.fromEntries의 타입 안전한 버전
- * @param entries [키, 값] 튜플 배열
- * @returns 생성된 객체
+ * Type-safe version of Object.fromEntries
+ * @param entries Array of [key, value] tuples
+ * @returns Created object
  */
 export function objFromEntries<T extends [string, unknown]>(entries: T[]): { [K in T[0]]: T[1] } {
   return Object.fromEntries(entries) as { [K in T[0]]: T[1] };
@@ -959,18 +959,18 @@ export function objFromEntries<T extends [string, unknown]>(entries: T[]): { [K 
 type ObjEntries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObject][];
 
 /**
- * 객체의 각 엔트리를 변환하여 새 객체 반환
- * @param obj 변환할 객체
- * @param fn 변환 함수 (key, value) => [newKey, newValue]
- * @returns 변환된 키와 값을 가진 새 객체
+ * Transform each entry of object and return new object
+ * @param obj Object to transform
+ * @param fn Transform function (key, value) => [newKey, newValue]
+ * @returns New object with transformed keys and values
  * @example
  * const colors = { primary: "255, 0, 0", secondary: "0, 255, 0" };
  *
- * // 값만 변환
+ * // Transform only values
  * objMap(colors, (key, rgb) => [null, `rgb(${rgb})`]);
  * // { primary: "rgb(255, 0, 0)", secondary: "rgb(0, 255, 0)" }
  *
- * // 키와 값 모두 변환
+ * // Transform both keys and values
  * objMap(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
  * // { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
  */

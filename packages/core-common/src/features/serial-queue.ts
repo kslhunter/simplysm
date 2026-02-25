@@ -1,18 +1,18 @@
 /**
- * 비동기 함수 직렬 큐
+ * Asynchronous serial queue
  *
- * 큐에 추가된 함수들을 순서대로 실행합니다.
- * 한 작업이 완료되어야 다음 작업이 시작됩니다.
- * 에러가 발생해도 후속 작업은 계속 실행됩니다.
+ * Functions added to the queue are executed sequentially.
+ * The next task starts only after one task completes.
+ * Subsequent tasks continue to execute even if an error occurs.
  *
  * @example
  * const queue = new SerialQueue();
  * queue.run(async () => { await fetch("/api/1"); });
- * queue.run(async () => { await fetch("/api/2"); }); // 1번 완료 후 실행
- * queue.run(async () => { await fetch("/api/3"); }); // 2번 완료 후 실행
+ * queue.run(async () => { await fetch("/api/2"); }); // executed after 1 completes
+ * queue.run(async () => { await fetch("/api/3"); }); // executed after 2 completes
  *
  * @example
- * // 에러 처리
+ * // Error handling
  * queue.on("error", (err) => console.error(err));
  */
 import { SdError } from "../errors/sd-error";
@@ -31,14 +31,14 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
   private _isQueueRunning = false;
 
   /**
-   * @param _gap 각 작업 사이의 간격 (ms)
+   * @param _gap Gap between each task (ms)
    */
   constructor(private readonly _gap: number = 0) {
     super();
   }
 
   /**
-   * 대기 중인 큐 비우기 (현재 실행 중인 작업은 완료됨)
+   * Clear pending queue (currently executing task will complete)
    */
   override dispose(): void {
     this._queue.length = 0;
@@ -46,14 +46,14 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
   }
 
   /**
-   * using 문 지원
+   * Supports using statement
    */
   override [Symbol.dispose](): void {
     this.dispose();
   }
 
   /**
-   * 함수를 큐에 추가하고 실행
+   * Add a function to the queue and execute it
    */
   run(fn: () => void | Promise<void>): void {
     this._queue.push(fn);
@@ -73,9 +73,9 @@ export class SerialQueue extends EventEmitter<SerialQueueEvents> {
           await fn();
         } catch (err) {
           const error = err instanceof Error ? err : new Error(String(err));
-          const sdError = new SdError(error, "큐 작업 실행 중 오류 발생");
+          const sdError = new SdError(error, "Error occurred while executing queue task");
 
-          // 리스너가 있으면 이벤트로 전달, 없으면 로깅
+          // If there are listeners, emit as event; otherwise log
           if (this.listenerCount("error") > 0) {
             this.emit("error", sdError);
           } else {

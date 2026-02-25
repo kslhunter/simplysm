@@ -2,10 +2,10 @@ import { ArgumentError } from "../errors/argument-error";
 import { convert12To24, formatDate, normalizeMonth } from "../utils/date-format";
 
 /**
- * 날짜시간 클래스 (불변)
+ * DateTime class (immutable)
  *
- * JavaScript Date 객체를 래핑하여 불변성과 편리한 API를 제공한다.
- * 밀리초 단위까지 지원하며, 로컬 타임존을 기준으로 동작한다.
+ * Wraps JavaScript Date object to provide immutability and convenient API.
+ * Supports millisecond precision and operates based on local timezone.
  *
  * @example
  * const now = new DateTime();
@@ -15,9 +15,9 @@ import { convert12To24, formatDate, normalizeMonth } from "../utils/date-format"
 export class DateTime {
   readonly date: Date;
 
-  /** 현재 시간으로 생성 */
+  /** Create with current time */
   constructor();
-  /** 연월일시분초밀리초로 생성 */
+  /** Create with year, month, day, hour, minute, second, millisecond */
   constructor(
     year: number,
     month: number,
@@ -27,9 +27,9 @@ export class DateTime {
     second?: number,
     millisecond?: number,
   );
-  /** tick (밀리초)으로 생성 */
+  /** Create from tick (millisecond) */
   constructor(tick: number);
-  /** Date 객체로 생성 */
+  /** Create from Date object */
   constructor(date: Date);
   constructor(
     arg1?: number | Date,
@@ -60,17 +60,17 @@ export class DateTime {
   }
 
   /**
-   * 문자열을 파싱하여 DateTime 인스턴스를 생성
+   * Parse a string to create DateTime instance
    *
-   * @param str 날짜시간 문자열
-   * @returns 파싱된 DateTime 인스턴스
-   * @throws ArgumentError 지원하지 않는 형식인 경우
+   * @param str DateTime string
+   * @returns Parsed DateTime instance
+   * @throws ArgumentError If unsupported format
    *
    * @example
    * DateTime.parse("2025-01-15 10:30:00")     // yyyy-MM-dd HH:mm:ss
    * DateTime.parse("2025-01-15 10:30:00.123") // yyyy-MM-dd HH:mm:ss.fff
    * DateTime.parse("20250115103000")          // yyyyMMddHHmmss
-   * DateTime.parse("2025-01-15 오전 10:30:00") // yyyy-MM-dd 오전/오후 HH:mm:ss
+   * DateTime.parse("2025-01-15 오전 10:30:00") // yyyy-MM-dd AM/PM HH:mm:ss
    * DateTime.parse("2025-01-15T10:30:00Z")    // ISO 8601
    */
   static parse(str: string): DateTime {
@@ -85,7 +85,7 @@ export class DateTime {
       );
     if (match1 != null) {
       const rawHour = Number(match1[5]);
-      const isPM = match1[4] === "오후";
+      const isPM = match1[4] === "오후"; // "오후" = PM
       const hour = convert12To24(rawHour, isPM);
       return new DateTime(
         Number(match1[1]),
@@ -127,12 +127,12 @@ export class DateTime {
     }
 
     throw new ArgumentError(
-      `날짜시간 형식을 파싱할 수 없습니다. 지원 형식: 'yyyy-MM-dd HH:mm:ss', 'yyyyMMddHHmmss', 'yyyy-MM-dd 오전/오후 HH:mm:ss', ISO 8601`,
+      `Failed to parse datetime format. Supported formats: 'yyyy-MM-dd HH:mm:ss', 'yyyyMMddHHmmss', 'yyyy-MM-dd AM/PM HH:mm:ss', ISO 8601`,
       { input: str },
     );
   }
 
-  //#region Getters (읽기 전용)
+  //#region Getters (read-only)
 
   get year(): number {
     return this.date.getFullYear();
@@ -166,7 +166,7 @@ export class DateTime {
     return this.date.getTime();
   }
 
-  /** 요일 (일~토: 0~6) */
+  /** Day of week (Sunday~Saturday: 0~6) */
   get dayOfWeek(): number {
     return this.date.getDay();
   }
@@ -175,16 +175,16 @@ export class DateTime {
     return -this.date.getTimezoneOffset();
   }
 
-  /** 날짜시간 세팅이 제대로 되었는지 여부 */
+  /** Whether the datetime is set correctly */
   get isValid(): boolean {
     return this.date instanceof Date && !Number.isNaN(this.date.getTime());
   }
 
   //#endregion
 
-  //#region 불변 변환 메서드 (새 인스턴스 반환)
+  //#region Immutable transformation methods (returns new instance)
 
-  /** 지정된 연도로 새 인스턴스 반환 */
+  /** Return new instance with specified year */
   setYear(year: number): DateTime {
     return new DateTime(
       year,
@@ -198,10 +198,10 @@ export class DateTime {
   }
 
   /**
-   * 지정된 월로 새 DateTime 인스턴스를 반환
-   * @param month 설정할 월 (1-12, 범위 외 값은 연도 조정)
-   * @note 대상 월의 일수보다 현재 일자가 크면 해당 월의 마지막 날로 조정됨
-   *       (예: 1월 31일에서 setMonth(2) → 2월 28일 또는 29일)
+   * Return new DateTime instance with specified month
+   * @param month Month to set (1-12, out-of-range values are adjusted in year)
+   * @note If current day is greater than target month's day count, it will be adjusted to last day of month
+   *       (e.g., setMonth(2) on Jan 31 → Feb 28 or 29)
    */
   setMonth(month: number): DateTime {
     const normalized = normalizeMonth(this.year, month, this.day);
@@ -217,10 +217,10 @@ export class DateTime {
   }
 
   /**
-   * 지정된 일자로 새 DateTime 인스턴스를 반환
-   * @param day 설정할 일자
-   * @note 해당 월의 유효 범위를 벗어나는 일자는 JavaScript Date 기본 동작에 따라
-   *       자동으로 다음/이전 달로 조정됨 (예: 1월에 day=32 → 2월 1일)
+   * Return new DateTime instance with specified day
+   * @param day Day to set
+   * @note Days outside valid month range are automatically adjusted to next/previous month per JavaScript Date behavior
+   *       (e.g., day=32 in January → February 1)
    */
   setDay(day: number): DateTime {
     return new DateTime(
@@ -234,7 +234,7 @@ export class DateTime {
     );
   }
 
-  /** 지정된 시로 새 인스턴스 반환 */
+  /** Return new instance with specified hour */
   setHour(hour: number): DateTime {
     return new DateTime(
       this.year,
@@ -247,7 +247,7 @@ export class DateTime {
     );
   }
 
-  /** 지정된 분으로 새 인스턴스 반환 */
+  /** Return new instance with specified minute */
   setMinute(minute: number): DateTime {
     return new DateTime(
       this.year,
@@ -260,7 +260,7 @@ export class DateTime {
     );
   }
 
-  /** 지정된 초로 새 인스턴스 반환 */
+  /** Return new instance with specified second */
   setSecond(second: number): DateTime {
     return new DateTime(
       this.year,
@@ -273,7 +273,7 @@ export class DateTime {
     );
   }
 
-  /** 지정된 밀리초로 새 인스턴스 반환 */
+  /** Return new instance with specified millisecond */
   setMillisecond(millisecond: number): DateTime {
     return new DateTime(
       this.year,
@@ -288,51 +288,51 @@ export class DateTime {
 
   //#endregion
 
-  //#region 산술 메서드 (새 인스턴스 반환)
+  //#region Arithmetic methods (returns new instance)
 
-  /** 지정된 연수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified years added */
   addYears(years: number): DateTime {
     return this.setYear(this.year + years);
   }
 
-  /** 지정된 월수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified months added */
   addMonths(months: number): DateTime {
     return this.setMonth(this.month + months);
   }
 
-  /** 지정된 일수를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified days added */
   addDays(days: number): DateTime {
     return new DateTime(this.tick + days * 24 * 60 * 60 * 1000);
   }
 
-  /** 지정된 시간을 더한 새 인스턴스 반환 */
+  /** Return new instance with specified hours added */
   addHours(hours: number): DateTime {
     return new DateTime(this.tick + hours * 60 * 60 * 1000);
   }
 
-  /** 지정된 분을 더한 새 인스턴스 반환 */
+  /** Return new instance with specified minutes added */
   addMinutes(minutes: number): DateTime {
     return new DateTime(this.tick + minutes * 60 * 1000);
   }
 
-  /** 지정된 초를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified seconds added */
   addSeconds(seconds: number): DateTime {
     return new DateTime(this.tick + seconds * 1000);
   }
 
-  /** 지정된 밀리초를 더한 새 인스턴스 반환 */
+  /** Return new instance with specified milliseconds added */
   addMilliseconds(milliseconds: number): DateTime {
     return new DateTime(this.tick + milliseconds);
   }
 
   //#endregion
 
-  //#region 포맷팅
+  //#region Formatting
 
   /**
-   * 지정된 포맷으로 문자열 변환
-   * @param format 포맷 문자열
-   * @see dtFormat 지원 포맷 문자열 참조
+   * Convert to string with specified format
+   * @param format Format string
+   * @see dtFormat for supported format strings
    */
   toFormatString(formatStr: string): string {
     return formatDate(formatStr, {

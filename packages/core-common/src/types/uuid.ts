@@ -2,16 +2,16 @@ import type { Bytes } from "../common.types";
 import { ArgumentError } from "../errors/argument-error";
 
 /**
- * UUID v4 클래스
+ * UUID v4 class
  *
- * crypto.getRandomValues 기반으로 암호학적으로 안전한 UUID를 생성한다. (Chrome 79+, Node.js 공용)
+ * Generates cryptographically secure UUIDs based on crypto.getRandomValues. (Chrome 79+, Node.js compatible)
  *
  * @example
  * const id = Uuid.new();
  * const fromStr = new Uuid("550e8400-e29b-41d4-a716-446655440000");
  */
 export class Uuid {
-  // 0x00 ~ 0xFF에 대한 hex 문자열 미리 계산 (256개)
+  // Pre-calculate hex strings for 0x00 ~ 0xFF (256 entries)
   private static readonly _hexTable: string[] = Array.from({ length: 256 }, (_, i) =>
     i.toString(16).padStart(2, "0"),
   );
@@ -19,7 +19,7 @@ export class Uuid {
   private static readonly _uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  /** 16바이트 배열을 UUID 문자열로 변환 */
+  /** Convert 16-byte array to UUID string */
   private static _bytesToUuidStr(bytes: Uint8Array): string {
     const h = Uuid._hexTable;
     return (
@@ -46,12 +46,12 @@ export class Uuid {
     );
   }
 
-  /** 새 UUID v4 인스턴스 생성 */
+  /** Create new UUID v4 instance */
   static new(): Uuid {
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
 
-    // UUID v4 설정
+    // Set UUID v4 bits
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
 
@@ -59,13 +59,13 @@ export class Uuid {
   }
 
   /**
-   * 16바이트 Uint8Array에서 UUID 생성
-   * @param bytes 16바이트 배열
-   * @throws {ArgumentError} 바이트 크기가 16이 아닌 경우
+   * Create UUID from 16-byte Uint8Array
+   * @param bytes 16-byte array
+   * @throws {ArgumentError} If byte size is not 16
    */
   static fromBytes(bytes: Bytes): Uuid {
     if (bytes.length !== 16) {
-      throw new ArgumentError("UUID 바이트 크기는 16이어야 합니다.", { length: bytes.length });
+      throw new ArgumentError("UUID byte size must be 16.", { length: bytes.length });
     }
 
     return new Uuid(Uuid._bytesToUuidStr(bytes));
@@ -74,26 +74,26 @@ export class Uuid {
   private readonly _uuid: string;
 
   /**
-   * @param uuid UUID 문자열 (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 형식)
-   * @throws {ArgumentError} 형식이 올바르지 않은 경우
+   * @param uuid UUID string (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+   * @throws {ArgumentError} If format is invalid
    */
   constructor(uuid: string) {
     if (!Uuid._uuidRegex.test(uuid)) {
-      throw new ArgumentError("UUID 형식이 올바르지 않습니다.", { uuid });
+      throw new ArgumentError("Invalid UUID format.", { uuid });
     }
     this._uuid = uuid;
   }
 
-  /** UUID를 문자열로 변환 */
+  /** Convert UUID to string */
   toString(): string {
     return this._uuid;
   }
 
-  /** UUID를 16바이트 Uint8Array로 변환 */
+  /** Convert UUID to 16-byte Uint8Array */
   toBytes(): Bytes {
     const u = this._uuid;
-    // UUID 형식: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (8-4-4-4-12)
-    // 하이픈 위치: 8, 13, 18, 23
+    // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (8-4-4-4-12)
+    // Hyphen positions: 8, 13, 18, 23
     return new Uint8Array([
       Number.parseInt(u.substring(0, 2), 16),
       Number.parseInt(u.substring(2, 4), 16),

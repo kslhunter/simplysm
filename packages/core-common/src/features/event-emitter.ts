@@ -1,10 +1,10 @@
 /**
- * EventTarget 래퍼 - EventEmitter와 유사한 API 제공
+ * EventTarget wrapper - provides EventEmitter-like API
  *
- * 브라우저와 Node.js 모두에서 사용 가능한 타입 안전한 이벤트 에미터이다.
- * 내부적으로 EventTarget을 사용하여 구현되어 있다.
+ * A type-safe event emitter that can be used in both browsers and Node.js.
+ * Internally implemented using EventTarget.
  *
- * @typeParam TEvents 이벤트 타입 맵. 키는 이벤트 이름, 값은 이벤트 데이터 타입
+ * @typeParam TEvents Event type map. Keys are event names, values are event data types
  *
  * @example
  * interface MyEvents {
@@ -18,32 +18,32 @@
  * const emitter = new MyEmitter();
  * emitter.on("data", (data) => console.log(data)); // data: string
  * emitter.emit("data", "hello");
- * emitter.emit("done"); // void 타입은 인자 없이 호출
+ * emitter.emit("done"); // void type is called without arguments
  */
 export class EventEmitter<
   TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>,
 > {
   private readonly _target = new EventTarget();
-  // 이벤트 타입별로 리스너 맵 관리 (같은 리스너를 다른 이벤트에 등록 가능)
-  // 다형적 리스너 관리를 위해 Function 타입 사용
+  // Manage listener maps by event type (same listener can be registered to different events)
+  // Use Function type for polymorphic listener management
   private readonly _listenerMap = new Map<string, Map<Function, (e: Event) => void>>();
 
   /**
-   * 이벤트 리스너 등록
+   * Register an event listener
    *
-   * @param type 이벤트 타입
-   * @param listener 이벤트 핸들러
-   * @note 같은 리스너를 같은 이벤트에 중복 등록하면 무시됨
+   * @param type Event type
+   * @param listener Event handler
+   * @note Duplicate registration of the same listener to the same event is ignored
    */
   on<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
-    // 이벤트 타입별 맵 가져오거나 생성
+    // Get or create map for event type
     let typeMap = this._listenerMap.get(type);
     if (!typeMap) {
       typeMap = new Map();
       this._listenerMap.set(type, typeMap);
     }
 
-    // 이미 해당 이벤트에 등록된 리스너면 무시 (중복 등록 방지)
+    // If listener is already registered to this event, ignore it (prevent duplicate registration)
     if (typeMap.has(listener)) return;
 
     const wrappedListener = (e: Event) => listener((e as CustomEvent).detail);
@@ -52,10 +52,10 @@ export class EventEmitter<
   }
 
   /**
-   * 이벤트 리스너 제거
+   * Remove an event listener
    *
-   * @param type 이벤트 타입
-   * @param listener 제거할 이벤트 핸들러
+   * @param type Event type
+   * @param listener Event handler to remove
    */
   off<K extends keyof TEvents & string>(type: K, listener: (data: TEvents[K]) => void): void {
     const typeMap = this._listenerMap.get(type);
@@ -66,7 +66,7 @@ export class EventEmitter<
       this._target.removeEventListener(type, wrappedListener);
       typeMap.delete(listener);
 
-      // 빈 맵 정리
+      // Clean up empty map
       if (typeMap.size === 0) {
         this._listenerMap.delete(type);
       }
@@ -74,10 +74,10 @@ export class EventEmitter<
   }
 
   /**
-   * 이벤트 발생
+   * Emit an event
    *
-   * @param type 이벤트 타입
-   * @param args 이벤트 데이터 (void 타입이면 생략)
+   * @param type Event type
+   * @param args Event data (omitted if void type)
    */
   emit<K extends keyof TEvents & string>(
     type: K,
@@ -87,17 +87,17 @@ export class EventEmitter<
   }
 
   /**
-   * 특정 이벤트의 리스너 수 반환
+   * Return the number of listeners for a specific event
    *
-   * @param type 이벤트 타입
-   * @returns 등록된 리스너 수
+   * @param type Event type
+   * @returns Number of registered listeners
    */
   listenerCount<K extends keyof TEvents & string>(type: K): number {
     return this._listenerMap.get(type)?.size ?? 0;
   }
 
   /**
-   * 모든 이벤트 리스너를 제거한다.
+   * Remove all event listeners
    */
   dispose(): void {
     for (const [type, typeMap] of this._listenerMap) {
@@ -109,7 +109,7 @@ export class EventEmitter<
   }
 
   /**
-   * using 문 지원
+   * Supports using statement
    */
   [Symbol.dispose](): void {
     this.dispose();

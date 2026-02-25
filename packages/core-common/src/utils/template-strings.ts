@@ -1,13 +1,13 @@
 /**
- * 템플릿 문자열 태그 함수들
- * IDE 코드 하이라이팅 지원용 (실제 동작은 문자열 조합 + 들여쓰기 정리)
+ * Template string tag functions
+ * For IDE code highlighting support (actual behavior is string concatenation + indent normalization)
  */
 
 /**
- * JavaScript 코드 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for JavaScript code highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const code = js`
  *   function hello() {
@@ -20,10 +20,10 @@ export function js(strings: TemplateStringsArray, ...values: unknown[]): string 
 }
 
 /**
- * TypeScript 코드 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for TypeScript code highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const code = ts`
  *   interface User {
@@ -37,10 +37,10 @@ export function ts(strings: TemplateStringsArray, ...values: unknown[]): string 
 }
 
 /**
- * HTML 마크업 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for HTML markup highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const markup = html`
  *   <div class="container">
@@ -53,10 +53,10 @@ export function html(strings: TemplateStringsArray, ...values: unknown[]): strin
 }
 
 /**
- * MSSQL T-SQL 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for MSSQL T-SQL highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const query = tsql`
  *   SELECT TOP 10 *
@@ -69,10 +69,10 @@ export function tsql(strings: TemplateStringsArray, ...values: unknown[]): strin
 }
 
 /**
- * MySQL SQL 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for MySQL SQL highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const query = mysql`
  *   SELECT *
@@ -85,10 +85,10 @@ export function mysql(strings: TemplateStringsArray, ...values: unknown[]): stri
 }
 
 /**
- * PostgreSQL SQL 하이라이팅용 템플릿 태그
- * @param strings 템플릿 문자열 배열
- * @param values 보간된 값들
- * @returns 들여쓰기가 정리된 문자열
+ * Template tag for PostgreSQL SQL highlighting
+ * @param strings Template string array
+ * @param values Interpolated values
+ * @returns String with normalized indentation
  * @example
  * const query = pgsql`
  *   SELECT *
@@ -111,7 +111,7 @@ function _combine(strings: TemplateStringsArray, values: unknown[]): string {
 function _trimIndent(text: string): string {
   const lines = text.split("\n");
 
-  // 첫/마지막 빈 줄 제거 (연속된 빈 줄 모두 제거)
+  // Remove leading and trailing empty lines (remove all consecutive empty lines)
   while (lines.length > 0 && lines[0].trim() === "") {
     lines.shift();
   }
@@ -119,7 +119,7 @@ function _trimIndent(text: string): string {
     lines.pop();
   }
 
-  // 최소 들여쓰기 계산
+  // Calculate minimum indentation
   const minIndent = lines
     .filter((line) => line.trim() !== "")
     .reduce((min, line) => {
@@ -127,6 +127,6 @@ function _trimIndent(text: string): string {
       return Math.min(min, indent);
     }, Infinity);
 
-  // 들여쓰기 제거
+  // Remove indentation
   return lines.map((line) => (line.trim() === "" ? "" : line.slice(minIndent))).join("\n");
 }

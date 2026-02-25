@@ -1,5 +1,5 @@
 /**
- * Array 확장 타입 정의
+ * Array extension type definitions
  */
 
 import type { PrimitiveTypeMap, PrimitiveTypeStr, Type } from "../common.types";
@@ -7,71 +7,71 @@ import type { DateTime } from "../types/date-time";
 import type { DateOnly } from "../types/date-only";
 import type { Time } from "../types/time";
 
-//#region 인터페이스
+//#region Interfaces
 
 export interface ReadonlyArrayExt<TItem> {
   /**
-   * 조건에 맞는 단일 요소 반환
-   * @param predicate 필터 조건 (생략 시 배열 전체 대상)
-   * @returns 요소가 없으면 undefined
-   * @throws ArgumentError 조건에 맞는 요소가 2개 이상이면 발생
+   * Return single element matching condition
+   * @param predicate Filter condition (if omitted, entire array is target)
+   * @returns undefined if element does not exist
+   * @throws ArgumentError If 2 or more elements match condition
    */
   single(predicate?: (item: TItem, index: number) => boolean): TItem | undefined;
 
   /**
-   * 첫 번째 요소 반환
-   * @param predicate 필터 조건 (생략 시 첫 번째 요소 반환)
-   * @returns 요소가 없으면 undefined
+   * Return first element
+   * @param predicate Filter condition (if omitted, returns first element)
+   * @returns undefined if element does not exist
    */
   first(predicate?: (item: TItem, index: number) => boolean): TItem | undefined;
 
-  /** 비동기 필터 (순차 실행) */
+  /** Async filter (sequential execution) */
   filterAsync(predicate: (item: TItem, index: number) => Promise<boolean>): Promise<TItem[]>;
 
   /**
-   * 마지막 요소 반환
-   * @param predicate 필터 조건 (생략 시 마지막 요소 반환)
-   * @returns 요소가 없으면 undefined
+   * Return last element
+   * @param predicate Filter condition (if omitted, returns last element)
+   * @returns undefined if element does not exist
    */
   last(predicate?: (item: TItem, index: number) => boolean): TItem | undefined;
 
-  /** null/undefined 제거 */
+  /** Remove null/undefined */
   filterExists(): NonNullable<TItem>[];
 
-  /** 특정 타입의 요소만 필터링 (PrimitiveTypeStr 또는 생성자 타입) */
+  /** Filter only elements of specific type (PrimitiveTypeStr or constructor type) */
   ofType<K extends PrimitiveTypeStr>(type: K): Extract<TItem, PrimitiveTypeMap[K]>[];
   ofType<N extends TItem>(type: Type<N>): N[];
 
-  /** 비동기 매핑 (순차 실행) */
+  /** Async mapping (sequential execution) */
   mapAsync<R>(selector: (item: TItem, index: number) => Promise<R>): Promise<R[]>;
 
-  /** 중첩 배열 평탄화 */
+  /** Flatten nested array */
   mapMany(): TItem extends readonly (infer U)[] ? U[] : TItem;
 
-  /** 매핑 후 평탄화 */
+  /** Map and then flatten */
   mapMany<R>(selector: (item: TItem, index: number) => R[]): R[];
 
-  /** 비동기 매핑 후 평탄화 (순차 실행) */
+  /** Async mapping and then flatten (sequential execution) */
   mapManyAsync<R>(selector: (item: TItem, index: number) => Promise<R[]>): Promise<R[]>;
 
   /**
-   * 비동기 병렬 처리 (Promise.all 사용)
-   * @note 하나라도 reject되면 전체가 fail-fast로 reject됨 (Promise.all 동작)
+   * Async parallel processing (using Promise.all)
+   * @note If any rejects, entire operation fail-fast rejects (Promise.all behavior)
    */
   parallelAsync<R>(fn: (item: TItem, index: number) => Promise<R>): Promise<R[]>;
 
   /**
-   * 키 기준 그룹화
-   * @param keySelector 그룹 키 선택 함수
-   * @note O(n²) 복잡도 (객체 키 지원을 위해 깊은 비교 사용). primitive 키만 필요하면 toArrayMap()이 O(n)으로 더 효율적
+   * Group by key
+   * @param keySelector Key selection function for group
+   * @note O(n²) complexity (deep comparison for object key support). If only primitive keys are needed, toArrayMap() is more efficient at O(n)
    */
   groupBy<K>(keySelector: (item: TItem, index: number) => K): { key: K; values: TItem[] }[];
 
   /**
-   * 키 기준 그룹화 (값 변환 포함)
-   * @param keySelector 그룹 키 선택 함수
-   * @param valueSelector 값 변환 함수
-   * @note O(n²) 복잡도 (객체 키 지원을 위해 깊은 비교 사용). primitive 키만 필요하면 toArrayMap()이 O(n)으로 더 효율적
+   * Group by key (with value transformation)
+   * @param keySelector Key selection function for group
+   * @param valueSelector Value transformation function
+   * @note O(n²) complexity (deep comparison for object key support). If only primitive keys are needed, toArrayMap() is more efficient at O(n)
    */
   groupBy<K, V>(
     keySelector: (item: TItem, index: number) => K,
@@ -121,16 +121,16 @@ export interface ReadonlyArrayExt<TItem> {
   ): Record<string, V>;
 
   /**
-   * 평탄한 배열을 트리 구조로 변환한다
+   * Convert flat array to tree structure
    *
-   * @param keyProp 각 항목의 고유 키 속성명
-   * @param parentKey 부모 항목의 키를 참조하는 속성명
-   * @returns 루트 항목들의 배열 (각 항목에 children 속성 추가)
+   * @param keyProp Unique key property name of each item
+   * @param parentKey Property name referencing parent item's key
+   * @returns Array of root items (each item has children property added)
    *
    * @remarks
-   * - parentKey 값이 null/undefined인 항목이 루트가 된다
-   * - 내부적으로 toArrayMap을 사용하여 O(n) 복잡도로 처리한다
-   * - 원본 항목은 복사되어 children 속성이 추가된다
+   * - Items with null/undefined parentKey value become roots
+   * - Internally uses toArrayMap for O(n) complexity
+   * - Original items are copied with children property added
    *
    * @example
    * ```typescript
@@ -162,9 +162,9 @@ export interface ReadonlyArrayExt<TItem> {
   ): TreeArray<TItem>[];
 
   /**
-   * 중복 제거
-   * @param options matchAddress: 주소 비교 (true면 Set 사용), keyFn: 커스텀 키 함수 (O(n) 성능)
-   * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
+   * Remove duplicates
+   * @param options matchAddress: address comparison (true uses Set), keyFn: custom key function (O(n) performance)
+   * @note O(n²) complexity when used without keyFn on object arrays. Using keyFn is recommended for large data
    */
   distinct(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number },
@@ -179,10 +179,10 @@ export interface ReadonlyArrayExt<TItem> {
   ): TItem[];
 
   /**
-   * 두 배열 비교 (INSERT/DELETE/UPDATE)
-   * @param target 비교 대상 배열
-   * @param options keys: 키 비교용, excludes: 비교 제외 속성
-   * @note target에 중복 키가 있으면 첫 번째 매칭만 사용됨
+   * Compare two arrays (INSERT/DELETE/UPDATE)
+   * @param target Array to compare with
+   * @param options keys: for key comparison, excludes: properties to exclude from comparison
+   * @note If target has duplicate keys, only first match is used
    */
   diffs<TOtherItem>(
     target: TOtherItem[],
@@ -205,9 +205,9 @@ export interface ReadonlyArrayExt<TItem> {
   ): (TItem | TOtherItem | (TItem & TOtherItem))[];
 
   /**
-   * 요소의 합계 반환
-   * @param selector 값 선택 함수 (생략 시 요소 자체를 number로 사용)
-   * @returns 빈 배열인 경우 0 반환
+   * Return sum of elements
+   * @param selector Value selection function (if omitted, element itself is used as number)
+   * @returns 0 if array is empty
    */
   sum(selector?: (item: TItem, index: number) => number): number;
 
@@ -223,49 +223,49 @@ export interface ReadonlyArrayExt<TItem> {
 }
 
 /**
- * 원본 배열을 변경하는 확장 메서드
- * @mutates 모든 메서드가 원본 배열을 직접 변경합니다
+ * Extension methods that mutate the original array
+ * @mutates All methods directly modify the original array
  */
 export interface MutableArrayExt<TItem> {
   /**
-   * 원본 배열에서 중복 제거
-   * @param options matchAddress: 주소 비교 (true면 Set 사용), keyFn: 커스텀 키 함수 (O(n) 성능)
-   * @note 객체 배열에서 keyFn 없이 사용 시 O(n²) 복잡도. 대량 데이터는 keyFn 사용 권장
+   * Remove duplicates from original array
+   * @param options matchAddress: address comparison (true uses Set), keyFn: custom key function (O(n) performance)
+   * @note O(n²) complexity when used without keyFn on object arrays. Using keyFn is recommended for large data
    * @mutates
    */
   distinctThis(
     options?: boolean | { matchAddress?: boolean; keyFn?: (item: TItem) => string | number },
   ): TItem[];
 
-  /** 원본 배열 오름차순 정렬 @mutates */
+  /** Sort original array in ascending order @mutates */
   orderByThis(
     selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
   ): TItem[];
 
-  /** 원본 배열 내림차순 정렬 @mutates */
+  /** Sort original array in descending order @mutates */
   orderByDescThis(
     selector?: (item: TItem) => string | number | DateOnly | DateTime | Time | undefined,
   ): TItem[];
 
-  /** 원본 배열에 항목 삽입 @mutates */
+  /** Insert items into original array @mutates */
   insert(index: number, ...items: TItem[]): this;
 
-  /** 원본 배열에서 항목 제거 @mutates */
+  /** Remove item from original array @mutates */
   remove(item: TItem): this;
 
-  /** 원본 배열에서 조건에 맞는 항목 제거 @mutates */
+  /** Remove items matching condition from original array @mutates */
   remove(selector: (item: TItem, index: number) => boolean): this;
 
-  /** 원본 배열에서 항목 토글 (있으면 제거, 없으면 추가) @mutates */
+  /** Toggle item in original array (remove if exists, add if not) @mutates */
   toggle(item: TItem): this;
 
-  /** 원본 배열 비우기 @mutates */
+  /** Clear original array @mutates */
   clear(): this;
 }
 
 //#endregion
 
-//#region 내보내기 타입
+//#region Export Types
 
 export type ArrayDiffsResult<TOriginal, TOther> =
   | { source: undefined; target: TOther } // INSERT
@@ -279,7 +279,7 @@ export type ArrayDiffs2Result<TItem> =
 
 export type TreeArray<TNode> = TNode & { children: TreeArray<TNode>[] };
 
-/** 정렬/비교 가능한 타입 */
+/** Type that can be sorted/compared */
 export type ComparableType = string | number | boolean | DateTime | DateOnly | Time | undefined;
 
 //#endregion

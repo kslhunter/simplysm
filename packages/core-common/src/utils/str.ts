@@ -1,10 +1,10 @@
 /**
- * 문자열 유틸리티 함수
+ * String utility functions
  */
 
-//#region 한글 조사 처리
+//#region Korean particle handling
 
-// 한글 조사 매핑 테이블 (모듈 로드 시 1회만 생성)
+// Korean particle mapping table (created only once when module loads)
 const suffixTable = {
   을: { t: "을", f: "를" },
   은: { t: "은", f: "는" },
@@ -16,16 +16,16 @@ const suffixTable = {
 };
 
 /**
- * 한글 조사를 받침에 따라 적절히 반환
- * @param text 텍스트
- * @param type 조사 타입
- *   - `"을"`: 을/를
- *   - `"은"`: 은/는
- *   - `"이"`: 이/가
- *   - `"와"`: 과/와
- *   - `"랑"`: 이랑/랑
- *   - `"로"`: 으로/로
- *   - `"라"`: 이라/라
+ * Return the appropriate Korean particle based on the final consonant
+ * @param text The text
+ * @param type The particle type
+ *   - `"을"`: 을/를 (eul/reul - object particle)
+ *   - `"은"`: 은/는 (eun/neun - subject particle)
+ *   - `"이"`: 이/가 (i/ga - subject particle)
+ *   - `"와"`: 과/와 (gwa/wa - and particle)
+ *   - `"랑"`: 이랑/랑 (irang/rang - and particle)
+ *   - `"로"`: 으로/로 (euro/ro - instrumental particle)
+ *   - `"라"`: 이라/라 (ira/ra - copula particle)
  *
  * @example
  * getSuffix("사과", "을") // "를"
@@ -37,23 +37,23 @@ export function strGetSuffix(
 ): string {
   const table = suffixTable;
 
-  // 빈 문자열 또는 마지막 글자가 한글이 아닌 경우 받침 없음으로 처리
+  // Empty string or last character is not Hangul - treat as no final consonant
   if (text.length === 0) {
     return table[type].f;
   }
 
   const lastCharCode = text.charCodeAt(text.length - 1);
 
-  // 한글 범위 체크 (0xAC00 ~ 0xD7A3)
+  // Hangul range check (0xAC00 ~ 0xD7A3)
   if (lastCharCode < 0xac00 || lastCharCode > 0xd7a3) {
     return table[type].f;
   }
 
-  // 받침 존재 여부 및 종성 인덱스 계산
+  // Check for final consonant existence and calculate jongseong index
   const jongseongIndex = (lastCharCode - 0xac00) % 28;
   const hasLast = jongseongIndex !== 0;
 
-  // "로" 조사는 받침 ㄹ(종성 인덱스 8)일 때 "로"로 처리
+  // For "로" particle, when final consonant is ㄹ(jongseong index 8), use "로"
   if (type === "로" && jongseongIndex === 8) {
     return table[type].f;
   }
@@ -63,9 +63,9 @@ export function strGetSuffix(
 
 //#endregion
 
-//#region 전각→반각 변환
+//#region Full-width to half-width conversion
 
-// 전각 → 반각 매핑 테이블 (모듈 로드 시 1회만 생성)
+// Full-width to half-width mapping table (created only once when module loads)
 const specialCharMap: Record<string, string> = {
   "Ａ": "A",
   "Ｂ": "B",
@@ -134,18 +134,18 @@ const specialCharMap: Record<string, string> = {
   "（": "(",
 };
 
-// 정규식도 1회만 생성
+// Regex also created only once
 const specialCharRegex = new RegExp(`[${Object.keys(specialCharMap).join("")}]`, "g");
 
 /**
- * 전각(Full-width) 문자를 반각(Half-width) 문자로 변환
+ * Convert full-width characters to half-width characters
  *
- * 변환 대상:
- * - 전각 영문 대문자 (Ａ-Ｚ → A-Z)
- * - 전각 영문 소문자 (ａ-ｚ → a-z)
- * - 전각 숫자 (０-９ → 0-9)
- * - 전각 공백 (　 → 일반 공백)
- * - 전각 괄호 (（） → ())
+ * Conversion targets:
+ * - Full-width uppercase letters (Ａ-Ｚ → A-Z)
+ * - Full-width lowercase letters (ａ-ｚ → a-z)
+ * - Full-width digits (０-９ → 0-9)
+ * - Full-width space (　 → regular space)
+ * - Full-width parentheses (（） → ())
  *
  * @example
  * replaceSpecialDefaultChar("Ａ１２３") // "A123"
@@ -157,7 +157,7 @@ export function strReplaceFullWidth(str: string): string {
 
 //#endregion
 
-//#region 케이스 변환
+//#region Case conversion
 
 /**
  * PascalCase로 변환
@@ -184,28 +184,28 @@ export function strToCamelCase(str: string): string {
 }
 
 /**
- * kebab-case로 변환
+ * Convert to kebab-case
  *
  * @example "HelloWorld" → "hello-world"
  * @example "helloWorld" → "hello-world"
- * @example "hello_world" → "hello_world" (소문자만 있으면 변환 안됨)
- * @example "Hello_World" → "hello-_world" (기존 분리자는 유지됨)
- * @example "Hello-World" → "hello--world" (기존 분리자는 유지됨)
- * @example "XMLParser" → "x-m-l-parser" (연속된 대문자는 각각 분리됨)
+ * @example "hello_world" → "hello_world" (no conversion if only lowercase)
+ * @example "Hello_World" → "hello-_world" (existing separators are preserved)
+ * @example "Hello-World" → "hello--world" (existing separators are preserved)
+ * @example "XMLParser" → "x-m-l-parser" (consecutive uppercase letters are separated)
  */
 export function strToKebabCase(str: string): string {
   return toCaseWithSeparator(str, "-");
 }
 
 /**
- * snake_case로 변환
+ * Convert to snake_case
  *
  * @example "HelloWorld" → "hello_world"
  * @example "helloWorld" → "hello_world"
- * @example "hello-world" → "hello-world" (소문자만 있으면 변환 안됨)
- * @example "Hello-World" → "hello_-world" (기존 분리자는 유지됨)
- * @example "Hello_World" → "hello__world" (기존 분리자는 유지됨)
- * @example "XMLParser" → "x_m_l_parser" (연속된 대문자는 각각 분리됨)
+ * @example "hello-world" → "hello-world" (no conversion if only lowercase)
+ * @example "Hello-World" → "hello_-world" (existing separators are preserved)
+ * @example "Hello_World" → "hello__world" (existing separators are preserved)
+ * @example "XMLParser" → "x_m_l_parser" (consecutive uppercase letters are separated)
  */
 export function strToSnakeCase(str: string): string {
   return toCaseWithSeparator(str, "_");
@@ -219,22 +219,22 @@ function toCaseWithSeparator(str: string, separator: string): string {
 
 //#endregion
 
-//#region 기타
+//#region Other
 
 /**
- * undefined 또는 빈 문자열 여부 체크 (타입 가드)
+ * Check if string is undefined or empty (type guard)
  *
- * @param str 체크할 문자열
- * @returns undefined, null, 빈 문자열이면 true
+ * @param str The string to check
+ * @returns true if undefined, null, or empty string
  *
  * @example
  * const name: string | undefined = getValue();
  * if (strIsNullOrEmpty(name)) {
  *   // name: "" | undefined
- *   console.log("이름이 비어있습니다");
+ *   console.log("Name is empty");
  * } else {
- *   // name: string (비어있지 않은 문자열)
- *   console.log(`이름: ${name}`);
+ *   // name: string (non-empty string)
+ *   console.log(`Name: ${name}`);
  * }
  */
 export function strIsNullOrEmpty(str: string | undefined): str is "" | undefined {
@@ -242,12 +242,12 @@ export function strIsNullOrEmpty(str: string | undefined): str is "" | undefined
 }
 
 /**
- * 문자열 특정 위치에 삽입
+ * Insert a string at a specific position
  *
- * @param str 원본 문자열
- * @param index 삽입할 위치 (0부터 시작)
- * @param insertString 삽입할 문자열
- * @returns 삽입된 새 문자열
+ * @param str The original string
+ * @param index The position to insert at (0-based)
+ * @param insertString The string to insert
+ * @returns A new string with the insertion applied
  *
  * @example
  * strInsert("Hello World", 5, ","); // "Hello, World"

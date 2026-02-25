@@ -13,15 +13,15 @@ import { SdError } from "./sd-error";
  * @example
  * // Passing only the argument object
  * throw new ArgumentError({ userId: 123, name: null });
- * // Result message: "인수가 잘못되었습니다.\n\nuserId: 123\nname: null"
+ * // Result message: "Invalid arguments.\n\nuserId: 123\nname: null"
  *
  * @example
  * // Passing a custom message and argument object
- * throw new ArgumentError("유효하지 않은 사용자", { userId: 123 });
- * // Result message: "유효하지 않은 사용자\n\nuserId: 123"
+ * throw new ArgumentError("Invalid user", { userId: 123 });
+ * // Result message: "Invalid user\n\nuserId: 123"
  */
 export class ArgumentError extends SdError {
-  /** Output argument object in YAML format with default message ("인수가 잘못되었습니다.") */
+  /** Output argument object in YAML format with default message ("Invalid arguments.") */
   constructor(argObj: Record<string, unknown>);
   /** Output argument object in YAML format with a custom message */
   constructor(message: string, argObj: Record<string, unknown>);
@@ -31,9 +31,9 @@ export class ArgumentError extends SdError {
     const argObj = typeof arg1 === "string" ? arg2 : arg1;
 
     if (argObj != null) {
-      super((message ?? "인수가 잘못되었습니다.") + "\n\n" + YAML.stringify(argObj));
+      super((message ?? "Invalid arguments.") + "\n\n" + YAML.stringify(argObj));
     } else {
-      super(message ?? "인수가 잘못되었습니다.");
+      super(message ?? "Invalid arguments.");
     }
     this.name = "ArgumentError";
   }

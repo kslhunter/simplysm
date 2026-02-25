@@ -1,19 +1,19 @@
 /**
- * 대기 유틸리티 함수
+ * Wait utility functions
  */
 import { TimeoutError } from "../errors/timeout-error";
 
 /**
- * 조건이 참이 될 때까지 대기
- * @param forwarder 조건 함수
- * @param milliseconds 체크 간격 (기본: 100ms)
- * @param maxCount 최대 시도 횟수 (undefined면 무제한)
+ * Wait until a condition becomes true
+ * @param forwarder Condition function
+ * @param milliseconds Check interval (default: 100ms)
+ * @param maxCount Maximum number of attempts (undefined for unlimited)
  *
- * @note 조건이 첫 번째 호출에서 true면 즉시 반환됩니다.
+ * @note Returns immediately if the condition is true on the first call.
  * @example
- * // maxCount=3: 최대 3번 조건 확인 후 모두 false면 TimeoutError
+ * // maxCount=3: checks condition up to 3 times, throws TimeoutError if all are false
  * await waitUntil(() => someCondition, 100, 3);
- * @throws TimeoutError 최대 시도 횟수 초과 시
+ * @throws TimeoutError when maximum number of attempts is exceeded
  */
 export async function waitUntil(
   forwarder: () => boolean | Promise<boolean>,
@@ -32,8 +32,8 @@ export async function waitUntil(
 }
 
 /**
- * 지정된 시간만큼 대기
- * @param millisecond 대기 시간 (ms)
+ * Wait for a specified amount of time
+ * @param millisecond Wait time (ms)
  */
 export async function waitTime(millisecond: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, millisecond));

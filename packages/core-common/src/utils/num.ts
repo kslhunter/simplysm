@@ -1,17 +1,17 @@
 /**
- * 숫자 유틸리티 함수
+ * Number utility functions
  */
 
 //#region numParseInt / numParseFloat / numParseRoundedInt
 
 /**
- * 문자열을 정수로 파싱
- * 숫자가 아닌 문자(0-9, -, . 제외)는 제거 후 파싱
+ * Parse string to integer
+ * Remove non-numeric characters (except 0-9, -, .) before parsing
  *
- * @note 소수점이 포함된 문자열은 정수 부분만 반환됩니다 (예: '12.34' → 12).
- *       반올림이 필요하면 {@link numParseRoundedInt}를 사용하세요.
- * @note 문자열 중간의 `-`도 유지되므로 의도치 않은 음수가 될 수 있습니다.
- *       예: `"가-123나"` → `-123`
+ * @note Strings with decimal points return only the integer part (e.g., '12.34' → 12).
+ *       Use {@link numParseRoundedInt} if rounding is needed.
+ * @note Hyphens (-) in the middle of the string are preserved, which may result in unintended negative numbers.
+ *       Example: `"가-123나"` → `-123`
  */
 export function numParseInt(text: unknown): number | undefined {
   if (typeof text === "number") return Math.trunc(text);
@@ -24,7 +24,7 @@ export function numParseInt(text: unknown): number | undefined {
 }
 
 /**
- * 문자열을 실수로 파싱 후 반올림하여 정수 반환
+ * Parse string to float, then round and return integer
  */
 export function numParseRoundedInt(text: unknown): number | undefined {
   const float = numParseFloat(text);
@@ -32,8 +32,8 @@ export function numParseRoundedInt(text: unknown): number | undefined {
 }
 
 /**
- * 문자열을 실수로 파싱
- * 숫자가 아닌 문자는 제거 후 파싱
+ * Parse string to float
+ * Remove non-numeric characters before parsing
  */
 export function numParseFloat(text: unknown): number | undefined {
   if (typeof text === "number") return text;
@@ -50,21 +50,21 @@ export function numParseFloat(text: unknown): number | undefined {
 //#region numIsNullOrEmpty
 
 /**
- * undefined, null, 0 체크 (타입 가드)
+ * Check undefined, null, 0 (type guard)
  *
- * 타입 가드로 동작하여, true 반환 시 `val`이 `0 | undefined`임을 보장합니다.
- * false 반환 시 `val`이 0이 아닌 유효한 숫자임이 보장됩니다.
+ * Acts as a type guard, guaranteeing that if true is returned, `val` is `0 | undefined`.
+ * If false is returned, `val` is guaranteed to be a valid non-zero number.
  *
- * @param val 체크할 값
- * @returns undefined, null, 0이면 true
+ * @param val Value to check
+ * @returns true if undefined, null, or 0
  * @example
  * const count: number | undefined = getValue();
  * if (numIsNullOrEmpty(count)) {
  *   // count: 0 | undefined
- *   console.log("비어있음");
+ *   console.log("Empty");
  * } else {
- *   // count: number (0이 아닌 값)
- *   console.log(`개수: ${count}`);
+ *   // count: number (non-zero value)
+ *   console.log(`Count: ${count}`);
  * }
  */
 export function numIsNullOrEmpty(val: number | undefined): val is 0 | undefined {
@@ -76,11 +76,11 @@ export function numIsNullOrEmpty(val: number | undefined): val is 0 | undefined 
 //#region numFormat
 
 /**
- * 숫자를 천단위 구분자가 포함된 문자열로 포맷팅
- * @param val 포맷팅할 숫자
- * @param digit 소수점 자릿수 옵션
- * @param digit.max 최대 소수점 자릿수
- * @param digit.min 최소 소수점 자릿수 (부족하면 0으로 채움)
+ * Format number to string with thousand separators
+ * @param val Number to format
+ * @param digit Decimal place options
+ * @param digit.max Maximum decimal places
+ * @param digit.min Minimum decimal places (pad with 0 if insufficient)
  * @example
  * numFormat(1234.567, { max: 2 }) // "1,234.57"
  * numFormat(1234, { min: 2 }) // "1,234.00"

@@ -2,32 +2,32 @@ import type { Bytes } from "../common.types";
 import { ArgumentError } from "../errors/argument-error";
 
 /**
- * Uint8Array 유틸리티 함수 (복잡한 연산만)
+ * Uint8Array utility functions (complex operations only)
  *
- * 기능:
- * - bytesConcat: 여러 Uint8Array 연결
- * - bytesToHex: Uint8Array를 hex 문자열로 변환
- * - bytesFromHex: hex 문자열을 Uint8Array로 변환
- * - bytesToBase64: Uint8Array를 base64 문자열로 변환
- * - bytesFromBase64: base64 문자열을 Uint8Array로 변환
+ * Features:
+ * - bytesConcat: Concatenate multiple Uint8Arrays
+ * - bytesToHex: Convert Uint8Array to hex string
+ * - bytesFromHex: Convert hex string to Uint8Array
+ * - bytesToBase64: Convert Uint8Array to base64 string
+ * - bytesFromBase64: Convert base64 string to Uint8Array
  */
 
-/** hex 변환용 룩업 테이블 (성능 최적화) */
+/** Lookup table for hex conversion (performance optimization) */
 const hexTable: string[] = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
 
-/** base64 인코딩 테이블 */
+/** Base64 encoding table */
 const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-/** base64 디코딩 룩업 테이블 (O(1) 조회, 모든 바이트 값 커버) */
+/** Base64 decoding lookup table (O(1) lookup, covers all byte values) */
 const BASE64_LOOKUP: number[] = Array.from({ length: 256 }, (_, i) => {
   const idx = BASE64_CHARS.indexOf(String.fromCharCode(i));
   return idx === -1 ? 0 : idx;
 });
 
 /**
- * 여러 Uint8Array 연결
- * @param arrays 연결할 Uint8Array 배열
- * @returns 연결된 새 Uint8Array
+ * Concatenate multiple Uint8Arrays
+ * @param arrays Uint8Array array to concatenate
+ * @returns New concatenated Uint8Array
  * @example
  * const a = new Uint8Array([1, 2]);
  * const b = new Uint8Array([3, 4]);
@@ -46,9 +46,9 @@ export function bytesConcat(arrays: Bytes[]): Bytes {
 }
 
 /**
- * hex 문자열로 변환
- * @param bytes 변환할 Uint8Array
- * @returns 소문자 hex 문자열
+ * Convert to hex string
+ * @param bytes Uint8Array to convert
+ * @returns Lowercase hex string
  * @example
  * bytesToHex(new Uint8Array([255, 0, 127]));
  * // "ff007f"
@@ -63,20 +63,20 @@ export function bytesToHex(bytes: Bytes): string {
 }
 
 /**
- * hex 문자열에서 Uint8Array로 변환
- * @param hex 변환할 hex 문자열 (소문자/대문자 모두 허용)
- * @returns 변환된 Uint8Array
- * @throws {ArgumentError} 홀수 길이 또는 유효하지 않은 hex 문자가 포함된 경우
+ * Convert from hex string to Uint8Array
+ * @param hex Hex string to convert (lowercase and uppercase allowed)
+ * @returns Converted Uint8Array
+ * @throws {ArgumentError} If odd length or invalid hex characters are present
  * @example
  * bytesFromHex("ff007f");
  * // Uint8Array([255, 0, 127])
  */
 export function bytesFromHex(hex: string): Bytes {
   if (hex.length % 2 !== 0) {
-    throw new ArgumentError("hex 문자열은 짝수 길이여야 합니다", { hex });
+    throw new ArgumentError("Hex string must have even length", { hex });
   }
   if (hex.length > 0 && !/^[0-9a-fA-F]+$/.test(hex)) {
-    throw new ArgumentError("유효하지 않은 hex 문자가 포함되어 있습니다", { hex });
+    throw new ArgumentError("Invalid hex character included", { hex });
   }
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < bytes.length; i++) {
@@ -86,9 +86,9 @@ export function bytesFromHex(hex: string): Bytes {
 }
 
 /**
- * Bytes를 base64 문자열로 변환
- * @param bytes 변환할 Uint8Array
- * @returns base64 인코딩된 문자열
+ * Convert Bytes to base64 string
+ * @param bytes Uint8Array to convert
+ * @returns Base64 encoded string
  * @example
  * bytesToBase64(new Uint8Array([72, 101, 108, 108, 111]));
  * // "SGVsbG8="
@@ -113,33 +113,33 @@ export function bytesToBase64(bytes: Bytes): string {
 }
 
 /**
- * base64 문자열을 Bytes로 변환
- * @param base64 변환할 base64 문자열
- * @returns 디코딩된 Uint8Array
- * @throws {ArgumentError} 유효하지 않은 base64 문자가 포함된 경우
+ * Convert base64 string to Bytes
+ * @param base64 Base64 string to convert
+ * @returns Decoded Uint8Array
+ * @throws {ArgumentError} If invalid base64 character is present
  * @example
  * bytesFromBase64("SGVsbG8=");
  * // Uint8Array([72, 101, 108, 108, 111])
  */
 export function bytesFromBase64(base64: string): Bytes {
-  // 공백 제거 및 패딩 정규화
+  // Remove whitespace and normalize padding
   const cleanBase64 = base64.replace(/\s/g, "").replace(/=+$/, "");
 
-  // 빈 문자열 처리
+  // Handle empty string
   if (cleanBase64.length === 0) {
     return new Uint8Array(0);
   }
 
-  // 유효성 검사: 문자
+  // Validation: characters
   if (!/^[A-Za-z0-9+/]+$/.test(cleanBase64)) {
-    throw new ArgumentError("유효하지 않은 base64 문자가 포함되어 있습니다", {
+    throw new ArgumentError("Invalid base64 character included", {
       base64: base64.substring(0, 20),
     });
   }
 
-  // 유효성 검사: 길이 (패딩 제거 후 나머지가 1이면 유효하지 않음)
+  // Validation: length (remainder of 1 after padding removal is invalid)
   if (cleanBase64.length % 4 === 1) {
-    throw new ArgumentError("유효하지 않은 base64 길이입니다", { length: cleanBase64.length });
+    throw new ArgumentError("Invalid base64 length", { length: cleanBase64.length });
   }
 
   const len = cleanBase64.length;

@@ -1,10 +1,10 @@
 /**
- * unknown 타입의 에러에서 메시지를 추출하는 유틸리티.
+ * Utility to extract message from unknown type error.
  *
- * Error 인스턴스이면 message 속성을, 아니면 String 변환을 반환한다.
+ * Returns the message property if it's an Error instance, otherwise returns String conversion.
  *
- * @param err - catch 블록의 unknown 에러
- * @returns 에러 메시지 문자열
+ * @param err - Unknown error from catch block
+ * @returns Error message string
  */
 export function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);

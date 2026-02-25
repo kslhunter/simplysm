@@ -1,5 +1,5 @@
 // @simplysm/core-common
-// 공통 유틸리티 패키지
+// Common utility package
 
 import "./extensions/arr-ext";
 import "./extensions/set-ext";

@@ -1,5 +1,5 @@
 /**
- * ZIP 파일 처리 유틸리티
+ * ZIP file processing utility
  */
 import type { FileEntry } from "@zip.js/zip.js";
 import {
@@ -18,25 +18,25 @@ export interface ZipArchiveProgress {
 }
 
 /**
- * ZIP 아카이브 처리 클래스
+ * ZIP archive processing class
  *
- * ZIP 파일의 읽기, 쓰기, 압축/해제를 처리합니다.
- * 내부 캐시를 사용하여 동일 파일의 중복 압축 해제를 방지합니다.
+ * Handles reading, writing, compression, and decompression of ZIP files.
+ * Uses internal caching to prevent duplicate decompression of the same file.
  *
  * @example
- * // ZIP 파일 읽기
+ * // Read ZIP file
  * await using archive = new ZipArchive(zipBytes);
  * const content = await archive.get("file.txt");
  *
  * @example
- * // ZIP 파일 생성
+ * // Create ZIP file
  * await using archive = new ZipArchive();
  * archive.write("file.txt", textBytes);
  * archive.write("data.json", jsonBytes);
  * const zipBytes = await archive.compress();
  *
  * @example
- * // 전체 압축 해제 (진행률 표시)
+ * // Extract all files (with progress reporting)
  * await using archive = new ZipArchive(zipBytes);
  * const files = await archive.extractAll((progress) => {
  *   console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
@@ -48,8 +48,8 @@ export class ZipArchive {
   private _entries?: Awaited<ReturnType<ZipReader<Blob | Bytes>["getEntries"]>>;
 
   /**
-   * ZipArchive 생성
-   * @param data ZIP 데이터 (생략 시 새 아카이브 생성)
+   * Create ZipArchive
+   * @param data ZIP data (omit to create a new archive)
    */
   constructor(data?: Blob | Bytes) {
     if (!data) return;
@@ -70,8 +70,8 @@ export class ZipArchive {
 
   //#region extractAll
   /**
-   * 모든 파일을 압축 해제
-   * @param progressCallback 진행률 콜백
+   * Extract all files
+   * @param progressCallback Progress callback
    */
   async extractAll(
     progressCallback?: (progress: ZipArchiveProgress) => void,
@@ -79,7 +79,7 @@ export class ZipArchive {
     const entries = await this._getEntries();
     if (entries == null) return this._cache;
 
-    // 압축 해제 대상 크기 총합 계산
+    // Calculate total size to extract
     const totalSize = entries
       .filter((e) => !e.directory)
       .reduce((acc, e) => acc + e.uncompressedSize, 0);
@@ -112,7 +112,7 @@ export class ZipArchive {
 
       this._cache.set(entry.filename, entryBytes);
 
-      // 개별 파일이 끝나면 누적 처리
+      // Accumulate when individual file completes
       totalExtracted += entry.uncompressedSize;
 
       progressCallback?.({
@@ -128,8 +128,8 @@ export class ZipArchive {
 
   //#region get
   /**
-   * 특정 파일 압축 해제
-   * @param fileName 파일 이름
+   * Extract specific file
+   * @param fileName File name
    */
   async get(fileName: string): Promise<Bytes | undefined> {
     if (this._cache.has(fileName)) {
@@ -156,8 +156,8 @@ export class ZipArchive {
 
   //#region exists
   /**
-   * 파일 존재 여부 확인
-   * @param fileName 파일 이름
+   * Check if file exists
+   * @param fileName File name
    */
   async exists(fileName: string): Promise<boolean> {
     if (this._cache.has(fileName)) {
@@ -176,9 +176,9 @@ export class ZipArchive {
 
   //#region write
   /**
-   * 파일 쓰기 (캐시에 저장)
-   * @param fileName 파일 이름
-   * @param bytes 파일 내용
+   * Write file (store in cache)
+   * @param fileName File name
+   * @param bytes File content
    */
   write(fileName: string, bytes: Bytes): void {
     this._cache.set(fileName, bytes);
@@ -187,11 +187,11 @@ export class ZipArchive {
 
   //#region compress
   /**
-   * 캐시된 파일들을 ZIP으로 압축
+   * Compress cached files to ZIP
    *
    * @remarks
-   * 내부적으로 `extractAll()`을 호출하여 모든 파일을 메모리에 로드한 후 압축합니다.
-   * 대용량 ZIP 파일의 경우 메모리 사용량에 주의가 필요합니다.
+   * Internally calls `extractAll()` to load all files into memory before compressing.
+   * Be mindful of memory usage when dealing with large ZIP files.
    */
   async compress(): Promise<Bytes> {
     const fileMap = await this.extractAll();
@@ -211,7 +211,7 @@ export class ZipArchive {
 
   //#region close
   /**
-   * 리더 닫기 및 캐시 정리
+   * Close reader and clear cache
    */
   async close(): Promise<void> {
     await this._reader?.close();
@@ -219,7 +219,7 @@ export class ZipArchive {
   }
 
   /**
-   * await using 지원
+   * Support for await using
    */
   async [Symbol.asyncDispose](): Promise<void> {
     await this.close();

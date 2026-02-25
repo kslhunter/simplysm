@@ -1,34 +1,34 @@
 /**
- * Set 확장 메서드
+ * Set extension methods
  */
 
 declare global {
   interface Set<T> {
     /**
-     * 여러 값을 한 번에 추가
+     * Add multiple values at once
      */
     adds(...values: T[]): this;
 
     /**
-     * 값을 토글한다 (있으면 제거, 없으면 추가)
+     * Toggle value (remove if exists, add if not)
      *
-     * @param value 토글할 값
-     * @param addOrDel 강제로 추가("add") 또는 제거("del") 지정 (생략 시 자동 토글)
-     * @returns this (메서드 체이닝 가능)
+     * @param value Value to toggle
+     * @param addOrDel Force add ("add") or remove ("del") (if omitted, toggle automatically)
+     * @returns this (method chaining available)
      *
      * @remarks
-     * addOrDel 파라미터로 조건부 추가/제거를 간결하게 표현할 수 있다.
+     * addOrDel parameter allows concise expression of conditional add/remove.
      *
      * @example
      * ```typescript
      * const set = new Set<number>([1, 2, 3]);
      *
-     * set.toggle(2);  // 2가 있으므로 제거 → {1, 3}
-     * set.toggle(4);  // 4가 없으므로 추가 → {1, 3, 4}
+     * set.toggle(2);  // 2 exists, so remove → {1, 3}
+     * set.toggle(4);  // 4 doesn't exist, so add → {1, 3, 4}
      *
-     * // 조건부 토글
+     * // Conditional toggle
      * const isAdmin = true;
-     * set.toggle(5, isAdmin ? "add" : "del");  // 강제 추가
+     * set.toggle(5, isAdmin ? "add" : "del");  // Force add
      * ```
      */
     toggle(value: T, addOrDel?: "add" | "del"): this;

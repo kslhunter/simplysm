@@ -4,44 +4,44 @@ import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
 
 /**
- * Worker 간 전송 가능한 객체 타입
+ * Object types that can be transferred between Workers
  *
- * 이 코드에서는 ArrayBuffer만 사용됩니다.
+ * Only ArrayBuffer is used in this code.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
  */
 type Transferable = ArrayBuffer;
 
 /**
- * Transferable 변환 유틸리티 함수
+ * Transferable conversion utility functions
  *
- * Worker 간 데이터 전송을 위한 직렬화/역직렬화를 수행합니다.
- * structuredClone이 지원하지 않는 커스텀 타입들을 처리합니다.
+ * Performs serialization/deserialization for data transfer between Workers.
+ * Handles custom types that structuredClone does not support.
  *
- * 지원 타입:
+ * Supported types:
  * - Date, DateTime, DateOnly, Time, Uuid, RegExp
- * - Error (cause, code, detail 포함)
- * - Uint8Array (다른 TypedArray는 미지원, 일반 객체로 처리됨)
- * - Array, Map, Set, 일반 객체
+ * - Error (including cause, code, detail)
+ * - Uint8Array (other TypedArrays not supported, handled as plain objects)
+ * - Array, Map, Set, plain objects
  *
- * @note 순환 참조가 있으면 transferableEncode 시 TypeError 발생 (경로 정보 포함)
- * @note 동일 객체가 여러 곳에서 참조되면 캐시된 인코딩 결과를 재사용합니다
+ * @note Circular references cause TypeError in transferableEncode (includes path info)
+ * @note If the same object is referenced from multiple places, the cached encoding result is reused
  *
  * @example
- * // Worker로 데이터 전송
+ * // Send data to Worker
  * const { result, transferList } = transferableEncode(data);
  * worker.postMessage(result, transferList);
  *
- * // Worker에서 데이터 수신
+ * // Receive data from Worker
  * const decoded = transferableDecode(event.data);
  */
 
 //#region encode
 
 /**
- * 심플리즘 타입을 사용한 객체를 일반 객체로 변환
- * Worker에 전송할 수 있는 형태로 직렬화
+ * Convert objects using Simplysm types to plain objects
+ * Serializes in a form that can be sent to a Worker
  *
- * @throws 순환 참조 감지 시 TypeError
+ * @throws TypeError if circular reference is detected
  */
 export function transferableEncode(obj: unknown): {
   result: unknown;
@@ -65,17 +65,17 @@ function encodeImpl(
 
   // 객체 타입 처리: 순환 감지 + 캐시
   if (typeof obj === "object") {
-    // 순환 참조 감지 (현재 재귀 스택에 있는 객체)
+    // Circular reference detection (object in current recursion stack)
     if (ancestors.has(obj)) {
       const currentPath = path.length > 0 ? path.join(".") : "root";
-      throw new TypeError(`순환 참조가 감지되었습니다: ${currentPath}`);
+      throw new TypeError(`Circular reference detected: ${currentPath}`);
     }
 
-    // 캐시 히트 → 이전 인코딩 결과 재사용
+    // Cache hit → reuse previous encoding result
     const cached = cache.get(obj);
     if (cached !== undefined) return cached;
 
-    // 재귀 스택에 추가
+    // Add to recursion stack
     ancestors.add(obj);
   }
 
@@ -84,8 +84,8 @@ function encodeImpl(
   try {
     // 1. Uint8Array
     if (obj instanceof Uint8Array) {
-      // SharedArrayBuffer는 이미 공유 메모리이므로 transferList에 추가하지 않음
-      // ArrayBuffer만 transferList에 추가
+      // SharedArrayBuffer is already shared memory, so don't add to transferList
+      // Add only ArrayBuffer to transferList
       const isSharedArrayBuffer =
         typeof SharedArrayBuffer !== "undefined" && obj.buffer instanceof SharedArrayBuffer;
       const buffer = obj.buffer as ArrayBuffer;
@@ -94,7 +94,7 @@ function encodeImpl(
       }
       result = obj;
     }
-    // 2. 특수 타입 변환 (JSON.stringify 없이 구조체로 변환)
+    // 2. Special type conversion (convert to struct without JSON.stringify)
     else if (obj instanceof Date) {
       result = { __type__: "Date", data: obj.getTime() };
     } else if (obj instanceof DateTime) {
@@ -138,13 +138,13 @@ function encodeImpl(
         },
       };
     }
-    // 3. 배열 재귀 순회
+    // 3. Array recursion
     else if (Array.isArray(obj)) {
       result = obj.map((item, idx) =>
         encodeImpl(item, transferList, [...path, idx], ancestors, cache),
       );
     }
-    // 4. Map 재귀 순회
+    // 4. Map recursion
     else if (obj instanceof Map) {
       let idx = 0;
       result = new Map(
@@ -159,7 +159,7 @@ function encodeImpl(
         }),
       );
     }
-    // 5. Set 재귀 순회
+    // 5. Set recursion
     else if (obj instanceof Set) {
       let idx = 0;
       result = new Set(
@@ -168,7 +168,7 @@ function encodeImpl(
         ),
       );
     }
-    // 6. 일반 객체 재귀 순회
+    // 6. Plain object recursion
     else if (typeof obj === "object") {
       const res: Record<string, unknown> = {};
       const record = obj as Record<string, unknown>;
@@ -177,19 +177,19 @@ function encodeImpl(
       }
       result = res;
     }
-    // 7. 원시 타입
+    // 7. Primitive types
     else {
       return obj;
     }
 
-    // 캐시 저장 (성공 시에만)
+    // Save to cache (only on success)
     if (typeof obj === "object") {
       cache.set(obj, result);
     }
 
     return result;
   } finally {
-    // 재귀 스택에서 제거 (예외 시에도 반드시 실행)
+    // Remove from recursion stack (must execute even on exception)
     if (typeof obj === "object") {
       ancestors.delete(obj);
     }
@@ -201,13 +201,13 @@ function encodeImpl(
 //#region decode
 
 /**
- * serialize 객체를 심플리즘 타입 사용 객체로 변환
- * Worker로부터 받은 데이터를 역직렬화
+ * Convert serialized objects to objects using Simplysm types
+ * Deserialize data received from a Worker
  */
 export function transferableDecode(obj: unknown): unknown {
   if (obj == null) return obj;
 
-  // 1. 특수 타입 복원
+  // 1. Restore special types
   if (typeof obj === "object" && "__type__" in obj && "data" in obj) {
     const typed = obj as { __type__: string; data: unknown };
     const data = typed.data;
@@ -245,12 +245,12 @@ export function transferableDecode(obj: unknown): unknown {
     }
   }
 
-  // 2. 배열 재귀 (새 배열 생성)
+  // 2. Array recursion (create new array)
   if (Array.isArray(obj)) {
     return obj.map((item) => transferableDecode(item));
   }
 
-  // 3. Map 재귀
+  // 3. Map recursion
   if (obj instanceof Map) {
     const newMap = new Map<unknown, unknown>();
     for (const [k, v] of obj) {
@@ -259,7 +259,7 @@ export function transferableDecode(obj: unknown): unknown {
     return newMap;
   }
 
-  // 4. Set 재귀
+  // 4. Set recursion
   if (obj instanceof Set) {
     const newSet = new Set<unknown>();
     for (const v of obj) {
@@ -268,7 +268,7 @@ export function transferableDecode(obj: unknown): unknown {
     return newSet;
   }
 
-  // 5. 객체 재귀 (새 객체 생성)
+  // 5. Object recursion (create new object)
   if (typeof obj === "object") {
     const record = obj as Record<string, unknown>;
     const result: Record<string, unknown> = {};

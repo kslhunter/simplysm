@@ -19,9 +19,9 @@
 export class SdError extends Error {
   override cause?: Error;
 
-  /** 원인 에러를 감싸서 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지 => 원인 메시지) */
+  /** Create by wrapping a cause error. Messages are joined in reverse order (upper message => lower message => cause message) */
   constructor(cause: Error, ...messages: string[]);
-  /** 메시지만으로 생성. 메시지는 역순으로 연결됨 (상위 메시지 => 하위 메시지) */
+  /** Create with messages only. Messages are joined in reverse order (upper message => lower message) */
   constructor(...messages: string[]);
   constructor(arg1?: unknown, ...messages: string[]);
   constructor(arg1?: unknown, ...messages: string[]) {
@@ -46,7 +46,7 @@ export class SdError extends Error {
     Object.setPrototypeOf(this, new.target.prototype);
     this.name = "SdError";
 
-    // V8 엔진(Node.js, Chrome)에서만 사용 가능한 captureStackTrace
+    // captureStackTrace available only on V8 engine (Node.js, Chrome)
     if ("captureStackTrace" in Error) {
       (Error.captureStackTrace as (targetObject: object, constructorOpt?: Function) => void)(
         this,
@@ -54,7 +54,7 @@ export class SdError extends Error {
       );
     }
 
-    // cause 체인의 stack을 현재 stack에 추가
+    // Add cause chain stack to current stack
     if (cause?.stack != null) {
       this.stack += `\n---- cause stack ----\n${cause.stack}`;
     }
