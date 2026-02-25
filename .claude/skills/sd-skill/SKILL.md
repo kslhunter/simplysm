@@ -1,7 +1,6 @@
 ---
 name: sd-skill
 description: "Skill creation and editing (explicit invocation only)"
-model: opus
 ---
 
 # Writing Skills

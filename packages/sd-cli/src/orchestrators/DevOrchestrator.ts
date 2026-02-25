@@ -321,7 +321,7 @@ export class DevOrchestrator {
       );
     }
 
-    // 이벤트 핸들러 등록
+    // Register event handlers
     for (const workerInfo of this._standaloneClientWorkers) {
       const completeTask = registerWorkerEventHandlers(
         workerInfo as unknown as BaseWorkerInfo,

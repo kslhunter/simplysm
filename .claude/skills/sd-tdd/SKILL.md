@@ -1,7 +1,6 @@
 ---
 name: sd-tdd
 description: "TDD - failing test first, then implement (explicit invocation only)"
-model: sonnet
 user-invocable: false
 ---
 

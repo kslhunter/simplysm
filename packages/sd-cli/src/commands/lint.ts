@@ -241,29 +241,29 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
         };
       }
       stylelintResult = await stylelint.lint(stylelintOptions);
-      logger.success("Stylelint 실행 완료");
+      logger.success("Stylelint execution complete");
     }
   }
 
-  // 파일이 없거나 린트가 실행되지 않았으면 성공 결과 반환
+  // Return success result if no files or lint was not executed
   if (files.length === 0 || eslintResults == null || eslint == null) {
-    logger.info("린트할 파일 없음");
+    logger.info("no files to lint");
     return { success: true, errorCount: 0, warningCount: 0, formattedOutput: "" };
   }
 
-  // 결과 집계
+  // Aggregate results
   let errorCount = eslintResults.sum((r) => r.errorCount);
   let warningCount = eslintResults.sum((r) => r.warningCount);
 
   if (errorCount > 0) {
-    logger.error("린트 에러 발생", { errorCount, warningCount });
+    logger.error("lint errors occurred", { errorCount, warningCount });
   } else if (warningCount > 0) {
-    logger.info("린트 완료 (경고 있음)", { errorCount, warningCount });
+    logger.info("lint complete (warnings present)", { errorCount, warningCount });
   } else {
-    logger.info("린트 완료", { errorCount, warningCount });
+    logger.info("lint complete", { errorCount, warningCount });
   }
 
-  // 포맷터 출력 수집
+  // Collect formatter output
   let formattedOutput = "";
   const formatter = await eslint.loadFormatter("stylish");
   const resultText = await formatter.format(eslintResults);
@@ -271,7 +271,7 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
     formattedOutput += resultText;
   }
 
-  // Stylelint 결과 수집
+  // Collect Stylelint results
   if (stylelintResult != null && stylelintResult.results.length > 0) {
     const stylelintErrorCount = stylelintResult.results.sum(
       (r) => r.warnings.filter((w) => w.severity === "error").length,
@@ -284,23 +284,23 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
     warningCount += stylelintWarningCount;
 
     if (stylelintErrorCount > 0) {
-      logger.error("Stylelint 에러 발생", {
+      logger.error("Stylelint errors occurred", {
         errorCount: stylelintErrorCount,
         warningCount: stylelintWarningCount,
       });
     } else if (stylelintWarningCount > 0) {
-      logger.info("Stylelint 완료 (경고 있음)", {
+      logger.info("Stylelint complete (warnings present)", {
         errorCount: stylelintErrorCount,
         warningCount: stylelintWarningCount,
       });
     } else {
-      logger.info("Stylelint 완료", {
+      logger.info("Stylelint complete", {
         errorCount: stylelintErrorCount,
         warningCount: stylelintWarningCount,
       });
     }
 
-    // Stylelint formatter 출력
+    // Stylelint formatter output
     const stylelintFormatter = await stylelint.formatters.string;
     const stylelintOutput = stylelintFormatter(stylelintResult.results, stylelintResult);
     if (stylelintOutput) {
@@ -317,12 +317,12 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
 }
 
 /**
- * ESLint를 실행한다.
+ * Run ESLint.
  *
- * executeLint()를 호출하고 결과를 stdout에 출력한 뒤 exitCode를 설정하는 래퍼.
+ * Wrapper that calls executeLint(), outputs results to stdout, and sets exitCode.
  *
- * @param options - 린트 실행 옵션
- * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ * @param options - lint execution options
+ * @returns resolves when complete. If errors are found, sets `process.exitCode` to 1 and resolves (does not throw)
  */
 export async function runLint(options: LintOptions): Promise<void> {
   const result = await executeLint(options);

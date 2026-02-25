@@ -306,11 +306,11 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
     await Promise.all(workers.map((w) => w.terminate()));
   }
 
-  // 결과 집계
+  // Aggregate results
   const allDiagnostics: ts.Diagnostic[] = [];
   let totalErrorCount = 0;
   let totalWarningCount = 0;
-  const fileCache = new Map<string, string>(); // 파일 내용 캐시 (동일 파일 중복 읽기 방지)
+  const fileCache = new Map<string, string>(); // File content cache (prevent duplicate reads of same file)
   for (const { result } of allResults) {
     totalErrorCount += result.errorCount;
     totalWarningCount += result.warningCount;
@@ -320,17 +320,17 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
   }
 
   if (totalErrorCount > 0) {
-    logger.error("타입체크 에러 발생", {
+    logger.error("typecheck errors occurred", {
       errorCount: totalErrorCount,
       warningCount: totalWarningCount,
     });
   } else if (totalWarningCount > 0) {
-    logger.info("타입체크 완료 (경고 있음)", {
+    logger.info("typecheck complete (warnings present)", {
       errorCount: totalErrorCount,
       warningCount: totalWarningCount,
     });
   } else {
-    logger.info("타입체크 완료", { errorCount: totalErrorCount, warningCount: totalWarningCount });
+    logger.info("typecheck complete", { errorCount: totalErrorCount, warningCount: totalWarningCount });
   }
 
   let formattedOutput = "";
@@ -348,12 +348,12 @@ export async function executeTypecheck(options: TypecheckOptions): Promise<Typec
 }
 
 /**
- * TypeScript 타입체크를 실행한다.
+ * Run TypeScript typecheck.
  *
- * `executeTypecheck()`를 호출하고 결과를 stdout에 출력하며, 에러 발생 시 `process.exitCode`를 설정한다.
+ * Calls `executeTypecheck()`, outputs results to stdout, and sets `process.exitCode` if errors occur.
  *
- * @param options - 타입체크 실행 옵션
- * @returns 완료 시 resolve. 에러 발견 시 `process.exitCode`를 1로 설정하고 resolve (throw하지 않음)
+ * @param options - typecheck execution options
+ * @returns resolves when complete. If errors are found, sets `process.exitCode` to 1 and resolves (does not throw)
  */
 export async function runTypecheck(options: TypecheckOptions): Promise<void> {
   const result = await executeTypecheck(options);

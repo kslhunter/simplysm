@@ -124,19 +124,19 @@ export class Electron {
   }
 
   /**
-   * 개발 모드 실행
+   * Run in development mode
    *
-   * 1. esbuild로 electron-main.ts 번들링
-   * 2. dist/electron/package.json 생성
-   * 3. npx electron . 실행
+   * 1. Bundle electron-main.ts with esbuild
+   * 2. Create dist/electron/package.json
+   * 3. Run npx electron .
    */
   async run(url?: string): Promise<void> {
     const electronRunPath = path.resolve(this._pkgPath, "dist/electron");
 
-    // 1. electron-main.ts 번들링
+    // 1. Bundle electron-main.ts
     await this._bundleMainProcess(electronRunPath);
 
-    // 2. package.json 생성
+    // 2. Create package.json
     await fsMkdir(electronRunPath);
     await fsWriteJson(
       path.resolve(electronRunPath, "package.json"),
@@ -144,7 +144,7 @@ export class Electron {
       { space: 2 },
     );
 
-    // 3. Electron 실행
+    // 3. Run Electron
     const runEnv: Record<string, string> = {
       NODE_ENV: "development",
       ...this._config.env,
@@ -159,17 +159,17 @@ export class Electron {
 
   //#endregion
 
-  //#region Private - 초기화
+  //#region Private - Initialization
 
   /**
-   * .electron/src/package.json 생성
+   * Create .electron/src/package.json
    */
   private async _setupPackageJson(srcPath: string): Promise<void> {
     await fsMkdir(srcPath);
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
 
-    // 메인 package.json에서 reinstallDependencies에 해당하는 버전 추출
+    // Extract versions from main package.json that match reinstallDependencies
     const dependencies: Record<string, string> = {};
     for (const dep of reinstallDeps) {
       const version = this._npmConfig.dependencies?.[dep];
@@ -195,17 +195,17 @@ export class Electron {
 
   //#endregion
 
-  //#region Private - 번들링
+  //#region Private - Bundling
 
   /**
-   * esbuild로 electron-main.ts 번들링
+   * Bundle electron-main.ts with esbuild
    */
   private async _bundleMainProcess(outDir: string): Promise<void> {
     const esbuild = await import("esbuild");
     const entryPoint = path.resolve(this._pkgPath, "src/electron-main.ts");
 
     if (!(await fsExists(entryPoint))) {
-      throw new Error(`electron-main.ts 파일을 찾을 수 없습니다: ${entryPoint}`);
+      throw new Error(`electron-main.ts file not found: ${entryPoint}`);
     }
 
     const builtinModules = module.builtinModules.flatMap((m) => [m, `node:${m}`]);
@@ -226,15 +226,15 @@ export class Electron {
 
   //#endregion
 
-  //#region Private - 빌드
+  //#region Private - Build
 
   /**
-   * 웹 에셋 복사 (빌드 결과물 → .electron/src/)
+   * Copy web assets (build output → .electron/src/)
    */
   private async _copyWebAssets(outPath: string, srcPath: string): Promise<void> {
     const items = await fsReaddir(outPath);
     for (const item of items) {
-      // electron/ 하위는 제외 (자기 자신 복사 방지)
+      // Exclude electron/ subdirectory (prevent self-copying)
       if (item === "electron") continue;
 
       const source = path.resolve(outPath, item);
@@ -244,7 +244,7 @@ export class Electron {
   }
 
   /**
-   * Symlink 생성 가능 여부 확인 (Windows 빌드 요구사항)
+   * Check if symlink creation is possible (Windows build requirement)
    */
   private static _canCreateSymlink(): boolean {
     const tmpDir = os.tmpdir();
@@ -264,12 +264,12 @@ export class Electron {
   }
 
   /**
-   * electron-builder 실행
+   * Run electron-builder
    */
   private async _runElectronBuilder(srcPath: string): Promise<void> {
     if (!Electron._canCreateSymlink()) {
       throw new Error(
-        "Electron 빌드를 위해서는 Symlink 생성 권한이 필요합니다. 윈도우의 개발자모드를 활성화하세요.",
+        "Symlink creation permission is required to build Electron. Enable Developer mode on Windows.",
       );
     }
 
@@ -307,7 +307,7 @@ export class Electron {
   }
 
   /**
-   * 빌드 결과물 복사 (.electron/dist/ → dist/electron/)
+   * Copy build output (.electron/dist/ → dist/electron/)
    */
   private async _copyBuildOutput(outPath: string): Promise<void> {
     const distPath = path.resolve(this._electronPath, "dist");
@@ -318,21 +318,21 @@ export class Electron {
     const version = this._npmConfig.version;
     const isPortable = this._config.portable === true;
 
-    // electron-builder 출력 파일명
+    // electron-builder output filename
     const builderFileName = `${description} ${isPortable ? "" : "Setup "}${version}.exe`;
     const sourcePath = path.resolve(distPath, builderFileName);
 
     if (await fsExists(sourcePath)) {
-      // latest 파일 복사
+      // Copy latest file
       const latestFileName = `${description}${isPortable ? "-portable" : ""}-latest.exe`;
       await fsCopy(sourcePath, path.resolve(electronOutPath, latestFileName));
 
-      // updates/ 버전별 파일 복사
+      // Copy per-version file to updates/
       const updatesPath = path.resolve(electronOutPath, "updates");
       await fsMkdir(updatesPath);
       await fsCopy(sourcePath, path.resolve(updatesPath, `${version}.exe`));
     } else {
-      Electron._logger.warn(`빌드 결과물을 찾을 수 없습니다: ${sourcePath}`);
+      Electron._logger.warn(`build output not found: ${sourcePath}`);
     }
   }
 

@@ -107,7 +107,7 @@ function classifyPackages(
 }
 
 /**
- * dist 폴더 삭제
+ * Delete dist folders
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
   await Promise.all(packageNames.map((name) => fsRm(path.join(cwd, "packages", name, "dist"))));
@@ -118,14 +118,14 @@ async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<vo
 //#region BuildOrchestrator
 
 /**
- * 프로덕션 빌드를 조율하는 Orchestrator
+ * Orchestrator for coordinating production builds
  *
- * sd.config.ts 기반으로 패키지를 분류하고, 빌드를 실행한다.
- * - dist 폴더 정리 (clean build)
- * - lint + 빌드 병렬 실행
- * - node/browser/neutral 타겟: esbuild JS 빌드 + dts 생성
- * - client 타겟: Vite production 빌드 + typecheck + Capacitor/Electron 빌드
- * - server 타겟: esbuild JS 빌드
+ * Classifies packages based on sd.config.ts and executes builds.
+ * - Clean dist folders (clean build)
+ * - Run lint + build concurrently
+ * - node/browser/neutral targets: esbuild JS build + dts generation
+ * - client targets: Vite production build + typecheck + Capacitor/Electron builds
+ * - server targets: esbuild JS build
  */
 export class BuildOrchestrator {
   private readonly _cwd: string;
@@ -143,34 +143,34 @@ export class BuildOrchestrator {
   }
 
   /**
-   * Orchestrator 초기화
-   * - sd.config.ts 로드
-   * - replaceDeps 설정
-   * - 패키지 분류
-   * - 환경변수 준비
+   * Initialize Orchestrator
+   * - Load sd.config.ts
+   * - Configure replaceDeps
+   * - Classify packages
+   * - Prepare environment variables
    */
   async initialize(): Promise<void> {
-    this._logger.debug("빌드 시작", { targets: this._options.targets });
+    this._logger.debug("build started", { targets: this._options.targets });
 
-    // sd.config.ts 로드
+    // Load sd.config.ts
     try {
       this._sdConfig = await loadSdConfig({
         cwd: this._cwd,
         dev: false,
         opt: this._options.options,
       });
-      this._logger.debug("sd.config.ts 로드 완료");
+      this._logger.debug("sd.config.ts loaded");
     } catch (err) {
-      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`sd.config.ts load failed: ${err instanceof Error ? err.message : err}`);
       process.exitCode = 1;
       throw err;
     }
 
-    // VER, DEV 환경변수 준비
+    // Prepare VER and DEV environment variables
     const version = await getVersion(this._cwd);
     this._baseEnv = { VER: version, DEV: "false" };
 
-    // 패키지 분류
+    // Classify packages
     this._classified = classifyPackages(this._sdConfig.packages, this._options.targets);
     this._allPackageNames = [
       ...this._classified.buildPackages.map((p) => p.name),
@@ -179,11 +179,11 @@ export class BuildOrchestrator {
     ];
 
     if (this._allPackageNames.length === 0) {
-      process.stdout.write("✔ 빌드할 패키지가 없습니다.\n");
+      process.stdout.write("✔ No packages to build.\n");
       return;
     }
 
-    this._logger.debug("패키지 분류 완료", {
+    this._logger.debug("package classification complete", {
       buildPackages: this._classified.buildPackages.map((p) => p.name),
       clientPackages: this._classified.clientPackages.map((p) => p.name),
       serverPackages: this._classified.serverPackages.map((p) => p.name),
