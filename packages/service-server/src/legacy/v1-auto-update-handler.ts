@@ -54,7 +54,7 @@ export function handleV1Connection(
           reqUuid: msg.uuid,
           state: "error",
           body: {
-            message: "앱 업데이트가 필요합니다.",
+            message: "App upgrade is required.",
             code: "UPGRADE_REQUIRED",
           },
         };

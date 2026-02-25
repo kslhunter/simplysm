@@ -17,14 +17,14 @@ export async function runServiceMethod(
   const serviceDef = server.options.services.find((item) => item.name === def.serviceName);
 
   if (serviceDef == null) {
-    throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
+    throw new Error(`Service [${def.serviceName}] not found.`);
   }
 
   // Request validation (gatekeeper)
   const clientName = def.socket?.clientName ?? def.http?.clientName;
   if (clientName != null) {
     if (clientName.includes("..") || clientName.includes("/") || clientName.includes("\\")) {
-      throw new Error(`[Security] 유효하지 않은 클라이언트명입니다: ${clientName}`);
+      throw new Error(`[Security] Invalid client name: ${clientName}`);
     }
   }
 
@@ -37,7 +37,7 @@ export async function runServiceMethod(
   // Find method
   const method = (methods as Record<string, unknown>)[def.methodName];
   if (typeof method !== "function") {
-    throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
+    throw new Error(`Method [${def.serviceName}.${def.methodName}] not found.`);
   }
 
   // Auth check
@@ -50,13 +50,13 @@ export async function runServiceMethod(
       const authTokenPayload = def.socket?.authTokenPayload ?? def.http?.authTokenPayload;
 
       if (authTokenPayload == null) {
-        throw new Error("로그인이 필요합니다.");
+        throw new Error("Login is required.");
       }
 
       if (requiredPerms.length > 0) {
         const hasPerm = requiredPerms.some((perm) => authTokenPayload.roles.includes(perm));
         if (!hasPerm) {
-          throw new Error("권한이 부족합니다.");
+          throw new Error("Insufficient permissions.");
         }
       }
     }

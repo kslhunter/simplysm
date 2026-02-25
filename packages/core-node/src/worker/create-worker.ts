@@ -32,7 +32,7 @@ export function createWorker<
   __events: TEvents;
 } {
   if (parentPort === null) {
-    throw new SdError("이 스크립트는 워커 스레드에서 실행되어야 합니다 (parentPort 필요).");
+    throw new SdError("This script must be executed in a worker thread (parentPort required).");
   }
 
   const port = parentPort;
@@ -77,7 +77,7 @@ export function createWorker<
       const errorResponse: WorkerResponse = {
         type: "error",
         request: { id: "unknown", method: "unknown", params: [] },
-        body: new SdError(`형식이 잘못된 워커 요청: ${decodedStr}`),
+        body: new SdError(`Invalid worker request format: ${decodedStr}`),
       };
       const serialized = transferableEncode(errorResponse);
       port.postMessage(serialized.result, serialized.transferList);
@@ -91,7 +91,7 @@ export function createWorker<
       const response: WorkerResponse = {
         request,
         type: "error",
-        body: new SdError(`알 수 없는 메서드: ${request.method}`),
+        body: new SdError(`Unknown method: ${request.method}`),
       };
 
       const serialized = transferableEncode(response);

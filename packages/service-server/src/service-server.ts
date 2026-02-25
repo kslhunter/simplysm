@@ -215,14 +215,14 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   async generateAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
     const jwtSecret = this.options.auth?.jwtSecret;
-    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+    if (jwtSecret == null) throw new Error("JWT Secret is not defined.");
 
     return signJwt(jwtSecret, payload);
   }
 
   async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>> {
     const jwtSecret = this.options.auth?.jwtSecret;
-    if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+    if (jwtSecret == null) throw new Error("JWT Secret is not defined.");
 
     return verifyJwt(jwtSecret, token);
   }

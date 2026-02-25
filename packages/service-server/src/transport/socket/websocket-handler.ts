@@ -114,13 +114,13 @@ export function createWebSocketHandler(
 
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "auth") {
-        if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+        if (jwtSecret == null) throw new Error("JWT Secret is not defined.");
 
         const token = message.body;
         serviceSocket.authTokenPayload = await verifyJwt(jwtSecret, token);
         return await serviceSocket.send(uuid, { name: "response" });
       } else {
-        const err = new Error("요청이 잘못되었습니다.");
+        const err = new Error("Invalid request.");
 
         return await serviceSocket.send(uuid, {
           name: "error",
@@ -136,7 +136,7 @@ export function createWebSocketHandler(
       const error =
         err instanceof Error
           ? err
-          : new Error(typeof err === "string" ? err : "알 수 없는 오류가 발생하였습니다.");
+          : new Error(typeof err === "string" ? err : "An unknown error has occurred.");
 
       return serviceSocket.send(uuid, {
         name: "error",

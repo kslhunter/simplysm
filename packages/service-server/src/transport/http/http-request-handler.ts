@@ -25,7 +25,7 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
   try {
     const authHeader = req.headers.authorization;
     if (authHeader != null) {
-      if (jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
+      if (jwtSecret == null) throw new Error("JWT Secret is not defined.");
 
       const token = authHeader.split(" ")[1]; // "Bearer <token>"
       authTokenPayload = await verifyJwt<TAuthInfo>(jwtSecret, token);

@@ -93,7 +93,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
           body: { key, name: value.eventName, info: value.info },
         });
       } catch (err) {
-        logger.error("이벤트 리스너 복구 실패", { err, eventName: value.eventName });
+        logger.error("Failed to recover event listener", { err, eventName: value.eventName });
       }
     }
   }
@@ -106,7 +106,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
         try {
           await entry.cb(data);
         } catch (err) {
-          logger.error("이벤트 핸들러 오류", { err, eventName: entry.eventName });
+          logger.error("Event handler error", { err, eventName: entry.eventName });
         }
       }
     }

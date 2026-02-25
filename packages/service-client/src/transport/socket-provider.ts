@@ -82,11 +82,11 @@ export function createSocketProvider(
     try {
       await waitUntil(() => isConnected(), undefined, 50);
     } catch {
-      throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
+      throw new Error("Not connected to the server. Please check your internet connection.");
     }
     const currentWs = ws;
     if (currentWs == null) {
-      throw new Error("WebSocket이 연결되어있지 않습니다.");
+      throw new Error("WebSocket is not connected.");
     }
     currentWs.send(data);
   }

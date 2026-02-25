@@ -31,7 +31,7 @@ export async function handleStaticFile(
 
   // Permission check (hidden files, etc.)
   if (path.basename(targetFilePath).startsWith(".")) {
-    const errorMessage = "파일을 사용할 권한이 없습니다.";
+    const errorMessage = "You do not have permission to access this file.";
     responseErrorHtml(reply, 403, errorMessage);
     logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
     return;
@@ -46,11 +46,11 @@ export async function handleStaticFile(
   } catch (err: unknown) {
     const error = err as { code?: string };
     if (error.code === "ENOENT") {
-      const errorMessage = "파일을 찾을 수 없습니다.";
+      const errorMessage = "File not found.";
       responseErrorHtml(reply, 404, errorMessage);
       logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
     } else {
-      const errorMessage = "파일 전송 중 오류가 발생했습니다.";
+      const errorMessage = "An error occurred while sending the file.";
       responseErrorHtml(reply, 500, errorMessage);
       logger.error(`[500] ${errorMessage}`, err);
     }

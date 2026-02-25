@@ -34,7 +34,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
 
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     await this._ormService.beginTransaction(this._connId, isolationLevel);
@@ -42,7 +42,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
 
   async commitTransaction(): Promise<void> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     await this._ormService.commitTransaction(this._connId);
@@ -50,7 +50,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
 
   async rollbackTransaction(): Promise<void> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     await this._ormService.rollbackTransaction(this._connId);
@@ -58,7 +58,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
 
   async close(): Promise<void> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     await this._ormService.close(this._connId);
@@ -69,7 +69,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     options?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     return (await this._ormService.executeDefs(this._connId, defs, options)) as T[][];
@@ -77,7 +77,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
 
   async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     return this._ormService.executeParametrized(this._connId, query, params);
@@ -89,7 +89,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     records: Record<string, unknown>[],
   ): Promise<void> {
     if (this._connId === undefined) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+      throw new Error("Not connected to the database.");
     }
 
     return this._ormService.bulkInsert(this._connId, tableName, columnDefs, records);

@@ -130,7 +130,7 @@ export function createServiceProtocol(): ServiceProtocol {
 
       // Total size limit check (performed first)
       if (totalSize > PROTOCOL_CONFIG.MAX_TOTAL_SIZE) {
-        throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
+        throw new ArgumentError("Message size exceeds the limit.", {
           totalSize,
           maxSize: PROTOCOL_CONFIG.MAX_TOTAL_SIZE,
         });
@@ -161,7 +161,7 @@ export function createServiceProtocol(): ServiceProtocol {
 
     decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T> {
       if (bytes.length < 28) {
-        throw new ArgumentError("버퍼 크기가 헤더 크기보다 작습니다.", {
+        throw new ArgumentError("Buffer size is smaller than header size.", {
           bufferSize: bytes.length,
           minimumSize: 28,
         });
@@ -180,7 +180,7 @@ export function createServiceProtocol(): ServiceProtocol {
 
       // Total size limit check (performed first)
       if (totalSize > PROTOCOL_CONFIG.MAX_TOTAL_SIZE) {
-        throw new ArgumentError("메시지 크기가 제한을 초과했습니다.", {
+        throw new ArgumentError("Message size exceeds the limit.", {
           totalSize,
           maxSize: PROTOCOL_CONFIG.MAX_TOTAL_SIZE,
         });
@@ -214,7 +214,7 @@ export function createServiceProtocol(): ServiceProtocol {
         try {
           messageArr = jsonParse<[string, unknown]>(new TextDecoder().decode(resultBytes));
         } catch (err) {
-          throw new ArgumentError("메시지 디코딩에 실패했습니다.", { uuid, cause: err });
+          throw new ArgumentError("Failed to decode message.", { uuid, cause: err });
         }
         return {
           type: "complete",

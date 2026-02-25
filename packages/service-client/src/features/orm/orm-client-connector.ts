@@ -44,7 +44,7 @@ export function createOrmClientConnector(serviceClient: ServiceClient): OrmClien
           (err.message.includes("a parent row: a foreign key constraint") ||
             err.message.includes("conflicted with the REFERENCE"))
         ) {
-          throw new Error("경고! 연결된 작업에 의한 처리 거부. 후속작업 확인요망", { cause: err });
+          throw new Error("Warning! Operation rejected due to related operations. Please check subsequent operations.", { cause: err });
         }
 
         throw err;

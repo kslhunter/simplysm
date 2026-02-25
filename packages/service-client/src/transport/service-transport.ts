@@ -145,7 +145,7 @@ export function createServiceTransport(
           const body = decoded.message.body as { keys: string[]; data: unknown };
           emitter.emit("event", { keys: body.keys, data: body.data });
         } else {
-          throw new Error("요청이 잘 못 되었습니다.");
+          throw new Error("Invalid message received from server.");
         }
       }
     } catch (err) {

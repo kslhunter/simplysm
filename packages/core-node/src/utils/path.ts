@@ -48,7 +48,7 @@ export function pathChangeFileDirectory(
   }
 
   if (!pathIsChildPath(filePath, fromDirectory)) {
-    throw new ArgumentError(`'${filePath}'가 ${fromDirectory} 안에 없습니다.`, {
+    throw new ArgumentError(`'${filePath}' is not inside ${fromDirectory}.`, {
       filePath,
       fromDirectory,
     });

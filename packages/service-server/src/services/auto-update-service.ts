@@ -12,7 +12,7 @@ export const AutoUpdateService = defineService("AutoUpdate", (ctx) => ({
     | undefined
   > {
     const clientPath = ctx.clientPath;
-    if (clientPath == null) throw new Error("클라이언트 경로를 찾을 수 없습니다.");
+    if (clientPath == null) throw new Error("Client path not found.");
 
     if (!(await fsExists(path.resolve(clientPath, platform, "updates")))) return undefined;
 

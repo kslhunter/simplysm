@@ -24,7 +24,7 @@ export const OrmService = defineService(
     const sock = (): ServiceSocket => {
       const socket = ctx.socket;
       if (socket == null) {
-        throw new Error("WebSocket 연결이 필요합니다. HTTP로는 ORM 서비스를 사용할 수 없습니다.");
+        throw new Error("WebSocket connection is required. ORM service cannot be used over HTTP.");
       }
       return socket;
     };
@@ -34,7 +34,7 @@ export const OrmService = defineService(
         opt.configName
       ];
       if (config == null) {
-        throw new Error(`ORM 설정을 찾을 수 없습니다: ${opt.configName}`);
+        throw new Error(`ORM configuration not found: ${opt.configName}`);
       }
       return { ...config, ...opt.config } as DbConnConfig;
     };
@@ -43,7 +43,7 @@ export const OrmService = defineService(
       const myConns = socketConns.get(sock());
       const conn = myConns?.get(connId);
       if (conn == null) {
-        throw new Error("DB에 연결되어있지 않습니다. (Invalid Connection ID)");
+        throw new Error("Not connected to database. (Invalid Connection ID)");
       }
       return conn;
     };

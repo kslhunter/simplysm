@@ -67,7 +67,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
           }
           await this._eventClient.reRegisterAll();
         } catch (err) {
-          logger.error("이벤트 리스너 복구 실패", err);
+          logger.error("Failed to recover event listeners", err);
         }
       }
     });
@@ -131,7 +131,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
     info: TInfo,
     cb: (data: TData) => PromiseLike<void>,
   ): Promise<string> {
-    if (!this.connected) throw new Error("서버와 연결되어있지 않습니다.");
+    if (!this.connected) throw new Error("Not connected to the server.");
     return this._eventClient.addListener(eventDef, info, cb);
   }
 
@@ -150,7 +150,7 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   async uploadFile(files: File[] | FileList | { name: string; data: BlobPart }[]) {
     if (this._authToken == null) {
       throw new Error(
-        "인증 토큰이 없습니다. 파일 업로드를 위해서는 먼저 auth()를 호출하여 인증해야 합니다.",
+        "No authentication token found. Call auth() to authenticate before uploading files.",
       );
     }
     return this._fileClient.upload(files, this._authToken);

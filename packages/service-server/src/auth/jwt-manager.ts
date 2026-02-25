@@ -25,9 +25,9 @@ export async function verifyJwt<TAuthInfo = unknown>(
     return payload as AuthTokenPayload<TAuthInfo>;
   } catch (err) {
     if (err != null && typeof err === "object" && "code" in err && err.code === "ERR_JWT_EXPIRED") {
-      throw new Error("토큰이 만료되었습니다.");
+      throw new Error("Token has expired.");
     }
-    throw new Error("유효하지 않은 토큰입니다.");
+    throw new Error("Invalid token.");
   }
 }
 

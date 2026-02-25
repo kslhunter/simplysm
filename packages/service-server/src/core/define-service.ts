@@ -49,7 +49,7 @@ export function createServiceContext<TAuthInfo = unknown>(
       if (name == null) return undefined;
 
       if (name === "" || name.includes("..") || name.includes("/") || name.includes("\\")) {
-        throw new Error(`유효하지 않은 클라이언트 명입니다: ${name}`);
+        throw new Error(`Invalid client name: ${name}`);
       }
 
       return name;
@@ -79,7 +79,7 @@ export function createServiceContext<TAuthInfo = unknown>(
       }
 
       const config = configParent[section];
-      if (config == null) throw new Error(`설정 섹션을 찾을 수 없습니다: ${section}`);
+      if (config == null) throw new Error(`Configuration section not found: ${section}`);
       return config;
     },
   };

@@ -25,10 +25,10 @@ export async function handleUpload(
   try {
     const authHeader = req.headers.authorization;
     if (authHeader == null) {
-      throw new Error("인증 토큰이 없습니다.");
+      throw new Error("Authentication token is missing.");
     }
     if (jwtSecret == null) {
-      throw new Error("JWT Secret이 정의되지 않았습니다.");
+      throw new Error("JWT Secret is not defined.");
     }
     const token = authHeader.split(" ")[1];
     await verifyJwt(jwtSecret, token);
