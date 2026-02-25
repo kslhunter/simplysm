@@ -191,12 +191,12 @@ export class BuildOrchestrator {
   }
 
   /**
-   * 빌드 실행
+   * Execute build
    * - Clean
    * - Lint + Build (concurrent)
-   * - 결과 출력
+   * - Output results
    *
-   * @returns 에러 여부 (true: 에러 있음)
+   * @returns whether errors occurred (true: errors present)
    */
   async start(): Promise<boolean> {
     if (this._allPackageNames.length === 0) {
@@ -206,29 +206,29 @@ export class BuildOrchestrator {
     const classified = this._classified!;
     const baseEnv = this._baseEnv!;
 
-    // 결과 수집
+    // Collect results
     const results: BuildStepResult[] = [];
-    // 에러 추적 (객체로 래핑하여 콜백 내 수정 추적 가능하게 함)
+    // Track errors (wrapped in object to allow mutation tracking in callbacks)
     const state = { hasError: false };
 
-    // Worker 경로
+    // Worker paths
     const libraryWorkerPath = import.meta.resolve("../workers/library.worker");
     const serverWorkerPath = import.meta.resolve("../workers/server.worker");
     const clientWorkerPath = import.meta.resolve("../workers/client.worker");
     const dtsWorkerPath = import.meta.resolve("../workers/dts.worker");
     const lintWorkerPath = import.meta.resolve("../workers/lint.worker");
 
-    // 파일 캐시 (diagnostics 출력용)
+    // File cache (for diagnostics output)
     const fileCache = new Map<string, string>();
 
-    // formatHost (diagnostics 출력용)
+    // formatHost (for diagnostics output)
     const formatHost: ts.FormatDiagnosticsHost = {
       getCanonicalFileName: (f) => f,
       getCurrentDirectory: () => this._cwd,
       getNewLine: () => ts.sys.newLine,
     };
 
-    // Lint 옵션 (전체 패키지 대상)
+    // Lint options (target all packages)
     const lintOptions: LintOptions = {
       targets: this._allPackageNames.map((name) => `packages/${name}`),
       fix: false,
@@ -243,17 +243,17 @@ export class BuildOrchestrator {
     // Phase 2: Lint + Build (concurrent)
     this._logger.start("Lint + Build");
 
-    // 빌드 작업 목록 생성
+    // Create list of build tasks
     const buildTasks: Array<() => Promise<void>> = [];
 
-    // buildPackages: JS 빌드 + dts 생성
+    // buildPackages: JS build + dts generation
     for (const { name, config } of classified.buildPackages) {
       const pkgDir = path.join(this._cwd, "packages", name);
       const env: TypecheckEnv = config.target === "node" ? "node" : "browser";
 
       buildTasks.push(async () => {
-        this._logger.debug(`${name} (${config.target}) 시작`);
-        // JS 빌드와 DTS 생성을 병렬 실행
+        this._logger.debug(`${name} (${config.target}) started`);
+        // Run JS build and DTS generation in parallel
         const libraryWorker: WorkerProxy<typeof LibraryWorkerModule> =
           Worker.create<typeof LibraryWorkerModule>(libraryWorkerPath);
         const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
@@ -261,13 +261,13 @@ export class BuildOrchestrator {
 
         try {
           const [buildResult, dtsResult] = await Promise.all([
-            // JS 빌드
+            // JS build
             libraryWorker.build({ name, config, cwd: this._cwd, pkgDir }),
-            // DTS 생성
+            // DTS generation
             dtsWorker.build({ name, cwd: this._cwd, pkgDir, env, emit: true }),
           ]);
 
-          // JS 빌드 결과 처리
+          // Handle JS build results
           results.push({
             name,
             target: config.target,
@@ -278,7 +278,7 @@ export class BuildOrchestrator {
           });
           if (!buildResult.success) state.hasError = true;
 
-          // DTS 결과 처리
+          // Handle DTS results
           const diagnostics = dtsResult.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
           results.push({
             name,
@@ -293,21 +293,21 @@ export class BuildOrchestrator {
           await Promise.all([libraryWorker.terminate(), dtsWorker.terminate()]);
         }
 
-        // copySrc 파일 복사
+        // Copy copySrc files
         if (config.copySrc != null && config.copySrc.length > 0) {
           await copySrcFiles(pkgDir, config.copySrc);
         }
-        this._logger.debug(`${name} (${config.target}) 완료`);
+        this._logger.debug(`${name} (${config.target}) completed`);
       });
     }
 
-    // clientPackages: Vite 빌드 + typecheck + Capacitor 빌드
+    // clientPackages: Vite build + typecheck + Capacitor build
     for (const { name, config } of classified.clientPackages) {
       const pkgDir = path.join(this._cwd, "packages", name);
 
       buildTasks.push(async () => {
-        this._logger.debug(`${name} (client) 시작`);
-        // Vite 빌드와 타입체크를 병렬 실행
+        this._logger.debug(`${name} (client) started`);
+        // Run Vite build and typecheck in parallel
         const clientWorker: WorkerProxy<typeof ClientWorkerModule> =
           Worker.create<typeof ClientWorkerModule>(clientWorkerPath);
         const dtsWorker: WorkerProxy<typeof DtsWorkerModule> =
@@ -319,9 +319,9 @@ export class BuildOrchestrator {
             env: { ...baseEnv, ...config.env },
           };
           const [clientResult, dtsResult] = await Promise.all([
-            // Vite production 빌드
+            // Vite production build
             clientWorker.build({ name, config: clientConfig, cwd: this._cwd, pkgDir }),
-            // typecheck (dts 없이)
+            // typecheck (without dts)
             dtsWorker.build({
               name,
               cwd: this._cwd,
@@ -331,7 +331,7 @@ export class BuildOrchestrator {
             }),
           ]);
 
-          // Vite 빌드 결과 처리
+          // Handle Vite build results
           results.push({
             name,
             target: "client",
@@ -341,7 +341,7 @@ export class BuildOrchestrator {
           });
           if (!clientResult.success) state.hasError = true;
 
-          // 타입체크 결과 처리
+          // Handle typecheck results
           const diagnostics = dtsResult.diagnostics.map((d) => deserializeDiagnostic(d, fileCache));
           results.push({
             name,
@@ -356,7 +356,7 @@ export class BuildOrchestrator {
           await Promise.all([clientWorker.terminate(), dtsWorker.terminate()]);
         }
 
-        // Capacitor 빌드 (설정이 있는 경우만)
+        // Capacitor build (only if configured)
         if (config.capacitor != null) {
           const outPath = path.join(pkgDir, "dist");
           try {
@@ -381,7 +381,7 @@ export class BuildOrchestrator {
           }
         }
 
-        // Electron 빌드 (설정이 있는 경우만)
+        // Electron build (only if configured)
         if (config.electron != null) {
           const outPath = path.join(pkgDir, "dist");
           try {
@@ -405,16 +405,16 @@ export class BuildOrchestrator {
             state.hasError = true;
           }
         }
-        this._logger.debug(`${name} (client) 완료`);
+        this._logger.debug(`${name} (client) completed`);
       });
     }
 
-    // serverPackages: JS 빌드만 (dts 생성 제외)
+    // serverPackages: JS build only (dts generation excluded)
     for (const { name, config } of classified.serverPackages) {
       const pkgDir = path.join(this._cwd, "packages", name);
 
       buildTasks.push(async () => {
-        this._logger.debug(`${name} (server) 시작`);
+        this._logger.debug(`${name} (server) started`);
         const serverWorker: WorkerProxy<typeof ServerWorkerModule> =
           Worker.create<typeof ServerWorkerModule>(serverWorkerPath);
 
@@ -442,11 +442,11 @@ export class BuildOrchestrator {
         } finally {
           await serverWorker.terminate();
         }
-        this._logger.debug(`${name} (server) 완료`);
+        this._logger.debug(`${name} (server) completed`);
       });
     }
 
-    // Lint + 모든 빌드를 병렬 실행
+    // Run Lint + all builds in parallel
     const lintWorker = Worker.create<typeof LintWorkerModule>(lintWorkerPath);
     const lintTask = async (): Promise<void> => {
       try {
@@ -459,17 +459,17 @@ export class BuildOrchestrator {
     await Promise.allSettled([lintTask(), ...buildTasks.map((task) => task())]);
     this._logger.success("Lint + Build");
 
-    // 결과 출력
+    // Output results
     const allDiagnostics: ts.Diagnostic[] = [];
     for (const result of results) {
       const typeLabel = result.type === "dts" ? "dts" : result.target;
 
-      // warnings 출력
+      // Output warnings
       if (result.warnings != null) {
         this._logger.warn(formatBuildMessages(result.name, typeLabel, result.warnings));
       }
 
-      // errors 출력
+      // Output errors
       if (!result.success) {
         if (result.errors != null) {
           this._logger.error(formatBuildMessages(result.name, typeLabel, result.errors));
@@ -482,29 +482,29 @@ export class BuildOrchestrator {
       }
     }
 
-    // diagnostics 출력 (중복 제거)
+    // Output diagnostics (deduplicated)
     if (allDiagnostics.length > 0) {
       const uniqueDiagnostics = ts.sortAndDeduplicateDiagnostics(allDiagnostics);
       const message = ts.formatDiagnosticsWithColorAndContext(uniqueDiagnostics, formatHost);
       process.stdout.write(message);
     }
 
-    // 결과 로그 출력
+    // Output result log
     if (state.hasError) {
-      this._logger.error("빌드 실패");
+      this._logger.error("Build failed");
     } else {
-      this._logger.info("빌드 완료");
+      this._logger.info("Build completed");
     }
 
     return state.hasError;
   }
 
   /**
-   * Orchestrator 종료 (현재는 정리할 리소스 없음)
+   * Shutdown Orchestrator (no resources to clean up currently)
    */
   async shutdown(): Promise<void> {
-    // 프로덕션 빌드는 일회성이므로 종료 시 정리할 리소스가 없음
-    // Worker는 각 빌드 태스크 내에서 terminate()로 정리됨
+    // Production builds are one-time operations, so there are no resources to clean up at shutdown
+    // Workers are cleaned up with terminate() within each build task
     await Promise.resolve();
   }
 }
