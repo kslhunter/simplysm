@@ -35,7 +35,7 @@ export interface DataSheetConfigDialogProps {
 export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (props) => {
   const dialog = useDialogInstance<DataSheetConfig>();
 
-  /* eslint-disable solid/reactivity -- 모달 props는 마운트 시 한 번만 사용되는 정적 값 */
+  /* eslint-disable solid/reactivity -- modal props are static values only used once at mount time */
   const initialItems: EditColumnItem[] = props.columnInfos
     .filter((info) => !info.collapse)
     .map((info) => {
