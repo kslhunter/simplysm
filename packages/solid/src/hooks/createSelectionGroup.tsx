@@ -113,7 +113,7 @@ export function createSelectionGroup(config: MultiGroupConfig | SingleGroupConfi
     const ctx = useContext(Context);
     if (!ctx)
       throw new Error(
-        `${config.contextName}.Item은 ${config.contextName} 내부에서만 사용할 수 있습니다`,
+        `${config.contextName}.Item can only be used inside ${config.contextName}`,
       );
 
     const isSelected = (): boolean => {

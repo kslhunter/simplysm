@@ -425,12 +425,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            저장
+            Save
           </Button>
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={handleRefresh}>
           <Icon icon={IconRefresh} class="mr-1" />
-          새로고침
+          Refresh
         </Button>
       </>
     ));
@@ -491,12 +491,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 onClick={() => formRef?.requestSubmit()}
               >
                 <Icon icon={IconDeviceFloppy} class="mr-1" />
-                저장
+                Save
               </Button>
             </Show>
             <Button size="sm" theme="info" variant="ghost" onClick={handleRefresh}>
               <Icon icon={IconRefresh} class="mr-1" />
-              새로고침
+              Refresh
             </Button>
           </div>
         </Show>
@@ -512,7 +512,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                 <FormGroup.Item>
                   <Button type="submit" theme="info" variant="solid">
                     <Icon icon={IconSearch} class="mr-1" />
-                    조회
+                    Search
                   </Button>
                 </FormGroup.Item>
                 {filterDef().children(filter, setFilter)}
@@ -528,7 +528,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               {/* Inline edit buttons */}
               <Show when={canEdit() && local.inlineEdit}>
                 <Button size="sm" theme="primary" variant="ghost" onClick={handleAddRow}>
-                  <Icon icon={IconPlus} class="mr-1" />행 추가
+                  <Icon icon={IconPlus} class="mr-1" />Add Row
                 </Button>
               </Show>
 
@@ -541,7 +541,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   onClick={() => void handleEditItem()}
                 >
                   <Icon icon={IconPlus} class="mr-1" />
-                  등록
+                  Register
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.deleteItems}>
@@ -560,7 +560,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrash} class="mr-1" />
-                  선택 삭제
+                  Delete Selected
                 </Button>
               </Show>
               <Show when={canEdit() && local.modalEdit?.restoreItems}>
@@ -575,7 +575,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
                   }
                 >
                   <Icon icon={IconTrashOff} class="mr-1" />
-                  선택 복구
+                  Restore Selected
                 </Button>
               </Show>
 
@@ -583,13 +583,13 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
               <Show when={canEdit() && local.excel?.upload}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelUpload}>
                   <Icon icon={IconUpload} class="mr-1" />
-                  엑셀 업로드
+                  Excel Upload
                 </Button>
               </Show>
               <Show when={local.excel}>
                 <Button size="sm" theme="success" variant="ghost" onClick={handleExcelDownload}>
                   <Icon icon={IconFileExcel} class="mr-1" />
-                  엑셀 다운로드
+                  Excel Download
                 </Button>
               </Show>
             </Show>
