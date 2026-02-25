@@ -242,7 +242,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
         type="button"
         class={resolvedStarBtnClass()}
         onClick={handleStartAdd}
-        title="프리셋 추가"
+        title="Add preset"
       >
         <Icon icon={IconStar} size={iconSize} />
       </button>
@@ -255,7 +255,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={chipNameBtnClass}
               onClick={() => handleRestore(preset)}
-              title={`"${preset.name}" 프리셋 적용`}
+              title={`Apply preset "${preset.name}"`}
             >
               {preset.name}
             </button>
@@ -263,7 +263,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={resolvedIconBtnClass()}
               onClick={() => handleOverwrite(index())}
-              title="현재 상태로 덮어쓰기"
+              title="Overwrite with current state"
             >
               <Icon icon={IconDeviceFloppy} size={iconSize} />
             </button>
@@ -271,7 +271,7 @@ function StatePresetInner<TValue>(props: StatePresetProps<TValue>): JSX.Element 
               type="button"
               class={resolvedIconBtnClass()}
               onClick={() => handleDelete(index())}
-              title="프리셋 삭제"
+              title="Delete preset"
             >
               <Icon icon={IconX} size={iconSize} />
             </button>

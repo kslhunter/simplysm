@@ -33,7 +33,7 @@ const headerClass = clsx(
 
 export interface SidebarMenuProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
   /**
-   * 메뉴 아이템 배열
+   * Menu items array
    */
   menus: AppMenu[];
 }
@@ -58,13 +58,13 @@ const MenuContext = createContext<MenuContextValue>();
  * @example
  * ```tsx
  * <SidebarMenu menus={[
- *   { title: "대시보드", href: "/dashboard", icon: IconHome },
+ *   { title: "Dashboard", href: "/dashboard", icon: IconHome },
  *   {
- *     title: "설정",
+ *     title: "Settings",
  *     icon: IconSettings,
  *     children: [
- *       { title: "프로필", href: "/settings/profile" },
- *       { title: "보안", href: "/settings/security" },
+ *       { title: "Profile", href: "/settings/profile" },
+ *       { title: "Security", href: "/settings/security" },
  *     ],
  *   },
  * ]} />

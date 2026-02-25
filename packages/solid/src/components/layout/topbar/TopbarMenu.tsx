@@ -30,31 +30,31 @@ export interface TopbarMenuItem {
 
 export interface TopbarMenuProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
   /**
-   * 메뉴 아이템 배열
+   * Menu items array
    */
   menus: TopbarMenuItem[];
 }
 
 /**
- * Topbar 드롭다운 메뉴 컴포넌트
+ * Topbar dropdown menu component
  *
  * @remarks
- * - children이 있는 항목: 클릭 시 드롭다운 표시
- * - children이 없는 항목: 클릭 시 바로 네비게이션
- * - 외부 링크(://포함)는 새 탭에서 열기
- * - pathname 정확 일치로 선택 상태 판단
- * - 하위 메뉴는 List/ListItem으로 렌더링 (모든 계층 펼침)
+ * - Items with children: show dropdown on click
+ * - Items without children: navigate directly on click
+ * - External links (containing ://): open in new tab
+ * - Selection determined by exact pathname match
+ * - Submenus rendered with List/ListItem (all levels expanded)
  *
  * @example
  * ```tsx
  * <TopbarMenu menus={[
- *   { title: "대시보드", href: "/dashboard", icon: IconHome },
+ *   { title: "Dashboard", href: "/dashboard", icon: IconHome },
  *   {
- *     title: "메뉴1",
+ *     title: "Menu 1",
  *     icon: IconFolder,
  *     children: [
- *       { title: "서브메뉴1", href: "/menu1/sub1" },
- *       { title: "서브메뉴2", href: "/menu1/sub2" },
+ *       { title: "Submenu 1", href: "/menu1/sub1" },
+ *       { title: "Submenu 2", href: "/menu1/sub2" },
  *     ],
  *   },
  * ]} />
@@ -66,18 +66,18 @@ export const TopbarMenu: Component<TopbarMenuProps> = (props) => {
 
   return (
     <>
-      {/* 데스크탑 메뉴 (640px 이상에서만 표시) */}
+      {/* Desktop menu (shown only on 640px and above) */}
       <nav {...rest} data-topbar-menu class={twMerge(desktopNavBaseClass, local.class)}>
         <For each={local.menus}>{(menu) => <TopbarMenuButton menu={menu} />}</For>
       </nav>
 
-      {/* 모바일 햄버거 (640px 미만에서만 표시) */}
+      {/* Mobile hamburger (shown only below 640px) */}
       <div class={mobileWrapperClass}>
         <Dropdown open={mobileMenuOpen()} onOpenChange={setMobileMenuOpen}>
           <Dropdown.Trigger>
             <Button
               variant="ghost"
-              aria-label="메뉴"
+              aria-label="Menu"
               aria-haspopup="menu"
               aria-expanded={mobileMenuOpen()}
             >

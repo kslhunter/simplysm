@@ -93,7 +93,7 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
         <Dropdown.Content>
           <div class="w-80 p-2">
             <div class={dropdownHeaderClass}>
-              <span class="font-bold">알림</span>
+              <span class="font-bold">Notifications</span>
               <Show when={notification.items().length > 0}>
                 <button
                   type="button"
@@ -101,14 +101,14 @@ export const NotificationBell: Component<NotificationBellProps> = (props) => {
                   class={clearButtonClass}
                   onClick={handleClear}
                 >
-                  전체 삭제
+                  Clear All
                 </button>
               </Show>
             </div>
 
             <Show
               when={notification.items().length > 0}
-              fallback={<div class={emptyClass}>알림이 없습니다</div>}
+              fallback={<div class={emptyClass}>No notifications</div>}
             >
               <div class={listClass}>
                 <For each={[...notification.items()].reverse()}>

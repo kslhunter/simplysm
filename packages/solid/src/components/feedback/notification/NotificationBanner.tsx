@@ -72,7 +72,7 @@ export const NotificationBanner: Component = () => {
               </Show>
               <button
                 type="button"
-                aria-label="알림 닫기"
+                aria-label="Close notification"
                 class={dismissButtonClass}
                 onClick={handleDismiss}
               >

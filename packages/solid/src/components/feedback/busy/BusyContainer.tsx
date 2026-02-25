@@ -14,9 +14,9 @@ import { createMountTransition } from "../../../hooks/createMountTransition";
 import "./BusyContainer.css";
 
 export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-  /** 로딩 오버레이 표시 (children은 유지됨) */
+  /** Show loading overlay (children are preserved) */
   busy?: boolean;
-  /** false이면 children을 숨기고 로딩 오버레이 표시. 초기 데이터 로드 시 사용 */
+  /** If false, children are hidden and loading overlay is shown. Used for initial data loading */
   ready?: boolean;
   variant?: BusyVariant;
   message?: string;
@@ -26,7 +26,7 @@ export interface BusyContainerProps extends Omit<JSX.HTMLAttributes<HTMLDivEleme
 
 const baseClass = clsx("relative", "size-full", "min-h-[70px] min-w-[70px]", "overflow-auto");
 
-// eslint-disable-next-line tailwindcss/enforces-shorthand -- inset은 Chrome 87+에서만 지원
+// eslint-disable-next-line tailwindcss/enforces-shorthand -- inset is only supported in Chrome 87+
 const screenBaseClass = clsx(
   "absolute bottom-0 left-0 right-0 top-0",
   "z-busy",
@@ -71,7 +71,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
   const busyCtx = useContext(BusyContext);
   const currVariant = (): BusyVariant => local.variant ?? busyCtx?.variant() ?? "spinner";
 
-  // 애니메이션 상태 (mount transition)
+  // Animation state (mount transition)
   const { mounted, animating, unmount } = createMountTransition(
     () => local.ready === false || !!local.busy,
   );
@@ -83,7 +83,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
     }
   };
 
-  // 키보드 입력 차단 (캡처 단계)
+  // Block keyboard input (capture phase)
   let containerRef!: HTMLDivElement;
 
   createEffect(() => {
@@ -106,7 +106,7 @@ export const BusyContainer: ParentComponent<BusyContainerProps> = (props) => {
       animating() ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
     );
 
-  // spinner: 슬라이드 다운 애니메이션
+  // spinner: slide down animation
   const rectClass = () => {
     if (currVariant() !== "spinner") return "";
     return clsx(

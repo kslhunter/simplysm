@@ -31,17 +31,17 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
 }
 
 /**
- * 사이드바 컨테이너 컴포넌트
+ * Sidebar container component
  *
  * @remarks
- * - `position: relative`로 Sidebar를 포함하는 컨테이너 역할
- * - 부모 요소에 높이가 지정되어야 함 (`h-full` 사용)
- * - 콘텐츠 영역의 `overflow-auto`는 사용자가 직접 적용해야 함
- * - SidebarContext.Provider로 toggle 상태 공유
- * - toggle 상태는 메모리에만 유지 (페이지 새로고침 시 초기화)
- * - 데스크탑(640px+)에서 padding-left + transition으로 콘텐츠 확장/축소
- * - 모바일(640px-)에서 backdrop 렌더링 및 클릭 시 닫기
- * - 페이지 이동 시 모바일에서 자동 닫기
+ * - Acts as container with `position: relative` for Sidebar
+ * - Parent element must have height specified (use `h-full`)
+ * - Content area's `overflow-auto` must be applied by user
+ * - Shares toggle state via SidebarContext.Provider
+ * - Toggle state is kept in memory only (reset on page refresh)
+ * - On desktop (640px+): uses padding-left + transition to expand/collapse content
+ * - On mobile (640px-): renders backdrop and closes on click
+ * - Auto closes on mobile when page navigates
  *
  * @example
  * ```tsx
@@ -49,11 +49,11 @@ export interface SidebarContainerProps extends JSX.HTMLAttributes<HTMLDivElement
  *   <SidebarContainer>
  *     <Sidebar>
  *       <SidebarUser menus={userMenus}>
- *         <span>사용자</span>
+ *         <span>User</span>
  *       </SidebarUser>
  *       <SidebarMenu menus={menuItems} />
  *     </Sidebar>
- *     <main class="h-full overflow-auto">콘텐츠</main>
+ *     <main class="h-full overflow-auto">Content</main>
  *   </SidebarContainer>
  * </div>
  * ```

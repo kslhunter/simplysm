@@ -40,44 +40,44 @@ export interface SidebarUserMenu {
 
 export interface SidebarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
   /**
-   * 사용자 이름 (필수)
+   * User name (required)
    */
   name: string;
 
   /**
-   * 아바타 아이콘 (미입력 시 기본 사용자 아이콘)
+   * Avatar icon (defaults to user icon if not provided)
    */
   icon?: Component<TablerIconProps>;
 
   /**
-   * 부가 정보 (이메일 등, 미입력 시 이름만 표시)
+   * Additional information (email, etc.; shows name only if not provided)
    */
   description?: string;
 
   /**
-   * 드롭다운 메뉴 (있을 때만 클릭 가능)
+   * Dropdown menu (clickable only when provided)
    */
   menus?: SidebarUserMenu[];
 }
 
 /**
- * 사이드바 사용자 정보 컴포넌트
+ * Sidebar user information component
  *
  * @remarks
- * - name, icon, description props로 사용자 정보 표시
- * - icon 미입력 시 기본 사용자 아이콘 표시
- * - description 미입력 시 이름만 세로 중앙 정렬
- * - menus가 있을 때만 클릭 가능 및 ripple 효과 적용
- * - 클릭 시 드롭다운 메뉴 펼침/접힘
+ * - Displays user info via name, icon, description props
+ * - Shows default user icon if icon not provided
+ * - Shows name only with vertical centering if description not provided
+ * - Clickable and ripple effect apply only when menus provided
+ * - Click toggles dropdown menu
  *
  * @example
  * ```tsx
  * <SidebarUser
- *   name="홍길동"
- *   description="hong@example.com"
+ *   name="John Doe"
+ *   description="john@example.com"
  *   menus={[
- *     { title: "프로필", onClick: () => navigate("/profile") },
- *     { title: "로그아웃", onClick: handleLogout },
+ *     { title: "Profile", onClick: () => navigate("/profile") },
+ *     { title: "Logout", onClick: handleLogout },
  *   ]}
  * />
  * ```

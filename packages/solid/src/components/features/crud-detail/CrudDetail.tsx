@@ -108,7 +108,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
   // -- Refresh --
   async function handleRefresh() {
     if (hasChanges()) {
-      if (!confirm("변경사항을 무시하시겠습니까?")) return;
+      if (!confirm("Discard changes?")) return;
     }
     await doLoad();
   }
@@ -198,7 +198,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
             onClick={() => formRef?.requestSubmit()}
           >
             <Icon icon={IconDeviceFloppy} class="mr-1" />
-            저장
+            Save
           </Button>
         </Show>
         <Show
@@ -214,13 +214,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               onClick={() => void handleToggleDelete()}
             >
               <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-              {info()!.isDeleted ? "복구" : "삭제"}
+              {info()!.isDeleted ? "Restore" : "Delete"}
             </Button>
           )}
         </Show>
         <Button size="lg" variant="ghost" theme="info" onClick={() => void handleRefresh()}>
           <Icon icon={IconRefresh} class="mr-1" />
-          새로고침
+          Refresh
         </Button>
       </>
     ));
@@ -285,7 +285,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                   onClick={() => formRef?.requestSubmit()}
                 >
                   <Icon icon={IconDeviceFloppy} class="mr-1" />
-                  저장
+                  Save
                 </Button>
               </Show>
               <Show
@@ -305,13 +305,13 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                     onClick={() => void handleToggleDelete()}
                   >
                     <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                    {info()!.isDeleted ? "복구" : "삭제"}
+                    {info()!.isDeleted ? "Restore" : "Delete"}
                   </Button>
                 )}
               </Show>
               <Button size="sm" theme="info" variant="ghost" onClick={() => void handleRefresh()}>
                 <Icon icon={IconRefresh} class="mr-1" />
-                새로고침
+                Refresh
               </Button>
             </Show>
             <Show when={defs().tools}>{(toolsDef) => toolsDef().children}</Show>
@@ -330,7 +330,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
         <Show when={info()?.lastModifiedAt}>
           {(_) => (
             <div class="px-2 pb-1 text-xs text-base-400">
-              최종 수정: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
+              Last modified: {info()!.lastModifiedAt!.toFormatString("yyyy-MM-dd HH:mm")}
               <Show when={info()?.lastModifiedBy}> ({info()!.lastModifiedBy})</Show>
             </div>
           )}
@@ -349,7 +349,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
               {(_) => (
                 <Button variant={"solid"} theme="danger" onClick={() => void handleToggleDelete()}>
                   <Icon icon={info()!.isDeleted ? IconTrashOff : IconTrash} class="mr-1" />
-                  {info()!.isDeleted ? "복구" : "삭제"}
+                  {info()!.isDeleted ? "Restore" : "Delete"}
                 </Button>
               )}
             </Show>
@@ -361,7 +361,7 @@ const CrudDetailBase = <TData extends object>(props: CrudDetailProps<TData>) => 
                 class={"gap-1"}
               >
                 <Icon icon={IconCheck} />
-                확인
+                Confirm
               </Button>
             </Show>
           </div>

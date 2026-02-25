@@ -9,7 +9,7 @@ export function isCrudSheetFilterDef(value: unknown): value is CrudSheetFilterDe
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
+/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudSheetFilter<TFilter>(props: {
   children: (filter: TFilter, setFilter: any) => JSX.Element;
 }): JSX.Element {

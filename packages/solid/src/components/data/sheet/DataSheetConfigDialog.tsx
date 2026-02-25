@@ -105,7 +105,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
   }
 
   function handleReset(): void {
-    if (!confirm("모든 시트 설정을 초기화하시겠습니까?")) return;
+    if (!confirm("Are you sure you want to reset all sheet settings?")) return;
     dialog?.close({ columnRecord: {} });
   }
 
@@ -115,13 +115,13 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
         <DataSheet items={editItems} inset hideConfigBar onItemsReorder={handleReorder}>
           <DataSheet.Column<EditColumnItem>
             key="header"
-            header="컬럼"
+            header="Column"
             class="px-2 py-1"
             sortable={false}
           >
             {(ctx) => ctx.item.headerText}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="fixed" header="고정" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="fixed" header="Fixed" sortable={false}>
             {(ctx) => (
               <Checkbox
                 inset
@@ -130,7 +130,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
               />
             )}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="hidden" header="숨김" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="hidden" header="Hidden" sortable={false}>
             {(ctx) => (
               <Checkbox
                 inset
@@ -139,7 +139,7 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
               />
             )}
           </DataSheet.Column>
-          <DataSheet.Column<EditColumnItem> key="width" header="너비" sortable={false}>
+          <DataSheet.Column<EditColumnItem> key="width" header="Width" sortable={false}>
             {(ctx) => (
               <TextInput
                 value={ctx.item.width}
@@ -154,12 +154,12 @@ export const DataSheetConfigDialog: Component<DataSheetConfigDialogProps> = (pro
 
       <div class={footerClass}>
         <Button onClick={handleReset} theme="warning" variant="solid">
-          초기화
+          Reset
         </Button>
         <div class={footerActionsClass}>
-          <Button onClick={() => dialog?.close(undefined)}>취소</Button>
+          <Button onClick={() => dialog?.close(undefined)}>Cancel</Button>
           <Button onClick={handleOk} theme="primary" variant="solid">
-            확인
+            Confirm
           </Button>
         </div>
       </div>

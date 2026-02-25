@@ -10,21 +10,21 @@ export interface TopbarContainerProps extends JSX.HTMLAttributes<HTMLDivElement>
 }
 
 /**
- * Topbar + 콘텐츠 영역을 감싸는 레이아웃 컨테이너
+ * Layout container wrapping Topbar and content area
  *
  * @remarks
- * - `flex flex-col h-full` 구조로 Topbar와 콘텐츠를 수직 배치
- * - TopbarContext.Provider로 actions 상태 공유
- * - 부모 요소에 높이가 지정되어야 함
+ * - Uses `flex flex-col h-full` structure to vertically layout Topbar and content
+ * - Shares actions state via TopbarContext.Provider
+ * - Parent element must have height specified
  *
  * @example
  * ```tsx
  * <TopbarContainer>
  *   <Topbar>
- *     <h1>앱 이름</h1>
+ *     <h1>App Name</h1>
  *     <TopbarMenu menus={menuItems} />
  *   </Topbar>
- *   <main class="flex-1 overflow-auto">콘텐츠</main>
+ *   <main class="flex-1 overflow-auto">Content</main>
  * </TopbarContainer>
  * ```
  */

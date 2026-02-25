@@ -9,7 +9,7 @@ export function isCrudSheetToolsDef(value: unknown): value is CrudSheetToolsDef<
   );
 }
 
-/* eslint-disable solid/reactivity -- plain object 반환 패턴으로 reactive context 불필요 */
+/* eslint-disable solid/reactivity -- plain object return pattern does not require reactive context */
 export function CrudSheetTools<_TItem>(props: {
   children: (ctx: any) => JSX.Element;
 }): JSX.Element {

@@ -254,7 +254,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
                 class={twMerge(actionButtonClass, "text-base-400 hover:text-danger-500")}
                 onClick={handleClear}
                 tabIndex={-1}
-                aria-label="선택 해제"
+                aria-label="Deselect"
               >
                 <Icon icon={IconX} size="0.875em" />
               </button>
@@ -266,7 +266,7 @@ export function DataSelectButton<TItem, TKey = string | number>(
                 class={twMerge(actionButtonClass, "text-base-400 hover:text-primary-500")}
                 onClick={() => void handleOpenModal()}
                 tabIndex={-1}
-                aria-label="검색"
+                aria-label="Search"
               >
                 <Icon icon={IconSearch} size="0.875em" />
               </button>

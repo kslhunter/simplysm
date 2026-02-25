@@ -20,7 +20,7 @@ const titleCellClass = clsx("flex items-stretch", "px-2");
 const indentGuideWrapperClass = clsx("mr-1 flex w-3", "justify-center");
 const indentGuideLineClass = clsx("w-0 self-stretch", "border-r", borderDefault);
 
-// --- 타입 ---
+// --- Types ---
 
 export interface PermissionTableProps<TModule = string> {
   items?: AppPerm<TModule>[];
@@ -32,9 +32,9 @@ export interface PermissionTableProps<TModule = string> {
   style?: JSX.CSSProperties;
 }
 
-// --- 유틸리티 (테스트에서도 사용) ---
+// --- Utilities (also used in tests) ---
 
-/** 트리에서 모든 고유 perm 타입을 수집 */
+/** Collect all unique perm types from the tree */
 export function collectAllPerms<TModule>(items: AppPerm<TModule>[]): string[] {
   const set = new Set<string>();
   const walk = (list: AppPerm<TModule>[]) => {
@@ -49,7 +49,7 @@ export function collectAllPerms<TModule>(items: AppPerm<TModule>[]): string[] {
   return [...set];
 }
 
-/** modules 필터: 활성 모듈과 교차가 있는 아이템만 남김 */
+/** Filter by modules: keep only items that have intersection with active modules */
 export function filterByModules<TModule>(
   items: AppPerm<TModule>[],
   modules: TModule[] | undefined,
@@ -72,7 +72,7 @@ export function filterByModules<TModule>(
   return result;
 }
 
-/** 체크 변경 시 cascading 처리 */
+/** Handle cascading when checkbox changes */
 export function changePermCheck<TModule>(
   value: Record<string, boolean>,
   item: AppPerm<TModule>,

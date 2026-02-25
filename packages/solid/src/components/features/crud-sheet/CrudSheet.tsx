@@ -182,7 +182,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
   function checkIgnoreChanges(): boolean {
     if (!local.inlineEdit) return true;
     if (getItemDiffs().length === 0) return true;
-    return confirm("변경사항이 있습니다. 무시하시겠습니까?");
+    return confirm("You have unsaved changes. Discard them?");
   }
 
   // -- Filter --
@@ -709,7 +709,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
 
             {/* Auto lastModified columns */}
             <Show when={local.lastModifiedAtProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header="수정일시" hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedAtProp!} header="Last Modified" hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {(
@@ -723,7 +723,7 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             </Show>
 
             <Show when={local.lastModifiedByProp}>
-              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header="수정자" hidden>
+              <DataSheetColumn<TItem> key={local.lastModifiedByProp!} header="Modified By" hidden>
                 {(dsCtx) => (
                   <div class="px-2 py-1 text-center">
                     {objGetChainValue(dsCtx.item, local.lastModifiedByProp!, true) as string}
@@ -740,12 +740,12 @@ const CrudSheetBase = <TItem, TFilter extends Record<string, any>>(
             <div class="flex-1" />
             <Show when={selectedItems().length > 0}>
               <Button size="sm" theme="danger" onClick={handleSelectCancel}>
-                {local.selectMode === "multiple" ? "모두" : "선택"} 해제
+                Deselect {local.selectMode === "multiple" ? "All" : ""}
               </Button>
             </Show>
             <Show when={local.selectMode === "multiple"}>
               <Button size="sm" theme="primary" onClick={handleSelectConfirm}>
-                확인({selectedItems().length})
+                Confirm ({selectedItems().length})
               </Button>
             </Show>
           </div>

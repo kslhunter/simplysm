@@ -51,10 +51,10 @@ export interface TopbarProps extends JSX.HTMLAttributes<HTMLElement> {
  * @example
  * ```tsx
  * <Topbar>
- *   <h1 class="text-lg font-bold">앱 이름</h1>
+ *   <h1 class="text-lg font-bold">App Name</h1>
  *   <Topbar.Menu menus={menuItems} />
  *   <div class="flex-1" />
- *   <Topbar.User menus={userMenus}>사용자</Topbar.User>
+ *   <Topbar.User menus={userMenus}>User</Topbar.User>
  * </Topbar>
  * ```
  */
@@ -80,7 +80,7 @@ const TopbarBase: ParentComponent<TopbarProps> = (props) => {
   return (
     <header {...rest} data-topbar class={getClassName()}>
       <Show when={sidebarContext}>
-        <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="사이드바 토글">
+        <Button variant="ghost" onClick={handleToggle} class="p-2" aria-label="Toggle sidebar">
           <Icon icon={IconMenu2} size="1.5em" />
         </Button>
       </Show>

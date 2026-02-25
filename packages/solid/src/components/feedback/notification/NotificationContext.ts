@@ -1,90 +1,90 @@
 import { type Accessor, createContext, useContext } from "solid-js";
 
-/** 알림 테마 */
+/** Notification theme */
 export type NotificationTheme = "info" | "success" | "warning" | "danger";
 
-/** 알림 액션 버튼 */
+/** Notification action button */
 export interface NotificationAction {
-  /** 버튼 텍스트 */
+  /** Button text */
   label: string;
-  /** 클릭 핸들러 */
+  /** Click handler */
   onClick: () => void;
 }
 
-/** 알림 항목 */
+/** Notification item */
 export interface NotificationItem {
-  /** 고유 식별자 */
+  /** Unique identifier */
   id: string;
-  /** 테마 (info, success, warning, danger) */
+  /** Theme (info, success, warning, danger) */
   theme: NotificationTheme;
-  /** 알림 제목 */
+  /** Notification title */
   title: string;
-  /** 알림 메시지 (선택) */
+  /** Notification message (optional) */
   message?: string;
-  /** 액션 버튼 (선택) */
+  /** Action button (optional) */
   action?: NotificationAction;
-  /** 생성 시각 */
+  /** Creation time */
   createdAt: Date;
-  /** 읽음 여부 */
+  /** Read status */
   read: boolean;
 }
 
-/** 알림 생성 옵션 */
+/** Notification creation options */
 export interface NotificationOptions {
-  /** 알림에 표시할 액션 버튼 */
+  /** Action button to display in notification */
   action?: NotificationAction;
 }
 
-/** 알림 수정 옵션 */
+/** Notification update options */
 export interface NotificationUpdateOptions {
-  /** true면 읽은 알림을 다시 읽지 않음 상태로 변경 (배너 재표시) */
+  /** If true, mark read notification as unread (redisplay banner) */
   renotify?: boolean;
 }
 
 /**
- * 알림 시스템 Context 값
+ * Notification system Context value
  *
  * @remarks
- * 알림 생성, 수정, 삭제 및 읽음 관리를 위한 메서드 제공.
- * 최대 50개까지 유지되며 초과 시 오래된 항목부터 제거.
+ * Provides methods to create, update, delete, and manage read status of notifications.
+ * Maintains up to 50 notifications; older items are removed when exceeded.
  */
 export interface NotificationContextValue {
-  // 상태
+  // State
   items: Accessor<NotificationItem[]>;
   unreadCount: Accessor<number>;
   latestUnread: Accessor<NotificationItem | undefined>;
 
-  // 알림 발생 (id 반환)
+  // Create notification (returns id)
   info: (title: string, message?: string, options?: NotificationOptions) => string;
   success: (title: string, message?: string, options?: NotificationOptions) => string;
   warning: (title: string, message?: string, options?: NotificationOptions) => string;
   danger: (title: string, message?: string, options?: NotificationOptions) => string;
   error: (err?: any, header?: string) => void;
 
-  // 알림 수정
+  // Update notification
   update: (
     id: string,
     updates: Partial<Pick<NotificationItem, "title" | "message" | "theme" | "action">>,
     options?: NotificationUpdateOptions,
   ) => void;
 
-  // 알림 삭제
+  // Delete notification
   remove: (id: string) => void;
 
-  // 관리
+  // Management
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissBanner: () => void;
   clear: () => void;
 }
 
-/** 알림 시스템 Context */
+/** Notification system Context */
 export const NotificationContext = createContext<NotificationContextValue>();
 
 /**
- * 알림 시스템에 접근하는 훅
+ * Hook to access the notification system
  *
- * @throws NotificationProvider가 없으면 에러 발생
+ * @throws Error if used outside NotificationProvider
  */
 export function useNotification(): NotificationContextValue {
   const context = useContext(NotificationContext);

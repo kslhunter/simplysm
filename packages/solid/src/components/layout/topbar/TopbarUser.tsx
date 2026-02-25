@@ -18,31 +18,31 @@ export interface TopbarUserMenu {
 
 export interface TopbarUserProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "onClick"> {
   /**
-   * 드롭다운 메뉴 (있을 때만 드롭다운 표시)
+   * Dropdown menu (dropdown shown only when provided)
    */
   menus?: TopbarUserMenu[];
 
   /**
-   * 사용자 정보 영역 (커스터마이징)
+   * User information area (customizable)
    */
   children: JSX.Element;
 }
 
 /**
- * Topbar 사용자 정보 컴포넌트
+ * Topbar user information component
  *
  * @remarks
- * - children으로 사용자 정보 표시 커스터마이징
- * - menus가 있을 때 클릭 시 Dropdown으로 메뉴 표시
- * - Button의 ghost 스타일 사용
+ * - Customize user info display with children
+ * - When menus provided, click shows Dropdown menu
+ * - Uses Button's ghost style
  *
  * @example
  * ```tsx
  * <TopbarUser menus={[
- *   { title: "프로필", onClick: () => navigate("/profile") },
- *   { title: "로그아웃", onClick: handleLogout },
+ *   { title: "Profile", onClick: () => navigate("/profile") },
+ *   { title: "Logout", onClick: handleLogout },
  * ]}>
- *   <span>사용자명</span>
+ *   <span>Username</span>
  * </TopbarUser>
  * ```
  */

@@ -12,13 +12,13 @@ import { useLogger } from "../../../hooks/useLogger";
 const MAX_ITEMS = 50;
 
 /**
- * 알림 시스템 Provider
+ * Notification system Provider
  *
  * @remarks
- * - 최대 50개 알림 유지 (초과 시 오래된 항목 자동 제거)
- * - 읽지 않은 최신 알림을 배너로 표시
- * - 스크린 리더용 aria-live region 포함
- * - LoggerProvider가 있으면 에러 알림을 로거에도 기록
+ * - Maintains up to 50 notifications (older items auto-removed)
+ * - Shows latest unread notification in banner
+ * - Includes aria-live region for screen readers
+ * - Logs errors to logger if LoggerProvider is present
  */
 export const NotificationProvider: ParentComponent = (props) => {
   const logger = useLogger();

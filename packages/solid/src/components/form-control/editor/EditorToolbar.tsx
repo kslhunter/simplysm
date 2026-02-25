@@ -129,7 +129,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isH1)}
-        title="제목 1"
+        title="Heading 1"
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 1 }).run()}
       >
         <Icon icon={IconH1} size="1em" />
@@ -137,7 +137,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isH2)}
-        title="제목 2"
+        title="Heading 2"
         onClick={() => props.editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         <Icon icon={IconH2} size="1em" />
@@ -150,7 +150,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isBold)}
-        title="굵게"
+        title="Bold"
         onClick={() => props.editor.chain().focus().toggleBold().run()}
       >
         <Icon icon={IconBold} size="1em" />
@@ -158,7 +158,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isItalic)}
-        title="기울임"
+        title="Italic"
         onClick={() => props.editor.chain().focus().toggleItalic().run()}
       >
         <Icon icon={IconItalic} size="1em" />
@@ -166,7 +166,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isUnderline)}
-        title="밑줄"
+        title="Underline"
         onClick={() => props.editor.chain().focus().toggleUnderline().run()}
       >
         <Icon icon={IconUnderline} size="1em" />
@@ -174,17 +174,17 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
       <button
         type="button"
         class={btnClass(isStrike)}
-        title="취소선"
+        title="Strikethrough"
         onClick={() => props.editor.chain().focus().toggleStrike().run()}
       >
         <Icon icon={IconStrikethrough} size="1em" />
       </button>
 
-      {/* 4. 구분선 */}
+      {/* 4. Separator */}
       <div class={separatorClass} />
 
       {/* 5. Text color + background color (using input[type=color]) */}
-      <label class={colorLabelClass} title="텍스트 색상">
+      <label class={colorLabelClass} title="Text color">
         <span class={clsx("text-sm font-bold")}>A</span>
         <div class={colorIndicatorClass} style={{ "background-color": currentColor() }} />
         <input
@@ -194,7 +194,7 @@ export const EditorToolbar: Component<EditorToolbarProps> = (props) => {
           onInput={(ev) => props.editor.chain().focus().setColor(ev.currentTarget.value).run()}
         />
       </label>
-      <label class={colorLabelClass} title="배경색">
+      <label class={colorLabelClass} title="Background color">
         <span
           class={clsx("rounded px-0.5 text-sm font-bold")}
           style={{ "background-color": currentHighlight() }}

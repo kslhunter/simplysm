@@ -69,7 +69,7 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     },
     get getChildren() {
       if (!local.data.getParentKey) return undefined;
-      // eslint-disable-next-line solid/reactivity -- 반환 함수는 Select 내부 JSX tracked scope에서 호출됨
+      // eslint-disable-next-line solid/reactivity -- return function is called within Select's internal JSX tracked scope
       return (item: TItem) => {
         const key = local.data.getKey(item);
         return items().filter((child) => local.data.getParentKey!(child) === key);
@@ -87,12 +87,12 @@ export function SharedDataSelect<TItem>(props: SharedDataSelectProps<TItem>): JS
     <Select {...selectProps}>
       <Select.ItemTemplate>{local.children}</Select.ItemTemplate>
       {local.modal && (
-        <Select.Action onClick={() => void handleOpenModal()} aria-label="검색">
+        <Select.Action onClick={() => void handleOpenModal()} aria-label="Search">
           <Icon icon={IconSearch} size="1em" />
         </Select.Action>
       )}
       {local.editModal && (
-        <Select.Action onClick={() => void handleOpenEditModal()} aria-label="편집">
+        <Select.Action onClick={() => void handleOpenEditModal()} aria-label="Edit">
           <Icon icon={IconEdit} size="1em" />
         </Select.Action>
       )}

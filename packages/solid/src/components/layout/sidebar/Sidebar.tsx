@@ -38,18 +38,18 @@ export interface SidebarProps extends JSX.HTMLAttributes<HTMLElement> {
 }
 
 /**
- * 사이드바 본체 컴포넌트
+ * Sidebar body component
  *
  * @remarks
- * - SidebarContainer 내부에서 사용해야 함 (`position: absolute`로 컨테이너에 종속)
- * - Context에서 toggle 상태를 읽어 열림/닫힘 애니메이션 적용
- * - 토글 버튼 미포함 - useSidebarContext().setToggle로 외부에서 제어
+ * - Must be used inside SidebarContainer (`position: absolute` dependency)
+ * - Reads toggle state from Context to apply open/close animation
+ * - Does not include toggle button - controlled externally via useSidebarContext().setToggle
  *
  * @example
  * ```tsx
  * <Sidebar>
  *   <Sidebar.User menus={userMenus}>
- *     <span>사용자</span>
+ *     <span>User</span>
  *   </Sidebar.User>
  *   <Sidebar.Menu menus={menuItems} />
  * </Sidebar>

@@ -1,18 +1,18 @@
 import { createContext, useContext, type Accessor, type Setter } from "solid-js";
 
 /**
- * Tailwind sm: breakpoint에 해당하는 미디어 쿼리
+ * Media query corresponding to Tailwind sm: breakpoint
  * @see tailwind.config.ts screens.sm (640px)
  */
 export const SM_MEDIA_QUERY = "(min-width: 640px)";
 
 /**
- * 사이드바 toggle 상태 공유 Context
+ * Sidebar toggle state shared Context
  *
  * @remarks
- * toggle 시맨틱:
- * - `toggle=false` (기본값): 데스크탑(640px+)에서 열림, 모바일(640px-)에서 닫힘
- * - `toggle=true`: 데스크탑(640px+)에서 닫힘, 모바일(640px-)에서 열림 (오버레이)
+ * toggle semantics:
+ * - `toggle=false` (default): open on desktop (640px+), closed on mobile (640px-)
+ * - `toggle=true`: closed on desktop (640px+), open on mobile (640px-) as overlay
  */
 export interface SidebarContextValue {
   toggle: Accessor<boolean>;
@@ -30,10 +30,10 @@ export function useSidebarContext(): SidebarContextValue {
 }
 
 /**
- * SidebarContext를 선택적으로 사용 (Context 없으면 undefined 반환)
+ * Optionally use SidebarContext (returns undefined if no Context)
  *
  * @remarks
- * SidebarContainer 외부에서도 사용 가능한 컴포넌트(예: Topbar)에서 사용
+ * Used in components that can be used outside SidebarContainer (e.g., Topbar)
  */
 export function useSidebarContextOptional(): SidebarContextValue | undefined {
   return useContext(SidebarContext);
